@@ -96,6 +96,17 @@ describe('the page tools', () => {
       expect(Object.keys(tool(name).mcpShapes.output)).toContain('next');
     }
     expect(tool('search_pages').description).toContain('Prefer a verified passage');
+    // Each conflict's question rides beside the other page (knowledgebase-for-agents.md "Conflicts for agents").
+    expect(tool('read_page').description).toContain('(question)');
+  });
+
+  it('let the suggest scope move a never-verified page, and keep write for a verified one', () => {
+    const move = tool('move_page').description;
+    expect(move).toContain('With the suggest scope it moves a page');
+    expect(move).toContain('needs the write scope');
+    expect(JSON.stringify(z.toJSONSchema(tool('get_context').output))).toMatch(
+      /suggest \(suggest_edit, create_page, and move_page/,
+    );
   });
 
   it('keep a direct write for the write scope, as far as AI Editing allows', () => {

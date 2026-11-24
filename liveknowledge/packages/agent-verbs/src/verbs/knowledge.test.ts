@@ -146,6 +146,36 @@ describe('pages', () => {
     expect(out.pages[1]).toMatchObject({ parent: 'ops', always_in_context: true });
   });
 
+  // Conflicts for agents (knowledgebase-for-agents.md): the question each open conflict asks, beside the other page.
+  it('prints each conflict’s question beside the other page', async () => {
+    const disputed = [
+      {
+        ...ROWS[3]!,
+        trust: {
+          ...DRAFT,
+          conflictsWith: [
+            { tab: 'deploys', title: 'Deploys', question: 'Is the office open?', foundAt: AT },
+          ],
+        },
+      },
+    ];
+    const { ctx } = setup({ [`${base}/pages`]: { reviewEvery: 90, pages: disputed } });
+    const out = await run(pages, ctx, { doc: DOC_A });
+    expect(pages.text!(out)[1]).toBe(
+      'Holidays  (holidays)  never verified, CONFLICTS WITH "Deploys" on "Is the office open?"',
+    );
+    expect(out.pages[0]).toMatchObject({
+      conflicts_with: [
+        {
+          page: 'deploys',
+          title: 'Deploys',
+          question: 'Is the office open?',
+          found_at: '2026-10-01T00:00:00.000Z',
+        },
+      ],
+    });
+  });
+
   it('prints one page’s subtree, by id or title', async () => {
     const { ctx } = setup({ [`${base}/pages`]: { pages: ROWS } });
     const under = await run(pages, ctx, { doc: DOC_A, under: ' deploys' });
@@ -276,6 +306,19 @@ describe('read', () => {
     ]);
     expect(read.quiet!(out)).toEqual(['# When\n\nOn Tuesdays.']);
     expect(out.parent).toBe('ops');
+  });
+
+  it('prints each conflict’s question on the trust line', async () => {
+    const path = `${base}/pages/Deploys`;
+    const conflictsWith = [
+      { tab: 'holidays', title: 'Holidays', question: 'When do we deploy?', foundAt: AT },
+      { tab: 'ops', title: 'Operations', question: 'Who approves?', foundAt: AT },
+    ];
+    const { ctx } = setup({ [path]: { page: { ...page, trust: { ...VERIFIED, conflictsWith } } } });
+    const out = await run(read, ctx, { doc: DOC_A, page: 'Deploys' });
+    expect(read.text!(out)).toContain(
+      '--- "Deploys" (deploys) · rev 7 · verified 2026-10-01, review due 2026-12-30, CONFLICTS WITH "Holidays" on "When do we deploy?", "Operations" on "Who approves?"',
+    );
   });
 
   it('asks for the whole page by default, and prints only what there is', async () => {

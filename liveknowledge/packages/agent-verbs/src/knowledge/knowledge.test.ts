@@ -56,6 +56,34 @@ describe('the trust fields', () => {
     ).toEqual({ verified: 'verified', verified_at: '2026-10-01T00:00:00.000Z', stale: false });
   });
 
+  // Conflicts for agents (knowledgebase-for-agents.md): each open conflict's question and when it was found.
+  it('carry each conflict’s question and when it was found, one entry a conflict', () => {
+    expect(
+      trustFieldsOf({
+        state: 'verified',
+        verifiedAt: AT,
+        stale: false,
+        conflictsWith: [
+          { tab: 'h', title: 'Holidays', question: 'Is the office open?', foundAt: DUE },
+          { tab: 'r', title: 'Rollbacks', question: 'Who approves?', foundAt: AT },
+        ],
+      }).conflicts_with,
+    ).toEqual([
+      {
+        page: 'h',
+        title: 'Holidays',
+        question: 'Is the office open?',
+        found_at: '2026-12-30T00:00:00.000Z',
+      },
+      {
+        page: 'r',
+        title: 'Rollbacks',
+        question: 'Who approves?',
+        found_at: '2026-10-01T00:00:00.000Z',
+      },
+    ]);
+  });
+
   it('read a search result’s state, dates and conflicts', () => {
     const result = {
       id: 'p1',
@@ -118,6 +146,15 @@ describe('trustLine', () => {
         ],
       }),
     ).toBe('REVIEW DUE, last verified 2026-10-01, CONFLICTS WITH "Holidays", "Rollbacks"');
+    expect(
+      trustLine({
+        verified: 'never-verified',
+        stale: false,
+        conflicts_with: [
+          { page: 'h', title: 'Holidays', question: 'When do we deploy?', found_at: '2026-10-01' },
+        ],
+      }),
+    ).toBe('never verified, CONFLICTS WITH "Holidays" on "When do we deploy?"');
   });
 });
 

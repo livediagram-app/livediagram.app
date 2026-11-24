@@ -1166,7 +1166,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Move a page in the tree with its subpages (an agent's `move_page`), as `{ parent, before? }`: under `parent` (null for the top level), in front of its subpage `before` (last when left out). Editor only; an agent needs the `write` scope. 409 `own_subtree`, `depth_limit` or `unknown_page`.",
+      "Move a page in the tree with its subpages (an agent's `move_page`), as `{ parent, before? }`: under `parent` (null for the top level), in front of its subpage `before` (last when left out). Editor only; an agent holding `suggest` (an Editor's or a Participant's) moves a page whose subtree is all Never Verified, and any other page needs the `write` scope (403 `scope_needed`, naming the page that holds it back). 409 `own_subtree`, `depth_limit` or `unknown_page`.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'MovePageRequest',

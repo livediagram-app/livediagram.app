@@ -7,7 +7,8 @@
 //                                                  Editor's agent holding `suggest`
 //   PUT  /api/documents/<id>/pages/<tab>           the page's writing replaced, or added to (write_page): Editor;
 //                                                  an agent needs `write`, and goes as far as AI Editing allows
-//   POST /api/documents/<id>/pages/<tab>/move      a page moved in the tree (move_page): Editor
+//   POST /api/documents/<id>/pages/<tab>/move      a page moved in the tree (move_page): Editor; an agent holding
+//                                                  `suggest` moves a page whose subtree is all Never Verified
 //   PUT  /api/documents/<id>/agents/<token>/scopes what an API token may do here: an Editor in person
 // Reading is every role's. A page read here is counted as `GET tabs/<tab>` counts it. `<tab>`, `parent` and `before`
 // take a page's id, or its title when one page alone has it.
@@ -60,6 +61,7 @@ import {
   markdownHeadings,
   markdownSection,
   parseKnowledgeFields,
+  trustState,
   verificationOn,
 } from '@liveknowledge/knowledge';
 import { readStoredTab } from '../changesets/stored-tab';
@@ -248,14 +250,18 @@ async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<
   const caller = ctx.resolveOwner();
   for (const page of context.pages) await countRead(ctx.env, page.id, reader, caller, now);
   const knowledgeOf = new Map(marked.map((p) => [p.id, p.knowledge]));
-  // Each context page's Health Score: one read for them all.
-  const health = await pageHealthWires(
-    ctx.env,
-    document.id,
-    document.knowledgeSettings.reviewEvery,
-    now,
-    context.pages.map((p) => p.id),
-  );
+  // Each context page's Health Score: one read for them all; and the open conflicts, one read of at most 50, for the
+  // question each disputed page answers differently (knowledgebase-for-agents.md "Conflicts for agents").
+  const [health, conflicts] = await Promise.all([
+    pageHealthWires(
+      ctx.env,
+      document.id,
+      document.knowledgeSettings.reviewEvery,
+      now,
+      context.pages.map((p) => p.id),
+    ),
+    context.pages.length > 0 ? openConflictPages(ctx.env, document.tabs) : null,
+  ]);
   const answer: KnowledgeAgentContextResponse = {
     name: document.name,
     role: grant.role,
@@ -274,6 +280,7 @@ async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<
       markdown: p.markdown,
       tokens: p.tokens,
       trust: pageTrustOf(knowledgeOf.get(p.id), document.knowledgeSettings.reviewEvery, now, {
+        conflictsWith: conflicts?.byTab.get(p.id),
         health: health.get(p.id),
       }),
     })),
@@ -448,9 +455,73 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
   );
 }
 
-async function handleMove(route: KnowledgeRoute, tab: string): Promise<Response> {
+// Moving a page changes none of its writing, so a connection holding `suggest` arranges the drafts it makes: a page
+// whose subtree is all Never Verified (knowledgebase-for-agents.md "Moving pages with the suggest scope"). A page a
+// person vouched for, or one with such a page under it, still needs `write`. AI Editing does not bound a move.
+const STATE_WORDS = { verified: 'is verified', 'review-due': 'is due for review' } as const;
+
+/** The first page in the subtree at `tab` (itself, then the pages under it in tree order) that a person verified,
+ *  with its state; null when every one is Never Verified. A Review Period of Never keeps a page verified before it
+ *  was turned off verified, as AI Editing reads it (agent-write-gate.ts). */
+function verifiedInSubtree(
+  document: DocumentDTO,
+  tab: string,
+  now = Date.now(),
+): { summary: Summary; state: keyof typeof STATE_WORDS } | null {
+  const under = new Set([tab]);
+  for (const row of treeOf(document)) {
+    const id = row.page.id;
+    if (id !== tab && !(row.page.parent && under.has(row.page.parent))) continue;
+    under.add(id);
+    const { state } = trustState(
+      parseKnowledgeFields(row.page.knowledge),
+      document.knowledgeSettings.reviewEvery,
+      now,
+    );
+    if (state !== 'never-verified') return { summary: row.page, state };
+  }
+  return null;
+}
+
+/** Null when the caller may move the page at `tab`; else the refusal. */
+function moveRefusal(route: KnowledgeRoute, tab: string): Response | null {
   const { ctx, document, grant } = route;
-  if (!writesPages(grant)) return forbidden();
+  if (writesPages(grant)) return null;
+  // A Viewer's connection and a read-only one never move a page; an Editor's or a Participant's holding `suggest`
+  // moves drafts (a Participant moves pages in person).
+  const drafts =
+    grant.scopes?.includes('suggest') === true &&
+    (grant.personRole === 'edit' || grant.personRole === 'participate');
+  if (!drafts) return forbidden();
+  const held = verifiedInSubtree(document, tab);
+  if (!held) return null;
+  const which =
+    held.summary.id === tab
+      ? `"${held.summary.name}" ${STATE_WORDS[held.state]}`
+      : `"${held.summary.name}", under the page you are moving, ${STATE_WORDS[held.state]}`;
+  console.info('[knowledge] scope needed', {
+    documentId: document.id,
+    tokenId: ctx.token?.id,
+    needs: 'write',
+    tabId: tab,
+    held: held.summary.id,
+  });
+  return json(
+    {
+      error: 'scope_needed',
+      needs: 'write',
+      scopes: grant.scopes,
+      page: { tab: held.summary.id, title: held.summary.name, state: held.state },
+      message: `This connection holds the suggest scope here, so it moves only never-verified pages. ${which}. Ask an Editor of the knowledgebase to move it, or to grant this connection the write scope.`,
+    },
+    { status: 403 },
+  );
+}
+
+async function handleMove(route: KnowledgeRoute, tab: string): Promise<Response> {
+  const { ctx, document } = route;
+  const refusal = moveRefusal(route, tab);
+  if (refusal) return refusal;
   const body = (await ctx.request.json().catch(() => null)) as MovePageRequest | null;
   if (!body || typeof body !== 'object' || Array.isArray(body))
     return invalid(
@@ -469,8 +540,8 @@ async function handleMove(route: KnowledgeRoute, tab: string): Promise<Response>
   if (parent instanceof Response) return parent;
   const stored = await readStoredPages(ctx.env, document.id);
   const to = { parent, before };
-  const refusal = pageMoveRefusal(stored, tab, to);
-  if (refusal) return conflict(refusal);
+  const treeRefusal = pageMoveRefusal(stored, tab, to);
+  if (treeRefusal) return conflict(treeRefusal);
   if (before !== undefined && stored.find((p) => p.id === before)?.parent !== parent)
     return invalid('invalid_before', '"before" must be a page under the same parent.');
   const moved = withPageMoved(stored, tab, to);
@@ -494,7 +565,12 @@ async function handleMove(route: KnowledgeRoute, tab: string): Promise<Response>
   }
   const after = moved ? await relayTree(route) : document;
   const row = (after ? treeOf(after) : []).find((r) => r.page.id === tab);
-  console.info('[knowledge] page moved', { documentId: document.id, tabId: tab, moved: !!moved });
+  console.info('[knowledge] page moved', {
+    documentId: document.id,
+    tabId: tab,
+    moved: !!moved,
+    agent: ctx.token !== null && ctx.token !== undefined,
+  });
   return json({
     page: {
       tab,
