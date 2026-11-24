@@ -5,6 +5,7 @@
 
 import { memo, useId, useState } from 'react';
 import { Chip } from '@liveworkspace/ui';
+import { AiWriterMark } from '@liveworkspace/ui/ai-writer-mark';
 import { ChevronDownIcon } from '../ui/icons';
 import { FOCUS_RING } from '../ui/classes';
 import { eventIcon } from './event-icons';
@@ -16,7 +17,7 @@ import {
   toneColor,
   toneSoftColor,
 } from './history-model';
-import { actorWords, eventWords } from './history-render';
+import { actorWords, eventAgent, eventWords } from './history-render';
 import type { HistoryRun } from './history';
 import { MUTED, PersonAvatar, iso } from './HistoryParts';
 
@@ -43,6 +44,8 @@ export const HistoryEntry = memo(function HistoryEntry({
   const tone = eventTone(event.type);
   const many = run.events.length;
   const who = cap(actorWords(event, ctx.viewerId));
+  // An agent's doing wears the AI sparkle every app draws beside an agent's writer (Work Tracker 1381).
+  const agent = eventAgent(event);
   const detail = many > 1 ? null : words.detail;
   return (
     <li
@@ -98,6 +101,12 @@ export const HistoryEntry = memo(function HistoryEntry({
             <span className="font-medium text-slate-700 dark:text-slate-200">{who}</span>
             {detail ? ` · ${detail}` : ''}
           </span>
+          {agent ? (
+            <AiWriterMark
+              words={event.type === 'created' ? 'Made by AI' : 'Edited by AI'}
+              data-history-ai=""
+            />
+          ) : null}
         </p>
         {words.quote && many === 1 ? (
           <blockquote className="mt-1.5 line-clamp-3 rounded-lg border-l-2 border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">

@@ -116,6 +116,34 @@ describe('what the index records', () => {
     });
   });
 
+  it("records the agent an API client's create was made by, and refuses one that is not an agent", async () => {
+    const ada = await person('user_tlag');
+    const make = (agent: unknown) =>
+      call('/items', {
+        method: 'POST',
+        auth: ada.auth,
+        body: { app: 'liveplanner', title: 'By Claude', source: 'ai', agent },
+      });
+    const made = await body<{ item: { id: string } }>(
+      await make({ name: ' Claude\u0007  Code ', via: 'mcp' }),
+    );
+    expect((await history(ada.auth, made.item.id)).events[0]).toMatchObject({
+      type: 'created',
+      actorId: 'user_tlag',
+      detail: { source: 'ai', agent: 'Claude Code', via: 'mcp' },
+    });
+    // A person's create names no agent, and says nothing when nothing made it but them.
+    const own = await makeItem(ada.auth, { title: 'Mine' });
+    expect((await history(ada.auth, own.id)).events[0]!.detail).toBeNull();
+    for (const agent of [
+      { name: 'Claude', via: 'email' },
+      { name: '  ', via: 'cli' },
+      'Claude',
+      [],
+    ])
+      expect(await body<{ error: string }>(await make(agent))).toEqual({ error: 'invalid_agent' });
+  });
+
   it('records an item synced back, and nothing for one taken offline (it and its History go)', async () => {
     const next = tick();
     const ada = await person('user_off');
@@ -197,6 +225,54 @@ describe('what apps report', () => {
     expect(recent.mostUsed.map((i) => [i.id, i.useOpens, i.useDays])).toEqual([[item.id, 2, 2]]);
   });
 
+  it("lands an agent's edits for its person on an event of their own, apart from the person's", async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: TODAY * DAY + 5000 });
+    const ada = await person('user_tlai');
+    const item = await makeItem(ada.auth, { title: 'Agent plan' });
+    const edited = (at: number, agent?: unknown) => ({
+      type: 'edited',
+      actorId: 'user_tlai',
+      ...(agent === undefined ? {} : { agent }),
+      at,
+    });
+    expect(
+      (
+        await asApp(`/app/items/${item.id}/events`, {
+          events: [
+            edited(TODAY * DAY + 1000, { name: 'Claude Code', via: 'mcp' }),
+            edited(TODAY * DAY + 2000),
+            // The same agent in another case is the same event; another door is another.
+            edited(TODAY * DAY + 3000, { name: 'claude code', via: 'mcp' }),
+            edited(TODAY * DAY + 3500, { name: 'Claude Code', via: 'cli' }),
+            edited(TODAY * DAY + 4000, null),
+          ],
+        })
+      ).status,
+    ).toBe(204);
+    const events = (await history(ada.auth, item.id)).events.filter((e) => e.type === 'edited');
+    expect(events.map((e) => [e.actorId, e.detail, e.occurredAt])).toEqual([
+      ['user_tlai', null, TODAY * DAY + 4000],
+      ['user_tlai', { agent: 'Claude Code', via: 'cli' }, TODAY * DAY + 3500],
+      ['user_tlai', { agent: 'claude code', via: 'mcp' }, TODAY * DAY + 3000],
+    ]);
+    const key = await personEventKey('user_tlai');
+    expect(
+      logged()
+        .filter((e) => e.type === 'edited')
+        .map((e) => e.id)
+        .sort(),
+    ).toEqual([
+      `ed:${item.id}:${key}:${TODAY}`,
+      `ed:${item.id}:${key}:${TODAY}:cli:claude code`,
+      `ed:${item.id}:${key}:${TODAY}:mcp:claude code`,
+    ]);
+    // The agent's writes were the person's day all the same: one use day.
+    const days = h.db.sql
+      .prepare('SELECT day FROM use_days WHERE person_id = ? AND item_id = ?')
+      .all('user_tlai', item.id) as { day: number }[];
+    expect(days.map((d) => d.day)).toEqual([TODAY]);
+  });
+
   it('refuses a bad report, and another app’s', async () => {
     const ada = await person('user_tl8');
     const item = await makeItem(ada.auth);
@@ -207,6 +283,9 @@ describe('what apps report', () => {
       [{ ...ok, actorId: '' }],
       [{ ...ok, at: -1 }],
       [{ ...ok, actorName: 7 }],
+      [{ ...ok, agent: { name: 'Claude', via: 'email' } }],
+      [{ ...ok, agent: { name: '', via: 'mcp' } }],
+      [{ ...ok, agent: 'Claude' }],
       Array.from({ length: APP_EVENTS_MAX + 1 }, () => ok),
       'nope',
     ]) {

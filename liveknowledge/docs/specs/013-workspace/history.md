@@ -27,6 +27,15 @@ The create (`POST /api/documents`) is not an edit: the index records the making 
 a use is the create's `markUsed` ([Marking a document used](../015-api/api.md#marking-a-document-used)).
 Writes from a WebSocket participant carry no account and are not attributed.
 
+An agent's write (any request with an API token: the MCP server's tools, the CLI, a script) is still its person's, and
+says which agent made it (Work Tracker 1381): the room records it as an outbox row of its own beside the person's
+(`recordItemEditor` with the agent `itemAgentOf` reads from the request, both from `@liveworkspace/index-app`), named by
+the agent's client where the request says it, else by the token's name, with the door it came through (`mcp`, `cli` or
+`api`). The index keeps it as an `edited` event of its own carrying `agent` and `via`, and an API client's create
+carries them on its `created` too, so History reads "Claude Code for Priya Shah" with the AI sparkle, never the person
+alone ([one-explorer-contracts.md "The event log"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#the-event-log)).
+An event from before carries no agent and names the person, as it always did.
+
 How long the index keeps an event is the index's
 ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)).
 
