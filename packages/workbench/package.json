@@ -502,7 +502,6 @@
     "./lib/api/tab-draft-store": "./src/lib/api/tab-draft-store.ts",
     "./lib/api/tab-drafts": "./src/lib/api/tab-drafts.ts",
     "./lib/api/tab-saved": "./src/lib/api/tab-saved.ts",
-    "./lib/api/tokens": "./src/lib/api/tokens.ts",
     "./lib/api/xhr-fetch": "./src/lib/api/xhr-fetch.ts",
     "./lib/api/write-signal": "./src/lib/api/write-signal.ts",
     "./lib/app-location": "./src/lib/app-location.ts",
