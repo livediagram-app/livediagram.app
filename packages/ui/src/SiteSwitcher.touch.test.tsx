@@ -76,12 +76,12 @@ describe('a tap on the logo', () => {
       .filter((row) => row !== currentRow())
       .map((row) => row.getAttribute('href'));
     expect(others).toEqual([
-      'https://www.liveworkspace.app',
       'https://www.liveplanner.app',
       'https://www.livedocuments.app',
       'https://www.livedesign.app',
       'https://www.livehuddle.app',
       'https://www.liveknowledge.app',
+      'https://www.liveworkspace.app',
     ]);
   });
 
