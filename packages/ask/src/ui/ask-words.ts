@@ -31,19 +31,25 @@ export type AskAiView = {
   key: { label: string; detail: string } | null;
 };
 
-export function askAiView(line: AiSourceLine | null, choice: AskAiChoice): AskAiView {
+/** `itemKey` names the item's own key, where the app has one ("This Knowledgebase’s Key"). */
+export function askAiView(
+  line: AiSourceLine | null,
+  choice: AskAiChoice,
+  itemKey: string = OWNER.item,
+): AskAiView {
+  const owner = (who: keyof typeof OWNER) => (who === 'item' ? itemKey : OWNER[who]);
   if (line?.kind === 'loading') return { using: 'loading', label: '', key: null };
   if (line?.kind === 'key') {
     const key = {
-      label: OWNER[line.owner],
+      label: owner(line.owner),
       detail: `${PROVIDER[line.provider]} · ${line.model} · No daily limits`,
     };
     return choice === 'built-in'
       ? { using: 'built-in', label: BUILT_IN_LABEL, key }
-      : { using: 'key', label: `${line.model} (${OWNER[line.owner]})`, key };
+      : { using: 'key', label: `${line.model} (${owner(line.owner)})`, key };
   }
   if (line?.kind === 'failed') {
-    const key = { label: `${OWNER[line.owner]} Needs Attention`, detail: line.words };
+    const key = { label: `${owner(line.owner)} Needs Attention`, detail: line.words };
     return choice === 'built-in'
       ? { using: 'built-in', label: BUILT_IN_LABEL, key }
       : { using: 'failed', label: 'Key Needs Attention', key };
