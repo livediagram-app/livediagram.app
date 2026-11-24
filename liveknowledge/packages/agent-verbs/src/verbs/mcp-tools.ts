@@ -68,7 +68,8 @@ export { mcpDeleteImage, mcpUploadImage };
 const TRUST =
   'Each carries its trust: verified ("verified", "review-due", "never-verified", or "off" where the knowledgebase ' +
   'does not verify pages), verified_at, review_due (worked out from the knowledgebase’s one Review Period), stale ' +
-  'and, when pages disagree, conflicts_with.';
+  'and, when pages disagree, conflicts_with: each other page with the question the two answer differently ' +
+  '(question) and when it was found (found_at).';
 
 const HEALTH =
   'Each page also carries health: its Health Score (score 0 to 100, label "healthy", "fair" or "needs-work", ' +
@@ -112,7 +113,7 @@ export const mcpSearchPages = mcpTool('search_pages', {
     `of the writing, verified pages before others, each with its page and the headings it sits under. ${TRUST} ` +
     `${HEALTH} ` +
     'Prefer a verified passage; say so when you rely on a stale one; when conflicts_with names a page, read both ' +
-    'and tell the user they disagree. labels narrows it to the pages carrying any of those labels ("only ' +
+    'on its question and tell the user they disagree. labels narrows it to the pages carrying any of those labels ("only ' +
     'Engineering pages"; list_pages shows each page’s labels). A search that finds nothing is recorded as a ' +
     'question the knowledgebase could not answer, unless labels narrowed it.',
   inputSchema: searchPagesShape,
@@ -187,8 +188,10 @@ export const mcpMovePage = mcpTool('move_page', {
   title: 'Move a page',
   description:
     'Move a page, with the pages under it, to another parent or to the top level, in front of a named sibling ' +
-    'or last. Links to the page keep working. Needs the write scope. A page never moves under itself or one of ' +
-    'its own subpages.',
+    'or last. Links to the page keep working and no writing changes. With the suggest scope it moves a page ' +
+    'when the page and every page under it are never-verified (the drafts create_page makes); a verified or ' +
+    'review-due page, or one with such a page under it, needs the write scope. A page never moves under itself ' +
+    'or one of its own subpages.',
   inputSchema: movePageShape,
   outputSchema: movePageOutput,
 });

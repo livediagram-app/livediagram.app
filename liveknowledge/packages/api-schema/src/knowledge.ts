@@ -80,7 +80,7 @@ export type KnowledgeSearchResult = {
    *  the pages an open conflict sets this passage against. */
   text?: string;
   reviewAt?: number;
-  conflictsWith?: KnowledgePageRef[];
+  conflictsWith?: KnowledgeConflictRef[];
   /** For an agent: the page's Health Score. */
   health?: KnowledgePageHealth;
 };
@@ -115,6 +115,10 @@ export type KnowledgeLowHealthPage = {
 
 /** A page by its id and current title. */
 export type KnowledgePageRef = { tab: string; title: string };
+
+/** The other page of an open conflict (knowledgebase-for-agents.md "Conflicts for agents"): the question the two
+ *  pages answer differently, and when the check found it. An api from before either says only the page. */
+export type KnowledgeConflictRef = KnowledgePageRef & { question?: string; foundAt?: number };
 
 /** A page that links here (links-and-embeds.md "Backlinks"), in tree order. */
 export type KnowledgeBacklink = { tab: string; title: string };
@@ -465,8 +469,8 @@ export type KnowledgePageTrust = {
   verifiedBy?: string;
   reviewAt?: number;
   stale: boolean;
-  /** The pages an open conflict sets this one against. */
-  conflictsWith?: KnowledgePageRef[];
+  /** The pages an open conflict sets this one against, each with the conflict's question. */
+  conflictsWith?: KnowledgeConflictRef[];
   /** The page's approval (approval.md "Where it shows"), without anyone's account id: its state, when it was asked
    *  for (and by which agent), when it was decided, and a rejection's note. */
   approval?: KnowledgeApprovalTrust;

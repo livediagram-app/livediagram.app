@@ -18,19 +18,27 @@ An agent connected to a Knowledgebase can do three kinds of thing, each called a
 | Scope     | Chip on its card   | What it lets the agent do                                                                 |
 | --------- | ------------------ | ----------------------------------------------------------------------------------------- |
 | `read`    | **Reads**          | Read the context pages, the page tree and pages; search; report a question nobody could answer |
-| `suggest` | **Suggests Edits** | Everything `read` does, plus create a page and suggest an edit to a page                   |
-| `write`   | **Writes**         | Everything `suggest` does, plus replace a page's writing (as far as AI Editing allows) and move pages |
+| `suggest` | **Suggests Edits** | Everything `read` does, plus create a page, suggest an edit to a page, and move a page nobody has verified |
+| `write`   | **Writes**         | Everything `suggest` does, plus replace a page's writing (as far as AI Editing allows) and move any page |
 
 - A full API token, and a connection your AI tool made through the MCP server, hold `read` and `suggest`.
 - A read-only token holds `read` only, and can never hold more.
 - `write` is never given by a token. An Editor grants it in the Knowledgebase, and it applies there alone.
+
+## Moving Pages
+
+An agent that builds pages can also put them in order. With `suggest`, it moves a page to another parent or another place in the tree when the page, and every page under it, has never been verified: the drafts it made. Moving changes none of a page's writing, and links to it keep working.
+
+- A page that is **Verified** or **Review Due**, or one with such a page under it, still needs `write`. The agent is told which page holds it back, and can ask you to move it.
+- AI Editing does not limit moving: it bounds what an agent writes, and a move writes nothing.
+- Anyone watching the page hears of a move to a new parent under the agent's name, as they would of yours.
 
 ## The Person Behind the Agent Still Counts
 
 An agent acts for the person or token that connected it, and never does more than that person could:
 
 - A **Viewer's** agent only reads, whatever its scopes.
-- A **Participant's** agent can suggest edits, but not create pages or write.
+- A **Participant's** agent can suggest edits and move pages nobody has verified, but not create pages or write.
 - An **Editor's** agent can create pages and suggest edits, and can be allowed to write.
 
 ## Allow an Agent to Write

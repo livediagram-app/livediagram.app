@@ -5888,6 +5888,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeConflictRef": {
+    "additionalProperties": false,
+    "description": "The other page of an open conflict (knowledgebase-for-agents.md \"Conflicts for agents\"): the question the two pages answer differently, and when the check found it. An api from before either says only the page.",
+    "properties": {
+      "foundAt": {
+        "type": "number"
+      },
+      "question": {
+        "type": "string"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tab",
+      "title"
+    ],
+    "type": "object"
+  },
   "KnowledgeConflictSide": {
     "additionalProperties": false,
     "properties": {
@@ -6753,9 +6776,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "description": "The page's approval (approval.md \"Where it shows\"), without anyone's account id: its state, when it was asked for (and by which agent), when it was decided, and a rejection's note."
       },
       "conflictsWith": {
-        "description": "The pages an open conflict sets this one against.",
+        "description": "The pages an open conflict sets this one against, each with the conflict's question.",
         "items": {
-          "$ref": "#/components/schemas/KnowledgePageRef"
+          "$ref": "#/components/schemas/KnowledgeConflictRef"
         },
         "type": "array"
       },
@@ -6959,7 +6982,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "conflictsWith": {
         "items": {
-          "$ref": "#/components/schemas/KnowledgePageRef"
+          "$ref": "#/components/schemas/KnowledgeConflictRef"
         },
         "type": "array"
       },

@@ -419,7 +419,7 @@ export const move = defineVerb({
   id: 'move',
   summary: 'Move a page in the tree',
   description:
-    'Moves a page, with the pages under it, under --parent or to the top level (--top), in front of --before or last. With --before alone it goes where that page is. Links to the page keep working. Needs the write scope.',
+    'Moves a page, with the pages under it, under --parent or to the top level (--top), in front of --before or last. With --before alone it goes where that page is. Links to the page keep working. With the suggest scope it moves a page whose subtree is all never verified; any other page needs the write scope.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,

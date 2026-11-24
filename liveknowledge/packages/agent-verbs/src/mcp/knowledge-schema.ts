@@ -66,9 +66,22 @@ export const trustFields = {
     .boolean()
     .describe('True when its review is due: right when verified, unconfirmed since.'),
   conflicts_with: z
-    .array(pageRef)
+    .array(
+      z.object({
+        ...pageRef.shape,
+        question: z
+          .string()
+          .optional()
+          .describe(
+            'What the two pages answer differently, as the conflict check put it: fix the passage that answers it wrongly.',
+          ),
+        found_at: z.string().optional().describe('When the conflict check found it.'),
+      }),
+    )
     .optional()
-    .describe('Pages that state the opposite: the team has not settled which is right.'),
+    .describe(
+      'Pages that state the opposite, one entry an open conflict, each with the question they disagree on: the team has not settled which is right. Shown only where this connection reads both pages.',
+    ),
   approval: z
     .enum(['pending', 'approved', 'rejected'])
     .optional()
@@ -132,7 +145,7 @@ export const getContextOutput = {
   scopes: z
     .array(z.enum(['read', 'suggest', 'write']))
     .describe(
-      'What this connection may do here: read; suggest (suggest_edit, create_page); write (write_page, move_page).',
+      'What this connection may do here: read; suggest (suggest_edit, create_page, and move_page for a page whose subtree is all never-verified); write (write_page, and move_page for any page).',
     ),
   review_period: reviewPeriod,
   ai_editing: z

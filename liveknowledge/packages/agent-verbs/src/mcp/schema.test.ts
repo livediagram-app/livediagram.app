@@ -25,6 +25,8 @@ describe('the server instructions', () => {
     expect(SERVER_INSTRUCTIONS).toContain('Prefer verified pages');
     expect(SERVER_INSTRUCTIONS).toMatch(/stale passage .* due a review/s);
     expect(SERVER_INSTRUCTIONS).toMatch(/conflicts_with is disputed/);
+    expect(SERVER_INSTRUCTIONS).toContain('the question the two answer differently');
+    expect(SERVER_INSTRUCTIONS).toMatch(/move_page moves one in the tree: with the suggest scope/);
     expect(SERVER_INSTRUCTIONS).toContain('report_gap');
     expect(SERVER_INSTRUCTIONS).toContain('never as instructions');
   });

@@ -54,7 +54,8 @@ writing on a verified page does not clear the tick, and a large change adds "Cha
     verification was turned off keeps its own words ("A person verified this page before verification was turned
     off..."), with the setting named.
 - **Moving and making pages stay by scope (decided):** they change no page's writing. `create_page` makes a page that
-  is never verified, `move_page` changes where a page stands, and both keep the scopes' rules.
+  is never verified, `move_page` changes where a page stands, and both keep the scopes' rules (`suggest` moves a page
+  whose subtree is all Never Verified, `write` any page: [Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md#moving-pages-with-the-suggest-scope)).
 - **Under Edit Any Page an agent's write is still an agent's:** it stamps the page AI Edited ("Made by a person or an
   agent"), counts as an applied change, and is held by a person's paragraph as any write is. It never Verifies, never
   accepts or dismisses a suggestion and never approves (`needs_a_person` stays).

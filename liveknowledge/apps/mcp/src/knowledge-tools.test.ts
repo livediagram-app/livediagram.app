@@ -415,7 +415,9 @@ describe('search_pages', () => {
             passage({ isTitle: true, headings: [], text: undefined }),
             passage({
               trust: 'review-due',
-              conflictsWith: [{ tab: 'holidays', title: 'Holidays' }],
+              conflictsWith: [
+                { tab: 'holidays', title: 'Holidays', question: 'When do we deploy?', foundAt: 0 },
+              ],
             }),
             passage({ trust: 'never-verified', verifiedAt: undefined, reviewAt: undefined }),
           ],
@@ -428,7 +430,15 @@ describe('search_pages', () => {
     expect(stale).toMatchObject({
       verified: 'review-due',
       stale: true,
-      conflicts_with: [{ page: 'holidays', title: 'Holidays' }],
+      // The conflict's question rides beside the other page (knowledgebase-for-agents.md "Conflicts for agents").
+      conflicts_with: [
+        {
+          page: 'holidays',
+          title: 'Holidays',
+          question: 'When do we deploy?',
+          found_at: '1970-01-01T00:00:00.000Z',
+        },
+      ],
     });
     expect(draft).toEqual({
       page: 'deploys',
