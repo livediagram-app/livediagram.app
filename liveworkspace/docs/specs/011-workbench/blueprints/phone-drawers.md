@@ -35,7 +35,9 @@ Paths are relative to the repository root.
   title as its name or the hero's `<h2>` as its label).
 - In the drawer: no pointer arrow, no popover width, no UI-scale zoom (the phone's own size), no panel translucency;
   the hero header takes `underHandle`; `useClickOutside` is off (the scrim closes it); the toast floor stays
-  (`data-toast-floor`), so a toast stands on the drawer rather than covering it.
+  (`data-toast-floor`), so a toast stands on the drawer rather than covering it. `PhoneDrawer` itself carries
+  `data-toast-floor="popover"` and announces the floor on open, close and `hidden`, so every drawer
+  (`PopoverOrSheet`'s too) is one.
 
 ## Tests
 

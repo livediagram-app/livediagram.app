@@ -8,6 +8,7 @@
 // through it, so all of them behave as one. The children lay out as a column: a header fixed, a body scrolling.
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { Portal, SheetHandle, safeInset, useFocusTrap, useSheetDrag } from '@liveworkspace/ui';
+import { announceToastFloorChange, TOAST_FLOOR_POPOVER } from '@liveworkspace/ui/toast';
 
 export type PhoneDrawerProps = {
   // Its accessible name, unless `labelledBy` names a heading inside it.
@@ -67,6 +68,13 @@ export function PhoneDrawer({
     return () => window.removeEventListener('keydown', onKey, { capture: true });
   }, [sheet]);
   useFocusTrap(sheet, !hidden);
+  // A floor the toast stack stands on while it shows (phone-drawers.md "Toasts stand on it"), so a standing toast
+  // never covers its controls: told on open, on stepping aside or back, and on close.
+  useEffect(() => {
+    if (hidden) return;
+    announceToastFloorChange();
+    return announceToastFloorChange;
+  }, [hidden]);
   const drag = useSheetDrag(onClose);
   const z = layer === 'modal' ? 'z-[var(--z-modal)]' : 'z-[var(--z-popover)]';
   const off = hidden ? 'invisible' : '';
@@ -91,6 +99,7 @@ export function PhoneDrawer({
         aria-labelledby={labelledBy}
         tabIndex={-1}
         data-phone-drawer=""
+        data-toast-floor={hidden ? undefined : TOAST_FLOOR_POPOVER}
         {...attrs}
         // A press in it is the drawer's, never a canvas gesture's or a menu's outside press under it.
         onPointerDown={(e) => e.stopPropagation()}

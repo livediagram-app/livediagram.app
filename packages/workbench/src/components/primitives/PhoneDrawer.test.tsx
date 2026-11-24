@@ -46,6 +46,14 @@ describe('PhoneDrawer', () => {
     expect(sheet.hasAttribute('data-floating-panel')).toBe(true);
   });
 
+  it('is a floor the toast stack stands on while it shows, and not while hidden', () => {
+    const { sheet, view } = drawer();
+    expect(sheet.getAttribute('data-toast-floor')).toBe('popover');
+    view.unmount();
+    const hidden = drawer({ hidden: true });
+    expect(hidden.sheet.hasAttribute('data-toast-floor')).toBe(false);
+  });
+
   it('is named by a heading when given one', () => {
     render(
       <PhoneDrawer name="Vote" labelledBy="vote-title" onClose={() => undefined}>

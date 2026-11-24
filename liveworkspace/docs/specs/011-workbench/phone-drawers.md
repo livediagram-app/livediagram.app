@@ -22,6 +22,9 @@ Tools and Get Started already open as ([footer-tools-menu.md "On a phone"](../00
   unasked; its first control with a keyboard) and is kept inside it: Tab and Shift+Tab wrap at its ends. Closing hands
   focus back to what opened it. A menu, confirm or dialog the panel opens draws over the drawer and keeps its own keys.
 - **Safe area.** Its foot pads by the home indicator's inset (`safeInset('bottom')`), so its last row clears it.
+- **Toasts stand on it.** Every drawer, Tools, Get Started and livehuddle's Timer length as much as the cluster panels, is a
+  floor for the toast stack while it shows ([Toasts](../016-notifications/toasts.md) "Placement"), so a standing toast
+  (Nothing in View, an Undo) sits above the drawer and never covers its controls.
 - **The canvas underneath.** The drawer is portalled out of the canvas, and a press inside it or on the scrim never
   starts a canvas gesture (no pan, draw, marquee or deselect).
 - **Desktop is unchanged.** From the phone breakpoint up every panel is the popover it was, hung from its button.
