@@ -29,6 +29,8 @@ const ROOTS = [
   join(__dirname, '..'),
   join(__dirname, '..', '..', 'app'),
   join(__dirname, '..', '..', '..', '..', '..', 'packages', 'workbench', 'src'),
+  // Ask's question box is the shared composer every Ask AI draws.
+  join(__dirname, '..', '..', '..', '..', '..', 'packages', 'ask', 'src', 'ui'),
 ];
 function sources(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
