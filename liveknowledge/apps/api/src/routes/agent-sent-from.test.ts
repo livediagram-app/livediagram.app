@@ -39,8 +39,7 @@ function index(answer: typeof FROM | null) {
 }
 
 const page = () => ({ id: 'p1', title: 'Checkout' });
-const sentBody = async (r: KnowledgeRoute) =>
-  r.ctx.request.json<Record<string, unknown>>();
+const sentBody = async (r: KnowledgeRoute) => r.ctx.request.json<Record<string, unknown>>();
 
 describe('sentFrom on an agent write', () => {
   it('leaves a write without it as it was', async () => {

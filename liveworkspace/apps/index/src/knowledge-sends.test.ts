@@ -91,6 +91,22 @@ describe('a send to a knowledgebase', () => {
     });
   });
 
+  it('sends from an untitled item to the end of a page whose title the door leaves out', async () => {
+    const { ada, kb } = await world();
+    const bare = await makeItem(ada.auth, { app: 'livediagram', title: 'Bare' });
+    h.db.sql.prepare("UPDATE items SET title = '' WHERE id = ?").run(bare.id);
+    h.appAnswer = () => Response.json({ ok: true, page: { id: 'page-1', title: 7 } });
+    const res = await send(
+      ada.auth,
+      ask(kb.id, bare.id, {
+        place: { page: 'page-1' },
+      }),
+    );
+    expect(res.status).toBe(201);
+    const { send: made } = await body<{ send: KnowledgeSend }>(res);
+    expect(made.page.title).toBe('');
+  });
+
   it('writes to a new page', async () => {
     const { ada, diagram, kb } = await world();
     const res = await send(
@@ -300,6 +316,12 @@ describe("a page's headings", () => {
     expect(doorCalls()[0]!.body).toEqual({ op: 'outline', person: 'user_ada', page: 'page-1' });
   });
 
+  it('answers no headings when the door sends none it can read', async () => {
+    const { ada, kb } = await world();
+    h.appAnswer = () => Response.json({ ok: true, headings: 'none' });
+    expect(await body(await outline(ada.auth, kb.id))).toEqual({ headings: [] });
+  });
+
   it("is refused to a Viewer, without a page, and passes on the door's failure", async () => {
     const { ada, ben, kb } = await world();
     await visit(ada.auth, kb.id, ben.auth, 'view');
@@ -343,6 +365,37 @@ describe("an agent's write with a source", () => {
     );
     expect(bens.sentFrom).toBeNull();
     expect(await sendsOf(ada.auth, diagram.id)).toHaveLength(1);
+  });
+
+  it('names an untitled source plainly, links to its item alone without a tab, and keeps to the cap', async () => {
+    const { ada, kb } = await world();
+    const bare = await makeItem(ada.auth, { app: 'livediagram', title: 'Bare' });
+    h.db.sql.prepare("UPDATE items SET title = '' WHERE id = ?").run(bare.id);
+    const payload = {
+      person: 'user_ada',
+      source: { app: 'livediagram', itemId: bare.id },
+      page: { id: 'page-9', title: 'Flows' },
+      record: true,
+    };
+    const out = await body<{ sentFrom: { title: string; link: string } }>(
+      await agentSend(kb.id, payload),
+    );
+    expect(out.sentFrom.title).toBe('Untitled');
+    expect(out.sentFrom.link).not.toContain('el=');
+    expect(
+      (
+        await call(`/app/items/${kb.id}/knowledge-sends`, {
+          auth: 'lk-key',
+          headers: { 'X-Index-App': 'liveknowledge' },
+        })
+      ).status,
+    ).toBe(404);
+    const insert = h.db.sql.prepare(
+      `INSERT INTO knowledge_sends (id, source_id, source_tab_id, elements, kb_id, page_id, page_title, place_link, at)
+       VALUES (?, ?, '', '[]', ?, 'p', '', '', 1)`,
+    );
+    for (let i = 0; i < 1000; i++) insert.run(`ks_cap_${i}`, bare.id, kb.id);
+    expect((await agentSend(kb.id, payload)).status).toBe(409);
   });
 
   it("is liveknowledge's alone, for its own item, with a body that reads", async () => {

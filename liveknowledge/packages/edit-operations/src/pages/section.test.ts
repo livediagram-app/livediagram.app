@@ -10,7 +10,14 @@ import {
 } from '@liveknowledge/document';
 import { applyArticleWrite } from './article-write';
 import { parsePagesRequest } from './parse';
-import { articleHeadings, pictureZoneSize, sectionEndOf } from './section';
+import {
+  articleHeadings,
+  blockText,
+  headingLevel,
+  pictureZone,
+  pictureZoneSize,
+  sectionEndOf,
+} from './section';
 
 type Block = ArticleFlow['blocks'][number];
 const para = (id: string, text: string, style?: 'h1' | 'h2' | 'h3'): Block => ({
@@ -166,6 +173,15 @@ describe('the wire', () => {
         picture: { imageId: 'i', width: 2, height: 3 },
       },
     });
+    expect(
+      parsePagesRequest({
+        article: {
+          markdown: 'x',
+          mode: 'append',
+          picture: { imageId: 'i', width: 2, height: 3, alt: 'The flow' },
+        },
+      }),
+    ).toMatchObject({ article: { picture: { alt: 'The flow' } } });
     expect(parsePagesRequest({ article: { markdown: 'x', after: 'Overview' } })).toMatchObject({
       refusal: { code: 'invalid_value' },
     });
@@ -184,9 +200,32 @@ describe('the wire', () => {
       }),
     ).toMatchObject({ refusal: { code: 'invalid_value' } });
     expect(
+      parsePagesRequest({
+        article: { markdown: 'x', mode: 'append', picture: { imageId: '', width: 2, height: 3 } },
+      }),
+    ).toMatchObject({ refusal: { code: 'invalid_value' } });
+    expect(
       parsePagesRequest({ article: { markdown: 'x', mode: 'append', picture: 'i' } }),
     ).toMatchObject({
       refusal: { code: 'invalid_value' },
     });
+  });
+});
+
+describe('a block as a section reads it', () => {
+  it('names only h1 to h3 paragraphs as headings, and gives a block without words none', () => {
+    expect(headingLevel(para('q', 'Quote', 'quote' as never))).toBeNull();
+    expect(headingLevel({ id: 'z', type: 'zone' } as never)).toBeNull();
+    expect(blockText({ id: 'z', type: 'zone' } as never)).toBe('');
+  });
+
+  it('parks a picture on the first page when no page holds the flow', () => {
+    const tab = tabWith(blocks);
+    const { zone } = pictureZone(tab, 'elsewhere', articlesOf(tab).art!, {
+      imageId: 'i',
+      width: 40,
+      height: 20,
+    });
+    expect(zone.at!.page).toBe('pg1');
   });
 });

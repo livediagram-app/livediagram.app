@@ -179,6 +179,81 @@ describe('the summary on built-in AI', () => {
   });
 });
 
+describe('the summary refused after the model answered', () => {
+  it('says the canvas has taken its share of other people’s summaries today, or that it could not count them', async () => {
+    const limited = creditsOf({ ok: true, used: 1, limit: 50, tier: 'free' });
+    limited.credits.byOthers = async () => false;
+    const res = await serveSelectionSummary(doorOf({ credits: limited.credits }));
+    expect([res.status, (await read(res)).error]).toEqual([429, 'ask_by_others_limit']);
+    const down = creditsOf({ ok: true, used: 1, limit: 50, tier: 'free' });
+    down.credits.byOthers = async () => 'unavailable';
+    const res2 = await serveSelectionSummary(doorOf({ credits: down.credits }));
+    expect([res2.status, (await read(res2)).error]).toEqual([503, 'summary_unavailable']);
+  });
+
+  it('summarises a selection whose only words are an arrow’s', async () => {
+    const res = await serveSelectionSummary(
+      doorOf({
+        request: post({
+          selection: {
+            items: [{ id: 'a', kind: 'shape', label: '' }],
+            links: [{ from: 'a', to: null, label: 'pays' }],
+          },
+        }),
+      }),
+    );
+    expect(res.status).toBe(200);
+  });
+});
+
+describe('the body’s choices', () => {
+  it('asks for the named team’s key, built-in AI when asked, and refuses a body that is not an object', async () => {
+    const aiKey = vi.fn(async () => ({ status: 'none' }) as const);
+    await serveSelectionSummary(
+      doorOf({ aiKey, request: post({ selection, teamId: 'team_1', focus: 5 }) }),
+    );
+    expect(aiKey).toHaveBeenLastCalledWith('team_1');
+    await serveSelectionSummary(doorOf({ aiKey, request: post({ selection, teamId: '' }) }));
+    expect(aiKey).toHaveBeenLastCalledWith(null);
+    aiKey.mockClear();
+    const res = await serveSelectionSummary(
+      doorOf({ aiKey, request: post({ selection, ai: 'built-in' }) }),
+    );
+    expect(res.status).toBe(200);
+    expect(aiKey).not.toHaveBeenCalled();
+    const bad = await serveSelectionSummary(doorOf({ request: post([selection]) }));
+    expect([bad.status, (await read(bad)).error]).toEqual([400, 'summary_invalid']);
+  });
+
+  it('says plainly when built-in AI throws, or a key’s provider fails for its own reasons', async () => {
+    const thrown = await serveSelectionSummary(
+      doorOf({ builtIn: { run: vi.fn(async () => Promise.reject(new Error('boom'))) } }),
+    );
+    expect([thrown.status, (await read(thrown)).error]).toEqual([502, 'summary_failed']);
+    // An answer it cannot even read, on the real clock.
+    const odd = await serveSelectionSummary(
+      doorOf({ now: undefined, builtIn: { run: vi.fn(async () => null) } }),
+    );
+    expect([odd.status, (await read(odd)).error]).toEqual([502, 'summary_failed']);
+    const { fetch } = fakeFetch(() => errorResponse(500, 'api_error'));
+    const keyed: KeyAnswer = {
+      status: 'key',
+      source: 'account',
+      provider: 'anthropic',
+      model: 'm',
+      key: KEY,
+    };
+    const down = await serveSelectionSummary(doorOf({ aiKey: async () => keyed, through: fetch }));
+    expect([down.status, (await read(down)).error]).toEqual([502, 'summary_failed']);
+    // A key's address that cannot be reached at all.
+    const unreachable = (async () => Promise.reject(new TypeError('fetch failed'))) as typeof fetch;
+    const gone = await serveSelectionSummary(
+      doorOf({ aiKey: async () => keyed, through: unreachable }),
+    );
+    expect([gone.status, (await read(gone)).error]).toEqual([502, 'summary_failed']);
+  });
+});
+
 describe('the summary on a key', () => {
   const keyed: KeyAnswer = {
     status: 'key',
@@ -207,6 +282,22 @@ describe('the summary on a key', () => {
     expect(JSON.stringify(logged)).not.toContain(KEY);
   });
 
+  it('says a key it cannot read, and one it cannot reach, without falling back to built-in AI', async () => {
+    const builtIn = builtInOf({ response: 'x' });
+    const unreadable = await serveSelectionSummary(
+      doorOf({ aiKey: async () => ({ status: 'unreadable', source: 'account' }), builtIn }),
+    );
+    expect([unreadable.status, (await read(unreadable)).error]).toEqual([422, 'ai_key_failed']);
+    const unavailable = await serveSelectionSummary(
+      doorOf({ aiKey: async () => ({ status: 'unavailable' }), builtIn }),
+    );
+    expect([unavailable.status, (await read(unavailable)).error]).toEqual([
+      503,
+      'summary_unavailable',
+    ]);
+    expect(builtIn.run).not.toHaveBeenCalled();
+  });
+
   it('says a key the provider refused, with whose it is, and never falls back to built-in AI', async () => {
     const { fetch } = fakeFetch(() => errorResponse(401, 'authentication_error'));
     const builtIn = builtInOf({ response: 'x' });
@@ -225,6 +316,10 @@ describe('cleanSummary', () => {
         '---\ntitle: x\n---\n# Big\n## Less\n### Kept\n![pic](u)\n<div>x</div>\nSee [[Page]] and [link](u).\n```\n# code\n<b>\n```',
       ),
     ).toBe('### Big\n### Less\n### Kept\nSee Page and [link](u).\n```\n# code\n<b>\n```');
+  });
+
+  it('keeps an opening --- with no end as the words it is', () => {
+    expect(cleanSummary('---\nThe cart pays.')).toContain('The cart pays.');
   });
 
   it('closes a fence left open and cuts at a line', () => {
