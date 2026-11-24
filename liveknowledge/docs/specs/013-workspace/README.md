@@ -32,6 +32,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./automations.md - when working on Automations: rules a knowledgebase runs on its own, its own trust, Insights and version triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./send-to-diagram.md - when working on Send to Diagram: liveknowledge's words drawn as a livediagram diagram by its own AI (the platform's `004-index/send-to-diagram.md`), the draft route, entries, roles
 - ./start-a-call.md - when working on Start a Call Here in liveknowledge: where Call, the live pill with Join and Meetings sit (the platform's `004-index/item-calls.md`), roles
+- ./send-to-knowledge.md - when working on Send to Knowledge Base arriving here: the door that writes a section, the Sent From chip, agents' `after` and `sentFrom` (the platform's `004-index/send-to-knowledge.md`)
 - ./send-to-plan.md - when working on Send to Plan: what liveknowledge sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
 - ./suggestions.md - when working on the Bring In Your Diagrams and Docs suggestion: its trigger, its one click, who sees it
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, automations)

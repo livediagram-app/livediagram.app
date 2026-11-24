@@ -20,6 +20,7 @@ Follow the references below only as needed; never upfront.
 - ./write-up.md - when working on Write It Up: the wire, the index.s two routes, the default knowledgebase, tests
 - ./send-to-plan.md - when working on Send to Plan: the wire, the index's routes and table, liveplanner's door and change call, the editors' store, picker and chips, tests
 - ./diagrams-and-plans.md - when working on Diagrams and Plans: the wire, the index routes, liveplanner's plan-diagram door and view watcher, livediagram's door and the editors' pieces, tests
+- ./send-to-knowledge.md - when working on Send to Knowledge Base: the wire, the index's routes and table, liveknowledge's door and section write, the summariser, the picker, preview and chips, tests
 - ./send-to-diagram.md - when working on Send to Diagram: the wire, the index's routes and table, livediagram's graph door, the picker, preview and chips, tests
 - ./team-audit-log.md - when working on the team audit log: its table, the write path beside each event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's page
 - ./approvals.md - when working on approvals: the tables, the routes and their checks, the revision, the notice and email, the editor kit
