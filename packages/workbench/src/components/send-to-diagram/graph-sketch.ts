@@ -58,7 +58,8 @@ function edgePoint(a: SketchBox, b: SketchBox): { x: number; y: number } {
 function layers(graph: DiagramSendGraph): Map<string, number> {
   const out = new Map<string, string[]>();
   for (const n of graph.nodes) out.set(n.id, []);
-  for (const e of graph.edges) out.get(e.from)?.push(e.to);
+  // An arrow to a box the graph does not hold is left out of the layers.
+  for (const e of graph.edges) if (out.has(e.to)) out.get(e.from)?.push(e.to);
   // A topological order over the edges a depth-first walk keeps (back edges dropped), iteratively.
   const state = new Map<string, 1 | 2>();
   const order: string[] = [];
@@ -100,7 +101,7 @@ function layered(graph: DiagramSendGraph, across: boolean): SketchBox[] {
   const layer = layers(graph);
   const slot = new Map<number, number>();
   return graph.nodes.map((n) => {
-    const l = layer.get(n.id) ?? 0;
+    const l = layer.get(n.id)!;
     const i = slot.get(l) ?? 0;
     slot.set(l, i + 1);
     // Across, an arrow's label sits in the gap between layers: room for it there.
@@ -123,10 +124,12 @@ function rings(graph: DiagramSendGraph): SketchBox[] {
   const near = new Map<string, string[]>();
   for (const n of graph.nodes) near.set(n.id, []);
   for (const e of graph.edges) {
+    // An arrow to a box the graph does not hold is left out of the rings.
+    if (!near.has(e.from) || !near.has(e.to)) continue;
     degree.set(e.from, (degree.get(e.from) ?? 0) + 1);
     degree.set(e.to, (degree.get(e.to) ?? 0) + 1);
-    near.get(e.from)?.push(e.to);
-    near.get(e.to)?.push(e.from);
+    near.get(e.from)!.push(e.to);
+    near.get(e.to)!.push(e.from);
   }
   let root = graph.nodes[0]!.id;
   for (const n of graph.nodes) if ((degree.get(n.id) ?? 0) > (degree.get(root) ?? 0)) root = n.id;
@@ -135,7 +138,7 @@ function rings(graph: DiagramSendGraph): SketchBox[] {
   const queue = [root];
   for (let q = 0; q < queue.length; q++) {
     const id = queue[q]!;
-    for (const to of near.get(id) ?? []) {
+    for (const to of near.get(id)!) {
       if (depth.has(to)) continue;
       depth.set(to, depth.get(id)! + 1);
       children.set(id, [...(children.get(id) ?? []), to]);

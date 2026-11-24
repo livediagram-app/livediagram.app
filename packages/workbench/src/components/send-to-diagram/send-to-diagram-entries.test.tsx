@@ -164,6 +164,22 @@ describe('the host', () => {
     expect(canSendDiagramHere()).toBe(false);
   });
 
+  it('opens the picker for words with no element, offering no Update', async () => {
+    render(
+      <SendToPlanHost
+        app="liveknowledge"
+        itemId="K"
+        tabId="t1"
+        title="Handbook"
+        enabled
+        diagram={drafter}
+      />,
+    );
+    act(() => sendWordsToDiagram({ elementId: null, text: 'Some words' }));
+    expect(await screen.findByLabelText('Name')).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: /Update/ })).toBeNull();
+  });
+
   it('offers no Send to Diagram without a drafter', () => {
     render(<SendToPlanHost app="liveknowledge" itemId="K" title="Handbook" enabled />);
     expect(canSendDiagramHere()).toBe(false);

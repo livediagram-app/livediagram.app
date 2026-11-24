@@ -302,6 +302,73 @@ describe('SendToDiagramDialog', () => {
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
+  it('says nothing for a make that fails after it closed', async () => {
+    let fail: (e: unknown) => void = () => {};
+    const send = vi.fn(() => new Promise((_, r) => (fail = r)));
+    setup({ send });
+    fireEvent.click(button('Preview'));
+    await screen.findByRole('img', { name: /sketch/ });
+    fireEvent.click(button('Make Diagram'));
+    cleanup();
+    fail(new Error('late'));
+    await Promise.resolve();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('asks the drafter once while it is reading', async () => {
+    const drafter = vi.fn(() => new Promise(() => {}));
+    setup({ drafter });
+    fireEvent.click(button('Preview'));
+    fireEvent.submit(screen.getByRole('button', { name: 'Reading…' }).closest('form')!);
+    expect(drafter).toHaveBeenCalledTimes(1);
+  });
+
+  it('updates a tab that never learnt its tab or title, and names the diagram it was given', async () => {
+    const send = vi.fn().mockResolvedValue({ item: { id: 'D' }, link: 'https://ld/document/D' });
+    const { onClose } = setup({
+      send,
+      earlier: { ...SEND, tabId: '', diagram: { id: 'D', title: '' } },
+    });
+    await previewThenMake('Update Tab');
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Onboarding diagram', target: { itemId: 'D' } }),
+    );
+    expect(toast.success).toHaveBeenCalledWith(
+      'Tab updated: Onboarding diagram',
+      expect.anything(),
+    );
+  });
+
+  it('counts the boxes, arrows and groups the preview shows, one and many', async () => {
+    const one = {
+      nodes: [{ id: 'a', label: 'A', group: 'g' }],
+      edges: [],
+      groups: [{ id: 'g', label: 'G' }],
+    };
+    setup({ drafter: vi.fn().mockResolvedValue(one) });
+    fireEvent.click(button('Preview'));
+    expect((await screen.findByText(/1 box, 0 arrows, 1 group\./)).textContent).toBeTruthy();
+    cleanup();
+    const many = {
+      nodes: [
+        { id: 'a', label: 'A', group: 'g' },
+        { id: 'b', label: 'B', group: 'h' },
+      ],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'a' },
+      ],
+      groups: [
+        { id: 'g', label: 'G' },
+        { id: 'h', label: 'H' },
+      ],
+    };
+    setup({ drafter: vi.fn().mockResolvedValue(many) });
+    fireEvent.click(button('Preview'));
+    expect(await screen.findByText(/2 boxes, 2 arrows, 2 groups\./)).toBeTruthy();
+  });
+
   it('names a diagram after the place, else the source', () => {
     expect(diagramName('Onboarding', 'Handbook')).toBe('Onboarding diagram');
     expect(diagramName('', 'Handbook')).toBe('Handbook diagram');

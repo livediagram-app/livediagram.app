@@ -118,4 +118,71 @@ describe('sketchGraph', () => {
     };
     expect(at(sketchGraph(chain, 0.5), 'a').y).toBeLessThan(at(sketchGraph(chain, 0.5), 'b').y);
   });
+
+  it('places boxes that share a centre, leaves out arrows to unknown boxes, and frames no empty group', () => {
+    const g: DiagramSendGraph = {
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [
+        { from: 'a', to: 'a' },
+        { from: 'a', to: 'ghost' },
+        { from: 'a', to: 'b', label: 'x' },
+      ],
+      groups: [{ id: 'empty', label: 'Nobody' }],
+    };
+    const s = sketchGraph(g);
+    expect(s.lines).toHaveLength(2);
+    expect(s.lines[0]).toMatchObject({ x1: s.lines[0]!.x2, y1: s.lines[0]!.y2 });
+    expect(s.frames).toEqual([]);
+  });
+
+  it('draws a mind map with an isolated box, a shape and an arrow to nowhere', () => {
+    const s = sketchGraph({
+      style: 'mindmap',
+      nodes: [
+        { id: 'lone', label: 'Lone' },
+        { id: 'hub', label: 'Hub', shape: 'circle' },
+        { id: 'leaf', label: 'Leaf' },
+        { id: 'free', label: 'Free' },
+      ],
+      edges: [
+        { from: 'hub', to: 'leaf' },
+        { from: 'hub', to: 'ghost' },
+      ],
+    });
+    expect(s.boxes.map((b) => b.id).sort()).toEqual(['free', 'hub', 'leaf', 'lone']);
+    expect(s.boxes.find((b) => b.id === 'hub')!.shape).toBe('circle');
+    expect(s.lines).toHaveLength(1);
+    const lone = sketchGraph({ style: 'mindmap', nodes: [{ id: 'a', label: 'A' }], edges: [] });
+    expect(lone.boxes).toHaveLength(1);
+    const apart = sketchGraph({
+      style: 'mindmap',
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [],
+    });
+    expect(apart.boxes).toHaveLength(2);
+  });
+
+  it('draws a sequence with unlabelled messages and skips one to an unknown part', () => {
+    const s = sketchGraph({
+      style: 'sequence',
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'a', to: 'ghost' },
+        { from: 'b', to: 'a', label: 'back', line: 'dashed' },
+      ],
+    });
+    expect(s.lines).toHaveLength(2);
+    expect(s.lines[0]!.label).toBeUndefined();
+    expect(s.lines[1]).toMatchObject({ label: 'back', dashed: true });
+  });
 });

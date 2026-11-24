@@ -7,8 +7,11 @@ const track = vi.hoisted(() => vi.fn());
 vi.mock('../../bindings', () => ({ workbench: { track } }));
 vi.mock('../../lib/index-client', () => ({ indexClient: {} }));
 
+import { createElement } from 'react';
+import { renderHook } from '@testing-library/react';
 import {
   addDiagramSend,
+  useElementDiagramSends,
   elementDiagramSends,
   onDiagramSendsChanged,
   refreshDiagramSends,
@@ -74,7 +77,50 @@ describe('the diagram send store', () => {
   });
 });
 
+describe('the diagram send store at its edges', () => {
+  it('drops a read that lands after the source changed, and skips a ref naming no element', async () => {
+    let land!: (r: { sends: DiagramSend[] }) => void;
+    const slow = vi.fn().mockReturnValue(new Promise((r) => (land = r)));
+    setDiagramSendSource('a', null, { diagramSends: slow });
+    setDiagramSendSource('b', null, {
+      diagramSends: vi.fn().mockResolvedValue({ sends: [{ ...send('9', 'x'), ref: 'nocolon' }] }),
+    });
+    land({ sends: [send('1', 'b1')] });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(elementDiagramSends('b1')).toEqual([]);
+    expect(elementDiagramSends('')).toEqual([]);
+  });
+
+  it('gives an element its sends live, and none without an element', async () => {
+    setDiagramSendSource('kb', null, { diagramSends: vi.fn().mockResolvedValue({ sends: [] }) });
+    await Promise.resolve();
+    const initial: { id: string | null } = { id: 'b1' };
+    const { result, rerender } = renderHook((props) => useElementDiagramSends(props.id), {
+      initialProps: initial,
+    });
+    expect(result.current).toEqual([]);
+    addDiagramSend(send('1', 'b1'));
+    rerender({ id: 'b1' });
+    expect(result.current.map((s) => s.id)).toEqual(['1']);
+    rerender({ id: null });
+    expect(result.current).toEqual([]);
+  });
+
+  it('shows no sends on a server', async () => {
+    const { renderToString } = await import('react-dom/server');
+    const Probe = () => String(useElementDiagramSends('b1').length);
+    expect(renderToString(createElement(Probe))).toBe('0');
+  });
+});
+
 describe('the diagram chip', () => {
+  it('says how many more diagrams, plural from two', () => {
+    expect(diagramChipWords([send('1', 'b'), send('2', 'b', 'B'), send('3', 'b', 'C')]).title).toBe(
+      'Flows, and 2 more diagrams. Opens in livediagram.',
+    );
+    expect(diagramChipWords([send('1', 'b')]).title).toBe('Flows. Opens in livediagram.');
+  });
+
   it('names the newest diagram, +N for the rest, and opens it on its tab', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     const chip = diagramChipDom([send('1', 'b1', 'Flows'), send('2', 'b1', 'Old')]);
