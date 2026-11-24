@@ -129,7 +129,7 @@ export function DesignFineTune({
             {design.colors ? (
               <button
                 type="button"
-                className="cursor-pointer text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-300"
+                className="cursor-pointer text-[11px] font-medium text-brand-700 hover:underline dark:text-brand-300"
                 onClick={() => onSet(tuned(design, 'colors', undefined))}
               >
                 Use the Theme’s

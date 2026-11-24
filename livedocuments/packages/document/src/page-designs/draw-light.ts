@@ -1,4 +1,4 @@
-// The Light and Depth family (docs/specs/011-theme/page-designs.md "The catalogue"): frosted glass, a spotlight,
+// The Light family (docs/specs/011-theme/page-designs.md "The catalogue"): frosted glass, a spotlight,
 // out-of-focus lights and soft shadows. Shadows are stacked translucent shapes and soft lights radial gradients, never
 // blur filters, so nothing here needs a filter to draw. Pure.
 import {

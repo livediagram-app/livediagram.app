@@ -7,10 +7,10 @@ export const PAGE_DESIGN_FAMILIES = [
   { id: 'geometric', label: 'Geometric' },
   { id: 'organic', label: 'Organic' },
   { id: 'texture', label: 'Texture' },
-  { id: 'light', label: 'Light and Depth' },
+  { id: 'light', label: 'Light' },
   { id: 'frames', label: 'Frames' },
   { id: 'bold', label: 'Bold' },
-  { id: 'tech', label: 'Tech and Space' },
+  { id: 'tech', label: 'Tech' },
 ] as const;
 export type PageDesignFamily = (typeof PAGE_DESIGN_FAMILIES)[number]['id'];
 
@@ -350,7 +350,7 @@ export const PAGE_DESIGNS: readonly PageDesignMeta[] = [
       'plan',
     ],
   },
-  // Light and depth
+  // Light
   {
     id: 'glass-panels',
     label: 'Glass Panels',
@@ -510,7 +510,7 @@ export const PAGE_DESIGNS: readonly PageDesignMeta[] = [
     busy: 0.2,
     keywords: ['quote', 'question', 'faq', 'opinion', 'literature', 'poetry', 'podcast'],
   },
-  // Tech and space
+  // Tech
   {
     id: 'circuit',
     label: 'Circuit',

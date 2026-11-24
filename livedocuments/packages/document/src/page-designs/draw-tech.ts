@@ -1,4 +1,4 @@
-// The Tech and Space family (docs/specs/011-theme/page-designs.md "The catalogue"): circuit traces, stars,
+// The Tech family (docs/specs/011-theme/page-designs.md "The catalogue"): circuit traces, stars,
 // constellations, a data grid and scanlines. Pure.
 import {
   between,

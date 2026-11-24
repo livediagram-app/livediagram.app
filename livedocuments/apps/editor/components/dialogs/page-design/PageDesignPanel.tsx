@@ -166,7 +166,7 @@ function Preview() {
             className="block h-full w-full"
           />
         ) : (
-          <span className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-400">
+          <span className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-500 dark:text-slate-400">
             No design on this page
           </span>
         )}

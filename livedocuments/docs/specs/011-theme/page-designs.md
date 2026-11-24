@@ -32,16 +32,16 @@ Forty-three designs in eight families, each **procedural**: drawn as SVG from it
 theme, never a fixed picture, so it fits any page size, stays crisp at any zoom and in every export, and weighs
 nothing to store. The catalogue's order is the picker's.
 
-| Family          | Designs                                                                        |
-| --------------- | ------------------------------------------------------------------------------ |
-| Gradients       | Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Sunset Bands                    |
-| Geometric       | Grid, Dots, Isometric, Hexagons, Triangles, Concentric Rings, Diagonal Stripes |
-| Organic         | Blobs, Waves, Topographic, Flowing Ribbons, Marbled                            |
-| Texture         | Paper Grain, Noise, Linen, Risograph, Halftone, Blueprint                      |
-| Light and depth | Glass Panels, Spotlight, Bokeh, Soft Shadows, Layered Cards                    |
-| Frames          | Corner Accents, Edge Bands, Side Rail, Torn Paper, Offset Border               |
-| Bold            | Brutalist Blocks, Memphis, Swiss Grid, Split Fields, Type Watermark            |
-| Tech and space  | Circuit, Starfield, Constellations, Data Grid, Scanlines                       |
+| Family    | Designs                                                                        |
+| --------- | ------------------------------------------------------------------------------ |
+| Gradients | Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Sunset Bands                    |
+| Geometric | Grid, Dots, Isometric, Hexagons, Triangles, Concentric Rings, Diagonal Stripes |
+| Organic   | Blobs, Waves, Topographic, Flowing Ribbons, Marbled                            |
+| Texture   | Paper Grain, Noise, Linen, Risograph, Halftone, Blueprint                      |
+| Light     | Glass Panels, Spotlight, Bokeh, Soft Shadows, Layered Cards                    |
+| Frames    | Corner Accents, Edge Bands, Side Rail, Torn Paper, Offset Border               |
+| Bold      | Brutalist Blocks, Memphis, Swiss Grid, Split Fields, Type Watermark            |
+| Tech      | Circuit, Starfield, Constellations, Data Grid, Scanlines                       |
 
 - **Decoration only.** A design adds nothing selectable, searchable or exported as content: it is drawn inside the
   page's sheet, under the element layer, takes no pointer events and is hidden from screen readers. Type Watermark
