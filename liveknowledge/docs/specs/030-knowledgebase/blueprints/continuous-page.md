@@ -82,8 +82,10 @@ height is already right, and after `ARTICLE_GROW_SETTLE_TRIES` writes at most.
 
 `growForAbsentWriter` on a continuous page under a lock returns **without** `clearArticleGrow` (it cleared the mark
 before, so a page opened in read mode was never settled by the Editor's later Edit). Pressing Edit lifts the read
-lens's lock: the `ArticleEditor`'s `editable` flips, which schedules a layout (`ArticleEditor`'s rights effect), and
-that layout, now unlocked, settles the page as the absent writer's settle does: through the edit lens, straight onto
+lens's lock, and `useArticles` marks each continuous page's flow again on that rising edge of `reshape` (an Editor,
+the tab unlocked): the mark set as the tab loaded may already be spent, since a layout of the tab before its writing
+arrived, or before the role was known, clears it. The `ArticleEditor`'s `editable` flips too, which schedules a layout
+(`ArticleEditor`'s rights effect), and that layout, now unlocked and marked, settles the page as the absent writer's settle does: through the edit lens, straight onto
 the saved page while there is no draft (`lowerPage`: "only the saved page's own height settled"), else onto the
 draft's `height`, which Save carries to the page. The narrow view never writes, because its column is narrower than
 the stored page's and would store a height that is too tall for every full-width reader; two full-width Editors

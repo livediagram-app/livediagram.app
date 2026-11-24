@@ -39,6 +39,7 @@ import {
   withArticlePageHeight,
   absentWriterPageCount,
   continuousPageHeight,
+  isContinuousPage,
   withZonesSettled,
   type ArticleBlock,
   type ArticleFlow,
@@ -409,6 +410,19 @@ export function useArticles(deps: {
       markArticleGrow(tabId, flow);
     }
   }, [activeTab, tabId]);
+  // An Editor's page coming unlocked (Edit lifting the read lens's lock, or the session's role arriving as an Editor's
+  // after the page opened): each continuous page is marked again, so its next layout settles a stale height
+  // (docs/specs/030-knowledgebase/blueprints/continuous-page.md "Who settles it, and when"). A mark spent earlier (a
+  // layout before the role was known clears it) would otherwise leave the height as it was.
+  const couldReshape = useRef(reshape);
+  useEffect(() => {
+    const was = couldReshape.current;
+    couldReshape.current = reshape;
+    if (!reshape || was) return;
+    for (const p of pagesOf(activeTab))
+      if (p.flow && isContinuousPage(p) && articlesOf(activeTab)[p.flow])
+        markArticleGrow(tabId, p.flow);
+  }, [reshape, activeTab, tabId]);
 
   useArticleIntake({
     activeTab,

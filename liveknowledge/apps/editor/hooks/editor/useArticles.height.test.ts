@@ -48,7 +48,7 @@ const laidOut: FlowLayout = {
 function setup(tab: Tab, canEdit = true) {
   const tickTabs = vi.fn();
   const hook = renderHook(
-    ({ activeTab }) =>
+    ({ activeTab, canEdit }) =>
       useArticles({
         activeTab,
         on: true,
@@ -65,7 +65,7 @@ function setup(tab: Tab, canEdit = true) {
         openNote: vi.fn(),
         reveal: vi.fn(),
       }),
-    { initialProps: { activeTab: tab } },
+    { initialProps: { activeTab: tab, canEdit } },
   );
   const written = (ts: Tab[]): Tab[] =>
     (tickTabs.mock.calls as [(ts: Tab[]) => Tab[]][]).reduce((acc, [map]) => map(acc), ts);
@@ -89,10 +89,51 @@ describe('who settles the stored height', () => {
     expect(isArticleGrowPending('t', FLOW)).toBe(true);
     // Edit lifts the read lens's lock: the next layout settles the page.
     const editing = stale();
-    hook.rerender({ activeTab: editing });
+    hook.rerender({ activeTab: editing, canEdit: true });
     hook.result.current!.onLayout(laidOut);
     expect(tickTabs).toHaveBeenCalledTimes(1);
     expect(heightOf(written([editing])[0]!)).toBe(2600);
+  });
+
+  // The real open path: the session's role arrives after the page's first layout (a layout before it clears the
+  // mark, as a Viewer's does), the page opens in read mode, then Edit lifts the read lens's lock. No mark is set by hand.
+  it('settles on Edit after the role arrived late and the page opened in read mode', () => {
+    const { hook, tickTabs, written } = setup(stale({ locked: true }), false);
+    hook.result.current!.onLayout(laidOut);
+    expect(isArticleGrowPending('t', FLOW)).toBe(false);
+    hook.rerender({ activeTab: stale({ locked: true }), canEdit: true });
+    hook.result.current!.onLayout(laidOut);
+    expect(tickTabs).not.toHaveBeenCalled();
+    const editing = stale();
+    hook.rerender({ activeTab: editing, canEdit: true });
+    expect(isArticleGrowPending('t', FLOW)).toBe(true);
+    hook.result.current!.onLayout(laidOut);
+    expect(tickTabs).toHaveBeenCalledTimes(1);
+    expect(heightOf(written([editing])[0]!)).toBe(2600);
+  });
+
+  it('marks again on every Edit, so a mark spent earlier settles a page edited later', () => {
+    const { hook, tickTabs, written } = setup(stale({ locked: true }));
+    clearArticleGrow('t', FLOW);
+    const editing = stale();
+    hook.rerender({ activeTab: editing, canEdit: true });
+    hook.result.current!.onLayout(laidOut);
+    expect(heightOf(written([editing])[0]!)).toBe(2600);
+    // Back to read mode and a page already right: nothing more is written.
+    tickTabs.mockClear();
+    hook.rerender({ activeTab: stale({ locked: true }), canEdit: true });
+    hook.rerender({ activeTab: editing, canEdit: true });
+    hook.result.current!.onLayout({ ...laidOut, heightNeeded: 240 });
+    expect(tickTabs).not.toHaveBeenCalled();
+  });
+
+  it('a Viewer is never marked again, however its tab changes', () => {
+    const { hook, tickTabs } = setup(stale({ locked: true }), false);
+    hook.result.current!.onLayout(laidOut);
+    hook.rerender({ activeTab: stale(), canEdit: false });
+    hook.result.current!.onLayout(laidOut);
+    expect(tickTabs).not.toHaveBeenCalled();
+    expect(isArticleGrowPending('t', FLOW)).toBe(false);
   });
 
   it('settles a page that opens unlocked on its first layout', () => {
