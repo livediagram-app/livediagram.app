@@ -67,7 +67,8 @@ export async function resolvePastedLink(
   if (!parsed)
     return {
       ok: false,
-      words: 'Paste a share link from livediagram, liveplanner, livedocuments or livedesign.',
+      words:
+        'Paste a share link from livediagram, liveplanner, livedocuments, livedesign or liveknowledge.',
     };
   try {
     const { item } = await client.resolveShare(parsed.code);

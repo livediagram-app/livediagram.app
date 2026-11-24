@@ -586,7 +586,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'More than boxes and arrows',
         title: 'Videos, Figma, Docs, or any website',
         description:
-          'Paste a YouTube or Vimeo link, a Loom recording, a Figma file, a Google Doc, or any web address at all, and it sits on the canvas where the discussion is. Nothing loads until somebody presses play, and the player never steals the pointer, so the board stays draggable while it runs. A Live Embed shows a plan, page, design or another canvas from your liveworkspace apps, live and read-only, each reader seeing it with their own access.',
+          'Paste a YouTube or Vimeo link, a Loom recording, a Figma file, a Google Doc, or any web address at all, and it sits on the canvas where the discussion is. Nothing loads until somebody presses play, and the player never steals the pointer, so the board stays draggable while it runs. An Embed File, under Layout, shows a plan, page, design, knowledgebase or another canvas from your liveworkspace apps, live and read-only, each reader seeing it with their own access.',
       },
       {
         art: <ComponentsArt />,

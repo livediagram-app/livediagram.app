@@ -17,6 +17,8 @@ export type DashboardItem =
   | { kind: 'board'; preset?: string | undefined }
   | { kind: 'sheet'; start?: string | undefined }
   | { kind: 'note' }
+  // An Embed File (Work Tracker 1375): another app's file, live and read-only, its file chosen once placed.
+  | { kind: 'embed' }
   // A card written on the page (palette-dashboard-tiles' Cards): a Title, Status, Checklist, Key Date or Links.
   | { kind: 'card'; card: DashboardCardKind }
   // A figure from a Sheet (Add to Slot's From a Sheet), its source chosen once placed.
@@ -64,6 +66,8 @@ export const SHEET_CHART_CHOICE = 'sheet:chart';
 export const formMetricChoice = (metric: FormMetricKind) => `form:${metric}`;
 
 export const dashboardTabChoice = (of: DashboardTabOf, tabId: string) => `tab:${of}:${tabId}`;
+// The Embed File tile's choice (docs/specs/013-workspace/embeds.md "Embed File on a Dashboard").
+export const EMBED_FILE_CHOICE = 'embed:file';
 
 function layoutItemOf(id: string): DashboardItem | null {
   if (id === 'slot') return { kind: 'slot' };
@@ -76,6 +80,7 @@ export function dashboardItemOf(kind: string, choice?: string): DashboardItem | 
   if (kind === 'plan-view' && choice?.startsWith('layout:')) return layoutItemOf(choice.slice(7));
   if (kind === 'plan-view' && choice?.startsWith('tab:')) return tabItemOf(choice.slice(4));
   if (kind === 'plan-view' && choice === SHEET_CHART_CHOICE) return { kind: 'sheet-chart' };
+  if (kind === 'plan-view' && choice === EMBED_FILE_CHOICE) return { kind: 'embed' };
   if (kind === 'plan-view' && choice?.startsWith('sheet:')) {
     const metric = choice.slice(6);
     return (SHEET_METRICS as readonly string[]).includes(metric)

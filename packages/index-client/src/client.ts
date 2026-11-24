@@ -58,6 +58,7 @@ import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
+import type { DiagramSendAnswer, DiagramSendAsk, DiagramSendsRead } from './diagram-sends';
 import type {
   PlanEdit,
   PlanEditsAnswer,
@@ -394,6 +395,20 @@ export function createIndexClient({
       call<PlanEditsAnswer>(`/items/${enc(planId)}/plan-edits`, {
         method: 'POST',
         body: { edits },
+      }),
+
+    // Send to Diagram (send-to-diagram.md): a livediagram diagram drawn from a graph (a new one of the person's own, a new
+    // tab in one they may edit, or a tab redrawn), and a source's sends (only those whose diagram the reader can open).
+    sendToDiagram: (ask: DiagramSendAsk) =>
+      call<DiagramSendAnswer>('/diagram-sends/diagrams', { method: 'POST', body: ask }),
+    diagramSends: (
+      sourceId: string,
+      options: RequestOptions & { share?: ShareAccess | null } = {},
+    ) =>
+      call<DiagramSendsRead>(`/items/${enc(sourceId)}/diagram-sends`, {
+        share: options.share ?? null,
+        signal: options.signal,
+        bounded: true,
       }),
 
     // Start a Call Here (item-calls.md): start the item's call (or join the live one), the item's calls for its pill and

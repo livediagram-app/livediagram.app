@@ -61,6 +61,28 @@ thumbnail, the same code in every app ([Previews: Pasting a share link](../../..
 - A signed-in editor inside a developer tool: that is a [workbench embed](workbench-embeds.md), served under `/embed`
   so it may be framed, and admitted by a workbench ticket rather than a share code.
 
+## Embed File on a Dashboard
+
+A Dashboard shows a file from any of our apps live, read-only, in a slot (Work Tracker 1375; [Live
+embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md)): a plan is a host as the canvas apps are, with
+the slot in place of an element.
+
+- **Making one.** **Embed File** sits in the palette's Layout on a Dashboard tab and in Add to Slot's Utilities. Placed,
+  it fills the slot with an empty embed (`{ type: 'embed' }`) and opens the **Embed File** dialog at once: the role
+  (Editor, Participant, Viewer, as Connect File asks it), this plan's connected files, the person's Recent in the five
+  apps and a field for a pasted share link. Picking writes `liveItem`, `liveName` and `livePoster` on the slot's
+  content, one undo step (`Plan · Changed · DashboardContent`, `Element · Added · LiveEmbed`). The slot's Slot Settings
+  offer **Change File**, and a double-click on the embed opens the dialog too. Only an Editor chooses.
+- **The role.** The embed is read-only whatever the role. A file the person may share and this plan is not yet
+  connected to is first connected one way at the role, as Connect File does: a connected tab at the end of the tab bar,
+  the way in for readers who cannot open the file themselves. A file they may not share is embedded with no tab.
+- **What readers see** is the platform's face (`LiveEmbedView`), filling the slot under the slot's own frame: the
+  file live with the reader's own access, or its snapshot made unreadable with **Open in <App>** for anyone who cannot
+  open it (a Participant, a Viewer, a guest and a link's reader alike, when the file is not theirs to open), or "No
+  file chosen yet" before one is chosen. **Use the file** and **Open** sit on the embed's top row.
+- **Limits.** At most three frames are live in the page at once, and none off screen, as for every host.
+- **Exports** (image, PDF) draw the snapshot. A Community copy drops `liveItem` and keeps the snapshot.
+
 ## Live embeds of a plan
 
 Another app's item can show a plan live, read-only, inside it ([Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md),

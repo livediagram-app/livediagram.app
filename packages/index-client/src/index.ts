@@ -20,6 +20,7 @@ export * from './access-requests';
 export * from './automation-steps';
 export * from './plan-sends';
 export * from './plan-diagrams';
+export * from './diagram-sends';
 export * from './item-calls';
 export * from './updates';
 export * from './knowledge-sources';

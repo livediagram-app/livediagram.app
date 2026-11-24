@@ -12,9 +12,14 @@ app serves is its [workbench embed](../011-workbench/workbench.md), opened at th
 
 ## Names
 
-- The **host** is the item holding the element; the **target** is the item it shows. Hosts: livediagram, livedocuments
-  and livedesign (their Embed element). Targets: livediagram, liveplanner, livedocuments and livedesign
-  (`LIVE_EMBED_APPS`), the apps that serve a workbench frame. livehuddle is neither: it has no workbench.
+- The **host** is the item holding the element; the **target** is the item it shows. Hosts: livediagram, livedocuments,
+  livedesign and liveknowledge (their Embed element; liveknowledge's sits in a page's writing) and liveplanner (a
+  Dashboard's Embed File card, in a slot). Targets: livediagram, liveplanner, livedocuments, livedesign and
+  liveknowledge (`LIVE_EMBED_APPS`), the apps that serve a workbench frame; a knowledgebase shows its pages, with its
+  page switcher. livehuddle is neither (Work Tracker 1375): it serves no workbench frame, a Space or a call is a place
+  people meet rather than a file to read, and its rooms have no insert surface for files.
+- **Embed File** is the one name for making one, in every host (Work Tracker 1375): the tile, the menu entry and the
+  dialog. It was Live Embed and Choose a File.
 - The **link** is what the host keeps on the element: `liveItem = {app, itemId}`, the target's app and index item id.
   Nothing in it is secret, and it opens nothing by itself.
 - The **snapshot** is what the host keeps beside the link, so the element draws without the target: `liveName` (the
@@ -39,8 +44,25 @@ with you" and **Open in <App>**, and never the target's content.
 
 ## Making one
 
-An Editor of the host (whoever may set an embed's link there) makes a live embed from the Embed element's **Live Embed** tile (or turns an empty embed into
-one) and picks the target in **Choose a File**:
+An Editor of the host (whoever may set an embed's link there) makes a live embed with **Embed File**:
+
+| Host          | Where                                                                               |
+| ------------- | ----------------------------------------------------------------------------------- |
+| livediagram   | the palette's **Layout**, its own group after the pictures (and the strip's Search) |
+| livedocuments | the palette's Media, the embed group (and Search)                                   |
+| livedesign    | the palette's Media, the embed group (and Search)                                   |
+| liveknowledge | a page's slash menu, **Embed File** (found by "embed" and each app's name)          |
+| liveplanner   | a Dashboard's **Layout**, **Embed File**: a card in a slot, as a Note or a Title is |
+
+Placing it opens the **Embed File** dialog at once, over the new empty embed; closing it leaves the empty embed, which
+a double-click (an Editor's) opens again, as it does on a chosen one to choose another. The dialog is the Connect
+list's: the role first, then the files, in the same rows and ink:
+
+- **Role**: the Connect list's switch ([connected-tabs.md](connected-tabs.md) "Connecting"), Editor first and
+  chosen, then Participant and Viewer. An embed is always read-only, for everyone (below), so the role is not what the
+  embed shows: it is the role of the **connected tab** Embed File adds for the file, the way in for the host's readers
+  who cannot open the file themselves. A screen reader hears what it means with the control: "Anyone who can open this
+  <host kind> can edit the file you embed, through its tab. The embed itself is read-only."
 
 - **Connected**: the files this host's connected tabs stand for, first (those a live embed can show).
 - **Recent**: the person's Recent across the apps (the index's Recent), the host left out; a file of an app that
@@ -51,7 +73,21 @@ one) and picks the target in **Choose a File**:
   link says so.
 
 Picking a file writes the link and a fresh snapshot (the target's name and its preview,
-`GET /api/previews/items/:id`, drawn small, below). Choosing again replaces both.
+`GET /api/previews/items/:id`, drawn small, below). Choosing again replaces both. Before that:
+
+- **A file not yet connected that the person may share** (its owner, or a joined member of its team): Embed File
+  connects it one way at the chosen role, exactly as Connect File does, through the same index door and its checks,
+  pass, limits, Share listing and removal. The host gains a connected tab at the end of its tab bar, loose, and stays
+  on the tab the embed is on. When connecting fails, the row says why in the Connect list's words and nothing is
+  embedded.
+- **A file already connected to this host**: embedded; its connection stands at its own role.
+- **A file the person may not share**, or a session that cannot connect (a guest, an Offline item, a link's Editor,
+  anywhere Connect File's entry does not show): embedded with no tab, each reader with their own access. The row says
+  so before it is pressed ("Embeds with no tab: only people with access see it"), and where no session can connect the
+  role is not shown at all.
+
+The embed never uses the tab's pass, and the two then live apart: removing the embed leaves the tab, and removing the
+tab (which deletes the pass) leaves the embed, shown to each reader with their own access.
 
 ## What a reader sees
 
@@ -65,7 +101,9 @@ Picking a file writes the link and a fresh snapshot (the target's name and its p
 | Offline, or the ticket could not be had             | The snapshot, "<name> could not be shown just now.", **Try Again**                                                |
 | A Community copy, or a Community visitor            | The snapshot alone, with no app or item named and no way to open it                                               |
 
-**Open** (and **Open in <App>** on the no-access card) opens the target at its own address in its own app, in a new
+Embeds are read-only for everyone, whatever the role chosen and whatever the reader's own level (owner decision,
+Work Tracker 1375: extend them read-only, never edit in place). A reader who can edit the target works on it through
+**Open in <App>**, in its own app, as every reader who can open it may. **Open** (and **Open in <App>** on the no-access card) opens the target at its own address in its own app, in a new
 browser tab, at whatever the reader's own access gives there: signed out, its sign-in; signed in without access, the
 app's not-found page. A signed-in reader is also offered **Request Access** ([request-access.md "On
 screen"](request-access.md#on-screen)): one press asks the target's owner, with no note on a card this small, and
@@ -160,4 +198,6 @@ are kept; anything else (an SVG, any other URL) is refused by validation, so a p
 ## Telemetry
 
 Each host counts, under its own app: `Element·Added·LiveEmbed` (a file chosen) and `Canvas·Used·LiveEmbed` (a frame
-went live). Never a name, an id or an app.
+went live). A connection Embed File makes counts as Connect File's does, `Tab·Added·Connected`, and
+`Tab·Added·EmbedConnected` beside it, so a chart can tell embeds that brought a tab from those that did not.
+Never a name, an id or an app.

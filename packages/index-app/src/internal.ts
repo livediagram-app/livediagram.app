@@ -49,6 +49,8 @@
 //                                                            (template-item.ts, liveworkspace/docs/specs/004-index/kits.md)
 //   POST   /api/internal/items/plan-diagram PlanDiagramDraw  livediagram: a plan's board drawn as a new diagram, or
 //                                                            a tab redrawn (plan-diagram-door.ts, diagrams-and-plans.md)
+//   POST   /api/internal/items/from-graph {owner, name, graph, caption, link}  Send to Diagram's new canvas for
+//                                                            `owner` from a graph (graph-item.ts, send-to-diagram.md)
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
 //                                                            into the item's room with its own times (docs/migration.md
 //                                                            "The apps' migration door"). Takes MIGRATION_KEY too.
@@ -85,6 +87,7 @@ import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
 import { answerKnowledgeSourceDoor, isKnowledgeSourceDoor } from './knowledge-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { templateDoor } from './template-item';
+import { graphDoor } from './graph-item';
 import { bearerMatches } from './timing-safe';
 import {
   type Copier,
@@ -126,6 +129,7 @@ export type {
   ExportFormat,
   ExportQuery,
   ExportResult,
+  GraphItemResult,
   ImportInput,
   ImportResult,
   InternalItemHandlers,
@@ -278,6 +282,8 @@ export async function handleInternalItems(
   if (importing) return handlers.import ? importItem(request, handlers.import) : notFound();
   if (rest.length === 1 && id === 'from-template' && request.method === 'POST')
     return handlers.fromTemplate ? templateDoor(request, handlers.fromTemplate) : notFound();
+  if (rest.length === 1 && id === 'from-graph' && request.method === 'POST')
+    return handlers.fromGraph ? graphDoor(request, handlers.fromGraph) : notFound();
   if (migrating)
     return handlers.migrate ? migrateItem(request, id, app, handlers.migrate) : notFound();
 

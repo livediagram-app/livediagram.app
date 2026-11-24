@@ -12,9 +12,9 @@ import {
 } from './live-item';
 
 describe('a live embed link', () => {
-  it('names one of the four apps and an index item id, nothing more', () => {
+  it('names one of the five target apps and an index item id, nothing more', () => {
     expect(isLiveItem({ app: 'liveplanner', itemId: 'abc_123-X' })).toBe(true);
-    for (const app of ['livediagram', 'livedocuments', 'livedesign']) {
+    for (const app of ['livediagram', 'livedocuments', 'livedesign', 'liveknowledge']) {
       expect(isLiveItem({ app, itemId: 'a' })).toBe(true);
     }
     expect(isLiveItem({ app: 'livehuddle', itemId: 'a' })).toBe(false);
@@ -27,6 +27,9 @@ describe('a live embed link', () => {
     expect(isLiveItem(['liveplanner', 'a'])).toBe(false);
     expect(isLiveItem('liveplanner:a')).toBe(false);
     expect(isLiveEmbedApp('livedesign')).toBe(true);
+    // A knowledgebase is a target (Work Tracker 1375); a huddle serves no frame.
+    expect(isLiveEmbedApp('liveknowledge')).toBe(true);
+    expect(isLiveEmbedApp('livehuddle')).toBe(false);
     expect(isLiveEmbedApp('nope')).toBe(false);
   });
 

@@ -26,8 +26,15 @@ describe("liveworkspace.app's own events", () => {
   });
 
   it('holds only tokens the wire accepts, one pair per step', () => {
-    expect(Object.keys(PLATFORM_OWN_TELEMETRY_EVENTS)).toEqual(
-      KIT_TELEMETRY_ACTIONS.map((a) => `Kit·${a}`),
+    expect(Object.keys(PLATFORM_OWN_TELEMETRY_EVENTS)).toEqual([
+      ...KIT_TELEMETRY_ACTIONS.map((a) => `Kit·${a}`),
+      'Token·Created',
+    ]);
+    expect(isPlatformOwnTelemetryEvent({ category: 'Token', action: 'Created', type: 'MCP' })).toBe(
+      true,
+    );
+    expect(isPlatformOwnTelemetryEvent({ category: 'Token', action: 'Created', type: 'Cli' })).toBe(
+      false,
     );
     for (const type of KIT_TELEMETRY_TYPES) expect(type).toMatch(TELEMETRY_TYPE_PATTERN);
   });

@@ -7,6 +7,7 @@ import type {
 } from './automation-step-door';
 import type { PlanSendHandler } from './plan-send-door';
 import type { PlanDiagramDrawHandler, PlanDiagramHandler } from './plan-diagram-door';
+import type { DiagramFromGraphInput } from '@liveworkspace/index-client';
 import type {
   AccessGrantedNotice,
   AccessRequestedNotice,
@@ -187,6 +188,9 @@ export type InternalItemHandlers = {
   // A new item for `owner` from one of the app's templates (template-item.ts `itemFromTemplate`), a project kit's
   // part (liveworkspace/docs/specs/004-index/kits.md "The apps' door"). An app without it answers 404.
   fromTemplate?: (input: TemplateInput) => Promise<TemplateResult>;
+  // Send to Diagram's new canvas for `owner`, drawn from another app's graph (graph-item.ts,
+  // liveworkspace/docs/specs/004-index/send-to-diagram.md). livediagram alone; elsewhere a 404.
+  fromGraph?: (input: DiagramFromGraphInput) => Promise<GraphItemResult>;
 } & DataExportHandlers &
   SheetSourceHandlers &
   KnowledgeSourceHandlers;
@@ -208,6 +212,15 @@ export type TemplateInput = {
   // The template's first tab alone, with no example cards (kits.md "The apps' door"): Send to Plan's New Plan.
   bare?: boolean;
 };
+
+export type GraphItemResult =
+  // `tabId`: the tab drawn (absent for a new item's first tab, which the app names itself).
+  | { status: 'ok'; id: string; tabId?: string }
+  // An existing item (`itemId`) the app holds nothing for.
+  | { status: 'not_found' }
+  | { status: 'invalid_graph' }
+  | { status: 'invalid_file' }
+  | { status: 'too_large' };
 
 export type TemplateResult = { status: 'ok'; id: string } | { status: 'unknown_template' };
 

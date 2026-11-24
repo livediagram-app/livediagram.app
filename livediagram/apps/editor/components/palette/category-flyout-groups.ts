@@ -117,6 +117,8 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   // Page Blocks where Elements holds the Card and the Badge (a tab with a wireframe page).
   'components:step': 'Page Blocks',
   'tools:image': 'Pictures',
+  // Embed File, Layout's last group (Work Tracker 1375).
+  'media:embed-live': 'Files',
   'media:embed-youtube': 'Embeds',
   'tools:avatar': 'People',
   'data:pie': 'Charts',

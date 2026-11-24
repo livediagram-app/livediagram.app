@@ -9,6 +9,7 @@ import {
   type PlanPalette,
 } from '@liveplanner/project';
 import { relativeSince } from '@liveworkspace/ui/relative-time';
+import { xmlEscape } from '@liveworkspace/icons';
 import {
   FORM_METRIC_NAMES,
   SHEET_METRIC_NAMES,
@@ -253,9 +254,40 @@ export function cardArt(content: DashboardContent, input: CardArtInput): string 
     // A figure from a form is read live from its link: an export names it.
     case 'form-metric':
       return slotMessageArt(r, p, content.name ?? FORM_METRIC_NAMES[content.metric], true);
+    // An Embed File draws its snapshot, never the file live (live-embeds.md "Snapshots", Work Tracker 1375).
+    case 'embed':
+      return embedArt(content, r, p);
     default:
       return '';
   }
+}
+
+// The height of an Embed File's name row, as the shared face draws it (LiveEmbedView's NameBar).
+const EMBED_NAME_ROW = 24;
+
+// An Embed File as a still: its name in the top row and its snapshot under it, cut to the card; without a snapshot the
+// name alone, centred; before a file is chosen, "No file chosen yet". The snapshot is a raster data URL, checked when
+// it was read (isLivePoster), so it can carry no script and needs no escaping beyond its own alphabet.
+export function embedArt(
+  content: { liveName?: string; livePoster?: string; liveItem?: unknown },
+  r: Rect,
+  p: PlanPalette,
+): string {
+  const name = content.liveName?.trim();
+  if (!name && !content.livePoster) return slotMessageArt(r, p, 'No file chosen yet');
+  const title = line(r.x + 10, r.y + 16, name || 'Embedded file', {
+    size: 12,
+    weight: 600,
+    color: p.text,
+    width: r.width - 20,
+  });
+  if (!content.livePoster) return title + slotMessageArt(r, p, name ?? '', true);
+  const top = r.y + EMBED_NAME_ROW;
+  const height = Math.max(0, r.height - EMBED_NAME_ROW);
+  return (
+    title +
+    `<image href="${xmlEscape(content.livePoster)}" x="${r.x}" y="${top}" width="${r.width}" height="${height}" preserveAspectRatio="xMidYMin slice"/>`
+  );
 }
 
 // A figure from a Sheet: its name, the figure large, the line under it.

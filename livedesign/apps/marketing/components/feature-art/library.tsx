@@ -181,7 +181,7 @@ export function LiveEmbedArt() {
           className={INK_SOFT}
           fill="#64748b"
         >
-          Live Embed
+          Embed File
         </text>
 
         {/* The sheet's range, and the chart linked to it. */}

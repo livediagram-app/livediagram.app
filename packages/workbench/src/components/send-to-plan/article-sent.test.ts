@@ -9,6 +9,7 @@ vi.mock('../../lib/index-client', () => ({ indexClient: {} }));
 
 import { articleSendPick, articleSentSpec, onlySent, type PMState } from './article-sent';
 import { addSends, setSendSource } from './send-store';
+import { addDiagramSend, setDiagramSendSource } from '../send-to-diagram/diagram-send-store';
 import { onSendToPlan, setSendHere, type SendRequest } from './send-to-plan-entry';
 
 type Block = { id: unknown; text: string; isTextblock?: boolean };
@@ -121,6 +122,31 @@ describe('the chips and the pill', () => {
     expect(decos).toHaveLength(1);
     expect(decos[0]!.pos).toBe(5);
     expect((decos[0]!.toDOM() as HTMLElement).dataset.sentChip).toBe('');
+  });
+
+  it('draws the diagram chip after the plan chip, for a block drawn as a diagram', async () => {
+    setDiagramSendSource('D', null, { diagramSends: vi.fn().mockResolvedValue({ sends: [] }) });
+    await Promise.resolve();
+    const spec = articleSentSpec(() => true, draw);
+    addSends([sent('a')]);
+    addDiagramSend({
+      id: 'ds',
+      ref: 't1:b1',
+      diagram: { id: 'X', title: 'Flow' },
+      tabId: 'tx',
+      link: 'https://ld/document/X#t=tx',
+      at: 1,
+    });
+    const decos = spec.props.decorations(stateOf([{ id: 'b1', text: 'Ship' }], { from: 1 })) as {
+      toDOM: () => Node;
+      key: string;
+    }[];
+    expect(decos.map((d) => (d.toDOM() as HTMLElement).dataset)).toEqual([
+      expect.objectContaining({ sentChip: '' }),
+      expect.objectContaining({ diagramChip: '' }),
+    ]);
+    expect(decos[1]!.key).toBe('diagram:b1:ds:Flow:1');
+    setDiagramSendSource(null);
   });
 
   it('redraws as sends change, marking the redraw, until the writing goes', () => {

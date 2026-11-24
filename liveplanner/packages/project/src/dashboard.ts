@@ -3,6 +3,7 @@
 // changes), always within the limits, so a stored or forged layout is normalised on read and never trusted as is.
 
 import { readDashboardCard } from './dashboard-cards';
+import { readDashboardEmbed } from './dashboard-embed';
 import { isDashboardStyledType, readDashboardCardStyle } from './dashboard-card-style';
 import { isNamedSlotType, readSlotName } from './slot-name';
 import {
@@ -98,7 +99,7 @@ function readBareContent(v: unknown): DashboardContent | undefined {
       title: typeof c['title'] === 'string' ? c['title'].slice(0, DASHBOARD_NOTE_TITLE_MAX) : '',
       text: typeof c['text'] === 'string' ? c['text'].slice(0, DASHBOARD_NOTE_MAX) : '',
     };
-  return readDashboardCard(c);
+  return readDashboardEmbed(c) ?? readDashboardCard(c);
 }
 
 // Spans that fit a row: each at least the minimum, together exactly twelve (the last slot takes up the slack, or the

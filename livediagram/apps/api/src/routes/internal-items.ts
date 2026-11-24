@@ -44,6 +44,7 @@ import {
 } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
+import { documentFromGraph } from './internal-graph';
 import { documentFromTemplate } from './internal-template';
 import { documentFromPlan } from './internal-plan-diagram';
 import { indexAppClient } from '../index-service';
@@ -158,6 +159,8 @@ export function handleInternalItems(
       fromTemplate: (input) => documentFromTemplate(env, input),
       // View As Diagram's new canvas or redrawn tab, from a liveplanner board's graph (internal-plan-diagram.ts).
       drawPlanDiagram: (draw) => documentFromPlan(env, draw),
+      // Send to Diagram's new canvas, drawn from another app's graph (internal-graph.ts).
+      fromGraph: (input) => documentFromGraph(env, input),
       // An old livediagram.app document's livediagram part, into its canvas's room (document-migration.ts). A tab over
       // the tab cap refuses the whole part (413) before the room is called.
       migrate: async (payload) => {

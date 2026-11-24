@@ -17,6 +17,11 @@ import {
 import { track } from '@/lib/telemetry';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { connectedTargets } from '@liveworkspace/workbench/components/connect/tab-connection';
+import {
+  EmbedFileOnPlace,
+  liveEmbedConnectOf,
+} from '@liveworkspace/workbench/components/live-embed/useEmbedFileOnPlace';
+import { useConnectHost } from '@/components/connect/useConnectHost';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
 import { getTheme, themeChartPalette } from '@/lib/themes';
@@ -128,6 +133,9 @@ export function EditorElementDialogs() {
     workbenchMode,
     can,
   } = useEditorContext();
+  // Where Connect File could connect, Embed File asks the role and adds the embed's tab (live-embeds.md "Making
+  // one", Work Tracker 1375); elsewhere it embeds with no tab.
+  const embedConnect = liveEmbedConnectOf(useConnectHost());
 
   // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a lock
   // or a role change, it would otherwise reopen by itself when that is undone. Edit Outline closes itself
@@ -236,6 +244,7 @@ export function EditorElementDialogs() {
           client={indexClient}
           hostId={documentId}
           connectedIds={[...connectedTargets(tabs).keys()]}
+          connect={embedConnect}
           onChoose={(choice) => {
             applyLiveEmbed(choice);
             track('Element', 'Added', 'LiveEmbed');
@@ -243,6 +252,12 @@ export function EditorElementDialogs() {
           onClose={() => setLinkPickerOpenForId(null)}
         />
       ) : null}
+      {/* Placing an Embed File opens it at once (live-embeds.md "Making one"). */}
+      <EmbedFileOnPlace
+        elements={activeTab.elements}
+        enabled={!isReadOnly && !!documentId}
+        open={setLinkPickerOpenForId}
+      />
       {linkPickerOpenForId !== null && !isReadOnly && !liveEmbedTarget ? (
         <LinkPickerDialog
           title={linkTarget?.type === 'video' ? 'Link embed' : 'Link element'}

@@ -293,6 +293,13 @@ export function trackAppEvent(category: string, action: string, type: string | n
 /** A project kit's step (liveworkspace/docs/specs/004-index/kits.md "Telemetry"), always in liveworkspace.app's own
  *  name, whatever the page's sender: a run is every app's at once. The person's choice holds as for every event. On
  *  an app's own address nothing is sent: the service takes liveworkspace.app's own events only from its origin. */
+/** An AI tool connected through the one MCP's consent page (liveworkspace/docs/specs/021-mcp/mcp.md), in
+ *  liveworkspace.app's own name: the token it mints is every app's at once. */
+export function trackMcpTokenCreated() {
+  if (pageApp()) return;
+  send(PLATFORM_TELEMETRY_APP, 'Token', 'Created', 'MCP');
+}
+
 export function trackKit(action: KitTelemetryAction, type: KitTelemetryType) {
   if (pageApp()) return;
   send(PLATFORM_TELEMETRY_APP, 'Kit', action, type);

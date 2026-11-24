@@ -95,15 +95,42 @@ export function redactElementsForCommunity<E extends object>(elements: E[]): E[]
   });
 }
 
+// A Dashboard's slots (liveplanner): an Embed File's content keeps its link like an element does.
+type DashboardSlots = { rows?: { slots?: { content?: { liveItem?: unknown } }[] }[] };
+
 type TabPeople = {
   elements?: object[];
   vote?: { votes?: Record<string, string[]>; startedBy?: string };
+  dashboard?: DashboardSlots;
 };
+
+// A Dashboard with every slot's Embed File link dropped, its snapshot kept (live-embeds.md "Snapshots", Work Tracker
+// 1375): a stranger is told of no other item.
+function redactDashboard(dashboard: DashboardSlots): DashboardSlots {
+  if (!Array.isArray(dashboard.rows)) return dashboard;
+  return {
+    ...dashboard,
+    rows: dashboard.rows.map((row) =>
+      Array.isArray(row.slots)
+        ? {
+            ...row,
+            slots: row.slots.map((slot) => {
+              if (!slot.content || slot.content.liveItem === undefined) return slot;
+              const { liveItem: _live, ...content } = slot.content;
+              return { ...slot, content };
+            }),
+          }
+        : row,
+    ),
+  };
+}
 
 // A whole tab (the read's DTO or the stored body): its elements, and its dot vote.
 export function redactTabForCommunity<T extends TabPeople>(tab: T): T {
   const out: T = { ...tab };
   if (Array.isArray(tab.elements)) out.elements = redactElementsForCommunity(tab.elements);
+  if (tab.dashboard && typeof tab.dashboard === 'object')
+    out.dashboard = redactDashboard(tab.dashboard);
   if (tab.vote) {
     const { startedBy: _startedBy, ...vote } = tab.vote;
     const votes: Record<string, string[]> = {};
