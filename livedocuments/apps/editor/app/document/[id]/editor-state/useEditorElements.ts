@@ -1,5 +1,6 @@
 import { useUnusedImageOffer } from '@/hooks/canvas/useUnusedImageOffer';
 import { useEffect, useMemo } from 'react';
+import { restingTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
 import { checklistDeltaFor, pageSnapBoxes } from '@livedocuments/document';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
@@ -166,7 +167,8 @@ export function useEditorElements({
   useEffect(() => {
     putToolDownRef.current = () => {
       cancelDrawShape();
-      setCanvasTool('select');
+      // The tool the editor starts with: Hand on a phone or a touch-first screen, else Select.
+      setCanvasTool(restingTool());
     };
   });
   // Palette element-creation handlers. See useElementCreation.
