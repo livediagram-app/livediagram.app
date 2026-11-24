@@ -465,7 +465,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I ask AI about a canvas?',
-        a: 'Yes, once you sign in. Open Tools, then Ask AI, and ask anything about the canvas: a summary, the main steps, what looks unclear. The answer comes from the canvas’s own words, with numbered sources that take you to the shape each came from, and asking never changes the canvas. Built-in AI answers free within a daily allowance, or you can use your own AI key with no daily limit.',
+        a: 'Yes, once you sign in. Open Tools, then Ask AI, and ask anything about the canvas: a summary, the main steps, what looks unclear. The answer comes from the canvas’s own words, with numbered sources that take you to the shape each came from, and asking never changes the canvas. Built-in AI answers within a daily allowance, or you can use your own AI key.',
       },
       {
         q: 'Can I connect my own AI assistant, like Claude?',

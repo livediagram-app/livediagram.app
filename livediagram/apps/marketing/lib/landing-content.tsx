@@ -828,7 +828,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Ask AI about the canvas',
         description:
-          'Open Tools, then Ask AI, and ask a question of the canvas: what are the main steps, what looks missing. The answer comes from the canvas\u2019s own words, with numbered sources that select the shape each one came from. Built-in AI answers free within a daily allowance, or use your own AI key. Asking reads the canvas and changes nothing; sign in to ask.',
+          'Open Tools, then Ask AI, and ask a question of the canvas: what are the main steps, what looks missing. The answer comes from the canvas\u2019s own words, with numbered sources that select the shape each one came from. Built-in AI answers within a daily allowance, or use your own AI key. Asking reads the canvas and changes nothing; sign in to ask.',
       },
       {
         art: <McpArt />,
