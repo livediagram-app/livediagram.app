@@ -33,7 +33,7 @@ embed, placed from the slash menu, which is not the card described below: the bl
   "file" and each app's name: placed, it opens the Embed File dialog at once, with the role asked as Connect File asks
   it ([Live embeds "Making one"](../../../../liveworkspace/docs/specs/004-index/live-embeds.md#making-one)), and a
   knowledgebase can itself be embedded in the other apps, shown at its pages with its page switcher.
-- The slash menu's **Embed** takes a link to a livediagram, liveplanner, livedocuments, livedesign or livehuddle item
+- The slash menu's **Embed File** takes a link to a livediagram, liveplanner, livedocuments, livedesign or liveknowledge item
   (or a tab of one) the person can open, and adds an embed zone: a framed card with the app's logo mark and wordmark,
   the item's name, its current preview picture and **Open**. A new embed (as any new object) sits aligned left, level with the text
   (owner, 2026-11-21: "left align the embeds by default"); the zone bar's Align Centre and Align Right still move it.

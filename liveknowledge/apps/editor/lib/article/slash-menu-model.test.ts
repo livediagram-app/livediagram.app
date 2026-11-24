@@ -92,7 +92,7 @@ describe('the slash menu: filtering', () => {
     const drawing = slashModel('diagram').sections.flatMap((s) => s.entries)[0]!;
     expect(drawing.item.id).toBe('drawing');
     expect(drawing.marks).toEqual([]);
-    for (const app of ['livediagram', 'liveplanner', 'livehuddle'])
+    for (const app of ['livediagram', 'liveplanner', 'liveknowledge'])
       expect(slashModel(app).items.map((i) => i.id)).toEqual(['embed']);
   });
 

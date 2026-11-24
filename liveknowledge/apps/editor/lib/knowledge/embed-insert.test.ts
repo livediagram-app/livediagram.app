@@ -15,7 +15,13 @@ describe('the slash menu’s knowledge entries', () => {
       group: 'Knowledge',
       action: { kind: 'insert', what: 'embed' },
     });
-    for (const app of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'])
+    for (const app of [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'liveknowledge',
+    ])
       expect(found(app).map((i) => i.id)).toContain('embed');
   });
 
