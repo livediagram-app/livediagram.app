@@ -6,7 +6,7 @@
 import { useId } from 'react';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { meetingHeroArt } from '@liveworkspace/ui/dialog-hero-art/meeting';
-import { lucideGlyph } from '@liveworkspace/ui';
+import { Chip, lucideGlyph } from '@liveworkspace/ui';
 import { lucideBookOpen, lucideSquareKanban, lucideUsers } from '@liveworkspace/icons/lucide';
 import type { ItemMeeting } from '@liveworkspace/index-client';
 import { workbench } from '../../bindings';
@@ -65,9 +65,9 @@ function MeetingRow({ meeting, onJoin }: { meeting: ItemMeeting; onJoin: () => v
         <div className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-slate-100">
           {meetingWhen(meeting.startedAt)}
           {meeting.live ? (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+            <Chip className="bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
               Live
-            </span>
+            </Chip>
           ) : length ? (
             <span className="text-xs font-normal text-slate-500 dark:text-slate-400">{length}</span>
           ) : null}

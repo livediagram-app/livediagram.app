@@ -590,6 +590,7 @@
     "./components/item-call/ItemAppMark": "./src/components/item-call/ItemAppMark.tsx",
     "./components/item-call/ItemCallButton": "./src/components/item-call/ItemCallButton.tsx",
     "./components/item-call/ItemCallHost": "./src/components/item-call/ItemCallHost.tsx",
+    "./components/item-call/MeetingsDialog": "./src/components/item-call/MeetingsDialog.tsx",
     "./components/item-call/item-call-store": "./src/components/item-call/item-call-store.ts",
     "./components/send-to-plan/article-send-dom": "./src/components/send-to-plan/article-send-dom.ts",
     "./components/send-to-plan/article-sent": "./src/components/send-to-plan/article-sent.ts",
