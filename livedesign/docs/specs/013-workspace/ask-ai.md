@@ -27,8 +27,12 @@ An **Editor**, a **Participant** and a **Viewer** may each ask once signed in: a
 nothing. A guest, and a link visitor who is not signed in, see the row badged Sign In. What is sent is what that
 person's editor holds, so a link to one tab asks about that tab alone.
 
+With Pro on, a built-in question spends **1 AI credit** ([Ask AI](../../../../liveworkspace/docs/specs/020-ask/ask.md)
+"AI credits"): an Editor's and a Participant's from the design's owner (its team's for a team's design), a Viewer's
+from their own month. A question on a key spends none, and with Pro off nothing is counted or asked.
+
 ## Where it lives
 
 - `apps/api/src/routes/ask.ts`: `POST /api/ask`, handing the platform's `serveAsk` who is calling, the key lookup,
-  the `AI` binding and the count; the room class's `spendAsk` keeps the account's daily count.
+  the `AI` binding, the count and, with Pro on, the AI credits (`askCreditsOf`); the room class's `spendAsk` keeps the account's daily count.
 - `apps/live/components/panels/useAskAi.ts`: what the editor hands the tool, called from `ItemToolsHost`.

@@ -42,6 +42,7 @@ function setup(over: Partial<AskConversationDeps> = {}) {
     passages: () => [passage('a'), passage('b')],
     teamId: () => null,
     builtIn: () => false,
+    itemId: 'item_1',
     nothingToRead: 'Nothing to read.',
     ...over,
   };
@@ -81,6 +82,7 @@ describe('a conversation with Ask AI', () => {
     expect(calls[0]!.body).toEqual({
       question: 'What happens?',
       passages: [passage('a'), passage('b')],
+      itemId: 'item_1',
       teamId: 'team_1',
     });
     const before = conversation.turns();
@@ -124,6 +126,24 @@ describe('a conversation with Ask AI', () => {
       ai: 'built-in',
     });
     expect(calls[1]!.body).not.toHaveProperty('teamId');
+  });
+
+  it('keeps a refusal\'s AI credits for the notice (020-ask "AI credits")', async () => {
+    const { conversation, calls, settle } = setup();
+    conversation.ask('Q?');
+    await settle();
+    calls[0]!.end({
+      type: 'error',
+      kind: 'ai_credits_used',
+      message: "This month's AI credits are used.",
+      credits: { owner: 't:team_1' },
+    });
+    await settle();
+    expect(conversation.turns()[0]!.failure).toEqual({
+      kind: 'ai_credits_used',
+      message: "This month's AI credits are used.",
+      credits: { owner: 't:team_1' },
+    });
   });
 
   it('does not take an empty or too long question, or one asked before it is bound', () => {
@@ -252,6 +272,7 @@ describe('a conversation with Ask AI', () => {
         passages: () => [passage('a')],
         teamId: () => null,
         builtIn: () => false,
+        itemId: 'item_1',
         nothingToRead: '',
       });
       conversation.ask('Q?');

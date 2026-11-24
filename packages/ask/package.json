@@ -25,6 +25,8 @@
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/subscription": "workspace:*",
+    "@liveworkspace/subscription-ui": "workspace:*",
     "@liveworkspace/ui": "workspace:*",
     "@liveworkspace/workbench": "workspace:*"
   },

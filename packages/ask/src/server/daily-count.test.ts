@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ASK_BUILT_IN_PER_PERSON_PER_DAY } from '../limits';
-import { ASK_COUNT_KEY, askCountName, spendAsk, spendAskIn, utcDay } from './daily-count';
+import { ASK_BUILT_IN_PER_PERSON_PER_DAY, ASK_OWNER_CREDITS_BY_OTHERS_PER_DAY } from '../limits';
+import {
+  ASK_COUNT_KEY,
+  askCountName,
+  askOthersCountName,
+  spendAsk,
+  spendAskByOthers,
+  spendAskIn,
+  utcDay,
+} from './daily-count';
 
 const storageOf = () => {
   const kept = new Map<string, unknown>();
@@ -41,6 +49,22 @@ describe("built-in AI's allowance", () => {
     expect(spendAskRpc).toHaveBeenCalledWith('2026-11-23', ASK_BUILT_IN_PER_PERSON_PER_DAY);
     spendAskRpc.mockResolvedValueOnce(false);
     expect(await spendAsk(rooms, 'acc_1')).toBe(false);
+  });
+
+  it("counts others' questions on an item's owner in the item's own instance, with its cap", async () => {
+    const spendAskRpc = vi.fn(async () => true);
+    const rooms = {
+      idFromName: vi.fn((name: string) => `id:${name}`),
+      get: vi.fn(() => ({ spendAsk: spendAskRpc })),
+    };
+    expect(askOthersCountName('doc_1')).toBe('~ask-ai-others:doc_1');
+    expect(await spendAskByOthers(rooms, 'doc_1', Date.UTC(2026, 10, 23))).toBe(true);
+    expect(rooms.idFromName).toHaveBeenCalledWith('~ask-ai-others:doc_1');
+    expect(spendAskRpc).toHaveBeenCalledWith('2026-11-23', ASK_OWNER_CREDITS_BY_OTHERS_PER_DAY);
+    spendAskRpc.mockResolvedValueOnce(false);
+    expect(await spendAskByOthers(rooms, 'doc_1')).toBe(false);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(await spendAskByOthers(null, 'doc_1')).toBe('unavailable');
   });
 
   it('refuses rather than lifts the cap when the count cannot be reached', async () => {
