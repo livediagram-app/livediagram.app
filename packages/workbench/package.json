@@ -187,6 +187,8 @@
     "./components/dialogs/DialogTabs": "./src/components/dialogs/DialogTabs.tsx",
     "./components/dialogs/export-tab-dialog": "./src/components/dialogs/export-tab-dialog.tsx",
     "./components/dialogs/ElementRowsDialog": "./src/components/dialogs/ElementRowsDialog.tsx",
+    "./components/dialogs/ElementRowsDialogs": "./src/components/dialogs/ElementRowsDialogs.tsx",
+    "./components/dialogs/ElementResourcesDialog": "./src/components/dialogs/ElementResourcesDialog.tsx",
     "./components/dialogs/TableSettings": "./src/components/dialogs/TableSettings.tsx",
     "./components/palette/text-style-icons": "./src/components/palette/text-style-icons.tsx",
     "./components/dialogs/settings-layout": "./src/components/dialogs/settings-layout.tsx",
