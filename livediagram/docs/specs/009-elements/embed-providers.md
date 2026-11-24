@@ -6,8 +6,8 @@ The video element ([YouTube video element](youtube-video.md)) embeds **YouTube, 
 Loom, Figma, and Google Docs / Sheets / Slides**. Any other `http(s)` address frames as a
 website ([The Website embed](website-embed.md)).
 
-A seventh tile, **Live Embed**, shows a file from our own apps live and read-only instead of a pasted link: it is
-chosen from Choose a File, never parsed from an address ([Live embeds](../013-workspace/embeds.md#live-embeds)).
+A seventh tile, **Embed File** (Live Embed until Work Tracker 1375), shows a file from our own apps live and read-only instead of a pasted link: it is
+chosen in the Embed File dialog, never parsed from an address ([Live embeds](../013-workspace/embeds.md#live-embeds)).
 
 ## Why
 
@@ -54,7 +54,7 @@ away the whole reason the poster-then-iframe design exists.
 ## One tile per provider
 
 The palette shows **seven tiles, not one generic Embed**: YouTube, Vimeo,
-Loom, Figma, Google Docs, Website and Live Embed, collapsed behind a single **Embed** row in the Media
+Loom, Figma, Google Docs, Website and Embed File, collapsed behind a single **Embed** row in the Media
 tab that opens in place.
 
 A single generic tile hides which services actually work: somebody wanting to

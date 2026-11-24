@@ -19,7 +19,7 @@ describe('the slash menu: what it offers', () => {
       Text: ['Text', 'Heading 1', 'Heading 2', 'Heading 3', 'Subtitle', 'Quote', 'Code'],
       Lists: ['Bulleted List', 'Numbered List', 'To-Do List'],
       'Media and Embeds': ['Image', 'Bar Chart', 'Pie Chart', 'Line Chart', 'Drawing'],
-      Knowledge: ['Link to Page', 'Embed', 'Footnote', 'Table of Contents'],
+      Knowledge: ['Link to Page', 'Embed File', 'Footnote', 'Table of Contents'],
       Layout: ['Table', 'Divider'],
     });
   });
@@ -92,7 +92,7 @@ describe('the slash menu: filtering', () => {
     const drawing = slashModel('diagram').sections.flatMap((s) => s.entries)[0]!;
     expect(drawing.item.id).toBe('drawing');
     expect(drawing.marks).toEqual([]);
-    for (const app of ['livediagram', 'liveplanner', 'livehuddle'])
+    for (const app of ['livediagram', 'liveplanner', 'liveknowledge'])
       expect(slashModel(app).items.map((i) => i.id)).toEqual(['embed']);
   });
 

@@ -2,6 +2,7 @@
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
+import { diagramDrafter } from '@/lib/send-to-diagram/diagram-api';
 import { maySuggestTo } from '@liveworkspace/workbench/components/suggest/suggest-gate';
 import { BringInSuggestion } from '@/components/insights/BringInSuggestion';
 
@@ -187,6 +188,12 @@ export function EditorView() {
   // Offline Mode (docs/specs/006-document/offline-mode.md): a document saved only in this browser. Drives the
   // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDocument(ctx.documentId);
+  // Send to Diagram's draft (013-workspace/send-to-diagram.md), as the person on this session's access.
+  const diagramSelf = ctx.selfParticipant?.id ?? null;
+  const sendDiagram =
+    diagramSelf && ctx.documentId
+      ? diagramDrafter({ ownerId: diagramSelf, shareCode: ctx.sessionShareCode }, ctx.documentId)
+      : null;
   // Snapshots (docs/specs/013-workspace/snapshots.md): the footer's button and dialog, for an Editor of the whole item.
   const snapshotsDoor = useEditorSnapshotsDoor({
     hydrated: ctx.hydrated,
@@ -458,6 +465,9 @@ export function EditorView() {
                   embed: !appChrome,
                   community: sessionCommunity !== null,
                 })}
+                // Send to Diagram (013-workspace/send-to-diagram.md): drafted on this knowledgebase's own AI.
+                diagram={sendDiagram}
+                tabTitle={activeTab.name}
               />
               {/* Bring In Your Diagrams and Docs (liveworkspace/docs/specs/016-notifications/suggestions.md): a new
                   knowledgebase offered the person's recent items for Ask, in the notice slot. */}

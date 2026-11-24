@@ -476,6 +476,16 @@ export const FILES_CONNECTED_AGAIN: Metric = {
     'A connected tab mended with Connect Again, after its link was removed or it came with a copy.',
 };
 
+// Embed File (liveworkspace/docs/specs/004-index/live-embeds.md "Telemetry"): a file connected as the embed's tab as it
+// was embedded, with the role Embed File asked. Counted in Files Connected too.
+export const FILES_EMBED_CONNECTED: Metric = {
+  category: 'Tab',
+  action: 'Added',
+  type: 'EmbedConnected',
+  title: 'Connected by Embed File',
+  blurb: 'A file connected as a tab by Embed File as it was embedded, with the role it asked.',
+};
+
 export const CONNECTED_TABS_OPENED: Metric = {
   category: 'Tab',
   action: 'Opened',
@@ -520,6 +530,7 @@ export const CONNECTED_TABS: MetricStack = {
     FILES_CONNECTED,
     FILES_CONNECTED_BOTH_WAYS,
     FILES_CONNECTED_AGAIN,
+    FILES_EMBED_CONNECTED,
     CONNECTED_TABS_OPENED,
     CONNECT_BUTTON_PRESSED,
     CONNECTED_TABS_RENAMED,

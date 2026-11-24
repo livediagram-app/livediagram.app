@@ -59,7 +59,12 @@ import { track } from '@/lib/telemetry';
 import { articleSendPick } from '@liveworkspace/workbench/components/send-to-plan/article-sent';
 import { canSendHere } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
-import { sendArticleWords } from '@liveworkspace/workbench/components/send-to-plan/article-send-dom';
+import {
+  sendArticleWords,
+  sendArticleWordsToDiagram,
+} from '@liveworkspace/workbench/components/send-to-plan/article-send-dom';
+import { canSendDiagramHere } from '@liveworkspace/workbench/components/send-to-diagram/send-to-diagram-entry';
+import { SendToDiagramIcon } from '@liveworkspace/workbench/components/send-to-diagram/SendToDiagramIcon';
 import {
   tableCommand,
   tableCommandBlock,
@@ -394,6 +399,17 @@ export function PageToolbar({
           >
             <SendToPlanMenuIcon size={16} />
           </Button>
+          {canSendDiagramHere() ? (
+            <Button
+              label="Send to Diagram"
+              description="AI draws the words picked, or this paragraph or item, as a diagram in livediagram."
+              disabled={!articleSendPick(handle.state())}
+              why="Put the caret in some words first."
+              onPress={() => sendArticleWordsToDiagram(articleSendPick(handle.state()))}
+            >
+              <SendToDiagramIcon size={16} />
+            </Button>
+          ) : null}
         </>
       ) : null}
     </div>

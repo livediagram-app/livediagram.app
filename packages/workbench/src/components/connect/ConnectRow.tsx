@@ -32,6 +32,7 @@ export function ConnectRow({
   now,
   onPress,
   busyLabel = 'Connecting',
+  note,
 }: {
   item: Item;
   state: ConnectRowState;
@@ -41,6 +42,8 @@ export function ConnectRow({
   onPress: () => void;
   // What a row in progress says (Connect, or a live embed's Adding).
   busyLabel?: string;
+  // A word on what a press does here, in place of when it was opened (Embed File's "Embeds with no tab").
+  note?: string | undefined;
 }) {
   const errorId = useId();
   const reasonId = useId();
@@ -50,7 +53,7 @@ export function ConnectRow({
   const detail =
     state.kind === 'blocked'
       ? state.reason
-      : `${appName(item.app)} · Opened ${relativeSince(when, now)}`;
+      : `${appName(item.app)} · ${note ?? `Opened ${relativeSince(when, now)}`}`;
   return (
     <li className="relative">
       <button

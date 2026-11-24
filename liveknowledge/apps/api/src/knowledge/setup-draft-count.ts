@@ -13,6 +13,7 @@
 // (`~page-structure:`), through the same room call: each instance keeps one count.
 import {
   ASK_BUILT_IN_PER_PERSON_PER_DAY,
+  DIAGRAM_BUILT_IN_PER_PERSON_PER_DAY,
   SETUP_BUILT_IN_PER_PERSON_PER_DAY,
   STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY,
 } from '@liveknowledge/knowledge';
@@ -23,12 +24,14 @@ export const SETUP_DRAFT_COUNT_KEY = 'setup-drafts';
 
 /** What a person's built-in calls are counted for: Describe to Set Up's suggestions, questions, or Describe
  *  Structure's drafts of a page (describe-to-set-up.md "Describe Structure on a page"). */
-export type BuiltInCount = 'setup' | 'ask' | 'structure';
+export type BuiltInCount = 'setup' | 'ask' | 'structure' | 'diagram';
 
 const COUNTS: Readonly<Record<BuiltInCount, { prefix: string; cap: number }>> = {
   setup: { prefix: '~setup-drafts:', cap: SETUP_BUILT_IN_PER_PERSON_PER_DAY },
   ask: { prefix: '~ask-built-in:', cap: ASK_BUILT_IN_PER_PERSON_PER_DAY },
   structure: { prefix: '~page-structure:', cap: STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY },
+  // Send to Diagram's drafts (013-workspace/send-to-diagram.md).
+  diagram: { prefix: '~send-to-diagram:', cap: DIAGRAM_BUILT_IN_PER_PERSON_PER_DAY },
 };
 
 /** The DOCUMENT_ROOM instance that keeps an account's count of one kind. */

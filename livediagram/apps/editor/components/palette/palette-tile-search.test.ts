@@ -37,8 +37,10 @@ describe('elementTileSections', () => {
   });
 
   it("finds the tiles on no strip in every mode, as this mode's", () => {
-    // The C4 tiles joined them on 2026-11-19: on the strip only inside Layout's Infrastructure popover.
-    expect(SEARCH_ONLY_TILE_IDS.length).toBe(26);
+    // The C4 tiles joined them on 2026-11-19: on the strip only inside Layout's Infrastructure popover. Embed File
+    // left them for Layout's strip (Work Tracker 1375).
+    expect(SEARCH_ONLY_TILE_IDS.length).toBe(25);
+    expect(SEARCH_ONLY_TILE_IDS).not.toContain('media:embed-live');
     for (const mode of ['diagram', 'workshop'] as const) {
       const { here, elsewhere } = elementTileSections({ mode, hasImage: true });
       for (const id of SEARCH_ONLY_TILE_IDS) {

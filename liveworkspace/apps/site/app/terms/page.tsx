@@ -157,12 +157,14 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          You can create API tokens on liveworkspace.app to use the apps programmatically. A token
-          acts as your account in every app&rsquo;s API, and in the MCP server of every app that has
-          one (all but livehuddle), or only reads, if you make it read-only, so keep it secret and
-          revoke any that might have been exposed. You are responsible for what is done with your
-          tokens. We may apply rate limits to keep the Service healthy. If you connect a third-party
-          or AI tool, you authorise it to act for you with that access, until you revoke its token.
+          You can create API tokens on liveworkspace.app to use the apps programmatically, from the
+          command line, a script or an AI tool. A token acts as your account in every app&rsquo;s
+          API, and in the MCP server of every app that has one (all but livehuddle), or only reads,
+          if you make it read-only, so keep it secret and revoke any that might have been exposed.
+          You are responsible for what is done with your tokens. We may apply rate limits to keep
+          the Service healthy. If you connect a third-party or AI tool, you authorise it to act for
+          you with that access, until you revoke its token, and what it does is done by you. The
+          tool&rsquo;s own terms and privacy policy govern what it does with what it reads.
         </p>
         <p>
           If you add a connection, you choose where the messages your items&rsquo; automation rules
@@ -170,6 +172,47 @@ const SECTIONS: LegalSection[] = [
           address handles them under its own terms.
         </p>
       </>
+    ),
+  },
+  {
+    id: 'ai-features',
+    title: 'AI features',
+    body: (
+      <>
+        <p>
+          Some features use AI to answer, summarise or draft. They run only when you use them, and
+          the <a href="/privacy#ai-features">Privacy Policy</a> says what each one sends and to
+          whom.
+        </p>
+        <ul>
+          <li>
+            <strong>Check what it writes.</strong> AI output can be wrong, incomplete or similar to
+            what it gives others. You are responsible for reviewing it and for how you use it, and
+            for having the right to use what you ask it about.
+          </li>
+          <li>
+            <strong>Built-in AI</strong> comes with daily limits, which may change, and is provided
+            on the same &ldquo;as is&rdquo; basis as the rest of the Service.
+          </li>
+          <li>
+            <strong>Your own key.</strong> If you or your team add an AI provider&rsquo;s key, that
+            provider bills the key&rsquo;s owner and its own terms govern the calls on it. A team
+            key is the team admins&rsquo; to set and to remove.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: 'the-forum',
+    title: 'The Forum',
+    body: (
+      <p>
+        What you post in the Community Forum is public, shown with the name your account shows, and
+        the acceptable use rules below apply to it. Each post is checked automatically before it is
+        listed, and one that does not pass is not shown to others. You can edit or delete your own
+        posts at any time.
+      </p>
     ),
   },
   {
@@ -211,6 +254,7 @@ const SECTIONS: LegalSection[] = [
           <li>break the law or infringe someone else&rsquo;s rights;</li>
           <li>store or share malicious, harmful or illegal content;</li>
           <li>disrupt the Service or gain unauthorised access to it or its infrastructure;</li>
+          <li>get around its limits or rate limits, including the daily limits on built-in AI;</li>
           <li>abuse it in a way that degrades it for other people.</li>
         </ul>
         <p>
@@ -227,8 +271,10 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          The Service is free to use, with no feature behind a paywall; paid plans raise some
-          limits. We work to keep it running, but provide it &ldquo;as is&rdquo; and &ldquo;as
+          {proOn()
+            ? 'The Service is free to use, with generous limits; paid plans raise some of them. '
+            : 'The Service is free to use, with no feature behind a paywall. '}
+          We work to keep it running, but provide it &ldquo;as is&rdquo; and &ldquo;as
           available&rdquo;, without warranties of any kind. We may change, suspend or discontinue
           any part of it, and we may update these terms; if we make significant changes, we will
           update the date at the top.

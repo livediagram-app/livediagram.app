@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Send to Diagram',
+  description:
+    'Turn picked words into a livediagram diagram drawn by AI, from a flowchart to a timeline, previewed first and linked back to the words.',
+  path: '/help/collaboration/send-to-diagram/',
+});
+
+<ArticleLayout path="collaboration/send-to-diagram" title="Send to Diagram" description="Pick some words, and AI draws them as a diagram in livediagram: a new one, a new tab in one of yours, or an update of the one you drew before." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("send-to-diagram")}>
+
+A process, a system or a team written as prose is easier to follow as a picture. **Send to Diagram** asks AI to read the words you picked and draws them in livediagram as boxes and arrows, laid out for you. The words stay as they are; a small chip after them opens the diagram.
+
+You need to be signed in. Reading the page is enough to send from it: a Viewer can send too. Sending is not offered to a guest, in an embed, for a knowledgebase saved only in this browser (Offline), or on Community.
+
+## Sending
+
+<Step n={1}>
+  Pick the words: a sentence, a list, a few paragraphs, up to 8,000 characters. With nothing picked,
+  the paragraph or list item the caret is in is sent. While you edit, press **Send to Diagram** on
+  the text toolbar or the page toolbar, beside **Send to Plan**. If you can only read the page, pick
+  the words and press the **Send to Diagram** pill that shows under them.
+</Step>
+
+<Step n={2}>
+  Choose **Where**: a **New Diagram** of your own, or a **New Tab** in a diagram you can edit (your
+  most recent come first; search for the rest).
+</Step>
+
+<Step n={3}>
+  Choose a **Kind**: **Auto** lets the AI pick, or ask for a **Flowchart**, a **Sequence** (who
+  sends what to whom, in order), a **Mind Map**, an **Org Chart**, an **Architecture** diagram or a
+  **Timeline**. Check the **Name**.
+</Step>
+
+<Step n={4}>
+  Press **Preview**. The AI reads the words and the picker shows a sketch of what it found, with how
+  many boxes and arrows. Nothing is written yet: press **Draw Again** for another try, or change the
+  kind and preview again.
+</Step>
+
+<Step n={5}>
+  Press **Make Diagram** (or **Add Tab**). livediagram lays the diagram out and it opens in a new
+  browser tab. Its caption says where the words came from and links back to them.
+</Step>
+
+## Sending again
+
+Words you have drawn show a chip after them, with livediagram's logo and the diagram's name. Click it to open the diagram on its tab. You see a chip only for a diagram you can open.
+
+Send the same words again and the picker opens on **Update**: **Update Tab** redraws that tab from the words as they read now. **New Diagram** and **New Tab** are still there, so the earlier diagram is only replaced when you mean it.
+
+## Which AI draws it
+
+The knowledgebase's own AI key answers first, then its team's, then yours, as Ask does. Without one, liveknowledge's built-in AI draws it. Built-in AI draws up to 10 diagrams a person a day; anyone may draw 20 an hour, and a knowledgebase 100 a day. The words go to that AI alone, and are never kept.
+
+<Tip>
+  If the AI finds no diagram in the words, pick a kind: a list of steps reads best as a Flowchart,
+  and a list of people with their managers as an Org Chart.
+</Tip>
+
+</ArticleLayout>

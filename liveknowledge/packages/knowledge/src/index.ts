@@ -31,6 +31,7 @@ export * from './setup-request';
 export * from './setup-suggestion';
 export * from './setup-structures';
 export * from './page-structure';
+export * from './diagram-draft';
 export * from './page-structure-blocks';
 export * from './conflicts';
 export * from './conflict-request';

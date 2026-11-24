@@ -553,7 +553,9 @@ OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!, FIND_BAR_OPENED.typeIn!);
 
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
 // Start a Call Here has its own stack too (_shared/item-call-metrics.ts).
-OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard');
+OPENED_HOMES.push(
+  (t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram' || t === 'SentDiagram',
+);
 // Suggestions have a stack each (_shared/suggestion-metrics.ts).
 OPENED_HOMES.push(isSuggestionType);
 OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');

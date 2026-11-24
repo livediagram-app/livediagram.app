@@ -72,6 +72,8 @@ const EMBED_TILES = [
   'media:embed-website',
   'media:embed-live',
 ];
+// Embed File sits on the strip, in Layout (Work Tracker 1375): the one embed that is not search-only.
+const EMBED_FILE_TILE = 'media:embed-live';
 
 // Write's own tiles, then the Comment panel and the Action card as their own group: comments and assigned actions
 // belong to every mode, so Diagram keeps them though their Collaborate category is Workshop's. The Callout is a Card
@@ -122,12 +124,16 @@ const LAYOUT_TILES = [
   ...MEDIA_WITHOUT_EMBEDS,
 ];
 
+// Embed File (Work Tracker 1375): a file from any of our apps, live and read-only, Layout's last group.
+const LAYOUT_FILES = [DIVIDE, EMBED_FILE_TILE];
+
 // Workshop's Layout: the same, with the Timeline after the containers, as Workshop has no Concepts (where the
 // Timeline lives, docs/specs/009-elements/concept-graphics.md "Timeline") and a session plans along one as often.
 const WORKSHOP_LAYOUT_TILES = [
   ...LAYOUT_TILES.slice(0, LAYOUT_TILES.indexOf(DIVIDE)),
   'tools:timeline',
   ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE)),
+  ...LAYOUT_FILES,
 ];
 
 // Diagram's Layout: the containers with the Table (its own divider ends them), the parts with the Infrastructure
@@ -139,6 +145,7 @@ const DIAGRAM_LAYOUT_TILES = [
   ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE) + 1, LAYOUT_TILES.lastIndexOf(DIVIDE)),
   'layout:infrastructure',
   ...LAYOUT_TILES.slice(LAYOUT_TILES.lastIndexOf(DIVIDE)),
+  ...LAYOUT_FILES,
 ];
 
 // Diagram's Concepts in four groups (owner, 2026-11-19; toolbar-layout.md "Fixed dividers"): Diagrams (the builders),
@@ -166,7 +173,7 @@ const DIAGRAM_CONCEPTS = [
 // this mode's wherever it is shown, as the search panel's Add to canvas does.
 export const SEARCH_ONLY_TILE_IDS: readonly string[] = [
   'tools:code-block',
-  ...EMBED_TILES,
+  ...EMBED_TILES.filter((id) => id !== EMBED_FILE_TILE),
   ...tilesForCategory('devices').map((t) => t.id),
   'components:hero',
   'components:header',
@@ -301,7 +308,8 @@ export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
 
-// The listed tiles and openers; a DIVIDE marks the tile before it as ending a group, in this list only.
+// The listed tiles and openers; a DIVIDE marks the tile before it as ending a group, in this list only. The last
+// tile ends no group, so a divider of its own (Embed File's, ending Layout) is dropped there.
 function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
   const out: PaletteTileDef[] = [];
   for (const id of ids) {
@@ -312,6 +320,11 @@ function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
     }
     const def = tileById(id) ?? openerById(id);
     if (def) out.push(def);
+  }
+  const last = out.at(-1);
+  if (last?.dividerAfter) {
+    const { dividerAfter: _ends, ...ended } = last;
+    out[out.length - 1] = ended;
   }
   return out;
 }

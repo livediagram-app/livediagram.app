@@ -9,6 +9,7 @@ import { drainAssistantNotices, handleAssistantRevoked } from './assistant-notic
 import { handleAccessRequests } from './access-requests';
 import { handleApproval } from './approvals';
 import { handleNewPlanForSend, handlePlanSends } from './plan-sends';
+import { handleDiagramSends, readDiagramSends } from './diagram-sends';
 import { handleItemCalls, handleSpaceCall } from './item-calls';
 import { handleWriteUp } from './write-up';
 import { callerOf } from './auth';
@@ -79,6 +80,8 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   kits: handleKits,
   // Send to Plan's New Plan (plan-sends.ts).
   'plan-sends': handleNewPlanForSend,
+  // Send to Diagram's new diagram (diagram-sends.ts).
+  'diagram-sends': handleDiagramSends,
 };
 
 async function route(ctx: RouteContext): Promise<Response> {
@@ -126,6 +129,7 @@ async function route(ctx: RouteContext): Promise<Response> {
     if (segments[2] === 'sheet-range' && segments.length === 3) return handleSheetRange(ctx, id);
     // Send to Plan (plan-sends.ts): a send to this plan, or this source's sends for its chips.
     if (segments[2] === 'plan-sends' && segments.length === 3) return handlePlanSends(ctx, id);
+    if (segments[2] === 'diagram-sends' && segments.length === 3) return readDiagramSends(ctx, id);
     // Start a Call Here (item-calls.ts): the item's calls, and a Space's call with its summary and invites.
     if (segments[2] === 'calls' && segments.length === 3) return handleItemCalls(ctx, id);
     if (segments[2] === 'call') return handleSpaceCall(ctx, id, segments.slice(3));

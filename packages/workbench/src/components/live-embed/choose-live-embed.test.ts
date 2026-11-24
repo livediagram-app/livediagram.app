@@ -92,7 +92,8 @@ describe('a pasted share link', () => {
     });
     expect(await resolvePastedLink('nope', refusing(null))).toMatchObject({
       ok: false,
-      words: 'Paste a share link from livediagram, liveplanner, livedocuments or livedesign.',
+      words:
+        'Paste a share link from livediagram, liveplanner, livedocuments, livedesign or liveknowledge.',
     });
     const words = async (error: unknown) =>
       ((await resolvePastedLink(LINK, refusing(error))) as { words: string }).words;

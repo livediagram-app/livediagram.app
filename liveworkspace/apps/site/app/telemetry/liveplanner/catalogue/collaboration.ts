@@ -106,6 +106,16 @@ export const EMBEDS_VIEWED = chart(
   { types: ['Embed'] },
 );
 
+// Embed File on a Dashboard (docs/specs/013-workspace/embeds.md "Embed File on a Dashboard"): a file chosen into a
+// slot is counted in Other Elements Added; this is a file shown live in one.
+export const LIVE_EMBEDS_SHOWN = chart(
+  'Canvas',
+  'Used',
+  'Live Embeds Shown',
+  'A file from another of our apps shown live and read-only in a Dashboard slot, with the reader’s own access.',
+  { types: ['LiveEmbed'] },
+);
+
 export const WORKBENCH_SESSIONS = chart(
   'Session',
   'Opened',
@@ -645,8 +655,8 @@ export const EMBEDS_AND_WORKBENCH: MetricStack = {
   stack: true,
   title: 'Embeds & Workbench',
   blurb:
-    'Projects opened inside another site through an embed, or inside a developer tool’s frame.',
-  members: [EMBEDS_VIEWED, WORKBENCH_SESSIONS, WORKBENCH_WORKSPACES],
+    'Projects opened inside another site through an embed or a developer tool’s frame, and other apps’ files embedded in Dashboards.',
+  members: [EMBEDS_VIEWED, LIVE_EMBEDS_SHOWN, WORKBENCH_SESSIONS, WORKBENCH_WORKSPACES],
 };
 
 export const DISCUSSION: MetricStack = {

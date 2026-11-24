@@ -28,6 +28,7 @@ import {
   lucideTable,
   lucideUsers,
   lucideSend,
+  lucideWorkflow,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@liveknowledge/ui';
 import type { ReactNode } from 'react';
@@ -190,9 +191,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideSend} />
     </Glyph>
   ),
-  // A compass: Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md), the way to the next app.
-  suggestions: (
+  // Words drawn as boxes and arrows: Send to Diagram (liveworkspace/docs/specs/004-index/send-to-diagram.md).
+  'send-to-diagram': (
     <Glyph>
+      <Prims prims={lucideWorkflow} />
+      // A compass: Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md), the way
+      to the next app. suggestions: (
       <Prims prims={lucideCompass} />
     </Glyph>
   ),

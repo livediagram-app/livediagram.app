@@ -135,6 +135,18 @@ const KNOWLEDGEBASE = { category: 'Knowledgebase', categorySlug: 'knowledgebase'
 const APPS = { apps: ['liveknowledge'] } as const;
 
 export const articles: Article[] = [
+  // ---- Collaboration ----
+  {
+    slug: 'send-to-diagram',
+    title: 'Send to Diagram',
+    description:
+      'Pick some words, and AI draws them as a diagram in livediagram, linked back to the words.',
+    keywords:
+      'send to diagram livediagram ai draw flowchart sequence mind map org chart architecture timeline picture visualise visualize words chip preview update tab',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+    ...APPS,
+  },
   // ---- About ----
   {
     slug: 'what-is-liveknowledge',

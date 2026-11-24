@@ -120,8 +120,9 @@ describe('palette layouts', () => {
   });
 
   // Media merged into Layout (owner, 2026-11-16): Diagram and Workshop end Layout with the image and the avatar, apart
-  // from its parts, leaving the embeds out; no divider at the very end.
-  it('ends Layout with Image and Avatar, apart, and no embeds, where Media merged in', () => {
+  // from its parts, then Embed File in a group of its own (Work Tracker 1375), leaving the other embeds out; no
+  // divider at the very end.
+  it('ends Layout with Image and Avatar, then Embed File, apart, and no other embeds, where Media merged in', () => {
     for (const mode of ['diagram', 'workshop'] as const) {
       const cats = paletteCategoriesFor(mode);
       expect(
@@ -130,9 +131,10 @@ describe('palette layouts', () => {
       ).toBe(false);
       const layout = cats.find((c) => c.id === 'layout')!;
       const ids = layout.tiles!.map((t) => t.id);
-      expect(ids.slice(-2), mode).toEqual(['tools:image', 'tools:avatar']);
+      expect(ids.slice(-3), mode).toEqual(['tools:image', 'tools:avatar', 'media:embed-live']);
       expect(ids, mode).not.toContain('media:embed-website');
-      expect(layout.tiles!.at(-3)?.dividerAfter, mode).toBe(true);
+      expect(layout.tiles!.at(-4)?.dividerAfter, mode).toBe(true);
+      expect(layout.tiles!.at(-2)?.dividerAfter, mode).toBe(true);
       expect(layout.tiles!.at(-1)?.dividerAfter, mode).toBeFalsy();
     }
   });

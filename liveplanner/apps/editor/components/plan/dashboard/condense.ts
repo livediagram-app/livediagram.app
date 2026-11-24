@@ -14,7 +14,7 @@ export const isCondensed = (width: number | undefined) =>
 
 // What a stacked slot is sized as: a Title (its text), a written card (its content, at least CARD_MIN_PX), a figure
 // (a short tile), something worked in (most of the screen), or an empty slot (its Add to Slot).
-type PhoneSlotSize = 'title' | 'card' | 'figure' | 'work' | 'empty';
+type PhoneSlotSize = 'title' | 'card' | 'figure' | 'work' | 'empty' | 'embed';
 
 // A small card's least height: a heading and two or three lines (Note, Status, Key Date, a short Checklist or Links).
 export const PHONE_CARD_MIN_PX = 168;
@@ -26,6 +26,8 @@ const PHONE_EMPTY_PX = 176;
 // slot still peeks in below; never under 360 px (a short landscape screen).
 const PHONE_WORK_VH = 66;
 export const PHONE_WORK_MIN_PX = 360;
+// An Embed File's least height on a phone: its name row and a readable snapshot.
+export const PHONE_EMBED_MIN_PX = 240;
 
 // A plan view whose id names a metric tile (plan-views: `metric:<kind>`).
 const isMetricView = (view: string | undefined) => !!view?.startsWith('metric:');
@@ -49,6 +51,9 @@ export function phoneSlotSize(
       return 'figure';
     case 'tab':
       return 'work';
+    // An Embed File at 4:3 of the width, so its snapshot reads whole (plan-tabs.md "On a phone").
+    case 'embed':
+      return 'embed';
     case 'element':
       return element?.shape === 'plan-view' && isMetricView(element.planView?.view)
         ? 'figure'
@@ -69,6 +74,13 @@ export function phoneSlotStyle(size: PhoneSlotSize): CSSProperties {
       return { ...cell, gridTemplateRows: '1fr', height: PHONE_FIGURE_PX };
     case 'empty':
       return { ...cell, gridTemplateRows: '1fr', height: PHONE_EMPTY_PX };
+    case 'embed':
+      return {
+        ...cell,
+        gridTemplateRows: '1fr',
+        aspectRatio: '4 / 3',
+        minHeight: PHONE_EMBED_MIN_PX,
+      };
     case 'work':
       return {
         ...cell,
