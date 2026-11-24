@@ -2,6 +2,8 @@
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
+import { maySuggestTo } from '@liveworkspace/workbench/components/suggest/suggest-gate';
+import { WriteUpSuggestion } from '@/components/plan/WriteUpSuggestion';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
@@ -115,6 +117,9 @@ const CommunityBar = dynamic(
 // from EditorContext (provided by the page), so the page no longer
 // threads ~150 props through this JSX. The JSX is verbatim; only its
 // scope changed from the page's locals to the destructured context.
+
+// Before the plan's statuses are read (Write It Up's check then finds nothing done).
+const NO_STATUS_PHASES: ReadonlyMap<string, string> = new Map();
 export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (docs/specs/006-project/offline-mode.md): a project saved only in this browser. Drives the
@@ -350,6 +355,24 @@ export function EditorView() {
                       embed: !appChrome,
                       community: sessionCommunity !== null,
                     })}
+                  />
+                  {/* Write It Up (liveworkspace/docs/specs/016-notifications/suggestions.md): a done card's decision
+                      offered to the team's knowledgebase, in the notice slot. */}
+                  <WriteUpSuggestion
+                    itemId={ctx.authLoaded && hydrated ? ctx.projectId : null}
+                    allowed={maySuggestTo({
+                      level: ctx.can.level,
+                      readOnly: isReadOnly,
+                      signedIn: !!accountUserId,
+                      offline: isOffline,
+                      embed: !appChrome,
+                      community: sessionCommunity !== null,
+                    })}
+                    planTitle={projectName?.trim() || 'Untitled plan'}
+                    items={ctx.plan.context?.items}
+                    statusPhases={ctx.plan.context?.statusPhases ?? NO_STATUS_PHASES}
+                    practiceIds={ctx.plan.context?.practiceIds}
+                    tabId={activeId}
                   />
                   {/* Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md): the Call button's item, and
                       Meetings in Tools. */}

@@ -1,6 +1,8 @@
 'use client';
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
+import { maySuggestTo } from '@liveworkspace/workbench/components/suggest/suggest-gate';
+import { SendToPlanSuggestion } from '@/components/calls/SendToPlanSuggestion';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import dynamic from 'next/dynamic';
@@ -411,6 +413,21 @@ export function EditorView() {
               embed: !appChrome,
               community: sessionCommunity !== null,
             })}
+          />
+          {/* Send to a Plan (liveworkspace/docs/specs/016-notifications/suggestions.md): a call that ended with
+              stickies on the wall, offered to a plan in the notice slot. */}
+          <SendToPlanSuggestion
+            itemId={ctx.authLoaded && hydrated ? documentId : null}
+            allowed={maySuggestTo({
+              level: ctx.can.level,
+              readOnly: ctx.isStructureReadOnly,
+              signedIn: !!accountUserId,
+              offline: isOffline,
+              embed: !appChrome,
+              community: sessionCommunity !== null,
+            })}
+            activeId={activeId}
+            tabs={tabs}
           />
           <ViewportStoreProvider store={ctx.viewport}>
             <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
