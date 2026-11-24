@@ -9,6 +9,7 @@ import type { Finish } from '@liveworkspace/element-model/finish';
 import type { TabId, TextSize } from '@liveworkspace/model-core/basics';
 import type { BackgroundPattern } from './retired-patterns';
 import type { Element } from './element-union';
+import type { PageDesign } from './page-designs/tuning';
 
 export type Tab = {
   id: TabId;
@@ -59,6 +60,9 @@ export type Tab = {
   // Tab Style's New Page Background): a fill and a pattern, never a picture. Absent, a new page carries over the
   // page before it, and a first page takes its kind's theme default. Read via `newPageBackgroundOf`.
   newPageBackground?: PageBackground;
+  // The tab's page design (docs/specs/011-theme/page-designs.md): procedural decoration every page wears behind its
+  // elements, unless a page has its own (`Page.design`). Absent is none. Read via `tabPageDesignOf`.
+  pageDesign?: PageDesign;
   // Selected preset theme name (see apps/editor/lib/themes.ts). Setting
   // a theme via the palette repaints every existing element on the tab
   // to match (sticky notes keep their amber palette). Newly added
