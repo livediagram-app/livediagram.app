@@ -34,7 +34,11 @@ const OTHER_PRODUCTS: readonly RegExp[] = [
 ];
 
 // Questions whose answers may name a sister app, because the two genuinely work together.
-const INTEGRATION_ANSWERS: ReadonlySet<string> = new Set([]);
+const INTEGRATION_ANSWERS: ReadonlySet<string> = new Set([
+  // Charts and tables read a liveplanner plan (Live data), and a diagram's shapes become its cards.
+  'Can I show data, like a chart?',
+  'Can I turn a diagram into tasks?',
+]);
 
 const entries = FAQ_CATEGORIES.flatMap((c) =>
   c.items.map((item) => ({
