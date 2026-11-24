@@ -6,7 +6,8 @@
 // rows it leaves and enters and no others. With a mouse the row's + and ... show only while it is pointed at, holds
 // focus, has its menu open or is the current page (CSS alone, ROW_CONTROLS_HIDDEN); their hover cards and the title's
 // tooltip mount only while it is pointed at, holds focus or has its menu open. Their room is always kept, so nothing
-// shifts.
+// shifts. On a touch screen both are always there, 44 px squares with no cards (PageTree never marks a row from a
+// finger, so a tap re-mounts nothing under it).
 import { memo, type ReactNode } from 'react';
 import { HoverCard, Tooltip } from '@liveknowledge/ui';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
@@ -31,6 +32,7 @@ import {
   ROW_INSET,
   ROW_NEST,
   ROW_REST,
+  ROW_TOUCH_BUTTON,
 } from './page-tree-row-styles';
 import {
   PAGE_TREE_INDENT,
@@ -102,7 +104,7 @@ function PageTreeRowView({
   const indent = ROW_INSET + (row.level - 1) * PAGE_TREE_INDENT;
   const hasSubpages = row.subpages > 0;
   const icon = outOfScope ? undefined : pageIconOfKey(row.icon);
-  const control = touch ? 'h-11 w-9' : 'h-6 w-6';
+  const control = touch ? ROW_TOUCH_BUTTON : 'h-6 w-6';
   const menuButton = (
     <button
       type="button"
@@ -235,10 +237,14 @@ function PageTreeRowView({
       {/* The row's buttons: their room is kept whether they show or not, so a hover moves nothing. */}
       <span
         data-row-controls
-        className={`${current || menuOpen ? ROW_CONTROLS_SHOWN : ROW_CONTROLS_HIDDEN} ${touch ? 'w-9' : 'w-[50px]'}`}
+        className={`${current || menuOpen ? ROW_CONTROLS_SHOWN : ROW_CONTROLS_HIDDEN} ${touch ? (canEdit ? 'w-[90px]' : 'w-11') : 'w-[50px]'}`}
       >
         {editing || outOfScope ? null : touch ? (
-          menuButton
+          // Always there on touch, plain: a finger has no hover for a card to answer (Work Tracker 1417).
+          <>
+            {canEdit ? addButton : null}
+            {menuButton}
+          </>
         ) : (
           // Shown on hover with a mouse, always on touch (owner, 2026-11-21), quiet until the row is active. Their
           // hover cards are drawn on the active row only, so 500 rows carry 1,000 plain buttons and no extra cards.

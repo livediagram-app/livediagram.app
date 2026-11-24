@@ -128,12 +128,14 @@ describe('a row’s + and … (WI-1335)', () => {
     expect(controls('Notes').className).toBe(`${ROW_CONTROLS_SHOWN} w-[50px]`);
   });
 
-  it('keeps the phone sheet’s 44px menu button, Add Subpage in its menu', () => {
+  it('keeps a touch row’s + and … there, 44px squares (Work Tracker 1417)', () => {
     mount({ touch: true });
-    expect(controls('Notes').className).toContain('w-9');
-    const button = within(row('Notes')).getByRole('button', { name: 'Page Options for Notes' });
-    expect(button.className).toContain('h-11');
-    expect(within(row('Notes')).queryByRole('button', { name: /Add Subpage/ })).toBeNull();
+    expect(controls('Notes').className).toContain('w-[90px]');
+    for (const name of ['Page Options for Notes', 'Add Subpage to Notes']) {
+      const button = within(row('Notes')).getByRole('button', { name });
+      expect(button.className).toContain('h-11');
+      expect(button.className).toContain('w-11');
+    }
   });
 });
 

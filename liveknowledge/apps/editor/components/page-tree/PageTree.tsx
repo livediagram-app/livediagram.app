@@ -110,6 +110,11 @@ const rowOf = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>('[data-page-row]') : null;
 const actionOf = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>('[data-row-action]') : null;
+// A finger or a pen: it never hovers a row, and the focus its tap gives one is not the keyboard's.
+const fingered = (pointerType: string | undefined) => pointerType === 'touch' || pointerType === 'pen';
+/** How long after a finger's press the focus that arrives is that press's (a tap's synthetic mousedown focuses the
+ *  row well inside it), so it marks nothing (blueprint page-tree.md "A tap never re-mounts what it lands on"). */
+export const TOUCH_FOCUS_MS = 1000;
 // A press inside the rename field or a control is not a press on the row.
 const inField = (target: EventTarget | null) =>
   target instanceof Element && target.closest('input, textarea, [contenteditable="true"]') !== null;
@@ -228,6 +233,11 @@ export function PageTree({
   // The row whose menu a key opened: the contextmenu event some browsers send after the menu key or Shift+F10 is
   // that key's, not a right-click at the pointer. Any press clears it.
   const keyMenu = useRef<string | null>(null);
+  // When a finger or a pen last pressed the tree (0: never). Marking a row active re-mounts its title and buttons
+  // (their tooltip and hover cards), so a tap must mark nothing: the tap's own target would be replaced under it and
+  // iPad Safari sent its click nowhere (Work Tracker 1417).
+  const fingerAt = useRef(0);
+  const fingerPress = () => fingerAt.current > 0 && Date.now() - fingerAt.current < TOUCH_FOCUS_MS;
   // Type-ahead: the letters typed on the tree, and when the last one was.
   const typed = useRef({ text: '', at: 0 });
   const shownName = (r: PageRow) =>
@@ -266,7 +276,9 @@ export function PageTree({
     }
     if (control === 'add') return onVerb('add', id);
     if (control === 'menu') {
-      setMenu((open) => (open?.id === id ? null : { id, anchor: actionOf(e.target) ?? row }));
+      // A finger's menu hangs from the row, which never re-mounts; the button may, as the open menu marks the row.
+      const anchor = fingerPress() ? row : (actionOf(e.target) ?? row);
+      setMenu((open) => (open?.id === id ? null : { id, anchor }));
       return;
     }
     if (outside?.(id)) return;
@@ -416,15 +428,22 @@ export function PageTree({
         onContextMenu={onContextMenu}
         onPointerDown={(e) => {
           keyMenu.current = null;
+          fingerAt.current = fingered(e.pointerType) ? Date.now() : 0;
           longPress.onPointerDown(e);
         }}
         onPointerMove={longPress.onPointerMove}
         onPointerUp={longPress.cancel}
         onPointerCancel={longPress.cancel}
-        onPointerOver={(e) => ui.hover(rowOf(e.target)?.dataset.pageRow ?? null)}
+        // Only a mouse (or a trackpad) hovers: a finger's pointerover comes with its press.
+        onPointerOver={(e) => {
+          if (!fingered(e.pointerType)) ui.hover(rowOf(e.target)?.dataset.pageRow ?? null);
+        }}
         onPointerLeave={() => ui.hover(null)}
         onFocus={(e) => {
           const id = rowOf(e.target)?.dataset.pageRow ?? null;
+          // A tap's focus is the tap's, not the keyboard's: it marks no row and moves no Tab stop, since either
+          // re-mounts the row's buttons under the finger (their hover cards).
+          if (id && fingerPress()) return ui.focus(null);
           ui.focus(id);
           if (id) setStopId(id);
         }}
