@@ -4,7 +4,8 @@
 // whole list in each session, so a repeat becomes a pointer to the first place the text stands. A short description
 // said again of a property of the same name (`tabId` under each of a tool's ops) is left out of the repeats: the
 // first already said what that property is, and a pointer would be longer than the words. Only the listing changes:
-// the SDK validates a call against the tool's own schema, never this JSON.
+// the SDK validates a call against the tool's own schema, never this JSON. A tuple is said as a plain array too
+// (`untuple`), so a client that hands the list to the Claude API isn't refused.
 
 // The shortest description worth pointing at: under this a pointer saves little and reads worse.
 export const REPEAT_MIN_CHARS = 200;
@@ -23,6 +24,34 @@ function variantOf(schema: { [key: string]: Json }): string | null {
     if (isObject(property) && typeof property.const === 'string') return `${key}=${property.const}`;
   }
   return null;
+}
+
+/**
+ * A schema with every tuple (zod's `z.tuple`: `items` as an array, `additionalItems`) said as a plain array of one
+ * item schema, which every JSON Schema draft reads alike. The Claude API takes JSON Schema 2020-12 only, where a
+ * draft-07 tuple is invalid and the whole tool list is refused. Positions alike (a two-stop gradient) keep their one
+ * schema; positions that differ become `anyOf`. The length stays exact through minItems and maxItems.
+ */
+export function untuple<T>(schema: T): T {
+  const walk = (node: Json): Json => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (!isObject(node)) return node;
+    const out: { [key: string]: Json } = {};
+    for (const [key, value] of Object.entries(node)) {
+      if (key === 'additionalItems' && Array.isArray(node.items)) continue;
+      out[key] = walk(value);
+    }
+    if (Array.isArray(node.items)) {
+      const positions = (out.items as Json[]).filter((p) => p !== undefined);
+      const distinct = [...new Map(positions.map((p) => [JSON.stringify(p), p])).values()];
+      out.items = distinct.length === 1 ? distinct[0]! : { anyOf: distinct };
+      out.minItems ??= positions.length;
+      if (node.additionalItems === false || node.additionalItems === undefined)
+        out.maxItems ??= positions.length;
+    }
+    return out;
+  };
+  return walk(schema as Json) as T;
 }
 
 /**
@@ -126,7 +155,8 @@ export function compactToolList<T>(given: T): T {
   const tools = body.result.tools.map((tool) => {
     if (!isObject(tool)) return tool;
     const compact = { ...tool };
-    if (tool.inputSchema !== undefined) compact.inputSchema = sayDescriptionsOnce(tool.inputSchema);
+    if (tool.inputSchema !== undefined)
+      compact.inputSchema = sayDescriptionsOnce(untuple(tool.inputSchema));
     if (tool.outputSchema !== undefined)
       compact.outputSchema = sayDescriptionsOnce(shallowOutputSchema(tool.outputSchema));
     return compact;

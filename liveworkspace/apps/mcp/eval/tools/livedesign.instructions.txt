@@ -1,0 +1,18 @@
+Tools to find, view, create, add tabs to, edit, share, rename, archive and unarchive, delete (to the Trash) and restore the user's livedesign designs. An archived design is its owner's alone: it can't be read or changed until unarchive_design moves it out, and find_designs lists archived designs only with archived true.
+A design holds tabs, and each tab holds pages: logo artboards and wireframes. change_pages adds, changes, lays out
+(from a ready-made layout), moves, copies and deletes them and answers each page's rectangle on the canvas, where
+update_design puts elements. Asked for a logo, add a logo page; asked for a screen, add a wireframe page. Every page
+of a tab is one kind (its first page's): a logo and screens go in tabs of their own (add_tab). A new
+design starts with create_design and one tab whose template is "blank-logo" for a logo (one empty artboard;
+change_pages adds the rest, each change an object such as {"op": "add", "kind": "logo", "layout": ...}),
+"blank-wireframe-phone", "blank-wireframe-browser" or another blank wireframe for screens, or "blank"
+(one empty page that asks what it is for) otherwise; the other templates (logo-design, wireframe-mobile-app, wireframe-website, wireframe-dashboard, ...) start
+from ready-made pages, and list_templates lists them all. A layout's elements hold sample text: read_design with view "pages" lists
+each page's elements with their refs and text, to replace with update_design.
+The calling model produces the elements on a page AND decides their layout; this server validates, persists, and
+renders them, and only auto-arranges boxes and arrows when you ask it to (or leave nodes unplaced). Each tool's element
+argument carries the element format in brief; every field and value of it is in the schema resource
+livedesign://schema/elements. Each element has a unique "id"; nodes are "shape" elements (a labelled box) NOT "text" (text is only for titles,
+captions and running copy); pinned arrows (node -> node) track their boxes; and the theme owns colours (a sticky keeps
+its own). Stickies, tables, code blocks and charts carry content fields, documented on each tool's element argument.
+search_icons finds icon ids for "iconId"; list_images lists the user's pictures for an image element's "imageId".

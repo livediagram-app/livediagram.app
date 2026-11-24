@@ -14,7 +14,6 @@
 import { Suspense, use, useEffect, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
-import { isLoopbackHost } from '@liveworkspace/api-kit/request-auth';
 import { Button } from '@liveworkspace/ui';
 import { apiExchangeOauthToken } from '../../lib/api/oauth';
 import { apiRevokeTokenAsItself } from '../../lib/api/tokens';
@@ -36,69 +35,14 @@ import {
   OAUTH_SECONDARY,
   OauthHelpLink,
   OauthLoading,
-  OauthWarning,
   ReadOnlyAccessToggle,
   UnverifiedAppBadge,
+  UnverifiedDestination,
+  VerifiedDestination,
   type OauthPagesConfig,
 } from './oauth-chrome';
 import { Callout } from '@liveworkspace/ui/callout';
 import { TokenLimitListLazy } from './TokenLimitListLazy';
-
-// The host, as the line says it, in mono. A site's may be long, so it breaks anywhere; a loopback one is short
-// (`localhost:55884`) and is kept whole.
-function Host({ host, whole = false }: { host: string; whole?: boolean }) {
-  return (
-    <span
-      className={`font-mono text-sm font-semibold text-slate-900 dark:text-white ${whole ? 'whitespace-nowrap' : 'break-all'}`}
-    >
-      {host}
-    </span>
-  );
-}
-
-// Where the access goes, for a client the server vouches for (the product's CLI): the quiet line.
-function VerifiedDestination({ host }: { host: string }) {
-  return (
-    <Callout tone="info" className="mt-3">
-      {isLoopbackHost(host) ? (
-        <>
-          Access will be sent back to the app on this computer (
-          <span className="font-semibold">{host}</span>). Only continue if you started this
-          connection yourself.
-        </>
-      ) : (
-        <>
-          Access will be sent to <span className="font-semibold">{host}</span>. Only continue if you
-          recognise this.
-        </>
-      )}
-    </Callout>
-  );
-}
-
-// Where the access goes, for any other client: the card's first fact, with whose app this is not.
-function UnverifiedDestination({ client, host }: { client: string; host: string }) {
-  return (
-    <OauthWarning title={`${client} is not made by liveworkspace, and we can’t check who made it.`}>
-      {host && isLoopbackHost(host) ? (
-        <p>
-          Access will be sent back to the app on this computer{' '}
-          <span className="whitespace-nowrap">
-            (<Host host={host} whole />)
-          </span>
-          . Only continue if you started this connection yourself.
-        </p>
-      ) : host ? (
-        <p>
-          Access will be sent to <Host host={host} />. Only continue if you recognise this site and
-          started this connection yourself.
-        </p>
-      ) : (
-        <p>Only continue if you started this connection yourself.</p>
-      )}
-    </OauthWarning>
-  );
-}
 
 function Consent({ config }: { config: OauthPagesConfig }) {
   const { Shell, titleClass, product, noun, mcpOrigin } = config;

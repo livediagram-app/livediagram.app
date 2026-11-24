@@ -28,6 +28,7 @@
     "./tool-result": "./src/tool-result.ts",
     "./template-elements": "./src/template-elements.ts",
     "./tool-scope": "./src/tool-scope.ts",
+    "./token-refusal": "./src/token-refusal.ts",
     "./eval/summary": "./eval/summary.mjs",
     "./eval/mcp-client": "./eval/mcp-client.mjs",
     "./eval/diagram-tasks": "./eval/diagram-tasks.mjs",

@@ -1,0 +1,158 @@
+# One AI connection
+
+One MCP server for every app with an MCP of its own (livediagram, liveplanner, livedocuments, livedesign,
+liveknowledge), behind one OAuth consent and one token (Work Tracker 1370). livehuddle has no MCP, so it has no
+tools here.
+
+**Unlisted while it is tried.** The server runs in production at `https://mcp.liveworkspace.app/mcp`, but nothing
+public names it yet: no help article, marketing page, connect page or directory listing. Each app's own MCP stays as
+it is and is still the one its pages recommend. Listing it, and pointing the connect pages at it, waits for the
+owner's call after the tool-pick eval and a few days of use.
+
+## Why
+
+Today an assistant connects to each app separately: five connections, five sign-ins, five tokens against the
+account's 20, five tool lists (about 150 tools, 600 KB). Cross-app work ("turn this retro into a plan and write it
+up") needs several connections set up in advance. Merging the lists alone would make picking worse: livediagram,
+livedocuments and liveknowledge already share names (`create_document`, `find_documents`, `share_document`). So the
+server is shaped to pick better than five servers, and the eval says whether it does.
+
+## Three layers
+
+1. **Core verbs, always listed.** Ten tools that work on any item:
+
+   | Tool                   | Does                                                                                                 |
+   | ---------------------- | ---------------------------------------------------------------------------------------------------- |
+   | `find_items`           | Finds items by name across the apps; `kind` narrows to one kind, `where` reads archived or the Trash |
+   | `read_item`            | Reads one item (its tabs and their content, as the app's own read tool does)                         |
+   | `create_item`          | Makes an item of a `kind`: diagram, deck, article, infographic, plan, design, knowledgebase          |
+   | `share_item`           | Shares an item by link with a role                                                                   |
+   | `rename_item`          | Renames an item                                                                                      |
+   | `trash_item`           | Moves an item to the Trash                                                                           |
+   | `restore_item`         | Restores an item from the Trash                                                                      |
+   | `list_app_tools`       | Lists one kind's editing tools, with their input schemas                                             |
+   | `read_with_app_tool`   | Calls one of those tools that only reads (`readOnlyHint`), by name                                   |
+   | `change_with_app_tool` | Calls one of those tools that changes something, by name                                             |
+
+   An item is named by its **ref**, `<kind>:<id>` (`diagram:Ab3…`), which `find_items` and `create_item` answer.
+   The kinds and the app each belongs to: `diagram` (livediagram), `doc` (livedocuments: a deck, an article or an
+   infographic; `create_item` takes those three as kinds and answers a `doc:` ref), `plan` (liveplanner), `design`
+   (livedesign), `knowledgebase` (liveknowledge).
+
+2. **Editing tools, on demand.** Each app's other tools (diagram elements, board cards, sheet cells, article
+   writing, knowledgebase pages) come back from `list_app_tools(kind)`, each marked `readOnly` or not, and run through
+   `read_with_app_tool` or `change_with_app_tool`. An assistant normally sees ten tools, not about 150.
+   So that finding a tool takes one call, not two, `list_app_tools`' description names every kind's tools, reads
+   and changes apart (about 1,250 tokens more); a name it gets wrong answers with the names it has. And the item a
+   tool works on can be given as a ref, on the verb (`ref`) or in its arguments: it goes in as the app's own id
+   argument (`projectId`, `documentId`, `designId`), which is the argument assistants most often got wrong. A client with its own tool search (it defers tool definitions until
+   needed) connects to `/mcp?tools=all` instead: that lists the core verbs and every editing tool, each callable
+   by name.
+
+3. **Names by what they make, never by app.** Every editing tool is renamed from its app's name:
+   - the app's own item word becomes its kind: `update_document` in livediagram is `update_diagram`,
+     `create_project` in liveplanner is `create_plan`, `find_documents` in liveknowledge is `find_knowledgebases`;
+   - a name with no subject of its own gets its kind after the verb: `add_tab` is `add_diagram_tab`,
+     `add_plan_tab`, `add_doc_tab`; `upload_image`, `list_templates`, `change_threads` the same;
+   - liveknowledge's page tools say whose pages they are: `create_knowledge_page`, `search_knowledge_pages`;
+   - a handful read better by hand: liveplanner's `change_items` and `list_items` are `change_cards` and
+     `list_cards`; liveknowledge's `get_context`, `report_gap`, `suggest_edit` and `request_approval` are
+     `get_knowledge_context`, `report_knowledge_gap`, `suggest_knowledge_edit`, `request_knowledge_approval`.
+
+   No two tools share a name, and no name says a bare "document". A naming test fails on a clash, on "document", or
+   on a name with no subject word (the kinds, and card, sheet, board, form, article, item, app_tool). Every
+   description opens with the noun people use and the app ("For a diagram (livediagram)."), and every old tool name
+   inside a description or an answer is rewritten to its new name, so an answer's "call read_document next" says
+   `read_diagram`. The apps' deprecated aliases (livediagram's `*_diagram(s)` names) are not listed.
+
+## Fit for Claude's connector directory
+
+The server is built to be listed in Claude's connector directory, so it meets its review criteria
+(claude.com/docs/connectors/building/review-criteria), checked again whenever they change:
+
+- **Every tool has a `title` and the hints that apply**, said in full rather than left to the defaults:
+  `readOnlyHint: true` on a tool that only reads, `destructiveHint` true or false on every other. An editing tool
+  keeps its app's own annotations, title and all, under its new name.
+- **Reading and changing never share a tool.** The directory refuses one tool that does both, so an editing tool
+  runs through `read_with_app_tool` (read-only, and it refuses a tool that changes anything) or
+  `change_with_app_tool` (marked destructive, and it refuses a read-only tool, naming the other).
+- **Input schemas any client can send on**: JSON Schema every draft reads alike, so no tuples (mcp-kit says them
+  as plain arrays with an exact length).
+- **No instructions out of place**: descriptions say what a tool does and when; they never send the assistant to
+  other tools the person didn't ask for, nor to outside instructions. What items hold is data.
+- **Sign-in as the directory expects**: OAuth 2.1 with S256 PKCE, dynamic client registration, a 401 with
+  `resource_metadata` for a missing or refused token, and `https://claude.ai/api/mcp/auth_callback` and loopback
+  redirects accepted (mcp-kit's authorization server).
+
+Before submitting: public docs, a privacy policy and support links, which wait until the trial ends.
+
+## How it works
+
+A thin router. It keeps no copy of any app's tool logic: each call goes, as the person, to that app's own MCP Worker
+over a service binding, with the person's own `Authorization: Bearer lwt_…` (an account token works on every app).
+An app's answer comes back as it is, its old tool names rewritten. A refused token (401 from any app) makes the
+whole request answer 401 with the sign-in challenge, as each app's MCP does.
+
+The core verbs map to each app's existing tools: `find_items` to `find_documents`, `find_projects` or
+`find_designs` (or `list_trash` with `where: "trash"`), across every allowed app at once, five at most, each app's
+matches marked with their refs; `read_item` to the app's read tool (`list_pages` for a knowledgebase); `create_item`
+to its create tool, a deck, article or infographic starting from livedocuments' blank slide deck, blank article or
+blank infographic template; the rest to the matching share, rename, delete and restore tools. An app that fails
+during `find_items` is named in the answer with its error; the others still answer.
+
+Each app's tool list is read from its MCP once per isolate and kept 10 minutes.
+
+### Nothing an app's MCP offers is lost
+
+Everything each app's own MCP serves reaches the person through the one MCP, for the apps they allowed:
+
+- **Every tool.** Each app tool runs through `read_with_app_tool` or `change_with_app_tool`, or by its own name (all
+  of them are listed with `?tools=all`), the views' own `view_*` tools too, as each app's MCP lists them: a host
+  without MCP Apps lets the model call them for a picture, and with `?tools=all` each keeps its `_meta`, so a host
+  with MCP Apps keeps the ones marked for the view alone from the model.
+- **Each app's guidance.** The server instructions each app's MCP gives (liveknowledge's trust and health rules,
+  livedocuments' pictures, archived items, and so on) come back from `list_app_tools(kind)` as `guide`, old tool
+  names rewritten, read once per isolate and kept 10 minutes.
+- **Prompts.** Every allowed app's prompts are listed (`prompts/list`) and run (`prompts/get`) through the app, the
+  app's item word in a name made its noun (`show_my_document` is `show_my_diagram`, `show_my_doc` and
+  `show_my_knowledgebase`; `show_my_project` is `show_my_plan`), and old tool names in their texts rewritten.
+- **Resources.** Every allowed app's resources (the element schemas, the views' `ui://` pages) are listed and read
+  through the app that owns the URI (`<app>://…` or `ui://<app>/…`), old tool names in their texts rewritten, so a
+  view calls its tools by their names here.
+- **Interactive views.** A tool that links an app's view keeps its `_meta`, so with `?tools=all` a host with MCP
+  Apps shows the view beside the result. Through the core verbs, which serve every app, the result's picture shows
+  instead, as in a host without MCP Apps.
+
+## Sign-in and per-app consent
+
+OAuth 2.1 with PKCE and dynamic registration, the same as each app's MCP (`@liveworkspace/mcp-kit`). The consent
+page is liveworkspace.app's `/oauth/consent` (signed in, never indexed, linked from nowhere). It lists the five apps,
+each ticked; clearing one keeps that app's tools away from this connection. Approving makes an ordinary account
+token named after the client (the Settings panel's API Tokens list it, and revoke it), hands it to the server, and
+the server keeps which apps it may reach, by the token's hash, as long as the client's registration. A token with no
+such record (one pasted from Settings) reaches every app. A reconnect replaces the client's earlier token, as each
+app's MCP does.
+
+## The tool-pick eval
+
+Before the server is listed anywhere, an eval measures whether it picks better than the five servers:
+
+- about 60 realistic requests, each with the tool it should lead to and the key arguments;
+- run against (a) the five app servers' tool lists together and (b) this server, both its default ten and
+  `?tools=all`, with a current Claude model and a smaller one;
+- reports the right-tool rate, the right-arguments rate, calls per task and the tool-list tokens.
+
+In (b), `list_app_tools` is answered as the server would and the model goes on, up to four steps; a request counts
+as picked by its first call that is not discovery. Nothing runs: the eval reads which tool the model calls, never
+calls it. The server is listed only when (b) matches or beats (a) on both rates with fewer tool-list tokens.
+
+The eval runs by hand with an Anthropic key in the environment (never in the repo); its last result is recorded in
+the repo. CI runs the part that needs no model on every change to a tool (the naming rules, the catalogue built from
+the recorded tool lists, every request's expected tool still existing), so a renamed or new tool can't quietly break
+picking.
+
+## Limits
+
+- Requests are as each app's MCP allows: the router adds no limit of its own beyond mcp-kit's registration limits.
+- One `find_items` call is at most five app calls; any other call is one app call (two for the first call in an
+  isolate, which also reads that app's tool list).
