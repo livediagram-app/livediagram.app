@@ -49,9 +49,9 @@ async function fillNew(page: Page, headers: Record<string, string>): Promise<voi
   for (let i = 1; i <= 4; i++) await apiCreate(page, headers, `Newer ${i}`, { markUsed: false });
 }
 
-// Home's opened documents: the Most Used and Recent sections, grids on a wide screen, strips on a phone.
+// Home's opened documents: Most Used's rows, and the opened rows of Recent's timeline (New's are its made rows).
 const homeOpened = (page: Page) =>
-  page.getByRole('region', { name: /^(Most Used|Recent)$/ }).getByRole('listitem');
+  page.locator('[data-home-section="most-used"] li, [data-timeline-event="opened"]');
 
 test('an API client’s document is in Home’s Most Used or Recent unless it says markUsed: false', async ({
   page,
