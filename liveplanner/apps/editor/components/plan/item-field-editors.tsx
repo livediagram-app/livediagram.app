@@ -172,6 +172,16 @@ export function DebouncedText({
   );
 }
 
+// A Details select (Status, Priority, Estimate): the 34px field and slate-900 paper its neighbours (Assignee, Parent,
+// Labels, Due) draw, and an empty "None" muted as theirs is, so the column reads as one set of fields.
+export function detailSelectClass(empty: boolean, extra = ''): string {
+  return `min-h-[34px] text-[13px] dark:bg-slate-900! ${
+    empty
+      ? 'text-slate-500! dark:text-slate-400! [&>option]:text-slate-700 dark:[&>option]:text-slate-200'
+      : ''
+  }${extra ? ` ${extra}` : ''}`;
+}
+
 export function PriorityPicker({
   id,
   value,
@@ -187,7 +197,7 @@ export function PriorityPicker({
     <Select
       id={id}
       className="w-full"
-      selectClassName="text-[13px]"
+      selectClassName={detailSelectClass(typeof value !== 'string' || value === '')}
       disabled={disabled}
       value={typeof value === 'string' ? value : ''}
       onChange={(e) => void onSave(e.target.value || undefined)}
@@ -232,7 +242,7 @@ export function EstimateSelect({
     <Select
       id={id}
       className="w-full"
-      selectClassName="text-[13px]"
+      selectClassName={detailSelectClass(current === undefined)}
       disabled={disabled}
       value={current === undefined ? '' : String(current)}
       onChange={(e) => void onSave(e.target.value === '' ? undefined : Number(e.target.value))}
@@ -264,6 +274,7 @@ export function DateField({
       id={id}
       disabled={disabled}
       compact
+      className="min-h-[34px]"
       value={typeof value === 'string' ? value : undefined}
       onCommit={(v) => void onSave(v)}
     />

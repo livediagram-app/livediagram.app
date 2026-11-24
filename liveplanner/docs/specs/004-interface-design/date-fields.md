@@ -40,6 +40,8 @@ in a segment at a time never loses what is already there.
 - **Clearing every segment** (or the browser's clear button) clears the date.
 - **A change from elsewhere** (a collaborator, undo) shows in the field at once, except while
   the field has focus, so it never overwrites typing in progress.
+- **An empty date reads as a placeholder.** Its dd/mm/yyyy mask is muted, as a text field's placeholder is, so
+  it never looks like a typed value; it takes the full ink again while the field has focus.
 
 The Plan card panel's Start, Due and custom Date fields and the decision record's Date all use it.
 

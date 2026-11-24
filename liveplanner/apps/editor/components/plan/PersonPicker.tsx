@@ -202,7 +202,7 @@ export function PersonPicker({
             }
           }}
           // 16px on a phone, as the card's selects are there (globals.css: iOS zooms a field under 16px on focus).
-          className={`flex min-h-[34px] w-full items-center gap-1.5 rounded-md border bg-white px-2 py-1 text-left text-[13px] outline-none transition max-sm:text-[16px] enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-60 dark:bg-slate-900 ${
+          className={`flex min-h-[34px] w-full items-center gap-1.5 rounded-md border bg-white py-1 pl-2 pr-1.5 text-left text-[13px] outline-none transition max-sm:text-[16px] enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-60 dark:bg-slate-900 ${
             open
               ? 'border-brand-500 ring-2 ring-brand-500/20'
               : 'border-slate-200 dark:border-slate-700'
