@@ -76,14 +76,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore boards',
     title: 'Plan the work, then watch it move',
     description:
-      'A plan holds the work on boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, one card on every board it belongs to, and a public roadmap when you want one.',
+      'A plan holds the work on boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, one card on every board it belongs to, and a public roadmap when you want one. Hand a card to your AI assistant and it works the card like a teammate.',
     metaDescription:
       'Boards of cards with WIP limits, swimlanes, your own card types and fields, comments on every card, and one card that sits on every board it belongs to.',
     highlights: [
-      'Boards with WIP limits',
       'One card, every board',
       'Card types and fields of your own',
       'Publish a roadmap people vote on',
+      'Agents that move the cards',
     ],
     items: [
       {
@@ -385,14 +385,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore forms',
     title: 'Collect answers straight into your board or sheet',
     description:
-      'Build a form where it sits, share one link, and each response lands the moment it is sent: a row in a sheet, or a card on a board ready to work through. No account needed to answer, and nothing else of yours to see.',
+      'Build a form where it sits, or describe it and let AI draft it, share one link, and each response lands the moment it is sent: a row in a sheet, or a card on a board ready to work through. Summary sums up every answer. No account needed to answer, and nothing else of yours to see.',
     metaDescription:
       'Build a form, share one link, and each response lands as a row in a sheet or a card on a board. No account needed to answer.',
     highlights: [
       'Build it where it sits',
-      'One link to share',
       'Every answer lands',
-      'Seven forms to start from',
+      'Describe a form in your words',
+      'A summary of every answer',
     ],
     items: [
       {
@@ -467,14 +467,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore automations',
     title: 'Rules that do the routine steps for you',
     description:
-      'Tell the plan what to do when a card moves, a form response lands or a due date nears: stamp the date, hand the card to whoever is next, post to Slack. Rules run on their own, even when nobody has the plan open.',
+      'Tell the plan what to do when a card moves, a form response lands or a due date nears: stamp the date, hand the card to whoever is next, post to Slack, or reach your other apps and write a page or a note there. Rules run on their own, even when nobody has the plan open.',
     metaDescription:
       'Automation rules for your boards: when a card moves, a form lands or a date nears, liveplanner assigns, labels, stamps dates and posts to Slack for you.',
     highlights: [
       'Rules in plain words',
-      'Start from a template',
       'Rules on a schedule',
       'AI steps that triage',
+      'Steps in your other apps',
     ],
     items: [
       {

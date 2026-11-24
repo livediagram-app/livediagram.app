@@ -139,14 +139,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, recorded walkthroughs, and Workshop, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
+      'Share a link and your team is on the canvas with you: live cursors, comments on any element and recorded walkthroughs. Start a call without leaving the canvas, send its actions to a plan as cards, and run the session in Workshop, with timers, votes and a spotlight on the thing you mean.',
     metaDescription:
       'Share a link and your team is on the canvas with you: live cursors, comments, recorded walkthroughs, assigned actions, and workshop timers, votes and polls.',
     highlights: [
-      'Live presence',
       'Comments on any element',
       'Run the session: timer + voting',
       'Record a walkthrough',
+      'From the canvas to the plan',
     ],
     items: [
       {
@@ -422,13 +422,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore diagrams',
     title: 'Diagrams that look designed, not dragged',
     description:
-      'Shapes that snap into line, arrows that follow them, and icons, tables, BPMN and C4 when boxes are not enough. Start from a template, recolour it with a theme, or describe it to your AI and let it build the diagram for you.',
+      'Shapes that snap into line, arrows that follow them, and icons, tables, BPMN and C4 when boxes are not enough. Start from a template, bring in a Visio or draw.io file, draw your architecture from its Terraform or Compose files, or describe it to your AI and let it build the diagram for you.',
     metaDescription:
       'Shapes that snap into line, arrows that follow them, templates and one-click themes, and an AI that can build the diagram from a description.',
     highlights: [
       'Arrows that bend your way',
-      'Mind maps from the keyboard',
       'BPMN process diagrams',
+      'Diagrams from your code, shown in review',
       'Build diagrams with AI',
     ],
     items: [
@@ -902,7 +902,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       'Three markers in hand',
       'Pressure-sensitive pens',
       'Sketch freehand, or let it snap to shape',
-      'Two erasers',
+      'Colour it in with one press',
     ],
     items: [
       {
