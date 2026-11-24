@@ -7,5 +7,8 @@
   "scripts": {
     "dev": "node start.mjs",
     "test": "node --test"
+  },
+  "devDependencies": {
+    "@liveworkspace/vitest-config": "workspace:*"
   }
 }

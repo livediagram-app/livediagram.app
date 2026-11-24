@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { routeFor } from './gateway.mjs';
 import { GROUPS } from './groups.mjs';
 import { gatewayConfig, localConfig, parseDevScript, routesFor } from './workers.mjs';
@@ -27,10 +28,11 @@ test('a dev script that is only wrangler dev has no steps', () => {
 
 test('a dev script with env prefixes parses, and a long run of KEY=VALUE words finishes fast', () => {
   assert.equal(parseDevScript('A=1 B=2 wrangler dev --port 1').flags.port, 1);
-  const started = performance.now();
-  assert.throws(() => parseDevScript(`${'a=a= '.repeat(20000)}!`), /no `wrangler dev`/);
-  assert.throws(() => parseDevScript(`${'!==!\t'.repeat(20000)}x`), /no `wrangler dev`/);
-  assert.ok(performance.now() - started < 1000);
+  const spent = cpuMsOf(() => {
+    assert.throws(() => parseDevScript(`${'a=a= '.repeat(20000)}!`), /no `wrangler dev`/);
+    assert.throws(() => parseDevScript(`${'!==!\t'.repeat(20000)}x`), /no `wrangler dev`/);
+  });
+  assert.ok(spent < cpuBudgetMs(1000));
 });
 
 test('a local config folds in --var flags and drops routes', () => {
