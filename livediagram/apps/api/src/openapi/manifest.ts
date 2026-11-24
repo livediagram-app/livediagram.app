@@ -730,6 +730,35 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 401, 403, 404, 410],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/knowledge-summary',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Send to Knowledge Base: a short Markdown section describing the selected items (up to 80 items and 120 arrows, from their labels, notes, frames and arrows alone), with an optional focus (up to 300 characters). Read-gated like the tab. Runs on the caller’s own AI key, or their team’s, when one applies, else on built-in AI, counted with Ask AI’s questions; with Pro on, 1 AI credit spent only once the summary is written. Nothing is saved. Signed in only.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        tabId: { type: 'string' },
+        selection: { type: 'object' },
+        focus: { type: 'string' },
+        ai: { type: 'string', enum: ['built-in'] },
+        teamId: { type: 'string' },
+      },
+      required: ['tabId', 'selection'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: {
+        markdown: { type: 'string' },
+        provider: { type: 'string' },
+        model: { type: 'string' },
+      },
+    },
+    statuses: [200, 400, 401, 403, 404, 405, 422, 429, 502, 503],
+  },
+  {
     method: 'PUT',
     path: '/documents/{id}/tabs/{tabId}/presence',
     segment: 'documents',

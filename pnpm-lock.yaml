@@ -8171,6 +8171,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../index-client
       '@liveworkspace/settings-ui':
         specifier: workspace:*
         version: link:../settings-ui

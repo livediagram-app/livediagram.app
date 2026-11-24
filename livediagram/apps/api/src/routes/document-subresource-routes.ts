@@ -21,6 +21,7 @@ import { handleCommentRoutes } from './comment-routes';
 import { handleActionRoutes } from './action-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
+import { handleKnowledgeSummary } from './knowledge-summary-route';
 import {
   deniedEdit,
   deniedOnTab,
@@ -230,6 +231,9 @@ export async function handleDocumentSubresources(
   // One tab drawn by the shared renderer (docs/specs/015-api/api.md).
   const rendered = await handleTabRender(ctx);
   if (rendered) return rendered;
+  // Send to Knowledge Base's summary of selected items (docs/specs/013-workspace/send-to-knowledge.md).
+  const summary = await handleKnowledgeSummary(ctx);
+  if (summary) return summary;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   // A tab belongs to exactly one document (its Durable Object holds it), so there is no linking an existing tab into
