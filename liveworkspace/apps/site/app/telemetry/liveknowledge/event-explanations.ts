@@ -2126,8 +2126,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',
   'Trash|Restored':
     'Someone brought a deleted document back from the Trash, putting it back where it was.',
-  'Token|Created':
-    'A new API token was created, either by hand or for an AI tool connected over MCP.',
+  'Token|Created': 'A new API token was created by hand.',
   'Token|Linked': 'A token’s owner allowed a developer tool to open their documents.',
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added':

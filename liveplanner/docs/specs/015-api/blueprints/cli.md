@@ -836,8 +836,7 @@ LIVEPLANNER_DEBUG=1 and report it at https://www.liveplanner.app/help/contact/`,
 - **E32** Connect on the device page after the code expired or was used, or when `/oauth/device/complete` refuses
   the token: the page checks `GET /oauth/device/session/<code>` before minting and shows the expired line without
   minting; a token minted but refused is revoked at once (`DELETE /api/tokens/<id>`), so a failed Connect never
-  leaves a live token counting towards the cap (`../packages/workbench/src/lib/oauth-handover.ts`, log `[oauth] handover refused;
-minted token revoked`, or `[oauth] handover revoke failed` when the revoke itself fails).
+  leaves a live token counting towards the cap (`connectDevice` in `../liveworkspace/apps/site/lib/mcp-connect.ts`).
 
 ## Security and trust
 
@@ -1048,7 +1047,7 @@ below run them over this CLI's own modules.
 | Update check: once a day, stderr, skipped in CI, non-TTY, opt-out, offline, never waited for, semver with pre-releases | `../packages/cli-kit/src/update-check.test.ts`, `../packages/cli-kit/src/bin.test.ts`                                                                                           |
 | Telemetry: after success only, profile's api, opt-outs, flip first, notice once, no arguments                          | `apps/cli/src/telemetry.test.ts`                                                                                                                                                |
 | Every emitted event has a chart and a sentence                                                                         | `liveworkspace/apps/site/app/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                                                                                  |
-| Port-agnostic loopback; built-in client; `clientId` on the session                                                     | `../packages/mcp-kit/src/oauth.test.ts`; this product's client in `apps/mcp/src/oauth.test.ts`                                                                                  |
+| Port-agnostic loopback; built-in client; `clientId` on the session                                                     | `../packages/mcp-kit/src/oauth.test.ts`; the CLIs as built-in clients in `../liveworkspace/apps/mcp/src/oauth.test.ts`                                                          |
 | Device grant endpoints and polling answers                                                                             | `../packages/mcp-kit/src/oauth-device.test.ts`, `../packages/mcp-kit/src/oauth.test.ts` (the built-in client)                                                                   |
 | `tokens/current` read and revoke; session refused; any role revokes                                                    | `apps/api/src/routes/tokens.test.ts`                                                                                                                                            |
 | api-client and render-png extractions keep the MCP's behaviour                                                         | `packages/api-client/src/client.test.ts`; existing `apps/mcp` suites stay green                                                                                                 |

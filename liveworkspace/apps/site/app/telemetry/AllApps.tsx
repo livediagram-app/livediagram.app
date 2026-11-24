@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import type { TelemetryApp, TelemetrySummary, TelemetryWindowKey } from '@liveworkspace/telemetry';
 import {
   ChartGlyph,
+  ConnectGlyph,
   KitGlyph,
   PersonGlyph,
   RankGlyph,
@@ -24,12 +25,14 @@ const LOADERS = {
   events: () => import('./_all/EventsByApp').then((m) => m.EventsByApp),
   visitors: () => import('./_all/VisitorsAndAccounts').then((m) => m.VisitorsAndAccounts),
   kits: () => import('./_all/ProjectKits').then((m) => m.ProjectKits),
+  agents: () => import('./_all/AgentSignIns').then((m) => m.AgentSignIns),
   forum: () => import('./_all/ForumChecks').then((m) => m.ForumChecks),
 };
 // Next needs each call's options written out in place.
 const EventsByApp = dynamic(LOADERS.events, { ssr: false });
 const VisitorsAndAccounts = dynamic(LOADERS.visitors, { ssr: false });
 const ProjectKits = dynamic(LOADERS.kits, { ssr: false });
+const AgentSignIns = dynamic(LOADERS.agents, { ssr: false });
 const ForumChecks = dynamic(LOADERS.forum, { ssr: false });
 
 function prefetchTabs(): () => void {
@@ -48,12 +51,13 @@ function prefetchTabs(): () => void {
 const TOP_EVENTS = 25;
 
 // All Apps' views, laid out as an app's are: the Dashboard, then a Detail tab an area.
-type AllView = 'dashboard' | 'events-by-app' | 'visitors' | 'kits' | 'forum' | 'busiest';
+type AllView = 'dashboard' | 'events-by-app' | 'visitors' | 'kits' | 'agents' | 'forum' | 'busiest';
 const VIEWS: { key: AllView; label: string; icon: ReactNode }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },
   { key: 'events-by-app', label: 'Events by App', icon: <ChartGlyph /> },
   { key: 'visitors', label: 'Visitors & Accounts', icon: <PersonGlyph /> },
   { key: 'kits', label: 'Project Kits', icon: <KitGlyph /> },
+  { key: 'agents', label: 'AI Tools & CLI', icon: <ConnectGlyph /> },
   { key: 'forum', label: 'Forum Checks', icon: <ShieldGlyph /> },
   { key: 'busiest', label: 'Busiest Events', icon: <RankGlyph /> },
 ];
@@ -134,6 +138,8 @@ export function AllApps({
         </>
       ) : view === 'kits' ? (
         <ProjectKits summary={summary} active={active} />
+      ) : view === 'agents' ? (
+        <AgentSignIns summary={summary} active={active} />
       ) : view === 'forum' ? (
         <ForumChecks />
       ) : (

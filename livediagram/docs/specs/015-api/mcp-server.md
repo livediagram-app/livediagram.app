@@ -1122,7 +1122,7 @@ discouraging tool use, not encouraging it.
 
 ### 4.16 Registry listing
 
-This server has no registry listing of its own: `livediagram/server.json` is gone. liveworkspace's one MCP is the listed
+This server has no registry listing of its own: livediagram's server.json is gone. liveworkspace's one MCP is the listed
 server (liveworkspace/docs/specs/021-mcp/mcp.md). What stays is the one identity, written once in
 `apps/mcp/src/listing.ts` (built with `@liveworkspace/mcp-kit/listing`): the `initialize` response's `serverInfo` (name
 `livediagram`, title, version, website and icon) beside the server instructions, and the server card

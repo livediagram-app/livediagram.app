@@ -1967,8 +1967,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Trash|Deleted': 'Someone deleted a design in the Trash for good, before its 30 days were up.',
   'Trash|Restored':
     'Someone brought a deleted design back from the Trash, putting it back where it was.',
-  'Token|Created':
-    'A new API token was created, either by hand or for an AI tool connected over MCP.',
+  'Token|Created': 'A new API token was created by hand.',
   'Token|Linked': 'A token’s owner allowed a developer tool to open their designs.',
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added': 'Someone added something in the editor, such as a slide.',

@@ -844,8 +844,7 @@ LIVEDOCUMENTS_DEBUG=1 and report it at https://github.com/livedocuments-app/live
 - **E32** Connect on the device page after the code expired or was used, or when `/oauth/device/complete` refuses
   the token: the page checks `GET /oauth/device/session/<code>` before minting and shows the expired line without
   minting; a token minted but refused is revoked at once (`DELETE /api/tokens/<id>`), so a failed Connect never
-  leaves a live token counting towards the cap (`oauth-handover.ts`, log `[oauth] handover refused;
-minted token revoked`, or `[oauth] handover revoke failed` when the revoke itself fails).
+  leaves a live token counting towards the cap (`connectDevice` in `../liveworkspace/apps/site/lib/mcp-connect.ts`).
 
 ## Security and trust
 

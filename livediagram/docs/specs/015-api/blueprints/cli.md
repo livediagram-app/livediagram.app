@@ -855,8 +855,7 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
 - **E32** Connect on the device page after the code expired or was used, or when `/oauth/device/complete` refuses
   the token: the page checks `GET /oauth/device/session/<code>` before minting and shows the expired line without
   minting; a token minted but refused is revoked at once (`DELETE /api/tokens/<id>`), so a failed Connect never
-  leaves a live token counting towards the cap (`../packages/workbench/src/lib/oauth-handover.ts`, log `[oauth] handover refused;
-minted token revoked`, or `[oauth] handover revoke failed` when the revoke itself fails).
+  leaves a live token counting towards the cap (`connectDevice` in `../liveworkspace/apps/site/lib/mcp-connect.ts`).
 
 ## Security and trust
 
@@ -1073,8 +1072,8 @@ below run them over this CLI's own modules.
 | Every emitted event has a chart and a sentence; `Token·Created·Cli`                                                    | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                                                                                                         |
 | Port-agnostic loopback; built-in client; `clientId` on the session                                                     | `../packages/mcp-kit/src/oauth.test.ts`                                                                                                                                         |
 | Device grant endpoints and polling answers                                                                             | `../packages/mcp-kit/src/oauth-device.test.ts`, `../packages/mcp-kit/src/oauth.test.ts` (the built-in client)                                                                   |
-| The device page trusts only the server's client name                                                                   | `../packages/workbench/src/lib/mcp-device-session.test.ts`                                                                                                                      |
-| The device page never fills the code from its address, and warns                                                       | `../packages/workbench/src/components/oauth/OauthDevicePage.test.tsx`                                                                                                           |
+| The device page trusts only the server's client name                                                                   | `../liveworkspace/apps/site/lib/mcp-device-session.test.ts`                                                                                                                     |
+| The device page never fills the code from its address, and warns                                                       | `../liveworkspace/apps/site/components/account/McpDevice.test.tsx`                                                                                                              |
 | `tokens/current` read and revoke; session refused; any role revokes                                                    | `apps/api/src/routes/tokens.test.ts`                                                                                                                                            |
 | api-client and render-png extractions keep the MCP's behaviour                                                         | `packages/api-client/src/client.test.ts`; existing `apps/mcp` suites stay green                                                                                                 |
 

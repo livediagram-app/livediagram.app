@@ -32,6 +32,7 @@
 @source inline("dark:from-emerald-500/10");
 @source inline("dark:hover:bg-slate-800/40");
 @source inline("dark:hover:bg-slate-800/70");
+@source inline("dark:hover:text-brand-400");
 @source inline("dark:hover:text-slate-50");
 @source inline("dark:placeholder:text-slate-500");
 @source inline("dark:ring-brand-500/40");

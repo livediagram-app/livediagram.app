@@ -712,7 +712,7 @@ discouraging tool use, not encouraging it.
 
 ### 4.16 Listing
 
-This server is no longer listed anywhere: the MCP Registry entry (`liveplanner/server.json`) and the Claude connector
+This server is no longer listed anywhere: the MCP Registry entry (liveplanner's server.json) and the Claude connector
 directory submission are the one MCP's (`../../../../liveworkspace/docs/specs/021-mcp/mcp.md`). What stays is the one
 identity, written once in `apps/mcp/src/listing.ts` (built with `@liveworkspace/mcp-kit/listing`): the `initialize`
 response's `serverInfo` carries it (name `liveplanner`, title, version, website and icon) beside the server

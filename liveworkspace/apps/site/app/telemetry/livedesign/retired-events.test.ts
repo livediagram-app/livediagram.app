@@ -189,6 +189,13 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'MapDimOn')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'CollaboratePanelOff')).toBe(false);
   });
+
+  it("retires an AI tool's and a CLI's tokens, which liveworkspace.app counts in its own name", () => {
+    expect(isRetiredEvent('Token', 'Created', 'MCP')).toBe(true);
+    expect(isRetiredEvent('Token', 'Created', 'Cli')).toBe(true);
+    expect(isRetiredEvent('Token', 'Created', 'Manual')).toBe(false);
+    expect(isRetiredEvent('Token', 'Removed', null)).toBe(false);
+  });
 });
 
 describe('dropRetiredEvents', () => {

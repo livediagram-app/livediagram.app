@@ -168,7 +168,7 @@ This implements the OAuth flow Manager Toolkit uses:
    API's bearer door (`GET` and `DELETE /api/workspace/account/tokens`); a revoke
    clears the line, says there is room now and puts the keyboard on Connect, so the
    person connects straight away without leaving the page. The device page does the
-   same (`oauth-handover`,
+   same (`mcp-connect`,
    `TokenLimitList`).
    **A reconnect replaces the client's earlier token.** The page sends the minted
    token's id with it to `/oauth/complete`, which keeps the ids of the last five
