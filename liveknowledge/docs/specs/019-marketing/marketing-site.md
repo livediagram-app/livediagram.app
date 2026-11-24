@@ -75,23 +75,23 @@ Owner, 2026-11-21: "Each section on the landing page needs a drill-in page like 
 
 1. **Header** (surface `Feature`) and the breadcrumb (Home, then the section's label), with its `BreadcrumbList` JSON-LD.
 2. **Hero** (`FeatureCategoryHero`): the section's glyph and label as the eyebrow, its heading as the h1, its description, **Start a Knowledgebase** (`/new`, `Feature.Hero`), and beside it from `lg` the section's landing art, so arriving from the beat reads as a continuation.
-3. **Everything in <label>**: the section's `items`, six each, in the shared `FeatureGrid` (`@liveworkspace/marketing-site` `Section`): each a card with a small drawing over a Title Case name and two plain sentences, and a **Learn More** foot linking its help article (`/help/knowledgebase/…`, held by `lib/help-links.test.ts`). Each card's id is `featureAnchor(title)`, so the hero's Notion and Confluence marks land on theirs ("From Notion", "From Confluence").
+3. **Everything in <label>**: the section's `items`, six to nine each, in the shared `FeatureGrid` (`@liveworkspace/marketing-site` `Section`): each a card with a small drawing over a Title Case name and two plain sentences, and a **Learn More** foot linking its help article (`/help/knowledgebase/…`, held by `lib/help-links.test.ts`). Each card's id is `featureAnchor(title)`, so the hero's Notion and Confluence marks land on theirs ("From Notion", "From Confluence").
 4. **Explore More of liveknowledge** (`OtherCategories`): a link to each other section's page.
 5. The closing CTA (`Feature.Closing`) and the footer.
 
-| Id          | Cards                                                                                                                                  |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `pages`     | A Page Tree; Read First, Edit on Purpose; Links Between Pages; Linked From; Covers; Start From a Structure (Describe to Set Up)        |
-| `trust`     | An Owner for Every Page; Verified, With a Name and a Date; Reviews That Come Due; Changed Since Verified; Page Health; Yours to Review |
-| `ask`       | Every Claim Cited; A Sources Rail; It Does Not Guess; Your Own Claude or OpenAI Key; Search Needs No Key; Save an Answer as a Page     |
-| `agents`    | An MCP Server; A Command Line; Always in Context; Trust Fields on Every Passage; Suggested Edits; Insights                             |
-| `import`    | From Notion; From Confluence; A Folder of Markdown; A Review Before Anything Lands; Links Become Page Links; Export Whenever You Like  |
-| `workspace` | Live Embeds From Five Apps; Editor, Participant and Viewer; Knowledgebase Style; Offline; The Google Drive Mirror; One Account         |
+| Id          | Cards                                                                                                                                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pages`     | A Page Tree; Read First, Edit on Purpose; Links Between Pages; Linked From; Covers; Start From a Structure (Describe to Set Up); Labels Across the Tree; Watch a Page; Comments and Reactions                |
+| `trust`     | An Owner for Every Page; Verified, With a Name and a Date; Reviews That Come Due; Changed Since Verified; Page Health; Yours to Review; A Health Score for Every Page; Required Reading; Not Read in 90 Days |
+| `ask`       | Every Claim Cited; A Sources Rail; It Does Not Guess; Built-In AI, or Your Own Key; Search Needs No AI; Save an Answer as a Page; Ask Across Your Apps; Ask Within a Label; Choose What Ask Reads            |
+| `agents`    | An MCP Server; A Command Line; Always in Context; Trust Fields on Every Passage; Suggested Edits; Insights; AI Editing; Agents Draft and Arrange; Named in History                                           |
+| `import`    | From Notion; From Confluence; A Folder of Markdown; A Review Before Anything Lands; Links Become Page Links; Export Whenever You Like                                                                        |
+| `workspace` | Live Embeds From Five Apps; Editor, Participant and Viewer; Knowledgebase Style; Offline; The Google Drive Mirror; One Account; Publish to the Web; Automations; Calls and Cards From a Page                 |
 
 - **The card drawings** (`components/feature-art/cards/`, one file per section, on one kit, `cards/kit.tsx`) sit in the shared `Frame` (300 by 96), drawn in the brand ramp and slate, following light and dark, with the same golden rule as everything else: each shows something the product does today, with words on it, never a screenshot. Animated on the same `kb-*` timeline as the landing art (rows rise in, lines type in, ticks and pills pop, arrows draw, a caret blinks), each piece at its own delay; the shared `Frame` is `content-visibility: auto`, so only the cards on screen move, and reduced motion shows each drawing finished.
 - **Metadata:** `pageMetadata` with `/features/<id>`, the title "<label>: <heading> | liveknowledge" and the section's `metaDescription` (50 to 160 characters, `lib/meta-descriptions.test.ts`).
 - **Sitemap:** each page is listed (`changeFrequency` monthly, priority 0.7).
-- Automations are not a section yet: when they are built in liveknowledge, they arrive as a seventh section and page.
+- Automations are a card on the liveworkspace page (`workspace`), as are Start a Call Here and Send to Plan: they are the platform's, shared by every app, so they sit with the rest of the workspace rather than in a section of their own.
 
 ### Closing CTA
 
@@ -131,7 +131,7 @@ with no other change.
 
 ## Content pages (FAQ)
 
-`/faq` is the shared FAQ browser over `FAQ_CATEGORIES` (`lib/faq-content.tsx`): Getting Started, Trust and Verification, Ask and AI, Agents, Import and Export, Sharing and Privacy. Every answer is a plain statement of what is built, including what is not (Google Docs import, page-level permissions). Price is said as it stands, never promised: free to start, and no paid tier at launch ("Is there a paid tier?", whose answer never says "no paid tier" as a promise). The answers cover reading and editing (a page opens to read; Edit opens a shared draft), the roles (a Participant is an Editor minus the Review Period, Knowledgebase Style, AI Settings and sharing), covers, AI Context and Always in Context, Describe to Set Up on built-in AI, and the Review Due email. The landing page shows eight of them (`LANDING_FAQ`).
+`/faq` is the shared FAQ browser over `FAQ_CATEGORIES` (`lib/faq-content.tsx`): Getting Started, Trust and Verification, Ask and AI, Agents, Import and Export, Sharing and Privacy. Every answer is a plain statement of what is built, including what is not (Google Docs import, page-level permissions). Price is said as it stands, never promised: free to start, every feature on the free plan, and a paid plan raising a few limits ("Is there a paid tier?", whose answer never says "no paid tier" as a promise and never leads with Pro: [comparisons README](../../../../packages/comparisons/README.md) "Tell our own price straight"). The answers cover reading and editing (a page opens to read; Edit opens a shared draft), the roles (a Participant is an Editor minus the Review Period, Knowledgebase Style, AI Settings and sharing), covers, AI Context and Always in Context, Describe to Set Up on built-in AI, the Review Due email, AI Editing (how far an agent may change pages), Required Reading, Watch, labels, Ask across connected items, and Start a Call Here. The landing page shows eight of them (`LANDING_FAQ`).
 
 ## Performance
 

@@ -1,6 +1,7 @@
 // The liveworkspace page's card drawings (docs/specs/019-marketing/marketing-site.md "Feature pages", `workspace`):
-// live embeds, the three roles, Knowledgebase Style, Offline, the Google Drive mirror and one account.
-import { Avatar, Bars, Button, PageGlyph, Pill, Scene, Sheet, Tick, Txt, at } from './kit';
+// live embeds, the three roles, Knowledgebase Style, Offline, the Google Drive mirror, one account, Publish to the
+// Web, Automations, and a call or a card started from a page.
+import { Arrow, Avatar, Bars, Button, PageGlyph, Pill, Scene, Sheet, Tick, Txt, at } from './kit';
 
 /** A page with a diagram and a board embedded, each as it is now. */
 export function EmbedsArt() {
@@ -229,6 +230,130 @@ export function OneAccountArt() {
           </Txt>
         </g>
       ))}
+    </Scene>
+  );
+}
+
+/** The public site Publish to the Web makes: its address, the page tree and a page, read by anyone. */
+export function PublishArt() {
+  return (
+    <Scene>
+      <Sheet x={14} y={8} w={272} h={80}>
+        <rect
+          x={14}
+          y={8}
+          width={272}
+          height={14}
+          rx={4}
+          className="fill-slate-100 dark:fill-slate-700"
+        />
+        <Txt x={24} y={17.6} size={5.6} weight={600} tone="quiet">
+          /kb/acme-help/returns
+        </Txt>
+        <Pill x={232} y={10.5} w={46} h={9} tone="verified" delay={0.5}>
+          Published
+        </Pill>
+        <g className="kb-in" style={at(0.6)}>
+          {['Getting Started', 'Returns', 'Shipping'].map((t, i) => (
+            <g key={t}>
+              <PageGlyph x={24} y={30 + i * 14} />
+              <Txt x={34} y={36.5 + i * 14} size={6} weight={i === 1 ? 700 : 500}>
+                {t}
+              </Txt>
+            </g>
+          ))}
+        </g>
+        <g className="kb-in" style={at(1)}>
+          <Txt x={110} y={36} size={7.4} weight={700}>
+            Returns
+          </Txt>
+          <Bars x={110} y={44} widths={[160, 140, 150]} />
+        </g>
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** The Automations starter: Review Due, then a card in a plan assigned to the page's owner. */
+export function AutomationsArt() {
+  const steps = [
+    { t: 'When a page is Review Due', tone: 'fill-orange-500' },
+    { t: 'Create a card in Docs Upkeep (liveplanner)', tone: 'fill-sky-500' },
+    { t: 'Assigned to the page owner', tone: 'fill-violet-500' },
+  ];
+  return (
+    <Scene>
+      <Sheet x={14} y={8} w={272} h={80}>
+        <Txt x={24} y={22} size={6} weight={700} tone="quiet">
+          AUTOMATIONS · REVIEW DUE, ADD A CARD
+        </Txt>
+        {steps.map((s, i) => (
+          <g key={s.t} className="kb-in" style={at(0.4 + i * 0.3)}>
+            <circle cx={30} cy={34 + i * 17} r={3.2} className={s.tone} />
+            {i < 2 ? (
+              <path
+                d={`M30 ${38 + i * 17} V ${47 + i * 17}`}
+                strokeWidth={0.9}
+                className="stroke-slate-300 dark:stroke-slate-600"
+              />
+            ) : null}
+            <Txt x={40} y={36.4 + i * 17} size={6.2} weight={i ? 500 : 700}>
+              {s.t}
+            </Txt>
+          </g>
+        ))}
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** A page's Call button with a call live, and a paragraph sent to a plan as a card. */
+export function CallsCardsArt() {
+  return (
+    <Scene>
+      <Sheet x={14} y={10} w={150} h={76}>
+        <Txt x={22} y={24} size={7.2} weight={700}>
+          Launch Checklist
+        </Txt>
+        <g className="kb-pop" style={at(0.5)}>
+          <circle cx={94} cy={21} r={2.2} className="fill-emerald-500" />
+          <Txt x={99} y={23.2} size={5.6} weight={600} tone="quiet">
+            3 in Call
+          </Txt>
+          <Button x={136} y={15} w={22} filled>
+            Join
+          </Button>
+        </g>
+        <rect
+          x={22}
+          y={34}
+          width={120}
+          height={7}
+          rx={1.5}
+          className="fill-sky-100 dark:fill-sky-900"
+        />
+        <Bars x={22} y={48} widths={[130, 112, 120]} />
+      </Sheet>
+      <Arrow x1={168} x2={184} y={42} delay={1} />
+      <Sheet x={190} y={22} w={96} h={46}>
+        <Txt x={198} y={34} size={5.4} weight={700} tone="quiet">
+          LIVEPLANNER · TO DO
+        </Txt>
+        <g className="kb-in" style={at(1.3)}>
+          <rect
+            x={198}
+            y={40}
+            width={80}
+            height={20}
+            rx={3}
+            strokeWidth={0.8}
+            className="fill-white stroke-sky-400 dark:fill-slate-800"
+          />
+          <Txt x={203} y={52.5} size={6} weight={600}>
+            Book the venue
+          </Txt>
+        </g>
+      </Sheet>
     </Scene>
   );
 }

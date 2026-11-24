@@ -1,7 +1,20 @@
 // The Agents page's card drawings (docs/specs/019-marketing/marketing-site.md "Feature pages", `agents`): the MCP
-// server, the command line, Always in Context, trust fields, suggested edits and Insights. The tool and command
-// names are the MCP server's and the CLI's own.
-import { Agent, Arrow, Bars, Button, PageGlyph, Pill, Scene, Sheet, Tick, Txt, at } from './kit';
+// server, the command line, Always in Context, trust fields, suggested edits, Insights, AI Editing, agents drafting
+// and arranging pages, and History naming the agent. The tool and command names are the MCP server's and the CLI's own.
+import {
+  Agent,
+  Arrow,
+  Avatar,
+  Bars,
+  Button,
+  PageGlyph,
+  Pill,
+  Scene,
+  Sheet,
+  Tick,
+  Txt,
+  at,
+} from './kit';
 
 /** An agent calling the MCP server's tools, each answered from the knowledgebase. */
 export function McpArt() {
@@ -285,6 +298,126 @@ export function InsightsArt() {
           </Sheet>
         </g>
       ))}
+    </Scene>
+  );
+}
+
+/** AI Editing's three levels, the middle one chosen. */
+export function AiEditingArt() {
+  const levels = ['Suggest Edits Only', 'Edit Unverified Pages', 'Edit Any Page'];
+  return (
+    <Scene>
+      <Sheet x={14} y={8} w={272} h={80}>
+        <Txt x={24} y={22} size={6} weight={700} tone="quiet">
+          AI EDITING
+        </Txt>
+        {levels.map((l, i) => (
+          <g key={l} className="kb-in" style={at(0.3 + i * 0.25)}>
+            <rect
+              x={24}
+              y={28 + i * 18}
+              width={252}
+              height={15}
+              rx={4}
+              strokeWidth={0.9}
+              className={
+                i === 1
+                  ? 'fill-brand-50 stroke-brand-600 dark:fill-brand-900 dark:stroke-brand-300'
+                  : 'fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-600'
+              }
+            />
+            <circle
+              cx={33}
+              cy={35.5 + i * 18}
+              r={3}
+              strokeWidth={0.9}
+              className="fill-none stroke-slate-400"
+            />
+            {i === 1 ? (
+              <circle cx={33} cy={35.5 + i * 18} r={1.6} className="fill-brand-600" />
+            ) : null}
+            <Txt x={41} y={37.8 + i * 18} size={6.2} weight={i === 1 ? 700 : 500}>
+              {l}
+            </Txt>
+          </g>
+        ))}
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** An agent's draft page, never verified, moved under the section it belongs to. */
+export function DraftArrangeArt() {
+  return (
+    <Scene>
+      <Agent x={22} y={36} />
+      <Txt x={40} y={46} size={6} weight={600} mono>
+        create_page
+      </Txt>
+      <Arrow x1={86} x2={104} y={44} delay={0.6} />
+      <Sheet x={110} y={10} w={176} h={76} lime>
+        <PageGlyph x={120} y={20} />
+        <Txt x={130} y={26.5} size={6.4} weight={700}>
+          Support Handbook
+        </Txt>
+        <g className="kb-in" style={at(1)}>
+          <PageGlyph x={132} y={36} />
+          <Txt x={142} y={42.5} size={6.2} weight={500}>
+            Escalations
+          </Txt>
+        </g>
+        <g className="kb-in" style={at(1.4)}>
+          <PageGlyph x={132} y={52} />
+          <Txt x={142} y={58.5} size={6.2} weight={700}>
+            Refund Requests
+          </Txt>
+          <Pill x={214} y={52} w={62} tone="plain" delay={1.7}>
+            Never Verified
+          </Pill>
+        </g>
+        <Txt x={132} y={78} size={5.4} weight={500} tone="quiet">
+          Moved by Claude Code for Priya
+        </Txt>
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** A page's Version History, an agent's save named with the person it acts for. */
+export function NamedInHistoryArt() {
+  const rows = [
+    { who: 'Claude Code for Priya', when: 'Today, 10:42', agent: true },
+    { who: 'Sam', when: 'Yesterday', agent: false },
+    { who: 'Priya', when: '12 Nov', agent: false },
+  ];
+  return (
+    <Scene>
+      <Sheet x={14} y={8} w={272} h={80}>
+        <Txt x={24} y={22} size={6} weight={700} tone="quiet">
+          VERSION HISTORY
+        </Txt>
+        {rows.map((r, i) => (
+          <g key={r.who} className="kb-in" style={at(0.4 + i * 0.25)}>
+            {r.agent ? (
+              <Agent x={22} y={28 + i * 17} s={11} />
+            ) : (
+              <Avatar
+                cx={28}
+                cy={34 + i * 17}
+                r={5}
+                fill={i === 1 ? 'fill-sky-500' : 'fill-violet-500'}
+                initial={r.who[0]!}
+              />
+            )}
+            <Txt x={40} y={36.5 + i * 17} size={6.4} weight={r.agent ? 700 : 500}>
+              {r.who}
+            </Txt>
+            <Txt x={276} y={36.5 + i * 17} size={5.6} weight={500} tone="quiet" anchor="end">
+              {r.when}
+            </Txt>
+          </g>
+        ))}
+      </Sheet>
     </Scene>
   );
 }

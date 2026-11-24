@@ -1,5 +1,6 @@
 // The Ask page's card drawings (docs/specs/019-marketing/marketing-site.md "Feature pages", `ask`): citations, the
-// Sources rail, a Knowledge Gap, built-in AI or the team's own key, search with no AI, and Save as Page.
+// Sources rail, a Knowledge Gap, built-in AI or the team's own key, search with no AI, Save as Page, sources from the
+// other apps, a question asked within a label, and the Sources Ask may read.
 import { Bars, Button, PageGlyph, Pill, Scene, Sheet, Tick, Txt, at } from './kit';
 
 /** A citation number, in a small lime box. */
@@ -243,6 +244,134 @@ export function SaveAsPageArt() {
           <Bars x={166} y={56} widths={[92, 78, 60]} gap={7} />
         </Sheet>
       </g>
+    </Scene>
+  );
+}
+
+/** An answer citing a page and a connected diagram, each chip naming its app, and the trust line counting them apart. */
+export function AskAcrossAppsArt() {
+  return (
+    <Scene>
+      <Sheet x={14} y={8} w={272} h={80}>
+        <Txt x={24} y={22} size={6.6} weight={700}>
+          How do refunds reach the ledger?
+        </Txt>
+        <Bars x={24} y={30} widths={[230, 196]} />
+        <g className="kb-pop" style={at(0.7)}>
+          <rect
+            x={24}
+            y={50}
+            width={70}
+            height={12}
+            rx={6}
+            className="fill-brand-100 dark:fill-brand-900"
+          />
+          <PageGlyph x={29} y={52.2} />
+          <Txt x={38} y={58.4} size={5.6} weight={700}>
+            Refunds Runbook
+          </Txt>
+        </g>
+        <g className="kb-pop" style={at(1)}>
+          <rect
+            x={100}
+            y={50}
+            width={112}
+            height={12}
+            rx={6}
+            className="fill-sky-100 dark:fill-sky-900"
+          />
+          <rect x={105} y={53} width={6} height={6} rx={1.5} className="fill-sky-500" />
+          <Txt x={115} y={58.4} size={5.6} weight={700}>
+            Checkout Flow (livediagram)
+          </Txt>
+        </g>
+        <Txt x={24} y={78} size={5.6} weight={600} tone="quiet">
+          Answered From 1 Verified Page and 1 Connected Item
+        </Txt>
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** Ask scoped to a label: the question with its label chip, answered only from the pages that carry it. */
+export function AskLabelArt() {
+  return (
+    <Scene>
+      <Sheet x={14} y={14} w={272} h={68}>
+        <rect
+          x={24}
+          y={24}
+          width={252}
+          height={16}
+          rx={4}
+          className="fill-slate-50 stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-600"
+          strokeWidth={0.8}
+        />
+        <g className="kb-pop" style={at(0.4)}>
+          <rect
+            x={28}
+            y={27}
+            width={44}
+            height={10}
+            rx={5}
+            className="fill-slate-100 dark:fill-slate-700"
+          />
+          <circle cx={33} cy={32} r={1.8} className="fill-rose-500" />
+          <Txt x={37} y={34} size={5.4} weight={600}>
+            Security
+          </Txt>
+        </g>
+        <Txt x={78} y={34.4} size={6} weight={500}>
+          Who rotates the API keys?
+        </Txt>
+        <g className="kb-in" style={at(1)}>
+          <Bars x={24} y={50} widths={[220, 170]} />
+          <Txt x={24} y={74} size={5.6} weight={600} tone="quiet">
+            From 3 pages labelled Security
+          </Txt>
+        </g>
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** AI Settings' Sources: this knowledgebase always, connected items on, a team folder off until chosen. */
+export function SourcesSettingsArt() {
+  const rows = [
+    { t: 'This Knowledgebase', note: 'Always', on: true, fixed: true },
+    { t: 'Connected Items', note: '4 items', on: true, fixed: false },
+    { t: 'A Team Folder', note: 'Off', on: false, fixed: false },
+  ];
+  return (
+    <Scene>
+      <Sheet x={14} y={8} w={272} h={80}>
+        <Txt x={24} y={22} size={6} weight={700} tone="quiet">
+          SOURCES
+        </Txt>
+        {rows.map((r, i) => (
+          <g key={r.t} className="kb-in" style={at(0.3 + i * 0.25)}>
+            <Txt x={24} y={38 + i * 17} size={6.4} weight={600}>
+              {r.t}
+            </Txt>
+            <Txt x={232} y={38 + i * 17} size={5.6} weight={500} tone="quiet" anchor="end">
+              {r.note}
+            </Txt>
+            {r.fixed ? null : (
+              <g>
+                <rect
+                  x={242}
+                  y={31 + i * 17}
+                  width={22}
+                  height={11}
+                  rx={5.5}
+                  className={r.on ? 'fill-brand-600' : 'fill-slate-200 dark:fill-slate-600'}
+                />
+                <circle cx={r.on ? 258.5 : 247.5} cy={36.5 + i * 17} r={4} className="fill-white" />
+              </g>
+            )}
+          </g>
+        ))}
+      </Sheet>
     </Scene>
   );
 }
