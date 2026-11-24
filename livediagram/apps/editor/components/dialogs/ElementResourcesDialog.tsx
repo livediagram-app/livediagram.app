@@ -1,119 +1,54 @@
 'use client';
 
-import { useEffect } from 'react';
 import { elementKindLabel, isBoxed } from '@livediagram/document';
-import { ResourceLinkPanel } from '@liveworkspace/workbench/components/dialogs/ResourceLinkPanel';
-import {
-  appFileUrl,
-  type AppLinkMode,
-} from '@liveworkspace/workbench/components/palette/element-resources';
-import type { AppName } from '@liveworkspace/sites';
-import { ResourcesDialog } from '@liveworkspace/workbench/components/dialogs/ResourcesDialog';
+import { ElementResourcesDialog as SharedElementResourcesDialog } from '@liveworkspace/workbench/components/dialogs/ElementResourcesDialog';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { quickBarItems } from '@/components/palette/ElementMenuQuickBar';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { canBindLiveStatus } from '@/lib/live-status-input';
-import { quickBarItems } from '@/components/palette/ElementMenuQuickBar';
 import { track } from '@/lib/telemetry';
 
 // The Resources dialog for the element the menu's Resources row was pressed on
-// (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"): the options the menu's row counted, each run through the
-// handlers the menu itself used. It takes what the menu's row took: a boxed element.
-const HERE: AppName = 'livediagram';
-const appOfMode = (mode: AppLinkMode): AppName => mode.slice(4) as AppName;
-
+// (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"): the workbench's one copy, handed this editor's
+// options (its quickBarItems, run through the handlers the menu itself used) and where its links go. It takes what
+// the menu's row took: a boxed element.
 export function ElementResourcesDialog() {
-  const {
-    activeTab,
-    tabs,
-    resourcesOpenForId: openId,
-    setResourcesOpenForId,
-    openAssignAction,
-    openComments,
-    openLinkPicker,
-    openNote,
-    applyElementLink,
-    setNote,
-    activeId,
-    documentId,
-    setLiveStatusOpenForId,
-    can,
-  } = useEditorContext();
+  const editor = useEditorContext();
   const { liveStatusEnabled } = useCapabilities();
-  const el = openId ? activeTab.elements.find((e) => e.id === openId) : undefined;
-  const target = el && isBoxed(el) ? el : undefined;
-  // Its element gone (deleted, undone away, on another tab): closed, never left to reopen by itself.
-  const gone = openId !== null && !target;
-  useEffect(() => {
-    if (gone) setResourcesOpenForId(null);
-  }, [gone, setResourcesOpenForId]);
-  if (!target) return null;
-  const link = target.link;
-  const options = quickBarItems(target, {
-    onAssignAction: openAssignAction,
-    onOpenComments: openComments,
-    onLinkElement: openLinkPicker,
-    onOpenNote: openNote,
-    // Live Status, as the menu's row counted it: an Editor, on a shape that can be bound, where the deployment checks.
-    onEditLiveStatus:
-      liveStatusEnabled && can.level === 'edit' && canBindLiveStatus(target)
-        ? setLiveStatusOpenForId
-        : undefined,
-    // The link comes off the selection, which the menu that opened this made the element (as the link picker's
-    // own Remove does).
-    onRemoveLink: () => {
-      applyElementLink(null);
-      track('Element', 'Unlinked');
-    },
-    // An empty note is no note: the element drops it.
-    onRemoveNote: (id) => setNote(id, ''),
-    tabs,
-    // A link's place is a step of this dialog, not a dialog of its own: the address, the tabs, the canvass.
-    linkPanel: (mode, done) => {
-      // This app's own file keeps its own link kind; another product's is linked by its address.
-      const app =
-        mode === 'url' || mode === 'tab' ? null : mode === 'document' ? HERE : appOfMode(mode);
-      return (
-        <ResourceLinkPanel
-          mode={app ? { app } : (mode as 'url' | 'tab')}
-          current={{
-            url: link?.kind === 'url' ? link.url : undefined,
-            tabId: link?.kind === 'tab' || link?.kind === 'element' ? link.tabId : undefined,
-            fileId: link?.kind === 'document' ? link.documentId : undefined,
-          }}
-          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
-          currentTabId={activeId}
-          hostId={documentId ?? ''}
-          onPick={(pick) => {
-            applyElementLink(
-              pick.kind !== 'file'
-                ? pick
-                : pick.app === HERE
-                  ? { kind: 'document', documentId: pick.id, name: pick.name }
-                  : { kind: 'url', url: appFileUrl(pick.app, pick.id) },
-            );
-            track(
-              'Element',
-              'Linked',
-              pick.kind === 'url'
-                ? 'Url'
-                : pick.kind === 'tab'
-                  ? 'Tab'
-                  : pick.app === HERE
-                    ? 'Document'
-                    : 'App',
-            );
-            done();
-          }}
-        />
-      );
-    },
-  });
-  if (!options.length) return null;
+  const { resourcesOpenForId: openId, setResourcesOpenForId } = editor;
+  const el = openId ? editor.activeTab.elements.find((e) => e.id === openId) : undefined;
   return (
-    <ResourcesDialog
-      elementName={elementKindLabel(target)}
-      options={options}
+    <SharedElementResourcesDialog
+      openId={openId}
+      target={el && isBoxed(el) ? el : undefined}
+      name={elementKindLabel}
       onClose={() => setResourcesOpenForId(null)}
+      links={{
+        app: 'livediagram',
+        kind: 'document',
+        hostId: editor.documentId ?? '',
+        tabs: editor.tabs,
+        currentTabId: editor.activeId,
+        onLink: editor.applyElementLink,
+        track,
+      }}
+      options={(target, links) =>
+        quickBarItems(target, {
+          onAssignAction: editor.openAssignAction,
+          onOpenComments: editor.openComments,
+          onLinkElement: editor.openLinkPicker,
+          onOpenNote: editor.openNote,
+          // Live Status, as the menu's row counted it: an Editor, on a shape that can be bound, where the
+          // deployment checks.
+          onEditLiveStatus:
+            liveStatusEnabled && editor.can.level === 'edit' && canBindLiveStatus(target)
+              ? editor.setLiveStatusOpenForId
+              : undefined,
+          // An empty note is no note: the element drops it.
+          onRemoveNote: (id) => editor.setNote(id, ''),
+          ...links,
+        })
+      }
     />
   );
 }

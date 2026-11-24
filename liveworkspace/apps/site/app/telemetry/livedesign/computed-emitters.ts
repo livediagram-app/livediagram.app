@@ -235,6 +235,11 @@ const UI_SCALE_PARTS = [
 ].map((m) => m[1]!);
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // The shared Resources dialog (packages/workbench ElementResourcesDialog) types a link by its place: a web
+  // address, a tab, another file of this app, or another app's file.
+  'packages/workbench/src/components/dialogs/ElementResourcesDialog.tsx Element·Linked': {
+    values: ['Url', 'Tab', 'Design', 'App'],
+  },
   // The UI Scale slider's per-part rows (UI_SCALE_PARTS above).
   'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: UI_SCALE_PARTS,

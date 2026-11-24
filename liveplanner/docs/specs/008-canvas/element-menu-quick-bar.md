@@ -129,7 +129,10 @@ Every editor (livediagram, liveplanner, livedocuments, livedesign) opens the sam
   the options every editor shares, an option offered when its handler is given; `quickBarItems(target, handlers)` in
   `ElementMenuQuickBar.tsx` binds it to this app. `EditorContextMenu` draws the row (`MenuDialogSection`),
   `EditorContextMenuHost` closes the menu and sets `resourcesOpenForId` (`editor-ui-state.ts`), and
-  `apps/editor/components/dialogs/ElementResourcesDialog.tsx` renders `ResourcesDialog`
-  (`../packages/workbench/src/components/dialogs/ResourcesDialog.tsx`) from `EditorElementDialogs`. Tests:
+  `apps/editor/components/dialogs/ElementResourcesDialog.tsx` (from `EditorElementDialogs`) hands this
+  editor's profile (the element the row took, its `quickBarItems`, where its links go) to the workbench's one copy,
+  `../packages/workbench/src/components/dialogs/ElementResourcesDialog.tsx`, which keeps it closed once its element
+  is gone, builds the link places' steps and renders `ResourcesDialog`
+  (`../packages/workbench/src/components/dialogs/ResourcesDialog.tsx`). Tests: `ElementResourcesDialog.test.tsx`,
   `ResourcesDialog.test.tsx`, `element-resources.test.tsx`.
 - Tests: `ElementMenuQuickBar.test.tsx`, `EditorContextMenu.plan-attachments.test.tsx`.
