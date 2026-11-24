@@ -4,6 +4,11 @@ import {
   sendElements,
 } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { useCallback } from 'react';
+import {
+  canSendKnowledgeHere,
+  sendToKnowledge,
+} from '@liveworkspace/workbench/components/send-to-knowledge/send-to-knowledge-entry';
+import { captureSelected } from '@/lib/knowledge-send';
 import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
@@ -264,6 +269,13 @@ export function CanvasSelectionToolbars({
             onSendToPlan={
               readOnly && selected && canSendElements([selected])
                 ? () => sendElements([selected])
+                : undefined
+            }
+            // Send to Knowledge Base (docs/specs/013-workspace/send-to-knowledge.md): as Send to Plan, a read-only
+            // session's way in; an Editor's is the element menu's Resources.
+            onSendToKnowledge={
+              readOnly && selected && canSendKnowledgeHere()
+                ? () => sendToKnowledge(captureSelected([selected.id]))
                 : undefined
             }
             commentsReadOnly={!props.takePart}

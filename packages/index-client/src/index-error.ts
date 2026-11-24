@@ -39,7 +39,7 @@ export class IndexError extends Error {
 }
 
 // The refusals whose body says more than its code (IndexError `detail`).
-const DETAILED = new Set(['already_sent', 'plan_refused', 'write_up_refused']);
+const DETAILED = new Set(['already_sent', 'plan_refused', 'write_up_refused', 'knowledge_refused']);
 
 // The longest share code a refusal's `link` is read as: codes are 14 characters, so anything longer is not one.
 const REFUSAL_LINK_MAX = 64;

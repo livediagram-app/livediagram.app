@@ -3,6 +3,7 @@ import { PlanCardsHost } from '@/components/plan-cards/PlanCardsHost';
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
+import { useKnowledgeSend } from '@/hooks/editor/useKnowledgeSend';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import dynamic from 'next/dynamic';
@@ -228,6 +229,23 @@ export function EditorView() {
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
 
   const selectTab = useSelectTab();
+  // Send to Knowledge Base (docs/specs/013-workspace/send-to-knowledge.md): who may send is Send to Plan's rule.
+  const knowledgeSummariser = useKnowledgeSend({
+    documentId: documentId ?? '',
+    teamId: ctx.documentTeamId ?? null,
+    activeTab,
+    imageContext: ctx.imageContext,
+    enabled:
+      ctx.authLoaded &&
+      hydrated &&
+      !!documentId &&
+      canSendToPlan({
+        signedIn: !!accountUserId,
+        offline: isOffline,
+        embed: !appChrome,
+        community: sessionCommunity !== null,
+      }),
+  });
   // Automations (docs/specs/013-workspace/automations.md): the footer's Tools row and the screen, for an Editor of the
   // whole canvas; the gate for one who must sign in or sync first.
   const automations = useDocumentAutomations(ctx, isOffline, selectTab);
@@ -377,6 +395,7 @@ export function EditorView() {
                 tabId={activeId}
                 title={canvasName}
                 share={sessionShareCode ? { code: sessionShareCode } : null}
+                knowledge={knowledgeSummariser}
                 enabled={canSendToPlan({
                   signedIn: !!accountUserId,
                   offline: isOffline,
