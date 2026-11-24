@@ -4,7 +4,7 @@
 // who can see it, a grid of what the corner card offered (only what this app and this person have), the app's own
 // actions, and the account. In the shared PhoneDrawer, so its handle, scrim, Escape and focus are every drawer's.
 import Link from 'next/link';
-import { useId, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, useId, type CSSProperties, type ReactNode } from 'react';
 import { BrandMark, type BrandApp } from '@liveworkspace/brand';
 import { inCallWords } from '@liveworkspace/index-client';
 import {
@@ -229,7 +229,13 @@ export function AppsDrawer({ app, itemId, inboxCount, hasInbox, onClose }: AppsD
         );
     }
   };
-  const slots = [snapshot?.approval, snapshot?.leadAction, snapshot?.shareAction].filter(Boolean);
+  const slots = (
+    [
+      ['approval', snapshot?.approval],
+      ['lead', snapshot?.leadAction],
+      ['share', snapshot?.shareAction],
+    ] as const
+  ).filter(([, node]) => !!node);
   return (
     <PhoneDrawer
       name="Apps"
@@ -267,7 +273,9 @@ export function AppsDrawer({ app, itemId, inboxCount, hasInbox, onClose }: AppsD
         {slots.length ? (
           // The app's own actions, as its corner card draws them, with their names (corner-actions.css).
           <div data-phone-apps-slots="" className="flex flex-wrap items-center gap-2">
-            {slots}
+            {slots.map(([key, node]) => (
+              <Fragment key={key}>{node}</Fragment>
+            ))}
           </div>
         ) : null}
 
