@@ -308,7 +308,8 @@ export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
 
-// The listed tiles and openers; a DIVIDE marks the tile before it as ending a group, in this list only.
+// The listed tiles and openers; a DIVIDE marks the tile before it as ending a group, in this list only. The last
+// tile ends no group, so a divider of its own (Embed File's, ending Layout) is dropped there.
 function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
   const out: PaletteTileDef[] = [];
   for (const id of ids) {
@@ -319,6 +320,11 @@ function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
     }
     const def = tileById(id) ?? openerById(id);
     if (def) out.push(def);
+  }
+  const last = out.at(-1);
+  if (last?.dividerAfter) {
+    const { dividerAfter: _ends, ...ended } = last;
+    out[out.length - 1] = ended;
   }
   return out;
 }
