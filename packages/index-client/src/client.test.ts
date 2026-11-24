@@ -656,3 +656,15 @@ describe('createIndexClient write-up', () => {
     expect(seen[1]!.body).toEqual(ask);
   });
 });
+
+describe('startItemCall', () => {
+  it('sends the Calls Space only when one is chosen', async () => {
+    const { seen, doFetch } = fakeFetch(() => Response.json({ call: {}, started: true }));
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await client.startItemCall('i1');
+    await client.startItemCall('i1', null, null);
+    await client.startItemCall('i1', null, 'lh_room');
+    expect(seen.map((s) => s.body)).toEqual([{}, {}, { space: 'lh_room' }]);
+    expect(seen.every((s) => s.method === 'POST' && s.url.endsWith('/items/i1/calls'))).toBe(true);
+  });
+});
