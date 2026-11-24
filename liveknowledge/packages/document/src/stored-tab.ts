@@ -3,6 +3,7 @@
 // added once and reaches every entry point.
 import { settleStoredArticles } from './article-flow';
 import { withArticleContinuous } from './continuous-article';
+import { withContinuousPageWidth } from './continuous-page-width';
 import { withKnowledgebasePage } from './knowledgebase-page';
 import { withoutPageLooks } from './page-looks';
 import { withSettledCover } from './page-cover';
@@ -42,9 +43,12 @@ export function migrateStoredTab<
   // Stacks lay out last (docs/specs/009-elements/stack.md), over the settled elements.
   const elements = settleStacks(migrateStoredElements(settled.elements));
   const stacked = elements === settled.elements ? settled : { ...settled, elements };
+  // A continuous page stored at its first width (856 px) reads at the continuous width, its height, zones and margin
+  // notes moved to match (./continuous-page-width), over the settled writing and elements.
+  const widened = withContinuousPageWidth(stacked);
   // A tab with nothing on it and no page of a kind (an agent's, a script's, an older client's) is an empty knowledgebase
   // page (docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen"): it opens as an article page.
-  return withKnowledgebasePage(stacked as T & Pick<Tab, 'pages' | 'articles'>);
+  return withKnowledgebasePage(widened as T & Pick<Tab, 'pages' | 'articles'>);
 }
 
 /**

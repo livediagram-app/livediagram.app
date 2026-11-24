@@ -23,6 +23,7 @@ import {
 } from './page';
 import { FIT_PAGE_MAX_SIDE, FIT_PAGE_MIN_SIDE } from '@liveworkspace/model-core/page-fit';
 import type { Element } from './index';
+import { CONTINUOUS_PAGE_WIDTH } from './page-sizes';
 
 // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages").
 const P = (id: string, orientation: 'portrait' | 'landscape' = 'portrait'): Page => ({
@@ -236,7 +237,7 @@ describe('Fit to Content pages', () => {
     }
     const [doc] = pagesOf({ pages: [fit({ kind: 'article', flow: 'd' })] });
     expect(doc!.size).toBe('fit');
-    expect(doc!.fit!.width).toBe(856);
+    expect(doc!.fit!.width).toBe(CONTINUOUS_PAGE_WIDTH);
   });
 
   it('keeps an explicit infographic kind', () => {
