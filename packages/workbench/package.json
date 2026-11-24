@@ -9,6 +9,8 @@
     "./styles/image-backing.css": "./src/styles/image-backing.css",
     "./styles/corner-actions.css": "./src/styles/corner-actions.css",
     "./components/chrome/EditorCornerActions": "./src/components/chrome/EditorCornerActions.tsx",
+    "./components/chrome/phone-apps/ExplorerMenuButtons": "./src/components/chrome/phone-apps/ExplorerMenuButtons.tsx",
+    "./components/chrome/phone-apps/phone-apps-store": "./src/components/chrome/phone-apps/phone-apps-store.ts",
     "./components/ask/AskCitationBar": "./src/components/ask/AskCitationBar.tsx",
     "./components/chrome/ShareVisibilityButton": "./src/components/chrome/ShareVisibilityButton.tsx",
     "./components/chrome/VisibilityLegend": "./src/components/chrome/VisibilityLegend.tsx",
