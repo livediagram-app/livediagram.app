@@ -25,6 +25,10 @@ theirs without adding a settings screen.
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
   then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
+- **On a phone** a popover off a button opens as a drawer ([Tool panels are drawers on a phone](../../../../liveworkspace/docs/specs/011-workbench/phone-drawers.md)):
+  Layers, Tidy Up, Collaborate and the Session strip's Timer, Vote and Poll rise as a bottom sheet over a dim scrim, with a grab handle that drags it closed, focus kept
+  inside and the home indicator cleared. The Explorer keeps its own sheet. From the phone
+  breakpoint up each is the popover it was.
 - **Participating panels:** Minimap, Poll, Vote, and the tool panels (Avatar, Laser,
   Spotlight, Eraser, Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
