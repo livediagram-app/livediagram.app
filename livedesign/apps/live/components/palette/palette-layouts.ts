@@ -82,6 +82,7 @@ const PAGES_COMPONENTS = [
   'components:process',
   DIVIDE,
   'tools:code-block',
+  DIVIDE,
   'tools:checklist',
 ];
 

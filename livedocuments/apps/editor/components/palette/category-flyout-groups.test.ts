@@ -61,7 +61,8 @@ describe('a flyout’s groups', () => {
     expect(flyoutGroups(tiles('components')).map((g) => g.title)).toEqual([
       'Layout',
       'Page Blocks',
-      'Code and Lists',
+      'Code',
+      'Lists',
     ]);
   });
 

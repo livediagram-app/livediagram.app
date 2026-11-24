@@ -88,7 +88,8 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:table': 'Tables',
   'tools:stack': 'Layout',
   'components:hero': 'Layout',
-  'tools:code-block': 'Code and Lists',
+  'tools:code-block': 'Code',
+  'tools:checklist': 'Lists',
   'components:card': 'Page Blocks',
   // Page Blocks where Elements holds the Card and the Badge (a tab with a wireframe page).
   'components:step': 'Page Blocks',

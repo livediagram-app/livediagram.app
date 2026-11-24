@@ -4,7 +4,7 @@
 // Drawn as the category's flyout shows them, hanging under the palette strip with the category pressed on its
 // bar: the category's name, then its body. Components and
 // Devices are rows (a glyph chip, the tile's caption and its one-line blurb),
-// Components under its group headings (Layout, Page Blocks, Code and Lists); Icons is a search
+// Components under its group headings (Layout, Page Blocks, Code, Lists); Icons is a search
 // box over a grid of category tiles. Captions and blurbs are the editor's own
 // (palette-tile-defs.tsx, lib/icons.ts).
 
@@ -116,7 +116,7 @@ function Row({
 const g = { className: 'fill-none stroke-brand-600', strokeWidth: 1.4 } as const;
 
 /** The Components category as the Pages palette shows it: its Layout group first (Hero, Header, Banner, the
- *  Stack and the Devices row), then Page Blocks, then Code and Lists. */
+ *  Stack and the Devices row), then Page Blocks, then Code and Lists, each a group. */
 export function ComponentsCategory() {
   const x = PX + 12;
   const groups: [string, [string, string, ReactNode][]][] = [
@@ -204,13 +204,18 @@ export function ComponentsCategory() {
       ],
     ],
     [
-      'Code and Lists',
+      'Code',
       [
         [
           'Code',
           'A syntax-highlighted code card',
           <path key="cd" d="M-2 -5l-4 5 4 5M2 -5l4 5 -4 5" {...g} />,
         ],
+      ],
+    ],
+    [
+      'Lists',
+      [
         [
           'Checklist',
           'Tickable to-do rows',

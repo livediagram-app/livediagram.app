@@ -213,8 +213,8 @@ avatars, badges, cards and lists." Its tiles:
 - Each tile is in one category: the text styles (Title to Caption, [Canvas and
   palette](../008-canvas/canvas-and-palette.md#text-element) "Text styles") and the Sticky Note are **Write**'s, and while Elements is
   offered **Components** leaves out the Card, the Badge and the Checklist it holds. Components
-  opens on its **Layout** group (Hero, Header, Banner, Stack), then **Page Blocks**, then **Code
-  and Lists**.
+  opens on its **Layout** group (Hero, Header, Banner, Stack), then **Page Blocks**, then **Code**
+  (and **Lists**, the Checklist, where Elements is not offered: a group takes one name, never two joined by "and").
 - Each part keeps its wireframe greys as placed (a dark primary button, grey pictures), over the
   theme and the style remembered for its shape.
 
