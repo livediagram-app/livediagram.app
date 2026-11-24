@@ -19,7 +19,7 @@ export const categories: Category[] = [
     title: 'Getting Started',
     description:
       'Go from a new Knowledgebase to pages your team can find and trust, with the basics every new user needs.',
-    articleCount: 5,
+    articleCount: 7,
   },
   {
     slug: 'account-and-data',
@@ -47,7 +47,14 @@ export const categories: Category[] = [
     title: 'Troubleshooting',
     description:
       'Get unstuck fast: Ask and its key, reviews, imports, agents, sign-in and collaboration problems.',
-    articleCount: 8,
+    articleCount: 9,
+  },
+  {
+    slug: 'supported-devices',
+    title: 'Supported Devices',
+    description:
+      'How liveknowledge works on a computer, a tablet, and a phone, and what to expect on each.',
+    articleCount: 3,
   },
   {
     slug: 'policies',
@@ -94,7 +101,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you make: one library, shared by every liveworkspace app, that keeps your knowledgebases, folders and teams easy to find.',
-    articleCount: 12,
+    articleCount: 13,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -102,8 +109,8 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Your own preferences for the editor: the Settings every liveworkspace app shares.',
-    articleCount: 1,
+      'How the editor is laid out (the top corners, the page tree and the footer), its quick controls, and the Settings every liveworkspace app shares.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -119,7 +126,7 @@ export const categories: Category[] = [
     title: 'Search Panel',
     description:
       'One search over everything you can reach: the pages of this Knowledgebase first, then your other work, commands, settings and help.',
-    articleCount: 1,
+    articleCount: 2,
     kind: 'feature',
   },
 ];
@@ -554,6 +561,17 @@ export const articles: Article[] = [
       "Why an agent's write was refused, and whether to allow writing or have it suggest the edit.",
     keywords:
       'agent cannot write refused forbidden write_page page_verified page_review_due allow writing read-only token scope suggest instead viewer participant',
+    category: 'Troubleshooting',
+    categorySlug: 'troubleshooting',
+    ...APPS,
+  },
+  {
+    slug: 'page-changes-missing',
+    title: 'My Page Changes Are Missing',
+    description:
+      'What to check when writing seems to have vanished from a page: drafts and Save, the right page, and how to get it back.',
+    keywords:
+      'missing lost vanished disappeared changes edits gone unsaved draft save cancel discard version history restore undo trash page knowledgebase',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
     ...APPS,

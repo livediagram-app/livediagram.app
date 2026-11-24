@@ -34,6 +34,24 @@ const TREE: TreeRowSpec[] = [
   { label: 'Glossary' },
 ];
 
+/** Cancelling a draft nobody else is editing: the question asked before the changes are thrown away. */
+export function DiscardDraft() {
+  return (
+    <Scene w={W} h={130} bg="plain">
+      <DialogCard x={40} y={14} w={340} h={102} title="Discard your changes to this page?">
+        <Label x={54} y={56} size={8} tone="body">
+          Save keeps them for everyone. Discard Changes throws them away.
+        </Label>
+        <Label x={54} y={68} size={8} tone="body">
+          Closing the tab keeps the draft; the next Edit opens it again.
+        </Label>
+        <Btn x={196} y={88} w={66} label="Keep Editing" />
+        <Btn x={268} y={88} w={98} label="Discard Changes" variant="primary" />
+      </DialogCard>
+    </Scene>
+  );
+}
+
 /** The page tree with one row's Page Options menu open: every verb an Editor has for a page. */
 export function PageTreeMenu() {
   return (

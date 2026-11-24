@@ -22,9 +22,6 @@ type Why = 'not-applicable' | 'follow-up';
  *  describes is a canvas or tab surface a Knowledgebase has no counterpart of, so its help says nothing. `follow-up`:
  *  it applies to a Knowledgebase and has no liveknowledge wording yet (a Large card of its own, listed in the
  *  Work Tracker), so liveknowledge's help does not show it rather than show a canvas article's words. */
-const FOLLOW_UP =
-  "Not written for liveknowledge yet: its wording has to be checked against liveknowledge's editor first.";
-
 const EXEMPT: Record<string, { why: Why; reason: string }> = {
   'user-interface/zoom-controls': {
     why: 'not-applicable',
@@ -67,6 +64,21 @@ const EXEMPT: Record<string, { why: Why; reason: string }> = {
     why: 'not-applicable',
     reason: 'Creates a tab; Create New Page is listed with the commands in The Search Panel.',
   },
+  'developers/agent-changes': {
+    why: 'not-applicable',
+    reason:
+      "liveknowledge's agents work through page tools, as suggestions a person accepts or, with the write scope, direct writes (What Agents Can Do, Suggested Edits).",
+  },
+  'developers/agent-comments-presence': {
+    why: 'not-applicable',
+    reason:
+      "liveknowledge's agents read and comment through page tools (What Agents Can Do), not the changeset and presence API.",
+  },
+  'troubleshooting/missing-changes': {
+    why: 'not-applicable',
+    reason:
+      'A page is written in a draft until Save, so liveknowledge has its own, My Page Changes Are Missing.',
+  },
   'tips-and-tricks/keyboard-shortcuts': {
     why: 'not-applicable',
     reason:
@@ -76,19 +88,6 @@ const EXEMPT: Record<string, { why: Why; reason: string }> = {
     why: 'not-applicable',
     reason: 'The Search Panel article names the commands a Knowledgebase has.',
   },
-  'user-interface/panel-layout': { why: 'follow-up', reason: FOLLOW_UP },
-  'user-interface/quick-controls': { why: 'follow-up', reason: FOLLOW_UP },
-  'user-interface/title-bar': { why: 'follow-up', reason: FOLLOW_UP },
-  'getting-started/keyboard-essentials': { why: 'follow-up', reason: FOLLOW_UP },
-  'getting-started/accessibility': { why: 'follow-up', reason: FOLLOW_UP },
-  'developers/agent-changes': { why: 'follow-up', reason: FOLLOW_UP },
-  'developers/agent-comments-presence': { why: 'follow-up', reason: FOLLOW_UP },
-  'troubleshooting/missing-changes': { why: 'follow-up', reason: FOLLOW_UP },
-  'supported-devices/desktop': { why: 'follow-up', reason: FOLLOW_UP },
-  'supported-devices/tablet': { why: 'follow-up', reason: FOLLOW_UP },
-  'supported-devices/mobile': { why: 'follow-up', reason: FOLLOW_UP },
-  'explorer/explorer-panel': { why: 'follow-up', reason: FOLLOW_UP },
-  'search-panel/the-search-panel/search-teams': { why: 'follow-up', reason: FOLLOW_UP },
 };
 
 /** Articles whose notes for the five other apps are deliberate, because liveknowledge has its own note beside each. */

@@ -31,6 +31,33 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3M9 7h6M9 10.5h4" />
     </Glyph>
   ),
+  // Supported devices: three siblings, told apart by proportion.
+  desktop: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="12" rx="2" />
+      <path d="M9 20h6M12 16v4" />
+    </Glyph>
+  ),
+  tablet: (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="2" />
+      <path d="M12 18.5h.01" />
+    </Glyph>
+  ),
+  mobile: (
+    <Glyph>
+      <rect x="7.5" y="2.5" width="9" height="19" rx="2" />
+      <path d="M10.5 5.5h3" />
+      <path d="M12 18.5h.01" />
+    </Glyph>
+  ),
+  // A page with a question mark's gap: a change that went missing.
+  'page-changes-missing': (
+    <Glyph>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5M9.5 13h5M9.5 16.5h3" strokeDasharray="1.5 2" />
+    </Glyph>
+  ),
   // A bulb: why to use it (the same glyph as the other apps' Why articles).
   'why-liveknowledge': (
     <Glyph>
