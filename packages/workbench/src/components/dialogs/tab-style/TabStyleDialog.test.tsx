@@ -695,4 +695,10 @@ describe('a profile that names and cuts the dialog', () => {
     open();
     expect(screen.queryByRole('button', { name: /^Page Design:/ })).toBeNull();
   });
+
+  it('gives a product’s own panel the shared line and picture when its surface names none', () => {
+    open({ profile: profileWith({ base: { ...base, panels: ['theme', 'design'] } }) });
+    const row = button('Page Design: None');
+    expect(row.querySelector('svg')).toBeTruthy();
+  });
 });
