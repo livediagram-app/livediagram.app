@@ -12,7 +12,7 @@ export const categories: Category[] = [
     title: 'About liveknowledge',
     description:
       'Get to know liveknowledge: a free, open-source Knowledgebase a team writes, verifies and asks questions of.',
-    articleCount: 3,
+    articleCount: 4,
   },
   {
     slug: 'getting-started',
@@ -26,7 +26,7 @@ export const categories: Category[] = [
     title: 'Account and Data',
     description:
       'Stay in control of your work: guest access, signing in, the Trash, deleting your data, API tokens, the Google Drive mirror and email notifications.',
-    articleCount: 7,
+    articleCount: 8,
   },
   {
     slug: 'privacy-and-security',
@@ -110,8 +110,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Let a Knowledgebase run its routine on its own: Automations, rules that ask for reviews, tell Slack and keep pages owned.',
-    articleCount: 1,
+      'Let a Knowledgebase run its routine on its own with Automations, and choose the look of the app itself: Light, Dark or System.',
+    articleCount: 2,
     kind: 'feature',
   },
   {
@@ -136,6 +136,18 @@ export const articles: Article[] = [
       'A Knowledgebase for a team: pages of writing in a tree, each with an owner who vouches for it, that people and AI agents can ask.',
     keywords:
       'overview intro introduction about product knowledgebase knowledge base wiki handbook docs documentation team pages verified ask ai agents',
+    category: 'About liveknowledge',
+    categorySlug: 'about',
+    parentSlug: 'about',
+    ...APPS,
+  },
+  {
+    slug: 'why-liveknowledge',
+    title: 'Why Use liveknowledge?',
+    description:
+      'Free, open source, no sign-in wall, and every page says who vouches for it. Here is why.',
+    keywords:
+      'benefits reasons comparison alternatives features advantages why use free open source wiki notion confluence trust verified',
     category: 'About liveknowledge',
     categorySlug: 'about',
     parentSlug: 'about',
