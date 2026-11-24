@@ -91,7 +91,7 @@ export class SentCards {
   // Tell the index about the gathered cards, once; a removed one is forgotten here too.
   async flush(): Promise<void> {
     this.timer = null;
-    const entries = [...this.pending].slice(0, PLAN_CARDS_CHANGED_MAX);
+    const entries = [...this.pending];
     this.pending.clear();
     const planId = this.planId();
     const client = this.signal();
@@ -119,7 +119,9 @@ export class SentCards {
           JSON.stringify(gone.map((c) => c.id)),
         );
       }
-      await client.planCardsChanged(planId, cards);
+      // A burst past one call's cap (a 500-card Make Plan Cards) goes as several calls, so no card is dropped.
+      for (let at = 0; at < cards.length; at += PLAN_CARDS_CHANGED_MAX)
+        await client.planCardsChanged(planId, cards.slice(at, at + PLAN_CARDS_CHANGED_MAX));
     } catch (err) {
       console.warn('[plan] sent cards not told', { error: String(err) });
     }

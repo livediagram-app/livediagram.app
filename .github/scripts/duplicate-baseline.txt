@@ -43,7 +43,6 @@ livediagram/apps/editor/app/join/page.tsx	livehuddle/apps/editor/app/join/page.t
 livediagram/apps/editor/app/not-found.tsx	livedocuments/apps/editor/app/not-found.tsx	livehuddle/apps/editor/app/not-found.tsx	liveknowledge/apps/editor/app/not-found.tsx
 livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
 livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx	liveknowledge/apps/editor/app/sign-in/page.tsx
-livediagram/apps/editor/components/chrome/EllipsisMenuButton.tsx	livedocuments/apps/editor/components/chrome/EllipsisMenuButton.tsx
 livediagram/apps/editor/components/chrome/OpeningScreen.tsx	livedocuments/apps/editor/components/chrome/OpeningScreen.tsx	livehuddle/apps/editor/components/chrome/OpeningScreen.tsx	liveknowledge/apps/editor/components/chrome/OpeningScreen.tsx
 livediagram/apps/editor/components/dialogs/ConversionHandoff.tsx	livehuddle/apps/editor/components/dialogs/ConversionHandoff.tsx
 livediagram/apps/editor/components/panels/LaserColourRow.tsx	livedocuments/apps/editor/components/panels/LaserColourRow.tsx	liveknowledge/apps/editor/components/panels/LaserColourRow.tsx

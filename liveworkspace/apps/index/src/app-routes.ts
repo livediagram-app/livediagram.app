@@ -22,6 +22,7 @@ import { FUTURE_SLACK_MS } from './events';
 import { pushAutomationSends } from './webhooks/automation-sends';
 import { pushAutomationStep } from './automation-steps';
 import { handleAgentPlanSends, handlePlanCards } from './plan-sends';
+import { handlePlanDiagrams } from './plan-diagrams';
 import { handleCallPeople } from './item-call-people';
 
 const isTime = (value: unknown): value is number =>
@@ -97,6 +98,10 @@ export async function handleApp(
   }
   if (segments.length === 4 && segments[3] === 'plan-sends') {
     return handleAgentPlanSends(request, env, app, segments[2]);
+  }
+  // /app/items/:id/plan-diagrams: liveplanner's live diagrams whose graph changed (plan-diagrams.ts).
+  if (segments.length === 4 && segments[3] === 'plan-diagrams') {
+    return handlePlanDiagrams(request, env, app, segments[2]);
   }
   if (request.method !== 'PUT' && !seenRead && !automationSends && !automationSteps)
     return notFound();

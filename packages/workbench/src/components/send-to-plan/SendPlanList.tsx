@@ -47,6 +47,7 @@ export function SendPlanList({
   query,
   onQuery,
   pickedId,
+  picked = null,
   onPick,
   newName,
   onCreate,
@@ -56,6 +57,9 @@ export function SendPlanList({
   query: string;
   onQuery: (q: string) => void;
   pickedId: string | null;
+  // The plan picked (or remembered from the last send), listed first when Recent has not got it: a plan made with
+  // New Plan in an earlier send was never opened, so Recent leaves it out.
+  picked?: { id: string; title: string } | null;
   onPick: (item: Item) => void;
   // New Plan's name to start from ("Plans from <source>").
   newName: string;
@@ -72,6 +76,10 @@ export function SendPlanList({
     onCreate(name);
   };
 
+  const held =
+    picked && !query && plans.state === 'ready' && !plans.items.some((p) => p.id === picked.id)
+      ? picked
+      : null;
   const list =
     plans.state === 'loading' ? (
       <div
@@ -94,7 +102,7 @@ export function SendPlanList({
         title="Couldn't load your plans"
         description="Check your connection and try again."
       />
-    ) : plans.items.length === 0 ? (
+    ) : plans.items.length === 0 && !held ? (
       query ? (
         <NoMatches things="plans" query={query} onClear={() => onQuery('')} />
       ) : (
@@ -107,6 +115,14 @@ export function SendPlanList({
       )
     ) : (
       <ul className="flex flex-col gap-0.5" aria-label="Your plans" onKeyDown={moveFocus}>
+        {held ? (
+          <li key={held.id}>
+            <button type="button" data-plan-row="" aria-pressed className={`${ROW} ${ROW_ON}`}>
+              <PlanIcon size={16} className="shrink-0 opacity-70" />
+              <span className="min-w-0 flex-1 truncate">{held.title || 'Untitled plan'}</span>
+            </button>
+          </li>
+        ) : null}
         {plans.items.map((p) => {
           const locked = p.access !== 'edit';
           const on = p.id === pickedId;
