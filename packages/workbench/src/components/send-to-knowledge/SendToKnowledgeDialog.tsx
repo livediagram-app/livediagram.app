@@ -420,10 +420,9 @@ export function SendToKnowledgeDialog({
               ) : null}
             </>
           ) : (
-            <>
-              <p className="mr-auto hidden text-xs text-slate-500 sm:block dark:text-slate-400">
-                Nothing is written until you insert it.
-              </p>
+            // The buttons on one row (wrapping on a phone, where the three are wider than the sheet), and under them a
+            // quiet line: nothing is written yet, and what Write With AI costs.
+            <div className="flex w-full flex-wrap items-center justify-end gap-x-2 gap-y-1.5">
               <Button type="button" variant="secondary" onClick={onClose} className="shrink-0">
                 Cancel
               </Button>
@@ -446,15 +445,11 @@ export function SendToKnowledgeDialog({
                 <SparkGlyph aria-hidden />
                 {step.at === 'writing' ? 'Writing…' : 'Write With AI'}
               </Button>
-              {proOn() ? (
-                <span
-                  id={`${titleId}-cost`}
-                  className="w-full text-right text-[11px] text-slate-500 sm:w-auto dark:text-slate-400"
-                >
-                  {usesAiCredits(credit)}
-                </span>
-              ) : null}
-            </>
+              <div className="flex basis-full items-baseline justify-between gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+                <p>Nothing is written until you insert it.</p>
+                {proOn() ? <span id={`${titleId}-cost`}>{usesAiCredits(credit)}</span> : null}
+              </div>
+            </div>
           )}
         </DialogFooter>
       </div>
