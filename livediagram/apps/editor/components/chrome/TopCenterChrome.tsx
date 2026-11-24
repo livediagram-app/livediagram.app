@@ -3,6 +3,7 @@ import { drawBannerMessage, isHeldToolIntent } from '@/lib/draw-mode';
 import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import { PlanChangesPill } from '@/components/plan-cards/PlanChangesPill';
 import { ModeBanner } from '@liveworkspace/workbench/components/chrome/ModeBanner';
 import { OfflineBanner } from '@liveworkspace/workbench/components/chrome/OfflineBanner';
 import {
@@ -99,6 +100,9 @@ export function TopCenterChrome({
           </TopCenterBanner>
         </TopCenterRow>
       ) : null}
+      {/* Changes to the plan (docs/specs/013-workspace/make-plan-cards.md): on a tab a plan drew, the drawing's edits
+          offered to the plan. Renders nothing elsewhere. */}
+      <PlanChangesPill />
       {/* The active mode banner. `empty:hidden` collapses the row (and its
           stack gap) when nothing in it is active. */}
       {/* The multi-selection toolbar used to sit here; it now floats over the

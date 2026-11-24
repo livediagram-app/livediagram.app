@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'View As Diagram',
+  description:
+    'Draw a board as a live diagram in livediagram: cards in lanes, Blocked By links as arrows and the critical path, redrawn as the plan changes.',
+  path: '/help/collaboration/view-as-diagram/',
+});
+
+<ArticleLayout path="collaboration/view-as-diagram" title="View As Diagram" description="Draw a board as a live diagram: cards in lanes, Blocked By as arrows and the critical path, redrawn as the plan changes." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("view-as-diagram")}>
+
+A board shows where each card stands; a diagram shows how the work hangs together. **View As Diagram** draws a board in livediagram: each card a box in its column's lane, each **Blocked By** link an arrow, and the **critical path** (the longest chain of open cards, by their days from Start to Due) drawn strong. Done cards are drawn quietly. The diagram is live: when a card moves, is added or gains a link, the diagram is redrawn within a few seconds.
+
+## Drawing a board
+
+<Step n={1}>
+  Open a Board tab's menu and press **View As Diagram**.
+</Step>
+
+<Step n={2}>
+  With several boards on the tab, pick the **Board**. When the board has a filter, choose the
+  **Whole Board** or the **Cards the Filter Shows**.
+</Step>
+
+<Step n={3}>
+  Check the preview: how many cards, lanes and arrows will be drawn, and the critical path in
+  order. Name the diagram.
+</Step>
+
+<Step n={4}>
+  Press **Make Diagram**. As an Editor of the whole plan, the diagram opens beside the plan as a
+  [connected tab](/help/tabs/connected-files/); otherwise it opens in livediagram in a new browser
+  tab. A message offers **Open Diagram** either way.
+</Step>
+
+## Live both ways
+
+The plan is the source: changes to the plan redraw the diagram, and the diagram's title links back to the board. Edits in the diagram never change the plan by themselves. When someone who can edit the plan draws an arrow between two cards, or drags a card into another lane, livediagram offers the change to the plan, to apply or dismiss ([Make Plan Cards](/help/collaboration/make-plan-cards/) explains how).
+
+## Who can do what
+
+- **Editors** of the plan see View As Diagram in the tab menu, get the diagram as a connected tab, and can apply the diagram's changes to the plan.
+- **Participants and Viewers** have no menu entry. A diagram an Editor made can be shared with them in livediagram as any canvas is.
+
+<Tip>
+  A board is drawn with at most 500 cards. A bigger board draws its first 500, and the preview says
+  so.
+</Tip>
+
+</ArticleLayout>

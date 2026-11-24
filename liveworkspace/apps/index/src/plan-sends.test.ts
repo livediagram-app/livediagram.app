@@ -1,7 +1,11 @@
 // Send to Plan on the index (liveworkspace/docs/specs/004-index/send-to-plan.md): a card made in a plan as the person,
 // only on their Editor access to the whole plan and their read of the source; the source's chips shown only to those
 // who can open the plan; the plan's changes told to the source's app, and never polled.
-import type { PlanSend, SentFrom } from '@liveworkspace/index-client';
+import {
+  PLAN_SENDS_PER_SOURCE_MAX,
+  type PlanSend,
+  type SentFrom,
+} from '@liveworkspace/index-client';
 import { decodeJwt } from 'jose';
 import { describe, expect, it } from 'vitest';
 import { appSiteOrigin } from './connection-rows';
@@ -420,7 +424,7 @@ describe('the bounds', () => {
       `INSERT INTO plan_sends (id, source_id, ref, kind, plan_id, card_id, card_title, column_name, at, updated_at)
        VALUES (?, ?, ?, 'element', ?, ?, 'T', 'To Do', 1, 1)`,
     );
-    for (let i = 0; i < 499; i++)
+    for (let i = 0; i < PLAN_SENDS_PER_SOURCE_MAX - 1; i++)
       insert.run(`ps_${i}`, doc.id, `element:t:e${i}:`, plan.id, `c${i}`);
     h.appAnswer = made(['c1']);
     const two = { title: 'x', places: [place(doc.id), place(doc.id, { elementId: 'e2' })] };

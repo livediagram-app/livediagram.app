@@ -85,6 +85,7 @@ import {
 import { ORDER_STATE_KEY, restoreRoom } from './room-restore';
 import { newFacilitator, newInternalRoom, newRoomTier } from './room-wiring';
 import * as rpc from './room-rpc';
+import type { PlanTabOutcome, PlanTabWrite } from './plan-diagram-tab';
 import type { GraphTabOutcome, GraphTabWrite } from './graph-tab';
 import { community, communityListing, communityPostTitle } from './room-community';
 import { renewGrant, roomFetch } from './room-grants';
@@ -470,6 +471,12 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.addConnectedTab(this, documentId, write);
   }
 
+  // View As Diagram's redraw (plan-diagram-tab.ts).
+  drawPlanTab(documentId: string, write: PlanTabWrite): Promise<PlanTabOutcome> {
+    return rpc.drawPlanTab(this, documentId, write);
+  }
+
+  // Send to Diagram's tab (graph-tab.ts).
   drawGraphTab(documentId: string, write: GraphTabWrite): Promise<GraphTabOutcome> {
     return rpc.drawGraphTab(this, documentId, write);
   }

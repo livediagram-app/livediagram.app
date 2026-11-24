@@ -1,4 +1,5 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import { MakePlanCardsIcon } from '@/components/plan-cards/MakePlanCardsButton';
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { useMenuDismiss } from '@liveworkspace/workbench/hooks/ui/useMenuDismiss';
@@ -66,6 +67,7 @@ export function PortalMenu({
   canClearContent,
   canDelete,
   connected,
+  onMakePlanCards,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -99,6 +101,8 @@ export function PortalMenu({
   // follows its file unless renamed, so its menu keeps only Rename, Remove Tab, its folder and, when it opens nothing,
   // Connect Again.
   connected?: ConnectedTabMenu | undefined;
+  // Make Plan Cards (docs/specs/013-workspace/make-plan-cards.md "Where"): the tab's shapes as plan cards, where offered.
+  onMakePlanCards?: (() => void) | undefined;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
   // organise pickers — "copyTo" (docs/specs/006-document/tab-document-many-to-many.md, link the tab into another
@@ -382,6 +386,14 @@ export function PortalMenu({
             disabled={locked}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
+          {onMakePlanCards ? (
+            <MenuActionRow
+              plain
+              icon={<MakePlanCardsIcon />}
+              label="Make Plan Cards"
+              onClick={onMakePlanCards}
+            />
+          ) : null}
           <MenuActionRow
             plain
             icon={<ClearIcon />}

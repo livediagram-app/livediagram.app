@@ -149,6 +149,9 @@ export function handleInternalItems(
       automationTarget: (id) => planRoom(env, id).automationTarget(),
       // Send to Plan (plan-room/plan-send-door.ts): the person's Editor grant checked first, as a step's is.
       planSend: (id, call) => planRoom(env, id).planSend(call),
+      // Diagrams and Plans (plan-room/plan-diagram-door.ts): a make or an edit on an Editor's grant, a graph or a
+      // watch on any read, checked first by the internal door.
+      planDiagram: (id, call) => planRoom(env, id).planDiagram(call),
       // A workbench pairing's access ended at liveworkspace: its sockets in this plan's room close.
       // An old livediagram.app document's liveplanner part, into its plan's room (plan-room/plan-migration.ts). A tab
       // over the tab cap refuses the whole part (413) before the room is called.
