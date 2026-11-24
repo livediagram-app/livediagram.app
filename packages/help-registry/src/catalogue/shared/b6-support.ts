@@ -320,8 +320,20 @@ export const articles: Article[] = [
       'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
     category: 'Tools',
     categorySlug: 'tools',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
-    byApp: {},
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
+    byApp: {
+      liveknowledge: {
+        description:
+          "Light, Dark, or follow your device: the look of the app itself, apart from the Knowledgebase's style.",
+      },
+    },
   },
   {
     slug: 'layout-cleanup',

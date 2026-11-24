@@ -109,7 +109,7 @@ curl https://www.livedesign.app/api/designs \
 
 </AppNote>
 
-Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a <Noun />'s last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-<TabWord /> saves, a token can't delete a <Noun />'s last <TabWord />, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
 
 For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), worked examples, and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
 

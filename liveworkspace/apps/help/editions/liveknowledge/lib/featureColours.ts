@@ -54,6 +54,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'team-shared-documents': '#0ea5e9',
   'audit-log': '#10b981',
   automations: '#7c3aed',
+  'dark-mode': '#475569',
   'explorer-page': '#64748b',
   home: '#8b5cf6',
   'personal-space': '#f59e0b',

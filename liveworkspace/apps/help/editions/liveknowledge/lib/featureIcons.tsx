@@ -227,6 +227,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12.8 7.8l-3.3 4.9h3l-.8 3.5 3.3-4.9h-3z" />
     </Glyph>
   ),
+  // Light/dark mode guide.
+  'dark-mode': (
+    <Glyph>
+      <path d="M21 12.8A8 8 0 1 1 11.2 3a6 6 0 0 0 9.8 9.8z" />
+    </Glyph>
+  ),
   'explorer-page': (
     <Glyph>
       <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
