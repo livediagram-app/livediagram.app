@@ -94,6 +94,8 @@ async function setUp(selections: Selection[] = []) {
   const created = await call(db, 'POST', '/api/documents', {
     id: 'D',
     name: 'Board',
+    // Agents write here (docs/specs/030-knowledgebase/ai-editing.md): the default only suggests.
+    knowledgeSettings: { reviewEvery: 90, aiEditing: 'unverified' },
     tabs: [
       { id: 't1', name: 'Board', elements: [box('a'), box('b', 'b', 200)] },
       { id: 't2', name: 'Other', elements: [] },

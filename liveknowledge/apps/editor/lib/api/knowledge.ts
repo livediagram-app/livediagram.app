@@ -14,6 +14,8 @@ import type {
   KnowledgeSearchResult,
   KnowledgeSettingsPreviewResponse,
   KnowledgeSettingsResponse,
+  KnowledgeSettingsWire,
+  KnowledgeAiEditing,
   KnowledgeReviewEvery,
   KnowledgeSummaryResponse,
   PageHealthResponse,
@@ -193,6 +195,18 @@ export async function apiSetReviewPeriod(
   });
   const answer = await expectOk<KnowledgeSettingsResponse>(res, 'set review period', expected);
   return answer.knowledgeSettings.reviewEvery;
+}
+
+/** Set the knowledgebase's AI Editing (docs/specs/030-knowledgebase/ai-editing.md): the level, the option beside it,
+ *  or both. Answers the settings as stored. An Editor in person only: anyone else is refused with 403. */
+export async function apiSetAiEditing(
+  who: KnowledgeCaller,
+  documentId: string,
+  change: { aiEditing?: KnowledgeAiEditing; aiEditUnverifies?: boolean },
+): Promise<KnowledgeSettingsWire> {
+  const res = await write(who, knowledgeUrl(documentId, 'knowledge-settings'), 'PUT', change);
+  const answer = await expectOk<KnowledgeSettingsResponse>(res, 'set ai editing', expected);
+  return answer.knowledgeSettings;
 }
 
 /** How many pages would be Review Due under a Review Period, beside how many are now. Changes nothing. */

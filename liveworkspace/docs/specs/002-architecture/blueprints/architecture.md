@@ -254,7 +254,7 @@ From the root `package.json`:
 
 | Script             | Runs                                                                                   |
 | ------------------ | -------------------------------------------------------------------------------------- |
-| `dev:workspace`    | `turbo run dev` for the site and all eight services                                    |
+| `dev:workspace`    | the site, the help centre and all eight services in one `wrangler dev` (below)         |
 | `dev:site`         | `@liveworkspace/site` alone (`next dev --port 3000`)                                   |
 | `dev:accounts`     | `@liveworkspace/accounts` (`wrangler dev --port 8787 --local-upstream localhost:3000`) |
 | `dev:telemetry`    | `@liveworkspace/telemetry-service` (`--port 8790`)                                     |
@@ -265,7 +265,35 @@ From the root `package.json`:
 | `dev:status`       | `@liveworkspace/status-service` (`--port 3010`)                                        |
 | `dev:drive`        | `@liveworkspace/drive-service` (`--port 3011`)                                         |
 
-Inspector ports, one per Worker: 9130 accounts, 9131 telemetry, 9132 community, 9133 media, 9134 index, 9135 status, 9136 drive, 9138 subscription. Status runs with `--test-scheduled`, `ENVIRONMENT=development` and `PLATFORM_ORIGIN=http://localhost:3000`; accounts with `--local-upstream localhost:3000`.
+Inspector ports, one per Worker when each runs alone: 9130 accounts, 9131 telemetry, 9132 community, 9133 media, 9134 index, 9135 status, 9136 drive, 9138 subscription. Status runs with `--test-scheduled`, `ENVIRONMENT=development` and `PLATFORM_ORIGIN=http://localhost:3000`; accounts with `--local-upstream localhost:3000`.
+
+### One process (`packages/local-workers`)
+
+`dev:workspace` sets `LOCAL_WORKERS=workspace` (the one group, `groups.mjs`) and turbo runs
+`@liveworkspace/local-workers`' `dev` beside the site and the help centre; turbo passes the variable through (`turbo.json`).
+`start.mjs`:
+
+1. Reads each Worker's package `dev` script (`workers.mjs`): the steps before `wrangler dev` (`.dev.vars`, local D1
+   migrations, seeds) and that command's `--port`, `--var` and `--local-upstream`. Wrangler gives `--var` to the first
+   Worker only, so each Worker gets `local-workers.wrangler.json` (gitignored) beside its wrangler.toml: its top level
+   with its `--var` values folded in and its routes and environments dropped. A Worker whose `dev` names an `--env`
+   can't join (one `wrangler dev` takes one for all). A port with no `--port` comes from `[dev] port`.
+2. Links each Worker's `.wrangler/state` to `liveworkspace/.wrangler/local-workers/state` (`state.mjs`), since one
+   Miniflare keeps one state folder; a Worker's own state is copied in first, never over the shared copy, and its old
+   folder kept as `state.before-shared`. Migrations, seeds and `wrangler d1 execute --local` in a Worker's folder
+   reach the same data. Then runs each Worker's steps, one Worker at a time (two migrations at once on the one state
+   folder fail with `SQLITE_BUSY`).
+3. Runs `wrangler dev -c <gateway> -c <each Worker> --persist-to <shared state>` on the gateway port (3009), with the
+   inspector on accounts' old port (9130). `LOCAL_WORKERS_PORT_OFFSET` moves all of them, to run or measure a second
+   copy beside a running one (with its own `WRANGLER_REGISTRY_PATH`: its vars still name the usual ports).
+4. Once the gateway answers, pipes each Worker's own port to it over TCP (`forward.mjs`, on 127.0.0.1 and ::1), bytes
+   unchanged, so WebSocket upgrades pass through.
+
+The gateway (`gateway.mjs`) picks the Worker by the request's port (its URL, else its Host header), rebuilds the URL
+on the origin that Worker saw alone (`http://localhost:3000` for accounts), and calls it over a service binding.
+`/__scheduled?cron=...` on any Worker's port runs that Worker's `scheduled()`, which `--test-scheduled` gave status
+alone. Every Worker is in wrangler's dev registry, so a product's own `wrangler dev` reaches them over its service
+bindings (its api's `ACCOUNTS` and `INDEX`), as before.
 
 ## The site's dev forwards
 

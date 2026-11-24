@@ -259,3 +259,16 @@
 - [x] Testing
 - [x] Constants and configuration
 - [ ] Defaults ledger
+
+## ai-editing
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Security and trust
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Observability
+- [x] Testing
+- [x] Defaults ledger

@@ -17,6 +17,8 @@ import {
   type ReactNode,
 } from 'react';
 import { useAiSource, type AiSourceEvent } from '@liveworkspace/settings-ui/ai-source';
+import { AI_CREDIT_COSTS, usesAiCredits } from '@liveworkspace/subscription';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 import {
   ButtonContent,
   CompactEmptyState,
@@ -42,6 +44,7 @@ import { ASK_MAX_QUESTION_CHARS } from '../limits';
 import type { AskSource } from '../wire';
 import { AnswerText } from './AnswerText';
 import { AnswerWith } from './AnswerWith';
+import { AskCreditsNotice } from './AskCreditsNotice';
 import { askAiChoiceStore, useAskAiChoice } from './ask-ai-choice';
 import { askSender } from './ask-client';
 import { CopiedIcon, CopyIcon, SendIcon, SignInIcon, StopIcon } from './ask-icons';
@@ -204,7 +207,13 @@ const Turn = memo(function Turn({
           </article>
         </div>
       )}
-      {turn.status === 'failed' && turn.failure ? (
+      {turn.status === 'failed' && turn.failure?.credits && proOn() ? (
+        <AskCreditsNotice
+          credits={turn.failure.credits}
+          message={turn.failure.message}
+          onAskAgain={() => conversation.askAgain(turn.id)}
+        />
+      ) : turn.status === 'failed' && turn.failure ? (
         <Callout
           tone="warning"
           size="md"
@@ -227,6 +236,7 @@ function Composer({
   onStop,
   onNewChat,
   pill,
+  cost,
 }: {
   noun: string;
   followUp: boolean;
@@ -236,6 +246,8 @@ function Composer({
   onStop: () => void;
   onNewChat: (() => void) | null;
   pill: ReactNode;
+  /** What the next question costs, with Pro on and built-in AI answering: "Uses 1 AI credit". */
+  cost: string | null;
 }) {
   const [value, setValue] = useState('');
   const field = useRef<HTMLTextAreaElement>(null);
@@ -336,6 +348,11 @@ function Composer({
           </Tooltip>
         )}
       </div>
+      {cost ? (
+        <p data-ask-credits="" className="text-[12px] leading-4 text-slate-600 dark:text-slate-400">
+          {cost}
+        </p>
+      ) : null}
     </form>
   );
 }
@@ -415,6 +432,7 @@ function AskThread({
       passages: () => live.current.host.passages(),
       teamId: () => live.current.teamId,
       builtIn: () => live.current.builtIn,
+      itemId: host.itemId,
       nothingToRead: nothingToReadWords(host.app),
     });
   });
@@ -530,6 +548,7 @@ function AskThread({
                 }
               : null
           }
+          cost={proOn() && view.using === 'built-in' ? usesAiCredits(AI_CREDIT_COSTS.ask) : null}
           pill={
             <AnswerWith
               app={host.app}

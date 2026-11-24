@@ -230,8 +230,12 @@ describe('get_context', () => {
       page_count: 4,
       // The knowledgebase's Review Period, said once.
       review_period: '90 days',
+      // AI Editing (docs/specs/030-knowledgebase/ai-editing.md): an api that says nothing reads as the default.
+      ai_editing: 'suggest',
+      ai_edit_unverifies: false,
       left_out: [{ page: 'holidays', title: 'Holidays', tokens: 9000 }],
     });
+    expect(out.ai_editing_allows).toContain('suggest_edit');
     expect((out.pages as object[])[0]).toEqual({
       page: 'deploys',
       title: 'Deploys',
@@ -256,6 +260,39 @@ describe('get_context', () => {
     const described = (name: string) => tools.find((t) => t.name === name)!.description!;
     expect(described('get_context')).toContain('Review Period');
     expect(described('list_pages')).toContain('Review Period');
+  });
+
+  it.each([
+    ['suggest', false, ['read', 'suggest', 'write'], 'Suggest Edits Only'],
+    ['unverified', false, ['read', 'suggest', 'write'], 'never-verified page'],
+    ['any', true, ['read', 'suggest', 'write'], 'takes its verification away'],
+    ['any', false, ['read', 'suggest', 'write'], 'they stay verified'],
+    // The scope comes first: Edit Any Page lets a suggest-only connection write nothing.
+    ['any', true, ['read', 'suggest'], 'no write scope'],
+  ] as const)(
+    'says AI Editing %s (unverifies %s) to scopes %j',
+    async (level, unverifies, scopes, says) => {
+      const { call } = await connect({
+        'GET /context': () =>
+          Response.json({
+            ...CONTEXT,
+            scopes,
+            aiEditing: level,
+            aiEditUnverifies: unverifies,
+          }),
+      });
+      const { out } = await call('get_context', {});
+      expect(out.ai_editing).toBe(level);
+      expect(out.ai_edit_unverifies).toBe(unverifies);
+      expect(out.ai_editing_allows).toContain(says);
+    },
+  );
+
+  it('tells write_page’s reach by AI Editing in the tool and the server’s words', async () => {
+    const { client } = await connect();
+    const { tools } = await client.listTools();
+    expect(tools.find((t) => t.name === 'write_page')!.description).toContain('AI Editing');
+    expect(tools.find((t) => t.name === 'get_context')!.description).toContain('ai_editing');
   });
 
   it('says so when no page is marked', async () => {
@@ -378,7 +415,9 @@ describe('search_pages', () => {
             passage({ isTitle: true, headings: [], text: undefined }),
             passage({
               trust: 'review-due',
-              conflictsWith: [{ tab: 'holidays', title: 'Holidays' }],
+              conflictsWith: [
+                { tab: 'holidays', title: 'Holidays', question: 'When do we deploy?', foundAt: 0 },
+              ],
             }),
             passage({ trust: 'never-verified', verifiedAt: undefined, reviewAt: undefined }),
           ],
@@ -391,7 +430,15 @@ describe('search_pages', () => {
     expect(stale).toMatchObject({
       verified: 'review-due',
       stale: true,
-      conflicts_with: [{ page: 'holidays', title: 'Holidays' }],
+      // The conflict's question rides beside the other page (knowledgebase-for-agents.md "Conflicts for agents").
+      conflicts_with: [
+        {
+          page: 'holidays',
+          title: 'Holidays',
+          question: 'When do we deploy?',
+          found_at: '1970-01-01T00:00:00.000Z',
+        },
+      ],
     });
     expect(draft).toEqual({
       page: 'deploys',

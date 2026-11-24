@@ -27,6 +27,7 @@ import {
 import { readPassages } from '../passages';
 import { askRequest, readTurns } from '../request';
 import type { AskEvent, AskRefusalCode, AskSource } from '../wire';
+import { chargeAsk, type AskCreditRefusal, type AskCreditsDoor } from './ask-credits';
 
 export type AskDoor = {
   request: Request;
@@ -41,6 +42,9 @@ export type AskDoor = {
   builtIn: BuiltInAiBinding | null;
   /** Counts one built-in question for the account (`spendAsk`). */
   spend: (accountId: string, now: number) => Promise<boolean | 'unavailable'>;
+  /** With Pro on, who pays a built-in question's AI credit and how it is spent (`askCreditsOf`); null with Pro off,
+   *  where nothing more is read or asked. */
+  credits?: AskCreditsDoor | null;
   /** Headers every answer carries (the app's CORS headers). */
   headers?: Record<string, string>;
   /** The provider's API is called through this (tests hand a stand-in). */
@@ -85,7 +89,7 @@ export async function serveAsk(door: AskDoor): Promise<Response> {
     status: number,
     error: AskRefusalCode,
     message: string,
-    more: { aiKey?: AiKeyFailure } = {},
+    more: { aiKey?: AiKeyFailure } | AskCreditRefusal['more'] = {},
   ) =>
     new Response(JSON.stringify({ error, message, ...more }), {
       status,
@@ -108,6 +112,10 @@ export async function serveAsk(door: AskDoor): Promise<Response> {
   const teamId =
     typeof body.teamId === 'string' && body.teamId !== '' && body.teamId.length <= ASK_MAX_ID_CHARS
       ? body.teamId
+      : null;
+  const itemId =
+    typeof body.itemId === 'string' && body.itemId !== '' && body.itemId.length <= ASK_MAX_ID_CHARS
+      ? body.itemId
       : null;
   const clock = door.now ?? Date.now;
   const now = clock();
@@ -135,6 +143,11 @@ export async function serveAsk(door: AskDoor): Promise<Response> {
     const spent = await door.spend(accountId, now);
     if (spent === 'unavailable') return refuse(503, 'ask_unavailable', ASK_WORDS.countFailed);
     if (!spent) return refuse(429, 'ask_built_in_limit', ASK_WORDS.limit);
+    // With Pro on, the question's AI credit too, beside the day's count and after it, before the model is called.
+    if (door.credits) {
+      const refused = await chargeAsk(door.credits, accountId, itemId, now);
+      if (refused) return refuse(refused.status, refused.error, refused.message, refused.more);
+    }
     caller = { provider: 'built-in', ai: door.builtIn };
   }
 

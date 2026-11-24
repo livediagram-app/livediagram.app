@@ -108,19 +108,30 @@ Each is one request for one tool. `<page>`, `parent` and `before` take a page re
 `404` (`409` in a body) `page_unknown` naming up to twelve pages, or `page_ambiguous` naming the ids. A link
 confined to one page names it by id and reads any other as a plain `404`.
 
-| Route                       | Reads and writes                                                                                                     |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `GET pages`                 | The tab summaries (parent and knowledge fields are in them) and the open conflicts: no page body                     |
-| `GET pages/<page>`          | One tab, its backlink rows, the open conflicts, the verifier's profile; counts a read; `?heading=`, `?maxChars=`     |
-| `GET context`               | The summaries, then one tab a context page (the budget bounds them); counts a read each; answers `role`, `scopes`    |
-| `POST pages`                | `newPageFromMarkdown`, `tabParentRefusal`, one tab insert, a `document-meta` relay; `id` and `pageIds` for an import |
-| `PUT pages/<page>`          | The article write (`handleTabPages`): its gate, `page_verified`, held paragraphs, its relay                          |
-| `POST pages/<page>/move`    | `pageMoveRefusal`, `withPageMoved`, `reorderTabs`, `writeTabParents`, a `document-meta` relay                        |
-| `GET search` (for an agent) | Adds `text`, `reviewAt` and `conflictsWith` to each result: one more statement, when there are results               |
+| Route                       | Reads and writes                                                                                                                                                                  |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET pages`                 | The tab summaries (parent and knowledge fields are in them) and the open conflicts: no page body                                                                                  |
+| `GET pages/<page>`          | One tab, its backlink rows, the open conflicts, the verifier's profile; counts a read; `?heading=`, `?maxChars=`                                                                  |
+| `GET context`               | The summaries, then one tab a context page (the budget bounds them), and the open conflicts; counts a read each; answers `role`, `scopes`                                         |
+| `POST pages`                | `newPageFromMarkdown`, `tabParentRefusal`, one tab insert, a `document-meta` relay; `id` and `pageIds` for an import                                                              |
+| `PUT pages/<page>`          | The article write (`handleTabPages`): its gate, `page_verified`, held paragraphs, its relay                                                                                       |
+| `POST pages/<page>/move`    | `moveRefusal` (a `suggest` token: `verifiedInSubtree` over the summaries, no read), `pageMoveRefusal`, `withPageMoved`, `reorderTabs`, `writeTabParents`, a `document-meta` relay |
+| `GET search` (for an agent) | Adds `text`, `reviewAt` and `conflictsWith` to each result: one more statement, when there are results                                                                            |
 
 - `depth` is 1 at the top level (`pageTreeRows`).
 - A new page's writing opens with its title as front matter (`withTitleFrontMatter`) unless the Markdown brings its
   own.
+- **Conflicts** (`openConflictPages`, `knowledge/page-read.ts`): one `listConflicts` read (at most 50, newest first)
+  gives every page's `conflictsWith`, `{ tab, title, question, foundAt }`, one entry a conflict (two passages of a
+  pair asking the same question are one). A conflict either of whose pages the caller cannot read (`outOfScope`,
+  or not the scoped page of a search) is skipped whole. The tools' `conflicts_with` is `{ page, title, question,
+found_at }` (`trustFieldsOf`); the CLI's trust line adds ` on "<question>"` (`trustLine`).
+- **A move with `suggest`** (`moveRefusal`): a token below `write` whose person is an Editor or a Participant moves
+  the page when `verifiedInSubtree` finds no page in it (pre-order over `pageTreeRows`) whose stored state is not
+  `never-verified` (`trustState`, so a page verified before a Review Period of Never stays verified). Otherwise
+  `403` `scope_needed`, `needs: "write"`, `page: { tab, title, state }`. A Viewer's or read-only token gets the bare
+  `403` that `scopeRefusalOf` words. A new parent notes a Moved update for watchers with `writerActor(writerOf(...))`,
+  the agent's name.
 - `page_verified`: an article write by a token on a page whose state is `verified`, `409`. `page_review_due`: the
   same on a page whose state is `review-due`. `never-verified` alone is written.
 
@@ -183,7 +194,7 @@ confined to one page names it by id and reads any other as a plain `404`.
 | A token's request on a document | One keyed read of `agent_grants`; none for a read-only token or a person       |
 | A token's knowledge request     | One guarded upsert of `agent_seen`: a row written an hour at most              |
 | `GET pages`                     | The summaries (already read for the gate) and one read of at most 50 conflicts |
-| `GET context`                   | One tab a context page: bounded by the 8,000 token budget                      |
+| `GET context`                   | One tab a context page: bounded by the 8,000 token budget; one conflicts read  |
 | Accept                          | One page read, one article write                                               |
 | A tool call                     | One api request; one KV read for the client's name                             |
 | `export`                        | One page held at a time; a picture fetched once                                |

@@ -100,9 +100,11 @@ own.
   Verified, and it comes due for review again in 90 days."), "It has no owner yet, so you become its owner." where that
   is so, then **Cancel** and **Verify**. The rail's and the menu's stay one press.
   A page with no owner takes the verifier as its owner.
-- An agent never rewrites a page that is Verified or Review Due, whatever it was granted: it suggests the edit, and
-  a person accepts it ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md)). A due page is the
-  one most likely to need a person's eye.
+- An agent rewrites a page that is Verified or Review Due only where the knowledgebase's [AI Editing](ai-editing.md)
+  is **Edit Any Page**; otherwise it suggests the edit, and a person accepts it ([Knowledgebase for
+  agents](../024-agents/knowledgebase-for-agents.md)). A due page is the one most likely to need a person's eye.
+  Such a rewrite keeps the tick, as a person's save does, unless **Remove Verification When AI Edits** is on: then
+  it clears `verifiedAt` and `verifiedBy` (the owner stays) and the page reads Never Verified.
 - Writing on a verified page does not clear the tick. A large change (more than a fifth of the writing's characters
   since `verifiedAt`) adds "Changed since verified" beside it, until someone verifies again.
 - **Page Health** (right rail): owner (changeable), last verified (one line: the date, then the verifier's disc,
