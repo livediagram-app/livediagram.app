@@ -43,7 +43,7 @@ describe('how work moves between the apps', () => {
   it('names no price, paid tier or unlisted connection', () => {
     for (const card of TOGETHER)
       expect(`${card.title} ${card.body}`, card.key).not.toMatch(
-        /\b(pro|paid|price|pricing|subscription|mcp)\b|—/i,
+        /\b(pro|paid|price|pricing|subscription|mcp)\b|\u2014/i,
       );
   });
 });
