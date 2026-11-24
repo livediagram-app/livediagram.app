@@ -2,7 +2,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ToastActionSpec } from '../../hooks/ui/useToast';
-import { noticeSlotHeld } from '../../lib/notice-slot';
+import { noticeSlotHeld } from '@liveworkspace/ui/toast';
 import { OFFSCREEN_TOAST_KEY, OffscreenContentHint } from './OffscreenContentHint';
 
 // liveworkspace/docs/specs/016-notifications/toasts.md "Timing": Nothing in view is a standing toast with Show All.

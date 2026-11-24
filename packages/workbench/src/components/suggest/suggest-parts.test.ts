@@ -3,7 +3,6 @@
 // the person is mid-gesture, and the notice slot's holders.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { holdNoticeSlot, noticeSlotHeld, onNoticeSlot } from '../../lib/notice-slot';
 import { busyNow, resetActivityForTests, watchActivity } from './suggest-activity';
 import {
   decideSuggestion,
@@ -115,25 +114,6 @@ describe('mid-gesture', () => {
     });
     // 10,000 dispatches, each through jsdom's whole event path; the listener itself only stores a time.
     expect(ms).toBeLessThan(cpuBudgetMs(400));
-  });
-});
-
-describe('the notice slot', () => {
-  it('is held while any notice shows, and tells who listens', () => {
-    const heard = vi.fn();
-    const off = onNoticeSlot(heard);
-    expect(noticeSlotHeld()).toBe(false);
-    const a = holdNoticeSlot();
-    const b = holdNoticeSlot();
-    a();
-    a();
-    expect(noticeSlotHeld()).toBe(true);
-    b();
-    expect(noticeSlotHeld()).toBe(false);
-    expect(heard).toHaveBeenCalledTimes(4);
-    off();
-    holdNoticeSlot()();
-    expect(heard).toHaveBeenCalledTimes(4);
   });
 });
 

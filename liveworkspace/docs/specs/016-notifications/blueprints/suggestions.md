@@ -8,13 +8,13 @@ Derived from [Suggestions](../suggestions.md).
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `packages/workbench/src/components/suggest/suggestions.ts`            | `SuggestionId`, `SUGGESTIONS` (title, action, telemetry type), the constants               |
 | `packages/workbench/src/components/suggest/useSuggestion.ts`          | The rules: idle checks, one at a time, the gesture and slot waits, take, dismiss, turn off |
-| `packages/workbench/src/components/suggest/NextAppSuggestion.tsx`     | The hook and the floating info callout in the notice slot (`SuggestionCallout`)            |
+| `packages/workbench/src/components/suggest/NextAppSuggestion.tsx`     | The hook and its stacked `ToastCard` in the toast stack (`SuggestionCallout`)              |
 | `packages/workbench/src/components/suggest/suggest-activity.ts`       | `watchActivity`, `busyNow`: keys, pointers, the wheel and focused text                     |
 | `packages/workbench/src/components/suggest/suggest-memory.ts`         | `maySuggest`, `decideSuggestion`, `turnOffSuggestion` over local storage                   |
 | `packages/workbench/src/components/suggest/suggest-gate.ts`           | `maySuggestTo`: the role and session gate                                                  |
 | `packages/workbench/src/components/suggest/write-up.ts`               | `writeUpTarget` (one read per item), `writeUpToKnowledgebase` (the page and its toast)     |
-| `packages/workbench/src/lib/notice-slot.ts`                           | `noticeBottom`, and the slot's holders: `holdNoticeSlot`, `noticeSlotHeld`, `onNoticeSlot` |
-| `packages/workbench/src/hooks/ui/useNoticeSlot.ts`                    | The slot measured above the dock; `hold` false for a suggestion                            |
+| `packages/ui/src/toast/notice-slot.ts`                                | The slot's holders: `holdNoticeSlot`, `noticeSlotHeld`, `onNoticeSlot`; the stack's row    |
+| `packages/ui/src/toast/ToastNotice.tsx`                               | A notice drawn in the toast stack; `hold` false for a suggestion                           |
 | `livediagram/apps/editor/lib/action-stickies.ts`                      | Make These a Plan's trigger                                                                |
 | `liveplanner/apps/editor/lib/write-up-trigger.ts`                     | Write It Up's watch and trigger                                                            |
 | `livedocuments/apps/editor/lib/process-article.ts`                    | Add to Knowledgebase's trigger                                                             |
