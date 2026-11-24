@@ -45,8 +45,9 @@ export function Hero() {
           Meet your team in a Space
         </h1>
         <p className="mx-auto mt-5 max-w-2xl sm:mt-7 text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl">
-          Walk in as your own character, find the team round the table and say hello. Rooms to meet
-          in, with a timer on the wall when you need one. Share one link and everyone&rsquo;s in.
+          Walk in as your own character, find the team round the table and start talking. Rooms keep
+          a call private, with a timer on the wall when you need one. Share one link and
+          everyone&rsquo;s in.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10">
           <a href={ctaHref('/new', 'Home.Hero')} className={PRIMARY}>

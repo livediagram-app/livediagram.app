@@ -90,14 +90,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore Spaces',
     title: 'Walk in and meet in a Space',
     description:
-      'Walk into a Space as your own little character and see it stand up around you in 3D. Find the team round the table and talk it through: status above your head, a speech bubble for a quick hello, a cheer when it goes well.',
+      'Walk into a Space as your own little character and see it stand up around you in 3D, with a host at the door to greet you. Find the team round the table and talk it through: status above your head, a speech bubble for a quick hello, a cheer when it goes well.',
     metaDescription:
       'Walk into a Space as your own character and see it in 3D: thirty-two offices, campuses, halls and homes to meet in, with status, bubbles and reactions.',
     highlights: [
       'Walk in as yourself',
       'See the Space in 3D',
       'Thirty-two Spaces to start from',
-      'Status at a glance',
+      'A host at the door',
     ],
     items: [
       {
@@ -237,14 +237,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore meetings',
     title: 'Talk it through, right where you stand',
     description:
-      'Walk up to someone and you are talking: voices fade as you walk apart, a room’s walls keep its call private, and a camera or a shared screen shows above your head. The rest of the meeting is in the room too: a timer, a stage and a baton for whoever runs it. Start a call from your work in livediagram, liveplanner or livedocuments, and Wrap Up sends what was decided back to it.',
+      'Walk up to someone and you are talking: voices fade as you walk apart, a room’s walls keep its call private, and a camera or a shared screen shows above your head. The rest of the meeting is in the room too: a timer, a stage and a baton for whoever runs it. Start a call from your work in any of the other apps, and Wrap Up sends the summary to a knowledgebase and the actions to a plan.',
     metaDescription:
       'Talk in a Space by walking up to people: private rooms, cameras and screens, a stage, a timer, and calls started from your work in the other apps.',
     highlights: [
       'Talk to whoever is near you',
       'Rooms keep a call private',
-      'Your camera, above your head',
-      'Speak from the stage',
+      'Start a call from any app',
+      'Wrap up where the work lives',
     ],
     items: [
       {
@@ -384,14 +384,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Together in one place, live',
     description:
-      'Share a link and your team is in the Space with you: who is where at a glance, sticky notes on the walls, and links for whoever runs it, whoever takes part and whoever watches.',
+      'Share a link and your team is in the Space with you: who is where at a glance, sticky notes on the walls, and links for whoever runs it, whoever takes part and whoever watches. Signed in, Automations keep the office for you, and Ask AI answers from the notes on its walls.',
     metaDescription:
       'Share a link and your team is in the Space with you: live presence, a call, sticky notes on the walls, and share links for editors and participants.',
     highlights: [
       'Live presence',
-      'Follow someone’s view',
       'Editor and participant links',
       'Teams with a shared library',
+      'Automations that keep the office',
     ],
     items: [
       {
