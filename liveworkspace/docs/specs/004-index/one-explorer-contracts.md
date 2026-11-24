@@ -1104,6 +1104,17 @@ each with a form, a thread and an action (measured when a fourth, the old Timeli
 The Explorer shows it as a list and a reading pane (`packages/explorer/src/explorer/InboxPane.tsx`), the same
 component on the page and in every editor's panel:
 
+- **Every app's rows, everywhere** (the owner, 2026-11-24, Work Tracker 1404: "make the inbox show inbox items from
+  all apps not a single app, in explorer panel and pages"). The Inbox reads `GET /inbox` with no `app`, on the
+  Explorer page (liveworkspace.app's and each app's) and in every editor's panel alike, so what waits on me in any
+  app is in each. The header's app filter (this app or All) does not apply to it and is not drawn on the Inbox view,
+  on the page or in the panel's header row; it still scopes every other view, and is back as the view changes.
+  Every row, and the reading pane, shows the logo of the app the row opens (`AppMark`, its Living Prism in that
+  app's colour, named for a screen reader and in its tooltip: "Diagram in livediagram"), always, so it is plain
+  where a row goes; a row of another app opens at that app's address. The counts follow the list: the page's
+  sidebar, the panel's rail and the editor's Explorer button count every app's rows
+  ([inbox-notices.md "The count"](inbox-notices.md#the-count)).
+
 - **Apps without an Inbox.** An app can have none: `APPS_WITHOUT_INBOX` (`packages/explorer/src/inbox-apps.ts`, read
   through `appHasInbox(app)`, like `APPS_WITHOUT_MCP`) holds livehuddle, which removed comments and actions (Work
   Tracker #714). Its Explorer, on its own address and in its editor's panel, shows no Inbox row in the sidebar, no
@@ -1126,16 +1137,16 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   the tooltip naming it ("Status: In Progress"), no chip when the card's column is unknown;
   and why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your plan**,
   **Replied to you** or **You replied**, **Your agent wrote** for a thread only their agent wrote in,
-  **6 new responses**), then the app's Living Prism (in the All filter) and
+  **6 new responses**), then the logo of the app it opens (its Living Prism, on every row) and
   the item's name, and the teal **Offline** pill for an item only this browser holds. The chosen row has a
   brand edge on its left. Rows are an ARIA listbox: focus stays on the list while j/k or the arrows move the choice.
 - **The filter dropdown**: **All**, **My Actions** (assigned to me, a self-assignment included),
   **Assigned by Me** (waiting on others), **Comments** (mentions, threads on my items, threads I replied in) and
   **Form Responses**, each with its count. The choice is kept per viewer on this device
-  (`liveworkspace:explorer-inbox-filter:<viewer id>`), as the Explorer keeps its other view choices, and sits beside
-  the header's app filter (this app or All), which still decides which rows are read. It is one compact dropdown
-  (`Select`, `@liveworkspace/ui`, a native select named **Inbox filter**) in the pane's header row, on the right
-  beside the app filter, in the editor's panel and on the page alike (one style, no chips), each option reading its
+  (`liveworkspace:explorer-inbox-filter:<viewer id>`), as the Explorer keeps its other view choices. It is the
+  header's one filter (the Inbox has no app filter: it lists every app's rows). It is one compact dropdown
+  (`Select`, `@liveworkspace/ui`, a native select named **Inbox filter**) in the pane's header row, on the right,
+  in the editor's panel and on the page alike (one style, no chips), each option reading its
   name and count ("My Actions (3)"), so the pane keeps one quiet row of controls; it shows only while the list does.
   **Access Requests** joins them while there is an open request on an item I manage (or it is the choice), so
   someone who never shares never sees it.
@@ -1193,7 +1204,7 @@ latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a
   row leaves the Inbox when the app's next push no longer holds it, or after 14 days. An index from before updates
   answers no `updates`, read as none.
   `Activity·Selected` (`Update`), `Activity·Changed` (`Updates`).
-- **The reading pane**, labelled by its title: where it is (the Living Prism, the team glyph, the item › the tab ›
+- **The reading pane**, labelled by its title: where it is (the logo of the app the row opens, the team glyph, the item › the tab ›
   the element or board), the title, who and why in a sentence ("Priya mentioned you · 25 mins ago · Task"), the verbs
   with their keys, the item's thumbnail where the host draws one (the host's `renderThumbnail`, the item read from
   the index once the choice has rested 200 ms and kept, at most 64), then the thread, the action's note or the

@@ -358,7 +358,7 @@ export function ExplorerProvider({
     onOrganise,
   });
   const hasInbox = appHasInbox(app);
-  const inbox = useInbox(client, app, filter, inboxHost, hasInbox, viewerId);
+  const inbox = useInbox(client, inboxHost, hasInbox, viewerId);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, openDialog] = useState<DialogTarget>(null);
   const [expansion] = useState(createExpansion);

@@ -68,7 +68,6 @@ function threadCache(host: object): BoundedCache<InboxComment[] | null> {
 
 type Props = {
   entry: InboxEntry;
-  showApp: boolean;
   /** On a phone or in the panel: the pane stands in for the list, with Back. */
   onBack?: () => void;
   /** The row's work was done here (resolved, marked done): it leaves the list. */
@@ -77,7 +76,7 @@ type Props = {
 };
 
 export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
-  { entry, showApp, onBack, onGone, announce },
+  { entry, onBack, onGone, announce },
   ref,
 ) {
   const { client, Link, itemHref, inboxHost, renderThumbnail, viewerId, teamName } = useExplorer();
@@ -248,7 +247,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         aria-label="Where it is"
         className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-slate-500 dark:text-slate-400"
       >
-        {showApp ? <AppMark app={entry.row.app} size={15} /> : null}
+        <AppMark app={entry.row.app} size={15} />
         {teamId ? (
           <span title={team ?? 'Team'} className="inline-flex shrink-0 text-slate-400">
             <TeamIcon size={13} />

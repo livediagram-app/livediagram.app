@@ -98,7 +98,6 @@ describe('the model', () => {
     expect(entries[0]!.kind).toBe('Suggestion');
     expect(inboxBadge(d, 'user_me')).toBe(2);
     expect(inboxTotal(d, 'user_me')).toBe(2);
-    expect(inboxBadge(d, 'user_me', 'livediagram')).toBeUndefined();
   });
 
   it('reads an Inbox from an index without suggestions as none', () => {

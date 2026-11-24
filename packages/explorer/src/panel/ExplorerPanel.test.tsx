@@ -987,11 +987,11 @@ describe('<ExplorerPanel> Inbox filter', () => {
     expect(select.value).toBe('waiting');
   });
 
-  // Work Tracker 1315: the rail's badge counts this app's rows, as the editor's menu button does, whichever filter
-  // the list shows; another app's row stays listed under All.
-  it("counts this app's rows in the rail's badge, the list showing every app's", async () => {
+  // Work Tracker 1404 (owner, 2026-11-24): the Inbox lists every app's rows whatever the app filter, each with the
+  // logo of the app it opens, has no app filter of its own, and the rail's badge counts what it lists.
+  it("lists every app's rows under This App, each with its app's logo, and counts them all", async () => {
     const index = createFakeIndex({ items: [] });
-    const mine = (app: 'liveplanner' | 'livediagram', id: string) => ({
+    const mine = (app: 'liveplanner' | 'livediagram' | 'livedocuments', id: string) => ({
       app,
       itemId: `i-${id}`,
       itemTitle: 'Plan',
@@ -1016,9 +1016,26 @@ describe('<ExplorerPanel> Inbox filter', () => {
     index.inbox.actions.push(
       mine('liveplanner', 'a1'),
       mine('livediagram', 'a2'),
-      mine('livediagram', 'a3'),
+      mine('livedocuments', 'a3'),
     );
-    renderPanel(index, { viewerId: 'user_me', filter: 'all' });
-    expect(await within(rail()).findByRole('button', { name: 'Inbox (1)' })).toBeTruthy();
+    renderPanel(index, { viewerId: 'user_me', filter: 'app' });
+    // The app filter is on This App, as the other sections show it.
+    expect(screen.getByRole('group', { name: 'Show' })).toBeTruthy();
+    fireEvent.click(await within(rail()).findByRole('button', { name: 'Inbox (3)' }));
+    const list = await screen.findByRole('listbox', { name: /^Inbox/ });
+    const rows = await within(list).findAllByRole('option');
+    expect(rows).toHaveLength(3);
+    expect(
+      rows.map((r) => r.querySelector('[data-app-mark]')?.getAttribute('data-app-mark')).sort(),
+    ).toEqual(['livediagram', 'livedocuments', 'liveplanner']);
+    // The read named no app, and the Inbox draws no app filter.
+    const asked = index.calls.filter((c) => c.method === 'inbox');
+    expect(asked.length).toBeGreaterThan(0);
+    for (const c of asked) expect(c.args[0]).toEqual({});
+    expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
+    // The reading pane names the chosen row's app by its logo too.
+    fireEvent.click(rows[0]!);
+    const pane = await screen.findByRole('navigation', { name: 'Where it is' });
+    expect(pane.querySelector('[data-app-mark]')).toBeTruthy();
   });
 });
