@@ -147,7 +147,8 @@ people_before`; names merged in order, first come, at most `ITEM_CALL_NAMES_MAX`
   `settings-panel-host.tsx`) lists with its `indexClient`, liveworkspace.app's with the Explorer's client
   (`workspaceToken`); both `listItems({app: livehuddle, view: all, limit: CALL_SPACES_LISTED})`, kept to `access ===
 edit` and no `sharedVia` (`choosableSpaces`). Each preview is `GET /api/previews/items/:id?v=&appearance=` on the
-  page's own origin with the bearer, at most 3 at once, as blob URLs revoked when the panel goes.
+  page’s own origin with the bearer, asked once its card comes within 200px of view (one IntersectionObserver for the
+  panel, disconnected when it goes), each version once, at most 3 at once, as blob URLs revoked when the panel goes.
 - A stored id not among the listed (with fewer than `CALL_SPACES_LISTED` listed) is **Unavailable**.
 
 ## Every editor's Call

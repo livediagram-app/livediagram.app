@@ -2,7 +2,7 @@
 // Settings › Calls › Calls Open In (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): Default or
 // one of the person's own or their teams' livehuddle Spaces, each with its preview; a choice they can't use any more
 // shows as Unavailable; nothing shared with them through a link is offered.
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CALL_SPACES_LISTED, type Item } from '@liveworkspace/index-client';
 import { CallSpacePanel } from './CallSpacePanel';
@@ -151,6 +151,61 @@ describe('CallSpacePanel', () => {
     expect(new Headers(init.headers).get('authorization')).toBe('Bearer tok');
     unmount();
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks for a card’s preview only once it nears the screen, once, and stops watching with the panel', async () => {
+    // One observer for the panel, as the browser's: `show` brings a card into view.
+    const observers: FakeObserver[] = [];
+    class FakeObserver {
+      watched = new Set<Element>();
+      disconnected = false;
+      readonly callback: IntersectionObserverCallback;
+      readonly options: IntersectionObserverInit;
+      constructor(callback: IntersectionObserverCallback, options: IntersectionObserverInit) {
+        this.callback = callback;
+        this.options = options;
+        observers.push(this);
+      }
+      observe(el: Element) {
+        this.watched.add(el);
+      }
+      unobserve(el: Element) {
+        this.watched.delete(el);
+      }
+      disconnect() {
+        this.disconnected = true;
+        this.watched.clear();
+      }
+      show(id: string) {
+        const target = [...this.watched].find(
+          (el) => (el as HTMLElement).dataset.previewFor === id,
+        )!;
+        this.callback(
+          [{ target, isIntersecting: true } as unknown as IntersectionObserverEntry],
+          this as unknown as IntersectionObserver,
+        );
+      }
+    }
+    vi.stubGlobal('IntersectionObserver', FakeObserver);
+    const { container, unmount } = render(
+      <CallSpacePanel spaces={host([space('a'), space('b')])} value={null} onChange={() => {}} />,
+    );
+    await screen.findByRole('radio', { name: 'Room b' });
+    expect(observers).toHaveLength(1);
+    const [observer] = observers;
+    expect(observer!.options.rootMargin).toBe('200px');
+    expect(observer!.watched.size).toBe(2);
+    expect(fetchMock).not.toHaveBeenCalled();
+    act(() => observer!.show('b'));
+    await waitFor(() => expect(container.querySelectorAll('img')).toHaveLength(1));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]![0]).toMatch(/\/items\/b\?/);
+    // Seen again, it is not asked again.
+    act(() => observer!.show('b'));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    unmount();
+    expect(observer!.disconnected).toBe(true);
+    expect(observers).toHaveLength(1);
   });
 
   it('keeps the stand-in where a preview is refused, not an image, or there is no bearer', async () => {

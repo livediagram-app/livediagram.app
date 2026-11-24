@@ -2,7 +2,7 @@
 
 // Settings › Calls' data (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): the Spaces a person may
 // choose, and each one's preview. Plain helpers and one hook, apart from the panel so a test reads them alone.
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CALL_SPACES_LISTED, type Item } from '@liveworkspace/index-client';
 import { PREVIEWS_PATH } from '@liveworkspace/sites/workspace-proxy';
 
@@ -51,49 +51,158 @@ export const spacePreviewUrl = (
 // At most this many asked for at once: the browser's cache answers a reopen (max-age a day).
 export const PREVIEWS_AT_ONCE = 3;
 
-/** The previews of `items`, by id, as blob URLs once each arrives (none for an empty Space or a refusal). Asked with
- *  the bearer, PREVIEWS_AT_ONCE at a time; every URL is revoked and every request dropped when the panel goes or the
- *  list changes. */
-export function useSpacePreviews(
-  items: readonly Pick<Item, 'id' | 'updatedAt' | 'summary'>[],
+// A card's preview is asked for once it comes this near the screen.
+export const PREVIEW_ROOT_MARGIN = '200px';
+
+type Wanted = Pick<Item, 'id' | 'updatedAt' | 'summary'>;
+
+/** The previews' fetcher: each Space version asked for once, PREVIEWS_AT_ONCE at a time, with the bearer. `stop` drops
+ *  every request and revokes every URL it made. */
+function previewLoader(
   token: () => Promise<string | null>,
-): ReadonlyMap<string, string> {
-  const [previews, setPreviews] = useState<ReadonlyMap<string, string>>(new Map());
-  const key = items.map((item) => `${item.id}:${item.updatedAt}`).join(',');
-  useEffect(() => {
-    const abort = new AbortController();
-    const made: string[] = [];
-    const queue = items.filter(
-      (item) => (item.summary as { empty?: boolean } | null)?.empty !== true,
-    );
-    const one = async (item: (typeof queue)[number]) => {
-      const bearer = await token();
-      if (!bearer || abort.signal.aborted) return;
-      const res = await fetch(spacePreviewUrl(item), {
-        headers: { authorization: `Bearer ${bearer}` },
-        credentials: 'omit',
-        signal: abort.signal,
-      });
-      if (!res.ok || !(res.headers.get('content-type') ?? '').startsWith('image/')) return;
-      const blob = await res.blob();
-      if (abort.signal.aborted) return;
-      const url = URL.createObjectURL(blob);
-      made.push(url);
-      setPreviews((was) => new Map(was).set(item.id, url));
-    };
-    const worker = async () => {
-      for (let next = queue.shift(); next && !abort.signal.aborted; next = queue.shift()) {
-        await one(next).catch(() => undefined);
-      }
-    };
-    void Promise.all(Array.from({ length: PREVIEWS_AT_ONCE }, worker));
-    return () => {
+  ready: (id: string, url: string) => void,
+) {
+  const asked = new Set<string>();
+  const queue: Wanted[] = [];
+  const made: string[] = [];
+  const abort = new AbortController();
+  let running = 0;
+  const one = async (item: Wanted) => {
+    const bearer = await token();
+    if (!bearer || abort.signal.aborted) return;
+    const res = await fetch(spacePreviewUrl(item), {
+      headers: { authorization: `Bearer ${bearer}` },
+      credentials: 'omit',
+      signal: abort.signal,
+    });
+    if (!res.ok || !(res.headers.get('content-type') ?? '').startsWith('image/')) return;
+    const blob = await res.blob();
+    if (abort.signal.aborted) return;
+    const url = URL.createObjectURL(blob);
+    made.push(url);
+    ready(item.id, url);
+  };
+  const pump = () => {
+    while (running < PREVIEWS_AT_ONCE && queue.length > 0 && !abort.signal.aborted) {
+      const item = queue.shift()!;
+      running += 1;
+      void one(item)
+        .catch(() => undefined)
+        .finally(() => {
+          running -= 1;
+          pump();
+        });
+    }
+  };
+  return {
+    want(item: Wanted) {
+      const key = `${item.id}:${item.updatedAt}`;
+      if (asked.has(key) || (item.summary as { empty?: boolean } | null)?.empty === true) return;
+      asked.add(key);
+      queue.push(item);
+      pump();
+    },
+    stop() {
       abort.abort();
       for (const url of made) URL.revokeObjectURL(url);
-      setPreviews(new Map());
+    },
+  };
+}
+
+/** The previews of `items`, by id, as blob URLs once each arrives (none for an empty Space or a refusal), and `watch`,
+ *  the ref each card's picture puts on itself: a card's preview is asked for only once it comes within
+ *  PREVIEW_ROOT_MARGIN of the screen (one IntersectionObserver for the panel; every card at once where the browser has
+ *  none). Each version is asked once for the panel's life, so a search or Show All reuses what came; every URL is
+ *  revoked, every request dropped and the observer disconnected when the panel goes. */
+export function useSpacePreviews(
+  items: readonly Wanted[],
+  token: () => Promise<string | null>,
+): { previews: ReadonlyMap<string, string>; watch: (id: string) => (el: Element | null) => void } {
+  const [previews, setPreviews] = useState<ReadonlyMap<string, string>>(() => new Map());
+  const byId = useRef(new Map<string, Wanted>());
+  byId.current = new Map(items.map((item) => [item.id, item]));
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+  const live = useRef<{
+    loader: ReturnType<typeof previewLoader>;
+    observer: IntersectionObserver | null;
+  } | null>(null);
+  // The cards on screen now, by id, so the observer made after them (refs come before effects) finds them.
+  const cards = useRef(new Map<string, Element>());
+  const watchers = useRef(new Map<string, (el: Element | null) => void>());
+
+  const see = (id: string) => {
+    const item = byId.current.get(id);
+    if (item) live.current?.loader.want(item);
+  };
+
+  useEffect(() => {
+    const loader = previewLoader(
+      () => tokenRef.current(),
+      (id, url) => setPreviews((was) => new Map(was).set(id, url)),
+    );
+    const observer =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                const id = (entry.target as HTMLElement).dataset.previewFor;
+                if (id) see(id);
+              }
+            },
+            { rootMargin: PREVIEW_ROOT_MARGIN },
+          );
+    live.current = { loader, observer };
+    for (const [id, el] of cards.current) {
+      if (observer) observer.observe(el);
+      else see(id);
+    }
+    return () => {
+      observer?.disconnect();
+      loader.stop();
+      live.current = null;
     };
-    // `key` stands for the items; `token` is the host's, stable for the panel's life.
+    // Once for the panel's life: what it reads is kept in refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-  return previews;
+  }, []);
+
+  // A Space shown again in a new version (its picture changed) is asked for again when next in view.
+  const versions = items.map((item) => `${item.id}:${item.updatedAt}`).join(',');
+  useEffect(() => {
+    const observer = live.current?.observer;
+    for (const [id, el] of cards.current) {
+      if (!observer) see(id);
+      else {
+        observer.unobserve(el);
+        observer.observe(el);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [versions]);
+
+  const watch = useCallback((id: string) => {
+    let ref = watchers.current.get(id);
+    if (!ref) {
+      ref = (el: Element | null) => {
+        const was = cards.current.get(id);
+        if (was && was !== el) {
+          live.current?.observer?.unobserve(was);
+          cards.current.delete(id);
+        }
+        if (!el) return;
+        cards.current.set(id, el);
+        const now = live.current;
+        if (!now) return;
+        if (now.observer) now.observer.observe(el);
+        else see(id);
+      };
+      watchers.current.set(id, ref);
+    }
+    return ref;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { previews, watch };
 }

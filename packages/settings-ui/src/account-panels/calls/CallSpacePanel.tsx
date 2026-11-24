@@ -83,9 +83,21 @@ function Choice({
 }
 
 /** A Space's picture: its preview once it arrives, else a quiet stand-in with the camera. */
-function SpacePicture({ src }: { src: string | undefined }) {
+function SpacePicture({
+  id,
+  src,
+  watch,
+}: {
+  id: string;
+  src: string | undefined;
+  watch: (id: string) => (el: Element | null) => void;
+}) {
   return (
-    <span className="relative block aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-950/50 dark:to-cyan-950/40">
+    <span
+      ref={watch(id)}
+      data-preview-for={id}
+      className="relative block aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-950/50 dark:to-cyan-950/40"
+    >
       {src ? (
         <img src={src} alt="" className="size-full object-cover" draggable={false} />
       ) : (
@@ -125,7 +137,7 @@ export function CallSpacePanel({
   const spaces = load.state === 'ready' ? load.spaces : [];
   const matching = useMemo(() => spaces.filter((s) => matchesSpace(s, query)), [spaces, query]);
   const shown = all || query ? matching : matching.slice(0, SHOWN_FIRST);
-  const previews = useSpacePreviews(shown, host.token);
+  const { previews, watch } = useSpacePreviews(shown, host.token);
   const pick = useCallback((space: string | null) => onChange(space), [onChange]);
 
   const intro = (
@@ -272,7 +284,7 @@ export function CallSpacePanel({
                     testId={space.id}
                     className="h-full"
                   >
-                    <SpacePicture src={previews.get(space.id)} />
+                    <SpacePicture id={space.id} src={previews.get(space.id)} watch={watch} />
                     <span className="block min-w-0 px-3 py-2">
                       <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">
                         <bdi>{space.title || 'Untitled'}</bdi>
