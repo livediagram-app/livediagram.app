@@ -1,7 +1,7 @@
 import { BRAND_APPS, type BrandApp, BrandMark } from '@liveworkspace/brand';
 import { lucideArrowLeftRight, lucideArrowRight } from '@liveworkspace/icons/lucide';
 import { APP_SITES, type SiteId, PLATFORM_SITE } from '@liveworkspace/sites';
-import { lucideGlyph } from '@liveworkspace/ui';
+import { lucideGlyph, RAIL_CLEAR_PADDING } from '@liveworkspace/ui';
 import { TOGETHER, type TogetherCard, togetherFor, togetherHref } from '../../lib/together';
 
 const ArrowIcon = lucideGlyph(lucideArrowRight, 16);
@@ -38,7 +38,7 @@ export function Together({ app }: { app?: SiteId } = {}) {
           </symbol>
         ))}
       </svg>
-      <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 sm:pb-28">
+      <div className={`mx-auto max-w-7xl ${RAIL_CLEAR_PADDING} pb-20 sm:pb-28`}>
         <p className="text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
           Better together
         </p>
@@ -55,7 +55,7 @@ export function Together({ app }: { app?: SiteId } = {}) {
           {cards.map((card) => (
             <li
               key={card.key}
-              className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 sm:last:odd:col-span-2 lg:last:odd:col-span-1 dark:border-slate-800 dark:bg-slate-900"
+              className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 sm:last:odd:col-span-2 lg:last:odd:col-span-1 dark:border-slate-700 dark:bg-slate-900"
             >
               <Flow card={card} />
               <h3 className="mt-5 text-lg font-semibold text-slate-900 dark:text-white">
