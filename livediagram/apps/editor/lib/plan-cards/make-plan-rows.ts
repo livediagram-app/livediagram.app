@@ -1,7 +1,7 @@
 // Make Plan Cards' preview (livediagram/docs/specs/013-workspace/make-plan-cards.md "The preview"; the platform's
 // diagrams-and-plans.md): the shapes an app read, turned into the rows the dialog lists and the ask it sends, for the
 // plan, board and column picked and how lanes land. Pure and linear in shapes plus arrows (a loop check walks each
-// arrow's upstream once), so a 500-shape tab previews in a few milliseconds (make-plan-rows.perf.test.ts).
+// arrow's upstream once), so a 500-shape tab previews in a few milliseconds (read-shapes.perf.test.ts).
 import {
   PLAN_MAKE_CARDS_MAX,
   PLAN_MAKE_LABEL_MAX,
@@ -62,7 +62,10 @@ export type MakePreview = {
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 /** Lanes Become's starting choice: Columns when any lane is a column of the board, else Labels. */
-export function defaultLaneMode(shapes: readonly MakeShape[], columns: readonly string[]): LaneMode {
+export function defaultLaneMode(
+  shapes: readonly MakeShape[],
+  columns: readonly string[],
+): LaneMode {
   const lanes = shapes.map((s) => s.lane).filter((l): l is string => !!l);
   if (lanes.length === 0) return 'none';
   return lanes.some((l) => columns.some((c) => same(c, l))) ? 'columns' : 'labels';

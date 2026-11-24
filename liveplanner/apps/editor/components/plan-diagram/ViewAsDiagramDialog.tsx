@@ -36,7 +36,10 @@ const SOON_DAYS = 7;
 const NAME_MAX = 120;
 const LABEL = 'text-[13px] font-medium text-slate-700 dark:text-slate-200';
 
-type Client = Pick<typeof indexClient, 'viewPlanAsDiagram' | 'makeConnection' | 'takeBackConnection'>;
+type Client = Pick<
+  typeof indexClient,
+  'viewPlanAsDiagram' | 'makeConnection' | 'takeBackConnection'
+>;
 
 export type ViewAsDiagramConnect = {
   // The plan's grant at `edit` for the connection, null when refused.
@@ -56,7 +59,7 @@ export function ViewAsDiagramDialog({
   connect,
   onClose,
   client = indexClient,
-  now = Date.now(),
+  now: nowProp,
 }: {
   planId: string;
   planTitle: string;
@@ -69,8 +72,10 @@ export function ViewAsDiagramDialog({
   connect: ViewAsDiagramConnect | null;
   onClose: () => void;
   client?: Client;
+  // The clock, for a filter's due words; read once when the dialog opens.
   now?: number;
 }) {
+  const [now] = useState(() => nowProp ?? Date.now());
   const toast = useToast();
   const titleId = useId();
   const ids = { board: useId(), name: useId() };
@@ -305,7 +310,8 @@ export function ViewAsDiagramDialog({
 
 function refusal(err: unknown): string {
   if (err instanceof IndexError) {
-    if (err.code === 'rate_limited') return 'That is a lot of diagrams at once. Try again in a minute.';
+    if (err.code === 'rate_limited')
+      return 'That is a lot of diagrams at once. Try again in a minute.';
     if (err.status === 403 || err.status === 404) return "You can't read this board any more.";
   }
   return "livediagram couldn't be reached just now. Try again.";

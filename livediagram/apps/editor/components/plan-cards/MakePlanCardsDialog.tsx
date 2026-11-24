@@ -4,15 +4,29 @@
 // to Plan's picker offers them, how lanes land, and one row a card, every one ticked, with the shapes no longer on the
 // tab offered (unticked) for the Trash. Nothing is written until Make Cards. Centred, a bottom sheet on a phone.
 import { useEffect, useId, useMemo, useState } from 'react';
-import { IndexError, type AutomationTargetDescription, type Item } from '@liveworkspace/index-client';
+import {
+  IndexError,
+  type AutomationTargetDescription,
+  type Item,
+} from '@liveworkspace/index-client';
+import { Tooltip } from '@livediagram/ui';
 import { Button, DialogFooter, SegmentedToggle, Select } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { makePlanCardsHeroArt } from '@liveworkspace/ui/dialog-hero-art/make-plan-cards';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { SendPlanList, type PlanList } from '@liveworkspace/workbench/components/send-to-plan/SendPlanList';
-import { recallSend, rememberSend } from '@liveworkspace/workbench/components/send-to-plan/send-memory';
-import { addSends, refreshSends } from '@liveworkspace/workbench/components/send-to-plan/send-store';
+import {
+  SendPlanList,
+  type PlanList,
+} from '@liveworkspace/workbench/components/send-to-plan/SendPlanList';
+import {
+  recallSend,
+  rememberSend,
+} from '@liveworkspace/workbench/components/send-to-plan/send-memory';
+import {
+  addSends,
+  refreshSends,
+} from '@liveworkspace/workbench/components/send-to-plan/send-store';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import { useToast } from '@liveworkspace/workbench/hooks/ui/useToast';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
@@ -39,6 +53,8 @@ type Client = Pick<
   'listItems' | 'automationTarget' | 'makePlanCards' | 'newPlanForSend'
 >;
 type Boards = NonNullable<AutomationTargetDescription['boards']>;
+const NO_BOARDS: Boards = [];
+
 type Target =
   | { state: 'idle' }
   | { state: 'loading' }
@@ -164,7 +180,7 @@ export function MakePlanCardsDialog({
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- the board and column are read once a plan
   }, [client, planId]);
 
-  const boards = target.state === 'ready' ? target.boards : [];
+  const boards = target.state === 'ready' ? target.boards : NO_BOARDS;
   const columns = useMemo(() => boards.find((b) => b.id === board)?.columns ?? [], [boards, board]);
   const hasLanes = useMemo(() => shapes.some((s) => s.lane), [shapes]);
   const lanes = laneMode ?? defaultLaneMode(shapes, columns);
@@ -185,8 +201,7 @@ export function MakePlanCardsDialog({
   );
   const trashing = preview.removed.filter((s) => trash.has(s.card.id)).length;
   const nothing = preview.made + preview.updated + trashing === 0;
-  const ready =
-    !!plan && target.state === 'ready' && !!board && !!column && !making && !nothing;
+  const ready = !!plan && target.state === 'ready' && !!board && !!column && !making && !nothing;
 
   const needle = filter.trim().toLowerCase();
   const shown = needle
@@ -218,7 +233,9 @@ export function MakePlanCardsDialog({
         makeAsk({
           shapes,
           ticked,
-          removedTicked: new Set(preview.removed.filter((s) => trash.has(s.card.id)).map((s) => s.card.id)),
+          removedTicked: new Set(
+            preview.removed.filter((s) => trash.has(s.card.id)).map((s) => s.card.id),
+          ),
           laneMode: lanes,
           columns,
           board,
@@ -323,8 +340,16 @@ export function MakePlanCardsDialog({
                 value={lanes}
                 onChange={setLaneMode}
                 options={[
-                  { value: 'columns', label: 'Columns', description: "A lane lands in the board's column of its name." },
-                  { value: 'labels', label: 'Labels', description: "A lane's name becomes a label on its cards." },
+                  {
+                    value: 'columns',
+                    label: 'Columns',
+                    description: "A lane lands in the board's column of its name.",
+                  },
+                  {
+                    value: 'labels',
+                    label: 'Labels',
+                    description: "A lane's name becomes a label on its cards.",
+                  },
                   { value: 'none', label: 'Nothing', description: 'Lanes are left out.' },
                 ]}
               />
@@ -397,7 +422,8 @@ export function MakePlanCardsDialog({
                   ))}
                 </ul>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Their shapes are gone. Tick a card to move it to the plan&apos;s Trash; the rest stay as they are.
+                  Their shapes are gone. Tick a card to move it to the plan&apos;s Trash; the rest
+                  stay as they are.
                 </p>
               </fieldset>
             ) : null}
@@ -433,7 +459,8 @@ export function MakePlanCardsDialog({
 
 function refusal(err: unknown): string {
   if (err instanceof IndexError) {
-    if (err.code === 'rate_limited') return 'That is a lot of cards at once. Try again in a minute.';
+    if (err.code === 'rate_limited')
+      return 'That is a lot of cards at once. Try again in a minute.';
     if (err.code === 'source_full') return 'This diagram has made as many cards as it may.';
     if (err.code === 'plan_refused') {
       const reason = err.detail?.reason;
@@ -590,12 +617,11 @@ function CardRows({
                 </span>
               </span>
               {row.updates ? (
-                <span
-                  className="mt-0.5 shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30"
-                  title={`Updates ${row.updates.card.title}`}
-                >
-                  Updates Card
-                </span>
+                <Tooltip label={`Updates ${row.updates.card.title}`}>
+                  <span className="mt-0.5 shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30">
+                    Updates Card
+                  </span>
+                </Tooltip>
               ) : null}
             </label>
           </li>

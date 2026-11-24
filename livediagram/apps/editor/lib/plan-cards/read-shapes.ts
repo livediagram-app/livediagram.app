@@ -4,7 +4,12 @@
 // 12 Dec", "by Friday") or, on a timeline, from where it stands against the dates written along the axis. Pure and
 // linear in the tab's elements (containers are few; each shape checks them once), measured at 500 shapes in
 // read-shapes.perf.test.ts.
-import { elementSupportsText, isBoxed, type BoxedElement, type Element } from '@livediagram/document';
+import {
+  elementSupportsText,
+  isBoxed,
+  type BoxedElement,
+  type Element,
+} from '@livediagram/document';
 import type { MakeShape } from './make-plan-rows';
 import {
   readSendSpan,
@@ -132,9 +137,7 @@ export function readPlanShapes(
   // Reading order: lane by lane, then rows (a band of 40px), then left to right.
   shapes.sort(
     (a, b) =>
-      a.at.lane - b.at.lane ||
-      Math.floor(a.at.y / 40) - Math.floor(b.at.y / 40) ||
-      a.at.x - b.at.x,
+      a.at.lane - b.at.lane || Math.floor(a.at.y / 40) - Math.floor(b.at.y / 40) || a.at.x - b.at.x,
   );
   return shapes.map(({ at: _at, ...s }) => s);
 }

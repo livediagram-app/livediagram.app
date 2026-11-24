@@ -29,7 +29,15 @@ const PIECES = (
     className={`${HERO_PLACE.bottomRight} overflow-visible`}
   >
     {/* The board: a column with three cards, running off the band's foot. */}
-    <rect x="4" y="4" width="30" height="40" rx="4" fill="var(--hero-plate)" stroke="var(--hero-line)" />
+    <rect
+      x="4"
+      y="4"
+      width="30"
+      height="40"
+      rx="4"
+      fill="var(--hero-plate)"
+      stroke="var(--hero-line)"
+    />
     <rect x="8" y="9" width="22" height="6" rx="2" fill="var(--hero-wash)" />
     <rect x="8" y="18" width="22" height="6" rx="2" fill="var(--hero-wash)" />
     <rect x="8" y="27" width="22" height="6" rx="2" fill="var(--hero-soft)" />
@@ -42,8 +50,24 @@ const PIECES = (
     />
     {/* The drawing: two lanes, three boxes, arrows; the critical box in the accent. */}
     <path d="M56 17h76" stroke="var(--hero-faint)" />
-    <rect x="58" y="4" width="20" height="10" rx="2.5" fill="var(--hero-wash)" stroke="var(--hero-line)" />
-    <rect x="86" y="21" width="20" height="10" rx="2.5" fill="var(--hero-plate)" stroke="var(--hero-line)" />
+    <rect
+      x="58"
+      y="4"
+      width="20"
+      height="10"
+      rx="2.5"
+      fill="var(--hero-wash)"
+      stroke="var(--hero-line)"
+    />
+    <rect
+      x="86"
+      y="21"
+      width="20"
+      height="10"
+      rx="2.5"
+      fill="var(--hero-plate)"
+      stroke="var(--hero-line)"
+    />
     <path
       d="M78 9h4a2 2 0 0 1 2 2v13a2 2 0 0 0 2 2"
       fill="none"

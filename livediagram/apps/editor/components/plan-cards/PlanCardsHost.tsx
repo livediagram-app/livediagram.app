@@ -54,7 +54,9 @@ export function PlanCardsHost({
   const sends = useAllSends();
   // Read at the moment an entry asks, never on every render.
   const now = useRef({ elements, tabId, tabName, sends });
-  now.current = { elements, tabId, tabName, sends };
+  useEffect(() => {
+    now.current = { elements, tabId, tabName, sends };
+  }, [elements, tabId, tabName, sends]);
 
   useEffect(
     () =>
@@ -85,7 +87,10 @@ export function PlanCardsHost({
   );
 
   // The offers on a drawn tab, read once the drawing settles.
-  const planId = useMemo(() => (live && canEdit ? drawnPlanOf(elements) : null), [live, canEdit, elements]);
+  const planId = useMemo(
+    () => (live && canEdit ? drawnPlanOf(elements) : null),
+    [live, canEdit, elements],
+  );
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(() => new Set());
   const [settled, setSettled] = useState(elements);
   useEffect(() => {

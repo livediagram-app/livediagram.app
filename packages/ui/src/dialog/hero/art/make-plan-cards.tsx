@@ -46,7 +46,15 @@ const PIECES = (
       stroke="var(--hero-line)"
       strokeLinejoin="round"
     />
-    <rect x="34" y="10" width="16" height="14" rx="3" fill="var(--hero-wash)" stroke="var(--hero-line)" />
+    <rect
+      x="34"
+      y="10"
+      width="16"
+      height="14"
+      rx="3"
+      fill="var(--hero-wash)"
+      stroke="var(--hero-line)"
+    />
     <path d="M24 17h8" stroke="var(--hero-mark)" strokeWidth="1.25" strokeLinecap="round" />
     <path
       d="M30 15l2 2-2 2"
@@ -74,12 +82,7 @@ const PIECES = (
       className={HERO_MOTION.ring}
     />
     <circle cx="72" cy="17" r="7" fill="var(--hero-accent)" />
-    <path
-      d="M72 14v6M69 17h6"
-      stroke="var(--hero-plate)"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-    />
+    <path d="M72 14v6M69 17h6" stroke="var(--hero-plate)" strokeWidth="1.4" strokeLinecap="round" />
     {/* The cards, leaning a little. */}
     <g transform="rotate(-5 94 22)">{card(82, 6, 'var(--hero-plate)')}</g>
     <g transform="rotate(5 118 22)">{card(106, 8, 'var(--hero-wash)')}</g>

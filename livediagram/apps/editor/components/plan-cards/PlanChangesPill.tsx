@@ -7,7 +7,10 @@
 import { useState, useSyncExternalStore } from 'react';
 import { IndexError, type PlanEditResult } from '@liveworkspace/index-client';
 import { Button } from '@liveworkspace/ui';
-import { TopCenterBanner, TopCenterRow } from '@liveworkspace/workbench/components/chrome/TopCenter';
+import {
+  TopCenterBanner,
+  TopCenterRow,
+} from '@liveworkspace/workbench/components/chrome/TopCenter';
 import { useToast } from '@liveworkspace/workbench/hooks/ui/useToast';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { track } from '@/lib/telemetry';
@@ -92,7 +95,10 @@ export function PlanChangesPill({ client = indexClient }: { client?: Client }) {
         shape="card"
         className={`flex-col items-stretch gap-0 ${open ? 'w-[min(26rem,calc(100vw-1.5rem))]' : ''}`}
       >
-        <div className="flex items-center gap-2 py-1 pr-1 pl-3 text-xs font-medium" data-plan-changes="">
+        <div
+          className="flex items-center gap-2 py-1 pr-1 pl-3 text-xs font-medium"
+          data-plan-changes=""
+        >
           <span className="min-w-0 flex-1 truncate">{title}</span>
           <button
             type="button"
@@ -109,7 +115,8 @@ export function PlanChangesPill({ client = indexClient }: { client?: Client }) {
         {open ? (
           <div className="flex flex-col gap-2 border-t border-brand-200/70 px-3 pt-2 pb-3 dark:border-brand-500/30">
             <p className="text-[11px] text-brand-900/70 dark:text-brand-100/70">
-              Your edits to this drawing, offered to the plan. Nothing changes there until you apply.
+              Your edits to this drawing, offered to the plan. Nothing changes there until you
+              apply.
             </p>
             <ul className="flex max-h-64 flex-col gap-1.5 overflow-y-auto">
               {offers.map((o) => (

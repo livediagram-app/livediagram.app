@@ -50,7 +50,8 @@ export function planChangeOffers(
   for (const el of elements) {
     const read = readPlanElementId(el.id);
     if (!read) continue;
-    if (read.kind === 'card' && isBoxed(el)) cards.set(el.id, { card: read.card, lane: read.lane, el });
+    if (read.kind === 'card' && isBoxed(el))
+      cards.set(el.id, { card: read.card, lane: read.lane, el });
     else if (read.kind === 'lane' && isBoxed(el)) lanes.push({ lane: read.lane, el });
     else if (read.kind === 'dep') deps.add(`${read.blocker}>${read.card}`);
   }
