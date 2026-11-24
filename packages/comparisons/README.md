@@ -189,8 +189,8 @@ Miro and FigJam remain livediagram's comparisons.
   are not an AI tool" is never a selling point: most of them have AI of their own, and the pages say so.
 - **Where liveknowledge differs** (each a shipped feature, its
   [marketing-site spec](../../liveknowledge/docs/specs/019-marketing/marketing-site.md)): an owner, a verified date
-  and a review that comes due on every page; agents as readers, with trust fields on every passage and edits as
-  suggestions; Ask with a citation on every claim, on the team's own Claude API key; free and MIT-licensed; part of a
+  and a review that comes due on every page; agents as readers, with trust fields on every passage, editing only as far as the
+  knowledgebase's AI Editing allows; Ask with a citation on every claim, on built-in AI or the team's own key; free and MIT-licensed; part of a
   workspace.
 - **Where liveknowledge is behind**, said on the pages it bears on: databases (Notion), page-level permissions
   (Notion, Confluence), integrations (all of them), a native mobile app, semantic search (Slite, Guru) and public
