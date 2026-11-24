@@ -800,7 +800,9 @@ livediagram's specs ([MCP server](../../../../livediagram/docs/specs/015-api/mcp
   (liveworkspace's [Workbench](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)), so livehuddle no longer
   pairs one: the `/embed/workbench` frame, Settings' list of workbench pairings, the editor's workbench chrome and
   messages, and the api's `lvw_` session and its confinement are gone. An `lvw_` bearer now identifies nobody, and the
-  router's `/api/workbench` answers 404 from the api. liveworkspace's pairing service is unchanged; livehuddle simply
+  router's `/api/workbench` answers 404 from the api, but for the one route a Screen needs to show a file
+  live, `/api/workbench/embed-tickets`, which the router forwards to liveworkspace (Work Tracker 1427, [A file on the
+  Screen](../009-elements/screen-and-room-sign.md#a-file-on-the-screen)). liveworkspace's pairing service is unchanged; livehuddle simply
   never redeems a pairing. The room's share of the pairing contract went too (Work Tracker #583): no session
   carries a pairing, the api has no workbench-close door, and a platform close for a pairing matches nobody.
 - **Help**: the Connect an AI Tool, CLI and Workbenches articles go, and the developer articles show `curl` only. Old

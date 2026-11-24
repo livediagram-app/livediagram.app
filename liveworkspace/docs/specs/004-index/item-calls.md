@@ -31,6 +31,11 @@ Here: a livehuddle call about this <noun>, in a new tab."
 - Pressing it opens a **new browser tab** at once (an empty one, so no pop-up blocker stops it), and the index answers
   with the call's address, which the tab then goes to. The call never opens inside the item's tab (owner, 2026-11-22).
 - **One call an item.** While a call about the item is live, pressing starts nothing new: the person joins that call.
+- **A Document Room with the item on its wall** (Work Tracker 1427). A Space made for the call is livehuddle's
+  [Document Room](../../../../livehuddle/docs/specs/012-collaboration/virtual-office-template.md#document-room)
+  (`ITEM_CALL_TEMPLATE`, `document-room`): chairs facing a big wall Screen, and the item already on the Screen, each
+  person seeing it with their own access. The index asks the template door for it with `screen: {app, itemId, name}`
+  ([kits.md](kits.md) "The apps' door"). A call in a Calls Space leaves that Space as it is.
 - The call's tab is named for the item, so pressing Call or Join again brings the open call's tab to the front instead
   of opening another, and **Open Item** in the call brings the item's tab back.
 - The tab enters the call through livehuddle's no-click sign-in (`/api/auth/silent?return=<the call's address>`,

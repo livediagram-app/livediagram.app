@@ -52,6 +52,14 @@ thumbnail, the same code in every app ([Previews: Pasting a share link](../../..
 - **Sizes and caching.** 800 x 500, scaled down to fit the host's `maxwidth` and `maxheight`; `cache_age` 300
   seconds, so a revoked link's unfurl lingers five minutes at most and its frame shows the not found card at once.
 
+## Live embeds: a file on a Screen
+
+livehuddle has no Embed element; a **Screen** is its live embed's host (Work Tracker 1427, the platform's [Live
+embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md)): an Editor chooses a file from any app for it,
+and each person in the room sees it live with their own access ([A file on the
+Screen](../009-elements/screen-and-room-sign.md#a-file-on-the-screen)). A Space is never shown in another app's live
+embed: livehuddle serves no workbench frame.
+
 ## Out of scope
 
 - Embedding a single element or region rather than a tab.
