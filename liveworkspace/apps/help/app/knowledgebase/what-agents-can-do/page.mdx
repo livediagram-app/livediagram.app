@@ -5,11 +5,11 @@ import { AgentCardScene } from '@/editions/liveknowledge/components/illustration
 export const metadata = helpMetadata({
   title: 'What Agents Can Do',
   description:
-    'A new agent connection reads, searches and suggests edits. An Editor can allow one to write pages directly, never over a verified page or one due for review.',
+    'A new agent connection reads, searches and suggests edits. An Editor can allow one to write pages directly, as far as the Knowledgebase\'s AI Editing setting allows.',
   path: '/help/knowledgebase/what-agents-can-do/',
 });
 
-<ArticleLayout path="knowledgebase/what-agents-can-do" title="What Agents Can Do" description="A new connection reads, searches and suggests. An Editor can allow one to write, never over a verified page." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+<ArticleLayout path="knowledgebase/what-agents-can-do" title="What Agents Can Do" description="A new connection reads, searches and suggests. An Editor can allow one to write, as far as AI Editing allows." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
 
 An agent connected to a Knowledgebase can do three kinds of thing, each called a **scope**: read, suggest and write. A new connection holds the first two. Writing is something an Editor allows, for one connection, in one Knowledgebase.
 
@@ -19,7 +19,7 @@ An agent connected to a Knowledgebase can do three kinds of thing, each called a
 | --------- | ------------------ | ----------------------------------------------------------------------------------------- |
 | `read`    | **Reads**          | Read the context pages, the page tree and pages; search; report a question nobody could answer |
 | `suggest` | **Suggests Edits** | Everything `read` does, plus create a page and suggest an edit to a page                   |
-| `write`   | **Writes**         | Everything `suggest` does, plus replace a page's writing and move pages                    |
+| `write`   | **Writes**         | Everything `suggest` does, plus replace a page's writing (as far as AI Editing allows) and move pages |
 
 - A full API token, and a connection your AI tool made through the MCP server, hold `read` and `suggest`.
 - A read-only token holds `read` only, and can never hold more.
@@ -55,14 +55,32 @@ To take it back, choose **Stop Writing** from the same menu and confirm. The age
 
 A card with no menu cannot be allowed to write, and says why: its token is read-only, or the person it acts for is not an Editor here.
 
-## Never on a Verified Page
+## AI Editing
 
-An agent that may write still never rewrites a page that is **Verified** or **Review Due**. Those are pages a person vouched for, and the one that is due is the page most in need of a person's eye. On either, the write is refused and the agent is told to use `suggest_edit` instead, so the change waits for a person to accept. It can write directly only on a page that was never verified.
+**AI Editing** is a setting of the whole Knowledgebase that says how far any agent may change pages itself. An agent may do the lower of the two: what its connection holds, and what AI Editing allows.
+
+| Level                                   | What an agent that may write does                                                       |
+| --------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Suggest Edits Only** (the default)    | Nothing directly. Every change is a suggestion for a person to accept.                   |
+| **Edit Unverified Pages**               | Rewrites pages nobody has verified. A **Verified** or **Review Due** page takes a suggestion. |
+| **Edit Any Page**                       | Rewrites any page, verified ones too. Every change is marked **AI Edited**.               |
+
+Under **Edit Any Page** one more switch shows: **Remove Verification When AI Edits**. Off (the default), a verified page an agent rewrites stays Verified, as it does when a person edits it. On, it goes back to **Not Verified**, so a person checks it and verifies it again. The owner stays.
+
+<Step n={1}>
+  Press the Knowledgebase's name at the top of the sidebar to open its menu, and choose **AI Editing**.
+</Step>
+
+<Step n={2}>
+  Choose a level, and under **Edit Any Page** whether to remove verification. Press **Save**.
+</Step>
+
+Only an Editor sees **AI Editing**, and no agent, token or command can change it. A connection without **Allow Writing** only suggests, whatever the level. Agents read the level from `get_context` (the CLI's `context`), so they know whether to write or suggest. A refused write names the setting and tells the agent to use `suggest_edit`.
 
 ## What an Agent Never Does
 
 - It never verifies a page. A page an agent creates is **Never Verified**.
-- No MCP tool or CLI command changes the Review Period or Knowledgebase Style. An Editor sets both in the app.
+- No MCP tool or CLI command changes the Review Period, AI Editing or Knowledgebase Style. An Editor sets them in the app.
 - It never sees the team's AI key, if it added one.
 - It never reaches a Knowledgebase kept Offline.
 
@@ -77,5 +95,6 @@ An agent that may write still never rewrites a page that is **Verified** or **Re
 | ------------------------------------- | ------ | ----------- | ------ |
 | See what each agent may do            | Yes    | Yes         | Yes    |
 | Allow an agent to write, or stop it   | Yes    | No          | No     |
+| Change AI Editing                     | Yes    | No          | No     |
 
 </ArticleLayout>

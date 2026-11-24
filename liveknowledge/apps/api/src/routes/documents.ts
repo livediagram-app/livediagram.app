@@ -414,8 +414,14 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
         presentation: clash ? null : presentation,
         // The Review Period a knowledgebase kept Offline chose, on the create that syncs it (verification.md "The
         // Review Period"); a period the api does not know is left out, and the knowledgebase reads as the default.
+        // AI Editing rides it only from a person: an agent never raises its own reach (ai-editing.md "Who sets it").
         ...(!clash && isReviewEvery(body.knowledgeSettings?.reviewEvery)
-          ? { knowledgeSettings: parseKnowledgeSettings(body.knowledgeSettings) }
+          ? {
+              knowledgeSettings: carriedKnowledgeSettings(
+                body.knowledgeSettings,
+                !!(ctx.token || ctx.workbench),
+              ),
+            }
           : {}),
         // Its Knowledgebase Style, on the same terms (page-surface.md "Knowledgebase Style"): read forgivingly,
         // the default left out.
@@ -626,4 +632,12 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
   if (subResp) return subResp;
 
   return notFound();
+}
+
+// The settings a create carries: as stored, less AI Editing when an agent sends them.
+function carriedKnowledgeSettings(sent: unknown, agent: boolean) {
+  const settings = parseKnowledgeSettings(sent);
+  if (!agent) return settings;
+  const { aiEditing: _ai, aiEditUnverifies: _un, ...rest } = settings;
+  return rest;
 }

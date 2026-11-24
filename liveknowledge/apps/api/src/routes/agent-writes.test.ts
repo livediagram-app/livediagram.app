@@ -75,6 +75,8 @@ async function personalDocument(room: ReturnType<typeof roomRecorder>) {
   const created = await call(db, 'person', 'POST', '/api/documents', {
     id: 'D',
     name: 'Board',
+    // Agents write here (docs/specs/030-knowledgebase/ai-editing.md): the default only suggests.
+    knowledgeSettings: { reviewEvery: 90, aiEditing: 'unverified' },
     tabs: [{ id: 't1', name: 'Board', elements: [box('a')] }],
   });
   expect(created.status).toBe(201);

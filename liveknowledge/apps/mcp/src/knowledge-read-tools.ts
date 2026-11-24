@@ -28,6 +28,7 @@ import {
   reviewPeriodOf,
   treeRowOf,
   trustFieldsOf,
+  aiEditingFieldsOf,
 } from '@liveknowledge/agent-verbs';
 import { knowledgeApi } from './knowledge-client';
 import { pageRowNamed } from './page-named';
@@ -52,6 +53,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
       role: context.role,
       scopes: context.scopes,
       review_period: reviewPeriodOf(context.reviewEvery),
+      ...aiEditingFieldsOf(context.aiEditing, context.aiEditUnverifies, context.scopes),
       budget_tokens: context.budget,
       tokens: context.tokens,
       pages: context.pages.map((p) => ({

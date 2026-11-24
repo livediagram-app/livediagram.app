@@ -579,9 +579,7 @@ describe('allowing an agent to write', () => {
     choose('Allow Writing');
     const dialog = within(screen.getByRole('dialog', { name: 'Allow Coding Agent to Write?' }));
     expect(dialog.getByText(/replace a page’s writing and move pages/)).toBeTruthy();
-    expect(
-      dialog.getByText(/never rewrite a page that is Verified or due for review/),
-    ).toBeTruthy();
+    expect(dialog.getByText(/How far it may write is the knowledgebase’s AI Editing/)).toBeTruthy();
     expect(dialog.getByText(/This applies to this knowledgebase only\./)).toBeTruthy();
     fireEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
     expect(agentsApi.apiSetAgentScopes).not.toHaveBeenCalled();

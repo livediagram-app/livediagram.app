@@ -98,9 +98,10 @@ describe('the page tools', () => {
     expect(tool('search_pages').description).toContain('Prefer a verified passage');
   });
 
-  it('keep a direct write for the write scope and off verified pages', () => {
+  it('keep a direct write for the write scope, as far as AI Editing allows', () => {
     expect(tool('write_page').behaviour).toBe('destructive');
-    expect(tool('write_page').description).toContain('never on a verified page');
+    expect(tool('write_page').description).toContain('AI Editing');
+    expect(tool('write_page').description).toContain('"unverified" refuses a verified page');
     expect(tool('write_page').description).toContain('suggest_edit');
     expect(tool('report_gap').idempotent).toBe(true);
     expect(tool('move_page').idempotent).toBe(true);

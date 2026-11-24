@@ -7,6 +7,7 @@ import {
   lucideGlobe,
   lucidePalette,
   lucidePencil,
+  lucideShieldCheck,
   lucideSparkles,
   lucideTrash2,
   lucideWandSparkles,
@@ -21,4 +22,5 @@ export const ImportIcon = lucideGlyph(lucideFileUp, 16);
 export const ExportIcon = lucideGlyph(lucideFileDown, 16);
 export const PublishIcon = lucideGlyph(lucideGlobe, 16);
 export const AiIcon = lucideGlyph(lucideSparkles, 16);
+export const AiEditingIcon = lucideGlyph(lucideShieldCheck, 16);
 export const DeleteIcon = lucideGlyph(lucideTrash2, 16);
