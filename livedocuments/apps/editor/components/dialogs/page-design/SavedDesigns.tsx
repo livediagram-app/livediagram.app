@@ -18,12 +18,14 @@ import {
 } from '@liveworkspace/workbench/components/library/library-icons';
 import { DesignTileImage } from './DesignTile';
 import type { TileLook } from './DesignGrid';
-import { saveDraftOf, savedDesignsOf, type SavedDesign } from './saved-designs';
+import { saveDraftOf, savedDesignsOf, wearsSaved, type SavedDesign } from './saved-designs';
 
 const TILE =
   'group relative flex w-full cursor-pointer flex-col gap-0.5 rounded-lg p-1 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand-500';
 const FRAME =
   'relative block aspect-[16/10] w-full overflow-hidden rounded-md ring-1 ring-slate-200 transition-shadow group-hover:ring-slate-300 dark:ring-slate-700 dark:group-hover:ring-slate-500';
+// The catalogue tiles' selected ring (DesignGrid's SELECTED).
+const SELECTED = 'ring-2 ring-brand-500 group-hover:ring-brand-500 dark:ring-brand-400';
 const MENU_ROW =
   'flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800';
 
@@ -43,10 +45,15 @@ export function useSavedDesigns(): SavedDesign[] | null {
 export function SavedDesignGrid({
   saved,
   look,
+  worn,
+  onPage,
   onApply,
 }: {
   saved: readonly SavedDesign[];
   look: TileLook;
+  // The design the tab (or, on This Page, the page) wears: the tile it matches shows selected.
+  worn: PageDesign | undefined;
+  onPage: boolean;
   onApply: (design: PageDesign) => void;
 }) {
   const library = useLibrary();
@@ -63,6 +70,7 @@ export function SavedDesignGrid({
             key={s.item.id}
             saved={s}
             look={look}
+            selected={wearsSaved(worn, s.design, onPage)}
             onApply={() => onApply(s.design)}
             onRename={(title) => void library.rename(s.item, title)}
             onDelete={() => setDeleting(s)}
@@ -91,12 +99,14 @@ export function SavedDesignGrid({
 function SavedTile({
   saved,
   look,
+  selected,
   onApply,
   onRename,
   onDelete,
 }: {
   saved: SavedDesign;
   look: TileLook;
+  selected: boolean;
   onApply: () => void;
   onRename: (title: string) => void;
   onDelete: () => void;
@@ -130,10 +140,11 @@ function SavedTile({
         type="button"
         className={TILE}
         aria-label={`${item.title}, saved to ${whose}`}
+        aria-pressed={selected}
         onClick={onApply}
         data-page-design-saved-tile={item.id}
       >
-        <span className={FRAME}>
+        <span className={`${FRAME} ${selected ? SELECTED : ''}`}>
           <DesignTileImage input={input} />
         </span>
         {renaming ? null : (

@@ -93,6 +93,8 @@ export function PageDesignPanel() {
           {saved && saved.length > 0 ? (
             <SavedGrid
               saved={saved}
+              worn={worn}
+              onPage={onPage}
               onApply={(d) => door.edits.applySavedDesign(d, onPage && page ? page.id : null)}
             />
           ) : null}
@@ -123,14 +125,8 @@ function useTileLook(): TileLook {
   );
 }
 
-function SavedGrid({
-  saved,
-  onApply,
-}: {
-  saved: Parameters<typeof SavedDesignGrid>[0]['saved'];
-  onApply: (design: PageDesign) => void;
-}) {
-  return <SavedDesignGrid saved={saved} look={useTileLook()} onApply={onApply} />;
+function SavedGrid(props: Omit<Parameters<typeof SavedDesignGrid>[0], 'look'>) {
+  return <SavedDesignGrid {...props} look={useTileLook()} />;
 }
 
 // The catalogue's tiles.
