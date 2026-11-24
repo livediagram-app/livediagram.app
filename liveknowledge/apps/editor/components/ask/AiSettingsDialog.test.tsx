@@ -12,6 +12,15 @@ const api = vi.hoisted(() => ({
   apiSetKnowledgeAiKey: vi.fn(),
   apiRemoveKnowledgeAiKey: vi.fn(),
   apiSetKnowledgeAiModel: vi.fn(),
+  // AI Settings > Sources has its own suite (AiSourcesSection.test.tsx): here it reads an empty set.
+  apiKnowledgeSources: vi.fn(async () => ({
+    connected: true,
+    folderId: null,
+    folderName: null,
+    teamId: null,
+    items: [],
+  })),
+  apiSetKnowledgeSources: vi.fn(),
 }));
 vi.mock('@/lib/api/knowledge', async (actual) => ({
   ...(await actual<typeof import('@/lib/api/knowledge')>()),
@@ -185,9 +194,9 @@ describe('the provider', () => {
     expect(isOn('Anthropic \\(Claude\\)')).toBe(true);
     expect(isOn('OpenAI')).toBe(false);
     expect(group.querySelector('img')).toBeNull();
-    // Provider, then the key, then the model.
+    // Provider, then the key, then the model, then what Ask reads.
     const headings = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
-    expect(headings).toEqual(['Which AI', 'Provider', 'Claude API Key', 'Model']);
+    expect(headings).toEqual(['Which AI', 'Provider', 'Claude API Key', 'Model', 'Sources']);
     expect(keyField()!.placeholder).toBe('sk-ant-...');
   });
 

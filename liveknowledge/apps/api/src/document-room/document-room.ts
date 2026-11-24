@@ -93,7 +93,7 @@ import {
   closeAllReverted,
 } from './document-room-sockets';
 import { webSocketMessage } from './document-room-frames';
-import type { SourceChange } from '@liveworkspace/index-client';
+import type { KnowledgeSourceChange, SourceChange } from '@liveworkspace/index-client';
 import {
   localNamespace,
   roomHead,
@@ -136,6 +136,7 @@ import {
   type SiteAddressAnswer,
   type SiteAddressOp,
 } from '../publishing/site-addresses';
+import { oweSourceSync, oweSources, takeKnowledgeSourceChange } from './document-room-sources';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -333,6 +334,7 @@ export class DocumentRoom extends DurableObject<Env> {
       oweWork(state.storage.sql, { kind: 'watch', key, dueAt, payload: '' });
       this.knowledge.wake(dueAt);
     };
+    this.knowledge.onRemoved = () => oweSourceSync(this);
     this.knowledge.work = async (now) =>
       this.roomEnv && this.documentId
         ? runKnowledgeWork(this.roomEnv, state.storage.sql, this.documentId, now)
@@ -372,6 +374,7 @@ export class DocumentRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
           REVIEW_PERIOD_CHANGED: oweReviewCheck,
           WATCH_OWED: oweWatch,
+          SOURCES_OWED: (key: string, dueAt: number) => oweSources(this, key, dueAt),
           OUTBOX_OWED: () => noteOutboxOwed(this),
         }
       : undefined;
@@ -524,6 +527,10 @@ export class DocumentRoom extends DurableObject<Env> {
       documentId,
       change,
     );
+  }
+
+  async knowledgeSourceChanged(documentId: string, change: KnowledgeSourceChange): Promise<void> {
+    takeKnowledgeSourceChange(this, documentId, change);
   }
 
   joined(documentId: string, personId: string, level?: AccessLevel): Promise<void> {

@@ -203,7 +203,8 @@ function isKnowledgePath(segments: readonly string[]): boolean {
     );
   if (segments.length === 5)
     return (
-      (segments[3] === 'ai' && (segments[4] === 'key' || segments[4] === 'model')) ||
+      (segments[3] === 'ai' &&
+        (segments[4] === 'key' || segments[4] === 'model' || segments[4] === 'sources')) ||
       (segments[3] === 'knowledge' && segments[4] === 'remind-owners') ||
       (segments[3] === 'knowledge-settings' && segments[4] === 'preview') ||
       segments[3] === 'labels' ||

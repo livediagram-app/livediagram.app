@@ -109,6 +109,30 @@ describe('History', () => {
     expect(within(run).getByText('Was “\u2068Untitled\u2069”')).toBeTruthy();
   });
 
+  it("names an agent's create and update for its person with the AI sparkle; a person's change, the person", async () => {
+    const claude = { agent: 'Claude Code', via: 'mcp' };
+    const events = [
+      mine(1, { type: 'edited', actorId: 'user_ada', actorName: 'Ada', detail: claude }),
+      mine(2, { type: 'edited', actorId: 'user_ada', actorName: 'Ada' }),
+      // An old event, from before agents were named: the person, as it always was.
+      mine(3, { type: 'edited', actorId: 'user_bo', actorName: 'Bo', detail: null }),
+      mine(4, { type: 'created', actorId: 'user_me', detail: { source: 'ai', ...claude } }),
+    ];
+    page(createFakeIndex({ items: [makeItem(1)], events }));
+    const dialog = await openHistory();
+    await waitFor(() => expect(entries(dialog)).toHaveLength(4));
+    const [update, own, old, made] = [...entries(dialog)] as HTMLElement[];
+    expect(within(update!).getByText('Claude Code for Ada')).toBeTruthy();
+    expect(within(update!).getByRole('img', { name: 'Edited by AI' })).toBeTruthy();
+    expect(within(own!).getByText('Ada')).toBeTruthy();
+    expect(own!.querySelector('[data-history-ai]')).toBeNull();
+    expect(within(old!).getByText('Bo')).toBeTruthy();
+    expect(old!.querySelector('[data-history-ai]')).toBeNull();
+    expect(within(made!).getByText('Plan Made by AI')).toBeTruthy();
+    expect(within(made!).getByText('Claude Code for you')).toBeTruthy();
+    expect(within(made!).getByRole('img', { name: 'Made by AI' })).toBeTruthy();
+  });
+
   it('says when nothing has happened', async () => {
     page(createFakeIndex({ items: [makeItem(1)] }));
     const dialog = await openHistory();

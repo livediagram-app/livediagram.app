@@ -77,6 +77,7 @@ import { automationStepDoor, automationTargetDoor } from './automation-step-door
 import { planSendDoor } from './plan-send-door';
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
+import { answerKnowledgeSourceDoor, isKnowledgeSourceDoor } from './knowledge-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { templateDoor } from './template-item';
 import { bearerMatches } from './timing-safe';
@@ -276,6 +277,8 @@ export async function handleInternalItems(
     return handlers.migrate ? migrateItem(request, id, app, handlers.migrate) : notFound();
 
   if (isSheetSourceDoor(rest)) return answerSheetSourceDoor(request, id, rest[1]!, handlers);
+  if (isKnowledgeSourceDoor(rest))
+    return answerKnowledgeSourceDoor(request, id, rest[1]!, handlers);
 
   if (rest.length === 1 && request.method === 'DELETE') {
     await handlers.purge(id);

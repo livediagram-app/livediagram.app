@@ -163,7 +163,7 @@ describe('the access, by role', () => {
     expect(rows.map((row) => row.querySelector('.rounded-full')?.textContent)).toEqual(
       yours.map((words) => `Yours: ${words}`),
     );
-    expect(access.textContent).toContain('Never on a page that is Verified or Review Due');
+    expect(access.textContent).toContain('as far as the knowledgebase’s AI Editing allows');
     expect(access.textContent).toContain('“Handbook”');
     const button = within(access).queryByRole('button', { name: 'Open Connected Agents' });
     expect(!!button).toBe(opensAgents);

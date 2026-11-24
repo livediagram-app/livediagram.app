@@ -3,6 +3,8 @@
 // and Settings > AI are built over. Each is one request through the shared funnel (identity, the index's grant, the
 // release signal, the failure report); the Ask stream is knowledge-ask.ts.
 import type {
+  KnowledgeSources,
+  KnowledgeSourcesChange,
   KnowledgeAiProvider,
   KnowledgeAiSettings,
   KnowledgeBacklink,
@@ -12,6 +14,8 @@ import type {
   KnowledgeSearchResult,
   KnowledgeSettingsPreviewResponse,
   KnowledgeSettingsResponse,
+  KnowledgeSettingsWire,
+  KnowledgeAiEditing,
   KnowledgeReviewEvery,
   KnowledgeSummaryResponse,
   PageHealthResponse,
@@ -193,6 +197,18 @@ export async function apiSetReviewPeriod(
   return answer.knowledgeSettings.reviewEvery;
 }
 
+/** Set the knowledgebase's AI Editing (docs/specs/030-knowledgebase/ai-editing.md): the level, the option beside it,
+ *  or both. Answers the settings as stored. An Editor in person only: anyone else is refused with 403. */
+export async function apiSetAiEditing(
+  who: KnowledgeCaller,
+  documentId: string,
+  change: { aiEditing?: KnowledgeAiEditing; aiEditUnverifies?: boolean },
+): Promise<KnowledgeSettingsWire> {
+  const res = await write(who, knowledgeUrl(documentId, 'knowledge-settings'), 'PUT', change);
+  const answer = await expectOk<KnowledgeSettingsResponse>(res, 'set ai editing', expected);
+  return answer.knowledgeSettings;
+}
+
 /** How many pages would be Review Due under a Review Period, beside how many are now. Changes nothing. */
 export function apiPreviewReviewPeriod(
   who: KnowledgeCaller,
@@ -274,6 +290,25 @@ export async function apiSetKnowledgeAiModel(
 ): Promise<KnowledgeAiSettings> {
   const res = await write(who, knowledgeUrl(documentId, 'ai/model'), 'PUT', { model });
   return expectOk<KnowledgeAiSettings>(res, 'set ai model', expected);
+}
+
+/** AI Settings' Sources (search-and-ask.md "Sources in AI Settings"): what the knowledgebase reads besides its pages. */
+export function apiKnowledgeSources(
+  who: KnowledgeCaller,
+  documentId: string,
+  signal?: AbortSignal,
+): Promise<KnowledgeSources> {
+  return read(who, knowledgeUrl(documentId, 'ai/sources'), 'read sources', signal);
+}
+
+/** An Editor's change to Sources: Connected Items on or off, a team folder or none. */
+export async function apiSetKnowledgeSources(
+  who: KnowledgeCaller,
+  documentId: string,
+  change: KnowledgeSourcesChange,
+): Promise<KnowledgeSources> {
+  const res = await write(who, knowledgeUrl(documentId, 'ai/sources'), 'PUT', change);
+  return expectOk<KnowledgeSources>(res, 'set sources', expected);
 }
 
 /** The Insights tab: agents, unanswered questions, conflicts, Always in Context pages, health. */

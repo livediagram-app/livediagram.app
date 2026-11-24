@@ -26,7 +26,7 @@ const sections: HomeSection[] = [
     eyebrow: 'Your Account',
     heading: 'Your account and your data',
     lede: 'Who you are to liveknowledge, where your work lives, and the promises that cover it.',
-    categories: ['account-and-data', 'privacy-and-security', 'policies'],
+    categories: ['account-and-data', 'privacy-and-security', 'supported-devices', 'policies'],
   },
 ];
 

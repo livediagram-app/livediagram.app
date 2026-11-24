@@ -30,11 +30,8 @@ import {
 } from './knowledge-icons';
 import { RequestIcon } from './approval/feedback-icons';
 import type { PageStamp } from '@/lib/knowledge/page-makers';
-import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
-import {
-  AN_AGENT,
-  agentForPerson,
-} from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
+import { AiWriterMark } from '@liveworkspace/ui/ai-writer-mark';
+import { AN_AGENT, agentForPerson } from '@liveworkspace/ui/agent-for-person';
 import { ReadByAgentsButton } from './ReadByAgents';
 import { Collapse } from './Collapse';
 import type { PageAgentReads } from '@liveknowledge/api-schema';

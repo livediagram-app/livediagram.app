@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { NewKnowledgebase } from '@/editions/liveknowledge/components/illustrations/getting-started';
+import { TrustStates } from '@/editions/liveknowledge/components/illustrations/trust';
+
+export const metadata = helpMetadata({
+  title: 'Why Use liveknowledge?',
+  description:
+    'liveknowledge is free, open source, needs no sign-in to start, and tells you which pages a team still vouches for.',
+  path: '/help/about/why-liveknowledge/',
+});
+
+<ArticleLayout path="about/why-liveknowledge" title="Why Use liveknowledge?" description="Free and open source, no sign-in wall, and every page says who vouches for it." categoryTitle="About liveknowledge" categorySlug="about">
+
+There are plenty of places to write down what a team knows. liveknowledge is built around four ideas that keep it useful after the first month: it is **free**, it is **open source**, it never puts a **sign-in wall** in front of your first page, and every page says **how far to trust it**. Here is what each of those means for you.
+
+## Free to use
+
+liveknowledge is **free for everyone**. There is no trial that expires, no card to enter, and every feature works on the free plan. A Knowledgebase holds up to 500 pages. Ask and Describe to Set Up run on built-in AI, included with daily limits, and your team's own Claude or OpenAI key is optional.
+
+## Open source
+
+The whole codebase is **MIT-licensed** and publicly viewable. That has real consequences:
+
+- **You can check the claims.** How a Knowledgebase is stored and what telemetry records are in the open for anyone to audit.
+- **No lock-in.** Because the code is open and your pages [export to Markdown](/help/knowledgebase/exporting-a-knowledgebase/), you are never trapped.
+
+## No sign-in wall
+
+A first-time visitor can open [a new Knowledgebase](/new) and start writing, with no modal in the way. As a guest, your Knowledgebase is kept [Offline](/help/privacy-and-security/offline-mode/), in this browser, and writing and Search work there. An [account](/help/getting-started/guest-vs-account/) adds the rest: saving to every device, Verify, Ask, Insights and sharing. It is never a gate in front of the first page.
+
+<Figure caption="A new Knowledgebase opens on its first page with the caret ready, with no sign-in gate in front of it.">
+  <NewKnowledgebase />
+</Figure>
+
+## Pages you can trust
+
+A wiki goes stale quietly. In liveknowledge a page has an **owner**, an Editor presses **Verify** to say it is right, and the page comes **Review Due** when the Knowledgebase's Review Period has passed. Readers, and the AI agents that read through the MCP server, see each page's state beside its words, so they know which pages to rely on and which to check first. Where two pages disagree, Insights says so.
+
+<Figure caption="The three states a page can be in: verified, review due and never verified.">
+  <TrustStates />
+</Figure>
+
+<FeatureGrid>
+  <Feature slug="owners-and-verifying" title="Owners and verifying">
+    Say who vouches for a page and when they last did.
+  </Feature>
+  <Feature slug="ask" title="Ask">
+    Get an answer in plain words, with the passage behind it.
+  </Feature>
+  <Feature slug="connecting-an-agent" title="Connecting an agent">
+    Let an AI agent read your pages and see how far to trust them.
+  </Feature>
+  <Feature slug="import-a-markdown-folder" title="Import">
+    Bring in a folder of Markdown, or pages from Notion and Confluence.
+  </Feature>
+</FeatureGrid>
+
+<Tip>
+  The best argument for liveknowledge is a Knowledgebase itself. Open [a new one](/new) and write a
+  page, no account needed.
+</Tip>
+
+</ArticleLayout>

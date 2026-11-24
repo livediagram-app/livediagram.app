@@ -30,6 +30,7 @@ import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
 import type { PublishedAnswer, PublishedRead } from './publishing/published-reads';
+import type { KnowledgeSourceChange } from '@liveworkspace/index-client';
 
 // The source side of a copy, and whether it went through the document's open Community post's link.
 export type CopySource = { copy: DocumentCopy; community: boolean };
@@ -97,6 +98,8 @@ export type DocumentRoomClient = {
   takeStanding(standing: ItemStanding): Promise<void>;
   // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
   sourceChanged(change: SourceChange): Promise<void>;
+  // A source this knowledgebase reads changed or went (knowledge/source-work.ts takeSourceChange).
+  knowledgeSourceChanged(change: KnowledgeSourceChange): Promise<void>;
   // A closed account's name off the document (document-anonymise.ts), and the guests merged into it (`guestIds`) as its
   // own: answers the rows changed.
   anonymise(personId: string, guestIds?: readonly string[]): Promise<number>;
@@ -141,6 +144,7 @@ export function documentRoom(
     emailOptOut: (token) => room.emailOptOut(documentId, token),
     takeStanding: (standing) => room.takeStanding(documentId, standing),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
+    knowledgeSourceChanged: (change) => room.knowledgeSourceChanged(documentId, change),
     anonymise: (personId, guestIds = []) => room.anonymise(documentId, personId, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
@@ -187,6 +191,7 @@ export type DocumentRoomRpc = {
   emailOptOut(documentId: string, token: string): Promise<boolean>;
   takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;
+  knowledgeSourceChanged(documentId: string, change: KnowledgeSourceChange): Promise<void>;
   anonymise(documentId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(

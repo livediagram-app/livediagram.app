@@ -6,7 +6,7 @@ import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { ASK_MAX_QUESTION_CHARS, ASK_MAX_TURNS } from '../limits';
 import { choosePassages, type AskPassage } from '../passages';
 import type { AskTurn } from '../request';
-import type { AskProvider, AskSource } from '../wire';
+import type { AskCreditsUsed, AskProvider, AskSource } from '../wire';
 import { ASK_FAILED, type AskSend } from './ask-client';
 
 export type AskTurnView = {
@@ -19,7 +19,7 @@ export type AskTurnView = {
   /** Which AI answered, once it has. */
   provider?: AskProvider;
   model?: string;
-  failure?: { kind: string; message: string; aiKey?: AiKeyFailure };
+  failure?: { kind: string; message: string; aiKey?: AiKeyFailure; credits?: AskCreditsUsed };
 };
 
 /** What the conversation asks its host for, read at each question (the newest the tool handed it). */
@@ -29,6 +29,8 @@ export type AskConversationDeps = {
   teamId: () => string | null;
   /** The person chose built-in AI over the key that applies. */
   builtIn: () => boolean;
+  /** The open item, sent so the api can learn who pays a built-in question's AI credit with Pro on. */
+  itemId: string;
   /** What a question says when the item holds no words. */
   nothingToRead: string;
 };
@@ -140,6 +142,7 @@ export class AskConversation {
         {
           question,
           passages,
+          itemId: deps.itemId,
           ...(turns.length ? { turns } : {}),
           ...(teamId ? { teamId } : {}),
           ...(deps.builtIn() ? { ai: 'built-in' as const } : {}),
@@ -175,6 +178,7 @@ export class AskConversation {
           kind: outcome.kind,
           message: outcome.message,
           ...(outcome.aiKey ? { aiKey: outcome.aiKey } : {}),
+          ...(outcome.credits ? { credits: outcome.credits } : {}),
         },
       });
     } catch {

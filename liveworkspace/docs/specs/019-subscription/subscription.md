@@ -140,7 +140,7 @@ A limit of "none" means unlimited. Days are UTC days and months are UTC calendar
   counted as Public Roadmaps are (liveknowledge/docs/specs/030-knowledgebase/publishing.md "Tiers"). Every other
   part of Publish to the Web works on every tier.
 - **A credit spend sits beside an app's own hourly and daily caps**, never in place of them (liveknowledge's Ask and
-  conflict check caps, liveplanner's AI steps a day). Those are abuse bounds and hold on every tier.
+  conflict check caps, liveplanner's AI steps a day, Ask AI's 30 questions a person a day). Those are abuse bounds and hold on every tier.
 - **A call minute** is one person in a call for one minute. Nobody limits how many people join a call. Pro has
   5,000 (owner, 2026-11-22, down from 10,000) so the smallest team, three members pooling 7,500, never has fewer
   than one person on Pro.
@@ -177,6 +177,7 @@ spend these amounts and the screens say them from one table (`AI_CREDIT_COSTS` i
 | Automations: Describe a Rule                           | 1                    | 1,500 tokens written                                |
 | liveplanner: Describe a Plan, Describe a Form          | 1                    | 2,000 tokens written                                |
 | livediagram: read a photo's notes                      | 1 for every 24 notes | six notes a request, 2,000 tokens written a request |
+| Ask AI in any app's Tools (built-in)                   | 1                    | 24,000 characters of passages read, 2,000 written   |
 
 - **Said before, in the words the operation's own screen uses:** "Uses 2 AI credits" beside the button that starts
   it, "Each run of this step uses 1 AI credit." in a step's panel, and for a photo, "Read 60 notes with AI · Uses 3
@@ -185,6 +186,13 @@ spend these amounts and the screens say them from one table (`AI_CREDIT_COSTS` i
   is never more than the table says.
 - **A refused spend costs nothing**, and an operation the model then fails is not given back (each app's own
   caps bound retries).
+- **Ask AI** (owner's open choice, decided 2026-11-23 in Work Tracker 1391; the owner may overturn it) costs 1
+  credit, as liveknowledge's Ask does: on built-in AI the model writes at most 2,000 tokens (`BUILT_IN_MAX_TOKENS`
+  caps Ask's 8,000, which is room for a key's model, and a key spends no credits), and it reads at most 24,000
+  characters of passages and the earlier turns. The **item's owner pays** (the team for a team's item) for an Editor
+  or a Participant, as every other limit does; a **Viewer is lent nothing** and spends their own; a guest's item
+  spends nobody's. People who are not the owner or the owning team charge at most 20 questions a day to one item.
+  Ask's own 30 built-in questions a person a day hold beside it ([Ask AI](../020-ask/ask.md) "AI credits").
 
 ## Price
 

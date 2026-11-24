@@ -3,12 +3,25 @@
 // words to quote beneath.
 
 import type { ItemEvent } from '@liveworkspace/index-client';
+import { agentForPerson } from '@liveworkspace/ui/agent-for-person';
 import { quoted } from '../quoted';
 import { dueWords } from '../approvals/approval-words';
 import { SHARE_LEVEL_WORDS } from './share-levels';
 
-/** Who did it, as the reader should hear it. The index keeps no names: an app's report may carry one. */
+/** The agent that did it for its person (Work Tracker 1381: an agent's create or update), or null for a person's
+ *  doing, and for any event recorded before agents were named. */
+export function eventAgent(event: Pick<ItemEvent, 'detail'>): string | null {
+  return event.detail?.agent?.trim() || null;
+}
+
+/** Who did it, as the reader should hear it: an agent for its person ("Claude Code for you"), else the person. The
+ *  index keeps no names: an app's report may carry one. */
 export function actorWords(event: ItemEvent, viewerId: string | null): string {
+  const agent = eventAgent(event);
+  return agent ? agentForPerson(agent, personWords(event, viewerId)) : personWords(event, viewerId);
+}
+
+function personWords(event: ItemEvent, viewerId: string | null): string {
   if (event.actorId && viewerId && event.actorId === viewerId) return 'you';
   if (event.actorName) return event.actorName;
   if (event.actorId === 'deleted') return 'a closed account';

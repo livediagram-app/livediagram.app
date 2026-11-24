@@ -5,7 +5,6 @@
 // endpoints mount alongside.
 import { createMcpApp } from '@liveworkspace/mcp-kit/app';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { rememberClientName } from './agent-name';
 import { LISTING } from './listing';
 import { OAUTH } from './oauth';
 import { buildServer } from './server';
@@ -16,11 +15,5 @@ export type { Env };
 // server (tools, prompts) and its authorization server's configuration (oauth.ts).
 const app = createMcpApp<Env>({ buildServer, oauth: OAUTH, listing: LISTING });
 
-export default {
-  // A handshake's client name is remembered beside the request (agent-name.ts), never in its way: the answer does
-  // not wait for it.
-  fetch(request: Request, env: Env, ctx: ExecutionContext): Response | Promise<Response> {
-    ctx.waitUntil(rememberClientName(env, request));
-    return app.fetch(request, env, ctx);
-  },
-};
+// The kit's app remembers a handshake's client name and names each api call by it (agent-name.ts).
+export default app;

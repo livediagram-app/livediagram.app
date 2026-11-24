@@ -18,8 +18,8 @@ import {
   type ReviewEvery,
 } from '@liveknowledge/knowledge';
 import type {
+  KnowledgeConflictRef,
   KnowledgePageHealth,
-  KnowledgePageRef,
   KnowledgePageTrust,
 } from '@liveknowledge/api-schema';
 import type { DocumentDTO, DocumentEnv } from '../types';
@@ -86,29 +86,62 @@ export function pageMarkdownOf(tab: Tab, tabs: TabSummaries): string {
   return articleToMarkdown(withPageLinkTitles(savedArticlesOf(tab)[flow]!, titleOf));
 }
 
-/** For each page an open conflict names, the pages it is set against; and the same by passage. One read of the
- *  conflicts (at most 50), none of any page. */
+type ConflictRefs = {
+  byTab: Map<string, KnowledgeConflictRef[]>;
+  byPassage: Map<string, KnowledgeConflictRef[]>;
+};
+
+/** The open conflicts as each page and passage names them: the other page, the question the two answer differently
+ *  and when it was found (knowledgebase-for-agents.md "Conflicts for agents"), newest first as the rows come. A
+ *  conflict is named only where the caller reads both of its pages: a page it cannot see (`outOfScope`, or any page
+ *  but `scope` for a link confined to one page) hides it, question and all. Pure. */
+export function conflictRefsOf(
+  rows: readonly ConflictRow[],
+  tabs: TabSummaries,
+  scope: string | null = null,
+): ConflictRefs {
+  const titles = new Map(
+    tabs
+      .filter((t) => !t.outOfScope && (scope === null || t.id === scope))
+      .map((t) => [t.id, t.name]),
+  );
+  const byTab = new Map<string, KnowledgeConflictRef[]>();
+  const byPassage = new Map<string, KnowledgeConflictRef[]>();
+  const note = (
+    map: Map<string, KnowledgeConflictRef[]>,
+    key: string,
+    other: string,
+    row: ConflictRow,
+  ) => {
+    const held = map.get(key) ?? [];
+    // Two passages of the same pair asking the same question are one disagreement to an agent.
+    if (!held.some((p) => p.tab === other && p.question === row.question))
+      held.push({
+        tab: other,
+        title: titles.get(other)!,
+        question: row.question,
+        foundAt: row.foundAt,
+      });
+    map.set(key, held);
+  };
+  for (const row of rows) {
+    if (!titles.has(row.aTab) || !titles.has(row.bTab)) continue;
+    note(byTab, row.aTab, row.bTab, row);
+    note(byTab, row.bTab, row.aTab, row);
+    note(byPassage, row.aPassage, row.bTab, row);
+    note(byPassage, row.bPassage, row.aTab, row);
+  }
+  return { byTab, byPassage };
+}
+
+/** The open conflicts by page and by passage, as `conflictRefsOf` names them. One read of the conflicts (at most 50),
+ *  none of any page, whatever the number of pages. */
 export async function openConflictPages(
   env: DocumentEnv,
   tabs: TabSummaries,
-): Promise<{ byTab: Map<string, KnowledgePageRef[]>; byPassage: Map<string, KnowledgePageRef[]> }> {
-  const titles = new Map(tabs.map((t) => [t.id, t.name]));
-  const byTab = new Map<string, KnowledgePageRef[]>();
-  const byPassage = new Map<string, KnowledgePageRef[]>();
-  const note = (map: Map<string, KnowledgePageRef[]>, key: string, other: string) => {
-    const title = titles.get(other);
-    if (title === undefined) return;
-    const held = map.get(key) ?? [];
-    if (!held.some((p) => p.tab === other)) held.push({ tab: other, title });
-    map.set(key, held);
-  };
-  for (const row of await rowsOf<ConflictRow>(env, listConflicts())) {
-    note(byTab, row.aTab, row.bTab);
-    note(byTab, row.bTab, row.aTab);
-    note(byPassage, row.aPassage, row.bTab);
-    note(byPassage, row.bPassage, row.aTab);
-  }
-  return { byTab, byPassage };
+  scope: string | null = null,
+): Promise<ConflictRefs> {
+  return conflictRefsOf(await rowsOf<ConflictRow>(env, listConflicts()), tabs, scope);
 }
 
 /** How far a page can be trusted, from its stored fields, the knowledgebase's Review Period and the clock.
@@ -118,7 +151,7 @@ export function pageTrustOf(
   every: ReviewEvery,
   now: number,
   extra: {
-    conflictsWith?: KnowledgePageRef[] | undefined;
+    conflictsWith?: KnowledgeConflictRef[] | undefined;
     verifiedBy?: string | undefined;
     /** The page's Health Score (page-health-read.ts), where the caller scored it. */
     health?: KnowledgePageHealth | undefined;

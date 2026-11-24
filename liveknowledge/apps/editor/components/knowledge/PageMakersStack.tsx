@@ -8,7 +8,7 @@
 import { GUEST_DISC_TINT, GUEST_NAME, isGuestName } from './guest-disc';
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
 import { Tooltip } from '@liveknowledge/ui';
-import { agentForPerson } from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
+import { agentForPerson } from '@liveworkspace/ui/agent-for-person';
 import { initialsOf } from '@/lib/identity';
 import { AgentsIcon, MakerPersonIcon } from './knowledge-icons';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';

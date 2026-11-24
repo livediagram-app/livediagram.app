@@ -1,6 +1,12 @@
 // The bodies of the room's RPC doors (design-room.ts) that do more than one read: what the worker asks of a design
 // (its routes, the Community post, the export door, copies, share links, a closed account). Each takes the room.
-import { openRoomSockets, recordItemEditor, putAwayGate } from '@liveworkspace/index-app';
+import { AGENT_HEADERS } from '../changesets/front-door';
+import {
+  openRoomSockets,
+  recordItemEditor,
+  putAwayGate,
+  itemAgentOf,
+} from '@liveworkspace/index-app';
 import { designServesImage } from '../db/image-grants';
 import { designHasTab } from '../db/tabs';
 import { drawDesign } from '../thumbnail';
@@ -77,6 +83,8 @@ export async function route(
         designId,
         identity.owner,
         Date.now(),
+        // An agent's write for its person names the agent (Work Tracker 1381).
+        itemAgentOf(request, identity.token, AGENT_HEADERS),
       );
     }
     noteWrite(room);

@@ -1,11 +1,13 @@
 // The bodies of the room's RPC doors (document-room.ts) that do more than one read: what the worker asks of a document
 // (its routes, the Community post, the export door, copies, share links, a closed account). Each takes the room.
+import { AGENT_HEADERS } from '../changesets/front-door';
 import {
   openRoomSockets,
   recordItemEditor,
   type ExportCommentsResult,
   type ExportQuery,
   type ExportResult,
+  itemAgentOf,
 } from '@liveworkspace/index-app';
 import { documentHasTab } from '../db/tabs';
 import { documentMayServeImage } from '../db/image-grants';
@@ -79,6 +81,8 @@ export async function route(
         documentId,
         identity.owner,
         Date.now(),
+        // An agent's write for its person names the agent (Work Tracker 1381).
+        itemAgentOf(request, identity.token, AGENT_HEADERS),
       );
     }
     noteWrite(room);

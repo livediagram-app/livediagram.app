@@ -14,6 +14,7 @@ import { TrustBadge } from '@/components/knowledge/TrustBadge';
 import { HealthChip } from '@/components/knowledge/HealthChip';
 import { SourcesIcon } from './ask-icons';
 import { NUMBER_CHIP } from './CitationChip';
+import { ItemSourceCard } from './ItemSourceCard';
 
 export type SourcePage = { id: string; name: string; parent?: string; knowledge?: unknown };
 
@@ -144,6 +145,25 @@ function SourceCard({
     card.current?.scrollIntoView?.({ block: 'nearest', behavior: 'auto' });
     card.current?.focus({ preventScroll: true });
   }, [lit]);
+  // An item of another app (search-and-ask.md "Sources"): its own card, opening in its app.
+  if (source.source)
+    return (
+      <ItemSourceCard
+        source={source}
+        passage={<Passage text={source.text} question={question} />}
+        now={now}
+        lit={lit}
+        stale={stale}
+        card={CARD}
+        onOpen={onOpen}
+      >
+        {'reason' in source && source.reason ? (
+          <span className="mt-1.5 block break-words text-[13px] leading-5 text-amber-900 dark:text-amber-200">
+            {source.reason}
+          </span>
+        ) : null}
+      </ItemSourceCard>
+    );
   const page = pages.find((p) => p.id === source.tab);
   const verifier = nameOf(parseKnowledgeFields(page?.knowledge).verifiedBy);
   // The card's title is the page's: a top-level page's path, or a heading that only repeats it, would say it twice.
@@ -230,7 +250,7 @@ export const AskSourcesRail = memo(function AskSourcesRail({
           description={
             turn?.status === 'done'
               ? 'This answer cites no passage.'
-              : 'The passages an answer cites show here, each with its page and who verified it.'
+              : 'The passages an answer cites show here, each with its page and who verified it, or the item it is from in another app.'
           }
         />
       ) : (

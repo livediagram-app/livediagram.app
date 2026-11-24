@@ -1,7 +1,8 @@
 'use client';
 
 // What the knowledgebase's menu holds for this session (docs/specs/030-knowledgebase/knowledgebases-and-pages.md
-// "The knowledgebase's menu"): Rename, Describe to Add Pages, Import, Export, Publish to the Web, AI Settings, then
+// "The knowledgebase's menu"): Rename, Describe to Add Pages, Import, Export, Publish to the Web, AI Settings,
+// AI Editing, then
 // Delete. Publish to the Web is an Editor's in person, signed in, for a knowledgebase not kept Offline
 // (publishing.md "Who"). Describe to Add
 // Pages and Import are a writer's (an Editor or a Participant of the whole knowledgebase); Rename, AI Settings and
@@ -15,9 +16,10 @@ import { useStyleOffered } from '@/components/knowledge-style/useStyleOffered';
 import { useDescribeToAddPages } from '@/components/setup/SetupHost';
 import { openAiSettings } from '@/lib/knowledge-ask/ai-settings-open';
 import { openPublishing } from '@/lib/publishing/publish-open';
+import { openAiEditing } from '@/lib/knowledge-settings/ai-editing-open';
 
 export type KnowledgeMenuVerb =
-  'rename' | 'describe' | 'import' | 'export' | 'publish' | 'ai' | 'delete';
+  'rename' | 'describe' | 'import' | 'export' | 'publish' | 'ai' | 'aiEditing' | 'delete';
 
 export type KnowledgeMenuRow = { verb: KnowledgeMenuVerb; label: string; run: () => void };
 
@@ -61,6 +63,13 @@ export function useKnowledgebaseMenu(onRename: (() => void) | undefined): Knowle
   if (editor && publishes)
     rows.push({ verb: 'publish', label: 'Publish to the Web', run: openPublishing });
   if (editor && manageAi) rows.push({ verb: 'ai', label: 'AI Settings', run: openAiSettings });
+  // How far agents may change pages (ai-editing.md): an Editor's in person, not kept Offline.
+  if (editor && ask?.rights.grantAgents)
+    rows.push({
+      verb: 'aiEditing',
+      label: 'AI Editing',
+      run: openAiEditing,
+    });
   if (editor)
     rows.push({
       verb: 'delete',

@@ -58,6 +58,26 @@ describe('buildHistory', () => {
     expect(days[0]!.runs.map((r) => r.events.map((e) => e.id))).toEqual([['a', 'b'], ['c'], ['d']]);
   });
 
+  it("never folds an agent's doing into its person's, nor one agent's into another's", () => {
+    const by = (id: string, agent?: string) =>
+      makeEvent(1, {
+        id,
+        type: 'edited',
+        occurredAt: at(0, 14),
+        detail: agent ? { agent, via: 'mcp' } : null,
+      });
+    const days = buildHistory(
+      [by('a', 'Claude'), by('b', 'Claude'), by('c'), by('d', 'Cursor'), by('e')],
+      NOW,
+    );
+    expect(days[0]!.runs.map((r) => r.events.map((e) => e.id))).toEqual([
+      ['a', 'b'],
+      ['c'],
+      ['d'],
+      ['e'],
+    ]);
+  });
+
   it('works out 10,000 loaded events well inside a frame budget', () => {
     const events = Array.from({ length: 10_000 }, (_, i) =>
       makeEvent(1, {

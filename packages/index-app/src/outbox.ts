@@ -37,7 +37,9 @@ import {
   type CollabSuggestionInput,
   type CollabThreadInput,
   type IndexAppClient,
+  type ItemAgent,
   type ItemSummary,
+  parseItemAgent,
 } from '@liveworkspace/index-client';
 
 // How long the outbox waits after a write before it pushes (the contract's "on idle"), the least gap between two
@@ -154,23 +156,36 @@ export function flushAfterWrite(
 // ---------- Who edited ---------------------------------------------------------------------------------------
 
 // An `edit` key is `<person>@<time>`: one per person, the time of their latest write, so a morning of saves is
-// one key and the drain reports it as one `edited` event (the index keeps one per person, item and day).
+// one key and the drain reports it as one `edited` event (the index keeps one per person, item and day). An agent's
+// write for the person (Work Tracker 1381) is `<person>\x1f<via>\x1f<agent>@<time>`: one key per person and agent,
+// kept apart from the person's own, which the drain reports as an `edited` with `agent`. The unit separator sorts
+// before '@', so neither key's range holds the other, and an agent's name never holds one (cleanItemAgentName).
 const EDITOR_SEP = '@';
+const AGENT_SEP = '\u001f';
 
-export const editKeyOf = (personId: string, at: number): string => `${personId}${EDITOR_SEP}${at}`;
+// Who an edit key is for: the person, or the person and the agent that wrote for them.
+const editorOf = (personId: string, agent?: ItemAgent | null): string =>
+  agent ? `${personId}${AGENT_SEP}${agent.via}${AGENT_SEP}${agent.name}` : personId;
 
-// The key range [from, to) holding every edit key of this person: '@' + 1 is 'A'.
-export const editKeyRange = (personId: string): [string, string] => [
-  `${personId}${EDITOR_SEP}`,
-  `${personId}A`,
+export const editKeyOf = (personId: string, at: number, agent?: ItemAgent | null): string =>
+  `${editorOf(personId, agent)}${EDITOR_SEP}${at}`;
+
+// The key range [from, to) holding every edit key of this person (or of this agent for them): '@' + 1 is 'A'.
+export const editKeyRange = (personId: string, agent?: ItemAgent | null): [string, string] => [
+  `${editorOf(personId, agent)}${EDITOR_SEP}`,
+  `${editorOf(personId, agent)}A`,
 ];
 
 export function editedOf(key: string): AppEvent | null {
   const at = key.lastIndexOf(EDITOR_SEP);
-  const actorId = key.slice(0, at);
   const time = Number(key.slice(at + 1));
   if (at <= 0 || !Number.isFinite(time)) return null;
-  return { type: 'edited', actorId, at: time };
+  const [actorId = '', via, ...name] = key.slice(0, at).split(AGENT_SEP);
+  if (via === undefined) return { type: 'edited', actorId, at: time };
+  const agent = parseItemAgent({ name: name.join(AGENT_SEP), via });
+  // A key whose agent part does not read is the person's: their edit is never lost over a name.
+  if (!actorId) return null;
+  return { type: 'edited', actorId, ...(agent ? { agent } : {}), at: time };
 }
 
 // ---------- Card moves ---------------------------------------------------------------------------------------
@@ -640,16 +655,18 @@ export type SqlExec = {
 
 // A person's write to the item, in an app's outbox table keyed by the item (`plan_id`, `document_id`, `design_id`):
 // replaces the person's edit key on that item with one at `at`. Call it after a request that wrote, so the edit is
-// the person's who asked, never a guess from the content.
+// the person's who asked, never a guess from the content. `agent`, when an agent wrote for them (item-agent.ts
+// itemAgentOf), keeps a key of its own for that agent, so History names it (Work Tracker 1381).
 export function recordItemEditor(
   exec: (query: string, ...bindings: (string | number)[]) => unknown,
   outbox: { table: string; itemColumn: string },
   itemId: string,
   personId: string,
   at: number,
+  agent: ItemAgent | null = null,
 ): void {
   const { table, itemColumn } = outbox;
-  const [from, to] = editKeyRange(personId);
+  const [from, to] = editKeyRange(personId, agent);
   exec(
     `DELETE FROM ${table} WHERE ${itemColumn} = ? AND kind = 'edit' AND key >= ? AND key < ?`,
     itemId,
@@ -659,6 +676,6 @@ export function recordItemEditor(
   exec(
     `INSERT INTO ${table} (${itemColumn}, kind, key) VALUES (?, 'edit', ?)`,
     itemId,
-    editKeyOf(personId, at),
+    editKeyOf(personId, at, agent),
   );
 }

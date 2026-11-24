@@ -1,5 +1,5 @@
 // POST /api/documents/<id>/ask (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Built-in AI"): a question
-// answered from the knowledgebase's own pages, on the team's own key (Claude's or OpenAI's) when one is set and the
+// answered from the knowledgebase's own pages and the sources the asker can open in other apps ("Sources"), on the team's own key (Claude's or OpenAI's) when one is set and the
 // person did not choose built-in AI, else on built-in AI (Workers AI, liveknowledge's, under its daily caps), streamed as server-sent events (`AskEvent`): `delta`
 // pieces of the answer, then one `done` with the sources, what was found but not used and the gaps; or one `error`.
 // A signed-in Editor, Participant or Viewer may ask (an API token asks for its account); a guest or a visitor
@@ -21,7 +21,7 @@ import {
   askRequest,
   askSearch,
   bumpCounter,
-  chooseAskPassages,
+  chooseAskPassagesWithSources,
   dayOf,
   dismissQuestion,
   foundPassage,
@@ -41,6 +41,7 @@ import { modelDoorFor } from '../knowledge/model-door';
 import { builtInAi } from '../knowledge/setup-built-in-ai';
 import { spendSetupDraft } from '../knowledge/setup-draft-count';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
+import { askSourceItemOf, askSourcePassages, likelyWrites } from '../knowledge/ask-source-read';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { pageHealthWires } from '../knowledge/page-health-read';
 import { labelScopeOf, labelsOfBody } from '../knowledge/label-scope';
@@ -126,9 +127,10 @@ const sourceOf = ({ number, passage, health }: AskPassage): AskSource => ({
   firstBlock: passage.firstBlock,
   lastBlock: passage.lastBlock,
   ...(health ? { health } : {}),
+  ...(passage.source ? { source: askSourceItemOf(passage) } : {}),
 });
 
-export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Response> {
+export async function handleAsk({ ctx, document, grant }: KnowledgeRoute): Promise<Response> {
   const { env } = ctx;
   const person = accountOf(ctx);
   if (!person)
@@ -200,16 +202,19 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           reviewEvery: document.knowledgeSettings.reviewEvery,
           ...(scope ? { onlyTabs: [...scope.tabs] } : {}),
         });
-  const chosen = chooseAskPassages(
-    search ? (await rowsOf<SearchRow>(env, search)).map(foundPassage) : [],
-  );
+  // Sources (search-and-ask.md "Sources"): the chunks the asker can open themselves, none under a label scope.
+  const [pages, sourceFound] = await Promise.all([
+    search ? rowsOf<SearchRow>(env, search).then((rows) => rows.map(foundPassage)) : [],
+    scope ? [] : askSourcePassages(ctx, grant, document.id, question),
+  ]);
+  const chosen = chooseAskPassagesWithSources(pages, sourceFound);
   // Each passage goes with its page's Health Score (search-and-ask.md "Answering"): one read for the chosen pages.
   const health = await pageHealthWires(
     env,
     document.id,
     document.knowledgeSettings.reviewEvery,
     now,
-    chosen.map((p) => p.passage.tab),
+    chosen.flatMap((p) => (p.passage.source ? [] : [p.passage.tab])),
   );
   const passages = chosen.map((p) => {
     const scored = health.get(p.passage.tab);
@@ -261,7 +266,7 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           : recordPageAnswers(
               questionKey(question),
               question,
-              sources.map((s) => s.tab),
+              sources.flatMap((s) => (s.source ? [] : [s.tab])),
               now,
             );
         const fresh = await newQuestions(
@@ -278,12 +283,25 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           !earlier.length && sources.length > 0 && read.gaps.length === 0 && askedKey
             ? dismissQuestion(askedKey)
             : [];
-        await runAll(env, [...gaps, ...(answered ? [answered] : []), ...settled]);
+        // Each gap's likely item in another app (insights.md "Likely answered elsewhere"), kept beside it.
+        const likely = await likelyWrites(
+          ctx,
+          grant,
+          document.id,
+          recorded.flatMap((gap) => {
+            const key = questionKey(gap);
+            return key ? [{ key, question: gap }] : [];
+          }),
+          now,
+        );
+        await runAll(env, [...gaps, ...(answered ? [answered] : []), ...settled, ...likely]);
         await queueNewQuestions(ctx, fresh);
         console.info('[knowledge] ask', {
           documentId: document.id,
           passages: passages.length,
           cited: sources.length,
+          sourcesSent: passages.filter((p) => p.passage.source).length,
+          sourcesCited: sources.filter((s) => s.source).length,
           gaps: read.gaps.length,
           labels: scope?.ids.length ?? 0,
           provider,

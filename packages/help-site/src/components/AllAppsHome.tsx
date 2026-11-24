@@ -19,7 +19,7 @@ function pitchOf(app: AppId): string {
   return APP_SITES.find((s) => s.name === app)?.pitch ?? '';
 }
 
-/** Pick an App: the five apps' helps, each on its address in the page's deployment (SiteLink). */
+/** Pick an App: the six apps' helps, each on its address in the page's deployment (SiteLink). */
 export function PickAnApp({ counts }: { counts: Partial<Record<AppId, number>> }) {
   return (
     <section aria-labelledby="pick-an-app" className="mx-auto max-w-7xl px-4 pt-14 md:px-8">
@@ -84,7 +84,7 @@ export function AllAppsHome({
       home={home}
       lede={lede}
       title="Help for every app"
-      note="One help centre for all five apps"
+      note="One help centre for all six apps"
       afterHero={<PickAnApp counts={site.facts.guideCounts ?? {}} />}
     />
   );

@@ -27,6 +27,15 @@ The create (`POST /api/documents`) is not an edit: the index records the making 
 a use is the create's `markUsed` ([Marking a document used](../015-api/api.md#marking-a-document-used)).
 Writes from a WebSocket participant carry no account and are not attributed.
 
+An agent's write (any request with an API token: the MCP server's tools, the CLI, a script) is still its person's, and
+says which agent made it (Work Tracker 1381): the room records it as an outbox row of its own beside the person's
+(`recordItemEditor` with the agent `itemAgentOf` reads from the request, both from `@liveworkspace/index-app`), named by
+the agent's client where the request says it, else by the token's name, with the door it came through (`mcp`, `cli` or
+`api`). The index keeps it as an `edited` event of its own carrying `agent` and `via`, and an API client's create
+carries them on its `created` too, so History reads "Claude Code for Priya Shah" with the AI sparkle, never the person
+alone ([one-explorer-contracts.md "The event log"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#the-event-log)).
+An event from before carries no agent and names the person, as it always did.
+
 How long the index keeps an event is the index's
 ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)).
 
@@ -35,7 +44,8 @@ How long the index keeps an event is the index's
 History is on the menu of a canvas the person reaches directly: one in their own space, or a team's canvas for a
 team they belong to (including what happened before they joined). A canvas reached through a share link has no
 History, and the index refuses the read. The index keeps no names: an entry says "You" for the reader's own doing,
-the name an app reported, or "a teammate".
+the name an app reported, or "a teammate". An agent's doing names the agent for its person ("Claude Code for you",
+"Claude Code for Priya Shah").
 
 ## 3. The dialog
 
@@ -67,8 +77,12 @@ at a time with `itemHistory(itemId, { limit, cursor })`.
   sharing, green for made and edited), always with the reason line in words ("Canvas Renamed"), so colour is never
   the only signal. Then who did it (an avatar with their initials, in a stable colour from the presence palette picked from their name, the one Automatic rule of liveworkspace/docs/specs/003-accounts/accounts.md "Profiles",
   and their name or "You"), the detail ("Was “Q3”", "To Launches", "Anyone with the link can edit"), a comment's or
-  action's words quoted beneath, and the time.
-- **Runs.** Consecutive events of one kind by one person on one day fold into one entry ("Renamed 3 times · You ·
+  action's words quoted beneath, and the time. An event an agent made (its `detail.agent`, Work Tracker 1381: an
+  agent's create or update through the MCP server, the CLI or an API token) names the agent for its person, "Claude
+  Code for Priya Shah" (`agentForPerson`), with the shared AI sparkle after it (`AiWriterMark`, "Made by AI" on a
+  create, "Edited by AI" otherwise, `@liveworkspace/ui`), still wearing the person's avatar. An event with no agent
+  (a person's, or one recorded before agents were named) names the person as before.
+- **Runs.** Consecutive events of one kind by one person (and the same agent, or none) on one day fold into one entry ("Renamed 3 times · You ·
   13:47–14:00"); **Show all 3** (`aria-expanded`) deals the run out beneath it.
 - **Paging.** Pages of 30 (`HISTORY_PAGE`). **Show older events** under the rail reads the next page and says how
   many are shown; the button is gone at the end of the history. No other request is made: people's names come from

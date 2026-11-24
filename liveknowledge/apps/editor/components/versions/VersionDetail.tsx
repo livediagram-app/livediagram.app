@@ -8,7 +8,7 @@ import type { VersionSummary } from '@liveknowledge/api-schema';
 import type { VersionChanges } from '@liveknowledge/document';
 import { versionChangesLine } from '@liveknowledge/document';
 import { Button, SwitchRow } from '@liveknowledge/ui';
-import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
+import { AiWriterMark } from '@liveworkspace/ui/ai-writer-mark';
 import { aiVersionWords, kindWords, versionAuthorWords, whenWords } from './version-words';
 
 export function VersionDetail({

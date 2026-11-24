@@ -44,6 +44,7 @@ import type { AutomationPerson } from '@liveworkspace/automations';
 import { getParticipant } from '../person/profiles';
 import { isAccountIdShape } from '@liveknowledge/api-schema';
 import { pageSuggestionsOf } from '../knowledge/suggestions-inbox';
+import { readSourceSettings } from '../knowledge/source-settings';
 
 type TabRow = {
   id: string;
@@ -311,7 +312,15 @@ export async function drainOutbox(
       },
       summary: async () => {
         const { summary, savedAt, ownerId } = await readContentSummary(env, documentId);
-        return { summary: itemSummaryOf(summary), updatedAt: savedAt, ownerId };
+        // The team folder this knowledgebase reads (search-and-ask.md "Sources"), so the index tells it when an item
+        // in that folder changes (liveworkspace/docs/specs/004-index/knowledge-sources.md "Keeping in step").
+        const { folderId } = await readSourceSettings(env);
+        const item = itemSummaryOf(summary);
+        return {
+          summary: folderId ? { ...item, knowledgeFolder: folderId } : item,
+          updatedAt: savedAt,
+          ownerId,
+        };
       },
       // The owner's newest activity, for liveworkspace's onboarding emails; a guest's is not sent.
       onSummary: (ownerId, at) => reportOwnerActivity(env, ownerId, at),

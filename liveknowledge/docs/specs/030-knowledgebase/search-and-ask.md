@@ -206,6 +206,89 @@ called for either provider, so the request and stream shapes are unverified agai
   stored before there was a choice reads as Anthropic's: the provider is one more row of the room's settings, and
   its absence is that answer, so no stored knowledgebase is changed.
 
+## Sources
+
+Owner, 2026-11-22 (Work Tracker 1364, "Ask Across Every App"): a team's knowledge is spread across its diagrams,
+plans, decks and Spaces, so a knowledgebase may draw on the team's other items as **sources**. Ask, Insights and the
+MCP `search_pages` tool (once `search_knowledge`) answer from pages first, then from sources, naming each source with a link that opens it
+in its own app at the right place. The platform's half (the text door, the index's routes, the change signal) is
+[knowledge-sources.md](../../../../liveworkspace/docs/specs/004-index/knowledge-sources.md).
+
+- **What a knowledgebase reads** (AI Settings, [Sources in AI Settings](#sources-in-ai-settings)):
+  - **This Knowledgebase**, always: its pages, as above.
+  - **Connected Items**, on by default: every item a connected tab in the knowledgebase stands for (Connect File, a
+    kit, or connected both ways from the item), in livediagram, liveplanner, livedocuments, livedesign and livehuddle.
+  - **A Team Folder**, off by default: one folder of the knowledgebase's own team, with the folders inside it. Only a
+    team's knowledgebase offers it.
+    The default is pages and connected items, so nothing is read that nobody chose: connecting an item was a choice.
+- **The source index.** The knowledgebase's Durable Object keeps each source's chunks (`source_passages`, an FTS5
+  table beside the pages' with the same tokenizer), each with its item, its place and when it was read. Bounded:
+  at most 200 chunks and 60,000 characters a source (the door's caps), at most `SOURCES_MAX` (100) sources and
+  `SOURCE_CHUNKS_MAX` (6,000) chunks a knowledgebase; a source past the knowledgebase's cap is listed as Over the
+  Limit rather than read.
+- **Kept in step without polling.** A source is read when it joins (a connected tab added, the folder chosen), again
+  when the index says it changed (gathered 60 seconds a source), and dropped when its tab is removed, it leaves the
+  folder, it goes to the Trash, or the index no longer counts it as a source (a `404`). Each read is work the room's
+  alarm owes (`knowledge_work` kind `source`: key `~sync` the look at the set, any other key one source's read),
+  never done on a request, three a turn. A daily look reads the set of sources again, so a missed signal costs a day
+  at most.
+- **Answering.** A question searches the pages as before, then the source chunks with the same words (at most
+  `ASK_MAX_SOURCE_PASSAGES` (6) chunks, 8,000 of the 24,000 characters), and only those of items **the asker can open
+  themselves** are kept: the room asks the index once per question for the items the search found
+  ([knowledge-sources.md "Each reader's own access"](../../../../liveworkspace/docs/specs/004-index/knowledge-sources.md#each-readers-own-access)).
+  Pages come first in the passages sent; a source chunk follows them under its own number. A guest or a link
+  visitor never reaches Ask; through search (a person or an agent without an account, a share link, a page's link or
+  a Community post) gets pages alone, and so does a question under a label scope. With the index away, a question
+  is answered from pages rather than refused.
+- **Trust.** A source carries no Verified mark: the model is told each chunk is from another app's item
+  (`app`, `item`, `as_of`), never verified, and to say in a few words when a claim rests only on one ("this comes from
+  the Checkout Flow diagram, which nobody has verified here"). The trust line counts them apart ("Answered From 2
+  Verified Pages and 2 Connected Items").
+- **As of.** Each source citation says when it was last read; a source read more than `SOURCE_STALE_DAYS` (7) days
+  ago says so in amber ("As of 12 Nov").
+- **What an answer shows.** A source cited is a chip with its app's logo and the item's name ("Checkout Flow
+  (livediagram)"); several chunks of one plan's cards read "Launch Plan (liveplanner), 3 cards". Its card in the
+  Sources rail shows the app's logo, the item's name, the place (the tab, the shapes or cards), the chunk with the
+  question's words marked, "Not Verified Here · As of 21 Nov", and **Open in livediagram**; pressing it opens the item
+  in a new browser tab at the place: the shapes, the card, the slide passage, the text layer or the Space's note,
+  under that app's [Cited by Ask bar](#where-a-citation-lands). On a phone the Sources rail sits under the answer, as
+  for pages, and a chip brings its card into view there.
+- **Where a citation lands.** The link is the editors' element deep link (`#t=<tab>&el=<element>`, `&item=<card>`)
+  with `&ask=<question>&from=<knowledgebase id>` (further cited elements ride as `&els=`). The target app opens at the
+  place with the first cited element selected (a card opens in its panel) and a slim violet bar across the top of its
+  canvas, "Cited by Ask: <question>" with **Back to the Answer** (to the knowledgebase's Ask view) and a close button;
+  the bar is the shared `AskCitationBar` (`@liveworkspace/workbench`), drawn by the shared corner actions every source
+  app's editor shows. The reader's own access applies: someone who cannot open the item meets that app's usual
+  not-found or sign-in.
+- **Agents.** The MCP's and the CLI's `search_pages` (the tool once named `search_knowledge`) answers source chunks
+  after the pages' passages, for an agent whose account can open them, as a `sources` list of `{app, item, itemId,
+place, snippet, asOf}` with no trust: the search route's `sources` list, read on the same reach check. A search
+  that finds a source is not logged as an unanswered question.
+- **Bounds and cost.** A source chunk is ordinary passage text to the model, so a question costs no more than before:
+  the passages sent are still capped at 24,000 characters. Built-in AI's caps and the shared key rules
+  ([Which key answers](#which-key-answers)) are unchanged.
+- **Telemetry.** `UI·Used·AskSourceCited` for an answer citing a source, `UI·Opened·AskSourceItem` for a cited item
+  opened, `UI·Changed` with `SourcesConnectedOn`, `SourcesConnectedOff`, `SourcesFolderOn` or `SourcesFolderOff`, and
+  `UI·Used·ConnectLikely`; never a name, an id or a word. Charted under Ask on the telemetry dashboard.
+
+### Sources in AI Settings
+
+- A **Sources** section after the model: "What Ask answers from. Each person gets answers only from the items they
+  can open themselves; guests and people on a share link get answers from pages only." Then three rows:
+  - **This Knowledgebase**, marked Always.
+  - **Connected Items**, a switch, on by default: "The diagrams, plans, documents, designs and Spaces connected in the
+    sidebar: their shapes, cards, slides and meeting notes."
+  - **A Team Folder**, a team knowledgebase's only: a picker of the team's folders, None by default: "Everything in
+    one of the team's folders and the folders in it." A personal knowledgebase has no such row.
+  - Under them, the sources themselves, each with its app's mark, its name and its state: Read 21 Nov, Reading Soon,
+    Over the Limit or Couldn't Read. The first 8 show, then "and 4 more". With none: "No connected items yet.
+    Connect a file in the sidebar to add one."
+- An **Editor** changes them; a Participant and a Viewer read On or Off and the folder's name. A knowledgebase kept
+  Offline shows no Sources. `GET ai/sources` answers `{connected, folderId, folderName, teamId, items: [{itemId,
+app, title, origin, state, chunks, readAt?}]}`; `PUT ai/sources` takes `{connected?, folderId?, folderName?}` (an
+  Editor's; `folderId` null turns the folder off; a folder on a personal knowledgebase is refused) and answers the
+  same. A folder change also pushes the knowledgebase's summary, so the index knows which folder it reads.
+
 ## Share roles
 
 | Action                                | Editor | Participant | Viewer |
@@ -215,9 +298,13 @@ called for either provider, so the request and stream shapes are unverified agai
 | Ask                                   | yes    | yes         | yes    |
 | Add, replace or remove the key, model | yes    | no          | no     |
 | Draft a page from a gap               | yes    | yes         | no     |
+| See Sources and answers citing them   | yes    | yes         | yes    |
+| Change Sources                        | yes    | no          | no     |
+| Connect an unanswered question's item | yes    | no          | no     |
 
 Ask through an anonymous share link is off: it would spend the team's key, or liveknowledge's built-in AI, for
-strangers.
+strangers. Every role is answered from a source only when that person can open the item themselves; a guest, a
+share link's visitor, a page's link and a Community post's reader get pages alone.
 
 ## The Ask view
 

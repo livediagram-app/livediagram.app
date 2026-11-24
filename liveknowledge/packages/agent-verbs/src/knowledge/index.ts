@@ -2,6 +2,12 @@
 // knowledgebase-for-agents.md): the routes' paths and the trust fields every answer carries.
 export { jsonBody, knowledgePath } from './paths';
 export {
+  AI_EDITING_VALUES,
+  aiEditingFieldsOf,
+  aiEditingLine,
+  type AiEditingFields,
+} from './ai-editing';
+export {
   applyPageCommentChanges,
   listPageComments,
   listedPageThread,

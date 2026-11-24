@@ -1,5 +1,6 @@
 // The tools that change a knowledgebase's pages (docs/specs/024-agents/knowledgebase-for-agents.md "MCP tools"):
-// create_page and suggest_edit (the `suggest` scope), write_page and move_page (the `write` scope). Each is one
+// create_page, suggest_edit and move_page of a never-verified subtree (the `suggest` scope), write_page and any
+// move_page (the `write` scope). Each is one
 // request to the api, which holds the rules: the scopes, the share roles, and that an agent never rewrites a
 // verified page. A refusal comes back in the api's own words, naming what to call instead (tool-annotations.ts).
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
