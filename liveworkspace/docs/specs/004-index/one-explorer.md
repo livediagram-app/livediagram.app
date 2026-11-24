@@ -933,8 +933,8 @@ The journeys, one way each:
    the team if it was made and otherwise says none was, never a bare "try again" that could make a second one
    ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
 2. **Run a team.** Choose the team (sidebar or panel rail). Its page opens (see [A team's page](#a-teams-page)
-   below): a header, then the tabs **People**, **Library** and, for its admins, **Audit Log**. People is where the
-   team is run; by role:
+   below): a header, then the tabs **Library** (where it opens), **People** and, for its admins, **Audit Log**. People
+   is where the team is run; by role:
    - **Invite by Email** (admins): one or many addresses, typed or pasted (commas, semicolons, spaces or new lines; a
      pasted `Name <address>` keeps the address), each a chip, a role for them all, and **Send Invite** ("Send 3
      Invites" for several, at most 50 at once). Each address is invited on its own request, one after another, so a
@@ -985,8 +985,9 @@ Old addresses keep working: `liveworkspace.app/account/teams` goes to `/explorer
 
 #### A team's page
 
-`/explorer/team?id=<id>` opens on **People**; `&tab=library` and `&tab=audit` open the other two (an unknown tab,
-or Audit Log for a Member, is People). A tab is part of the address, so Back returns to it; the Library's lens
+`/explorer/team?id=<id>` opens on **Library**, the first tab, since the team's work is what people usually come for;
+`&tab=people` and `&tab=audit` open the other two (an unknown tab, Audit Log for a Member, or an older link's
+`&tab=library`, is Library). Until November 2026 the page opened on People. A tab is part of the address, so Back returns to it; the Library's lens
 (`q`) stays on the Library tab alone. The sidebar keeps the team lit on every tab. The Explorer's own header, sidebar and bottom bar
 are as on every view.
 
@@ -995,8 +996,8 @@ are as on every view.
   the joined members' discs (four, then "+N"), **Copy Link**, **Invite People** (admins: opens People and puts the
   keyboard in Invite by Email) and the ⋯ menu. On a phone the buttons fill the width under the name and the discs
   are left out.
-- **Tabs**: People (how many rows), Library (how many items, once the list is loaded whole) and Audit Log
-  (admins). A `tablist`; the arrow keys move between them.
+- **Tabs**, in this order: Library (how many items, once the list is loaded whole), People (how many rows) and Audit
+  Log (admins). A `tablist`; the arrow keys move between them.
 - **People**: Invite by Email (admins), then one card: the chips **Everyone**, **Admins**, **Members** and
   **Pending** (shown while any invitation waits), each with its count, and **Find a person** (name or address);
   then the members as a table (Name with "you" and the address, Role, **Added**, the ⋯ menu) and Waiting to Join.
