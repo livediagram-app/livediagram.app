@@ -103,4 +103,11 @@ describe('the help Worker', () => {
     );
     expect(out.headers.get('vary')).toBe('Accept-Encoding, x-help-app');
   });
+
+  it('keeps staging out of search, and never production', () => {
+    expect(withHelpHeaders(new Response('ok')).headers.get('x-robots-tag')).toBeNull();
+    expect(withHelpHeaders(new Response('ok'), { staging: true }).headers.get('x-robots-tag')).toBe(
+      'noindex, nofollow',
+    );
+  });
 });

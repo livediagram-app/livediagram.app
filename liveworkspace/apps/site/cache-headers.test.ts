@@ -19,3 +19,19 @@ describe('the build assets’ caching', () => {
     expect(headers.match(/^\s+Cache-Control:/gm)).toHaveLength(1);
   });
 });
+
+// Staging is a public mirror of the site: its host answers noindex (liveworkspace/docs/specs/010-site/site.md
+// "Hosting"). One build serves both hosts, so the rule must name the staging host and nothing else may say noindex.
+describe('staging stays out of search', () => {
+  const headers = readFileSync(new URL('./public/_headers', import.meta.url), 'utf8');
+
+  it('says noindex on the staging host', () => {
+    expect(headers).toContain(
+      '\nhttps://staging.liveworkspace.app/*\n  X-Robots-Tag: noindex, nofollow\n',
+    );
+  });
+
+  it('says it in that rule only, so production never sends it', () => {
+    expect(headers.match(/^\s+X-Robots-Tag:/gm)).toHaveLength(1);
+  });
+});

@@ -720,6 +720,18 @@ recorded here, so it can't drift silently.
   Turning on **SSL/TLS > Edge Certificates > Always Use HTTPS** in each zone (liveworkspace.app, livediagram.app,
   liveplanner.app, livedocuments.app, livedesign.app, livehuddle.app) is an optional belt-and-braces step: it also
   covers the platform services' own `/api` routes on liveworkspace.app and `staging.liveworkspace.app`'s pages, which
-  no redirecting Worker fronts. It was off in every zone on 2026-11-15 (`http://www.` answered `200`).
+  no redirecting Worker fronts. It was off in every zone on 2026-11-15 (`http://www.` answered `200`); it is on in
+  liveworkspace.app since 2026-11-24, so plain HTTP there is answered at the edge and runs no Worker.
 - **HSTS preload** is not set: the sites send `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
   Adding `preload` and submitting to hstspreload.org is the owner's call, once every subdomain is HTTPS-only.
+- **liveworkspace.app's zone** (set in the dashboard on 2026-11-24): minimum TLS 1.2; 0-RTT, Early Hints and Smart
+  Tiered Cache on; Browser Cache TTL "Respect existing headers" (the Workers and `_headers` set every response's
+  `Cache-Control`); Email Address Obfuscation and Automatic HTTPS Rewrites off (they rewrite HTML at the edge, which
+  the Trusted Types CSP doesn't need and the pages don't use); DMARC Management on (it adds Cloudflare's `rua`);
+  a CAA record (`0 issue "letsencrypt.org"`, to which Cloudflare adds its other CAs); alerts for Advanced Certificate
+  events and HTTP DDoS attacks. One rate limiting rule, "Auth abuse limit", blocks an IP for 10 s past 10 requests in
+  10 s to `/api/auth/sign-in*`, `/api/auth/guest*` and `/api/auth/delete-account/code*` (the token, JWKS and callback
+  paths stay outside it, since apps and Workers call them often).
+- **Staging stays out of search**: every staging host answers `X-Robots-Tag: noindex, nofollow`. The products'
+  routers stamp it (`DEPLOY_ENV=staging`); on `staging.liveworkspace.app` the site's `public/_headers` sets it for
+  that host and the help Worker sets it on a staging host (liveworkspace/docs/specs/010-site/site.md "Hosting").
