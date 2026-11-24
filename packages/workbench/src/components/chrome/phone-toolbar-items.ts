@@ -26,3 +26,10 @@ export const PACKED_TOOLBAR_ITEMS =
 // buttons is narrower than the screen anyway, so its buttons reach the 44px cap.
 export const PHONE_CLUSTER_BUTTON_WIDTH =
   'phone:[&_.w-11]:w-[clamp(36px,calc((100vw_-_103px)/6),44px)]';
+
+// A card in a phone's top row, the menu card and the palette strip alike
+// (liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md "The rule" 4): its 36px items grow to 44px and the card to
+// 56px (a 5px inset inside its hairline), with 14px corners, so the row's targets are a thumb's. On the card's class,
+// it reaches the items by their size classes, as PHONE_TOOLBAR_ITEMS does. From the phone breakpoint up, nothing.
+export const PHONE_TOP_ROW_CARD =
+  'phone:rounded-[14px] phone:p-[5px] phone:[&_.h-9]:h-11 phone:[&_.w-9]:w-11 phone:[&_.min-w-9]:min-w-11 phone:[&_.size-9]:size-11';

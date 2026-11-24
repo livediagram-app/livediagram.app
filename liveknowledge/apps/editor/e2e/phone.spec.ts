@@ -57,7 +57,9 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({
   await expect(pagesButton).toBeHidden();
   await putKeyboardAway(page);
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Share' })).toBeVisible();
+  // Share is not on a phone's row: it opens from Apps (liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md).
+  await expect(page.getByRole('button', { name: /^Apps/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Share' })).toHaveCount(0);
   await pagesButton.tap();
   const sheet = page.getByRole('dialog', { name: 'Pages' });
   await expect(sheet.getByRole('treeitem', { name: 'Handbook', exact: true })).toBeVisible();

@@ -57,6 +57,7 @@ export function renderEditorHeader(
   return zenMode || !appChrome ? null : (
     <AreaErrorBoundary area="Header" fallback="panel">
       <PlanCornerActions
+        itemName={ctx.projectName}
         showShare={canShareProject && hydrated && !anyWelcomeOpen}
         shareable={projectShareable}
         // The Share button's colour reads the plan's visibility, as the header's badges did.
