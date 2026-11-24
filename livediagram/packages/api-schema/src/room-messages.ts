@@ -116,10 +116,12 @@ export type ServerMessage =
   // step"): ids only, never values. Each session reads the range again with its own access.
   | {
       kind: 'source-changed';
-      app: 'liveplanner';
+      app: 'liveplanner' | 'livehuddle';
       itemId: string;
       sheetIds: string[];
       cards?: string[];
+      // A call about the item (item-calls.md): its calls changed, read them again.
+      calls?: true;
     }
   // The ordering cursor this session has reached (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1), sent on
   // `hello` and to the SENDER of each ordered op, which the relay skips. Without
@@ -221,10 +223,12 @@ export type RoomIncoming =
   | { kind: 'followers'; ids: string[] }
   | {
       kind: 'source-changed';
-      app: 'liveplanner';
+      app: 'liveplanner' | 'livehuddle';
       itemId: string;
       sheetIds: string[];
       cards?: string[];
+      // A call about the item (item-calls.md): its calls changed, read them again.
+      calls?: true;
     }
   | CursorMessage
   | FormatMessage

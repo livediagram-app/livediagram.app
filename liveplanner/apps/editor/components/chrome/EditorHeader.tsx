@@ -14,6 +14,7 @@ import {
   type EditorCornerActionsProps,
 } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
 import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
+import { ItemCallButton } from '@liveworkspace/workbench/components/item-call/ItemCallButton';
 
 export type { SaveStatus } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 
@@ -39,6 +40,7 @@ export function PlanCornerActions(
   return (
     <EditorCornerActions
       approval={<ApprovalBadge corner />}
+      call={<ItemCallButton />}
       {...props}
       copyDescription="Duplicate this plan into your own files."
       shareAction={

@@ -1,4 +1,5 @@
 import {
+  lucidePhone,
   lucideAppWindow,
   lucideBookOpen,
   lucideBookOpenText,
@@ -195,6 +196,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideWorkflow} />
     </Glyph>
   ),
+  // A handset: Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md), a call about the open item.
+  'start-a-call': (
+    <Glyph>
+      <Prims prims={lucidePhone} />
+    </Glyph>
+  ),
   'live-presence': (
     <Glyph>
       <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" />
@@ -241,6 +248,46 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M19.5 12a7.5 7.5 0 01-12.9 5.2" />
       <path d="M6.2 20.4V17h3.4" />
       <path d="M12.8 7.8l-3.3 4.9h3l-.8 3.5 3.3-4.9h-3z" />
+    </Glyph>
+  ),
+  'panel-layout': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M9 4v16" />
+    </Glyph>
+  ),
+  'quick-controls': (
+    <Glyph>
+      <circle cx="6" cy="18" r="3" />
+      <path d="M14 14l7-7M14 7h7v7" />
+    </Glyph>
+  ),
+  'title-bar': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M6 6.5h5" />
+      <rect x="13" y="5.5" width="5" height="2" rx="1" />
+    </Glyph>
+  ),
+  'explorer-panel': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M9 4v16M12 9h6M12 13h6" />
+    </Glyph>
+  ),
+  'search-teams': (
+    <Glyph>
+      <path d="M3 7a1.5 1.5 0 011.5-1.5h4L10 7.5h8A1.5 1.5 0 0119.5 9v8.5A1.5 1.5 0 0118 19H4.5A1.5 1.5 0 013 17.5z" />
+      <circle cx="9.5" cy="12" r="1.5" />
+      <path d="M7.2 16.2a2.5 2.5 0 014.6 0" />
+      <circle cx="14.5" cy="12" r="1.5" />
+      <path d="M12.2 16.2a2.5 2.5 0 014.6 0" />
+    </Glyph>
+  ),
+  // Light/dark mode guide.
+  'dark-mode': (
+    <Glyph>
+      <path d="M21 12.8A8 8 0 1 1 11.2 3a6 6 0 0 0 9.8 9.8z" />
     </Glyph>
   ),
   'explorer-page': (

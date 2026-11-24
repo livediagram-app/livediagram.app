@@ -7,16 +7,9 @@ import {
   TEAM_REQUEST_NOTE_MAX,
   TIER_NAMES,
 } from '@liveworkspace/subscription';
-import {
-  Button,
-  Dialog,
-  DialogCloseButton,
-  DialogFooter,
-  DialogHeader,
-  Spinner,
-  TextArea,
-  useCopiedFlash,
-} from '@liveworkspace/ui';
+import { Button, Dialog, DialogFooter, Spinner, TextArea, useCopiedFlash } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { askAdminHeroArt } from '@liveworkspace/ui/dialog-hero-art/ask-admin';
 import { formatShortDay } from '../price';
 import type { UpgradeTarget } from '../provider/context';
 import { useBilling, useSubscription } from '../provider/hooks';
@@ -116,16 +109,17 @@ export function AskAdminDialog({
 
   return (
     <Dialog open onClose={onClose} titleId={titleId} size="sm">
-      <DialogHeader
-        title={<span id={titleId}>Ask an Admin About Pro</span>}
+      <HeroDialogHeader
+        art={askAdminHeroArt}
+        titleId={titleId}
+        title="Ask an Admin About Pro"
         subtitle={
           teamName
             ? `Only an admin of ${teamName} can subscribe the team.`
             : 'Only a team admin can subscribe the team.'
         }
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        onClose={onClose}
+      />
       <div className="flex flex-col gap-2 px-6 py-4">
         <label htmlFor={noteId} className="text-xs font-medium text-slate-600 dark:text-slate-300">
           Your Note

@@ -20,6 +20,7 @@ import type { UpdatePush } from './updates';
 import type { AutomationSend, AutomationSendResult, CardMove } from './webhooks';
 import type { AutomationStepAnswer, AutomationStepPush } from './automation-steps';
 import type { AgentSentFrom, PlanCardChange, SentFrom } from './plan-sends';
+import type { CallPeoplePush } from './item-calls';
 import { appConnectionPath } from './connections';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { enc, IndexError, refusal } from './index-error';
@@ -151,6 +152,9 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
         person,
         cards,
       }),
+    // Start a Call Here (item-calls.md "Joining"): who is in a call's Space now, from its room.
+    callPeople: (spaceId: string, push: CallPeoplePush) =>
+      put(`/items/${enc(spaceId)}/call-people`, push),
     confirmConnection: (hostId: string, connectionId: string, tabId: string) =>
       send('PUT', appConnectionPath(hostId, connectionId, tabId)),
     removeConnection: (hostId: string, connectionId: string, tabId: string) =>

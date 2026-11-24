@@ -6,6 +6,7 @@ Follow the references below only as needed; never upfront.
 - ./workshop-mode.md - when implementing or changing Workshop mode: the `workshop` editor mode, its palette layout (the one palette), the Session strip, the templates and blank that open in it, its telemetry and default folder
 - ./workshop-tour.md - when implementing or changing the Workshop tour: its host, steps, offer, Settings rerun and telemetry
 - ./presentation-mode.md - (Gone from livehuddle, Work Tracker #423 part 2) when implementing or changing slide moves, the entrance or fullscreen while presenting: View Transitions typed by move, the asked-for slide, refusals logged
+- ./calls-from-items.md - when building a call started from another app's item: the room's push, the door, the editor's call card, Invite, Wrap Up and their tests
 - ./proximity-audio.md - when building or changing proximity audio: the call phases, hearing radii, voice detection, the `avatar-voice` and `call-track` ops, the mint routes and their tokens
 - ./call-minutes.md - when building or changing Call Minutes: the room's meter (`CallMeter`), its storage key and alarm, the admit and minutes routes, the `call-minutes` op, closing a session at Realtime, the editor's store and notices
 - ./meeting-rooms-and-stage.md - when building or changing room zones in a call (`roomZones`, `zoneAt`, zoned `nextHeard`), the stage, hands or Do Not Disturb

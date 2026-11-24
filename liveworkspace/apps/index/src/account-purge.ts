@@ -242,6 +242,16 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('collab_form_reads'),
     // The updates on watched pages told to them (updates.ts), and their name on the updates they made.
     byPerson('item_update_people'),
+    // Calls (item-calls.ts): the invites to them go; the calls they started stay in their items' Meetings, the host
+    // anonymised.
+    byPerson('item_call_invites'),
+    () =>
+      db
+        .prepare(
+          `UPDATE item_calls SET host_id = ? WHERE rowid IN (
+             SELECT rowid FROM item_calls WHERE host_id = ? LIMIT ?)`,
+        )
+        .bind(ANONYMISED_PERSON, person, CHUNK),
     () =>
       db
         .prepare(

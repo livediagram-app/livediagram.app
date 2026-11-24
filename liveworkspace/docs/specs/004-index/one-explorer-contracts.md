@@ -1091,7 +1091,7 @@ name an app reported, or as a teammate.
 
 ## Inbox
 
-`GET /inbox?app=`: `{threads, actions, forms, accessRequests, shares, suggestions, updates}` across every app: open actions and cards assigned
+`GET /inbox?app=`: `{threads, actions, forms, accessRequests, shares, suggestions, updates, calls}` across every app: open actions and cards assigned
 to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
 link; and open access requests on items I manage ([request-access.md](request-access.md#in-the-inbox)), and my own requests granted lately (`shares`, [inbox-notices.md](inbox-notices.md#shares-in-the-inbox-read)), which no list row draws (an access request's row is below); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
@@ -1161,6 +1161,19 @@ agent, reason, kind, before, after, createdAt}`. Its row reads the agent ("Claud
   row done here leaves the list at once (`settle`), as a resolved thread does. **Suggested Edits** joins the filter
   while one is listed (or it is the choice), as Access Requests does (`Activity·Changed` `SuggestedEdits`;
   `Activity·Resolved` `Suggestion` on Accept and Dismiss).
+- **Calls** ([Start a Call Here](./item-calls.md#invites)): `calls` answers my invites of the last
+  `ITEM_CALL_INVITE_DAYS` (1 day), on items I reach and not in the Trash, newest first, each `{id, app, itemId,
+itemTitle, itemTeamId, byName, at, live}`. One indexed query, from `item_call_invites (person_id, at)`. A row is
+  **who** (the inviter), its age; **what** (**Call in progress** while the call is live, else **Call**) and the item;
+  and **why** as a video icon and **Invited you to a call**. Its pane reads the call as it stands (`itemCalls`, once
+  on open) and offers **Join Call** while it is on, opening the call's own tab, or says the call has ended. It is
+  never counted in the badge. **Calls** joins the filter while one is listed (or it is the choice) (`Activity·Changed`
+  `Calls`).
+- **Automations** ([Notify steps](../018-automations/automations.md)): `notices` answers a rule's Notify steps to me,
+  each `{id, app, itemId, itemTitle, rule, text, at}`. A row is **who** (the rule's name, **An automation** when it
+  has none); **what** (the text's first line) and the item; and **why** as a bolt and **Automation**. Its pane shows
+  the whole text and which rule sent it, with Open in the app (the item). It asks nothing, so it is never counted.
+  **Automations** joins the filter while one is listed (or it is the choice) (`Activity·Changed` `Automations`).
 - **Updates** (liveknowledge's [Watching](../../../../liveknowledge/docs/specs/030-knowledgebase/watching.md)):
   `updates` answers the rows pushed for me (`people` holds me) in the last `INBOX_UPDATES_MS` (14 days), on items I
   reach (as a thread: owner, scope or a live link, a link scoped to one tab reaching that tab's rows alone) and not in

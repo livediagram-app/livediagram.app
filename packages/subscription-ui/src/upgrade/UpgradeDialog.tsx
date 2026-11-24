@@ -6,19 +6,17 @@ import {
   Button,
   buttonClassName,
   ButtonContent,
-  CloseIcon,
   Dialog,
   SegmentedToggle,
   Select,
   Spinner,
-  Tooltip,
   type SegmentedOption,
 } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { upgradeHeroArt } from '@liveworkspace/ui/dialog-hero-art/upgrade';
 import { ComparisonGrid } from '../comparison/ComparisonGrid';
-import { ON_INK_ICON_BUTTON } from '../on-ink';
 import { pricePeriod, teamTotal, tierPrice } from '../price';
-import { ProBadge } from '../ProBadge';
 import type { UpgradeTarget } from '../provider/context';
 import { usePrices, useSubscriptionHost } from '../provider/hooks';
 import { billingErrorMessage } from './billing-errors';
@@ -136,39 +134,27 @@ export function UpgradeDialog({ target, onClose }: { target: UpgradeTarget; onCl
       initialFocus="container"
       closeOnEscape={!busy}
     >
-      {/* Badge, title and sentence read first at every width; the price sits at the header's right from `sm`, and on a
-          phone beside the button that buys it, in the footer. */}
-      <header className="flex shrink-0 items-start gap-x-4 bg-slate-900 py-5 pr-3 pl-5 text-white sm:py-7 sm:pr-4 sm:pl-8 dark:bg-slate-950">
-        <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
-          <ProBadge form="solid" ground="ink" tooltip={false} label="Pro" />
-          <h2 id={titleId} className="text-xl font-bold tracking-tight sm:text-[26px]">
-            One Upgrade, Every App
-          </h2>
-          <p className="text-sm leading-normal text-slate-300">
-            Pro for you, or Pro for Teams for a shared library. Each has its own price and limits.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-start gap-4">
+      {/* The hero header (dialog-hero-header.md): title and sentence read first at every width; the price stands
+          among its actions from `sm`, and on a phone beside the button that buys it, in the footer. The price's
+          width moves the centre piece further in. */}
+      <HeroDialogHeader
+        art={upgradeHeroArt}
+        titleId={titleId}
+        title="One Upgrade, Every App"
+        subtitle="Pro for you, or Pro for Teams for a shared library."
+        className="[--hero-centre-end:14rem]"
+        actions={
           <TierPrice
             tier={tier}
             prices={prices}
             note={priceNote}
             data-upgrade-price={tier}
-            className="max-sm:hidden sm:items-end sm:text-right"
-            tone="ink"
+            className="mr-1 items-end text-right max-sm:hidden"
+            tone="hero"
           />
-          <Tooltip label="Close">
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={onClose}
-              className={`${ON_INK_ICON_BUTTON} size-9`}
-            >
-              <CloseIcon size={14} />
-            </button>
-          </Tooltip>
-        </div>
-      </header>
+        }
+        onClose={onClose}
+      />
 
       <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-3 px-5 pt-5 pb-2 sm:px-8">
         <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">
@@ -310,7 +296,7 @@ export function UpgradeDialog({ target, onClose }: { target: UpgradeTarget; onCl
   );
 }
 
-/** The chosen tier's price and its period: on the header's ink, or on the page in the phone's footer. */
+/** The chosen tier's price and its period: on the hero header's band, or on the page in the phone's footer. */
 function TierPrice({
   tier,
   prices,
@@ -323,15 +309,17 @@ function TierPrice({
   prices: PriceList | null;
   note: string;
   className: string;
-  tone: 'ink' | 'page';
+  tone: 'hero' | 'page';
 } & Record<`data-${string}`, string>) {
-  const ink = tone === 'ink';
+  const hero = tone === 'hero';
   return (
     <div {...data} className={`flex flex-col gap-0.5 ${className}`}>
       {prices ? (
         <span
           className={`leading-tight font-bold tabular-nums ${
-            ink ? 'text-[22px]' : 'text-lg text-slate-900 dark:text-slate-100'
+            hero
+              ? 'text-[22px] text-[var(--hero-ink)]'
+              : 'text-lg text-slate-900 dark:text-slate-100'
           }`}
         >
           {tierPrice(prices, tier)}
@@ -340,11 +328,13 @@ function TierPrice({
         <span
           aria-hidden
           className={`h-7 w-12 animate-pulse rounded motion-reduce:animate-none ${
-            ink ? 'bg-white/15' : 'bg-slate-200 dark:bg-slate-700'
+            hero ? 'bg-[var(--hero-wash)]' : 'bg-slate-200 dark:bg-slate-700'
           }`}
         />
       )}
-      <span className={`text-xs ${ink ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
+      <span
+        className={`text-xs ${hero ? 'whitespace-nowrap text-[var(--hero-muted)]' : 'text-slate-500 dark:text-slate-400'}`}
+      >
         {note}
       </span>
     </div>

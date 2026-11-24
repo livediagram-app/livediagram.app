@@ -213,3 +213,26 @@ describe('tellSourceChanged', () => {
     expect(sent).toEqual([{ kind: 'source-changed', ...change }]);
   });
 });
+
+describe("a call's change (item-calls.md)", () => {
+  it('passes `calls` on to every session, and the call door keeps the id', async () => {
+    const sent: unknown[] = [];
+    const change = {
+      app: 'livehuddle' as const,
+      itemId: 'space1',
+      sheetIds: [],
+      calls: true as const,
+    };
+    tellSourceChanged({ bind: () => {}, broadcast: (frame) => sent.push(frame) }, 'doc_1', change);
+    expect(sent).toEqual([{ kind: 'source-changed', ...change }]);
+
+    const itemCall = vi.fn(async () => {});
+    const res = await send(call('S1/call', 'index-key', { callId: 'ic_abc' }), { itemCall });
+    expect(res.status).toBe(204);
+    expect(itemCall).toHaveBeenCalledWith('S1', 'ic_abc');
+    const bad = await send(call('S1/call', 'index-key', { callId: 'x' }), { itemCall });
+    expect(bad.status).toBe(400);
+    const none = await send(call('S1/call', 'index-key', { callId: 'ic_abc' }), {});
+    expect(none.status).toBe(404);
+  });
+});

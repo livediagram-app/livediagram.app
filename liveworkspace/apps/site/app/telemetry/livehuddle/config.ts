@@ -20,6 +20,7 @@ import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SEND_TO_PLAN } from '../_shared/send-to-plan-metrics';
 import { SEND_TO_DIAGRAM } from '../_shared/send-to-diagram-metrics';
+import { CALLS_FROM_ITEMS } from '../_shared/item-call-metrics';
 import { SNAPSHOTS } from '../_shared/snapshot-walkthrough-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
 import type { RetiredCategory } from '../_shared/retired-explorer';
@@ -296,6 +297,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
           SNAPSHOTS,
           SEND_TO_PLAN,
           SEND_TO_DIAGRAM,
+          CALLS_FROM_ITEMS,
           EDITOR_SEARCH,
           EDITOR_CHROME,
           TRASH,

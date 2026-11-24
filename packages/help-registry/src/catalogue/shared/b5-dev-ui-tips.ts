@@ -100,7 +100,14 @@ export const articles: Article[] = [
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'eraser',
@@ -428,7 +435,14 @@ export const articles: Article[] = [
       'title bar header top bar corner corners card menu button explorer logo editor mode switch present prototype share share form copy make a copy account sign in sign out design canvas document space plan name rename visibility',
     category: 'User Interface',
     categorySlug: 'user-interface',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
     byApp: {
       livedocuments: { title: 'The Title Bar' },
       livedesign: { title: 'Share, Copy and Your Account' },
@@ -444,7 +458,14 @@ export const articles: Article[] = [
       'corner buttons actions tools toolbox search settings get started tour receptionist history snapshots connections walkthroughs slide deck github bottom bar cluster appearance light dark automations sign in sync plan badge',
     category: 'User Interface',
     categorySlug: 'user-interface',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'panel-layout',
@@ -454,7 +475,14 @@ export const articles: Article[] = [
       'ui window dock arrange workspace interface layout move panels chrome corner snap reset position menu button header board header bottom right buttons cluster undo redo trash types board style tools top corners tab bar phone',
     category: 'User Interface',
     categorySlug: 'user-interface',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'settings',

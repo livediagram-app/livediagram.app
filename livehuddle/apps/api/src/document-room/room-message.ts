@@ -11,6 +11,7 @@ import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types
 import { storedTabName } from './room-content-state';
 import { noteCallSession, relayNudge } from './room-call-sessions';
 import { noteAttendance } from './room-attendance';
+import { noteItemCall } from './room-item-call';
 import { nameVisitor, storedVisitorName } from './room-names';
 import { recolourSession } from './room-colour';
 import { isVisitorSecret, visitorCollabKey } from '../visitor-key';
@@ -92,6 +93,8 @@ export function roomMessage(
     room.presenceRelay.noteSession(ws, relaySessionOf(hello));
     // Who is in which tab, for its Attendance (docs/specs/012-collaboration/tab-attendance.md).
     noteAttendance(room, ws, session, hello);
+    // A call's Space tells the index who is in it (room-item-call.ts).
+    noteItemCall(room);
     // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
     // key"): its editor records its answers and reactions under it from now on.
     if (presence.key) room.sendTo(ws, { kind: 'collab-key', key: presence.key });

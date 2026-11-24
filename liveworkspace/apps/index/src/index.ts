@@ -10,6 +10,7 @@ import { handleAccessRequests } from './access-requests';
 import { handleApproval } from './approvals';
 import { handleNewPlanForSend, handlePlanSends } from './plan-sends';
 import { handleDiagramSends, readDiagramSends } from './diagram-sends';
+import { handleItemCalls, handleSpaceCall } from './item-calls';
 import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
@@ -128,6 +129,9 @@ async function route(ctx: RouteContext): Promise<Response> {
     // Send to Plan (plan-sends.ts): a send to this plan, or this source's sends for its chips.
     if (segments[2] === 'plan-sends' && segments.length === 3) return handlePlanSends(ctx, id);
     if (segments[2] === 'diagram-sends' && segments.length === 3) return readDiagramSends(ctx, id);
+    // Start a Call Here (item-calls.ts): the item's calls, and a Space's call with its summary and invites.
+    if (segments[2] === 'calls' && segments.length === 3) return handleItemCalls(ctx, id);
+    if (segments[2] === 'call') return handleSpaceCall(ctx, id, segments.slice(3));
     // A board's counts or a metric's rows on the person's own access, and the plan's boards for its picker (live-data.ts).
     if (segments[2] === 'plan-data' && segments.length === 3) return handlePlanData(ctx, id);
     // Approvals (approvals.ts): asked, decided, cancelled and read, a person in person only.
@@ -221,6 +225,10 @@ const routeLabel = createApiRouteLabel(
     'plan-sends',
     'plan-cards',
     'plans',
+    'calls',
+    'call',
+    'call-people',
+    'invite',
   ]),
 );
 

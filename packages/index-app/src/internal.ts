@@ -18,6 +18,8 @@
 //   GET    /api/internal/items/:id/sheets              a source app's sheets; POST …/sheet-range one range's read; POST
 //                                                            …/source-changed a watched sheet changed (sheet-source-doors.ts,
 //                                                            liveworkspace/docs/specs/004-index/sheet-sources.md)
+//   POST   /api/internal/items/:id/call {callId}      the Space is a call about an item (item-calls.md): its room keeps
+//                                                            the id; 204, or 404 for an app without calls
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?, title?}  copy an item's content (or one
 //                                                            tab) into a new item, for `by` (who copies) through link
 //                                                            `code` (if any), from address `ip` (if known), named
@@ -401,6 +403,16 @@ export async function handleInternalItems(
     return handlers.planSend && verifyGrant
       ? planSendDoor(request, id, verifyGrant, handlers.planSend)
       : notFound();
+  }
+
+  // Start a Call Here: the Space is a call about an item (item-calls.md), its room told the call's id.
+  if (rest.length === 2 && rest[1] === 'call' && request.method === 'POST' && handlers.itemCall) {
+    const body = await bodyOf(request);
+    const callId = body?.['callId'];
+    if (typeof callId !== 'string' || !/^ic_[A-Za-z0-9]{1,40}$/.test(callId))
+      return badRequest('invalid call');
+    await handlers.itemCall(id, callId);
+    return new Response(null, { status: 204 });
   }
 
   if (rest.length === 3 && rest[1] === 'copy-to' && request.method === 'POST' && handlers.copy) {

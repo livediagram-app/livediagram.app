@@ -24,7 +24,7 @@ export const articles: Article[] = [
     description:
       'Keep a copy of your work, and your work from every liveworkspace app, in your own Google Drive.',
     keywords:
-      'google drive mirror sync backup copy cloud storage open with livediagram file folders liveplanner liveworkspace livedocuments livedesign livehuddle',
+      'google drive mirror sync backup copy cloud storage open with livediagram file folders liveplanner liveworkspace livedocuments livedesign livehuddle liveknowledge knowledgebase',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
     apps: [
@@ -93,6 +93,16 @@ export const articles: Article[] = [
     categorySlug: 'account-and-data/connect-ai-mcp',
     parentSlug: 'connect-ai-mcp',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
+  },
+  {
+    slug: 'download-all-my-data',
+    title: 'Download All My Data',
+    description: 'One zip of everything you own, from every liveworkspace app, from Settings.',
+    keywords:
+      'download all my data zip export backup everything portability gdpr settings your data comments pictures png livehuddle liveknowledge space knowledgebase file email link',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+    apps: ['livehuddle', 'liveknowledge'],
   },
   {
     slug: 'deleting-your-data',
@@ -214,6 +224,12 @@ export const articles: Article[] = [
       'livehuddle',
       'liveknowledge',
     ],
+    byApp: {
+      liveknowledge: {
+        description:
+          "The full-page library every liveworkspace app shares: Knowledgebases or All Apps, the sidebar's Overview, Spaces and More, views and search.",
+      },
+    },
   },
   {
     slug: 'explorer-panel',
@@ -225,7 +241,14 @@ export const articles: Article[] = [
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'filters',
@@ -351,6 +374,12 @@ export const articles: Article[] = [
       'livehuddle',
       'liveknowledge',
     ],
+    byApp: {
+      liveknowledge: {
+        description:
+          'Your own library: the folders you create, and your unfiled knowledgebases at its root.',
+      },
+    },
   },
   {
     slug: 'profile',
@@ -411,6 +440,11 @@ export const articles: Article[] = [
       'livehuddle',
       'liveknowledge',
     ],
+    byApp: {
+      liveknowledge: {
+        description: 'Knowledgebases other people have shared with you, collected in one place.',
+      },
+    },
   },
   {
     slug: 'team-spaces',

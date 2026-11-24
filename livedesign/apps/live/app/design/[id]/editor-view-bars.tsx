@@ -21,6 +21,7 @@ import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
 import type { useSelectTab } from './useSelectTab';
+import { ItemCallButton } from '@liveworkspace/workbench/components/item-call/ItemCallButton';
 
 type EditorContextValue = ReturnType<typeof useEditorContext>;
 
@@ -67,6 +68,7 @@ export function editorViewHeader(
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
         approval={<ApprovalBadge corner />}
+        call={<ItemCallButton />}
         leadAction={prototype}
         showShare={canShareDesign && hydrated && !anyWelcomeOpen}
         shareable={designShareable}

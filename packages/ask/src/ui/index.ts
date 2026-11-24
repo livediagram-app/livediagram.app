@@ -10,6 +10,7 @@ export {
   type PassageTab,
   type TabPassageOptions,
 } from './tab-passages';
+export { askSender, type AskOutcome, type AskSend } from './ask-client';
 export { askAiChoiceStore, useAskAiChoice, type AskAiChoice } from './ask-ai-choice';
 export { conversationOf, resetConversations, AskConversation } from './conversation';
 export type { AskHost } from './host';

@@ -3,7 +3,7 @@
 Derived from [send-to-diagram.md](../send-to-diagram.md). The spec decides; this file adds engineering precision.
 Nothing here is a new Worker, queue or binding: the source app drafts on the AI it already has, the index calls
 livediagram's internal door with the app's key, and a person's writes count on `KIT_RUN_LIMITER` under a key of their
-own. The index gains one D1 migration (`0031_diagram_sends.sql`).
+own. The index gains one D1 migration (`0032_diagram_sends.sql`).
 
 ## Flow
 
@@ -50,7 +50,7 @@ source opens: GET /api/index/items/:source/diagram-sends → {sends} whose diagr
 ## The index (liveworkspace/apps/index)
 
 ```
-migrations/0031_diagram_sends.sql   the table below
+migrations/0032_diagram_sends.sql   the table below
 src/diagram-sends.ts                POST /diagram-sends/diagrams, GET /items/:id/diagram-sends
 src/index.ts                        routes both
 ```

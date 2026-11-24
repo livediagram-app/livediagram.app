@@ -5,30 +5,31 @@ from the code. Paths are relative to `livehuddle/`.
 
 ## Files
 
-| File                                                             | Role                                                                                                                                          |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/call-minutes.ts`                        | `CALL_MINUTES_LOW` (80), `CallSessionMinutes`, `CallMinutesRefusal`, `CallMinutesResponse`, `CallMinutesOp`, `parseCallMinutesOp`             |
-| `packages/api-schema/src/call-control.ts`                        | `CallSessionOp.left`, kept by `parseCallSession` only when exactly `true`                                                                     |
-| `packages/api-schema/src/room-op-kinds.ts`                       | `call-minutes` in `SYSTEM_OP_KINDS`: the room drops one sent by a client                                                                      |
-| `@liveworkspace/subscription`                                    | `subscriptionClientOf(env, 'livehuddle.app')`: the api's subscription client, on the package's one entitlement cache per isolate              |
-| `apps/api/src/calls/call-meter.ts`                               | `CallMeter`: the room's meter. `admit`, `proved`, `left`, `dropped`, `alarm`, `due`, `read`, `restore`, `forget`                              |
-| `apps/api/src/calls/realtime-api.ts`                             | `sessionMids` (`GET sessions/:id`), `severSession` (force-close every track of a session, in batches of 64)                                   |
-| `apps/api/src/routes/calls.ts`                                   | `callsPayer(grant)`, the admit before `mintSession`, `GET calls/minutes`                                                                      |
-| `apps/api/src/document-room/document-room.ts`                    | `callMeter` (the host wiring), the RPCs `callsAdmit` and `callMinutes`, `restore` in the constructor                                          |
-| `apps/api/src/document-room/room-call-sessions.ts`               | `noteCallSession` (a proof counts the person in; `left` takes them out), `callSessionHolders`                                                 |
-| `apps/api/src/document-room/room-roster.ts`                      | `dropSession`: a closed connection's session goes to the meter (`dropped`)                                                                    |
-| `apps/api/src/document-room/room-lifecycle.ts`                   | `armAlarm` adds `callMeter.due()`; `alarm` runs `callMeter.alarm(now)`; `purge` forgets the meter                                             |
-| `apps/api/src/room-scope.ts`                                     | `call-minutes` reaches a tab-scoped session                                                                                                   |
-| `apps/editor/lib/api/calls.ts`                                   | `CallsApiError.minutesUsed`, `apiCallMinutes`                                                                                                 |
-| `apps/editor/lib/calls/call-minutes-store.ts`                    | What the browser was told: `caller`, `owner`, `low`, `used`, `notice`                                                                         |
-| `apps/editor/lib/calls/call-minutes-words.ts`                    | Every sentence, and `callMinutesResetDay` (`nextMonthStart`, UTC, the reader's locale)                                                        |
-| `apps/editor/lib/calls/proximity-call.ts`                        | Notes a session's `minutes`; a metered call sends `left` in `teardown`; a refused mint with `minutesUsed` stops the call without failing it   |
-| `apps/editor/lib/calls/useProximityCall.ts`                      | No auto-join while used; joins again on the store's resumed signal                                                                            |
-| `apps/editor/components/calls/minutes/CallMinutesHost.tsx`       | In the Call dock: loads the low notice and the used dialog only when there is one to show                                                     |
-| `apps/editor/components/calls/minutes/CallMinutesLow.tsx`        | The one-time low notice                                                                                                                       |
-| `apps/editor/components/calls/minutes/CallMinutesUsedDialog.tsx` | The used dialog: the kit's `UsageMeter` and `LimitNotice`                                                                                     |
-| `apps/editor/components/calls/minutes/CallsPausedSegment.tsx`    | The dock's Calls Paused while used                                                                                                            |
-| `apps/editor/components/calls/minutes/CallMinutesSection.tsx`    | Call Minutes at the foot of Collaborators (`CollaboratorsDialog`'s `below`); limit from the page's subscription or owner view, else the api's |
+| File                                                              | Role                                                                                                                                          |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/call-minutes.ts`                         | `CALL_MINUTES_LOW` (80), `CallSessionMinutes`, `CallMinutesRefusal`, `CallMinutesResponse`, `CallMinutesOp`, `parseCallMinutesOp`             |
+| `packages/api-schema/src/call-control.ts`                         | `CallSessionOp.left`, kept by `parseCallSession` only when exactly `true`                                                                     |
+| `packages/api-schema/src/room-op-kinds.ts`                        | `call-minutes` in `SYSTEM_OP_KINDS`: the room drops one sent by a client                                                                      |
+| `@liveworkspace/subscription`                                     | `subscriptionClientOf(env, 'livehuddle.app')`: the api's subscription client, on the package's one entitlement cache per isolate              |
+| `apps/api/src/calls/call-meter.ts`                                | `CallMeter`: the room's meter. `admit`, `proved`, `left`, `dropped`, `alarm`, `due`, `read`, `restore`, `forget`                              |
+| `apps/api/src/calls/realtime-api.ts`                              | `sessionMids` (`GET sessions/:id`), `severSession` (force-close every track of a session, in batches of 64)                                   |
+| `apps/api/src/routes/calls.ts`                                    | `callsPayer(grant)`, the admit before `mintSession`, `GET calls/minutes`                                                                      |
+| `apps/api/src/document-room/document-room.ts`                     | `callMeter` (the host wiring), the RPCs `callsAdmit` and `callMinutes`, `restore` in the constructor                                          |
+| `apps/api/src/document-room/room-call-sessions.ts`                | `noteCallSession` (a proof counts the person in; `left` takes them out), `callSessionHolders`                                                 |
+| `apps/api/src/document-room/room-roster.ts`                       | `dropSession`: a closed connection's session goes to the meter (`dropped`)                                                                    |
+| `apps/api/src/document-room/room-lifecycle.ts`                    | `armAlarm` adds `callMeter.due()`; `alarm` runs `callMeter.alarm(now)`; `purge` forgets the meter                                             |
+| `apps/api/src/room-scope.ts`                                      | `call-minutes` reaches a tab-scoped session                                                                                                   |
+| `apps/editor/lib/api/calls.ts`                                    | `CallsApiError.minutesUsed`, `apiCallMinutes`                                                                                                 |
+| `apps/editor/lib/calls/call-minutes-store.ts`                     | What the browser was told: `caller`, `owner`, `low`, `used`, `notice`                                                                         |
+| `apps/editor/lib/calls/call-minutes-words.ts`                     | Every sentence, and `callMinutesResetDay` (`nextMonthStart`, UTC, the reader's locale)                                                        |
+| `apps/editor/lib/calls/proximity-call.ts`                         | Notes a session's `minutes`; a metered call sends `left` in `teardown`; a refused mint with `minutesUsed` stops the call without failing it   |
+| `apps/editor/lib/calls/useProximityCall.ts`                       | No auto-join while used; joins again on the store's resumed signal                                                                            |
+| `apps/editor/components/calls/minutes/CallMinutesHost.tsx`        | In the Call dock: loads the low notice and the used dialog only when there is one to show                                                     |
+| `apps/editor/components/calls/minutes/CallMinutesLow.tsx`         | The one-time low notice                                                                                                                       |
+| `apps/editor/components/calls/minutes/CallMinutesUsedDialog.tsx`  | The used dialog: the kit's `UsageMeter` and `LimitNotice`                                                                                     |
+| `apps/editor/components/calls/minutes/CallMinutesUsedHeroArt.tsx` | `callMinutesUsedHeroArt`, the used dialog's hero art                                                                                          |
+| `apps/editor/components/calls/minutes/CallsPausedSegment.tsx`     | The dock's Calls Paused while used                                                                                                            |
+| `apps/editor/components/calls/minutes/CallMinutesSection.tsx`     | Call Minutes at the foot of Collaborators (`CollaboratorsDialog`'s `below`); limit from the page's subscription or owner view, else the api's |
 
 ## The meter's state
 
