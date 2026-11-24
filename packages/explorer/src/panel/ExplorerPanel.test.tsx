@@ -103,7 +103,9 @@ describe('<ExplorerPanel>', () => {
     );
     const index = createFakeIndex({ items });
     const { onOpenExplorer } = renderPanel(index);
-    const used = await screen.findByRole('region', { name: 'Most Used' });
+    // The section and its heading draw while it loads (card placeholders, no list): wait for its cards.
+    await screen.findByRole('list', { name: 'Most Used' });
+    const used = screen.getByRole('region', { name: 'Most Used' });
     const recent = screen.getByRole('region', { name: 'Recent' });
     expect(used.compareDocumentPosition(recent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByText('Jump Back In')).toBeNull();
@@ -137,7 +139,9 @@ describe('<ExplorerPanel>', () => {
     );
     const index = createFakeIndex({ items });
     renderPanel(index, { current: items[0], currentId: items[0]!.id });
-    const used = await screen.findByRole('region', { name: 'Most Used' });
+    // The section and its heading draw while it loads (card placeholders, no list): wait for its cards.
+    await screen.findByRole('list', { name: 'Most Used' });
+    const used = screen.getByRole('region', { name: 'Most Used' });
     const names = (el: HTMLElement) =>
       within(within(el).getByRole('list'))
         .getAllByRole('listitem')
@@ -170,7 +174,7 @@ describe('<ExplorerPanel>', () => {
   it('leaves Recent out when Most Used holds everything opened', async () => {
     const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i, useOpens: 3 }));
     renderPanel(createFakeIndex({ items }));
-    await screen.findByRole('region', { name: 'Most Used' });
+    await screen.findByRole('list', { name: 'Most Used' });
     expect(screen.queryByRole('region', { name: 'Recent' })).toBeNull();
   });
 
