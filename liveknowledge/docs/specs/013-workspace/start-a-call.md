@@ -19,7 +19,7 @@ Meetings are the platform's and livehuddle's; this file says only where they sit
 | Role                                            | Call (start) | Join          | Meetings |
 | ----------------------------------------------- | ------------ | ------------- | -------- |
 | Editor, Participant, Viewer (an account)        | Yes          | Yes           | Yes      |
-| A guest holding the knowledgebase's link               | No           | Yes, as guest | Yes      |
+| A guest holding the knowledgebase's link        | No           | Yes, as guest | Yes      |
 | Offline, embed, workbench frame, Community copy | No           | No            | No       |
 
 ## Telemetry
