@@ -4,8 +4,9 @@
 // lib/bindings.generated.ts, editions/current.generated.ts, app/scope.generated.css), runs `next build`, and moves
 // the static export from out/ to dist/<scope>/. All Apps builds first: its /scope-manifest.json becomes
 // dist/manifest.json, the help Worker's map, and each app's build then drops the article and landing pages that do
-// not apply to it (the Worker answers those addresses with a 308 before a file is looked up). The checked-in
-// defaults (livediagram's) are put back at the end, built or failed.
+// not apply to it (the Worker answers those addresses with a 308 before a file is looked up). Each scope's pages then
+// get their Markdown for agents, and the scope its llms.txt. The checked-in defaults (livediagram's) are put back at
+// the end, built or failed.
 //
 //   node scripts/build-scopes.mjs                  every scope, into dist/
 //   node scripts/build-scopes.mjs --only=all,livedesign
@@ -95,6 +96,25 @@ function writeScope(scope) {
   }
 }
 
+const AGENT_MARKDOWN = join(APP, '../../../packages/agent-markdown/scripts/agent-markdown.ts');
+
+/** The Markdown step's arguments for a scope's export in `dir`: every page (an app's copy of a shared article is
+ *  only in the canonical scope's sitemap), under /help, with trailing slashes. */
+export function agentMarkdownArgs(dir, scope) {
+  const name = `${scope === 'all' ? 'liveworkspace' : scope} Help Centre`;
+  return [
+    AGENT_MARKDOWN,
+    '--out',
+    dir,
+    '--name',
+    name,
+    '--base-path',
+    '/help',
+    '--trailing-slash',
+    '--every-page',
+  ];
+}
+
 function run(command, args) {
   const result = spawnSync(command, args, { cwd: APP, stdio: 'inherit', env: process.env });
   if (result.status !== 0)
@@ -140,6 +160,9 @@ function build(scopes) {
     rmSync(own, { force: true });
     if (scope !== 'all')
       console.log(`[build-scopes] ${scope}: ${prune(target, scope, manifest)} pages dropped`);
+    // Markdown for agents (liveworkspace/docs/specs/010-site/markdown-for-agents.md): every page the scope keeps gets
+    // its Markdown beside it, and the scope its /help/llms.txt.
+    run('node', agentMarkdownArgs(target, scope));
   }
 }
 
