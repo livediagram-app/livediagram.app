@@ -12,6 +12,7 @@ import {
 } from '@liveknowledge/document';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { PageSurfaceSheet } from '@/components/page-surface/PageSurfaceSheet';
+import { withDrawnHeight } from '@/lib/page-surface/page-measured-height-store';
 import { useDrawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
 import { WORLD_HEIGHT_CSS } from '@/lib/page-surface/page-lock';
 import { releaseReadSelection } from '@/lib/page-surface/read-selection';
@@ -439,7 +440,8 @@ function CanvasView(props: CanvasProps) {
                   // A knowledgebase page paints no sheet (PageSurfaceSheet): its box, its breadcrumb, its foot room.
                   <PageSurfaceSheet
                     key={leadPage.id}
-                    page={leadPage}
+                    // As tall as its writing here, however short it last stored (continuous-page.md "The drawn height").
+                    page={withDrawnHeight(leadPage, props.pagesMode?.articles?.measured)}
                     zoom={viewportZoom}
                     margin={pageMargin}
                     topMargin={articleTopMarginPx(leadStyle)}

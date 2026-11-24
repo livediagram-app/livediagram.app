@@ -6,6 +6,11 @@
 // consequences undo as one.
 import { isPageViewLens, narrowLayoutOf } from '@/lib/page-surface/page-view-lens';
 import { notePageViewLayout } from '@/lib/page-surface/page-view-store';
+import {
+  noteMeasuredPageHeight,
+  useMeasuredPageHeights,
+  type MeasuredHeights,
+} from '@/lib/page-surface/page-measured-height-store';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import {
   articleMarginPx,
@@ -33,6 +38,7 @@ import {
   withArticlePageCount,
   withArticlePageHeight,
   absentWriterPageCount,
+  continuousPageHeight,
   withZonesSettled,
   type ArticleBlock,
   type ArticleFlow,
@@ -102,6 +108,9 @@ export type ArticlesView = {
   // A style shown on an article while a Style tab choice is hovered.
   stylePreview: { flow: string; style: ArticleStyle } | null;
   setStylePreview: (preview: { flow: string; style: ArticleStyle } | null) => void;
+  // What this browser measured each continuous page's writing to need at full width, by flow: the page's box is drawn
+  // at the taller of it and the stored height (page-measured-height-store.ts), never stored.
+  measured: MeasuredHeights;
 };
 
 // What each insert places at the caret (the writing then takes it into a zone).
@@ -261,7 +270,9 @@ export function useArticles(deps: {
       // A continuous page is one page: an absent writer's article takes the height its writing needs here, once the
       // fonts are in, and the mark goes when the page is already that tall (a write only when the height changes).
       if (layout.heightNeeded !== undefined) {
-        if (locked) return clearArticleGrow(tabId, flow);
+        // Locked (read mode, a locked page): nothing is written, and the mark waits for the lock to lift, so the
+        // Editor's Edit settles a page opened in read mode (continuous-page.md "Who settles it, and when").
+        if (locked) return;
         const grown = withArticlePageHeight(t, flow, layout.heightNeeded);
         if (grown === t) {
           if (layout.zones.length > 0) {
@@ -342,6 +353,18 @@ export function useArticles(deps: {
         const narrow = narrowLayoutOf(d.activeTab, layout);
         if (narrow) notePageViewLayout(tabId, narrow);
         return;
+      }
+      // What the writing needs here, at full width, for every role: the page's box is drawn at least that tall
+      // (continuous-page.md "The drawn height"), whoever may write the stored height.
+      if (layout.heightNeeded !== undefined) {
+        const page = pagesOf(d.activeTab).find((p) => p.flow === layout.flow);
+        if (page?.fit)
+          noteMeasuredPageHeight(
+            tabId,
+            layout.flow,
+            page.fit.width,
+            continuousPageHeight(layout.heightNeeded),
+          );
       }
       // An article an import here just wrote is this editor's to settle, as its writer.
       if (!layout.local && !isArticleSettleClaimed(tabId, layout.flow)) {
@@ -589,6 +612,8 @@ export function useArticles(deps: {
     [tabId],
   );
 
+  const measured = useMeasuredPageHeights(tabId);
+
   const undo = useCallback(() => latest.current.undo(), []);
   const redo = useCallback(() => latest.current.redo(), []);
   const onWritingPress = useCallback(() => latest.current.clearSelection(), []);
@@ -621,5 +646,6 @@ export function useArticles(deps: {
     setStyle,
     stylePreview,
     setStylePreview,
+    measured,
   };
 }

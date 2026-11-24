@@ -7,6 +7,7 @@ import { NodeSelection, Selection, TextSelection, type Command } from 'prosemirr
 import type { EditorView } from 'prosemirror-view';
 import type { Node as PMNode } from 'prosemirror-model';
 import {
+  isContinuousPage,
   nextArticleBlockId,
   type ArticleBlock,
   type ArticleFlow,
@@ -20,6 +21,7 @@ import { isSafeArticleHref } from '@liveknowledge/document';
 import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
 import { blockTagger } from '@/lib/article/article-pdf-tags';
+import { pressedPos } from '@/lib/article/article-press-pos';
 import { snapshotBars, snapshotWriting, type ArticleDrawOp } from '@/lib/article/article-snapshot';
 
 // What the writing is laid out over, as ArticleEditor's props hold it.
@@ -407,8 +409,22 @@ export function createArticleHandle({
       const x = Math.max(colLeft + 1, Math.min(clientX, colLeft + frame.columnWidth * z - 1));
       const y = Math.max(root.top + 1, Math.min(clientY, root.bottom - 1));
       const hit = view.posAtCoords({ left: x, top: y });
-      // Below the writing (nothing laid out there): the end of the writing.
-      const pos = hit?.pos ?? view.state.doc.content.size;
+      const end = view.state.doc.content.size;
+      // Below the writing's last line on a continuous page, or nothing laid out there: the end of the writing.
+      let endBottom: number | null;
+      try {
+        endBottom = view.coordsAtPos(end).bottom;
+      } catch {
+        endBottom = null;
+      }
+      const lead = latest.current.pages[0];
+      const pos = pressedPos({
+        hit: hit?.pos,
+        y: clientY,
+        endBottom,
+        end,
+        continuous: !!lead && isContinuousPage(lead),
+      });
       view.dispatch(view.state.tr.setSelection(Selection.near(view.state.doc.resolve(pos))));
       view.focus();
     },
