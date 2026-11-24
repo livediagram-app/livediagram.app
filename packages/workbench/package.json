@@ -604,6 +604,10 @@
     "./components/send-to-plan/SentChip": "./src/components/send-to-plan/SentChip.tsx",
     "./components/send-to-plan/ThreadSendToPlan": "./src/components/send-to-plan/ThreadSendToPlan.tsx",
     "./components/send-to-plan/send-cards": "./src/components/send-to-plan/send-cards.ts",
+    "./components/send-to-diagram/send-to-diagram-entry": "./src/components/send-to-diagram/send-to-diagram-entry.ts",
+    "./components/send-to-diagram/SendToDiagramDialog": "./src/components/send-to-diagram/SendToDiagramDialog.tsx",
+    "./components/send-to-diagram/SendWordsToDiagramButton": "./src/components/send-to-diagram/SendWordsToDiagramButton.tsx",
+    "./components/send-to-diagram/SendToDiagramIcon": "./src/components/send-to-diagram/SendToDiagramIcon.tsx",
     "./components/send-to-plan/send-memory": "./src/components/send-to-plan/send-memory.ts",
     "./components/send-to-plan/send-menu-item": "./src/components/send-to-plan/send-menu-item.tsx",
     "./components/send-to-plan/send-store": "./src/components/send-to-plan/send-store.ts",
@@ -969,7 +973,14 @@
     "./components/canvas/web/CardFace": "./src/components/canvas/web/CardFace.tsx",
     "./components/canvas/web/SiteHeaderFace": "./src/components/canvas/web/SiteHeaderFace.tsx",
     "./lib/drag-geometry": "./src/lib/drag-geometry.ts",
-    "./hooks/canvas/useSnapGuideState": "./src/hooks/canvas/useSnapGuideState.ts"
+    "./hooks/canvas/useSnapGuideState": "./src/hooks/canvas/useSnapGuideState.ts",
+    "./components/send-to-diagram/DiagramSketch": "./src/components/send-to-diagram/DiagramSketch.tsx",
+    "./components/send-to-diagram/DiagramWhere": "./src/components/send-to-diagram/DiagramWhere.tsx",
+    "./components/send-to-diagram/diagram-chip-dom": "./src/components/send-to-diagram/diagram-chip-dom.ts",
+    "./components/send-to-diagram/diagram-kinds": "./src/components/send-to-diagram/diagram-kinds.tsx",
+    "./components/send-to-diagram/diagram-send-store": "./src/components/send-to-diagram/diagram-send-store.ts",
+    "./components/send-to-diagram/graph-sketch": "./src/components/send-to-diagram/graph-sketch.ts",
+    "./hooks/ui/useSettled": "./src/hooks/ui/useSettled.ts"
   },
   "scripts": {
     "lint": "oxlint",

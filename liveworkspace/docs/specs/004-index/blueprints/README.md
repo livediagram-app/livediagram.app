@@ -18,6 +18,7 @@ Follow the references below only as needed; never upfront.
   side of the frame's messages, snapshots, limits and tests
 - ./item-calls.md - when working on Start a Call Here: the wire, the index's routes and tables, livehuddle's door and room push, the editors' button, pill, store and Meetings, tests
 - ./send-to-plan.md - when working on Send to Plan: the wire, the index's routes and table, liveplanner's door and change call, the editors' store, picker and chips, tests
+- ./send-to-diagram.md - when working on Send to Diagram: the wire, the index's routes and table, livediagram's graph door, the picker, preview and chips, tests
 - ./team-audit-log.md - when working on the team audit log: its table, the write path beside each event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's view
 - ./approvals.md - when working on approvals: the tables, the routes and their checks, the revision, the notice and email, the editor kit
 - ./request-access.md - when working on Request Access: the build order, the two tables, the ask off the response's path, grant and decline, the Inbox read, the notices

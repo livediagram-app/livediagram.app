@@ -24,6 +24,7 @@ import {
 } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { workbench } from '../../bindings';
+import { useSettled } from '../../hooks/ui/useSettled';
 import { useToast } from '../../hooks/ui/useToast';
 import { indexClient } from '../../lib/index-client';
 import { Dialog } from '../dialogs/Dialog';
@@ -63,15 +64,6 @@ const NOUNS: Record<SendNoun, string> = {
   action: 'this action',
   stickies: 'these stickies',
 };
-
-function useSettled<T>(value: T, ms: number): T {
-  const [settled, setSettled] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setSettled(value), ms);
-    return () => clearTimeout(t);
-  }, [value, ms]);
-  return settled;
-}
 
 export function SendToPlanDialog({
   request,

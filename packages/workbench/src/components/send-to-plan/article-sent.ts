@@ -7,6 +7,8 @@
 // builds its Plugin from `articleSentSpec`, so one copy of ProseMirror runs and the types below are only the few
 // shapes read here.
 import { elementSends, onSendsChanged } from './send-store';
+import { elementDiagramSends, onDiagramSendsChanged } from '../send-to-diagram/diagram-send-store';
+import { diagramChipDom } from '../send-to-diagram/diagram-chip-dom';
 import {
   hideReadSendPill,
   sentChipDom,
@@ -100,33 +102,51 @@ export function articleSentSpec<Deco, Set, State extends PMState>(
   editable: () => boolean,
   draw: ArticleSentDraw<Deco, Set, State>,
 ) {
-  // Each sent block's chip, after its last word.
+  // Each sent block's chips, after its last word: the plan's card, then the diagram (send-to-diagram.md "The chip").
   const decorations = (state: State): Set => {
     const decos: Deco[] = [];
     state.doc.forEach((node, pos) => {
       const id = node.attrs.id;
       if (typeof id !== 'string' || !node.isTextblock) return;
+      const end = pos + node.nodeSize - 1;
       const sends = elementSends(id);
       const newest = sends[0];
-      if (!newest) return;
-      decos.push(
-        draw.widget(pos + node.nodeSize - 1, () => sentChipDom(sends), {
-          side: 1,
-          marks: [],
-          ignoreSelection: true,
-          key: `sent:${id}:${newest.id}:${newest.card.column}:${newest.card.done}:${sends.length}`,
-        }),
-      );
+      if (newest)
+        decos.push(
+          draw.widget(end, () => sentChipDom(sends), {
+            side: 1,
+            marks: [],
+            ignoreSelection: true,
+            key: `sent:${id}:${newest.id}:${newest.card.column}:${newest.card.done}:${sends.length}`,
+          }),
+        );
+      const diagrams = elementDiagramSends(id);
+      const drawn = diagrams[0];
+      if (drawn)
+        decos.push(
+          draw.widget(end, () => diagramChipDom(diagrams), {
+            side: 2,
+            marks: [],
+            ignoreSelection: true,
+            key: `diagram:${id}:${drawn.id}:${drawn.diagram.title}:${diagrams.length}`,
+          }),
+        );
     });
     return decos.length > 0 ? draw.set(state.doc, decos) : draw.empty;
   };
   return {
     props: { decorations },
     view(view: PMView) {
-      const stop = onSendsChanged(() => {
+      const redraw = () => {
         if (!view.isDestroyed)
           view.dispatch(view.state.tr.setMeta(SENT, true).setMeta('addToHistory', false));
-      });
+      };
+      const stopPlans = onSendsChanged(redraw);
+      const stopDiagrams = onDiagramSendsChanged(redraw);
+      const stop = () => {
+        stopPlans();
+        stopDiagrams();
+      };
       const onSelection = () => {
         const read = editable() ? null : readerPick(view);
         if (!read) return hideReadSendPill();

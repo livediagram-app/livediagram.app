@@ -473,6 +473,11 @@ export const INDEX_ERRORS = [
   'source_full',
   'plan_refused',
   'plan_unavailable',
+  // Send to Diagram (send-to-diagram.md): livediagram could not be reached, or refused the graph.
+  'diagram_unavailable',
+  // Send to Diagram: the diagram a new tab or an update was for is no longer there.
+  'diagram_gone',
+  'invalid_graph',
   // Start a Call Here (item-calls.md): a Space asked for a call of its own, a call that could not be made, a summary
   // the knowledgebase turned away (422, its reason), an invite naming someone who can't reach the item.
   'not_for_spaces',

@@ -210,6 +210,8 @@ const HELD_AT_100 = [
   'src/components/send-to-plan/send-store.ts',
   'src/components/send-to-plan/send-to-plan-entry.ts',
   'src/components/send-to-plan/send-words.ts',
+  // Send to Diagram (liveworkspace/docs/specs/004-index/send-to-diagram.md, Work Tracker 1393).
+  'src/components/send-to-diagram/**',
   'src/components/send-to-plan/SendPlanList.tsx',
   'src/components/send-to-plan/SendToPlanButton.tsx',
   'src/components/send-to-plan/SendToPlanDialog.tsx',

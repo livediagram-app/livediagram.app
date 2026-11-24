@@ -8,6 +8,19 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import type { App, ShareAccess } from '@liveworkspace/index-client';
 import { setSendSource } from './send-store';
 import { onSendToPlan, setSendHere, type SendRequest } from './send-to-plan-entry';
+import {
+  onSendToDiagram,
+  setDiagramDrafter,
+  type DiagramDrafter,
+  type DiagramSendRequest,
+} from '../send-to-diagram/send-to-diagram-entry';
+import { elementDiagramSends, setDiagramSendSource } from '../send-to-diagram/diagram-send-store';
+
+const SendToDiagramDialog = lazy(() =>
+  import('../send-to-diagram/SendToDiagramDialog').then((m) => ({
+    default: m.SendToDiagramDialog,
+  })),
+);
 
 const SendToPlanDialog = lazy(() =>
   import('./SendToPlanDialog').then((m) => ({ default: m.SendToPlanDialog })),
@@ -20,6 +33,8 @@ export function SendToPlanHost({
   title,
   share = null,
   enabled,
+  diagram = null,
+  tabTitle = '',
 }: {
   // The app this editor is, and the open item, the source of every send from here.
   app: App;
@@ -31,8 +46,13 @@ export function SendToPlanHost({
   share?: ShareAccess | null;
   // canSendToPlan(...) for this session.
   enabled: boolean;
+  // Send to Diagram's draft on the app's own AI (send-to-diagram.md); without it no entry offers Send to Diagram.
+  diagram?: DiagramDrafter | null;
+  // The shown tab's name (a page's title): what a diagram from it is named after and its caption says.
+  tabTitle?: string;
 }) {
   const [request, setRequest] = useState<SendRequest | null>(null);
+  const [diagramRequest, setDiagramRequest] = useState<DiagramSendRequest | null>(null);
   const live = enabled && itemId ? itemId : null;
   const code = share?.code ?? null;
 
@@ -49,6 +69,42 @@ export function SendToPlanHost({
 
   useEffect(() => (live ? onSendToPlan(setRequest) : undefined), [live]);
 
+  // The diagram chips' read, only for an app that drafts diagrams.
+  const diagramLive = live && diagram ? live : null;
+  useEffect(() => {
+    setDiagramSendSource(diagramLive, code ? { code } : null);
+    return () => setDiagramSendSource(null);
+  }, [diagramLive, code]);
+
+  useEffect(() => {
+    if (!live || !diagram) return undefined;
+    setDiagramDrafter(diagram);
+    const off = onSendToDiagram(setDiagramRequest);
+    return () => {
+      off();
+      setDiagramDrafter(null);
+    };
+  }, [live, diagram]);
+
+  if (live && diagram && diagramRequest)
+    return (
+      <Suspense fallback={null}>
+        <SendToDiagramDialog
+          request={
+            diagramRequest.label ? diagramRequest : { ...diagramRequest, label: tabTitle.trim() }
+          }
+          source={{ app, itemId: live }}
+          sourceTitle={title}
+          drafter={diagram}
+          earlier={
+            diagramRequest.elementId
+              ? (elementDiagramSends(diagramRequest.elementId)[0] ?? null)
+              : null
+          }
+          onClose={() => setDiagramRequest(null)}
+        />
+      </Suspense>
+    );
   if (!live || !request) return null;
   return (
     <Suspense fallback={null}>
