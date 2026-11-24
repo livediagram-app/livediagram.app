@@ -131,6 +131,10 @@ describe('workbenchRouteVerdict', () => {
     ['DELETE', 'projects/doc1/items/i1'],
     ['DELETE', 'projects/doc1/items/i1/comments/c1'],
     ['PUT', 'projects/doc1/item-types'],
+    ['GET', 'projects/doc1/sheets'],
+    ['POST', 'projects/doc1/sheets'],
+    ['DELETE', 'projects/doc1/sheets/s1'],
+    ['POST', 'projects/doc1/sheets/s1/writes'],
     ['DELETE', 'workbench/sessions/current'],
   ])('allows %s %s', (method, path) => {
     expect(verdict(method, path)).toBe('allow');
