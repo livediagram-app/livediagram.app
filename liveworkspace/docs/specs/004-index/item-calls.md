@@ -16,9 +16,10 @@ Where each app's button sits is that app's spec (`<app>/docs/specs/013-workspace
 
 - The **item** is what the call is about: a diagram, a plan, a document, a design or a knowledgebase. livehuddle's own
   Spaces start no calls this way: a Space is a meeting already.
-- A **call** is a livehuddle Space made for one item, with a Participant link that lets its people in. It is **live**
-  while anyone is in it.
-- The **host** is the account that started it. The Space is theirs, in their own space, named "<item title> Call".
+- A **call** is a livehuddle Space made for one item, with a Participant link that lets its people in, or the host's
+  **Calls Space** when they chose one ([below](#your-calls-space)). It is **live** while anyone is in it.
+- The **host** is the account that started it. A Space made for the call is theirs, in their own space, named
+  "<item title> Call".
 - A **meeting** is a call as the item remembers it: when it started and ended, who was in it, its summary page and the
   plan its actions went to.
 
@@ -40,6 +41,48 @@ Here: a livehuddle call about this <noun>, in a new tab."
   tab's link), signed in to an account: the Space needs an owner who keeps it. A guest is offered Join once a call is
   live, never Start.
 - If the index can't make the call, the new tab closes and a toast says "Couldn't start the call. Try again."
+- With a [Calls Space](#your-calls-space) chosen, the call starts there instead of in a new Space.
+
+## Your Calls Space
+
+**Calls Open In**, in Settings › **Calls** (an account category, [site.md](../010-site/site.md#settings)), picks where
+a person's Call opens (Work Tracker 1409). It is one setting on the account, the `all` scope's `callSpace`
+([accounts.md](../003-accounts/accounts.md#scopes)), so it follows them to every app and every device.
+
+- **A New Space for Each Call** is the default, and what an unset setting means: Call makes a Space for the item as
+  above, exactly as before the setting existed.
+- **One of my Spaces**: the picker lists the person's livehuddle Spaces they can choose, each with its name, its
+  preview and whose space it is in (Yours, or a team's), the most recently changed first, at most
+  `CALL_SPACES_LISTED` (200). A Space can be chosen when the person **owns it or it is their team's** (they reach it as
+  its owner or a member, never through someone's link), and it is out of the Trash and Archived.
+- **Starting.** The editor sends the chosen Space with the start. The index checks it again as the person, at that
+  moment: owned or the team's, livehuddle's, not trashed or archived. Then the call starts in it: the item's call row
+  points at that Space, the room is told the call's id, and the tab opens the Space. Everyone who joins from the item
+  lands in the same Space. The Space keeps its own name; nothing in it is changed or moved.
+- **One call an item still holds.** A live call about the item is joined, never restarted, whatever the setting says.
+- **A Space holds one item's call at a time.** When the chosen Space is in a live call about another item, the call
+  gets a Space of its own, as the default does, and a toast says "Your Calls Space is in another call, so this call
+  has a Space of its own." The other call is never taken over.
+- **People already in the Space**, working or meeting with no call, are in the call once it starts: they count in the
+  item's pill, and the item's readers can join them. Choosing a Space is choosing to meet there.
+- **Unavailable.** A Space that was deleted, archived or trashed, or that the person can no longer choose (they left
+  the team, the Space changed hands), is skipped: Call makes a new Space as the default does, and a toast says "Your
+  Calls Space isn't available, so this call has a new Space. Choose another in Settings › Calls." Settings shows the
+  choice as **Unavailable** with the same reason, until another is chosen or Default is picked again.
+- **Who gets in.** Joining is the same as for any call: the index hands the way in only to someone it has just found
+  can read the item. The way in to a Calls Space is **one link of its own for calls**, a Participant link the index
+  makes on the Space the first time and reuses after, which stops working `CALL_SPACE_LINK_DAYS` (7) days after the
+  latest call there started. So someone who joined one call can't come back to the Space for good: the Space's own
+  roles and links decide that, as before. The link shows in the Space's Share like any other, so its owner can stop
+  it sooner. Settings says so under the picker.
+- **When a call there ends.** A Space made for one item stays that item's call: opening it again later makes the call
+  live again. A Calls Space is used for other things too, so a call in it that has been live and has stood empty for
+  `ITEM_CALL_START_GRACE_MS` (2 minutes) has ended for good: people coming back to the Space later are not that item's
+  call. Starting a call in it ends any earlier call there that hadn't ended.
+- **Meetings.** Each call in a Calls Space is its own meeting on its own item, with its own summary and actions. Wrap
+  Up is the host's of each.
+- **Guests and everyone without the setting** see no change: a guest never starts a call, and a call without the
+  setting is made as before.
 
 ## Joining
 
@@ -117,6 +160,8 @@ host's choice alone, off until they turn it on, with a notice to everyone in the
 | `ITEM_CALL_CHECKS_MAX`  | 10    | Knowledgebases and plans a read checks the reader's access to       |
 | `ITEM_CALL_INVITES_MAX` | 10    | People one Invite names                                             |
 | `ITEM_CALL_INVITE_DAYS` | 1     | Days an invite stays in the Inbox                                   |
+| `CALL_SPACES_LISTED`    | 200   | Spaces Settings › Calls lists to choose from                        |
+| `CALL_SPACE_LINK_DAYS`  | 7     | Days a Calls Space's call link works after its latest call started  |
 | Starts, invites, wraps  | 10/m  | The kit run limiter (`KIT_RUN_LIMITER`), under `item-call:<person>` |
 
 ## Cost
@@ -130,11 +175,15 @@ Built-in AI for the summary is Ask AI's allowance ([Ask AI](../020-ask/ask.md) "
 
 - **The way in is the item.** The call's link reaches only someone the index has just found can read the item; a link
   forwarded on is a Space link like any, which the host can stop from the Space's Share.
+- **A Calls Space is never opened wider than its owner meant.** It can be chosen only by its owner or its team's
+  members, is checked again at every start, and its call link stops a week after the latest call
+  ([Your Calls Space](#your-calls-space) "Who gets in").
 - **Names, not ids, and only to the item's readers.** Who is in a call reaches those who can open the item.
 - **No backdoor.** The summary is written by the knowledgebase's own door with the host's grant at their own access;
   the actions are Send to Plan's sends, each checked as any.
 - **The signal carries ids only.** A `source-changed` with `calls` says nothing of who or how many.
-- **Purges.** A meeting goes with its item or its Space; an invite with its meeting or its person.
+- **Purges.** A meeting goes with its item or its Space (a Calls Space takes every meeting held in it); an invite
+  with its meeting or its person.
 
 ## Telemetry
 
