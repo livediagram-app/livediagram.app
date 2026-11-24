@@ -112,6 +112,25 @@ describe('workbenchRefusal', () => {
     expect(refuse('DELETE', 'workbench/sessions/current', view)).toBeNull();
     expect(refuse('GET', 'projects/doc1', view)).toBeNull();
   });
+
+  it("lets a view session read its plan's sheets, never write them, and hides another plan's", async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const view = { level: 'view' as const };
+    expect(refuse('GET', 'projects/doc1/sheets', view)).toBeNull();
+    for (const [method, path] of [
+      ['POST', 'projects/doc1/sheets'],
+      ['DELETE', 'projects/doc1/sheets/s1'],
+      ['POST', 'projects/doc1/sheets/s1/writes'],
+    ] as const) {
+      expect(await body(refuse(method, path, view))).toEqual({
+        status: 403,
+        body: { error: 'workbench_read_only' },
+      });
+    }
+    expect(refuse('POST', 'projects/doc1/sheets/s1/writes')).toBeNull();
+    expect((await body(refuse('GET', 'projects/doc2/sheets', view))).status).toBe(404);
+    expect(warn).toHaveBeenCalled();
+  });
 });
 
 describe('workbenchRefusal, workspace scope', () => {
