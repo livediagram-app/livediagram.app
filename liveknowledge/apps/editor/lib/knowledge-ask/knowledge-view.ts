@@ -46,6 +46,17 @@ export const KNOWLEDGE_VIEWS: readonly {
   },
 ];
 
+/** The views the footer shows: all four, or without Connect when the person hid it (mcp-connect.md "Closing the
+ *  tab"), unless Connect is the view open (a link or Connect an Agent opened it), which keeps its tab while it is. */
+export function knowledgeViewsShown(
+  showConnect: boolean,
+  current: KnowledgeView,
+): typeof KNOWLEDGE_VIEWS {
+  return showConnect || current === 'connect' ? KNOWLEDGE_VIEWS : WITHOUT_CONNECT;
+}
+
+const WITHOUT_CONNECT = KNOWLEDGE_VIEWS.filter(({ view }) => view !== 'connect');
+
 const NAMED: ReadonlySet<string> = new Set(['ask', 'insights', 'connect']);
 
 /** Addresses from before a view was renamed: emails and bookmarks still say `?view=ai` for Insights. */

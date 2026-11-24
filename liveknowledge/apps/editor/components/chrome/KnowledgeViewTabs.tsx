@@ -3,8 +3,10 @@
 // The knowledgebase's four views as tabs at the footer's left (docs/specs/030-knowledgebase/page-surface.md "The
 // footer"): Pages | Ask | Insights | Connect, drawn as the other liveworkspace editors draw the tabs of their footer tab
 // bar (the shared tab shape, @liveworkspace/workbench tab-shape). They are views, not a person's tabs: no add,
-// close, drag or menu. Each is a real link to the view's address (so it opens in a new tab, and Back returns),
-// marked `aria-current` when it is the view showing; a plain press moves in place, as a new history entry.
+// drag or menu. Each is a real link to the view's address (so it opens in a new tab, and Back returns),
+// marked `aria-current` when it is the view showing; a plain press moves in place, as a new history entry. The one
+// close is Connect MCP's X, while it is open, which hides that tab for this person (mcp-connect.md "Closing the tab",
+// ConnectTabClose).
 import type { MouseEvent, ReactNode } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
 import {
@@ -25,8 +27,10 @@ import { useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { SyncKnowledgebaseButton } from '@/components/ask/SyncKnowledgebaseButton';
 import { useKnowledgeViewsOffered } from '@/components/ask/useKnowledgeViewsOffered';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { ConnectTabClose } from '@/components/chrome/ConnectTabClose';
+import { connectTabShown } from '@/lib/user-preferences';
 import {
-  KNOWLEDGE_VIEWS,
+  knowledgeViewsShown,
   showKnowledgeView,
   type KnowledgeView,
 } from '@/lib/knowledge-ask/knowledge-view';
@@ -99,6 +103,9 @@ export function KnowledgeViewTabs() {
   const href = useKnowledgeViewHref(useEditorChrome((s) => (s.hydrated ? s.activeId : null)));
   const offline = useIsOfflineDocument(useEditorChrome((s) => s.documentId));
   const session = useAskSession();
+  const showConnect = useEditorChrome((s) => connectTabShown(s.userPreferences));
+  // The X is an account's choice: a guest has no account for it to follow (mcp-connect.md "Closing the tab").
+  const signedIn = useEditorChrome((s) => !!s.accountUserId);
   if (!offered) return null;
   return (
     <>
@@ -109,51 +116,56 @@ export function KnowledgeViewTabs() {
         // The bar's full height, the tabs standing on its foot; a phone's four tabs share the row.
         className={`${TAB_LIST_CLASS} self-stretch phone:min-w-0 phone:flex-1 phone:shrink`}
       >
-        {KNOWLEDGE_VIEWS.map(({ view, label, short, hoverTitle, about }) => {
-          const open = view === current;
-          const off = offlineOff(view, offline);
-          return (
-            <HoverCard
-              key={view}
-              title={off ? `${label} Needs Syncing` : (hoverTitle ?? label)}
-              description={off ? OFFLINE_VIEW_WHY : about}
-              {...(off ? { action: <SyncKnowledgebaseButton />, pressWithText: true } : {})}
-              className="self-end phone:min-w-0"
-            >
+        {knowledgeViewsShown(showConnect, current).map(
+          ({ view, label, short, hoverTitle, about }) => {
+            const open = view === current;
+            const off = offlineOff(view, offline);
+            const closable = open && view === 'connect' && signedIn;
+            return (
               <span
+                key={view}
                 data-knowledge-view-tab={view}
                 data-open={open ? '' : undefined}
                 data-off={off ? '' : undefined}
-                className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} phone:h-11 phone:justify-center phone:px-3 phone:max-[359px]:px-0`}
+                className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} self-end phone:h-11 phone:min-w-0 phone:justify-center phone:px-3 phone:max-[359px]:px-0 ${closable ? 'pr-1! phone:pr-1!' : ''}`}
               >
-                {/* Off, the link goes nowhere: a press opens the card that says why and holds Sync Knowledgebase. */}
-                <a
-                  {...(off ? { role: 'link', 'aria-disabled': true } : { href: href(view) })}
-                  tabIndex={0}
-                  aria-label={label}
-                  aria-current={open ? 'page' : undefined}
-                  data-tab-key=""
-                  data-knowledge-view-link={view}
-                  onClick={(event) =>
-                    off ? event.preventDefault() : pressed(event, view, current, session)
-                  }
-                  className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11 phone:max-[359px]:min-w-11 phone:max-[359px]:justify-center`}
+                {/* The card is the link's alone, so the X's own tooltip never sits under it. */}
+                <HoverCard
+                  title={off ? `${label} Needs Syncing` : (hoverTitle ?? label)}
+                  description={off ? OFFLINE_VIEW_WHY : about}
+                  {...(off ? { action: <SyncKnowledgebaseButton />, pressWithText: true } : {})}
+                  className="min-w-0"
                 >
-                  <span aria-hidden className="flex shrink-0">
-                    {ICONS[view]}
-                  </span>
-                  {/* The full name, and a phone's short one (icon only under 360 px, where four labels no longer fit); the link is named by the full name either way. */}
-                  <span className={`${TAB_NAME_CLASS} phone:hidden`}>{label}</span>
-                  <span
-                    className={`${TAB_NAME_CLASS} hidden phone:inline phone:max-[359px]:hidden`}
+                  {/* Off, the link goes nowhere: a press opens the card that says why and holds Sync Knowledgebase. */}
+                  <a
+                    {...(off ? { role: 'link', 'aria-disabled': true } : { href: href(view) })}
+                    tabIndex={0}
+                    aria-label={label}
+                    aria-current={open ? 'page' : undefined}
+                    data-tab-key=""
+                    data-knowledge-view-link={view}
+                    onClick={(event) =>
+                      off ? event.preventDefault() : pressed(event, view, current, session)
+                    }
+                    className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11 phone:max-[359px]:min-w-11 phone:max-[359px]:justify-center`}
                   >
-                    {short}
-                  </span>
-                </a>
+                    <span aria-hidden className="flex shrink-0">
+                      {ICONS[view]}
+                    </span>
+                    {/* The full name, and a phone's short one (icon only under 360 px, where four labels no longer fit); the link is named by the full name either way. */}
+                    <span className={`${TAB_NAME_CLASS} phone:hidden`}>{label}</span>
+                    <span
+                      className={`${TAB_NAME_CLASS} hidden phone:inline phone:max-[359px]:hidden`}
+                    >
+                      {short}
+                    </span>
+                  </a>
+                </HoverCard>
+                {closable ? <ConnectTabClose /> : null}
               </span>
-            </HoverCard>
-          );
-        })}
+            );
+          },
+        )}
       </nav>
     </>
   );

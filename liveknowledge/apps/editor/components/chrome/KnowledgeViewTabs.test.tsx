@@ -13,8 +13,14 @@ vi.mock('@/hooks/persistence/useIsOfflineDocument', () => ({
 vi.mock('@/components/ask/SyncKnowledgebaseButton', () => ({
   SyncKnowledgebaseButton: () => <button type="button">Sync Knowledgebase</button>,
 }));
+// The account write the X makes, caught here rather than sent.
+vi.mock('@/lib/preferences-sync', async (original) => ({
+  ...(await original<typeof import('@/lib/preferences-sync')>()),
+  savePreferences: vi.fn(),
+}));
 
 import { track } from '@/lib/telemetry';
+import { savePreferences } from '@/lib/preferences-sync';
 import { ROLES, chromeValue, renderInEditor } from '@/components/ask/test-chrome';
 import { BottomBar } from './BottomBar';
 import { KnowledgeViewTabs } from './KnowledgeViewTabs';
@@ -30,6 +36,7 @@ afterEach(() => {
   cleanup();
   aiSettingsStore.reset();
   askGate.close();
+  window.localStorage.clear();
   window.history.replaceState(null, '', '/document/d1');
   vi.clearAllMocks();
 });
@@ -83,6 +90,106 @@ describe('the Connect tab', () => {
     expect(dialog.querySelector('a')?.textContent).toBe('Sign In');
     expect(window.location.search).toBe('');
     expect(track).not.toHaveBeenCalled();
+  });
+
+  // mcp-connect.md "Closing the tab".
+  it('shows its X only while it is the open tab', () => {
+    renderInEditor(<KnowledgeViewTabs />);
+    expect(screen.queryByRole('button', { name: 'Hide Connect MCP' })).toBeNull();
+    window.history.replaceState(null, '', '/document/d1?view=connect');
+    cleanup();
+    renderInEditor(<KnowledgeViewTabs />);
+    const x = screen.getByRole('button', { name: 'Hide Connect MCP' });
+    expect(x.closest('[data-knowledge-view-tab]')?.getAttribute('data-knowledge-view-tab')).toBe(
+      'connect',
+    );
+    expect(x.className).toContain('cursor-pointer');
+    expect(x.className).toContain('focus-visible:outline-2');
+  });
+
+  it('names its X in a tooltip', async () => {
+    window.history.replaceState(null, '', '/document/d1?view=connect');
+    renderInEditor(<KnowledgeViewTabs />);
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Hide Connect MCP' }), {
+      pointerType: 'mouse',
+    });
+    const tip = await screen.findByRole('tooltip');
+    expect(tip.textContent).toContain('Settings, Appearance brings it back');
+  });
+
+  it('hides itself on its X: Pages in place, the setting turned off and saved to the account', async () => {
+    window.history.replaceState(null, '', '/document/d1?view=connect');
+    const setUserPreferences = vi.fn();
+    const { store } = renderInEditor(
+      <KnowledgeViewTabs />,
+      chromeValue('edit', { userPreferences: { homeBanner: false }, setUserPreferences }),
+    );
+    const before = window.history.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Hide Connect MCP' }));
+    expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'ConnectMcpTabOff');
+    expect(setUserPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ showConnectMcp: false, homeBanner: false }),
+    );
+    expect(savePreferences).toHaveBeenCalledWith(
+      'me',
+      expect.objectContaining({ showConnectMcp: false }),
+    );
+    await waitFor(() => expect(window.location.search).toBe(''));
+    expect(window.history.length).toBe(before);
+    // The store now holds the choice, as the editor's session slice would: the tab is gone.
+    store.set({ ...store.get(), userPreferences: setUserPreferences.mock.calls[0]![0] });
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Connect MCP' })).toBeNull());
+    expect(screen.getAllByRole('link')).toHaveLength(3);
+  });
+
+  it('stays hidden in every knowledgebase once off, unless a link opens it', () => {
+    renderInEditor(
+      <KnowledgeViewTabs />,
+      chromeValue('edit', { documentId: 'd2', userPreferences: { showConnectMcp: false } }),
+    );
+    expect(screen.queryByRole('link', { name: 'Connect MCP' })).toBeNull();
+    cleanup();
+    window.history.replaceState(null, '', '/document/d2?view=connect');
+    renderInEditor(
+      <KnowledgeViewTabs />,
+      chromeValue('edit', { documentId: 'd2', userPreferences: { showConnectMcp: false } }),
+    );
+    expect(link('Connect MCP').getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('button', { name: 'Hide Connect MCP' })).toBeTruthy();
+  });
+
+  it('comes back once Settings turns it on again', () => {
+    renderInEditor(
+      <KnowledgeViewTabs />,
+      chromeValue('edit', { userPreferences: { showConnectMcp: true } }),
+    );
+    expect(link('Connect MCP')).toBeTruthy();
+  });
+
+  it('is one person’s: someone without the setting off keeps the tab', () => {
+    // Each session reads its own person's preferences; another person's `false` is not in them.
+    renderInEditor(
+      <KnowledgeViewTabs />,
+      chromeValue('edit', {
+        selfParticipant: { id: 'bea', name: 'Bea' },
+        accountUserId: 'bea',
+        userPreferences: {},
+      }),
+    );
+    expect(link('Connect MCP')).toBeTruthy();
+  });
+
+  it('has no X for someone signed out, even with its address open', () => {
+    window.history.replaceState(null, '', '/document/d1?view=connect');
+    renderInEditor(<KnowledgeViewTabs />, chromeValue('edit', { accountUserId: null }));
+    expect(link('Connect MCP').getAttribute('aria-current')).toBe('page');
+    expect(screen.queryByRole('button', { name: 'Hide Connect MCP' })).toBeNull();
+  });
+
+  it.each(ROLES)('offers its X to a session of the %s role', (role) => {
+    window.history.replaceState(null, '', '/document/d1?view=connect');
+    renderInEditor(<KnowledgeViewTabs />, chromeValue(role));
+    expect(screen.getByRole('button', { name: 'Hide Connect MCP' })).toBeTruthy();
   });
 
   it('says what it is for in its hover card', async () => {
@@ -156,7 +263,7 @@ describe('the view tabs', () => {
     expect(track).not.toHaveBeenCalled();
   });
 
-  it('are reached by the keyboard, and are not a person’s tabs: no add, close, drag or menu', () => {
+  it('are reached by the keyboard, and are not a person’s tabs: no add, drag or menu, and no close off Connect', () => {
     renderInEditor(<KnowledgeViewTabs />);
     const nav = screen.getByRole('navigation', { name: 'Knowledgebase Views' });
     for (const a of nav.querySelectorAll('a')) expect(a.tabIndex).toBe(0);
@@ -167,7 +274,7 @@ describe('the view tabs', () => {
 
   it('show a hover card of a title and one line', async () => {
     renderInEditor(<KnowledgeViewTabs />);
-    fireEvent.mouseEnter(link('Ask').closest('[data-knowledge-view-tab]')!.parentElement!);
+    fireEvent.mouseEnter(link('Ask').parentElement!);
     expect(
       await screen.findByText('Ask a question and get an answer from its pages.'),
     ).toBeTruthy();
@@ -210,6 +317,19 @@ describe('the footer', () => {
     const settings = screen.getByRole('button', { name: 'Application settings' });
     expect(nav.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'More' })).toBeNull();
+  });
+
+  it('on a phone gives the open Connect MCP tab its X, and leaves the tab out once hidden', () => {
+    window.history.replaceState(null, '', '/document/d1?view=connect');
+    renderInEditor(<BottomBar phone onOpenSettings={() => {}} onOpenSearch={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Hide Connect MCP' })).toBeTruthy();
+    cleanup();
+    window.history.replaceState(null, '', '/document/d1');
+    renderInEditor(
+      <BottomBar phone onOpenSettings={() => {}} onOpenSearch={() => {}} />,
+      chromeValue('edit', { userPreferences: { showConnectMcp: false } }),
+    );
+    expect(screen.getAllByRole('link')).toHaveLength(3);
   });
 
   it('on a phone keeps the tabs and the notification list in the row, the rest behind More', () => {

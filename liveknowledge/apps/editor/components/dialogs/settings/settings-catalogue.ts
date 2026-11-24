@@ -10,7 +10,7 @@ import type {
   SettingsIconId,
 } from '@liveworkspace/workbench/components/dialogs/settings/settings-icons';
 import type { TelemetryCategory } from '@liveknowledge/api-schema';
-import type { UserPreferences } from '@/lib/user-preferences';
+import { connectTabShown, type UserPreferences } from '@/lib/user-preferences';
 import {
   KNOWLEDGE_TOURS,
   KNOWLEDGE_TOUR_COPY,
@@ -396,6 +396,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.dockButtonNames !== false,
         write: (p, v) => ({ ...p, dockButtonNames: v }),
         event: { category: 'UI', on: 'DockButtonNamesOn', off: 'DockButtonNamesOff' },
+      },
+      {
+        // The knowledgebase footer's Connect MCP tab (docs/specs/030-knowledgebase/mcp-connect.md "Closing the tab"):
+        // its own X turns this off, here it comes back. Yours alone, in every knowledgebase.
+        kind: 'toggle',
+        key: 'showConnectMcp',
+        keywords:
+          'connect mcp tab footer ai app agent claude chatgpt cursor hide show close remove x views',
+        section: 'Interface',
+        label: 'Show Connect MCP',
+        description:
+          'The Connect MCP tab beside Pages, Ask and Insights in every knowledgebase. Its X turns this off.',
+        read: (p) => connectTabShown(p),
+        write: (p, v) => ({ ...p, showConnectMcp: v }),
+        event: { category: 'UI', on: 'ConnectMcpTabOn', off: 'ConnectMcpTabOff' },
       },
       // UI scale (docs/specs/007-editor/ui-scale.md): the working chrome only,
       // never the canvas, dialogs or menus. The master sets every part; each
