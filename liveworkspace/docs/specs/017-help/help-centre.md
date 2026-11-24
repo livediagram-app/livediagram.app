@@ -73,6 +73,12 @@ only the articles that apply to it; All Apps shows every article.
   one closed row ("How this works in N other apps", with their marks). Under All Apps every note is open, in the
   registry's app order. Apps an article applies to that have no note are listed in one quiet line ("Works the same
   in livedocuments and livedesign").
+- **Inline app text.** A phrase or sentence only some apps' help shows, with no box, is `<ForApps app="…">…</ForApps>`
+  (shown in those apps' helps) or `<NotFor app="…">…</NotFor>` (shown in every help but those), so it sits in a
+  paragraph or a list item (a sentence about Add a Tab to Another, which liveknowledge has no counterpart of).
+  Under All Apps both show. An app list in help that names the five apps the help centre had before liveknowledge and
+  leaves it out is a failing test (`lib/guards/app-lists.test.ts`), unless its article is in the test's exemption
+  list with the reason.
 - **The work's name.** Shared copy names the work with `<Noun />` (and `<Noun plural />`, `<Noun capital />`), which
   reads canvas, plan, document, design or Space for the current app and "file" under All Apps, the words the
   Explorer uses. Product names in shared copy come from `<AppName />`.
