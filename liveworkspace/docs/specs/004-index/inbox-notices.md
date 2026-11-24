@@ -79,7 +79,7 @@ A notice in the toast stack, bottom centre ([Toasts](../016-notifications/toasts
 pops up"): it stands on the tab bar, the dock and the bottom-right cluster as every toast does, above any toast on
 show, and wears the toast's stacked card (white or slate-900, its border and shadow). It never pops up at the top of
 the screen (the owner, 2026-11-24: "there is an ugly inbox one that appears in the top of the screen, all toasts /
-notifications should appear in the same place"). 25rem wide on a computer; on a phone it spans the screen with a 16 px
+notifications should appear in the same place"). As wide as its words on a computer (20rem to 36rem, as every stacked card); on a phone it spans the screen with a 16 px
 gutter. It takes no focus. While it shows it holds the notice slot, so a suggestion waits for it.
 
 - **One row**: the kind's icon, who and what as its title (**Priya mentioned you**), the comment's first line in

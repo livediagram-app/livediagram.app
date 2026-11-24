@@ -66,10 +66,10 @@ export function BoardSceneNotice({
           onClose={onClose}
           onKeyDown={onKeyDown}
           body={
-            <div className="text-xs leading-5 text-slate-600 dark:text-slate-300">
+            <div className="text-xs leading-4 text-slate-600 dark:text-slate-300 [&_ul]:mt-1 [&_ul]:space-y-1">
               <BoardSceneReportList report={notice.report} />
               {images && images.failures.length > 0 ? (
-                <ul className="mt-1 space-y-1">
+                <ul>
                   {images.failures.map((f) => (
                     <li key={f.failure} data-failure={f.failure}>
                       <span className="font-semibold tabular-nums">{f.count}</span> · {f.sentence}
@@ -77,7 +77,7 @@ export function BoardSceneNotice({
                   ))}
                 </ul>
               ) : null}
-              {images?.hint ? <p className="mt-2">{images.hint}</p> : null}
+              {images?.hint ? <p className="mt-1.5">{images.hint}</p> : null}
             </div>
           }
         />

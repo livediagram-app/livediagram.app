@@ -57,12 +57,12 @@ The toast's stacked card ([Toasts](./toasts.md) "One line by default, stacked wh
 - **Title**, with the info icon before it and the × after it: what it would do ("Make These a Plan").
 - **Line**, under the title at the card's full width: why now, with the count where there is one ("4 action stickies
   here could be cards in a liveplanner plan, one each.").
-- **The foot row**: **Don't Suggest This Again** at its start, quiet; the one click at its end, a small solid button
+- **The foot row**: **Don't Suggest This Again** at its start, quiet; the one click at its end, in the brand colour
   ("Send to Plan", "Write Page", "Add Page", "Connect Them").
 - **×**: dismisses it for this item.
 
 It enters as a toast does (none under reduced motion), never takes the focus and is announced politely
-(`role="status"`); Escape inside it dismisses it. 25rem (400 px) wide; on a phone it spans the width less 16 px a side.
+(`role="status"`); Escape inside it dismisses it. As wide as its words, 20rem to 36rem, as a toast is; on a phone it spans the width less 16 px a side.
 While a dialog is open over the page it waits, undrawn, and shows again when the dialog closes.
 
 ## What taking one does

@@ -200,7 +200,7 @@ describe('ToastCard', () => {
     );
     const card = screen.getByRole('status');
     expect(card.getAttribute('data-toast-layout')).toBe('stacked');
-    expect(card.className).toContain('sm:w-[25rem]');
+    expect(card.className).toContain('sm:max-w-[36rem]');
     const column = card.children[1]!;
     // The close floats in the first line's corner, so only the title's line runs short of it.
     const close = screen.getByRole('button', { name: 'Dismiss' });
@@ -220,16 +220,17 @@ describe('ToastCard', () => {
     expect(quiet.hasAttribute('data-toast-quiet')).toBe(true);
     expect(quiet.parentElement!.className).toContain('mr-auto');
     const send = screen.getByRole('button', { name: 'Send to Plan' });
-    expect(send).toBe(foot.lastElementChild);
-    expect(send.className).toContain('bg-brand-700');
-    expect(send.className).toContain('text-white');
+    expect(send).toBe(foot.lastElementChild!.lastElementChild);
+    // A text button, 24px tall on the foot row, so the row costs little more than a line.
+    expect(send.className).toContain('text-brand-700');
+    expect(send.className).toContain('h-6');
     fireEvent.click(quiet);
     fireEvent.click(send);
     expect(never).toHaveBeenCalledTimes(1);
     expect(take).toHaveBeenCalledTimes(1);
   });
 
-  it('stacks a switch, its answers on the foot row under it; a destructive primary is solid rose', () => {
+  it('stacks a switch at the foot row’s start, its answers at the end; a destructive primary stays rose', () => {
     render(
       <ToastCard
         tone="info"
@@ -246,9 +247,13 @@ describe('ToastCard', () => {
     expect(card.getAttribute('data-toast-layout')).toBe('stacked');
     const toggle = card.querySelector('[data-toast-toggle]')!;
     const foot = card.querySelector('[data-toast-foot]')!;
-    expect(toggle.compareDocumentPosition(foot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The switch leads the foot row, its answers at the row's end.
+    expect(foot.contains(toggle)).toBe(true);
+    expect(toggle.parentElement!.className).toContain('mr-auto');
+    // Keep and Delete from Storage wrap together, never split across rows.
+    expect(foot.lastElementChild!.textContent).toBe('KeepDelete from Storage');
     const remove = screen.getByRole('button', { name: 'Delete from Storage' });
-    expect(remove.className).toContain('bg-rose-700');
+    expect(remove.className).toContain('text-rose-700');
     expect(screen.getByRole('button', { name: 'Keep' }).className).toContain('text-slate-600');
   });
 
@@ -271,7 +276,7 @@ describe('ToastCard', () => {
     expect(card.querySelector('[data-testid=kind]')).not.toBeNull();
     const link = screen.getByRole('link', { name: 'Open in Inbox' });
     expect(link.getAttribute('href')).toBe('/explorer/inbox?at=1');
-    expect(link.className).toContain('bg-brand-700');
+    expect(link.className).toContain('text-brand-700');
     link.addEventListener('click', (e) => e.preventDefault());
     fireEvent.click(link);
     expect(follow).toHaveBeenCalledTimes(1);

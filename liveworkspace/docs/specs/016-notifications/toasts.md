@@ -66,14 +66,16 @@ list of rows) or more than one paragraph never squeezes its words beside its but
    line runs short of it: every line under it takes the card's full width.
 2. **The message** under the title, at the card's full width (less the icon's column), so a two-line message stays two
    lines, not four.
-3. **What else it holds** (a list of rows, a place in small text, a switch), each at full width.
-4. **The actions on a row of their own at the foot**, aligned to the end: the primary as a small solid button in the
-   brand colour (rose for a destructive one, white on the highlight look), any secondary before it as a text button,
-   and a quiet answer (Don't Suggest This Again) at the row's start, in small slate text.
+3. **What else it holds** (a list of rows, a place in small text), each at full width.
+4. **The actions on a row of their own at the foot**, aligned to the end, the toast's own text buttons (the primary
+   in the brand colour, rose for a destructive one, a secondary in slate) standing 24px tall (44px to tap on a touch
+   screen), so the row costs little more than the line of words it replaces; a switch (Remember My Choice) or a quiet
+   answer (Don't Suggest This Again, in small slate text) at the row's start. Where the row runs out of room, the
+   answers wrap under the switch.
 
 A stacked card is as tall as its words, never taller: a phone's Make These a Plan went from title, action and close
-over a four-line column with Don't Suggest This Again under it, to the title and close, two full lines and one foot
-row. It is 25rem (400px) wide from 640px and spans the screen on a phone, as every toast does. A plain toast, one
+over a three-line column with Don't Suggest This Again under it, to the title and close, two full lines and one foot
+row, and is shorter for it. From 640px it is as wide as its words, at least 20rem (so its foot row has room) and at most 36rem, the toast's own widest, so a message that fits on one line stays one line; on a phone it spans the screen, as every toast does. A plain toast, one
 short message with its buttons, never stacks: it keeps the one row above, however its words wrap.
 
 The copy is written to fit. A message is one short sentence, or two very short ones: what happened, then what to do
@@ -123,7 +125,7 @@ Storage** (each product's `docs/specs/009-elements/images.md` "Deleting an unuse
 can't be undone, and timing out or closing it is the safe answer.
 
 **A switch on a toast** (an action toast's `toggle`): one iOS-style switch, the house `Switch`, on a row of its own
-under the message (so the toast is stacked, its answers on the foot row under the switch), its words beside it as its label, for an answer the person may want to stop being asked: "Remember
+at the start of the foot row under the message (so the toast is stacked, its answers at the row's end), its words beside it as its label, for an answer the person may want to stop being asked: "Remember
 My Choice" on the unused-picture offer. It starts off each time the toast appears, is read only when an answer is
 pressed, and flipping it answers nothing: it neither closes the toast nor counts as seeing it, and the toast's timer
 pauses while it has focus or the pointer, as for the buttons. Closing the toast or letting it time out with the switch

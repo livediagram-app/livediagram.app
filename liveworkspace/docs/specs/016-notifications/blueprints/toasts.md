@@ -132,13 +132,13 @@ An empty message is ignored. The Explorer keeps its own short API (`show(text, {
   is open); `ToastNotice` portals into it and counts itself (`countNotice`), so the floor is measured with only a
   notice up. With no stack, a notice stands alone at `fixed bottom-4`, centred.
 - `ToastCard` layout (`data-toast-layout`): `toastCardLayout` answers `stacked` for a `title`, a `body`, a `toggle` or
-  a `quiet` action, else `inline`; `layout` overrides. Inline is the one row above. Stacked: `p-3`, `w-full
-sm:w-[25rem]`; the icon (`h-5`) then a block column holding the close floated right (`-mr-1.5 -mt-1.5
+  a `quiet` action, else `inline`; `layout` overrides. Inline is the one row above. Stacked: `px-3 py-2.5`, `w-full
+sm:w-auto sm:min-w-[20rem] sm:max-w-[36rem]`; the icon (`h-5`) then a block column holding the close floated right (`-mr-1.5 -mt-1.5
 mb-[-0.75rem]`, so only the first line runs short of it), the title (`font-semibold`), the message (`slate-600`,
   `slate-300` in dark, under a title), the body, the switch, and the foot row (`[data-toast-foot]`, `clear-both mt-2.5
 flex flex-wrap justify-end`): quiet actions in a `mr-auto` group (`text-xs` slate-500), secondaries as text
-  buttons, the primary solid (`bg-brand-700` / `dark:bg-brand-600`, `bg-rose-700` when destructive, white on the
-  highlight). An action with `href` is a link.
+  buttons `h-6` (the inline row's are `h-8`), the primary in the brand colour (rose when destructive, the white
+  button on the highlight). An action with `href` is a link.
 - Bell: `lucideBell` 16px in the host's button classes, `data-toast-bell`, `aria-haspopup="dialog"`,
   `aria-expanded`, `aria-label` "Notifications" or "Notifications, new"; a `HoverCard` "Notifications". The dot:
   `absolute right-1 top-1 h-2 w-2 rounded-full bg-brand-600 ring-2 ring-white dark:bg-brand-400

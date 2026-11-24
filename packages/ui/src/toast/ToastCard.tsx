@@ -61,6 +61,9 @@ const ACTION_BASE =
   'touch-target relative inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:cursor-not-allowed disabled:opacity-50';
 // A button's size: a compact text button, 32px tall (44px to tap); a quiet answer is small text.
 const ACTION_SIZE = 'h-8 rounded-lg text-sm font-semibold';
+// On a stacked card's foot row the same text buttons stand 24px tall (44px to tap on a touch screen), so the row costs
+// little more than the line of words it replaces (toasts.md "Stacked").
+const FOOT_SIZE = 'h-6 rounded-md text-sm font-semibold';
 const ACTION_PAD = 'px-2.5';
 const ACTION_PRIMARY =
   'text-brand-700 enabled:hover:bg-brand-50 dark:text-brand-300 dark:enabled:hover:bg-brand-500/15';
@@ -106,12 +109,6 @@ export function toastCardLayout(parts: {
   return more ? 'stacked' : 'inline';
 }
 
-// The stacked card's foot row: the primary a small solid button (toasts.md "Stacked"). brand-700 and rose-700 carry
-// white at over 4.5:1, and brand-600 in dark; the highlight keeps its white button.
-const FOOT_PRIMARY =
-  'bg-brand-700 text-white enabled:hover:bg-brand-800 dark:bg-brand-600 dark:enabled:hover:bg-brand-500 [&:not(button)]:hover:bg-brand-800 dark:[&:not(button)]:hover:bg-brand-500';
-const FOOT_DESTRUCTIVE =
-  'bg-rose-700 text-white enabled:hover:bg-rose-800 focus-visible:outline-rose-700 dark:bg-rose-600 dark:enabled:hover:bg-rose-500';
 // A quiet answer: small slate text, underlined on hover. slate-500 on white reads at 4.8:1, slate-400 on slate-900 at
 // 6.9:1.
 const ACTION_QUIET =
@@ -119,10 +116,9 @@ const ACTION_QUIET =
 const ACTION_HIGHLIGHT_QUIET =
   'rounded text-xs font-medium text-white/85 underline-offset-2 enabled:hover:text-white enabled:hover:underline';
 
-function actionLook(action: ToastCardAction, highlight: boolean, stacked: boolean): string {
+function actionLook(action: ToastCardAction, highlight: boolean): string {
   if (action.quiet) return highlight ? ACTION_HIGHLIGHT_QUIET : ACTION_QUIET;
   if (highlight) return action.primary ? ACTION_HIGHLIGHT_PRIMARY : ACTION_HIGHLIGHT_SECONDARY;
-  if (stacked && action.primary) return action.destructive ? FOOT_DESTRUCTIVE : FOOT_PRIMARY;
   if (action.destructive) return ACTION_DESTRUCTIVE;
   return action.primary ? ACTION_PRIMARY : ACTION_SECONDARY;
 }
@@ -136,10 +132,12 @@ function ActionButton({
   highlight: boolean;
   stacked: boolean;
 }) {
-  // A solid button (the highlight's, a stacked card's primary) has a little more room either side of its words.
-  const solid = !action.quiet && action.primary && (highlight || stacked);
-  const size = action.quiet ? '' : `${ACTION_SIZE} ${solid ? 'px-3' : ACTION_PAD}`;
-  const className = `${ACTION_BASE} ${size} ${actionLook(action, highlight, stacked)}`;
+  // The highlight's solid white button has a little more room either side of its words.
+  const solid = action.primary && highlight;
+  const size = action.quiet
+    ? ''
+    : `${stacked ? FOOT_SIZE : ACTION_SIZE} ${solid ? 'px-3' : stacked ? 'px-1.5' : ACTION_PAD}`;
+  const className = `${ACTION_BASE} ${size} ${actionLook(action, highlight)}`;
   if (action.href !== undefined)
     return (
       <a
@@ -176,7 +174,7 @@ function ToastSwitch({ toggle, highlight }: { toggle: ToastToggle; highlight: bo
       checked={on}
       track="start"
       layout="flex items-center gap-2 rounded-md text-left"
-      className={`touch-target relative -ml-0.5 mb-1 py-1 text-sm font-medium ${highlight ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}
+      className={`touch-target relative -ml-0.5 text-sm font-medium ${highlight ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}
       onChange={(next) => {
         setState({ of: toggle, on: next });
         toggle.onChange(next);
@@ -273,7 +271,7 @@ export function ToastCard({
     return (
       <div
         {...shared}
-        className={`flex w-full items-start gap-2.5 p-3 sm:w-[25rem] sm:max-w-full ${surface} ${motion} ${className}`}
+        className={`flex w-full items-start gap-2.5 px-3 py-2.5 sm:w-auto sm:min-w-[20rem] sm:max-w-[36rem] ${surface} ${motion} ${className}`}
         {...rest}
       >
         <span className={`flex h-5 shrink-0 items-center ${iconTint}`} aria-hidden>
@@ -294,29 +292,33 @@ export function ToastCard({
             <div
               data-toast-message=""
               className={
-                title
-                  ? `mt-0.5 ${highlight ? 'text-white/90' : 'text-slate-600 dark:text-slate-300'}`
-                  : ''
+                title ? `${highlight ? 'text-white/90' : 'text-slate-600 dark:text-slate-300'}` : ''
               }
             >
               {message}
             </div>
           ) : null}
           {body ? <div className="mt-1">{body}</div> : null}
-          {toggle ? (
-            <div className="mt-1.5" data-toast-toggle="">
-              <ToastSwitch toggle={toggle} highlight={highlight} />
-            </div>
-          ) : null}
-          {buttons.length > 0 ? (
+          {buttons.length > 0 || toggle ? (
             <div
               data-toast-foot=""
-              className="clear-both mt-2.5 flex flex-wrap items-center justify-end gap-x-2 gap-y-1"
+              className="clear-both -mr-1.5 mt-2 flex flex-wrap items-center justify-end gap-x-1 gap-y-1"
             >
-              {quiet.length > 0 ? (
-                <div className="mr-auto flex items-center gap-3">{quiet}</div>
+              {/* The switch and any quiet answer at the row's start: choices about the asking, not answers. */}
+              {quiet.length > 0 || toggle ? (
+                <div className="mr-auto flex items-center gap-3">
+                  {toggle ? (
+                    <div data-toast-toggle="">
+                      <ToastSwitch toggle={toggle} highlight={highlight} />
+                    </div>
+                  ) : null}
+                  {quiet}
+                </div>
               ) : null}
-              {answers}
+              {/* The answers wrap as one group, never split across rows. */}
+              {answers.length > 0 ? (
+                <div className="ml-auto flex items-center gap-1">{answers}</div>
+              ) : null}
             </div>
           ) : null}
         </div>
