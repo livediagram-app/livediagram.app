@@ -67,6 +67,7 @@ describe('settings catalogue', () => {
       // Element tours (docs/specs/007-editor/element-tours.md): one switch per element, linking that element's
       // article; no switch over them all while the Portal is the only one.
       ['elementTour-portal', 'toggle', 'Portal', 'portals'],
+      ['suggestNextApp', 'toggle', 'Suggest Other Apps', undefined],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -80,6 +81,7 @@ describe('settings catalogue', () => {
       [
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['PortalTourSeenOff', 'PortalTourSeenOn'],
+        ['SuggestionsOn', 'SuggestionsOff'],
       ],
     );
   });

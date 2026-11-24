@@ -94,6 +94,7 @@ describe('settings catalogue', () => {
       ['planTourSeen-sheets', 'toggle', 'Sheets Tour', 'planTour'],
       ['planTourSeen-dashboards', 'toggle', 'Dashboards Tour', 'planDashboards'],
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
+      ['suggestNextApp', 'toggle', 'Suggest Other Apps', undefined],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -112,6 +113,7 @@ describe('settings catalogue', () => {
         ['SheetsTourSeenOff', 'SheetsTourSeenOn'],
         ['DashboardsTourSeenOff', 'DashboardsTourSeenOn'],
         ['FormTourSeenOff', 'FormTourSeenOn'],
+        ['SuggestionsOn', 'SuggestionsOff'],
       ],
     );
   });
@@ -346,12 +348,13 @@ describe('settings sub-categories', () => {
       'planTourSeen-sheets',
       'planTourSeen-dashboards',
       'formTourSeen',
+      'suggestNextApp',
     ]);
     expect(
       rows({
         planTourTracks: ['boards', 'card-types', 'board-setup', 'sheets', 'dashboards'],
       }),
-    ).toEqual(['planTourSeen', 'formTourSeen']);
+    ).toEqual(['planTourSeen', 'formTourSeen', 'suggestNextApp']);
   });
 
   it('names a sub-category by its path', () => {
