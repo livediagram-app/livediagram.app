@@ -20,7 +20,7 @@ import {
 // The field grows with its writing up to this height, then scrolls: the Ask view is wider and taller than Tools.
 const MAX_FIELD_HEIGHT_PX = 160;
 /** Built-in AI's row in Answer With. */
-export const BUILT_IN_DETAIL = `Included with liveknowledge, ${ASK_BUILT_IN_PER_PERSON_PER_DAY} questions a person a day`;
+export const BUILT_IN_DETAIL = `Included, ${ASK_BUILT_IN_PER_PERSON_PER_DAY} questions a person a day`;
 
 export function AskComposer({
   streaming,

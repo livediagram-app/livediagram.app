@@ -377,7 +377,7 @@ share link's visitor, a page's link and a Community post's reader get pages alon
   - **The AI pill** is livediagram's ([ask.md](../../../../liveworkspace/docs/specs/020-ask/ask.md) "Choosing which
     AI answers"): a sparkle and **Built-In AI**, or a key mark and the model with whose key it is; amber **Key Needs
     Attention** after the provider refused the key on the last question (or a stored key that will not open). It
-    opens **Answer With**: Built-In AI ("Included with liveknowledge, 30 questions a person a day") and, where one
+    opens **Answer With**: Built-In AI ("Included, 30 questions a person a day") and, where one
     applies, the key ("Anthropic · Claude Fable 5.2 · No daily limits"), the one in use ticked. Its foot offers
     **Use Your Own Key** with no key, **Manage Keys** with one and **Fix Key** after a failure, to whoever may change
     the key that applies: the knowledgebase's key opens AI Settings for an Editor; built-in AI, a person's own key or

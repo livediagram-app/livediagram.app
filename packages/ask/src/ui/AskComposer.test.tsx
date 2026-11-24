@@ -166,14 +166,12 @@ describe('the AI pill for an app of its own', () => {
         view={view}
         manage={null}
         onPick={vi.fn()}
-        builtInDetail="Included with liveknowledge, 30 questions a person a day"
+        builtInDetail="Included, 30 questions a person a day"
       />,
     );
     menu = await screen.findByRole('dialog', { name: 'Answer With' });
     expect(within(menu).getAllByRole('radio')).toHaveLength(2);
-    expect(
-      within(menu).getByText('Included with liveknowledge, 30 questions a person a day'),
-    ).toBeTruthy();
+    expect(within(menu).getByText('Included, 30 questions a person a day')).toBeTruthy();
   });
 
   it('keeps built-in AI where no key applies, even with built-in AI said to be missing', async () => {

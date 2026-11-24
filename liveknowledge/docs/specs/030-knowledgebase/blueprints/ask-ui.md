@@ -279,7 +279,7 @@ Built-In AI Could Not Answer". The server's own `message` is never shown. Inside
   the shared `AnswerWith` over `askAiView(knowledgeAiLine(state, manageAi, lastFailure), choice, 'This
 Knowledgebase’s Key')`. On a server with no built-in AI (`settings.builtIn` false) the view is worked out for
   `key` whatever the stored choice, and `AnswerWith` gets `builtIn={false}`, so the menu holds the key alone. Its
-  built-in row reads "Included with liveknowledge, 30 questions a person a day" (`builtInDetail`). Its `manage` is
+  built-in row reads "Included, 30 questions a person a day" (`builtInDetail`; short enough not to be cut in the 400px menu). Its `manage` is
   `useKnowledgeAiSource`'s `act`. A pick sends `UI·Changed·AskAiBuiltIn` or `UI·Changed·AskAiKey` and sets
   `askAiChoiceStore` for this person and knowledgebase. With Pro on and built-in AI answering, `useAiCreditsLine`
   is the box's `cost`. Nothing about which AI answers is drawn outside the box (no `KnowledgeAiSource`, no picker).
