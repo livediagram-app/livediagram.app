@@ -15,7 +15,11 @@ import type { EditorInbox } from '../useEditorInbox';
 import { EditorCornerActions } from '../EditorCornerActions';
 import { ExplorerMenuButtons } from './ExplorerMenuButtons';
 import { publishPhoneApps } from './phone-apps-store';
-import { resetPhoneAppsSectionForTests, usePhoneAppsSection } from './phone-apps-section';
+import {
+  resetPhoneAppsSectionForTests,
+  useClosePhoneApps,
+  usePhoneAppsSection,
+} from './phone-apps-section';
 
 vi.mock('../AuthControls', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../AuthControls')>()),
@@ -204,6 +208,28 @@ describe('on a phone', () => {
     expect(section?.textContent).toBe('Editor mode picker');
     host.rerender(<Section on={false} />);
     expect(drawer().querySelector('[data-phone-apps-section]')).toBeNull();
+    host.unmount();
+    view.unmount();
+  });
+
+  it('gives the section the drawer’s Close, so a control that acts closes the drawer', async () => {
+    function Picker() {
+      const close = useClosePhoneApps();
+      return (
+        <button type="button" onClick={close}>
+          Workshop
+        </button>
+      );
+    }
+    function Section() {
+      usePhoneAppsSection(<Picker />, true);
+      return null;
+    }
+    const view = editor();
+    const host = render(<Section />);
+    await openApps();
+    fireEvent.click(within(drawer()).getByRole('button', { name: 'Workshop' }));
+    expect(document.querySelector('[data-phone-apps]')).toBeNull();
     host.unmount();
     view.unmount();
   });

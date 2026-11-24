@@ -5,7 +5,13 @@
 // card publishes it while on a phone, and the open drawer draws it under its header. One editor runs per page, so one
 // section at a time; the last to publish wins and its unpublish clears only its own.
 
-import { useLayoutEffect, useSyncExternalStore, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 
 let section: ReactNode = null;
 const listeners = new Set<() => void>();
@@ -39,6 +45,16 @@ const readServer = () => null;
 /** The section the drawer draws now, or null. */
 export function usePhoneAppsSectionNode(): ReactNode {
   return useSyncExternalStore(subscribe, read, readServer);
+}
+
+// The open drawer's Close, for a section control that acts: it closes the drawer first, as a tile does, so a press
+// behaves the same whether or not the app's top row redraws around it (a Draw tab moves livediagram's menu card).
+const CloseContext = createContext<() => void>(() => undefined);
+/** Gives the section the drawer's Close (AppsDrawer wraps the section in it). */
+export const PhoneAppsSectionClose = CloseContext.Provider;
+/** Closes the Apps drawer the section is drawn in (a no-op outside one). */
+export function useClosePhoneApps(): () => void {
+  return useContext(CloseContext);
 }
 
 /** Clears the section between tests. */

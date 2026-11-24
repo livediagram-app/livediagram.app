@@ -46,7 +46,7 @@ where it is and changes only how the next mark is made.
   - **On a computer** it is a dropdown chip (`EditorModeSwitch`, over `ModeMenuChip` with `compact`): the current
     mode's icon, its name and a chevron.
   - **On a phone** it is not in the top row: it leads the Apps drawer as **Editor mode** over the three modes side
-    by side, the current one marked, one press to switch (`PhoneModePicker`;
+    by side, the current one marked, one press to switch, which also closes the drawer (`PhoneModePicker`;
     liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md "The app's section").
   - It stays up in every mode, so it never moves when the mode changes.
   - livediagram's alone: liveplanner, livedocuments and livedesign have no editor modes and no such switch.

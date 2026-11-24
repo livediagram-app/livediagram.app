@@ -39,7 +39,8 @@ From the top:
   visibility words, `shareStatesLabel`). A round 44 px **Close** at its right.
 - **The app's section.** A control the top row no longer holds leads the drawer, under the header: livediagram's
   editor mode switch, as **Editor mode** over the three modes side by side (Diagram, Draw, Workshop), each 44 px tall
-  with its tinted glyph and name, the current one raised and marked (a radio group; one press switches). The menu card
+  with its tinted glyph and name, the current one raised and marked (a radio group; one press switches, and closes the drawer first, as a tile that
+  acts does, so the new mode shows). The menu card
   publishes it while on a phone (`usePhoneAppsSection`); an app with none shows no section, and nor does a viewer who
   may not switch (a Participant, a Viewer, a locked tab).
 - **A grid of tiles**, three to a row, each 84 px tall with its glyph over its name. In this order, and **only where the
