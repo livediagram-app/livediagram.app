@@ -328,6 +328,16 @@ describe('SendToPlanDialog', () => {
     const held = await screen.findByRole('button', { name: 'Sprint' });
     expect(held.getAttribute('aria-pressed')).toBe('true');
     expect(screen.queryByText('No plans yet')).toBeNull();
+    cleanup();
+    // A held plan with no title reads as Untitled plan.
+    localStorage.setItem(
+      SEND_MEMORY_KEY,
+      JSON.stringify({ D: { planId: 'P', planTitle: '', board: 'b1', column: 'To Do', at: 1 } }),
+    );
+    open(client({ listItems: vi.fn().mockResolvedValue({ items: [] }) }));
+    expect(
+      (await screen.findByRole('button', { name: 'Untitled plan' })).getAttribute('aria-pressed'),
+    ).toBe('true');
   });
 
   it('closes from its close button and Cancel', () => {

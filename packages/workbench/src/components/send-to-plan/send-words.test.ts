@@ -145,6 +145,13 @@ describe('the words read as a span of work', () => {
     });
   });
 
+  it('ends a backwards span on its start when the end day has no match next year (29 Feb)', () => {
+    expect(readSendSpan('Leap 1 Mar to 29 Feb', new Date(2028, 0, 10))).toMatchObject({
+      start: '2028-03-01',
+      due: '2028-03-01',
+    });
+  });
+
   it('is null without two dates joined by a range word', () => {
     expect(span('Design by 12 Dec')).toBeNull();
     expect(span('Design 1 Dec and 12 Dec')).toBeNull();
