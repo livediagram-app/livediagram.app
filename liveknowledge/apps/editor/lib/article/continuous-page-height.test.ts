@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { continuousHeightNeeded } from './continuous-page-height';
+import { PAGE_FOOT_ROOM } from '@/lib/page-surface/page-lock';
+import { continuousFootPadding, continuousHeightNeeded } from './continuous-page-height';
 
 // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page".
 describe('continuousHeightNeeded', () => {
@@ -21,5 +22,17 @@ describe('continuousHeightNeeded', () => {
 
   it('never reads a writing above its own top', () => {
     expect(continuousHeightNeeded(frame, -4, undefined)).toBe(72 + 64);
+  });
+});
+
+// docs/specs/030-knowledgebase/page-surface.md "Room under the foot".
+describe('continuousFootPadding', () => {
+  it('is the bottom margin and the room under the page', () => {
+    expect(continuousFootPadding({ margin: 48 })).toBe(48 + PAGE_FOOT_ROOM);
+    expect(continuousFootPadding({ margin: 64 })).toBe(64 + PAGE_FOOT_ROOM);
+  });
+
+  it('never takes room away for a margin below nothing', () => {
+    expect(continuousFootPadding({ margin: -10 })).toBe(PAGE_FOOT_ROOM);
   });
 });
