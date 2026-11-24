@@ -1,13 +1,21 @@
 // The knowledgebase's settings over REST (docs/specs/030-knowledgebase/verification.md "The Review Period"):
 //   GET  /api/documents/<id>/knowledge-settings                    the Review Period (every role)
-//   PUT  /api/documents/<id>/knowledge-settings   { reviewEvery }  set it (Editor: in person, or a token granted
-//                                                                  `write`, which is what makes a token an Editor)
+//   PUT  /api/documents/<id>/knowledge-settings   { reviewEvery?, aiEditing?, aiEditUnverifies? }
+//                                                                  set them (Editor: in person, or a token granted
+//                                                                  `write` for the period; AI Editing in person only,
+//                                                                  docs/specs/030-knowledgebase/ai-editing.md)
 //   GET  /api/documents/<id>/knowledge-settings/preview?reviewEvery=
 //                                                                  how many pages would be Review Due (Editor)
 // The period is one value on the document's row. Setting it writes that row and nothing else: every page's state
 // is worked out when read (trust.ts), so no page, trust row or index entry is rewritten however many pages there
 // are. The room then owes its review check (the next review to wait for moved) and tells every open editor.
-import { isReviewEvery } from '@liveknowledge/knowledge';
+import {
+  DEFAULT_AI_EDITING,
+  aiEditingOf,
+  isAiEditing,
+  isReviewEvery,
+  storedKnowledgeSettings,
+} from '@liveknowledge/knowledge';
 import type { KnowledgeSettings } from '@liveknowledge/document';
 import type {
   KnowledgeSettingsPreviewResponse,
@@ -21,6 +29,7 @@ import { relayPages } from '../room-client';
 import type { KnowledgeRoute } from './knowledge-routes';
 
 const PERIODS = 'reviewEvery is 30, 90, 180, 365 or "never".';
+const SEND = 'Send reviewEvery, aiEditing or aiEditUnverifies.';
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
 
 // A period as a query carries it: the days as digits, or `never`.
@@ -41,18 +50,60 @@ async function handlePreview({ ctx, document }: KnowledgeRoute): Promise<Respons
 }
 
 async function handleSet({ ctx, document }: KnowledgeRoute): Promise<Response> {
-  const body = (await ctx.request.json().catch(() => null)) as { reviewEvery?: unknown } | null;
+  const body = (await ctx.request.json().catch(() => null)) as {
+    reviewEvery?: unknown;
+    aiEditing?: unknown;
+    aiEditUnverifies?: unknown;
+  } | null;
   if (!body || typeof body !== 'object' || Array.isArray(body))
-    return invalid('invalid_body', 'Send reviewEvery.');
-  const { reviewEvery } = body;
-  if (!isReviewEvery(reviewEvery)) return invalid('invalid_review_every', PERIODS);
-  const was = document.knowledgeSettings.reviewEvery;
-  // The labels ride the same value (page-surface.md "Page labels"): a new period keeps them.
-  const knowledgeSettings = { ...document.knowledgeSettings, reviewEvery };
-  if (was === reviewEvery) return json({ knowledgeSettings } satisfies KnowledgeSettingsResponse);
+    return invalid('invalid_body', SEND);
+  const { reviewEvery, aiEditing, aiEditUnverifies } = body;
+  if (reviewEvery === undefined && aiEditing === undefined && aiEditUnverifies === undefined)
+    return invalid('invalid_body', SEND);
+  if (reviewEvery !== undefined && !isReviewEvery(reviewEvery))
+    return invalid('invalid_review_every', PERIODS);
+  if (aiEditing !== undefined && !isAiEditing(aiEditing))
+    return invalid('invalid_ai_editing', 'aiEditing is "suggest", "unverified" or "any".');
+  if (aiEditUnverifies !== undefined && typeof aiEditUnverifies !== 'boolean')
+    return invalid('invalid_ai_edit_unverifies', 'aiEditUnverifies is true or false.');
+  // AI Editing is an Editor's in person (ai-editing.md "Who sets it"): an agent never raises its own reach.
+  if ((aiEditing !== undefined || aiEditUnverifies !== undefined) && (ctx.token || ctx.workbench))
+    return json(
+      {
+        error: 'needs_a_person',
+        message: 'AI Editing is changed by an Editor in the app, never by an agent.',
+      },
+      { status: 403 },
+    );
+  const was = document.knowledgeSettings;
+  // The labels ride the same value (page-surface.md "Page labels"): a change of one setting keeps the rest.
+  const { aiEditing: _ai, aiEditUnverifies: _un, ...rest } = was;
+  const level = aiEditing === undefined ? aiEditingOf(was) : aiEditing;
+  const unverifies =
+    aiEditUnverifies === undefined ? was.aiEditUnverifies === true : aiEditUnverifies;
+  const knowledgeSettings: KnowledgeSettings = {
+    ...rest,
+    ...(reviewEvery === undefined ? {} : { reviewEvery }),
+    ...(level !== DEFAULT_AI_EDITING ? { aiEditing: level } : {}),
+    ...(unverifies ? { aiEditUnverifies: true as const } : {}),
+  };
+  if (storedKnowledgeSettings(knowledgeSettings) === storedKnowledgeSettings(was))
+    return json({ knowledgeSettings } satisfies KnowledgeSettingsResponse);
   if (!(await setKnowledgeSettings(ctx.env, document.id, knowledgeSettings, Date.now())))
     return notFound();
-  console.info('[knowledge] review period', { documentId: document.id, reviewEvery, was });
+  if (reviewEvery !== undefined && reviewEvery !== was.reviewEvery)
+    console.info('[knowledge] review period', {
+      documentId: document.id,
+      reviewEvery,
+      was: was.reviewEvery,
+    });
+  if (aiEditing !== undefined || aiEditUnverifies !== undefined)
+    console.info('[knowledge] ai editing', {
+      documentId: document.id,
+      aiEditing: level,
+      aiEditUnverifies: unverifies,
+      was: aiEditingOf(was),
+    });
   await relayKnowledgeSettings(ctx.env, document, knowledgeSettings);
   return json({ knowledgeSettings } satisfies KnowledgeSettingsResponse);
 }

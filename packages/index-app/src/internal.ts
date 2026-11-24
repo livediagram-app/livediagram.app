@@ -80,6 +80,7 @@ import { planSendDoor } from './plan-send-door';
 import { planDiagramDoor, planDiagramDrawDoor } from './plan-diagram-door';
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
+import { answerKnowledgeSourceDoor, isKnowledgeSourceDoor } from './knowledge-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { templateDoor } from './template-item';
 import { bearerMatches } from './timing-safe';
@@ -284,6 +285,8 @@ export async function handleInternalItems(
     return handlers.drawPlanDiagram
       ? planDiagramDrawDoor(request, handlers.drawPlanDiagram)
       : notFound();
+  if (isKnowledgeSourceDoor(rest))
+    return answerKnowledgeSourceDoor(request, id, rest[1]!, handlers);
 
   if (rest.length === 1 && request.method === 'DELETE') {
     await handlers.purge(id);

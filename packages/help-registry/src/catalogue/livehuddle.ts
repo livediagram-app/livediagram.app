@@ -201,16 +201,6 @@ export const articles: Article[] = [
     apps: ['livehuddle'],
   },
   {
-    slug: 'download-all-my-data',
-    title: 'Download All My Data',
-    description: 'Download every space you own, with a picture of each tab, as one zip.',
-    keywords:
-      'download all my data zip export backup everything portability gdpr settings your data comments pictures png livehuddle file email link',
-    category: 'Account and Data',
-    categorySlug: 'account-and-data',
-    apps: ['livehuddle'],
-  },
-  {
     slug: 'avatar-mode',
     title: 'Avatar Mode',
     description: 'Walk a pixel character around the canvas while you talk through it.',

@@ -8,6 +8,7 @@ import { NOT_READ_DAYS } from '@liveknowledge/knowledge';
 import { useMemo, useState } from 'react';
 import type {
   KnowledgeAgent,
+  KnowledgeLikelySource,
   KnowledgeOverviewResponse,
   KnowledgeQuestion,
   KnowledgeSuggestion,
@@ -38,6 +39,8 @@ export type DashboardActions = {
   askOwners: (id: string) => void;
   draft: (question: KnowledgeQuestion) => void;
   dismissQuestion: (key: string) => void;
+  /** Connect an unanswered question's likely item: an Editor's, absent otherwise. */
+  connectLikely?: ((likely: KnowledgeLikelySource) => void) | undefined;
   accept: (suggestion: KnowledgeSuggestion) => void;
   dismissSuggestion: (suggestion: KnowledgeSuggestion) => void;
   remindOwners: () => void;
@@ -74,6 +77,7 @@ export function InsightsDashboard({
   canEmailOwners,
   now,
   actions,
+  connectingLikely = null,
 }: {
   overview: KnowledgeOverviewResponse;
   /** The knowledgebase open: its Review Period is the live settings store's, as the rail's is, so a change of it
@@ -88,6 +92,7 @@ export function InsightsDashboard({
   canEmailOwners: boolean;
   now: number;
   actions: DashboardActions;
+  connectingLikely?: string | null;
 }) {
   const live = useReviewEvery(documentId);
   const reviewEvery = documentId ? live : read.reviewEvery;
@@ -134,6 +139,8 @@ export function InsightsDashboard({
             onAskOwners={actions.askOwners}
             onDraft={actions.draft}
             onDismissQuestion={actions.dismissQuestion}
+            onConnectLikely={actions.connectLikely}
+            connectingLikely={connectingLikely}
             onAccept={actions.accept}
             onDismissSuggestion={actions.dismissSuggestion}
             onOpenAiSettings={actions.openAiSettings}

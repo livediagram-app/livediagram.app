@@ -28,6 +28,7 @@ import type {
 } from '@liveworkspace/migration';
 import type { DataExportHandlers } from './data-export-door';
 import type { SheetSourceHandlers } from './sheet-source-doors';
+import type { KnowledgeSourceHandlers } from './knowledge-source-doors';
 
 export const JOINED_TELEMETRY_TYPE: Record<Level, 'View' | 'Participate' | 'Edit'> = {
   view: 'View',
@@ -184,7 +185,8 @@ export type InternalItemHandlers = {
   // part (liveworkspace/docs/specs/004-index/kits.md "The apps' door"). An app without it answers 404.
   fromTemplate?: (input: TemplateInput) => Promise<TemplateResult>;
 } & DataExportHandlers &
-  SheetSourceHandlers;
+  SheetSourceHandlers &
+  KnowledgeSourceHandlers;
 
 // The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
 // never a guest), the folder of theirs it goes in (null: the top), its name, and the file's text.

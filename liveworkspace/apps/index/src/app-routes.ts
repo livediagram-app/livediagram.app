@@ -2,12 +2,13 @@
 // server with the app's key: the summary derived from its content, each tab's comment threads and
 // actions for the Inbox, and its events (event-push.ts). Only the item's own app may push for it.
 
-import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
+import { isKnowledgeSourceApp, SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
 import { handleCommunityStates } from './community-states';
 import { calendarFeedByToken } from './calendar-feeds';
 import { handleAppConnection } from './connection-doors';
 import { handleSheetChanged } from './sheet-sources';
+import { handleKnowledgeSources, signalKnowledgeSources } from './knowledge-sources';
 import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
 import { pushUpdates } from './updates';
 import { isId, isPartId } from './codec';
@@ -78,6 +79,10 @@ export async function handleApp(
   if (segments.length === 5 && segments[3] === 'connections') {
     return handleAppConnection(request, env, app, segments[2], segments[4]!, waitUntil);
   }
+  // /app/items/:kb/knowledge-sources, -text, -reach, -likely: a knowledgebase's sources (knowledge-sources.ts).
+  if (segments.length === 4 && segments[3]?.startsWith('knowledge-')) {
+    return handleKnowledgeSources(request, env, app, segments[2], segments[3]);
+  }
   // /app/items/:id/sheet-changed: watched sheets changed, told to each watcher's app (sheet-sources.ts).
   if (segments.length === 4 && segments[3] === 'sheet-changed') {
     return handleSheetChanged(request, env, app, segments[2]);
@@ -142,6 +147,10 @@ export async function handleApp(
     // A content save: the Drive mirror rewrites a personal item's file when its updatedAt moved on.
     if (item.team_id === null && updatedAt > item.updated_at && env.DRIVE) {
       waitUntil(sendDriveSignals(env, [item.owner_id]));
+    }
+    // A content save of a source app's item: the knowledgebases reading it read it again (knowledge-sources.ts).
+    if (updatedAt > item.updated_at && isKnowledgeSourceApp(item.app)) {
+      waitUntil(signalKnowledgeSources(env, itemId));
     }
     return noContent();
   }

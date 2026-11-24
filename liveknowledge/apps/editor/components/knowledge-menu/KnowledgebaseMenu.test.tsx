@@ -22,11 +22,19 @@ vi.mock('@/components/setup/SetupHost', () => ({
 }));
 vi.mock('@/components/ask/useAskSession', () => ({
   useAskSession: () => ({
-    rights: { manageAi: offered.ai, askOff: offered.publish ? null : 'offline' },
+    rights: {
+      manageAi: offered.ai,
+      grantAgents: offered.ai,
+      askOff: offered.publish ? null : 'offline',
+    },
   }),
 }));
 vi.mock('@/lib/knowledge-ask/ai-settings-open', () => ({ openAiSettings: () => openAi() }));
 vi.mock('@/lib/publishing/publish-open', () => ({ openPublishing: () => openPublish() }));
+const openAiEditing = vi.fn<() => void>();
+vi.mock('@/lib/knowledge-settings/ai-editing-open', () => ({
+  openAiEditing: () => openAiEditing(),
+}));
 
 afterEach(() => {
   cleanup();
@@ -101,6 +109,7 @@ describe('the knowledgebase’s menu', () => {
       'Export',
       'Publish to the Web',
       'AI Settings',
+      'AI Editing',
       'Delete',
     ]);
     const menu = screen.getByRole('menu');
@@ -128,6 +137,9 @@ describe('the knowledgebase’s menu', () => {
     expect(openPublish).toHaveBeenCalledTimes(1);
     choose('AI Settings');
     expect(openAi).toHaveBeenCalledTimes(1);
+    // How far agents may change pages (docs/specs/030-knowledgebase/ai-editing.md).
+    choose('AI Editing');
+    expect(openAiEditing).toHaveBeenCalledTimes(1);
     choose('Delete');
     expect(handlers.deleteDocument).toHaveBeenCalledWith('kb');
   });

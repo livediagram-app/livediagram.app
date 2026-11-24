@@ -1,5 +1,6 @@
 // The bodies of the room's RPC doors (plan-room.ts) that do more than one read: what the worker asks of a plan
 // (its routes, the Community post, the export door, copies, share links, a closed account). Each takes the room.
+import { AGENT_HEADERS } from '../changesets/front-door';
 import {
   openRoomSockets,
   recordItemEditor,
@@ -8,6 +9,7 @@ import {
   type ExportResult,
   type ExportTablesResult,
   putAwayGate,
+  itemAgentOf,
 } from '@liveworkspace/index-app';
 import { getTab, planHasTab } from '../db/tabs';
 import { itemIdsShownOnTab, tabShowsEveryCard } from '@liveplanner/items';
@@ -105,6 +107,8 @@ export async function route(
         planId,
         identity.owner,
         Date.now(),
+        // An agent's write for its person names the agent (Work Tracker 1381).
+        itemAgentOf(request, identity.token, AGENT_HEADERS),
       );
     }
     noteWrite(room);

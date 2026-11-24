@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="troubleshooting/collaboration-issues" title="Real-Time Collaboration Problems" description="What to check when you cannot see collaborators, or edits are slow to arrive." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-Real-time collaboration in <AppName /> works through a per-<Noun /> room: everyone editing the same <Noun /> connects to it over a live connection, and that room relays cursors, who is selecting what, which tab people are on, and edits as they happen. When something is not coming through, it is almost always the connection to that room rather than your data. Work through the checks below.
+Real-time collaboration in <AppName /> works through a per-<Noun /> room: everyone editing the same <Noun /> connects to it over a live connection, and that room relays cursors, who is selecting what, which <TabWord /> people are on, and edits as they happen. When something is not coming through, it is almost always the connection to that room rather than your data. Work through the checks below.
 
 <Figure app="livediagram,all" caption="When the room is connected, everyone in the work sees each other's cursors and selections live.">
   <LiveCursors />
@@ -48,7 +48,7 @@ Real-time collaboration in <AppName /> works through a per-<Noun /> room: everyo
 
 1. **Give it a moment, then reload.** After a short drop, the editor reconnects on its own and catches up on what it missed, without reloading the page. If the connection was out for longer (more than about half a minute, for example after sleep or a long Wi-Fi outage), it stops retrying: reload the page to rejoin. If it still seems stuck, the affected person refreshing re-arms the connection.
 2. **Remember not every link can edit.** A Viewer link only looks. If someone's changes are not landing, check whether they need an Editor link.
-3. **Avoid editing the exact same thing at once.** Edits to different elements, even on the same tab, merge cleanly. Two people changing the same thing is the one case where the last change to arrive wins, which is why something someone else has selected (an Editor or a Participant) shows as locked for you until they let go and their change is saved, which takes a moment (everything in a multi-selection locks; a Viewer's selection never locks anything).
+3. **Avoid editing the exact same thing at once.** Edits to different elements, even on the same <TabWord />, merge cleanly. Two people changing the same thing is the one case where the last change to arrive wins, which is why something someone else has selected (an Editor or a Participant) shows as locked for you until they let go and their change is saved, which takes a moment (everything in a multi-selection locks; a Viewer's selection never locks anything).
 4. **If something stays locked,** the person holding it has probably left it selected and walked away (what someone has just let go of also stays locked until their change is saved, about 10 seconds at most when the save keeps failing). Ask them to click away.
 5. **Watch for a dropped link mid-session.** If a share link is revoked, or the password changes, visitors using it are disconnected (or sent back to the password prompt). If the <Noun /> is moved to the [Trash](/help/account-and-data/trash/), everyone in it is told it was deleted. An expired link lets people already inside carry on until their next load, save or reconnect. Ask the owner for a fresh link.
 

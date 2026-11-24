@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Glyph, HoverCard } from '@liveworkspace/ui';
 import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canvas/menu-join';
 import { AuthControls } from './AuthControls';
+import { AskCitationBar } from '../ask/AskCitationBar';
 import { ShareVisibilityButton } from './ShareVisibilityButton';
 import { shareStateOf, shareStatesOf, type ItemVisibility } from './share-states';
 import type { VisibilityActions } from './share-states';
@@ -148,6 +149,8 @@ export function EditorCornerActions({
     // Not `data-app-chrome` (the header bar's, which keeps the app's own colours): it takes the tab's style, as the
     // palette strip and the menu card beside it do.
     <div className="relative z-[var(--z-modal)] h-0">
+      {/* An item opened from a knowledgebase's answer says so (AskCitationBar): drawn over the canvas, by portal. */}
+      <AskCitationBar />
       <div
         ref={cardRef}
         data-corner-actions=""

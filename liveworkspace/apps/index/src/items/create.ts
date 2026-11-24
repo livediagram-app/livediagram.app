@@ -1,7 +1,14 @@
 // Making an item (items.ts).
 
 import { inTeamNow } from '../fresh-teams';
-import { isApp, ITEM_SOURCES, APP_KINDS, type ItemSource } from '@liveworkspace/index-client';
+import {
+  isApp,
+  ITEM_SOURCES,
+  APP_KINDS,
+  parseItemAgent,
+  type ItemAgent,
+  type ItemSource,
+} from '@liveworkspace/index-client';
 import { type Person, scopeOf } from '../auth';
 import { isId } from '../codec';
 import { defaultPlacement } from '../default-placement';
@@ -49,6 +56,9 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   const source = body.source ?? null;
   if (source !== null && !(ITEM_SOURCES as readonly unknown[]).includes(source))
     return badRequest();
+  // The agent an API client's create was made by (Work Tracker 1381), for its `created` event.
+  const agent = parseItemAgent(body.agent);
+  if (agent === undefined) return badRequest('invalid_agent');
   let teamId = body.teamId ?? null;
   if (teamId && !(await inTeamNow(env, person, teamId))) return forbidden('not_team_member');
   let scope = scopeOf(person.id, teamId);
@@ -92,7 +102,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     await insertItem(
       env,
       row,
-      row.source && row.source !== 'person' ? { source: row.source } : null,
+      createdDetail(row.source, agent),
       body.synced === true ? 'synced' : 'created',
     );
   } catch (err) {
@@ -117,6 +127,19 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     filed: !('folderId' in body) && folderId !== null ? 'default' : 'given',
   });
   return json({ item: await itemFor(env, person, row, access), grant }, { status: 201 });
+}
+
+/** A `created` event's detail: what made it, when not a person, and the agent that made it, when one did. Null
+ *  when there is nothing to say. */
+export function createdDetail(
+  source: ItemSource | null,
+  agent: ItemAgent | null,
+): Record<string, string | null> | null {
+  const detail: Record<string, string | null> = {
+    ...(source && source !== 'person' ? { source } : {}),
+    ...(agent ? { agent: agent.name, via: agent.via } : {}),
+  };
+  return Object.keys(detail).length > 0 ? detail : null;
 }
 
 /** An id whose purged item's content its app has not dropped yet (a `purge_tombstones` row): no item is made under

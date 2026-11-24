@@ -106,6 +106,28 @@ describe('the outbox', () => {
     ]);
   });
 
+  it("keeps an agent's edit for its person apart from the person's own, one per agent", () => {
+    const sql = sqlite();
+    sql.exec('CREATE TABLE outbox (id INTEGER PRIMARY KEY, plan_id TEXT, kind TEXT, key TEXT)');
+    const exec = (q: string, ...b: (string | number)[]) => sql.exec(q, ...b);
+    const outbox = { table: 'outbox', itemColumn: 'plan_id' };
+    const claude = { name: 'Claude Code', via: 'mcp' } as const;
+    recordItemEditor(exec, outbox, 'P', 'user_a', 1, claude);
+    recordItemEditor(exec, outbox, 'P', 'user_a', 2);
+    recordItemEditor(exec, outbox, 'P', 'user_a', 3, claude);
+    recordItemEditor(exec, outbox, 'P', 'user_a', 4, { name: 'Cursor', via: 'mcp' });
+    recordItemEditor(exec, outbox, 'P', 'user_a', 5);
+    const keys = sql
+      .exec('SELECT key FROM outbox ORDER BY id')
+      .toArray()
+      .map((r) => editedOf(String(r.key)));
+    expect(keys).toEqual([
+      { type: 'edited', actorId: 'user_a', agent: claude, at: 3 },
+      { type: 'edited', actorId: 'user_a', agent: { name: 'Cursor', via: 'mcp' }, at: 4 },
+      { type: 'edited', actorId: 'user_a', at: 5 },
+    ]);
+  });
+
   it('pushes everything once', async () => {
     const rows = [row(1, 'summary'), row(2, 'tab', 't1'), row(3, 'edit', editKeyOf('user_a', 7))];
     const { client, calls } = fakeIndex();
@@ -204,6 +226,20 @@ describe('helpers', () => {
     });
     expect(editedOf('@9')).toBeNull();
     expect(editedOf('user_a@soon')).toBeNull();
+    // An agent's key names the person and the agent; one whose agent part does not read is the person's.
+    const agent = { name: 'Claude @ work', via: 'cli' } as const;
+    expect(editedOf(editKeyOf('user_a', 9, agent))).toEqual({
+      type: 'edited',
+      actorId: 'user_a',
+      agent,
+      at: 9,
+    });
+    expect(editedOf('user_a\u001fsmoke\u001fClaude@9')).toEqual({
+      type: 'edited',
+      actorId: 'user_a',
+      at: 9,
+    });
+    expect(editedOf('\u001fmcp\u001fClaude@9')).toBeNull();
   });
 
   it('writes and reads card move keys, cutting long text and refusing malformed ones', () => {

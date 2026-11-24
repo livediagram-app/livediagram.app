@@ -5,6 +5,7 @@
 import type { KnowledgeStyle, PageApproval } from '@liveknowledge/document';
 import type { AgentCover, AgentPageIcon } from './pages';
 import type { KnowledgeRequiredReadingPage } from './page-reading';
+import type { KnowledgeSourceHit, AskSourceItem, KnowledgeLikelySource } from './knowledge-sources';
 
 /** The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the one look every
  *  page is drawn in. In a document read (always whole), the `document-meta` op when it changed, and the metadata
@@ -25,7 +26,13 @@ export type KnowledgeReviewEvery = 30 | 90 | 180 | 365 | 'never';
 export type KnowledgeSettingsWire = {
   reviewEvery: KnowledgeReviewEvery;
   labels?: KnowledgeLabelWire[];
+  /** AI Editing (ai-editing.md): absent is Suggest Edits Only. */
+  aiEditing?: KnowledgeAiEditing;
+  /** Remove Verification When AI Edits, in effect under Edit Any Page alone. */
+  aiEditUnverifies?: true;
 };
+/** How far an agent may change pages itself (ai-editing.md): Suggest Edits Only, Edit Unverified Pages, Edit Any Page. */
+export type KnowledgeAiEditing = 'suggest' | 'unverified' | 'any';
 /** One of the knowledgebase's labels (page-surface.md "Page labels"): its colour a standard colour's name ("blue")
  *  or a custom `#rrggbb`. Kept with the settings, so a rename is one write and no page's. */
 export type KnowledgeLabelWire = { id: string; name: string; colour: string };
@@ -41,7 +48,12 @@ export type KnowledgeLabelChangeResponse = {
   labels: KnowledgeLabelWire[];
 };
 /** `PUT .../knowledge-settings`: Editor only. Answers the settings as stored. */
-export type KnowledgeSettingsRequest = { reviewEvery: KnowledgeReviewEvery };
+/** `PUT .../knowledge-settings`: any of these, at least one. The AI fields are an Editor's in person (ai-editing.md). */
+export type KnowledgeSettingsRequest = {
+  reviewEvery?: KnowledgeReviewEvery;
+  aiEditing?: KnowledgeAiEditing;
+  aiEditUnverifies?: boolean;
+};
 export type KnowledgeSettingsResponse = { knowledgeSettings: KnowledgeSettingsWire };
 /** `GET .../knowledge-settings/preview?reviewEvery=`: how many pages are Review Due now and how many would be
  *  under the period asked about, so a dialog can say so before a shorter period is applied. */
@@ -69,11 +81,16 @@ export type KnowledgeSearchResult = {
    *  the pages an open conflict sets this passage against. */
   text?: string;
   reviewAt?: number;
-  conflictsWith?: KnowledgePageRef[];
+  conflictsWith?: KnowledgeConflictRef[];
   /** For an agent: the page's Health Score. */
   health?: KnowledgePageHealth;
 };
-export type KnowledgeSearchResponse = { results: KnowledgeSearchResult[] };
+export type KnowledgeSearchResponse = {
+  results: KnowledgeSearchResult[];
+  /** The reader's own sources in other apps that match (search-and-ask.md "Sources"), after the pages; absent with
+   *  none. */
+  sources?: KnowledgeSourceHit[];
+};
 
 /** A page's Health Score (verification.md "Health Score"), as agents and Ask read it: 0 to 100, its word, the
  *  factor that lost the most, and each factor's points of its maximum with what would raise it when short. */
@@ -104,6 +121,10 @@ export type KnowledgeLowHealthPage = {
 
 /** A page by its id and current title. */
 export type KnowledgePageRef = { tab: string; title: string };
+
+/** The other page of an open conflict (knowledgebase-for-agents.md "Conflicts for agents"): the question the two
+ *  pages answer differently, and when the check found it. An api from before either says only the page. */
+export type KnowledgeConflictRef = KnowledgePageRef & { question?: string; foundAt?: number };
 
 /** A page that links here (links-and-embeds.md "Backlinks"), in tree order. */
 export type KnowledgeBacklink = { tab: string; title: string };
@@ -278,6 +299,8 @@ export type AskSource = {
   lastBlock: string;
   /** The page's Health Score and word (search-and-ask.md "Sources"); absent from an older answer. */
   health?: { score: number; label: KnowledgeHealthLabel };
+  /** A chunk of another app's item (search-and-ask.md "Sources"), not a page: `tab` is then the item's id. */
+  source?: AskSourceItem;
 };
 export type AskNotUsed = AskSource & { reason: string };
 /** Ask answers as server-sent events, in this order: `delta` (the answer's next piece), then one `done`; or one
@@ -382,6 +405,8 @@ export type KnowledgeQuestion = {
   byPeople: number;
   agents: { name: string; asked: number }[];
   lastAt: number;
+  /** An item the question was likely answered in, that is not a source (insights.md "Likely answered elsewhere"). */
+  likely?: KnowledgeLikelySource;
 };
 export type KnowledgeConflictSide = {
   passageId: string;
@@ -454,8 +479,8 @@ export type KnowledgePageTrust = {
   verifiedBy?: string;
   reviewAt?: number;
   stale: boolean;
-  /** The pages an open conflict sets this one against. */
-  conflictsWith?: KnowledgePageRef[];
+  /** The pages an open conflict sets this one against, each with the conflict's question. */
+  conflictsWith?: KnowledgeConflictRef[];
   /** The page's approval (approval.md "Where it shows"), without anyone's account id: its state, when it was asked
    *  for (and by which agent), when it was decided, and a rejection's note. */
   approval?: KnowledgeApprovalTrust;
@@ -532,6 +557,10 @@ export type KnowledgeAgentContextResponse = {
   tokens: number;
   /** The knowledgebase's Review Period. */
   reviewEvery: KnowledgeReviewEvery;
+  /** The knowledgebase's AI Editing (ai-editing.md); absent from an older api, read as `suggest`. */
+  aiEditing?: KnowledgeAiEditing;
+  /** Remove Verification When AI Edits, on under Edit Any Page. */
+  aiEditUnverifies?: boolean;
   pages: (KnowledgePageRef & { markdown: string; tokens: number; trust: KnowledgePageTrust })[];
   leftOut: (KnowledgePageRef & { tokens: number })[];
   pageCount: number;

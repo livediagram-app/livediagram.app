@@ -4,7 +4,9 @@
 import type { ItemSql } from '@liveworkspace/index-app';
 
 // `watch` (watching.md): key `inbox`, the updates' push; key `daily`, the reach check and the digests (watch-work.ts).
-export type WorkKind = 'conflict' | 'review-email' | 'watch';
+// `source` (search-and-ask.md "Sources"): key `~sync`, the set of sources; any other key, one source's read
+// (source-work.ts).
+export type WorkKind = 'conflict' | 'review-email' | 'watch' | 'source';
 export type Work = { kind: WorkKind; key: string; dueAt: number; payload: string };
 
 /** Owe a piece of work at `dueAt`; one already owed keeps its earlier time and its own payload (a conflict check's

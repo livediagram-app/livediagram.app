@@ -55,6 +55,41 @@ export const ANSWERS_NOT_HELPFUL = chart(
   { types: ['AskNotHelpful'], rising: 'bad' },
 );
 
+// Sources (search-and-ask.md "Sources"): answers that cite an item of another app, a cited item opened there,
+// Sources changed in AI Settings, and an unanswered question's likely item connected from Insights.
+export const ANSWERS_CITING_ITEMS = chart(
+  'UI',
+  'Used',
+  'Answers Citing Other Apps',
+  'An answer from Ask that cites a diagram, plan, document, design or Space connected to the knowledgebase.',
+  { types: ['AskSourceCited'] },
+);
+
+export const CITED_ITEMS_OPENED = openedChart(
+  'Cited Items Opened',
+  "A cited item opened in its own app, at the cited place, from an answer's Sources.",
+  (t) => t === 'AskSourceItem',
+);
+
+export const SOURCES_CHANGED = chart(
+  'UI',
+  'Changed',
+  'Sources Changed',
+  "An Editor turned Connected Items on or off, or chose or cleared a team folder, in AI Settings' Sources.",
+  {
+    types: ['SourcesConnectedOn', 'SourcesConnectedOff', 'SourcesFolderOn', 'SourcesFolderOff'],
+    rising: 'neutral',
+  },
+);
+
+export const LIKELY_ITEMS_CONNECTED = chart(
+  'UI',
+  'Used',
+  'Likely Items Connected',
+  "Connect pressed on an unanswered question's likely item in Insights, so Ask reads it from then on.",
+  { types: ['ConnectLikely'] },
+);
+
 export const ANSWERS_ACCEPTED = chart(
   'UI',
   'Used',
@@ -94,6 +129,10 @@ export const ASK: MetricStack = {
     ANSWERS_ACCEPTED,
     QUESTIONS_REOPENED,
     ASK_CHATS_DELETED,
+    ANSWERS_CITING_ITEMS,
+    CITED_ITEMS_OPENED,
+    SOURCES_CHANGED,
+    LIKELY_ITEMS_CONNECTED,
   ],
   headline: QUESTIONS_ASKED,
 };
@@ -662,6 +701,22 @@ export const AI_MODELS_CHANGED = chart(
   { types: ['AiModel'], rising: 'neutral' },
 );
 
+export const AI_EDITING_CHANGED = chart(
+  'UI',
+  'Changed',
+  'AI Editing Levels Chosen',
+  'How far agents may change pages, chosen by an Editor in AI Editing: suggest only, unverified pages, or any page.',
+  { types: ['AiEditingSuggest', 'AiEditingUnverified', 'AiEditingAny'], rising: 'neutral' },
+);
+
+export const AI_EDIT_UNVERIFIES_TOGGLED = chart(
+  'UI',
+  'Toggled',
+  'AI Edit Unverifies Toggled',
+  'Remove Verification When AI Edits turned on or off in AI Editing.',
+  { types: ['AiEditUnverifiesOn', 'AiEditUnverifiesOff'], rising: 'neutral' },
+);
+
 export const ASK_AI_CHOSEN = chart(
   'UI',
   'Changed',
@@ -733,6 +788,13 @@ export const AGENT_ACCESS: MetricStack = {
   stack: true,
   title: 'Agent Access',
   blurb:
-    'What Editors let agents do in a knowledgebase: write pages directly or only suggest, and which pages every agent reads first.',
-  members: [AGENT_WRITES_ALLOWED, AGENT_WRITES_STOPPED, CONTEXT_PAGES_ADDED, CONTEXT_PAGES_REMOVED],
+    'What Editors let agents do in a knowledgebase: write pages directly or only suggest, how far AI Editing lets them, and which pages every agent reads first.',
+  members: [
+    AGENT_WRITES_ALLOWED,
+    AGENT_WRITES_STOPPED,
+    AI_EDITING_CHANGED,
+    AI_EDIT_UNVERIFIES_TOGGLED,
+    CONTEXT_PAGES_ADDED,
+    CONTEXT_PAGES_REMOVED,
+  ],
 };

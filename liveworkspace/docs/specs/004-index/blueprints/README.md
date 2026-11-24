@@ -11,6 +11,7 @@ Follow the references below only as needed; never upfront.
 - ./events.md - when recording events, reading an item's History, or the daily sweep
 - ./connected-tabs.md - when working on connected tabs: the build order, the connections table, the make, open and removal doors, each app's column and door
 - ./kits.md - when working on project kits: the run's wire shapes, the index's two routes, the apps' template door, tests
+- ./knowledge-sources.md - when working on knowledge sources: the text door every source app answers and its walkers, the index's four knowledge routes, the change signal to knowledgebases, each reader's own access, the Cited by Ask bar, limits and tests
 - ./sheet-sources.md - when working on sheet sources: the index's two routes, the doors' contract, the watch and the change signal, limits and tests
 - ./live-data.md - when working on live data: board and metric reads, the plan-data routes and door, the cards watch, Freeze, tables
 - ./live-embeds.md - when working on live embeds: the element's fields and checks, the embed ticket, the slots, the host's

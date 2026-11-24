@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="getting-started/keyboard-essentials" title="Keyboard Essentials" description="The small set of shortcuts worth learning first to work quickly." categoryTitle="Getting Started" categorySlug="getting-started">
 
-You can do everything in <AppName /> with the mouse or a finger, but a few keyboard shortcuts make working much faster. This is the short list worth committing to memory. For the complete reference, see [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/). On Windows and Linux, read **Cmd** as **Ctrl**.
+You can do everything in <AppName /> with the mouse or a finger, but a few keyboard shortcuts make working much faster. This is the short list worth committing to memory. For the complete reference, <NotFor app="liveknowledge">see [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/)</NotFor><ForApps app="liveknowledge">open **Settings** and pick **Keyboard**</ForApps>. On Windows and Linux, read **Cmd** as **Ctrl**.
 
 ## Everyday Editing
 
@@ -20,7 +20,7 @@ A few shortcuts cover the actions you repeat most:
 
 - **`Cmd/Ctrl+Z`** undoes, and **`Cmd/Ctrl+Shift+Z`** (or **`Ctrl+Y`**) redoes. The same controls sit in the bottom-right corner.
 - **`Cmd/Ctrl+K`** opens [search](/help/search-panel/), which also runs commands.
-- **`Delete`** or **`Backspace`** removes the selection.
+- <NotFor app="liveknowledge">**`Delete`** or **`Backspace`** removes the selection.</NotFor><ForApps app="liveknowledge">**`Delete`** or **`Backspace`** removes the selected words.</ForApps>
 - **`Escape`** closes an open dialog or clears the selection.
 - **`Enter`** confirms a dialog.
 
@@ -167,11 +167,20 @@ More in [Sheets](/help/plan/sheets/).
 </AppNote>
 
 <Tip>
-  The editor has a built-in shortcut reference: open **Settings** from the bottom-right and pick
+  The editor has a built-in shortcut reference: open **Settings** from the <NotFor app="liveknowledge">bottom-right</NotFor><ForApps app="liveknowledge">footer bar</ForApps> and pick
   **Keyboard** to see the full list any time without leaving your work.
 </Tip>
 
-Settings is the sliders icon at the bottom-right.
+<NotFor app="liveknowledge">Settings is the sliders icon at the bottom-right.</NotFor>
+
+<AppNote app="liveknowledge">
+  In a Knowledgebase a page opens to read, so these keys are for reading and writing it:
+
+  - **`E`** edits the page you are reading, and **`Cmd/Ctrl+S`** saves your changes.
+  - **`Escape`** asks to cancel your edit, unless a menu or dialog is open, which it closes first.
+  - **`Cmd/Ctrl+Alt+M`** starts a comment on the words you have selected.
+  - In the page tree, **`Up`** and **`Down`** move between pages, **`Right`** and **`Left`** open and close a page, **`Enter`** opens it and **`F2`** renames it.
+</AppNote>
 
 <AppNote app="livediagram,livedesign,livedocuments,livehuddle">
   Holding `Cmd` (or `Ctrl`) also shows each palette tile's shortcut on the tile itself.

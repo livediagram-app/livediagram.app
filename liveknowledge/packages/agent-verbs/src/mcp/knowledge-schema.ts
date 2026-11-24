@@ -15,6 +15,7 @@ import {
   PAGE_MOTION_SPEED_MIN,
   truncateName,
 } from '@liveknowledge/document';
+import { AI_EDITING_VALUES } from '../knowledge/ai-editing';
 import { REVIEW_PERIODS } from '../knowledge/trust';
 
 /** The most one suggestion holds (the api's SUGGESTION_MAX_CHARS). */
@@ -65,9 +66,22 @@ export const trustFields = {
     .boolean()
     .describe('True when its review is due: right when verified, unconfirmed since.'),
   conflicts_with: z
-    .array(pageRef)
+    .array(
+      z.object({
+        ...pageRef.shape,
+        question: z
+          .string()
+          .optional()
+          .describe(
+            'What the two pages answer differently, as the conflict check put it: fix the passage that answers it wrongly.',
+          ),
+        found_at: z.string().optional().describe('When the conflict check found it.'),
+      }),
+    )
     .optional()
-    .describe('Pages that state the opposite: the team has not settled which is right.'),
+    .describe(
+      'Pages that state the opposite, one entry an open conflict, each with the question they disagree on: the team has not settled which is right. Shown only where this connection reads both pages.',
+    ),
   approval: z
     .enum(['pending', 'approved', 'rejected'])
     .optional()
@@ -131,9 +145,24 @@ export const getContextOutput = {
   scopes: z
     .array(z.enum(['read', 'suggest', 'write']))
     .describe(
-      'What this connection may do here: read; suggest (suggest_edit, create_page); write (write_page, move_page).',
+      'What this connection may do here: read; suggest (suggest_edit, create_page, and move_page for a page whose subtree is all never-verified); write (write_page, and move_page for any page).',
     ),
   review_period: reviewPeriod,
+  ai_editing: z
+    .enum(AI_EDITING_VALUES)
+    .describe(
+      'The knowledgebase’s AI Editing, set by an Editor (no tool sets it): "suggest" (Suggest Edits Only, the default: every agent change goes through suggest_edit), "unverified" (write_page rewrites never-verified pages only) or "any" (write_page rewrites any page, verified ones too). It caps the write scope: a connection without write only suggests whatever this says.',
+    ),
+  ai_edit_unverifies: z
+    .boolean()
+    .describe(
+      'True where ai_editing is "any" and rewriting a verified or review-due page takes its verification away until a person verifies it again.',
+    ),
+  ai_editing_allows: z
+    .string()
+    .describe(
+      'What this connection may change here, the lower of its scopes and ai_editing, in one sentence.',
+    ),
   budget_tokens: z.number().describe('The most the Always in Context pages may hold together.'),
   tokens: z.number().describe('What the pages below hold.'),
   pages: z
@@ -253,6 +282,25 @@ export const searchPagesOutput = {
     )
     .describe('Page titles that match first, then passages, verified pages before others.'),
   more: z.number().describe('How many further results the search found beyond the limit.'),
+  sources: z
+    .array(
+      z.object({
+        app: z
+          .string()
+          .describe(
+            'The app the item is in: livediagram, liveplanner, livedocuments, livedesign or livehuddle.',
+          ),
+        item: z.string().describe('The item’s name.'),
+        itemId: z.string(),
+        place: z.string().describe('Where in the item: a tab’s or a card’s name.'),
+        snippet: z.string().describe('The words that matched, in their sentence.'),
+        asOf: z.string().describe('The day the knowledgebase last read the item, YYYY-MM-DD.'),
+      }),
+    )
+    .optional()
+    .describe(
+      'The team’s items in other apps this knowledgebase reads that match, after the pages: never verified, so weigh them below a verified page and say so when an answer rests on one alone.',
+    ),
   next,
 };
 

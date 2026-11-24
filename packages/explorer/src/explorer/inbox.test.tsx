@@ -378,6 +378,33 @@ describe('choosing a row', () => {
       ['Selected', 'FormResponses'],
     ]);
   });
+
+  // WI-1395: in the editor's panel a row on the open item differs from the page's address only in its fragment, which
+  // a link moves without the editor noticing. Open takes it over as a page load; another item stays the link's.
+  it('opens a row on the page already open as a page load, another item as a link', async () => {
+    const before = window.location.href;
+    window.history.replaceState(null, '', '/open/plan-1');
+    try {
+      const pageHref: ItemHref = (item, at) => {
+        const q = new URLSearchParams();
+        for (const [k, v] of Object.entries(at ?? {})) if (v) q.set(k, String(v));
+        return `/open/${item.id}#${q.toString()}`;
+      };
+      renderInbox(everyKind(), { itemHref: pageHref });
+      await screen.findByRole('listbox');
+      const open = () => screen.getByRole('link', { name: 'Open in liveplanner' });
+      // The pane's link on the open item: taken over (the click is prevented), its place pushed before the reload.
+      expect(fireEvent.click(open())).toBe(false);
+      expect(window.location.pathname).toBe('/open/plan-1');
+      expect(window.location.hash).toBe('#tabId=tab-b&elementId=board-1&cardId=card-7');
+      // Another item's row: the link's own.
+      fireEvent.click(options()[4]!);
+      expect(open().getAttribute('href')).toBe('/open/plan-2#tabId=board-tab');
+      expect(fireEvent.click(open(), { ctrlKey: true })).toBe(true);
+    } finally {
+      window.history.replaceState(null, '', before);
+    }
+  });
 });
 
 describe('the keys', () => {

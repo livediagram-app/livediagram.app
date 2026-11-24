@@ -17,6 +17,8 @@ import {
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
   handleInternalItems as handle,
+  canvasKnowledgeChunks,
+  knowledgeTextFromExport,
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { communityService } from '../community-service';
@@ -165,6 +167,12 @@ export function handleInternalItems(
         query.format === 'file'
           ? designRoom(env, id).exportFile(query)
           : designRoom(env, id).exportImage(query),
+      // The design's indexable text for a knowledgebase reading it (liveworkspace/docs/specs/004-index/
+      // knowledge-sources.md): its whole file, read as the export door reads it, walked by the shared canvasKnowledgeChunks.
+      knowledgeText: knowledgeTextFromExport(
+        (id, query) => designRoom(env, id).exportFile(query),
+        canvasKnowledgeChunks,
+      ),
       // Every comment thread in the design with its real authors, for the data export (design-room.ts
       // `exportComments`). It has no boards or sheets, so the door's `csv` format is a 404.
       exportComments: (id) => designRoom(env, id).exportComments(),

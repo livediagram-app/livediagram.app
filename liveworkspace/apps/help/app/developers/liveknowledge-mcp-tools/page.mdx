@@ -25,7 +25,7 @@ The liveknowledge MCP server, at `https://mcp.liveknowledge.app/mcp`, speaks in 
 | `create_page`  | A new page from Markdown, under a parent or at the top level. Never Verified                                        | `suggest` |
 | `suggest_edit` | A change to a page, with a reason: replace a passage (`old_text` with `new_text`) or append. Waits for a person      | `suggest` |
 | `write_page`   | Replaces a page's writing with Markdown, or appends to it, at once. Never on a Verified or Review Due page          | `write`   |
-| `move_page`    | Moves a page and its subpages to another parent or the top level, before a named sibling or last                    | `write`   |
+| `move_page`    | Moves a page and its subpages to another parent or the top level, before a named sibling or last                    | `suggest` for a never-verified subtree, else `write` |
 
 A page is named by its id, or by its title where one page alone has that title. `[[Title]]` in Markdown is a link to the page of that title.
 
@@ -40,7 +40,7 @@ Every page and passage in an answer carries:
 | `verified_by`    | Who verified it (on `read_page`)                                         |
 | `review_due`     | When its review comes due, from the Knowledgebase's Review Period        |
 | `stale`          | `true` when the review is due                                            |
-| `conflicts_with` | The pages it disagrees with, while a disagreement is open                |
+| `conflicts_with` | The pages it disagrees with, while a disagreement is open, each with the `question` the two answer differently and when it was found (`found_at`); only where the connection can read both pages |
 
 `get_context` and `list_pages` also give the Review Period once, as `review_period`: `30 days`, `90 days`, `180 days`, `365 days` or `never`. No tool sets it.
 
@@ -62,7 +62,7 @@ A search is at most 200 characters, a gap's question 1,000, a suggestion 20,000 
 
 ## The Scopes
 
-`read` covers the five read tools; `suggest` adds `create_page` and `suggest_edit`; `write` adds `write_page` and `move_page`. A connection your AI tool makes holds `read` and `suggest`. Only an Editor grants `write`, for one connection in one Knowledgebase. A person's role still bounds the agent: a Viewer's agent only reads. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+`read` covers the five read tools; `suggest` adds `create_page`, `suggest_edit`, and `move_page` for a page whose subtree has never been verified; `write` adds `write_page`, and `move_page` for any page. A connection your AI tool makes holds `read` and `suggest`. Only an Editor grants `write`, for one connection in one Knowledgebase. A person's role still bounds the agent: a Viewer's agent only reads. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
 
 ## The Knowledgebase Tools
 
