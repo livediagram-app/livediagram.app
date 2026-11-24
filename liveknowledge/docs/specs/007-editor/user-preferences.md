@@ -47,8 +47,14 @@ table of its own for them.
   (zero-blocking), then fire-and-forget `GET /api/preferences`,
   once per page load per owner (every caller shares the one request,
   which is one call to the accounts Worker).
-  When the server response arrives, merge it over the cache
-  (server wins for any key present on both sides), persist back
+  When the server response arrives, merge it with the cache key by key, against the copy last agreed
+  (`liveknowledge:user-preferences:server`): a key this device did not change follows
+  the server, and is dropped when the server no longer holds it, so a
+  setting cleared anywhere clears here; a key only this device changed
+  stays; a key both changed goes to this device while it holds an unsaved
+  change ([Editor preferences](../../../../liveworkspace/docs/specs/011-workbench/editor-preferences.md) "Loading"; with no copy agreed
+  yet, nothing is dropped and the server wins where both hold a key, unless
+  this device holds an unsaved change), persist back
   to localStorage, and dispatch the existing
   `liveknowledge:preferences-changed` window event so in-process
   listeners refresh. If the fetch fails the cache value stays
@@ -884,7 +890,7 @@ click, both panels on), which is what a drawing zone uses. Their help article li
 
 ## Read / write helpers
 
-Live in `apps/editor/lib/user-preferences.ts`:
+Live in `apps/editor/lib/user-preferences.ts`, each a thin wrapper over the editors' one preferences store (`@liveworkspace/workbench/lib/preferences/preferences-store`, bound in `lib/preferences-sync.ts`):
 
 - `readUserPreferences(): UserPreferences` returns the current
   cached preferences, parsing the stored JSON and defaulting any
@@ -904,9 +910,10 @@ Live in `apps/editor/lib/user-preferences.ts`:
 - `fetchUserPreferences(ownerId): Promise<UserPreferences | null>`
   does a single `GET /api/preferences` for the resolved owner (shared
   by every caller for the page's life; a failed read may be retried),
-  merges the server's value over the localStorage cache (server
-  wins on conflict, unless this browser holds an unconfirmed save
-  for the owner, when the cache wins and is sent again), writes the merged blob back to localStorage,
+  merges the server's value with the localStorage cache (the shared
+  store's merge, [Editor preferences](../../../../liveworkspace/docs/specs/011-workbench/editor-preferences.md) "Loading": a key the
+  server dropped is dropped here too unless this device changed it, and an
+  unconfirmed save for the owner wins and is sent again), writes the merged blob back to localStorage,
   and dispatches `liveknowledge:preferences-changed`. Returns the
   merged preferences (the cache alone when the server keeps none),
   or null on failure / when the api worker is unreachable (the caller can treat that as "stick with the
