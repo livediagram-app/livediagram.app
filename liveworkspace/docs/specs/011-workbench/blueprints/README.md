@@ -10,5 +10,7 @@ Follow the references below only as needed; never upfront.
   measurements and tests
 - ./phone-drawers.md - when implementing the tool panels' phone drawer: PhoneDrawer, its use in MovablePanel and
   PopoverOrSheet, and tests
+- ./phone-apps-drawer.md - when implementing a phone's top row and Apps drawer: the store, the tiles, the menu
+  card's buttons, EditorCornerActions on a phone, and tests
 - ./DEFAULTS.md - when you need a default the workbench specs leave open
 - ./COMPLETENESS.md - when checking which completeness categories the workbench blueprint covers

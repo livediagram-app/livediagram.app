@@ -227,6 +227,8 @@ They ARE used for actions that finish off-surface from the gesture: clicking "Ad
 
 ## Mobile chrome
 
+**The top row on a phone** ([phone-apps-drawer.md](../../../../liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md), Work Tracker 1407): the top-right corner card is not drawn and the palette strip takes its width; Explorer, Call, Share, Present, Copy Link, Inbox and the account open from **Apps** in a bottom drawer, each only where this editor and the viewer's role offer it; the menu card and the strip are 56 px with 44 px buttons. The menu card holds the logo (opening the Explorer panel) and Apps; Present is a tile while the deck has a presentable slide.
+
 On a phone-sized viewport the editor's chrome would crowd the canvas. It tightens so a mobile visitor can read the canvas and tap through:
 
 - **A phone has the same layout as a desktop** ([Toolbar layout](toolbar-layout.md)), fitted to its width. A phone is below `sm:`, or a touch screen under 500px tall (landscape; `PHONE_MEDIA_QUERY`, the `phone:` variant). There the Palette is the strip across the top, the Explorer opens from the strip's menu button, and every other panel behaves as on a desktop: tool panels dock in their corners. (Per-element + tab formatting lives in the right-click context menus, so there is no Editor panel. The desktop-only [Quick style panel](../008-canvas/quick-style-panel.md) offers the few most-used choices beside a selection; it is not that panel, and the menus stay the complete home of every setting.) The `/explorer/` page and the AuthControls menu item are alternate routes to the library, open to guests and signed-in users alike.
