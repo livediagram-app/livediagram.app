@@ -105,6 +105,20 @@ describe('slide layouts', () => {
             expect(overlap, `${p.label} / ${q.label}`).toBe(false);
           }
         }
+        // No text box sits on an accent rule (a short round bar with no label): the line under a title never
+        // runs through the text after it.
+        const rules = els.filter(
+          (e) =>
+            e.type === 'shape' && e.shape === 'square' && e.borderRadius === 'full' && !e.label,
+        );
+        for (const r of rules) {
+          for (const t of texts) {
+            const overlap =
+              Math.min(r.x + r.width, t.x + t.width) - Math.max(r.x, t.x) > 1 &&
+              Math.min(r.y + r.height, t.y + t.height) - Math.max(r.y, t.y) > 0;
+            expect(overlap, `rule / ${t.label}`).toBe(false);
+          }
+        }
         // A full bleed meets the slide's edge: it never stops in the margin short of it.
         for (const b of boxes(els).filter((x) => x.bleed)) {
           const edges = [
