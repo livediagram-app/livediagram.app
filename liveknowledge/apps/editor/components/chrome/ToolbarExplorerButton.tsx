@@ -1,11 +1,11 @@
 'use client';
 
-import { track } from '@/lib/telemetry';
-import { Glyph } from '@liveknowledge/ui';
+import { ExplorerMenuButtons } from '@liveworkspace/workbench/components/chrome/phone-apps/ExplorerMenuButtons';
 import type { Ref } from 'react';
 import { useEditorInbox } from '@liveworkspace/workbench/components/chrome/useEditorInbox';
 import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/ToolbarMenuCard';
-import { KnowledgeLogo } from './KnowledgeLogo';
+import { KnowledgeLogo, useOpenItemId } from './KnowledgeLogo';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -37,32 +37,24 @@ export function ToolbarExplorerButton({
   buttonRef?: Ref<HTMLButtonElement>;
 }) {
   const inbox = useEditorInbox('liveknowledge');
+  const itemId = useOpenItemId();
+  const phone = useIsMobileViewport();
+  // The hamburger, or on a phone the logo and Apps (phone-apps-drawer.md), which then holds the logo itself.
   const button = (
-    <button
-      ref={buttonRef}
-      type="button"
-      aria-label={inbox.label('Explorer')}
-      aria-expanded={open}
-      onClick={(e) => {
-        if (!open) track('UI', 'Opened', 'ToolbarExplorer');
-        onToggle(e.currentTarget);
-      }}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-md transition ${
-        open
-          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-      }`}
-    >
-      <Glyph size={18} units={20} strokeLinejoin="miter">
-        <path d="M4 6h12M4 10h12M4 14h12" />
-      </Glyph>
-      {inbox.badge}
-    </button>
+    <ExplorerMenuButtons
+      app="liveknowledge"
+      open={open}
+      onToggle={onToggle}
+      buttonRef={buttonRef}
+      itemId={itemId}
+      inbox={inbox}
+    />
   );
   return (
     <>
-      {/* The shared card draws no logo inline; the top row keeps it, left of the menu button. */}
-      {inline ? <KnowledgeLogo className="mr-1 shrink-0" /> : null}
+      {/* The shared card draws no logo inline; the top row keeps it, left of the menu button. On a phone the logo is
+          the menu button itself (ExplorerMenuButtons). */}
+      {inline && !phone ? <KnowledgeLogo className="mr-1 shrink-0" /> : null}
       <ToolbarMenuCard
         inline={inline}
         dockButton
@@ -70,7 +62,9 @@ export function ToolbarExplorerButton({
         {...(joinedWidth === undefined ? {} : { joinedWidth })}
         logo={
           // Heading the Contents sidebar the wordmark stays, the sidebar being as wide as ever.
-          <KnowledgeLogo wordmarkClassName="hidden lg:inline [[data-logo-in-band]_&]:inline" />
+          phone ? undefined : (
+            <KnowledgeLogo wordmarkClassName="hidden lg:inline [[data-logo-in-band]_&]:inline" />
+          )
         }
       >
         {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}

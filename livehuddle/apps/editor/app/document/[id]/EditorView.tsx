@@ -291,6 +291,7 @@ export function EditorView() {
         visibilityActions={visibilityActions}
         copying={copying}
         copyDescription="Duplicate this space into your own files."
+        itemName={spaceName}
         leadAction={
           spaceCall && documentId ? (
             <CallItemCard

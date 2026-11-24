@@ -66,6 +66,7 @@ export function editorViewHeader(
       <EditorCornerActions
         approval={<ApprovalBadge corner />}
         call={<ItemCallButton />}
+        itemName={ctx.documentName}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
         // The Share button's words wear who can see the document; hovering it shows the legend.

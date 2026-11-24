@@ -1,9 +1,10 @@
 'use client';
 
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { ExplorerMenuButtons } from '@liveworkspace/workbench/components/chrome/phone-apps/ExplorerMenuButtons';
 import type { Ref } from 'react';
 
-import { track } from '@/lib/telemetry';
-import { Brand, Glyph } from '@livehuddle/ui';
+import { Brand } from '@livehuddle/ui';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
@@ -38,26 +39,16 @@ export function ToolbarExplorerButton({
 }) {
   // The open space: the logo opens the Explorer on the place that holds it (at its root with no editor around it).
   const itemId = useOptionalEditorContext()?.documentId ?? null;
+  const phone = useIsMobileViewport();
+  // The hamburger, or on a phone the logo and Apps (phone-apps-drawer.md), which then holds the logo itself.
   const button = (
-    <button
-      ref={buttonRef}
-      type="button"
-      aria-label="Explorer"
-      aria-expanded={open}
-      onClick={(e) => {
-        if (!open) track('UI', 'Opened', 'ToolbarExplorer');
-        onToggle(e.currentTarget);
-      }}
-      className={`flex h-9 w-9 items-center justify-center rounded-md transition ${
-        open
-          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-      }`}
-    >
-      <Glyph size={18} units={20} strokeLinejoin="miter">
-        <path d="M4 6h12M4 10h12M4 14h12" />
-      </Glyph>
-    </button>
+    <ExplorerMenuButtons
+      app="livehuddle"
+      open={open}
+      onToggle={onToggle}
+      buttonRef={buttonRef}
+      itemId={itemId}
+    />
   );
   return (
     <ToolbarMenuCard
@@ -65,12 +56,14 @@ export function ToolbarExplorerButton({
       dockButton
       tourId="dock-explorer"
       logo={
-        <Brand
-          href={explorerItemHref(itemId)}
-          size="sm"
-          wordmarkClassName="hidden lg:inline"
-          className="relative touch-target"
-        />
+        phone ? undefined : (
+          <Brand
+            href={explorerItemHref(itemId)}
+            size="sm"
+            wordmarkClassName="hidden lg:inline"
+            className="relative touch-target"
+          />
+        )
       }
     >
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
