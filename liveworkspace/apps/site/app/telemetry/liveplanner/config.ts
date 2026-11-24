@@ -20,6 +20,7 @@ import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { VIEW_AS_DIAGRAM } from '../_shared/diagrams-and-plans-metrics';
 import { SEND_TO_PLAN } from '../_shared/send-to-plan-metrics';
+import { SEND_TO_KNOWLEDGE_PICKER } from '../_shared/send-to-knowledge-metrics';
 import { SEND_TO_DIAGRAM } from '../_shared/send-to-diagram-metrics';
 import { SUGGEST_WRITE_UP } from '../_shared/suggestion-metrics';
 import { ITEM_CALLS } from '../_shared/item-call-metrics';
@@ -305,6 +306,7 @@ export const LIVEPLANNER: TelemetryAppConfig = {
           CONNECTED_TABS,
           SNAPSHOTS,
           SEND_TO_PLAN,
+          SEND_TO_KNOWLEDGE_PICKER,
           VIEW_AS_DIAGRAM,
           SEND_TO_DIAGRAM,
           SUGGEST_WRITE_UP,
