@@ -265,8 +265,8 @@ describe('PageTreeSheet', () => {
     expect(rows).toHaveLength(2);
     for (const row of rows) expect(row.style.height).toBe(`${PAGE_TREE_TOUCH_ROW}px`);
     expect(PAGE_TREE_TOUCH_ROW).toBeGreaterThanOrEqual(44);
-    // No hover on a touch screen: every row's menu button is there.
-    expect(within(sheet).getAllByRole('button', { name: /^Page Options for/ })).toHaveLength(2);
+    // On touch only the current page's row shows its buttons; the others open their menu on a long press.
+    expect(within(sheet).getAllByRole('button', { name: /^Page Options for/ })).toHaveLength(1);
   });
 
   it('closes on Escape', () => {

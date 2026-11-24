@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PageTree, TOUCH_FOCUS_MS, type PageTreeActions } from './PageTree';
 import { PageTreeSidebar, type PageTreeSidebarProps } from './PageTreeSidebar';
 import { ROW_TOUCH_BUTTON } from './page-tree-row-styles';
+import { LONG_PRESS_MS } from './useRowLongPress';
 import type { TreeTab } from './page-tree-view';
 
 const TABS: TreeTab[] = [
@@ -135,18 +136,33 @@ describe('a tap on the page tree', () => {
 });
 
 describe('the touch rows', () => {
-  it('show + and ... always, 44 px squares, with no hover card', () => {
-    mount({ touch: true });
+  it('show + and ... on the current row alone, 44 px squares, with no hover card', () => {
+    mount({ touch: true, activeId: 'a' });
     for (const label of ['Add Subpage to Handbook', 'Page Options for Handbook']) {
       const el = button(label);
       for (const cls of ROW_TOUCH_BUTTON.split(' ')) expect(el.className).toContain(cls);
       // A plain button: no hover card wraps it (a card's wrapper is an inline-flex span).
       expect(el.parentElement?.hasAttribute('data-row-controls')).toBe(true);
     }
+    // Another row keeps its title's room: no buttons, and its box takes none.
+    expect(screen.queryByRole('button', { name: 'Page Options for Notes' })).toBeNull();
+    expect(row('Notes').querySelector('[data-row-controls]')!.className).toContain('w-0');
   });
 
-  it("a Viewer's touch row has its ... alone", () => {
-    mount({ touch: true, canEdit: false });
+  it('a long press shows another row its buttons with its menu', async () => {
+    vi.useFakeTimers();
+    mount({ touch: true, activeId: 'a' });
+    fireEvent.pointerDown(title('Notes'), { pointerType: 'touch', isPrimary: true, pointerId: 1 });
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    vi.useRealTimers();
+    expect(await screen.findByRole('menu')).toBeTruthy();
+    expect(button('Page Options for Notes')).toBeTruthy();
+  });
+
+  it("a Viewer's current touch row has its ... alone", () => {
+    mount({ touch: true, canEdit: false, activeId: 'a' });
     expect(screen.queryByRole('button', { name: 'Add Subpage to Handbook' })).toBeNull();
     expect(button('Page Options for Handbook')).toBeTruthy();
   });
@@ -178,7 +194,7 @@ describe('the touch rows', () => {
         joined: true,
       };
       render(<PageTreeSidebar {...props} />);
-      const add = button('Add Subpage to Release Process');
+      const add = button('Add Subpage to Handbook');
       for (const cls of ROW_TOUCH_BUTTON.split(' ')) expect(add.className).toContain(cls);
     } finally {
       vi.unstubAllGlobals();

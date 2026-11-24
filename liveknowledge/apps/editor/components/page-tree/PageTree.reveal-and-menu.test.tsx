@@ -128,9 +128,10 @@ describe('a row’s + and … (WI-1335)', () => {
     expect(controls('Notes').className).toBe(`${ROW_CONTROLS_SHOWN} w-[50px]`);
   });
 
-  it('keeps a touch row’s + and … there, 44px squares (Work Tracker 1417)', () => {
-    mount({ touch: true });
+  it('shows a touch row’s + and … on the current row, 44px squares (Work Tracker 1417)', () => {
+    mount({ touch: true, activeId: 'e' });
     expect(controls('Notes').className).toContain('w-[90px]');
+    expect(controls('Handbook').className).toContain('w-0');
     for (const name of ['Page Options for Notes', 'Add Subpage to Notes']) {
       const button = within(row('Notes')).getByRole('button', { name });
       expect(button.className).toContain('h-11');
@@ -420,7 +421,8 @@ describe('long press (WI-1336)', () => {
   });
 
   it('is never a mouse’s, a second finger’s or a press on a row’s button', () => {
-    mount({ touch: true });
+    // Notes is the current page, so its touch buttons show.
+    mount({ touch: true, activeId: 'e' });
     fireEvent.pointerDown(row('Notes'), { pointerType: 'mouse', isPrimary: true });
     fireEvent.pointerDown(row('Notes'), { pointerType: 'touch', isPrimary: false });
     touchDown(within(row('Notes')).getByRole('button', { name: 'Page Options for Notes' }));

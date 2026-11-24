@@ -186,8 +186,10 @@ All of it is in `apps/editor/components/page-tree/`.
   wraps, so the row whose buttons take Tab keeps them, and a focused button never loses the focus to its own card),
   so a 500-page tree carries plain buttons and two rows of cards (the drag perf test holds the budget). Their 50 px is always kept, so nothing shifts. On a touch screen (`touch`: the phone sheet always, and
   the sidebar where the pointer cannot hover, `useCoarsePointer`, `(hover: none)`, so an iPad's sidebar too) the rows
-  are 44 px tall and Add Subpage (an Editor's) and Page Options are always there, each 44 x 44
-  (`ROW_TOUCH_BUTTON`), plain buttons with no hover card; Add Subpage stays in the menu as well (Work Tracker 1417).
+  are 44 px tall, and Add Subpage (an Editor's) and Page Options show on the current page's row and the row whose
+  menu is open (`touchShown`), each 44 x 44 (`ROW_TOUCH_BUTTON`), plain buttons with no hover card; every other row's
+  controls box is `w-0`, so its title keeps the room, and a long press opens its menu. Add Subpage stays in the menu
+  as well (Work Tracker 1417).
   The rail's peek draws the same `PageTree`.
 - **A tap never re-mounts what it lands on** (Work Tracker 1417). A row marked active mounts its title's tooltip and
   its buttons' hover cards, and mounting a card re-mounts the button it wraps (above). Marked by a finger, the tap's
@@ -489,7 +491,7 @@ pages trading places, a full knowledgebase within budget); `page-tree-routes.tes
 save's parents and both saves' refusals over the api; `page-tree-sync.test.ts` (editor) the placeholders, the save
 diff, a peer's list and a resync. The sidebar: `page-tree-view.test.ts` (rows, keys, the drop),
 `PageTree.test.tsx` (the tree's roles and attributes, the keyboard, the menu, the drag, a role at a time),
-`PageTree.perf.test.tsx` (500 rows), `PageTree.touch.test.tsx` (a tap on a row, its chevron, + and ... with a finger: nothing re-mounts, each lands the first time; the 44 px buttons; the sidebar's touch rows), `PageTreeSidebar.test.tsx` (the shell, the rail, the sheet, the tint's
+`PageTree.perf.test.tsx` (500 rows), `PageTree.touch.test.tsx` (a tap on a row, its chevron, + and ... with a finger: nothing re-mounts, each lands the first time; the 44 px buttons on the current row alone, a long press showing another's; the sidebar's touch rows), `PageTreeSidebar.test.tsx` (the shell, the rail, the sheet, the tint's
 contrast), `PageBreadcrumb.test.tsx`, `page-tree-open.test.ts`; the actions: `page-tree-edits.test.ts`,
 `useTabActions.pages.test.tsx`, `page-title.test.ts` (document), `live-page-title.test.ts`,
 `usePageNameFromTitle.test.tsx`, the api's `knowledge-agent-routes.test.ts` and `tab-pages-route.test.ts`, the
