@@ -21,14 +21,16 @@ import {
 const ROOM_W = 1040;
 const ROOM_H = 1040;
 
-// The wall screen: 640 x 400 (the Screen's 8:5), centred on the back wall.
-export const DOCUMENT_ROOM_SCREEN = { width: 640, height: 400 } as const;
+// The wall screen: 800 x 500 (the Screen's 8:5), centred on the back wall. It keeps its size as the room opens out
+// (template-roomy.ts), so it fills most of the wall between the Notice Board and the Timer.
+export const DOCUMENT_ROOM_SCREEN = { width: 800, height: 500 } as const;
 const SCREEN_X = (ROOM_W - DOCUMENT_ROOM_SCREEN.width) / 2;
 
-// Two rows of six chairs, three either side of a 160 px aisle up from the door, every sitter facing the screen. A row's
-// 84 px and 120 px of floor between rows (templates-by-mode.md "Every Space is roomy").
+// Two rows of six chairs, three either side of a 160 px aisle up from the door, every sitter facing the screen. Drawn
+// here before the room opens out; built, the front row stands 76 px from the screen with a 120 px aisle between the
+// rows, so the room sits close to the wall and sitting can frame the Screen with you (avatar-mode.md "The camera").
 const SEAT_XS = [194, 279, 364, 600, 685, 770];
-const ROW_YS = [480, 684];
+const ROW_YS = [456, 620] as const;
 
 // The board by the screen: how the room works.
 const ROOM_NOTES: readonly TemplateNote[] = [
@@ -90,10 +92,10 @@ export function buildDocumentRoom(cx: number, cy: number): Element[] {
       subtitle:
         'Meet round one file: it is live on the big screen for everyone with access, and the chairs face it.',
     },
-    // In the aisle behind the last row, the screen ahead.
+    // In the aisle just behind the last row, the screen ahead.
     arrival({
       x: cx,
-      y: y0 + SPACE_HEAD + 880,
+      y: y0 + SPACE_HEAD + 780,
       hintW: 200,
       hint: 'You arrive on the Avatar Pad: take a seat, and press the screen to open the file large.',
     }),

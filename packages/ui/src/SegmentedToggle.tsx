@@ -18,6 +18,9 @@ const SEGMENTS =
   'flex max-w-full flex-wrap items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800';
 // Wrapped (data-segments-wrapped on the track), each segment shares its row's width, so the rows read as one grid.
 const SEGMENT_CELL = 'in-data-segments-wrapped:grow';
+// Filling (`fill`), every segment takes an equal share of the track on one row: a switch that spans its place (a
+// dialog's File | Video) rather than two small tabs at one end of a long track.
+const SEGMENT_FILL_CELL = 'flex-1 basis-0';
 // 44 px to a thumb: a pad on one row, the segment itself once wrapped, where rows sit too close for pads.
 const segment = (active: boolean) =>
   `relative flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-2 text-xs font-medium transition-colors duration-micro touch-target-y in-data-segments-wrapped:grow pointer-coarse:in-data-segments-wrapped:h-11 ${
@@ -59,6 +62,7 @@ export function SegmentedToggle<T extends string>({
   onChange,
   options,
   label,
+  fill = false,
   className = '',
 }: {
   value: T;
@@ -66,6 +70,8 @@ export function SegmentedToggle<T extends string>({
   options: readonly SegmentedOption<T>[];
   // The group's accessible name ("Show").
   label: string;
+  // Each segment an equal share of the track's width (the track is as wide as its place).
+  fill?: boolean;
   className?: string;
 }) {
   const { ref, wrapped } = useWrapped();
@@ -75,6 +81,7 @@ export function SegmentedToggle<T extends string>({
       role="group"
       aria-label={label}
       data-segments-wrapped={wrapped ? '' : undefined}
+      data-segments-fill={fill ? '' : undefined}
       className={`${SEGMENTS} ${className}`}
     >
       {options.map((option) => (
@@ -82,7 +89,7 @@ export function SegmentedToggle<T extends string>({
           key={option.value}
           title={option.label}
           description={option.description}
-          className={SEGMENT_CELL}
+          className={fill ? `${SEGMENT_CELL} ${SEGMENT_FILL_CELL}` : SEGMENT_CELL}
         >
           <button
             type="button"
@@ -90,7 +97,7 @@ export function SegmentedToggle<T extends string>({
             onClick={() => {
               if (value !== option.value) onChange(option.value);
             }}
-            className={segment(value === option.value)}
+            className={`${segment(value === option.value)}${fill ? ' w-full' : ''}`}
           >
             {option.logo ? (
               <span aria-hidden className="mr-1.5 inline-flex shrink-0 [&_svg]:size-4">

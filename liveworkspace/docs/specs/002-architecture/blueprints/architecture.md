@@ -541,7 +541,9 @@ drives it with fake timers.
   it each segment (its `HoverCard` and its button) grows (`in-data-segments-wrapped:grow`) and, under a coarse
   pointer, is `h-11`. On one row a segment is `h-7` with `relative touch-target-y`. Callers no longer add
   `whitespace-nowrap`, `flex-wrap` or a scroller of their own (Live Data's Source and Needs Attention dropped theirs).
-  Tested in `SegmentedToggle.test.tsx` (narrow, normal and wide tracks).
+  `fill` (Work Tracker 1427) marks the track `data-segments-fill` and makes each segment's `HoverCard` `flex-1 basis-0`
+  and its button `w-full`.
+  Tested in `SegmentedToggle.test.tsx` (narrow, normal and wide tracks; filling and not).
 
 ## Testing
 
