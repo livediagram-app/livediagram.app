@@ -116,6 +116,23 @@ file, Connected (the first
 (`useRecentFiles`, the host and the connected left out). One busy row at a time; the host or a non-target app's file
 is blocked with its reason. Choosing captures the poster and calls `onChoose` then `onClose`.
 
+The picker is `LiveEmbedChooser` (its body, with every prop above, plus `poster`, default true) in Embed File's
+dialog; livehuddle's Show on the Screen wears the chooser in its own dialog with `poster: false` (a Screen keeps no
+picture) and no `connect`. Find a File (`useFileSearch`, Work Tracker 1427): two or more characters, after
+`LIVE_PICKER_SEARCH_SETTLE_MS`, ask `listItems({ view: 'search', q, apps: LIVE_EMBED_APPS, limit:
+LIVE_PICKER_SEARCH_MAX })`, aborting the read before; the host, archived files and any other app's are left out; the
+answers stand in for Recent under **Found** ("No file matches" when none), and a failed search leaves Recent with a
+line saying so.
+
+Which tab (Work Tracker 1427): `useLiveEmbedFrame({ tabId })` asks the ticket with it
+(`requestLiveEmbedTicket(item, origin, tabId)`, the body's `tabId`; the accounts door keeps it on the ticket for the
+session, `[A-Za-z0-9_-]{1,64}`), its key including the tab so a new tab asks again; it hears `<app>:ready` and
+`<app>:tab` (`tabId`, `tabName`, checked with `isLiveTab`) and returns the tab shown as `tab` on the live state.
+
+Framing (live-embeds.md "Framed by our apps alone"): each target's editor worker adds `frame-ancestors` from
+`@liveworkspace/sites`' `liveEmbedFrameAncestors(url)` to `/embed/workbench` with `live=1`: every app's origins in the
+frame's environment (`'self'` and any loopback port locally); every other path's headers are unchanged.
+
 ## Errors and edge cases
 
 - A share link with a password: "This link has a password. Open it once in its app, then choose it from Recent."
@@ -166,6 +183,10 @@ originHost, kind }`.
 | the frame flag and the item-only look                                             | `editor-surface.test.ts`, each target's `WorkbenchPage.test.tsx`     |
 | every face state, inert frame, nesting                                            | `LiveEmbedView.test.tsx`                                             |
 | choosing, pasting, code dropped                                                   | `choose-live-embed.test.ts`, `LiveEmbedPicker.test.tsx`              |
+| Find a File across the apps                                                       | `LiveEmbedPicker.test.tsx` "Find a File"                             |
+| a kept tab asked for, the shown tab heard                                         | `useLiveEmbedFrame.test.tsx` "tab", `live-embed-ticket.test.ts`      |
+| frame-ancestors on the live frame only                                            | sites `app-origins.test.ts`, each target's `worker.test.ts`          |
+| livehuddle's Screen host                                                          | livehuddle `screen-file.test.tsx`, `ScreenSourceDialog.test.tsx`     |
 | the role: connects a manageable file once, embeds others with no tab, failures    | `LiveEmbedPicker.test.tsx` "Embed File's role"                       |
 | opening on place                                                                  | `useEmbedFileOnPlace.test.tsx`                                       |
 | liveplanner's slot content and its readers                                        | liveplanner `dashboard-embed.test.ts`, `DashboardEmbedCard.test.tsx` |
@@ -185,7 +206,9 @@ originHost, kind }`.
 | `LIVE_NAME_MAX`             | 200        | element-model live-item.ts | as the index's    |
 | `LIVE_POSTER_MAX_EDGE`      | 480        | element-model live-item.ts | 240 to 960        |
 | `LIVE_POSTER_MAX_CHARS`     | 60,000     | element-model live-item.ts | 20,000 to 120,000 |
-| `LIVE_PICKER_CONNECTED_MAX` | 8          | LiveEmbedPicker.tsx        | 1 to 50           |
+| `LIVE_PICKER_CONNECTED_MAX` | 8          | LiveEmbedChooser.tsx       | 1 to 50           |
+| `LIVE_PICKER_SEARCH_MAX`    | 20         | useFileSearch.ts           | 10 to 50          |
+| `LIVE_PICKER_SEARCH_SETTLE_MS` | 250     | useFileSearch.ts           | 150 to 500        |
 | `EMBED_TOKEN_ID`            | `embed`    | accounts store-types.ts    | fixed             |
 
 ## Presentation and UX

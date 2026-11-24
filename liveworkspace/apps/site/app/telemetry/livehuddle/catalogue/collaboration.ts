@@ -75,6 +75,16 @@ export const EMBEDS_VIEWED = chart(
   { types: ['Embed'] },
 );
 
+// A file on a Screen going live (docs/specs/009-elements/screen-and-room-sign.md "A file on the Screen", Work Tracker
+// 1427): a file from another app shown live on a Screen or opened large, with the viewer's own access. Never which.
+export const SCREEN_FILES_SHOWN = chart(
+  'Canvas',
+  'Used',
+  'Screen Files Shown',
+  'A file from another of our apps shown live on a Screen, or opened large from one, with the viewer’s own access.',
+  { types: ['LiveEmbed'] },
+);
+
 export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
@@ -294,6 +304,7 @@ export const SHARING_AND_JOINING: MetricStack = {
     SHARE_SETTINGS,
     SHARE_LINKS_REMOVED,
     EMBEDS_VIEWED,
+    SCREEN_FILES_SHOWN,
     LIVE_IMAGE_TABS,
   ],
   headline: SHARE_LINKS_COPIED,

@@ -234,6 +234,7 @@ Each event says that something happened, never who, where or which:
 | Ping-Pong Games     | `Canvas·Used·PingPong`                 | A game is played to its end ([Social pieces](../009-elements/social-pieces.md#telemetry))                                 |
 | Doors Swung         | `Canvas·Used·Door`                     | A door is swung ([Room builder](../009-elements/room-builder.md#telemetry))                                               |
 | Screens Opened      | `Canvas·Used·ScreenOpen`               | A Screen is opened large ([Screen and room sign](../009-elements/screen-and-room-sign.md#telemetry))                      |
+| Screen Files        | `Element·Added·LiveEmbed`, `Canvas·Used·LiveEmbed` | A file is put on a Screen, and its live frame is shown ([Screen and room sign](../009-elements/screen-and-room-sign.md#telemetry)) |
 
 Travelling (a Portal, the stairs, an elevator, a Directory) and walking into a room are navigation, like panning, and
 are not counted. The calls have their own stack, **Calls**, in Collaboration.

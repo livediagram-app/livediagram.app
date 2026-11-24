@@ -243,7 +243,7 @@ menu's Lock) is the one to read for them.
   gone, and an Editor or a Participant opens and closes any door ([Room builder](../009-elements/room-builder.md)). A
   Suggestion Box closed only by being locked, so it no longer closes: it takes notes until it is full, and the
   `box_closed` refusal is gone ([Team pieces](../009-elements/team-pieces.md#suggestion-box)). A Notice Board and a
-  Calendar Wall always take notes, a portal's tour and a Screen's Set Link are an Editor's on any one, and an image
+  Calendar Wall always take notes, a portal's tour and what a Screen shows are an Editor's on any one, and an image
   always takes a new picture.
 - **Kept, because they are other things**: Lock Aspect Ratio (`aspectLocked`), the concurrent-selection lock ("Locked
   to <name>", [Editor app](../007-editor/editor-app.md)) and the facilitator freeing it, and a stored layer's `locked`
