@@ -15,7 +15,7 @@ export const HIDE_CONNECT_TIP = 'Hide Connect MCP. Settings, Appearance brings i
 // The tabs' trailing button: 24 px (a 44 px target on touch), the tab's ink, its own inset wash on hover and the
 // brand ring on keyboard focus.
 const CLOSE_CLASS =
-  'relative flex size-6 shrink-0 cursor-pointer touch-target items-center justify-center rounded-md text-current/60 outline-none transition-colors duration-150 hover:bg-slate-400/[0.2] hover:text-current focus-visible:outline-2 focus-visible:outline-brand-500 dark:hover:bg-slate-400/[0.14] motion-reduce:transition-none';
+  'relative flex size-6 shrink-0 cursor-pointer touch-target items-center justify-center rounded-md text-current/60 outline-none transition-colors duration-150 hover:bg-slate-400/[0.2] hover:text-current focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-brand-500 dark:hover:bg-slate-400/[0.14] motion-reduce:transition-none';
 
 export function ConnectTabClose() {
   const chrome = useEditorChromeStore();
