@@ -8,9 +8,10 @@ front of them; they cross over most easily with their content in hand. A suggest
 in the item, says what it would do in a line, and does it when taken: the retro's actions become plan cards, the
 decision becomes a knowledgebase page.
 
-A suggestion is a floating [callout](./callouts.md) in the editor's notice slot, the place the paste notice takes: bottom
-centre, just above the dock or where a dock would sit. It is not a toast (nothing just happened), not a banner and not a
-new surface.
+A suggestion is a **notice in the toast stack** ([Toasts](./toasts.md) "One place for everything that pops up"): bottom
+centre, standing on the dock, the tab bar and the bottom-right cluster as every toast does, in the toast's stacked
+card. It is not a toast (nothing just happened: it never times out and is not in the notification list), not a banner
+and not a new surface.
 
 ## The suggestions
 
@@ -30,7 +31,7 @@ retired custom themes), so there is nothing one click could do. It comes when a 
 ## Rules
 
 - **One at a time.** At most one suggestion shows on a page, and none while the notice slot holds something else (a
-  paste notice, the Nothing in View hint). A notice that takes the slot while a suggestion shows sends it away,
+  paste notice, an Inbox notice, the Nothing in View toast). A notice that takes the slot while a suggestion shows sends it away,
   undecided, so it can come back once the slot is free.
 - **Never mid-gesture.** None appears while the person types (a field or the canvas text has the focus, or a key went
   down in the last 1.5 s), holds a pointer down (a drag, a draw, a resize), or in the 1.5 s after either. One already
@@ -51,17 +52,18 @@ retired custom themes), so there is nothing one click could do. It comes when a 
 
 ## What it looks like
 
-An info callout, floating, medium:
+The toast's stacked card ([Toasts](./toasts.md) "One line by default, stacked when there is more to say"), info tone:
 
-- **Title**: what it would do ("Make These a Plan").
-- **Line**: why now, with the count where there is one ("4 action stickies here could be cards in a liveplanner plan,
-  one each.").
-- **Action**: the one click ("Send to Plan", "Write Page", "Add Page", "Connect Them").
-- **Don't Suggest This Again**: a quiet text button under the line.
+- **Title**, with the info icon before it and the × after it: what it would do ("Make These a Plan").
+- **Line**, under the title at the card's full width: why now, with the count where there is one ("4 action stickies
+  here could be cards in a liveplanner plan, one each.").
+- **The foot row**: **Don't Suggest This Again** at its start, quiet; the one click at its end, a small solid button
+  ("Send to Plan", "Write Page", "Add Page", "Connect Them").
 - **×**: dismisses it for this item.
 
-It fades in (none under reduced motion), never takes the focus and is announced politely (`role="status"`); Escape
-inside it dismisses it. At most 400 px wide; on a phone it spans the width less 16 px a side.
+It enters as a toast does (none under reduced motion), never takes the focus and is announced politely
+(`role="status"`); Escape inside it dismisses it. 25rem (400 px) wide; on a phone it spans the width less 16 px a side.
+While a dialog is open over the page it waits, undrawn, and shows again when the dialog closes.
 
 ## What taking one does
 

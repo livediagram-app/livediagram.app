@@ -75,21 +75,24 @@ item's rows reach the index only when its outbox drains (at least 60 seconds apa
 
 ## How a notice looks
 
-A small card under the editor's top-right corner card (its Share and account buttons), 8 px below it, 320 px wide on
-a computer; on a phone and at 450 px it spans the screen under the top row with a 16 px gutter. It never covers the
-palette strip, the menu card or the corner card, and takes no focus.
+A notice in the toast stack, bottom centre ([Toasts](../016-notifications/toasts.md) "One place for everything that
+pops up"): it stands on the tab bar, the dock and the bottom-right cluster as every toast does, above any toast on
+show, and wears the toast's stacked card (white or slate-900, its border and shadow). It never pops up at the top of
+the screen (the owner, 2026-11-24: "there is an ugly inbox one that appears in the top of the screen, all toasts /
+notifications should appear in the same place"). 25rem wide on a computer; on a phone it spans the screen with a 16 px
+gutter. It takes no focus. While it shows it holds the notice slot, so a suggestion waits for it.
 
-- **One row**: the kind's icon, who and what in one line (**Priya mentioned you**), the comment's first line in quotes
-  where there is one (an `@handle` of the reader, of who mentioned them or of who wrote it reads as that person's
-  name, **@Ada Quinn**, not **@ada-quinn**; anyone else's handle stays as written, as in the comment's chips), the item (› the tab › the element, or › the card, as its Inbox row names them, so rows on one
-  canvas tell apart) in small text, and one action: **Open in Inbox** (or **Open** for a share).
-  A close button (**Dismiss**, with its tooltip) at the top right.
+- **One row**: the kind's icon, who and what as its title (**Priya mentioned you**), the comment's first line in
+  quotes under it at the card's full width, where there is one (an `@handle` of the reader, of who mentioned them or
+  of who wrote it reads as that person's name, **@Ada Quinn**, not **@ada-quinn**; anyone else's handle stays as
+  written, as in the comment's chips), the item (› the tab › the element, or › the card, as its Inbox row names them,
+  so rows on one canvas tell apart) in small text, and one action on the foot row: **Open in Inbox** (or **Open**
+  for a share). A close button (**Dismiss**, with its tooltip) at the top right.
 - **Several rows** that arrive in one read, or while a notice is still on screen, are one notice: **3 New in Your
   Inbox**, then up to three lines (each who and what, then the item, each a link to its own place), **and 2 more**
-  past three, and **Open Inbox**.
-- Light and dark from the page's theme; the card is the corner card's surface (white or slate-900, its border and
-  shadow). It slides down 8 px and fades in over 160 ms, and only fades with reduced motion (the system setting or
-  the app's Reduce Motion).
+  past three, and **Open Inbox** on the foot row.
+- Light and dark from the page's theme. It enters as a toast does (rises 8 px and fades in), and only fades with
+  reduced motion (the system setting or the app's Reduce Motion).
 - Announced politely (`role="status"`): a screen reader hears the notice's first line once, never twice.
 - **Never over a dialog.** While a dialog is open over the page (a modal such as Share, or a canvas modal such as
   livedesign's Start Making Pages), a notice waits: it is not drawn and its 15 seconds do not run. It shows when the

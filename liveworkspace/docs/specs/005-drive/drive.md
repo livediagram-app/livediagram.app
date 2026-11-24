@@ -382,8 +382,9 @@ What the browser draws, beyond what the sections above pin (`@liveworkspace/sett
 - **The Explorer's marks** come from the service's answer alone (it names only the person's mirrored items), so an
   item made since the last read shows nothing until the next. Config first; marks and the connection (for the banner)
   only for someone connected; read once per Explorer mount and on window focus at most every 30 s
-  (`DRIVE_MARKS_MIN_GAP_MS`); no polling. The banner ("Google Drive sync is paused.", **Reconnect**) sits bottom-left
-  and closes for the tab's session. The page Explorer and the editors' Explorer panel both take the host
+  (`DRIVE_MARKS_MIN_GAP_MS`); no polling. The notice ("Google Drive sync is paused.", **Reconnect**) is a warning in the toast
+  stack, bottom centre ([Toasts](../016-notifications/toasts.md) "One place for everything that pops up"), and closes
+  for the tab's session. The page Explorer and the editors' Explorer panel both take the host
   (`drive`); the site's Explorer passes it, and so does every editor's panel, for an account holder only (it draws
   only the name's mark).
 
