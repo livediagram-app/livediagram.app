@@ -68,6 +68,9 @@ export const ALL_SETTING_KEYS = [
   'customSwatches',
   // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md "One switch for all").
   'suggestNextApp',
+  // Your Calls Space (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): the livehuddle Space every
+  // app's Call opens in, absent for a new Space each call.
+  'callSpace',
   // The editor settings two or more apps have.
   ...COMMON_SETTING_KEYS,
 ] as const;

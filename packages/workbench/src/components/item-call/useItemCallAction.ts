@@ -4,7 +4,14 @@
 // someone is in it, Start for an account that may start one, nothing otherwise. Shared by the corner card's Call
 // button (ItemCallButton) and the phone's Apps drawer's Call tile (phone-apps-drawer.md), so both say and do the same.
 import { useState } from 'react';
-import { itemCallTabName, type ItemCall, type ItemCallsRead } from '@liveworkspace/index-client';
+import {
+  callFallbackWords,
+  itemCallTabName,
+  readCallSpaceSetting,
+  type CallSpaceFallback,
+  type ItemCall,
+  type ItemCallsRead,
+} from '@liveworkspace/index-client';
 import { focusOrOpen, isBlank, namedTab, sendTab } from '@liveworkspace/index-client/browser';
 import { workbench } from '../../bindings';
 import { useToast } from '../../hooks/ui/useToast';
@@ -13,11 +20,14 @@ import { refreshItemCalls, useItemCalls, type CallSource } from './item-call-sto
 
 type Starter = Pick<typeof indexClient, 'startItemCall'>;
 
-/** Starts the item's call (or joins the live one) in the call's own tab, opened in the press so nothing blocks it. */
+/** Starts the item's call (or joins the live one) in the call's own tab, opened in the press so nothing blocks it: in
+ *  the person's Calls Space when they chose one (item-calls.md "Your Calls Space"). `fallback`: the Space was
+ *  skipped, and why. */
 export async function startCall(
   source: CallSource,
   starter: Starter = indexClient,
-): Promise<'opened' | 'blocked' | 'failed'> {
+  space: string | null = readCallSpaceSetting(workbench.readPreferences()),
+): Promise<'opened' | 'blocked' | 'failed' | { fallback: CallSpaceFallback }> {
   const tab = namedTab(itemCallTabName(source.id));
   if (!tab) return 'blocked';
   // A tab already at the call: bring it forward, no second call.
@@ -26,9 +36,9 @@ export async function startCall(
     return 'opened';
   }
   try {
-    const { call } = await starter.startItemCall(source.id, source.share);
+    const { call, fallback } = await starter.startItemCall(source.id, source.share, space);
     sendTab(tab, call.link);
-    return 'opened';
+    return fallback ? { fallback } : 'opened';
   } catch {
     tab.close();
     return 'failed';
@@ -79,6 +89,7 @@ export function useItemCallAction(): ItemCallAction | null {
           workbench.track('UI', 'Refused', 'ItemCall');
           toast.error('The call couldn’t start. Try again in a moment.');
         }
+        if (typeof outcome === 'object') toast.warning(callFallbackWords(outcome.fallback));
         void refreshItemCalls();
       });
     },

@@ -46,6 +46,8 @@ export type WorkbenchPreferences = {
   notificationsEnabled?: boolean;
   // Suggest Other Apps off quiets every suggestion (components/suggest; the `all` scope's suggestNextApp).
   suggestNextApp?: boolean;
+  // Your Calls Space: the livehuddle Space Call opens in (components/item-call; the `all` scope's callSpace).
+  callSpace?: string | null;
 };
 
 /** The product's api transport (its lib/api/core.ts), as far as workbench code calls it. */

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { accountCategories } from './account-model';
+import { describe, expect, it, vi } from 'vitest';
+import { accountCategories, type CallSpaceChoice } from './account-model';
 
 // The Account section's API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): drawn in the panel where the host
 // hands them in (every host with an account), and left out where it doesn't (a guest, a workbench).
@@ -42,6 +42,48 @@ describe('accountCategories, Your Data', () => {
 
   it('leaves the category out where the host hands none in', () => {
     expect(dataOf(base)).toBeUndefined();
+  });
+});
+
+// Settings › Calls (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): Calls Open In, after
+// Accessibility, where the host can list the person's Spaces; its choice read from and written to `all`.
+describe('accountCategories, Calls', () => {
+  it('draws Calls Open In over the `all` scope, after Accessibility', () => {
+    const set = vi.fn();
+    const renderCalls = vi.fn((_choice: CallSpaceChoice) => null);
+    const section = {
+      all: { callSpace: 'lh_room' },
+      set,
+      renderCalls,
+      renderDataExport: () => null,
+    };
+    const categories = accountCategories(section);
+    expect(categories.map((c) => c.id)).toEqual([
+      'notifications',
+      'privacy',
+      'accessibility',
+      'calls',
+      'data',
+    ]);
+    const row = categories.find((c) => c.id === 'calls')?.rows[0];
+    expect(row).toMatchObject({ kind: 'custom', key: 'callSpace', label: 'Calls Open In' });
+    if (row?.kind === 'custom') row.render();
+    const choice = renderCalls.mock.calls[0]![0];
+    expect(choice.value).toBe('lh_room');
+    choice.onChange(null);
+    expect(set).toHaveBeenCalledWith('callSpace', '');
+    choice.onChange('lh_other');
+    expect(set).toHaveBeenCalledWith('callSpace', 'lh_other');
+  });
+
+  it('reads anything but a Space id as Default, and lists no category without the host’s Spaces', () => {
+    const renderCalls = vi.fn((_choice: CallSpaceChoice) => null);
+    const row = accountCategories({ all: { callSpace: true }, set: () => {}, renderCalls }).find(
+      (c) => c.id === 'calls',
+    )?.rows[0];
+    if (row?.kind === 'custom') row.render();
+    expect(renderCalls.mock.calls[0]![0]).toMatchObject({ value: null });
+    expect(accountCategories(base).map((c) => c.id)).not.toContain('calls');
   });
 });
 
