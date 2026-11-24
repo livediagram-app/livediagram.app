@@ -117,7 +117,7 @@ export const PAGE_SETUP = chart(
   'Tab',
   'Changed',
   'Pages Set Up',
-  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), a page locked or unlocked, or a tab's pages stacked or set side by side.",
+  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), a page design picked, tuned or set for the tab or a page, a page locked or unlocked, or a tab's pages stacked or set side by side.",
   {
     types: [
       'PageSize',
@@ -133,6 +133,12 @@ export const PAGE_SETUP = chart(
       'NewPageBackground',
       'NewPageBackgroundCarried',
       'NewPageBackgroundToEveryPage',
+      // Tab Style's Page Design (docs/specs/011-theme/page-designs.md "Telemetry").
+      'PageDesign',
+      'PageDesignPage',
+      'PageDesignTuned',
+      'PageDesignSet',
+      'PageDesignAnimated',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',

@@ -6,6 +6,7 @@
 // stays one constant.
 import { createContext, useContext } from 'react';
 import type { PageBackground, PageKind } from '@livedocuments/document';
+import type { PageDesignDoor } from './page-design/page-design-door';
 
 export type TabStylePages = {
   // The kind of the page someone is on; null on a tab with no pages yet.
@@ -20,6 +21,8 @@ export type TabStylePages = {
   onApplyToEveryPage: () => void;
   // Opens the article's own Style (an article page or a card); undefined elsewhere.
   onOpenArticleStyle?: () => void;
+  // The Page Design panel's door (page-design/page-design-door.ts); undefined while the dialog has no pages to style.
+  design?: PageDesignDoor;
 };
 
 const NONE: TabStylePages = {

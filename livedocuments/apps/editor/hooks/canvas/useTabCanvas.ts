@@ -27,6 +27,7 @@ import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-ch
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import { withTidyEngine, type TidyEngine } from '@/lib/tidy-engine';
 import { useTabTheme } from './useTabTheme';
+import { pageDesignEdits } from './usePageDesignEdits';
 import { tabLookById, withLookApplied, type TabLook } from '@/lib/tab-looks';
 import {
   withTabFinish,
@@ -256,7 +257,19 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     notify?.(everyPageMessage(reached, kept));
   };
 
+  // Page Design (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design").
+  const pageDesign = pageDesignEdits({
+    editsBlocked,
+    activeId,
+    activeTab,
+    commitTabs,
+    tickTabs,
+    checkpointBurst,
+    notify,
+  });
+
   return {
+    pageDesignEdits: pageDesign,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
     autoAlignTab,

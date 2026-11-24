@@ -92,7 +92,9 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
     view,
     title,
     subtitle: surface.copy.viewLines[view],
-    help: profile.renderHelp(TAB_STYLE_HELP[view]),
+    help:
+      (view !== 'looks' ? surface.panelHelp?.[view] : undefined) ??
+      profile.renderHelp(TAB_STYLE_HELP[view]),
     // Show Me's tour of the home, run on this dialog.
     tourApi: {
       panels: surface.panels,

@@ -5,14 +5,18 @@ import { useMemo } from 'react';
 import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
+  layOutPages,
   newPageBackgroundOf,
   pageUnits,
   pagesOf,
+  tabPageDesignOf,
 } from '@livedocuments/document';
+import { useAppearance } from '@livedocuments/ui';
+import { getTheme } from '@/lib/themes';
 
 import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
-import { currentPageIdNow, useCurrentPageKind } from '@/lib/current-page-kind';
+import { currentPageIdNow, useCurrentPageId, useCurrentPageKind } from '@/lib/current-page-kind';
 import { requestStylePanel } from '@/lib/article/article-editor-store';
 import type { TabStylePages } from './tab-style-pages';
 
@@ -71,7 +75,10 @@ function OpenEditorModals() {
     canApplyStyleToAllTabs,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
+    pageDesignEdits,
   } = useEditorContext();
+  const pageId = useCurrentPageId();
+  const { appearance } = useAppearance();
   // The page someone is on is the Tab Style surface; a tab with no pages yet is the canvas.
   const pageKind = useCurrentPageKind();
   // What the dialog knows of the tab's pages (tab-style-pages.ts), worked out when the tab or the page kind changes.
@@ -85,6 +92,24 @@ function OpenEditorModals() {
       units: activeTab.pages?.length ? pageUnits(pagesOf(activeTab)).length : 0,
       onSet: setNewPageBackground,
       onApplyToEveryPage: applyNewPageBackgroundToEveryPage,
+      ...(activeTab.pages?.length
+        ? {
+            // The Page Design panel's door (page-design/page-design-door.ts).
+            design: (() => {
+              const row = layOutPages(pagesOf(activeTab));
+              return {
+                tabDesign: tabPageDesignOf(activeTab),
+                page: row.find((p) => p.id === pageId) ?? row[0],
+                pages: row,
+                elements: activeTab.elements,
+                theme: getTheme(activeTab.theme),
+                tabFont: activeTab.font ?? undefined,
+                paperDark: appearance === 'dark',
+                edits: pageDesignEdits,
+              };
+            })(),
+          }
+        : {}),
       ...(written
         ? {
             // The Style beside the page's cog, for the page someone is on, once the dialog has gone.
@@ -99,6 +124,9 @@ function OpenEditorModals() {
   }, [
     activeTab,
     pageKind,
+    pageId,
+    appearance,
+    pageDesignEdits,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
     setCanvasThemeTab,
