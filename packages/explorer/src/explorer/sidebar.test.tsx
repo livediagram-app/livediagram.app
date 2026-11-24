@@ -54,8 +54,14 @@ const findRow = (name: string) => within(nav()).findByRole('treeitem', { name })
 const key = (el: Element, k: string, extra: object = {}) =>
   fireEvent.keyDown(el, { key: k, ...extra });
 
+// The person opened My Work before (a space opens only when the person does it, Work Tracker 1420).
+const myWorkOpened = () => {
+  localStorage.clear();
+  localStorage.setItem(EXPANDED_KEY, JSON.stringify(['my-work']));
+};
+
 describe('the sidebar’s menus and rename', () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(myWorkOpened);
 
   it('opens a folder row’s menu from its ⋯, a right-click and Shift+F10', async () => {
     const index = createFakeIndex({ folders: [folder('f1', 'Projects')] });
@@ -190,21 +196,45 @@ describe('expansion', () => {
     const store = createExpansion('test-key');
     const seen = vi.fn();
     store.subscribe(seen);
-    store.expand('my-work');
-    expect(seen).not.toHaveBeenCalled();
     store.expand('x', 'y');
-    expect([...store.get()]).toEqual(['my-work', 'x', 'y']);
+    expect(seen).toHaveBeenCalledTimes(1);
+    store.expand('x');
+    expect(seen).toHaveBeenCalledTimes(1);
+    expect([...store.get()]).toEqual(['x', 'y']);
   });
 
-  it("opens one space at a time, keeping the view's space and every folder fold", () => {
+  it('starts every space folded with nothing kept, and keeps each space as the person left it (Work Tracker 1420)', () => {
+    expect([...createExpansion('test-key-fresh').get()]).toEqual([]);
     const store = createExpansion('test-key-spaces');
-    store.expand('my-work', 'team:A', 'this-browser', 'f1', 'local:l1', 'library');
-    store.openSpace('team:B', 'team:A');
-    expect(new Set(store.get())).toEqual(
-      new Set(['team:A', 'team:B', 'f1', 'local:l1', 'library']),
-    );
-    store.openSpace('my-work', null);
-    expect(new Set(store.get())).toEqual(new Set(['my-work', 'f1', 'local:l1', 'library']));
+    store.toggle('team:A');
+    store.toggle('my-work');
+    // Opening one space never folds another.
+    expect(new Set(store.get())).toEqual(new Set(['team:A', 'my-work']));
+    store.toggle('team:A');
+    // A later visit reads what this browser kept.
+    expect([...createExpansion('test-key-spaces').get()]).toEqual(['my-work']);
+  });
+
+  it('starts folded, without an error, when storage is blocked or holds nonsense', () => {
+    localStorage.setItem('test-key-bad', '{not json');
+    expect([...createExpansion('test-key-bad').get()]).toEqual([]);
+    localStorage.setItem('test-key-obj', JSON.stringify({ a: 1 }));
+    expect([...createExpansion('test-key-obj').get()]).toEqual([]);
+    const get = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    const set = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    try {
+      const store = createExpansion('test-key-blocked');
+      expect([...store.get()]).toEqual([]);
+      expect(() => store.toggle('my-work')).not.toThrow();
+      expect([...store.get()]).toEqual(['my-work']);
+    } finally {
+      get.mockRestore();
+      set.mockRestore();
+    }
   });
 
   it('names the space holding each view', () => {
@@ -219,33 +249,50 @@ describe('expansion', () => {
     expect(spaceOfView({ kind: 'home' }, byId)).toBeNull();
   });
 
-  it('folds the other spaces when one opens, but not the space being viewed', async () => {
-    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['my-work']));
+  it('opens and folds a space only from its own chevron, never from a view inside it', async () => {
     const index = createFakeIndex({
       folders: [
         folder('f1', 'Projects'),
+        folder('f2', 'Inner', 'f1'),
         folder('t1', 'Team Root', null, 'T1'),
         folder('t2', 'Other Root', null, 'T2'),
       ],
     });
-    page(index, { kind: 'folder', id: 'f1' }, [
+    page(index, { kind: 'folder', id: 'f2' }, [
       { id: 'T1', name: 'Alpha' },
       { id: 'T2', name: 'Beta' },
     ]);
-    await waitFor(() => expect(row('My Work').getAttribute('aria-expanded')).toBe('true'));
+    // The view sits inside My Work, which stays folded: its row is drawn as the current one.
+    await waitFor(() => expect(row('My Work').getAttribute('aria-current')).toBe('page'));
+    expect(row('My Work').getAttribute('aria-expanded')).toBe('false');
+    expect(within(nav()).queryByRole('treeitem', { name: 'Projects' })).toBeNull();
     fireEvent.click(within(row('Alpha')).getByRole('button', { name: 'Expand Alpha' }));
     await waitFor(() => expect(row('Alpha').getAttribute('aria-expanded')).toBe('true'));
-    // My Work holds the folder on screen, so it stays open beside Alpha for a drag between them.
-    expect(row('My Work').getAttribute('aria-expanded')).toBe('true');
     fireEvent.click(within(row('Beta')).getByRole('button', { name: 'Expand Beta' }));
     await waitFor(() => expect(row('Beta').getAttribute('aria-expanded')).toBe('true'));
-    expect(row('Alpha').getAttribute('aria-expanded')).toBe('false');
-    expect(row('My Work').getAttribute('aria-expanded')).toBe('true');
+    // Opening Beta folds nothing else.
+    expect(row('Alpha').getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(within(row('My Work')).getByRole('button', { name: 'Expand My Work' }));
+    // Opened, My Work shows the way down to the current folder, which is the current row now.
+    expect(await findRow('Inner')).toBeTruthy();
+    expect(row('Inner').getAttribute('aria-current')).toBe('page');
+    expect(row('My Work').getAttribute('aria-current')).toBeNull();
+    expect(JSON.parse(localStorage.getItem(EXPANDED_KEY) ?? '[]')).toEqual(
+      expect.arrayContaining(['team:T1', 'team:T2', 'my-work', 'f1']),
+    );
+  });
+
+  it("ignores a kept state for a team the person is no longer in", async () => {
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['team:GONE', 'team:T1']));
+    const index = createFakeIndex({ folders: [folder('t1', 'Team Root', null, 'T1')] });
+    page(index, { kind: 'home' }, [{ id: 'T1', name: 'Alpha' }]);
+    expect(await findRow('Team Root')).toBeTruthy();
+    expect(row('Alpha').getAttribute('aria-expanded')).toBe('true');
   });
 });
 
 describe('the keyboard tree', () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(myWorkOpened);
 
   it('keeps one tab stop, on the current row', async () => {
     page(createFakeIndex(), { kind: 'recent' });
@@ -313,7 +360,7 @@ describe('a big tree', () => {
   // Rendering 2,000 rows in jsdom took over 8 s on a CI runner, past Vitest's 5 s default; the budget that
   // matters is the per-key one below.
   it('keeps a key press cheap with 2,000 folder rows open', { timeout: 30_000 }, async () => {
-    localStorage.clear();
+    myWorkOpened();
     const folders = Array.from({ length: 2000 }, (_, i) =>
       folder(`f${i}`, `Folder ${String(i).padStart(4, '0')}`),
     );

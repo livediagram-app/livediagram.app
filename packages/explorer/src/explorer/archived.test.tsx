@@ -114,8 +114,9 @@ describe('the sidebar', () => {
     expect(row('Library').getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('opens a folder’s space and every folder down to it, and only ever adds', async () => {
-    localStorage.setItem(EXPANDED_KEY, JSON.stringify([]));
+  it('opens every folder down to a folder inside an open space, never the space, and only ever adds', async () => {
+    // The person opened My Work (a space opens only when the person does it, Work Tracker 1420).
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['my-work']));
     const index = createFakeIndex({
       folders: [folder('a', 'Alpha'), folder('b', 'Beta', 'a'), folder('c', 'Gamma', 'b')],
     });
@@ -140,10 +141,12 @@ describe('the sidebar', () => {
       ['b', { id: 'b', parentId: 'a', teamId: null }],
       ['t', { id: 't', parentId: null, teamId: 'T1' }],
     ]);
-    expect(rowsForView({ kind: 'all' }, byId)).toEqual(['my-work']);
-    expect(rowsForView({ kind: 'folder', id: 'b' }, byId)).toEqual(['my-work', 'a', 'b']);
-    expect(rowsForView({ kind: 'team', id: 'T1' }, byId)).toEqual(['team:T1']);
-    expect(rowsForView({ kind: 'team', id: 'T1', folderId: 't' }, byId)).toEqual(['team:T1', 't']);
+    // Never a space (Work Tracker 1420): only the folders inside one, and the Library.
+    expect(rowsForView({ kind: 'all' }, byId)).toEqual([]);
+    expect(rowsForView({ kind: 'folder', id: 'b' }, byId)).toEqual(['a', 'b']);
+    expect(rowsForView({ kind: 'team', id: 'T1' }, byId)).toEqual([]);
+    expect(rowsForView({ kind: 'team', id: 'T1', folderId: 't' }, byId)).toEqual(['t']);
+    expect(rowsForView({ kind: 'offline' }, byId)).toEqual([]);
     for (const kind of ['recent', 'archived', 'trash'] as const)
       expect(rowsForView({ kind }, byId)).toEqual(['library']);
     expect(rowsForView({ kind: 'home' }, byId)).toEqual([]);

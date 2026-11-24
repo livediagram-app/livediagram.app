@@ -21,6 +21,7 @@ import { Explorer } from './Explorer';
 import { useThisBrowserList, type ThisBrowserHost } from './ThisBrowser';
 import { panelSectionGroups } from '../panel/sections';
 import { sameNameFolder } from './this-browser-space/space';
+import { EXPANDED_KEY } from './sidebar/expansion';
 
 const APP = 'liveplanner' as const;
 
@@ -181,7 +182,25 @@ describe('the Space in the sidebar', () => {
     expect(onNavigate).toHaveBeenCalledWith({ kind: 'all' }, expect.anything());
   });
 
+  it('stays folded on its own view until opened, standing for the folder open inside it (Work Tracker 1420)', async () => {
+    writeThisBrowserStore(APP, {
+      items: [local(1, { folderId: 'b' })],
+      folders: [lf('a', 'Trips'), lf('b', 'Rome', 'a')],
+    });
+    page({ kind: 'offline', folder: 'b' });
+    const offline = await waitFor(() => browserRow()!);
+    expect(offline.getAttribute('aria-expanded')).toBe('false');
+    expect(offline.getAttribute('aria-selected')).toBe('true');
+    expect(spaces().queryByRole('treeitem', { name: 'Rome' })).toBeNull();
+    fireEvent.click(within(offline).getByRole('button', { name: 'Expand Offline' }));
+    const rome = await waitFor(() => spaces().getByRole('treeitem', { name: 'Rome' }));
+    expect(rome.getAttribute('aria-selected')).toBe('true');
+    expect(browserRow()!.getAttribute('aria-selected')).toBe('false');
+  });
+
   it('lists its folders nested, opens the current one, and goes to each', async () => {
+    // The person opened Offline (a space opens only when the person does it).
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['this-browser']));
     writeThisBrowserStore(APP, {
       items: [local(1, { folderId: 'b' })],
       folders: [lf('a', 'Trips'), lf('b', 'Rome', 'a')],
@@ -210,6 +229,7 @@ describe('the Space in the sidebar', () => {
   });
 
   it('takes an item dropped on a folder row, with an Undo', async () => {
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['this-browser']));
     writeThisBrowserStore(APP, { items: [local(1)], folders: [lf('a', 'Trips')] });
     page({ kind: 'offline' });
     const source = (await screen.findByText('Local 1')).closest('li')!;

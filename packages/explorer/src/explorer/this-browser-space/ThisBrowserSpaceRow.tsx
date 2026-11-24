@@ -22,13 +22,10 @@ type Rename = { renamingId: string | null; setRenamingId: (id: string | null) =>
 export function ThisBrowserSpaceRow({
   expanded,
   toggle,
-  toggleSpace,
   rename,
 }: {
   expanded: ReadonlySet<string>;
   toggle: (key: string) => void;
-  // Its own row's chevron: opening a space folds the others (one-explorer.md "One space open at a time").
-  toggleSpace: (key: string) => void;
   rename: Rename;
 }) {
   const { view, navigate, expansion } = useExplorer();
@@ -36,13 +33,15 @@ export function ThisBrowserSpaceRow({
   const menu = useRowMenu();
   const onView = view.kind === 'offline';
   const open = onView ? (view.folder ?? null) : null;
-  // The current local folder's rows are open: Offline's, and each folder down to it (itself too).
+  // The current local folder's rows are open: each folder down to it (itself too). Offline's own row, a space, opens
+  // and folds only when the person does it (one-explorer.md, Work Tracker 1420).
   const path = localPath(folders, open)
     .map((f) => localKey(f.id))
     .join('\n');
   useLayoutEffect(() => {
-    if (onView) expansion.expand(LOCAL_ROW_KEY, ...(path ? path.split('\n') : []));
+    if (onView && path) expansion.expand(...path.split('\n'));
   }, [onView, path, expansion]);
+  const spaceOpen = expanded.has(LOCAL_ROW_KEY);
   if (!readable || (!holds && !onView)) return null;
   const roots = localChildren(folders, null);
   return (
@@ -50,15 +49,16 @@ export function ThisBrowserSpaceRow({
       icon={<BrowserIcon />}
       tone="teal"
       label={SIDEBAR_LABELS.thisBrowser}
-      selected={onView && open === null}
+      // Folded, it stands for the local folder open inside it, so the sidebar shows where you are.
+      selected={onView && (open === null || !spaceOpen)}
       onActivate={() => navigate({ kind: 'offline' })}
       depth={0}
       dropTo={{ local: null }}
       badge={live.length || undefined}
       badgeLabel={`${live.length} kept Offline`}
       expandable={roots.length > 0}
-      expanded={expanded.has(LOCAL_ROW_KEY)}
-      onToggleExpand={() => toggleSpace(LOCAL_ROW_KEY)}
+      expanded={spaceOpen}
+      onToggleExpand={() => toggle(LOCAL_ROW_KEY)}
       onContextMenu={menu.onContextMenu}
       trailing={
         <>

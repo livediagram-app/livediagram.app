@@ -1,7 +1,9 @@
 // Which sidebar rows are open (liveplanner/docs/specs/013-workspace/explorer-structure.md "Expansion"): one set of
 // folder ids, team keys and the two fixed keys, made once per Explorer and remembered in this browser. It is read
 // synchronously the first time the sidebar asks, so the tree paints open where it was left, never closed and then
-// open. Making a folder opens the rows above it, so the new row is in sight.
+// open. A space opens and folds only when the person does it (one-explorer.md "A space opens and folds only when the
+// person does it"); with nothing kept every space starts folded. Making a folder opens the rows above it, so the new
+// row is in sight.
 
 import type { Folder } from '@liveworkspace/index-client';
 
@@ -22,13 +24,10 @@ export type Expansion = {
   toggle: (key: string) => void;
   /** Opens these rows; nothing changes (and nobody re-renders) when they all are. */
   expand: (...keys: string[]) => void;
-  /** Opens one space and folds every other space but `keep` (the current view's): one space open at a time
-   *  (one-explorer.md "One space open at a time"). Folders inside the folded spaces keep their own folds. */
-  openSpace: (key: string, keep: string | null) => void;
 };
 
-// As livediagram's tree starts: My Work unfolded, the Library folded.
-const START: ReadonlySet<string> = new Set([MY_WORK]);
+// With nothing kept: every space folded, My Work too, and the Library folded (Work Tracker 1420).
+const START: ReadonlySet<string> = new Set();
 
 function read(storageKey: string): ReadonlySet<string> {
   try {
@@ -70,11 +69,6 @@ export function createExpansion(storageKey = EXPANDED_KEY): Expansion {
       const next = new Set(get());
       if (next.has(key)) next.delete(key);
       else next.add(key);
-      set(next);
-    },
-    openSpace(key, keep) {
-      const next = new Set([...get()].filter((k) => !isSpaceKey(k) || k === keep));
-      next.add(key);
       set(next);
     },
     expand(...keys) {
