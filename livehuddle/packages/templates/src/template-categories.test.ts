@@ -72,6 +72,7 @@ describe('template categories', () => {
       'focus-library',
       'interview-suite',
       'client-lounge',
+      'document-room',
     ]);
     expect(inCategory('events')).toEqual([
       'all-hands-hall',

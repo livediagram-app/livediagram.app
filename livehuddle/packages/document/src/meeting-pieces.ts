@@ -3,6 +3,12 @@
 // Screen's video link and the Sign's words. Pure: no React, no DOM. Who is inside a room and who is sharing are
 // presence and the call, read by the editor; nothing here is stored about them.
 
+import {
+  isLiveItem,
+  isLiveName,
+  type LiveItem,
+  type LiveTab,
+} from '@liveworkspace/element-model/live-item';
 import { embedTargetFor, type EmbedTarget } from './youtube';
 import type { CallZone } from './call-geometry';
 
@@ -102,6 +108,101 @@ export const SCREEN_ART = {
     ink: '#94a3b8',
   },
 } as const;
+
+// --- A Screen's size (screen-and-room-sign.md "Any size up to a wall", Work Tracker 1427) -------------------------
+
+/** The smallest Screen, and the largest: a wall-filling one. */
+export const SCREEN_MIN = { width: 96, height: 60 } as const;
+export const SCREEN_MAX = { width: 1600, height: 1000 } as const;
+
+/**
+ * A resized Screen's box kept between SCREEN_MIN and SCREEN_MAX, its top left where the resize put it. With its
+ * proportions kept (`locked`) the whole box scales by one factor, so the ratio holds at either bound.
+ */
+export function clampScreenBox<B extends { width: number; height: number }>(
+  box: B,
+  locked: boolean,
+): B {
+  const { width, height } = box;
+  if (width <= 0 || height <= 0) return box;
+  if (locked) {
+    const up = Math.max(SCREEN_MIN.width / width, SCREEN_MIN.height / height, 1);
+    const down = Math.min(SCREEN_MAX.width / width, SCREEN_MAX.height / height, 1);
+    const k = up > 1 ? up : down;
+    if (k === 1) return box;
+    return { ...box, width: Math.round(width * k), height: Math.round(height * k) };
+  }
+  const w = Math.min(SCREEN_MAX.width, Math.max(SCREEN_MIN.width, width));
+  const h = Math.min(SCREEN_MAX.height, Math.max(SCREEN_MIN.height, height));
+  return w === width && h === height ? box : { ...box, width: w, height: h };
+}
+
+// --- A Screen's source (screen-and-room-sign.md "Choosing what it shows") ---------------------------------------
+
+/** What an Editor puts on a Screen: a file (its link, its name, the tab it opens on), a video link, or nothing. */
+export type ScreenSource =
+  | { kind: 'file'; liveItem: LiveItem; liveName: string; liveTab?: LiveTab }
+  | { kind: 'video'; url: string }
+  | { kind: 'none' };
+
+/** The fields a source writes on a Screen: one source at a time, so each clears the other's fields. */
+export function screenSourcePatch(source: ScreenSource): {
+  screenUrl: string | undefined;
+  liveItem: LiveItem | undefined;
+  liveName: string | undefined;
+  liveTab: LiveTab | undefined;
+} {
+  if (source.kind === 'file')
+    return {
+      screenUrl: undefined,
+      liveItem: source.liveItem,
+      liveName: source.liveName,
+      liveTab: source.liveTab,
+    };
+  return {
+    screenUrl: source.kind === 'video' ? source.url : undefined,
+    liveItem: undefined,
+    liveName: undefined,
+    liveTab: undefined,
+  };
+}
+
+/** The file a Screen shows, or null: the link with its name and tab. */
+export function screenFile(el: {
+  liveItem?: LiveItem;
+  liveName?: string;
+  liveTab?: LiveTab;
+}): { liveItem: LiveItem; liveName: string; liveTab?: LiveTab } | null {
+  if (!el.liveItem) return null;
+  return {
+    liveItem: el.liveItem,
+    liveName: el.liveName ?? '',
+    ...(el.liveTab ? { liveTab: el.liveTab } : {}),
+  };
+}
+
+/** A template door's `screen` (kits.md "The apps' door") as a Screen's file, checked as a live embed's link; else null. */
+export function screenFileOfSeed(
+  seed: { app: string; itemId: string; name: string } | undefined,
+): { liveItem: LiveItem; liveName: string } | null {
+  if (!seed) return null;
+  const liveItem = { app: seed.app, itemId: seed.itemId };
+  return isLiveItem(liveItem) && isLiveName(seed.name) ? { liveItem, liveName: seed.name } : null;
+}
+
+/**
+ * Every Screen among `elements` with no source of its own, showing `file` (calls-from-items.md "The Space": a call's
+ * Document Room opens with the call's item on its wall). Anything else is left as it is; no Screen, nothing changes.
+ */
+export function withScreenFile<
+  E extends { type: string; shape?: string; screenUrl?: string; liveItem?: LiveItem },
+>(elements: readonly E[], file: { liveItem: LiveItem; liveName: string }): E[] {
+  return elements.map((el): E =>
+    el.type === 'shape' && el.shape === 'screen' && !el.screenUrl && !el.liveItem
+      ? { ...el, liveItem: file.liveItem, liveName: file.liveName }
+      : el,
+  );
+}
 
 /** The idle face's words. */
 export const SCREEN_IDLE_TEXT = 'No one is sharing';

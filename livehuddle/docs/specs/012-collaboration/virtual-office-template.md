@@ -372,12 +372,11 @@ started from a file in another app opens in ([Calls from other apps](calls-from-
   the room's reason. It shows a file from any of the apps live to everyone in the room with their own access ([A file
   on the Screen](../009-elements/screen-and-room-sign.md#a-file-on-the-screen)); a call about a file starts with that
   file on it. Pressing it opens the file large, with Open in its own app beside it.
-- **Twelve chairs facing it**: three rows of four, two either side of a 112 px aisle up from the door, every chair
-  facing the screen (`facing: 'n'`). Walk onto a chair to sit in it, as on any chair
-  ([Chair](../009-elements/chair.md)).
-- A **Timer** beside the screen to timebox the discussion, a **Notice Board** of two notes by the door (how the screen
-  works, and how to sit), a coffee machine and a water cooler in the back corners, and a plant either side of the
-  screen.
+- **Twelve chairs facing it**: two rows of six, three either side of a 160 px aisle up from the door, every chair
+  facing the screen. Walk onto a chair to sit in it, as on any chair ([Chair](../009-elements/chair.md)).
+- A **Notice Board** of two notes left of the screen (how the screen works, and how to sit), a **Timer** right of it
+  to timebox the discussion, a coffee machine and a water cooler either side of the rows, a plant in each front
+  corner, and a window in each side wall.
 - The **Avatar Pad** waits in the aisle behind the last row, the screen ahead. Its how-to line: "You arrive on the
   Avatar Pad: take a seat, and press the screen to open the file large."
 

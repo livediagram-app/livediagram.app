@@ -1,5 +1,5 @@
 // The meeting pieces in an export (docs/specs/009-elements/screen-and-room-sign.md "Export"): a Screen's idle face (or
-// its video's named card) and a Room Sign's plaque reading Free. An export is a still picture of one element, with
+// its video's named card, or its file's name and app, never a picture of the file) and a Room Sign's plaque reading Free. An export is a still picture of one element, with
 // nobody in it, so neither shows a share or a count. The drawings are the canvas's (SCREEN_ART, ROOM_SIGN_ART).
 
 import {
@@ -17,15 +17,24 @@ function scaled(el: Face, w: number, h: number, body: string): string {
   return `<g transform="translate(${r2(el.x)} ${r2(el.y)}) scale(${r2(el.width / w)} ${r2(el.height / h)})">${body}</g>`;
 }
 
+// A file's title card in words: its name and its app (a picture of the file is never drawn).
+export function screenFileWords(el: Pick<Face, 'liveItem' | 'liveName'>): string | null {
+  if (!el.liveItem) return null;
+  const name = (el.liveName ?? '').trim();
+  return name ? `${name} · ${el.liveItem.app}` : el.liveItem.app;
+}
+
 export function screenSvg(el: Face): string {
   const { bezel: b, panel: p, light: l, shadow: s, tones: t } = SCREEN_ART;
-  const video = screenVideoTarget(el.screenUrl);
-  const words = video ? video.label : SCREEN_IDLE_TEXT;
+  const file = screenFileWords(el);
+  const video = file ? null : screenVideoTarget(el.screenUrl);
+  const shows = !!file || !!video;
+  const words = file ?? (video ? video.label : SCREEN_IDLE_TEXT);
   const body =
     `<rect x="${s.dx}" y="${s.dy}" width="${b.w}" height="${b.h}" rx="${b.rx}" fill="#000" opacity="${s.opacity}"/>` +
     `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="${b.rx}" fill="${t.bezel}" stroke="${t.bezelEdge}"/>` +
     `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="${t.panel}"/>` +
-    `<circle cx="${l.cx}" cy="${l.cy}" r="${l.r}" fill="${video ? '#4ade80' : t.bezelEdge}"/>` +
+    `<circle cx="${l.cx}" cy="${l.cy}" r="${l.r}" fill="${shows ? '#4ade80' : t.bezelEdge}"/>` +
     text(p.x + p.w / 2, p.y + p.h / 2 + 4, words, { size: 11, color: t.ink, anchor: 'middle' });
   return scaled(el, b.w, b.h, body);
 }

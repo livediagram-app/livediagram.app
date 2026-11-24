@@ -117,6 +117,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, Template
   'festival-field': 'venues',
   'interview-suite': 'office',
   'client-lounge': 'office',
+  'document-room': 'office',
   classroom: 'events',
   'hackathon-hall': 'events',
   'art-gallery': 'events',

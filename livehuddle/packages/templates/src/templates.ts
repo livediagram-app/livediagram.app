@@ -49,7 +49,10 @@ export type TemplateKind =
   // Two unlike the rest (the owner, 2026-11-18): a show to walk round, and time out together
   // (virtual-office-template.md "Art Gallery and Wellness Studio").
   | 'art-gallery'
-  | 'wellness-studio';
+  | 'wellness-studio'
+  // The room for meeting round one file, and the room a call about a file opens in (Work Tracker 1427,
+  // virtual-office-template.md "Document Room").
+  | 'document-room';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -274,6 +277,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Client Lounge',
     description:
       'A place to host clients in Avatar mode: a front desk, a lounge with a coffee bar, a glass pitch room, a boardroom and a quiet room.',
+    extra: true,
+  },
+  {
+    kind: 'document-room',
+    title: 'Document Room',
+    description:
+      'A room to meet round one file in Avatar mode: a big wall screen showing it live, and two rows of chairs facing it.',
     extra: true,
   },
   {

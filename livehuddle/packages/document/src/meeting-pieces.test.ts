@@ -11,10 +11,17 @@ import {
   ROOM_SIGN_TONES,
   screenVideoTarget,
   SCREEN_URL_MAX,
+  clampScreenBox,
+  screenFile,
+  screenFileOfSeed,
+  screenSourcePatch,
+  withScreenFile,
+  SCREEN_MAX,
+  SCREEN_MIN,
 } from './meeting-pieces';
 import { roomZones } from './call-geometry';
 import { createShape } from './shape-factory';
-import { isPlacedShape } from './placed-kinds';
+import { isFixedSizeElement, isPlacedShape } from './placed-kinds';
 import { isBehaviourShape, carriesSharedSettingsMenu } from './behaviour-shapes';
 import { shapeValidationIssue } from './validate-shape';
 import { svgBehaviourFace } from './svg-render-faces';
@@ -117,5 +124,88 @@ describe('the Room Sign', () => {
     // The status lamp and the enamel strip in Free's colour, on the walnut-framed sign.
     expect(svg).toContain(ROOM_SIGN_TONES.free);
     expect(svg).toContain(ROOM_SIGN_ART.tones.frame);
+  });
+});
+
+// Work Tracker 1427: a Screen any size up to a wall, showing a file, a video or nothing.
+describe('a Screen up to wall size', () => {
+  it('grows to SCREEN_MAX and shrinks to SCREEN_MIN, keeping its ratio when locked', () => {
+    expect(clampScreenBox({ x: 5, width: 3200, height: 2000 }, true)).toEqual({
+      x: 5,
+      width: SCREEN_MAX.width,
+      height: SCREEN_MAX.height,
+    });
+    expect(clampScreenBox({ width: 48, height: 30 }, true)).toEqual({
+      width: SCREEN_MIN.width,
+      height: SCREEN_MIN.height,
+    });
+    const box = { width: 640, height: 400 };
+    expect(clampScreenBox(box, true)).toBe(box);
+    expect(clampScreenBox({ width: 2000, height: 40 }, false)).toEqual({ width: 1600, height: 60 });
+    expect(clampScreenBox({ width: 0, height: 10 }, false)).toEqual({ width: 0, height: 10 });
+  });
+
+  it('is resizable, and takes a file within the validation', () => {
+    const screen = createShape('screen', 0, 0);
+    expect(isFixedSizeElement(screen)).toBe(false);
+    const file = { liveItem: { app: 'liveplanner', itemId: 'P1' }, liveName: 'Launch' };
+    expect(
+      shapeValidationIssue({ ...screen, ...file, liveTab: { id: 't1', name: 'Board' } }),
+    ).toBeNull();
+    expect(
+      shapeValidationIssue({ ...screen, liveItem: { app: 'livehuddle', itemId: 'S1' } }),
+    ).not.toBeNull();
+    expect(
+      shapeValidationIssue({ ...screen, ...file, liveTab: { id: 'a b', name: 'x' } }),
+    ).not.toBeNull();
+  });
+});
+
+describe("a Screen's source", () => {
+  const liveItem = { app: 'livedocuments' as const, itemId: 'D1' };
+
+  it('writes one source at a time, clearing the other', () => {
+    expect(screenSourcePatch({ kind: 'file', liveItem, liveName: 'Brief' })).toEqual({
+      screenUrl: undefined,
+      liveItem,
+      liveName: 'Brief',
+      liveTab: undefined,
+    });
+    expect(screenSourcePatch({ kind: 'video', url: 'https://youtu.be/x' })).toEqual({
+      screenUrl: 'https://youtu.be/x',
+      liveItem: undefined,
+      liveName: undefined,
+      liveTab: undefined,
+    });
+    expect(Object.values(screenSourcePatch({ kind: 'none' })).every((v) => v === undefined)).toBe(
+      true,
+    );
+  });
+
+  it('reads the file back, with its tab when it has one', () => {
+    expect(screenFile({})).toBeNull();
+    expect(screenFile({ liveItem })).toEqual({ liveItem, liveName: '' });
+    const liveTab = { id: 't2', name: 'Notes' };
+    expect(screenFile({ liveItem, liveName: 'Brief', liveTab })).toEqual({
+      liveItem,
+      liveName: 'Brief',
+      liveTab,
+    });
+  });
+
+  it("seeds a template's Screens with a call's file, leaving a Screen with its own source", () => {
+    expect(screenFileOfSeed(undefined)).toBeNull();
+    expect(screenFileOfSeed({ app: 'livehuddle', itemId: 'S1', name: 'x' })).toBeNull();
+    const seed = screenFileOfSeed({ app: 'livedocuments', itemId: 'D1', name: 'Brief' })!;
+    expect(seed).toEqual({ liveItem, liveName: 'Brief' });
+    const els = [
+      { type: 'shape', shape: 'screen', id: 'a' },
+      { type: 'shape', shape: 'screen', id: 'b', screenUrl: 'https://youtu.be/x' },
+      { type: 'shape', shape: 'chair', id: 'c' },
+    ];
+    const seeded = withScreenFile(els, seed);
+    expect(seeded[0]).toMatchObject({ liveItem, liveName: 'Brief' });
+    expect(seeded[1]).toBe(els[1]);
+    expect(seeded[2]).toBe(els[2]);
   });
 });

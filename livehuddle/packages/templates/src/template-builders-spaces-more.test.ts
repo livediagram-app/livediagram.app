@@ -55,6 +55,7 @@ const ROOMY: readonly string[] = [
   'festival-field',
   'interview-suite',
   'client-lounge',
+  'document-room',
   'classroom',
   'hackathon-hall',
   'art-gallery',

@@ -51,6 +51,7 @@ describe('TEMPLATES catalogue', () => {
     'festival-field',
     'interview-suite',
     'client-lounge',
+    'document-room',
     'classroom',
     'hackathon-hall',
     'art-gallery',
