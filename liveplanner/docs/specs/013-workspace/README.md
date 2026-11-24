@@ -32,4 +32,5 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what liveplanner supplies (the platform's `004-index/inbox-notices.md`)
 - ./start-a-call.md - when working on Start a Call Here in liveplanner: where Call, the live pill with Join and Meetings sit (the platform's `004-index/item-calls.md`), roles
 - ./send-to-plan.md - when working on Send to Plan: what liveplanner sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
+- ./suggestions.md - when working on the Write It Up suggestion: its trigger, its one click, who sees it
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds)

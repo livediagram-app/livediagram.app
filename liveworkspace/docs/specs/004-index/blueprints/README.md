@@ -17,6 +17,7 @@ Follow the references below only as needed; never upfront.
 - ./live-embeds.md - when working on live embeds: the element's fields and checks, the embed ticket, the slots, the host's
   side of the frame's messages, snapshots, limits and tests
 - ./item-calls.md - when working on Start a Call Here: the wire, the index's routes and tables, livehuddle's door and room push, the editors' button, pill, store and Meetings, tests
+- ./write-up.md - when working on Write It Up: the wire, the index.s two routes, the default knowledgebase, tests
 - ./send-to-plan.md - when working on Send to Plan: the wire, the index's routes and table, liveplanner's door and change call, the editors' store, picker and chips, tests
 - ./team-audit-log.md - when working on the team audit log: its table, the write path beside each event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's view
 - ./approvals.md - when working on approvals: the tables, the routes and their checks, the revision, the notice and email, the editor kit

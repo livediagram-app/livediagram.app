@@ -559,7 +559,7 @@ and the dialog stays as the one complete, browsable index of them.
   category"), so a category reads the same here as in every app and in liveworkspace's merged panel: the rows with
   no section lead (a category's broadest setting, like Panel Opacity), then the sections in the shared order
   (`SECTION_ORDER` in `@liveworkspace/settings/sections`): Canvas, Mouse, Draw, Pages, Logo Pages; Slides, Playback,
-  While Presenting; Layers, Quick Style, Map, Collaborate; Offer Again, Show Me; Default Folders; In the Editor,
+  While Presenting; Layers, Quick Style, Map, Collaborate; Offer Again, Show Me, Suggestions; Default Folders; In the Editor,
   Email, Phone. Email reads Comments, Mentions, Assigns and Invite responses, then this app's own emails, then Tips
   and Check-Ins and Milestones last (`closesSection`), the emails from us rather than about your work. In the
   merged panel Reset All Settings and Delete Account carry every app's mark: both act on every app.

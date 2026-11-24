@@ -374,10 +374,10 @@ and `savedAt` (integers). `apiCreateDocument` sends `savedAt` when given.
 ### `BoardSceneNotice`
 
 A `role="status"` `aria-live="polite"` panel, fixed, bottom centre (`z-[var(--z-overlay)]`), 360 px
-max wide. Its `bottom` comes from `useNoticeSlot` (`components/canvas/useNoticeSlot.ts`): the
+max wide. Its `bottom` comes from `useNoticeSlot` (`packages/workbench/src/hooks/ui/useNoticeSlot.ts` (the root packages)): the
 `[data-whiteboard-dock]` top plus `NOTICE_GAP_PX` (8), or, with no dock, the canvas bottom less
 `DOCKLESS_LIFT_PX` (68; `DOCKLESS_WIDE_LIFT_PX` 16 from `DOCKLESS_WIDE_MIN_PX` 1760, mirroring the
-dock), via the pure `noticeBottom` (`lib/board-scene-notice-slot.ts`); measured in a layout effect
+dock), via the pure `noticeBottom` (`packages/workbench/src/lib/notice-slot.ts`); measured in a layout effect
 and on resize (ResizeObserver on the dock and canvas), hidden until measured. The panel dress (border, radius, shadow, light and dark);
 heading per the spec, `BoardSceneReportList` rows, the image placeholder sentences, a Close button
 (Escape when focus is inside). Never steals focus; reduced motion removes its fade.
@@ -493,5 +493,5 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 | a 413 on create is "This board is too big for one canvas", logged, the rest land | `apps/editor/lib/board-scene-import.test.ts`                                                                                                   |
 | new documents outside the editor: folder, offline, own maker                     | `apps/editor/lib/board-scene-import.test.ts`                                                                                                   |
 | import: replace-tab, new documents (cloud and offline), failures                 | `apps/editor/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                                                                            |
-| notice slot above the dock at every width                                        | `apps/editor/lib/board-scene-notice-slot.test.ts`                                                                                              |
+| notice slot above the dock at every width                                        | `packages/workbench/src/lib/notice-slot.test.ts` (root)                                                                                        |
 | notice copy and role                                                             | `apps/editor/components/canvas/BoardSceneNotice.test.tsx`                                                                                      |
