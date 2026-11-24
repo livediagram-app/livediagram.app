@@ -6303,8 +6303,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/DashboardCardContent"
+      },
+      {
+        "$ref": "#/components/schemas/DashboardEmbedContent"
       }
     ]
+  },
+  "DashboardEmbedContent": {
+    "additionalProperties": false,
+    "properties": {
+      "liveItem": {
+        "$ref": "#/components/schemas/LiveItem"
+      },
+      "liveName": {
+        "type": "string"
+      },
+      "livePoster": {
+        "type": "string"
+      },
+      "type": {
+        "const": "embed",
+        "type": "string"
+      }
+    },
+    "required": [
+      "type"
+    ],
+    "type": "object"
   },
   "DashboardLayout": {
     "additionalProperties": false,
@@ -11107,6 +11132,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "LinkedRecordKind": {
     "const": "actions",
     "type": "string"
+  },
+  "LiveEmbedApp": {
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign",
+      "liveknowledge"
+    ],
+    "type": "string"
+  },
+  "LiveItem": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/LiveEmbedApp"
+      },
+      "itemId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId"
+    ],
+    "type": "object"
   },
   "MindFlow": {
     "enum": [

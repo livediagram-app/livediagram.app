@@ -39,7 +39,9 @@ export function fitKindOf(item: DashboardItem): SlotFitKind | null {
     case 'sheet-metric':
     case 'form-metric':
       return 'metric';
+    // An Embed File needs room for a file to read, as a chart does.
     case 'sheet-chart':
+    case 'embed':
       return 'chart';
     default:
       return null;
@@ -68,6 +70,7 @@ export function contentFitKind(
   if (!content) return null;
   if (content.type === 'tab') return content.of ?? 'board';
   if (content.type === 'sheet-metric' || content.type === 'form-metric') return 'metric';
+  if (content.type === 'embed') return 'chart';
   if (content.type !== 'element') return 'note';
   const el = elements.get(content.elementId);
   if (!el || el.type !== 'shape') return null;

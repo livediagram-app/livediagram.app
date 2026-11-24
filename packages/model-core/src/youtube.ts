@@ -110,7 +110,7 @@ export function youtubeEmbedUrl(videoId: string): string {
 // provider chip and a Load button, which keeps the rule that matters — nothing
 // third-party loads until the user asks.
 
-// `live` is a live embed (liveworkspace/docs/specs/004-index/live-embeds.md): another app's item, chosen from Choose a
+// `live` is a live embed (liveworkspace/docs/specs/004-index/live-embeds.md): another app's item, chosen in Embed
 // File rather than pasted as a link, so no link parser below names it.
 export const EMBED_PROVIDERS = [
   'youtube',
@@ -131,7 +131,7 @@ export const EMBED_PROVIDER_LABEL: Record<EmbedProvider, string> = {
   figma: 'Figma',
   gdocs: 'Google Docs',
   website: 'Website',
-  live: 'Live Embed',
+  live: 'Embed File',
 };
 
 /** What to type in the link dialog, per provider. */
@@ -142,7 +142,7 @@ export const EMBED_PROVIDER_HINT: Record<EmbedProvider, string> = {
   figma: 'Any Figma file, prototype or board link.',
   gdocs: 'A Google Doc, Sheet or Slides link you have shared.',
   website: 'Any https link. Some sites refuse to be framed and will come up blank.',
-  live: 'A canvas, plan, page or design from our apps, live and read-only.',
+  live: 'A canvas, plan, page, design or knowledgebase from our apps, live and read-only.',
 };
 
 export type EmbedTarget = {

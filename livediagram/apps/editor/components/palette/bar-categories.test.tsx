@@ -65,7 +65,7 @@ describe('the category bar’s categories', () => {
       flyoutGroups(id, bar('diagram').find((c) => c.id === id)!.tiles!).map((g) => g.title);
     expect(groups('write')).toEqual(['Text', 'Notes', 'Comments']);
     expect(groups('draw')).toEqual(['Pens', 'Outlines', 'Connectors']);
-    expect(groups('layout')).toEqual(['Containers', 'Parts', 'Pictures']);
+    expect(groups('layout')).toEqual(['Containers', 'Parts', 'Pictures', 'Files']);
   });
 
   it('gathers Workshop’s session tools into Session, Ask keeping its own button', () => {

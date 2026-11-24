@@ -16,6 +16,11 @@ import { screenLinkChoices, wireframeTabPages } from '@/lib/screen-link-choices'
 import { track } from '@/lib/telemetry';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { connectedTargets } from '@liveworkspace/workbench/components/connect/tab-connection';
+import {
+  EmbedFileOnPlace,
+  liveEmbedConnectOf,
+} from '@liveworkspace/workbench/components/live-embed/useEmbedFileOnPlace';
+import { useConnectHost } from '@/components/connect/useConnectHost';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
@@ -105,6 +110,9 @@ export function EditorElementDialogs() {
     workbenchMode,
     can,
   } = useEditorContext();
+  // Where Connect File could connect, Embed File asks the role and adds the embed's tab (live-embeds.md "Making
+  // one", Work Tracker 1375); elsewhere it embeds with no tab.
+  const embedConnect = liveEmbedConnectOf(useConnectHost());
 
   // A wireframe tab's screens, for Link Element's Screen mode (docs/specs/007-editor/wireframe-pages.md "Setting a
   // link"), offered only to whoever may link the element.
@@ -210,6 +218,7 @@ export function EditorElementDialogs() {
           client={indexClient}
           hostId={designId}
           connectedIds={[...connectedTargets(tabs).keys()]}
+          connect={embedConnect}
           onChoose={(choice) => {
             applyLiveEmbed(choice);
             track('Element', 'Added', 'LiveEmbed');
@@ -217,6 +226,12 @@ export function EditorElementDialogs() {
           onClose={() => setLinkPickerOpenForId(null)}
         />
       ) : null}
+      {/* Placing an Embed File opens it at once (live-embeds.md "Making one"). */}
+      <EmbedFileOnPlace
+        elements={activeTab.elements}
+        enabled={!isReadOnly && !!designId}
+        open={setLinkPickerOpenForId}
+      />
       {linkPickerOpenForId !== null &&
       linkTarget &&
       linkPickable(linkTarget) &&

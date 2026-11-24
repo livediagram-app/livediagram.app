@@ -422,6 +422,11 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   - **Visualisation** or **Metric**: a plan view ([Plan views](plan-views.md)) of the tile's view kind, an element on
     the dashboard tab drawn in the slot at the slot's size.
   - **Note**: a heading and short text, typed in place (each field one step when left).
+  - **Embed File** (Work Tracker 1375): a file from any of our apps (a canvas, another plan, a page, a design or
+    a knowledgebase) shown live and read-only in the slot, each reader with their own access
+    ([Embed File on a Dashboard](../013-workspace/embeds.md#embed-file-on-a-dashboard)). Placed from the palette's
+    Layout or Add to Slot's Utilities, it opens Embed File at once; empty, the slot says "Choose a file" and an
+    Editor's press (or a double-click) opens it again, as **Change File** in its Slot Settings does once one is chosen.
 - Elements on a Dashboard tab are only ever in a slot: never moved, resized, rotated, layered or animated; a slot's
   element is removed with the slot's Clear.
 - Their copies on the canvas under the page draw nothing, so a slot's board, view or Sheet **maximised** has one
@@ -665,6 +670,7 @@ row's:
 - a written card (**Note**, **Status**, **Checklist**, **Key Date**, **Links**) as tall as its content, never shorter
   than 168 px;
 - a figure (a metric tile, a figure from a Sheet) a 176 px tile, and an empty slot 176 px (its Add to Slot);
+- an **Embed File** at 4:3 of the screen's width, never under 240 px, so the file's snapshot reads whole;
 - something worked in (a board, a Sheet, a visualisation or chart, a shown tab of any kind) two thirds of the screen
   (66 `svh`, never under 360 px), scrolling inside itself, so the next slot peeks in below. A finger on a board's empty
   space scrolls the board, and past its end the page, so a page of boards always scrolls (a finger on a card still

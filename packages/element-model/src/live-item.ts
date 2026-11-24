@@ -4,12 +4,14 @@
 // open it, an export and a Community copy. Pure, and free of the index client (its guards are restated here).
 import { stringRule, type FieldCheck } from '@liveworkspace/model-core/validate-primitives';
 
-// The apps that serve a workbench frame, so the ones a live embed can show.
+// The apps that serve a workbench frame, so the ones a live embed can show: every app but livehuddle (Work Tracker
+// 1375 added liveknowledge, a knowledgebase shown at its pages).
 export const LIVE_EMBED_APPS = [
   'livediagram',
   'liveplanner',
   'livedocuments',
   'livedesign',
+  'liveknowledge',
 ] as const;
 export type LiveEmbedApp = (typeof LIVE_EMBED_APPS)[number];
 

@@ -44,6 +44,9 @@ export type LiveEmbedViewProps = {
   canChoose: boolean;
   // A Media animation's class from the host (moves the content inside the frame).
   className?: string;
+  // Where Use the file and Open sit: above the element's top left (a canvas, the default), or inside its bottom right
+  // (a Dashboard slot, which clips what is outside it and holds its own grip and cog at its top; Work Tracker 1375).
+  controlsAt?: 'above' | 'inside';
 };
 
 // Clicks on a control are the control's, never the canvas's select-and-drag.
@@ -63,6 +66,7 @@ export function LiveEmbedView({
   hostName,
   canChoose,
   className = '',
+  controlsAt = 'above',
 }: LiveEmbedViewProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -200,7 +204,7 @@ export function LiveEmbedView({
       </div>
 
       {liveItem && href ? (
-        <Controls>
+        <Controls at={controlsAt}>
           {live && frame.ready ? (
             <Control
               label={using ? words.stopUsing : words.use}
@@ -233,7 +237,9 @@ export function LiveEmbedView({
 // screen whatever the zoom (counter-scaled, as the canvas's other chrome on an element is), shown on hover or focus.
 // Near the right of a phone it slides left to stay on screen, and flips under the element at the top of it: measured
 // as it shows (useKeepOnScreen's revealOn), never per frame.
-function Controls({ children }: { children: ReactNode }) {
+// Inside (a Dashboard slot), the row sits over the body's bottom right at its own size, shown on hover or focus, and
+// always on a touch screen, which has no hover.
+function Controls({ children, at }: { children: ReactNode; at: 'above' | 'inside' }) {
   const zoom = useCanvasZoom();
   const ref = useRef<HTMLDivElement>(null);
   const slide = onScreenTranslate(
@@ -243,6 +249,16 @@ function Controls({ children }: { children: ReactNode }) {
       revealOn: 'parent',
     }),
   );
+  if (at === 'inside')
+    return (
+      <div
+        ref={ref}
+        data-live-embed-controls="inside"
+        className="pointer-events-none absolute bottom-2 right-2 z-10 flex gap-1 transition focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:hover)]:opacity-0"
+      >
+        {children}
+      </div>
+    );
   return (
     <div
       ref={ref}
