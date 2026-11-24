@@ -32,6 +32,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   comments: '#f59e0b',
   'live-presence': '#06b6d4',
   'send-to-plan': '#0d9488',
+  suggestions: '#0284c7',
   'start-a-call': '#059669',
   links: '#10b981',
   images: '#ec4899',

@@ -1,5 +1,6 @@
 import {
   lucidePhone,
+  lucideCompass,
   lucideAppWindow,
   lucideBookOpen,
   lucideBookOpenText,
@@ -187,6 +188,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'send-to-plan': (
     <Glyph>
       <Prims prims={lucideSend} />
+    </Glyph>
+  ),
+  // A compass: Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md), the way to the next app.
+  suggestions: (
+    <Glyph>
+      <Prims prims={lucideCompass} />
     </Glyph>
   ),
   // A handset: Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md), a call about the open item.

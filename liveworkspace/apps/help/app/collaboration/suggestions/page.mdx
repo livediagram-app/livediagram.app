@@ -1,0 +1,63 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Suggestions',
+  description:
+    'When what you have open would help in another app, a small suggestion offers to take it there in one click: actions to a plan, a decision or a process to the knowledgebase.',
+  path: '/help/collaboration/suggestions/',
+});
+
+<ArticleLayout path="collaboration/suggestions" title="Suggestions" description="A small offer, at the right moment, to take what you have open into another app in one click." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("suggestions")}>
+
+Sometimes the thing in front of you would do more in another app: a retro's actions belong in a plan, a decision belongs in the knowledgebase. When <AppName /> sees that, a small **suggestion** appears at the bottom of the screen, says what it would do, and does it when you press its button. Your content goes with it, and a link back to where it came from.
+
+## What you might see
+
+<AppNote app="livediagram">
+  **Make These a Plan.** Three or more stickies on the tab are actions: open assigned actions, or
+  stickies in a lane headed **Actions**, **Action Items**, **Next Steps** or **To Do**. **Send to
+  Plan** opens Send to Plan on exactly those stickies, one card each, and you pick the plan.
+</AppNote>
+
+<AppNote app="liveplanner">
+  **Write It Up.** You move a card to a done column and its description holds a decision ("we
+  decided", "agreed", "going with"), or the card is a **Milestone**. **Write Page** writes the card
+  as a page in your team's knowledgebase, with a link back to the card.
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Add to Knowledgebase.** The article you have open explains a process: numbered steps, **Step**
+  headings, or a **How to** heading with a list. **Add Page** copies the article into your team's
+  knowledgebase as a page, with a link back. The article stays where it is.
+</AppNote>
+
+<AppNote app="liveknowledge">
+  **Bring In Your Diagrams and Docs.** The knowledgebase is new: nothing connected yet and only a
+  few pages. **Connect Them** connects your three latest diagrams and three latest documents, so Ask
+  can answer from them too. Nothing is copied.
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Send to a Plan.** You leave a call in the Space and the wall you met on has stickies. **Send to
+  Plan** opens Send to Plan on every sticky there, one card each, and you pick the plan.
+</AppNote>
+
+A page written to the knowledgebase goes to the one connected to this <Noun />, else your team's newest, else your own. It is written as you, starts unverified, and a message says where it went, with **Open Page**.
+
+## When they appear
+
+- **One at a time**, and never over another notice at the bottom of the screen.
+- **Never while you work**: not while you type, drag or draw, nor for a moment after.
+- **Once per <Noun />**: pressing a suggestion's button or its **×** means it never comes back for this <Noun />.
+- **Only for what you can do**: suggestions show to an Editor who is signed in. A Participant or a Viewer never sees one, nor does an embed, an Offline <Noun /> or a Community copy.
+
+## Turning them off
+
+- **Don't Suggest This Again**, under a suggestion's words, turns that one off everywhere.
+- **Settings › Getting Started › Suggest Other Apps** turns every suggestion off, in every app at once. Turning it back on does not bring back the ones you turned off one by one.
+
+What you dismissed is remembered in this browser.
+
+</ArticleLayout>

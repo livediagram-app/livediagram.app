@@ -145,6 +145,7 @@ export const ORDER: readonly string[] = [
   'tabs/tab-cleanup',
   'collaboration/comments',
   'collaboration/send-to-plan',
+  'collaboration/suggestions',
   'collaboration/start-a-call',
   'collaboration/facilitator',
   'collaboration/assigned-actions',

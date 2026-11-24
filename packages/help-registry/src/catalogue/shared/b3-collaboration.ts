@@ -43,6 +43,17 @@ export const articles: Article[] = [
     ],
   },
   {
+    slug: 'suggestions',
+    title: 'Suggestions',
+    description:
+      'A small offer, at the right moment, to take what you have open into another app in one click.',
+    keywords:
+      'suggestion suggestions suggest other apps next app offer prompt nudge hint make these a plan write it up add to knowledgebase bring in send to a plan dont suggest this again turn off',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livehuddle', 'liveknowledge'],
+  },
+  {
     slug: 'start-a-call',
     title: 'Start a Call Here',
     description:
