@@ -248,4 +248,18 @@ describe('CallSpacePanel', () => {
     });
     expect(await screen.findByText('No Space is called that.')).toBeTruthy();
   });
+
+  it('shows a chosen Space changed long ago first, not behind Show All', async () => {
+    const many = Array.from({ length: 12 }, (_, i) =>
+      space(`s${i}`, { title: `Room ${i}`, updatedAt: 100 - i }),
+    );
+    render(<CallSpacePanel spaces={host(many)} value="s11" onChange={() => {}} />);
+    const chosen = await screen.findByRole('radio', { name: 'Room 11' });
+    expect((chosen as HTMLInputElement).checked).toBe(true);
+    const radios = screen.getAllByRole('radio').map((r) => r.getAttribute('aria-label'));
+    expect(radios.slice(0, 2)).toEqual(['A New Space for Each Call', 'Room 11']);
+    expect(radios).toHaveLength(10);
+    expect(screen.queryByRole('radio', { name: 'Room 8' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Show All 12 Spaces' })).toBeTruthy();
+  });
 });

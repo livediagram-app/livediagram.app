@@ -136,7 +136,13 @@ export function CallSpacePanel({
 
   const spaces = load.state === 'ready' ? load.spaces : [];
   const matching = useMemo(() => spaces.filter((s) => matchesSpace(s, query)), [spaces, query]);
-  const shown = all || query ? matching : matching.slice(0, SHOWN_FIRST);
+  // The chosen Space always shows: one changed long ago comes first rather than hiding behind Show All.
+  const shown = useMemo(() => {
+    if (all || query) return matching;
+    const first = matching.slice(0, SHOWN_FIRST);
+    const lifted = value === null ? undefined : matching.find((s) => s.id === value);
+    return lifted && !first.includes(lifted) ? [lifted, ...first.slice(0, SHOWN_FIRST - 1)] : first;
+  }, [all, query, matching, value]);
   const { previews, watch } = useSpacePreviews(shown, host.token);
   const pick = useCallback((space: string | null) => onChange(space), [onChange]);
 
