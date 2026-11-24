@@ -369,11 +369,11 @@ describe('Import CSV', () => {
     draw(element({ sheetId: 'sheetAAAA' }), bridge());
     expect(await screen.findByText('Not set up yet')).toBeTruthy();
     expect(screen.queryByRole('grid')).toBeNull();
-    // Not placed by this person: the dialog waits for Set up sheet.
+    // Not placed by this person: the dialog waits for Set Up Sheet.
     expect(screen.queryByRole('dialog')).toBeNull();
     // The button and the lazily loaded dialog both arrive late when the machine is busy: wait for each.
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Set up sheet' }, { timeout: LOAD_WAIT }),
+      await screen.findByRole('button', { name: 'Set Up Sheet' }, { timeout: LOAD_WAIT }),
     );
     expect(
       await screen.findByRole('dialog', { name: 'Set Up Your Sheet' }, { timeout: LOAD_WAIT }),
@@ -556,7 +556,7 @@ describe('a template set up in a slot showing another tab’s Sheet', () => {
         </PlanProvider>
       </CanvasSurfaceProvider>,
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Set up sheet' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Set Up Sheet' }));
     await screen.findByRole('dialog', { name: 'Set Up Your Sheet' });
     fireEvent.click(screen.getByRole('radio', { name: /^Budget/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Style' }));

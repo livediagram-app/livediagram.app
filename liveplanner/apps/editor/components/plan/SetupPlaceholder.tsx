@@ -15,7 +15,7 @@ export const SetupPlaceholder = forwardRef<
   {
     icon: ReactNode;
     title: string;
-    // The button's words ("Set up board"), or null for someone who may only view.
+    // The button's words ("Set Up Board"), or null for someone who may only view.
     action: string | null;
     onAction: () => void;
     // Read by someone who may only view, in the button's place.

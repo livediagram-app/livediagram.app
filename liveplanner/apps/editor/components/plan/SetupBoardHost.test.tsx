@@ -65,7 +65,7 @@ describe('Setup Board as a dialog', () => {
   it('shows only the placeholder on a board someone else placed', () => {
     render(draw(UNSET));
     expect(screen.getByText('Roadmap')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Set up board' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Set Up Board' })).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -113,7 +113,7 @@ describe('Setup Board as a dialog', () => {
     markPlacedHere('board1');
     render(draw(UNSET, false));
     expect(screen.getByText('Someone who can edit it will set it up.')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Set up board' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Set Up Board' })).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 

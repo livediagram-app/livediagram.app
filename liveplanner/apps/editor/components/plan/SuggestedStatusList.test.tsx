@@ -179,19 +179,19 @@ describe('who sees the suggestions', () => {
     />
   );
 
-  it('an Editor reaches them from Set up board', async () => {
+  it('an Editor reaches them from Set Up Board', async () => {
     render(host(true));
-    fireEvent.click(screen.getByRole('button', { name: 'Set up board' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Set Up Board' }));
     await screen.findByRole('dialog', { name: 'Set Up Your Board' });
     fireEvent.click(screen.getByRole('button', { name: 'Select All' }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
     expect(suggested()).toHaveLength(5);
   });
 
-  it('a Participant or a Viewer never does: no Set up board, no dialog, even on a board placed here', () => {
+  it('a Participant or a Viewer never does: no Set Up Board, no dialog, even on a board placed here', () => {
     markPlacedHere('board1');
     render(host(false));
-    expect(screen.queryByRole('button', { name: 'Set up board' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Set Up Board' })).toBeNull();
     expect(screen.getByText('Someone who can edit it will set it up.')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByText('Suggested States')).toBeNull();
