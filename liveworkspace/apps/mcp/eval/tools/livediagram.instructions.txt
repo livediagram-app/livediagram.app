@@ -1,0 +1,21 @@
+Tools to find, view, create, add tabs to, edit, share, rename, archive and unarchive, delete (to the Trash) and restore the user's livediagram documents. An archived document is its owner's alone: it can't be read or changed until unarchive_document moves it out, and find_documents lists archived documents only with archived true.
+The calling model produces the diagram elements AND decides their layout; this
+server validates, persists, and renders them, and only auto-arranges the graph
+when you ask it to (or leave nodes unplaced). Each tool's element argument carries the element format in
+brief; every field and value of it is in the schema resource livediagram://schema/elements. The "graph" argument (nodes + edges by id, or the same as Mermaid text in
+"mermaid") builds any node/edge diagram (flowchart, process, architecture, org chart, state machine, swimlanes, a
+cycle, a mind map) in the template look with no coordinates: template-sized boxes, elbow lines, a decision's side
+exit level beside it, loops and skipped ranks routed round the boxes, flowchart steps toned by their "shape" (a
+stadium starts or ends, a diamond decides; a node's "role" is a person's job title, for an org chart), node tones and
+icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy),
+mindmap, lanes (each group a swimlane), cycle (a ring) and c4 (a level of the C4 model). A node's label is its heading (up to 40 characters,
+longer ones shortened with the full text kept in the node's note). Raw "elements" are for content a graph cannot
+express (charts, tables, stickies, free placement). Either way:
+use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
+"text" (text is only for titles/captions), prefer pinned arrows (node -> node),
+and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
+entities, lanes and charts carry content fields, documented on each tool's
+element argument. For a standard artefact that is not a node/edge graph (swot, roadmap,
+gantt, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
+"template" on create_document / add_tab, then fill in real labels with
+update_document. search_icons finds icon ids for "iconId" and a graph node's "icon".

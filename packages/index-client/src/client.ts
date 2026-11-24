@@ -60,6 +60,14 @@ import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
 import type { DiagramSendAnswer, DiagramSendAsk, DiagramSendsRead } from './diagram-sends';
 import type {
+  PlanEdit,
+  PlanEditsAnswer,
+  PlanMakeAnswer,
+  PlanMakeAsk,
+  PlanViewAnswer,
+  PlanViewAsk,
+} from './plan-diagrams';
+import type {
   CallInviteAsk,
   CallSummaryAsk,
   ItemCallStart,
@@ -377,6 +385,18 @@ export function createIndexClient({
       }),
     newPlanForSend: (name: string) =>
       call<{ item: Item }>('/plan-sends/plans', { method: 'POST', body: { name } }),
+    // Diagrams and Plans (diagrams-and-plans.md): a diagram's shapes made cards in a plan (Make Plan Cards), a board
+    // drawn as a live diagram (View As Diagram), and the changes a drawn diagram offers, applied as the person.
+    makePlanCards: (planId: string, ask: PlanMakeAsk) =>
+      call<PlanMakeAnswer>(`/items/${enc(planId)}/plan-makes`, { method: 'POST', body: ask }),
+    viewPlanAsDiagram: (planId: string, ask: PlanViewAsk) =>
+      call<PlanViewAnswer>(`/items/${enc(planId)}/plan-views`, { method: 'POST', body: ask }),
+    applyPlanEdits: (planId: string, edits: readonly PlanEdit[]) =>
+      call<PlanEditsAnswer>(`/items/${enc(planId)}/plan-edits`, {
+        method: 'POST',
+        body: { edits },
+      }),
+
     // Send to Diagram (send-to-diagram.md): a livediagram diagram drawn from a graph (a new one of the person's own, a new
     // tab in one they may edit, or a tab redrawn), and a source's sends (only those whose diagram the reader can open).
     sendToDiagram: (ask: DiagramSendAsk) =>

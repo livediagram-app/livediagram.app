@@ -13,12 +13,24 @@ import {
   useAccountData,
   type AccountPanelsHost,
   type ApiToken,
+  type SettingsRequest,
 } from '@liveworkspace/settings-ui/token-list';
 import { accountTokensRequest, leastRecentlyUsedFirst } from '../../lib/oauth-replaced-tokens';
 
-export function TokenLimitList({ onFreed }: { onFreed: () => void }) {
+export function TokenLimitList({
+  onFreed,
+  request,
+}: {
+  onFreed: () => void;
+  // How the list reaches the account API: by default an editor's bearer door; liveworkspace.app's own pages pass
+  // their same-origin account API.
+  request?: SettingsRequest;
+}) {
   // One host for the page's life, so the list's read isn't redone on every render.
-  const host = useMemo<AccountPanelsHost>(() => ({ request: accountTokensRequest() }), []);
+  const host = useMemo<AccountPanelsHost>(
+    () => ({ request: request ?? accountTokensRequest() }),
+    [request],
+  );
   return (
     <AccountPanelsProvider host={host}>
       <Tokens onFreed={onFreed} />

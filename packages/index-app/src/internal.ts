@@ -47,6 +47,8 @@
 //   POST   /api/internal/items/from-template {owner, folderId, name, template}  a new item for `owner` from one of
 //                                                            the app's templates, a project kit's part
 //                                                            (template-item.ts, liveworkspace/docs/specs/004-index/kits.md)
+//   POST   /api/internal/items/plan-diagram PlanDiagramDraw  livediagram: a plan's board drawn as a new diagram, or
+//                                                            a tab redrawn (plan-diagram-door.ts, diagrams-and-plans.md)
 //   POST   /api/internal/items/from-graph {owner, name, graph, caption, link}  Send to Diagram's new canvas for
 //                                                            `owner` from a graph (graph-item.ts, send-to-diagram.md)
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
@@ -79,6 +81,7 @@ import {
 } from '@liveworkspace/index-client';
 import { automationStepDoor, automationTargetDoor } from './automation-step-door';
 import { planSendDoor } from './plan-send-door';
+import { planDiagramDoor, planDiagramDrawDoor } from './plan-diagram-door';
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
 import { answerKnowledgeSourceDoor, isKnowledgeSourceDoor } from './knowledge-source-doors';
@@ -285,6 +288,11 @@ export async function handleInternalItems(
     return handlers.migrate ? migrateItem(request, id, app, handlers.migrate) : notFound();
 
   if (isSheetSourceDoor(rest)) return answerSheetSourceDoor(request, id, rest[1]!, handlers);
+  // Diagrams and Plans (plan-diagram-door.ts): livediagram's new diagram, or a tab redrawn, from a plan's graph.
+  if (rest.length === 1 && id === 'plan-diagram' && request.method === 'POST')
+    return handlers.drawPlanDiagram
+      ? planDiagramDrawDoor(request, handlers.drawPlanDiagram)
+      : notFound();
   if (isKnowledgeSourceDoor(rest))
     return answerKnowledgeSourceDoor(request, id, rest[1]!, handlers);
 
@@ -402,6 +410,12 @@ export async function handleInternalItems(
   if (rest.length === 2 && rest[1] === 'plan-send' && request.method === 'POST') {
     return handlers.planSend && verifyGrant
       ? planSendDoor(request, id, verifyGrant, handlers.planSend)
+      : notFound();
+  }
+  // Diagrams and Plans (plan-diagram-door.ts): a make, a graph, a watch or an edit here as the person, their grant checked.
+  if (rest.length === 2 && rest[1] === 'plan-diagram' && request.method === 'POST') {
+    return handlers.planDiagram && verifyGrant
+      ? planDiagramDoor(request, id, verifyGrant, handlers.planDiagram)
       : notFound();
   }
 

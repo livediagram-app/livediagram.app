@@ -56,6 +56,8 @@ export * from './card-display';
 export * from './card-prefix';
 export * from './status-names';
 export * from './plan-outline';
+export * from './plan-diagram-graph';
+export * from './plan-make';
 export * from './removal-guard';
 export * from './plan-names';
 export * from './type-changes';

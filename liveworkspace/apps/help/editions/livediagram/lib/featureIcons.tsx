@@ -30,6 +30,7 @@ import {
   lucideUsers,
   lucideVote,
   lucideSend,
+  lucideWorkflow,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
 import type { ReactNode } from 'react';
@@ -396,6 +397,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'send-to-plan': (
     <Glyph>
       <Prims prims={lucideSend} />
+    </Glyph>
+  ),
+  // Boxes joined into a flow: Make Plan Cards (docs/specs/013-workspace/make-plan-cards.md).
+  'make-plan-cards': (
+    <Glyph>
+      <Prims prims={lucideWorkflow} />
     </Glyph>
   ),
   // A handset: Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md), a call about the open item.
