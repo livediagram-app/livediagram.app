@@ -27,6 +27,29 @@ Knowledge's **Connect an Agent** buttons open this view.
 - Not offered where the views are not (an embed, zen mode, a workbench, the welcome flow, a Community visitor, a
   link confined to one page).
 
+### Closing the tab
+
+Owner, 2026-11-24: "let me remove the Connect MCP page from a Knowledgebase by clicking an X to the right of the name
+in the tab when it is open, but not when it is not open. Save a setting to my account [...] this affects just me
+across all knowledgebases".
+
+- **The X.** While Connect MCP is the open tab, an **X** sits right of its name, inside the tab; on any other view
+  the tab has no X. It is a button named "Hide Connect MCP", with the tooltip "Hide Connect MCP. Settings, Appearance
+  brings it back", a pointer cursor and the tabs' focus ring. On a phone it is the same, in the footer's view row.
+- **Pressing it** hides the tab and moves to **Pages** in place (the view's address is replaced, so Back does not
+  return to a view that is gone), and turns off **Show Connect MCP**, an account setting of liveknowledge's own
+  ([User preferences](../007-editor/user-preferences.md) `showConnectMcp`): the tab is gone in every knowledgebase,
+  on every device the person signs in on, until they turn it back on in **Settings, Appearance, Interface**. Then it
+  returns in every knowledgebase.
+- **It is one person's.** Nobody else's tabs change: each person's footer reads their own setting.
+- **Signed out** (a guest, a share link's visitor): no X. Connect does not open for them (the gate above), and
+  where its address is followed from a link the view shows the sign-in words with no X: a guest has no account for
+  the choice to follow.
+- **Links still open it.** An address with `?view=connect` (a help article, a bookmark) and AI Knowledge's **Connect
+  an Agent** still open the view with the setting off: the tab shows while it is open, with its X, and leaves once
+  another view is chosen. The Connect tour's first step points at the tab, so with the tab hidden that step's card
+  shows without a spotlight; the later steps open the view and spotlight it as before.
+
 ## The view
 
 The header: "Connect" and its line, "Connect an AI app over MCP so it can read and write this knowledgebase." Under
