@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { generatedFiles, iconSources, prune } from './build-scopes.mjs';
+import { agentMarkdownArgs, generatedFiles, iconSources, prune } from './build-scopes.mjs';
 
 // The checked-in generated files are exactly what the build script writes for livediagram, so `next dev` without a
 // predev step serves livediagram and a build leaves the tree as it found it.
@@ -72,5 +72,24 @@ describe('build-scopes', () => {
     expect(existsSync(join(dir, 'canvas/links/index.html'))).toBe(true);
     expect(existsSync(join(dir, 'og/canvas.png'))).toBe(false);
     expect(existsSync(join(dir, 'about/index.html'))).toBe(true);
+  });
+});
+
+// Markdown for agents (liveworkspace/docs/specs/010-site/markdown-for-agents.md): every page a scope keeps, under /help.
+describe('the Markdown step', () => {
+  it('converts every page of the scope, with trailing slashes, under /help', () => {
+    const args: string[] = agentMarkdownArgs('/tmp/dist/livediagram', 'livediagram');
+    expect(existsSync(String(args[0]))).toBe(true);
+    expect(args.slice(1)).toEqual([
+      '--out',
+      '/tmp/dist/livediagram',
+      '--name',
+      'livediagram Help Centre',
+      '--base-path',
+      '/help',
+      '--trailing-slash',
+      '--every-page',
+    ]);
+    expect(agentMarkdownArgs('/tmp/dist/all', 'all')[4]).toBe('liveworkspace Help Centre');
   });
 });
