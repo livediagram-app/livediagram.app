@@ -17,6 +17,7 @@
 // silently no-op'd.
 
 import { useEffect } from 'react';
+import { restingTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
 import { isInMenuSurface, isPressableControl } from '@livedesign/ui';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import {
@@ -83,11 +84,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           e.preventDefault();
         }
         liveRef.current.setFormatSourceId(null);
-        // Persistent Format tool: Escape exits the tool entirely (back to
-        // Select) from either phase, not just disarming the base.
-        if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
+        // Persistent Format tool: Escape exits the tool entirely, from either phase, back to the tool the editor
+        // starts with (Select, or Hand on a phone or a touch-first screen), not just disarming the base.
+        if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool(restingTool());
         // Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect") leaves the same way.
-        if (liveRef.current.canvasTool === 'inspect') liveRef.current.setCanvasTool('select');
+        if (liveRef.current.canvasTool === 'inspect') liveRef.current.setCanvasTool(restingTool());
         if (liveRef.current.pendingDraw !== null) {
           liveRef.current.onCancelDraw();
         }
