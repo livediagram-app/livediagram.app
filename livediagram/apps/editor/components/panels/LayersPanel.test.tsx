@@ -44,13 +44,19 @@ function renderPanel(
 }
 
 describe('LayersPanel', () => {
-  it('counts the layers and adds one from the header', () => {
+  it('counts the layers and adds one from the button pinned at the foot', () => {
     const p = renderPanel([
       { id: 'a', name: 'A' },
       { id: 'b', name: 'B' },
     ]);
     expect(screen.getByText('2 layers')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'New Layer' }));
+    const add = screen.getByRole('button', { name: 'New Layer' });
+    // The tools' one footer look (layers.md "The Layers panel"): pinned at the foot, after Merge and Delete.
+    const foot = add.closest('[data-tool-footer]');
+    expect(foot).not.toBeNull();
+    const del = screen.getByRole('button', { name: 'Delete Layer' });
+    expect(del.compareDocumentPosition(foot!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(add);
     expect(p.onAddLayer).toHaveBeenCalledOnce();
     expect(screen.queryByText(SINGLE_LAYER_HINT)).toBeNull();
   });
@@ -136,7 +142,9 @@ describe('LayersPanel on a phone', () => {
     const p = renderPanel(one);
     const sheet = screen.getByRole('dialog', { name: 'Layers' });
     expect(sheet.querySelector('[data-sheet-handle]')).not.toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'New Layer' }));
+    const add = screen.getByRole('button', { name: 'New Layer' });
+    expect(add.closest('[data-tool-footer]')).not.toBeNull();
+    fireEvent.click(add);
     expect(p.onAddLayer).toHaveBeenCalled();
     fireEvent.click(sheet.previousElementSibling as HTMLElement);
     expect(p.onPopoverClose).toHaveBeenCalledTimes(1);

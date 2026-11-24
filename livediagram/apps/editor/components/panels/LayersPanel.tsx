@@ -18,6 +18,7 @@ import {
 } from '@/components/panels/layers-panel-icons';
 import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePanel.types';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { ToolFooter, ToolFooterButton } from '@liveworkspace/ui';
 
 // Under a lone layer, so a first visit learns what the panel is for.
 export const SINGLE_LAYER_HINT =
@@ -26,11 +27,11 @@ export const SINGLE_LAYER_HINT =
 // The popover never moves, so its MovablePanel's move handler has nothing to do.
 const NO_MOVE = () => {};
 
-// The Layers panel (docs/specs/006-document/layers.md "The Layers panel"): a header bar (layer
-// count + New Layer), one roomy row per layer, TOP layer first (the panel mirrors the paint stack
+// The Layers panel (docs/specs/006-document/layers.md "The Layers panel"): a header line (layer
+// count), one roomy row per layer, TOP layer first (the panel mirrors the paint stack
 // like every design tool; see LayerRow), and a footer acting on the ACTIVE layer (Merge Up / Merge
 // Down / Delete, with an anchored confirm when it still has elements; the last layer can't be
-// deleted). Rows drag to restack. Pure view: every mutation is a callback into useLayersState.
+// deleted), then New Layer pinned at the foot. Rows drag to restack. Pure view: every mutation is a callback into useLayersState.
 
 // Shared look of the footer's labelled buttons.
 const FOOTER_BUTTON =
@@ -223,19 +224,10 @@ export function LayersPanel({
       onPopoverClose={onPopoverClose}
     >
       <div className="pb-1">
-        <div className="flex items-center justify-between gap-2 px-3 pb-2">
+        <div className="px-3 pb-2">
           <span className="text-xs text-slate-500 dark:text-slate-400">
             {layers.length} {layers.length === 1 ? 'layer' : 'layers'}
           </span>
-          {/* No hover card: the button says what it does. */}
-          <button
-            type="button"
-            onClick={onAddLayer}
-            className={`flex h-8 items-center gap-1.5 rounded-lg bg-brand-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
-          >
-            <PlusIcon />
-            New Layer
-          </button>
         </div>
         <ul
           ref={listRef}
@@ -340,6 +332,14 @@ export function LayersPanel({
             </button>
           </HoverCard>
         </div>
+        {/* New Layer is the panel's main button, pinned at its foot in the tools' one footer look (owner, 2026-11-24;
+            docs/specs/006-document/layers.md "The Layers panel"), on a desktop and in the phone drawer alike. */}
+        <ToolFooter className="mt-1.5">
+          <ToolFooterButton onClick={onAddLayer} className={SOLID_BRAND_DARK_CONTROL}>
+            <PlusIcon />
+            New Layer
+          </ToolFooterButton>
+        </ToolFooter>
         {rowMenu
           ? (() => {
               const menuLayer = layers.find((l) => l.id === rowMenu.layerId);

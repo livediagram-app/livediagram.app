@@ -70,29 +70,23 @@ type Row = {
 };
 
 export const ROW_H = 40;
-// Where the first row starts below the panel's top: the title band, then the header bar.
+// Where the first row starts below the panel's top: the title band, then the header line.
 const ROWS_TOP = 54;
+// The New Layer strip pinned at the panel's foot (the tools' footer look): a hairline, then a full-width button.
+const NEW_H = 31;
 
-/** The Layers panel: the header bar (layer count + New Layer), one row per layer, top of the
- *  stack first (preview, name over its meta line, padlock, eye, options), and the footer's
- *  labelled Merge Up and Merge Down on the left, Delete on the right. */
+/** The Layers panel: the header line (layer count), one row per layer, top of the stack first
+ *  (preview, name over its meta line, padlock, eye, options), the footer's labelled Merge Up and
+ *  Merge Down on the left, Delete on the right, and New Layer pinned full width at the foot. */
 export function LayersPanel({ x, y, rows }: { x: number; y: number; rows: Row[] }) {
   const w = 218;
-  const h = ROWS_TOP + rows.length * ROW_H + 30;
+  // The rows, the merge footer (30) and the New Layer strip at the foot (NEW_H).
+  const h = ROWS_TOP + rows.length * ROW_H + 30 + NEW_H;
+  const f = h - NEW_H;
   return (
     <Panel x={x} y={y} w={w} h={h} title="LAYERS">
       <Label x={x + 12} y={y + 38} size={9.5} tone="muted">
         {`${rows.length} layers`}
-      </Label>
-      <rect x={x + w - 86} y={y + 28} width={76} height={19} rx={5} className="fill-brand-600" />
-      <path
-        d={`M${x + w - 77} ${y + 37.5} h7 M${x + w - 73.5} ${y + 34} v7`}
-        className="stroke-white"
-        strokeWidth={1.4}
-        strokeLinecap="round"
-      />
-      <Label x={x + w - 65} y={y + 38} size={9.5} weight={600} tone="onAccent">
-        New Layer
       </Label>
       {rows.map((r, i) => {
         const ry = y + ROWS_TOP + i * ROW_H;
@@ -155,12 +149,12 @@ export function LayersPanel({ x, y, rows }: { x: number; y: number; rows: Row[] 
           </g>
         );
       })}
-      {/* Footer */}
+      {/* Footer: the merge row sits above the New Layer strip (f is its bottom edge) */}
       <line
         x1={x}
-        y1={y + h - 26}
+        y1={y + f - 26}
         x2={x + w}
-        y2={y + h - 26}
+        y2={y + f - 26}
         className="stroke-slate-100"
         strokeWidth={0.75}
       />
@@ -172,21 +166,47 @@ export function LayersPanel({ x, y, rows }: { x: number; y: number; rows: Row[] 
         strokeLinejoin="round"
       >
         {/* Merge Up / Merge Down: an arrow meeting a line */}
-        <path d={`M${x + 10} ${y + h - 17} h7 M${x + 13.5} ${y + h - 7} v-8 m-3 3 l3 -3 l3 3`} />
-        <path d={`M${x + 78} ${y + h - 7} h7 M${x + 81.5} ${y + h - 17} v8 m-3 -3 l3 3 l3 -3`} />
+        <path d={`M${x + 10} ${y + f - 17} h7 M${x + 13.5} ${y + f - 7} v-8 m-3 3 l3 -3 l3 3`} />
+        <path d={`M${x + 78} ${y + f - 7} h7 M${x + 81.5} ${y + f - 17} v8 m-3 -3 l3 3 l3 -3`} />
         {/* Delete */}
         <path
-          d={`M${x + w - 50} ${y + h - 16} h9 M${x + w - 48.5} ${y + h - 16} v8 h6 v-8 M${x + w - 47} ${y + h - 18} h3`}
+          d={`M${x + w - 50} ${y + f - 16} h9 M${x + w - 48.5} ${y + f - 16} v8 h6 v-8 M${x + w - 47} ${y + f - 18} h3`}
         />
       </g>
-      <Label x={x + 21} y={y + h - 11.5} size={9.5} weight={500} tone="body">
+      <Label x={x + 21} y={y + f - 11.5} size={9.5} weight={500} tone="body">
         Merge Up
       </Label>
-      <Label x={x + 89} y={y + h - 11.5} size={9.5} weight={500} tone="body">
+      <Label x={x + 89} y={y + f - 11.5} size={9.5} weight={500} tone="body">
         Merge Down
       </Label>
-      <Label x={x + w - 37} y={y + h - 11.5} size={9.5} weight={500} tone="body">
+      <Label x={x + w - 37} y={y + f - 11.5} size={9.5} weight={500} tone="body">
         Delete
+      </Label>
+      {/* New Layer, pinned at the foot */}
+      <line
+        x1={x}
+        y1={y + h - NEW_H}
+        x2={x + w}
+        y2={y + h - NEW_H}
+        className="stroke-slate-100"
+        strokeWidth={0.75}
+      />
+      <rect
+        x={x + 6}
+        y={y + h - NEW_H + 6}
+        width={w - 12}
+        height={19}
+        rx={5}
+        className="fill-brand-600"
+      />
+      <path
+        d={`M${x + w / 2 - 34} ${y + h - NEW_H + 15.5} h7 M${x + w / 2 - 30.5} ${y + h - NEW_H + 12} v7`}
+        className="stroke-white"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      <Label x={x + w / 2 - 22} y={y + h - NEW_H + 19} size={9.5} weight={600} tone="onAccent">
+        New Layer
       </Label>
     </Panel>
   );
