@@ -130,10 +130,15 @@ export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   ]),
 };
 
-/** `response` with the security headers set, and `Vary: x-help-app` so a cache keeps the scopes apart. */
-export function withHelpHeaders(response: Response): Response {
+/** `response` with the security headers set, and `Vary: x-help-app` so a cache keeps the scopes apart. On a staging
+ *  host it also says `noindex, nofollow`, so the public staging mirror stays out of search results. */
+export function withHelpHeaders(
+  response: Response,
+  { staging = false }: { staging?: boolean } = {},
+): Response {
   const out = new Response(response.body, response);
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) out.headers.set(name, value);
+  if (staging) out.headers.set('X-Robots-Tag', 'noindex, nofollow');
   out.headers.append('Vary', HELP_APP_HEADER);
   return out;
 }

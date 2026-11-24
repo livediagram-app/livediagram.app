@@ -1186,6 +1186,12 @@ each app's router sends for its own build ([Stale builds](../../../../livediagra
 `public, max-age=0, must-revalidate`, so a page is checked on every load. `/.well-known/security.txt` is the site's (accounts' routes name only its two
 discovery documents), and the bare-domain redirect leaves `/.well-known/*` alone, so both hosts answer it.
 
+Staging stays out of search results: every page on `staging.liveworkspace.app` answers
+`X-Robots-Tag: noindex, nofollow`, from a host rule in `public/_headers` (one build serves both hosts, so the rule
+names the host), and the help centre's Worker adds the same header on a `staging.` host. `robots.txt` still allows
+everything there, so a crawler can read the header and drop the pages. Production never sends it
+(`cache-headers.test.ts`).
+
 Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
 livediagram/docs/specs/016-platform/trusted-types.md). Each app's router passes these same headers through for the
 Explorer and the sign-in pages, so they hold on every app's address too. The boot script allows the site's own build
