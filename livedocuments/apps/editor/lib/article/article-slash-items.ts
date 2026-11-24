@@ -147,7 +147,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     label: 'Footnote',
     group: 'Blocks',
     keywords: 'note reference citation source endnote',
-    hint: 'A numbered note at the foot of the page',
+    hint: 'A note at the foot of the page',
     action: { kind: 'block', block: 'footnote' },
   },
   {
