@@ -6,7 +6,7 @@
 import { useId } from 'react';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { meetingHeroArt } from '@liveworkspace/ui/dialog-hero-art/meeting';
-import { Chip, lucideGlyph } from '@liveworkspace/ui';
+import { Chip, CompactEmptyState, lucideGlyph } from '@liveworkspace/ui';
 import { lucideBookOpen, lucideSquareKanban, lucideUsers } from '@liveworkspace/icons/lucide';
 import type { ItemMeeting } from '@liveworkspace/index-client';
 import { workbench } from '../../bindings';
@@ -17,6 +17,7 @@ import { joinCall } from './ItemCallButton';
 const PeopleGlyph = lucideGlyph(lucideUsers, 13);
 const PageGlyph = lucideGlyph(lucideBookOpen, 13);
 const PlanGlyph = lucideGlyph(lucideSquareKanban, 13);
+const EmptyGlyph = lucideGlyph(lucideUsers, 18);
 
 const MINUTE = 60_000;
 
@@ -134,16 +135,16 @@ export function MeetingsDialog({ onClose }: { onClose: () => void }) {
             Loading meetings…
           </p>
         ) : meetings.length === 0 ? (
-          <div className="px-6 py-10 text-center">
-            <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-              No meetings yet
-            </p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {source?.canStart
+          <CompactEmptyState
+            className="min-h-40"
+            icon={<EmptyGlyph />}
+            title="No meetings yet"
+            description={
+              source?.canStart
                 ? 'Press Call in the top corner to hold one. It opens in a new tab.'
-                : 'Calls about it show here, with their summaries.'}
-            </p>
-          </div>
+                : 'Calls about it show here, with their summaries.'
+            }
+          />
         ) : (
           <ul className="divide-y divide-slate-100 dark:divide-slate-800">
             {meetings.map((m) => (
