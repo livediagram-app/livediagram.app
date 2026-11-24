@@ -77,7 +77,7 @@ describe('the People tab', () => {
       /^Member · ended \d+ \w+ 2026$/,
     );
     expect(invitationLine(m({ status: 'invited', expired: true }), NOW)).toBe('Member · ended');
-    expect(invitationLine(m({ status: 'declined' }), NOW)).toBe('Member · declined');
+    expect(invitationLine(m({ status: 'declined' }), NOW)).toBe('Member');
     expect(invitationLine(m({ status: 'invited' }), NOW)).toBe('Member');
   });
 

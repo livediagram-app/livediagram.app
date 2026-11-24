@@ -289,7 +289,10 @@ export function ItemsPane({ view }: { view: ItemsView }) {
               ) : null
             }
           />
-          {lensKind !== null ? <LensBar parsed={parsed} showIssues={!(empty && lensOn)} /> : null}
+          {/* The kind chips stand for Opens in; the other filters show once one is set (from the Filter field). */}
+          {lensKind !== null && lensOn ? (
+            <LensBar parsed={parsed} showIssues={!(empty && lensOn)} />
+          ) : null}
           {lensKind !== null ? (
             <LensAnnouncer
               lens={q}

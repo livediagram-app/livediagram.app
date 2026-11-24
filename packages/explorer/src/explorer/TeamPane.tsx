@@ -63,13 +63,14 @@ export function TeamPage({
   if (load.state === 'loading') return <TeamPageSkeleton />;
   const { details } = load;
   const teamHelp = helpHref?.({ kind: 'team', id: teamId });
-  // The tab is in the address; a change keeps the lens the Library had.
+  // The tab is in the address; the Library's lens stays with the Library alone.
   const onTab = (next: TeamTab) =>
     navigate(
-      withLens(
-        next === 'people' ? { kind: 'team', id: teamId } : { kind: 'team', id: teamId, tab: next },
-        viewLens(view),
-      ),
+      next === 'people'
+        ? { kind: 'team', id: teamId }
+        : next === 'library'
+          ? withLens({ kind: 'team', id: teamId, tab: next }, viewLens(view))
+          : { kind: 'team', id: teamId, tab: next },
     );
   return (
     <Suspense fallback={<TeamPageSkeleton />}>

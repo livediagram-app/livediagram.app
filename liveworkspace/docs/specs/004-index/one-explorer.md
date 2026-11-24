@@ -986,8 +986,8 @@ Old addresses keep working: `liveworkspace.app/account/teams` goes to `/explorer
 #### A team's page
 
 `/explorer/team?id=<id>` opens on **People**; `&tab=library` and `&tab=audit` open the other two (an unknown tab,
-or Audit Log for a Member, is People). A tab is part of the address, so Back returns to it, and the Library's lens
-(`q`) rides with it. The sidebar keeps the team lit on every tab. The Explorer's own header, sidebar and bottom bar
+or Audit Log for a Member, is People). A tab is part of the address, so Back returns to it; the Library's lens
+(`q`) stays on the Library tab alone. The sidebar keeps the team lit on every tab. The Explorer's own header, sidebar and bottom bar
 are as on every view.
 
 - **Header**: the team's badge (its initials on the brand), its name, its plan ("Free Plan", or the Pro tier, with

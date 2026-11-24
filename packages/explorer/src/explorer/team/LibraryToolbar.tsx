@@ -45,7 +45,7 @@ export function KindChips({
       role="group"
       aria-label="Show"
       data-team-kinds=""
-      className="-my-1 flex min-w-0 gap-1.5 overflow-x-auto py-1 [scrollbar-width:none]"
+      className="-my-1 flex min-w-0 gap-1.5 py-1 max-sm:overflow-x-auto max-sm:[scrollbar-width:none] sm:flex-wrap"
     >
       <button
         type="button"

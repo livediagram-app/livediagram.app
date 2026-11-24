@@ -76,9 +76,9 @@ export function invitationLine(m: TeamMember, now = Date.now()): string {
   const by = m.invitedByName?.trim().split(/\s+/)[0];
   if (by) parts.push(`invited by ${by}`);
   const state = memberState(m);
-  if (state === 'declined') {
-    parts.push('declined');
-  } else if (m.sentAt) {
+  // A declined one's pill says so already, so its line ends at who sent it.
+  if (state === 'declined') return parts.join(' · ');
+  if (m.sentAt) {
     const ends = m.sentAt + INVITATION_DAYS * DAY_MS;
     if (state === 'expired' || ends <= now) parts.push(`ended ${DAY_MONTH_YEAR.format(ends)}`);
     else parts.push(endsIn(ends - now));

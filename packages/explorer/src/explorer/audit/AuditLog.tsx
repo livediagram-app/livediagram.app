@@ -377,15 +377,20 @@ function AuditRow({
   /** The actor as a member of the team, for their picture and colour. */
   person?: TeamMember;
 }) {
-  const line = auditSentence(event, teamId);
+  // The index keeps no names of people: its rows take the member's name from the team's list.
+  const named =
+    event.actor && !event.actor.name?.trim() && person
+      ? { ...event, actor: { ...event.actor, name: memberName(person, false) } }
+      : event;
+  const line = auditSentence(named, teamId);
   const detail = auditDetail(event);
   const at = new Date(event.occurredAt);
   const app = isApp(event.app) ? event.app : null;
-  const who = personWords(event.actor);
+  const who = personWords(named.actor);
   const pill = auditPill(event.type);
   return (
     <li className="flex items-start gap-3 px-4 py-3" data-audit-event={event.id}>
-      {event.actor && event.actor.id !== 'deleted' ? (
+      {event.actor && event.actor.id !== 'deleted' && who !== 'Someone' ? (
         <PictureDisc
           aria-hidden
           pictureUrl={person?.picture ?? null}

@@ -220,14 +220,14 @@ function AvatarStack({
             name={name}
             size={30}
             style={{ backgroundColor: avatarFill(name, m.color) }}
-            className="-ml-2 flex shrink-0 text-[11px] font-semibold text-white ring-2 ring-white first:ml-0 dark:ring-slate-900"
+            className="-ml-1.5 flex shrink-0 text-[10px] font-semibold text-white ring-2 ring-white first:ml-0 dark:ring-slate-900"
           >
             {personInitials(name, m.email)}
           </PictureDisc>
         );
       })}
       {more > 0 ? (
-        <span className="-ml-2 inline-flex size-[30px] items-center justify-center rounded-full bg-slate-200 text-[11px] font-semibold text-slate-700 ring-2 ring-white dark:bg-slate-700 dark:text-slate-200 dark:ring-slate-900">
+        <span className="-ml-1.5 inline-flex size-[30px] items-center justify-center rounded-full bg-slate-200 text-[11px] font-semibold text-slate-700 ring-2 ring-white dark:bg-slate-700 dark:text-slate-200 dark:ring-slate-900">
           <span className="text-optical-line">+{more}</span>
         </span>
       ) : null}
