@@ -44,7 +44,7 @@ const ALLOWED: Readonly<Record<string, string>> = {
   'packages/explorer/src/dialogs/share/ActivePass.tsx': 'a chip',
   'packages/explorer/src/explorer/SharedList.tsx': 'a chip',
   'packages/workbench/src/components/chrome/auth-cards.tsx': 'sign-in notices, their own family',
-  'packages/workbench/src/components/oauth/oauth-chrome.tsx': 'a badge',
+  'liveworkspace/apps/site/components/account/oauth/oauth-chrome.tsx': 'a badge',
   'packages/workbench/src/components/request-access/RequestAccessButton.tsx': 'a chip',
   'packages/help-site/src/mdx-components.tsx': 'help-article Note and Tip admonitions',
   'packages/workbench/src/components/request-access/RequestAccess.tsx': 'a chip',

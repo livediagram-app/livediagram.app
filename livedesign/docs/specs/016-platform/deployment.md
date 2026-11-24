@@ -12,10 +12,10 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | `apps/live`               | `livedesign-live`                      | Static assets + a tiny path-rewrite worker.                                                                                                                       |
 | `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `livedesign` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). |
 | `apps/api`                | `livedesign-api`                       | Worker (Durable Objects + R2; no database of its own).                                                                                                            |
-| `apps/mcp`                | `livedesign-mcp`                       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                     |
+| `apps/mcp`                | none (a package)                       | The MCP tools; liveworkspace's one MCP runs them in process ([MCP server](../015-api/mcp-server.md)), so livedesign has no MCP Worker. |
 | `apps/router`             | `livedesign-router`                    | Worker (service bindings to marketing, live, api and help).                                                                                                       |
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/design/<id>` request to the single statically-built `/design/placeholder/` page ([New design route](../007-editor/new-design-route.md)). `/help` is liveworkspace's one help centre: the router's `HELP` binding goes to `liveworkspace-help` (staging `liveworkspace-help-staging`) with `x-help-app: livedesign` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). The api worker holds the REST + WebSocket layer ([API](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedesign.app` (it binds to the api worker, not the router; [MCP server](../015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `LIVE`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/design/<id>` request to the single statically-built `/design/placeholder/` page ([New design route](../007-editor/new-design-route.md)). `/help` is liveworkspace's one help centre: the router's `HELP` binding goes to `liveworkspace-help` (staging `liveworkspace-help-staging`) with `x-help-app: livedesign` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). The api worker holds the REST + WebSocket layer ([API](../015-api/api.md)). The AI tools are served by liveworkspace's one MCP at `mcp.liveworkspace.app` (it binds to the api worker, not the router; [MCP server](../015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `LIVE`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, R2 buckets, Durable Object bindings and their `[[migrations]]` tags, the account it deploys to (`account_id`, the liveworkspace account) and its public hostnames (see [Custom domain](#custom-domain)). Secrets **never** go in `wrangler.toml` ([Secrets policy](../002-project-scope/secrets-policy.md)).
 
@@ -42,7 +42,7 @@ reaches livedesign. For livedesign's group:
   `staging:check`.
 - **CI**: one job that fails when any of the above failed. It is the check `main` requires.
 
-`staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp,
+`staging:check` runs `wrangler deploy --dry-run --env staging` for the two workers that carry bindings (api,
 router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]`
 block, or a `service =` that lost its `-staging` suffix (pointing the staging router at **production**), is neither a
 type error nor a test failure. Without this step the first sign of either is a deploy.
@@ -77,11 +77,10 @@ moves only when every tier succeeded, so a failed Worker is retried
 next time.
 
 **Order.** Three tiers, each waiting for the one before: the services and apis (`livedesign-api`), then the sites
-and the MCP Worker (`livedesign-marketing`, `livedesign-live`, `livedesign-mcp`, which bind to the
-api), then the router in front (`livedesign-router`, which binds to all four). A failing tier stops the ones after it.
+(`livedesign-marketing`, `livedesign-live`; liveworkspace's one MCP, which binds the api, deploys in the same tier), then the router in front (`livedesign-router`, which binds to all four). A failing tier stops the ones after it.
 
 **One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the
-other services and apis, livedesign's sites and MCP in a job of their own, and the router with the other routers,
+other services and apis, livedesign's sites in a job of their own, and the router with the other routers,
 each Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds with its build id (`NEXT_PUBLIC_BUILD_ID`, the
 [stale-build](stale-builds.md) check) and the hosted build vars; then `wrangler deploy` (with `--env staging` on
 staging); the api adds its hosted vars and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
@@ -121,16 +120,14 @@ targets exist before the router does. Later deploys are idempotent updates.
 
 ## Custom domain
 
-Production lives at **`https://www.livedesign.app`**. Only two workers have a hostname, and each declares its own in its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`), as liveworkspace's workers declare theirs:
+Production lives at **`https://www.livedesign.app`**. Only the router has a hostname, and it declares its own in its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`), as liveworkspace's workers declare theirs:
 
 | Worker                      | Hostnames                              |
 | --------------------------- | -------------------------------------- |
 | `livedesign-router`         | `livedesign.app`, `www.livedesign.app` |
-| `livedesign-mcp`            | `mcp.livedesign.app`                   |
 | `livedesign-router-staging` | `staging.livedesign.app`               |
-| `livedesign-mcp-staging`    | `mcp-staging.livedesign.app`           |
 
-`wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a dashboard step and none can be forgotten. `www.livedesign.app` is attached because it is the canonical origin links are built from (`APP_BASE_URL`, [Hosted profile](#hosted-profile)). Changing a hostname needs **Zone → Workers Routes → Edit** on `livedesign.app` for the deploy token; a deploy that leaves them as they are needs only the Workers permission. The other workers have no hostname: they are reached only over the router's (and the mcp worker's) service bindings. From the router:
+`wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a dashboard step and none can be forgotten. `www.livedesign.app` is attached because it is the canonical origin links are built from (`APP_BASE_URL`, [Hosted profile](#hosted-profile)). Changing a hostname needs **Zone → Workers Routes → Edit** on `livedesign.app` for the deploy token; a deploy that leaves them as they are needs only the Workers permission. The other workers have no hostname: they are reached only over the router's service bindings (and the api, also over liveworkspace's one MCP's). From the router:
 
 - `https://www.livedesign.app/api/*` → api worker (REST + WebSocket).
 - `https://www.livedesign.app/live` and `https://www.livedesign.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).
@@ -139,11 +136,11 @@ Production lives at **`https://www.livedesign.app`**. Only two workers have a ho
 
 No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
 
-A deployment of your own must also set two origins, or its links lead to livedesign.app: the mcp worker's
-`CONSENT_BASE_URL` (`[vars]` in `apps/mcp/wrangler.toml`: the editor origin that serves the OAuth consent page and
-hosts every tool's links, [MCP server §4.13](../015-api/mcp-server.md#413-worker-configuration)) and the api's
-`APP_BASE_URL` (the origin every email link points at, [Transactional email](../014-identity/transactional-email.md)).
-Local dev sets both to `http://localhost:3400` in the two dev scripts (`wrangler dev --var`), so a local run never
+A deployment of your own must also set the api's `APP_BASE_URL` (the origin every email link points at,
+[Transactional email](../014-identity/transactional-email.md)) and, on liveworkspace's one MCP, `LIVEDESIGN_BASE_URL` (the editor origin that hosts every
+tool's links) and the `LIVEDESIGN_TELEMETRY_KEY` secret (the same value as the api's `TELEMETRY_KEY`), or its links lead to livedesign.app
+([the app MCPs fold in](../../../../liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in)).
+Local dev sets them to `http://localhost:3400` in the dev scripts (`wrangler dev --var`), so a local run never
 links to production.
 
 ## Not covered here

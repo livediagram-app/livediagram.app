@@ -9,16 +9,16 @@ people's documents.
 
 ## The two environments
 
-|              | Production                                      | Staging                                    |
-| ------------ | ----------------------------------------------- | ------------------------------------------ |
-| Hostname     | `liveknowledge.app`                             | `staging.liveknowledge.app`                |
-| MCP host     | `mcp.liveknowledge.app`                         | `mcp-staging.liveknowledge.app`            |
-| Trigger      | By hand                                         | Automatic, on every green CI run on `main` |
-| Workflow     | `deploy-production.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
-| Worker names | `liveknowledge-<app>`                           | `liveknowledge-<app>-staging`              |
-| Index        | `liveworkspace.app`                             | `staging.liveworkspace.app`                |
-| Previews     | `liveworkspace.app`                             | `staging.liveworkspace.app`                |
-| Indexable    | Yes                                             | **No**: `X-Robots-Tag: noindex, nofollow`  |
+|              | Production                                                                                 | Staging                                    |
+| ------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| Hostname     | `liveknowledge.app`                                                                        | `staging.liveknowledge.app`                |
+| MCP host     | `mcp.liveknowledge.app`, a custom domain on liveworkspace's one MCP (old connections only) | `mcp-staging.liveknowledge.app` (the same) |
+| Trigger      | By hand                                                                                    | Automatic, on every green CI run on `main` |
+| Workflow     | `deploy-production.yml` (**Deploy Production**)                                            | `deploy-staging.yml` (**Deploy Staging**)  |
+| Worker names | `liveknowledge-<app>`                                                                      | `liveknowledge-<app>-staging`              |
+| Index        | `liveworkspace.app`                                                                        | `staging.liveworkspace.app`                |
+| Previews     | `liveworkspace.app`                                                                        | `staging.liveworkspace.app`                |
+| Indexable    | Yes                                                                                        | **No**: `X-Robots-Tag: noindex, nofollow`  |
 
 ### "editor" is an app, not an environment
 
@@ -46,14 +46,14 @@ restates its app's bindings in full, even where the value matches production's. 
 
 ### Service bindings point at staging
 
-The router binds four workers (marketing, editor, api, help) and mcp binds one (api). In `[env.staging]` every
+The router binds four workers (marketing, editor, api, help); staging's one MCP binds the staging api (`LIVEKNOWLEDGE_API`, liveworkspace's own staging config). In `[env.staging]` every
 `service =` value carries the `-staging` suffix, so the staging router forwards to the staging api and never to
 production's. A missed suffix is the worst failure mode available (staging frontend, production data), so
 `apps/router/wrangler.toml` keeps its staging bindings beside the production ones for comparison.
 
 ## Data isolation
 
-Staging has its own **KV namespace** (the MCP server's OAuth store), and talks to liveworkspace's staging index
+Staging has no KV namespace of its own (the one MCP keeps the scratch KV), and talks to liveworkspace's staging index
 (`INDEX_ORIGIN`), accounts Worker and media service (`MEDIA_URL`, which serves staging's previews). The api has no
 database. Durable Objects come free: a different script is a different Durable Object namespace, so the staging
 `DOCUMENT_ROOM` (every document's content) is already separate.
@@ -91,9 +91,9 @@ Two deliberate non-changes:
 `NEXT_PUBLIC_*` values are baked into the static export by `next build`, so **staging is its own build**. It differs
 from production's in one value:
 
-| Variable                 | Production                                          | Staging                                                                         |
-| ------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.liveknowledge.app`) | `https://mcp-staging.liveknowledge.app`, the staging MCP worker's custom domain |
+| Variable                 | Production                                                       | Staging                                                    |
+| ------------------------ | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.liveworkspace.app`, the one MCP) | `https://mcp-staging.liveworkspace.app`, staging's one MCP |
 
 Everything else matches: `NEXT_PUBLIC_API_BASE` stays unset so staging resolves `/api` same-origin through its own
 router, and `NEXT_PUBLIC_TELEMETRY_ENABLED` (from the hosted profile, [Deployment](deployment.md) "Hosted profile")
@@ -118,7 +118,7 @@ any moment: `{"emailEnabled":true}` on both.
 
 Staging's workers carry their own values of each secret, set with `wrangler secret put --env staging`, never
 production's: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` (staging's own OAuth
-client), `INDEX_KEY` (staging liveworkspace's `INDEX_KEY_LIVEKNOWLEDGE`), `TELEMETRY_KEY` (on api **and** mcp, the same
+client), `INDEX_KEY` (staging liveworkspace's `INDEX_KEY_LIVEKNOWLEDGE`), `TELEMETRY_KEY` (on api, and as `LIVEKNOWLEDGE_TELEMETRY_KEY` on staging's one MCP, the same
 value, staging telemetry's `TELEMETRY_KEY_LIVEKNOWLEDGE`) and `MEDIA_KEY` (staging media's `MEDIA_KEY_LIVEKNOWLEDGE`;
 unset, staging has no images). A deploy writes no secret, so they survive every deploy
 ([Secrets policy](../002-project-scope/secrets-policy.md)). Email needs no secret: the `EMAIL` binding is the credential.
@@ -136,25 +136,17 @@ red `main` never reaches staging. Its first job, **Still main's tip**, lets a ru
 
 ## One-time setup
 
-Resource ids are committed to `wrangler.toml` (identifiers, not secrets,
-[Secrets policy](../002-project-scope/secrets-policy.md)):
+This app creates no staging resource that needs an id: the KV namespace its own MCP Worker once used
+(`liveknowledge-mcp-oauth-staging`) is unused.
 
-| Resource | Name                              | Where the id lives       |
-| -------- | --------------------------------- | ------------------------ |
-| KV       | `liveknowledge-mcp-oauth-staging` | `apps/mcp/wrangler.toml` |
-
-The KV **title** matches production's `liveknowledge-mcp-oauth`: the product's name leads, because every
-liveworkspace app's namespaces share one account. `OAUTH_KV` is the binding name inside `wrangler.toml`, a different
-thing.
-
-The **workers** need no setup: a worker is its uploaded script, so the six `liveknowledge-*-staging` workers come into
-existence on the first staging deploy, in tier order (api, then the sites and mcp, then the router).
+The **workers** need no setup: a worker is its uploaded script, so the five `liveknowledge-*-staging` workers come into
+existence on the first staging deploy, in tier order (api, then the sites, then the router).
 
 **Hostnames** need none either: both are declared in the workers' `[env.staging]` blocks and attached by the deploy
 ([Deployment](deployment.md#custom-domain)):
 
 - `staging.liveknowledge.app` → `liveknowledge-router-staging`
-- `mcp-staging.liveknowledge.app` → `liveknowledge-mcp-staging`
+- `mcp-staging.liveknowledge.app` → the one MCP's staging Worker (liveworkspace's)
 
 The other four workers are reached only over service bindings.
 

@@ -138,7 +138,7 @@ export type Env = {
   // liveworkspace's central telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md). Unset means
   // production's, TELEMETRY_URL in @liveworkspace/telemetry.
   TELEMETRY_URL?: string;
-  // livedesign's Worker key for that service (a secret, the same value as the mcp worker's),
+  // livedesign's Worker key for that service (a secret, the same value as the MCP's),
   // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
   TELEMETRY_KEY?: string;
   // Cloudflare Email Service's `send_email` binding for livedesign's own email

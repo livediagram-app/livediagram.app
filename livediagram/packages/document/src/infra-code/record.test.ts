@@ -9,7 +9,7 @@ import { drawnRecord, INFRA_SOURCES_MAX_STORED_CHARS } from './record';
 const here = dirname(fileURLToPath(import.meta.url));
 
 // Every module record.ts reaches through value imports (type-only ones vanish from a bundle), and every package
-// those modules import by name. The api and MCP Workers bundle this graph, and the /licences page lists what their
+// those modules import by name. The api and the MCP package bundle this graph, and the /licences page lists what their
 // bundles' inputs hold, so a parser reached from here puts js-yaml and smol-toml back on the page.
 function reached(entry: string): { files: string[]; packages: string[] } {
   const files = new Set<string>();

@@ -1,6 +1,6 @@
-// The two pitches the Night Band frame shows beside its card (docs/specs/014-identity/auth-and-guest-access.md "The
-// look: Night Band"): what an account adds, on the account pages, and what connecting means, on the connect pages.
-// Each title stands alone, as on liveworkspace.app's sign-in pitch; the shared AuthPitch draws them. Copy only.
+// The pitch the Night Band frame shows beside its card on the account pages (docs/specs/014-identity/
+// auth-and-guest-access.md "The look: Night Band"): what an account adds. Each title stands alone, as on
+// liveworkspace.app's sign-in pitch; the shared AuthPitch draws it. Copy only.
 import { Glyph } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
 import { AuthPitch, type PitchRow } from '@liveworkspace/workbench/components/chrome/AuthPitch';
@@ -38,22 +38,6 @@ const PAGE = (
     <path d="M9 8h6M9 12h6" />
   </Icon>
 );
-const PULSE = (
-  <Icon>
-    <path d="M3 12h4l2-5 4 10 2-5h6" />
-  </Icon>
-);
-const CHECK = (
-  <Icon>
-    <path d="M5 12l5 5 9-10" />
-  </Icon>
-);
-const UNDO = (
-  <Icon>
-    <path d="M9 14L4 9l5-5" />
-    <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
-  </Icon>
-);
 
 export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
   {
@@ -82,43 +66,12 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
   },
 ];
 
-export const CONNECT_PITCH_ROWS: readonly PitchRow[] = [
-  {
-    tone: 'emerald',
-    icon: PULSE,
-    title: 'Changes show live',
-    line: 'Edits land on your plans like a teammate’s.',
-  },
-  {
-    tone: 'sky',
-    icon: CHECK,
-    title: 'You approve every connection',
-    line: 'Nothing connects until you say so here.',
-  },
-  {
-    tone: 'amber',
-    icon: UNDO,
-    title: 'Revoke access any time',
-    line: 'On liveworkspace.app, under API tokens.',
-  },
-];
-
 export function AccountPitch() {
   return (
     <AuthPitch
       eyebrow="No catch"
       heading="An account is optional. Here is what it adds."
       rows={ACCOUNT_PITCH_ROWS}
-    />
-  );
-}
-
-export function ConnectPitch() {
-  return (
-    <AuthPitch
-      eyebrow="Connect"
-      heading="Your plans, wherever you work."
-      rows={CONNECT_PITCH_ROWS}
     />
   );
 }

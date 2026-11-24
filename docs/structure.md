@@ -42,7 +42,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
 │  ├─ local-workers            local dev only: runs liveworkspace's eight services in one wrangler dev for dev:workspace, each on its own port
 │  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
-│  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config; and the MCP benchmark's client, report and shared diagram tasks
+│  ├─ mcp-kit                  the app MCPs' shared parts and liveworkspace's one MCP's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config; and the MCP benchmark's client, report and shared diagram tasks
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client, the Library
 │  ├─ migration                the move from the historical livediagram.app: the payload contract and the splitter
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig), and the dev entry every app's dev script runs (scripts/next-dev.mjs, which refuses a busy port)
@@ -81,7 +81,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 │  ├─ apps/status              liveworkspace.app/api/status: hourly checks of every service, 90 days kept, own D1
-│  ├─ apps/mcp                 mcp.liveworkspace.app: one MCP server routing to every app's MCP Worker, unlisted while it is tried
+│  ├─ apps/mcp                 mcp.liveworkspace.app: the one MCP server: it runs every app's `apps/mcp` package in process, serves the old `mcp.<app>.app` hosts and holds the one consent
 │  ├─ apps/drive               liveworkspace.app/api/drive: the Google Drive mirror for every app, one Durable Object per person
 │  ├─ apps/export              Download Your Data's service, behind accounts only: one Durable Object per export, the zip in R2
 │  ├─ apps/redirect            the bare liveworkspace.app: a page load's one 301 to www., everything else to the site
@@ -89,7 +89,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ docs/specs               the platform's specs and blueprints, one category per service
 │  └─ packages/status          @liveworkspace/status, which only the site and the status Worker use: the one list of services, how an answer is judged, the history's wire shapes
 ├─ livediagram/                imported with full history; Diagram, Draw, Workshop
-│  ├─ apps/                    editor, api, mcp, cli, marketing, router (its help is liveworkspace/apps/help's livediagram scope)
+│  ├─ apps/                    editor, api, mcp (a package, not a Worker), cli, marketing, router (its help is liveworkspace/apps/help's livediagram scope)
 │  └─ packages/                @livediagram/*
 ├─ liveplanner/                imported with full history; Plan
 │  ├─ apps/                    the same set
@@ -98,7 +98,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/                    the same set as livediagram's
 │  └─ packages/                @livedocuments/*
 ├─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
-│  ├─ apps/                    live (its editor), api, mcp, cli, marketing, router
+│  ├─ apps/                    live (its editor), api, mcp (a package), cli, marketing, router
 │  └─ packages/                @livedesign/*, with photo-engine of its own
 ├─ livehuddle/                 forked from livediagram in-tree (meeting in Spaces: avatars, rooms, calls)
 │  ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, router
@@ -183,7 +183,7 @@ liveworkspace/
 ├─ livediagram/
 │  ├─ apps/editor                  thin: workbench + mode-draw (Diagram, Draw and Workshop)
 │  ├─ apps/api                     api-core + the diagram-only routes
-│  ├─ apps/…                       marketing, mcp, cli: product-specific
+│  ├─ apps/…                       marketing, mcp (a package the one MCP runs), cli: product-specific
 │  └─ packages/                    mode-draw (canvas tabs), diagram, diagram-lint, sticky-*
 └─ liveplanner/
    ├─ apps/editor                  thin: workbench + mode-plan
@@ -621,7 +621,7 @@ Each step is its own PR, and both products build and pass their tests after ever
        unfurls, the refusal log and the `cloudflare:workers` test shim, plus the protocol helpers
        their `api-schema`s re-export (bearer and loopback reads, base64, the API-token shape, OAuth
        device codes and PKCE).
-     - `mcp-kit`: the MCP Worker itself (`createMcpApp`: CORS, health, the Streamable-HTTP
+     - `mcp-kit`: the MCP app (`createMcpApp`, run by liveworkspace's one MCP: CORS, health, the Streamable-HTTP
        transport, the OAuth 2.1 server with the device grant), its request and tool scopes and
        preview fonts. Each MCP hands in its server and an `OauthServer` config (its CLI client and
        consent base) and keeps its tools.

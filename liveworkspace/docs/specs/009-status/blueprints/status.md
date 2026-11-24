@@ -60,8 +60,8 @@ Scope, by file:
 | each app      | `router`          | derived `any` from `api`, `editor`, `marketing` (and `community-pages`)       |
 
 `appOrigin(site, env)`: development `http://localhost:<LOCAL_PORTS[site]>`; staging `https://staging.<site>`;
-production `https://www.<site>`. `mcpOrigin`: development `http://localhost:<MCP_DEV_PORTS>` (8788, 8888, 8988,
-8990; livehuddle has none), staging none, production `https://mcp.<site>`. `hasMcp(site)`: whether the app has an entry in
+production `https://www.<site>`. `mcpOrigin`: development `http://localhost:<MCP_DEV_PORTS>` (3013, the one MCP, for each app;
+livehuddle has none), staging none, production `https://mcp.<site>`. `hasMcp(site)`: whether the app has an entry in
 `MCP_DEV_PORTS`; an app without one gets no `mcp` row, and `mcpOrigin` is null for it in every
 environment. `appGroup(site, env)` is exported for one app's group; `statusGroups` lists `APP_SITES` only, so a held
 app is never on the page. Paths starting `/` resolve on `PLATFORM_ORIGIN` (`resolveProbeUrl`).
@@ -240,7 +240,7 @@ them apart.
 | `STATUS_HISTORY_PATH` | `'/history'`                                                                              | `wire.ts`                      | the read                       |
 | `HISTORY_DAYS`        | `90`                                                                                      | `wire.ts`                      | the window, `parseDays`        |
 | `INCIDENTS_MAX`       | `50`                                                                                      | `wire.ts`                      | `buildHistory`                 |
-| `MCP_DEV_PORTS`       | livediagram 8788, liveplanner 8888, livedocuments 8988, livedesign 8990 (livehuddle none) | `services.ts`                  | which apps have an MCP row     |
+| `MCP_DEV_PORTS`       | 3013 (the one MCP) for each app but livehuddle (none) | `services.ts`                  | which apps have an MCP row     |
 
 | Setting             | Production                                                           | Staging                                 |
 | ------------------- | -------------------------------------------------------------------- | --------------------------------------- |

@@ -41,15 +41,15 @@ corepack pnpm dev:documents
 Turbo spins up liveknowledge' six dev servers in parallel, in its 3600 port block (`corepack pnpm dev` inside
 `liveknowledge/` does the same):
 
-| App                       | Dev URL                                                                                                                       |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `apps/router`             | `http://localhost:3600`: **everything on one port**, stitched like production                                                 |
-| `apps/marketing`          | `http://localhost:3601`                                                                                                       |
-| `apps/editor`             | `http://localhost:3602` (clean routes: /new, /document/<id>, /offline, ...)                                                   |
-| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=liveknowledge corepack pnpm --filter @liveworkspace/help dev`) |
-| `apps/community`          | `http://localhost:3305/community`                                                                                             |
-| `apps/api`                | `http://localhost:9287/api`                                                                                                   |
-| `apps/mcp`                | `http://localhost:9288` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only)                            |
+| App                       | Dev URL                                                                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/router`             | `http://localhost:3600`: **everything on one port**, stitched like production                                                                                |
+| `apps/marketing`          | `http://localhost:3601`                                                                                                                                      |
+| `apps/editor`             | `http://localhost:3602` (clean routes: /new, /document/<id>, /offline, ...)                                                                                  |
+| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=liveknowledge corepack pnpm --filter @liveworkspace/help dev`)                                |
+| `apps/community`          | `http://localhost:3305/community`                                                                                                                            |
+| `apps/api`                | `http://localhost:9287/api`                                                                                                                                  |
+| `liveworkspace/apps/mcp`  | `http://127.0.0.1:3013/mcp` (the one MCP, every app; `/liveknowledge/mcp` serves this app's tools as they are, [MCP server](../specs/015-api/mcp-server.md)) |
 
 The `router` dev server (`wrangler dev --env local`, port 3600) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/help` and `/api` (`/telemetry` redirects to liveworkspace's dashboard), so there is no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 

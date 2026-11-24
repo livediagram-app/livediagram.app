@@ -9,16 +9,16 @@ people's documents.
 
 ## The two environments
 
-|              | Production                                      | Staging                                    |
-| ------------ | ----------------------------------------------- | ------------------------------------------ |
-| Hostname     | `livedocuments.app`                             | `staging.livedocuments.app`                |
-| MCP host     | `mcp.livedocuments.app`                         | `mcp-staging.livedocuments.app`            |
-| Trigger      | By hand                                         | Automatic, on every green CI run on `main` |
-| Workflow     | `deploy-production.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
-| Worker names | `livedocuments-<app>`                           | `livedocuments-<app>-staging`              |
-| Index        | `liveworkspace.app`                             | `staging.liveworkspace.app`                |
-| Previews     | `liveworkspace.app`                             | `staging.liveworkspace.app`                |
-| Indexable    | Yes                                             | **No**: `X-Robots-Tag: noindex, nofollow`  |
+|              | Production                                      | Staging                                         |
+| ------------ | ----------------------------------------------- | ----------------------------------------------- |
+| Hostname     | `livedocuments.app`                             | `staging.livedocuments.app`                     |
+| MCP host     | `mcp.livedocuments.app` (the one MCP's)         | `mcp-staging.livedocuments.app` (the one MCP's) |
+| Trigger      | By hand                                         | Automatic, on every green CI run on `main`      |
+| Workflow     | `deploy-production.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)       |
+| Worker names | `livedocuments-<app>`                           | `livedocuments-<app>-staging`                   |
+| Index        | `liveworkspace.app`                             | `staging.liveworkspace.app`                     |
+| Previews     | `liveworkspace.app`                             | `staging.liveworkspace.app`                     |
+| Indexable    | Yes                                             | **No**: `X-Robots-Tag: noindex, nofollow`       |
 
 ### "editor" is an app, not an environment
 
@@ -91,9 +91,9 @@ Two deliberate non-changes:
 `NEXT_PUBLIC_*` values are baked into the static export by `next build`, so **staging is its own build**. It differs
 from production's in one value:
 
-| Variable                 | Production                                          | Staging                                                                         |
-| ------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livedocuments.app`) | `https://mcp-staging.livedocuments.app`, the staging MCP worker's custom domain |
+| Variable                 | Production                                          | Staging                                                                                                       |
+| ------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.liveworkspace.app`) | `https://mcp-staging.liveworkspace.app`, staging's one MCP (the marketing site's Build with AI page reads it) |
 
 Everything else matches: `NEXT_PUBLIC_API_BASE` stays unset so staging resolves `/api` same-origin through its own
 router, and `NEXT_PUBLIC_TELEMETRY_ENABLED` (from the hosted profile, [Deployment](deployment.md) "Hosted profile")
@@ -136,17 +136,6 @@ red `main` never reaches staging. Its first job, **Still main's tip**, lets a ru
 
 ## One-time setup
 
-Resource ids are committed to `wrangler.toml` (identifiers, not secrets,
-[Secrets policy](../002-project-scope/secrets-policy.md)):
-
-| Resource | Name                              | Where the id lives       |
-| -------- | --------------------------------- | ------------------------ |
-| KV       | `livedocuments-mcp-oauth-staging` | `apps/mcp/wrangler.toml` |
-
-The KV **title** matches production's `livedocuments-mcp-oauth`: the product's name leads, because every
-liveworkspace app's namespaces share one account. `OAUTH_KV` is the binding name inside `wrangler.toml`, a different
-thing.
-
 The **workers** need no setup: a worker is its uploaded script, so the six `livedocuments-*-staging` workers come into
 existence on the first staging deploy, in tier order (api, then the sites and mcp, then the router).
 
@@ -154,7 +143,7 @@ existence on the first staging deploy, in tier order (api, then the sites and mc
 ([Deployment](deployment.md#custom-domain)):
 
 - `staging.livedocuments.app` → `livedocuments-router-staging`
-- `mcp-staging.livedocuments.app` → `livedocuments-mcp-staging`
+- `mcp-staging.livedocuments.app` is a custom domain on staging's one MCP Worker, not a livedocuments worker ([The app MCPs fold in](../../../../liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in))
 
 The other four workers are reached only over service bindings.
 

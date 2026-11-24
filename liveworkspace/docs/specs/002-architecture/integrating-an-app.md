@@ -221,6 +221,16 @@ Locally, against a development accounts Worker, the redirect is
 `http://localhost:3200/api/auth/callback` (the router) and the resource `http://localhost/api`
 (liveplanner/docs/development/local-development.md).
 
+## The app's MCP
+
+An app has no MCP Worker. Its `apps/mcp` is a package (no `wrangler.toml`, no `.env.example`, no dev or deploy
+scripts) that exports `createMcpApp` with no authorization server of its own, and liveworkspace's one MCP
+(`liveworkspace/apps/mcp`) runs it in process. Adding one is wiring on that Worker: the app's api service binding
+(`<APP>_API`), its `<APP>_BASE_URL` var, an `<APP>_TELEMETRY_KEY` secret (the same value as the app's api
+`TELEMETRY_KEY`), its entry in the one MCP's `apps.ts` and its tools' recorded copy for the eval. The app's api reports
+the one MCP as its `OAUTH_ISSUER` (`https://mcp.liveworkspace.app`, staging `https://mcp-staging.liveworkspace.app`), so its CLI signs
+in there; the app has no consent or device page of its own ([the app MCPs fold in](../021-mcp/mcp.md#the-app-mcps-fold-in)).
+
 ## Telemetry
 
 An app's anonymous product events go to liveworkspace too, not to its own API. See
@@ -269,7 +279,7 @@ No app is held today. **livehuddle** (`livehuddle.app`, port block 3500, its ite
 launched with Work Tracker #189: its row is in `APP_SITES`. Its telemetry was held until its dashboard was built
 (Work Tracker #400), and is now in `TELEMETRY_APPS`; the Explorer hero has no pictures of its kinds yet (a follow-up
 to #189). It ships every platform-wide
-feature, as the other apps do (owner, 2026-11-02): its MCP server, which the status checks look at
+feature, as the other apps do (owner, 2026-11-02): its MCP (a package the one MCP runs, with none of its own), which the status checks look at
 ([status.md](../009-status/status.md#where-the-checks-go)), and a Community, whose service takes its posts under
 `COMMUNITY_KEY_LIVEHUDDLE` ([Community](../007-community/community.md#adding-an-app)), with Offline's
 conversions and the Share dialog's Community tab in its `AppItems`.

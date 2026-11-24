@@ -356,16 +356,17 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I connect my own AI assistant, like Claude?',
         a: (
           <>
-            Yes. livedesign runs an MCP server at mcp.livedesign.app. Connect a compatible AI tool
-            and, after a one-time authorisation, it can find, read, create and edit the designs in
-            your account, including designing logos and wireframing screens. Its changes appear live
+            Yes. Connect a compatible AI tool to liveworkspace&apos;s MCP server at
+            mcp.liveworkspace.app, one connection for every liveworkspace app. After a one-time
+            authorisation, it can find, read, create and edit the designs in your account, including
+            designing logos and wireframing screens. Its changes appear live
             for anyone on the tab, outlined so you can see them and undo them.{' '}
             <a href="/ai">Build with AI</a> walks you through connecting Claude, ChatGPT, Cursor and
             more.
           </>
         ),
         aText:
-          'Yes. livedesign runs an MCP server at mcp.livedesign.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the designs in your account, including designing logos and wireframing screens. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+          'Yes. Connect a compatible AI tool to liveworkspace\'s MCP server at mcp.liveworkspace.app, one connection for every liveworkspace app. After a one-time authorisation, it can find, read, create and edit the designs in your account, including designing logos and wireframing screens. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
         q: 'Is there an API?',

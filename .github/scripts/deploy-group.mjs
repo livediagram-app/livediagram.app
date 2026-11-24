@@ -86,15 +86,14 @@ export function workerSteps(worker, { environment, ref, exists = existsSync }) {
     const hosted = `${worker.product}/apps/api/scripts/hosted-vars.mjs`;
     const extraEnv = { NEXT_PUBLIC_BUILD_ID: ref };
     const hasHosted = exists(hosted);
-    // Staging's sites name the staging mcp worker by its custom domain: no product Worker has a
-    // workers.dev address (each wrangler.toml sets workers_dev = false). A product with no mcp worker
-    // keeps the default.
+    // Staging's sites name staging's one MCP (liveworkspace/docs/specs/021-mcp/mcp.md), which runs every app's MCP
+    // package. A product with no MCP package keeps the default.
     if (
       hasHosted &&
       environment === 'staging' &&
-      exists(`${worker.product}/apps/mcp/wrangler.toml`)
+      exists(`${worker.product}/apps/mcp/package.json`)
     ) {
-      extraEnv.NEXT_PUBLIC_MCP_ORIGIN = `https://mcp-staging.${worker.product}.app`;
+      extraEnv.NEXT_PUBLIC_MCP_ORIGIN = 'https://mcp-staging.liveworkspace.app';
     }
     steps.push({
       name: 'Build',

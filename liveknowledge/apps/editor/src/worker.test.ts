@@ -32,15 +32,15 @@ describe('editor worker security headers', () => {
   // docs/specs/016-platform/trusted-types.md: every page enforces Trusted Types, the embed included.
   it('enforces Trusted Types on every page', async () => {
     const { env: e } = env();
-    for (const path of ['/document/abc', '/embed', '/offline', '/oauth/consent']) {
+    for (const path of ['/document/abc', '/embed', '/offline', '/sign-in']) {
       const res = await worker.fetch(new Request(`https://liveknowledge.app${path}`), e);
       expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
     }
   });
 
-  it('denies framing on the MCP OAuth consent screen', async () => {
+  it('denies framing on the sign-in page', async () => {
     const { env: e } = env();
-    const res = await worker.fetch(new Request('https://liveknowledge.app/oauth/consent'), e);
+    const res = await worker.fetch(new Request('https://liveknowledge.app/sign-in'), e);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
   });
 
@@ -89,9 +89,9 @@ describe('editor worker security headers', () => {
     ]);
   });
 
-  it('denies framing on the device page and the editor', async () => {
+  it('denies framing on the editor', async () => {
     const { env: e } = env();
-    for (const path of ['/oauth/device', '/document/doc-1', '/embedded', '/explorer/home']) {
+    for (const path of ['/document/doc-1', '/embedded', '/explorer/home']) {
       const res = await worker.fetch(new Request(`https://liveknowledge.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     }

@@ -12,7 +12,6 @@ import {
   WORKBENCH_SESSION_PREFIX,
 } from '@liveknowledge/api-schema';
 import { handleTokens } from './routes/tokens';
-import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { handleInternalItems } from './routes/internal-items';
 import { handleAutomationHook } from './routes/automation-hook-route';
@@ -325,8 +324,6 @@ async function routeApiRequest(
       return await handleTeams(ctx);
     case 'tokens':
       return await handleTokens(ctx);
-    case 'oauth':
-      return await handleOauthExchange(ctx);
     case 'account':
       return await handleAccount(ctx);
     case 'trash':

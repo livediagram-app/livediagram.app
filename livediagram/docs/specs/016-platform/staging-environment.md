@@ -13,7 +13,7 @@ reaches people's documents.
 |              | Production                                      | Staging                                    |
 | ------------ | ----------------------------------------------- | ------------------------------------------ |
 | Hostname     | `livediagram.app`                               | `staging.livediagram.app`                  |
-| MCP host     | `mcp.livediagram.app`                           | `mcp-staging.livediagram.app`              |
+| MCP host     | `mcp.livediagram.app` (a domain on the one MCP) | `mcp-staging.livediagram.app` (same)       |
 | Trigger      | By hand                                         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy-production.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names | `livediagram-<app>`                             | `livediagram-<app>-staging`                |
@@ -58,7 +58,7 @@ drifting apart unnoticed.
 
 ### Service bindings point at staging
 
-The router binds five workers (marketing, editor, api, help, community) and mcp binds one (api). In `[env.staging]` every `service =`
+The router binds five workers (marketing, editor, api, help, community). In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
 never to production's. A missed suffix here is the single worst failure mode available:
 staging frontend, production data, so `apps/router/wrangler.toml` keeps its staging
@@ -123,9 +123,9 @@ Two deliberate non-changes:
 its own build**: each environment's deploy builds its own sites. Staging's build differs
 from production's in exactly one value:
 
-| Variable                 | Production                                        | Staging                                                                       |
-| ------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app`, the staging MCP worker's custom domain |
+| Variable                 | Production                                          | Staging                                                    |
+| ------------------------ | --------------------------------------------------- | ---------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.liveworkspace.app`) | `https://mcp-staging.liveworkspace.app`, staging's one MCP |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
@@ -159,7 +159,7 @@ secret, set with `wrangler secret put --env staging`, never production's:
 `ACCOUNTS_URL` (the accounts Worker staging signs in through), `API_RESOURCE` (staging's
 own resource, the access-token audience), `ACCOUNTS_CLIENT_ID` and
 `ACCOUNTS_CLIENT_SECRET` (staging's own OAuth client), `TELEMETRY_KEY` (on the staging api
-**and** staging mcp, the same value on both and on the staging telemetry service, or
+and `LIVEDIAGRAM_TELEMETRY_KEY` on staging's one MCP Worker, the same value on both and on the staging telemetry service, or
 server-side counts silently go missing,
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), and
 `COMMUNITY_KEY`, `MEDIA_KEY`, `DRIVE_KEY` and the model key (`GOOGLE_AI_STUDIO_API_KEY`)
@@ -196,23 +196,11 @@ up the newest green commit when it starts.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets; [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done**: the data store exists:
+**Done**: no data store of its own. The MCP's scratch KV is liveworkspace's one MCP Worker's (`OAUTH_KV`), staging's included.
 
-| Resource | Name                            | Where the id lives       |
-| -------- | ------------------------------- | ------------------------ |
-| KV       | `livediagram-mcp-oauth-staging` | `apps/mcp/wrangler.toml` |
-
-Note the KV **title** is `livediagram-mcp-oauth-staging`, matching production's
-`livediagram-mcp-oauth`: the product's name leads, because every liveworkspace app's
-namespaces share one account (liveplanner's are `liveplanner-mcp-oauth[-staging]`).
-It is not `OAUTH_KV`; that is the binding name inside `wrangler.toml`, a different
-thing, and `wrangler kv namespace create OAUTH_KV --env staging` would have produced
-`livediagram-mcp-staging-OAUTH_KV` instead.
-
-The **workers** are not on this list: a worker is its uploaded script, so all seven
+The **workers** are not on this list: a worker is its uploaded script, so all six
 `livediagram-*-staging` workers come into existence on the first staging deploy. The
-tiers bootstrap them in the right order: the api first, then the sites and mcp (bound to
-the api), then the router (bound to the five), exactly as production's first deploy did
+tiers bootstrap them in the right order: the api first, then the sites, then the router (bound to the five), exactly as production's first deploy did
 ([Deployment](deployment.md) "Deploy").
 
 **Secrets** are set once per worker with `wrangler secret put <NAME> --env staging` (the
@@ -220,12 +208,7 @@ list under [Secrets](#secrets)), for example
 `cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging` for the note
 reader.
 
-**Hostnames**: only two workers get one:
-
-- `staging.livediagram.app` → `livediagram-router-staging`
-- `mcp-staging.livediagram.app` → `livediagram-mcp-staging`
-
-Each is declared as a custom domain in its worker's `[env.staging]` block and attached by
+**Hostnames**: only the router gets one, `staging.livediagram.app` → `livediagram-router-staging`, declared as a custom domain in its `[env.staging]` block and attached by
 the deploy ([Deployment](deployment.md#custom-domain)).
 The other five are reached exclusively over the router's service bindings and never
 touch DNS, exactly as in production.

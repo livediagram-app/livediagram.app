@@ -62,7 +62,7 @@ describe('liveknowledge', () => {
       'liveknowledge:mcp',
     );
     expect(mcpOrigin(knowledge, 'production')).toBe('https://mcp.liveknowledge.app');
-    expect(mcpOrigin(knowledge, 'development')).toBe('http://localhost:9288');
+    expect(mcpOrigin(knowledge, 'development')).toBe('http://localhost:3013');
     expect(mcpOrigin(knowledge, 'staging')).toBeNull();
     expect(appGroup(knowledge, 'development').services[0]!.check).toMatchObject({
       probe: { url: 'http://localhost:3600/api/capabilities' },

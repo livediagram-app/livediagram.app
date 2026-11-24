@@ -1,6 +1,6 @@
 # Evaluate MCP output
 
-How to measure, and raise, the quality of what an AI assistant makes through the livedesign MCP server
+How to measure, and raise, the quality of what an AI assistant makes through the livedesign MCP package, served by liveworkspace's one MCP
 ([MCP server](../specs/015-api/mcp-server.md)). A **benchmark** runs real headless Claude sessions with the connector
 mounted and nothing else, on several models, several times each, then scores every run mechanically: what the
 transcript shows (calls, refusals, retries) and yes/no **checks** on what was made, read back through the tools. A
@@ -25,10 +25,10 @@ The kit lives in `apps/mcp/eval/`:
 2. Give the worktree's api its local state: copy main's `apps/api/.wrangler/state` and `apps/api/.dev.vars`. The api
    has no database of its own: liveworkspace's accounts, index and media (for a task's gallery) run locally beside it (`pnpm dev` in each of
    `liveworkspace/apps/accounts`, `liveworkspace/apps/index`, `liveworkspace/apps/media`), at the origins `.dev.vars` names.
-3. Start the MCP and the api in ONE wrangler session, so the MCP's service binding reaches this branch's api, from
-   `apps/mcp`:
-   `nohup corepack pnpm exec wrangler dev -c wrangler.toml -c ../api/wrangler.toml --port 8798 --inspector-port 9398 --persist-to ../api/.wrangler/state > <scratchpad>/mcp.log 2>&1 &`
-4. Wait for `Ready on http://localhost:8798` in the log before any run.
+3. Start the api (`apps/api`, `wrangler dev`, on 8989) and the one MCP (`corepack pnpm --filter @liveworkspace/mcp dev`, on 3013;
+   its `LIVEDESIGN_API` binding reaches the api). `/livedesign/mcp` on 3013 serves livedesign's package as it is, with
+   no core verbs and every tool, which is what the benchmark connects to (`MCP_URL`, default `http://127.0.0.1:3013/livedesign/mcp`).
+4. Wait for both to answer (`/health`) before any run.
 5. Check `claude --version` answers and the CLI is signed in: the benchmark runs on the signed-in account's usage.
 
 ## Run a round

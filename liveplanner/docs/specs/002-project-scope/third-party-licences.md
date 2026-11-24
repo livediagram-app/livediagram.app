@@ -15,7 +15,7 @@ reach a deployed artefact, and nothing else.
 - **Bundle truth.** What ships is read from the bundler, not inferred from `package.json`. The
   static apps (live, marketing, telemetry) are analysed with Next's `experimental-analyze`
   (Turbopack), and only the modules it places in client output count: a static export has no server
-  at runtime, so server chunks never leave the build. The workers (api, mcp, router) are bundled
+  at runtime, so server chunks never leave the build. The workers (api, router) and the MCP package are bundled
   with `wrangler deploy --dry-run --metafile`, and every module in the metafile counts.
 - **Why not the lockfile closure.** The production closure of a Next app lists its build machinery
   (sharp and its LGPL libvips, Playwright, the MDX toolchain) as if it shipped.
@@ -36,7 +36,7 @@ reach a deployed artefact, and nothing else.
   a font. Every emitted binary asset (`.wasm`, `.ttf`, `.otf`, `.woff`, `.woff2`) must match at least
   one entry of the reviewed **embedded-works table**, which names the libraries inside it with their
   own licence texts: resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font inside the
-  mcp worker. The same
+  MCP package. The same
   table covers material vendored into our own source (Lucide and Feather icon geometry), triggered by
   the first-party source file that carries it being bundled (or, for a trigger ending in `/`, any file in that folder: Lucide's glyphs are a module each).
 
@@ -66,7 +66,7 @@ reach a deployed artefact, and nothing else.
   the app boundaries. Each entry names the apps that ship it.
 - **Two sections.** "In your browser" lists the works sent to people's browsers by the editor and the
   website (the help centre is liveworkspace's one, listed on liveworkspace.app/licences). "On our servers" lists the works bundled
-  into the api, MCP and router workers; they run on Cloudflare, not on anyone's device, and are
+  into the api and router workers and the one MCP Worker; they run on Cloudflare, not on anyone's device, and are
   listed in full all the same. A work shipped on both sides appears in both, with each side's apps.
 - **Entries are collapsed.** Each is a native disclosure showing the name, version, licence id and
   apps; opening it loads its texts. A vendored or embedded work also says what carries it. The
@@ -110,7 +110,7 @@ reach a deployed artefact, and nothing else.
   strictly and fails loudly when it changes; it never guesses.
 - An embedded-works entry names the libraries the upstream build declares (its build manifest or its
   own notices file). Rust crates inside resvg's WASM beyond resvg and tiny-skia are not enumerated;
-  it runs only in our mcp worker.
+  it runs only in our MCP package.
 - `THIRD_PARTY_NOTICES.md` at the repo root stays the notice for material vendored into the source
   tree (Lucide, Feather); the page is the notice for what the deployed apps carry.
 

@@ -1,11 +1,11 @@
 name: MCP Registry
 
-# Lists one product's hosted MCP server in the official MCP Registry (registry.modelcontextprotocol.io) from its
-# <product>/server.json. PulseMCP and other directories ingest from that registry. Started by hand only, never on a
-# push (docs/ci.md "Workflows"; each product's docs/specs/015-api/mcp-server.md "Registry listing").
+# Lists liveworkspace's one MCP (liveworkspace/docs/specs/021-mcp/mcp.md) in the official MCP Registry
+# (registry.modelcontextprotocol.io) from liveworkspace/server.json. PulseMCP and other directories ingest from that
+# registry. The apps have no MCP of their own to list. Started by hand only, never on a push (docs/ci.md "Workflows").
 #
-# The registry refuses a version it already holds, so bump "version" in the product's server.json (and its
-# apps/mcp/src/listing.ts, which a test keeps equal) before running this again.
+# The registry refuses a version it already holds, so bump "version" in liveworkspace/server.json (and
+# liveworkspace/apps/mcp/src/listing.ts, which a test keeps equal) before running this again.
 
 on:
   workflow_dispatch:
@@ -15,10 +15,7 @@ on:
         required: true
         type: choice
         options:
-          - livediagram
-          - liveplanner
-          - livedocuments
-          - livedesign
+          - liveworkspace
 
 permissions:
   contents: read

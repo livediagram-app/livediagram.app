@@ -253,8 +253,8 @@ dialog or Make a copy button, no image upload or paste (`useEditorImages.ts`, `u
    the team Trash.
 8. **No owner override on team documents.** `X-Verified-Owner` is set only for a personal-document `?o=` upgrade,
    so a stuck baton on a team document can be cleared only by the grace timer.
-9. **Read-only tokens cannot join the room or comment**, and Settings cannot mint them at all: only the MCP consent
-   screen offers the toggle (`apps/editor/app/oauth/consent/page.tsx`); `tokens.ts` ignores any `readOnly` field.
+9. **Read-only tokens cannot join the room or comment**, and Settings cannot mint them at all: only the one MCP's consent
+   screen offers the toggle (liveworkspace's, since this editor's page is retired); `tokens.ts` ignores any `readOnly` field.
 10. **A link's role is immutable.** There is no route to change it; scope can change (`PUT /share/:code`), role
     cannot.
 11. **Setting a password does not end live sessions.** The password route broadcasts nothing (unlike revoke and

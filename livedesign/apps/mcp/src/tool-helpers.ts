@@ -24,7 +24,7 @@ export {
 } from '@liveworkspace/mcp-kit/tool-result';
 
 // The live app this MCP server belongs to: its own host on staging and on any other host
-// (CONSENT_BASE_URL, as the consent and device pages use), livedesign.app otherwise.
+// (CONSENT_BASE_URL, the editor's origin), livedesign.app otherwise.
 export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
   env.CONSENT_BASE_URL ?? 'https://www.livedesign.app';
 

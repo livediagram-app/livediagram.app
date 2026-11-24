@@ -5,7 +5,7 @@
 // signature so the declared content-type is independently verified
 // at the api boundary before the bytes ever reach R2.
 //
-// The signatures themselves live in api-schema (the mcp worker's image
+// The signatures themselves live in api-schema (the MCP's image
 // embedder needs them too); this module stays the api's named security
 // boundary, so image-sniff.test.ts exercises it in isolation without
 // importing index.ts and the whole worker handler.

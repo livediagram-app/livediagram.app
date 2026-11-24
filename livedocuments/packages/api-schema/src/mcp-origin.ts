@@ -1,8 +1,10 @@
-// Origin of livedocuments's MCP worker (docs/specs/015-api/mcp-server.md): the hosted one, and the resolver every app
-// reads it through (liveworkspace's, @liveworkspace/api-schema/mcp-origin, bound to it here).
+// Origin of the MCP people connect for livedocuments: liveworkspace's one MCP (liveworkspace/docs/specs/021-mcp/mcp.md),
+// since livedocuments's own MCP is a package the one MCP runs ("The app MCPs fold in"). The resolver every app reads it through is
+// liveworkspace's (@liveworkspace/api-schema/mcp-origin), bound to it here. Staging is
+// https://mcp-staging.liveworkspace.app, local development http://localhost:3013.
 import { createMcpOriginResolver } from '@liveworkspace/api-schema/mcp-origin';
 
-export const DEFAULT_MCP_ORIGIN = 'https://mcp.livedocuments.app';
+export const DEFAULT_MCP_ORIGIN = 'https://mcp.liveworkspace.app';
 
 // The build-time NEXT_PUBLIC_MCP_ORIGIN, or the hosted default when it is unset or blank.
 export const resolveMcpOrigin = /* @__PURE__ */ createMcpOriginResolver(DEFAULT_MCP_ORIGIN);

@@ -259,9 +259,9 @@ const TIER_OF = new Map([
   // exports, from full history), so it deploys with the sites; every product router (tier 2) binds to it.
   ['liveworkspace/apps/help', 1],
   ['liveworkspace/apps/redirect', 2],
-  // The one MCP (liveworkspace/docs/specs/021-mcp/mcp.md) binds every app's MCP Worker (tier 1), so it deploys with the
-  // routers, after them: a binding to a Worker that is not yet deployed fails the deploy.
-  ['liveworkspace/apps/mcp', 2],
+  // The one MCP (liveworkspace/docs/specs/021-mcp/mcp.md) runs every app's MCP package and binds each app's api (tier
+  // 0), so it deploys in tier 1, after them: a binding to a Worker that is not yet deployed fails the deploy.
+  ['liveworkspace/apps/mcp', 1],
 ]);
 // A held product's Workers never deploy: its first deploy is its launch card's.
 const HELD_PRODUCTS = new Set(

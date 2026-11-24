@@ -91,8 +91,7 @@ The shared card chrome lives in `apps/live/components/chrome/auth-shared.tsx` so
 
 ### The look: Night Band
 
-Every account and connect page (`/sign-in`, `/get-started`, the OAuth consent and device pages and
-the workbench pairing page) stands on one frame, `AuthStage` (`apps/live/components/chrome/AuthStage.tsx`), modelled on
+Every account and connect page (`/sign-in`, `/get-started`, the workbench pairing page) stands on one frame, `AuthStage` (`apps/live/components/chrome/AuthStage.tsx`), modelled on
 the marketing site's "No Catch" night section:
 
 - **Header.** The brand at the top left. On `/sign-in` and `/get-started` a **"Not now, keep going as a guest"** link
@@ -192,7 +191,7 @@ The session loads deferred, so `/new` cannot wait for the token request without 
 
 - **No hint, or `ldes_signed_in=0`**: a guest. The create goes ahead at once, Offline.
 - **`ldes_signed_in=1`**: probably signed in. The create waits for auth to settle (as it always has) and then uses the settled answer.
-- **The consent and device pages** (`/oauth/*`) read the hint the same way. With `ldes_signed_in=1` they show their
+- **The sign-in pages that wait on the session** read the hint the same way (the OAuth consent and device pages are liveworkspace.app's now). With `ldes_signed_in=1` they show their
   loading line until the session itself answers, up to 15 seconds, rather than taking the page's 5-second give-up on
   sign-in as signed out: a slow session used to show a signed-in person "Sign in to connect", and the click then
   signed them straight in. Only the session's own answer that there is no one, or no hint, shows the Sign in step

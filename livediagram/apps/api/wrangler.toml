@@ -59,10 +59,10 @@ EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 # per IP) remains the only other control.
 AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 
-# The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
-# api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
+# The CLI signs in through liveworkspace's one MCP, which holds the OAuth server for every app
+# (liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold in"); the api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
 # from an older CLI.
-OAUTH_ISSUER = "https://mcp.livediagram.app"
+OAUTH_ISSUER = "https://mcp.liveworkspace.app"
 
 # No bucket: images are liveworkspace's media service's (MEDIA_KEY below), and snapshots and share cards
 # its previews (liveworkspace/docs/specs/006-media/previews.md). The bytes uploaded before that move are still in the previous
@@ -241,13 +241,13 @@ binding = "AI"
 
 # TELEMETRY_KEY is livediagram's secret on the liveworkspace telemetry service
 # (liveworkspace/docs/specs/008-telemetry/telemetry.md): sent as X-Telemetry-Key, it proves a batch with
-# no Origin (this worker's own events, the relay's, the mcp worker's) is livediagram's.
+# no Origin (this worker's own events, the relay's, the one MCP's) is livediagram's.
 # Provisioned out-of-band like the two above; never in [vars] — it is secret material:
 #
 #   - Local dev: `TELEMETRY_KEY=dev-livediagram-key` in `apps/api/.dev.vars`
 #     (gitignored), matching the local service's .dev.vars.
-#   - Production: `wrangler secret put TELEMETRY_KEY`, the SAME value on the mcp
-#     worker, and on the liveworkspace service as TELEMETRY_KEY_LIVEDIAGRAM.
+#   - Production: `wrangler secret put TELEMETRY_KEY`, the SAME value on the one MCP
+#     Worker (LIVEDIAGRAM_TELEMETRY_KEY), and on the liveworkspace service as TELEMETRY_KEY_LIVEDIAGRAM.
 #     Generate with `openssl rand -hex 32`.
 #
 # Unset = this worker sends no telemetry, which is what a deployment gets with no
@@ -356,8 +356,8 @@ EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 # edge".
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
 
-# The staging MCP worker's OAuth server, for the CLI against staging.
-OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
+# Staging's one MCP (the OAuth server), for the CLI against staging (mcp.md "The app MCPs fold in").
+OAUTH_ISSUER = "https://mcp-staging.liveworkspace.app"
 # No AI_REQUIRE_SIGN_IN, matching production: the editor offers AI to guests, so
 # requiring sign-in here made staging refuse what production allows (the photo
 # reader stopped with "sign in required"), which is drift, not a staging test.

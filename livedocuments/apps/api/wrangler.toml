@@ -38,10 +38,10 @@ PRO_ENABLED = "false"
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
 INDEX_ORIGIN = "https://www.liveworkspace.app"
 
-# The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
-# api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
-# from an older CLI.
-OAUTH_ISSUER = "https://mcp.livedocuments.app"
+# The CLI signs in through the one MCP's OAuth server (docs/specs/015-api/cli.md "Authentication";
+# liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold in"); the api names it in /api/capabilities.
+# CLI_MIN_VERSION (unset until a release needs a floor) refuses writes from an older CLI.
+OAUTH_ISSUER = "https://mcp.liveworkspace.app"
 
 # The From identity for transactional email (docs/specs/014-identity/transactional-email.md). Its domain is
 # onboarded to Cloudflare Email Service on this account (liveworkspace/docs/specs/003-accounts/email.md).
@@ -290,8 +290,9 @@ EMAIL_FROM = "livedocuments <hello@livedocuments.app>"
 # Staging's own index (see the top-level [vars]).
 INDEX_ORIGIN = "https://staging.liveworkspace.app"
 
-# The staging MCP worker's OAuth server, for the CLI against staging.
-OAUTH_ISSUER = "https://mcp-staging.livedocuments.app"
+# Staging's one MCP, whose OAuth server the CLI uses against staging (liveworkspace/docs/specs/021-mcp/mcp.md
+# "The app MCPs fold in").
+OAUTH_ISSUER = "https://mcp-staging.liveworkspace.app"
 
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
 # scopes a namespace per script, and `livedocuments-api-staging` is a different

@@ -51,9 +51,9 @@ account). What follows is how liveknowledge uses them.
 - **No copy.** liveknowledge keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
   liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
   it when it is revoked ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
-- **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
-  token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
-  revoked by presenting it to `DELETE /api/tokens/current`.
+- **Minting for an AI tool.** The one MCP (`liveworkspace/docs/specs/021-mcp/mcp.md`) mints the token at liveworkspace with the person's access token;
+  this app has no exchange route ("The app MCPs fold in"). A token the MCP then refuses is revoked by presenting it
+  to `DELETE /api/tokens/current`.
 - **Management** is liveworkspace's; this app has no routes for listing, minting or revoking tokens. The Settings dialog's Settings › API Tokens category draws the shared token panel in place for a signed-in account
   (`@liveworkspace/settings-ui/account-panels`, the same one liveworkspace.app's Settings has, loaded when the category
   is first opened): make a token (a name, Read Only), its secret shown once with Copy, and revoke one. Under it the editor's own API Tokens row lists the account's paired workbenches with Unpair and

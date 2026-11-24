@@ -321,7 +321,7 @@ export * from './tab-builders';
 // Shared by the editor's text export + import and reusable by the api / MCP.
 
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
-// shared by the in-app export and the MCP worker's inline image render.
+// shared by the in-app export and the MCP package's inline image render.
 export * from './svg-render';
 export { borderOf } from '@liveworkspace/element-model/svg-render-border';
 export {
@@ -354,7 +354,7 @@ export {
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). The viewer-appearance wrappers stay in apps/editor/lib/themes.ts.
+// MCP package (docs/specs/015-api/mcp-server.md). The viewer-appearance wrappers stay in apps/editor/lib/themes.ts.
 export * from '@liveworkspace/element-model/theme-graph';
 export * from '@liveworkspace/element-model/themes';
 export * from '@liveworkspace/element-model/theme-halves';
@@ -482,12 +482,12 @@ export {
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
 // apps/editor because the EXPORTS need it too — the SVG / PNG renderers have
 // to paint a label in the face the canvas painted it in, and they run in the
-// mcp worker as well as the browser.
+// MCP package as well as the browser.
 export * from '@liveworkspace/model-core/fonts';
 
 // Slide decks (docs/specs/012-collaboration/presentation-mode.md): the Slide / Deck types plus the pure resolution
 // helpers a presentation is built from. Kept here rather than in apps/editor
-// because the api and the MCP worker can answer the same questions.
+// because the api and the MCP package can answer the same questions.
 export * from './slide-deck';
 export * from './lane-seam-snapping';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):

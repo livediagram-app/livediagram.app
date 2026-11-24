@@ -154,10 +154,10 @@ In order of precedence:
    it would land in shell history and transcripts.
 2. **The stored credential** of the active profile, from `auth login`.
 
-- `auth login` runs OAuth 2.1 with PKCE through the MCP worker's authorisation server
-  ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lwt_` token. `--device` uses the
+- `auth login` runs OAuth 2.1 with PKCE through liveworkspace's one MCP, the authorisation server
+  ([MCP server](mcp-server.md) §3, `../../../../liveworkspace/docs/specs/021-mcp/mcp.md` "The app MCPs fold in") with a loopback redirect, and stores the minted `lwt_` token. `--device` uses the
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
-  do not run the MCP worker. The token is named "liveplanner CLI"; its work shows as its owner's. A new login on a
+  do not run the one MCP. The token is named "liveplanner CLI"; its work shows as its owner's. A new login on a
   profile that holds a token revokes the old one once the new one works.
 - The token goes in the operating system's own store, through the system's own tool and never native code: the
   macOS Keychain (`security`), the Secret Service on Linux (`secret-tool`), and on Windows a token sealed for the user
@@ -177,7 +177,7 @@ In order of precedence:
 
 - `~/.config/liveplanner/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEPLANNER_HOST` and
   `LIVEPLANNER_PROFILE` choose one. The default is `https://www.liveplanner.app`.
-- The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server exist, the
+- The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server (the one MCP) exist, the
   project format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer project format than it reads, the CLI
   refuses the commands that work on local files (`pull`, `push`, `export`, `tab diff`) the same way.
@@ -234,7 +234,7 @@ or fails a command, and when it last asked is kept in the CLI's config folder (`
 - Sent to the active profile's api only. Off with `LIVEPLANNER_TELEMETRY=0`, `DO_NOT_TRACK=1` or `telemetry off`
   (which sends its own `UI·Toggled·TelemetryOff` first). The first run says on stderr what is counted.
 - No device id, arguments, project ids or host names.
-- A sign-in through the CLI counts as `Token·Created·Cli`, beside the MCP's `Token·Created·MCP`.
+- A sign-in through the CLI is counted by liveworkspace's sign-in pages; this app sends no `Token·Created`.
 
 ## Limits
 

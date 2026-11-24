@@ -1,6 +1,6 @@
 // Error telemetry tokens (docs/specs/017-telemetry/telemetry.md 'Error' category): how every error source
 // says WHERE it failed inside the one `type` token it has. Shared so the
-// editor, the help centre, the api worker and the MCP worker all build the
+// editor, the help centre, the api worker and the MCP package all build the
 // same shape: dot-separated PascalCase parts, `<What>.<Where>[.<Which>]`,
 // e.g. `Http403.SaveTab`, `Internal.Put.Projects.Tabs`,
 // `Uncaught.Project.TypeError`, `Render.Canvas.TypeError`.
@@ -40,7 +40,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'folders',
   'teams',
   'tokens',
-  'oauth',
   'account',
   // The person's My Work calendar feed (docs/specs/026-plan/calendar-feed.md "The My Work feed"): `/my-work/calendar-feed`.
   'my-work',

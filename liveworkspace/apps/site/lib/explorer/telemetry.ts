@@ -295,9 +295,10 @@ export function trackAppEvent(category: string, action: string, type: string | n
  *  an app's own address nothing is sent: the service takes liveworkspace.app's own events only from its origin. */
 /** An AI tool connected through the one MCP's consent page (liveworkspace/docs/specs/021-mcp/mcp.md), in
  *  liveworkspace.app's own name: the token it mints is every app's at once. */
-export function trackMcpTokenCreated() {
+/** A token minted on the OAuth pages: for an AI tool (`MCP`) or an app's CLI (`Cli`). */
+export function trackMcpTokenCreated(type: 'MCP' | 'Cli' = 'MCP') {
   if (pageApp()) return;
-  send(PLATFORM_TELEMETRY_APP, 'Token', 'Created', 'MCP');
+  send(PLATFORM_TELEMETRY_APP, 'Token', 'Created', type);
 }
 
 export function trackKit(action: KitTelemetryAction, type: KitTelemetryType) {

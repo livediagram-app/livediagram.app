@@ -155,10 +155,10 @@ export function ConnectAgentScene() {
         <Label x={x + 32} y={148} size={6.8} tone="muted">
           Choose Add custom connector, name it liveknowledge and paste the address as its URL.
         </Label>
-        <CodeBox x={x + 32} y={156} w={cardW - 44} lines={['https://mcp.liveknowledge.app/mcp']} />
+        <CodeBox x={x + 32} y={156} w={cardW - 44} lines={['https://mcp.liveworkspace.app/mcp']} />
         <Btn x={x + cardW - 50} y={158} w={34} h={14} label="Copy" size={6.6} />
         <Label x={x + 32} y={185} size={6.8} tone="muted">
-          Choose Connect, then approve on the liveknowledge page that opens.
+          Choose Connect, then approve on the liveworkspace page that opens.
         </Label>
       </Surface>
       <Surface x={x} y={204} w={cardW} h={88} r={9}>

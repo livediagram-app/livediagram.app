@@ -618,9 +618,6 @@ importers:
       vitest:
         specifier: ^5.0.1
         version: 5.1.1(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-      wrangler:
-        specifier: ^4.166.0
-        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedesign/apps/router:
     dependencies:
@@ -1779,9 +1776,6 @@ importers:
       vitest:
         specifier: ^5.0.1
         version: 5.1.1(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-      wrangler:
-        specifier: ^4.166.0
-        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livediagram/apps/router:
     dependencies:
@@ -2933,9 +2927,6 @@ importers:
       vitest:
         specifier: ^5.0.1
         version: 5.1.1(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-      wrangler:
-        specifier: ^4.166.0
-        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedocuments/apps/router:
     dependencies:
@@ -4997,9 +4988,6 @@ importers:
       vitest:
         specifier: ^5.0.1
         version: 5.1.1(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-      wrangler:
-        specifier: ^4.166.0
-        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveknowledge/apps/router:
     dependencies:
@@ -6181,9 +6169,6 @@ importers:
       vitest:
         specifier: ^5.0.1
         version: 5.1.1(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-      wrangler:
-        specifier: ^4.166.0
-        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveplanner/apps/router:
     dependencies:
@@ -7313,6 +7298,21 @@ importers:
 
   liveworkspace/apps/mcp:
     dependencies:
+      '@livedesign/mcp':
+        specifier: workspace:*
+        version: link:../../../livedesign/apps/mcp
+      '@livediagram/mcp':
+        specifier: workspace:*
+        version: link:../../../livediagram/apps/mcp
+      '@livedocuments/mcp':
+        specifier: workspace:*
+        version: link:../../../livedocuments/apps/mcp
+      '@liveknowledge/mcp':
+        specifier: workspace:*
+        version: link:../../../liveknowledge/apps/mcp
+      '@liveplanner/mcp':
+        specifier: workspace:*
+        version: link:../../../liveplanner/apps/mcp
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
@@ -7332,6 +7332,21 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261118.1
         version: 5.20261120.1
+      '@livedesign/api-schema':
+        specifier: workspace:*
+        version: link:../../../livedesign/packages/api-schema
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../../../livediagram/packages/api-schema
+      '@livedocuments/api-schema':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/api-schema
+      '@liveknowledge/api-schema':
+        specifier: workspace:*
+        version: link:../../../liveknowledge/packages/api-schema
+      '@liveplanner/api-schema':
+        specifier: workspace:*
+        version: link:../../../liveplanner/packages/api-schema
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -7530,6 +7545,9 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:*
         version: link:../../../packages/account-menu
+      '@liveworkspace/api-kit':
+        specifier: workspace:^
+        version: link:../../../packages/api-kit
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema

@@ -43,7 +43,6 @@ export * from './api/qa-board';
 export * from './api/share';
 export * from './api/shape-libraries';
 export * from '@liveworkspace/workbench/lib/api/tokens';
-export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';
 export * from './api/room';
 export * from './api/images';

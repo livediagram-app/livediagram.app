@@ -12,6 +12,7 @@ import { FAQ_CATEGORIES } from './faq-content';
 const INTEGRATION_ANSWERS = new Map<string, RegExp>([
   ['Can I set up a team with shared documents?', /liveworkspace account/],
   ['Is there an API?', /liveworkspace account/],
+  ['Can I connect my own AI assistant, like Claude?', /liveworkspace's MCP server/],
   ['Is livedocuments up right now?', /liveworkspace status page/],
 ]);
 

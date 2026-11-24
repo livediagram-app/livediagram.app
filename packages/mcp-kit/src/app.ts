@@ -35,7 +35,9 @@ export function createMcpApp<E extends OauthEnv>(options: {
   // A fresh server per request: the caller's token arrives through the transport's authInfo and is read inside
   // each tool, so nothing carries over between requests.
   buildServer: (env: E) => McpServer;
-  oauth: OauthServer<E>;
+  // The authorization server. An app's MCP package has none: the one MCP (liveworkspace/docs/specs/021-mcp/mcp.md)
+  // runs it in process and signs people in itself.
+  oauth?: OauthServer<E>;
   // How the server is listed: its serverInfo, server.json and server card (mcp-server.md §4.16).
   listing: McpListing;
 }): Hono<{ Bindings: E }> {
@@ -93,8 +95,8 @@ export function createMcpApp<E extends OauthEnv>(options: {
     return c.json(card, 200, { 'Cache-Control': 'public, max-age=3600' });
   });
 
-  // OAuth 2.1 discovery / register / authorize / complete / token (mcp-server.md §3).
-  registerOauthRoutes(app, options.oauth);
+  // OAuth 2.1 discovery / register / authorize / complete / token (mcp-server.md §3), when this server signs in.
+  if (options.oauth) registerOauthRoutes(app, options.oauth);
 
   // The MCP Streamable-HTTP transport. Stateless (no session id) with JSON
   // responses, which suits a per-request Worker: build a fresh server + transport,

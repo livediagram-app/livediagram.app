@@ -66,7 +66,7 @@ export type Env = {
   // Local dev only: the origin the browser is on (the router, `http://localhost:3100`), which the
   // sign-in redirect returns to. Unset in production, where the request's own origin is right.
   AUTH_ORIGIN?: string;
-  // The OAuth server the CLI signs in through (docs/specs/015-api/cli.md), an https origin.
+  // The OAuth server the CLI signs in through (docs/specs/015-api/cli.md): liveworkspace's one MCP, an https origin.
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;

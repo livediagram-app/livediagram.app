@@ -60,8 +60,6 @@ export const PLAN_GRANT_BOOT_SCRIPT = trustedConstant(
 // pages, the guest hand-off's way back, embeds and form links; the shared script
 // (@liveworkspace/auth-client/silent) also leaves frames, crawlers, share links and anyone who signed out of
 // liveplanner alone.
-// The AI-tool consent and device pages (/oauth) do bounce: they only work signed in, and the bounce keeps their
-// address, so someone with a liveworkspace session who arrives from an AI tool is never shown a Sign in step.
 export const SILENT_SIGN_IN_SKIP_PATHS = [
   '/sign-in',
   '/get-started',

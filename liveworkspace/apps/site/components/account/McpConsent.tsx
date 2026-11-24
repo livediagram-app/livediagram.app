@@ -2,12 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BackBar, Button, usePageRestore } from '@liveworkspace/ui';
-import {
-  OauthHelpLink,
-  ReadOnlyAccessToggle,
-  OauthWarning,
-} from '@liveworkspace/workbench/components/oauth/oauth-chrome';
-import { TokenLimitListLazy } from '@liveworkspace/workbench/components/oauth/TokenLimitListLazy';
+import { OauthHelpLink, ReadOnlyAccessToggle, OauthWarning } from './oauth/oauth-chrome';
+import { TokenLimitListLazy } from './oauth/TokenLimitListLazy';
 import { Callout } from '@liveworkspace/ui/callout';
 import { accountApi } from '@/lib/account-api';
 import { trackMcpTokenCreated } from '@/lib/explorer/telemetry';
@@ -35,10 +31,9 @@ import {
 import { ConnectPitch } from './Pitch';
 
 // Connecting an AI tool to every app at once (liveworkspace/docs/specs/021-mcp/mcp.md "Sign-in and per-app
-// consent"): the one MCP's /oauth/authorize sends the person here. It is each app's own consent page (the shared
-// pieces in @liveworkspace/workbench/components/oauth: the Unverified App warning, where access goes, read-only, the
-// help link) beside the connect pitch, plus the apps it may use, every one ticked to start. Unlisted while the one
-// MCP is tried.
+// consent"): the one MCP's /oauth/authorize sends the person here. The pieces it shares with the device page
+// (./oauth: the Unverified App warning, where access goes, read-only, the help link) beside the connect pitch, plus
+// the apps it may use, every one ticked to start. A CLI signing in sees no app list: its token goes to one app's api.
 export function McpConsent() {
   return (
     <>
@@ -154,11 +149,12 @@ function ConsentCard() {
     setError('');
     setFreed(false);
     setBusy(true);
-    const chosen = MCP_APPS.map((a) => a.app).filter((app) => ticked.has(app));
+    // A CLI gets every app: it calls one app's api with the token, never this MCP's tools.
+    const chosen = MCP_APPS.map((a) => a.app).filter((app) => request.cli || ticked.has(app));
     const result = await connect(origin, session, client, chosen, readOnly);
     if (result.ok) {
-      // Anonymous telemetry: an AI tool was connected, which mints a token (each app's page sends the same).
-      trackMcpTokenCreated();
+      // Anonymous telemetry: an AI tool connected, or a CLI signed in, which mints a token.
+      trackMcpTokenCreated(request.cli ? 'Cli' : 'MCP');
       return window.location.assign(result.redirectTo);
     }
     setBusy(false);
@@ -188,7 +184,9 @@ function ConsentCard() {
         <strong className="break-all text-slate-900 dark:text-slate-100">
           <bdi>{client}</bdi>
         </strong>{' '}
-        wants access to your liveworkspace apps. Revoke it any time in Settings.
+        {request.cli
+          ? 'wants to act as you in your liveworkspace apps from your terminal. Revoke it any time in Settings.'
+          : 'wants access to your liveworkspace apps. Revoke it any time in Settings.'}
       </AccountHeading>
       {room ? (
         <>
@@ -228,34 +226,36 @@ function ConsentCard() {
               </p>
             </OauthWarning>
           )}
-          <fieldset className="mt-5">
-            <legend className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              Apps it can use
-            </legend>
-            <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
-              {apps.map((a) => (
-                <li key={a.app}>
-                  <label className="flex min-h-12 cursor-pointer items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800">
-                    <input
-                      type="checkbox"
-                      checked={ticked.has(a.app)}
-                      onChange={() => toggle(a.app)}
-                      className="size-4 cursor-pointer accent-slate-900 dark:accent-slate-100"
-                    />
-                    {a.listed ? <AppMark app={a.listed} className="size-6 shrink-0" /> : null}
-                    <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {a.app}
+          {request.cli ? null : (
+            <fieldset className="mt-5">
+              <legend className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Apps it can use
+              </legend>
+              <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
+                {apps.map((a) => (
+                  <li key={a.app}>
+                    <label className="flex min-h-12 cursor-pointer items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <input
+                        type="checkbox"
+                        checked={ticked.has(a.app)}
+                        onChange={() => toggle(a.app)}
+                        className="size-4 cursor-pointer accent-slate-900 dark:accent-slate-100"
+                      />
+                      {a.listed ? <AppMark app={a.listed} className="size-6 shrink-0" /> : null}
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          {a.app}
+                        </span>
+                        <span className="block text-xs text-slate-500 dark:text-slate-400">
+                          {a.makes}
+                        </span>
                       </span>
-                      <span className="block text-xs text-slate-500 dark:text-slate-400">
-                        {a.makes}
-                      </span>
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </fieldset>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </fieldset>
+          )}
           <ReadOnlyAccessToggle
             noun="items"
             readOnly={readOnly}
@@ -283,8 +283,8 @@ function ConsentCard() {
           variant="none"
           onClick={() => void approve()}
           busy={busy}
-          disabled={ticked.size === 0}
-          title={ticked.size === 0 ? 'Tick at least one app' : undefined}
+          disabled={!request.cli && ticked.size === 0}
+          title={!request.cli && ticked.size === 0 ? 'Tick at least one app' : undefined}
           className={PRIMARY_BUTTON}
         >
           {busy ? 'Connecting…' : 'Connect'}

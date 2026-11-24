@@ -12,12 +12,12 @@ There is a second environment, **staging**, which does deploy on its own: when C
 | `apps/editor`             | `livediagram-editor`                   | Static assets + a tiny path-rewrite worker.                                                                                                                        |
 | `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `livediagram` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). |
 | `apps/api`                | `livediagram-api`                      | Worker (Durable Objects; no database or bucket of its own).                                                                                                        |
-| `apps/mcp`                | `livediagram-mcp`                      | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                      |
+| `apps/mcp`                | none (a package)                       | No Worker: liveworkspace's one MCP Worker runs it ([MCP server](../015-api/mcp-server.md)); it deploys with liveworkspace.                                         |
 | `apps/router`             | `livediagram-router`                   | Worker (service bindings to marketing, editor, api and help).                                                                                                      |
 
-`apps/cli` is the npm CLI and deploys nowhere. Publishing is a manual step outside CI: the CLI goes to npm by hand, and `livediagram/server.json` is listed on the official MCP Registry by hand, or by the root `mcp-registry.yml` workflow started by hand ([MCP server §4.16](../015-api/mcp-server.md#416-registry-listing)). CI builds and packs the CLI on every run that reaches it (`npm pack --dry-run`, [docs/ci.md](../../../../docs/ci.md)).
+`apps/cli` is the npm CLI and deploys nowhere. Publishing is a manual step outside CI: the CLI goes to npm by hand, and liveworkspace's one MCP, not this product's, is the server listed on the official MCP Registry ([MCP server §4.16](../015-api/mcp-server.md#416-registry-listing)). CI builds and packs the CLI on every run that reaches it (`npm pack --dry-run`, [docs/ci.md](../../../../docs/ci.md)).
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page; see [New document route](../007-editor/new-document-route.md). `/help` is liveworkspace's one help centre: the router's `HELP` binding goes to `liveworkspace-help` (staging `liveworkspace-help-staging`) with `x-help-app: livediagram` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). There is no Community Worker: `/community` is liveworkspace.app's page, whose head and sitemap the router fills ([Community](../025-community/community.md) "Search engines"). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livediagram.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `EDITOR`, `API`, `HELP` and `COMMUNITY` service bindings that forward requests to the right downstream worker, and `/telemetry` redirects to liveworkspace's dashboard ([Telemetry](../017-telemetry/telemetry.md)).
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page; see [New document route](../007-editor/new-document-route.md). `/help` is liveworkspace's one help centre: the router's `HELP` binding goes to `liveworkspace-help` (staging `liveworkspace-help-staging`) with `x-help-app: livediagram` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). There is no Community Worker: `/community` is liveworkspace.app's page, whose head and sitemap the router fills ([Community](../025-community/community.md) "Search engines"). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The MCP package exposes the AI tools over its own host `mcp.livediagram.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `EDITOR`, `API`, `HELP` and `COMMUNITY` service bindings that forward requests to the right downstream worker, and `/telemetry` redirects to liveworkspace's dashboard ([Telemetry](../017-telemetry/telemetry.md)).
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, Durable Object bindings and the account it deploys to (`account_id`, the liveworkspace account). Secrets **never** go in `wrangler.toml`: they are set on each worker with `wrangler secret put`. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
@@ -44,7 +44,7 @@ The two test steps run two packages at a time (`--concurrency=2`). Each package'
 
 CI is the gate you check before deploying to production, but it does **not** trigger that deploy: production is run by hand (see below). It **does** trigger the staging deploy, which runs when CI passes for a push to `main` ([Staging environment](staging-environment.md)).
 
-`staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp, router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]` block, or a `service =` that lost its `-staging` suffix, pointing the staging router at **production**, is neither a type error nor a test failure. Without this step the first sign of either is a deploy.
+`staging:check` runs `wrangler deploy --dry-run --env staging` for the two workers that carry bindings (api, router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]` block, or a `service =` that lost its `-staging` suffix, pointing the staging router at **production**, is neither a type error nor a test failure. Without this step the first sign of either is a deploy.
 
 The root `e2e.yml` runs livediagram's smoke build and three smoke shards, and its signed-in specs through `e2e-product.yml` when a change reaches the editor ([End-to-end tests](../003-system-architecture/e2e-smoke.md)). Its sites audit runs on a plan of its own, when its marketing, the help centre or the Community changes (docs/ci.md "Workflows").
 
@@ -74,10 +74,10 @@ The root `deploy.yml` (reusable) deploys one environment, and two thin callers r
 **Order.** Three tiers, each waiting for the one before, and a failing tier stops the ones after it:
 
 1. **Services and apis**: `livediagram-api`.
-2. **Sites and MCP**: `livediagram-marketing`, `livediagram-editor` and `livediagram-mcp`, so a new editor never calls an api that lacks its routes, and the mcp's binding to the api exists.
+2. **Sites**: `livediagram-marketing` and `livediagram-editor`, so a new editor never calls an api that lacks its routes.
 3. **Routers**: `livediagram-router`, whose service bindings target the api, marketing and editor workers above, and liveworkspace's `liveworkspace-help`.
 
-**One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the other services and apis, livediagram's sites and MCP in a job of their own, and the router with the other routers, each Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID`, the [stale-build](stale-builds.md) check, and the hosted build vars; on staging, the staging MCP origin too). Then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production; the api adds its hosted vars and `BUILD_ID` and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
+**One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the other services and apis, livediagram's sites in a job of their own, and the router with the other routers, each Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID`, the [stale-build](stale-builds.md) check, and the hosted build vars; on staging, the staging MCP origin too). Then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production; the api adds its hosted vars and `BUILD_ID` and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
 
 **What a deploy writes.** Code and plain vars. Secrets are set on each Worker with `wrangler secret put` and survive a deploy (see [Credentials and secrets](#credentials-and-secrets)).
 
@@ -103,24 +103,24 @@ Some configuration is what **livediagram.app** runs with, not what the software 
 
 The only credential the workflows hold is the repository secret **`CLOUDFLARE_API_TOKEN`**, a token for the liveworkspace account ([docs/ci.md](../../../../docs/ci.md) "Deploys"). Every `wrangler.toml` pins the account, so no account id is passed.
 
-A deploy writes code and plain vars only. Each Worker's secrets (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` on the api; `TELEMETRY_KEY` on the api **and** mcp, the same value on both; `COMMUNITY_KEY`, `MEDIA_KEY`, `DRIVE_KEY` and the model key, `GOOGLE_AI_STUDIO_API_KEY` / `AI_API_KEY`, on the api) are set on it with `wrangler secret put` (with `--env staging` for staging) and survive every deploy. A value rotates by putting the new one on the worker. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full table.
+A deploy writes code and plain vars only. Each Worker's secrets (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` on the api; `TELEMETRY_KEY` on the api, and the same value as `LIVEDIAGRAM_TELEMETRY_KEY` on liveworkspace's one MCP Worker; `COMMUNITY_KEY`, `MEDIA_KEY`, `DRIVE_KEY` and the model key, `GOOGLE_AI_STUDIO_API_KEY` / `AI_API_KEY`, on the api) are set on it with `wrangler secret put` (with `--env staging` for staging) and survive every deploy. A value rotates by putting the new one on the worker. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full table.
 
 ## Custom domain
 
-Production is **`https://www.livediagram.app`**. The `livediagram.app` zone is on the liveworkspace Cloudflare account, and the router and mcp workers declare their hostnames in their `wrangler.toml` as Workers custom domains (`routes` with `custom_domain = true`), as liveplanner's do, so `wrangler deploy` attaches them:
+Production is **`https://www.livediagram.app`**. The `livediagram.app` zone is on the liveworkspace Cloudflare account, and the router worker declares its hostnames in its `wrangler.toml` as Workers custom domains (`routes` with `custom_domain = true`), as liveplanner's do, so `wrangler deploy` attaches them:
 
-| Worker               | Production                               | Staging (`[env.staging]`)     |
-| -------------------- | ---------------------------------------- | ----------------------------- |
-| `livediagram-router` | `livediagram.app`, `www.livediagram.app` | `staging.livediagram.app`     |
-| `livediagram-mcp`    | `mcp.livediagram.app`                    | `mcp-staging.livediagram.app` |
+| Worker               | Production                               | Staging (`[env.staging]`) |
+| -------------------- | ---------------------------------------- | ------------------------- |
+| `livediagram-router` | `livediagram.app`, `www.livediagram.app` | `staging.livediagram.app` |
+
+`mcp.livediagram.app` and `mcp-staging.livediagram.app` are custom domains on liveworkspace's one MCP Worker, kept only so connections made before it carry on until their token ends (`liveworkspace/docs/specs/021-mcp/mcp.md` "The app MCPs fold in"); the api's `OAUTH_ISSUER` is the one MCP's origin.
 
 The list in each `wrangler.toml` is the whole list: a deploy detaches a custom domain the file no longer names.
 
-A deployment of your own must also set two origins, or its links lead to livediagram.app: the mcp worker's
-`CONSENT_BASE_URL` (`[vars]` in `apps/mcp/wrangler.toml`: the editor origin that serves the OAuth consent page and
-hosts every tool's links, [MCP server §4.13](../015-api/mcp-server.md#413-worker-configuration)) and the api's
+A deployment of your own must also set two origins, or its links lead to livediagram.app: the one MCP's
+`LIVEDIAGRAM_BASE_URL` (a var on liveworkspace's `apps/mcp`: the editor origin that hosts every tool's links, [MCP server §4.13](../015-api/mcp-server.md#413-package-configuration)) and the api's
 `APP_BASE_URL` (the origin every email link points at, [Transactional email](../014-identity/transactional-email.md)).
-Local dev sets both to `http://localhost:3100` in the two dev scripts (`wrangler dev --var`), so a local run never
+Local dev sets both to `http://localhost:3100` in the api's and the one MCP's dev scripts (`wrangler dev --var`), so a local run never
 links to production.
 
 From the router:
@@ -131,7 +131,7 @@ From the router:
 - `/telemetry` → a 301 to liveworkspace's telemetry dashboard, `https://www.liveworkspace.app/telemetry?app=livediagram.app`.
 - Everything else → marketing.
 
-The other workers have no hostname: they are reached only over the router's (and the mcp worker's) service bindings. No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
+The other workers have no hostname: they are reached only over the router's service bindings. No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
 
 ## Rollback
 

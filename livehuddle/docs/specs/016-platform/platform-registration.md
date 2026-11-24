@@ -104,8 +104,7 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 
 - **The hold lifts**: `held: true` comes off, so shared-package changes reach livehuddle's suites and its Workers
   deploy.
-- **Real KV namespaces** for the MCP Worker's OAuth state (deleted with it since #562): `livehuddle-mcp-oauth` (production) and
-  `livehuddle-mcp-oauth-staging` replace the placeholder ids in `livediagram/apps/mcp/wrangler.toml`. The api has no D1 (its
+- **No KV namespace for an MCP**: livehuddle has none (deleted with its MCP Worker since #562), and an app's MCP is no longer a Worker with a KV of its own (liveworkspace's one MCP holds the one `OAUTH_KV`). The api has no D1 (its
   Durable Objects keep everything), so there is no database to create.
 - **The bare domain** `livehuddle.app` joins the platform's `APP_BARE_HOSTS`, so the router sends its pages to
   `www.`.

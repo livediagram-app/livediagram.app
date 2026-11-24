@@ -203,7 +203,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   live/         # the Pages editor app (Next.js, clean routes)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects + R2, no database of its own, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livedesign.app)
+  mcp/          # MCP package (tools for AI tools); liveworkspace/apps/mcp runs it in process, no Worker of its own
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the livedesign command line for agents and scripts (Node, one esbuild bundle)
 packages/

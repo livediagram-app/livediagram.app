@@ -914,7 +914,7 @@ text keeps its left edge, a centred one its centre (and so the point it turns ab
 edge. Text that wraps keeps its width, which is no wider than the content it heads.
 
 - `buildTemplate` runs its output through `fitTextWidths` (`@liveworkspace/element-model/text-fit`, one copy for
-  every product), the last step, so every path that makes a template (the editor, the api, the MCP worker) lands the
+  every product), the last step, so every path that makes a template (the editor, the api, the MCP package) lands the
   same boxes.
 - The width is an estimate, with no DOM to measure: the wider of Inter's advances (`textAdvanceEm`, bold widened)
   and the flat share a headless render wraps by, plus a tenth, 8 px and the box's padding both sides, so the words

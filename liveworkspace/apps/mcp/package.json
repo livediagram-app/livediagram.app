@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --inspector-port 9139 --port 3013 --var CONSENT_BASE_URL:http://localhost:3000",
+    "dev": "wrangler dev --inspector-port 9139 --port 3013 --var CONSENT_BASE_URL:http://localhost:3000 --var LIVEDIAGRAM_BASE_URL:http://localhost:3100 --var LIVEPLANNER_BASE_URL:http://localhost:3200 --var LIVEDOCUMENTS_BASE_URL:http://localhost:3300 --var LIVEDESIGN_BASE_URL:http://localhost:3400 --var LIVEKNOWLEDGE_BASE_URL:http://localhost:3600 --var SERVE_APP_PACKAGES:true",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
@@ -17,6 +17,11 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
   },
   "dependencies": {
+    "@livedesign/mcp": "workspace:*",
+    "@livediagram/mcp": "workspace:*",
+    "@livedocuments/mcp": "workspace:*",
+    "@liveknowledge/mcp": "workspace:*",
+    "@liveplanner/mcp": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/mcp-kit": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.2",
@@ -25,6 +30,11 @@
   "devDependencies": {
     "@anthropic-ai/sdk": "^1.13.0",
     "@cloudflare/workers-types": "^5.20261118.1",
+    "@livedesign/api-schema": "workspace:*",
+    "@livediagram/api-schema": "workspace:*",
+    "@livedocuments/api-schema": "workspace:*",
+    "@liveknowledge/api-schema": "workspace:*",
+    "@liveplanner/api-schema": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.6",

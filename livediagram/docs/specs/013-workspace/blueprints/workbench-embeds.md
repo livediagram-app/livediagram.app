@@ -202,7 +202,7 @@ any one segment but `usage`, `invites`, `invite-link`, `invite-decline`):
 | DELETE           | `workbench/sessions/current`                                                                |
 
 Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `shared-tabs`, `share*`, `community`,
-`tabs/:p/presence` (an agent's door), `tokens`, `account`, `ai`, `oauth`, every write to `preferences`,
+`tabs/:p/presence` (an agent's door), `tokens`, `account`, `ai`, every write to `preferences`,
 `participants` and `shape-libraries`, `images/:id` `DELETE`, `images/usage`, `GET images`, and every `workbench/*`
 route but the one above. `/ws` carries no bearer and is decided by its ticket. `events`, `unfurl` and `share/:code`
 are called without credentials by the editor and never see `lvw_`.
@@ -430,7 +430,7 @@ The Explorer's lists are the index's, which the frame reaches through `/api/inde
 ([one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); the folder, team and trash shapes above stay
 on the list so an older caller is confined the same way. Everything else is `confined`, among it (never the account):
 `account`, `tokens/**`, `workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`,
-`oauth/**`, team writes and invitations, `community/**` and `documents/:p/community/**` (Community publishing needs a
+team writes and invitations, `community/**` and `documents/:p/community/**` (Community publishing needs a
 signed-in session, so the token cannot, WB51), `documents/:p/tabs/:p/presence` (an agent's door), `forms/**` and
 `telemetry/**`.
 
@@ -885,7 +885,7 @@ is liveworkspace's.
   load), and announces nothing more.
 - Reveal outlines honour reduced motion as changeset outlines do.
 - The contrast audit, `apps/editor/e2e/signed-in/workbench-contrast.spec.ts` (it needs a signed-in person, which only
-  the signed-in export renders), holds the device page (code entry and consent) and the paired-workbench row, each in
+  the signed-in export renders), holds the paired-workbench row in
   both schemes.
 
 ## Web Experience

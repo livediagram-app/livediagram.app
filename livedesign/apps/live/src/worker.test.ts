@@ -32,15 +32,15 @@ describe('live worker security headers', () => {
   // docs/specs/016-platform/trusted-types.md: every page enforces Trusted Types, the embed included.
   it('enforces Trusted Types on every page', async () => {
     const { env: e } = env();
-    for (const path of ['/design/abc', '/embed', '/oauth/consent']) {
+    for (const path of ['/design/abc', '/embed', '/sign-in']) {
       const res = await worker.fetch(new Request(`https://livedesign.app${path}`), e);
       expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
     }
   });
 
-  it('denies framing on the MCP OAuth consent screen', async () => {
+  it('denies framing on the sign-in page', async () => {
     const { env: e } = env();
-    const res = await worker.fetch(new Request('https://livedesign.app/oauth/consent'), e);
+    const res = await worker.fetch(new Request('https://livedesign.app/sign-in'), e);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
   });
 
@@ -89,9 +89,9 @@ describe('live worker security headers', () => {
     ]);
   });
 
-  it('denies framing on the device page and the editor', async () => {
+  it('denies framing on the editor', async () => {
     const { env: e } = env();
-    for (const path of ['/oauth/device', '/design/doc-1', '/embedded']) {
+    for (const path of ['/design/doc-1', '/embedded']) {
       const res = await worker.fetch(new Request(`https://livedesign.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     }
@@ -99,7 +99,7 @@ describe('live worker security headers', () => {
 
   // The headers above only ship if the worker actually runs for page paths.
   // Static Assets serves a matching file BEFORE the worker by default, which
-  // once left every real page (consent screen included) frameable in prod.
+  // once left every real page frameable in prod.
   it('runs ahead of the static assets for every page, prod and staging', () => {
     const toml = readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8');
     const lines = toml.match(/^run_worker_first = .*$/gm) ?? [];

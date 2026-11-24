@@ -1,6 +1,6 @@
 // Headless SVG renderer for a tab's elements (docs/specs/015-api/mcp-server.md §5). Extracted from the
 // editor's export pipeline (apps/editor/lib/export-tab.ts) so the SAME element
-// drawing serves both the in-app SVG/PNG export AND the MCP worker's inline
+// drawing serves both the in-app SVG/PNG export AND the MCP package's inline
 // render — one renderer, two callers, no DOM. The per-element drawers
 // (svgBoxed in svg-render-boxed.ts, svgArrow, labels) are re-exported here; the in-app
 // export keeps only its backdrop-pattern orchestration on top.

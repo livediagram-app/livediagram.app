@@ -212,11 +212,10 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   11 to 21 minutes on every push) was turned off on 2026-11-06 to free runners: the `main` ruleset no
   longer requires it.
 
-- **MCP Registry** (`mcp-registry.yml`): only by hand (`workflow_dispatch`), never on a push. It publishes the
-  chosen product's `server.json` (livediagram, liveplanner, livedocuments or livedesign) to the official MCP
-  Registry, signed in with the repository's GitHub OIDC token, which proves the `io.github.livediagram-app`
-  namespace every product lists under; no secret. Each product's MCP spec, "Registry listing", says what the
-  descriptor holds.
+- **MCP Registry** (`mcp-registry.yml`): only by hand (`workflow_dispatch`), never on a push. It publishes
+  `liveworkspace/server.json`, the one MCP's descriptor (the apps have no MCP of their own to list), to the official
+  MCP Registry, signed in with the repository's GitHub OIDC token, which proves the `io.github.livediagram-app`
+  namespace; no secret.
 
 CI publishes no CLI: the CLIs' npm publishing happens outside CI. Each product's CLI builds and
 packs on every run that reaches it (Build).
@@ -327,7 +326,7 @@ script of their own:
   - something that went wrong is `console.warn` or `console.error`.
 
   `eslint/no-console` refuses `console.log` everywhere but tests (`*.test.*`, `*.spec.*`, `e2e/`) and scripts
-  (`scripts/`, the MCP servers' `eval/`), where what a tool prints is its output. A command line tool outside
+  (`scripts/`, the MCP packages' `eval/`), where what a tool prints is its output. A command line tool outside
   those folders (the migrate CLI) says so in a reasoned `oxlint-disable no-console`. Files outside every
   workspace (`.github/scripts/`, the root `scripts/`, each product's own `scripts/`) are tools by definition and
   print freely.
@@ -608,7 +607,7 @@ package (41 s, its thresholds), and a note box already on `main` (85 s, the merg
 ## Deploys
 
 Every Worker deploys from here, to the liveworkspace Cloudflare account its `wrangler.toml` pins:
-each product's api, sites, MCP and router, and the platform's services and site.
+each product's api, sites and router, and the platform's services, site and one MCP (an app's MCP is a package that one MCP runs).
 
 - **Staging** follows `main` (`deploy-staging.yml`): when CI passes for a push to `main`, the newest
   commit on `main` whose CI passed deploys to every Worker's `[env.staging]`, whichever run finished, so
@@ -658,14 +657,14 @@ failed one is retried by the next deploy. With no record yet, everything deploys
 
 **Order.** Three tiers, each waiting for the one before: first each product's api and every
 liveworkspace Worker but the site (with D1, migrations apply before the code: `wrangler d1 migrations
-apply`), then the sites and MCP Workers, then the routers in front of them. Three exceptions
+apply`), then the sites, then the routers in front of them. Three exceptions
 (`TIER_OF` in `ci-plan.mjs`): accounts deploys with the sites, once every Worker that checks its tokens
 accepts the issuer it signs with; liveworkspace's bare-domain redirect with the routers, once
-`www.` answers; and liveworkspace's one MCP (`apps/mcp`) with the routers too, after the MCP Workers it binds. A failing tier stops the ones after it.
+`www.` answers; and liveworkspace's one MCP (`apps/mcp`) with the sites, after the apis it binds (it runs every app's MCP package; the apps have no MCP Worker of their own). A failing tier stops the ones after it.
 
 **Jobs.** A tier's Workers deploy in a few jobs, not one each: the services and apis in one job, the
 sites in one job per product (liveworkspace's site and accounts together), and the routers in one job.
-Each product's Sites job holds three Workers (its editor, marketing and MCP Workers). Every app's help is
+Each product's Sites job holds two Workers (its editor and marketing). Every app's help is
 liveworkspace's one help Worker (`liveworkspace-help`), which deploys in Sites (liveworkspace) and builds
 six static exports, one per scope (`builds: 6` in the plan), so its job's limit counts it as six site builds.
 The plan names each Worker's group (`deploy-group.mjs`), and each group's job checks out and installs
@@ -693,7 +692,7 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
   retries gave up) or a 5xx, or a 502, 503, 504 or 524 on a request to the account's API. Any other
   failure (auth, validation, build, config) fails at once, as before, and a D1 migration step never
   retries. Wrangler's own retries run within seconds, inside the same blip: on
-  2026-11-12 two production deploys failed that way (a 524 on livediagram's MCP Worker's version
+  2026-11-12 two production deploys failed that way (a 524 on livediagram's former MCP Worker's version
   upload, and asset uploads for liveplanner's editor and livedesign's former help Worker), each costing a rerun and
   another approval of the gate. A deploy that runs out of its 15 minutes is a plain failure too, and
   the limit runs on wrangler itself (under coreutils `timeout`), so it never outlives its step. The
@@ -706,7 +705,7 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
   vars again, and `wrangler d1 migrations apply` skips the migrations already applied.
 
 **What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
-product's hosted build vars, and on staging its product's staging MCP address), built from full history for the help centre, whose sitemap dates each article by its last commit, and a product api's
+product's hosted build vars, and on staging the staging one MCP's address), built from full history for the help centre, whose sitemap dates each article by its last commit, and a product api's
 hosted vars (`apps/api/hosted-vars.json`, checked on the live deployment afterwards). Secrets are not
 written: each Worker's were set on it with `wrangler secret put` and survive a deploy. The only
 credential is the repository secret **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace account

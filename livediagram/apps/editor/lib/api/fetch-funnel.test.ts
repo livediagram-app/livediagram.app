@@ -29,7 +29,7 @@ const modules = readdirSync(API_DIR)
 
 describe('the api client fetch funnel', () => {
   it('sees the modules at all (guard against this test going blind)', () => {
-    // The modules every editor shares (oauth, tokens) are the workbench's now, checked below.
+    // The modules every editor shares (tokens) are the workbench's now, checked below.
     expect(modules.length).toBeGreaterThan(10);
     expect(modules).toContain('documents.ts');
   });

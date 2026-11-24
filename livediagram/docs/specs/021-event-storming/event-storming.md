@@ -194,7 +194,7 @@ An event-storming board has exactly one layer, `layer:es:board` (`eventStormingL
   the palette, the stationery and the note menu with it. A kind TUNES presentation; it does not fork
   persistence, realtime, comments or export, so the editor stays one
   editor. The template declares it through `templateCanvasOverrides`, so
-  the picker, /new and the MCP worker all land it in one commit.
+  the picker, /new and the MCP package all land it in one commit.
   `isEventStormingTab(tab)` reads the kind first and falls back to the
   board layer or any legacy stage-layer id, so boards authored before the
   field keep working; their bands remain ordinary [Layers](../006-document/layers.md) layers.
@@ -679,7 +679,7 @@ that lands notes without a drag is `packages/document/src/event-storming-lane-la
 (`landArrivals`, `settleNotesOnLanes`, rows to lanes) and, for a photograph,
 `event-storming-photo-place.ts`; the editor wires them in `lib/paste-placement.ts`,
 `../packages/workbench/src/lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
-`useElementDuplication`, and the MCP worker and the edit-operations engine in `landWorkshopArrivals`. The
+`useElementDuplication`, and the MCP package and the edit-operations engine in `landWorkshopArrivals`. The
 overlay's ink is the ALIGNMENT GUIDES' own derivation
 (`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
 vocabulary, which is also what keeps it legible on a dark wall.

@@ -92,7 +92,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 
 - `templateCanvasOverrides('whiteboard')` returns `{ opensIn: 'draw', backgroundPattern: WHITEBOARD_DEFAULT_PATTERN }`
   (`'graph'`, Grid, the tab's Diagram pattern): every creation path (the /new wizard, a start on a
-  tab, the MCP worker) goes through it.
+  tab, the MCP package) goes through it.
   `buildTemplate('whiteboard', …)` returns `[]`. Category: `design` (nominal, like Blank: the picker
   shows it only as a quick-pick) (D1).
 - The wizard's Draw card creates a Blank Whiteboard at once, on the `brand` theme (`NewDocumentWizard`).

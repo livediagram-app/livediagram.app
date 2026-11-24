@@ -36,8 +36,9 @@ Derived from [Connect](../mcp-connect.md). The fourth view, on the frame and the
   Knowledgebase"). Signed out: `ConnectSignedOut` in the view. Otherwise the layout: a scroll column, `max-w-6xl`,
   a grid `lg:grid-cols-[minmax(0,1fr)_20rem]`: the four steps in the first column, the aside in the second (after
   the steps below `lg`).
-- **The MCP address** is `mcpEndpoint(MCP_ORIGIN)` (`lib/mcp-config.ts`), so a build with `NEXT_PUBLIC_MCP_ORIGIN`
-  (staging, local) shows its own.
+- **The MCP address** is `mcpEndpoint(MCP_ORIGIN)` (`lib/mcp-config.ts`): liveworkspace's one MCP, `https://mcp.liveworkspace.app/mcp`
+  (`liveworkspace/docs/specs/021-mcp/mcp.md` "The app MCPs fold in"; liveknowledge has no MCP Worker of its own). A build with
+  `NEXT_PUBLIC_MCP_ORIGIN` (staging, local) shows its own.
 - **`ConnectStep`**: an `INSIGHTS_CARD` `section` named by its heading, a brand circle with the step's number (hidden from
   a screen reader: the `ol` it sits in counts), the heading, one line and the body.
 - **The apps** (`connectApps(mcpUrl)`): `aiClients({ name: 'liveknowledge', mcpUrl })` from

@@ -132,10 +132,10 @@ In order of precedence:
    it would land in shell history and transcripts.
 2. **The stored credential** of the active profile, from `auth login`.
 
-- `auth login` runs OAuth 2.1 with PKCE through the MCP worker's authorisation server
-  ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lwt_` token. `--device` uses the
+- `auth login` runs OAuth 2.1 with PKCE through liveworkspace's one MCP's authorisation server, the `oauthIssuer` the api reports
+  ([MCP server](mcp-server.md) §3; the app MCP folded into it, [the app MCPs fold in](../../../../liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in)) with a loopback redirect, and stores the minted `lwt_` token. `--device` uses the
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
-  do not run the MCP worker. The token is named "livedesign CLI"; its work shows as its owner's. A new login on a
+  cannot reach the one MCP. The token is named "livedesign CLI"; its work shows as its owner's. A new login on a
   profile that holds a token revokes the old one once the new one works.
 - The token goes in the operating system's own store, through the system's own tool and never native code: the
   macOS Keychain (`security`), the Secret Service on Linux (`secret-tool`), and on Windows a token sealed for the user

@@ -301,7 +301,7 @@ export * from './label-box';
 export * from './tab-builders';
 
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
-// shared by the in-app export and the MCP worker's inline image render.
+// shared by the in-app export and the MCP's inline image render.
 export * from './svg-render';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export {
@@ -320,7 +320,7 @@ export { mixHex } from '@liveworkspace/model-core/color-wash';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). Resolution in the viewer's appearance stays in apps/live/lib/themes.ts.
+// MCP (docs/specs/015-api/mcp-server.md). Resolution in the viewer's appearance stays in apps/live/lib/themes.ts.
 export * from '@liveworkspace/element-model/theme-graph';
 export * from './themes';
 export * from '@liveworkspace/element-model/theme-halves';
@@ -426,7 +426,7 @@ export {
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
 // apps/live because the EXPORTS need it too — the SVG / PNG renderers have
 // to paint a label in the face the canvas painted it in, and they run in the
-// mcp worker as well as the browser.
+// MCP as well as the browser.
 export * from './fonts';
 
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/design-views.md):

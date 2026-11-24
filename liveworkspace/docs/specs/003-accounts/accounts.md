@@ -167,20 +167,20 @@ index know someone's teams" above).
 
 ## API tokens
 
-A token (`lwt_…`, 32 random bytes) acts as its account on every app's API and MCP server, read
+A token (`lwt_…`, 32 random bytes) acts as its account on every app's API and on liveworkspace's one MCP, read
 and write or read only, for six months. Only its SHA-256 hash is kept; the secret is shown once.
 An account holds up to 20. They are made and revoked in the Settings panel, Settings › API Tokens, wherever it opens:
 on liveworkspace.app (`/explorer?settings=tokens`, [site.md](../010-site/site.md#settings)) over the session, and in
 every app over the app's bearer ([Every account setting in every app](#every-account-setting-in-every-app)).
 
-Connecting an AI tool in an app (its MCP OAuth flow) makes one too: the app's consent page sends
+Connecting an AI tool (the one MCP's OAuth flow, [the app MCPs fold in](../021-mcp/mcp.md#the-app-mcps-fold-in)) makes one too: liveworkspace.app's consent page sends
 the person's access token to liveworkspace (`POST /api/account/internal/tokens`), which makes the
 token for whoever that access token belongs to and only for an access token minted for that app.
 So the connection shows among the API tokens in Settings and works on every app.
 
-Connecting the same tool to the same app again replaces its token rather than adding one: once the new token has
+Connecting the same tool again replaces its token rather than adding one: once the new token has
 been handed over, the consent page revokes the earlier token that same OAuth client was given for that app, over
-the bearer door like any revoke in Settings (each app's `docs/specs/015-api/mcp-server.md` "Consent + mint" says how
+the bearer door like any revoke in Settings ([the one MCP's spec](../021-mcp/mcp.md#sign-in-and-per-app-consent) says how
 the client is matched). Nothing is revoked when the handover fails, and a manual token or another client's is never
 touched. When the account is still at its 20, the consent page lists the live tokens with Revoke, so the person
 frees one and connects without leaving it. The 20 is `MAX_API_TOKENS_PER_ACCOUNT` in

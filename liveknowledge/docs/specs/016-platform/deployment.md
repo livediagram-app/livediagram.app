@@ -14,7 +14,7 @@ covers what they do for liveknowledge. [Staging environment](staging-environment
 | `apps/editor`             | `liveknowledge-editor`                 | Static assets + a tiny path-rewrite worker.                                                                                                                          |
 | `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `liveknowledge` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). |
 | `apps/api`                | `liveknowledge-api`                    | Worker (Durable Objects; no database, no bucket).                                                                                                                    |
-| `apps/mcp`                | `liveknowledge-mcp`                    | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                        |
+| `apps/mcp`                | none (a package)                       | The MCP tools, run in process by liveworkspace's one MCP Worker ([MCP server](../015-api/mcp-server.md)).                                                            |
 | `apps/router`             | `liveknowledge-router`                 | Worker (service bindings to marketing, editor, help and api).                                                                                                        |
 
 `apps/cli` is published to npm, not deployed ([CLI](../015-api/cli.md)). Publishing is a manual step outside CI, and the
@@ -26,8 +26,9 @@ The marketing worker serves files from `apps/marketing/out/`. The editor worker 
 plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single
 statically-built `/document/placeholder/` page ([New document route](../007-editor/new-document-route.md)). The help
 worker is static-assets-only too, served under `/help` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). The api worker holds the
-REST + WebSocket layer ([API app](../015-api/api.md)). The mcp worker exposes the AI tools on its own host
-`mcp.liveknowledge.app` and binds the api worker, not the router ([MCP server](../015-api/mcp-server.md)). The router
+REST + WebSocket layer ([API app](../015-api/api.md)). `apps/mcp` is a package, not a worker: liveworkspace's one MCP Worker runs it and binds the api worker
+(`LIVEKNOWLEDGE_API`). `mcp.liveknowledge.app` is a custom domain on that Worker, serving connections made before
+([MCP server](../015-api/mcp-server.md)). The router
 holds **no application logic**: four service bindings, `MARKETING`, `EDITOR`, `HELP` and `API`, and the forwards to
 liveworkspace (its pages, the index, Drive and every preview) ([Router app](router-app.md)).
 
@@ -139,21 +140,17 @@ Only two workers have a hostname, each declared in its `wrangler.toml` as a Work
 | Worker                         | Hostnames                                    |
 | ------------------------------ | -------------------------------------------- |
 | `liveknowledge-router`         | `liveknowledge.app`, `www.liveknowledge.app` |
-| `liveknowledge-mcp`            | `mcp.liveknowledge.app`                      |
 | `liveknowledge-router-staging` | `staging.liveknowledge.app`                  |
-| `liveknowledge-mcp-staging`    | `mcp-staging.liveknowledge.app`              |
 
 `wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a
 dashboard step. `www.liveknowledge.app` is attached because it is the canonical origin links are built from
-(`APP_BASE_URL`). The other workers have no hostname: they are reached only over the router's (and the mcp worker's)
-service bindings. No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules. The router's paths are in
+(`APP_BASE_URL`). The other workers have no hostname: they are reached only over the router's service bindings. No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules. The router's paths are in
 [Router app](router-app.md) "Routing table".
 
-A deployment of your own must also set two origins, or its links lead to liveknowledge.app: the mcp worker's
-`CONSENT_BASE_URL` (`[vars]` in `apps/mcp/wrangler.toml`: the editor origin that serves the OAuth consent page and
-hosts every tool's links, [MCP server §4.13](../015-api/mcp-server.md#413-worker-configuration)) and the api's
+A deployment of your own must also set two origins, or its links lead to liveknowledge.app: the one MCP's
+`LIVEKNOWLEDGE_BASE_URL` (`[vars]` of `liveworkspace/apps/mcp/wrangler.toml`: the editor origin that hosts every tool's links, [MCP server §4.13](../015-api/mcp-server.md#413-worker-configuration)) and the api's
 `APP_BASE_URL` (the origin every email link points at, [Transactional email](../014-identity/transactional-email.md)).
-Local dev sets both to `http://localhost:3600` in the two dev scripts (`wrangler dev --var`), so a local run never
+Local dev sets both to `http://localhost:3600` (the api's dev script and liveworkspace's one MCP `dev`), so a local run never
 links to production.
 
 ## Out of scope

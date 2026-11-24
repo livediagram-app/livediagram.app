@@ -5,7 +5,7 @@ A collaborative editor for logos, wireframes and photos that works without signi
 **Live at [livedesign.app](https://www.livedesign.app).** MIT-licensed and publicly viewable.
 
 ```
-apps/        marketing site + editor + api + mcp server + router + cli
+apps/        marketing site + editor + api + mcp package + router + cli
 packages/    shared design model, the photo engine, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, page backgrounds, the api client and agent verbs, the edit-operations engine, design views, the lint, telemetry client, the licences generator, configs (PNG rendering and the TypeScript source parser are the monorepo's @liveworkspace/render-png and @liveworkspace/source-ast)
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
@@ -30,7 +30,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per design; each design's content in its own SQLite-backed Durable Object, with where it is filed and who may open it in liveworkspace's index).
 - **Telemetry** is liveworkspace's: events go to its central service and `/telemetry` redirects to its public dashboard, filtered to livedesign (off in OSS forks by default).
 - **Help** at `/help` is livedesign's scope of liveworkspace's one help centre (`liveworkspace/apps/help`), which the router forwards to.
-- **MCP** at `mcp.livedesign.app` is a Cloudflare Worker that exposes the design tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host, not a router path.
+- **MCP** is a package (`apps/mcp`) that exposes the design tools to AI clients (Claude and other MCP hosts). liveworkspace's one MCP, at `https://mcp.liveworkspace.app/mcp`, runs it in process beside the other apps' tools; there is no livedesign MCP Worker.
 - **Router** stitches marketing, the editor, the API and liveworkspace's help centre under one hostname.
 - **CLI** (`apps/cli`) is `livedesign`, the command line agents and scripts read and change designs with, published on npm as `@livedesign/cli`. It also opens a design inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 

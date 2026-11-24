@@ -3,16 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
-    "dev": "wrangler dev --inspector-port 9730 --var CONSENT_BASE_URL:http://localhost:3600",
-    "build": "wrangler deploy --dry-run --outdir dist",
-    "deploy": "wrangler deploy",
-    "staging:check": "wrangler deploy --dry-run --env staging",
     "lint": "oxlint",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage && vitest-budgets",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
+    "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
     "@liveknowledge/agent-verbs": "workspace:*",
@@ -39,7 +38,6 @@
     "@vitest/coverage-v8": "^5.1.0",
     "oxlint": "^1.94.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0",
-    "wrangler": "^4.166.0"
+    "vitest": "^5.1.0"
   }
 }

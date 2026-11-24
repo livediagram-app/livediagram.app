@@ -32,7 +32,7 @@ describe('the Default colour scheme', () => {
   });
 
   it('defaults to the light half when no appearance is given', () => {
-    // Every pure caller (exports, the MCP worker, a node test) has no viewer
+    // Every pure caller (exports, the MCP, a node test) has no viewer
     // to ask, and must land somewhere predictable.
     expect(getBuiltInTheme(DEFAULT_SCHEME_ID)).toEqual(getBuiltInTheme(DEFAULT_SCHEME_ID, 'light'));
   });

@@ -11,7 +11,6 @@ import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livediagram/api-s
 import { isWorkbenchSessionFormat, WORKBENCH_SESSION_PREFIX } from '@livediagram/api-schema';
 import { hasApiTokenPrefix, isApiTokenFormat } from '@livediagram/api-schema';
 import { handleTokens } from './routes/tokens';
-import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
@@ -355,8 +354,6 @@ async function routeApiRequest(
       return await handleTeams(ctx);
     case 'tokens':
       return await handleTokens(ctx);
-    case 'oauth':
-      return await handleOauthExchange(ctx);
     case 'account':
       return await handleAccount(ctx);
     case 'trash':

@@ -78,7 +78,7 @@ export const TELEMETRY_CATEGORIES = [
   // via the consent screen, which mints a token under the hood).
   'Token',
   // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
-  // name (CreateDesign, ReadDesign, ...). Emitted by the MCP worker, the
+  // name (CreateDesign, ReadDesign, ...). Emitted by the MCP, the
   // third app that reports telemetry.
   'Mcp',
   // CLI commands (apps/cli, docs/specs/015-api/cli.md "Telemetry"): 'Used' with `type` the verb (TabView, ElementSet), sent

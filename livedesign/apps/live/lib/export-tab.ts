@@ -22,7 +22,7 @@ import {
   type Tab,
 } from '@livedesign/design';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the design package so the
-// MCP worker reuses the same element drawing. The canvas / backdrop
+// MCP reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
   canvasSurface,

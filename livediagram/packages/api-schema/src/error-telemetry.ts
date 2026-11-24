@@ -1,6 +1,6 @@
 // Error telemetry tokens (docs/specs/017-telemetry/telemetry.md 'Error' category): how every error source
 // says WHERE it failed inside the one `type` token it has. Shared so the
-// editor, the help centre, the api worker and the MCP worker all build the
+// editor, the help centre, the api worker and the MCP package all build the
 // same shape: dot-separated PascalCase parts, `<What>.<Where>[.<Which>]`,
 // e.g. `Http403.SaveTab`, `Internal.Put.Documents.Tabs`,
 // `Uncaught.Document.TypeError`, `Render.Canvas.TypeError`.
@@ -41,7 +41,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'shape-libraries',
   'teams',
   'tokens',
-  'oauth',
   'account',
   'trash',
   // Ask AI (liveworkspace/docs/specs/020-ask/ask.md "The route").

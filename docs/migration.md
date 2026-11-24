@@ -267,10 +267,10 @@ are none to carry.) The rehearsal should include a browser with a real old local
 2. **Freeze** the old site: a read-only banner, writes answer 503, at a quiet hour.
 3. **Final catch-up run** of steps 1–6 (only what changed since the last run, by `saved_at` and created times),
    then the checks in step 9.
-4. **Move the `livediagram.app` zone** to the liveworkspace account, where the router and mcp Workers carry its
-   hostnames as custom domains ([deployment.md](../livediagram/docs/specs/016-platform/deployment.md#custom-domain)),
+4. **Move the `livediagram.app` zone** to the liveworkspace account, where the router Worker carries its
+   hostnames as custom domains (and `mcp.livediagram.app` is a custom domain on liveworkspace's one MCP) ([deployment.md](../livediagram/docs/specs/016-platform/deployment.md#custom-domain)),
    and the email domain move in [email.md](../liveworkspace/docs/specs/003-accounts/email.md).
-5. Point the Google clients' redirect URIs at the real hosts, and the MCP server's OAuth at liveworkspace sign-in.
+5. Point the Google clients' redirect URIs at the real hosts, and the one MCP's OAuth at liveworkspace sign-in.
 6. **Rollback** until step 10: point the zone back at the old account and lift the freeze. Nothing there changed.
 
 ## 8. Email everyone (once)

@@ -202,7 +202,7 @@ Cloudflare account (`851be7d244b76a6557bcbe6c4ded80f5`), which each `wrangler.to
 
 CI deploys every Worker ([docs/ci.md](../../../../docs/ci.md#deploys) at the repository root): staging follows
 `main`, production is a manual gate that ships what staging runs, and only the Workers a change reaches are rebuilt.
-The services and apis deploy first, each applying its D1 migrations before its code; then the sites and MCP Workers;
+The services and apis deploy first, each applying its D1 migrations before its code; then the sites and liveworkspace's one MCP (an app's MCP is a package it runs, not a Worker);
 then the routers. No one applies a remote migration or deploys by hand. Secrets are set once per Worker and
 environment with `wrangler secret put` and survive every deploy; each service's spec lists its own.
 

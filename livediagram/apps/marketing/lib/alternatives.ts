@@ -205,7 +205,7 @@ const LIST: Alternative[] = [
         heading: 'Connected to the rest of your workflow',
         paragraphs: [
           'Diagrams rarely live alone. livediagram imports Mermaid (flowcharts, state and ER diagrams, the diagram-as-code format that lives in READMEs and AI output), Markdown outlines, Excalidraw scenes, draw.io files and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
-          'For programmatic use there is a free REST API with personal tokens and an MCP server at mcp.livediagram.app that lets AI assistants read and edit your canvases directly; their edits arrive live, outlined, and undoable as one unit. None of it sits behind a plan.',
+          'For programmatic use there is a free REST API with personal tokens and the one liveworkspace MCP server (mcp.liveworkspace.app) that lets AI assistants read and edit your canvases directly; their edits arrive live, outlined, and undoable as one unit. None of it sits behind a plan.',
         ],
       },
     ],

@@ -11,7 +11,6 @@ import {
   WORKBENCH_SESSION_PREFIX,
 } from '@liveplanner/api-schema';
 import { handleTokens } from './routes/tokens';
-import { handleOauthExchange } from './routes/oauth';
 import { PlanRoom } from './plan-room/plan-room';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
@@ -364,8 +363,6 @@ async function routeApiRequest(
       return await handleTeams(ctx);
     case 'tokens':
       return await handleTokens(ctx);
-    case 'oauth':
-      return await handleOauthExchange(ctx);
     case 'account':
       return await handleAccount(ctx);
     // The person's My Work calendar feed (docs/specs/026-plan/calendar-feed.md "The My Work feed").

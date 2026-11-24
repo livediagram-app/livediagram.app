@@ -18,8 +18,8 @@ Scope, by file:
 | `liveworkspace/apps/accounts/scripts/local-clients.ts`, `seed-local-clients.ts`                   | Each app's fixed local client, written into the local database by the dev script         |
 | `packages/auth-client/src/oauth.ts`, `silent.ts`, `verify.ts`, `return-path.ts`, `pkce-cookie.ts` | Each app's side: PKCE code flow, `prompt=none`, offline verification, safe returns       |
 | `packages/auth-client/src/sign-out.ts`                                                            | The page's side of signing out: `askSignOut`, the app API's answer and its hop           |
-| `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`                           | The device grant each app's MCP server runs for CLIs                                     |
-| `packages/mcp-kit/src/oauth.ts`, `oauth-names.ts`                                                 | Registration, authorize and the token each app's MCP server runs for MCP clients         |
+| `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`                           | The device grant the one MCP runs for every app's CLIs                                  |
+| `packages/mcp-kit/src/oauth.ts`, `oauth-names.ts`                                                 | Registration, authorize and the token the one MCP runs for MCP clients         |
 
 ## Domain and naming
 
@@ -148,9 +148,9 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
   returns `returnTo` normalised.
 - `verify.ts` checks access tokens offline against the published key set.
 
-### The device grant (each app's MCP server, `mcp-kit`)
+### The device grant (the one MCP, `mcp-kit`)
 
-For a CLI without a browser (RFC 8628), built-in clients only, state in the app's `OAUTH_KV`:
+For a CLI without a browser (RFC 8628), built-in clients only, state in the one MCP's `OAUTH_KV`:
 
 1. `POST /oauth/device_authorization`: `400 invalid_client`; limited 20 an hour per IP (`429 rate_limited`); writes
    `device:<device code>` (with `startedAt` and `startedIn`, the caller's approximate city and country from
@@ -168,7 +168,7 @@ For a CLI without a browser (RFC 8628), built-in clients only, state in the app'
 
 User codes are 8 characters of `BCDFGHJKLMNPQRSTVWXZ`.
 
-### Registered clients (each app's MCP server, `mcp-kit`)
+### Registered clients (the one MCP, `mcp-kit`)
 
 Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client's name is never a trust signal:
 
@@ -194,7 +194,7 @@ Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client'
 - The protected-resource metadata names `resource` `<origin>/mcp` exactly and `bearer_methods_supported: ["header"]`,
   at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-protected-resource/mcp`. `/mcp` refuses a request
   whose query names `access_token`, `token`, `api_key` or `apikey` (`400 invalid_request`): a token travels only in the
-  `Authorization` header. The audit against Claude's connector directory is each product's `mcp-server.md` §4.16a.
+  `Authorization` header. The audit against Claude's connector directory is the one MCP's ([mcp.md](../../021-mcp/mcp.md#fit-for-claudes-connector-directory)).
 
 ## Data and persistence
 

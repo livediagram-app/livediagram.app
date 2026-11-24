@@ -34,7 +34,6 @@ export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/share';
 export * from '@liveworkspace/workbench/lib/api/tokens';
-export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';
 export * from './api/room';
 export * from './api/preferences';

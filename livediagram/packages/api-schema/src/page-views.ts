@@ -23,7 +23,6 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'import',
   'join',
   'new',
-  'oauth',
   // /offline, the old This Browser page: a redirect to /explorer/offline (docs/specs/006-document/offline-mode.md).
   'offline',
   'sign-in',

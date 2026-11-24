@@ -11,55 +11,26 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="account-and-data/connect-ai-mcp/ai-clients" title="Connecting AI Tools" description="Add the app to Claude, Claude Code, Cursor, ChatGPT or another MCP client, step by step." categoryTitle="Account and Data" categorySlug="account-and-data" parentArticle={{ title: "Connect an AI Tool (MCP)", slug: "connect-ai-mcp" }} subArticles={getSubArticles("connect-ai-mcp").filter((a) => a.slug !== "ai-clients")}>
 
-Every AI tool connects to <AppName /> the same way: you give it one address, and the first time it uses it, you approve the connection on a <AppName /> page. This article walks through that for the tools people use most. For what the AI can do once it is connected, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/).
+Every AI tool connects to <AppName /> the same way: you give it one address, and the first time it uses it, you approve the connection on a liveworkspace page. This article walks through that for the tools people use most. For what the AI can do once it is connected, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/).
 
 You need a <AppName /> account: connecting an AI tool is a signed-in-only feature.
 
 ## The Address
 
-<AppName />
-'s MCP server lives at:
-
-<AppNote app="livediagram">
+There is one address for every liveworkspace app, <AppName /> included:
 
 ```text
-https://mcp.livediagram.app/mcp
+https://mcp.liveworkspace.app/mcp
 ```
-
-</AppNote>
-
-<AppNote app="liveplanner">
-
-```text
-https://mcp.liveplanner.app/mcp
-```
-
-</AppNote>
-
-<AppNote app="livedocuments">
-
-```text
-https://mcp.livedocuments.app/mcp
-```
-
-</AppNote>
-
-<AppNote app="livedesign">
-
-```text
-https://mcp.livedesign.app/mcp
-```
-
-</AppNote>
 
 It is a remote MCP server over HTTP (what some tools call "Streamable HTTP"), so there is nothing to install or run on your computer. Wherever a tool asks for a connector, a remote MCP server or a server URL, this is the address to give it.
 
 ## Approving the Connection
 
-The first time your tool connects, it opens a <AppName /> page in your browser:
+The first time your tool connects, it opens a liveworkspace page in your browser:
 
 <Step n={1}>
-  Sign in to <AppName />, if you aren't already.
+  Sign in to liveworkspace, if you aren't already.
 </Step>
 <Step n={2}>
   Check the page. It is titled **Connect** followed by your tool's name, and it says which site the
@@ -68,6 +39,7 @@ The first time your tool connects, it opens a <AppName /> page in your browser:
   with an address such as `localhost:55884`: continue if you started the connection yourself.
 </Step>
 <Step n={3}>
+  The page lists each liveworkspace app, ticked. Clear any app you don't want this tool to reach.
   Switch on **Read-only access** if the tool should only find and read your <Noun plural />, never
   change them.
 </Step>
@@ -75,19 +47,19 @@ The first time your tool connects, it opens a <AppName /> page in your browser:
   Choose **Connect**. The browser hands you back to your tool, and the connection is ready.
 </Step>
 
-Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke in **Settings**, **Developers**, **API Tokens** (in any liveworkspace app, or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)) to disconnect it. It lasts six months; reconnect the tool after that. Connecting the same tool again replaces its earlier token for <AppName />, so it doesn't use up another.
+Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke in **Settings**, **Developers**, **API Tokens** (in any liveworkspace app, or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)) to disconnect it. It lasts six months; reconnect the tool after that. Connecting the same tool again replaces its earlier token, so it doesn't use up another.
 
 ## Claude
 
 Once <AppName /> is listed in Claude's connector directory, open **Settings**, then **Connectors**, browse the directory, find **<AppName />** and choose **Connect**: no address to paste. Until then, add it as a custom connector:
 
-In Claude on the web, open **Settings**, then **Connectors**, and add a custom connector. Give it a name such as "<AppName />", paste the address above as its URL, and add it. Then choose to connect it, and approve the connection on the <AppName /> page that opens.
+In Claude on the web, open **Settings**, then **Connectors**, and add a custom connector. Give it a name such as "<AppName />", paste the address above as its URL, and add it. Then choose to connect it, and approve the connection on the liveworkspace page that opens.
 
 On a Team or Enterprise plan, an owner of your Claude organisation may need to add the connector before members can connect it. Exact menu names in Claude can change between versions; look for custom connectors in its settings.
 
 ## Claude Desktop
 
-Claude Desktop uses the same connectors as Claude on the web: a connector you add there appears in the desktop app when you are signed in to the same Claude account, and you can add one from the app's own **Settings**, **Connectors** in the same way. Approve the connection when the <AppName /> page opens in your browser.
+Claude Desktop uses the same connectors as Claude on the web: a connector you add there appears in the desktop app when you are signed in to the same Claude account, and you can add one from the app's own **Settings**, **Connectors** in the same way. Approve the connection when the liveworkspace page opens in your browser.
 
 ## Claude Code
 
@@ -97,7 +69,7 @@ Add the server from your terminal, with <code><AppName /></code> as NAME and the
 claude mcp add --transport http NAME ADDRESS
 ```
 
-Then, in a Claude Code session, run `/mcp`, choose <code><AppName /></code>, and authenticate: your browser opens the <AppName /> approval page. Add `--scope user` to the `claude mcp add` command to make <AppName /> available in every project rather than only the current one.
+Then, in a Claude Code session, run `/mcp`, choose <code><AppName /></code>, and authenticate: your browser opens the liveworkspace approval page. Add `--scope user` to the `claude mcp add` command to make <AppName /> available in every project rather than only the current one.
 
 <AppNote app="liveplanner">
   `--scope user` makes it available in every project on your computer.
@@ -126,7 +98,7 @@ Add <AppName /> to Cursor's MCP configuration: `~/.cursor/mcp.json` for every pr
 }
 ```
 
-Use <code><AppName /></code> as NAME and the address above as ADDRESS. Cursor then lists <AppName /> in its MCP settings and offers to sign in to it, which opens the <AppName /> approval page. To use an API token instead, add a `headers` entry beside `url`:
+Use <code><AppName /></code> as NAME and the address above as ADDRESS. Cursor then lists <AppName /> in its MCP settings and offers to sign in to it, which opens the liveworkspace approval page. To use an API token instead, add a `headers` entry beside `url`:
 
 ```json
 "headers": { "Authorization": "Bearer lwt_..." }
@@ -134,7 +106,7 @@ Use <code><AppName /></code> as NAME and the address above as ADDRESS. Cursor th
 
 ## ChatGPT
 
-Where your ChatGPT plan lets you add custom connectors (it is part of ChatGPT's developer mode, and the wording varies by plan and version), create a new connector, paste the address above as its MCP server URL, and choose OAuth for authentication. Approve the connection when the <AppName /> page opens.
+Where your ChatGPT plan lets you add custom connectors (it is part of ChatGPT's developer mode, and the wording varies by plan and version), create a new connector, paste the address above as its MCP server URL, and choose OAuth for authentication. Approve the connection when the liveworkspace page opens.
 
 ## Any Other MCP Client
 

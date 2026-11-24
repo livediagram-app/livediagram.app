@@ -27,10 +27,9 @@ The kit lives in `apps/mcp/eval/`:
 2. Give the worktree's api its local state: copy main's `apps/api/.wrangler/state` and `apps/api/.dev.vars`. The api
    has no database of its own: liveworkspace's accounts, index and media (for a task's gallery) run locally beside it (`pnpm dev` in each of
    `liveworkspace/apps/accounts`, `liveworkspace/apps/index`, `liveworkspace/apps/media`), at the origins `.dev.vars` names.
-3. Start the MCP and the api in ONE wrangler session, so the MCP's service binding reaches this branch's api, from
-   `apps/mcp`:
-   `nohup corepack pnpm exec wrangler dev -c wrangler.toml -c ../api/wrangler.toml --port 8798 --inspector-port 9398 --persist-to ../api/.wrangler/state > <scratchpad>/mcp.log 2>&1 &`
-4. Wait for `Ready on http://localhost:8798` in the log before any run.
+3. Start the api (`apps/api`, `dev`) and liveworkspace's one MCP (`liveworkspace/apps/mcp`, `dev`, port 3013). The one
+   MCP's `dev` serves every app's package and reaches this branch's api through its `LIVEDIAGRAM_API` binding.
+4. Wait for `http://127.0.0.1:3013/livediagram/mcp` (this package as it is, with its own tool names) to answer before any run.
 5. Check `claude --version` answers and the CLI is signed in: the benchmark runs on the signed-in account's usage.
 
 ## Run a round
@@ -81,8 +80,8 @@ The kit lives in `apps/mcp/eval/`:
 21. A weaker model shows a description gap first: a Haiku-only failure is still a finding.
 22. Write the spec delta before the code, as for any change; specs name what the MCP now does.
 23. Commit and push each batch of fixes as it turns green; run the full gate only before the PR.
-24. Restart the server after every change a round should see: kill the wrangler PID
-    (`pgrep -f "wrangler dev -c wrangler.toml"`) and relaunch step 3.
+24. Restart the server after every change a round should see: restart the one MCP's `dev`
+    (kill its PID, then relaunch step 3).
 25. Rerun the tasks the fix touched, then the whole bank, and compare with `--compare`: keep a fix only when its
     numbers improve and no other task drops.
 
@@ -137,7 +136,7 @@ The kit lives in `apps/mcp/eval/`:
 - The local dev server now and then drops a request ("Error: Network connection lost"); the bench client retries a
   request twice before the error stands. One such drop in a transcript is the server, not the tools.
 - To measure a change before and after, run the before half on a detached worktree of the last commit started on the
-  same `--persist-to` state, then the after half on the branch: a wrangler session reloads edits under it, so the
+  same `--persist-to` state, then the after half on the branch: a dev session reloads edits under it, so the
   branch's own server is never the "before".
 - Timing tests fail under load while a round and the coverage gate share the machine; rerun them alone before
   treating them as real.

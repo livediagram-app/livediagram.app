@@ -103,14 +103,14 @@ The shared card chrome lives in `apps/editor/components/chrome/auth-shared.tsx` 
 
 ### The look: Night Band
 
-Every account and connect page (`/sign-in`, `/get-started`, the OAuth consent and device pages and
+Every account page (`/sign-in`, `/get-started` and
 the workbench pairing page) stands on one frame, `AuthStage` (`apps/editor/components/chrome/AuthStage.tsx`), modelled on
 the marketing site's "No Catch" night section:
 
 - **Header.** The brand at the top left. On `/sign-in` and `/get-started` a **"Not now, keep going as a guest"** link
   sits at the top right, because the canvas never needs an account. It goes back to the page's `?redirect_url` when
-  that is safe and is not itself a signed-in-only page (`/oauth/*`, `/workbench/*`), and to `/new` otherwise
-  (`guestReturnHref`). The connect pages have no guest link: they only work signed in.
+  that is safe and is not itself a signed-in-only page (`/workbench/*`), and to `/new` otherwise
+  (`guestReturnHref`). The pairing page has no guest link: it only works signed in.
 - **The card.** A near-opaque card (no backdrop blur, so the lines moving behind it never make it repaint) holding the page's title (the `h1`), an optional line under it, the error or notice, and its action (on
   `/sign-in` after a failed hand-off, **Try again**).
 - **The pitch.** Beside the card, an eyebrow, a heading and its promise rows (four on the account pages, three on the
@@ -239,10 +239,7 @@ The session loads deferred, so `/new` cannot wait for the token request without 
 
 - **No hint, or `ld_signed_in=0`**: a guest. The create goes ahead at once, Offline.
 - **`ld_signed_in=1`**: probably signed in. The create waits for auth to settle (as it always has) and then uses the settled answer.
-- **The consent and device pages** (`/oauth/*`) read the hint the same way. With `ld_signed_in=1` they show their
-  loading line until the session itself answers, up to 15 seconds, rather than taking the page's 5-second give-up on
-  sign-in as signed out, so a slow session never shows a signed-in person "Sign in to connect". Only the session's own answer that there is no one, or no hint, shows the Sign in step
-  (`signInGateOf`, `../packages/workbench/src/hooks/auth/useSignInGate.ts`).
+- **The AI-tool consent and device pages** are liveworkspace's now (the editor has none; `liveworkspace/docs/specs/021-mcp/mcp.md` "The app MCPs fold in").
 - **The page itself** never settles as a guest while `ld_signed_in=1` and the session hasn't answered: the 5-second
   give-up (a stalled proxy must not hold the canvas) applies only without the hint. When the accounts site doesn't
   answer (the api's `503 accounts_unreachable`, a network error, no answer in 10 seconds, or nothing after 5 seconds),

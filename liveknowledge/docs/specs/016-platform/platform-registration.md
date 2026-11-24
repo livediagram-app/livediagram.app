@@ -67,8 +67,7 @@ Code locations as on the registration branch.
 7. **Settings.** `packages/settings/src/device.ts` (`keysFor('liveknowledge')`), `push.ts`, its catalogue
    (`packages/settings/src/catalogues/liveknowledge.ts`, livedocuments' until the editor's own
    settings-site-catalogue test writes it again) and the Settings panel's lists in `packages/settings-ui`.
-8. **Status.** `liveworkspace/packages/status/src/services.ts`: its MCP Worker's port in `MCP_DEV_PORTS` (9288), so
-   its group has six checks.
+8. **Status.** `liveworkspace/packages/status/src/services.ts`: its group's checks (the MCP is the one MCP's, no port of its own).
 9. **Drive.** `packages/drive/src/formats.ts` (`APP_FILE_FORMATS.liveknowledge`), and the drive Worker's env
    (`DRIVE_KEY_LIVEKNOWLEDGE`, `APP_ORIGIN_LIVEKNOWLEDGE`) and `wrangler.toml`.
 10. **Community.** `packages/community/src` (`COMMUNITY_APPS`, `COMMUNITY_APP_CATEGORIES['liveknowledge.app']`), the
@@ -130,7 +129,7 @@ In the root AGENTS.md table (`liveknowledge | 3600 onward`). As in every product
 **3600**, and the other Next.js apps the next ones (the editor 3601, marketing 3602).
 
 Wrangler's own ports sit outside the 36xx block, one range per product: liveknowledge takes **9287** for the api,
-**9288** for the MCP, and inspector ports **9730** onward.
+and inspector ports **9730** onward. The MCP has no port of its own: liveworkspace's one MCP serves it (3013).
 
 ## CI
 
@@ -149,7 +148,7 @@ Through CI only, never by hand (docs/ci.md "Deploys"), to the liveworkspace Clou
 pins, once the hold lifts:
 
 - First tier: `liveknowledge-api` (Durable Objects and their migrations; no D1).
-- Second tier: `liveknowledge-editor`, `liveknowledge-marketing`, `liveknowledge-mcp`.
+- Second tier: `liveknowledge-editor`, `liveknowledge-marketing`.
 - Third tier: `liveknowledge-router`.
 
 Staging is `staging.liveknowledge.app`; production is `www.liveknowledge.app`, with the bare domain redirecting to
@@ -169,7 +168,7 @@ None of these can be done by an agent.
 - **Domain:** registered (owner, 2026-11-21): `liveknowledge.app` is in Cloudflare. It must be a zone on the
   liveworkspace account (`851be7d244b76a6557bcbe6c4ded80f5`), the one every `wrangler.toml` pins, so the router's
   custom domains (`liveknowledge.app`, `www.liveknowledge.app`, `staging.liveknowledge.app`) and the MCP's
-  (`mcp.liveknowledge.app`) can attach.
+  (`mcp.liveknowledge.app`, a custom domain on liveworkspace's one MCP) can attach.
 - **Accounts client:** run `register-client.ts` per environment and set `ACCOUNTS_CLIENT_SECRET` on the api Worker.
 - **Index, media, telemetry, drive, Community and data export keys:** one value each, set on the service
   (`INDEX_KEY_LIVEKNOWLEDGE`, `MEDIA_KEY_LIVEKNOWLEDGE`, `TELEMETRY_KEY_LIVEKNOWLEDGE` on the telemetry Worker and on
@@ -189,8 +188,8 @@ None of these can be done by an agent.
   a key in the settings accounts already stores, on by default.
 - **Google:** `application/vnd.liveknowledge+json` (`.liveknowledge`) added to the Google Cloud project's Drive UI
   MIME types, and the new domain among the Google sign-in origins.
-- **KV namespaces** for the MCP Worker's OAuth state: made 2026-11-22 (`liveknowledge-mcp-oauth` and
-  `liveknowledge-mcp-oauth-staging`), their ids in `apps/mcp/wrangler.toml`.
+- **KV namespaces** `liveknowledge-mcp-oauth` and `liveknowledge-mcp-oauth-staging` (made 2026-11-22) belonged to the
+  app's own MCP Worker and are not used: the one MCP keeps its own scratch KV.
 - **Any third-party keys** the fork carries over (Turnstile), added for the new domain.
 - **The MCP registry and the CLI's npm package**, when it is ready to be found.
 - **The hold**: lifted 2026-11-22, before the secrets, so the Workers exist to set them on. Until each secret is

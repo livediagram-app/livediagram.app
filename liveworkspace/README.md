@@ -19,7 +19,7 @@ apps/community         /api/community: every app's Community listings
 apps/subscription      /api/subscription: tiers, entitlements, meters and billing, off unless PRO_ENABLED is on
 apps/telemetry         /api/telemetry: every app's anonymous events
 apps/status            /api/status: hourly checks of every service, 90 days kept
-apps/mcp               mcp.liveworkspace.app: one MCP server routing to every app's MCP (unlisted while it is tried)
+apps/mcp               mcp.liveworkspace.app: the one MCP server: runs every app's MCP package in process (unlisted while it is tried)
 apps/redirect          the bare liveworkspace.app: a page load's one 301 to www. (docs/specs/010-site/site.md)
 apps/migrate           the one-off move from the historical livediagram.app, run from a laptop, never deployed
 packages/status        @liveworkspace/status: the one list of services and how an answer is judged

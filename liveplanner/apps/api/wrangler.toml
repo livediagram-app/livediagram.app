@@ -46,10 +46,10 @@ EMAIL_INTAKE_DOMAIN = "in.liveplanner.app"
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
 INDEX_ORIGIN = "https://www.liveworkspace.app"
 
-# The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
-# api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
+# The CLI signs in through liveworkspace's one MCP (liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold in"),
+# which the api names in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
 # from an older CLI.
-OAUTH_ISSUER = "https://mcp.liveplanner.app"
+OAUTH_ISSUER = "https://mcp.liveworkspace.app"
 
 # No bucket: a plan's previews (the Explorer thumbnail, a link's live image and share card) are liveworkspace's
 # (liveworkspace/docs/specs/006-media/previews.md), drawn through the export door on request and stored by its media service.
@@ -293,8 +293,8 @@ INDEX_ORIGIN = "https://staging.liveworkspace.app"
 # Staging's media service, which serves its previews (MEDIA_KEY, above).
 MEDIA_URL = "https://staging.liveworkspace.app/api/media"
 
-# The staging MCP worker's OAuth server, for the CLI against staging.
-OAUTH_ISSUER = "https://mcp-staging.liveplanner.app"
+# Staging's one MCP, for the CLI against staging (liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold in").
+OAUTH_ISSUER = "https://mcp-staging.liveworkspace.app"
 
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
 # scopes a namespace per script, and `liveplanner-api-staging` is a different

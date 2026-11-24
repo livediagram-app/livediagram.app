@@ -4,14 +4,12 @@ import { expect, expectNoPageErrors, openStartBlank, test } from '../fixtures';
 import { WEBBER } from './agent-session';
 import { freshUserId, installSession } from './session';
 
-// Contrast of the workbench pairing surfaces and the OAuth shell they share (docs/specs/013-workspace/blueprints/
-// workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes (the pairing page itself is
-// liveworkspace.app's, liveworkspace/docs/specs/011-workbench/workbench.md): the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
-// consent, both drawn by OauthShell and its primary fill, and Settings > API Tokens with a paired workbench (the
-// tokens themselves are made and listed on liveworkspace.app, so the row links there and lists only pairings).
-// All need a signed-in person, so they run against the signed-in export here rather than in the guest-mode
-// audit. The api's and the MCP worker's answers are stubbed, so each surface renders exactly the state under
-// audit.
+// Contrast of the workbench pairing surface (docs/specs/013-workspace/blueprints/workbench-embeds.md
+// "Accessibility"), to WCAG 2.2 AA in both colour schemes (the pairing page itself is liveworkspace.app's,
+// liveworkspace/docs/specs/011-workbench/workbench.md): Settings > API Tokens with a paired workbench (the tokens
+// themselves are made and listed on liveworkspace.app, so the row links there and lists only pairings). It needs a
+// signed-in person, so it runs against the signed-in export here rather than in the guest-mode audit. The api's
+// answers are stubbed, so the surface renders exactly the state under audit.
 
 const DAY = 86_400_000;
 const NOW = Date.now();
@@ -44,35 +42,9 @@ async function signedIn(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   await page.addInitScript((mode) => localStorage.setItem('livedesign:v2:ui-mode', mode), scheme);
 }
 
-const MCP = 'https://mcp.livedesign.app';
-
 async function expectScheme(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   if (scheme === 'dark') await expect(page.locator('html')).toHaveClass(/\bdark\b/);
   else await expect(page.locator('html')).not.toHaveClass(/\bdark\b/);
-}
-
-for (const scheme of ['dark', 'light'] as const) {
-  test.describe(`OAuth shell contrast, ${scheme} mode`, () => {
-    test.use({ colorScheme: scheme, reducedMotion: 'reduce', viewport: VIEWPORT });
-
-    test('the device page, entering the code and consenting', async ({ page, pageErrors }) => {
-      await signedIn(page, scheme);
-      await page.route(`${MCP}/oauth/device/session/*`, (route) =>
-        route.fulfill({ json: { clientName: 'livedesign CLI' } }),
-      );
-      await page.goto('/oauth/device');
-      await expect(page.getByRole('heading', { name: 'Connect a terminal' })).toBeVisible();
-      await page.getByLabel('Code shown in your terminal').fill('bcdf-ghjk');
-      await expectScheme(page, scheme);
-      expectAA(await auditContrast(page), `device page, code entry, ${scheme}`);
-
-      await page.getByRole('button', { name: 'Continue' }).click();
-      await expect(page.getByRole('heading', { name: 'Connect livedesign CLI' })).toBeVisible();
-      await page.screenshot({ path: test.info().outputPath(`device-consent-${scheme}.png`) });
-      expectAA(await auditContrast(page), `device page, consent, ${scheme}`);
-      expectNoPageErrors(pageErrors);
-    });
-  });
 }
 
 for (const scheme of ['dark', 'light'] as const) {

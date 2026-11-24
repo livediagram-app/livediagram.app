@@ -39,7 +39,7 @@ Object (`exportImage`):
 - **404** no such document, a tab it does not hold, or a Community post's code while the post is not open.
 
 The drawing is the first tab, or `tab`, through `renderElementsToSvg` (`@livediagram/document`, the same DOM-free
-renderer the MCP worker uses). Icon elements render their real glyph (line art + Technology brand tiles) via the
+renderer the MCP package uses). Icon elements render their real glyph (line art + Technology brand tiles) via the
 `@liveworkspace/icons/resolve` resolver; see [Technology icons](../010-palette/technology-icons.md) "Rendering". Image
 elements render their real picture: the object reads each upload from the media service and inlines it as a base64
 data URL through `embedTabImages` (`@livediagram/api-schema`, shared with the MCP preview,
