@@ -93,9 +93,11 @@ describe(MIGRATION, () => {
     migrate(sql);
     sql.exec(`DELETE FROM share_links WHERE code = 'code1'`);
     expect(
-      (sql.prepare(`SELECT share_code FROM item_calls WHERE id = 'ic_1'`).get() as {
-        share_code: string | null;
-      }).share_code,
+      (
+        sql.prepare(`SELECT share_code FROM item_calls WHERE id = 'ic_1'`).get() as {
+          share_code: string | null;
+        }
+      ).share_code,
     ).toBeNull();
     sql.exec(`DELETE FROM items WHERE id = 's1'`);
     expect(count(sql, 'item_calls')).toBe(1);

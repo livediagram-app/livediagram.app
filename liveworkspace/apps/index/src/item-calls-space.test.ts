@@ -1,8 +1,13 @@
 // Your Calls Space on the index (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): unset, Call makes
 // a Space as ever; set, the call starts in the person's own or team's Space, one item's call at a time, through one
 // call link that works a week past the latest call; anything they can't choose now falls back to a Space of its own.
-import { CALL_SPACE_LINK_DAYS, type ItemCallStart, type SpaceCall } from '@liveworkspace/index-client';
+import {
+  CALL_SPACE_LINK_DAYS,
+  type ItemCallStart,
+  type SpaceCall,
+} from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
+import { callLineOf } from './item-call-plans';
 import { body, call, h, makeItem, person, settle, token, useHarness } from './test-support';
 
 useHarness({ INDEX_KEY_LIVEHUDDLE: 'lh-key', APP_ORIGIN_LIVEHUDDLE: 'https://www.livehuddle.app' });
@@ -46,7 +51,9 @@ const row = (id: string) =>
     .get(id) as { space_id: string; chosen: number; ended_at: number | null; share_code: string };
 
 const link = (code: string) =>
-  h.db.sql.prepare('SELECT level, expiry, expires_at FROM share_links WHERE code = ?').get(code) as {
+  h.db.sql
+    .prepare('SELECT level, expiry, expires_at FROM share_links WHERE code = ?')
+    .get(code) as {
     level: string;
     expiry: string;
     expires_at: number;
@@ -63,7 +70,10 @@ describe('unset', () => {
       const res = await start(ada.auth, doc.id, payload);
       expect(res.status).toBe(201);
       const answer = await body<ItemCallStart>(res);
-      expect(answer).toEqual({ call: expect.objectContaining({ spaceId: made.id }), started: true });
+      expect(answer).toEqual({
+        call: expect.objectContaining({ spaceId: made.id }),
+        started: true,
+      });
       expect(row(answer.call.id)).toMatchObject({ space_id: made.id, chosen: 0 });
       expect(link(row(answer.call.id).share_code)).toMatchObject({ expiry: 'never' });
     }
@@ -183,7 +193,11 @@ describe('set', () => {
     const ada = await person('user_ada', { teams: [{ id: 'team_1' }] });
     const ben = await person('user_ben', { teams: [{ id: 'team_1' }] });
     const doc = await makeItem(ben.auth, { app: 'livediagram', title: 'Retro' });
-    const room = await makeItem(ada.auth, { app: 'livehuddle', title: 'Team Room', teamId: 'team_1' });
+    const room = await makeItem(ada.auth, {
+      app: 'livehuddle',
+      title: 'Team Room',
+      teamId: 'team_1',
+    });
     await ownSpace(ben.auth);
     const res = await body<ItemCallStart>(await start(ben.auth, doc.id, { space: room.id }));
     expect(res).toMatchObject({ started: true, call: { spaceId: room.id } });
@@ -236,7 +250,11 @@ describe('unavailable', () => {
 
   it('falls back once they leave the team the Space is in', async () => {
     const ada = await person('user_ada', { teams: [{ id: 'team_1' }] });
-    const room = await makeItem(ada.auth, { app: 'livehuddle', title: 'Team Room', teamId: 'team_1' });
+    const room = await makeItem(ada.auth, {
+      app: 'livehuddle',
+      title: 'Team Room',
+      teamId: 'team_1',
+    });
     const ben = await person('user_ben');
     const doc = await makeItem(ben.auth, { app: 'livediagram', title: 'Retro' });
     const made = await ownSpace(ben.auth);
@@ -247,6 +265,26 @@ describe('unavailable', () => {
     const { doc, room } = await world();
     const guest = await token('guest_x', { guest: true });
     expect((await start(guest, doc.id, { space: room.id })).status).toBe(403);
+  });
+});
+
+describe("Send to Plan's line back from a Calls Space", () => {
+  it("names the newest call's item, and nothing for a Space with no call or a trashed item", async () => {
+    const { ada, doc, plan, room } = await world();
+    await ownSpace(ada.auth);
+    const source = { id: room.id, app: 'livehuddle' as const };
+    expect(await callLineOf(h.db.env, source)).toBeNull();
+    expect(await callLineOf(h.db.env, { id: doc.id, app: 'livediagram' })).toBeNull();
+    await start(ada.auth, doc.id, { space: room.id });
+    await people(room.id, 1);
+    await people(room.id, 0);
+    h.db.sql.prepare('UPDATE item_calls SET started_at = started_at - 1000').run();
+    const second = await body<ItemCallStart>(await start(ada.auth, plan.id, { space: room.id }));
+    const line = await callLineOf(h.db.env, source);
+    expect(line).toMatchObject({ callId: second.call.id, spaceId: room.id });
+    expect(line?.line).toMatch(/^Discussed on a call about Launch \(liveplanner\): /);
+    await call(`/items/${plan.id}`, { method: 'DELETE', auth: ada.auth });
+    expect(await callLineOf(h.db.env, source)).toBeNull();
   });
 });
 
@@ -264,7 +302,9 @@ describe("the room's count in a Calls Space", () => {
     expect(row(made.id).ended_at).toBeNull();
     // Out for good, then the Space used again later.
     await people(room.id, 0);
-    h.db.sql.prepare('UPDATE item_calls SET ended_at = ended_at - 600000 WHERE id = ?').run(made.id);
+    h.db.sql
+      .prepare('UPDATE item_calls SET ended_at = ended_at - 600000 WHERE id = ?')
+      .run(made.id);
     h.appCalls = [];
     expect((await people(room.id, 3)).status).toBe(204);
     await settle();
