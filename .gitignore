@@ -7,5 +7,7 @@ dist/
 coverage/
 .dev.vars*
 !.dev.vars.example
+# Each Worker's config for running in one process (packages/local-workers), written from its wrangler.toml.
+local-workers.wrangler.json
 *.tsbuildinfo
 .DS_Store
