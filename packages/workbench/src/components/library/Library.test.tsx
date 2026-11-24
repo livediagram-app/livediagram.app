@@ -439,7 +439,7 @@ describe('Save to Library', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     });
-    expect(onSaved).toHaveBeenCalledWith('personal');
+    expect(onSaved).toHaveBeenCalledWith('personal', expect.any(Array));
   });
 
   it('asks for its pictures’ copies, and saves without any it can’t make', async () => {
