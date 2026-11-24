@@ -107,7 +107,8 @@ describe('MakePlanCardsDialog', () => {
     const rows = () => within(document.querySelector<HTMLElement>('[data-plan-cards-rows]')!);
     expect(rows().getByText('Doing')).toBeTruthy();
     expect(rows().getByText('No column called Design')).toBeTruthy();
-    expect(screen.getByText('Due 5 Dec')).toBeTruthy();
+    // The day follows the reader's locale (CI runs en-US: "Dec 5").
+    expect(screen.getByText(/^Due (5 Dec|Dec 5)$/)).toBeTruthy();
     expect(screen.getByText('Waits on 1')).toBeTruthy();
     expect(screen.getByText(/Make 2 cards, 1 Blocked By link\./)).toBeTruthy();
     // The removed shape's card is offered, unticked; ticking it moves it to the Trash.
