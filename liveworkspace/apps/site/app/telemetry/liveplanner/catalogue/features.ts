@@ -12,6 +12,7 @@ import {
   ASK_AI_SOURCES_OPENED,
   ASK_AI_SWITCHED,
 } from './ask-ai';
+import { isSuggestionType } from '../../_shared/suggestion-metrics';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -673,6 +674,8 @@ export const PLAN_DESCRIBE_OPENED = opened(
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
 // Start a Call Here has its own stack too (_shared/item-call-metrics.ts).
 OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard');
+// Suggestions have a stack each (_shared/suggestion-metrics.ts).
+OPENED_HOMES.push(isSuggestionType);
 OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');
 
 export const OTHER_OPENED = chart(

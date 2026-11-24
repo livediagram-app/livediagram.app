@@ -8,6 +8,7 @@ import { isNonThemePick } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { elementTourTokens } from '../element-tour-kinds';
+import { isSuggestionType } from '../../_shared/suggestion-metrics';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -830,6 +831,8 @@ OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
 // Start a Call Here has its own stack too (_shared/item-call-metrics.ts).
 OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard');
+// Suggestions have a stack each (_shared/suggestion-metrics.ts).
+OPENED_HOMES.push(isSuggestionType);
 OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');
 
 export const OTHER_OPENED = chart(

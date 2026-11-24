@@ -190,6 +190,17 @@ const UI_SCALE_PARTS = [
 ].map((m) => m[1]!);
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md "Telemetry"): the shared hook counts the
+  // suggestion this app offers, typed by it (SUGGESTIONS in packages/workbench src/components/suggest/suggestions.ts).
+  'packages/workbench/src/components/suggest/useSuggestion.ts UI·Opened': {
+    values: ['SuggestWriteUp'],
+  },
+  'packages/workbench/src/components/suggest/useSuggestion.ts UI·Used': {
+    values: ['SuggestWriteUp'],
+  },
+  'packages/workbench/src/components/suggest/useSuggestion.ts UI·Closed': {
+    values: ['SuggestWriteUp'],
+  },
   // The UI Scale slider's per-part rows (UI_SCALE_PARTS above).
   'apps/editor/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: UI_SCALE_PARTS,
