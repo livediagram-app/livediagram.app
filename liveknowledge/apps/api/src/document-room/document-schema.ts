@@ -32,7 +32,11 @@ import {
   VERSION_SCHEMA,
   versionAgentSchemaStep,
 } from '../versions/version-schema';
-import { knowledgeSchemaStep, knowledgeShapeStep } from '../knowledge/knowledge-schema';
+import {
+  knowledgeSchemaStep,
+  knowledgeShapeStep,
+  sourceSchemaStep,
+} from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
 import { agentSeenSchemaStep } from '../knowledge/agent-seen';
@@ -485,6 +489,12 @@ const V44 = publishedMediaSchemaStep;
 // site already there reads as never counted.
 const V45 = publishedCountedStep;
 
+// Step 46: a knowledgebase's sources in other apps (docs/specs/030-knowledgebase/search-and-ask.md "Sources";
+// knowledge/source-work.ts): the items it reads, their chunks and their search index, and an Unanswered question's
+// likely item. Only adds tables; every statement is IF NOT EXISTS. The connected tabs already there settle in the
+// knowledge backfill as no page, which has the room look at its set of sources.
+const V46 = sourceSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -523,6 +533,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V43,
   V44,
   V45,
+  V46,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

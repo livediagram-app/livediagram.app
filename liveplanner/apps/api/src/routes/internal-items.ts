@@ -18,6 +18,8 @@ import {
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
   handleInternalItems as handle,
+  planKnowledgeChunks,
+  knowledgeTextFromExport,
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { communityService } from '../community-service';
@@ -70,6 +72,12 @@ export function handleInternalItems(
         query.format === 'file'
           ? planRoom(env, id).exportFile(query)
           : planRoom(env, id).exportImage(query),
+      // The plan's indexable text for a knowledgebase reading it (liveworkspace/docs/specs/004-index/
+      // knowledge-sources.md): its whole file, read as the export door reads it, walked by the shared planKnowledgeChunks.
+      knowledgeText: knowledgeTextFromExport(
+        (id, query) => planRoom(env, id).exportFile(query),
+        planKnowledgeChunks,
+      ),
       // The plan for liveworkspace's data export (liveworkspace/docs/specs/003-accounts/data-export.md), by its Durable
       // Object: its boards and Sheets as CSV, and every comment thread with its real authors (plan-room/plan-export.ts).
       exportTables: (id) => planRoom(env, id).exportTables(),

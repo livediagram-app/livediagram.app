@@ -282,6 +282,25 @@ export const searchPagesOutput = {
     )
     .describe('Page titles that match first, then passages, verified pages before others.'),
   more: z.number().describe('How many further results the search found beyond the limit.'),
+  sources: z
+    .array(
+      z.object({
+        app: z
+          .string()
+          .describe(
+            'The app the item is in: livediagram, liveplanner, livedocuments, livedesign or livehuddle.',
+          ),
+        item: z.string().describe('The item’s name.'),
+        itemId: z.string(),
+        place: z.string().describe('Where in the item: a tab’s or a card’s name.'),
+        snippet: z.string().describe('The words that matched, in their sentence.'),
+        asOf: z.string().describe('The day the knowledgebase last read the item, YYYY-MM-DD.'),
+      }),
+    )
+    .optional()
+    .describe(
+      'The team’s items in other apps this knowledgebase reads that match, after the pages: never verified, so weigh them below a verified page and say so when an answer rests on one alone.',
+    ),
   next,
 };
 

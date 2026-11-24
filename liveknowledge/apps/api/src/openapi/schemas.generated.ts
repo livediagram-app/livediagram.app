@@ -1380,6 +1380,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "reason": {
         "type": "string"
       },
+      "source": {
+        "$ref": "#/components/schemas/AskSourceItem",
+        "description": "A chunk of another app's item (search-and-ask.md \"Sources\"), not a page: `tab` is then the item's id."
+      },
       "tab": {
         "type": "string"
       },
@@ -1477,6 +1481,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "passageId": {
         "type": "string"
       },
+      "source": {
+        "$ref": "#/components/schemas/AskSourceItem",
+        "description": "A chunk of another app's item (search-and-ask.md \"Sources\"), not a page: `tab` is then the item's id."
+      },
       "tab": {
         "type": "string"
       },
@@ -1503,6 +1511,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "trust",
       "firstBlock",
       "lastBlock"
+    ],
+    "type": "object"
+  },
+  "AskSourceItem": {
+    "additionalProperties": false,
+    "description": "What a cited source chunk carries beside the passage: the item, its app, the place and when it was read. The editor makes the link from them (the app's address, the place's deep link and the question).",
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/KnowledgeSourceAppName"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "place": {
+        "$ref": "#/components/schemas/KnowledgeSourcePlace"
+      },
+      "readAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "itemName",
+      "place",
+      "readAt"
     ],
     "type": "object"
   },
@@ -6244,6 +6281,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeLikelySource": {
+    "additionalProperties": false,
+    "description": "An Unanswered question's likely item (insights.md \"Likely answered elsewhere\"), shown only to a reader who can open it.",
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/KnowledgeSourceAppName"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "title"
+    ],
+    "type": "object"
+  },
   "KnowledgeLineSpacing": {
     "enum": [
       "compact",
@@ -6864,6 +6922,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "lastAt": {
         "type": "number"
       },
+      "likely": {
+        "$ref": "#/components/schemas/KnowledgeLikelySource",
+        "description": "An item the question was likely answered in, that is not a source (insights.md \"Likely answered elsewhere\")."
+      },
       "question": {
         "type": "string"
       }
@@ -6967,6 +7029,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "results": {
         "items": {
           "$ref": "#/components/schemas/KnowledgeSearchResult"
+        },
+        "type": "array"
+      },
+      "sources": {
+        "description": "The reader's own sources in other apps that match (search-and-ask.md \"Sources\"), after the pages; absent with none.",
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeSourceHit"
         },
         "type": "array"
       }
@@ -7252,6 +7321,164 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "name",
       "pages"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSourceAppName": {
+    "description": "The apps a knowledgebase reads (`KNOWLEDGE_SOURCE_APPS`,",
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign",
+      "livehuddle"
+    ],
+    "type": "string"
+  },
+  "KnowledgeSourceHit": {
+    "additionalProperties": false,
+    "description": "A source chunk as `search_pages` answers it, after the pages' passages.",
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/KnowledgeSourceAppName"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "place": {
+        "$ref": "#/components/schemas/KnowledgeSourcePlace"
+      },
+      "readAt": {
+        "type": "number"
+      },
+      "snippet": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "itemName",
+      "title",
+      "place",
+      "snippet",
+      "readAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSourcePlace": {
+    "additionalProperties": false,
+    "description": "Where in the item a citation opens (`KnowledgePlace`).",
+    "properties": {
+      "cardId": {
+        "type": "string"
+      },
+      "elementIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "tabId": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "KnowledgeSourceRow": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/KnowledgeSourceAppName"
+      },
+      "chunks": {
+        "type": "number"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "origin": {
+        "enum": [
+          "connected",
+          "folder"
+        ],
+        "type": "string"
+      },
+      "readAt": {
+        "description": "When its text was last read (epoch ms); absent until it is.",
+        "type": "number"
+      },
+      "state": {
+        "$ref": "#/components/schemas/KnowledgeSourceState"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "itemId",
+      "app",
+      "title",
+      "origin",
+      "state",
+      "chunks"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSourceState": {
+    "description": "How far a source has been read: `read` (its chunks are searched), `waiting` (owed a read), `capped` (past the knowledgebase's source cap, not read) or `failed` (its app did not answer; tried again later).",
+    "enum": [
+      "read",
+      "waiting",
+      "capped",
+      "failed"
+    ],
+    "type": "string"
+  },
+  "KnowledgeSources": {
+    "additionalProperties": false,
+    "description": "`GET .../ai/sources`: the choices and the sources they make. `folderName` is the folder's name as the Editor chose it (null with no folder); `teamId` the knowledgebase's team (only a team's is offered a folder, of that team).",
+    "properties": {
+      "connected": {
+        "type": "boolean"
+      },
+      "folderId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "folderName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeSourceRow"
+        },
+        "type": "array"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "connected",
+      "folderId",
+      "folderName",
+      "teamId",
+      "items"
     ],
     "type": "object"
   },

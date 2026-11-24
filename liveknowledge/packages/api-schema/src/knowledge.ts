@@ -5,6 +5,7 @@
 import type { KnowledgeStyle, PageApproval } from '@liveknowledge/document';
 import type { AgentCover, AgentPageIcon } from './pages';
 import type { KnowledgeRequiredReadingPage } from './page-reading';
+import type { KnowledgeSourceHit, AskSourceItem, KnowledgeLikelySource } from './knowledge-sources';
 
 /** The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the one look every
  *  page is drawn in. In a document read (always whole), the `document-meta` op when it changed, and the metadata
@@ -84,7 +85,12 @@ export type KnowledgeSearchResult = {
   /** For an agent: the page's Health Score. */
   health?: KnowledgePageHealth;
 };
-export type KnowledgeSearchResponse = { results: KnowledgeSearchResult[] };
+export type KnowledgeSearchResponse = {
+  results: KnowledgeSearchResult[];
+  /** The reader's own sources in other apps that match (search-and-ask.md "Sources"), after the pages; absent with
+   *  none. */
+  sources?: KnowledgeSourceHit[];
+};
 
 /** A page's Health Score (verification.md "Health Score"), as agents and Ask read it: 0 to 100, its word, the
  *  factor that lost the most, and each factor's points of its maximum with what would raise it when short. */
@@ -293,6 +299,8 @@ export type AskSource = {
   lastBlock: string;
   /** The page's Health Score and word (search-and-ask.md "Sources"); absent from an older answer. */
   health?: { score: number; label: KnowledgeHealthLabel };
+  /** A chunk of another app's item (search-and-ask.md "Sources"), not a page: `tab` is then the item's id. */
+  source?: AskSourceItem;
 };
 export type AskNotUsed = AskSource & { reason: string };
 /** Ask answers as server-sent events, in this order: `delta` (the answer's next piece), then one `done`; or one
@@ -397,6 +405,8 @@ export type KnowledgeQuestion = {
   byPeople: number;
   agents: { name: string; asked: number }[];
   lastAt: number;
+  /** An item the question was likely answered in, that is not a source (insights.md "Likely answered elsewhere"). */
+  likely?: KnowledgeLikelySource;
 };
 export type KnowledgeConflictSide = {
   passageId: string;

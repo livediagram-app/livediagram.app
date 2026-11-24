@@ -41,6 +41,8 @@ export class RoomKnowledge {
   onIndexed: ((pages: readonly IndexedPage[]) => void) | null = null;
   /** Told that a page's verification changed. */
   onTrust: (() => void) | null = null;
+  /** Told that a tab settled as no page (a source's set may have moved: source-work.ts). */
+  onRemoved: (() => void) | null = null;
 
   constructor(storage: KnowledgeStorage, arm: () => void) {
     this.storage = storage;
@@ -53,6 +55,7 @@ export class RoomKnowledge {
       onQueued: () => this.wake(Date.now() + BACKFILL_GAP_MS),
       onIndexed: (pages) => this.onIndexed?.(pages),
       onTrust: () => this.onTrust?.(),
+      onRemoved: () => this.onRemoved?.(),
     });
   }
 
@@ -81,6 +84,7 @@ export class RoomKnowledge {
       if (settled.queued > 0) next = now + BACKFILL_GAP_MS;
       if (settled.indexed.length > 0) this.onIndexed?.(settled.indexed);
       if (settled.trust > 0) this.onTrust?.();
+      if (settled.removed > 0) this.onRemoved?.();
     } catch (error) {
       console.warn('[knowledge] backfill failed', { error: String(error) });
     }

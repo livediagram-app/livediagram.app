@@ -463,7 +463,7 @@ export const articles: Article[] = [
     description:
       'Add a tab that opens a file from any liveworkspace app: a plan, a document, a design or another canvas.',
     keywords:
-      'connect connected file tab liveplanner livedocuments livedesign livehuddle other app project link share both ways role editor viewer participant remove again livediagram canvas design start a kit kits software product launch team workshop website build folder',
+      'connect connected file tab liveplanner livedocuments livedesign livehuddle other app project link share both ways role editor viewer participant remove again livediagram canvas design start a kit kits software product launch team workshop website build folder knowledgebase ask cited by ask back to the answer liveknowledge',
     category: 'Tabs',
     categorySlug: 'tabs',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],

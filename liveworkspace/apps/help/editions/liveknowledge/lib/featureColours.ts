@@ -19,6 +19,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'searching-a-knowledgebase': '#0891b2',
   ask: '#7c3aed',
   'ai-settings': '#8b5cf6',
+  'ask-across-apps': '#6d28d9',
   // ---- Insights ----
   'connecting-an-agent': '#0284c7',
   'what-agents-can-do': '#0ea5e9',

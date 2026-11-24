@@ -20,6 +20,8 @@ import {
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
   handleInternalItems as handle,
+  canvasKnowledgeChunks,
+  knowledgeTextFromExport,
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { countCommunityCopy } from '../community-service';
@@ -164,6 +166,12 @@ export function handleInternalItems(
         query.format === 'file'
           ? documentRoom(env, id).exportFile(query)
           : documentRoom(env, id).exportImage(query),
+      // The Space's indexable text for a knowledgebase reading it (liveworkspace/docs/specs/004-index/
+      // knowledge-sources.md): its whole file, read as the export door reads it, walked by the shared canvasKnowledgeChunks.
+      knowledgeText: knowledgeTextFromExport(
+        (id, query) => documentRoom(env, id).exportFile(query),
+        canvasKnowledgeChunks,
+      ),
       // Every comment thread in the Space with its real authors, for the data export (document-room.ts
       // `exportComments`). It has no boards or sheets, so the door's `csv` format is a 404.
       exportComments: (id) => documentRoom(env, id).exportComments(),

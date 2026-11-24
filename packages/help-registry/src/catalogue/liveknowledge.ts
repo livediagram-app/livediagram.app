@@ -321,6 +321,17 @@ export const articles: Article[] = [
     group: 'Finding Things',
     ...APPS,
   },
+  {
+    slug: 'ask-across-apps',
+    title: 'Asking Across Your Apps',
+    description:
+      'Ask answers from the diagrams, plans, documents, designs and Spaces connected to your Knowledgebase, as well as its pages.',
+    keywords:
+      'sources connected items team folder other apps livediagram liveplanner livedocuments livedesign livehuddle diagram plan card deck design space cited by ask back to the answer likely answered connect not verified as of',
+    ...KNOWLEDGEBASE,
+    group: 'Finding Things',
+    ...APPS,
+  },
   // ---- Knowledgebase: Insights ----
   {
     slug: 'connecting-an-agent',

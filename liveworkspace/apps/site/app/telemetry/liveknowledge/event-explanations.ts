@@ -797,6 +797,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|HomeAsk': 'Someone asked a question from the box on Home, opening it in Ask.',
   'UI|Ended|AskStopped': 'Someone stopped Ask while it was still writing an answer.',
   'UI|Used|AskHelpful': 'Someone marked an answer from Ask as helpful.',
+  'UI|Used|AskSourceCited': 'Ask answered with a citation of an item in another app.',
+  'UI|Opened|AskSourceItem': 'Someone opened an item an answer cited, in its own app.',
+  'UI|Changed|SourcesConnectedOn': 'An Editor turned Connected Items on in Sources.',
+  'UI|Changed|SourcesConnectedOff': 'An Editor turned Connected Items off in Sources.',
+  'UI|Changed|SourcesFolderOn': 'An Editor chose a team folder for Ask to read.',
+  'UI|Changed|SourcesFolderOff': 'An Editor cleared the team folder Ask reads.',
+  'UI|Used|ConnectLikely': "Someone connected an unanswered question's likely item from Insights.",
   'UI|Used|AskNotHelpful': 'Someone marked an answer from Ask as not helpful.',
   'UI|Used|SuggestionAccepted':
     'An Editor accepted an edit an agent had suggested, changing the page.',

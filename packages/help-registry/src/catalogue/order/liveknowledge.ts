@@ -25,6 +25,7 @@ export const ORDER: readonly string[] = [
   'knowledgebase/searching-a-knowledgebase',
   'knowledgebase/ask',
   'knowledgebase/ai-settings',
+  'knowledgebase/ask-across-apps',
   'knowledgebase/connecting-an-agent',
   'knowledgebase/what-agents-can-do',
   'knowledgebase/suggested-edits',
