@@ -92,6 +92,17 @@ describe('Home’s first run', () => {
     expect(index.count('listItems')).toBe(1);
   });
 
+  it('greets without a gap for the name while the app’s welcome loads', async () => {
+    const index = createFakeIndex();
+    renderHome(index, { welcome: { manifest: null, signedIn: false } });
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Welcome. What are you making first?',
+      }),
+    ).toBeTruthy();
+  });
+
   it('shows each start’s whole name and description, wrapped rather than clamped', async () => {
     const long =
       'An empty form to share by link: add your questions, then choose a board or a sheet for the answers.';

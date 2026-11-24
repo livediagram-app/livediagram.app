@@ -70,7 +70,8 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:table': 'Tables',
   'tools:stack': 'Layout',
   'components:hero': 'Layout',
-  'tools:code-block': 'Code and Lists',
+  'tools:code-block': 'Code',
+  'tools:checklist': 'Lists',
   'components:card': 'Page Blocks',
   // Page Blocks where a layout leaves out the Card and the Badge.
   'components:step': 'Page Blocks',

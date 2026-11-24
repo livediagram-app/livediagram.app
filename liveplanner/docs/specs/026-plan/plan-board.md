@@ -261,7 +261,7 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **Setup Board**: a board with no columns (the Blank board starts so, and starts taller than a set-up board: 880 px
   against 640, blueprint DEFAULTS D5) is **not set up yet**.
   - **On the canvas** it shows, in place of its columns, a calm **placeholder**, centred: a board glyph, the board's
-    title, "Not set up yet", and for someone who may edit a **Set up board** button that opens the Setup Board
+    title, "Not set up yet", and for someone who may edit a **Set Up Board** button that opens the Setup Board
     dialog. Whoever else has the board selected the canvas's own selection badge names, as on any element. Someone
     who may only view reads "Someone who can edit it will set it up." instead of the button. The placeholder zooms
     with the board like any of its content.
@@ -284,11 +284,11 @@ Where each is set, so a setting lives with what it changes, never in one central
     board with no columns on the canvas. Run again on a set-up board (its cog's Setup), it has **Cancel** before the
     primary action and Close in its header, and Escape and the backdrop close it, leaving the board as it was.
   - **When it opens**: for the person who placed the board (Start Planning, a Dashboard slot's new board), at once;
-    and from the placeholder's **Set up board**. Only for that person:
+    and from the placeholder's **Set Up Board**. Only for that person:
     nobody else's screen changes. A board someone else placed, or one brought back by undo or a template, shows the
-    placeholder until someone presses Set up board.
+    placeholder until someone presses Set Up Board.
   - **Picks are kept** as they are made: if the page goes away mid-setup (a reload, a lost tab), the placeholder's
-    Set up board returns to the same step with the same choices, for the rest of the session.
+    Set Up Board returns to the same step with the same choices, for the rest of the session.
   - **Keyboard**: Enter presses the step's primary action (Next or Create Board) from anywhere in the dialog but a
     text field, a button or a link (where Enter already means something: the column name field's Enter adds the
     column); a chosen option row counts, an unchosen one is picked by Enter instead. In each option list ArrowUp,

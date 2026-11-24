@@ -50,7 +50,7 @@ const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 
 
 // Pages mode's Components: Layout first (what a page is laid out with: the Hero, Header and Banner, the Stack that
 // lines blocks up, and the Devices row, whose frames a screen design or a screenshot is set in), then the web blocks,
-// then Code and the Checklist; no data-model Entity.
+// then Code, then the Checklist under Lists; no data-model Entity.
 const PAGES_COMPONENTS = [
   'components:hero',
   'components:header',
@@ -68,6 +68,7 @@ const PAGES_COMPONENTS = [
   'components:process',
   DIVIDE,
   'tools:code-block',
+  DIVIDE,
   'tools:checklist',
 ];
 

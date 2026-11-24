@@ -91,7 +91,8 @@ liveworkspace logo and then that app's logo (which leads back), and a filter sho
 "All Apps". Reached on liveworkspace.app from no app (its account menu's **Explorer**, say), it is in no app and
 shows every app's items, with no app filter (there is no app to narrow to, so no "liveplanner | All Apps" switch
 names one the person never chose), and a first run there greets the person to liveworkspace ("Welcome to
-liveworkspace."), never to the app whose starts it shows. Opening an item goes to its app. The page is described in [site.md](../010-site/site.md#the-explorer-explorer).
+liveworkspace."), never to the app whose starts it shows. While the app's welcome is still loading it reads
+"Welcome.", never a gap where the name goes. Opening an item goes to its app. The page is described in [site.md](../010-site/site.md#the-explorer-explorer).
 
 Under All Apps each row, card and History entry wears its **app's mark**: the app's logo, the Living Prism, drawn at
 rest in the app's accent with each face at its own opacity (`BrandGlyph` from `@liveworkspace/brand`), never a

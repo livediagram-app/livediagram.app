@@ -419,7 +419,7 @@ export type ObjectInsert = 'image' | 'chart' | 'pie' | 'line' | 'drawing';
 
 // The Insert menu, dressed as the palette's rows (a glyph chip, the name, a line on what it is,
 // the slash menu's own: lib/article/article-slash-items.ts): the objects, then the blocks.
-const INSERT_OBJECTS: readonly {
+export const INSERT_OBJECTS: readonly {
   id: ObjectInsert;
   label: string;
   blurb: string;
@@ -436,46 +436,50 @@ const INSERT_OBJECTS: readonly {
   { id: 'pie', label: 'Pie Chart', blurb: 'Parts of a whole', icon: <PanelIcons.pie /> },
   { id: 'line', label: 'Line Chart', blurb: 'A trend over time', icon: <PanelIcons.line /> },
 ];
-const INSERT_BLOCKS: readonly { id: BlockInsert; label: string; blurb: string; icon: ReactNode }[] =
-  [
-    {
-      id: 'table',
-      label: 'Table',
-      blurb: 'Rows and columns in the text',
-      icon: <PanelIcons.table />,
-    },
-    {
-      id: 'toc',
-      label: 'Table of Contents',
-      blurb: 'The headings, with their pages',
-      icon: <PanelIcons.toc />,
-    },
-    {
-      id: 'footnote',
-      label: 'Footnote',
-      blurb: 'A numbered note at the foot of the page',
-      icon: <PanelIcons.footnote />,
-    },
-    {
-      id: 'divider',
-      label: 'Divider',
-      blurb: 'A line across',
-      icon: <PanelIcons.divider />,
-    },
-    {
-      id: 'pageBreak',
-      label: 'Page Break',
-      blurb: 'Start the next page',
-      icon: <PanelIcons.pageBreak />,
-    },
-    { id: 'quote', label: 'Quote', blurb: 'A quotation', icon: <PanelIcons.quote /> },
-    {
-      id: 'code',
-      label: 'Code',
-      blurb: 'Code, as typed',
-      icon: <PanelIcons.codeBlock />,
-    },
-  ];
+export const INSERT_BLOCKS: readonly {
+  id: BlockInsert;
+  label: string;
+  blurb: string;
+  icon: ReactNode;
+}[] = [
+  {
+    id: 'table',
+    label: 'Table',
+    blurb: 'Rows and columns in the text',
+    icon: <PanelIcons.table />,
+  },
+  {
+    id: 'toc',
+    label: 'Table of Contents',
+    blurb: 'The headings, with their pages',
+    icon: <PanelIcons.toc />,
+  },
+  {
+    id: 'footnote',
+    label: 'Footnote',
+    blurb: 'A note at the foot of the page',
+    icon: <PanelIcons.footnote />,
+  },
+  {
+    id: 'divider',
+    label: 'Divider',
+    blurb: 'A line across',
+    icon: <PanelIcons.divider />,
+  },
+  {
+    id: 'pageBreak',
+    label: 'Page Break',
+    blurb: 'Start the next page',
+    icon: <PanelIcons.pageBreak />,
+  },
+  { id: 'quote', label: 'Quote', blurb: 'A quotation', icon: <PanelIcons.quote /> },
+  {
+    id: 'code',
+    label: 'Code',
+    blurb: 'Code, as typed',
+    icon: <PanelIcons.codeBlock />,
+  },
+];
 
 function InsertRow({
   label,

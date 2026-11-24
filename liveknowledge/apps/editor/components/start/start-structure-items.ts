@@ -32,13 +32,19 @@ const textOf = (id: string): string => {
   return [s.name, s.line, ...structurePageTitles(s)].join(' ');
 };
 
+// The line offers Describe only where Describe to Set Up is offered (a signed-in Editor, not Offline).
+export const startLine = (describe: boolean) =>
+  `Pick a shape for the whole knowledgebase: its pages, already in place. Or start blank${describe ? ', or describe it' : ''}.`;
+
 /** The start's groups, with Describe to Set Up in Start only where it is offered. */
 export function knowledgebaseStart(offer: { describe: boolean }): KnowledgebaseStart {
   const groups: StartGroup[] = [
     {
       id: START_GROUP_ID,
       name: 'Start',
-      line: 'An empty knowledgebase to shape yourself, or one the AI suggests from a description.',
+      line: offer.describe
+        ? 'An empty knowledgebase to shape yourself, or one the AI suggests from a description.'
+        : 'An empty knowledgebase to shape yourself.',
       ids: [BLANK_KNOWLEDGEBASE, ...(offer.describe ? [DESCRIBE_TO_SET_UP] : [])],
     },
     ...STRUCTURE_GROUPS.map((g) => ({

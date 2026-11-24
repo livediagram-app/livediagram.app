@@ -57,7 +57,7 @@ export function LensBar({ parsed, showIssues }: { parsed: ParsedLens; showIssues
       <div
         role="group"
         aria-label="Filters"
-        className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 py-1"
+        className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {chips.map((chip) => {
           const choose = (dimension: LensDimension, value: string | null) => {
