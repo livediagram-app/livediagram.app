@@ -4,7 +4,7 @@ import { SITE_URL } from '@liveplanner/ui';
 // liveplanner's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "liveplanner"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-11-18');
+const UPDATED = new Date('2026-11-24');
 
 // Facts liveplanner states on more than one page, kept in one place so every comparison says them
 // the same way.
@@ -20,7 +20,7 @@ const ACCOUNT =
   'Signing in is optional and free. It adds teams with shared folders, and the tools that keep working while nobody has the plan open: Automations, Email to Board and calendar feeds.';
 const AUTOMATIONS_ROW = {
   label: 'Automation',
-  us: 'Rules on card, form, email, time and GitHub triggers, free with a sign-in',
+  us: 'Rules on card, form, email, time and GitHub triggers, with steps in other apps, free with a sign-in',
 };
 const GANTT_CLASHES =
   'A Gantt chart that catches clashes: a Blocked By arrow turns amber when dates overlap, and Move N Cards shifts the clashing cards that follow in one undo step.';
@@ -45,7 +45,7 @@ const LIST: Alternative[] = [
       {
         label: 'Price',
         us: 'Free, every feature (a few limits rise on paid plans)',
-        them: 'Free plan, then paid plans per user',
+        them: 'Free for up to 10 collaborators, then paid plans per user',
       },
       {
         label: 'Start without an account',
@@ -53,16 +53,16 @@ const LIST: Alternative[] = [
         them: 'An account to create a board',
       },
       { label: 'Kanban boards', us: 'Yes, with WIP limits and swimlanes', them: 'Yes, its core' },
-      { ...AUTOMATIONS_ROW, them: 'Butler rules and buttons built in' },
+      { ...AUTOMATIONS_ROW, them: 'Butler rules and buttons, 250 runs a month free' },
       {
         label: 'Custom fields',
         us: 'Card types with fields of your own',
-        them: 'Custom fields on cards',
+        them: 'Custom fields on cards, on paid plans',
       },
       {
         label: 'Beyond the board',
         us: 'Sheets, Dashboards, Forms and Gantt and calendar charts in the same plan, all free',
-        them: 'Timeline, calendar and table views on paid plans, and Power-Ups for integrations',
+        them: 'Timeline, calendar and table views on Premium, and Power-Ups for integrations',
       },
     ],
     themBest: [
@@ -132,7 +132,7 @@ const LIST: Alternative[] = [
       {
         label: 'Price',
         us: 'Free, every feature (a few limits rise on paid plans)',
-        them: 'Free plan, then paid plans per seat',
+        them: 'Free for up to two people, then paid plans per seat',
       },
       {
         label: 'Start without an account',
@@ -222,7 +222,7 @@ const LIST: Alternative[] = [
       {
         label: 'Price',
         us: 'Free, every feature (a few limits rise on paid plans)',
-        them: 'Paid plans per seat, with a free plan',
+        them: 'Paid plans per seat from three seats, free for two',
       },
       {
         label: 'Start without an account',
@@ -242,7 +242,7 @@ const LIST: Alternative[] = [
       {
         label: 'Automation',
         us: 'Rules on card, form, email, time and GitHub triggers, plus an API, MCP and CLI for scripts and AI agents',
-        them: 'Automation recipes and integrations, on paid plans',
+        them: 'Automation recipes and integrations, from the Standard plan',
       },
     ],
     themBest: [
@@ -345,6 +345,7 @@ const LIST: Alternative[] = [
       'Gantt and calendar charts you can drag cards across, drawn live from the cards.',
       'Forms on a public link whose answers land as cards on a board or rows in a sheet.',
       'Automations on every board, free: rules that move, assign and label cards when they change, a form answer lands or a due date nears.',
+      'Plans tied to your pages: Send to Plan turns a paragraph in livedocuments or a page’s thread in liveknowledge into a card that shows its status back there, and charts in those pages follow the plan’s numbers live.',
       'Real-time editing with live cursors and each person’s selection in their colour, cell by cell in a Sheet.',
       'Free, with no ads, no trackers and no sign-up to start.',
     ],
@@ -415,7 +416,7 @@ const LIST: Alternative[] = [
         us: 'Columns you name, and card types with your own fields',
         them: 'Configurable workflows, issue types and permissions',
       },
-      { ...AUTOMATIONS_ROW, them: 'Project automation rules, with monthly limits by plan' },
+      { ...AUTOMATIONS_ROW, them: 'Automation rules, with a monthly step allowance by plan' },
       {
         label: 'Developer integrations',
         us: 'GitHub pull requests on cards and in rules, plus a REST API, MCP server and CLI',
@@ -508,7 +509,7 @@ const LIST: Alternative[] = [
       {
         label: 'Timelines, dashboards and time tracking',
         us: 'Gantt chart, Dashboard tabs and Time Tracking fields, free for everyone',
-        them: 'Trials on the free plan, with dashboards in full from Business',
+        them: 'Trials on the free plan; Gantt and time tracking from Core, dashboards from Business',
       },
     ],
     themBest: [
@@ -575,7 +576,7 @@ const LIST: Alternative[] = [
       {
         label: 'Price',
         us: 'Free, every feature (a few limits rise on paid plans)',
-        them: 'Free plan, then paid plans per seat',
+        them: 'Free for up to 5 editors, then paid plans per seat',
       },
       {
         label: 'Start without an account',
@@ -672,7 +673,7 @@ const LIST: Alternative[] = [
       {
         label: 'Views of the work',
         us: 'Boards, Gantt chart, calendars, charts by field',
-        them: 'Grid, Gantt, card and calendar views',
+        them: 'Grid, Gantt, board, calendar and timeline views',
       },
       {
         label: 'Spreadsheets',

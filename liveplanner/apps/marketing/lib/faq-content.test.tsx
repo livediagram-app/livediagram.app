@@ -94,8 +94,10 @@ describe('domain language', () => {
 // The FAQ answers for liveplanner alone. Several sibling apps share the platform (the account, teams on
 // liveworkspace.app), and liveworkspace may be named, but no answer may name another app or offer its kind of work.
 // An answer about a genuine integration with another app goes in INTEGRATION_ANSWERS, by its question, and is the
-// only place such a name may appear. None does today.
-const INTEGRATION_ANSWERS: ReadonlySet<string> = new Set<string>([]);
+// only place such a name may appear.
+const INTEGRATION_ANSWERS: ReadonlySet<string> = new Set<string>([
+  'Can I turn a task I find in another app into a card?',
+]);
 
 const OTHER_APPS: readonly [string, RegExp][] = [
   ['another app by name', /\b(?:livediagram|livedocuments|livepages|livedesign)\b/i],
