@@ -253,6 +253,9 @@ element in the same colour.
   selects it (its toolbar and menu with it), a drag on an element moves it, a double-tap edits it. A pinch zooms and
   two fingers pan in either tool (`useCanvasPinchZoom`, canvas-and-palette.md "Touch"). Select is one tap away on the
   palette strip's first control, the selection-mode picker, as on a phone.
+- Wherever a held tool is put down (a template's scaffold replacing an empty tab, Escape out of Isometric, the
+  Magnifier, the format painter or Draw's eraser), it goes back to this same tool: Hand on a touch-first screen,
+  else Select (`restingTool`).
 - The tool is picked whenever the mode changes, the first mode a tab opens in included; any tool can be picked
   after. An embedded viewer always starts on Hand.
 

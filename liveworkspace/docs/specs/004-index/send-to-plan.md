@@ -125,6 +125,9 @@ Send to Plan or Send to Diagram did nothing). The same entries show in the same 
   Safari, Android Chrome), and the desktop's way to keep them (a press that never takes focus, `mousedown`) comes only
   after. So an entry that sends words reads them as the press starts and sends those on its click; a press read more
   than a second before its click counts for nothing (a held press, a keyboard press later).
+- **A mouse picks a reader's words.** A read-only writing (livedocuments' and liveknowledge's article read view)
+  leaves a press to the browser, so a drag, a double-click or a triple-click picks words natively for the pills under
+  them (prosemirror-view 1.43 otherwise prevents the press's default even when the writing can't be edited).
 - **The reader's pills stay for their own tap.** The pills under a reader's picked words go when the words do, except
   while a press on one is under way: they stay until its click sends, or the press is let go elsewhere.
 - **Clear of the system's handles.** On a coarse pointer the pills sit 24px under the words, not 8px, clear of the

@@ -65,9 +65,9 @@ Isometric is **navigation-only**, modelled on the Hand tool:
 - **No selecting, dragging, resizing, marquee, or editing** while it's
   active: the content layer is non-interactive (like Spotlight, [Canvas and palette](canvas-and-palette.md)),
   so there's no reverse hit-testing to get wrong. To edit, switch back to
-  Select. **Escape** exits the view to the default editing tool, Select on
-  desktop, Hand (pan) on touch viewports where Select isn't the default
-  (mirrors how Spotlight reverts to Select).
+  Select. **Escape** exits the view to the tool a mode starts with, Select, or
+  Hand (pan) on a phone or a touch-first screen such as an iPad
+  ([The tool a mode starts with](../007-editor/editor-modes.md#the-tool-a-mode-starts-with)).
 - It is **purely a view state**: it changes nothing about the document, never
   persists to the server, and is **not synced** to other participants; each
   viewer tilts independently (same contract as Zen mode, [Zen mode](../007-editor/zen-mode.md)).

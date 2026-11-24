@@ -158,9 +158,11 @@ export function SelectionPopover({
         {/* The toolbar is at most 95vw wide; its buttons ride a strip that scrolls sideways when they outgrow it (on a
           phone). The strip reaches 6px past the buttons top and bottom, so their 44px
           tap pads are not clipped. */}
+        {/* `isolate` makes the strip a stacking context of its own, so the pads draw over it rather than under it: without it a
+          tap just above or below a button landed on the strip (iPad). Isolation does not position it. */}
         <div
           data-testid="selection-popover-strip"
-          className="-my-1.5 flex touch-pan-x items-center gap-1 overflow-x-auto overscroll-x-contain py-1.5 [scrollbar-width:none]"
+          className="isolate -my-1.5 flex touch-pan-x items-center gap-1 overflow-x-auto overscroll-x-contain py-1.5 [scrollbar-width:none]"
         >
           {showMore && onOpenContextMenu ? (
             <>

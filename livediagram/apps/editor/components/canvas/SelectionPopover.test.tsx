@@ -107,6 +107,10 @@ describe('SelectionPopover tap areas', () => {
     expect(bar.className).toContain('[&_.h-8]:touch-target-packed');
     expect(bar.className).toContain('[&_.h-8]:relative');
     expect(bar.className).toMatch(/\bisolate\b/);
+    // The in-flow strip that scrolls the buttons sits over the pads too (its -my-1.5 py-1.5 band), so it is a stacking
+    // context of its own and the pads draw over it: a tap just above or below a button lands on that button. jsdom
+    // has no layout to hit-test, so this checks the class the browser needs.
+    expect(screen.getByTestId('selection-popover-strip').className).toMatch(/\bisolate\b/);
     expect(screen.getByRole('button', { name: 'Duplicate' }).className).toMatch(/\bh-8\b/);
   });
 });

@@ -188,6 +188,29 @@ describe('the writing as it shows sends', () => {
     expect(pill()).toBeNull();
   });
 
+  // A mouse picks a reader's words (send-to-plan.md "A mouse picks a reader's words"): prosemirror-view 1.43 prevents
+  // a press's default when it can't start a drag, read only too, which stopped the browser selecting. jsdom has no
+  // layout, so the press's place is stubbed (and the selection it sets not drawn).
+  const pressOn = (view: EditorView): boolean => {
+    view.posAtCoords = () => ({ pos: 3, inside: -1 });
+    view.dispatch = () => {};
+    const press = new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 });
+    view.dom.querySelector('p')!.dispatchEvent(press);
+    view.dom.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    return press.defaultPrevented;
+  };
+  it('leaves a press in the read-only writing to the browser, which ProseMirror alone would take', () => {
+    expect(pressOn(mount(false))).toBe(false);
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const plain = new EditorView(host, {
+      state: EditorState.create({ doc: blocksToDoc(BLOCKS) }),
+      editable: () => false,
+    });
+    views.push(plain);
+    expect(pressOn(plain)).toBe(true);
+  });
+
   it('takes its pill away with the writing', () => {
     const view = mount(false);
     const words = view.dom.querySelector('p')!.firstChild!;

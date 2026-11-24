@@ -136,7 +136,13 @@ export function articleSentSpec<Deco, Set, State extends PMState>(
     return decos.length > 0 ? draw.set(state.doc, decos) : draw.empty;
   };
   return {
-    props: { decorations },
+    props: {
+      decorations,
+      // Read only, a press is the browser's (send-to-plan.md "A mouse picks a reader's words"): prosemirror-view 1.43
+      // prevents a mousedown's default whenever the press can't start a drag, even in a view that isn't editable, so
+      // a mouse could not pick words to send. Claiming the press keeps ProseMirror's handler out.
+      handleDOMEvents: { mousedown: () => !editable() },
+    },
     view(view: PMView) {
       const redraw = () => {
         if (!view.isDestroyed)

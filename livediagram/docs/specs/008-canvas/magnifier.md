@@ -25,7 +25,7 @@ check an arrow's end, peer into a dense cluster, without a single zoom.
 - **On a Mode Button** ([Selection Mode button](../009-elements/mode-button.md)): a button can hand out Magnifier
   wherever it can hand out Isometric, and the palette's Behaviour group has a Magnifier button tile beside the
   Isometric one.
-- **Escape**, or picking any other mode, leaves it: Escape lands on Select on a computer and Hand on a phone, as it
+- **Escape**, or picking any other mode, leaves it: Escape lands on Select on a computer and Hand on a phone or a touch-first screen, as it
   does from Isometric.
 
 ## The lens

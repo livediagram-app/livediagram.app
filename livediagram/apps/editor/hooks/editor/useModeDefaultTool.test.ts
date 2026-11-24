@@ -5,7 +5,7 @@ import {
   PHONE_MEDIA_QUERY,
   TOUCH_FIRST_MEDIA_QUERY,
 } from '@liveworkspace/workbench/lib/responsive';
-import { modeDefaultTool, startsOnHand } from './useModeDefaultTool';
+import { modeDefaultTool, restingTool, startsOnHand } from './useModeDefaultTool';
 
 const before = window.matchMedia;
 // A device answering these media queries.
@@ -33,6 +33,13 @@ describe('startsOnHand', () => {
   it('starts a phone on Hand', () => {
     device([PHONE_MEDIA_QUERY, TOUCH_FIRST_MEDIA_QUERY]);
     expect(modeDefaultTool(startsOnHand())).toBe('pan');
+  });
+
+  it('puts a held tool down to the same tool a mode starts with', () => {
+    device([TOUCH_FIRST_MEDIA_QUERY]);
+    expect(restingTool()).toBe('pan');
+    device([FINE_POINTER_MEDIA_QUERY]);
+    expect(restingTool()).toBe('select');
   });
 
   it('keeps Select with a trackpad or mouse attached to an iPad, on a touchscreen laptop and on a desktop', () => {

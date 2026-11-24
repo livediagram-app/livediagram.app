@@ -37,6 +37,7 @@ import type { EditorViewportSlice } from './useEditorViewport';
 import type { EditorPresenceSlice } from './useEditorPresence';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorLayersSlice } from './useEditorLayers';
+import { restingTool } from '@/hooks/editor/useModeDefaultTool';
 import type { EditorTabsSlice } from './useEditorTabs';
 import type { EditorRoomSlice } from './useEditorRoom';
 
@@ -187,7 +188,8 @@ export function useEditorCreation({
   useEffect(() => {
     putToolDownRef.current = () => {
       cancelDrawShape();
-      setCanvasTool('select');
+      // The tool a mode starts with: Hand on a touch-first screen, else Select (editor-modes.md).
+      setCanvasTool(restingTool());
     };
   });
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.

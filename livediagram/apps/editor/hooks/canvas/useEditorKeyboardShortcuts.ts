@@ -19,7 +19,7 @@
 import { useEffect } from 'react';
 import { isInMenuSurface, isPressableControl } from '@livediagram/ui';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
-import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
+import { restingTool } from '@/hooks/editor/useModeDefaultTool';
 import {
   EDIT_KEYS,
   runModShortcut,
@@ -111,24 +111,24 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         ) {
           e.preventDefault();
         }
-        // Whiteboard: back to Select from any tool in hand.
+        // Whiteboard: the eraser is put down, back to the tool a mode starts with (Select, or Hand on a touch-first
+        // screen, editor-modes.md).
         if (live.whiteboard !== null && live.canvasTool === 'eraser') {
-          live.whiteboard.pickSelect();
+          live.setCanvasTool(restingTool());
           return;
         }
         liveRef.current.setFormatSourceId(null);
         // Persistent Format tool: Escape exits the tool entirely (back to
         // Select) from either phase, not just disarming the base.
-        if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
-        // Isometric: Escape leaves the view back to the normal editing tool —
-        // Select on desktop, Hand (pan) on touch where Select isn't the
-        // default. Mirrors how Spotlight reverts to Select.
+        if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool(restingTool());
+        // Isometric: Escape leaves the view back to the tool a mode starts with:
+        // Select, or Hand (pan) on a phone or a touch-first screen (editor-modes.md). Mirrors how Spotlight reverts to Select.
         // Magnifier (docs/specs/008-canvas/magnifier.md) leaves the same way.
         if (
           liveRef.current.canvasTool === 'isometric' ||
           liveRef.current.canvasTool === 'magnifier'
         ) {
-          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
+          liveRef.current.setCanvasTool(restingTool());
         }
         if (liveRef.current.pendingDraw !== null) {
           liveRef.current.onCancelDraw();
