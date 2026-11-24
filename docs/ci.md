@@ -40,6 +40,10 @@ Prettier config and ignore file, or a product folder's own `package.json` or Pre
 - **Every product's E2E**: what only the e2e jobs run. `e2e.yml`, `e2e-product.yml`, the `e2e-setup`,
   `next-cache-restore` and `next-cache-save` actions and `next-build-cold-retry.sh`. Unit tests, lint
   and type check run only for what else the change reaches.
+  E2E builds never reach production's Community: `e2e-product.yml` sets `NEXT_PUBLIC_COMMUNITY_API` to
+  the same-origin `/api/community` (the stack's api answers 404, so a template picker shows no Community
+  tiles), because an unset value means `www.liveworkspace.app` and every E2E run's Playwright Chromium
+  would call it (`e2e-community-guard.test.mjs` holds this).
 - **The platform's Checks job alone**: the rest of `.github/` (the repo guards and their baseline lists,
   the deploy, CodeQL, cache-prune and other workflows, the other scripts, `dependabot.yml`). Each script
   has its own tests, the CI script tests, and the guards run over the whole repository in that job, so
