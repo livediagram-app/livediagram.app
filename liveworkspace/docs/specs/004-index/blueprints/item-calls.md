@@ -33,7 +33,7 @@ livehuddle room: hello / tab-focus / close ── 1.5 s settle ─▶ PUT /app/i
 | `ItemCall`        | `id`, `spaceId`, `link` (the Space's Participant link), `people`, `names`, `startedAt`, `endedAt` (null while live), `live`     |
 | `ItemMeeting`     | `ItemCall` and `summary: {title, link} \| null`, `plan: {id, title, link} \| null`, `you` (the reader hosted it)                |
 | `ItemCallsRead`   | `{live: ItemCall \| null, meetings: ItemMeeting[]}`                                                                             |
-| `ItemCallStart`   | `{call: ItemCall, started: boolean, fallback?: 'unavailable' \| 'busy'}` (the Calls Space was skipped, and why)                  |
+| `ItemCallStart`   | `{call: ItemCall, started: boolean, fallback?: 'unavailable' \| 'busy'}` (the Calls Space was skipped, and why)                 |
 | `ItemCallAsk`     | `{space?: id}`: the start's body, the person's Calls Space when they chose one                                                  |
 | `SpaceCall`       | `{id, item: {app, id, title, link}, host: boolean, live, names, startedAt, summary, plan, summaryDefault: {id, title} \| null}` |
 | `CallPeoplePush`  | `{people: number, names: string[]}`: livehuddle's room's push                                                                   |

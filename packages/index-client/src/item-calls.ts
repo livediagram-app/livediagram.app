@@ -124,7 +124,9 @@ export function readItemCallAsk(raw: unknown): ItemCallAsk | null {
 }
 
 /** The person's Calls Space from their preferences (the `all` scope's `callSpace`), or null for Default. */
-export function readCallSpaceSetting(prefs: Readonly<Record<string, unknown>> | null): string | null {
+export function readCallSpaceSetting(
+  prefs: Readonly<Record<string, unknown>> | null,
+): string | null {
   const value = prefs?.[CALL_SPACE_SETTING];
   return isId(value) ? value : null;
 }
