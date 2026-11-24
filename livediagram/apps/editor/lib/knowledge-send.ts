@@ -10,8 +10,7 @@ import type {
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import type { Tab } from '@livediagram/document';
 import { API_BASE, apiFetch } from '@/lib/api/core';
-import { tabAsSeen } from '@/lib/export-as-seen';
-import { renderTabToCanvas, type ImageExportOpts } from '@/lib/export-tab';
+import type { ImageExportOpts } from '@/lib/export-tab';
 import { captureKnowledgeSelection, pictureWithin, selectionTab } from '@/lib/knowledge-selection';
 
 type TabSource = {
@@ -42,7 +41,12 @@ export function captureSelected(ids: Iterable<string>): KnowledgeCapture | null 
     selection,
     heading,
     picture: async () => {
-      // The selection as Export Selection draws it, in the appearance the person is looking at.
+      // The selection as Export Selection draws it, in the appearance the person is looking at. The drawing code
+      // loads on the picker's first open, never with the canvas.
+      const [{ tabAsSeen }, { renderTabToCanvas }] = await Promise.all([
+        import('@/lib/export-as-seen'),
+        import('@/lib/export-tab'),
+      ]);
       const part = tabAsSeen(selectionTab(tab, selected));
       await ensureIconCatalogs();
       const images = await from.images(part).catch(() => undefined);

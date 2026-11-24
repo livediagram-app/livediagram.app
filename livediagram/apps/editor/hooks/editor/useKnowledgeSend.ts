@@ -6,7 +6,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { Tab } from '@livediagram/document';
 import type { KnowledgeSummariser } from '@liveworkspace/workbench/components/send-to-knowledge/send-to-knowledge-entry';
-import { loadTabImages } from '@/lib/export-tab';
 import { knowledgeSummariser, setKnowledgeTabSource } from '@/lib/knowledge-send';
 
 type ImageContext = { ownerId: string; documentId: string; shareCode: string | null } | undefined;
@@ -37,7 +36,9 @@ export function useKnowledgeSend({
       tab: () => tabRef.current,
       images: async (tab) => {
         const context = imagesRef.current;
-        return context ? await loadTabImages(tab, context) : undefined;
+        if (!context) return undefined;
+        const { loadTabImages } = await import('@/lib/export-tab');
+        return await loadTabImages(tab, context);
       },
     });
     return () => setKnowledgeTabSource(null);
