@@ -97,14 +97,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore articles',
     title: 'Write it up on pages',
     description:
-      'Write on pages like a doc: headings, lists and tables from the keyboard, a table of contents, headers, footers and footnotes, pictures and charts in the text, comments in the margin, and five looks to match your house style. The writing flows onto a new page as it grows.',
+      'Write on pages like a doc: headings, lists and tables from the keyboard, a table of contents, headers, footers and footnotes, and comments in the margin. Charts in the text can follow a liveplanner plan, Word and Google Docs come in, and PDF, Word or Markdown go out. The writing flows onto a new page as it grows.',
     metaDescription:
       'Write articles on pages like a doc: tables across pages, a table of contents, headers and footers, margin comments, and Word import and export.',
     highlights: [
       'Write like a doc',
       'Pages that grow',
-      'Tables that run across pages',
-      'Contents, headers and footers',
+      'Pictures and charts in the text',
+      'Bring in Word and Google Docs',
     ],
     items: [
       {
@@ -204,14 +204,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore slide decks',
     title: 'Build the deck, then present it',
     description:
-      'Start a slide from one of 64 ready-made layouts and fill it in, then present the deck full screen on your screen alone, each point building in on a click, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
+      'Start a slide from one of 64 ready-made layouts, or bring in a PowerPoint deck, then present the deck full screen on your screen alone, each point building in on a click, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
     metaDescription:
       'Slide decks from 64 ready-made layouts, presented full screen with builds, private notes, a timer, a laser pointer and a spotlight.',
     highlights: [
       'Slide pages, ready-made layouts',
       'Builds, one point at a time',
       'Notes only you open',
-      'Your screen, not everyone else’s',
+      'From PowerPoint and back',
     ],
     items: [
       {
@@ -311,14 +311,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore infographics',
     title: 'Posters, one-pagers and social posts',
     description:
-      'Lay out a page from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Every page has its own size, from A4 to a story.',
+      'Lay out a page from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready, or as an animated GIF to post. Every page has its own size, from A4 to a story.',
     metaDescription:
       'Lay out posters, one-pagers and social posts from 92 ready-made layouts, fill them with stats and charts, then export them print-ready.',
     highlights: [
       'Pages for print and social',
       'Start a page from a layout',
-      'Backgrounds from your theme',
       'Every page, print-ready',
+      'Pages as an animated GIF',
     ],
     items: [
       {
@@ -388,14 +388,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the pages with you: live cursors, comments on anything, and actions handed to teammates. Ask for sign-off, record a walkthrough, go back to any version, send the follow-ups to a plan, or hand the work to your AI.',
+      'Share a link and your team is on the pages with you: live cursors, comments on anything, and actions handed to teammates. Ask for sign-off, record a walkthrough, go back to any version, ask AI what the pages say, or send the follow-ups to a plan.',
     metaDescription:
       'Work on documents together: live cursors, comments, approvals, version history, walkthroughs, calls, cards sent to a plan and AI that answers from your pages.',
     highlights: [
       'Live presence',
       'Comments on anything',
       'Every version kept',
-      'Make documents with AI',
+      'Ask AI about the document',
     ],
     items: [
       {
