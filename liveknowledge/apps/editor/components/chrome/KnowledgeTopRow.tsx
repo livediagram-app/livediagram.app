@@ -38,7 +38,13 @@ export function KnowledgeTopRow({
       style={{ height: TOP_ROW_HEIGHT_VAR, ...style }}
       className={`pointer-events-auto flex shrink-0 cursor-default items-center gap-1 border-b border-slate-200 bg-white pl-3 pr-2 text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 phone:pl-2 phone:pr-1.5 ${className}`}
     >
-      {leading}
+      {/* A phone's menu card (the logo, Apps) and Pages buttons: 44 px targets, as every editor's top row has on a phone
+          (liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md). */}
+      {leading ? (
+        <div className="flex shrink-0 items-center gap-1 phone:[&_.h-9]:h-11 phone:[&_.w-9]:w-11">
+          {leading}
+        </div>
+      ) : null}
       <div className="flex min-w-0 flex-1 items-center gap-1">{children}</div>
       {trailing}
       {/* Share and the account button (TopRowActions). `data-corner-actions` is what the shared account control is

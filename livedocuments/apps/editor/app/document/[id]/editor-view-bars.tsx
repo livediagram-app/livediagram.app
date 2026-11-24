@@ -53,6 +53,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const copying = useEditorChrome((s) => s.copying);
   const teamDocument = useEditorChrome((s) => !!s.documentTeamId);
+  const documentName = useEditorChrome((s) => s.documentName);
   const slideCount = useEditorChrome((s) => s.slideDeck.runnable.length);
   const startingDeck = useEditorChrome((s) => s.slideDeck.startingDeck);
   const { isMobileViewport } = view;
@@ -62,6 +63,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   return (
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
+        itemName={documentName}
         approval={<ApprovalBadge corner />}
         call={<ItemCallButton />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}

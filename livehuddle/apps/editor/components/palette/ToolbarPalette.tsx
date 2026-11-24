@@ -15,7 +15,10 @@ import { atLeastInset, safeInlinePadding } from '@livehuddle/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
-import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
+import {
+  PACKED_TOOLBAR_ITEMS,
+  PHONE_TOP_ROW_CARD,
+} from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
@@ -38,7 +41,6 @@ import {
   useStripCrowding,
 } from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { useBarFold } from '@liveworkspace/workbench/components/palette/useBarFold';
-import { PHONE_EDGE_LEFT_IN_ROW } from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 
@@ -71,7 +73,7 @@ type Props = Pick<PaletteProps, 'canvasTool' | 'onExitAvatarMode' | 'pendingDraw
 // screen each gets a full 44 x 44 pad behind it and a tap in a gap still picks a tile (PACKED_TOOLBAR_ITEMS,
 // docs/specs/004-interface-design/touch-targets.md); the category flyouts hang beside the card, not in it, so the
 // card's own stacking context traps none of them.
-export const CARD_CLASS = `${TOOLBAR_CARD} ${PACKED_TOOLBAR_ITEMS}`;
+export const CARD_CLASS = `${TOOLBAR_CARD} ${PACKED_TOOLBAR_ITEMS} ${PHONE_TOP_ROW_CARD}`;
 
 // On a phone's row, the menu card sits at the left gutter and the strip beside
 // it rather than centred (docs/specs/007-editor/toolbar-layout.md "On a phone");
@@ -105,7 +107,7 @@ export function StripRow({
         <div
           ref={leadingRef}
           data-strip-leading=""
-          className={`${CARD_CLASS} ${PHONE_EDGE_LEFT_IN_ROW}`}
+          className={CARD_CLASS}
         >
           {leading}
         </div>

@@ -2,14 +2,13 @@
 
 import type { Ref } from 'react';
 
-import { track } from '@/lib/telemetry';
-import { Glyph } from '@livediagram/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 import { Brand } from '@livediagram/ui';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { useEditorInbox } from '@liveworkspace/workbench/components/chrome/useEditorInbox';
 import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
+import { ExplorerMenuButtons } from '@liveworkspace/workbench/components/chrome/phone-apps/ExplorerMenuButtons';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -46,27 +45,16 @@ export function ToolbarExplorerButton({
 }) {
   const phone = useIsMobileViewport();
   const inbox = useEditorInbox('livediagram');
+  // The hamburger, or on a phone the logo and Apps (phone-apps-drawer.md), which then holds the logo itself.
   const button = (
-    <button
-      ref={buttonRef}
-      type="button"
-      aria-label={inbox.label('Explorer')}
-      aria-expanded={open}
-      onClick={(e) => {
-        if (!open) track('UI', 'Opened', 'ToolbarExplorer');
-        onToggle(e.currentTarget);
-      }}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-md transition ${
-        open
-          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-      }`}
-    >
-      <Glyph size={18} units={20} strokeLinejoin="miter">
-        <path d="M4 6h12M4 10h12M4 14h12" />
-      </Glyph>
-      {inbox.badge}
-    </button>
+    <ExplorerMenuButtons
+      app="livediagram"
+      open={open}
+      onToggle={onToggle}
+      buttonRef={buttonRef}
+      itemId={itemId}
+      inbox={inbox}
+    />
   );
   return (
     <>
@@ -75,12 +63,14 @@ export function ToolbarExplorerButton({
         dockButton
         tourId="dock-explorer"
         logo={
-          <Brand
+          phone ? undefined : (
+            <Brand
             href={explorerItemHref(itemId)}
             size="sm"
             wordmarkClassName="hidden lg:inline"
             className="relative touch-target"
-          />
+            />
+          )
         }
       >
         {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}

@@ -12,7 +12,7 @@ import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 const noSubscribe = () => () => {};
 
 /** The open knowledgebase's id, read without requiring the editor's store (a test or a workbench has none). */
-function useOpenItemId(): string | null {
+export function useOpenItemId(): string | null {
   const store = useContext(EditorChromeContext);
   return useSyncExternalStore(
     store?.subscribe ?? noSubscribe,
