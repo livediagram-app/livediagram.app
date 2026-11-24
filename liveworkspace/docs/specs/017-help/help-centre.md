@@ -449,6 +449,16 @@ article or category from being redirected away. What each app has retired:
   Tools, to Automations (`tools/automations#connections`), where outgoing messages are now Connections; on
   liveplanner both old addresses land on Plan Automations.
 
+## Markdown for agents
+
+Every page a scope serves, the home, each category and each article, answers its Markdown to an AI agent whose
+request prefers `text/markdown`, and its HTML with `Vary: Accept` to everyone else
+([Markdown for agents](../010-site/markdown-for-agents.md)). The Markdown is the page as the scope's build renders it
+(the article's MDX with its app notes for that scope), written beside the page at build time
+(`/help/<category>/<article>/index.md`), never at request time. An app's copy of an article several apps share
+answers too, though only the canonical scope's sitemap lists it. Each scope has its own `/help/llms.txt`, listing its
+pages; the liveworkspace site's and every marketing site's `/llms.txt` link it.
+
 ## Telemetry
 
 One stream. Each help event counts for its scope (the app whose help it is, or liveworkspace.app for All Apps) and,
