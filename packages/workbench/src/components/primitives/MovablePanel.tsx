@@ -9,6 +9,7 @@ import { useClickOutside } from '@liveworkspace/ui';
 import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { announceToastFloorChange, TOAST_FLOOR_POPOVER } from '@liveworkspace/ui/toast';
 import { isMobileViewportSync } from '../../lib/responsive';
+import { useIsMobileViewport } from '../../hooks/ui/useIsMobileViewport';
 import { announcePanelPresence } from '../../lib/panel-presence';
 
 // The corner-docking props bundle (docs/specs/007-editor/panel-docking.md). CanvasChrome builds one of
@@ -26,6 +27,7 @@ import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
 import { cornerInsetStyle } from './movable-panel-scale';
 import { PopoverScrim } from './PopoverScrim';
 import { MOVABLE_PANEL_INSIDE } from './movable-panel-inside';
+import { PhoneDrawer } from './PhoneDrawer';
 
 export type { MovablePanelDockProps };
 
@@ -55,6 +57,65 @@ export function createMovablePanel<HelpKey extends string>({
   // Width is fixed at construction time (via the `width` Tailwind utility)
   // and the body grows with its content. No user-driven resize: keeping
   // the panels uniformly-sized makes the chrome easier to reason about.
+  // A popover's header, in place of the draggable title row: the hero (its band running up under a drawer's handle),
+  // or a slim band with the title and the header's controls.
+  function PopoverHeader({
+    hero,
+    heroTitleId,
+    title,
+    titleAdornment,
+    headerExtra,
+    headerActions,
+    helpArticle,
+    onClose,
+    underHandle,
+  }: Pick<
+    MovablePanelProps<HelpKey>,
+    'hero' | 'title' | 'titleAdornment' | 'headerExtra' | 'headerActions' | 'helpArticle'
+  > & { heroTitleId: string; onClose?: () => void; underHandle: boolean }) {
+    const controls =
+      headerExtra || headerActions || helpArticle ? (
+        <>
+          {headerExtra}
+          {headerActions}
+          {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
+        </>
+      ) : undefined;
+    if (hero)
+      return (
+        <HeroDialogHeader
+          art={hero.art}
+          titleId={heroTitleId}
+          title={
+            titleAdornment ? (
+              <span className="flex items-center gap-1.5">
+                {title}
+                {titleAdornment}
+              </span>
+            ) : (
+              title
+            )
+          }
+          subtitle={hero.subtitle}
+          actions={controls}
+          onClose={onClose}
+          underHandle={underHandle}
+          className={`gap-2.5 px-3! ${hero.className ?? ''}`}
+        />
+      );
+    return (
+      <div
+        className={`flex items-center justify-between gap-2 border-b border-slate-200 px-2 py-1.5 dark:border-slate-800 ${underHandle ? '' : 'rounded-t-lg'}`}
+      >
+        <span className="flex min-w-0 items-center gap-1.5">
+          <PanelTitle title={title} />
+          {titleAdornment}
+        </span>
+        {controls ? <div className="ml-auto flex items-center gap-1">{controls}</div> : null}
+      </div>
+    );
+  }
+
   function MovablePanel({
     title,
     position,
@@ -144,20 +205,25 @@ export function createMovablePanel<HelpKey extends string>({
     // A popover off a button (the Toolbar layout's Explorer, the cluster
     // popovers): shown only while the button has it open.
     const popoverShown = asPopover && popoverOpen === true;
+    // On a phone a popover off a button is a drawer from the screen's foot
+    // (liveworkspace/docs/specs/011-workbench/phone-drawers.md), unless it opens as a sheet of its own (the Explorer).
+    const phone = useIsMobileViewport();
+    const drawer = popoverShown && phone && !popoverSheet;
 
     // As a popover off a dock button: keyboard focus in on a keyboard open, Escape out (useDockPopoverKeys).
     useDockPopoverKeys(ref, popoverShown, onPopoverClose);
 
     // Opening up from a bottom button, it stops short of a toolbar across the canvas's top.
-    const risesFromBottom = popoverShown && popoverAnchor?.bottom !== undefined;
+    const risesFromBottom = popoverShown && !drawer && popoverAnchor?.bottom !== undefined;
     const topClear = usePopoverTopClearance(ref, risesFromBottom);
-    // Risen from the bottom chrome, it is a floor the toast stack stands on while it is open
+    // Risen from the bottom chrome (a drawer always is), it is a floor the toast stack stands on while it is open
     // (liveworkspace/docs/specs/016-notifications/toasts.md "Placement"), so a standing toast never covers it.
+    const toastFloor = risesFromBottom || drawer;
     useEffect(() => {
-      if (!risesFromBottom) return;
+      if (!toastFloor) return;
       announceToastFloorChange();
       return announceToastFloorChange;
-    }, [risesFromBottom]);
+    }, [toastFloor]);
 
     // Outside-tap auto-close, for a popover that opts in with
     // `dismissOnOutside` (the Toolbar Explorer, the Layers / Activity /
@@ -168,7 +234,8 @@ export function createMovablePanel<HelpKey extends string>({
     useClickOutside(
       ref,
       () => onPopoverClose?.(),
-      dismissOnOutside && popoverShown,
+      // A drawer's scrim closes it instead.
+      dismissOnOutside && popoverShown && !drawer,
       // The button that opened the popover toggles it itself. The tour popover
       // (docs/specs/007-editor/editor-tour.md) is always "inside": it sits next to the panel it's
       // explaining, so tapping its Next button must not dismiss that panel out
@@ -242,8 +309,45 @@ export function createMovablePanel<HelpKey extends string>({
 
     if (asPopover && !popoverShown) return null;
 
-    // A popover: hung from its button with an arrow, no draggable header.
+    // A popover: hung from its button with an arrow, no draggable header; on a phone, a drawer.
     if (popoverShown) {
+      const header = (
+        <PopoverHeader
+          hero={hero}
+          heroTitleId={heroTitleId}
+          title={title}
+          titleAdornment={titleAdornment}
+          headerExtra={headerExtra}
+          headerActions={headerActions}
+          helpArticle={helpArticle}
+          onClose={onPopoverClose}
+          underHandle={drawer}
+        />
+      );
+      if (drawer) {
+        return (
+          <PhoneDrawer
+            ref={ref}
+            name={title}
+            labelledBy={hero ? heroTitleId : undefined}
+            onClose={() => onPopoverClose?.()}
+            // With the modals, so a layer's menu, a confirm or a dialog the panel opens draws over it.
+            layer="modal"
+            attrs={{
+              'data-floating-panel': '',
+              'data-toast-floor': TOAST_FLOOR_POPOVER,
+              'data-tour-id': dataTourId,
+            }}
+          >
+            {header}
+            <div
+              className={`min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain ${flushTop ? '' : 'pt-2'}`}
+            >
+              {children}
+            </div>
+          </PhoneDrawer>
+        );
+      }
       const anchor = popoverAnchor;
       const sheet = popoverSheet && anchor !== undefined && anchor.bottom === undefined;
       // A popover given a height fills it, clamped to the canvas below its button; its body then fills it too.
@@ -324,48 +428,7 @@ export function createMovablePanel<HelpKey extends string>({
             headerActions like the Explorer's "New" button) reachable.
             Reset-position / drag affordances are intentionally omitted:
             a popover doesn't drag. */}
-            {hero ? (
-              <HeroDialogHeader
-                art={hero.art}
-                titleId={heroTitleId}
-                title={
-                  titleAdornment ? (
-                    <span className="flex items-center gap-1.5">
-                      {title}
-                      {titleAdornment}
-                    </span>
-                  ) : (
-                    title
-                  )
-                }
-                subtitle={hero.subtitle}
-                actions={
-                  headerExtra || headerActions || helpArticle ? (
-                    <>
-                      {headerExtra}
-                      {headerActions}
-                      {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
-                    </>
-                  ) : undefined
-                }
-                onClose={onPopoverClose}
-                className={`gap-2.5 px-3! ${hero.className ?? ''}`}
-              />
-            ) : (
-              <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
-                <span className="flex min-w-0 items-center gap-1.5">
-                  <PanelTitle title={title} />
-                  {titleAdornment}
-                </span>
-                {headerExtra || headerActions || helpArticle ? (
-                  <div className="ml-auto flex items-center gap-1">
-                    {headerExtra}
-                    {headerActions}
-                    {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
-                  </div>
-                ) : null}
-              </div>
-            )}
+            {header}
             <div
               className={`min-h-0 overflow-y-auto overflow-x-hidden ${sheet || fill ? 'flex flex-1 flex-col' : ''} ${flushTop ? '' : 'pt-2'}`}
             >
