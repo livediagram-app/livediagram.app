@@ -38,14 +38,14 @@ export const COLLABORATION_SECTION: LandingSection = {
   cta: 'Explore collaboration',
   title: 'Plan it together, live',
   description:
-    'Share a link and your team is in the plan with you: live presence on every board, sheet and dashboard, comments on cards and cells, links with the access each person needs, and agents that can lend a hand.',
+    'Share a link and your team is in the plan with you: live presence on every board, sheet and dashboard, comments on cards and cells, a call started from the plan, cards sent in from your other apps, and Ask AI to answer from the plan itself.',
   metaDescription:
     'Share a link and your team plans with you live: presence on every tab, comments on cards and cells, share links with the right access, and agent access.',
   highlights: [
-    'Live presence',
     'Comments where the work is',
-    'Editor, participant or view-only links',
-    'Agents that work beside you',
+    'Start a call from the plan',
+    'Cards from anywhere',
+    'Ask the plan a question',
   ],
   items: [
     {
