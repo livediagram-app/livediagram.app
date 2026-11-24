@@ -1,8 +1,9 @@
 // Palette-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the mode picker (Select, Hand,
-// Eraser, Format Painter, Laser, Spotlight, Isometric) and the palette
+// Eraser, Format Painter, Laser, Spotlight, Magnifier, Isometric) and the palette
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds.
 
+import { useId } from 'react';
 import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
 import { IsoCard, iso } from './palette-modes-parts';
 import { PickerTrigger } from './selection-modes';
@@ -172,6 +173,86 @@ export function IsometricMode() {
       />
       <IsoCard cx={-70} cy={-30} label="A" />
       <IsoCard cx={70} cy={30} accent label="B" />
+    </Scene>
+  );
+}
+
+/** Magnifier: the picker set to Magnifier and a small, busy map with a square lens over one corner of it, the
+ *  shapes under the lens drawn twice the size with a crosshair at its centre. */
+export function MagnifierMode() {
+  // The lens: centred on (lx, ly), showing the map around that point at 2x.
+  const lx = 262;
+  const ly = 150;
+  const half = 58;
+  const zoom = 2;
+  const clip = `help-magnifier-${useId().replace(/:/g, '')}`;
+  const map = (
+    <g>
+      <Shape x={70} y={96} w={46} h={24} label="API" />
+      <Shape x={70} y={150} w={46} h={24} label="Web" />
+      <Shape x={146} y={120} w={46} h={24} label="Auth" />
+      <Shape x={228} y={128} w={40} h={20} accent label="DB" />
+      <Shape x={262} y={164} w={40} h={20} label="Cache" />
+      <Shape x={320} y={104} w={46} h={24} label="Queue" />
+      <Arrow from={[116, 108]} to={[146, 130]} tone="muted" />
+      <Arrow from={[192, 132]} to={[228, 138]} tone="muted" />
+      <Arrow from={[268, 140]} to={[282, 164]} tone="muted" />
+    </g>
+  );
+  return (
+    <Scene w={420} h={250}>
+      <PickerTrigger tool="magnifier" />
+      {map}
+      <defs>
+        <clipPath id={clip}>
+          <rect x={lx - half} y={ly - half} width={half * 2} height={half * 2} rx={9} />
+        </clipPath>
+      </defs>
+      {/* A soft shadow under the glass, as the real lens casts. */}
+      <rect
+        x={lx - half - 1}
+        y={ly - half + 5}
+        width={half * 2 + 2}
+        height={half * 2 + 2}
+        rx={11}
+        className="fill-slate-900 opacity-[0.12]"
+      />
+      <rect
+        x={lx - half}
+        y={ly - half}
+        width={half * 2}
+        height={half * 2}
+        rx={9}
+        className="fill-white"
+      />
+      <g clipPath={`url(#${clip})`}>
+        <g transform={`translate(${lx * (1 - zoom)} ${ly * (1 - zoom)}) scale(${zoom})`}>{map}</g>
+      </g>
+      <rect
+        x={lx - half}
+        y={ly - half}
+        width={half * 2}
+        height={half * 2}
+        rx={9}
+        className="fill-none stroke-white"
+        strokeWidth={4}
+      />
+      {/* The ring: white glass edge with a hairline outside it, like the lens in the editor. */}
+      <rect
+        x={lx - half - 2.5}
+        y={ly - half - 2.5}
+        width={half * 2 + 5}
+        height={half * 2 + 5}
+        rx={11}
+        className="fill-none stroke-slate-300"
+        strokeWidth={1}
+      />
+      <path
+        d={`M${lx - 6} ${ly} h12 M${lx} ${ly - 6} v12`}
+        className="stroke-slate-500"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
     </Scene>
   );
 }

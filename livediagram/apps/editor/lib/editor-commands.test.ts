@@ -268,6 +268,8 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'tool:laser',
       'tool:spotlight',
       // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
+      // The Magnifier is a view, so a Viewer has it (docs/specs/008-canvas/magnifier.md "Share roles").
+      'tool:magnifier',
       'tool:isometric',
     ]);
   });
@@ -343,6 +345,7 @@ describe('canvas tool commands', () => {
       'tool:laser',
       'tool:spotlight',
       'tool:slide-deck',
+      'tool:magnifier',
       'tool:isometric',
     ]);
     // Select is the current tool, so it is not offered.
@@ -371,6 +374,10 @@ describe('canvas tool commands', () => {
     expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
   });
 
+  it('offers the Magnifier on a phone too: a finger drag moves its lens', () => {
+    expect(ids({ ...base, isMobile: true })).toContain('tool:magnifier');
+  });
+
   it('withholds Slide Deck on mobile', () => {
     expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
     expect(ids(base)).toContain('tool:slide-deck');
@@ -380,6 +387,7 @@ describe('canvas tool commands', () => {
     const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
     expect(got).toContain('tool:laser');
     expect(got).toContain('tool:isometric');
+    expect(got).toContain('tool:magnifier');
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
   });

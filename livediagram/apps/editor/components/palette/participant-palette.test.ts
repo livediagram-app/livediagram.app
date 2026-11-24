@@ -51,6 +51,13 @@ describe('PARTICIPANT_CANVAS_TOOLS', () => {
     for (const tool of mutating) expect(PARTICIPANT_CANVAS_TOOLS).not.toContain(tool);
   });
 
+  // The Magnifier changes nothing, so it is a Participant's as well as an Editor's
+  // (docs/specs/008-canvas/magnifier.md "Share roles").
+  it('gives a Participant the Magnifier', () => {
+    expect(PARTICIPANT_CANVAS_TOOLS).toContain('magnifier');
+    expect(CANVAS_TOOLS.find((t) => t.id === 'magnifier')?.mutates).toBeFalsy();
+  });
+
   it("names real selection modes, and none of an Editor's tools", () => {
     const ids = buildCanvasToolOptions({
       isMobile: false,

@@ -133,6 +133,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideLocateFixed} />
     </Glyph>
   ),
+  magnifier: (
+    <Glyph>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.2 15.2L21 21M10.5 7.5v6M7.5 10.5h6" />
+    </Glyph>
+  ),
   'isometric-mode': (
     <Glyph>
       <path d="M12 3l9 5v8l-9 5-9-5V8l9-5z" />

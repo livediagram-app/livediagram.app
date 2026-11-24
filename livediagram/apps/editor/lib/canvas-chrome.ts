@@ -44,9 +44,15 @@ export function computeDockAnchor(
 
 // The tools that make the canvas layer pointer-inert, so no press selects, moves or edits an element
 // (docs/specs/008-canvas/canvas-and-palette.md): Spotlight and Laser are non-editing presenter modes, and
-// isometric view is navigation only. A press then lands on the canvas surface beneath.
+// isometric view and the Magnifier (docs/specs/008-canvas/magnifier.md) are views only. A press then lands on the
+// canvas surface beneath.
 export function elementsInertTool(canvasTool: string): boolean {
-  return canvasTool === 'spotlight' || canvasTool === 'laser' || canvasTool === 'isometric';
+  return (
+    canvasTool === 'spotlight' ||
+    canvasTool === 'laser' ||
+    canvasTool === 'magnifier' ||
+    canvasTool === 'isometric'
+  );
 }
 
 // The Tailwind cursor class for the canvas surface, resolved from the
@@ -77,6 +83,9 @@ export function canvasCursorClass(input: {
   // shares the grab cursor (grabbing while dragging is handled by the `pan`
   // branch above).
   if (canvasTool === 'isometric' && !spaceHeld) return 'cursor-grab';
+  // Magnifier (docs/specs/008-canvas/magnifier.md): a crosshair until the lens shows; while it does, the lens hides
+  // the cursor itself (its own crosshair marks the point), and gives it back over the chrome.
+  if (canvasTool === 'magnifier' && !spaceHeld) return 'cursor-crosshair';
   // Format tool (docs/specs/008-canvas/canvas-and-palette.md): the copy cursor in both phases (picking a base
   // and painting onto targets) signals "this click acts on the element".
   if (canvasTool === 'format' && !spaceHeld) return 'cursor-copy';

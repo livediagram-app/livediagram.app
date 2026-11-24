@@ -83,6 +83,7 @@ export const ORDER: readonly string[] = [
   'selection-modes/slide-deck/building-a-deck',
   'selection-modes/slide-deck/presenting',
   'selection-modes/slide-deck/presenter-controls',
+  'selection-modes/magnifier',
   'selection-modes/isometric-mode',
   'palette/shapes',
   'palette/arrows',

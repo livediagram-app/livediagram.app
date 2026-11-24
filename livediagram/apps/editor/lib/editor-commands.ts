@@ -193,6 +193,13 @@ export const CANVAS_TOOLS: {
     mutates: true,
   },
   {
+    // Magnifier (docs/specs/008-canvas/magnifier.md): a view aid, so a read-only visitor has it too.
+    id: 'magnifier',
+    name: 'Magnifier',
+    keywords: 'magnifier magnify magnifying glass lens loupe enlarge zoom closer detail inspect m',
+    needsContent: true,
+  },
+  {
     id: 'isometric',
     name: 'Isometric View',
     keywords: 'isometric 3d tilt perspective depth angle i',

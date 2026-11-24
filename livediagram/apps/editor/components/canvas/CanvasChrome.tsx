@@ -202,6 +202,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     collaborateEl,
     sessionPopoverEl,
     tidyUpPopoverEl,
+    magnifierPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
     props,
@@ -321,6 +322,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           against the canvas, so it renders outside the corner layer, as Layers does. */}
       {zenMode ? null : collaborateEl}
       {tidyUpPopoverEl}
+      {magnifierPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
       {paletteShown ? (

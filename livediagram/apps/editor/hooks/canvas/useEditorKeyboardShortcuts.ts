@@ -67,6 +67,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       pendingDraw === null &&
       canvasTool !== 'format' &&
       canvasTool !== 'isometric' &&
+      canvasTool !== 'magnifier' &&
       !whiteboardEraser
     )
       return;
@@ -105,6 +106,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           live.pendingDraw !== null ||
           live.canvasTool === 'format' ||
           live.canvasTool === 'isometric' ||
+          live.canvasTool === 'magnifier' ||
           (live.whiteboard !== null && live.canvasTool === 'eraser')
         ) {
           e.preventDefault();
@@ -121,7 +123,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // Isometric: Escape leaves the view back to the normal editing tool —
         // Select on desktop, Hand (pan) on touch where Select isn't the
         // default. Mirrors how Spotlight reverts to Select.
-        if (liveRef.current.canvasTool === 'isometric') {
+        // Magnifier (docs/specs/008-canvas/magnifier.md) leaves the same way.
+        if (
+          liveRef.current.canvasTool === 'isometric' ||
+          liveRef.current.canvasTool === 'magnifier'
+        ) {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
         }
         if (liveRef.current.pendingDraw !== null) {
@@ -212,6 +218,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
+        live.canvasTool !== 'magnifier' &&
         !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         selectedId === null &&
         multiSelectedIds.size === 0
@@ -250,6 +257,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
+        live.canvasTool !== 'magnifier' &&
         // A whiteboard eraser in hand is put down first (the narrow listener).
         !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         (selectedId !== null || multiSelectedIds.size > 0)

@@ -92,10 +92,10 @@ The element holds one field, `mode`. Everything else is per-viewer and never per
    ([Retired elements](../retired-elements.md)). Otherwise it calls the host's handler.
 3. `useEditorState.pressModeButton(mode)`:
    `pickCanvasTool(canvasTool === mode ? toolBeforeCurrent() : mode)` (D109).
-4. `pickCanvasTool` applies the palette's rules unchanged: entering `spotlight`
+4. `pickCanvasTool` applies the palette's rules unchanged: entering `spotlight`, `laser` or `magnifier`
    clears the selection; `selectCanvasTool` records the prior tool and emits the palette picker's
    own event for that mode, none for Select and Hand [QF7]. The empty-canvas guard (refusing
-   `eraser`, `format`, `laser`, `spotlight`, `isometric` on an empty tab) is on the path
+   `eraser`, `format`, `laser`, `spotlight`, `magnifier`, `isometric` on an empty tab) is on the path
    but never fires for a button pressed on the active tab, which the button itself makes
    non-empty.
 
@@ -118,7 +118,7 @@ Invariants:
 
 ```ts
 export const SELECTION_MODES = ['select', 'pan', 'laser', 'spotlight', 'avatar', 'eraser',
-  'format', 'isometric'] as const;
+  'format', 'magnifier', 'isometric'] as const;
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar'; // what an absent stored mode means
 export const BUTTON_MODES: readonly ButtonMode[]; // SELECTION_MODES without 'avatar'
@@ -174,7 +174,7 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 | E3  | Press while already in the mode                | Leave to `toolBeforeCurrent()`                       |
 | E4  | Prior tool equals the current one (stale ref)  | Leave to `select`                                    |
 | E5  | Drag that ends on the chip                     | Click swallowed (I2)                                 |
-| E6  | Press inside Spotlight or Isometric            | Chip keeps `pointer-events: auto`, press works       |
+| E6  | Press inside Spotlight, Magnifier or Isometric | Chip keeps `pointer-events: auto`, press works       |
 | E7  | Right-click in Isometric                       | Element menu opens [QF5]                             |
 | E8  | Right-click in Spotlight                       | Shrinks the light; no menu [QF5]                     |
 | E9  | Read-only embed                                | Face inert, no `<button>` [QF4]                      |
