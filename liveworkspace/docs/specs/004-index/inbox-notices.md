@@ -68,8 +68,8 @@ item's rows reach the index only when its outbox drains (at least 60 seconds apa
   read is more than 15 seconds old. A browser left on a page overnight reads nothing after its first 10 quiet
   minutes.
 - **The Explorer's Inbox listens too.** The Inbox's list and badge (`useInbox`, on the Explorer page and in the
-  editor's panel) take each new answer: with the All filter it becomes the list as it is, with no request of its own;
-  with this app's filter, an answer whose rows differ from the list's reads the list again. So the editor's count,
+  editor's panel) take each new answer: it becomes the list as it is, with no request of its own (the Inbox lists every
+  app's rows, as the watch reads them). So the editor's count,
   the panel's rail and the Explorer's sidebar move together, live.
 - A failed read keeps what was there; the next read is the next turn.
 
@@ -113,15 +113,12 @@ questions").
 
 ## The count
 
-The editor's Explorer button carries this app's Inbox count (the sidebar's rule, what waits on the reader,
-[one-explorer-contracts.md "Inbox"](one-explorer-contracts.md#inbox), over the rows of the editor's own app only) as
-a small brand badge at its corner, `9+` past nine, nothing at 0; the button's name says it ("Explorer, 3 in Inbox").
-It moves with each read. The owner, 2026-11-19: "It should only show the inbox items I have in that app, not all
-apps". Every row names its app as the index's `?app=` reads it (an access request its item's, a card thread the
-plan's that lists it), so each row counts in its own app's editor and none is lost; a livehuddle request, an app
-with no Inbox, counts in liveworkspace.app's Explorer, which lists every app's. The editor's panel draws the same
-number on its rail's Inbox, whichever filter its list shows, so the two never disagree; the Explorer page's sidebar
-keeps the count of the list it shows (All's, every app's). A row done from the Inbox's pane (resolved) leaves the
+The editor's Explorer button carries the reader's Inbox count (the sidebar's rule, what waits on the reader,
+[one-explorer-contracts.md "Inbox"](one-explorer-contracts.md#inbox), over every app's rows) as a small brand badge
+at its corner, `9+` past nine, nothing at 0; the button's name says it ("Explorer, 3 in Inbox"). It moves with each
+read. The Inbox lists every app's rows wherever it is shown (the owner, 2026-11-24, Work Tracker 1404, replacing the
+editor's own-app count of 2026-11-19), so the count follows the list: the button, the editor's panel's rail and the
+Explorer page's sidebar draw one number, and a badge never counts a row the list leaves out. A row done from the Inbox's pane (resolved) leaves the
 count at once and after a reload, while the index still lists it ([one-explorer-contracts.md "What the reading pane
 can do"](one-explorer-contracts.md#inbox)).
 

@@ -1,27 +1,25 @@
 'use client';
 
 // The Inbox (GET /inbox): open actions and cards assigned to or by the person, unresolved threads they are in, and
-// forms with responses they haven't seen, across every app. One request per filter, shared by the sidebar's count
-// and the Inbox view. Beside it, the host's
+// forms with responses they haven't seen, across every app: always every app's, whatever the Explorer's app filter
+// (one-explorer-contracts.md "Inbox", Work Tracker 1404). One request, shared by the sidebar's count, the rail's and
+// the Inbox view. Beside it, the host's
 // own rows (items only this browser holds), marked `local`, read again alone when the host says they changed
 // (`subscribeLocal`). Coming back to the browser tab reads it again, keeping
 // what it had if that read fails: a slightly stale list beats an alarm. A row done from the pane (`settle`) leaves
 // `data` at once, so the sidebar's badge, the rail and Home drop with the list, and stays out while a read still
 // lists it as it was (the index lists it until the app's next push), after a reload too (./inbox-settled). It also hears the page's Inbox watch
-// (../inbox-notices/watch, inbox-notices.md "The Explorer's Inbox listens too"): with the All filter a newer answer
-// that lists other rows becomes the list, with no read of its own; with this app's, one whose rows for this app differ
-// reads the list again. So the badge and the list move as the editor's count does, live.
+// (../inbox-notices/watch, inbox-notices.md "The Explorer's Inbox listens too"): a newer answer that lists other rows
+// becomes the list, with no read of its own. So the badge and the list move as the editor's count does, live.
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type {
-  App,
   InboxAction,
   InboxResponse,
   InboxThread,
   IndexClient,
 } from '@liveworkspace/index-client';
 import type { InboxHost, InboxLocalRows, Located } from '../types';
-import type { AppFilter } from '../words';
 import { settledOf, withoutSettled } from '../explorer/inbox/inbox-keys';
 import type { InboxEntry } from '../explorer/inbox/sections';
 import { isAbort } from './errors';
@@ -48,26 +46,13 @@ const NO_LOCAL: InboxLocalRows = { actions: [], threads: [] };
 const NO_SETTLED: ReadonlyMap<string, number> = new Map();
 const noSubscribe = () => () => {};
 
-// The host's rows, in the filter. Its store failing lists nothing local; it never fails the Inbox.
-function readLocal(
-  host: InboxHost | undefined,
-  app: App,
-  filter: AppFilter,
-): Promise<InboxLocalRows> {
+// The host's rows. Its store failing lists nothing local; it never fails the Inbox.
+function readLocal(host: InboxHost | undefined): Promise<InboxLocalRows> {
   if (!host?.localRows) return Promise.resolve(NO_LOCAL);
-  return host.localRows().then(
-    (rows) =>
-      filter === 'app'
-        ? {
-            actions: rows.actions.filter((r) => r.app === app),
-            threads: rows.threads.filter((r) => r.app === app),
-          }
-        : rows,
-    (e: unknown) => {
-      console.warn('[explorer] inbox-local-read-failed', e);
-      return NO_LOCAL;
-    },
-  );
+  return host.localRows().catch((e: unknown) => {
+    console.warn('[explorer] inbox-local-read-failed', e);
+    return NO_LOCAL;
+  });
 }
 
 const byNewest =
@@ -100,8 +85,6 @@ type Held = {
 
 export function useInbox(
   client: IndexClient,
-  app: App,
-  filter: AppFilter,
   host?: InboxHost,
   // False for an app with no Inbox (appHasInbox, ../inbox-apps.ts): GET /inbox is never read, and the Inbox stays
   // empty and settled (no data, not loading).
@@ -122,7 +105,7 @@ export function useInbox(
   const [refresh, setRefresh] = useState(0);
   const hostRef = useRef(host);
   hostRef.current = host;
-  const key = `${filter}:${attempt}`;
+  const key = String(attempt);
   // When this hook's latest read started: an answer of the watch's from before it never replaces it.
   const readAt = useRef(0);
   useEffect(() => {
@@ -131,10 +114,7 @@ export function useInbox(
     readAt.current = Date.now();
     inboxWatchFor(client).touch();
     const localFrom = hostRef.current?.localRows;
-    Promise.all([
-      client.inbox(filter === 'app' ? { app } : {}, { signal: controller.signal }),
-      readLocal(hostRef.current, app, filter),
-    ])
+    Promise.all([client.inbox({}, { signal: controller.signal }), readLocal(hostRef.current)])
       .then(([raw, local]) => {
         if (!controller.signal.aborted) setState({ key, raw, local, localFrom, error: false });
       })
@@ -147,7 +127,7 @@ export function useInbox(
         );
       });
     return () => controller.abort();
-  }, [client, app, filter, key, refresh, enabled]);
+  }, [client, key, refresh, enabled]);
   useReturnToTab(() => setRefresh((n) => n + 1));
   // The page's watch: its newer answers keep the list live.
   const held = useRef(state);
@@ -159,27 +139,23 @@ export function useInbox(
       const { data: answer, at } = watch.current();
       const prev = held.current;
       if (!answer || !prev.raw || prev.key !== key || at < readAt.current) return;
-      if (filter === 'all') {
-        if (inboxSignature(prev.raw) === inboxSignature(answer)) return;
-        setState((p) => (p.key === key && p.raw ? { ...p, raw: answer, error: false } : p));
-      } else if (inboxSignature(prev.raw, app) !== inboxSignature(answer, app)) {
-        setRefresh((n) => n + 1);
-      }
+      if (inboxSignature(prev.raw) === inboxSignature(answer)) return;
+      setState((p) => (p.key === key && p.raw ? { ...p, raw: answer, error: false } : p));
     });
-  }, [client, app, filter, key, enabled]);
+  }, [client, key, enabled]);
   // The host's rows alone, read again: the latest read wins, and the index's rows stay as they are.
   const localReads = useRef(0);
   const rereadLocal = useCallback(() => {
     const read = ++localReads.current;
     const localFrom = hostRef.current?.localRows;
-    void readLocal(hostRef.current, app, filter).then((local) => {
+    void readLocal(hostRef.current).then((local) => {
       if (read !== localReads.current) return;
       setState((prev) => (prev.raw ? { ...prev, local, localFrom } : prev));
     });
-  }, [app, filter]);
+  }, []);
   useEffect(
     () => () => {
-      // Unmounted, or app and filter moved on: a read still out lands nowhere.
+      // Unmounted: a read still out lands nowhere.
       localReads.current++;
     },
     [rereadLocal],

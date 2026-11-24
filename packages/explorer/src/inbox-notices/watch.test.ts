@@ -340,8 +340,7 @@ describe('the page watch and the signature', () => {
     expect(inboxSignature(data)).not.toBe(
       inboxSignature({ ...data, threads: [{ ...thread, latestAt: 7 }] }),
     );
-    expect(inboxSignature(data, 'liveplanner')).toBe(
-      inboxSignature({ ...data, threads: [], accessRequests: [], shares: [] }, 'liveplanner'),
-    );
+    // Every app's rows: another app's request changes it.
+    expect(inboxSignature(data)).not.toBe(inboxSignature({ ...data, accessRequests: [] }));
   });
 });

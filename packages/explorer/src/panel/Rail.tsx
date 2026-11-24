@@ -85,7 +85,7 @@ export function Rail({
   // Above New in the sidebar: the item open in the editor (the panel's current card, compact).
   top?: ReactNode;
 }) {
-  const { app, onCreate, kind, inbox, hasInbox, viewerId, teamName } = useExplorer();
+  const { onCreate, kind, inbox, hasInbox, viewerId, teamName } = useExplorer();
   const canRunTeams = useTeams().canRun;
   const navRef = useRef<HTMLElement>(null);
   const selectedKey = sectionKey(selected);
@@ -97,10 +97,10 @@ export function Rail({
     `${top ? 1 : 0}|${canRunTeams ? 1 : 0}|${groups.map((g) => g.sections.length).join(',')}`,
   );
   const name = (id: string) => teamName(id);
-  // The editor's panel counts its own app's Inbox, as the menu button does, whichever filter the list shows
-  // (inbox-notices.md "The count"); the Explorer page's sidebar keeps the list's own count.
+  // Every app's rows, as the list shows them, the menu button counts and the Explorer page's sidebar does
+  // (inbox-notices.md "The count").
   const badges: Record<string, number | undefined> = {
-    inbox: hasInbox ? inboxBadge(inbox.data, viewerId, app) : undefined,
+    inbox: hasInbox ? inboxBadge(inbox.data, viewerId) : undefined,
     offline: offlineCount || undefined,
   };
   // On a phone the picked chip may sit past the row's edge: bring it into view.

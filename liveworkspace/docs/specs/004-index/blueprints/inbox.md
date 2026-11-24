@@ -154,8 +154,9 @@ row before the filter's slot (`panel/Pane.tsx`) and in the page's `PaneHeader` a
 A Plan card's row (an action or thread with `card`) draws `CardStatusChip` (`packages/explorer/src/explorer/badges.tsx`)
 from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. `inboxCount`
 (`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`, and the sidebar and the
-rail draw no badge at 0; with `app` (`inboxCount(data, viewerId, app)`, `inboxBadge`) it counts that app's rows only,
-as the panel's rail (`panel/Rail.tsx`) and the editor's button do. `useInbox` holds the rows done from the pane
+rail draw no badge at 0. It counts every app's rows, as the Inbox lists them, on the page's sidebar, the panel's rail
+(`panel/Rail.tsx`) and the editor's button alike. `useInbox` reads `GET /inbox` with no `app` whatever the Explorer's
+app filter (`useInbox(client, host, enabled, viewerId)`), and takes the watch's answers as the list. `useInbox` holds the rows done from the pane
 (`settle(key, at)`, each with the row's time as it was): `data` leaves them out while a read lists them at that time,
 so the badge, the rail, Home's pill and the list drop together, and a row that changes after (a new reply, reopened)
 comes back. For a signed-in reader the hold is `settledStoreFor(viewerId)` (`data/inbox-settled.ts`):

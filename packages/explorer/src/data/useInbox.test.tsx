@@ -44,9 +44,7 @@ describe('useInbox', () => {
         return () => listeners.delete(onChange);
       },
     };
-    const { result, unmount } = renderHook(() =>
-      useInbox(index.client, 'liveplanner', 'app', host),
-    );
+    const { result, unmount } = renderHook(() => useInbox(index.client, host));
     await waitFor(() => expect(result.current.data?.threads).toHaveLength(1));
     const asked = index.calls.filter((c) => c.method === 'inbox').length;
 
@@ -69,10 +67,9 @@ describe('useInbox', () => {
     const guest: InboxHost = {
       localRows: () => Promise.resolve({ actions: [], threads: [thread('offline', 5)] }),
     };
-    const { result, rerender } = renderHook(
-      ({ host }) => useInbox(index.client, 'liveplanner', 'app', host),
-      { initialProps: { host: nobody } },
-    );
+    const { result, rerender } = renderHook(({ host }) => useInbox(index.client, host), {
+      initialProps: { host: nobody },
+    });
     await waitFor(() => expect(result.current.data?.threads).toEqual([]));
     const asked = index.calls.filter((c) => c.method === 'inbox').length;
     rerender({ host: guest });
@@ -102,8 +99,7 @@ describe('a row done from the pane, then the Inbox read again', () => {
   it('stays out after a reload while the index still lists it, and comes back once it changes', async () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread('a', 10), thread('b', 20));
-    const open = () =>
-      renderHook(() => useInbox(index.client, 'liveplanner', 'app', undefined, true, 'user_me'));
+    const open = () => renderHook(() => useInbox(index.client, undefined, true, 'user_me'));
     const first = open();
     await waitFor(() => expect(first.result.current.data?.threads).toHaveLength(2));
     act(() => first.result.current.settle(entryOf(index.inbox.threads[0]!)));
@@ -128,7 +124,7 @@ describe('a row done from the pane, then the Inbox read again', () => {
   it('holds it for this page alone when signed out', async () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread('a', 10));
-    const open = () => renderHook(() => useInbox(index.client, 'liveplanner', 'app'));
+    const open = () => renderHook(() => useInbox(index.client));
     const first = open();
     await waitFor(() => expect(first.result.current.data?.threads).toHaveLength(1));
     act(() => first.result.current.settle(entryOf(index.inbox.threads[0]!)));

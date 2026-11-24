@@ -119,12 +119,16 @@ export function Pane({
         {section.kind === 'inbox' ? (
           <span
             ref={setInboxSlot}
-            // The filter gives way before the name does: a native select narrows cleanly.
-            className="flex min-w-0 max-w-[8.5rem] max-sm:max-w-[13rem]"
+            // The filter gives way before the name does: a native select narrows cleanly. With no app filter
+            // beside it (the Inbox lists every app's rows), it has the row's room.
+            className="flex min-w-0 max-w-[12rem] max-sm:max-w-[13rem]"
           />
         ) : null}
-        {/* Offline holds only this app's items, and the Library is the app's own. */}
-        {section.kind === 'library' || section.kind === 'offline' ? null : (
+        {/* Offline holds only this app's items, the Library is the app's own, and the Inbox lists every app's rows
+            (one-explorer-contracts.md "Inbox"): none has an app filter. */}
+        {section.kind === 'library' ||
+        section.kind === 'offline' ||
+        section.kind === 'inbox' ? null : (
           <span className="ml-1 shrink-0">
             <FilterToggle />
           </span>

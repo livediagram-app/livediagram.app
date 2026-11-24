@@ -306,14 +306,21 @@ describe('the filter dropdown', () => {
     expect(filterSelect().value).toBe('all');
   });
 
-  it('works beside the header’s app filter, which still decides what is read', async () => {
+  // Work Tracker 1404: the Inbox is every app's whatever the Explorer's app filter, which its header leaves out.
+  it('lists every app’s rows with the app filter on this app, and draws no app filter', async () => {
     const index = everyKind();
-    index.inbox.threads.push(thread({ app: 'livediagram', itemId: 'canvas-1', elementId: 'x' }));
+    index.inbox.threads.push(
+      thread({ app: 'livediagram', itemId: 'canvas-1', elementId: 'x', itemTitle: 'Canvas' }),
+    );
     renderInbox(index, { filter: 'app' });
     await screen.findByRole('listbox');
-    expect(index.calls.find((c) => c.method === 'inbox')!.args[0]).toEqual({ app: 'liveplanner' });
-    choose('comments');
-    expect(titles()).toEqual(['Budget', '#12Login fails']);
+    expect(index.calls.filter((c) => c.method === 'inbox').map((c) => c.args[0])).toEqual([{}]);
+    expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
+    const marks = options().map((o) =>
+      o.querySelector('[data-app-mark]')?.getAttribute('data-app-mark'),
+    );
+    expect(marks).toContain('livediagram');
+    expect(marks.every(Boolean)).toBe(true);
   });
 
   it('offers All again when a filter holds nothing', async () => {
