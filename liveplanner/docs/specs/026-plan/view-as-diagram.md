@@ -10,8 +10,9 @@ limits and the roles are the platform's.
 ## Where
 
 A **Board tab's** menu (right-click the tab, or its More), **View As Diagram**, after Export. It shows where the plan
-is on the server and the session is signed in (not Offline, an embed, a workbench frame or a Community copy), for every
-role: a Participant and a Viewer may draw what they can read.
+is on the server and the session is signed in (not Offline, an embed, a workbench frame or a Community copy). The tab
+menu is for those who may change the plan's tabs; the route itself needs only read, so a reader the platform lets in
+(an agent, a later entry) draws what they can read.
 
 ## The dialog
 
@@ -63,11 +64,11 @@ theirs, the plan's rules hear it, and the diagram redraws.
 
 ## Roles
 
-| Role in the plan                       | View As Diagram                                 | Applying a diagram's change |
-| -------------------------------------- | ----------------------------------------------- | --------------------------- |
-| Editor (whole plan)                    | Yes, with a connected tab                       | Yes                         |
-| Participant, Viewer, a tab-scoped link | Yes, the diagram opens in a new browser tab     | No ("You can view this plan but not change it") |
-| Guest, Offline, embed, Community       | No entry                                        | No                          |
+| Role in the plan                       | View As Diagram                                                           | Applying a diagram's change                     |
+| -------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------- |
+| Editor (whole plan)                    | Yes, with a connected tab                                                 | Yes                                             |
+| Participant, Viewer, a tab-scoped link | No menu entry; the route lets a reader draw, opening in a new browser tab | No ("You can view this plan but not change it") |
+| Guest, Offline, embed, Community       | No entry                                                                  | No                                              |
 
 ## Telemetry
 

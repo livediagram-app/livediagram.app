@@ -9,8 +9,9 @@ a shape and its card, the limits and the roles are the platform's.
 
 - **A selection**: the selection toolbar's **Make Plan Cards** (a plan-card glyph with a plus), beside Send to Plan,
   when the selection holds two or more shapes or stickies with words.
-- **A whole tab**: the tab's menu (right-click a tab, or its More), **Make Plan Cards** under Send to Plan's group,
-  when the tab holds one shape or sticky with words.
+- **A whole tab**: the open tab's menu (right-click the canvas, or the tab's More), **Make Plan Cards** after Export,
+  when the tab holds one shape or sticky with words. The tab menu is an Editor's; a Participant or a Viewer selects the
+  shapes and uses the selection toolbar.
 
 The same sessions that may Send to Plan see them: a signed-in account, on the server, not an embed, a workbench frame
 or a Community copy. Read access to the diagram is enough; what decides is Edit on the plan.
@@ -20,7 +21,7 @@ or a Community copy. Read access to the diagram is enough; what decides is Edit 
 Read once, when the preview opens, from what the person sees:
 
 - **Shapes become cards.** Every shape and sticky with words: not a lane, a frame, a text, an arrow, a line, a picture
-  or a chart. Its first line (at most 200 characters, dates taken out) is the title; all its words go in the card's
+  or a chart. Its first line (at most 120 characters, cut at a word, dates taken out) is the title; all its words go in the card's
   description with the line back to the shape.
 - **Arrows become Blocked By.** An arrow drawn from shape A to shape B, both becoming cards, means B waits on A: B's
   Blocked By holds A. An arrow with heads at both ends or none says no order and is left out. An arrow that would
@@ -46,9 +47,10 @@ presses Make Cards:
    they cannot edit not listed; the plan remembered per diagram).
 2. **Lanes Become**: Columns, Labels or Nothing, shown only when the shapes sit in lanes or frames.
 3. **The cards**, one row each in the diagram's reading order (top to bottom, then left to right), every row ticked:
-   the title, the column or label it lands in, Start and Due, "Waits on 2", and **Updates #12** where the shape
-   already has a card in this plan. Unticking a row leaves that shape out (a shape that isn't a task), and any arrow to
-   it. A search box narrows long lists; **Untick All** and **Tick All** sit beside it.
+   the title, the column or label it lands in, Start and Due, "Waits on 2", and **Updates Card** (its title on hover) where
+   the shape already has a card in this plan. Unticking a row leaves that shape out (a shape that isn't a task), and any arrow to
+   it. A search box narrows a list of more than eight; **Untick All** (or **Tick All** once any is unticked) sits above it.
+   The first 200 rows are listed and the rest found by the search, so a 500-shape tab stays light.
 4. **Removed from the diagram**: when this tab's shapes made cards in this plan before and some of those shapes are
    gone, each such card gets a row, **unticked**, "Move to Trash". Only a ticked row is trashed; nothing is ever
    deleted silently, and a trashed card can be restored from the plan's Trash.
@@ -60,7 +62,7 @@ in the dialog, in fixed words ("You can't add cards to this plan", "That plan is
 just now. Try again.") and the person may try again. Escape or Cancel closes; every row is reachable by Tab and Space
 ticks it.
 
-**Making again** opens on the same plan and board: shapes with a live card read **Updates #N** and update that card's
+**Making again** opens on the same plan and board: shapes with a live card read **Updates Card** and update that card's
 title, Start, Due and labels and add its new Blocked By links (its column stays the plan's). New shapes add cards.
 
 ## The chip
@@ -90,14 +92,15 @@ The pill shows only to a session that may edit the diagram, and only while there
 
 ## Who sees what
 
-| Role in the diagram              | Make Plan Cards                              | Chips | Changes to the plan          |
-| -------------------------------- | -------------------------------------------- | ----- | ---------------------------- |
-| Editor                           | Selection toolbar, tab menu                  | Yes   | Offered; applied with Edit on the plan |
-| Participant                      | Selection toolbar, tab menu                  | Yes   | No (cannot draw arrows)      |
-| Viewer                           | Selection toolbar, tab menu                  | Yes   | No                           |
-| Guest, Offline, embed, Community | None                                         | No    | No                           |
+| Role in the diagram              | Make Plan Cards             | Chips | Changes to the plan                    |
+| -------------------------------- | --------------------------- | ----- | -------------------------------------- |
+| Editor                           | Selection toolbar, tab menu | Yes   | Offered; applied with Edit on the plan |
+| Participant                      | Selection toolbar           | Yes   | No (cannot draw arrows)                |
+| Viewer                           | Selection toolbar           | Yes   | No                                     |
+| Guest, Offline, embed, Community | None                        | No    | No                                     |
 
 ## Telemetry
 
 `UI·Opened·MakePlanCards`, `UI·Created·MakePlanCards`, `UI·Refused·MakePlanCards`, `UI·Opened·PlanChange`,
-`UI·Created·PlanChange`, `UI·Refused·PlanChange` (the platform's Telemetry).
+`UI·Created·PlanChange`, `UI·Closed·PlanChange` (a change dismissed), `UI·Refused·PlanChange` (the platform's
+Telemetry).

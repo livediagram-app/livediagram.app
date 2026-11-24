@@ -40,18 +40,18 @@ livediagram editor ── POST /api/index/items/:plan/plan-edits {edits} ─▶ 
 
 ## Wire (`@liveworkspace/index-client`, src/plan-diagrams.ts)
 
-| Shape                | Fields                                                                                                     |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `PlanMakeCard`       | `element`, `title`, `text`, `column?`, `labels?`, `start?`, `due?`, `blockedBy?` (elements)                 |
-| `PlanMakeAsk`        | `board`, `column`, `source: {itemId, tabId, label}`, `cards` (1 to 500), `trash?` (card ids, up to 500)      |
-| `PlanMakeAnswer`     | `sends: PlanSend[]`, `made`, `updated`, `trashed`, `skipped`                                                |
-| `PlanDiagramGraph`   | `lanes: {id, label}[]`, `nodes: {card, label, lane, done, critical, link}[]`, `edges: {from, to, critical}[]`, `total` |
-| `PlanViewAsk`        | `board`, `filter?` (`BoardFilterValue`, liveplanner's), `name`                                              |
-| `PlanViewAnswer`     | `diagram: {id, title, tabId, link}`, `cards`, `links`, `critical`                                               |
-| `PlanEdit`           | `{kind: 'block', card, blocker}` or `{kind: 'move', card, column}`                                          |
-| `PlanEditResult`     | `{status: 'applied'}` or `{status: 'refused', reason}`                                                      |
-| `PlanDiagramDoorCall`| `op: 'make' \| 'graph' \| 'watch' \| 'edit'`, `person`, and each op's fields                                |
-| `PlanDiagramDraw`    | livediagram's door: `owner`, `name`, `graph`, `caption`, `link`, `itemId?`, `tabId?`                         |
+| Shape                 | Fields                                                                                                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `PlanMakeCard`        | `element`, `title`, `text`, `column?`, `labels?`, `start?`, `due?`, `blockedBy?` (elements)                            |
+| `PlanMakeAsk`         | `board`, `column`, `source: {itemId, tabId, label}`, `cards` (1 to 500), `trash?` (card ids, up to 500)                |
+| `PlanMakeAnswer`      | `sends: PlanSend[]`, `made`, `updated`, `trashed`, `skipped`                                                           |
+| `PlanDiagramGraph`    | `lanes: {id, label}[]`, `nodes: {card, label, lane, done, critical, link}[]`, `edges: {from, to, critical}[]`, `total` |
+| `PlanViewAsk`         | `board`, `filter?` (`BoardFilterValue`, liveplanner's), `name`                                                         |
+| `PlanViewAnswer`      | `diagram: {id, title, tabId, link}`, `cards`, `links`, `critical`                                                      |
+| `PlanEdit`            | `{kind: 'block', card, blocker}` or `{kind: 'move', card, column}`                                                     |
+| `PlanEditResult`      | `{status: 'applied'}` or `{status: 'refused', reason}`                                                                 |
+| `PlanDiagramDoorCall` | `op: 'make' \| 'graph' \| 'watch' \| 'edit'`, `person`, and each op's fields                                           |
+| `PlanDiagramDraw`     | livediagram's door: `owner`, `name`, `graph`, `caption`, `link`, `itemId?`, `tabId?`                                   |
 
 Every reader is a hand-written walk with caps (no schema library), shared by the index and both doors.
 
@@ -76,13 +76,16 @@ Every reader is a hand-written walk with caps (no schema library), shared by the
   by `applyReplace` (`style: 'lanes'`, `direction: 'right'`), the ids rewritten (`card:`, `lane:`, `dep:`), then a new
   canvas through the import door's path or a `replace` changeset as `owner`.
 - The editor: `lib/plan-cards/` (shapes, arrows, lanes and dates read into `PlanMakeCard`s; the offers a plan-drawn tab
-  makes), `components/plan-cards/` (the entries, the dialog host, the changes pill). The dialog is the workbench's
-  (`packages/workbench/src/components/plan-cards/MakePlanCardsDialog.tsx`), drawn from the rows the app reads.
+  makes), `components/plan-cards/` (the entries, the dialog host, the dialog and the changes pill). The dialog is
+  livediagram's own (one app makes plan cards), built from the workbench's Send to Plan parts (`SendPlanList`,
+  `send-memory`, `send-store`) and the hero art in `packages/ui` (`dialog-hero-art/make-plan-cards`).
 
 ## Performance
 
-Measured in each package's perf test (500 cards, 1,000 links): the shape reading, the make's plan with the loop checks,
-the graph and its critical path, and livediagram's lanes layout. The redraw is bounded by the settle window (one draw a
+Measured in each package's perf test (500 cards, about 1,000 links), on a loaded laptop: the graph, its critical path
+and hash 6 ms and the make's plan with its loop checks 29 ms (`plan-diagram-graph.perf.test.ts`); the shape reading,
+preview and ask 52 ms and a drawn tab's offers 2 ms (`read-shapes.perf.test.ts`); livediagram's lanes layout 172 ms, its
+elements 272 KB (`internal-plan-diagram.test.ts`). The redraw is bounded by the settle window (one draw a
 view per `PLAN_VIEW_SETTLE_MS`), skipped when the graph's hash is unchanged, and by `PLAN_VIEWS_PER_PLAN_MAX`.
 
 ## Tests

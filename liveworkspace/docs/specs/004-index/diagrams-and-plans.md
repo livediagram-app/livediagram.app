@@ -125,31 +125,31 @@ ones a person drew (make-plan-cards.md "Changes to the plan").
 
 ## Who may
 
-| Who                                            | Make Plan Cards                      | View As Diagram                        | Apply a diagram's edit |
-| ---------------------------------------------- | ------------------------------------ | -------------------------------------- | ---------------------- |
-| Editor of the plan (whole plan)                | Yes                                  | Yes, with a connected tab              | Yes                    |
-| Participant or Viewer of the plan, a tab link  | No (the plan is not listed)          | Yes, the diagram opens in a new tab    | No (refused, 403)      |
-| Reader of the diagram (any level)              | Yes, into a plan they edit           | n/a                                    | Needs Edit on the plan |
-| Guest, API token, Offline, embed, Community    | No                                   | No                                     | No                     |
+| Who                                           | Make Plan Cards             | View As Diagram                     | Apply a diagram's edit |
+| --------------------------------------------- | --------------------------- | ----------------------------------- | ---------------------- |
+| Editor of the plan (whole plan)               | Yes                         | Yes, with a connected tab           | Yes                    |
+| Participant or Viewer of the plan, a tab link | No (the plan is not listed) | Yes, the diagram opens in a new tab | No (refused, 403)      |
+| Reader of the diagram (any level)             | Yes, into a plan they edit  | n/a                                 | Needs Edit on the plan |
+| Guest, API token, Offline, embed, Community   | No                          | No                                  | No                     |
 
 A diagram drawn from a plan is the maker's own item: who else reads it is the diagram's own sharing, as for any file
 someone makes from what they can read. Its live redraws stop the moment its maker can no longer read the plan.
 
 ## Limits
 
-| Limit                       | Value | What it bounds                                                 |
-| --------------------------- | ----- | -------------------------------------------------------------- |
-| `PLAN_MAKE_CARDS_MAX`       | 500   | Cards one Make Plan Cards makes or updates, and cards it trashes |
-| `PLAN_MAKE_LINKS_MAX`       | 1,000 | Blocked By links in one make                                   |
-| `PLAN_VIEW_CARDS_MAX`       | 500   | Cards one diagram draws (livediagram's layout cap)             |
-| `PLAN_VIEW_LINKS_MAX`       | 1,000 | Arrows one diagram draws                                       |
-| `PLAN_VIEWS_PER_PLAN_MAX`   | 10    | Live diagrams one plan keeps                                   |
-| `PLAN_VIEW_SETTLE_MS`       | 2,000 | How long the plan gathers changes before redrawing             |
-| `PLAN_EDITS_MAX`            | 20    | Edits in one apply                                             |
-| `PLAN_DIAGRAM_LABEL_MAX`    | 120   | Characters in a box's label or a lane's                        |
-| `PLAN_SENDS_PER_SOURCE_MAX` | 1,000 | Sends one diagram holds (raised from 500 for Make Plan Cards)  |
+| Limit                       | Value | What it bounds                                                                          |
+| --------------------------- | ----- | --------------------------------------------------------------------------------------- |
+| `PLAN_MAKE_CARDS_MAX`       | 500   | Cards one Make Plan Cards makes or updates, and cards it trashes                        |
+| `PLAN_MAKE_LINKS_MAX`       | 1,000 | Blocked By links in one make                                                            |
+| `PLAN_VIEW_CARDS_MAX`       | 500   | Cards one diagram draws (livediagram's layout cap)                                      |
+| `PLAN_VIEW_LINKS_MAX`       | 1,000 | Arrows one diagram draws                                                                |
+| `PLAN_VIEWS_PER_PLAN_MAX`   | 10    | Live diagrams one plan keeps                                                            |
+| `PLAN_VIEW_SETTLE_MS`       | 2,000 | How long the plan gathers changes before redrawing                                      |
+| `PLAN_EDITS_MAX`            | 20    | Edits in one apply                                                                      |
+| `PLAN_DIAGRAM_LABEL_MAX`    | 120   | Characters in a box's label or a lane's                                                 |
+| `PLAN_SENDS_PER_SOURCE_MAX` | 1,000 | Sends one diagram holds (raised from 500 for Make Plan Cards)                           |
 | `PLAN_SEND_READ_MAX`        | 500   | Sends a source's read answers (raised from 200, so every chip of a 500-card make shows) |
-| Makes and views a person    | 10/m  | `KIT_RUN_LIMITER`, own keys                                    |
+| Makes and views a person    | 10/m  | `KIT_RUN_LIMITER`, own keys                                                             |
 
 ## Telemetry
 
@@ -158,8 +158,9 @@ shape's words:
 
 - livediagram: `UI·Opened·MakePlanCards` (the preview opened), `UI·Created·MakePlanCards` (cards made or updated),
   `UI·Refused·MakePlanCards` (a make turned away), `UI·Opened·PlanChange` (a diagram's suggested change shown),
-  `UI·Created·PlanChange` (applied), `UI·Refused·PlanChange` (refused by the plan).
+  `UI·Created·PlanChange` (applied), `UI·Closed·PlanChange` (dismissed), `UI·Refused·PlanChange` (refused by the
+  plan).
 - liveplanner: `UI·Opened·ViewAsDiagram`, `UI·Created·ViewAsDiagram`, `UI·Refused·ViewAsDiagram`.
 
-Charted on the site's telemetry page as the Diagrams and Plans stack in both apps
-(`apps/site/app/telemetry/_shared/diagrams-and-plans-metrics.ts`).
+Charted on the site's telemetry page beside Send to Plan: livediagram's Make Plan Cards stack and liveplanner's View
+As Diagram stack (`apps/site/app/telemetry/_shared/diagrams-and-plans-metrics.ts`).
