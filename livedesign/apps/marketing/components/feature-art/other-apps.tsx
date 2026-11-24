@@ -19,13 +19,14 @@ import {
   Avatar,
   at,
 } from './canvas-parts';
+import { siteOfApp } from '@liveworkspace/sites';
 
-// Each app's mark colour (packages/brand apps.ts, its 600), as the editor's chips and pickers show them.
-const PLANNER = '#7c3aed';
-const DIAGRAM = '#0284c7';
-const DOCS = '#c76508';
-const KNOWLEDGE = '#4d7c0f';
-const HUDDLE = '#059669';
+// Each app's accent, as the site switcher shows it (packages/sites).
+const PLANNER = siteOfApp('liveplanner').accent;
+const DIAGRAM = siteOfApp('livediagram').accent;
+const DOCS = siteOfApp('livedocuments').accent;
+const KNOWLEDGE = siteOfApp('liveknowledge').accent;
+const HUDDLE = siteOfApp('livehuddle').accent;
 
 const PAGE = 'fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-600';
 const LINE = 'fill-slate-200 dark:fill-slate-600';

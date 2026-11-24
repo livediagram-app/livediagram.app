@@ -5,14 +5,15 @@
 // finished frame under reduced motion.
 import { MUTED, Panel, Pill, RULE, Scene, TEXT, at, from } from './canvas-parts';
 import { PlanCard, SM, TM } from './plan-parts';
+import { siteOfApp } from '@liveworkspace/sites';
 
-// The apps' accents (packages/sites APP_SITES).
+// The apps' accents, as the site switcher shows them (packages/sites).
 export const APP_ACCENT = {
-  livediagram: '#0ea5e9',
-  liveplanner: '#8b5cf6',
-  livedocuments: '#f59e0b',
-  livehuddle: '#10b981',
-  liveknowledge: '#84cc16',
+  livediagram: siteOfApp('livediagram').accent,
+  liveplanner: siteOfApp('liveplanner').accent,
+  livedocuments: siteOfApp('livedocuments').accent,
+  livehuddle: siteOfApp('livehuddle').accent,
+  liveknowledge: siteOfApp('liveknowledge').accent,
 } as const;
 export type AppName = keyof typeof APP_ACCENT;
 
