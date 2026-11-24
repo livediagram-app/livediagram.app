@@ -9,6 +9,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { askSender, tabPassages } from '@liveworkspace/ask/ui';
 import { ITEM_CALL_SUMMARY_MAX, type Item, type SpaceCall } from '@liveworkspace/index-client';
 import { Button } from '@liveworkspace/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { meetingHeroArt } from '@liveworkspace/ui/dialog-hero-art/meeting';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -210,7 +211,7 @@ export function WrapUpDialog({
           </select>
         </label>
         {sent ? (
-          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-100">
+          <Callout tone="success" role="status" as="p">
             Sent as{' '}
             <a
               href={sent.link}
@@ -221,7 +222,7 @@ export function WrapUpDialog({
               {sent.title}
             </a>
             . The item’s Meetings link to it.
-          </p>
+          </Callout>
         ) : null}
       </div>
       <DialogFooter>
