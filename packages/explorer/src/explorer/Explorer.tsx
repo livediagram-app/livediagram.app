@@ -4,8 +4,8 @@
 // the view from its URL (viewFromLocation) and passes it in; the Explorer asks to go elsewhere through
 // onNavigate and links items through itemHref, so it never touches the host's router. It shows this app's
 // items or every app's (the filter), and New makes this app's kind. It draws the page as livediagram's
-// Explorer does: the host's header (with the search field in its middle), Home's hero across the full width
-// under it, then the sidebar and the pane.
+// Explorer does: the host's header (with the search field in its middle), then the sidebar and the pane, Home's hero
+// heading the pane beside the sidebar.
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { EXPLORER_MAIN } from '../ui/classes';
@@ -232,20 +232,6 @@ function ExplorerInner({
                 )}
                 <SectionsBar open={navOpen} drawerId={drawerId} onOpen={openNav} />
               </div>
-              {hero.mounted ? (
-                <div
-                  data-home-hero-fold={hero.open ? 'open' : 'closed'}
-                  inert={!hero.open}
-                  aria-hidden={!hero.open || undefined}
-                  className={`grid transition-[grid-template-rows,opacity] duration-long ease-out motion-reduce:transition-none ${
-                    hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                  }`}
-                >
-                  <div className="min-h-0 overflow-hidden">
-                    <HeroWithCount templateHref={templateHref} onHide={hideHero} />
-                  </div>
-                </div>
-              ) : null}
               <main className={EXPLORER_MAIN}>
                 {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
                 <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
@@ -255,6 +241,24 @@ function ExplorerInner({
                 </aside>
                 {navOpen ? <SectionsDrawer id={drawerId} onClose={closeNav} /> : null}
                 <section className="min-w-0 flex-1">
+                  {/* Home's hero heads the pane, beside the sidebar (owner, 2026-11-24): a band of its own on a
+                      phone, flush to the screen's edges, and a rounded panel from `sm`. */}
+                  {hero.mounted ? (
+                    <div
+                      data-home-hero-fold={hero.open ? 'open' : 'closed'}
+                      inert={!hero.open}
+                      aria-hidden={!hero.open || undefined}
+                      className={`grid transition-[grid-template-rows,opacity,margin] duration-long ease-out motion-reduce:transition-none ${
+                        hero.open
+                          ? '-mx-4 -mt-8 mb-6 grid-rows-[1fr] opacity-100 sm:mx-0 sm:mt-0 sm:mb-8'
+                          : 'grid-rows-[0fr] opacity-0'
+                      }`}
+                    >
+                      <div className="min-h-0 overflow-hidden">
+                        <HeroWithCount templateHref={templateHref} onHide={hideHero} />
+                      </div>
+                    </div>
+                  ) : null}
                   <ArrivedItemContext.Provider value={arrivedItem ?? null}>
                     <Pane view={view} hero={heroOnHome} />
                   </ArrivedItemContext.Provider>

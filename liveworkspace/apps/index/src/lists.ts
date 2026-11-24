@@ -102,14 +102,32 @@ export function buildMostUsedQuery(
     args.push(spec.app);
   }
   args.push(spec.limit);
-  const sql = `SELECT ${ITEM_COLUMNS}, u.use_days, u.use_opens, COALESCE(o.last_opened_at, 0) AS sort_at
-    FROM (SELECT item_id, COUNT(*) AS use_days, SUM(opens) AS use_opens FROM use_days
+  // use_history: each day in the window it was opened and how often ("20416:3,20419:1"), for Home's day chart.
+  const sql = `SELECT ${ITEM_COLUMNS}, u.use_days, u.use_opens, u.use_history, COALESCE(o.last_opened_at, 0) AS sort_at
+    FROM (SELECT item_id, COUNT(*) AS use_days, SUM(opens) AS use_opens,
+        GROUP_CONCAT(day || ':' || opens) AS use_history FROM use_days
       WHERE person_id = ? AND day >= ? GROUP BY item_id) u
     JOIN items i ON i.id = u.item_id
     LEFT JOIN opens o ON o.person_id = ? AND o.item_id = u.item_id
     WHERE ${where.join(' AND ')}
     ORDER BY u.use_opens DESC, sort_at DESC, i.id DESC LIMIT ?`;
   return { sql, args };
+}
+
+/**
+ * Most Used's day chart: the opens on each of the window's USE_WINDOW_DAYS UTC days, the oldest first and today last,
+ * from the query's `use_history` ("day:opens" pairs, in no order). A day outside the window, or a malformed pair, is
+ * left out.
+ */
+export function useHistoryOf(pairs: string | null, now: number): number[] {
+  const today = Math.floor(now / DAY_MS);
+  const days = Array.from({ length: USE_WINDOW_DAYS }, () => 0);
+  for (const pair of pairs ? pairs.split(',') : []) {
+    const [day, opens] = pair.split(':').map(Number);
+    const at = USE_WINDOW_DAYS - 1 - (today - day!);
+    if (Number.isInteger(at) && at >= 0 && at < USE_WINDOW_DAYS && opens! > 0) days[at] = opens!;
+  }
+  return days;
 }
 
 // A folder and every folder under it, at any depth (the folders_parent index, a step per level).
@@ -387,7 +405,10 @@ export async function listItems(env: Env, person: Person, spec: ListSpec): Promi
   const answers = await db.batch(statements);
   const [listed, usedRows] = [answers[0], withUsed ? answers[1] : undefined] as [
     D1Result<ItemRow & { sort_at: number }>,
-    D1Result<ItemRow & { use_days: number; use_opens: number }> | undefined,
+    (
+      | D1Result<ItemRow & { use_days: number; use_opens: number; use_history: string | null }>
+      | undefined
+    ),
   ];
   const results = listed.results;
   const more = results.length > spec.limit;
@@ -412,7 +433,16 @@ export async function listItems(env: Env, person: Person, spec: ListSpec): Promi
   if (withUsed) {
     out.mostUsed = usedList.flatMap((r) => {
       const item = byId.get(r.id);
-      return item ? [{ ...item, useDays: r.use_days, useOpens: r.use_opens }] : [];
+      return item
+        ? [
+            {
+              ...item,
+              useDays: r.use_days,
+              useOpens: r.use_opens,
+              useHistory: useHistoryOf(r.use_history, now),
+            },
+          ]
+        : [];
     });
   }
   if (withMine) {

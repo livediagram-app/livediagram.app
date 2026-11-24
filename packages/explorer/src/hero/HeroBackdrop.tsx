@@ -21,9 +21,10 @@ export function heroBackdropOf(app: App, filter: AppFilter): HeroBackdropKind {
 }
 
 const LAYER = 'pointer-events-none absolute inset-0';
-// The gap pieces are drawn in the hero's own pixels at `xl`, where its max-w-7xl row is 1280 wide: the words end by
+// The gap pieces are drawn in the hero's own pixels where it is 1280 wide (a container query: beside the sidebar the
+// hero is narrower, so they wait for a pane that wide): the words end by
 // 792 (24 + the heading's 48rem), the tiles start at 920.
-const XL_ART = 'absolute left-0 top-0 hidden h-[420px] w-[1280px] overflow-visible xl:block';
+const XL_ART = 'absolute left-0 top-0 hidden h-[420px] w-[1280px] overflow-visible @[80rem]:block';
 
 export function HeroBackdrop({ kind }: { kind: HeroBackdropKind }) {
   const id = useId();
@@ -172,7 +173,7 @@ function Blueprint({ id }: { id: string }) {
         </svg>
         {/* A drawing's title block, in the band's own colour so the grid stops at its edge. */}
         <div
-          className={`absolute bottom-3 right-6 hidden h-[22px] w-[300px] items-center border border-brand-300 font-mono text-[10px] tracking-[0.1em] text-brand-600 lg:flex dark:border-brand-700/70 dark:text-brand-400 ${BLUEPRINT_BG}`}
+          className={`absolute bottom-3 right-6 hidden h-[22px] w-[300px] items-center border border-brand-300 font-mono text-[10px] tracking-[0.1em] text-brand-600 @4xl:flex dark:border-brand-700/70 dark:text-brand-400 ${BLUEPRINT_BG}`}
         >
           <span className="flex-1 px-2.5">HOME · SHEET 1 OF 1</span>
           <span className="flex h-full w-[104px] items-center justify-end border-l border-brand-300 px-2.5 dark:border-brand-700/70">
@@ -226,13 +227,13 @@ function Shapes() {
       <div className="relative mx-auto h-full max-w-7xl">
         <svg
           viewBox="0 0 72 40"
-          className="absolute left-[32.75rem] top-[1.375rem] hidden h-10 w-[72px] lg:block"
+          className="absolute left-[32.75rem] top-[1.375rem] hidden h-10 w-[72px] @4xl:block"
         >
           <path d="M36 0L72 40H0Z" className="fill-brand-300 dark:fill-brand-700/60" />
         </svg>
         <svg
           viewBox="0 0 128 128"
-          className="absolute -bottom-16 right-3 hidden size-32 overflow-visible lg:block"
+          className="absolute -bottom-16 right-3 hidden size-32 overflow-visible @4xl:block"
         >
           <circle
             cx="64"
@@ -426,7 +427,7 @@ function Huddle() {
           </g>
         </svg>
         {/* Who is in the room, in the band's own colour so the rings stop at its edge. */}
-        <div className="absolute bottom-3 right-6 hidden h-[22px] items-center gap-2 rounded-full border border-brand-300 bg-[var(--huddle-paper)] px-2.5 font-mono text-[10px] tracking-[0.1em] text-brand-600 lg:flex dark:border-brand-700/70 dark:text-brand-400">
+        <div className="absolute bottom-3 right-6 hidden h-[22px] items-center gap-2 rounded-full border border-brand-300 bg-[var(--huddle-paper)] px-2.5 font-mono text-[10px] tracking-[0.1em] text-brand-600 @4xl:flex dark:border-brand-700/70 dark:text-brand-400">
           <span className="size-1.5 rounded-full bg-brand-500" />
           <span className="text-optical-line">LIVE · 5 HERE</span>
         </div>
