@@ -1,7 +1,7 @@
 // A team's Audit Log on its view (liveworkspace/docs/specs/004-index/team-audit-log.md "The Audit Log on a team's
 // view"): the team's admins alone see it; closed until opened; every filter sent as the read takes it; Show More and
 // its failure; empty, nothing matching, refused and failed; Export CSV across files, the cap and a failure.
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   IndexError,
@@ -188,6 +188,8 @@ describe('the Audit Log', () => {
     expect(tab.getAttribute('aria-selected')).toBe('false');
     expect(reads(index)).toEqual([]);
     view.unmount();
+    // The first page is held, so the placeholder rows are seen however fast or slow the runner is.
+    index.hold.add('teamAudit');
     renderTeam(index, details(), undefined, 'audit');
     expect((await toggle()).getAttribute('aria-selected')).toBe('true');
     expect((await screen.findByText(/Only admins see the Audit Log/)).textContent).toContain(
@@ -195,6 +197,7 @@ describe('the Audit Log', () => {
     );
     // Placeholder rows while the first page is read.
     expect(document.querySelector('[data-audit-loading]')).toBeTruthy();
+    act(() => index.release());
     await waitFor(() => expect(rows().length).toBe(3));
     expect(reads(index)).toEqual([{ team: 't1', limit: 50 }]);
     const [first, second, third] = [...rows()] as HTMLElement[];
