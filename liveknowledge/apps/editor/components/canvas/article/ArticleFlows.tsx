@@ -41,6 +41,7 @@ import { useTouchPagePan } from '@liveworkspace/workbench/components/canvas/arti
 import { publishZoneClips } from '@/lib/article/zone-clip-store';
 import { isContinuousPage } from '@liveknowledge/document';
 import { PAGE_FREE_HEIGHT_VAR } from '@/lib/page-surface/page-lock';
+import { drawnPageHeight } from '@/lib/page-surface/page-measured-height-store';
 import {
   resetDrawingZoneEditing,
   setDrawingZoneEditing,
@@ -188,11 +189,12 @@ export function ArticleFlows({
                       left: p.rect.x,
                       top: p.rect.y,
                       width: p.rect.width,
-                      // A continuous page's paper is at least as tall as the window leaves a page (the scroll
-                      // container's PAGE_FREE_HEIGHT_VAR), so a press under a short page's last line still lands
-                      // in the writing. A view concern: the stored page is as short as its writing.
+                      // A continuous page's paper is as tall as its writing here, even where the stored height is
+                      // stale and short (drawnPageHeight, continuous-page.md "The drawn height"), and at least as
+                      // tall as the window leaves a page (the scroll container's PAGE_FREE_HEIGHT_VAR), so a press
+                      // anywhere under the last line lands in the writing. A view concern: nothing is stored.
                       height: isContinuousPage(p)
-                        ? `max(${p.rect.height}px, var(${PAGE_FREE_HEIGHT_VAR}, 0px))`
+                        ? `max(${drawnPageHeight(p, articles.measured)}px, var(${PAGE_FREE_HEIGHT_VAR}, 0px))`
                         : p.rect.height,
                     }}
                     onPointerDown={(e) => {

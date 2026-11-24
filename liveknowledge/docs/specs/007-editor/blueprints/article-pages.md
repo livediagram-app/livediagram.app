@@ -721,39 +721,39 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 
 ## Errors and edge cases
 
-| Case                                               | Handling                                                                                                                           |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Malformed stored writing                           | Read defensively (Data and persistence); an empty article reads as one paragraph                                                   |
-| Article page with no flow                          | Its own article (flow = page id); writing created empty on first read                                                              |
-| Flow's pages split by crossed edits                | `withArticlesTogether` rejoins them at the first page, each taking its size and paint                                              |
-| Commit to an article deleted meanwhile             | `onCommit` skips the tab (no writing for a missing flow)                                                                           |
-| Commit refused (tab locked meanwhile)              | `onCommit` false: the writing stays local and goes with the next commit                                                            |
-| Malformed `article` frame from a peer              | `parseArticleOps` drops it (or its bad ops); nothing applied                                                                       |
-| Writing for an article removed here meanwhile      | Dropped unless `created` or its pages are present                                                                                  |
-| A copied article's margin notes                    | Relinked to the copied markers (`withNotesRelinked`); a note whose marker was not copied loses its mark                            |
-| An undo that touches no writing                    | The undo mark lapses after `UNDO_SETTLE_MS`; no stray caret jump                                                                   |
-| A zone or style choice already in force            | No edit, no undo step                                                                                                              |
-| Remote change while typing                         | Local block ops re-applied over it; the caret's block untouched                                                                    |
-| Two people in one paragraph                        | Last commit wins for that block (spec non-goal: no character merge)                                                                |
-| A block op naming a missing neighbour              | Placed by the other neighbour, its old index, or the end                                                                           |
-| A frame over the room's cap                        | Ops split into `ARTICLE_FRAME_CHARS` frames; a single larger block is not split                                                    |
-| Writing past the page limit                        | `withArticlePageCount` stops at `MAX_PAGES`; the rest is clipped from view                                                         |
-| A paste or key past a block, text or cell cap      | `articleCapsPlugin` (`article-caps.ts`) refuses the transaction; `announceArticleCap` (`article-caps-notice.ts`) toasts, throttled |
-| Trailing page that holds elements                  | Kept; trailing removal stops at it                                                                                                 |
-| Zone measured on a page not yet added              | Waits (`withZonesSettled` skips it) until the settle that adds the page                                                            |
-| A zone moving into another's old place             | Members read before any move: neither steals the other's elements                                                                  |
-| Object zone whose object was deleted               | `withZonesFitted` drops the zone                                                                                                   |
-| Zone floated (released)                            | `markZoneReleased` so the intake keeps its elements                                                                                |
-| Zone dropped beside itself / Escape                | `moveZone` returns null; nothing written                                                                                           |
-| Note marker deleted / note text deleted            | Tint removed / marker removed, in the same step (undo brings both)                                                                 |
-| Layout reported by a non-writer                    | Ignored (`local` false) unless the flow carries a grow mark (`growForAbsentWriter`, pages only)                                    |
-| Fonts arriving late                                | `loadingdone` re-measures                                                                                                          |
-| Export with no editor laid out                     | `pageWriting` returns null: the page exports bare                                                                                  |
-| Malformed peer caret op                            | `parseArticleCaret` null: dropped                                                                                                  |
-| Caret for a block that went                        | `resolveCaret` null: not drawn                                                                                                     |
-| Caret from someone not in the room, or another tab | Not drawn                                                                                                                          |
-| `getBoundingClientRect` / `coordsAtPos` throws     | Caught: caret page falls back to the first page, caret rect null                                                                   |
-| Stale dev bundle                                   | Not a code path; restart the dev server (wipe `.next-dev`)                                                                         |
+| Case                                               | Handling                                                                                                                            |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Malformed stored writing                           | Read defensively (Data and persistence); an empty article reads as one paragraph                                                    |
+| Article page with no flow                          | Its own article (flow = page id); writing created empty on first read                                                               |
+| Flow's pages split by crossed edits                | `withArticlesTogether` rejoins them at the first page, each taking its size and paint                                               |
+| Commit to an article deleted meanwhile             | `onCommit` skips the tab (no writing for a missing flow)                                                                            |
+| Commit refused (tab locked meanwhile)              | `onCommit` false: the writing stays local and goes with the next commit                                                             |
+| Malformed `article` frame from a peer              | `parseArticleOps` drops it (or its bad ops); nothing applied                                                                        |
+| Writing for an article removed here meanwhile      | Dropped unless `created` or its pages are present                                                                                   |
+| A copied article's margin notes                    | Relinked to the copied markers (`withNotesRelinked`); a note whose marker was not copied loses its mark                             |
+| An undo that touches no writing                    | The undo mark lapses after `UNDO_SETTLE_MS`; no stray caret jump                                                                    |
+| A zone or style choice already in force            | No edit, no undo step                                                                                                               |
+| Remote change while typing                         | Local block ops re-applied over it; the caret's block untouched                                                                     |
+| Two people in one paragraph                        | Last commit wins for that block (spec non-goal: no character merge)                                                                 |
+| A block op naming a missing neighbour              | Placed by the other neighbour, its old index, or the end                                                                            |
+| A frame over the room's cap                        | Ops split into `ARTICLE_FRAME_CHARS` frames; a single larger block is not split                                                     |
+| Writing past the page limit                        | `withArticlePageCount` stops at `MAX_PAGES`; the rest is clipped from view                                                          |
+| A paste or key past a block, text or cell cap      | `articleCapsPlugin` (`article-caps.ts`) refuses the transaction; `announceArticleCap` (`article-caps-notice.ts`) toasts, throttled  |
+| Trailing page that holds elements                  | Kept; trailing removal stops at it                                                                                                  |
+| Zone measured on a page not yet added              | Waits (`withZonesSettled` skips it) until the settle that adds the page                                                             |
+| A zone moving into another's old place             | Members read before any move: neither steals the other's elements                                                                   |
+| Object zone whose object was deleted               | `withZonesFitted` drops the zone                                                                                                    |
+| Zone floated (released)                            | `markZoneReleased` so the intake keeps its elements                                                                                 |
+| Zone dropped beside itself / Escape                | `moveZone` returns null; nothing written                                                                                            |
+| Note marker deleted / note text deleted            | Tint removed / marker removed, in the same step (undo brings both)                                                                  |
+| Layout reported by a non-writer                    | Ignored (`local` false) unless the flow carries a grow mark (`growForAbsentWriter`; a lock keeps a continuous page's mark for Edit) |
+| Fonts arriving late                                | `loadingdone` re-measures                                                                                                           |
+| Export with no editor laid out                     | `pageWriting` returns null: the page exports bare                                                                                   |
+| Malformed peer caret op                            | `parseArticleCaret` null: dropped                                                                                                   |
+| Caret for a block that went                        | `resolveCaret` null: not drawn                                                                                                      |
+| Caret from someone not in the room, or another tab | Not drawn                                                                                                                           |
+| `getBoundingClientRect` / `coordsAtPos` throws     | Caught: caret page falls back to the first page, caret rect null                                                                    |
+| Stale dev bundle                                   | Not a code path; restart the dev server (wipe `.next-dev`)                                                                          |
 
 ## Security and trust
 
