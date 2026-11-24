@@ -34,7 +34,9 @@ type Stored = {
 type Signal = Pick<IndexAppClient, 'planDiagramsChanged'>;
 
 /** Each view's graph now, by its board and filter, drawn for its maker: null when the plan cannot be read. */
-export type DrawViews = (views: readonly PlanViewRow[]) => Promise<Map<string, PlanGraph | null> | null>;
+export type DrawViews = (
+  views: readonly PlanViewRow[],
+) => Promise<Map<string, PlanGraph | null> | null>;
 
 const SCHEMA = `CREATE TABLE IF NOT EXISTS plan_views (
   diagram_id TEXT PRIMARY KEY, tab_id TEXT NOT NULL, board TEXT NOT NULL, filtered INTEGER NOT NULL,

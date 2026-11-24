@@ -268,7 +268,13 @@ async function drawDiagram(
   env: Env,
   draw: PlanDiagramDraw,
 ): Promise<{ ok: true; id: string; tabId: string } | { ok: false; gone: boolean }> {
-  const res = await callAppForJson(env, DIAGRAM_APP, '/items/plan-diagram', draw, KIT_CREATE_TIMEOUT_MS);
+  const res = await callAppForJson(
+    env,
+    DIAGRAM_APP,
+    '/items/plan-diagram',
+    draw,
+    KIT_CREATE_TIMEOUT_MS,
+  );
   if (!res.ok) {
     console.warn('[index] plan diagram not drawn', { error: res.error });
     return { ok: false, gone: res.error === 'status_404' };

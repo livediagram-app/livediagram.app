@@ -127,7 +127,9 @@ async function route(ctx: RouteContext): Promise<Response> {
     if (segments[2] === 'plan-sends' && segments.length === 3) return handlePlanSends(ctx, id);
     // Diagrams and Plans (plan-diagrams.ts): Make Plan Cards, View As Diagram and a drawn diagram's changes.
     if (
-      (segments[2] === 'plan-makes' || segments[2] === 'plan-views' || segments[2] === 'plan-edits') &&
+      (segments[2] === 'plan-makes' ||
+        segments[2] === 'plan-views' ||
+        segments[2] === 'plan-edits') &&
       segments.length === 3
     )
       return handlePlanDiagramRoutes(ctx, id, segments[2]);

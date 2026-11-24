@@ -281,7 +281,9 @@ export async function handleInternalItems(
   if (isSheetSourceDoor(rest)) return answerSheetSourceDoor(request, id, rest[1]!, handlers);
   // Diagrams and Plans (plan-diagram-door.ts): livediagram's new diagram, or a tab redrawn, from a plan's graph.
   if (rest.length === 1 && id === 'plan-diagram' && request.method === 'POST')
-    return handlers.drawPlanDiagram ? planDiagramDrawDoor(request, handlers.drawPlanDiagram) : notFound();
+    return handlers.drawPlanDiagram
+      ? planDiagramDrawDoor(request, handlers.drawPlanDiagram)
+      : notFound();
 
   if (rest.length === 1 && request.method === 'DELETE') {
     await handlers.purge(id);

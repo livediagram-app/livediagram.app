@@ -506,7 +506,8 @@ export function roomPlanViews(room: PlanRoom): PlanViews {
       const boards = new Map<string, Awaited<ReturnType<typeof readBoard>>>();
       const out = new Map<string, PlanGraph | null>();
       for (const view of views) {
-        if (!boards.has(view.board)) boards.set(view.board, await readBoard(env, planId, view.board));
+        if (!boards.has(view.board))
+          boards.set(view.board, await readBoard(env, planId, view.board));
         const board = boards.get(view.board);
         out.set(
           view.diagramId,

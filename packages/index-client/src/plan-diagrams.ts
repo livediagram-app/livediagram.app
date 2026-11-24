@@ -98,8 +98,7 @@ export type PlanViewAnswer = {
 };
 
 export type PlanEdit =
-  | { kind: 'block'; card: string; blocker: string }
-  | { kind: 'move'; card: string; column: string };
+  { kind: 'block'; card: string; blocker: string } | { kind: 'move'; card: string; column: string };
 
 export type PlanEditResult = { status: 'applied' } | { status: 'refused'; reason: string };
 
@@ -179,8 +178,7 @@ export const planDiagramDoorPath = (itemId: string): string =>
 /** The element id livediagram gives a drawn card's box, a lane and a Blocked By arrow. */
 export const planCardElementId = (lane: string, card: string): string => `card:${lane}:${card}`;
 export const planLaneElementId = (lane: string): string => `lane:${lane}`;
-export const planDepElementId = (blocker: string, card: string): string =>
-  `dep:${blocker}:${card}`;
+export const planDepElementId = (blocker: string, card: string): string => `dep:${blocker}:${card}`;
 
 /** A drawn element's id read back: what card or lane it is, or null for anything a person drew. */
 export function readPlanElementId(
@@ -193,7 +191,8 @@ export function readPlanElementId(
   const parts = id.split(':');
   if (parts[0] === 'card' && parts.length === 3 && parts[1] && parts[2])
     return { kind: 'card', lane: parts[1], card: parts[2] };
-  if (parts[0] === 'lane' && parts.length === 2 && parts[1]) return { kind: 'lane', lane: parts[1] };
+  if (parts[0] === 'lane' && parts.length === 2 && parts[1])
+    return { kind: 'lane', lane: parts[1] };
   if (parts[0] === 'dep' && parts.length === 3 && parts[1] && parts[2])
     return { kind: 'dep', blocker: parts[1], card: parts[2] };
   return null;
@@ -203,8 +202,7 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v);
 const text = (v: unknown, max: number): v is string => typeof v === 'string' && v.length <= max;
 // An id that can sit inside an element id: no colon, never empty.
-const id = (v: unknown, max = ID_MAX): v is string =>
-  text(v, max) && v !== '' && !v.includes(':');
+const id = (v: unknown, max = ID_MAX): v is string => text(v, max) && v !== '' && !v.includes(':');
 const idList = (v: unknown, max: number): v is string[] =>
   Array.isArray(v) && v.length <= max && v.every((x) => id(x));
 
@@ -260,8 +258,7 @@ export function readPlanMakeAsk(raw: unknown): PlanMakeAsk | null {
   }
   if (links > PLAN_MAKE_LINKS_MAX) return null;
   // A link names a shape in this ask, never itself.
-  for (const c of cards)
-    if (c.blockedBy?.some((b) => b === c.element || !seen.has(b))) return null;
+  for (const c of cards) if (c.blockedBy?.some((b) => b === c.element || !seen.has(b))) return null;
   return {
     board: raw.board,
     column: raw.column,
@@ -304,8 +301,7 @@ export function readPlanDiagramGraph(raw: unknown): PlanDiagramGraph | null {
   if (!text(raw.title, PLAN_DIAGRAM_LABEL_MAX)) return null;
   if (!Array.isArray(raw.edges) || !Number.isInteger(raw.total) || (raw.total as number) < 0)
     return null;
-  if (raw.nodes.length > PLAN_VIEW_CARDS_MAX || raw.edges.length > PLAN_VIEW_LINKS_MAX)
-    return null;
+  if (raw.nodes.length > PLAN_VIEW_CARDS_MAX || raw.edges.length > PLAN_VIEW_LINKS_MAX) return null;
   if (raw.lanes.length > PLAN_VIEW_CARDS_MAX) return null;
   const lanes: PlanDiagramLane[] = [];
   const laneIds = new Set<string>();
@@ -392,7 +388,8 @@ export function readPlanDiagramDoorCall(
   const person = raw.person;
   if (raw.op === 'graph' || raw.op === 'watch') {
     if (!id(raw.board) || typeof raw.filtered !== 'boolean') return null;
-    if (raw.op === 'graph') return { op: 'graph', person, board: raw.board, filtered: raw.filtered };
+    if (raw.op === 'graph')
+      return { op: 'graph', person, board: raw.board, filtered: raw.filtered };
     if (!id(raw.diagramId) || !id(raw.tabId)) return null;
     return {
       op: 'watch',

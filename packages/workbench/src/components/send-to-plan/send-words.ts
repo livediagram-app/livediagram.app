@@ -233,7 +233,7 @@ export function matchPerson(mention: string, people: readonly { name: string }[]
 }
 
 // The words between two dates that make them a span ("1 Dec to 12 Dec", "2026-12-01 - 2026-12-12").
-const SPAN_WORDS = ['-', '–', '—', 'to', 'until', 'till', 'through', 'thru', '→'];
+const SPAN_WORDS = ['-', '\u2013', '\u2014', 'to', 'until', 'till', 'through', 'thru', '→'];
 
 /** The words as a span of work: its title with both dates out, and its first and last day; null without a span. */
 export function readSendSpan(

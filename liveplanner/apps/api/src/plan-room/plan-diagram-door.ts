@@ -106,7 +106,11 @@ export function boardGraph(
   });
 }
 
-async function graphHere(room: PlanRoom, planId: string, call: GraphCall): Promise<PlanGraphDoorAnswer> {
+async function graphHere(
+  room: PlanRoom,
+  planId: string,
+  call: GraphCall,
+): Promise<PlanGraphDoorAnswer> {
   if (!bindStoredPlan(room, planId)) return { ok: false, code: 'target_gone', reason: '' };
   const env = room.requireEnv();
   const [board, items] = await Promise.all([
@@ -146,7 +150,11 @@ async function growType(
   return true;
 }
 
-async function makeHere(room: PlanRoom, planId: string, call: MakeCall): Promise<PlanMakeDoorAnswer> {
+async function makeHere(
+  room: PlanRoom,
+  planId: string,
+  call: MakeCall,
+): Promise<PlanMakeDoorAnswer> {
   if (!bindStoredPlan(room, planId)) return { ok: false, code: 'target_gone', reason: '' };
   const deps = automationDeps(room);
   if (!deps) return { ok: false, code: 'failed', reason: '' };
@@ -208,7 +216,11 @@ async function makeHere(room: PlanRoom, planId: string, call: MakeCall): Promise
   const creates = withDefaultStatuses(
     plan.cards
       .filter((c) => c.made)
-      .map((c) => ({ type, fields: c.fields, ...(c.status ? { place: { status: c.status } } : {}) })),
+      .map((c) => ({
+        type,
+        fields: c.fields,
+        ...(c.status ? { place: { status: c.status } } : {}),
+      })),
     allTypes,
   );
   const madeOut = plan.cards.filter((c) => c.made);
@@ -307,7 +319,9 @@ function planEdit(
   const card = byId.get(edit.card);
   if (!card || isTrashed(card) || isArchived(card)) return refuse('That card is gone');
   if (edit.kind === 'move') {
-    const column = columns.find((c) => c.name.trim().toLowerCase() === edit.column.trim().toLowerCase());
+    const column = columns.find(
+      (c) => c.name.trim().toLowerCase() === edit.column.trim().toLowerCase(),
+    );
     if (!column) return refuse(`The board has no column called ${edit.column}`);
     if (itemStatus(card) === column.status) return { status: 'applied' };
     return { before: card, next: { ...card, fields: { ...card.fields, status: column.status } } };
@@ -327,9 +341,11 @@ function planEdit(
 }
 
 async function editHere(room: PlanRoom, planId: string, call: EditCall) {
-  if (!bindStoredPlan(room, planId)) return { results: call.edits.map(() => refuse('The plan is gone')) };
+  if (!bindStoredPlan(room, planId))
+    return { results: call.edits.map(() => refuse('The plan is gone')) };
   const deps = automationDeps(room);
-  if (!deps) return { results: call.edits.map(() => refuse('The plan could not be changed just now')) };
+  if (!deps)
+    return { results: call.edits.map(() => refuse('The plan could not be changed just now')) };
   const { env } = deps;
   const [head, tabs, items] = await Promise.all([
     readPlanOutline(env, planId),
@@ -365,8 +381,16 @@ async function editHere(room: PlanRoom, planId: string, call: EditCall) {
       all.map((w) => ({ next: w.next, expectedRev: w.before.rev })),
     );
     const landed = all.filter((w) => result.landed.has(w.next.id));
-    if (landed.length > 0) deps.relay(landed.map((w) => w.next), result.rev);
-    await appendItemHistory(env, planId, landed.map((w) => ({ before: w.before, after: w.next })));
+    if (landed.length > 0)
+      deps.relay(
+        landed.map((w) => w.next),
+        result.rev,
+      );
+    await appendItemHistory(
+      env,
+      planId,
+      landed.map((w) => ({ before: w.before, after: w.next })),
+    );
     // A card someone changed since it was read: its edits are refused, to be offered again.
     call.edits.forEach((e, i) => {
       if (results[i]?.status === 'applied' && writes.has(e.card) && !result.landed.has(e.card))

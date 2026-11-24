@@ -31,7 +31,8 @@ export function madeBlocksField(typeId: string): CustomFieldDef {
 export function withBlocksField(type: ItemTypeDef): ItemTypeDef {
   if (blocksFieldsOf(type).length > 0) return type;
   let id = PLAN_MAKE_BLOCKS_FIELD_ID;
-  for (let n = 2; type.custom?.some((c) => c.id === id); n++) id = `${PLAN_MAKE_BLOCKS_FIELD_ID}-${n}`;
+  for (let n = 2; type.custom?.some((c) => c.id === id); n++)
+    id = `${PLAN_MAKE_BLOCKS_FIELD_ID}-${n}`;
   return {
     ...type,
     fields: [...type.fields, id],

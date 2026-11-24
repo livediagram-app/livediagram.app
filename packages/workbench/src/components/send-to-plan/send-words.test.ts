@@ -2,7 +2,13 @@
 // clock pinned to one local day.
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
-import { matchPerson, readSendWords, SEND_TITLE_MAX } from './send-words';
+import {
+  matchPerson,
+  readSendSpan,
+  readSendWords,
+  readWholeDate,
+  SEND_TITLE_MAX,
+} from './send-words';
 
 // Wednesday 18 November 2026, local.
 const TODAY = new Date(2026, 10, 18);
@@ -102,5 +108,72 @@ describe('words that look like a day but are not one', () => {
     expect(read('Mail @. now').mention).toBeNull();
     expect(read('Mail @@ben now').mention).toBeNull();
     expect(read('Mail @:x now').mention).toBeNull();
+  });
+});
+
+// Make Plan Cards' spans and timeline marks (livediagram make-plan-cards.md "Dates").
+describe('the words read as a span of work', () => {
+  const span = (text: string) => readSendSpan(text, TODAY);
+  it('takes two dates joined by a range word as Start and Due, the title without them', () => {
+    expect(span('Design 1 Dec to 12 Dec')).toEqual({
+      title: 'Design',
+      start: '2026-12-01',
+      due: '2026-12-12',
+    });
+    expect(span('Build from 2 Dec until 9 Dec carefully')).toEqual({
+      title: 'Build carefully',
+      start: '2026-12-02',
+      due: '2026-12-09',
+    });
+    expect(span('Test 3 Dec \u2013 4 Dec')).toMatchObject({
+      start: '2026-12-03',
+      due: '2026-12-04',
+    });
+    expect(span('Test 3 Dec \u2014 4 Dec')).toMatchObject({
+      start: '2026-12-03',
+      due: '2026-12-04',
+    });
+    expect(span('Launch 2026-12-01 \u2192 2026-12-03\nsecond line')).toMatchObject({
+      title: 'Launch',
+    });
+  });
+
+  it('carries a span across the new year', () => {
+    expect(span('Holiday 20 Dec to 5 Jan')).toMatchObject({
+      start: '2026-12-20',
+      due: '2027-01-05',
+    });
+  });
+
+  it('is null without two dates joined by a range word', () => {
+    expect(span('Design by 12 Dec')).toBeNull();
+    expect(span('Design 1 Dec and 12 Dec')).toBeNull();
+    expect(span('Design 1 Dec to')).toBeNull();
+    expect(span('Design 1 Dec to the moon')).toBeNull();
+    expect(span('x'.repeat(5000))).toBeNull();
+  });
+});
+
+describe('the words read as one date alone', () => {
+  const whole = (text: string) => readWholeDate(text, TODAY);
+  it('reads a label that is only a date', () => {
+    expect(whole('1 Dec')).toBe('2026-12-01');
+    expect(whole(' 2026-12-08 ')).toBe('2026-12-08');
+    expect(whole('Dec 8')).toBe('2026-12-08');
+  });
+
+  it('is null for anything more, a weekday, today or tomorrow', () => {
+    for (const text of [
+      '',
+      'Design 1 Dec',
+      '1 Dec\n2 Dec',
+      'Friday',
+      'today',
+      'tomorrow',
+      'a b c d',
+      'x'.repeat(41),
+      'Design',
+    ])
+      expect(whole(text)).toBeNull();
   });
 });

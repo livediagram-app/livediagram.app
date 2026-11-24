@@ -80,8 +80,7 @@ export async function planDiagramDrawDoor(
   }
   if (result.status !== 'ok') {
     console.warn('[internal] plan diagram draw refused', { status: result.status });
-    const status =
-      result.status === 'not_found' ? 404 : result.status === 'too_large' ? 413 : 422;
+    const status = result.status === 'not_found' ? 404 : result.status === 'too_large' ? 413 : 422;
     return json({ error: result.status }, status);
   }
   console.info('[internal] plan diagram drawn', {

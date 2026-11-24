@@ -5,11 +5,7 @@
 // ones. So a redraw changes only what moved, and the editor tells the plan's arrows and lanes from ones a person drew
 // (make-plan-cards.md "Changes to the plan"). Without `itemId` it is a new canvas of `owner`'s, written through the
 // import door's path; with one, that tab redrawn in the canvas's room as `owner`'s changeset.
-import {
-  documentToEnvelopeText,
-  type Element,
-  type GraphInput,
-} from '@livediagram/document';
+import { documentToEnvelopeText, type Element, type GraphInput } from '@livediagram/document';
 import { applyReplace } from '@livediagram/edit-operations';
 import type { PlanDiagramDrawResult } from '@liveworkspace/index-app';
 import {
@@ -116,7 +112,11 @@ export async function documentFromPlan(
   }
   const tab = planDiagramTab(draw);
   if (!tab) return { status: 'invalid_graph' };
-  const file = documentToEnvelopeText({ id: 'plan', name: draw.name, presentation: null }, [tab], Date.now());
+  const file = documentToEnvelopeText(
+    { id: 'plan', name: draw.name, presentation: null },
+    [tab],
+    Date.now(),
+  );
   const made = await importFile(env, { owner: draw.owner, folderId: null, name: draw.name, file });
   if (made.status === 'too_large') return { status: 'too_large' };
   if (made.status !== 'ok') return { status: 'invalid_graph' };

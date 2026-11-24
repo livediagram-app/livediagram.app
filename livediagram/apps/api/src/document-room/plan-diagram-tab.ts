@@ -13,9 +13,7 @@ import type { DocumentEnv } from '../types';
 export type PlanTabWrite = { tabId: string; elements: Element[]; owner: string };
 
 export type PlanTabOutcome =
-  | { status: 'ok' }
-  | { status: 'not_found' }
-  | { status: 'invalid_graph' };
+  { status: 'ok' } | { status: 'not_found' } | { status: 'invalid_graph' };
 
 // The author's name and colour when they have no participant row, as the changeset route's.
 const FALLBACK = { name: 'Someone', color: '#0ea5e9' };
