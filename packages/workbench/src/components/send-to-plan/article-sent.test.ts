@@ -149,6 +149,16 @@ describe('the chips and the pill', () => {
     setDiagramSendSource(null);
   });
 
+  // prosemirror-view 1.43 prevents a mousedown's default in a view that isn't editable too, so a mouse could not pick
+  // words in a reader's article (send-to-plan.md "A mouse picks a reader's words"): read only, the press is the browser's.
+  it('leaves a press in a read-only writing to the browser, and to ProseMirror while editing', () => {
+    let editing = false;
+    const { mousedown } = articleSentSpec(() => editing, draw).props.handleDOMEvents;
+    expect(mousedown()).toBe(true);
+    editing = true;
+    expect(mousedown()).toBe(false);
+  });
+
   it('redraws as sends change, marking the redraw, until the writing goes', () => {
     const state = stateOf([{ id: 'b1', text: 'Ship' }], { from: 1 });
     const view = {

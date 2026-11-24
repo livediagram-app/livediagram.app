@@ -20,15 +20,15 @@ describe('template categories', () => {
   it('are the use-case categories livedesign has, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Branding',
-      'Health and Fitness',
-      'Music and Video',
+      'Entertainment',
+      'Health',
+      'Onboarding',
       'Photos',
       'Shopping',
-      'Sign Up and Onboarding',
-      'Social and Messaging',
-      'Travel and Transport',
+      'Social',
+      'Travel',
       'Websites',
-      'Work and Productivity',
+      'Work',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));

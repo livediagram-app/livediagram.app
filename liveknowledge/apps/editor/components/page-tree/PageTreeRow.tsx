@@ -6,7 +6,9 @@
 // rows it leaves and enters and no others. With a mouse the row's + and ... show only while it is pointed at, holds
 // focus, has its menu open or is the current page (CSS alone, ROW_CONTROLS_HIDDEN); their hover cards and the title's
 // tooltip mount only while it is pointed at, holds focus or has its menu open. Their room is always kept, so nothing
-// shifts.
+// shifts. On a touch screen they show only on the current page's row and the row whose menu is open, 44 px squares
+// with no cards, so the other rows keep their titles' room; a long press opens any row's menu (PageTree never marks
+// a row from a finger, so a tap re-mounts nothing under it).
 import { memo, type ReactNode } from 'react';
 import { HoverCard, Tooltip } from '@liveknowledge/ui';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
@@ -31,6 +33,7 @@ import {
   ROW_INSET,
   ROW_NEST,
   ROW_REST,
+  ROW_TOUCH_BUTTON,
 } from './page-tree-row-styles';
 import {
   PAGE_TREE_INDENT,
@@ -99,10 +102,12 @@ function PageTreeRowView({
   // The open page is named from its Title as it is typed (knowledgebases-and-pages.md "Name").
   const live = useLivePageTitle(current);
   const name = outOfScope ? 'Not Shared' : (live ?? row.name) || 'Untitled Page';
+  // A touch row shows its + and ... only where they are in reach of what was tapped: the open page, or an open menu.
+  const touchShown = touch && (current || menuOpen);
   const indent = ROW_INSET + (row.level - 1) * PAGE_TREE_INDENT;
   const hasSubpages = row.subpages > 0;
   const icon = outOfScope ? undefined : pageIconOfKey(row.icon);
-  const control = touch ? 'h-11 w-9' : 'h-6 w-6';
+  const control = touch ? ROW_TOUCH_BUTTON : 'h-6 w-6';
   const menuButton = (
     <button
       type="button"
@@ -186,7 +191,11 @@ function PageTreeRowView({
       ) : (
         <span aria-hidden className={`shrink-0 ${touch ? 'w-7' : 'w-5'}`} />
       )}
-      {icon ? <PageIconGlyph icon={icon} size={16} className="mr-1.5" /> : null}
+      {icon ? (
+        <PageIconGlyph icon={icon} size={16} className="mr-1.5" />
+      ) : row.iconSlot ? (
+        <span aria-hidden className="mr-1.5 w-4 shrink-0" />
+      ) : null}
       {editing ? (
         <NameEditor
           label="Page name"
@@ -235,10 +244,17 @@ function PageTreeRowView({
       {/* The row's buttons: their room is kept whether they show or not, so a hover moves nothing. */}
       <span
         data-row-controls
-        className={`${current || menuOpen ? ROW_CONTROLS_SHOWN : ROW_CONTROLS_HIDDEN} ${touch ? 'w-9' : 'w-[50px]'}`}
+        className={`${current || menuOpen ? ROW_CONTROLS_SHOWN : ROW_CONTROLS_HIDDEN} ${touch ? (!touchShown ? 'w-0' : canEdit ? 'w-[90px]' : 'w-11') : 'w-[50px]'}`}
       >
         {editing || outOfScope ? null : touch ? (
-          menuButton
+          // On touch, plain (a finger has no hover for a card to answer), and only on the current row or the row whose
+          // menu is open, so the other rows' titles keep their room (Work Tracker 1417).
+          touchShown ? (
+            <>
+              {canEdit ? addButton : null}
+              {menuButton}
+            </>
+          ) : null
         ) : (
           // Shown on hover with a mouse, always on touch (owner, 2026-11-21), quiet until the row is active. Their
           // hover cards are drawn on the active row only, so 500 rows carry 1,000 plain buttons and no extra cards.

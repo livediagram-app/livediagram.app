@@ -58,3 +58,36 @@ export function appOfAnyOrigin(origin: string): AppSiteId | null {
   }
   return null;
 }
+
+// --- A live embed's frame (liveworkspace/docs/specs/004-index/live-embeds.md "Framed by our apps alone") -------------
+
+// The frame flag a host adds to a live embed's frame address (@liveworkspace/workbench editor-surface.ts
+// LIVE_EMBED_FRAME_PARAM, restated so a worker reads it without the workbench).
+const LIVE_EMBED_FRAME_PARAM = 'live';
+
+/** Whether a request is for a live embed's frame: the workbench page with the frame flag. */
+export function isLiveEmbedFrameRequest(url: URL): boolean {
+  return (
+    (url.pathname === '/embed/workbench' || url.pathname === '/embed/workbench/') &&
+    url.searchParams.get(LIVE_EMBED_FRAME_PARAM) === '1'
+  );
+}
+
+const isLoopbackHost = (host: string) =>
+  host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+
+/**
+ * The `frame-ancestors` sources for a live embed's frame served at `url` (live-embeds.md "Framed by our apps alone"),
+ * or null for any other request: every app's origins in the environment the frame's own origin belongs to, so only a
+ * page of one of our apps can frame it. Staging's apps on a staging frame; any local port on a loopback one (each
+ * app's dev servers answer on more than their router's port); production's anywhere else.
+ */
+export function liveEmbedFrameAncestors(url: URL): string | null {
+  if (!isLiveEmbedFrameRequest(url)) return null;
+  if (isLoopbackHost(url.hostname)) return "'self' http://localhost:* http://127.0.0.1:*";
+  const environment: AppEnvironment = isStagingHost(url.host) ? 'staging' : 'production';
+  const origins = REGISTERED_APP_SITES.flatMap((site) =>
+    appOrigins(site.id as AppSiteId, environment),
+  );
+  return ["'self'", ...origins].join(' ');
+}

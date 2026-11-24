@@ -38,3 +38,18 @@ export function isMobileViewportSync(): boolean {
   if (typeof window === 'undefined') return false;
   return window.matchMedia?.(PHONE_MEDIA_QUERY).matches ?? false;
 }
+
+// A touch-first screen (livediagram's docs/specs/007-editor/editor-modes.md "The tool a mode starts with"): its main
+// pointer is a finger (coarse, no hover) and nothing fine is attached. An iPad or an Android tablet, at any width; not
+// a touchscreen laptop (its trackpad is fine), nor an iPad with a trackpad or mouse attached. Media queries only,
+// never the user agent.
+export const TOUCH_FIRST_MEDIA_QUERY = '(pointer: coarse) and (hover: none)';
+export const FINE_POINTER_MEDIA_QUERY = '(any-pointer: fine)';
+
+export function isTouchFirstSync(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return (
+    window.matchMedia(TOUCH_FIRST_MEDIA_QUERY).matches &&
+    !window.matchMedia(FINE_POINTER_MEDIA_QUERY).matches
+  );
+}

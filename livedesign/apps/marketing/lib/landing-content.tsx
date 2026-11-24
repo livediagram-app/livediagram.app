@@ -2,10 +2,13 @@ import type { HeroSceneKey } from '@/components/hero-scene-data';
 import {
   ApiArt,
   ApprovalArt,
+  AskAiArt,
   AssignedActionsArt,
   AutomationsArt,
+  CallHereArt,
   CommentsArt,
   ComponentsArt,
+  ConnectFileArt,
   ContentsSidebarArt,
   ExpiryArt,
   FollowAlongArt,
@@ -33,6 +36,7 @@ import {
   RevokeArt,
   SearchPaletteArt,
   SelectionGlowArt,
+  SendToPlanArt,
   ShareLinksArt,
   SnapshotsArt,
   SpotlightArt,
@@ -265,14 +269,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the pages with you: live cursors, comments and walkthroughs. Take a snapshot before a big change, ask for approval when it is done, keep your best parts in a Library, or hand the work to your AI.',
+      'Share a link and your team is on the pages with you: live cursors, comments and walkthroughs. Take a snapshot before a big change, ask for approval when it is done, keep your best parts in a Library, ask AI what the screens say, or send the feedback to a plan.',
     metaDescription:
-      'Work on designs together: live cursors, comments, recorded walkthroughs, snapshots, approvals, a shared Library, expiring links and an MCP server for AI.',
+      'Work on designs together: live cursors, comments, walkthroughs, snapshots, approvals, a shared Library, calls, cards sent to a plan and an MCP server for AI.',
     highlights: [
       'Live presence',
       'Comments on anything',
       'Record a walkthrough',
-      'Make designs with AI',
+      'Ask AI about the design',
     ],
     items: [
       {
@@ -345,7 +349,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Automations for the handoff',
         description:
-          'Give a design rules of its own: post feedback and library changes to Slack or Microsoft Teams, email you once every thread is resolved, or take a snapshot every Friday. Rules run on our servers, even with nobody in the design.',
+          'Give a design rules of its own: post feedback and library changes to Slack or Microsoft Teams, email you once every thread is resolved, or take a snapshot every Friday. A step can reach your other apps too, making a card in a liveplanner plan. Rules run on our servers, even with nobody in the design.',
       },
       {
         art: <WalkthroughArt />,
@@ -401,7 +405,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Teams with shared designs',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of designs they can all open and edit. Admins manage membership and roles; members just get to work.',
+          'Create a team, invite people by email or a join link, and everyone gets a shared folder of designs they can all open and edit. Admins manage people and roles from the team’s page, with an Audit Log of what changed; members just get to work.',
       },
       {
         art: <LibraryArt />,
@@ -435,19 +439,52 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The design is yours again.',
       },
       {
+        art: <LiveEmbedArt />,
+        href: '/help/palette/embed-elements/#embed-file',
+        group: 'Your other apps',
+        title: 'Live files from your other apps',
+        description:
+          'Add an Embed File and a file from livediagram, liveplanner, livedocuments or liveknowledge sits on your page, live and read-only, each viewer seeing it with their own access. Link a chart to a liveplanner plan, a Sheet range, board counts or a Dashboard metric, and it redraws as the plan changes.',
+      },
+      {
+        art: <ConnectFileArt />,
+        href: '/help/tabs/connected-files/',
+        group: 'Your other apps',
+        title: 'Connect files from your other apps',
+        description:
+          'Add a plan, a canvas, a Space or a file from livedocuments as a tab of the design, with the role everyone gets on it. The tab shows a preview and opens the file in its own app, and Connect both files adds a tab back the other way.',
+      },
+      {
+        art: <SendToPlanArt />,
+        href: '/help/collaboration/send-to-plan/',
+        group: 'Your other apps',
+        title: 'Send to Plan',
+        description:
+          'Turn a review comment, a sticky or a few picked words into a card in one of your liveplanner plans, its assignee and due day read from the words. A chip on the screen shows where the card stands and ticks once it is done.',
+      },
+      {
+        art: <CallHereArt />,
+        href: '/help/collaboration/start-a-call/',
+        group: 'Your other apps',
+        title: 'Start a call here',
+        description:
+          'Press Call and a livehuddle video call about the design opens in a new tab. Everyone with the design open sees it is on and can join. Wrap Up sends the summary to a knowledgebase and the actions to a plan.',
+      },
+      {
+        art: <AskAiArt />,
+        href: '/help/privacy-and-security/data-privacy/#ai-features',
+        group: 'AI & your tools',
+        title: 'Ask AI about the design',
+        description:
+          'Signed in, open Ask AI in Tools and ask about the design in plain words: what the sign-up flow asks for, or which screens mention pricing. The answer comes from the words on its pages, and each source it names is one press from its place on the page.',
+      },
+      {
         art: <McpArt />,
         href: '/help/account-and-data/connect-ai-mcp/',
         group: 'AI & your tools',
         title: 'Make designs with AI',
         description:
           'Connect Claude or any MCP client and let it find, read, create, edit and share your designs for you. In Claude, each design it makes or reads opens as a live view beside the answer, to flip through page by page. It runs on a revocable token, read-only if you prefer.',
-      },
-      {
-        art: <LiveEmbedArt />,
-        group: 'AI & your tools',
-        title: 'Live files from your other apps',
-        description:
-          'Add an Embed File and a diagram, a plan or a document from another liveworkspace app sits on your page, live and read-only, each viewer seeing it with their own access. Link a chart to a liveplanner sheet and it redraws as the sheet changes.',
       },
       {
         art: <ApiArt />,

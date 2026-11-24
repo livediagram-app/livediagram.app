@@ -164,15 +164,15 @@ export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null 
         </svg>
       );
     case 'blank-flashcards':
-      // One empty 5:3 card, a second card peeking out below it (the stack): a title and a few lines to say. Hover story:
-      // the lines light up.
+      // One empty 5:3 card, a second card peeking out below it (the stack): a title and a few lines to say, and the
+      // "+" on the card as on the other blanks' pages. Hover story: the lines light up.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
           <rect
-            x="19"
-            y="13"
-            width="42"
-            height="25.2"
+            x="19.5"
+            y="12"
+            width="41"
+            height="28.8"
             rx="2"
             fill="rgb(241 245 249)"
             stroke={EDGE}
@@ -193,7 +193,7 @@ export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null 
               />
             ))}
           </g>
-          <Plus cx={40} cy={44} />
+          <Plus cx={40} cy={32.5} />
         </svg>
       );
     default:

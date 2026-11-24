@@ -8,10 +8,18 @@ the call shows, and the Wrap Up.
 
 ## The Space
 
-A call is an ordinary Space, made from the **Team Pod** template (a pod for a stand-up: everyone in it hears everyone)
-by the index as the host's, named "<item title> Call", with a Participant link that lets the item's readers in. Its
+A call is an ordinary Space, made from the **Document Room** template (Work Tracker 1427, [Document
+Room](virtual-office-template.md#document-room): chairs facing a big wall screen, one room, so everyone in it hears
+everyone) by the index as the host's, named "<item title> Call", with a Participant link that lets the item's readers
+in. **The item is already on its Screen**: the index asks the template door for the Space with `screen: {app, itemId,
+name}`, and every Screen of the new Space keeps that file (`liveItem`, `liveName`), so the file is on the wall for
+everyone who walks in, each with their own access ([A file on the
+Screen](../009-elements/screen-and-room-sign.md#a-file-on-the-screen)). A Space is never a file a Screen shows: a
+`screen` naming livehuddle is ignored. A call in someone's [Calls
+Space](../../../../liveworkspace/docs/specs/004-index/item-calls.md#your-calls-space) changes nothing in that Space,
+its Screens included, as before; an Editor there can choose the file in Show on the Screen. Its
 audio, video and screen share are livehuddle's own calls ([Proximity audio](proximity-audio.md), [Video and screen
-bubbles](video-and-screen-bubbles.md)): no second video stack. Presenting the item is screen share. Everything a Space
+bubbles](video-and-screen-bubbles.md)): no second video stack. Presenting the item is the Screen; screen share stays for anything else. Everything a Space
 offers works in it, and its minutes are the host's as any Space's ([Call Minutes](call-minutes.md)).
 
 The room keeps the call's id once the index marks it (the internal door `POST /api/internal/items/:id/call`), and from

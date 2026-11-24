@@ -1,9 +1,9 @@
 'use client';
 
-// Home's cards (HomePane's Most Used, Recent and Shared With You Recently, HomeNew's New): the large card and its
-// frame, the Offline card, a group of them, the phone's strip and the placeholders they load behind. One
-// component for every Home section, so a card looks and behaves the same wherever Home shows it; only its line
-// differs (when it was opened, or when it was made).
+// Home's rows (HomeTimeline's made and opened rows, HomePane's ranked Most Used and Shared With You Recently): the
+// row and its frame, the Offline row, the rank and the day chart's line. One component for every Home section, so a
+// row looks and behaves the same wherever Home shows it (its menu, rename and drag); only its line differs (made or
+// opened, and where; or the 14-day chart and its opens).
 
 import { SIDEBAR_LABELS } from '../views';
 import {
@@ -16,23 +16,27 @@ import {
   type ReactNode,
 } from 'react';
 import type { ShownItem } from '../data/overlay';
-import { JUMP_BACK_IN_PER_GROUP, jumpBackInLine, newLine } from '../data/viewLists';
+import { jumpBackInLine, newLine } from '../data/viewLists';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
-import { FOCUS_RING, MUTED, RENAME_INPUT, SKELETON } from '../ui/classes';
+import { FOCUS_RING, MUTED, RENAME_INPUT } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { useItemDrag, useThisBrowserDrag } from '../drag/drag';
-import { ChevronRightIcon, ItemIcon } from '../ui/icons';
+import { ItemIcon } from '../ui/icons';
 import { useNow } from '../time';
 import { AppMark, MadeByAiBadge } from './badges';
 import { useExplorer } from './context';
 import { ItemMenu } from './menus';
 import { useItemBits } from './rows';
 import { CARD_NAME, CARD_SURFACE, THUMB_EDGE } from './HomeSection';
+import { DayChart } from './DayChart';
 import type { ThisBrowserItem } from '../this-browser';
 import { LocalPreview, ThisBrowserItemMenu, useThisBrowserItems } from './ThisBrowser';
 
 // A card's line: when it was opened (Most Used, Recent, Shared With You Recently) or when it was made (New).
-export type CardLine = 'opened' | 'made';
+/** What a card's line says: when it was opened or made (the large cards'), or in a row of Home's (one-explorer.md
+ *  "Recent, a timeline" and "Home's rail"): `made-here`/`opened-here` say what happened and where, the timeline's
+ *  clock saying when, and `used` draws Most Used's day chart and its opens. */
+export type CardLine = 'opened' | 'made' | 'made-here' | 'opened-here' | 'used';
 
 // New and Most Used or Recent can show the same item, so a rename is drawn in the card whose menu started it: the
 // kind of line it carries says which section that was (Most Used, Recent and Shared With You Recently never share an
@@ -47,51 +51,47 @@ export function HomeCardsProvider({ children }: { children: ReactNode }) {
   return <RenameFromContext.Provider value={value}>{children}</RenameFromContext.Provider>;
 }
 
-export const LARGE_GRID = 'grid grid-cols-2 gap-4 lg:grid-cols-4';
-const COMPACT_GRID = 'grid grid-cols-2 gap-2.5 lg:grid-cols-4';
-// Readable over a thumbnail: a frosted chip rather than the row button's bare glyph.
 const MENU_CHIP =
   '!absolute bg-white/90 shadow-sm ring-1 ring-slate-200 pointer-fine:group-focus-within:opacity-100 dark:bg-slate-900/90 dark:ring-slate-700';
 
-/** One section's cards; a group with nothing draws nothing. */
-export function CardGroup({
-  items,
-  large,
+/** One row of Home's timeline or rail (one-explorer.md "Recent, a timeline", "Home's rail"): the card's own menu,
+ *  rename and drag, drawn flat. `rank` and `peak` are Most Used's. */
+export function HomeRow({
+  item,
   showApp,
-  line = 'opened',
+  line,
+  rank,
+  peak,
 }: {
-  items: readonly (ShownItem | ThisBrowserItem)[];
-  large: boolean;
+  item: ShownItem | ThisBrowserItem;
   showApp: boolean;
-  line?: CardLine;
+  line: CardLine;
+  rank?: number;
+  peak?: number;
 }) {
-  if (items.length === 0) return null;
-  return (
-    <div data-card-group={large ? 'large' : 'compact'}>
-      <ul className={large ? LARGE_GRID : COMPACT_GRID}>
-        {items.map((item) => (
-          <li key={item.id} className="min-w-0">
-            {'app' in item ? (
-              <JumpBackInCard item={item} large={large} showApp={showApp} line={line} />
-            ) : (
-              <LocalCard item={item} large={large} showApp={showApp} line={line} />
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
+  return 'app' in item ? (
+    <JumpBackInCard
+      item={item}
+      large={false}
+      flat
+      showApp={showApp}
+      line={line}
+      rank={rank}
+      peak={peak}
+    />
+  ) : (
+    <LocalCard item={item} large={false} flat showApp={showApp} line={line} />
   );
 }
 
-function Thumb({ item, className }: { item: ShownItem; className: string }) {
-  const { renderThumbnail } = useExplorer();
+/** Most Used's place, before the name: quiet, in tabular figures so the column lines up. */
+function RankMark({ rank }: { rank: number }) {
   return (
-    <span className={`${className} ${THUMB_EDGE}`}>
-      {renderThumbnail?.(item, 'card') ?? (
-        <span className="text-slate-300 dark:text-slate-600 [&_svg]:h-7 [&_svg]:w-7">
-          <ItemIcon />
-        </span>
-      )}
+    <span
+      aria-hidden
+      className="w-5 shrink-0 text-center text-[13px] font-extrabold tabular-nums text-slate-400 dark:text-slate-500"
+    >
+      {rank}
     </span>
   );
 }
@@ -117,7 +117,31 @@ function Line({
       id={id}
       className={`block min-w-0 truncate leading-[18px] ${large ? 'text-[12.5px]' : 'text-xs'} ${MUTED}`}
     >
-      {now ? (line === 'made' ? newLine(item, now, place) : jumpBackInLine(item, now)) : ''}
+      {line === 'made-here' || line === 'opened-here'
+        ? happenedHere(line, place)
+        : now
+          ? line === 'made'
+            ? newLine(item, now, place)
+            : jumpBackInLine(item, now)
+          : ''}
+    </span>
+  );
+}
+
+/** A timeline row's line: what happened and where ("Made · Marketing", "Opened · My Work"); its clock says when. */
+export function happenedHere(line: 'made-here' | 'opened-here', place: string | null): string {
+  const what = line === 'made-here' ? 'Made' : 'Opened';
+  return place ? `${what} · ${place}` : what;
+}
+
+/** Most Used's line in the rail: the day chart, then how often ("31 opens"). An index that sends no days draws the
+ *  count alone. */
+function UsedLine({ item, id, peak }: { item: ShownItem; id: string; peak: number }) {
+  const opens = item.useOpens ?? item.useDays ?? 0;
+  return (
+    <span id={id} className={`flex min-w-0 items-center gap-2 text-xs leading-[18px] ${MUTED}`}>
+      {item.useHistory ? <DayChart history={item.useHistory} peak={peak} app={item.app} /> : null}
+      <span className="truncate tabular-nums">{opens === 1 ? '1 open' : `${opens} opens`}</span>
     </span>
   );
 }
@@ -133,12 +157,21 @@ function Pinned({ pill, children }: { pill: ReactNode; children: ReactNode }) {
   );
 }
 
-const cardClass = (large: boolean) =>
-  `flex min-w-0 ${
-    large
-      ? 'h-[12.5rem] flex-col gap-2.5 rounded-[18px] p-2 pb-3'
-      : 'h-[3.875rem] items-center gap-3 rounded-[14px] p-2 pr-11'
-  } ${CARD_SURFACE} ${FOCUS_RING}`;
+// A row in Home's timeline or rail: no frame of its own, the hover wash the sidebar's rows have, tall enough for a
+// thumb on a phone.
+const FLAT_ROW = `flex min-h-14 min-w-0 items-center gap-3 rounded-[14px] p-2 pr-11 transition duration-micro hover:bg-slate-100 dark:hover:bg-slate-700/50 ${FOCUS_RING}`;
+
+// On a phone a row's name may take two lines rather than cut off after a word or two.
+const FLAT_NAME = 'max-sm:line-clamp-2 max-sm:whitespace-normal max-sm:break-words';
+
+const cardClass = (large: boolean, flat = false) =>
+  flat
+    ? FLAT_ROW
+    : `flex min-w-0 ${
+        large
+          ? 'h-[12.5rem] flex-col gap-2.5 rounded-[18px] p-2 pb-3'
+          : 'h-[3.875rem] items-center gap-3 rounded-[14px] p-2 pr-11'
+      } ${CARD_SURFACE} ${FOCUS_RING}`;
 const nameSize = (large: boolean) => (large ? 'text-[15px] leading-5' : 'text-sm leading-5');
 
 /** One Home card's frame, whoever holds the item: the thumbnail area, the name row (the app's mark under All)
@@ -157,12 +190,19 @@ function CardFrame({
   renderMenu,
   drag,
   attrs,
+  flat = false,
+  lead = null,
 }: {
   id: string;
   large: boolean;
+  /** A row of the timeline's or the rail's (cardClass): `large` is false. */
+  flat?: boolean;
+  /** Before the thumbnail (Most Used's rank). */
+  lead?: ReactNode;
   // The app's mark beside the name (under All), or null.
   app: ShownItem['app'] | null;
-  thumb: ReactNode;
+  // The picture, or null for a row with none (Most Used's).
+  thumb: ReactNode | null;
   name: ReactNode;
   line: ReactNode;
   // The card as a link, or null while it can't open (renaming).
@@ -175,12 +215,15 @@ function CardFrame({
 }) {
   const body = (
     <>
-      <span
-        className={`${large ? 'h-32 w-full rounded-xl' : 'h-11 w-16 shrink-0 rounded-lg'} ${THUMB_EDGE}`}
-      >
-        {thumb}
-      </span>
-      <span className={`flex min-w-0 flex-col gap-0.5 ${large ? 'px-1' : ''}`}>
+      {lead}
+      {thumb === null ? null : (
+        <span
+          className={`${large ? 'h-32 w-full rounded-xl' : `h-11 shrink-0 rounded-lg ${flat ? 'w-14 sm:w-16' : 'w-16'}`} ${THUMB_EDGE}`}
+        >
+          {thumb}
+        </span>
+      )}
+      <span className={`flex min-w-0 flex-1 flex-col gap-0.5 ${large ? 'px-1' : ''}`}>
         <span className="flex min-w-0 items-center gap-1.5">
           {app ? <AppMark app={app} size={14} /> : null}
           {name}
@@ -198,10 +241,10 @@ function CardFrame({
       {...drag}
     >
       {link ? (
-        link(cardClass(large), body)
+        link(cardClass(large, flat), body)
       ) : (
         // While renaming the card doesn't open: the field keeps its focus and its clicks.
-        <div className={cardClass(large)}>{body}</div>
+        <div className={cardClass(large, flat)}>{body}</div>
       )}
       {link ? (
         <EllipsisTriggerButton
@@ -222,11 +265,19 @@ const JumpBackInCard = memo(function JumpBackInCard({
   large,
   showApp,
   line,
+  flat = false,
+  rank,
+  peak = 0,
 }: {
   item: ShownItem;
   large: boolean;
   showApp: boolean;
   line: CardLine;
+  flat?: boolean;
+  /** Most Used's place in the rail, drawn before the name. */
+  rank?: number;
+  /** The busiest day across Most Used, which its day charts measure against. */
+  peak?: number;
 }) {
   const { Link, renamingId, renderThumbnail } = useExplorer();
   const bits = useItemBits(item);
@@ -248,10 +299,12 @@ const JumpBackInCard = memo(function JumpBackInCard({
     <CardFrame
       id={item.id}
       large={large}
+      flat={flat}
+      lead={rank === undefined ? null : <RankMark rank={rank} />}
       app={showApp ? item.app : null}
       // An AI tool's item says so on its picture's corner, as rows and Details do beside the name.
       thumb={
-        item.source === 'ai' && large ? (
+        line === 'used' ? null : item.source === 'ai' && large ? (
           <Pinned pill={<MadeByAiBadge item={item} />}>
             <span className="flex h-full w-full items-center justify-center">{picture}</span>
           </Pinned>
@@ -269,17 +322,31 @@ const JumpBackInCard = memo(function JumpBackInCard({
             className={`min-w-0 flex-1 ${RENAME_INPUT} ${nameSize(large)}`}
           />
         ) : (
-          <span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>
+          <>
+            <span className={`${CARD_NAME} ${nameSize(large)} ${flat ? FLAT_NAME : ''}`}>
+              {title}
+            </span>
+            {/* A row's picture is too small for the pill, so it follows the name. */}
+            {flat && item.source === 'ai' ? (
+              <span className="shrink-0">
+                <MadeByAiBadge item={item} />
+              </span>
+            ) : null}
+          </>
         )
       }
       line={
-        <Line
-          item={item}
-          id={`jbi-${item.id}-${large ? 'l' : 'c'}`}
-          large={large}
-          line={line}
-          place={bits.place?.label ?? null}
-        />
+        line === 'used' ? (
+          <UsedLine item={item} id={`jbi-${item.id}-u`} peak={peak} />
+        ) : (
+          <Line
+            item={item}
+            id={`jbi-${item.id}-${large ? 'l' : 'c'}`}
+            large={large}
+            line={line}
+            place={bits.place?.label ?? null}
+          />
+        )
       }
       link={
         renaming
@@ -306,11 +373,13 @@ const LocalCard = memo(function LocalCard({
   large,
   showApp,
   line,
+  flat = false,
 }: {
   item: ThisBrowserItem;
   large: boolean;
   showApp: boolean;
   line: CardLine;
+  flat?: boolean;
 }) {
   const { app } = useExplorer();
   const { host } = useThisBrowserItems();
@@ -322,6 +391,7 @@ const LocalCard = memo(function LocalCard({
       id={item.id}
       attrs={{ 'data-this-browser-card': '' }}
       large={large}
+      flat={flat}
       app={showApp ? app : null}
       // The picture says where it lives (a crossed cloud), with no pill on it (owner, 2026-11-17).
       thumb={
@@ -334,7 +404,13 @@ const LocalCard = memo(function LocalCard({
       }
       name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
       line={
-        <Line item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} line={line} />
+        <Line
+          item={item}
+          id={`jbi-${item.id}-${large ? 'l' : 'c'}`}
+          large={large}
+          line={line}
+          place={line === 'opened-here' || line === 'made-here' ? SIDEBAR_LABELS.thisBrowser : null}
+        />
       }
       link={(className, body) => (
         <a href={host?.itemHref(item)} aria-label={title} className={className}>
@@ -350,102 +426,3 @@ const LocalCard = memo(function LocalCard({
     />
   );
 });
-
-/** A phone's Home section (Most Used, Recent or New): one strip of at most `max` small tiles (the index's first, then
- *  this browser's), then, with `seeMore` (Recent's), its tile into the Recent view. */
-export function Strip({
-  items: all,
-  local: allLocal,
-  max,
-  seeMore,
-}: {
-  items: readonly ShownItem[];
-  local: readonly ThisBrowserItem[];
-  max: number;
-  seeMore?: string;
-}) {
-  const { app, Link, itemHref, viewHref, navigate } = useExplorer();
-  const { host } = useThisBrowserItems();
-  const items = all.slice(0, max);
-  const local = allLocal.slice(0, max - items.length);
-  return (
-    <div className="relative -mx-4 sm:mx-0">
-      <div className="flex h-28 snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:-mx-1 sm:scroll-px-1 sm:px-1">
-        <ul className="flex shrink-0 gap-3">
-          {items.map((item) => (
-            <li key={item.id} className="w-32 shrink-0 snap-start">
-              <Link
-                href={itemHref(item)}
-                aria-label={item.title || 'Untitled'}
-                className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
-              >
-                <Thumb item={item} className="h-20 w-32 rounded-md" />
-                <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
-                  {item.title || 'Untitled'}
-                </span>
-              </Link>
-            </li>
-          ))}
-          {local.map((item) => (
-            <li key={item.id} className="w-32 shrink-0 snap-start" data-this-browser-card="">
-              <a
-                href={host?.itemHref(item)}
-                aria-label={item.title || 'Untitled'}
-                className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
-              >
-                <LocalPreview app={app} iconSize={20} className="h-20 w-32 rounded-md" />
-                <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
-                  {item.title || 'Untitled'}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-        {seeMore ? (
-          <a
-            href={viewHref({ kind: 'recent' })}
-            onClick={(e) => {
-              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-              e.preventDefault();
-              navigate({ kind: 'recent' });
-            }}
-            className={`group block shrink-0 snap-start rounded-md ${FOCUS_RING}`}
-            data-see-link=""
-          >
-            <span className="flex h-20 w-32 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-xs font-medium text-brand-700 transition group-hover:border-slate-400 group-hover:bg-slate-100 dark:border-slate-600 dark:text-brand-300 dark:group-hover:border-slate-500 dark:group-hover:bg-slate-800/70">
-              <ChevronRightIcon size={16} />
-              {seeMore}
-            </span>
-          </a>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-/** A section's large cards as they load, under its own heading: `cards` of them (a full group on a desktop: Most
- *  Used's or Recent's eight, New's four). */
-export function GridSkeleton({ cards = JUMP_BACK_IN_PER_GROUP }: { cards?: number }) {
-  return (
-    <div aria-hidden className={LARGE_GRID}>
-      {Array.from({ length: cards }, (_, i) => (
-        <div key={i} className={`h-[12.5rem] rounded-[18px] ${SKELETON}`} />
-      ))}
-    </div>
-  );
-}
-
-export function StripSkeleton() {
-  return (
-    <div aria-hidden className="-mx-1 flex h-28 gap-3 overflow-hidden px-1 pb-2 pt-1">
-      {Array.from({ length: 4 }, (_, i) => (
-        <div key={i} className="w-32 shrink-0">
-          <div className={`h-20 w-32 ${SKELETON}`} />
-          <div className="mt-1 h-4 py-0.5">
-            <div className={`h-3 w-3/4 ${SKELETON}`} />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}

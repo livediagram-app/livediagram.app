@@ -129,7 +129,17 @@ SendToPlanDialog.tsx   the picker
 SentChip.tsx           the chip, and SentChipFor (a place's chip from the store)
 SentChipsLayer.tsx     the canvases' chips over their elements, in canvas space, counter-scaled
 send-to-plan-entry.ts  the entry's words and icon every menu uses, and sendToPlanOpen(request)
+press-hold.ts          pressHold(): the words read as a press starts, taken by its click within PRESS_HOLD_MS (1 s)
+article-send-dom.ts    the reader's pills: held through a press on them (releaseReadSendPill), placed
+                       READ_PILL_GAP_PX under the words (24 on a coarse pointer, 8 else), flipped above at the screen's foot
 ```
+
+Touch (send-to-plan.md "On a touch screen"): SendWordsButton, SendWordsToDiagramButton and each app's article page
+toolbar hold the words on `pointerdown` (`pressHold`) and send `take() ?? now` on click; the article plugin's
+`selectionchange` calls `releaseReadSendPill()`, which hides at once unless a pill's press is under way, and then at
+the hold's end. The toolbars hosting an entry (the shared FloatingToolbar, each SelectionPopover, each rich-text and
+article page toolbar) are stacking contexts (`isolate`) whose square buttons carry `touch-target-packed`; the thread
+header's entry carries `touch-target`.
 
 Each editor binds its own parts: what a place's words are, its menu entries, where its chips sit (each app's spec).
 
@@ -144,3 +154,5 @@ Each editor binds its own parts: what a place's words are, its menu entries, whe
   the agents' create recorded; the Sent From row.
 - Editors: the words (titles, mentions, dates, a 50,000-character worst case in a CPU budget), the memory, the store's
   reads and its signal, the picker's flow and its keyboard, the chip's states, each app's entries and its roles.
+- Touch: a touch press's words sent though the selection cleared before the click; a stale hold ignored; the reader's
+  pill kept through its own press, gone after it, placed clear of the handles and flipped at the screen's foot.

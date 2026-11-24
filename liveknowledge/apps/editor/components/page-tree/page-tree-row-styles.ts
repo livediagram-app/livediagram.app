@@ -28,6 +28,8 @@ export const ROW_REST =
 export const ROW_NEST = 'ring-2 ring-inset ring-brand-500';
 export const ROW_BUTTON =
   'flex shrink-0 cursor-pointer items-center justify-center rounded text-slate-500 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-300/70 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100';
+// A row's + and ... on a touch screen: a finger's 44 px square (knowledgebases-and-pages.md "A row's + and ...").
+export const ROW_TOUCH_BUTTON = 'h-11 w-11';
 // Where a dragged page will land among its siblings: a 2px brand line on that edge of the row.
 export const INSERT_LINE =
   'pointer-events-none absolute right-1 z-10 h-0.5 rounded-full bg-brand-500';

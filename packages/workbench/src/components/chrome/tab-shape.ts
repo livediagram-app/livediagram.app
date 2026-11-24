@@ -85,8 +85,9 @@ export function fixedTabShapeClass(active: boolean): string {
   return `${BASE} ${active ? ACTIVE : INACTIVE} px-3.5`;
 }
 
-// The tab's name: one line, truncated past 14rem, trimmed to its cap band so it centres on its letters.
-export const TAB_NAME_CLASS = 'text-optical-line max-w-[14rem] truncate';
+// The tab's name: one line, truncated past 14rem (7rem on a phone, where the whole strip is narrower than a long
+// name), trimmed to its cap band so it centres on its letters.
+export const TAB_NAME_CLASS = 'text-optical-line max-w-[14rem] truncate phone:max-w-[7rem]';
 
 // The name's button, the tab's own key in the strip (`data-tab-key`): the tab's full height (a 44px tap area on touch), no ring of its own
 // (the tab draws it).

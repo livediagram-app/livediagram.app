@@ -21,7 +21,7 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livehuddle/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 33;
+export const TEMPLATE_COUNT = 34;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 8;
 
@@ -253,6 +253,18 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. Walk up to someone and you hear each other, the voice fading as you walk apart; your microphone starts muted until you unmute. Turn on a camera or share a screen and it shows as a bubble above your character to the people in earshot. A meeting room is a call of its own that nobody outside hears, and whoever stands on a stage is heard by everyone on its tab. Guests on a Participant link talk too, with no sign-in.',
       },
       {
+        q: 'Can I start a call from my other work?',
+        a: 'Yes. Press Call on your work in livediagram, liveplanner, livedocuments, livedesign or liveknowledge and a livehuddle call about it opens in a new tab, in a Space made for it. Anyone who opens that work sees the call is on and can join, and Open Item in the call takes you back to it.',
+      },
+      {
+        q: 'Are calls recorded?',
+        a: 'No. livehuddle records nothing: no audio, no video and no transcript. What stays is what you put on the walls, the tab’s Attendance, and the summary you choose to send at Wrap Up.',
+      },
+      {
+        q: 'Where do a meeting’s notes and actions go?',
+        a: 'Where the work lives. On a call started from your other work, the host’s Wrap Up writes the summary to a page in a liveknowledge knowledgebase, drafted by Write With AI from the notes on the walls if you like, and sends the actions to a liveplanner plan. In any Space, Send to Plan turns the stickies you pick into cards on a liveplanner board.',
+      },
+      {
         q: 'Can I knock before walking in on a meeting?',
         a: 'Yes. A Room Sign by the door says whether the room is Free or In Use, and how many are inside. Press Knock and the people inside see who is asking, with Let In and Not Now. Set your status to Do Not Disturb when you need quiet: no voice, camera or screen reaches you, and knocks and chimes stay silent.',
       },
@@ -320,10 +332,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   },
   {
     id: 'ai-and-integrations',
-    title: 'API and Integrations',
-    blurb: 'Read and change your spaces from your own scripts.',
+    title: 'AI, API and Integrations',
+    blurb: 'Ask AI about a Space, and read and change your spaces from your own scripts.',
     icon: lucideGlyph(lucideCode, ICON),
     items: [
+      {
+        q: 'Can I ask AI about a Space?',
+        a: 'Yes, once you sign in. Ask AI, in the Tools, answers a question from the open space’s own words, such as its sticky notes and text, and shows where each answer came from. It runs on built-in AI with a daily allowance, or on your own or your team’s AI key.',
+      },
       {
         q: 'Is there an API?',
         a: (

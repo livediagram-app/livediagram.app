@@ -22,7 +22,7 @@ const facts = (name: string) => [
   {
     icon: lucideGlyph(lucideCpu, 18),
     title: 'Your AI does the thinking',
-    body: `${name} runs no AI model of its own here. It checks, lays out and saves what your tool asks for.`,
+    body: `When your tool connects, ${name} runs no AI model of its own for it. It checks, lays out and saves what your tool asks for.`,
   },
 ];
 

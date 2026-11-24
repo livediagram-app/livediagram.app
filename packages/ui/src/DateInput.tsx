@@ -71,6 +71,8 @@ export type DateInputProps = Omit<
   unstyled?: boolean;
 };
 
+const EMPTY_MASK = 'not-focus:[&::-webkit-datetime-edit]:text-slate-400';
+
 export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(function DateInput(
   { value, onCommit, onBlur, onKeyDown, unstyled = false, compact, invalid, ...rest },
   ref,
@@ -131,9 +133,20 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(function D
       onKeyDown?.(e);
     },
   };
-  return unstyled ? (
-    <input key={resets} ref={inner} {...props} />
-  ) : (
-    <TextInput key={resets} ref={inner} {...props} compact={compact} invalid={invalid} />
+  if (unstyled) return <input key={resets} ref={inner} {...props} />;
+  // An empty date's dd/mm/yyyy mask reads as a placeholder (muted, as a text field's), not as a typed value; in full
+  // ink again while it is being typed in.
+  const className = saved
+    ? rest.className
+    : `${EMPTY_MASK}${rest.className ? ` ${rest.className}` : ''}`;
+  return (
+    <TextInput
+      key={resets}
+      ref={inner}
+      {...props}
+      className={className}
+      compact={compact}
+      invalid={invalid}
+    />
   );
 });

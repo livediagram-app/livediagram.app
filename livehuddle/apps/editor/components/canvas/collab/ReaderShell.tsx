@@ -42,6 +42,8 @@ export function ReaderShell({
   widthClassName = 'max-w-[720px]',
   initialFocus = 'first',
   onBackdrop,
+  barStart,
+  barActions,
   children,
   ...data
 }: {
@@ -59,6 +61,10 @@ export function ReaderShell({
   initialFocus?: FocusTrapInitial;
   // A press on the dim around it: closes, unless the caller does something else (the Arcade pauses a run).
   onBackdrop?: () => void;
+  // The dark bar only: what leads the title (a file's app logo), and buttons before Close (the file overlay's Show
+  // This Tab on the Screen and Open in its app).
+  barStart?: ReactNode;
+  barActions?: ReactNode;
   children: ReactNode;
 } & { [attr: `data-${string}`]: string | boolean | undefined }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -101,15 +107,21 @@ export function ReaderShell({
           ) : (
             // Over the Screen's video: a dark bar, its Close a labelled button that reads on black.
             <div className="flex h-13 shrink-0 items-center justify-between gap-3 border-b border-white/10 px-3">
-              <span className="truncate text-sm font-semibold text-white">{title}</span>
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-white/10 px-3 text-sm font-medium text-white ring-1 ring-white/15 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-white/25"
-              >
-                <CloseIcon />
-                Close
-              </button>
+              <span className="flex min-w-0 items-center gap-2">
+                {barStart}
+                <span className="truncate text-sm font-semibold text-white">{title}</span>
+              </span>
+              <span className="flex shrink-0 items-center gap-2">
+                {barActions}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-white/10 px-3 text-sm font-medium text-white ring-1 ring-white/15 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-white/25"
+                >
+                  <CloseIcon />
+                  Close
+                </button>
+              </span>
             </div>
           )}
           <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>

@@ -8,7 +8,7 @@ import { AiCreditsNotice, useAiCreditsLine, useAiCreditsUsedUp } from './AiCredi
 import { openAiSettingsFrom } from './AiSettingsButton';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AskSource } from '@liveknowledge/api-schema';
-import { ASK_BUILT_IN_PER_PERSON_PER_DAY, ASK_MAX_TURNS } from '@liveknowledge/knowledge';
+import { ASK_MAX_TURNS } from '@liveknowledge/knowledge';
 import { EmptyState } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -16,7 +16,6 @@ import { useToast } from '@/hooks/ui/useToast';
 import type { AskConversation, AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
 import { saveAnswerAsPage } from '@/lib/knowledge-ask/make-page';
 import { BLOCK_HIT_MS } from '@/lib/knowledge/go-to-block';
-import { KnowledgeAiSource } from './KnowledgeAiSource';
 import { track } from '@/lib/telemetry';
 import { sourceHref } from '@/lib/knowledge-ask/source-item';
 import { AskAnswerCard } from './AskAnswerCard';
@@ -29,7 +28,6 @@ import { PagePickerDialog } from './PagePickerDialog';
 import { useDraftPage } from './useDraftPage';
 import { aiInUse } from '@/lib/knowledge-ask/ai-settings-words';
 import { answeredByLabel, offersAiChoice, useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
-import { AskAiPicker } from './AskAiPicker';
 import { useAiSettingsState, type AskSession } from './useAskSession';
 
 const QUESTION_BUBBLE =
@@ -67,8 +65,8 @@ export function AskConversationPane({
   // Whose key answers (the knowledgebase's, the team's or the asker's own), for a failure that is the provider's own.
   const ai = useAiSettingsState(session.documentId);
   const settings = ai.status === 'ready' ? ai.settings : null;
-  // With a key set and built-in AI here, the person chooses which answers (search-and-ask.md "Choosing which AI
-  // answers"); else the quiet line says which does.
+  // With a key set and built-in AI here, the person chooses which answers in the AI pill (search-and-ask.md "Choosing
+  // which AI answers"), and each answer then says which did.
   const choosing = settings !== null && offersAiChoice(settings);
   const choice = useAskAiChoice(session.who, session.documentId);
   const uses = settings ? aiInUse(settings) : null;
@@ -80,13 +78,13 @@ export function AskConversationPane({
         : (settings.usesProvider ?? settings.provider)
       : 'built-in'
     : undefined;
-  // With Pro on, built-in AI spends one of the owner's AI credits a question (tiers.md): the source line's allowance
-  // says so, and once they are used up the notice says it all, with no line under it.
+  // With Pro on, built-in AI spends one of the owner's AI credits a question (tiers.md): the box's foot says so, and
+  // once they are used up the notice under the box says it all.
   const creditLine = useAiCreditsLine(session.documentId);
   const onBuiltIn = provider === 'built-in';
   const usedUp = useAiCreditsUsedUp(session.documentId);
   const last = turns[turns.length - 1];
-  // The last answer's failure, for the source line (a key the provider refused); one per turn, gone with the next.
+  // The last answer's failure, for the AI pill (a key the provider refused); one per turn, gone with the next.
   const lastFailure = useMemo(
     () => (last?.status === 'failed' && last.failure ? { kind: last.failure } : null),
     [last],
@@ -271,6 +269,12 @@ export function AskConversationPane({
                   track('UI', 'Ended', 'AskStopped');
                   conversation.stop();
                 }}
+                ai={ai}
+                who={session.who}
+                documentId={session.documentId}
+                manageAi={rights.manageAi}
+                failure={lastFailure}
+                cost={usedUp ? null : creditLine}
               />
             )}
             {onBuiltIn ? (
@@ -286,35 +290,6 @@ export function AskConversationPane({
               Answers come from this knowledgebase and its connected items. Check the sources before
               you rely on one.
             </p>
-            {choosing || (onBuiltIn && usedUp) ? null : (
-              <div data-ask-ai="" className="mx-auto mt-2 w-full max-w-xl">
-                <KnowledgeAiSource
-                  state={ai}
-                  who={session.who}
-                  documentId={session.documentId}
-                  manageAi={rights.manageAi}
-                  allowance={
-                    creditLine ?? `${ASK_BUILT_IN_PER_PERSON_PER_DAY} questions a person a day.`
-                  }
-                  failure={lastFailure}
-                />
-              </div>
-            )}
-            {choosing ? (
-              <div
-                data-ask-ai-choice=""
-                className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1"
-              >
-                <span aria-hidden className="text-xs text-slate-600 dark:text-slate-400">
-                  Answer With
-                </span>
-                <AskAiPicker
-                  who={session.who}
-                  documentId={session.documentId}
-                  settings={settings}
-                />
-              </div>
-            ) : null}
           </div>
         </div>
       </section>

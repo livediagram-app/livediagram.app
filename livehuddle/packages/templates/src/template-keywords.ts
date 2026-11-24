@@ -283,6 +283,17 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'debrief',
     'reception',
   ],
+  'document-room': [
+    'document',
+    'file',
+    'review',
+    'screen',
+    'presentation',
+    'walkthrough',
+    'meeting room',
+    'call',
+    'design review',
+  ],
   'client-lounge': [
     'client',
     'clients',

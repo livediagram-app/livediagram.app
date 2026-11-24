@@ -101,8 +101,10 @@ export function RichTextToolbar({
     [grounds, ownColour],
   );
 
+  // Its 32px buttons sit 4px apart: on a touch screen each tap area is 44px both ways, drawn behind them
+  // (touch-target-packed in this stacking context, touch-targets.md).
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
+    <div className="isolate flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 [&_.h-8]:relative [&_.h-8]:touch-target-packed">
       {toggles.map((t) => (
         <HoverCard key={t.key} title={t.label} description={t.description}>
           <button

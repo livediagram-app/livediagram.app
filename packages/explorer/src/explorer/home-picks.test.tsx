@@ -56,7 +56,7 @@ describe("Home's picks", () => {
     const onHome = vi.fn();
     renderHome(onHome);
     await waitFor(() => expect(section('recent')?.querySelector('[data-see-link]')).toBeTruthy());
-    fireEvent.click(within(section('recent')!).getByRole('heading'));
+    fireEvent.click(within(section('recent')!).getByRole('heading', { level: 2 }));
     fireEvent.click(section('recent')!.querySelector('[data-see-link]')!);
     expect(onHome.mock.calls).toEqual([['Selected', 'SeeMore']]);
   });

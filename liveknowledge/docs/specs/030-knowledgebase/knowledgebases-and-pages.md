@@ -76,7 +76,15 @@ Web](publishing.md)): its "public site", never its "Public".
 - **A row's + and ...** (owner 2026-11-21): with a mouse or a trackpad they show only on the row under the pointer,
   the row holding the keyboard focus, the row whose menu is open and the current page's row, fading and sliding in
   and out (150 ms, ease out; with reduced motion, at once). Their room is kept, so a title never moves or truncates
-  differently. A touch screen cannot hover, so there they always show.
+  differently. A touch screen cannot hover, so there (in the sidebar on a tablet as in the phone's sheet) they show
+  on the current page's row and the row whose menu is open, each a 44 px square for a finger, the + for whoever may
+  add pages; every other row keeps its title's room and opens its menu on a long press (owner 2026-11-24, Work
+  Tracker 1417: two buttons on every row cut a tablet's second-level titles short).
+- **A tap is a press** (owner 2026-11-24, Work Tracker 1417: on an iPad a tap on a row, its + or its ... did
+  nothing). A finger or a pen never hovers a row and the focus a tap gives it is not the keyboard's, so a tap changes
+  nothing of the row under the finger before it lands: a tap on a row opens its page, on its chevron opens or closes
+  it, on its + adds a subpage and on its ... opens its menu, the first time. A press held still opens the menu (below);
+  a press held and moved drags the page, as a mouse drag does.
 - **Right-click** on a page's row opens its menu (the ... menu, the same rows for the same roles) at the pointer, kept
   on screen, in place of the browser's; a long press does on a touch screen. The menu closes on Escape, a press
   outside it or a right-click elsewhere. A Viewer's menu holds Copy Link, so it is never empty.

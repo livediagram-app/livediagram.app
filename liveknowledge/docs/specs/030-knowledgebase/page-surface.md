@@ -209,7 +209,8 @@ should be to the right of Add Cover under the title."
   an icon at the same size in the writing's accent. A long Title wraps beside it; the meta row starts under both. In the **page tree**, the row's
   icon stands before its title at 16 px, from the first paint (the knowledgebase's page summaries carry each page's
   icon, as they carry its parent, so a page not yet opened shows its icon too); a page with none shows its title
-  alone, as today. The **breadcrumb** names
+  alone, as today, except that beside siblings that show one (an icon, or a connected file's app mark) it keeps
+  the icon's place empty, so the titles line up. The **breadcrumb** names
   each ancestor with its icon too.
 - **Add Icon** sits in the meta row, right after Add Cover (or where Add Cover would be, on a page with a cover):
   the same quiet ghost button, a smile icon and "Add Icon", with no tooltip. Like Add Cover, it shows whether the

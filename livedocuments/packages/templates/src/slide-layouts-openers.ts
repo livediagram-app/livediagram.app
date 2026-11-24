@@ -31,9 +31,10 @@ export function titleImageSlide(k: Kit): Element[] {
       textAlignY: 'middle',
     }),
     rule(k, 0, top + u * 31),
+    // The subtitle starts under the rule, as on the other openers (5 units below it), never on it.
     k.text(
       0,
-      top + u * 31,
+      top + u * 36,
       textW,
       u * 16,
       'Where we are, where we are going and how we get there',

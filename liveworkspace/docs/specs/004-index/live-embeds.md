@@ -14,14 +14,18 @@ app serves is its [workbench embed](../011-workbench/workbench.md), opened at th
 
 - The **host** is the item holding the element; the **target** is the item it shows. Hosts: livediagram, livedocuments,
   livedesign and liveknowledge (their Embed element; liveknowledge's sits in a page's writing) and liveplanner (a
-  Dashboard's Embed File card, in a slot). Targets: livediagram, liveplanner, livedocuments, livedesign and
-  liveknowledge (`LIVE_EMBED_APPS`), the apps that serve a workbench frame; a knowledgebase shows its pages, with its
-  page switcher. livehuddle is neither (Work Tracker 1375): it serves no workbench frame, a Space or a call is a place
-  people meet rather than a file to read, and its rooms have no insert surface for files.
+  Dashboard's Embed File card, in a slot), and livehuddle's **Screen** (Work Tracker 1427: a wall screen in a Space
+  that shows a file, [livehuddle's Screen](../../../../livehuddle/docs/specs/009-elements/screen-and-room-sign.md#a-file-on-the-screen)).
+  Targets: livediagram, liveplanner, livedocuments, livedesign and liveknowledge (`LIVE_EMBED_APPS`), the apps that
+  serve a workbench frame; a knowledgebase shows its pages, with its page switcher. livehuddle is never a target: it
+  serves no workbench frame, and a Space or a call is a place people meet rather than a file to read.
 - **Embed File** is the one name for making one, in every host (Work Tracker 1375): the tile, the menu entry and the
   dialog. It was Live Embed and Choose a File.
 - The **link** is what the host keeps on the element: `liveItem = {app, itemId}`, the target's app and index item id.
   Nothing in it is secret, and it opens nothing by itself.
+- The **tab** a host may keep beside it: `liveTab = {id, name}`, the target's tab (or page) the frame opens on, absent
+  for the first. A tab that is gone opens the first. livehuddle's Screen sets it from the frame itself ("The frame"
+  below, "Which tab"); the other hosts set none.
 - The **snapshot** is what the host keeps beside the link, so the element draws without the target: `liveName` (the
   target's name when it was last seen) and `livePoster` (its picture then, a small raster image).
 - An **embed ticket** is a [workbench ticket](../011-workbench/workbench.md#live-embed-tickets) minted for one reader,
@@ -43,6 +47,9 @@ with you" and **Open in <App>**, and never the target's content.
   reach a target they could not already open.
 
 ## Making one
+
+livehuddle's Screen chooses its file in its own dialog, **Show on the Screen**, around the same chooser (its spec,
+"Choosing what it shows"); the table below is the Embed File element's hosts.
 
 An Editor of the host (whoever may set an embed's link there) makes a live embed with **Embed File**:
 
@@ -66,7 +73,11 @@ list's: the role first, then the files, in the same rows and ink:
 
 - **Connected**: the files this host's connected tabs stand for, first (those a live embed can show).
 - **Recent**: the person's Recent across the apps (the index's Recent), the host left out; a file of an app that
-  serves no frame (a knowledgebase, a huddle) is not listed, as it could not be chosen (owner 2026-11-21).
+  serves no frame (a huddle) is not listed, as it could not be chosen (owner 2026-11-21).
+- **Find a File**: typing in the field searches every file the person can open by name, across the target apps (the
+  index's `view=search` with `q` and `apps`, at most `LIVE_PICKER_SEARCH_MAX`, 20, a `LIVE_PICKER_SEARCH_SETTLE_MS`,
+  250 ms, pause after the last key), in place of Recent; archived files are left out. Under two characters it filters
+  Recent and the connected files as before (Work Tracker 1427).
 - **Paste a share link**: any share link of a target app. The editor resolves it through the index
   (`GET /api/index/share/:code`, as opening it would, which records it under the person's Shared), keeps the item's id
   and drops the code at once. A link with a share password asks the person to open it once first; a revoked or unknown
@@ -159,6 +170,17 @@ who loses access loses the frame at the next renewal at the latest. Messages fro
 are ignored. The frame takes no pointer until the reader turns on **Use the file**, so the host's canvas still drags,
 selects and pans over it. The frame is sandboxed without top navigation, so it can never move the host's tab.
 
+**Which tab.** The frame tells its host the tab it shows, as it tells a workbench: `<app>:ready` with
+`{tabId, tabName}` once, then `<app>:tab` on every change. A host keeps the latest (only from the frame's own window
+and origin, as every message) and may offer to keep it as the embed's `liveTab`. The tab's id and name reach the host
+page only from a frame minted with the reader's own access, so no tab name reaches anyone who could not open the file.
+A ticket asked with `tabId` opens the frame on that tab.
+
+**Framed by our apps alone.** A live embed's frame (`/embed/workbench` with `live=1`) is served with
+`Content-Security-Policy: frame-ancestors` naming the apps' own origins in the frame's environment (production's,
+staging's, or the local ports), so only a page of one of our apps can frame it; a workbench frame without `live=1`
+keeps its developer tools' framing, held by its ticket's origin as before. The other paths keep `X-Frame-Options: DENY`.
+
 Embeds never nest: a live embed on a page that is itself framed (a live embed's own frame, a share-code embed, a
 workbench) shows its snapshot and Open only, so two files embedding each other never open frames without end.
 
@@ -187,13 +209,15 @@ are kept; anything else (an SVG, any other URL) is refused by validation, so a p
 - **The reader's own access, every time.** A ticket is minted for the person asking, on their own grant on the target,
   at the view level. A host's share link, its Community link, an API token, a workbench session and the Drive mirror
   mint nothing.
+- **Framed only by our apps.** The live frame's `frame-ancestors` names the apps' origins alone ("The frame").
 - **The ticket is bound to the host's origin.** The body names the page's origin; the service takes only an app
   origin of this environment (any loopback origin in development). The frame mounts only for that parent, so another
   site cannot frame a reader's embed.
 - **No new standing access.** An embed session is a view-level workbench session that lives 30 minutes; it is never
   listed as a pairing, and ending the person's account ends it.
 - **Validation keeps the link and the snapshot narrow.** `liveItem` is exactly `{app, itemId}`, `app` one of
-  `LIVE_EMBED_APPS`; `liveName` is at most 200 characters; `livePoster` is a raster data URL under the cap.
+  `LIVE_EMBED_APPS`; `liveTab` exactly `{id, name}`, the id an id's shape and the name at most 200 characters;
+  `liveName` is at most 200 characters; `livePoster` is a raster data URL under the cap.
 
 ## Telemetry
 

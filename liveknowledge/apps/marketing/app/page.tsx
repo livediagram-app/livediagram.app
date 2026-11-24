@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { Together } from '@liveworkspace/marketing-site/components/together/Together';
 import { BuildWithAiBand } from '@/components/BuildWithAiBand';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -38,6 +39,7 @@ export default function LandingPage() {
         ))}
         <BuildWithAiBand />
         <CommunityShowcase />
+        <Together app="liveknowledge.app" />
         <PrivacySection />
         <LandingFaq />
         <StartDrawingCta surface="Home" />

@@ -104,6 +104,22 @@ describe('the text toolbar button', () => {
     stop();
   });
 
+  it('sends the words a touch press started on, though the tap cleared them', () => {
+    up();
+    const heard: DiagramSendRequest[] = [];
+    const stop = onSendToDiagram((r) => heard.push(r));
+    render(<SendWordsToDiagramButton elementId="e1" wholeText="All the words" className="b" />);
+    const button = screen.getByRole('button', { name: 'Send the words to a diagram' });
+    const picked = vi
+      .spyOn(window, 'getSelection')
+      .mockReturnValue({ toString: () => 'A to B' } as Selection);
+    fireEvent.pointerDown(button, { pointerType: 'touch' });
+    picked.mockRestore();
+    fireEvent.click(button);
+    expect(heard[0]).toMatchObject({ words: 'A to B', elementId: 'e1' });
+    stop();
+  });
+
   it('draws livediagram’s logo', () => {
     const { container } = render(<SendToDiagramIcon />);
     expect(container.querySelector('svg')?.getAttribute('style')).toContain('16px');

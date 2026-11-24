@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Screen',
   description:
-    'A wall screen for a meeting room: it shows a screen share from someone in the room, or plays a video link, and opens large with a click.',
+    'A wall screen for a meeting room: a screen share from someone in the room, a file from any app live, or a video, opening large with a click.',
   path: '/help/palette/screen/',
 });
 
@@ -27,7 +27,9 @@ It lives in the palette's **Meet** category, one of the [meeting elements](/help
 Each person sees the first of these that applies:
 
 1. **A screen share in its room.** When someone whose character stands in the Screen's room shares their screen in the call, the share shows on the Screen, fitted inside it, with the sharer's name in its corner. Your own share shows on the Screen of the room you're in. With two sharers in a room, it shows the one nearer the Screen.
-2. **Its video link.** A YouTube, Vimeo or Loom link set from its menu shows the video's picture with a play button. Nothing from the video site loads until somebody opens it.
+2. **Its file or its video**, whichever an Editor chose ([Choosing what it shows](#choosing-what-it-shows)):
+   - **A file** from livediagram, liveplanner, livedocuments, livedesign or liveknowledge shows its name and its app's logo on the screen. While you stand in the Screen's room it comes alive: the file itself, read-only, as it is right now, drawn the way a big screen shows a page. It's shown to each person with their own access, so someone who can't open the file sees only its name and a lock.
+   - **A video**, a YouTube, Vimeo or Loom link, shows the video's picture with a play button. Nothing from the video site loads until somebody opens it.
 3. **No one is sharing**: the screen rests, dark.
 
 The Screen belongs to the room it's in, or, placed just outside, the room within a short step of it. People outside the room never see the room's share on it: a room's call stays in the room.
@@ -37,19 +39,31 @@ The Screen belongs to the room it's in, or, placed just outside, the room within
 Click the Screen:
 
 - a share opens large, exactly as clicking the sharer's bubble does, with **Restore** to put it back;
+- a file opens large, filling most of the window, and you can scroll, pan and change tabs in it. **Open in** and its app's name (for example **Open in liveplanner**) opens it in its own app in a new browser tab. If you can't open the file, it says so, with **Request Access** to ask its owner;
 - a video opens in a large player with **Close**. It plays for whoever opened it, from the start: play and pause aren't shared with the room yet.
 
-## Setting a video link
+## Choosing what it shows
 
-Right-click the Screen and open **Screen**. Paste a link into **Video Link** and press **Set** (or Enter); **Clear** takes it off. A link that isn't a YouTube, Vimeo or Loom video says **That isn't a video link** and isn't saved.
+Right-click the Screen and open **Screen**: it says what the Screen shows now, with **Choose** (or **Change**) and **Clear**. Walking, click an empty Screen and press **Choose What It Shows**. Either opens **Show on the Screen**:
+
+- **File**: paste a file's share link, type to find any file you can open in any of the apps, or pick one of your recent files. The Screen shows it for everyone in the room straight away.
+- **Video**: paste a YouTube, Vimeo or Loom link and press **Set**. A link that isn't one says **That isn't a video link** and isn't saved.
+
+A file with several tabs or pages opens on its first. To show another, open the Screen large, go to the tab in the file, and press **Show This Tab on the Screen**: everyone's Screen moves to it.
+
+## Any size up to a wall
+
+Drag a Screen's corner to make it as big as a wall, up to 1600 by 1000, or as small as 96 by 60. It keeps its shape as you drag; unlock the ratio in its **Size** section to change that. Characters walk in front of a big Screen and sit in the chairs below it as usual.
+
+The **Document Room** template is built round one: chairs facing a wall-size Screen. A call started from a file in another app opens in one, with that file on its Screen.
 
 ## Who can do what
 
-- **Editors** place, move and delete a Screen, and set its video link. Sharing a screen in the call is an Editor's too.
-- **Everyone**, Editors, Participants and Viewers, sees what's on it and can open it large.
+- **Editors** place, move, resize and delete a Screen, and choose what it shows, its tab included. Sharing a screen in the call is an Editor's too.
+- **Everyone**, Editors, Participants and Viewers, sees what's on it and can open it large. A file shows to each person with their own access.
 
 ## The look
 
-A dark flat screen in a thin frame, a small light on its lower edge that glows green while it shows something. It has no label and no **…** on its face, and characters walk past it freely. Otherwise it is an ordinary element: move, resize (it keeps its shape), copy and export (an export shows the screen at rest).
+A dark flat screen in a thin frame, a small light on its lower edge that glows green while it shows something. It has no label and no **…** on its face, and characters walk past it freely. Otherwise it is an ordinary element: move, resize, copy and export (an export shows the screen at rest, or the file's name and app).
 
 </ArticleLayout>

@@ -5,7 +5,8 @@
 // Library: Recent, the host's Gallery and Shape Libraries, Archived and the Trash; then the
 // host's own rows). Rows carry toned
 // tiles and the current row is a raised pill, in the host app's brand colour. The tree reads the folder store, so it
-// costs no request of its own. The current view's rows are always open: its space and folders, or the Library.
+// costs no request of its own. A space opens and folds only when the person does it; inside an open space the current
+// view's folders open, and the Library for its pages. A folded space holding the current view is drawn current.
 //
 // It is one keyboard tree (sidebar/useTreeNavigation): one tab stop, arrows, Home and End, Left and Right to fold and
 // open, type-ahead. Folder rows and My Work carry a menu (⋯, right-click, Shift+F10) and rename in place.
@@ -44,6 +45,7 @@ import {
   LIBRARY,
   LOCAL_ROW_KEY,
   MY_WORK,
+  isSpaceKey,
   rowsAbove,
   teamKey,
   type Expansion,
@@ -72,17 +74,13 @@ const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'trash',
 ]);
 
-/** The rows to open so the current view's own row shows: the Library for one of its pages, a space for its page,
- *  and a space and every folder down to it for a folder (rowsAbove). Empty for a view with no row inside a fold. */
+/** The rows to open so the current view's own row shows inside its space: the Library for one of its pages, and every
+ *  folder down to a folder (rowsAbove). Never a space: a space opens and folds only when the person does it
+ *  (one-explorer.md, Work Tracker 1420). Empty for a view with no row inside a folder. */
 export function rowsForView(view: ExplorerView, byId: Parameters<typeof rowsAbove>[1]): string[] {
   if (LIBRARY_VIEWS.has(view.kind)) return [LIBRARY];
-  if (view.kind === 'all') return [MY_WORK];
-  if (view.kind === 'folder') return rowsAbove(view.id, byId);
-  if (view.kind === 'team')
-    return view.folderId
-      ? [...new Set([teamKey(view.id), ...rowsAbove(view.folderId, byId)])]
-      : [teamKey(view.id)];
-  return [];
+  const folder = view.kind === 'folder' ? view.id : view.kind === 'team' ? view.folderId : null;
+  return folder ? rowsAbove(folder, byId).filter((key) => !isSpaceKey(key)) : [];
 }
 
 /** Opens the current view's rows (rowsForView) as it changes, before paint: only ever adds to what is open, and once
@@ -100,7 +98,8 @@ export function useOpenCurrentRows(
   }, [rows, place, expansion]);
 }
 
-/** The space holding the view (My Work, a team, Offline), kept open when another space opens; null outside one. */
+/** The space holding the view (My Work, a team, Offline); null outside one. While that space is folded its row is
+ *  drawn as the current one, so the sidebar always shows where you are. */
 export function spaceOfView(
   view: ExplorerView,
   byId: Parameters<typeof rowsAbove>[1],
@@ -112,21 +111,19 @@ export function spaceOfView(
   return null;
 }
 
-const START_FOLDS: ReadonlySet<string> = new Set([MY_WORK]);
+const START_FOLDS: ReadonlySet<string> = new Set();
 const startFolds = () => START_FOLDS;
 
 /** The open rows, from the Explorer's expansion store: read as the sidebar first renders, so it paints open where it
- *  was left. The Library opens before paint when one of its pages is current, so the current row is never hidden. */
+ *  was left. The Library opens before paint when one of its pages is current, so the current row is never hidden.
+ *  `inFolded(key)`: the current view sits inside that space, and it is folded. */
 function useExpanded(view: ExplorerView) {
   const { expansion, folders } = useExplorer();
   const expanded = useSyncExternalStore(expansion.subscribe, expansion.get, startFolds);
   useOpenCurrentRows(view, folders.byId, expansion);
-  // A space's chevron: folding is a plain toggle; opening folds every other space but the view's own.
-  const toggleSpace = (key: string) => {
-    if (expansion.get().has(key)) expansion.toggle(key);
-    else expansion.openSpace(key, spaceOfView(view, folders.byId));
-  };
-  return { expanded, toggle: expansion.toggle, toggleSpace, expand: expansion.expand };
+  const space = spaceOfView(view, folders.byId);
+  const inFolded = (key: string) => space === key && !expanded.has(key);
+  return { expanded, toggle: expansion.toggle, expand: expansion.expand, inFolded };
 }
 
 /** A sidebar row's rename field, in place of its name: an account folder's and a local one's. */
@@ -288,7 +285,7 @@ export function Sidebar() {
   const { view, navigate, folders, teams, inbox, hasInbox, viewerId } = useExplorer();
   const { sidebarLinks } = useHostExtras();
   const library = useLibraryHost();
-  const { expanded, toggle, toggleSpace, expand } = useExpanded(view);
+  const { expanded, toggle, expand, inFolded } = useExpanded(view);
   const libraryOpen = expanded.has(LIBRARY);
   // A drag resting on the folded Library opens it, so the Trash inside is in reach.
   const libraryDrag = useDragHoverOpen(libraryOpen ? null : () => expand(LIBRARY));
@@ -362,13 +359,13 @@ export function Sidebar() {
           icon={<MyWorkIcon />}
           tone="sky"
           label={SIDEBAR_LABELS.myWork}
-          selected={view.kind === 'all'}
+          selected={view.kind === 'all' || inFolded(MY_WORK)}
           onActivate={() => navigate({ kind: 'all' })}
           depth={0}
           dropTo={MY_WORK_ROOT}
           expandable={myRoots.length > 0}
           expanded={expanded.has(MY_WORK)}
-          onToggleExpand={() => toggleSpace(MY_WORK)}
+          onToggleExpand={() => toggle(MY_WORK)}
           onContextMenu={myWorkMenu.onContextMenu}
           trailing={myWorkMenu.trailing}
         >
@@ -392,13 +389,15 @@ export function Sidebar() {
               icon={<TeamIcon />}
               tone="indigo"
               label={t.name}
-              selected={view.kind === 'team' && view.id === t.id && !view.folderId}
+              selected={
+                (view.kind === 'team' && view.id === t.id && !view.folderId) || inFolded(key)
+              }
               onActivate={() => navigate({ kind: 'team', id: t.id })}
               depth={0}
               dropTo={{ teamId: t.id, folderId: null }}
               expandable={roots.length > 0}
               expanded={expanded.has(key)}
-              onToggleExpand={() => toggleSpace(key)}
+              onToggleExpand={() => toggle(key)}
               {...teamMemberBadge(memberCounts.get(t.id))}
             >
               {roots.map((f) => (
@@ -415,12 +414,7 @@ export function Sidebar() {
           );
         })}
         {/* While this browser holds anything (one-explorer.md "Offline, a Space"). */}
-        <ThisBrowserSpaceRow
-          expanded={expanded}
-          toggle={toggle}
-          toggleSpace={toggleSpace}
-          rename={rename}
-        />
+        <ThisBrowserSpaceRow expanded={expanded} toggle={toggle} rename={rename} />
         {/* Shown while an invitation waits, or while its view is open, so the highlight never vanishes. */}
         {signedIn && (invites > 0 || view.kind === 'invites') ? (
           <SidebarRow

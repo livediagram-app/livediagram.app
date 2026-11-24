@@ -4,6 +4,15 @@ import { cleanup, renderHook } from '@testing-library/react';
 import { useEditorKeyboardShortcuts } from './useEditorKeyboardShortcuts';
 import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
+import { TOUCH_FIRST_MEDIA_QUERY } from '@liveworkspace/workbench/lib/responsive';
+
+const realMatchMedia = window.matchMedia;
+// An iPad with no trackpad or mouse: only the touch-first query matches.
+const touchFirst = () => {
+  window.matchMedia = vi.fn(
+    (q: string) => ({ matches: q === TOUCH_FIRST_MEDIA_QUERY }) as MediaQueryList,
+  );
+};
 
 // The listener itself, in a DOM: Delete AND Backspace delete the selection
 // (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
@@ -58,6 +67,7 @@ function press(key: string, init: KeyboardEventInit = {}) {
 }
 
 afterEach(() => {
+  window.matchMedia = realMatchMedia;
   cleanup();
   vi.restoreAllMocks();
 });
@@ -274,10 +284,15 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       openShapes: vi.fn(),
     };
     const onDeselect = vi.fn();
-    const { bag } = deps({ selectedId: 'a', whiteboard: wb, canvasTool: 'eraser', onDeselect });
+    const { bag, spies } = deps({
+      selectedId: 'a',
+      whiteboard: wb,
+      canvasTool: 'eraser',
+      onDeselect,
+    });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     press('Escape');
-    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
+    expect(spies.setCanvasTool).toHaveBeenCalledWith('select');
     expect(onDeselect).not.toHaveBeenCalled();
   });
 
@@ -293,10 +308,19 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
-    const { bag } = deps({ selectedId: null, whiteboard: wb, canvasTool: 'eraser' });
+    const { bag, spies } = deps({ selectedId: null, whiteboard: wb, canvasTool: 'eraser' });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     press('Escape');
-    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
+    expect(spies.setCanvasTool).toHaveBeenCalledWith('select');
+  });
+
+  // docs/specs/007-editor/editor-modes.md "The tool a mode starts with": an iPad worked by finger goes back to Hand.
+  it('puts the eraser down to Hand on a touch-first screen', () => {
+    touchFirst();
+    const { bag, spies } = deps({ selectedId: null, whiteboard: board().wb, canvasTool: 'eraser' });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('Escape');
+    expect(spies.setCanvasTool).toHaveBeenCalledWith('pan');
   });
 
   it('keeps hand on H', () => {
@@ -655,4 +679,26 @@ describe('vote keys (docs/specs/012-collaboration/blueprints/vote-keys.md)', () 
     expect(press('+').defaultPrevented).toBe(false);
     expect(onTypeIntoSelected).not.toHaveBeenCalled();
   });
+});
+
+// Escape out of Isometric or the Magnifier lands on the tool a mode starts with
+// (docs/specs/008-canvas/isometric-view.md, magnifier.md).
+describe('Escape out of a view tool', () => {
+  it.each(['isometric', 'magnifier'] as const)('leaves %s for Select with a mouse', (tool) => {
+    const { bag, spies } = deps({ selectedId: null, canvasTool: tool });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('Escape');
+    expect(spies.setCanvasTool).toHaveBeenCalledWith('select');
+  });
+
+  it.each(['isometric', 'magnifier', 'format'] as const)(
+    'leaves %s for Hand on a touch-first screen',
+    (tool) => {
+      touchFirst();
+      const { bag, spies } = deps({ selectedId: null, canvasTool: tool });
+      renderHook(() => useEditorKeyboardShortcuts(bag));
+      press('Escape');
+      expect(spies.setCanvasTool).toHaveBeenCalledWith('pan');
+    },
+  );
 });

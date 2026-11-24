@@ -135,8 +135,8 @@ dashboard on liveworkspace.app shows them under its own app.
 ## livedocuments
 
 - **Compete on their ground**: Google Slides as a presentation tool (slide pages and presenting), a design tool on infographics and posters, a writing tool on articles. Only a tool whose job is a kind of page livedocuments makes gets a comparison.
-- **Claims found false**: read-only embeds for every link, Markdown import onto a new tab, importing another tool's files, no Figma integration, unlimited document size, a live status page, imports that send nothing to a server, an AI assistant in the editor.
-- **Deep dives** cover interop as Markdown import, PNG/SVG/PDF export, MCP for AI tools and embeds; the switching answer for Google Slides is "there's no Google Slides importer; start from a template".
+- **Claims found false**: read-only embeds for every link, Markdown import onto a new tab, importing another tool's files beyond Markdown, Word and PowerPoint, no Figma integration, unlimited document size, a live status page, imports that send nothing to a server, an AI assistant that edits the document (Ask AI in Tools answers questions only).
+- **Deep dives** cover interop as Markdown import, PNG/SVG/PDF export, MCP for AI tools and embeds; the switching answer for Google Slides is "download the deck as a .pptx and import it; each slide becomes a slide page".
 
 **The set**: Google Slides (compared as a presentation tool, against slide pages and Presentation mode).
 
@@ -145,7 +145,7 @@ dashboard on liveworkspace.app shows them under its own app.
 ## livedesign
 
 - **Compete on their ground**: a design tool on logos and wireframes, a photo editor on photos. Only a tool whose job is a kind of page livedesign makes gets a comparison.
-- **Claims found false**: read-only embeds for every link, Markdown import, importing another tool's files, no Figma integration, unlimited design size, a live status page, imports that send nothing to a server.
+- **Claims found false**: read-only embeds for every link, Markdown import, importing another tool's files beyond Markdown, Word and PowerPoint, no Figma integration, unlimited design size, a live status page, imports that send nothing to a server.
 - **Words**: copy says "design" for what a person makes. Deep dives cover interop as PNG/SVG/PDF export, the Logo Kit, PSD on photo pages, MCP for AI tools and embeds.
 
 **The set**: Figma (`/alternatives/figma`), compared as a design tool on logos and wireframes and on the photo edits that go with them. Figma is the deeper product design tool (components, auto layout, prototypes, developer handoff), and the page says so. There is no Figma importer; a Figma link embeds live on the canvas.
@@ -189,8 +189,8 @@ Miro and FigJam remain livediagram's comparisons.
   are not an AI tool" is never a selling point: most of them have AI of their own, and the pages say so.
 - **Where liveknowledge differs** (each a shipped feature, its
   [marketing-site spec](../../liveknowledge/docs/specs/019-marketing/marketing-site.md)): an owner, a verified date
-  and a review that comes due on every page; agents as readers, with trust fields on every passage and edits as
-  suggestions; Ask with a citation on every claim, on the team's own Claude API key; free and MIT-licensed; part of a
+  and a review that comes due on every page; agents as readers, with trust fields on every passage, editing only as far as the
+  knowledgebase's AI Editing allows; Ask with a citation on every claim, on built-in AI or the team's own key; free and MIT-licensed; part of a
   workspace.
 - **Where liveknowledge is behind**, said on the pages it bears on: databases (Notion), page-level permissions
   (Notion, Confluence), integrations (all of them), a native mobile app, semantic search (Slite, Guru) and public

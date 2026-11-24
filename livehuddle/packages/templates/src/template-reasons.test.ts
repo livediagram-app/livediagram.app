@@ -39,6 +39,7 @@ const PINNED: TemplateKind[] = [
   'startup-hq',
   'arcade-lounge',
   'interview-suite',
+  'document-room',
   'classroom',
   'hackathon-hall',
   'expo-hall',

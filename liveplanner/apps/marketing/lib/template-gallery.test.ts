@@ -66,7 +66,7 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'kanban'));
-    expect(groups.map((g) => g.label)).toEqual(['Product and Engineering', 'Projects and Teams']);
+    expect(groups.map((g) => g.label)).toEqual(['Product', 'Projects']);
     expect(groups.map((g) => g.templates.map((t) => t.kind))).toEqual([['kanban'], ['kanban']]);
   });
 

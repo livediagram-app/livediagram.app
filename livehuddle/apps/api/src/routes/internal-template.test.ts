@@ -77,6 +77,32 @@ describe('the template file', () => {
     }
   });
 
+  // Start a Call Here's Document Room (calls-from-items.md "The Space", Work Tracker 1427): the call's item on the wall.
+  it('puts a call item on the Document Room’s Screen, and nothing on a link that is not a file', () => {
+    const screens = (text: string) =>
+      tabsOf(text)[0]!.elements.filter((el) => el.type === 'shape' && el.shape === 'screen');
+    const plain = screens(templateDocumentFile('document-room', 'Launch Plan Call')!);
+    expect(plain).toHaveLength(1);
+    expect(plain[0]).not.toHaveProperty('liveItem');
+    const file = templateDocumentFile('document-room', 'Launch Plan Call', {
+      screen: { app: 'liveplanner', itemId: 'P1', name: 'Launch Plan' },
+    })!;
+    expect(readDocumentFile(file).ok).toBe(true);
+    const [screen] = screens(file);
+    expect(screen).toMatchObject({
+      liveItem: { app: 'liveplanner', itemId: 'P1' },
+      liveName: 'Launch Plan',
+    });
+    expect(screen).not.toHaveProperty('livePoster');
+    // A Space is never a file a Screen shows.
+    const huddle = screens(
+      templateDocumentFile('document-room', 'X', {
+        screen: { app: 'livehuddle', itemId: 'S1', name: 'A Space' },
+      })!,
+    );
+    expect(huddle[0]).not.toHaveProperty('liveItem');
+  });
+
   it('has no file for a kind the app has no template of', () => {
     expect(templateDocumentFile('no-such-template', 'Apollo')).toBeNull();
   });

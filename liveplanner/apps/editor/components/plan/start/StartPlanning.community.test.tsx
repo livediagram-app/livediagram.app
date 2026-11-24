@@ -80,7 +80,7 @@ describe('Start Planning, from the Community', () => {
     expect(within(first).getByText('By Ada')).toBeTruthy();
     expect(first.querySelector('img')!.getAttribute('src')).toBe('/api/share/CODE-f1/image.svg');
     const ids = cardIds();
-    // Finance before Projects and Teams, as the categories run.
+    // Finance before Projects, as the categories run.
     expect(ids.slice(-3)).toEqual(['community:f1', 'community:f2', 'community:p1']);
     expect(ids.slice(0, -3).every((id) => id!.startsWith('template:'))).toBe(true);
     expect(inspiration().textContent).toBe(count);

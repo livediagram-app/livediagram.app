@@ -1,5 +1,6 @@
 // The Pages page's card drawings (docs/specs/019-marketing/marketing-site.md "Feature pages", `pages`): the page
-// tree, reading then editing, page links, Linked From, covers and starting from a structure.
+// tree, reading then editing, page links, Linked From, covers, starting from a structure, labels, Watch, and comments
+// and reactions.
 import {
   Arrow,
   Avatar,
@@ -273,6 +274,136 @@ export function DescribeArt() {
             </Txt>
           </g>
         ))}
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** A label pill on a page's meta row, and the page tree filtered to it. */
+export function LabelsArt() {
+  const labels = [
+    { n: 'Onboarding', w: 46, dot: 'fill-sky-500' },
+    { n: 'Security', w: 38, dot: 'fill-rose-500' },
+  ];
+  return (
+    <Scene>
+      <Sheet x={14} y={12} w={138} h={72}>
+        <Txt x={22} y={26} size={7.2} weight={700}>
+          Laptop Setup
+        </Txt>
+        {labels.map((l, i) => (
+          <g key={l.n} className="kb-pop" style={at(0.5 + i * 0.25)}>
+            <rect
+              x={22 + i * 50}
+              y={33}
+              width={l.w}
+              height={11}
+              rx={5.5}
+              className="fill-slate-100 dark:fill-slate-700"
+            />
+            <circle cx={28 + i * 50} cy={38.5} r={2} className={l.dot} />
+            <Txt x={32 + i * 50} y={40.6} size={5.6} weight={600}>
+              {l.n}
+            </Txt>
+          </g>
+        ))}
+        <Bars x={22} y={52} widths={[118, 104, 112]} />
+      </Sheet>
+      <Arrow x1={156} x2={170} y={48} delay={1} />
+      <Sheet x={176} y={12} w={110} h={72} lime>
+        <Txt x={184} y={25} size={5.6} weight={700} tone="quiet">
+          LABELLED ONBOARDING
+        </Txt>
+        {['Laptop Setup', 'Your First Week', 'Who to Ask'].map((t, i) => (
+          <g key={t} className="kb-in" style={at(1.3 + i * 0.25)}>
+            <PageGlyph x={184} y={32 + i * 15} />
+            <Txt x={194} y={38.5 + i * 15} size={6.2} weight={i ? 500 : 700}>
+              {t}
+            </Txt>
+          </g>
+        ))}
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** Watch This Section on a page with subpages, and the change a watcher hears of. */
+export function WatchArt() {
+  return (
+    <Scene>
+      <Sheet x={14} y={12} w={130} h={72}>
+        <Txt x={22} y={26} size={7.2} weight={700}>
+          On-Call
+        </Txt>
+        <Bars x={22} y={33} widths={[112, 96]} />
+        <Button x={22} y={58} w={78} filled>
+          Watch This Section
+        </Button>
+      </Sheet>
+      <Sheet x={156} y={22} w={130} h={52}>
+        <g className="kb-in" style={at(1)}>
+          <Avatar cx={168} cy={36} r={5} fill="fill-sky-500" initial="S" />
+          <Txt x={177} y={34} size={6.2} weight={700}>
+            Sam edited
+          </Txt>
+          <Txt x={177} y={43} size={5.6} weight={500} tone="quiet">
+            Paging Rota · On-Call
+          </Txt>
+        </g>
+        <Pill x={164} y={55} w={52} tone="brand" delay={1.5}>
+          Watching
+        </Pill>
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** The page's reactions row, and a comment thread from its foot. */
+export function ReactionsArt() {
+  const reactions = [
+    { e: '👏', n: '12' },
+    { e: '❤️', n: '4' },
+    { e: '👀', n: '7' },
+  ];
+  return (
+    <Scene>
+      <Sheet x={14} y={10} w={150} h={76}>
+        <Txt x={22} y={24} size={7.2} weight={700}>
+          Expenses Policy
+        </Txt>
+        <Bars x={22} y={32} widths={[130, 116, 124]} />
+        {reactions.map((r, i) => (
+          <g key={r.e} className="kb-pop" style={at(0.9 + i * 0.2)}>
+            <rect
+              x={22 + i * 30}
+              y={64}
+              width={26}
+              height={12}
+              rx={6}
+              className="fill-slate-100 dark:fill-slate-700"
+            />
+            <text x={28 + i * 30} y={72.6} fontSize={6.4}>
+              {r.e}
+            </text>
+            <Txt x={37 + i * 30} y={72.4} size={5.8} weight={700}>
+              {r.n}
+            </Txt>
+          </g>
+        ))}
+      </Sheet>
+      <Sheet x={176} y={18} w={110} h={52}>
+        <g className="kb-in" style={at(0.6)}>
+          <Avatar cx={188} cy={31} r={5} fill="fill-violet-500" initial="P" />
+          <Txt x={197} y={33.2} size={6.2} weight={700}>
+            Priya
+          </Txt>
+          <Txt x={184} y={47} size={6} weight={500}>
+            Is the limit still £50?
+          </Txt>
+          <Txt x={184} y={60} size={5.6} weight={600} tone="brand">
+            Reply
+          </Txt>
+        </g>
       </Sheet>
     </Scene>
   );

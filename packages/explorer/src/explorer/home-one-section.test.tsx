@@ -129,10 +129,16 @@ function renderHome(
   );
 }
 
-// A section's items, by the links its cards (or a phone's tiles) open, each once.
+// A section's items, by the links its rows open, each once. New's are the timeline's made rows, Recent's its opened
+// ones.
+const WHERE: Record<string, string> = {
+  new: '[data-home-section="recent"] [data-timeline-event="made"]',
+  recent: '[data-home-section="recent"] [data-timeline-event="opened"]',
+  'most-used': '[data-home-section="most-used"]',
+};
 const sectionIds = (id: string) => [
   ...new Set(
-    [...document.querySelectorAll(`[data-home-section="${id}"] a[href^="/p/"]`)].map((a) =>
+    [...document.querySelectorAll(`${WHERE[id]} a[href^="/p/"]`)].map((a) =>
       a.getAttribute('href')!.slice('/p/'.length),
     ),
   ),
@@ -173,17 +179,6 @@ describe('Home shows each item once', () => {
     renderHome(index, { filter: 'all' });
     await expectOnce();
     expect(index.calls.find((c) => c.method === 'listItems')!.args[0]).not.toHaveProperty('app');
-  });
-
-  it('the same in a phone’s strips', async () => {
-    vi.stubGlobal('matchMedia', (query: string) => ({
-      matches: false,
-      media: query,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-    }));
-    renderHome(createFakeIndex({ items: seeded() }));
-    await expectOnce();
   });
 
   it('leaves an offline item New shows out of Recent', async () => {

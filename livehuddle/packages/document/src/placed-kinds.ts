@@ -49,6 +49,8 @@ export function isFixedSizeElement(el: {
   if (el.type !== 'shape' || el.shape == null) return false;
   // A Long Table is drawn to its width, so it resizes and takes more chairs (office.md "Long Table").
   if (isLongTable({ shape: el.shape, variant: el.variant })) return false;
+  // A Screen resizes up to a wall (screen-and-room-sign.md "Any size up to a wall", Work Tracker 1427).
+  if (el.shape === 'screen') return false;
   return isPlacedShape(el.shape);
 }
 

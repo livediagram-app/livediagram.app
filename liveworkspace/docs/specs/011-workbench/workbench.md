@@ -152,13 +152,18 @@ reading in one of our own apps, so there is nothing to approve.
 - **Mint** (`POST embed-tickets`, on the host app's address, which forwards it here as for every workbench route). The
   bearer is the person's own access or guest token for an app: never an API token, a workbench session or a share code
   (`403 token_required` for those, `401 sign_in_required` with none). The body is
-  `{ target: <app>, itemId, origin }`: `target` one of `LIVE_EMBED_APPS`, `origin` the host page's origin, which must be
+  `{ target: <app>, itemId, origin, tabId? }`: `target` one of `LIVE_EMBED_APPS`, `tabId` (optional, an id's shape,
+  else `400 invalid_value`) the tab the frame opens on, kept on the ticket as a workbench ticket's `--tab` is and not
+  checked (a tab that is gone opens the first), `origin` the host page's origin, which must be
   one of the apps' origins in this environment (any loopback origin in development), else `400 invalid_origin`. Limited
   per person by `WORKBENCH_LIMITER` (`workbench-embed:<personId>`). The index is asked for the person's own grant on
   the item (`ownerItemAccess`): `404 not_found` out of reach, `410 <noun>_trashed` in the Trash, `503
 index_unavailable` when it cannot answer. A guest token mints for the guest's own access, as an account's does. The answer, `201 { ticket, path, expiresAt }`, gives the frame's path
   (`/embed/workbench?d=<itemId>`), which the host puts on the target's origin with `&live=1` added (the frame flag,
   [Live embeds "The frame"](../004-index/live-embeds.md#the-frame)), and the ticket for its fragment.
+- **On livehuddle's address too.** livehuddle pairs no workbench, so its router forwards this one route alone
+  (`EMBED_TICKETS_ROUTE`, `/api/workbench/embed-tickets`), for its Screen (Work Tracker 1427); every other
+  `/api/workbench/*` on its address still answers 404 from its api.
 - **The frame shows the item only.** The workbench page opened with `live=1` is a live embed's frame: it shows the item
   in the share-code embed's look, without the workbench's chrome (no Map, footer, Tools, Settings, Inbox, tab bar,
   palette, panels or tour). Without the flag the page is a developer tool's workbench and keeps its chrome. The flag

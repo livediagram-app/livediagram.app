@@ -11,6 +11,8 @@ import {
   GLASS_ROOM_VARIANT,
   type ClockZone,
   retypePiece,
+  screenSourcePatch,
+  type ScreenSource,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { shapeTelemetryToken } from '@/lib/element-telemetry';
@@ -88,22 +90,23 @@ export function useDataShapeSetters({
     matches: (kind) => kind === 'stage',
   });
   const setStageSelected = (patch: StagePatch) => patchStages(patch, 'Stage');
-  // A Screen's Video Link (docs/specs/009-elements/screen-and-room-sign.md "Screen"); undefined clears it.
+  // A Screen's source (docs/specs/009-elements/screen-and-room-sign.md "Choosing what it shows"): a file, a video or
+  // nothing, one at a time, so each clears the other's fields (screenSourcePatch).
   const patchScreens = makeShapePatcher({
     currentSelectionIds,
     commit,
     matches: (kind) => kind === 'screen',
   });
-  const setScreenUrlSelected = (url: string | undefined) =>
-    patchScreens({ screenUrl: url }, 'Screen');
-  // The same patch on one Screen by id: the walking reader's Set Link (docs/specs/008-canvas/avatar-mode.md "The
-  // reader"), which edits the Screen it opened, not the selection.
-  const setScreenUrlOf = (id: string, url: string | undefined) =>
+  const setScreenSourceSelected = (source: ScreenSource) =>
+    patchScreens(screenSourcePatch(source), 'Screen');
+  // The same patch on one Screen by id: Show on the Screen and the file overlay's Show This Tab on the Screen, which
+  // edit the Screen they opened from, not the selection.
+  const setScreenSourceOf = (id: string, source: ScreenSource) =>
     makeShapePatcher({
       currentSelectionIds: () => new Set([id]),
       commit,
       matches: (kind) => kind === 'screen',
-    })({ screenUrl: url }, 'Screen');
+    })(screenSourcePatch(source), 'Screen');
   // An Avatar Pad's Receptionist (docs/specs/008-canvas/receptionist.md "Asking him to leave"): the menu's switch on
   // the selected pad, and Ask to Leave on his pad by id. Here clears the flag; leaving sets it.
   const receptionistPatch = (here: boolean) => ({ receptionistLeft: here ? undefined : true });
@@ -145,8 +148,8 @@ export function useDataShapeSetters({
     setRoomFloorColourSelected: setRoomFloorColour,
     setPieceTypeSelected,
     setStageSelected,
-    setScreenUrlSelected,
-    setScreenUrlOf,
+    setScreenSourceSelected,
+    setScreenSourceOf,
     setPadReceptionistSelected,
     setPadReceptionistOf,
     setClockZonesSelected,

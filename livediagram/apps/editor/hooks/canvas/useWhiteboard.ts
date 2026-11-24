@@ -6,6 +6,7 @@
 // canvas; this hook owns only the device-local prefs (pens, recognition,
 // eraser mode) and turns dock presses into ordinary editor calls.
 
+import { restingTool } from '@/hooks/editor/useModeDefaultTool';
 import { useEffect, useRef, useState } from 'react';
 import type { PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
 import { WHITEBOARD_BACKGROUNDS, type PenColour, type Tab } from '@livediagram/document';
@@ -137,7 +138,7 @@ export function useWhiteboard(deps: Deps) {
       // A whiteboard pen, the Path tool or a dock shape is put down: none exists in Diagram
       // mode, and a dock shape would preview and be named the board's way there.
       if (isWhiteboardOnlyIntent(pendingDraw)) cancelDraw();
-      if (eraserCarried) setCanvasTool('select');
+      if (eraserCarried) setCanvasTool(restingTool());
       return;
     }
     // A shape armed from the palette is Diagram mode's own: switching into Draw puts it down.

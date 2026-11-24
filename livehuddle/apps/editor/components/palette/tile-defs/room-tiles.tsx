@@ -89,7 +89,7 @@ export const ROOM_TILES: PaletteTileDef[] = [
     label: 'Add Chair',
     caption: 'Chair',
     description:
-      'Furniture for Avatar mode: walk your character into one and it sits down. Give the room a seating plan.',
+      'Furniture: walk your character into one and it sits down. Give the room a seating plan.',
     filled: true,
     action: { type: 'shape', kind: 'chair' },
     icon: <ChairIcon size={TILE_GLYPH_PX} />,
@@ -105,7 +105,7 @@ export const ROOM_TILES: PaletteTileDef[] = [
     label: 'Add Desk',
     caption: 'Desk',
     description:
-      'A desk with a computer and a chair for Avatar mode: walk your character in and it sits down facing the screen.',
+      'A desk with a computer and a chair: walk your character in and it sits down facing the screen.',
     filled: true,
     action: { type: 'shape', kind: 'desk' },
     icon: <DeskIcon size={TILE_GLYPH_PX} />,
@@ -120,7 +120,7 @@ export const ROOM_TILES: PaletteTileDef[] = [
     label: 'Add Sofa',
     caption: 'Sofa',
     description:
-      'A two-seater sofa for Avatar mode: walk your character in and it sits on the nearer cushion, room for two.',
+      'A two-seater sofa: walk your character in and it sits on the nearer cushion, room for two.',
     filled: true,
     action: { type: 'shape', kind: 'sofa' },
     icon: <SofaIcon size={TILE_GLYPH_PX} />,
@@ -150,7 +150,7 @@ export const ROOM_TILES: PaletteTileDef[] = [
     label: 'Add Avatar Pad',
     caption: 'Avatar Pad',
     description:
-      "The board's entrance for Avatar mode: everyone who starts walking appears on the pad, beamed in, rather than wherever they were looking.",
+      "The board's entrance: everyone who starts walking appears on the pad, beamed in, rather than wherever they were looking.",
     filled: true,
     action: { type: 'shape', kind: 'avatar-pad' },
     icon: <AvatarPadIcon size={TILE_GLYPH_PX} />,
@@ -227,7 +227,7 @@ export const ROOM_TILES: PaletteTileDef[] = [
     toolGroup: 'behaviour',
     label: 'Add Avatar Mode Button',
     description:
-      'A button that switches whoever presses it into Avatar mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+      'A button that switches whoever presses it to Walk. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'avatar' },
     // Avatar's OWN glyph, the one the Edit | Walk toggle's Walk and Search's Walk show for it.
@@ -377,7 +377,7 @@ export const ROOM_TILES: PaletteTileDef[] = [
     label: 'Add Meeting Table',
     caption: 'Meeting Table',
     description:
-      'A meeting table with six chairs for Avatar mode: walk your character in and it sits on the nearest seat, facing the table.',
+      'A meeting table with six chairs: walk your character in and it sits on the nearest seat, facing the table.',
     filled: true,
     action: { type: 'shape', kind: 'meeting-table' },
     icon: <MeetingTableIcon size={TILE_GLYPH_PX} />,
@@ -393,7 +393,7 @@ export const ROOM_TILES: PaletteTileDef[] = [
     label: 'Add Long Table',
     caption: 'Long Table',
     description:
-      'A long boardroom table with sixteen seats for Avatar mode: drag it wider for more chairs, narrower for fewer. Walk your character in to sit on the nearest seat.',
+      'A long boardroom table with sixteen seats: drag it wider for more chairs, narrower for fewer. Walk your character in to sit on the nearest seat.',
     filled: true,
     action: { type: 'shape', kind: 'meeting-table', variant: 'long' },
     icon: <LongTableIcon size={TILE_GLYPH_PX} />,

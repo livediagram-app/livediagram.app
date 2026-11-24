@@ -81,7 +81,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
     // Only live in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Keyboard actions"), bound by the walk's own
     // listeners rather than the editor's maps, and built from the action-key maps so a key cannot drift from its row.
-    heading: 'While walking (Avatar mode)',
+    heading: 'While walking',
     rows: [
       { keys: ['←', '↑', '→', '↓'], label: 'Walk' },
       { keys: ['Space'], label: 'Hop and wave a flag' },

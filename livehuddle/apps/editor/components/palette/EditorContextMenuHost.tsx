@@ -84,7 +84,7 @@ export function EditorContextMenuHost() {
     setPieceTypeSelected,
     setStageSelected,
     setPadReceptionistSelected,
-    setScreenUrlSelected,
+    setScreenSourceSelected,
     setClockZonesSelected,
     setJukeboxSourceSelected,
     applyElementDelta,
@@ -215,7 +215,7 @@ export function EditorContextMenuHost() {
       onSetPieceType={setPieceTypeSelected}
       onSetStage={setStageSelected}
       onSetPadReceptionist={setPadReceptionistSelected}
-      onSetScreenUrl={setScreenUrlSelected}
+      onSetScreenSource={setScreenSourceSelected}
       onSetClockZones={setClockZonesSelected}
       onSetJukeboxSource={setJukeboxSourceSelected}
       onClearArcadeScores={can.level === 'edit' ? clearArcadeScores : undefined}

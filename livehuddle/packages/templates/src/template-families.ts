@@ -36,6 +36,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamilyOrNone> = {
   'festival-field': null,
   'interview-suite': null,
   'client-lounge': null,
+  'document-room': null,
   classroom: null,
   'hackathon-hall': null,
   'art-gallery': null,

@@ -7,6 +7,7 @@ import {
   BringFocusArt,
   BrowserSpaceArt,
   BubbleArt,
+  CallFromItemArt,
   CameraBubbleArt,
   CameraArt,
   CharacterArt,
@@ -34,6 +35,7 @@ import {
   RevokeArt,
   RoomBuilderArt,
   ScreenShareArt,
+  SendToPlanArt,
   SelectedNoteArt,
   SessionToolsArt,
   ShareLinksArt,
@@ -44,6 +46,7 @@ import {
   TalkNearArt,
   TeamsArt,
   WalkInArt,
+  WrapUpArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -87,14 +90,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore Spaces',
     title: 'Walk in and meet in a Space',
     description:
-      'Walk into a Space as your own little character and see it stand up around you in 3D. Find the team round the table and talk it through: status above your head, a speech bubble for a quick hello, a cheer when it goes well.',
+      'Walk into a Space as your own little character and see it stand up around you in 3D, with a host at the door to greet you. Find the team round the table and talk it through: status above your head, a speech bubble for a quick hello, a cheer when it goes well.',
     metaDescription:
       'Walk into a Space as your own character and see it in 3D: thirty-two offices, campuses, halls and homes to meet in, with status, bubbles and reactions.',
     highlights: [
       'Walk in as yourself',
       'See the Space in 3D',
       'Thirty-two Spaces to start from',
-      'Status at a glance',
+      'A host at the door',
     ],
     items: [
       {
@@ -234,14 +237,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore meetings',
     title: 'Talk it through, right where you stand',
     description:
-      'Walk up to someone and you are talking: voices fade as you walk apart, a room’s walls keep its call private, and a camera or a shared screen shows above your head. The rest of the meeting is in the room too: a timer, a stage and a baton for whoever runs it.',
+      'Walk up to someone and you are talking: voices fade as you walk apart, a room’s walls keep its call private, and a camera or a shared screen shows above your head. The rest of the meeting is in the room too: a timer, a stage and a baton for whoever runs it. Start a call from your work in any of the other apps, and Wrap Up sends the summary to a knowledgebase and the actions to a plan.',
     metaDescription:
-      'Talk in a Space by walking up to people: private rooms, cameras and screens above your head, a stage for the all-hands, and a timer on the wall.',
+      'Talk in a Space by walking up to people: private rooms, cameras and screens, a stage, a timer, and calls started from your work in the other apps.',
     highlights: [
       'Talk to whoever is near you',
       'Rooms keep a call private',
-      'Your camera, above your head',
-      'Speak from the stage',
+      'Start a call from any app',
+      'Wrap up where the work lives',
     ],
     items: [
       {
@@ -348,6 +351,30 @@ export const LANDING_SECTIONS: LandingSection[] = [
         description:
           'Open a tab’s Attendance after the stand-up to see who came in, when they joined and left, and how long they stayed, kept for 90 days. A dropped connection or a quick reload is never counted as leaving.',
       },
+      {
+        art: <CallFromItemArt />,
+        href: '/help/collaboration/start-a-call/',
+        group: 'Calls from your work',
+        title: 'Start a call from any app',
+        description:
+          'Press Call on your work in livediagram, liveplanner, livedocuments, livedesign or liveknowledge and a livehuddle call about it opens in a new tab. Anyone who opens that work sees the call is on and joins it with one press.',
+      },
+      {
+        art: <WrapUpArt />,
+        href: '/help/collaboration/start-a-call/',
+        group: 'Calls from your work',
+        title: 'Wrap up where the work lives',
+        description:
+          'When the call ends, Wrap Up writes the summary to a knowledgebase page, with Write With AI to draft it from the notes on the walls, and sends the actions to a plan. Nothing is recorded.',
+      },
+      {
+        art: <SendToPlanArt />,
+        href: '/help/collaboration/send-to-plan/',
+        group: 'Calls from your work',
+        title: 'Send stickies to a plan',
+        description:
+          'Pick the stickies on the wall and Send to Plan turns each into a card on a liveplanner board, linked back to its sticky, so the actions from a meeting land where the work is planned.',
+      },
     ],
   },
   {
@@ -357,14 +384,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Together in one place, live',
     description:
-      'Share a link and your team is in the Space with you: who is where at a glance, sticky notes on the walls, and links for whoever runs it, whoever takes part and whoever watches.',
+      'Share a link and your team is in the Space with you: who is where at a glance, sticky notes on the walls, and links for whoever runs it, whoever takes part and whoever watches. Signed in, Automations keep the office for you, and Ask AI answers from the notes on its walls.',
     metaDescription:
       'Share a link and your team is in the Space with you: live presence, a call, sticky notes on the walls, and share links for editors and participants.',
     highlights: [
       'Live presence',
-      'Follow someone’s view',
       'Editor and participant links',
       'Teams with a shared library',
+      'Automations that keep the office',
     ],
     items: [
       {
@@ -477,7 +504,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Your Spaces, your way',
         title: 'Automations that keep the office',
         description:
-          'Signed in, give a Space rules of its own: put a room back as it was once everyone leaves, tell Slack or Teams when the first person arrives, or post a stand-up reminder every weekday.',
+          'Signed in, give a Space rules of its own: put a room back as it was once everyone leaves, tell Slack or Teams when the first person arrives, or, once a meeting ends, summarise it with AI and add the actions to a liveplanner plan.',
       },
       {
         art: <ApiArt />,

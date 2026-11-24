@@ -54,3 +54,6 @@ export * from './feature-art/live-code';
 // The Done check, and the Agenda and Decision record that keep the record of a meeting.
 export * from './feature-art/meeting';
 export * from './feature-art/automations';
+// Plan cards made from shapes, a call started from the canvas, Ask AI, and the Magnifier's lens.
+export * from './feature-art/across-apps';
+export * from './feature-art/magnifier';

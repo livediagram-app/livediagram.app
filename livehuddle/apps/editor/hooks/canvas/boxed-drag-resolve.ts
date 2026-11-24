@@ -1,4 +1,4 @@
-import { isFixedSizeElement, rotationOf } from '@livehuddle/document';
+import { clampScreenBox, isFixedSizeElement, rotationOf } from '@livehuddle/document';
 import {
   alignmentGuides,
   distributionSnap,
@@ -394,5 +394,8 @@ export function resizedElement(
   if (hug && hug.mode !== 'move' && hugsText(el) && !el.rotation) {
     return hugResizedText(el, next, hug.mode, hug.constrain, hug.measure);
   }
+  // A Screen goes from SCREEN_MIN up to a wall-size SCREEN_MAX (screen-and-room-sign.md "Any size up to a wall").
+  if (el.type === 'shape' && el.shape === 'screen')
+    return { ...el, ...clampScreenBox(next, el.aspectLocked !== false) };
   return { ...el, ...next };
 }

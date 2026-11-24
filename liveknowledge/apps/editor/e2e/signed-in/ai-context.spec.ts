@@ -67,7 +67,9 @@ test('a question Ask answered from the page shows under Answered From This Page,
 
   for (let i = 0; i < 2; i++) {
     await openView(page, 'Ask');
-    const field = page.getByRole('textbox', { name: /^Ask a (question|follow-up)$/ });
+    const field = page.getByRole('textbox', {
+      name: /^Ask (this knowledgebase a question|a follow-up)$/,
+    });
     if (i > 0) await page.getByRole('button', { name: 'New Question' }).first().click();
     await field.fill(QUESTION);
     await field.press('Enter');

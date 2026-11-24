@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { MAX_SIZE_PX, MIN_SIZE_PX } from './useShapeStyleSetters';
+import { SCREEN_MAX, SCREEN_MIN, createShape, type ShapeElement } from '@livehuddle/document';
+
+import { MAX_SIZE_PX, MIN_SIZE_PX, typedSize } from './useShapeStyleSetters';
 
 // The typed-size rule (docs/specs/008-canvas/element-size.md), exercised as the pure function it is. The
 // hook itself needs a React tree and a commit handle; what is worth pinning is
@@ -77,5 +79,42 @@ describe('typed element size', () => {
 
   it('rounds to whole pixels', () => {
     expect(resize({ width: 100, height: 100 }, { width: 33.7 }).width).toBe(34);
+  });
+});
+
+describe('typed Screen size', () => {
+  // A Screen typed into the Size section stays within the same 96x60..1600x1000 range its drag resize keeps
+  // (screen-and-room-sign.md "Any size up to a wall").
+  const screen = (over: Partial<ShapeElement> = {}): ShapeElement => ({
+    ...createShape('screen', 0, 0),
+    width: 320,
+    height: 200,
+    ...over,
+  });
+
+  it('clamps a typed width past the wall size, keeping the ratio when locked', () => {
+    expect(typedSize(screen({ aspectLocked: true }), { width: 5000 })).toMatchObject({
+      width: SCREEN_MAX.width,
+      height: SCREEN_MAX.height,
+    });
+  });
+
+  it('clamps each dimension on its own when unlocked', () => {
+    expect(typedSize(screen({ aspectLocked: false }), { width: 5000, height: 20 })).toMatchObject({
+      width: SCREEN_MAX.width,
+      height: SCREEN_MIN.height,
+    });
+  });
+
+  it('lifts a typed size below the smallest Screen', () => {
+    expect(typedSize(screen({ aspectLocked: true }), { width: 32 })).toMatchObject({
+      width: SCREEN_MIN.width,
+      height: SCREEN_MIN.height,
+    });
+  });
+
+  it('leaves other shapes to the general bounds', () => {
+    const box = { ...createShape('desk', 0, 0), width: 100, height: 100 };
+    expect(typedSize(box, { width: 5000 }).width).toBe(5000);
   });
 });
