@@ -65,7 +65,8 @@ describe('unset', () => {
   it('makes a Space for the call, as without the setting, with a never-expiring link', async () => {
     const { ada, doc } = await world();
     const made = await ownSpace(ada.auth);
-    for (const payload of [{}, { space: null }]) {
+    // '' is Default as Settings stores it.
+    for (const payload of [{}, { space: null }, { space: '' }]) {
       h.db.sql.exec('DELETE FROM item_calls');
       const res = await start(ada.auth, doc.id, payload);
       expect(res.status).toBe(201);

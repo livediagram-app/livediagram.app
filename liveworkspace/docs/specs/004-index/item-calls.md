@@ -50,7 +50,9 @@ a person's Call opens (Work Tracker 1409). It is one setting on the account, the
 ([accounts.md](../003-accounts/accounts.md#scopes)), so it follows them to every app and every device.
 
 - **A New Space for Each Call** is the default, and what an unset setting means: Call makes a Space for the item as
-  above, exactly as before the setting existed.
+  above, exactly as before the setting existed. Picking it again stores an **empty choice** (`''`), never a deleted
+  key: each editor lays the account's settings over its own saved copy, so only a value overwrites a Space an editor
+  still holds from before. An empty choice reads, and starts a call, exactly as an unset one.
 - **One of my Spaces**: the picker lists the person's livehuddle Spaces they can choose, each with its name, its
   preview and whose space it is in (Yours, or a team's), the most recently changed first, at most
   `CALL_SPACES_LISTED` (200). A Space can be chosen when the person **owns it or it is their team's** (they reach it as

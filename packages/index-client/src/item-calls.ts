@@ -119,7 +119,8 @@ export function readItemCallAsk(raw: unknown): ItemCallAsk | null {
   if (raw === null || raw === undefined) return {};
   if (!isRecord(raw)) return null;
   const { space } = raw;
-  if (space === undefined || space === null) return {};
+  // '' is Default as the setting stores it (readCallSpaceSetting), so it asks for no Space.
+  if (space === undefined || space === null || space === '') return {};
   return isId(space) ? { space } : null;
 }
 

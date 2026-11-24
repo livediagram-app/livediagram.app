@@ -71,7 +71,7 @@ describe('accountCategories, Calls', () => {
     const choice = renderCalls.mock.calls[0]![0];
     expect(choice.value).toBe('lh_room');
     choice.onChange(null);
-    expect(set).toHaveBeenCalledWith('callSpace', null);
+    expect(set).toHaveBeenCalledWith('callSpace', '');
     choice.onChange('lh_other');
     expect(set).toHaveBeenCalledWith('callSpace', 'lh_other');
   });

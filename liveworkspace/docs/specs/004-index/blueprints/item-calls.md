@@ -140,7 +140,8 @@ people_before`; names merged in order, first come, at most `ITEM_CALL_NAMES_MAX`
 
 - `callSpace` is in `ALL_SETTING_KEYS` and `ACCOUNT_KEYS` (`@liveworkspace/settings/account` `CALL_SPACE_KEY`), so an
   editor's write sends it to `all` and its own Settings never shows it twice. `AccountSection.set` takes any stored
-  value (`StoredValue`); `null` deletes the key (Default). `ownToggleSetter` passes a non-boolean to its fallback.
+  value (`StoredValue`); Default writes `''` (an empty choice, not a deleted key, so it overwrites the copy each editor
+  merges under the account's), which `readCallSpaceSetting` and `readItemCallAsk` read as unset. `ownToggleSetter` passes a non-boolean to its fallback.
 - `account-panels/calls/`: `CallSpacePanel` (its own chunk, `accountPanels`' `renderCalls`), drawn in the account's
   **Calls** category (tile `calls`, cyan, a camera) only when the host hands a `callSpaces` door:
   `{list(): Promise<Item[] | null>, token(): Promise<string | null>}`. The editors' host (workbench
@@ -187,7 +188,7 @@ edit` and no `sharedVia` (`choosableSpaces`). Each preview is `GET /api/previews
   archived, someone else's or link-only Space falls back `unavailable`; a Space in another live call falls back
   `busy`; a guest still refused; the room's push after the grace ignored; the migration keeps every row.
 - Calls Space (settings-ui, workbench): the picker's states (loading, empty, list, chosen, unavailable, error) and
-  writes; Default deletes the key; the button sends the setting and toasts a fallback.
+  writes; Default writes `''`, and a stale local Space under it reads as Default; the button sends the setting and toasts a fallback.
 - index: start (a new call; the live call joined; a guest refused; a Space refused; the template door failing),
   read (a guest with the link; summary and plan hidden from a reader who can't open them), call-people (names merged
   and capped, the count's moves told once, a second app refused), summary (the host alone; a knowledgebase the host

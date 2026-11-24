@@ -126,6 +126,7 @@ describe('your Calls Space', () => {
     expect(readItemCallAsk(null)).toEqual({});
     expect(readItemCallAsk({})).toEqual({});
     expect(readItemCallAsk({ space: null })).toEqual({});
+    expect(readItemCallAsk({ space: '' })).toEqual({});
     expect(readItemCallAsk({ space: 'lh_room' })).toEqual({ space: 'lh_room' });
     expect(readItemCallAsk({ space: 7 })).toBeNull();
     expect(readItemCallAsk({ space: 'a b' })).toBeNull();
@@ -139,6 +140,10 @@ describe('your Calls Space', () => {
     expect(readCallSpaceSetting({ [CALL_SPACE_SETTING]: null })).toBeNull();
     expect(readCallSpaceSetting({ [CALL_SPACE_SETTING]: true })).toBeNull();
     expect(readCallSpaceSetting({ callSpace: 'lh_room' })).toBe('lh_room');
+    // Default is stored as '', so it wins over a Space an editor still holds locally ({...local, ...server}).
+    const local = { callSpace: 'lh_room' };
+    const server = { callSpace: '' };
+    expect(readCallSpaceSetting({ ...local, ...server })).toBeNull();
   });
 
   it('says why a start skipped it', () => {

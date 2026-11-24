@@ -1049,7 +1049,7 @@ Each setting is stored in one scope:
 - **`all`**: shown by every app that has the setting. Changing it in one app changes it everywhere.
   Which keys are shared is one list, `ALL_SETTING_KEYS` in `@liveworkspace/settings`
   (`packages/settings`): privacy and accessibility, notifications, the editors' chrome, your own
-  colours, where your calls open (`callSpace`, a livehuddle Space's id, absent for a new Space each call:
+  colours, where your calls open (`callSpace`, a livehuddle Space's id, absent or `''` for a new Space each call:
   [Your Calls Space](../004-index/item-calls.md#your-calls-space)), and every editor setting two or more apps have
   (`COMMON_SETTING_KEYS`, below). Its
   `splitSettings` and `joinSettings` turn an editor's flat preferences into the two scopes and back.

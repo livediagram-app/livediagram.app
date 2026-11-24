@@ -208,8 +208,9 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
   if (renderCalls) {
     const choice: CallSpaceChoice = {
       value: readCallSpaceSetting(all),
-      // Default deletes the key, so an unset account reads exactly as one that never chose.
-      onChange: (space) => set(CALL_SPACE_KEY, space),
+      // Default stores an empty choice rather than deleting the key: each editor lays the account's settings over
+      // its own saved copy, so only a value overwrites a Space it still holds. '' reads as Default everywhere.
+      onChange: (space) => set(CALL_SPACE_KEY, space ?? ''),
     };
     categories.push({
       id: 'calls',

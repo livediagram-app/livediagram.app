@@ -782,7 +782,8 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   assigned, invitation answers, tips and check-ins, milestones; an envelope beside every switch under Email and a phone
   beside every switch under Phone, so each says how it reaches you), **Privacy** (anonymous usage events, said in plain words with a **See Every Event** link that opens liveworkspace.app's public /telemetry list in a new tab, so people can look before choosing),
   **Accessibility** (Reduce Motion), **Calls** (**Calls Open In**: a new livehuddle Space for each call, or one of
-  the person's own or their teams' Spaces, each with its preview, read from the index through the host's
+  the person's own or their teams' Spaces, each with its preview; Default stores an empty choice, `''`, so it
+  overwrites a Space an editor still holds, read from the index through the host's
   `callSpaces` door and listed only where the host has one, `account-panels/calls/`, its own chunk;
   [item-calls.md](../004-index/item-calls.md#your-calls-space)), **AI** (Built-In AI or the person's own Anthropic or OpenAI key, and their teams'
   keys, write-only, `account-panels/ai/`, its own chunk; [ai-keys.md](../003-accounts/ai-keys.md#settings)), **API Tokens** (making a token, seeing its
