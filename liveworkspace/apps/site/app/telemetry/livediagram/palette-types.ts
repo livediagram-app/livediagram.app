@@ -44,6 +44,7 @@ export const SELECTION_MODES: readonly string[] = [
   'Spotlight',
   'Eraser',
   'FormatPainter',
+  'Magnifier',
   'Isometric',
 ];
 
