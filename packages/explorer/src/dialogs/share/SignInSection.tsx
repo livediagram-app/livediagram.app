@@ -7,7 +7,7 @@
 // first switch reads on and is held there. The index checks the rule; the card only sets it, and reads back what the
 // index stored, so a switch never disagrees with what is enforced.
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   parseShareDomains,
   SHARE_DOMAINS_MAX,
@@ -66,13 +66,15 @@ export function SignInSection({
   const lockRequire = locked && !signIn.requireAccount;
   const lockDomains = locked && !hasDomains;
   const focusField = () => requestAnimationFrame(() => field.current?.focus());
-  // A rule another tab or person saved while the box was open closes it.
+  // A rule saved while the box was open (here, in another tab or by another person) closes it. Adjusted while
+  // rendering (React's "storing information from previous renders"), not in an effect that could run a frame late
+  // and close a box a Change click had just opened.
   const savedText = domainsText(saved);
-  const shown = useRef(savedText);
-  useEffect(() => {
-    if (shown.current !== savedText) setEditing(false);
-    shown.current = savedText;
-  }, [savedText]);
+  const [shownText, setShownText] = useState(savedText);
+  if (shownText !== savedText) {
+    setShownText(savedText);
+    setEditing(false);
+  }
 
   const openBox = () => {
     setTyped(hasDomains ? savedText : suggestedDomain ? `@${suggestedDomain}` : '');
