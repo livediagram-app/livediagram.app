@@ -3,18 +3,18 @@
 Derived from [phone-apps-drawer.md](../phone-apps-drawer.md). The spec decides; this file only adds engineering
 precision. Paths are relative to the repository root.
 
-| File                                                                               | Role                                                                                                      |
-| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `packages/workbench/src/components/chrome/phone-apps/phone-apps-store.ts`          | The module store the corner actions publish to on a phone; `usePublishPhoneApps`, `usePhoneApps`        |
-| `packages/workbench/src/components/chrome/phone-apps/phone-apps-tiles.ts`          | `phoneAppsTiles`: which tiles show, from the published actions, the call, the Inbox and the app (pure)    |
-| `packages/workbench/src/components/chrome/phone-apps/ExplorerMenuButtons.tsx`      | The menu card's buttons: the hamburger from the phone breakpoint up, the logo and Apps below it           |
-| `packages/workbench/src/components/chrome/phone-apps/AppsButton.tsx`               | Apps, its unread dot, and the drawer while open                                                           |
-| `packages/workbench/src/components/chrome/phone-apps/AppsDrawer.tsx`               | The drawer's header, tiles, the item's own actions and the Account row, in `PhoneDrawer`                  |
-| `packages/workbench/src/components/item-call/useItemCallAction.ts`                 | Start or join the item's call: shared by `ItemCallButton` and the Call tile                               |
-| `packages/workbench/src/components/chrome/EditorCornerActions.tsx`                 | On a phone draws no card (clears its room) and publishes its props instead                                |
-| `liveknowledge/apps/editor/components/chrome/TopRowActions.tsx`                    | The same for liveknowledge's top-row actions                                                              |
-| `packages/workbench/src/components/chrome/phone-toolbar-items.ts`                  | `PHONE_TOP_ROW_CARD`: a phone's 56 px card, 44 px items                                                   |
-| Each editor's `components/chrome/ToolbarExplorerButton.tsx`                        | Draws `ExplorerMenuButtons`; on a phone passes no `logo` to its menu card (the logo is in the card)      |
+| File                                                                          | Role                                                                                                   |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `packages/workbench/src/components/chrome/phone-apps/phone-apps-store.ts`     | The module store the corner actions publish to on a phone; `usePublishPhoneApps`, `usePhoneApps`       |
+| `packages/workbench/src/components/chrome/phone-apps/phone-apps-tiles.ts`     | `phoneAppsTiles`: which tiles show, from the published actions, the call, the Inbox and the app (pure) |
+| `packages/workbench/src/components/chrome/phone-apps/ExplorerMenuButtons.tsx` | The menu card's buttons: the hamburger from the phone breakpoint up, the logo and Apps below it        |
+| `packages/workbench/src/components/chrome/phone-apps/AppsButton.tsx`          | Apps, its unread dot, and the drawer while open                                                        |
+| `packages/workbench/src/components/chrome/phone-apps/AppsDrawer.tsx`          | The drawer's header, tiles, the item's own actions and the Account row, in `PhoneDrawer`               |
+| `packages/workbench/src/components/item-call/useItemCallAction.ts`            | Start or join the item's call: shared by `ItemCallButton` and the Call tile                            |
+| `packages/workbench/src/components/chrome/EditorCornerActions.tsx`            | On a phone draws no card (clears its room) and publishes its props instead                             |
+| `liveknowledge/apps/editor/components/chrome/TopRowActions.tsx`               | The same for liveknowledge's top-row actions                                                           |
+| `packages/workbench/src/components/chrome/phone-toolbar-items.ts`             | `PHONE_TOP_ROW_CARD`: a phone's 56 px card, 44 px items                                                |
+| Each editor's `components/chrome/ToolbarExplorerButton.tsx`                   | Draws `ExplorerMenuButtons`; on a phone passes no `logo` to its menu card (the logo is in the card)    |
 
 ## The store
 
@@ -49,7 +49,7 @@ and `--corner-card-span` and sends `CORNER_CARD_EVENT` (`sayCornerCard(null)` a 
   links render as `<a>` (Explorer `explorerItemHref(itemId)`, Inbox `explorerHref('inbox')`), the rest as buttons that
   close the drawer, then act.
 - Copy Link: `navigator.clipboard.writeText(location.href)`, then the shared toast (`Link copied`), or `Couldn't copy
-  the link` when refused.
+the link` when refused.
 - The slots row is `data-phone-apps-slots`; `corner-actions.css` shows the `phone:sr-only` names inside it.
 - Account: `useDeferredAuth()`; signed in, a `PictureDisc` in `accountAvatarFill`; signed out, a link to
   `useAuthHrefs().signInHref`; nothing until `authLoaded`.

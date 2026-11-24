@@ -24,7 +24,10 @@ import {
 import { ItemCallButton } from '@liveworkspace/workbench/components/item-call/ItemCallButton';
 import { useTopRowSlot } from '@/lib/page-surface/top-row-slot';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { usePublishPhoneApps } from '@liveworkspace/workbench/components/chrome/phone-apps/phone-apps-store';
+import {
+  usePublishPhoneApps,
+  type ItemName,
+} from '@liveworkspace/workbench/components/chrome/phone-apps/phone-apps-store';
 
 export type TopRowActionsProps = {
   // Where the knowledgebase's approval stands, first (an `<ApprovalBadge corner />`).
@@ -40,7 +43,7 @@ export type TopRowActionsProps = {
   copying: boolean;
   onOpenAccount: () => void;
   // The knowledgebase's name, for the phone's Apps drawer.
-  itemName?: string | null;
+  itemName?: ItemName;
 };
 
 export function TopRowActions(props: TopRowActionsProps) {

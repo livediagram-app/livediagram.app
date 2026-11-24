@@ -49,7 +49,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const copying = useEditorChrome((s) => s.copying);
   const teamDocument = useEditorChrome((s) => !!s.documentTeamId);
-  const documentName = useEditorChrome((s) => s.documentName);
   if (hidden) return null;
   // Share (or a visitor's Make a Copy) and the account button, at the right end of the top row whichever view shows
   // (docs/specs/030-knowledgebase/page-surface.md "The footer"). The name and its visibility badge ride the Share
@@ -57,7 +56,8 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   return (
     <AreaErrorBoundary area="Header" fallback="panel">
       <TopRowActions
-        itemName={documentName}
+        // Read as the drawer draws, so a rename never renders this bar.
+        itemName={() => chrome.get().documentName}
         approval={<ApprovalBadge corner />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}

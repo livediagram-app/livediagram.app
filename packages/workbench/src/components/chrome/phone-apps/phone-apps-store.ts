@@ -9,9 +9,18 @@
 // publish, so its handlers and the app's own action nodes are always the newest.
 import { useLayoutEffect, useSyncExternalStore, type ReactNode } from 'react';
 
+/** A name, or a getter read when the drawer draws. */
+export type ItemName = string | null | (() => string | null | undefined);
+
+/** The name an `ItemName` stands for now. */
+export const itemNameNow = (name: ItemName | undefined): string | null =>
+  (typeof name === 'function' ? name() : name) ?? null;
+
 export type PhoneAppsSnapshot = {
-  // The open item's name; null where the app gives none (the drawer falls back to the call's title, then the noun).
-  itemName: string | null;
+  // The open item's name; null where the app gives none (the drawer falls back to the call's title, then the noun). A
+  // getter where the app's header must not re-render on a rename (livedocuments' and liveknowledge's memoised bars):
+  // the drawer reads it as it draws.
+  itemName: ItemName;
   // Who can see it, in the Share button's words ("Shared and Team").
   shareWords: string;
   showShare: boolean;
@@ -40,7 +49,7 @@ const liveListeners = new Set<() => void>();
 export function snapshotKey(s: PhoneAppsSnapshot | null): string {
   if (!s) return '';
   return JSON.stringify([
-    s.itemName,
+    typeof s.itemName === 'function' ? 'getter' : s.itemName,
     s.shareWords,
     s.showShare,
     !!s.onMakeCopy,

@@ -631,6 +631,7 @@ export const PALETTE_GROUPS_OPENED = chart(
       (type ?? '').endsWith('Group') ||
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
+      type === 'PhoneApps' ||
       type === 'ToolbarSearch' ||
       type === 'ToolbarSearchOtherModes',
   },

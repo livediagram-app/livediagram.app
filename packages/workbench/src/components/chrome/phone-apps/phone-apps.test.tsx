@@ -125,7 +125,11 @@ function editor({
   );
 }
 
-const openApps = () => fireEvent.click(screen.getByRole('button', { name: /^Apps/ }));
+// The drawer's code loads on the first press (lazy), so each open waits for it.
+const openApps = async () => {
+  fireEvent.click(screen.getByRole('button', { name: /^Apps/ }));
+  await screen.findByRole('dialog', { name: 'Offsite Planning' });
+};
 const drawer = () => screen.getByRole('dialog', { name: 'Offsite Planning' });
 const tileNames = () =>
   [...drawer().querySelectorAll('[data-apps-tile]')].map((el) => el.getAttribute('data-apps-tile'));
@@ -169,25 +173,27 @@ describe('on a phone', () => {
     expect(apps.querySelector('[data-unread-dot]')).not.toBeNull();
     unmount();
     editor({ count: 0 });
-    expect(screen.getByRole('button', { name: 'Apps' }).querySelector('[data-unread-dot]')).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Apps' }).querySelector('[data-unread-dot]'),
+    ).toBeNull();
   });
 
-  it('opens the drawer with the item, who can see it, and an Editor’s tiles', () => {
+  it('opens the drawer with the item, who can see it, and an Editor’s tiles', async () => {
     callAction.current = { kind: 'start', starting: false, source: {}, run: vi.fn() };
     editor({
       corner: { present: { slideCount: 2, starting: false, onPresent: () => {} } },
     });
-    openApps();
+    await openApps();
     expect(within(drawer()).getByText('livediagram · Shared and Team')).toBeTruthy();
     expect(tileNames()).toEqual(['explorer', 'call', 'share', 'present', 'copy-link', 'inbox']);
     expect(within(drawer()).getByRole('link', { name: 'Inbox, 3 unread' })).toBeTruthy();
     expect(within(drawer()).getByText('3')).toBeTruthy();
   });
 
-  it('sends Explorer straight to the Explorer page, no panel', () => {
+  it('sends Explorer straight to the Explorer page, no panel', async () => {
     const onToggle = vi.fn();
     editor({ onToggle });
-    openApps();
+    await openApps();
     const explorer = within(drawer()).getByRole('link', { name: 'Explorer' });
     expect(explorer.getAttribute('href')).toBe('/explorer?item=d1');
     fireEvent.click(explorer);
@@ -196,10 +202,10 @@ describe('on a phone', () => {
     expect(inboxLink.getAttribute('href')).toBe('/explorer/inbox');
   });
 
-  it('closes, then opens Share', () => {
+  it('closes, then opens Share', async () => {
     const onOpenShare = vi.fn();
     editor({ corner: { onOpenShare } });
-    openApps();
+    await openApps();
     fireEvent.click(within(drawer()).getByRole('button', { name: 'Share' }));
     expect(onOpenShare).toHaveBeenCalledOnce();
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -209,44 +215,58 @@ describe('on a phone', () => {
     const writeText = vi.fn(async () => {});
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
     editor();
-    openApps();
+    await openApps();
     await act(async () => {
       fireEvent.click(within(drawer()).getByRole('button', { name: 'Copy Link' }));
     });
     expect(writeText).toHaveBeenCalledWith(window.location.href);
   });
 
-  it('gives a visitor Make a Copy instead of Share, and joins a live call', () => {
+  it('says so when the browser refuses the copy', async () => {
+    const writeText = vi.fn(async () => {
+      throw new Error('denied');
+    });
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    editor();
+    await openApps();
+    await act(async () => {
+      fireEvent.click(within(drawer()).getByRole('button', { name: 'Copy Link' }));
+    });
+    expect(writeText).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('gives a visitor Make a Copy instead of Share, and joins a live call', async () => {
     const onMakeCopy = vi.fn();
     const run = vi.fn();
     callAction.current = { kind: 'join', source: {}, live: { people: 3 }, run };
     editor({ corner: { showShare: false, onMakeCopy } });
-    openApps();
+    await openApps();
     expect(tileNames()).toEqual(['explorer', 'call', 'copy-link', 'make-copy', 'inbox']);
     fireEvent.click(within(drawer()).getByRole('button', { name: /Join Call/ }));
     expect(run).toHaveBeenCalledOnce();
-    openApps();
+    await openApps();
     fireEvent.click(within(drawer()).getByRole('button', { name: 'Make a Copy' }));
     expect(onMakeCopy).toHaveBeenCalledOnce();
   });
 
-  it('gives a guest Explorer, Copy Link and Sign In, no Inbox', () => {
+  it('gives a guest Explorer, Copy Link and Sign In, no Inbox', async () => {
     editor({ auth: { isSignedIn: false }, corner: { showShare: false } });
-    openApps();
+    await openApps();
     expect(tileNames()).toEqual(['explorer', 'copy-link']);
     expect(within(drawer()).getByRole('link', { name: /Sign In/ })).toBeTruthy();
   });
 
-  it('opens Account from the account row', () => {
+  it('opens Account from the account row', async () => {
     const onOpenAccount = vi.fn();
     editor({ corner: { onOpenAccount } });
-    openApps();
+    await openApps();
     fireEvent.click(within(drawer()).getByRole('button', { name: /Account/ }));
     expect(onOpenAccount).toHaveBeenCalledOnce();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('shows the app’s own corner actions with their names, and none of Share where they stand in for it', () => {
+  it('shows the app’s own corner actions with their names, and none of Share where they stand in for it', async () => {
     editor({
       corner: {
         shareAction: (
@@ -256,22 +276,24 @@ describe('on a phone', () => {
         ),
       },
     });
-    openApps();
+    await openApps();
     expect(tileNames()).not.toContain('share');
     const slots = drawer().querySelector('[data-phone-apps-slots]');
     expect(slots && within(slots as HTMLElement).getByText('Share Form')).toBeTruthy();
   });
 
-  it('has no Inbox tile in an app without one, and no dot', () => {
+  it('has no Inbox tile in an app without one, and no dot', async () => {
     editor({ hasInbox: false });
-    expect(screen.getByRole('button', { name: 'Apps' }).querySelector('[data-unread-dot]')).toBeNull();
-    openApps();
+    expect(
+      screen.getByRole('button', { name: 'Apps' }).querySelector('[data-unread-dot]'),
+    ).toBeNull();
+    await openApps();
     expect(tileNames()).not.toContain('inbox');
   });
 
-  it('closes on its Close button', () => {
+  it('closes on its Close button', async () => {
     editor();
-    openApps();
+    await openApps();
     fireEvent.click(within(drawer()).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).toBeNull();
   });

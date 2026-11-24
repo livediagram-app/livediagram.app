@@ -104,11 +104,7 @@ export function StripRow({
       className={`pointer-events-none flex w-full items-start gap-1.5 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
       {leading == null ? null : (
-        <div
-          ref={leadingRef}
-          data-strip-leading=""
-          className={CARD_CLASS}
-        >
+        <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
           {leading}
         </div>
       )}

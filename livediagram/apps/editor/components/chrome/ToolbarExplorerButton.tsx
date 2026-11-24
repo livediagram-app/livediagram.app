@@ -65,10 +65,10 @@ export function ToolbarExplorerButton({
         logo={
           phone ? undefined : (
             <Brand
-            href={explorerItemHref(itemId)}
-            size="sm"
-            wordmarkClassName="hidden lg:inline"
-            className="relative touch-target"
+              href={explorerItemHref(itemId)}
+              size="sm"
+              wordmarkClassName="hidden lg:inline"
+              className="relative touch-target"
             />
           )
         }

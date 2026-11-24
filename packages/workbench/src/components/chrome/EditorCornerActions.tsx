@@ -6,17 +6,12 @@ import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canv
 import { AuthControls } from './AuthControls';
 import { AskCitationBar } from '../ask/AskCitationBar';
 import { ShareVisibilityButton } from './ShareVisibilityButton';
-import {
-  shareStateOf,
-  shareStatesLabel,
-  shareStatesOf,
-  type ItemVisibility,
-} from './share-states';
+import { shareStateOf, shareStatesLabel, shareStatesOf, type ItemVisibility } from './share-states';
 import type { VisibilityActions } from './share-states';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
 import { useIsMobileViewport } from '../../hooks/ui/useIsMobileViewport';
-import { usePublishPhoneApps } from './phone-apps/phone-apps-store';
+import { usePublishPhoneApps, type ItemName } from './phone-apps/phone-apps-store';
 
 // Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (the approval's badge, Copy, Present, Share and the account) float in a card of
 // their own at the canvas's top right, the same card as the menu card at its top left. The account control is the
@@ -83,7 +78,7 @@ export type EditorCornerActionsProps = {
   // the approval. A slot, so the card bundles no call code of its own.
   call?: ReactNode;
   // The open item's name, for the phone's Apps drawer (phone-apps-drawer.md), which stands in for this card there.
-  itemName?: string | null;
+  itemName?: ItemName;
 };
 
 // On a phone (liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md) the card is not drawn: what it would show is

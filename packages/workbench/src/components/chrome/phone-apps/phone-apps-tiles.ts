@@ -4,13 +4,7 @@
 import type { PhoneAppsSnapshot } from './phone-apps-store';
 
 export type PhoneAppsTileId =
-  | 'explorer'
-  | 'call'
-  | 'share'
-  | 'present'
-  | 'copy-link'
-  | 'make-copy'
-  | 'inbox';
+  'explorer' | 'call' | 'share' | 'present' | 'copy-link' | 'make-copy' | 'inbox';
 
 export type PhoneAppsCall = { kind: 'start' | 'join'; people?: number } | null;
 

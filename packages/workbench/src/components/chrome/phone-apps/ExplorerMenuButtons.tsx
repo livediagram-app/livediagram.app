@@ -4,19 +4,23 @@
 // (liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md "The rule"). From the phone breakpoint up: the hamburger,
 // which toggles the Explorer panel and wears the Inbox's count. On a phone: the app's logo in the hamburger's place,
 // doing what it did (still named Explorer), and Apps, which opens the Apps drawer with what the corner card held.
-import { useState, type Ref } from 'react';
+import { lazy, Suspense, useState, type Ref } from 'react';
 import { BrandMark, type BrandApp } from '@liveworkspace/brand';
 import { Glyph } from '@liveworkspace/ui';
 import { inboxButtonLabel } from '@liveworkspace/explorer/inbox-notices';
 import { workbench } from '../../../bindings';
 import { useIsMobileViewport } from '../../../hooks/ui/useIsMobileViewport';
 import type { EditorInbox } from '../useEditorInbox';
-import { AppsDrawer } from './AppsDrawer';
 
-const MENU_BTN = 'relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition';
+// The drawer's code loads on the first press of Apps (about 3 KB gzipped, measured), not with every editor's first
+// paint: a desktop never opens it. The press starts the load on pointer-down, so it is in by the click.
+const loadDrawer = () => import('./AppsDrawer');
+const AppsDrawer = lazy(() => loadDrawer().then((m) => ({ default: m.AppsDrawer })));
+
+const MENU_BTN =
+  'relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition';
 const MENU_OPEN = 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100';
-const MENU_REST =
-  'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800';
+const MENU_REST = 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800';
 
 export type ExplorerMenuButtonsProps = {
   app: BrandApp;
@@ -100,6 +104,7 @@ function AppsButton({
         aria-haspopup="dialog"
         aria-expanded={open}
         data-phone-apps-button=""
+        onPointerDown={() => void loadDrawer()}
         onClick={() => {
           if (!open) workbench.track('UI', 'Opened', 'PhoneApps');
           setOpen(!open);
@@ -110,11 +115,11 @@ function AppsButton({
             : 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25'
         }`}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <Glyph size={20} units={24} filled>
           {[5, 12, 19].map((y) =>
             [5, 12, 19].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="2" />),
           )}
-        </svg>
+        </Glyph>
         {count ? (
           <span
             aria-hidden="true"
@@ -124,13 +129,15 @@ function AppsButton({
         ) : null}
       </button>
       {open ? (
-        <AppsDrawer
-          app={app}
-          itemId={itemId}
-          inboxCount={count}
-          hasInbox={!!inbox}
-          onClose={() => setOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <AppsDrawer
+            app={app}
+            itemId={itemId}
+            inboxCount={count}
+            hasInbox={!!inbox}
+            onClose={() => setOpen(false)}
+          />
+        </Suspense>
       ) : null}
     </>
   );

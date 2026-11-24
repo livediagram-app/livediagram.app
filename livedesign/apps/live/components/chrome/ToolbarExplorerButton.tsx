@@ -63,13 +63,13 @@ export function ToolbarExplorerButton({
         {...(joinedWidth === undefined ? {} : { joinedWidth })}
         logo={
           phone ? undefined : (
-          <Brand
-            href={explorerItemHref(itemId)}
-            size="sm"
-            // Heading the Contents sidebar the wordmark stays, the sidebar being as wide as ever.
-            wordmarkClassName="hidden lg:inline [[data-logo-in-band]_&]:inline"
-            className="relative touch-target"
-          />
+            <Brand
+              href={explorerItemHref(itemId)}
+              size="sm"
+              // Heading the Contents sidebar the wordmark stays, the sidebar being as wide as ever.
+              wordmarkClassName="hidden lg:inline [[data-logo-in-band]_&]:inline"
+              className="relative touch-target"
+            />
           )
         }
       >

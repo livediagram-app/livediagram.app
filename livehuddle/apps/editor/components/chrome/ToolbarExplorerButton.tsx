@@ -57,12 +57,12 @@ export function ToolbarExplorerButton({
       tourId="dock-explorer"
       logo={
         phone ? undefined : (
-        <Brand
-          href={explorerItemHref(itemId)}
-          size="sm"
-          wordmarkClassName="hidden lg:inline"
-          className="relative touch-target"
-        />
+          <Brand
+            href={explorerItemHref(itemId)}
+            size="sm"
+            wordmarkClassName="hidden lg:inline"
+            className="relative touch-target"
+          />
         )
       }
     >

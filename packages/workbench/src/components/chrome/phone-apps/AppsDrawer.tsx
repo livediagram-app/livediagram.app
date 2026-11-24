@@ -28,7 +28,7 @@ import { useItemCalls } from '../../item-call/item-call-store';
 import { PhoneDrawer } from '../../primitives/PhoneDrawer';
 import { useAuthHrefs } from '../auth-routes';
 import { SignInIcon, useSavedLook } from '../AuthControls';
-import { usePhoneApps } from './phone-apps-store';
+import { itemNameNow, usePhoneApps } from './phone-apps-store';
 import { inboxBadgeWords, phoneAppsTiles, type PhoneAppsTileId } from './phone-apps-tiles';
 
 const TILE_ICON = 24;
@@ -76,7 +76,8 @@ export function AppsDrawer({ app, itemId, inboxCount, hasInbox, onClose }: AppsD
   const { authLoaded, isSignedIn } = useDeferredAuth();
   const toast = useToast();
   const items = APP_ITEMS[app];
-  const name = snapshot?.itemName?.trim() || source?.title?.trim() || `Untitled ${items.noun}`;
+  const name =
+    itemNameNow(snapshot?.itemName)?.trim() || source?.title?.trim() || `Untitled ${items.noun}`;
   const tiles = phoneAppsTiles({
     hasInbox,
     snapshot,
@@ -355,4 +356,3 @@ function AccountRow({
     </>
   );
 }
-
