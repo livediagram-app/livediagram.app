@@ -22,12 +22,12 @@ describe('template categories', () => {
       'Education',
       'Events',
       'Finance',
-      'Hiring and People',
+      'Hiring',
       'Marketing',
       'Meetings',
       'Personal',
-      'Product and Engineering',
-      'Projects and Teams',
+      'Product',
+      'Projects',
       'Sales',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);

@@ -37,19 +37,19 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'health',
-    label: 'Health and Fitness',
+    label: 'Health',
     searchWords: 'fitness workout wellness wearable activity',
     description: 'Workouts, heart rate and activity on the wrist.',
   },
   {
     id: 'media',
-    label: 'Music and Video',
-    searchWords: 'music audio video podcast streaming media player',
+    label: 'Entertainment',
+    searchWords: 'music audio video podcast streaming media player entertainment',
     description: 'Music, podcast and video players, and galleries.',
   },
   {
     id: 'onboarding',
-    label: 'Sign Up and Onboarding',
+    label: 'Onboarding',
     searchWords: 'signup register login sign in account first run welcome',
     description: 'First runs: welcome, sign up, verify, permissions.',
   },
@@ -67,13 +67,13 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'social',
-    label: 'Social and Messaging',
+    label: 'Social',
     searchWords: 'social network chat messaging community feed',
     description: 'Feeds, stories, posts, chat and profiles.',
   },
   {
     id: 'travel',
-    label: 'Travel and Transport',
+    label: 'Travel',
     searchWords: 'travel trip flight booking map ride taxi transport',
     description: 'Flights, boarding passes, maps and rides.',
   },
@@ -85,7 +85,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'work',
-    label: 'Work and Productivity',
+    label: 'Work',
     searchWords: 'work productivity saas business admin team',
     description: 'Dashboards, boards, tasks, calendars and inboxes.',
   },
@@ -132,27 +132,27 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'wireframe-blog': 'websites',
   'wireframe-company-site': 'websites',
   'wireframe-launch-site': 'websites',
-  // Work and Productivity: the screens a team works in.
+  // Work: the screens a team works in.
   'wireframe-dashboard': 'work',
   'wireframe-project-tool': 'work',
   'wireframe-team-inbox': 'work',
-  // Social and Messaging: people and what they share.
+  // Social: people and what they share.
   'wireframe-social-app': 'social',
   'wireframe-tablet-app': 'social',
   // An account's profile and settings, as a social app shows them.
   'wireframe-account-settings': 'social',
-  // Health and Fitness: activity on the wrist (the Watch App's glance is an activity ring), and booking a class.
+  // Health: activity on the wrist (the Watch App's glance is an activity ring), and booking a class.
   'wireframe-watch-app': 'health',
   'wireframe-fitness-watch': 'health',
   'wireframe-class-booking': 'health',
-  // Travel and Transport: getting somewhere.
+  // Travel: getting somewhere.
   'wireframe-travel-app': 'travel',
   'wireframe-ride-app': 'travel',
-  // Music and Video: listening and watching.
+  // Entertainment: listening and watching.
   'wireframe-music-app': 'media',
   'wireframe-video-app': 'media',
   'wireframe-watch-music': 'media',
-  // Sign Up and Onboarding: an app's first run.
+  // Onboarding: an app's first run.
   'wireframe-app-onboarding': 'onboarding',
 };
 

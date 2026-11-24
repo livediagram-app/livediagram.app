@@ -635,18 +635,18 @@ job sit together. Every template but the blanks has one primary category and may
 would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it
 has a home). Every picker shows them alphabetically by label.
 
-| Category               | Holds                                                                                                         | Also lists                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| Branding               | Logo Design, Brand Board, Wordmark Explorations, Emblems and Badges, Marks and App Icons, Lockup Explorations |                                             |
-| Health and Fitness     | Watch App Wireframe, Fitness Watch Wireframe, Class Booking Wireframe                                         |                                             |
-| Music and Video        | Music App Wireframe, Video App Wireframe, Watch Music Wireframe                                               |                                             |
-| Photos                 | Photo Edit                                                                                                    |                                             |
-| Shopping               | Mobile App Wireframe (a shopping app), Delivery App Wireframe                                                 | Online Store Wireframe                      |
-| Sign Up and Onboarding | App Sign Up Wireframe                                                                                         | Mobile App Wireframe, Launch Site Wireframe |
-| Social and Messaging   | Social App Wireframe, Tablet App Wireframe, Account Settings Wireframe                                        | Team Inbox Wireframe                        |
-| Travel and Transport   | Travel App Wireframe, Ride App Wireframe                                                                      |                                             |
-| Websites               | Website Wireframe, Launch Site Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe      |                                             |
-| Work and Productivity  | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                               |                                             |
+| Category      | Holds                                                                                                         | Also lists                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Branding      | Logo Design, Brand Board, Wordmark Explorations, Emblems and Badges, Marks and App Icons, Lockup Explorations |                                             |
+| Entertainment | Music App Wireframe, Video App Wireframe, Watch Music Wireframe                                               |                                             |
+| Health        | Watch App Wireframe, Fitness Watch Wireframe, Class Booking Wireframe                                         |                                             |
+| Onboarding    | App Sign Up Wireframe                                                                                         | Mobile App Wireframe, Launch Site Wireframe |
+| Photos        | Photo Edit                                                                                                    |                                             |
+| Shopping      | Mobile App Wireframe (a shopping app), Delivery App Wireframe                                                 | Online Store Wireframe                      |
+| Social        | Social App Wireframe, Tablet App Wireframe, Account Settings Wireframe                                        | Team Inbox Wireframe                        |
+| Travel        | Travel App Wireframe, Ride App Wireframe                                                                      |                                             |
+| Websites      | Website Wireframe, Launch Site Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe      |                                             |
+| Work          | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                               |                                             |
 
 The blanks (Blank Logo and the five blank wireframes) are in no category: they lead Popular, the
 landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the
