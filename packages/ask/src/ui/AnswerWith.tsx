@@ -110,7 +110,7 @@ export function AnswerWith({
             <SparkleIcon size={13} className="text-brand-700 dark:text-brand-300" />
           )}
         </span>
-        <span className="min-w-0 truncate">{view.label}</span>
+        <span className="text-optical-line min-w-0 truncate">{view.label}</span>
         <MenuChevronIcon aria-hidden className="shrink-0" />
       </button>
       {anchor ? (

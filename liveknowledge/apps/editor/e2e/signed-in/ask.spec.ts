@@ -36,7 +36,9 @@ async function knowledgebaseWithKey(page: Page): Promise<{ who: Person; id: stri
 }
 
 async function send(page: Page, question: string): Promise<void> {
-  const field = ask(page).getByRole('textbox', { name: /^Ask a (question|follow-up)$/ });
+  const field = ask(page).getByRole('textbox', {
+    name: /^Ask (this knowledgebase a question|a follow-up)$/,
+  });
   await field.fill(question);
   await field.press('Enter');
 }
