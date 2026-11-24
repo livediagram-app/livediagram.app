@@ -16,19 +16,23 @@ replaces what the fork still shows around the writing.
   2026-11-21): the dark surfaces take its hue, and in the light theme the white ground and the palest greys
   (slate-50 to 200) take a pale wash of its accent (`hooks/ui/useEditorAccent.ts`), so the page, the sidebar and
   the rail read as the theme in either appearance. Text greys stay neutral.
-- **A reading column.** The writing is one centred column, 760 px wide at most (the stored page is 856 px wide
-  and keeps 48 px either side), with 48 px of room either side on a desktop and 20 px on a phone. It
+- **A reading column.** The writing is one centred column, 960 px wide at most (the stored page is 1,056 px wide
+  and keeps 48 px either side), with 48 px of room either side on a desktop and 20 px on a phone. On a wide monitor
+  (1,920 px, 2,560 px) the column grows to that maximum and no further, so a line of body text stays readable (owner
+  2026-11-24, Work Tracker 1418: "make the page itself wider", the page in the stored model, not a view of it). Every
+  block shares the column: a table, a picture, a chart, an embed and a code block may use all 960 px of it. The
+  editor and the read view draw the same page at the same width, so nothing moves when Edit or Done is pressed. It
   scrolls with the window as any web page does: the wheel, the scrollbar, Page Up and Down, Home and End, and the
   browser's find all behave as on a web page. **A page is always shown at 100%** (owner 2026-11-21: "this should
   just render normally without zoom like a news webpage"): never scaled up or down, its text at its normal size,
   and nothing scrolls sideways. A phone has no Undo and Redo buttons (the edit bar stood over them), and its Pages,
   Ask and AI tabs are as wide as their names.
-- **A narrow window reflows the writing.** Where the window has no room for the 760 px column and its side room
+- **A narrow window reflows the writing.** Where the window has no room for the 960 px column and its side room
   (a phone, a narrow desktop window, the page tree taking room), the column is as wide as the room less the side
   room, and the writing re-wraps to it, as a news site's does. What is placed in the writing (a picture, a chart, a
   drawing, an embed) wider than that column is shown smaller to fit it; a wide table or code block scrolls sideways
   inside its own box. **The narrow layout is the viewer's own and is never stored**: the page keeps its stored
-  856 px width, its height and where its placed things stand, so two people at different window widths never
+  1,056 px width, its height and where its placed things stand, so two people at different window widths never
   write over each other and a phone reader writes nothing by reading. Writing typed on a phone is saved as any
   writing is; only what the narrow layout worked out stays in that browser.
 - **As short as its writing.** A page of one line is one line long: it does not scroll on a short window, and
@@ -58,8 +62,10 @@ replaces what the fork still shows around the writing.
   hover card or tooltip rides them. This is a deliberate exception to the rule that every control has one; the
   row's icon-only buttons (Edit Labels) and its notes that hold more than they show (the verified badge's review
   date, a label pill's filter) keep theirs. **Beside it** on a wide window, the right rail (Page Health, then On This Page, then Suggested Edits while any wait, then AI Context, a hairline between each section, owner 2026-11-22; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
-  and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
-  below that; the page's scrollbar stands between the writing and the docked rail, never under it.
+  and only where the page keeps at least a 760 px column beside it (1,432 px with the page tree open), a Page Info
+  button below that. Between there and the room for the full 960 px column (1,632 px with the tree and the rail
+  docked) the rail stays docked and the page reflows through the narrow view, wider than the 760 px it had before
+  Work Tracker 1418; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
 - **The logo** (mark, and the wordmark on a desktop) is always top left: heading the page tree, leading the top row
   left of the menu button when the tree is folded away, and leading the Ask and Insights header. A phone shows

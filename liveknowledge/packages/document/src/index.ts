@@ -153,6 +153,7 @@ export * from './page-draft';
 export * from './page-tree';
 export * from './article-page-links';
 export * from './continuous-page-estimate';
+export * from './continuous-page-width';
 export * from './speaking-time';
 export * from './article-style';
 export * from './article-zones';

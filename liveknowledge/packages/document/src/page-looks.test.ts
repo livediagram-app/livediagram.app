@@ -4,6 +4,7 @@ import { migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import { articlesOf } from './article-flow';
 import { pagesOf } from './page';
 import type { Tab } from './index';
+import { CONTINUOUS_PAGE_WIDTH } from './page-sizes';
 
 // docs/specs/030-knowledgebase/page-surface.md "What a page no longer has": a page stored with its own background,
 // style or lock is shown in the knowledgebase's style; the stored fields are ignored and dropped on the next save.
@@ -18,7 +19,7 @@ const imported = () =>
         id: 'p1',
         orientation: 'portrait',
         size: 'fit',
-        fit: { width: 856, height: 1400 },
+        fit: { width: CONTINUOUS_PAGE_WIDTH, height: 1400 },
         kind: 'article',
         flow: 'art-1',
         locked: true,
@@ -47,7 +48,7 @@ describe('withoutPageLooks', () => {
     const tab = withoutPageLooks(imported());
     const [page] = pagesOf(tab);
     expect(page).toMatchObject({ id: 'p1', kind: 'article', flow: 'art-1', size: 'fit' });
-    expect(page!.fit).toEqual({ width: 856, height: 1400 });
+    expect(page!.fit).toEqual({ width: CONTINUOUS_PAGE_WIDTH, height: 1400 });
     expect(articlesOf(tab)['art-1']!.blocks).toHaveLength(1);
     expect(tab.name).toBe('Release Process');
   });

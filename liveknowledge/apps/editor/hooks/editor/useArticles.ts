@@ -48,6 +48,7 @@ import {
 } from '@liveknowledge/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useArticleIntake } from './useArticleIntake';
+import { useNarrowHeightEstimate } from './useNarrowHeightEstimate';
 import {
   articleHandleOf,
   markZoneReleased,
@@ -276,10 +277,14 @@ export function useArticles(deps: {
         if (locked) return;
         const grown = withArticlePageHeight(t, flow, layout.heightNeeded);
         if (grown === t) {
-          if (layout.zones.length > 0) {
+          // The zones, and the margin notes beside their text: a page read at a wider width than it was written at
+          // (continuous-page-width.ts) has both only estimated until this settle.
+          if (layout.zones.length > 0 || layout.notes.length > 0) {
             d.tickTabs((ts) => {
               const out = ts.map((x) =>
-                x.id === tabId && x.locked !== true ? withZonesSettled(x, flow, layout.zones) : x,
+                x.id === tabId && x.locked !== true
+                  ? withNotesSettled(withZonesSettled(x, flow, layout.zones), flow, layout.notes)
+                  : x,
               );
               return out.every((x, i) => x === ts[i]) ? ts : out;
             });
@@ -344,6 +349,7 @@ export function useArticles(deps: {
     },
     [tabId],
   );
+  const estimateNarrowHeight = useNarrowHeightEstimate(tabId, deps.tickTabs);
   const onLayout = useCallback(
     (layout: FlowLayout) => {
       const d = latest.current;
@@ -353,6 +359,9 @@ export function useArticles(deps: {
       if (isPageViewLens(d.activeTab)) {
         const narrow = narrowLayoutOf(d.activeTab, layout);
         if (narrow) notePageViewLayout(tabId, narrow);
+        // This person's own writing here: once it rests, the stored height takes the full-width estimate.
+        if (layout.local && !articleEditRefused(d.canEdit, d.activeTab, layout.flow))
+          estimateNarrowHeight(layout.flow);
         return;
       }
       // What the writing needs here, at full width, for every role: the page's box is drawn at least that tall
@@ -395,7 +404,7 @@ export function useArticles(deps: {
         return out.every((t, i) => t === ts[i]) ? ts : out;
       });
     },
-    [tabId, growForAbsentWriter],
+    [tabId, growForAbsentWriter, estimateNarrowHeight],
   );
 
   // Every article of the tab as it loads may be grown once (a writer who left before settling).

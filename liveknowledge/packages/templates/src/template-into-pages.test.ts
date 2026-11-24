@@ -35,8 +35,9 @@ describe('a template entering Pages mode', () => {
       ).toEqual([]);
     }
     // The templates bigger than the first page were infographics, no longer in the catalogue
-    // (docs/specs/002-project-scope/not-in-liveknowledge.md "Unreachable, to delete"): written templates build no
-    // elements to page.
-    expect(paged).toBe(0);
+    // (docs/specs/002-project-scope/not-in-liveknowledge.md "Unreachable, to delete"). The written templates with a
+    // chart build it the width of the continuous page's 960 px column, wider than an A4 page, so built without their
+    // page (as here) they are paged; with it, as every written template is applied, they stand in its column.
+    expect(paged).toBe(3);
   });
 });

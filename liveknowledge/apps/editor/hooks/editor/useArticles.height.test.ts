@@ -2,9 +2,13 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  articleNoteCorner,
+  CONTINUOUS_PAGE_WIDTH,
   KNOWLEDGEBASE_FLOW,
   layOutPages,
+  newArticleNote,
   newKnowledgebasePageContent,
+  withArticlePageHeight,
   pagesOf,
   type Tab,
 } from '@liveknowledge/document';
@@ -16,6 +20,7 @@ import {
   resetMeasuredPageHeights,
 } from '@/lib/page-surface/page-measured-height-store';
 import { useArticles } from './useArticles';
+import { NARROW_ESTIMATE_DELAY_MS } from './useNarrowHeightEstimate';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/article/article-editor-store', () => ({
@@ -136,6 +141,24 @@ describe('who settles the stored height', () => {
     expect(isArticleGrowPending('t', FLOW)).toBe(false);
   });
 
+  // Work Tracker 1418: a page read wider than it was written has its margin notes moved across only; the first layout
+  // of the right height stands each beside its text, as it settles the zones.
+  it('settles the margin notes beside their text once the height is right', () => {
+    const note = newArticleNote('n1', 'comment', { x: 0, y: 0 });
+    const tab: Tab = { ...stale(), elements: [note] };
+    const { hook, written } = setup(tab);
+    const settledHeight = withArticlePageHeight(tab, FLOW, 2600);
+    hook.rerender({ activeTab: settledHeight, canEdit: true });
+    hook.result.current!.onLayout({
+      ...laidOut,
+      notes: [{ id: 'n1', index: 0, y: 300, height: 24 }],
+    });
+    const page = layOutPages(pagesOf(settledHeight))[0]!;
+    const moved = written([settledHeight])[0]!.elements[0] as { x: number; y: number };
+    expect(moved).toMatchObject(articleNoteCorner(page, 48, { y: 300, height: 24 }));
+    expect(isArticleGrowPending('t', FLOW)).toBe(false);
+  });
+
   it('settles a page that opens unlocked on its first layout', () => {
     const tab = stale();
     const { hook, written } = setup(tab);
@@ -151,15 +174,35 @@ describe('who settles the stored height', () => {
     expect(isArticleGrowPending('t', FLOW)).toBe(false);
   });
 
-  it('the narrow view never writes it, nor notes a full-width measure', () => {
-    const narrow = pageViewLens(stale(), 300);
-    expect(narrow).not.toBe(stale());
-    const { hook, tickTabs } = setup(narrow);
-    hook.result.current!.onLayout({ ...laidOut, heightNeeded: 4000 });
-    hook.result.current!.onLayout({ ...laidOut, heightNeeded: 4000, local: true });
-    expect(tickTabs).not.toHaveBeenCalled();
-    expect(hook.result.current!.measured.size).toBe(0);
-    expect(isArticleGrowPending('t', FLOW)).toBe(true);
+  it('the narrow view never writes its own measure, nor notes a full-width one', () => {
+    vi.useFakeTimers();
+    try {
+      const narrow = pageViewLens(stale(), 300);
+      expect(narrow).not.toBe(stale());
+      const { hook, tickTabs } = setup(narrow);
+      hook.result.current!.onLayout({ ...laidOut, heightNeeded: 4000 });
+      hook.result.current!.onLayout({ ...laidOut, heightNeeded: 4000, local: true });
+      expect(tickTabs).not.toHaveBeenCalled();
+      expect(hook.result.current!.measured.size).toBe(0);
+      expect(isArticleGrowPending('t', FLOW)).toBe(true);
+      // Only the full-width estimate is asked for, once the writing rests (useNarrowHeightEstimate.test.ts).
+      vi.advanceTimersByTime(NARROW_ESTIMATE_DELAY_MS);
+      expect(tickTabs).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('a Viewer in the narrow view asks for no estimate', () => {
+    vi.useFakeTimers();
+    try {
+      const { hook, tickTabs } = setup(pageViewLens(stale(), 300), false);
+      hook.result.current!.onLayout({ ...laidOut, local: true });
+      vi.advanceTimersByTime(NARROW_ESTIMATE_DELAY_MS * 2);
+      expect(tickTabs).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -170,7 +213,7 @@ describe('the drawn height', () => {
     act(() => hook.result.current!.onLayout(laidOut));
     expect(tickTabs).not.toHaveBeenCalled();
     const measured = hook.result.current!.measured;
-    expect(measured.get(FLOW)).toEqual({ width: 856, height: 2600 });
+    expect(measured.get(FLOW)).toEqual({ width: CONTINUOUS_PAGE_WIDTH, height: 2600 });
     const page = layOutPages(pagesOf(tab))[0]!;
     expect(page.rect.height).toBe(240);
     expect(drawnPageHeight(page, measured)).toBe(2600);

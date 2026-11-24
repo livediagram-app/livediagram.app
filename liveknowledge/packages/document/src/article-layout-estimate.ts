@@ -52,6 +52,9 @@ type EstimatedArticle = {
   // the page must be for the writing, from its top to the foot of its bottom margin, in canvas px. It is always one
   // page, never added to and never overflowing. Absent on paper pages.
   height?: number;
+  // On a continuous page: each zone's top, by its id, in canvas px from the page's top (./continuous-page-width reads
+  // what a wider column changes of it). Absent on paper pages.
+  zoneTops?: Map<string, number>;
 };
 
 // The most pages an estimate grows an article to (a preview, never the article itself).
@@ -128,6 +131,7 @@ function layoutOnce(
   let y = own[0]!.rect.y + top;
   let first = true;
   let overflows = false;
+  const zoneTops = new Map<string, number>();
   const page = () => own[at]!;
   const inkOf = (p: LaidOutPage) => {
     const tone = p.background?.fill ? pageFillTone(p.background.fill) : '#ffffff';
@@ -216,6 +220,7 @@ function layoutOnce(
     if (b.type === 'zone') {
       // A zone keeps its room in the writing (its elements are drawn as elements).
       if (!room(b.height)) break;
+      if (continuous) zoneTops.set(b.id, y - own[0]!.rect.y);
       y += b.height + 0.6 * line;
       first = false;
       continue;
@@ -391,7 +396,7 @@ function layoutOnce(
       pagesUsed: at + 1,
       added,
       overflows,
-      ...(continuous ? { height: Math.ceil(y - own[0]!.rect.y + margin) } : {}),
+      ...(continuous ? { height: Math.ceil(y - own[0]!.rect.y + margin), zoneTops } : {}),
     },
     headingPages,
   };

@@ -7,7 +7,7 @@ import type {
 } from '@liveworkspace/workbench/lib/api/last-seen-copies';
 import { keptWarmTab } from '@liveworkspace/workbench/lib/warm-open';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import type { Tab } from '@liveknowledge/document';
+import { migrateStoredTab, type Tab } from '@liveknowledge/document';
 import type { LiveDoc } from '@liveknowledge/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
@@ -15,6 +15,21 @@ import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/ta
 import { placeholdersFromSummaries } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
+
+// The last seen copy's first tab as a stored tab is read (migrateStoredTab, as the api's tab read and the offline store
+// run it): the copy was kept as an earlier load stored it, so a page kept at its first width (856 px, before Work
+// Tracker 1418) would otherwise paint, and stay, unwidened, its zones and margin notes where the narrower page had
+// them. Kept by copy, so the warm paint and the load that keeps it hold the same tab and nothing is drawn twice.
+const settledWarmTabs = new WeakMap<object, Tab>();
+export function settledWarmTab(tab: unknown): Tab {
+  const key = tab as object;
+  let settled = settledWarmTabs.get(key);
+  if (!settled) {
+    settled = migrateStoredTab(tab as Tab);
+    settledWarmTabs.set(key, settled);
+  }
+  return settled;
+}
 
 // The common "seed the editor from a fetched document" body shared by
 // useIdentityBootstrap's two arrival branches (share-code visitor and
@@ -108,7 +123,7 @@ export function makePaintLastSeen(deps: SeedDeps) {
     const tabs = placeholdersFromSummaries(copy.item.tabs);
     const firstId = firstTabToLoad(copy.item.tabs, copy.access.tabScope);
     const index = tabs.findIndex((t) => t.id === firstId);
-    if (copy.firstTab && index >= 0) tabs[index] = copy.firstTab.tab as Tab;
+    if (copy.firstTab && index >= 0) tabs[index] = settledWarmTab(copy.firstTab.tab);
     showDocument(deps, copy.item, tabs, firstId, copy.access.tabScope);
   };
 }
@@ -147,9 +162,8 @@ export function makeSeedFetchedDocument(deps: SeedDeps) {
       const loaded = await apiLoadTabRevisioned(selfId, fetched.id, firstId, tabShareCode, {
         open: recordOpen,
       }).catch(() => null);
-      const first = loaded
-        ? (keptWarmTab<Tab>(warmFirstTab?.(), firstId, loaded.rev) ?? loaded.tab)
-        : null;
+      const kept = loaded ? keptWarmTab<unknown>(warmFirstTab?.(), firstId, loaded.rev) : null;
+      const first = loaded ? (kept ? settledWarmTab(kept) : loaded.tab) : null;
       // Only mark the tab loaded when the eager fetch actually
       // returned content. If it failed (e.g. a transient 403 from
       // a request that raced ahead of the account token / session

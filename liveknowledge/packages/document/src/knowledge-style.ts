@@ -170,7 +170,7 @@ const ARTICLE_SPACING = { compact: 'single', comfortable: 'onehalf', relaxed: 'd
 
 /**
  * The style every page's writing is drawn with (the article style machinery, ./article-style): the knowledgebase's
- * fonts, size, spacing and heading style on the 760 px column (Narrow margins). Headings take the accent, as the
+ * fonts, size, spacing and heading style on the 960 px column (Narrow margins). Headings take the accent, as the
  * links, quotes, tables and code blocks do. The same object back for the same style, so a flow handed it keeps its
  * identity across renders.
  */
