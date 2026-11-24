@@ -38,3 +38,5 @@ export * from './feature-art/article-looks';
 export * from './feature-art/article-blocks';
 export * from './feature-art/writing-tools';
 export * from './feature-art/automations';
+// The other apps: Ask AI, Send to Plan, Start a Call Here and Connect a File.
+export * from './feature-art/other-apps';

@@ -39,3 +39,8 @@ export * from './feature-art/plan-reach';
 export * from './feature-art/plan-flow';
 // Walkthroughs, Snapshots and changes that wait out a dropped connection.
 export * from './feature-art/together-safety';
+
+export * from './feature-art/plan-crossapp';
+export * from './feature-art/together-calls';
+export * from './feature-art/forms-extra';
+export * from './feature-art/automations-reach';

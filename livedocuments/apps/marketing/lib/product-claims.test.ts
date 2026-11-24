@@ -59,8 +59,8 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'imported images go through the image upload pipeline',
   },
   {
-    pattern: /AI assistance|AI (?:key|panel)|ask and clean|clean mode|assistant in the editor/i,
-    why: 'the editor has no AI assistant of its own; AI tools connect over MCP (docs/specs/019-marketing/build-with-ai.md)',
+    pattern: /AI assistance|AI panel|ask and clean|clean mode|assistant in the editor/i,
+    why: "the editor's only AI is Ask AI in Tools, which answers about the open item and changes nothing; AI that edits connects over MCP (liveworkspace/docs/specs/020-ask/ask.md)",
   },
 ];
 

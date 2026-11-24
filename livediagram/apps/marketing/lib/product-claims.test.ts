@@ -59,7 +59,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /AI assistance|AI panel|ask and clean|clean mode|assistant in the editor/i,
-    why: 'the editor has no AI assistant of its own; AI tools connect over MCP (docs/specs/019-marketing/build-with-ai.md)',
+    why: "the editor's own AI is Ask AI, which answers questions and never edits; AI tools that build connect over MCP (docs/specs/013-workspace/ask-ai.md, docs/specs/019-marketing/build-with-ai.md)",
   },
 ];
 

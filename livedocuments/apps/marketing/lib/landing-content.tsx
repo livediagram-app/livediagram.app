@@ -9,9 +9,12 @@ import {
   ArticleTableArt,
   ArticleWrapArt,
   ApprovalArt,
+  AskAiArt,
   AssignedActionsArt,
   AutomationsArt,
+  CallHereArt,
   CommentsArt,
+  ConnectFileArt,
   ContentsSidebarArt,
   ExpiryArt,
   FindReplaceArt,
@@ -37,6 +40,7 @@ import {
   RevokeArt,
   SearchPaletteArt,
   SelectionGlowArt,
+  SendToPlanArt,
   ShareLinksArt,
   SlideBuildsArt,
   SlideLayoutsArt,
@@ -125,7 +129,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Write',
         title: 'Pictures and charts in the text',
         description:
-          'Pictures and charts sit in the line, wrap left or right, or float free. Drop a shape into the writing and a drawing area opens right there in the text. Give a picture alt text for screen readers, and link a chart to a liveplanner sheet to keep it in step.',
+          'Pictures and charts sit in the line, wrap left or right, or float free. Drop a shape into the writing and a drawing area opens right there in the text. Give a picture alt text for screen readers, and link a chart to a liveplanner plan, a Sheet range, board counts or a Dashboard metric, to keep it in step.',
       },
       {
         art: <ArticleTableArt />,
@@ -384,9 +388,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the pages with you: live cursors, comments on anything, and actions handed to teammates. Ask for sign-off, record a walkthrough, go back to any version, or hand the work to your AI.',
+      'Share a link and your team is on the pages with you: live cursors, comments on anything, and actions handed to teammates. Ask for sign-off, record a walkthrough, go back to any version, send the follow-ups to a plan, or hand the work to your AI.',
     metaDescription:
-      'Share a link and your team is on the pages with you: live cursors, comments, approvals, version history, walkthroughs and an MCP server for AI.',
+      'Work on documents together: live cursors, comments, approvals, version history, walkthroughs, calls, cards sent to a plan and AI that answers from your pages.',
     highlights: [
       'Live presence',
       'Comments on anything',
@@ -491,20 +495,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Copy an iframe from the Share dialog and the document sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save.',
       },
       {
-        art: <LiveEmbedArt />,
-        href: '/help/palette/embed-elements/',
-        group: 'Share & access',
-        title: 'Your other work, live on the page',
-        description:
-          'Add an Embed File and a canvas, plan, design or knowledgebase from livediagram, liveplanner, livedesign or liveknowledge sits on the page, live and read-only. Everyone sees it with their own access, and someone without access sees only a blurred picture.',
-      },
-      {
         art: <TeamsArt />,
         href: '/help/collaboration/teams/',
         group: 'Share & access',
         title: 'Teams with a shared library',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of documents they can all open and edit. Save shapes and components to the team’s Library and drag them from the palette onto any page, in every app. Admins manage membership and roles; members just get to work.',
+          'Create a team, invite people by email or a join link, and everyone gets a shared folder of documents they can all open and edit. Save shapes and components to the team’s Library and drag them from the palette onto any page, in every app. Admins manage people and roles from the team’s page, with an Audit Log of what changed; members just get to work.',
       },
       {
         art: <ExpiryArt />,
@@ -523,12 +519,52 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The document is yours again.',
       },
       {
+        art: <LiveEmbedArt />,
+        href: '/help/palette/embed-elements/',
+        group: 'Your other apps',
+        title: 'Your other work, live on the page',
+        description:
+          'Add an Embed File and a canvas, plan, design or knowledgebase from livediagram, liveplanner, livedesign or liveknowledge sits on the page, live and read-only. Everyone sees it with their own access, and someone without access sees only a blurred picture.',
+      },
+      {
+        art: <ConnectFileArt />,
+        href: '/help/tabs/connected-files/',
+        group: 'Your other apps',
+        title: 'Connect files from your other apps',
+        description:
+          'Add a plan, a canvas, a design or a Space as a tab of the document, with the role everyone gets on it. The tab shows a preview and opens the file in its own app, and Connect both files adds a tab back the other way.',
+      },
+      {
+        art: <SendToPlanArt />,
+        href: '/help/collaboration/send-to-plan/',
+        group: 'Your other apps',
+        title: 'Send to Plan',
+        description:
+          'Pick a sentence, a list item or a comment thread and make it a card in one of your liveplanner plans, its assignee and due day read from the words. A chip on the words shows where the card stands and ticks once it is done.',
+      },
+      {
+        art: <CallHereArt />,
+        href: '/help/collaboration/start-a-call/',
+        group: 'Your other apps',
+        title: 'Start a call here',
+        description:
+          'Press Call and a livehuddle video call about the document opens in a new tab. Everyone with the document open sees it is on and can join. Wrap Up sends the summary to a knowledgebase and the actions to a plan.',
+      },
+      {
+        art: <AskAiArt />,
+        href: '/help/privacy-and-security/data-privacy/#ai-features',
+        group: 'AI & your tools',
+        title: 'Ask AI about the document',
+        description:
+          'Signed in, open Ask AI in Tools and ask about the document in plain words: the key points, or what is still to be decided. The answer comes from the document’s own words, and each source it names is one press from its place on the page.',
+      },
+      {
         art: <AutomationsArt />,
         href: '/help/tools/automations/',
         group: 'AI & your tools',
         title: 'Automations that keep it current',
         description:
-          'Give a document rules of its own: name a version every Friday, tell Slack or Microsoft Teams about new comments and versions, or email you when nobody has touched it in 90 days. Rules run on our servers, even with nobody in the document.',
+          'Give a document rules of its own: name a version every Friday, tell Slack or Microsoft Teams about new comments and versions, or email you when nobody has touched it in 90 days. Steps reach your other apps too, making a card in a liveplanner plan or adding a tab from a template. Rules run on our servers, even with nobody in the document.',
       },
       {
         art: <McpArt />,

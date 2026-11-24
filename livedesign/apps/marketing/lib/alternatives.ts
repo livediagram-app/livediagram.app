@@ -4,7 +4,7 @@ import { SITE_URL } from '@livedesign/ui';
 // livedesign's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livedesign"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-11-18');
+const UPDATED = new Date('2026-11-24');
 
 const LIST: Alternative[] = [
   {
@@ -54,6 +54,16 @@ const LIST: Alternative[] = [
         us: 'Its own JSON export, SVG as editable shapes, and PSD on photo pages',
         them: 'Figma and Sketch files, PowerPoint decks, PNG and JPG images, and SVG as editable vectors',
       },
+      {
+        label: 'AI',
+        us: 'Ask AI answers from the design’s words and names each source; an MCP connection lets your AI tool make and edit designs',
+        them: 'Figma Make and AI tools that generate designs, prototypes and images, on monthly AI credits',
+      },
+      {
+        label: 'Around the design',
+        us: 'Plans, canvases and Spaces connected as tabs, review comments sent to a plan as cards, and calls started from the design',
+        them: 'FigJam, Slides, Sites and Buzz alongside Figma Design, on the right seat',
+      },
     ],
     themBest: [
       'A complete product design tool: components, variants, variables and auto layout for a design system that grows with the product.',
@@ -72,6 +82,7 @@ const LIST: Alternative[] = [
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can add logo, wireframe and photo pages for you, and in Claude a live view of the design opens beside the answer.',
       'A Personal or team Library: save any selection once, then drop it into every design.',
+      'Turn a review comment into a card in a liveplanner plan, start a livehuddle call about the design, and keep the plan behind it one tab away.',
       '36 templates to start from, by what you are making: logos, brand boards and marks, clickable app and website wireframes for shopping, travel, social and work, and a photo to edit.',
       'Free and MIT-licensed, with every feature on the free plan.',
     ],

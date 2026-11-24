@@ -15,6 +15,8 @@ export { PresenceArt, RealtimeArt } from './feature-art/together';
 export { ExpiryArt, RevokeArt, ShareLinksArt, TeamsArt } from './feature-art/sharing';
 export { ApiArt } from './feature-art/foundations';
 export * from './feature-art/calls';
+// Calls started from the other apps: the Call button, the Wrap Up and Send to Plan.
+export { CallFromItemArt, SendToPlanArt, WrapUpArt } from './feature-art/calls-from-items';
 // What a Space holds beyond its rooms and calls: the 3D View, the Receptionist, the Room Builder, the games, the Mini
 // View, snapshots and automations.
 export * from './feature-art/space-life';

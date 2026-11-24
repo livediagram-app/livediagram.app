@@ -14,6 +14,7 @@ const INTEGRATION_ANSWERS = new Map<string, RegExp>([
   ['How is a knowledgebase shared?', /Like every liveworkspace item/],
   ['Can I restrict a single page?', /every liveworkspace app/],
   ['What is tracked?', /liveworkspace’s own telemetry service/],
+  ['Can I start a call or a card from a page?', /livehuddle call about the knowledgebase/],
 ]);
 
 const OTHER_PRODUCTS =

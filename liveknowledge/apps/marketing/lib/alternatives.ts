@@ -8,7 +8,11 @@ import { SITE_URL } from '@liveknowledge/ui';
 // Each tool is compared at its own job, a team's knowledge tool. What is said of a competitor is its category and
 // what it is widely known for, never a price, a limit or a plan's contents. Every page says where liveknowledge
 // is behind: databases, page-level permissions, integrations, a native mobile app, semantic search, public sites.
-const UPDATED = new Date('2026-11-20');
+// Re-checked 2026-11-24 against each competitor's own pricing page: Slite has paid plans only, with Ask, doc
+// verification, MCP and API access, and search across connected tools (https://slite.com/pricing); Guru prices
+// through its sales team and serves agents over MCP (https://www.getguru.com/pricing); Outline's hosted service is
+// paid, with AI answers and an MCP server (https://www.getoutline.com/pricing).
+const UPDATED = new Date('2026-11-24');
 
 // Our side of the rows most pages share, written once so the six pages cannot drift apart.
 const US = {
@@ -20,12 +24,12 @@ const US = {
     'An owner, a verified tick with a name and a date, and a review that comes due, on every page',
   ask: 'Cited answers from your pages on built-in AI, or your own Claude or OpenAI key. It says what the pages do not cover',
   agents:
-    'An MCP server and a CLI in pages and passages, trust fields on every passage, edits as suggestions',
+    'An MCP server and a CLI in pages and passages, trust fields on every passage, edits as suggestions unless AI Editing allows more',
   permissions: 'Per knowledgebase: Editor, Participant, Viewer. No page-level permissions',
   search: 'Keyword search over passages. No semantic search',
   mobile: 'In a phone’s browser. No native app',
   integrations:
-    'Live embeds from the other liveworkspace apps, a REST API, the MCP server and the CLI',
+    'Live embeds from the other liveworkspace apps, Ask over connected items, Automations, a REST API, the MCP server and the CLI',
   publish: 'Publish to the Web: a public, searchable site from saved pages. No custom domain',
 };
 
@@ -40,7 +44,7 @@ const AGENTS_SECTION = {
   heading: 'Agents as readers',
   paragraphs: [
     'liveknowledge treats an agent as a reader with the same rights as the person it acts for. Its MCP server and command line speak in pages and passages: the pages a team marks Always in Context first, then passages by search, then a whole page when it is needed.',
-    'Every passage arrives with how far to trust it: whether the page is verified, when, whether its review is due, and any page it is known to disagree with. An agent’s edit lands as a suggestion a person accepts, and a question no page answered is recorded so someone can write that page.',
+    'Every passage arrives with how far to trust it: whether the page is verified, when, whether its review is due, and any page it is known to disagree with. By default an agent’s edit lands as a suggestion a person accepts; an Editor’s AI Editing setting decides whether agents may change unverified pages, or any page, themselves. A question no page answered is recorded so someone can write that page.',
   ],
 };
 
@@ -202,14 +206,14 @@ const LIST: Alternative[] = [
       row('Start without an account', US.account, 'An account to create documents'),
       row('Page trust', US.trust, 'Document verification with an expiry'),
       row('AI answers', US.ask, 'Its own AI answers with sources, part of its plans'),
-      row('Agents', US.agents, 'An API and integrations'),
-      row('Search', US.search, 'AI-assisted search across documents'),
+      row('Agents', US.agents, 'An MCP server and an API'),
+      row('Search', US.search, 'AI-assisted search across documents and the tools you connect'),
       row('Integrations', US.integrations, 'Integrations with chat and other work tools'),
       row('Mobile', US.mobile, 'Native apps'),
     ],
     themBest: [
       'You want AI answers with no daily limits and no key of your own to add.',
-      'You want search that understands meaning, not just the words on the page.',
+      'You want search that understands meaning, not just the words on the page, and reaches the other tools you connect.',
       'You want integrations with your chat tool and the other tools your team already uses.',
       'You want a polished, focused product with native apps and a company’s support behind it.',
     ],
@@ -218,7 +222,7 @@ const LIST: Alternative[] = [
       'Agents are first-class readers, through an MCP server and a CLI with trust fields on every passage.',
       'Insights shows which agents read what, and the questions nobody could answer.',
       'MIT-licensed and free to start.',
-      'It sits in a workspace: a page embeds a live diagram, board, document or design from the other apps.',
+      'It sits in a workspace: a page embeds a live diagram, board, document, design or Space from the other apps, and Ask answers from the ones connected to it.',
     ],
     sections: [
       {
@@ -263,12 +267,12 @@ const LIST: Alternative[] = [
     h1: 'An open-source Guru alternative',
     lede: 'Guru made verification the centre of a knowledge tool: every card has an expert who confirms it on a schedule, and the answer reaches people where they work. liveknowledge shares the first idea and is much smaller on the second.',
     rows: [
-      row('Price', US.price, 'Paid plans'),
+      row('Price', US.price, 'Priced through its sales team'),
       row('Open source', US.open, 'No, proprietary'),
       row('Start without an account', US.account, 'An account to create cards'),
       row('Page trust', US.trust, 'Cards verified by an expert on an interval'),
       row('AI answers', US.ask, 'Its own AI answers, with sources'),
-      row('Agents', US.agents, 'An API and its own connections for AI tools'),
+      row('Agents', US.agents, 'MCP for your AI tools, and its own knowledge agents'),
       row(
         'Structure',
         'Long pages in a page tree, linked to each other',
@@ -302,8 +306,8 @@ const LIST: Alternative[] = [
       {
         heading: 'Where Guru reaches further',
         paragraphs: [
-          'liveknowledge has no browser extension and no chat integration, and it searches its own pages by keyword. If the value of your knowledge tool is that the answer turns up wherever someone is working, Guru does that and liveknowledge does not.',
-          'What liveknowledge offers instead is the other direction: the agent your team already uses comes to the knowledgebase, over MCP, and reads it with the trust attached.',
+          'liveknowledge has no browser extension and no chat integration. Its search reads its own pages by keyword, and Ask reaches only as far as the diagrams, plans, documents, designs and Spaces connected to it in liveworkspace. If the value of your knowledge tool is that the answer turns up wherever someone is working, Guru does that and liveknowledge does not.',
+          'Both now hand knowledge to the agents a team already uses over MCP. In liveknowledge every passage arrives with its verified state, its review date and its page’s Health Score, so an agent can weigh it as a person would.',
         ],
       },
     ],
@@ -412,7 +416,7 @@ const LIST: Alternative[] = [
       ),
       row('Page trust', US.trust, 'Document history and who last edited'),
       row('AI answers', US.ask, 'AI answers on its hosted service'),
-      row('Agents', US.agents, 'A documented API'),
+      row('Agents', US.agents, 'An MCP server and a documented API'),
       row(
         'Structure',
         'Knowledgebases, each a page tree up to eight levels deep',
