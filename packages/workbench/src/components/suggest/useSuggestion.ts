@@ -7,7 +7,7 @@
 // for the item and the checks stop.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { workbench } from '../../bindings';
-import { noticeSlotHeld } from '../../lib/notice-slot';
+import { noticeSlotHeld, onNoticeSlot } from '../../lib/notice-slot';
 import { busyNow, watchActivity } from './suggest-activity';
 import { decideSuggestion, maySuggest, turnOffSuggestion } from './suggest-memory';
 import { SUGGESTIONS, SUGGEST_CHECK_MS, SUGGEST_IDLE_MS, type SuggestionId } from './suggestions';
@@ -97,6 +97,18 @@ export function useSuggestion({
     shownRef.current = false;
     setFind(null);
   }, [allowed, id]);
+
+  // A notice takes the slot while one is on show (the Nothing in View hint, a paste notice): the suggestion goes,
+  // undecided, so the two never stack ("One at a time"); it can come back once the slot is free.
+  useEffect(() => {
+    if (!find) return undefined;
+    return onNoticeSlot(() => {
+      if (!noticeSlotHeld()) return;
+      if (showing === id) showing = null;
+      shownRef.current = false;
+      setFind(null);
+    });
+  }, [find, id]);
 
   // Suggest Other Apps turned off while on show ("One switch for all"): it goes at the next tick, undecided, so it
   // can come back if the switch is turned on again. A read of the preferences each tick, only while one shows.

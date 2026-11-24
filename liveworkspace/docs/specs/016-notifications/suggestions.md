@@ -30,7 +30,8 @@ retired custom themes), so there is nothing one click could do. It comes when a 
 ## Rules
 
 - **One at a time.** At most one suggestion shows on a page, and none while the notice slot holds something else (a
-  paste notice).
+  paste notice, the Nothing in View hint). A notice that takes the slot while a suggestion shows sends it away,
+  undecided, so it can come back once the slot is free.
 - **Never mid-gesture.** None appears while the person types (a field or the canvas text has the focus, or a key went
   down in the last 1.5 s), holds a pointer down (a drag, a draw, a resize), or in the 1.5 s after either. One already
   showing stays; it covers nothing the person is working on.

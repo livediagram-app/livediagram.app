@@ -187,6 +187,23 @@ describe('NextAppSuggestion', () => {
     expect(screen.getByRole('status')).toBeTruthy();
   });
 
+  it('goes, undecided, when a notice takes the slot while it shows, and comes back once the slot is free', async () => {
+    mount(() => found());
+    await idle();
+    expect(screen.getByRole('status')).toBeTruthy();
+    let release = () => {};
+    act(() => {
+      release = holdNoticeSlot();
+    });
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(maySuggest('make-plan', 'D1')).toBe(true);
+    await idle(SUGGEST_CHECK_MS);
+    expect(screen.queryByRole('status')).toBeNull();
+    act(() => release());
+    await idle(SUGGEST_CHECK_MS);
+    expect(screen.getByRole('status')).toBeTruthy();
+  });
+
   it('takes an async check, and suggests nothing for one that finds nothing or fails', async () => {
     const check = vi
       .fn<SuggestionCheck>()

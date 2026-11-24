@@ -1,10 +1,12 @@
 // Nothing in view (liveworkspace/docs/specs/016-notifications/toasts.md "Timing"): while every element on the tab has
 // scrolled out of view (see useOffscreenContent), a standing info toast, "Nothing in view" with Show All, which fits
 // the tab to the screen as the Fit button does. Mounted by CanvasChrome while it holds; it draws nothing itself. It
-// leaves when this unmounts (something is back in view); closed, it stays away for the rest of this spell.
+// leaves when this unmounts (something is back in view); closed, it stays away for the rest of this spell. While it
+// shows it holds the notice slot (callouts.md), so a suggestion never stacks over it.
 
 import { useEffect, useRef } from 'react';
 import { useToast } from '../../hooks/ui/useToast';
+import { holdNoticeSlot } from '../../lib/notice-slot';
 
 export const OFFSCREEN_TOAST_KEY = 'nothing-in-view';
 
@@ -23,6 +25,7 @@ export function OffscreenContentHint({ onBringBack }: OffscreenContentHintProps)
   const closed = useRef(false);
   useEffect(() => {
     if (closed.current) return;
+    const release = holdNoticeSlot();
     toast.action({
       key: OFFSCREEN_TOAST_KEY,
       message: 'Nothing in view',
@@ -30,9 +33,13 @@ export function OffscreenContentHint({ onBringBack }: OffscreenContentHintProps)
       actions: [{ label: 'Show All', onSelect: () => bringBack.current() }],
       onDismiss: () => {
         closed.current = true;
+        release();
       },
     });
-    return () => toast.dismissAction(OFFSCREEN_TOAST_KEY);
+    return () => {
+      release();
+      toast.dismissAction(OFFSCREEN_TOAST_KEY);
+    };
   }, [toast]);
   return null;
 }
