@@ -35,6 +35,12 @@ replaces what the fork still shows around the writing.
   Linked From stands right under the writing. The stored page is never taller than its writing needs; a press
   anywhere in the window under the last line still puts the caret in the writing, which is the view's doing and
   stores nothing.
+- **Room under the foot.** Scrolled to the bottom, the last thing on a page (its last line, Linked From or the
+  Comments and their composer) stands 144 px clear of the footer bar: the page's 48 px bottom margin and 96 px of
+  room under it, on a desktop and a phone alike. The room follows what this browser draws, never only the stored
+  height: a page whose stored height is shorter than its writing here (comments or Linked From that arrived after
+  it was laid out, a page last laid out at another width, a reader who may not settle it) keeps the same room
+  (owner 2026-11-24: "the comments touches the footer of the page, needs spacing below it").
 - **No zoom and no panning.** The zoom cluster, Fit to Screen, the minimap and the hand tool are not in
   liveknowledge. The browser's own zoom is the zoom. A wide table or a wide drawing scrolls sideways inside its own
   box. On the page itself the canvas's bare-ground gestures do not exist: held Space scrolls the page, the middle
