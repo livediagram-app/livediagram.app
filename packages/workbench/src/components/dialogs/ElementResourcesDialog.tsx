@@ -33,8 +33,8 @@ export type ElementResourcesLinks<K extends string> = {
   currentTabId: string;
   /** Sets the link on the selection (the menu that opened the dialog made the element the selection). */
   onLink: (link: PickedElementLink<K> | null) => void;
-  /** The editor's telemetry, as `track('Element', action, type)`. */
-  track: (action: 'Linked' | 'Unlinked', type?: string) => void;
+  /** The editor's telemetry `track`, called with the category spelled out so the telemetry scan reads each event. */
+  track: (category: 'Element', action: 'Linked' | 'Unlinked', type?: string) => void;
 };
 
 /** What the dialog adds to the editor's quickBarItems: a link's removal, its tabs and its places' steps. */
@@ -58,7 +58,7 @@ function linkParts<K extends string>(
   return {
     onRemoveLink: () => {
       links.onLink(null);
-      links.track('Unlinked');
+      links.track('Element', 'Unlinked');
     },
     tabs: links.tabs,
     // A link's place is a step of this dialog, not a dialog of its own: the address, the tabs, the files.
@@ -97,6 +97,7 @@ function linkParts<K extends string>(
                   : { kind: 'url', url: appFileUrl(pick.app, pick.id) },
             );
             links.track(
+              'Element',
               'Linked',
               pick.kind === 'url'
                 ? 'Url'

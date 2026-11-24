@@ -176,7 +176,7 @@ describe('ElementResourcesDialog', () => {
     expect(handed.parts!.tabs).toBe(links!.tabs);
     handed.parts!.onRemoveLink();
     expect(links!.onLink).toHaveBeenCalledWith(null);
-    expect(links!.track).toHaveBeenCalledWith('Unlinked');
+    expect(links!.track).toHaveBeenCalledWith('Element', 'Unlinked');
   });
 
   it('opens a web address step on the link it has', () => {
@@ -236,10 +236,10 @@ describe('ElementResourcesDialog', () => {
       [{ kind: 'url', url: expect.stringContaining('p4') }],
     ]);
     expect(vi.mocked(links!.track).mock.calls).toEqual([
-      ['Linked', 'Url'],
-      ['Linked', 'Tab'],
-      ['Linked', 'Design'],
-      ['Linked', 'App'],
+      ['Element', 'Linked', 'Url'],
+      ['Element', 'Linked', 'Tab'],
+      ['Element', 'Linked', 'Design'],
+      ['Element', 'Linked', 'App'],
     ]);
     expect(done).toHaveBeenCalledTimes(4);
   });

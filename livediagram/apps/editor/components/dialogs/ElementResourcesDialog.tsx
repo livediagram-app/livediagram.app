@@ -30,7 +30,7 @@ export function ElementResourcesDialog() {
         tabs: editor.tabs,
         currentTabId: editor.activeId,
         onLink: editor.applyElementLink,
-        track: (action, type) => track('Element', action, type),
+        track,
       }}
       options={(target, links) =>
         quickBarItems(target, {
