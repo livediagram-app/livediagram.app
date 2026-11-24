@@ -415,7 +415,7 @@ describe('the new Spaces furnish what they promise', () => {
     for (const chair of chairs) {
       // Below the screen, facing it, and a seat a character can take.
       expect(chair.y).toBeGreaterThan(wall!.y + wall!.height);
-      expect(chair.chairFacing ?? chair.turn).toBe('s');
+      expect(chair.chairFacing).toBe('s');
       expect(seatsACharacter(chair.shape)).toBe(true);
     }
     expect(count('document-room', 'timer')).toBe(1);

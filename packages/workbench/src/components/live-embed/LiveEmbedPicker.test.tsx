@@ -115,9 +115,7 @@ describe('Find a File (Work Tracker 1427)', () => {
   it('falls back to Recent, saying so, when the search does not answer', async () => {
     open();
     await screen.findByText('Roadmap');
-    client.listItems.mockImplementationOnce(async () => {
-      throw new Error('offline');
-    });
+    client.listItems.mockRejectedValueOnce(new Error('offline'));
     fireEvent.change(screen.getByLabelText('Find a file'), { target: { value: 'road' } });
     expect(
       await screen.findByText('Search did not answer just now: showing your recent files.'),
