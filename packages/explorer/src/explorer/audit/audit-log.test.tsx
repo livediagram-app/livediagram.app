@@ -154,13 +154,13 @@ async function open(index: ReturnType<typeof createFakeIndex>, team?: TeamDetail
 }
 
 describe('the Audit Log', () => {
-  it('is an admin’s alone: a member sees no tab, lands on People from its address, and reads nothing', async () => {
+  it('is an admin’s alone: a member sees no tab, lands on the Library from its address, and reads nothing', async () => {
     const index = createFakeIndex({ audit: [row(1, 'shared')] });
     renderTeam(index, details('member'), undefined, 'audit');
     // The page has loaded (its headline says the reader's not an admin), and still no tab.
     await screen.findByText(/2 members/);
     expect(screen.queryByRole('tab', { name: /Audit Log/ })).toBeNull();
-    expect(screen.getByRole('tab', { name: /People/ }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: /Library/ }).getAttribute('aria-selected')).toBe('true');
     expect(reads(index)).toEqual([]);
   });
 

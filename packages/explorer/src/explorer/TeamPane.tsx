@@ -1,15 +1,15 @@
 'use client';
 
 // A team's page, at its root (liveworkspace/docs/specs/004-index/one-explorer.md "A team's page"): its header and
-// tabs (teams/page/TeamView.tsx), the People tab where the team is run, the Library tab (the team's list, drawn by
-// the caller), and for an admin the Audit Log tab (audit/AuditLog.tsx). A team the person is not in (gone, left,
+// tabs (teams/page/TeamView.tsx), the Library tab it opens on (the team's list, drawn by the caller), the People tab
+// where the team is run, and for an admin the Audit Log tab (audit/AuditLog.tsx). A team the person is not in (gone, left,
 // never joined) is a not-found card instead.
 
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { LIST_CARD, SKELETON } from '../ui/classes';
 import { useTeamDetails } from '../teams/team-details';
 import { useTeams } from '../teams/context';
-import { SIDEBAR_LABELS, viewLens, withLens, type TeamTab } from '../views';
+import { DEFAULT_TEAM_TAB, SIDEBAR_LABELS, viewLens, withLens, type TeamTab } from '../views';
 import { useExplorer } from './context';
 import { NotFoundCard } from './NotFoundCard';
 import { SECTIONS_BAR_ATTR } from './PhoneSections';
@@ -36,7 +36,7 @@ export { memberName } from '../teams/rules';
 
 export function TeamPage({
   teamId,
-  tab = 'people',
+  tab = DEFAULT_TEAM_TAB,
   libraryCount = null,
   children,
 }: {
@@ -63,14 +63,12 @@ export function TeamPage({
   if (load.state === 'loading') return <TeamPageSkeleton />;
   const { details } = load;
   const teamHelp = helpHref?.({ kind: 'team', id: teamId });
-  // The tab is in the address; the Library's lens stays with the Library alone.
+  // The tab is in the address (the Library, the default, rides none); the Library's lens stays with the Library alone.
   const onTab = (next: TeamTab) =>
     navigate(
-      next === 'people'
-        ? { kind: 'team', id: teamId }
-        : next === 'library'
-          ? withLens({ kind: 'team', id: teamId, tab: next }, viewLens(view))
-          : { kind: 'team', id: teamId, tab: next },
+      next === DEFAULT_TEAM_TAB
+        ? withLens({ kind: 'team', id: teamId }, viewLens(view))
+        : { kind: 'team', id: teamId, tab: next },
     );
   return (
     <Suspense fallback={<TeamPageSkeleton />}>
