@@ -139,7 +139,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the canvas with you: live cursors, comments on any element, recorded walkthroughs, a call started from the corner, actions sent to a plan as cards, and Workshop, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
+      'Share a link and your team is on the canvas with you: live cursors, comments on any element and recorded walkthroughs. Start a call without leaving the canvas, send its actions to a plan as cards, and run the session in Workshop, with timers, votes and a spotlight on the thing you mean.',
     metaDescription:
       'Share a link and your team is on the canvas with you: live cursors, comments, recorded walkthroughs, assigned actions, and workshop timers, votes and polls.',
     highlights: [
