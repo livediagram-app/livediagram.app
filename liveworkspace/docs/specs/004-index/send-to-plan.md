@@ -116,6 +116,24 @@ Trash shows no chip, and the place may be sent again. A place sent to several ca
   hover. In a thread's header it is the chip with its words. livehuddle, which has no element indicators, draws it as a
   disc on the sticky's top right corner.
 
+## On a touch screen
+
+Every entry works from a finger as it does from a mouse (Work Tracker 1424; owner, 2026-11-24: on an iPad a tap on
+Send to Plan or Send to Diagram did nothing). The same entries show in the same places; a tap opens the same picker.
+
+- **The words survive the tap.** A tap anywhere but on the words picked clears them before its click lands (iPad
+  Safari, Android Chrome), and the desktop's way to keep them (a press that never takes focus, `mousedown`) comes only
+  after. So an entry that sends words reads them as the press starts and sends those on its click; a press read more
+  than a second before its click counts for nothing (a held press, a keyboard press later).
+- **The reader's pills stay for their own tap.** The pills under a reader's picked words go when the words do, except
+  while a press on one is under way: they stay until its click sends, or the press is let go elsewhere.
+- **Clear of the system's handles.** On a coarse pointer the pills sit 24px under the words, not 8px, clear of the
+  selection's drag handle; where that would leave the screen they sit above the words instead.
+- **44px to tap.** Each entry's tap area is at least 44px both ways on a coarse pointer (the toolbars' packed pads,
+  [touch targets](../../../../livediagram/docs/specs/004-interface-design/touch-targets.md)), whatever size it is drawn;
+  a mouse sees no change.
+- Whether a keyboard is attached changes nothing: every entry is a button that a tap, a click, Enter and Space press.
+
 ## Agents
 
 liveplanner's MCP and CLI make cards with a source: `change_items`' `add` takes `sentFrom` (`{app, itemId, tabId?,

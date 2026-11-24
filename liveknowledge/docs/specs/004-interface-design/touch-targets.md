@@ -36,6 +36,9 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
 - **Every canvas toolbar pads its items.** The Palette strip's cards carry `PACKED_TOOLBAR_ITEMS`;
+  the selection toolbar (the shared `FloatingToolbar`), the text toolbar (`RichTextToolbar`) and the article page
+  toolbar's buttons carry `touch-target-packed`, each toolbar its own stacking context (Work Tracker 1424: Send to
+  Plan and Send to Diagram there were 32px and 36px to a finger);
   a tab's name, the tour card's buttons and a page's lock and cog get
   `touch-target-y`.
   The empty-tab card's close takes the full `touch-target`.

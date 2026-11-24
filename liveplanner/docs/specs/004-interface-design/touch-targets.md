@@ -27,8 +27,9 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
 - **Every canvas toolbar pads its items.** The Palette strip and the menu button's own card (`ToolbarExplorerButton`) both carry `PHONE_TOOLBAR_ITEMS`;
-  the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do a tab's name,
-  the tour card's buttons and a page's lock and cog.
+  the selection toolbars' square buttons (`SelectionPopover`'s 32px, the shared `FloatingToolbar`'s 28px and 32px)
+  carry `touch-target-packed`, each toolbar its own stacking context (Work Tracker 1424: Send to Plan there was 32px
+  wide to a finger); a tab's name, the tour card's buttons and a page's lock and cog get `touch-target-y`.
   The Plan cogs (a column's, Board Settings, a Sheet's) and the empty-tab card's close take the
   full `touch-target`.
   In the card panel, the card's number tag (`#12`, Copy Card Number) gets the full `touch-target`, 44px wide as well as

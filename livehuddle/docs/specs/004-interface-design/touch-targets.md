@@ -41,8 +41,9 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   own 16px pad on a coarse pointer (canvas element parts).
 - **Every canvas toolbar pads its items.** The Palette strip's cards (the Avatar strip's included) carry
   `PACKED_TOOLBAR_ITEMS`, the menu button's card (`ToolbarExplorerButton`) `PHONE_TOOLBAR_ITEMS`;
-  the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do a tab's name,
-  the tour card's buttons and a page's lock and cog.
+  the selection toolbars' square buttons (`SelectionPopover`'s 32px, the shared `FloatingToolbar`'s 28px and 32px)
+  carry `touch-target-packed`, each toolbar its own stacking context (Work Tracker 1424: Send to Plan there was 32px
+  wide to a finger); a tab's name, the tour card's buttons and a page's lock and cog get `touch-target-y`.
 - **A tab's presence avatars** (`TabPresenceStack`) draw at 16px and overlap under a mouse. On a touch screen they
   stop overlapping and each one, the `+N` badge too, is 24px wide (4px either side of the face, WCAG 2.5.8's AA
   floor) and padded to 44px tall with `touch-target-y`, so a thumb opens the Collaborators modal on the person it
