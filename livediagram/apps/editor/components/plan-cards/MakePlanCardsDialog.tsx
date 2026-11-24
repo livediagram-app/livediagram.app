@@ -282,15 +282,16 @@ export function MakePlanCardsDialog({
       return next;
     });
 
-  const summary = [
-    preview.made ? `Make ${plural(preview.made, 'card')}` : '',
-    preview.updated ? `update ${preview.updated}` : '',
+  const parts = [
+    preview.made ? `make ${plural(preview.made, 'card')}` : '',
+    preview.updated ? `update ${plural(preview.updated, 'card')}` : '',
     preview.links ? plural(preview.links, 'Blocked By link') : '',
     trashing ? `${trashing} to the Trash` : '',
     preview.loops ? `${preview.loops} left out (a loop)` : '',
   ]
     .filter(Boolean)
     .join(', ');
+  const summary = parts.charAt(0).toUpperCase() + parts.slice(1);
 
   return (
     <Dialog open onClose={onClose} titleId={titleId} size="3xl" phoneSheet className="max-h-[92vh]">
@@ -316,6 +317,7 @@ export function MakePlanCardsDialog({
               query={query}
               onQuery={setQuery}
               pickedId={plan?.id ?? null}
+              picked={plan}
               onPick={(p) => setPlan({ id: p.id, title: p.title })}
               newName={`Plan from ${sourceTitle || 'Untitled'}`.slice(0, 120)}
               onCreate={(name) => void makePlan(name)}

@@ -1,3 +1,4 @@
+import { rememberSend } from '@liveworkspace/workbench/components/send-to-plan/send-memory';
 // @vitest-environment jsdom
 // Make Plan Cards' preview (docs/specs/013-workspace/make-plan-cards.md "The preview"): pick a plan, board and column;
 // every shape a ticked row saying where it lands; Lanes Become; a shape made before updates its card; removed shapes'
@@ -182,6 +183,18 @@ describe('MakePlanCardsDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Update Cards' }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(toast.success).toHaveBeenCalledWith('1 card in Launch', {});
+  });
+
+  it('keeps the remembered plan listed when Recent has not got it, and counts the updates', async () => {
+    rememberSend('D', { planId: 'P', planTitle: 'Launch', board: 'b1', column: 'To Do', at: 1 });
+    open(client({ listItems: vi.fn().mockResolvedValue({ items: [] }) }), {
+      shapes: [shape('a'), shape('b')],
+      sends: [sent('a')],
+    });
+    const held = await screen.findByRole('button', { name: /Launch/ });
+    expect(held.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByText('No plans yet')).toBeNull();
+    await waitFor(() => expect(screen.getByText(/^Make 1 card, update 1 card\./)).toBeTruthy());
   });
 
   it('searches past 8 shapes, lists the first 200, and says how many more', async () => {

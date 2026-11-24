@@ -298,6 +298,7 @@ export function SendToPlanDialog({
               query={query}
               onQuery={setQuery}
               pickedId={plan?.id ?? null}
+              picked={plan}
               onPick={(p) => setPlan({ id: p.id, title: p.title })}
               newName={`Plans from ${sourceTitle || 'Untitled'}`.slice(0, 120)}
               onCreate={(name) => void makePlan(name)}
