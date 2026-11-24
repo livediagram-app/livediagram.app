@@ -27,5 +27,5 @@ export function ForApps({ scope, children, ...props }: InlineProps) {
 export function NotFor({ scope, children, ...props }: InlineProps) {
   const apps = noteApps(props);
   if (!scope || scope === 'all') return <>{children}</>;
-  return apps.includes(scope as never) ? null : <>{children}</>;
+  return apps.includes(scope) ? null : <>{children}</>;
 }
