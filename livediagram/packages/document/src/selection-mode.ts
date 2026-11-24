@@ -23,6 +23,8 @@ export const SELECTION_MODES = [
   'avatar',
   'eraser',
   'format',
+  // Magnifier (docs/specs/008-canvas/magnifier.md): a lens on the cursor, in the Preview group before Isometric.
+  'magnifier',
   'isometric',
 ] as const;
 
@@ -76,6 +78,7 @@ export const SELECTION_MODE_LABEL: Record<SelectionMode, string> = {
   avatar: 'Avatar',
   eraser: 'Eraser',
   format: 'Format',
+  magnifier: 'Magnifier',
   isometric: 'Isometric',
 };
 

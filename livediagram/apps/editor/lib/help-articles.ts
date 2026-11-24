@@ -43,6 +43,7 @@ export const HELP_ARTICLES = {
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',
   isometricMode: 'selection-modes/isometric-mode',
+  magnifier: 'selection-modes/magnifier',
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
@@ -187,6 +188,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   quickAddOnHover: {
     title: 'Learn about quick-add on hover',
     description: 'Open the element + menu by hovering instead of clicking.',
+  },
+  magnifier: {
+    title: 'Learn about the Magnifier',
+    description: 'Enlarge what is under the cursor on a big diagram without zooming.',
   },
   isometricMode: {
     title: 'Learn about the isometric view',

@@ -5,48 +5,48 @@ applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and 
 
 Scope, by file:
 
-| File                                                                                         | Role                                                                                             |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `packages/document/src/selection-mode.ts`                                                    | `'magnifier'` in `SELECTION_MODES` before `'isometric'`; `SELECTION_MODE_LABEL.magnifier`        |
-| `packages/document/src/mode-glyphs.ts`                                                       | `MODE_GLYPHS.magnifier`: a lens with a plus and a handle                                         |
-| `apps/editor/components/palette/palette.types.ts`                                            | `'magnifier'` in `CanvasTool`                                                                    |
-| `apps/editor/components/palette/canvas-tool-options.tsx`                                     | The picker row: group 2 (Preview), before Isometric, shortcut `M`, off on an empty canvas        |
-| `apps/editor/components/palette/palette-icons.tsx`                                           | `MagnifierIcon`, drawn from `MODE_GLYPHS`                                                        |
-| `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx`                               | `tools:mode-magnifier`, the Mode Button tile before Isometric's                                  |
-| `apps/editor/components/palette/palette-layouts.ts`                                          | `'magnifier'` in `PARTICIPANT_CANVAS_TOOLS`                                                      |
-| `apps/editor/lib/editor-commands.ts`                                                         | `tool:magnifier` ("Magnifier"), `needsContent`, not `mutates`                                    |
-| `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                                           | `m` in `VIEW_TOOL_KEYS`                                                                          |
-| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                                     | Escape leaves Magnifier (Select, or Hand on a phone), as it leaves Isometric                     |
-| `apps/editor/components/dialogs/shortcut-sections.ts`                                        | `M`: Magnifier in the shortcut sheet                                                             |
-| `apps/editor/hooks/canvas/useCanvasTool.ts`                                                  | `Canvas·Used·Magnifier` on entering                                                              |
-| `apps/editor/app/document/[id]/editor-state/useEditorTools.ts`                               | Empty-canvas guard; entering clears the selection                                                |
-| `apps/editor/lib/canvas-chrome.ts`                                                           | `elementsInertTool('magnifier')`; `cursor-none` while in it                                      |
-| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`                                       | Mouse drag pans; touch drag does not; no canvas menu, long press or double-tap zoom              |
-| `apps/editor/lib/magnifier-config.ts`                                                        | `MagnifierConfig`, defaults, ranges, presets, `clampMagnifierConfig`, load / save                |
-| `apps/editor/lib/magnifier-store.ts`                                                         | The one config store: `get`, `set(field, value)`, `subscribe`; persists; debounced telemetry     |
-| `apps/editor/lib/magnifier-lens.ts`                                                          | Pure geometry (`lensPlacement`) and the wheel step (`wheelChange`)                               |
-| `apps/editor/lib/magnifier-clone.ts`                                                         | `cloneCanvasLayer`: the drawn layer's copy, frames and videos stood in for                       |
-| `apps/editor/hooks/canvas/useMagnifierLens.ts`                                               | Pointer, wheel and re-copy wiring; per-frame transform writes                                    |
-| `apps/editor/components/canvas/MagnifierLens.tsx`                                            | The lens element: frame, stage, crosshair, value badge                                           |
-| `apps/editor/components/canvas/MagnifierClusterButton.tsx`                                   | The mode's control in the bottom-right cluster                                                   |
-| `apps/editor/components/canvas/MagnifierPopover.tsx`, `MagnifierHeroArt.tsx`                 | The settings popover and its header art                                                          |
-| `apps/editor/hooks/canvas/useDockPopovers.ts`                                                | `'magnifier'` in `DockPanel`                                                                     |
-| `apps/editor/components/canvas/CanvasCornerCluster.tsx`, `useCanvasChromePanels.tsx`, `CanvasChrome.tsx`, `Canvas.tsx` | Mount the button, the popover and the lens                                    |
-| `apps/editor/lib/help-articles.ts`                                                           | `magnifier` → `selection-modes/magnifier`                                                        |
-| `liveworkspace/apps/site/app/telemetry/livediagram/`                                         | `Magnifier` in the modes, `Magnifier*` in Mode Options, the event sentences                      |
+| File                                                                                                                   | Role                                                                                         |
+| ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `packages/document/src/selection-mode.ts`                                                                              | `'magnifier'` in `SELECTION_MODES` before `'isometric'`; `SELECTION_MODE_LABEL.magnifier`    |
+| `packages/document/src/mode-glyphs.ts`                                                                                 | `MODE_GLYPHS.magnifier`: a lens with a plus and a handle                                     |
+| `apps/editor/components/palette/palette.types.ts`                                                                      | `'magnifier'` in `CanvasTool`                                                                |
+| `apps/editor/components/palette/canvas-tool-options.tsx`                                                               | The picker row: group 2 (Preview), before Isometric, shortcut `M`, off on an empty canvas    |
+| `apps/editor/components/palette/palette-icons.tsx`                                                                     | `MagnifierIcon`, drawn from `MODE_GLYPHS`                                                    |
+| `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx`                                                         | `tools:mode-magnifier`, the Mode Button tile before Isometric's                              |
+| `apps/editor/components/palette/palette-layouts.ts`                                                                    | `'magnifier'` in `PARTICIPANT_CANVAS_TOOLS`                                                  |
+| `apps/editor/lib/editor-commands.ts`                                                                                   | `tool:magnifier` ("Magnifier"), `needsContent`, not `mutates`                                |
+| `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                                                                     | `m` in `VIEW_TOOL_KEYS`                                                                      |
+| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                                                               | Escape leaves Magnifier (Select, or Hand on a phone), as it leaves Isometric                 |
+| `apps/editor/components/dialogs/shortcut-sections.ts`                                                                  | `M`: Magnifier in the shortcut sheet                                                         |
+| `apps/editor/hooks/canvas/useCanvasTool.ts`                                                                            | `Canvas·Used·Magnifier` on entering                                                          |
+| `apps/editor/app/document/[id]/editor-state/useEditorTools.ts`                                                         | Empty-canvas guard; entering clears the selection                                            |
+| `apps/editor/lib/canvas-chrome.ts`                                                                                     | `elementsInertTool('magnifier')`; a crosshair, hidden inline while the lens shows            |
+| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`                                                                 | Mouse drag pans; touch drag does not; no canvas menu, long press or double-tap zoom          |
+| `apps/editor/lib/magnifier-config.ts`                                                                                  | `MagnifierConfig`, defaults, ranges, presets, `clampMagnifierConfig`, load / save            |
+| `apps/editor/lib/magnifier-store.ts`                                                                                   | The one config store: `get`, `set(field, value)`, `subscribe`; persists; debounced telemetry |
+| `apps/editor/lib/magnifier-lens.ts`                                                                                    | Pure geometry (`lensPlacement`) and the wheel step (`wheelChange`)                           |
+| `apps/editor/lib/magnifier-clone.ts`                                                                                   | `cloneCanvasLayer`: the drawn layer's copy, frames and videos stood in for                   |
+| `apps/editor/hooks/canvas/useMagnifierLens.ts`                                                                         | Pointer, wheel and re-copy wiring; per-frame transform writes                                |
+| `apps/editor/components/canvas/MagnifierLens.tsx`                                                                      | The lens element: frame, stage, crosshair, value badge                                       |
+| `apps/editor/components/canvas/MagnifierClusterButton.tsx`                                                             | The mode's control in the bottom-right cluster                                               |
+| `apps/editor/components/canvas/MagnifierPopover.tsx`, `MagnifierHeroArt.tsx`                                           | The settings popover and its header art                                                      |
+| `apps/editor/hooks/canvas/useDockPopovers.ts`                                                                          | `'magnifier'` in `DockPanel`                                                                 |
+| `apps/editor/components/canvas/CanvasCornerCluster.tsx`, `useCanvasChromePanels.tsx`, `CanvasChrome.tsx`, `Canvas.tsx` | Mount the button, the popover and the lens                                                   |
+| `apps/editor/lib/help-articles.ts`                                                                                     | `magnifier` → `selection-modes/magnifier`                                                    |
+| `liveworkspace/apps/site/app/telemetry/livediagram/`                                                                   | `Magnifier` in the modes, `Magnifier*` in Mode Options, the event sentences                  |
 
 ## Domain and naming
 
-| Term                | Identifier                                | Meaning                                                            |
-| ------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
-| Magnifier           | `'magnifier'` (`CanvasTool`, `SelectionMode`) | The selection mode                                             |
-| lens                | `MagnifierLens`, `[data-magnifier-lens]`  | The window on the cursor                                           |
-| stage               | `[data-magnifier-stage]`                  | The lens's inner layer the copy sits in, scaled and moved          |
-| copy                | `cloneCanvasLayer`                        | The deep copy of the drawn layer (`[data-canvas-content]`)         |
-| magnification       | `MagnifierConfig.zoom`                    | The lens's scale over the canvas as drawn                          |
-| size                | `MagnifierConfig.size`                    | The lens's side (square) or diameter (round), in screen px         |
-| shape               | `MagnifierConfig.shape`: `'square' \| 'round'` | The lens's outline                                            |
-| size preset         | `MagnifierSizePreset`                     | `'small' \| 'medium' \| 'large'`, or `'custom'` off them           |
+| Term          | Identifier                                     | Meaning                                                    |
+| ------------- | ---------------------------------------------- | ---------------------------------------------------------- |
+| Magnifier     | `'magnifier'` (`CanvasTool`, `SelectionMode`)  | The selection mode                                         |
+| lens          | `MagnifierLens`, `[data-magnifier-lens]`       | The window on the cursor                                   |
+| stage         | `[data-magnifier-stage]`                       | The lens's inner layer the copy sits in, scaled and moved  |
+| copy          | `cloneCanvasLayer`                             | The deep copy of the drawn layer (`[data-canvas-content]`) |
+| magnification | `MagnifierConfig.zoom`                         | The lens's scale over the canvas as drawn                  |
+| size          | `MagnifierConfig.size`                         | The lens's side (square) or diameter (round), in screen px |
+| shape         | `MagnifierConfig.shape`: `'square' \| 'round'` | The lens's outline                                         |
+| size preset   | `MagnifierSizePreset`                          | `'small' \| 'medium' \| 'large'`, or `'custom'` off them   |
 
 ## Behaviour and state
 
@@ -84,7 +84,11 @@ export type MagnifierConfig = { zoom: number; size: number; shape: MagnifierShap
 export const DEFAULT_MAGNIFIER_CONFIG: MagnifierConfig; // { zoom: 2, size: 240, shape: 'square' }
 export const MAGNIFIER_ZOOM_RANGE = { min: 1.5, max: 6, step: 0.5 };
 export const MAGNIFIER_SIZE_RANGE = { min: 120, max: 480 };
-export const MAGNIFIER_SIZES: readonly { id: 'small' | 'medium' | 'large'; label: string; px: number }[];
+export const MAGNIFIER_SIZES: readonly {
+  id: 'small' | 'medium' | 'large';
+  label: string;
+  px: number;
+}[];
 export function clampMagnifierConfig(raw: unknown): MagnifierConfig;
 export function magnifierSizePreset(size: number): MagnifierSizePreset;
 export function formatMagnification(zoom: number): string; // "2x", "2.5x"
@@ -96,12 +100,17 @@ export const magnifierStore: {
 };
 
 export function lensPlacement(input: {
-  x: number; y: number; // pointer, relative to <main>
-  size: number; zoom: number; touch: boolean;
+  x: number;
+  y: number; // pointer, relative to <main>
+  size: number;
+  zoom: number;
+  touch: boolean;
   height: number; // <main>'s height, for the touch flip
 }): { left: number; top: number; stageX: number; stageY: number };
-export function wheelChange(config: MagnifierConfig, e: { deltaX: number; deltaY: number; shiftKey: boolean }):
-  Partial<MagnifierConfig>;
+export function wheelChange(
+  config: MagnifierConfig,
+  e: { deltaX: number; deltaY: number; shiftKey: boolean },
+): Partial<MagnifierConfig>;
 export function cloneCanvasLayer(layer: HTMLElement): HTMLElement;
 ```
 
@@ -122,18 +131,18 @@ export function cloneCanvasLayer(layer: HTMLElement): HTMLElement;
 
 ## Errors and edge cases
 
-| #   | Case                                          | Handling                                                                   |
-| --- | --------------------------------------------- | -------------------------------------------------------------------------- |
-| E1  | `localStorage` throws or holds junk           | Defaults; the write is skipped silently (`writeLocalStorageSafe`)          |
-| E2  | The tab empties while in the mode             | The copy shows the empty canvas; the mode stays until left                 |
-| E3  | An `<iframe>` or `<video>` in the layer       | A same-size `div` with the frame's classes and style stands in             |
-| E4  | A `<canvas>` (a reaction burst)               | Copied blank; it is transient                                              |
-| E5  | Pointer over a panel inside `<main>`          | Lens hidden, wheel untouched                                               |
-| E6  | Ctrl / Cmd wheel, trackpad pinch              | Untouched: the canvas zooms                                                |
-| E7  | Two fingers                                   | Lens hidden; the pinch handler runs                                        |
-| E8  | Touch lens near the top                       | Flips below the finger                                                     |
-| E9  | Tab switch while in the mode                  | `elements` changes → re-copy                                               |
-| E10 | Isometric's `[data-iso]` not set              | The copy carries the layer's own attributes, so it matches what is drawn   |
+| #   | Case                                    | Handling                                                                 |
+| --- | --------------------------------------- | ------------------------------------------------------------------------ |
+| E1  | `localStorage` throws or holds junk     | Defaults; the write is skipped silently (`writeLocalStorageSafe`)        |
+| E2  | The tab empties while in the mode       | The copy shows the empty canvas; the mode stays until left               |
+| E3  | An `<iframe>` or `<video>` in the layer | A same-size `div` with the frame's classes and style stands in           |
+| E4  | A `<canvas>` (a reaction burst)         | Copied blank; it is transient                                            |
+| E5  | Pointer over a panel inside `<main>`    | Lens hidden, wheel untouched                                             |
+| E6  | Ctrl / Cmd wheel, trackpad pinch        | Untouched: the canvas zooms                                              |
+| E7  | Two fingers                             | Lens hidden; the pinch handler runs                                      |
+| E8  | Touch lens near the top                 | Flips below the finger                                                   |
+| E9  | Tab switch while in the mode            | `elements` changes → re-copy                                             |
+| E10 | Isometric's `[data-iso]` not set        | The copy carries the layer's own attributes, so it matches what is drawn |
 
 ## Security and trust
 
@@ -143,7 +152,8 @@ export function cloneCanvasLayer(layer: HTMLElement): HTMLElement;
 ## Performance and limits
 
 - Pointer move: one stored point, at most one rAF; per frame three `style.transform` writes and one string read.
-  CPU-time budget test: 2,000 moves over a 3,000-node layer stay under `cpuBudgetMs(60)`, with exactly one copy.
+  CPU-time budget test: 2,000 moves (a frame every fourth) over a 2,000-node layer stay under `cpuBudgetMs(250)`,
+  with no render and exactly one copy (measured 74 ms locally under jsdom, most of it event dispatch).
 - Copy: `cloneNode(true)` of the layer, O(nodes). Throttled to 4/s; never during a hidden lens.
 - Config changes from the wheel re-render only `MagnifierLens` (a frame with no React children in the stage) and the
   cluster button.
@@ -187,28 +197,28 @@ export function cloneCanvasLayer(layer: HTMLElement): HTMLElement;
 
 ## Testing
 
-| Rule                                                     | Test                                                         |
-| -------------------------------------------------------- | ------------------------------------------------------------ |
-| Config clamps and defaults                               | `lib/magnifier-config.test.ts`                               |
-| Store persists, notifies, debounces telemetry            | `lib/magnifier-store.test.ts`                                |
-| Lens geometry and wheel step                             | `lib/magnifier-lens.test.ts`                                 |
-| Copy stands in for frames and videos                     | `lib/magnifier-clone.test.ts`                                |
-| No re-copy per move, budget on a large layer             | `hooks/canvas/useMagnifierLens.test.tsx`                     |
-| Lens hides over chrome, touch follows the finger, wheel  | `hooks/canvas/useMagnifierLens.test.tsx`                     |
-| Picker row before Isometric, in Preview                  | `components/palette/canvas-tool-options.test.tsx`            |
-| Roles: Participant set, view key, read-only command      | `magnifier-roles.test.ts`                                    |
-| Popover controls and cluster button                      | `components/canvas/MagnifierPopover.test.tsx`                |
-| Mode glyph exists for every mode                         | `packages/document/src/svg-render-fidelity.test.ts` (existing) |
+| Rule                                                    | Test                                                                            |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Config clamps and defaults                              | `lib/magnifier-config.test.ts`                                                  |
+| Store persists, notifies, debounces telemetry           | `lib/magnifier-store.test.ts`                                                   |
+| Lens geometry and wheel step                            | `lib/magnifier-lens.test.ts`                                                    |
+| Copy stands in for frames and videos                    | `lib/magnifier-clone.test.ts`                                                   |
+| No re-copy per move, budget on a large layer            | `hooks/canvas/useMagnifierLens.test.tsx`                                        |
+| Lens hides over chrome, touch follows the finger, wheel | `hooks/canvas/useMagnifierLens.test.tsx`                                        |
+| Picker row before Isometric, in Preview                 | `components/palette/canvas-tool-options.test.ts`                                |
+| Roles: Participant set, view key, read-only command     | `participant-palette`, `useEditorKeyboardShortcuts` and `editor-commands` tests |
+| Popover controls and cluster button                     | `components/canvas/MagnifierPopover.test.tsx`                                   |
+| Mode glyph exists for every mode                        | `packages/document/src/svg-render-fidelity.test.ts` (existing)                  |
 
 ## Constants and configuration
 
-| Constant                           | Value  | Range / provenance                        |
-| ---------------------------------- | ------ | ----------------------------------------- |
-| `DEFAULT_MAGNIFIER_CONFIG.zoom`    | 2      | Spec                                      |
-| `MAGNIFIER_ZOOM_RANGE`             | 1.5–6, step 0.5 | Spec                             |
-| `MAGNIFIER_SIZE_RANGE`             | 120–480 px | Spec                                  |
-| `MAGNIFIER_SIZES`                  | 160 / 240 / 360 px | Spec                          |
-| `MAGNIFIER_RECOPY_MS`              | 250    | D132                                      |
-| `TOUCH_LIFT_PX`                    | 24     | D133                                      |
-| `MAGNIFIER_TELEMETRY_DEBOUNCE_MS`  | 800    | D134, matches the canvas sliders          |
-| `MAGNIFIER_BADGE_MS`               | 900    | D135                                      |
+| Constant                          | Value              | Range / provenance               |
+| --------------------------------- | ------------------ | -------------------------------- |
+| `DEFAULT_MAGNIFIER_CONFIG.zoom`   | 2                  | Spec                             |
+| `MAGNIFIER_ZOOM_RANGE`            | 1.5–6, step 0.5    | Spec                             |
+| `MAGNIFIER_SIZE_RANGE`            | 120–480 px         | Spec                             |
+| `MAGNIFIER_SIZES`                 | 160 / 240 / 360 px | Spec                             |
+| `MAGNIFIER_RECOPY_MS`             | 250                | D132                             |
+| `TOUCH_LIFT_PX`                   | 24                 | D133                             |
+| `MAGNIFIER_TELEMETRY_DEBOUNCE_MS` | 800                | D134, matches the canvas sliders |
+| `MAGNIFIER_BADGE_MS`              | 900                | D135                             |

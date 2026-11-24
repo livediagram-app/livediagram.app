@@ -406,6 +406,7 @@ export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'pan',
   'laser',
   'spotlight',
+  'magnifier',
   'isometric',
   'zen',
 ];
