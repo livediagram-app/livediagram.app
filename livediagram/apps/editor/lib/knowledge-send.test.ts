@@ -3,8 +3,18 @@
 // summary route's answers and refusals reach the picker as it reads them.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const api = vi.hoisted(() => ({ apiFetch: vi.fn() }));
-vi.mock('@/lib/api/core', () => ({ API_BASE: 'https://api', apiFetch: api.apiFetch }));
+const api = vi.hoisted(() => ({
+  apiFetch: vi.fn(),
+  apiHeaders: async (_owner: string, opts: { body?: boolean } = {}) => ({
+    Authorization: 'Bearer account-token',
+    ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
+  }),
+}));
+vi.mock('@/lib/api/core', () => ({
+  API_BASE: 'https://api',
+  apiFetch: api.apiFetch,
+  apiHeaders: api.apiHeaders,
+}));
 vi.mock('@liveworkspace/workbench/lib/icon-registry', () => ({
   ensureIconCatalogs: async () => {},
 }));
@@ -93,6 +103,11 @@ describe('knowledgeSummariser', () => {
     });
     const [url, init] = api.apiFetch.mock.calls[0]!;
     expect(url).toBe('https://api/documents/D%201/knowledge-summary');
+    // Sent as the person: the route refuses a request with no account behind it.
+    expect((init as RequestInit).headers).toEqual({
+      Authorization: 'Bearer account-token',
+      'Content-Type': 'application/json',
+    });
     expect(JSON.parse((init as RequestInit).body as string)).toEqual({
       tabId: 't1',
       selection: { items: [], links: [] },

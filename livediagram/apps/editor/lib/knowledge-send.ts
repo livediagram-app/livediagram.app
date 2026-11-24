@@ -9,7 +9,7 @@ import type {
 } from '@liveworkspace/workbench/components/send-to-knowledge/send-to-knowledge-entry';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import type { Tab } from '@livediagram/document';
-import { API_BASE, apiFetch } from '@/lib/api/core';
+import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
 import type { ImageExportOpts } from '@/lib/export-tab';
 import { captureKnowledgeSelection, pictureWithin, selectionTab } from '@/lib/knowledge-selection';
 
@@ -71,7 +71,9 @@ export function knowledgeSummariser(
       `${API_BASE}/documents/${encodeURIComponent(documentId)}/knowledge-summary`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // The caller's Bearer (an account's; a guest's is refused there), as every api request sends it: apiFetch
+        // adds only the canvas's grant, so without it the route never knows who is asking.
+        headers: await apiHeaders('', { body: true }),
         body: JSON.stringify({
           tabId,
           selection,
