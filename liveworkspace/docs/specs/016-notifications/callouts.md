@@ -46,6 +46,12 @@ and take the callout's look, on an opaque surface with a shadow so they read ove
   Card** for someone who may change the pages. It sits below the card's last line, not over it.
 - **The paste notice** (livediagram): warning tone at the bottom of the canvas after a paste that changed or dropped
   anything, closable, never timing out.
+- **Suggestions** ([Suggestions](./suggestions.md)): info tone in the same slot, offering to carry the item's content
+  into another app in one click; one at a time, and never while the paste notice holds the slot.
+
+The paste notice and the suggestions share the editor's **notice slot** (`@liveworkspace/workbench` lib/notice-slot):
+bottom centre, just above the whiteboard dock, or where a dock would sit. A notice on show holds it; a suggestion waits
+for it to be free.
 
 ## Where callouts are used
 

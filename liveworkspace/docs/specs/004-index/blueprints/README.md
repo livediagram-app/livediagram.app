@@ -17,6 +17,7 @@ Follow the references below only as needed; never upfront.
 - ./live-embeds.md - when working on live embeds: the element's fields and checks, the embed ticket, the slots, the host's
   side of the frame's messages, snapshots, limits and tests
 - ./item-calls.md - when working on Start a Call Here: the wire, the index's routes and tables, livehuddle's door and room push, the editors' button, pill, store and Meetings, tests
+- ./write-up.md - when working on Write It Up: the wire, the index.s two routes, the default knowledgebase, tests
 - ./send-to-plan.md - when working on Send to Plan: the wire, the index's routes and table, liveplanner's door and change call, the editors' store, picker and chips, tests
 - ./diagrams-and-plans.md - when working on Diagrams and Plans: the wire, the index routes, liveplanner's plan-diagram door and view watcher, livediagram's door and the editors' pieces, tests
 - ./send-to-diagram.md - when working on Send to Diagram: the wire, the index's routes and table, livediagram's graph door, the picker, preview and chips, tests

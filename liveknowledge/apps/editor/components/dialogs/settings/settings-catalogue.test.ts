@@ -108,6 +108,7 @@ describe('settings catalogue', () => {
       ['knowledgeTour-ask', 'toggle', 'Ask Your Knowledgebase', 'ask'],
       ['knowledgeTour-connect', 'toggle', 'Connect an AI Agent', 'connectAiTool'],
       ['knowledgeTour-share', 'toggle', 'Share and Work Together', 'sharing'],
+      ['suggestNextApp', 'toggle', 'Suggest Other Apps', undefined],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/Get Started in the bottom bar/);
@@ -153,6 +154,7 @@ describe('settings catalogue', () => {
         ['AskTourSeenOff', 'AskTourSeenOn'],
         ['ConnectTourSeenOff', 'ConnectTourSeenOn'],
         ['WorkTogetherTourSeenOff', 'WorkTogetherTourSeenOn'],
+        ['SuggestionsOn', 'SuggestionsOff'],
       ],
     );
   });
@@ -367,7 +369,7 @@ describe('settings sub-categories', () => {
       visibleCategories({ emailEnabled: false, signedIn: false, preferences })
         .find((c) => c.id === 'tours')!
         .rows.map((r) => r.key);
-    expect(rows({ knowledgeToursSeen: true })).toEqual(['knowledgeToursSeen']);
+    expect(rows({ knowledgeToursSeen: true })).toEqual(['knowledgeToursSeen', 'suggestNextApp']);
     expect(rows({})).toContain('knowledgeTour-trust');
   });
 

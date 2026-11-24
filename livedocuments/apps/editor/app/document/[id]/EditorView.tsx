@@ -2,6 +2,8 @@
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
+import { maySuggestTo } from '@liveworkspace/workbench/components/suggest/suggest-gate';
+import { AddToKnowledgebaseSuggestion } from '@/components/canvas/article/AddToKnowledgebaseSuggestion';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { usePublishDocumentVisibility } from '@/hooks/editor/document-visibility-store';
@@ -446,6 +448,21 @@ export function EditorView() {
                   embed: !appChrome,
                   community: sessionCommunity !== null,
                 })}
+              />
+              {/* Add to Knowledgebase (liveworkspace/docs/specs/016-notifications/suggestions.md): an article that
+                  explains a process, offered to the team's knowledgebase in the notice slot. */}
+              <AddToKnowledgebaseSuggestion
+                itemId={ctx.authLoaded && hydrated ? documentId : null}
+                allowed={maySuggestTo({
+                  level: ctx.can.level,
+                  readOnly: isReadOnly,
+                  signedIn: !!accountUserId,
+                  offline: isOffline,
+                  embed: !appChrome,
+                  community: sessionCommunity !== null,
+                })}
+                title={ctx.documentName?.trim() || 'Untitled document'}
+                tab={activeTab}
               />
               {/* Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md): the Call button's item, and
                   Meetings in Tools. */}

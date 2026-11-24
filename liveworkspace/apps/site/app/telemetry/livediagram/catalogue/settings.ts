@@ -299,6 +299,14 @@ export const TOURS_SETTINGS = settingsStack(
   'Tours Settings',
   'The Diagram, Workshop and Draw tours switched back on or off.',
   [
+    // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md), the same switch in every app.
+    toggle(
+      'UI',
+      'SuggestionsOn',
+      'SuggestionsOff',
+      'Suggest Other Apps',
+      'Every app\u2019s suggestions switched on or off at once.',
+    ),
     toggle(
       'UI',
       'TourSeenOff',

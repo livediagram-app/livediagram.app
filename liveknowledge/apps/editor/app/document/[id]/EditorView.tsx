@@ -3,6 +3,8 @@ import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan
 import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 import { diagramDrafter } from '@/lib/send-to-diagram/diagram-api';
+import { maySuggestTo } from '@liveworkspace/workbench/components/suggest/suggest-gate';
+import { BringInSuggestion } from '@/components/insights/BringInSuggestion';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { usePublishDocumentVisibility } from '@/hooks/editor/document-visibility-store';
@@ -466,6 +468,19 @@ export function EditorView() {
                 // Send to Diagram (013-workspace/send-to-diagram.md): drafted on this knowledgebase's own AI.
                 diagram={sendDiagram}
                 tabTitle={activeTab.name}
+              />
+              {/* Bring In Your Diagrams and Docs (liveworkspace/docs/specs/016-notifications/suggestions.md): a new
+                  knowledgebase offered the person's recent items for Ask, in the notice slot. */}
+              <BringInSuggestion
+                itemId={ctx.authLoaded && hydrated ? documentId : null}
+                allowed={maySuggestTo({
+                  level: ctx.can.level,
+                  readOnly: isReadOnly,
+                  signedIn: !!accountUserId,
+                  offline: isOffline,
+                  embed: !appChrome,
+                  community: sessionCommunity !== null,
+                })}
               />
               {/* Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md): the Call button's item, and
                   Meetings in Tools. */}

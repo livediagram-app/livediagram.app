@@ -135,6 +135,7 @@ describe('settings catalogue', () => {
       ['elementTour-timeline', 'toggle', 'Timeline', 'conceptGraphics'],
       ['elementTour-chart', 'toggle', 'Chart', 'dataElements'],
       ['elementTour-stack', 'toggle', 'Stack', 'stacks'],
+      ['suggestNextApp', 'toggle', 'Suggest Other Apps', undefined],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -163,6 +164,7 @@ describe('settings catalogue', () => {
         ['TimelineTourSeenOff', 'TimelineTourSeenOn'],
         ['ChartTourSeenOff', 'ChartTourSeenOn'],
         ['StackTourSeenOff', 'StackTourSeenOn'],
+        ['SuggestionsOn', 'SuggestionsOff'],
       ],
     );
   });

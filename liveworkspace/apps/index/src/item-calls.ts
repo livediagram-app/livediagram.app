@@ -29,9 +29,9 @@ import { takeTargetedStep } from './automation-steps';
 import { generateShareCode, isId } from './codec';
 import { KIT_CREATE_TIMEOUT_MS } from './config';
 import { isDelegate } from './connections';
+import { defaultKnowledgebase } from './knowledgebase-default';
 import { accountsPeopleNames } from './accounts-access';
 import type { RouteContext } from './context';
-import type { Env } from './env';
 import { badRequest, fail, forbidden, json, notFound, readObject, unauthorized } from './http';
 import {
   callOf,
@@ -150,40 +150,6 @@ async function callOfSpace(
   return { call, item };
 }
 
-// The knowledgebase a summary goes to by default: one connected to the item (either way), else the newest of the
-// item's team the host can edit.
-async function summaryDefault(
-  env: Env,
-  item: ItemRow,
-  host: Person,
-): Promise<SpaceCall['summaryDefault']> {
-  const connected = await env.INDEX_DB.prepare(
-    `SELECT i.id, i.title FROM connections c JOIN items i
-       ON (c.host_item_id = ?1 AND i.id = c.target_item_id) OR (c.target_item_id = ?1 AND i.id = c.host_item_id)
-     WHERE i.app = 'liveknowledge' AND i.trashed_at IS NULL AND i.archived_at IS NULL
-     ORDER BY c.created_at DESC LIMIT 1`,
-  )
-    .bind(item.id)
-    .first<{ id: string; title: string }>();
-  const candidate =
-    connected ??
-    (item.team_id
-      ? await env.INDEX_DB.prepare(
-          `SELECT id, title FROM items WHERE team_id = ? AND app = 'liveknowledge'
-             AND trashed_at IS NULL AND archived_at IS NULL ORDER BY updated_at DESC LIMIT 1`,
-        )
-          .bind(item.team_id)
-          .first<{ id: string; title: string }>()
-      : null);
-  if (!candidate) return null;
-  const can = await loadItem(env, candidate.id, { person: host, share: null }, 'edit');
-  if (can instanceof Response) {
-    await can.body?.cancel();
-    return null;
-  }
-  return { id: candidate.id, title: candidate.title };
-}
-
 /** GET /items/:space/call: the call, for livehuddle's editor; `{call: null}` for a Space that is no call. */
 async function readSpaceCall(ctx: RouteContext, spaceId: string): Promise<Response> {
   const found = await callOfSpace(ctx, spaceId);
@@ -206,7 +172,7 @@ async function readSpaceCall(ctx: RouteContext, spaceId: string): Promise<Respon
       call.summary_link && call.summary_title
         ? { title: call.summary_title, link: call.summary_link }
         : null,
-    summaryDefault: host && person ? await summaryDefault(env, item, person) : null,
+    summaryDefault: host && person ? await defaultKnowledgebase(env, item, person) : null,
   };
   return json({ call: answer });
 }

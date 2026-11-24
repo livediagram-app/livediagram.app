@@ -13,6 +13,7 @@ import {
   ASK_AI_SOURCES_OPENED,
   ASK_AI_SWITCHED,
 } from './ask-ai';
+import { isSuggestionType } from '../../_shared/suggestion-metrics';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -676,6 +677,8 @@ export const PLAN_DESCRIBE_OPENED = opened(
 OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram');
 // Diagrams and Plans' too (_shared/diagrams-and-plans-metrics.ts).
 OPENED_HOMES.push((t) => t !== null && DIAGRAMS_AND_PLANS_OPENED.has(t));
+// Suggestions have a stack each (_shared/suggestion-metrics.ts).
+OPENED_HOMES.push(isSuggestionType);
 OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');
 
 export const OTHER_OPENED = chart(

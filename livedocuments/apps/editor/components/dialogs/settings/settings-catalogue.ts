@@ -1084,6 +1084,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'With a stack selected.',
         helpArticle: 'stacks',
       }),
+      // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md "One switch for all"): every
+      // app's suggestions at once, the same switch in every app (the `all` scope).
+      {
+        kind: 'toggle',
+        key: 'suggestNextApp',
+        keywords:
+          'suggestions suggest offers tips nudges cross app plan knowledgebase other apps turn off quiet annoying',
+        section: 'Suggestions',
+        label: 'Suggest Other Apps',
+        description:
+          'Now and then, offers to carry what you are working on into another app, such as a retro’s actions into a plan. Off, no app suggests anything.',
+        read: (p) => p.suggestNextApp !== false,
+        write: (p, v) => ({ ...p, suggestNextApp: v }),
+        event: { category: 'UI', on: 'SuggestionsOn', off: 'SuggestionsOff' },
+      },
     ],
   },
   {

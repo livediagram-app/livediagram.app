@@ -87,6 +87,7 @@ export const ORDER: readonly string[] = [
   'collaboration/comments',
   'collaboration/send-to-plan',
   'collaboration/view-as-diagram',
+  'collaboration/suggestions',
   'collaboration/start-a-call',
   'collaboration/live-presence',
   'explorer/explorer-page',

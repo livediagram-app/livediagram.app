@@ -15,6 +15,10 @@
 
 import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
 import { SEND_TO_DIAGRAM_EXACT } from '../_shared/send-to-diagram-metrics';
+import {
+  SUGGESTIONS_SWITCH_EXACT,
+  SUGGEST_SEND_TO_PLAN_EXACT,
+} from '../_shared/suggestion-metrics';
 import { CALL_FROM_ITEM_EXACT } from '../_shared/item-call-metrics';
 import { SNAPSHOT_BY_ACTION } from '../_shared/snapshot-walkthrough-metrics';
 import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@livehuddle/api-schema';
@@ -35,6 +39,8 @@ const perReportReason = Object.fromEntries(
 export const EXACT: Readonly<Record<string, string>> = {
   ...SEND_TO_PLAN_EXACT,
   ...SEND_TO_DIAGRAM_EXACT,
+  ...SUGGESTIONS_SWITCH_EXACT,
+  ...SUGGEST_SEND_TO_PLAN_EXACT,
   ...CALL_FROM_ITEM_EXACT,
   'Editor|Changed|LeavePagesConfirmed':
     'Someone confirmed leaving Pages on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',

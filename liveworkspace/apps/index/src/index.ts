@@ -12,6 +12,7 @@ import { handleNewPlanForSend, handlePlanSends } from './plan-sends';
 import { handlePlanDiagramRoutes } from './plan-diagrams';
 import { handleDiagramSends, readDiagramSends } from './diagram-sends';
 import { handleItemCalls, handleSpaceCall } from './item-calls';
+import { handleWriteUp } from './write-up';
 import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
@@ -141,6 +142,8 @@ async function route(ctx: RouteContext): Promise<Response> {
     // Start a Call Here (item-calls.ts): the item's calls, and a Space's call with its summary and invites.
     if (segments[2] === 'calls' && segments.length === 3) return handleItemCalls(ctx, id);
     if (segments[2] === 'call') return handleSpaceCall(ctx, id, segments.slice(3));
+    // Write It Up (write-up.ts): something from the item written as a knowledgebase page, as the person.
+    if (segments[2] === 'write-up' && segments.length === 3) return handleWriteUp(ctx, id);
     // A board's counts or a metric's rows on the person's own access, and the plan's boards for its picker (live-data.ts).
     if (segments[2] === 'plan-data' && segments.length === 3) return handlePlanData(ctx, id);
     // Approvals (approvals.ts): asked, decided, cancelled and read, a person in person only.
@@ -242,6 +245,7 @@ const routeLabel = createApiRouteLabel(
     'call',
     'call-people',
     'invite',
+    'write-up',
   ]),
 );
 

@@ -184,6 +184,8 @@ describe('settings catalogue', () => {
       ['elementTour-lane', 'toggle', 'Lane', 'lanes'],
       ['elementTour-boundary', 'toggle', 'Boundary', 'boundaries'],
       ['elementTour-diagram-key', 'toggle', 'Diagram Key', 'diagramKeys'],
+      // Suggest Other Apps, the one switch over every app's suggestions.
+      ['suggestNextApp', 'toggle', 'Suggest Other Apps', undefined],
     ]);
     // The Avatar Tour's Offer Again section went with Avatar mode (docs/specs/009-elements/retired-elements.md).
     expect(tours.sectionNotes?.['Offer Again']).toBeUndefined();
@@ -232,6 +234,8 @@ describe('settings catalogue', () => {
         ['LaneTourSeenOff', 'LaneTourSeenOn'],
         ['BoundaryTourSeenOff', 'BoundaryTourSeenOn'],
         ['DiagramKeyTourSeenOff', 'DiagramKeyTourSeenOn'],
+        // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md), not a tour: on is on.
+        ['SuggestionsOn', 'SuggestionsOff'],
       ],
     );
   });

@@ -17,7 +17,7 @@ export class IndexError extends Error {
   // visitor's restricted page says the item is restricted to.
   readonly domains: string[] | null;
   // The rest of a Send to Plan refusal's body (send-to-plan.md "Sending again"): an `already_sent`'s `send`, a
-  // `plan_refused`'s `code` and `reason`. Null for every other refusal.
+  // `plan_refused`'s `code` and `reason`, and a `write_up_refused`'s (write-up.md). Null for every other refusal.
   readonly detail: Readonly<Record<string, unknown>> | null;
   constructor(
     status: number,
@@ -39,7 +39,7 @@ export class IndexError extends Error {
 }
 
 // The refusals whose body says more than its code (IndexError `detail`).
-const DETAILED = new Set(['already_sent', 'plan_refused']);
+const DETAILED = new Set(['already_sent', 'plan_refused', 'write_up_refused']);
 
 // The longest share code a refusal's `link` is read as: codes are 14 characters, so anything longer is not one.
 const REFUSAL_LINK_MAX = 64;

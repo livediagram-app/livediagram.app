@@ -187,6 +187,17 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md "Telemetry"): the shared hook counts the
+  // suggestion this app offers, typed by it (SUGGESTIONS in packages/workbench src/components/suggest/suggestions.ts).
+  'packages/workbench/src/components/suggest/useSuggestion.ts UI·Opened': {
+    values: ['SuggestBringIn'],
+  },
+  'packages/workbench/src/components/suggest/useSuggestion.ts UI·Used': {
+    values: ['SuggestBringIn'],
+  },
+  'packages/workbench/src/components/suggest/useSuggestion.ts UI·Closed': {
+    values: ['SuggestBringIn'],
+  },
   // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
   ...platformComputedEmitters(isValidTelemetryEvent),
   // The api worker.
