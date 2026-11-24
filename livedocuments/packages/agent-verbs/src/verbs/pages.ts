@@ -109,7 +109,7 @@ export const pageSet = defineVerb({
   id: 'page.set',
   summary: "Change a tab's pages",
   description:
-    'Adds, changes, lays out, moves, duplicates or deletes pages, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one.',
+    'Adds, changes, lays out, moves, duplicates or deletes pages, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one. --tab-design sets the design every page wears, --design a page’s own.',
   behaviour: 'destructive',
   input: z.object({
     doc: docArg,
@@ -133,6 +133,14 @@ export const pageSet = defineVerb({
     duplicate: z.boolean().optional().describe('Copy the page'),
     backgroundToAll: z.boolean().optional().describe('Its background onto every page of its kind'),
     delete: z.boolean().optional().describe('Delete the page and what is on it'),
+    design: z
+      .string()
+      .optional()
+      .describe('Give the page its own design: a design id, none, or tab (the tab’s again)'),
+    tabDesign: z
+      .string()
+      .optional()
+      .describe('Set the design every page wears: a design id, auto (one for its words), or none'),
   }),
   output: doneOutput,
   run: async (ctx, input) => {
@@ -198,6 +206,8 @@ type ChangeFlags = {
   duplicate?: boolean;
   backgroundToAll?: boolean;
   delete?: boolean;
+  design?: string;
+  tabDesign?: string;
 };
 
 // Each change flag by its name on the command line, when given.
@@ -212,6 +222,8 @@ const FLAG_NAMES: [keyof ChangeFlags, string][] = [
   ['name', '--name'],
   ['size', '--size'],
   ['orientation', '--orientation'],
+  ['design', '--design'],
+  ['tabDesign', '--tab-design'],
 ];
 const given = (flags: ChangeFlags, key: keyof ChangeFlags) =>
   flags[key] !== undefined && flags[key] !== false && flags[key] !== '';
@@ -228,11 +240,26 @@ const combined = (names: readonly string[]) =>
     hint: CHANGES_HINT,
   });
 
+// A design as the flags name it; the api reads it strictly (an id or a name) and names the closest when unknown.
+const designOf = (v: string) =>
+  (v === 'none' || v === 'tab' ? v : { id: v }) as Extract<PageChange, { op: 'set' }>['design'];
+
 function changeFrom(flags: ChangeFlags): PageChange {
+  // The tab's design is a change of its own (docs/specs/011-theme/page-designs.md "Agents").
+  if (given(flags, 'tabDesign')) {
+    const other = changeFlagsGiven(flags).filter((n) => n !== '--tab-design');
+    if (other.length) throw combined(['--tab-design', ...other]);
+    const v = flags.tabDesign!;
+    return {
+      op: 'tab_design',
+      design: v === 'none' ? null : v === 'auto' ? 'auto' : (designOf(v) as { id: never }),
+    };
+  }
   const fields = {
     ...(flags.name !== undefined ? { name: flags.name } : {}),
     ...(flags.size ? { size: flags.size as PageSizeId } : {}),
     ...(flags.orientation ? { orientation: flags.orientation } : {}),
+    ...(flags.design ? { design: designOf(flags.design) } : {}),
   };
   if (flags.add) {
     // An add is named, sized, turned, laid out and put at a place (--move) in one change; nothing else goes with it.
@@ -258,7 +285,7 @@ function changeFrom(flags: ChangeFlags): PageChange {
   if (!flags.page) throw none();
   const page = /^\d+$/.test(flags.page) ? Number(flags.page) : flags.page;
   // The changes the flags ask of the page: one each for delete, duplicate, background to all, move and layout, and
-  // one set for any of name, size and orientation.
+  // one set for any of name, size, orientation and design.
   const asked: PageChange[] = [
     ...(flags.delete ? [{ op: 'delete', page } as const] : []),
     ...(flags.duplicate ? [{ op: 'duplicate', page } as const] : []),

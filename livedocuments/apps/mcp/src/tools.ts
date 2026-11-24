@@ -5,7 +5,14 @@
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DocumentResponse, ShareLinkResponse } from '@livedocuments/api-schema';
-import { buildTab, isValidTab, normaliseElements, type Tab } from '@livedocuments/document';
+import {
+  buildTab,
+  isValidTab,
+  normaliseElements,
+  withTabPageDesign,
+  type Tab,
+} from '@livedocuments/document';
+import { readTabDesign, tabDesignFor } from '@livedocuments/edit-operations';
 import {
   buildTemplateTabs,
   templateTabName,
@@ -181,6 +188,15 @@ export function registerTools(server: McpServer, env: Env): void {
       }
       // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
       if (args.finish) for (const t of tabs) t.finish = args.finish;
+      // The page design asked for (docs/specs/011-theme/page-designs.md "Agents") is every new tab's, "auto" picked
+      // for each tab's own words.
+      if (args.design !== undefined) {
+        const choice = readTabDesign(args.design);
+        if (choice !== null && typeof choice === 'object' && 'refused' in choice)
+          return errorResult(`"design": ${choice.refused.message}`);
+        for (const [i, t] of tabs.entries())
+          tabs[i] = withTabPageDesign(t, tabDesignFor(t, choice));
+      }
       const id = crypto.randomUUID();
       // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
       // filter and badge read source != null, wherever the document is filed.

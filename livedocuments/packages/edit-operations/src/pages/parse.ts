@@ -22,6 +22,7 @@ import {
   PAGE_PATTERNS,
   PAGE_SIZE_IDS,
 } from '@livedocuments/document';
+import { readPageDesign, readTabDesign } from './design-input';
 
 const PAGE_KINDS = ['infographic', 'article', 'slide', 'flashcard'] as const;
 
@@ -135,6 +136,14 @@ function pageChange(v: unknown, i: number): PageChange {
     v.layout === undefined && !required
       ? {}
       : { layout: text(v.layout, 'layout', PAGES_REF_MAX, i) };
+  // A page's own design (pages-for-agents.md "Page designs").
+  const design = () => {
+    if (v.design === undefined) return {};
+    const read = readPageDesign(v.design);
+    if (typeof read === 'object' && 'refused' in read)
+      throw new Refused(read.refused.code, read.refused.message, i);
+    return { design: read };
+  };
   // A layout's words by slot (pages-for-agents.md "Text slots"), only beside a layout.
   const slots = () => {
     if (v.text === undefined) return {};
@@ -147,7 +156,18 @@ function pageChange(v: unknown, i: number): PageChange {
     case 'add':
       onlyKeys(
         v,
-        [...COMMON, 'kind', 'size', 'orientation', 'name', 'background', 'layout', 'text', 'at'],
+        [
+          ...COMMON,
+          'kind',
+          'size',
+          'orientation',
+          'name',
+          'background',
+          'layout',
+          'text',
+          'at',
+          'design',
+        ],
         'add',
         i,
       );
@@ -161,11 +181,12 @@ function pageChange(v: unknown, i: number): PageChange {
         ...layout(false),
         ...slots(),
         ...(v.at === undefined ? {} : { at: place(v.at, 'at', i) }),
+        ...design(),
       };
     case 'set': {
       onlyKeys(
         v,
-        [...COMMON, 'page', 'name', 'size', 'orientation', 'background', 'locked'],
+        [...COMMON, 'page', 'name', 'size', 'orientation', 'background', 'locked', 'design'],
         'set',
         i,
       );
@@ -179,9 +200,13 @@ function pageChange(v: unknown, i: number): PageChange {
         ...orientation(),
         ...bg(),
         ...(v.locked === undefined ? {} : { locked: v.locked as boolean }),
+        ...design(),
       };
       if (Object.keys(change).length === 2)
-        bad('"set" changes at least one of name, size, orientation, background or locked.', i);
+        bad(
+          '"set" changes at least one of name, size, orientation, background, locked or design.',
+          i,
+        );
       return change;
     }
     case 'layout':
@@ -190,6 +215,15 @@ function pageChange(v: unknown, i: number): PageChange {
     case 'move':
       onlyKeys(v, [...COMMON, 'page', 'to'], 'move', i);
       return { op, page: pageRef(v.page, i), to: place(v.to, 'to', i) };
+    case 'tab_design': {
+      onlyKeys(v, [...COMMON, 'design'], 'tab_design', i);
+      if (!('design' in v))
+        bad('"tab_design" takes "design": a design, null to clear it, or "auto".', i);
+      const read = readTabDesign(v.design);
+      if (read !== null && typeof read === 'object' && 'refused' in read)
+        throw new Refused(read.refused.code, read.refused.message, i);
+      return { op, design: read };
+    }
     case 'duplicate':
     case 'delete':
     case 'apply_background_to_all':

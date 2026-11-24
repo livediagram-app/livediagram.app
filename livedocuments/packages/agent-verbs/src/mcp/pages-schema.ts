@@ -12,6 +12,8 @@ import {
 import {
   ARTICLE_LOOK_IDS,
   ARTICLE_MARKDOWN_MAX,
+  PAGE_DESIGNS,
+  PAGE_DESIGN_FAMILIES,
   PAGE_NAME_MAX,
   PAGE_SIZE_IDS,
   type ArticleLookId,
@@ -97,6 +99,84 @@ const text = z
   .describe(
     "Words for the layout's sample text, by slot; a slot left out keeps its sample. The page's texts in the answer name each slot.",
   );
+// Page designs (docs/specs/011-theme/page-designs.md): decoration behind every element, in the tab theme's colours.
+const designIds = PAGE_DESIGN_FAMILIES.map(
+  (f) =>
+    `${f.label}: ${PAGE_DESIGNS.filter((d) => d.family === f.id)
+      .map((d) => d.id)
+      .join(', ')}`,
+).join('; ');
+const designTuning = {
+  id: z.string().describe(`The design. ${designIds}.`),
+  colors: z
+    .tuple([hex, hex, hex])
+    .optional()
+    .describe('Three colours of its own; absent: the theme’s, so a theme change recolours it.'),
+  intensity: z.number().min(0.1).max(1).optional().describe('How strongly it shows, 0.1 to 1.'),
+  scale: z.number().min(0.5).max(2).optional().describe('How large its parts are, 0.5 to 2.'),
+  angle: z.number().optional().describe('Which way it runs, in degrees.'),
+  focus: z
+    .tuple([z.number().min(0).max(1), z.number().min(0).max(1)])
+    .optional()
+    .describe('Where its focus sits, [x, y] each 0 to 1 across the page.'),
+  seed: z.number().int().min(1).max(9999).optional().describe('Which variation, 1 to 9999.'),
+  blur: z.number().min(0).max(1).optional().describe('How soft its edges are, 0 to 1.'),
+  grain: z.number().min(0).max(1).optional().describe('Film grain over it, 0 to 1.'),
+  calm: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe('Safe area: how calm the middle of the page stays, 0 to 1.'),
+  variant: z.string().optional().describe('One of the design’s own styles (a refusal lists them).'),
+  animate: z
+    .boolean()
+    .optional()
+    .describe(
+      `Move gently on screen (exports stay still): ${PAGE_DESIGNS.filter((d) => d.animates)
+        .map((d) => d.id)
+        .join(', ')}.`,
+    ),
+  speed: z.number().min(0.25).max(3).optional().describe('Its pace while it moves, 0.25 to 3.'),
+  guard: z
+    .enum(['scrim', 'warn'])
+    .optional()
+    .describe(
+      'scrim (default): a soft plate under a text the design makes hard to read; warn: none.',
+    ),
+};
+// A page's own takes the same tuning as tab_design's (listed there once, to keep the tool list small).
+const pageDesign = z
+  .union([z.string(), z.object({ id: z.string() }).passthrough()])
+  .describe(
+    'The page’s own design: a design id (or {"id", ...tuning} as tab_design takes, but rhythm and flow), "none" for no design on this page, or "tab" for the tab’s.',
+  );
+const tabDesign = z
+  .union([
+    z.string(),
+    z
+      .object({
+        ...designTuning,
+        rhythm: z
+          .boolean()
+          .optional()
+          .describe('Bold on title and section pages, quieter on content pages.'),
+        flow: z
+          .boolean()
+          .optional()
+          .describe(
+            `One long strip across the pages in order: ${PAGE_DESIGNS.filter((d) => d.flows)
+              .map((d) => d.id)
+              .join(', ')}.`,
+          ),
+      })
+      .strict(),
+    z.null(),
+  ])
+  .describe(
+    'A design id (or {"id", ...tuning}), "auto" for one picked for the tab’s words, or null to clear it.',
+  );
+
 const name = z
   .string()
   .max(PAGE_NAME_MAX)
@@ -119,6 +199,7 @@ const pageChange = z
         layout: layout.optional(),
         text: text.optional(),
         at: z.number().int().min(1).optional().describe('The place it goes to (default: the end).'),
+        design: pageDesign.optional(),
       })
       .describe(
         'A new page; on a fresh tab its empty first page (or a blank deck’s one empty slide) becomes it.',
@@ -132,9 +213,10 @@ const pageChange = z
         orientation: orientation.optional(),
         background: background.optional(),
         locked: z.boolean().optional().describe('Lock or unlock the page (unlocking comes first).'),
+        design: pageDesign.optional(),
       })
       .describe(
-        'A page’s name, size, orientation, background or lock; on an article, all its pages.',
+        'A page’s name, size, orientation, background, lock or design; on an article, all its pages.',
       ),
     z
       .object({
@@ -163,6 +245,14 @@ const pageChange = z
       })
       .describe(
         'Every other page of the same kind (every slide, say) takes this page’s background and pattern, as the Background tab’s Apply to All; a locked page keeps its own.',
+      ),
+    z
+      .object({
+        op: z.literal('tab_design').describe('Set the page design every page of the tab wears.'),
+        design: tabDesign,
+      })
+      .describe(
+        'The tab’s page design: decoration drawn behind every element of every page in the theme’s colours (a page with its own keeps it). Text stays readable: a soft plate goes under any text it would make hard to read.',
       ),
     z
       .object({ op: z.literal('delete').describe('Delete a page.'), page: pageRef })
@@ -199,6 +289,10 @@ const pageOut = z
     locked: z.boolean().describe('Whether it is locked.'),
     flow: z.string().nullable().describe('The article it is a page of, or null.'),
     elements: z.number().describe('How many elements are on it.'),
+    design: z
+      .string()
+      .optional()
+      .describe('Its own design id, or "none"; absent: it wears the tab’s design.'),
     texts: z
       .array(
         z.object({

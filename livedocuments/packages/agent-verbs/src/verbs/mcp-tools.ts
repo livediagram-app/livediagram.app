@@ -222,7 +222,9 @@ export const mcpChangePages = mcpTool('change_pages', {
     'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
     'infographic or slide page, set {page, name, size, orientation, background, locked}, layout ' +
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
-    "other page of its kind, every slide say, takes that page's background). The answer gives every page with its rectangle in canvas " +
+    "other page of its kind, every slide say, takes that page's background), tab_design {design} (decoration " +
+    'drawn behind every page in the theme\u2019s colours: an id such as "aurora", {"id", ...tuning}, "auto" or null; ' +
+    'set and add take a page\u2019s own "design", or "none" / "tab"). The answer gives every page with its rectangle in canvas ' +
     'coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text; its "text" replaces it by slot in the same change ' +
