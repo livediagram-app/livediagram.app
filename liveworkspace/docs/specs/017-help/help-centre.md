@@ -154,6 +154,7 @@ groups, in order:
 | livediagram   | Canvas                    | Basics, Modes and Boards, Text and Notes, Styling Elements, Layers and Locking |
 | livediagram   | Palette                   | Everyday Elements, Diagram Kits, Workshop Kits, Palette Settings               |
 | livediagram   | Explorer                  | Your Library, Activity, Assets and Imports                                     |
+| livediagram   | Collaboration             | Working Together, Other Apps, Running Sessions                                 |
 | liveplanner   | Plan                      | Getting Going, Boards and Cards, Sheets, Forms and Dashboards                  |
 | livedocuments | Pages                     | Basics, Kinds of Page                                                          |
 | livedocuments | Canvas                    | Basics, Text and Notes, Styling Elements, Layers and Locking                   |

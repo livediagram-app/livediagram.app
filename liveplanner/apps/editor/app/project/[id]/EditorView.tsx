@@ -1,4 +1,5 @@
 'use client';
+import { ViewAsDiagramHost } from '@/components/plan-diagram/ViewAsDiagramHost';
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
@@ -444,6 +445,21 @@ export function EditorView() {
                                                 ) : null}
                                                 <AreaErrorBoundary area="TabDialogs">
                                                   <EditorTabDialogs />
+                                                </AreaErrorBoundary>
+                                                {/* View As Diagram (docs/specs/026-plan/view-as-diagram.md): a Board tab drawn in livediagram. */}
+                                                <AreaErrorBoundary area="TabDialogs">
+                                                  <ViewAsDiagramHost
+                                                    enabled={
+                                                      ctx.authLoaded &&
+                                                      hydrated &&
+                                                      canSendToPlan({
+                                                        signedIn: !!accountUserId,
+                                                        offline: isOffline,
+                                                        embed: !appChrome,
+                                                        community: sessionCommunity !== null,
+                                                      })
+                                                    }
+                                                  />
                                                 </AreaErrorBoundary>
                                                 <AreaErrorBoundary area="Collaborators">
                                                   <CollaboratorsHost />

@@ -11,26 +11,23 @@ import {
   lucideSquareKanban,
   lucideTimer,
   lucideUsers,
-  lucideVote,
   lucideSend,
+  lucideWorkflow,
 } from '@liveworkspace/icons/lucide';
-import { Prims, Glyph as UiGlyph } from '@liveplanner/ui';
+import { Prims } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
+import { Glyph } from './glyph';
+import { VOTING_ICONS } from './votingIcons';
+
+export { Glyph };
 
 /** Feature slug → icon (full <svg>). Used by the home grid, the features
  *  index, and the MDX <Feature> cards. Outline glyphs at w-6 h-6,
  *  `currentColor` so the call site sets the hue (see featureColours.ts).
  *  Add an entry here when adding a feature landing page. Missing slugs fall
  *  back to their category's glyph, then to FEATURE_FALLBACK_ICON. */
-export function Glyph({ children }: { children: ReactNode }) {
-  return (
-    <UiGlyph size={24} units={24} className="h-6 w-6">
-      {children}
-    </UiGlyph>
-  );
-}
-
 export const FEATURE_ICONS: Record<string, ReactNode> = {
+  ...VOTING_ICONS,
   'planning-basics': (
     <Glyph>
       <Prims prims={lucideSquareKanban} />
@@ -261,6 +258,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideSend} />
     </Glyph>
   ),
+  // Boxes joined into a flow: View As Diagram (docs/specs/026-plan/view-as-diagram.md).
+  'view-as-diagram': (
+    <Glyph>
+      <Prims prims={lucideWorkflow} />
+    </Glyph>
+  ),
   // A compass: Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md), the way to the next app.
   suggestions: (
     <Glyph>
@@ -435,47 +438,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="15" cy="8.5" r="1.5" />
       <path d="M15 15.5a4 4 0 016.5-1.5" />
       <path d="M21.5 11.5V14h-2.5" />
-    </Glyph>
-  ),
-  // Collaboration → Voting. Five articles about one feature, so the collisions
-  // here are internal: every one of them could have been "some dots". Each draws
-  // its own subject instead, spending a dot, restricting to a layer, hiding the
-  // count, tracking the room, and what won.
-  //
-  // `casting-dots` deliberately has no enclosing square: dots inside a box is the
-  // die that `pickers` already draws.
-  'casting-dots': (
-    <Glyph>
-      <Prims prims={lucideVote} />
-    </Glyph>
-  ),
-  // A struck-through eye: the counts and the cursors are what stay hidden. The
-  // open eye belongs to layer visibility, which is a different question.
-  'vote-privacy': (
-    <Glyph>
-      <path d="M3 12s3.5-5.5 9-5.5 9 5.5 9 5.5-3.5 5.5-9 5.5S3 12 3 12z" />
-      <circle cx="12" cy="12" r="2.5" />
-      <path d="M4 20L20 4" />
-    </Glyph>
-  ),
-  // A panel tracking the room: who has voted, and how far along it is.
-  'vote-panel': (
-    <Glyph>
-      <rect x="3" y="3.5" width="18" height="17" rx="2" />
-      <path d="M3 8h18" />
-      <path d="M6 11.5h7M6 15h5" />
-      <rect x="6" y="17.5" width="12" height="1.5" rx="0.75" />
-      <path d="M6 18.25h5" />
-    </Glyph>
-  ),
-  // A podium: the tallest in the middle, which is what a ranked result looks
-  // like. No axes, so it cannot be read as the bar chart.
-  'vote-results': (
-    <Glyph>
-      <rect x="9" y="5.5" width="6" height="15" rx="1" />
-      <rect x="2.5" y="11" width="6" height="9.5" rx="1" />
-      <rect x="15.5" y="14" width="6" height="6.5" rx="1" />
-      <path d="M11.5 9h1v4" />
     </Glyph>
   ),
   // Palette → Data elements. Charts are the easiest subjects in the whole set,

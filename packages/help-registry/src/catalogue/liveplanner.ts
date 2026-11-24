@@ -117,7 +117,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, live presence, teams, sharing, and session tools.',
-    articleCount: 7,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -531,6 +531,17 @@ export const articles: Article[] = [
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
+    apps: ['liveplanner'],
+  },
+  {
+    slug: 'view-as-diagram',
+    title: 'View As Diagram',
+    description:
+      'Draw a board as a live diagram: cards in lanes, Blocked By as arrows and the critical path.',
+    keywords:
+      'view as diagram board diagram livediagram dependencies dependency graph blocked by arrows critical path lanes swimlanes flow chart visualise visualize map live redraw',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
     apps: ['liveplanner'],
   },
 ];

@@ -12,6 +12,7 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'livedocuments', 'livedesign'],
+    byApp: { livediagram: { group: 'Working Together' } },
   },
   {
     slug: 'comments',
@@ -23,6 +24,7 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'liveknowledge'],
+    byApp: { livediagram: { group: 'Working Together' } },
   },
   {
     slug: 'send-to-plan',
@@ -41,6 +43,7 @@ export const articles: Article[] = [
       'livehuddle',
       'liveknowledge',
     ],
+    byApp: { livediagram: { group: 'Other Apps' } },
   },
   {
     slug: 'suggestions',
@@ -52,6 +55,7 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livehuddle', 'liveknowledge'],
+    byApp: { livediagram: { group: 'Other Apps' } },
   },
   {
     slug: 'start-a-call',
@@ -70,6 +74,7 @@ export const articles: Article[] = [
       'livehuddle',
       'liveknowledge',
     ],
+    byApp: { livediagram: { group: 'Other Apps' } },
   },
   {
     slug: 'facilitator',
@@ -80,6 +85,7 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'livehuddle'],
+    byApp: { livediagram: { group: 'Running Sessions' } },
   },
   {
     slug: 'live-presence',
@@ -99,6 +105,7 @@ export const articles: Article[] = [
       'liveknowledge',
     ],
     byApp: {
+      livediagram: { group: 'Working Together' },
       liveknowledge: {
         description:
           'See who is here in real time: who is on which page, what each person is working on, and agents at work.',
@@ -115,6 +122,7 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livehuddle'],
+    byApp: { livediagram: { group: 'Running Sessions' } },
   },
   {
     slug: 'timer',
@@ -199,6 +207,7 @@ export const articles: Article[] = [
       'livehuddle',
       'liveknowledge',
     ],
+    byApp: { livediagram: { group: 'Working Together' } },
   },
   {
     slug: 'community',
@@ -358,6 +367,7 @@ export const articles: Article[] = [
       'livehuddle',
       'liveknowledge',
     ],
+    byApp: { livediagram: { group: 'Working Together' } },
   },
   {
     slug: 'teams',
@@ -375,6 +385,7 @@ export const articles: Article[] = [
       'livehuddle',
       'liveknowledge',
     ],
+    byApp: { livediagram: { group: 'Working Together' } },
   },
   {
     slug: 'audit-log',
@@ -438,5 +449,6 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
+    byApp: { livediagram: { group: 'Running Sessions' } },
   },
 ];

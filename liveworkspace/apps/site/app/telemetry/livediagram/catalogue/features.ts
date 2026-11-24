@@ -1,6 +1,7 @@
 // Which features carry the work: the photo import, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
+import { DIAGRAMS_AND_PLANS_OPENED } from '../../_shared/diagrams-and-plans-metrics';
 import { isHelpArticleType, isSettingsCategory } from '../../_shared/opened-types';
 import { SELECTION_MODES } from '../palette-types';
 import { NON_PATTERN_CANVAS_TYPES } from '../../_shared/look-feel-types';
@@ -831,6 +832,8 @@ OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
 // Start a Call Here has its own stack too (_shared/item-call-metrics.ts).
 OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram');
+// Diagrams and Plans' too (_shared/diagrams-and-plans-metrics.ts).
+OPENED_HOMES.push((t) => t !== null && DIAGRAMS_AND_PLANS_OPENED.has(t));
 // Suggestions have a stack each (_shared/suggestion-metrics.ts).
 OPENED_HOMES.push(isSuggestionType);
 OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');

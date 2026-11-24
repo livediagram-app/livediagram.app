@@ -8,5 +8,7 @@ Follow the references below only as needed; never upfront.
   constants and tests
 - ./label-editor.md - when implementing the shared label editor: its files, the binding, the mixed-direction lines,
   measurements and tests
+- ./phone-drawers.md - when implementing the tool panels' phone drawer: PhoneDrawer, its use in MovablePanel and
+  PopoverOrSheet, and tests
 - ./DEFAULTS.md - when you need a default the workbench specs leave open
 - ./COMPLETENESS.md - when checking which completeness categories the workbench blueprint covers

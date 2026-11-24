@@ -292,3 +292,59 @@ describe('SessionPopover', () => {
     expect(p.onClose).toHaveBeenCalled();
   });
 });
+
+// liveworkspace/docs/specs/011-workbench/phone-drawers.md: on a phone each of the strip's popovers is a drawer from
+// the screen's foot, set-up and running alike; on a desktop the popover it was.
+describe('SessionPopover on a phone', () => {
+  const phone = (matches: boolean) =>
+    vi.stubGlobal(
+      'matchMedia',
+      (query: string) =>
+        ({
+          matches,
+          media: query,
+          addEventListener: () => undefined,
+          removeEventListener: () => undefined,
+        }) as unknown as MediaQueryList,
+    );
+  afterEach(() => vi.unstubAllGlobals());
+  const drawer = () => document.querySelector<HTMLElement>('[data-phone-drawer]');
+  const fromBottom = { left: 0, top: 0, bottom: 56, arrowOffset: 0 };
+
+  it('opens Timer, Vote and Poll set-up as drawers, each named and closed by its scrim', () => {
+    phone(true);
+    for (const [segment, name] of [
+      ['session-timer', 'Timer'],
+      ['session-vote', 'Vote'],
+      ['session-poll', 'Poll'],
+    ] as const) {
+      const p = popover({ segment, anchor: fromBottom });
+      const sheet = drawer()!;
+      expect(screen.getByRole('dialog', { name })).toBe(sheet);
+      expect(sheet.querySelector('[data-sheet-handle]')).not.toBeNull();
+      fireEvent.click(sheet.previousElementSibling as HTMLElement);
+      expect(p.onClose).toHaveBeenCalledTimes(1);
+      cleanup();
+    }
+  });
+
+  it('opens the running Vote panel as a drawer too', () => {
+    phone(true);
+    const p = popover({ segment: 'session-vote' });
+    cleanup();
+    popover({
+      segment: 'session-vote',
+      session: session({ vote: openVote }),
+      vote: { ...p.vote, tabVote: openVote },
+    });
+    const end = screen.getByRole('button', { name: 'End vote' });
+    expect(end.closest('[data-phone-drawer]')).not.toBeNull();
+  });
+
+  it('keeps the popover on a desktop', () => {
+    phone(false);
+    popover({ anchor: fromBottom });
+    expect(drawer()).toBeNull();
+    expect(screen.getByRole('region', { name: 'Timer' })).toBeTruthy();
+  });
+});

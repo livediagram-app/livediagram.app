@@ -1,4 +1,5 @@
 'use client';
+import { PlanCardsHost } from '@/components/plan-cards/PlanCardsHost';
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
@@ -382,6 +383,21 @@ export function EditorView() {
                   embed: !appChrome,
                   community: sessionCommunity !== null,
                 })}
+              />
+              {/* Diagrams and Plans (docs/specs/013-workspace/make-plan-cards.md): Make Plan Cards and the plan's offers. */}
+              <PlanCardsHost
+                itemId={ctx.authLoaded && hydrated ? documentId : null}
+                tabId={activeId}
+                tabName={activeTab.name}
+                title={canvasName}
+                elements={activeTab.elements}
+                enabled={canSendToPlan({
+                  signedIn: !!accountUserId,
+                  offline: isOffline,
+                  embed: !appChrome,
+                  community: sessionCommunity !== null,
+                })}
+                canEdit={ctx.can.level === 'edit' && !isReadOnly}
               />
               {/* Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md): the Call button's item, and
                   Meetings in Tools. */}

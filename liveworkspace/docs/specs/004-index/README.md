@@ -11,6 +11,7 @@ Follow the references below only as needed; never upfront.
 - ./send-to-diagram.md - when working on Send to Diagram: words in any app drawn by its AI as a new livediagram diagram of the person's own, the graph, the index route and livediagram's door
 - ./knowledge-sources.md - when a knowledgebase answers from other apps' items: the indexable-text door, the index's source, reach and likely routes, the change signal, each reader's own access
 - ./send-to-plan.md - when working on Send to Plan: a sticky, a comment, words or an action in any app made a liveplanner card as the person, the send's record, the live status chip, the picker, agents
+- ./diagrams-and-plans.md - when working on Diagrams and Plans: Make Plan Cards (shapes to cards, arrows to Blocked By, lanes, dates), View As Diagram (a board drawn live), the shape-to-card link, the routes, doors, graph, limits and roles
 - ./item-calls.md - when working on Start a Call Here: a livehuddle call about any item in a new tab, one call an item, the live pill and Join, invites in the Inbox, the summary and actions after it, the item's Meetings in Tools
 - ./write-up.md - when working on Write It Up: something from an item written as a knowledgebase page as the person, the default knowledgebase, the routes
 - ./live-data.md - when a chart or table draws from a plan: Sheet ranges, board counts and dashboard metrics, Freeze, tables, the cards watch, bounds, agents

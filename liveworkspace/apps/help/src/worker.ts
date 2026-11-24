@@ -27,17 +27,24 @@ export default {
       return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
     const url = new URL(request.url);
     const scope = scopeOf(request);
+    const staging = isStagingHost(url.host);
     const found = answer(await loadManifest(env, url.origin), scope, url.pathname, url.search, {
-      staging: isStagingHost(url.host),
+      staging,
     });
     if (found.kind === 'redirect')
       return withHelpHeaders(
         new Response(null, { status: 308, headers: { Location: found.location } }),
+        { staging },
       );
     const asset = await env.ASSETS.fetch(new Request(new URL(found.path, url.origin), request));
-    if (asset.status !== 404) return withHelpHeaders(asset);
+    if (asset.status !== 404) return withHelpHeaders(asset, { staging });
     // The scope's own not-found page, with its status.
     const notFound = await env.ASSETS.fetch(new URL(`/${scope}/404.html`, url.origin).toString());
-    return withHelpHeaders(new Response(notFound.body, { status: 404, headers: notFound.headers }));
+    return withHelpHeaders(
+      new Response(notFound.body, { status: 404, headers: notFound.headers }),
+      {
+        staging,
+      },
+    );
   },
 };

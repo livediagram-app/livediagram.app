@@ -138,7 +138,8 @@ tool renders only that tool: the list unmounts behind it.
 
 Tools and Get Started are drawers on a phone: a bottom sheet across the screen's foot over a dim scrim, the hero
 band running up under its grab handle. Dragging the handle down, a tap on the scrim or Escape closes it, and focus
-goes back to its button (`PopoverOrSheet`, `packages/workbench/src/components/primitives/PopoverOrSheet.tsx`). A
+goes back to its button, kept inside it while it is open (`PopoverOrSheet`, through the shared `PhoneDrawer` every
+tool panel opens as on a phone: [phone-drawers.md](../011-workbench/phone-drawers.md)). A
 second press on either button closes what it opened, on every screen.
 
 ## Rows from outside the footer

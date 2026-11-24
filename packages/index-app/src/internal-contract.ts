@@ -6,6 +6,7 @@ import type {
   AutomationTargetHandler,
 } from './automation-step-door';
 import type { PlanSendHandler } from './plan-send-door';
+import type { PlanDiagramDrawHandler, PlanDiagramHandler } from './plan-diagram-door';
 import type { DiagramFromGraphInput } from '@liveworkspace/index-client';
 import type {
   AccessGrantedNotice,
@@ -174,6 +175,10 @@ export type InternalItemHandlers = {
   automationTarget?: AutomationTargetHandler;
   // Send to Plan's cards made in this plan as the person (plan-send-door.ts), their grant checked. liveplanner alone.
   planSend?: PlanSendHandler;
+  // Diagrams and Plans (plan-diagram-door.ts, liveworkspace/docs/specs/004-index/diagrams-and-plans.md): liveplanner's
+  // make, graph, watch and edit as the person, and livediagram's draw of a plan's board. Elsewhere a 404.
+  planDiagram?: PlanDiagramHandler;
+  drawPlanDiagram?: PlanDiagramDrawHandler;
   // Start a Call Here (item-calls.md): this Space is a call about an item, its id kept by the room, which then tells
   // the index who is in it. livehuddle alone; an app without it answers 404.
   itemCall?: (spaceId: string, callId: string) => Promise<void>;

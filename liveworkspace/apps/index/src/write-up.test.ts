@@ -123,6 +123,30 @@ describe('the write-up', () => {
     expect(await body(res)).toMatchObject({ error: 'write_up_refused', reason: 'Read only' });
   });
 
+  it('refuses when the door answers without writing a page', async () => {
+    const ada = await person('user_ada');
+    const plan = await makeItem(ada.auth, { app: 'liveplanner', title: 'Launch' });
+    const kb = await makeItem(ada.auth, { app: 'liveknowledge', title: 'Wiki' });
+    h.appAnswer = (c) =>
+      c.url.endsWith('/automation-step')
+        ? Response.json({ ok: true, text: 'Nothing written' })
+        : new Response(null, { status: 200 });
+    const res = await write(ada.auth, plan.id, { knowledgebase: kb.id, title: 'T', body: 'B' });
+    expect(res.status).toBe(422);
+    expect(await body(res)).toEqual({ error: 'write_up_refused', code: 'failed', reason: '' });
+  });
+
+  it('writes nothing up from an item in the Trash', async () => {
+    const ada = await person('user_ada');
+    const plan = await makeItem(ada.auth, { app: 'liveplanner', title: 'Launch' });
+    const kb = await makeItem(ada.auth, { app: 'liveknowledge', title: 'Wiki' });
+    h.db.sql
+      .prepare('UPDATE items SET trashed_at = ?, trash_reason = ? WHERE id = ?')
+      .run(Date.now(), 'deleted', plan.id);
+    const res = await write(ada.auth, plan.id, { knowledgebase: kb.id, title: 'T', body: 'B' });
+    expect(res.status).toBe(404);
+  });
+
   it('answers only GET and POST', async () => {
     const ada = await person('user_ada');
     const plan = await makeItem(ada.auth, { app: 'liveplanner', title: 'Launch' });

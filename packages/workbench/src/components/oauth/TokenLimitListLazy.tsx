@@ -4,12 +4,19 @@
 // consent and device pages carry none of Settings' token rows until then. The fallback is the list's own loading
 // shape, so nothing jumps when it lands.
 import { lazy, Suspense } from 'react';
+import type { SettingsRequest } from '@liveworkspace/settings-ui/token-list';
 
 const TokenLimitList = lazy(() =>
   import('./TokenLimitList').then((m) => ({ default: m.TokenLimitList })),
 );
 
-export function TokenLimitListLazy({ onFreed }: { onFreed: () => void }) {
+export function TokenLimitListLazy({
+  onFreed,
+  request,
+}: {
+  onFreed: () => void;
+  request?: SettingsRequest;
+}) {
   return (
     <Suspense
       fallback={
@@ -21,7 +28,7 @@ export function TokenLimitListLazy({ onFreed }: { onFreed: () => void }) {
         />
       }
     >
-      <TokenLimitList onFreed={onFreed} />
+      <TokenLimitList onFreed={onFreed} request={request} />
     </Suspense>
   );
 }
