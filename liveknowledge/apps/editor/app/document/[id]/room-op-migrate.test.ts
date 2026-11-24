@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, FreehandElement, Tab } from '@liveknowledge/document';
+import {
+  CONTINUOUS_PAGE_WIDTH,
+  type Element,
+  type FreehandElement,
+  type Tab,
+} from '@liveknowledge/document';
 import type { RoomOp } from '@liveknowledge/api-schema';
 import { migrateRoomOp } from './room-op-migrate';
 
@@ -60,5 +65,41 @@ describe('migrateRoomOp', () => {
       op: { kind: 'update', element: { id: 's', type: 'text' } as Element },
     };
     expect(migrateRoomOp(current)).toBe(current);
+  });
+
+  // Work Tracker 1418: a peer loaded before the wider page sends its pages at the first width.
+  it("reads a peer's continuous page at the continuous width, its height kept, and leaves every other page", () => {
+    const first = {
+      id: 'p1',
+      orientation: 'portrait',
+      kind: 'article',
+      flow: 'art-1',
+      size: 'fit',
+      fit: { width: 856, height: 2400 },
+    } as const;
+    const paper = { id: 'p2', orientation: 'portrait', kind: 'article', flow: 'art-2' } as const;
+    const op: RoomOp = {
+      kind: 'tab-meta',
+      tabId: 't1',
+      patch: { pages: [first, paper], name: 'A' },
+    };
+    const out = migrateRoomOp(op) as Extract<RoomOp, { kind: 'tab-meta' }>;
+    expect(out.patch.pages![0]!.fit).toEqual({ width: CONTINUOUS_PAGE_WIDTH, height: 2400 });
+    expect(out.patch.pages![1]).toBe(paper);
+    expect(out.patch.name).toBe('A');
+    const now: RoomOp = {
+      kind: 'tab-meta',
+      tabId: 't1',
+      patch: { pages: [{ ...first, fit: { width: CONTINUOUS_PAGE_WIDTH, height: 2400 } }] },
+    };
+    expect(migrateRoomOp(now)).toBe(now);
+    const noPages: RoomOp = { kind: 'tab-meta', tabId: 't1', patch: { name: 'B' } };
+    expect(migrateRoomOp(noPages)).toBe(noPages);
+    const junk = {
+      kind: 'tab-meta',
+      tabId: 't1',
+      patch: { pages: [null, { ...first, fit: 'wide' }] },
+    };
+    expect(migrateRoomOp(junk as unknown as RoomOp)).toBe(junk);
   });
 });

@@ -276,10 +276,14 @@ export function useArticles(deps: {
         if (locked) return;
         const grown = withArticlePageHeight(t, flow, layout.heightNeeded);
         if (grown === t) {
-          if (layout.zones.length > 0) {
+          // The zones, and the margin notes beside their text: a page read at a wider width than it was written at
+          // (continuous-page-width.ts) has both only estimated until this settle.
+          if (layout.zones.length > 0 || layout.notes.length > 0) {
             d.tickTabs((ts) => {
               const out = ts.map((x) =>
-                x.id === tabId && x.locked !== true ? withZonesSettled(x, flow, layout.zones) : x,
+                x.id === tabId && x.locked !== true
+                  ? withNotesSettled(withZonesSettled(x, flow, layout.zones), flow, layout.notes)
+                  : x,
               );
               return out.every((x, i) => x === ts[i]) ? ts : out;
             });

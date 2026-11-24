@@ -1,5 +1,5 @@
 // The narrow view (docs/specs/030-knowledgebase/blueprints/page-surface.md "The narrow view"): a page in a window too
-// narrow for its 760 px column is drawn through this lens, its writing re-wrapped to the room the window gives. The
+// narrow for its 960 px column is drawn through this lens, its writing re-wrapped to the room the window gives. The
 // page is drawn narrower and as tall as this browser measured it; each zone is drawn scaled to fit the column at the
 // place this browser measured, its elements through the transform from the stored zone box to the drawn one; margin
 // notes at their measured corners. Every change made through the lens is lowered back (lowerPageView): the stored
@@ -95,10 +95,12 @@ const sameKeys = <T extends object>(a: T, b: T): boolean => {
 };
 
 /** The page the lens narrows: a continuous page holding writing, with its size, as the tab stores it (pagesOf answers
- *  read copies; lowering hands back the stored objects themselves). */
-function narrowedPage(tab: Tab): Page | undefined {
+ *  read copies; lowering hands back the stored objects themselves), and its sides as read (a page stored at another
+ *  width is read at the continuous width, continuous-page-width.ts). */
+function narrowedPage(tab: Tab): { page: Page; fit: NonNullable<Page['fit']> } | undefined {
   const read = pagesOf(tab).find((p) => isContinuousPage(p) && !!p.flow && !!p.fit);
-  return read && tab.pages?.find((p) => p.id === read.id && p.fit);
+  const page = read && tab.pages?.find((p) => p.id === read.id && p.fit);
+  return page && read.fit ? { page, fit: read.fit } : undefined;
 }
 
 /** An article's writing as the tab stores it, when it is well formed; else as read. */
@@ -108,12 +110,12 @@ function storedFlow(tab: Tab, flow: string): ArticleFlow | undefined {
 }
 
 function build(tab: Tab, room: number, layout: NarrowLayout | undefined): Tab {
-  const page = narrowedPage(tab);
-  if (!page || !page.flow) return tab;
-  const flow = page.flow;
+  const narrowed = narrowedPage(tab);
+  if (!narrowed || !narrowed.page.flow) return tab;
+  const { page, fit } = narrowed;
+  const flow = page.flow!;
   const doc = storedFlow(tab, flow);
   const margin = articleMarginPx(doc?.style);
-  const fit = page.fit!;
   if (room >= fit.width - 2 * margin) return tab;
   const column = Math.max(PAGE_VIEW_MIN_COLUMN, room);
   // Read at its own sides (a stored continuous page is read at the continuous width whatever it says).
@@ -287,16 +289,20 @@ function zonesNowOf(mapped: Tab, m: LensMeta): Map<string, Transform> {
   return out;
 }
 
+const sameSide = (a: number, b: number): boolean => Math.abs(a - b) < 1;
+
 function lowerDoc(doc: ArticleFlow, m: LensMeta): ArticleFlow {
   const blocks = doc.blocks.map((b) => {
     if (b.type !== 'zone') return b;
     const z = m.zones.get(b.id);
     if (!z) return b;
     if (b === z.lens) return z.real;
+    // A zone's sides are read back whole px (the article parse rounds them), so a side within a px of the lens's is the
+    // lens's own and lowers to the stored side: a settle never grows a zone by the rounding.
     const kept: ArticleZoneBlock = {
       ...b,
-      width: b.width === z.lens.width ? z.real.width : Math.round(b.width / z.s),
-      height: b.height === z.lens.height ? z.real.height : Math.round(b.height / z.s),
+      width: sameSide(b.width, z.lens.width) ? z.real.width : Math.round(b.width / z.s),
+      height: sameSide(b.height, z.lens.height) ? z.real.height : Math.round(b.height / z.s),
       ...(z.real.at ? { at: z.real.at } : {}),
     };
     return nearlyEqual(kept, z.real) ? z.real : kept;
