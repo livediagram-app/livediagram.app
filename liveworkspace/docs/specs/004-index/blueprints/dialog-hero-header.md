@@ -28,6 +28,9 @@ precision, read from the code. Paths are relative to the repository root.
 | `packages/ui/src/dialog/hero/art/settings.tsx`                                             | `settingsHeroArt` (every app's Settings, through `SettingsView`), `SETTINGS_GLYPH`, `cogPath`                                                 |
 | `packages/ui/src/dialog/hero/art/collaborators.tsx`                                        | `collaboratorsHeroArt` (every app's Collaborators)                                                                                            |
 | `packages/ui/src/dialog/hero/art/canvas-theme.tsx`                                         | `canvasThemeHeroArt` (Tab Style: livedesign, livediagram, livedocuments, livehuddle)                                                          |
+| `packages/ui/src/dialog/hero/art/upgrade.tsx`, `ask-admin.tsx`                             | `upgradeHeroArt` (`packages/subscription-ui/src/upgrade/UpgradeDialog.tsx`), `askAdminHeroArt` (`AskAdminDialog.tsx`)                         |
+| `packages/ui/src/dialog/hero/art/send-to-plan.tsx`                                         | `sendToPlanHeroArt` (`packages/workbench/src/components/send-to-plan/SendToPlanDialog.tsx`)                                                   |
+| `livehuddle/apps/editor/components/calls/minutes/CallMinutesUsedHeroArt.tsx`               | `callMinutesUsedHeroArt` (`CallMinutesUsedDialog`)                                                                                            |
 | `liveworkspace/apps/site/components/settings/SiteSettingsHeroArt.tsx`                      | `siteSettingsHeroArt`, passed to `SettingsPanel` as `heroArt`                                                                                 |
 
 ## The frame's API

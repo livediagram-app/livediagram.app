@@ -131,7 +131,9 @@ the reader's locale writes it.
 - **Used.** The Call dock's first button reads **Calls Paused**, and its hover card says until when. A call that was
   running when the minutes ran out opens a dialog, and a press of Calls Paused opens it again. That press also asks
   to join once more, quietly: refused while the month is used, admitted the moment it is not, which closes the
-  dialog and starts the call. The dialog:
+  dialog and starts the call. The dialog wears the
+  [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), its title alone over
+  the Call Minutes Used art. It says:
   - the owner, or a team admin: **This Month's Call Minutes Are Used**, "Calls start again on 1 December. The Space,
     its chat and everything on its walls still work.", the meter at "1,000 of 1,000", **Upgrade to Pro** (Upgrade
     Team for a team) and **Back to the Space**;

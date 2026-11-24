@@ -25,7 +25,7 @@ Settings and liveworkspace.app's (livediagram/docs/specs/007-editor/user-prefere
 liveworkspace/docs/specs/010-site/site.md "Settings"), Collaborators
 (livediagram/docs/specs/012-collaboration/collaborator-enhancements.md) and Tab Style
 (livediagram/docs/specs/011-theme/canvas-and-theme-dialog.md, every app's alike), Connect File
-([connected-tabs.md "From the tab bar"](./connected-tabs.md), every app's alike), the tab menu's organise dialogs, Organise in Tab Folder and Add to Another Canvas (each product's `006-*/tab-folders.md` "Membership UX"; Add to Design, Add to Document, Add to Another Space and Add to Knowledgebase alike), and the popovers: the footer's
+([connected-tabs.md "From the tab bar"](./connected-tabs.md), every app's alike), the tab menu's organise dialogs, Organise in Tab Folder and Add to Another Canvas (each product's `006-*/tab-folders.md` "Membership UX"; Add to Design, Add to Document, Add to Another Space and Add to Knowledgebase alike), the subscription dialogs, Upgrade and Ask an Admin (liveworkspace/docs/specs/019-subscription/subscription.md "What people see"), livehuddle's Call Minutes Used (livehuddle/docs/specs/012-collaboration/call-minutes.md "What people see"), Send to Plan's picker ([send-to-plan.md "The picker"](./send-to-plan.md#the-picker)) (Work Tracker 1390), and the popovers: the footer's
 Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)) and the cluster and Session popovers that hang
 from a button (owner, 2026-11-23): liveplanner's Card Types and Trash, the Session strip's Timer, Vote and Poll,
 livediagram's Layers and Tidy, and Contents in livedocuments, livedesign and liveknowledge. A popover's header is the
@@ -33,6 +33,12 @@ movable panel's `hero` (`packages/workbench` `MovablePanel`): the same 100px ban
 link and its own header controls as the actions, then the close; hung below its button, its arrow takes the band's
 paper. A panel that can also dock (Contents as a sidebar) wears it only as a popover. Only Card Types, the widest,
 carries a line under its title; the narrow ones are the mark and the title alone, clear of the art.
+
+What is not a modal or a popover keeps its own head (Work Tracker 1390). A hint is a tooltip, not a popover: the
+upgrade comparison's info note (one sentence on the hover card's surface, `role="tooltip"`, opened by a row's info
+button and pinned by a tap) wears no band, which would stand taller than the sentence it heads; every hover card
+alike. Nor do panels and pages: Settings' Subscription category sits under Settings' own hero, and liveworkspace.app's
+billing page has its page heading; the subscription scopes around them draw nothing.
 
 ## The frame
 
@@ -218,6 +224,10 @@ What each dialog draws:
 | Resources                                               | Dots fading in from the title's side; in the bottom right two sheets rising from the edge, the back one tinted, the front one a plate with two lines, held together by a paperclip in the accent, bobbing twice. Glyph: a paperclip. Worn by every app's Resources dialog, which the element menu's Resources row opens.                                                                                                                                                   |
 | Element rows                                            | Dots fading in from the title's side; in the bottom right a stack of three rows rising from the edge, the middle one in the accent lifted out of line, bobbing twice, an arrow beside it pointing up. Glyph: three rows with arrows up and down. Worn by the rows of a stat row, a process, a header's links, a card's tags and a concept graphic.                                                                                                                         |
 | Element settings                                        | A grid fading toward the title; in the bottom right a panel of three sliders rising from the edge, the middle one's knob in the accent, its ring spreading twice. Glyph: a pair of sliders. Worn by the dialog an element's own settings open in.                                                                                                                                                                                                                          |
+| Upgrade                                                 | Rings spreading from the bottom right, where three tiers rise from the edge as steps, each a step up from the last, a star in the accent on the top one, bobbing twice; centre: a card of limits, each row's bar running past a dashed line where Free stops, the accent's arrow up on its corner. Glyph: two chevrons rising. The price's wider actions move the centre piece to 14rem.                                                                                   |
+| Ask an Admin                                            | A grid of dots fading toward the title; in the bottom right a note rising from the edge, a dashed arrow arching from it to the team's admin, whose accent star badge spreads its ring twice. Glyph: a speech bubble with an arrow up.                                                                                                                                                                                                                                      |
+| Send to Plan                                            | A grid fading toward the title; in the bottom right a sticky, a dashed arc from it to a board of three columns rising from the edge, the new card in the accent dropping into the middle column, bobbing twice. Glyph: a board of three columns, a card in the middle one.                                                                                                                                                                                                 |
+| Call Minutes Used (livehuddle)                          | Rings spreading from the bottom right, where a meter rises from the edge filled to its end beside a dial whose sweep has come all the way round, the accent's pause badge on its shoulder, its ring spreading twice. Glyph: a pause in a circle.                                                                                                                                                                                                                           |
 
 ## Where art lives
 

@@ -412,8 +412,8 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   usage now, grouped (Automation; Publishing; AI; Storage and History; Recording and Calls; Knowledgebases),
   each row with the logos of the apps it applies to and an explanation. A limit shared by several apps shows each of
   their logos, a small block of them, never liveworkspace's own; each logo names its app in a tooltip, and the line
-  under the row's name says "Every app", "Every app but livehuddle", or the apps by name (owner, 2026-11-22). Its header reads badge, title and sentence at every width; the
-  price sits at the header's right on a wide screen, and on a phone in the footer, beside the button that buys it.
+  under the row's name says "Every app", "Every app but livehuddle", or the apps by name (owner, 2026-11-22). Its header is the [dialog hero header](../004-index/dialog-hero-header.md) with the Upgrade art, title and
+  sentence read first at every width; the price sits among the header's actions on a wide screen, and on a phone in the footer, beside the button that buys it.
 - **The pricing page** on liveworkspace.app: the three tiers and the same comparison, with your usage when signed in.
   It opens with an illustrated hero (the shared marketing PageHero, its art beside the words: three tiers rising,
   each a step up from the last, every app's tile on the first): "Pricing", "Free for Everyone. Pro When You Need
@@ -457,7 +457,7 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   after it, and a paid tier that ends again later is said again. A team's ending is for its admins alone (a member
   is told only that the team is on Free), and one admin's Dismiss is the team's.
 - **Ask an Admin:** a member of a team on Free who meets a limit, or presses Ask an Admin under Your Teams, opens a
-  dialog with a note to the team's admins (naming the limit when there is one). **Send Request** sends it; **Copy
+  dialog (the dialog hero header, with the Ask an Admin art) with a note to the team's admins (naming the limit when there is one). **Send Request** sends it; **Copy
   Note** stays, to send it some other way. The request is kept by the subscription service and shown to the team's
   admins in Settings, under Subscription, on the team's row: "Bea Lee asked for Pro for Teams" or "3 members have
   asked for Pro for Teams", opening on the newest five with who, the limit that prompted it, the day and their note.
