@@ -26,7 +26,9 @@ import { SITE_URL } from '@livehuddle/ui';
 //     platform for large broadcasts, Google Calendar, Outlook, Slack, Teams, Zoom and Google Drive
 //     integrations, apps for Mac, Windows, Linux, iOS and Android),
 //     https://www.kumospace.com/help/invite (guests join without an account when the host allows it).
-const UPDATED = new Date('2026-11-18');
+// Re-checked 2026-11-24: both pricing pages still say the same (Gather Essential $12 a member after a 30-day trial,
+// guests free; Kumospace Free to 5 members, Business $16).
+const UPDATED = new Date('2026-11-24');
 
 const LIST: Alternative[] = [
   {
@@ -72,7 +74,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Programmatic access',
-        us: 'A free REST API with personal tokens, and Automations that post to Slack, Teams or signed JSON',
+        us: 'A free REST API with personal tokens, Automations that post to Slack, Teams or signed JSON, and calls started from your work in the other liveworkspace apps',
         them: 'Calendar, GitHub and Spotify integrations, and webhooks from smart objects',
       },
     ],
@@ -95,6 +97,7 @@ const LIST: Alternative[] = [
       'A Space is also a board: sticky notes, text and stickers on the walls, and a Timer or a Stopwatch in any room.',
       'Share links for each role: an Editor reshapes the office, and a Participant, the default, walks, talks and reacts without moving a thing. Add a password or an expiry, or revoke a link at any time.',
       'A free REST API, so your own scripts can set up your Spaces, and Automations: rules a Space runs on its own, so a room tidies itself once everyone leaves and Slack or Teams hears when the office opens.',
+      'Calls start from the work: press Call on your work in livediagram, liveplanner, livedocuments, livedesign or liveknowledge and a call about it opens, and Wrap Up sends the summary to a knowledgebase and the actions to a plan.',
       'Your Spaces can sync to your own Google Drive, or stay Offline and never reach our servers.',
     ],
     sections: [
@@ -189,7 +192,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Programmatic access',
-        us: 'A free REST API with personal tokens, and Automations that post to Slack, Teams or signed JSON',
+        us: 'A free REST API with personal tokens, Automations that post to Slack, Teams or signed JSON, and calls started from your work in the other liveworkspace apps',
         them: 'Calendar, Slack, Teams, Zoom and Google Drive integrations',
       },
     ],
@@ -212,6 +215,7 @@ const LIST: Alternative[] = [
       'The walls hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch in any room.',
       'Participant links let people walk, talk and react without moving the furniture, and a Space can take a password and any link an expiry.',
       'A free REST API, so a script can set up a Space, and Automations, so a meeting room puts itself back once everyone leaves and Slack or Teams hears when the first person arrives.',
+      'Calls start from the work: press Call on your work in livediagram, liveplanner, livedocuments, livedesign or liveknowledge and a call about it opens, and Wrap Up sends the summary to a knowledgebase and the actions to a plan.',
       'Your Spaces can sync to your own Google Drive, or stay Offline and never reach our servers.',
     ],
     sections: [
