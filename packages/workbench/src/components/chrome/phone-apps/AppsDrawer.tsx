@@ -30,6 +30,7 @@ import { useAuthHrefs } from '../auth-routes';
 import { SignInIcon, useSavedLook } from '../AuthControls';
 import { itemNameNow, usePhoneApps } from './phone-apps-store';
 import { inboxBadgeWords, phoneAppsTiles, type PhoneAppsTileId } from './phone-apps-tiles';
+import { usePhoneAppsSectionNode } from './phone-apps-section';
 
 const TILE_ICON = 24;
 const ExplorerGlyph = lucideGlyph(lucideFolder, TILE_ICON);
@@ -229,6 +230,7 @@ export function AppsDrawer({ app, itemId, inboxCount, hasInbox, onClose }: AppsD
         );
     }
   };
+  const section = usePhoneAppsSectionNode();
   const slots = (
     [
       ['approval', snapshot?.approval],
@@ -267,6 +269,8 @@ export function AppsDrawer({ app, itemId, inboxCount, hasInbox, onClose }: AppsD
             <CloseGlyph aria-hidden />
           </button>
         </div>
+
+        {section ? <div data-phone-apps-section="">{section}</div> : null}
 
         <div className="grid grid-cols-3 gap-2">{tiles.map(tile)}</div>
 

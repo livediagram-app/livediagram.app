@@ -13,8 +13,8 @@ every editor (livediagram, liveplanner, livedocuments, livedesign, livehuddle, l
 
 1. **The menu card holds the app's logo and an Apps button.** The logo (the app's prism, `BrandMark`) takes the
    hamburger's place and does what it did: it opens the Explorer panel (the menu card), and its accessible name stays
-   **Explorer**. Apps follows it: a 3 x 3 dots glyph, named **Apps**. An app's mode switch (livediagram's) keeps its
-   place after them, its icon alone, as on a phone today. liveplanner's menu card keeps a maximised element's name
+   **Explorer**. Apps follows it: a 3 x 3 dots glyph, named **Apps**. An app's mode switch (livediagram's) leaves the
+   top row for the drawer (**The app's section**, below), so the card holds the logo and Apps alone. liveplanner's menu card keeps a maximised element's name
    after them (`MenuNameSlot`), as it does today.
 2. **The top-right corner card is not drawn.** Its actions move to the Apps drawer, and the palette strip takes its
    width: the corner card's room (`--corner-card-room`, `--corner-card-span`) is cleared and `CORNER_CARD_EVENT` sent,
@@ -37,6 +37,11 @@ From the top:
 - **Header.** The app's logo (40 px), the item's name (one line, cut with an ellipsis) and under it the app and who can
   see it: `livediagram · Shared`, `liveplanner · Shared and Team`, `livedocuments · Private` (the Share button's own
   visibility words, `shareStatesLabel`). A round 44 px **Close** at its right.
+- **The app's section.** A control the top row no longer holds leads the drawer, under the header: livediagram's
+  editor mode switch, as **Editor mode** over the three modes side by side (Diagram, Draw, Workshop), each 44 px tall
+  with its tinted glyph and name, the current one raised and marked (a radio group; one press switches). The menu card
+  publishes it while on a phone (`usePhoneAppsSection`); an app with none shows no section, and nor does a viewer who
+  may not switch (a Participant, a Viewer, a locked tab).
 - **A grid of tiles**, three to a row, each 84 px tall with its glyph over its name. In this order, and **only where the
   app and the viewer's role offer the action today** (no dead tiles):
 

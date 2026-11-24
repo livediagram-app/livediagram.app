@@ -1,6 +1,6 @@
 'use client';
 
-import type { Ref } from 'react';
+import { useMemo, type Ref } from 'react';
 
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
@@ -8,6 +8,9 @@ import { Brand } from '@livediagram/ui';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { useEditorInbox } from '@liveworkspace/workbench/components/chrome/useEditorInbox';
 import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
+import { PhoneModePicker } from './editor-mode/PhoneModePicker';
+import { useEditorModeState } from './editor-mode/editor-mode-context';
+import { usePhoneAppsSection } from '@liveworkspace/workbench/components/chrome/phone-apps/phone-apps-section';
 import { ExplorerMenuButtons } from '@liveworkspace/workbench/components/chrome/phone-apps/ExplorerMenuButtons';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -23,8 +26,9 @@ import { ExplorerMenuButtons } from '@liveworkspace/workbench/components/chrome/
 // `inline`: in the strip's row, as a phone puts it (ToolbarMenuCard).
 //
 // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch") rides right of the button in the
-// same card, so it goes wherever the menu goes: named on a computer, its icon alone on a phone. It renders nothing
-// where no switch is offered (a Participant, a Viewer, a locked tab, an event-storming board).
+// same card on a computer, named. On a phone it leaves the top row for the Apps drawer, where the three modes lead the
+// drawer (PhoneModePicker, phone-apps-drawer.md "The app's section"). Neither shows where no switch is offered (a
+// Participant, a Viewer, a locked tab, an event-storming board).
 // The Inbox's count rides the button, and a new Inbox row shows as a notice under the corner card while the
 // editor is open (liveworkspace/docs/specs/004-index/inbox-notices.md, docs/specs/013-workspace/inbox-notices.md).
 export function ToolbarExplorerButton({
@@ -45,6 +49,18 @@ export function ToolbarExplorerButton({
 }) {
   const phone = useIsMobileViewport();
   const inbox = useEditorInbox('livediagram');
+  const editorMode = useEditorModeState();
+  const switchable = !!editorMode?.canEdit && editorMode.canSwitch;
+  const mode = editorMode?.mode;
+  const setMode = editorMode?.setMode;
+  const picker = useMemo(
+    () =>
+      switchable && mode && setMode ? (
+        <PhoneModePicker mode={mode} onChange={(next) => setMode(next)} />
+      ) : null,
+    [switchable, mode, setMode],
+  );
+  usePhoneAppsSection(picker, phone);
   // The hamburger, or on a phone the logo and Apps (phone-apps-drawer.md), which then holds the logo itself.
   const button = (
     <ExplorerMenuButtons
@@ -75,7 +91,7 @@ export function ToolbarExplorerButton({
       >
         {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
         {button}
-        <EditorModeSwitch iconOnly={phone || inline} />
+        {phone ? null : <EditorModeSwitch iconOnly={inline} />}
         {/* No tab name here (owner, 2026-11-17): the tab bar names the tab. */}
       </ToolbarMenuCard>
       {inbox.notices}

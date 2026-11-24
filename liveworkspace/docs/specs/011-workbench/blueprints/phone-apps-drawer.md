@@ -26,6 +26,15 @@ precision. Paths are relative to the repository root.
 - `usePublishPhoneApps(snapshot, phone)`: a layout effect publishing each render while `phone`, and `null` on a desktop
   and on unmount.
 
+## The app's section
+
+- `phone-apps-section.ts`: `usePhoneAppsSection(node, active)` publishes one `ReactNode` in a layout effect while
+  `active` and clears it on unmount (only its own); `usePhoneAppsSectionNode()` reads it (`useSyncExternalStore`).
+- `AppsDrawer` draws it under the header in `data-phone-apps-section`, before the tiles.
+- livediagram's `ToolbarExplorerButton` publishes a memoised `PhoneModePicker` (`role="radiogroup"` named **Editor
+  mode**, one `role="radio"` button per `EDITOR_MODES` entry, `data-mode-option`) while on a phone and the viewer may
+  switch, and draws `EditorModeSwitch` only off a phone.
+
 ## EditorCornerActions on a phone
 
 `EditorCornerActions` reads `useIsMobileViewport()`. On a phone it publishes and renders only its zero-height layer and

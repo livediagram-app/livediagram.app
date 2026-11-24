@@ -15,6 +15,7 @@ import type { EditorInbox } from '../useEditorInbox';
 import { EditorCornerActions } from '../EditorCornerActions';
 import { ExplorerMenuButtons } from './ExplorerMenuButtons';
 import { publishPhoneApps } from './phone-apps-store';
+import { resetPhoneAppsSectionForTests, usePhoneAppsSection } from './phone-apps-section';
 
 vi.mock('../AuthControls', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../AuthControls')>()),
@@ -57,6 +58,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   act(() => publishPhoneApps(null));
+  act(() => resetPhoneAppsSectionForTests());
   vi.unstubAllGlobals();
   resetWorkbenchForTests();
   document.documentElement.style.removeProperty('--corner-card-room');
@@ -188,6 +190,22 @@ describe('on a phone', () => {
     expect(tileNames()).toEqual(['explorer', 'call', 'share', 'present', 'copy-link', 'inbox']);
     expect(within(drawer()).getByRole('link', { name: 'Inbox, 3 unread' })).toBeTruthy();
     expect(within(drawer()).getByText('3')).toBeTruthy();
+  });
+
+  it('leads with the app’s own section while one is published, and drops it when it goes', async () => {
+    function Section({ on }: { on: boolean }) {
+      usePhoneAppsSection(<p>Editor mode picker</p>, on);
+      return null;
+    }
+    const view = editor();
+    const host = render(<Section on />);
+    await openApps();
+    const section = drawer().querySelector('[data-phone-apps-section]');
+    expect(section?.textContent).toBe('Editor mode picker');
+    host.rerender(<Section on={false} />);
+    expect(drawer().querySelector('[data-phone-apps-section]')).toBeNull();
+    host.unmount();
+    view.unmount();
   });
 
   it('sends Explorer straight to the Explorer page, no panel', async () => {
