@@ -107,6 +107,11 @@ in a new browser tab. Beside Send to Plan's chip when the place has both.
   new name on the next open. The chip is drawn beside the place; it is not part of the source and never in an export.
 - The rows cascade from the source and the diagram, so purging either takes them, and they hold no person.
 
+## On a touch screen
+
+As [Send to Plan's](send-to-plan.md#on-a-touch-screen): the words are read as the press starts, the reader's pill
+stays through its own tap, and every entry is at least 44px to tap on a coarse pointer.
+
 ## Sending again
 
 A place with a chip opens the picker on **Update**, the newest diagram's tab the person may open: Update Tab redraws that

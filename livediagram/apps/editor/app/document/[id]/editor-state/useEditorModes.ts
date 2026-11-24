@@ -44,7 +44,7 @@ export function useEditorModes({
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
   const drawMode = editorMode.mode === 'draw';
-  // The tool a mode starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).
+  // The tool a mode starts with: Select, or Hand on a phone or a touch-first screen (docs/specs/007-editor/editor-modes.md).
   useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
 
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,

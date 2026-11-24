@@ -7,7 +7,7 @@
 
 import { useRef, useState } from 'react';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
+import { startsOnHand } from '@/hooks/editor/useModeDefaultTool';
 import { track } from '@/lib/telemetry';
 
 export function useCanvasTool({
@@ -15,16 +15,16 @@ export function useCanvasTool({
 }: {
   defaultPan?: boolean;
 } = {}) {
-  // Default to Hand (pan) on a touch / mobile viewport, Select on
-  // desktop: on a small touchscreen a drag-on-empty far more often
-  // means "scroll the canvas" than "marquee-select", and pinch-zoom
+  // Default to Hand (pan) on a phone or a touch-first screen (an iPad with no trackpad or mouse), Select
+  // wherever a mouse or trackpad is present (docs/specs/007-editor/editor-modes.md): on a touchscreen a
+  // drag-on-empty far more often means "scroll the canvas" than "marquee-select", and pinch-zoom
   // pairs naturally with panning. Lazy initial read is safe during the
   // static-export render (see isMobileViewportSync). `defaultPan` forces
   // Hand on every viewport, used by the read-only embed view (docs/specs/013-workspace/embeds.md):
   // there's nothing to select / edit, so panning is the only useful
   // drag-on-empty gesture.
   const [canvasTool, setCanvasTool] = useState<CanvasTool>(() =>
-    defaultPan || isMobileViewportSync() ? 'pan' : 'select',
+    defaultPan || startsOnHand() ? 'pan' : 'select',
   );
   // User-facing tool picker (palette buttons + keyboard). Wraps the raw
   // setter to emit telemetry when the user enters laser (presenter)

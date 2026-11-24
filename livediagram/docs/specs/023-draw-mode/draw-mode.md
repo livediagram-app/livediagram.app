@@ -864,7 +864,7 @@ not apply: a whiteboard has no palette to mirror):
 | Key    | Tool                                                    |
 | ------ | ------------------------------------------------------- |
 | V      | Select                                                  |
-| Escape | Put the tool down: back to Select                       |
+| Escape | Put the tool down: Select, or Hand when touch-first     |
 | 1      | Marker 1                                                |
 | 2      | Marker 2                                                |
 | 3      | Marker 3                                                |

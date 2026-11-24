@@ -57,6 +57,7 @@ import { articleCountsOf } from '@/lib/article/article-word-count';
 import { selectNextLongSentence } from '@/lib/article/article-long-sentences';
 import { track } from '@/lib/telemetry';
 import { articleSendPick } from '@liveworkspace/workbench/components/send-to-plan/article-sent';
+import { useArticleSendPress } from '@liveworkspace/workbench/components/send-to-plan/article-send-press';
 import { canSendHere } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import {
@@ -172,6 +173,8 @@ export function PageToolbar({
     phone,
     topRoomOf,
   });
+  // Send to Plan's words, read as a press on the bar starts: a tap may clear them before its click lands.
+  const sendPress = useArticleSendPress(() => shown?.handle.state() ?? null);
 
   if (!shown || phoneIdle) return null;
   const { handle, selection } = shown;
@@ -225,10 +228,13 @@ export function PageToolbar({
       data-page-toolbar=""
       data-article-keep-active=""
       onMouseDown={(e) => e.preventDefault()}
-      onPointerDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        sendPress.onPress();
+      }}
       className={
         dock
-          ? 'flex min-w-0 items-center gap-0.5'
+          ? 'isolate flex min-w-0 items-center gap-0.5'
           : `fixed left-0 top-0 z-[var(--z-toolbar)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`
       }
       style={dock ? undefined : { visibility: 'hidden' }}
@@ -395,7 +401,7 @@ export function PageToolbar({
             description="Make a card in liveplanner from the words picked, or this paragraph or item."
             disabled={!articleSendPick(handle.state())}
             why="Put the caret in some words first."
-            onPress={() => sendArticleWords(articleSendPick(handle.state()))}
+            onPress={() => sendArticleWords(sendPress.pick())}
           >
             <SendToPlanMenuIcon size={16} />
           </Button>
@@ -405,7 +411,7 @@ export function PageToolbar({
               description="AI draws the words picked, or this paragraph or item, as a diagram in livediagram."
               disabled={!articleSendPick(handle.state())}
               why="Put the caret in some words first."
-              onPress={() => sendArticleWordsToDiagram(articleSendPick(handle.state()))}
+              onPress={() => sendArticleWordsToDiagram(sendPress.pick())}
             >
               <SendToDiagramIcon size={16} />
             </Button>

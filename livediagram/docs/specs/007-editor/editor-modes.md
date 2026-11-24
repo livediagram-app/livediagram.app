@@ -241,7 +241,21 @@ element in the same colour.
 
 ## The tool a mode starts with
 
-- Every mode starts on **Select**. On a phone every mode starts on **Hand**, so a drag moves the canvas.
+- Every mode starts on **Select**. Where a finger is the way in, every mode starts on **Hand**, so a drag moves the
+  canvas rather than drawing a selection box or moving what it lands on (Work Tracker 1426; owner, 2026-11-24). That
+  is a phone, and a **touch-first** screen: its main pointer is coarse and cannot hover (`(pointer: coarse)` and
+  `(hover: none)`) and nothing attached to it is fine (no `(any-pointer: fine)`): an iPad, an Android tablet.
+- A mouse or trackpad keeps **Select**: a desktop, a touchscreen laptop (its trackpad is fine), and an iPad with a
+  trackpad or mouse attached (owner's suggestion taken: Select whenever a fine pointer is present). The browser's media
+  queries decide, never the user agent; they are read each time a mode starts, so attaching a trackpad counts from
+  the next mode or tab opened.
+- Hand on a touch-first screen is the Hand every screen has: a drag on the empty canvas pans, a tap on an element
+  selects it (its toolbar and menu with it), a drag on an element moves it, a double-tap edits it. A pinch zooms and
+  two fingers pan in either tool (`useCanvasPinchZoom`, canvas-and-palette.md "Touch"). Select is one tap away on the
+  palette strip's first control, the selection-mode picker, as on a phone.
+- Wherever a held tool is put down (a template's scaffold replacing an empty tab, Escape out of Isometric, the
+  Magnifier, the format painter or Draw's eraser), it goes back to this same tool: Hand on a touch-first screen,
+  else Select (`restingTool`).
 - The tool is picked whenever the mode changes, the first mode a tab opens in included; any tool can be picked
   after. An embedded viewer always starts on Hand.
 

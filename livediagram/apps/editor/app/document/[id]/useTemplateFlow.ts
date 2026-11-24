@@ -154,8 +154,8 @@ export function useTemplateFlow(opts: {
       if (slides.length > 0) appendSlides(slides);
     }
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
-    // It also turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
-    // put down, so its style panel doesn't sit over the board and the first click selects.
+    // It also turns the tab into one with content, which opens on the tool a mode starts with (Select, or Hand on a
+    // touch-first screen): a pen picked up for the empty tab is put down, so its style panel doesn't sit over the board.
     if (elements.length > 0) {
       requestFit();
       putToolDown();
