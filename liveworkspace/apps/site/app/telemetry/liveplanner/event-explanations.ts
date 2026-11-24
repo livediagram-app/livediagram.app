@@ -15,6 +15,7 @@
 
 import { VIEW_AS_DIAGRAM_EXACT } from '../_shared/diagrams-and-plans-metrics';
 import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
+import { ITEM_CALL_EXACT } from '../_shared/item-call-metrics';
 import {
   SNAPSHOT_BY_ACTION,
   WALKTHROUGH_BY_ACTION,
@@ -31,6 +32,7 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
 export const EXACT: Readonly<Record<string, string>> = {
   ...SEND_TO_PLAN_EXACT,
   ...VIEW_AS_DIAGRAM_EXACT,
+  ...ITEM_CALL_EXACT,
   ...WALKTHROUGH_EXACT,
   'Element|Changed|CanvasSuggesting':
     'Someone switched the canvas to Suggesting, so their changes become suggestions for an Editor to accept or reject.',

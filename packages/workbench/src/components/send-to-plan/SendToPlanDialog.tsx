@@ -12,12 +12,12 @@ import {
   type Item,
   type PlanSend,
 } from '@liveworkspace/index-client';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { sendToPlanHeroArt } from '@liveworkspace/ui/dialog-hero-art/send-to-plan';
 import {
   Button,
-  CloseIcon,
   DateInput,
   DialogFooter,
-  DialogHeader,
   SegmentedToggle,
   Select,
   TextInput,
@@ -248,29 +248,15 @@ export function SendToPlanDialog({
 
   const noun = NOUNS[request.noun];
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      ariaLabel="Send to Plan"
-      size="xl"
-      phoneSheet
-      className="max-h-[92vh]"
-    >
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} size="xl" phoneSheet className="max-h-[92vh]">
+      <HeroDialogHeader
+        art={sendToPlanHeroArt}
+        titleId={titleId}
         title="Send to Plan"
         subtitle={`Make ${several ? 'cards' : 'a card'} in liveplanner from ${noun}. It stays as it is here.`}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 sm:size-8 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <CloseIcon size={18} />
-        </button>
-      </DialogHeader>
+        onClose={onClose}
+      />
       <form
-        id={titleId}
         className="flex min-h-0 flex-1 flex-col"
         onSubmit={(e) => {
           e.preventDefault();

@@ -33,6 +33,7 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./approvals.md - when working on Approvals: asking named people to approve the canvas, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
 - ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livediagram supplies (the platform's `004-index/inbox-notices.md`)
 - ./automations.md - when working on Automations: rules a document runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
+- ./start-a-call.md - when working on Start a Call Here in livediagram: where Call, the live pill with Join and Meetings sit (the platform's `004-index/item-calls.md`), roles
 - ./send-to-plan.md - when working on Send to Plan: what livediagram sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
 - ./make-plan-cards.md - when working on Make Plan Cards: a selection or a tab made liveplanner cards (arrows to Blocked By, lanes, dates), the preview, making again, and the changes a plan-drawn tab offers (the platform's `004-index/diagrams-and-plans.md`)
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles, workbench embeds)

@@ -475,6 +475,12 @@ export const INDEX_ERRORS = [
   'source_full',
   'plan_refused',
   'plan_unavailable',
+  // Start a Call Here (item-calls.md): a Space asked for a call of its own, a call that could not be made, a summary
+  // the knowledgebase turned away (422, its reason), an invite naming someone who can't reach the item.
+  'not_for_spaces',
+  'call_unavailable',
+  'summary_refused',
+  'cannot_invite',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
 

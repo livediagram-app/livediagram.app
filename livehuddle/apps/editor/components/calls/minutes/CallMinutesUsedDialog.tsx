@@ -5,8 +5,8 @@
 // offered the upgrade, a team's member is pointed at an admin, and everyone else, guests included, is told calls are
 // paused and nothing more: no offer, no meter, nothing about the owner's tier. The kit's notice decides the action.
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { Button, buttonClassName, DialogCloseButton, DialogHeader } from '@livehuddle/ui';
+import { useEffect, useId, useState } from 'react';
+import { Button, buttonClassName } from '@livehuddle/ui';
 import { isOwnerScope } from '@liveworkspace/subscription';
 import {
   LimitNotice,
@@ -15,6 +15,7 @@ import {
   UsageMeter,
   useOwnerView,
 } from '@liveworkspace/subscription-ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import {
   CALL_MINUTES_TITLE,
@@ -28,6 +29,7 @@ import {
 } from '@/lib/calls/call-minutes-words';
 import { apiCallMinutes, type CallsCaller } from '@/lib/api/calls';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { callMinutesUsedHeroArt } from './CallMinutesUsedHeroArt';
 
 export function CallMinutesUsedDialog({
   owner,
@@ -50,6 +52,7 @@ export function CallMinutesUsedDialog({
 }) {
   const load = useOwnerView(owner !== null && isOwnerScope(owner) ? owner : null);
   const { signInHref } = useAuthHrefs();
+  const titleId = useId();
   // The clock as the dialog first drew: the day the month starts again.
   const [now] = useState(() => Date.now());
   const view = ownerViewOf(load);
@@ -88,10 +91,13 @@ export function CallMinutesUsedDialog({
   const limit = numbers?.limit ?? 0;
   const title = theirs ? CALL_MINUTES_USED_TITLE : CALLS_PAUSED_TITLE;
   return (
-    <Dialog open onClose={onClose} ariaLabel={title} size="sm">
-      <DialogHeader title={title}>
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+    <Dialog open onClose={onClose} titleId={titleId} size="sm">
+      <HeroDialogHeader
+        art={callMinutesUsedHeroArt}
+        titleId={titleId}
+        title={title}
+        onClose={onClose}
+      />
       <div
         data-call-minutes-used={view?.action ?? 'none'}
         className="flex flex-col gap-4 px-6 py-5"

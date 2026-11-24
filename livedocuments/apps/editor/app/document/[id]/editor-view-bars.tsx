@@ -22,6 +22,7 @@ import { offersHistory, openHistoryFromFooter } from '@/components/versions/hist
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { useEditorChrome, useEditorChromeStore } from './EditorContext';
 import { sameTabExcept } from './editor-chrome-equal';
+import { ItemCallButton } from '@liveworkspace/workbench/components/item-call/ItemCallButton';
 
 // The document in a full tab, by its link when the frame opened it by one.
 const workbenchDocumentHref = (documentId: string, shareCode: string | null) =>
@@ -62,6 +63,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
         approval={<ApprovalBadge corner />}
+        call={<ItemCallButton />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
         // The Share button's colour reads the document's visibility, as the header's badge did.

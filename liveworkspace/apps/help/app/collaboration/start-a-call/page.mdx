@@ -1,0 +1,67 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Start a Call Here',
+  description:
+    'Start a livehuddle video call about what you have open, in a new tab, then send its summary to a knowledgebase and its actions to a plan.',
+  path: '/help/collaboration/start-a-call/',
+});
+
+<ArticleLayout path="collaboration/start-a-call" title="Start a Call Here" description="Talk it through on a video call about what you have open, then keep the summary and the actions." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("start-a-call")}>
+
+Some things are quicker said than written. **Start a Call Here** opens a livehuddle video call about the item you have open, in a new browser tab, so the item stays where it is in its own tab. Everyone who opens the item sees the call is on and can join it. When you are done, the call's summary goes to a knowledgebase and its actions to a plan, and the item lists the call under **Meetings**.
+
+<AppNote app="livehuddle">
+  A Space is already a place to meet, so it has no Call button of its own. A call started from a
+  diagram, a plan, a document, a design or a knowledgebase opens here, as a Space of its own, and
+  this article's **In the call** and **Wrapping up** sections are what you see in it.
+</AppNote>
+
+## Starting a call
+
+<Step n={1}>
+  Press **Call** in the editor's top-right corner. A new tab opens on a livehuddle Space made for
+  the call, named after the item, and you are in it.
+</Step>
+
+<Step n={2}>
+  Everyone else with the item open sees a green **In Call** pill with how many people are in it, and
+  **Join**. Join brings up the call in its own tab, or the tab you already have it in.
+</Step>
+
+You need to be signed in to start a call. Anyone who can view the item can join it, a guest through a share link included, who joins as a guest. Calls are not offered in an embed, for an item saved only in this browser (Offline), or on Community.
+
+## In the call
+
+The Space's top-right card leads with the item: its app's logo and name. **Open Item** brings back the item's tab (or opens it). **Invite** picks teammates to ask in: each gets an entry in their Inbox under **Calls**, whose **Join Call** takes them straight in while the call is on.
+
+Calls are never recorded. A notice says so when you first open the call.
+
+## Wrapping up
+
+Whoever started the call has **Wrap Up** in the same card.
+
+<Step n={1}>
+  Check the **Summary**. It is drafted from the Space's notes: its stickies and text, floor by floor,
+  with headings for **Decisions** and **Actions**. **Write With AI** rewrites it from the notes when
+  AI is on for you; your draft stays if AI can't help.
+</Step>
+
+<Step n={2}>
+  Pick where it goes under **Send To**: a knowledgebase you can edit. The one connected to the item
+  is suggested, else your team's newest. Press **Send Summary**: it becomes a page there, with **Open
+  Page**.
+</Step>
+
+<Step n={3}>
+  Press **Send Actions to Plan** to make a liveplanner card from each sticky on the floor, each linked
+  back (see [Send to Plan](/help/collaboration/send-to-plan/)).
+</Step>
+
+## Meetings
+
+Open **Tools** and choose **Meetings** (under Collaborate) to see the item's calls, newest first: when each started and how long it ran, who was in it, and its summary and plan when you can open them. A call that is still on has **Join**.
+
+</ArticleLayout>

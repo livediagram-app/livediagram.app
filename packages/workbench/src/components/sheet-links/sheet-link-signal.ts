@@ -8,6 +8,8 @@ export type SourceChangedSignal = {
   itemId: string;
   sheetIds: string[];
   cards?: string[];
+  // A call about the item (liveworkspace/docs/specs/004-index/item-calls.md "Joining"): read its calls again.
+  calls?: true;
 };
 
 const listeners = new Set<(signal: SourceChangedSignal) => void>();

@@ -1,6 +1,7 @@
 'use client';
 import { PlanCardsHost } from '@/components/plan-cards/PlanCardsHost';
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
+import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
@@ -395,6 +396,20 @@ export function EditorView() {
                   community: sessionCommunity !== null,
                 })}
                 canEdit={ctx.can.level === 'edit' && !isReadOnly}
+              />
+              {/* Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md): the Call button's item, and
+                  Meetings in Tools. */}
+              <ItemCallHost
+                app="livediagram"
+                itemId={ctx.authLoaded && hydrated ? documentId : null}
+                title={canvasName}
+                share={sessionShareCode ? { code: sessionShareCode } : null}
+                signedIn={!!accountUserId}
+                enabled={canCall({
+                  offline: isOffline,
+                  embed: !appChrome,
+                  community: sessionCommunity !== null,
+                })}
               />
               <ViewportStoreProvider store={ctx.viewport}>
                 <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>

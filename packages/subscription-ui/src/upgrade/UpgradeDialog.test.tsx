@@ -159,9 +159,9 @@ describe('UpgradeDialog', () => {
     );
   });
 
-  it('reads badge, title and sentence first on a phone, with the price beside the button that buys it', async () => {
+  it('wears the hero header, title and sentence first on a phone, with the price beside the button that buys it', async () => {
     const { dialog } = await openDialog();
-    const header = dialog.querySelector('header') as HTMLElement;
+    const header = dialog.querySelector('[data-dialog-hero="upgrade"]') as HTMLElement;
     await waitFor(() =>
       expect(dialog.querySelector('[data-upgrade-price-phone]')!.textContent).toBe(
         `${formatPrice(PRICES.GBP.pro, 'GBP')}a month`,
@@ -171,9 +171,11 @@ describe('UpgradeDialog', () => {
     expect(dialog.querySelector('[data-upgrade-cancel-phone]')!.textContent).toContain(
       'Cancel any time.',
     );
-    // The header's first column is the badge, then the title, then the sentence; its price only from `sm`.
-    const lead = header.firstElementChild as HTMLElement;
-    expect([...lead.children].map((child) => child.tagName)).toEqual(['SPAN', 'H2', 'P']);
+    // The hero's title, then its sentence, the dialog's name; its price among the actions only from `sm`.
+    const title = header.querySelector('h2') as HTMLElement;
+    expect(title.textContent).toBe('One Upgrade, Every App');
+    expect(title.nextElementSibling!.tagName).toBe('P');
+    expect(dialog.getAttribute('aria-labelledby')).toBe(title.id);
     expect(header.querySelector('[data-upgrade-price]')!.className).toContain('max-sm:hidden');
     // On a phone the price is in the footer, ahead of Not Now and the primary button.
     const phone = dialog.querySelector('[data-upgrade-price-phone]') as HTMLElement;

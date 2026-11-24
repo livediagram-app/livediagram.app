@@ -105,3 +105,9 @@ export const HERO_SVG = { 'aria-hidden': true, focusable: 'false' } as const;
 export function heroCentreCap(art: HeroArt): string {
   return art.centre ? '@4xl:max-w-[26rem]' : '';
 }
+
+/** A four-pointed star's path, centred on (x, y), `r` from its centre to each point: a badge's mark. */
+export function heroStar(x: number, y: number, r: number): string {
+  const k = r * 0.28;
+  return `M${x} ${y - r}L${x + k} ${y - k}L${x + r} ${y}L${x + k} ${y + k}L${x} ${y + r}L${x - k} ${y + k}L${x - r} ${y}L${x - k} ${y - k}Z`;
+}

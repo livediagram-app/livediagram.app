@@ -30,6 +30,7 @@ Follow the references below only as needed; never upfront.
 - ./approvals.md - when working on Approvals: asking named people to approve the design, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
 - ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livedesign supplies (the platform's `004-index/inbox-notices.md`)
 - ./automations.md - when working on Automations: rules a design runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
+- ./start-a-call.md - when working on Start a Call Here in livedesign: where Call, the live pill with Join and Meetings sit (the platform's `004-index/item-calls.md`), roles
 - ./send-to-plan.md - when working on Send to Plan: what livedesign sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, local opens)
 - ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the design is read, where a source opens, the suggested questions (the platform's `020-ask`)

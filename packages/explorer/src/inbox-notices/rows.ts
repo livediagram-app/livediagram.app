@@ -19,13 +19,16 @@ import {
   threadKey,
   updateKey,
   updateReason,
+  callKey,
+  noticeKey,
 } from '../explorer/inbox/sections';
 import type { SeenStore } from './seen';
 
 /** A row older than this never notifies: it waits in the Inbox and its count. */
 export const NOTICE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-export type NoticeKind = 'mention' | 'comment' | 'assigned' | 'access' | 'share' | 'update';
+export type NoticeKind =
+  'mention' | 'comment' | 'assigned' | 'access' | 'share' | 'update' | 'call' | 'automation';
 
 export type NoticeRow = {
   key: string;
@@ -239,6 +242,38 @@ export function noticeRows(
       place: u.itemTitle,
       detail: [u.tabName, updateReason(u).label].filter(Boolean).join(' · '),
       href: inboxRowHref(u.app, key, here),
+    });
+  }
+  // An invite to a call about an item (item-calls.md "Invites"): it opens the Inbox at the invite, whose Join goes in.
+  for (const c of data.calls ?? []) {
+    const key = callKey(c);
+    out.push({
+      key,
+      at: c.at,
+      kind: 'call',
+      app: c.app,
+      who: c.byName || SOMEONE,
+      verb: 'invited you to a call',
+      quote: null,
+      place: c.itemTitle,
+      detail: null,
+      href: inboxRowHref(c.app, key, here),
+    });
+  }
+  // A rule's Notify step (automations.md): the rule as who, the text's first line as the quote.
+  for (const n of data.notices ?? []) {
+    const key = noticeKey(n);
+    out.push({
+      key,
+      at: n.at,
+      kind: 'automation',
+      app: n.app,
+      who: n.rule || 'An automation',
+      verb: 'sent you a notice',
+      quote: firstLine(n.text),
+      place: n.itemTitle,
+      detail: null,
+      href: inboxRowHref(n.app, key, here),
     });
   }
   return out.sort((a, b) => b.at - a.at);

@@ -44,6 +44,7 @@ export type RoomHandlers = {
     itemId: string;
     sheetIds: string[];
     cards?: string[];
+    calls?: true;
   }) => void;
   onClose?: () => void;
   // The project went to the Trash (docs/specs/013-workspace/trash.md): the room
@@ -332,6 +333,7 @@ export function connectRoom(
             itemId: msg.itemId,
             sheetIds: msg.sheetIds,
             ...(Array.isArray(msg.cards) ? { cards: msg.cards } : {}),
+            ...(msg.calls === true ? { calls: true as const } : {}),
           });
         } else if (msg.kind === 'op-refused') {
           // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An

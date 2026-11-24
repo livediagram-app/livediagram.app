@@ -178,6 +178,9 @@ export type InternalItemHandlers = {
   // make, graph, watch and edit as the person, and livediagram's draw of a plan's board. Elsewhere a 404.
   planDiagram?: PlanDiagramHandler;
   drawPlanDiagram?: PlanDiagramDrawHandler;
+  // Start a Call Here (item-calls.md): this Space is a call about an item, its id kept by the room, which then tells
+  // the index who is in it. livehuddle alone; an app without it answers 404.
+  itemCall?: (spaceId: string, callId: string) => Promise<void>;
   // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
   // Community's sweep. An app without it answers 404.
   communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;

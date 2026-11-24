@@ -23,6 +23,8 @@ import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/use
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { CallItemCard } from '@/components/item-call/CallItemCard';
+import { useSpaceCall } from '@/components/item-call/useSpaceCall';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
 import { documentIsPublic } from '@/lib/community-public';
@@ -256,6 +258,15 @@ export function EditorView() {
     openCommunity: () => ctx.openShareOn('app'),
   });
 
+  // A call about an item from another app (docs/specs/012-collaboration/calls-from-items.md): the item, Invite and
+  // Wrap Up in the corner card. One read in the cloud; a Space that is no call shows nothing new.
+  const { call: spaceCall, reread: rereadSpaceCall } = useSpaceCall(
+    ctx.authLoaded && hydrated && documentId && !isOffline && appChrome && sessionCommunity === null
+      ? documentId
+      : null,
+    sessionShareCode ? { code: sessionShareCode } : null,
+  );
+
   // The site header. Embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
   // side (docs/specs/007-editor/split-view.md) lays it across both panes.
   // Experiment: no header bar. The name and its visibility badge are gone; Copy, Share and the account float in a
@@ -278,6 +289,18 @@ export function EditorView() {
         visibilityActions={visibilityActions}
         copying={copying}
         copyDescription="Duplicate this space into your own files."
+        leadAction={
+          spaceCall && documentId ? (
+            <CallItemCard
+              call={spaceCall}
+              spaceId={documentId}
+              accountId={accountUserId ?? null}
+              tabs={tabs}
+              activeTabId={activeId}
+              onSent={rereadSpaceCall}
+            />
+          ) : undefined
+        }
         onOpenAccount={() => openSettingsOn('account')}
         onOpenShare={() => {
           setShareDialogOpen(true);
