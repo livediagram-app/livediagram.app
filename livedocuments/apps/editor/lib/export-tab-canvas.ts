@@ -33,7 +33,7 @@ import {
   resolveStickerArtLoaded,
 } from '@liveworkspace/workbench/lib/icon-registry';
 import { drawBoxed } from './export-tab-canvas-draw';
-import { EXPORT_PAPER, pageExportFrame } from './export-page';
+import { EXPORT_PAPER, exportPageDesignSvg, pageExportFrame } from './export-page';
 import { exportChartInk } from './export-chart-ink';
 import { paintMotionFrame } from './page-motion-canvas';
 import { embeddedFontFaceCss } from './export-fonts';
@@ -80,6 +80,8 @@ export type CanvasRenderOpts = {
   only?: ReadonlySet<string>;
   // The canvas covers exactly this rect (canvas px), with no padding.
   crop?: { x: number; y: number; w: number; h: number };
+  // The tab a page design reads its roles and scrims from, where this draws a bare copy (a PPTX slide's background).
+  designTab?: Tab;
 } & ImageExportOpts;
 
 export async function renderTabToCanvas(
@@ -178,6 +180,19 @@ export async function renderTabToCanvas(
         { x: r.x - x, y: r.y - y, width: r.width, height: r.height },
         opts.motionFrames,
       );
+    }
+    // The page's design, still, over its animated background and under all on it
+    // (docs/specs/011-theme/page-designs.md "Exports and thumbnails").
+    const design = opts.page ? exportPageDesignSvg(opts.designTab ?? tab, opts.page) : '';
+    if (design) {
+      const svgDesign =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.floor(w)}" height="${Math.floor(h)}" viewBox="${r2(x)} ${r2(y)} ${r2(fw)} ${r2(fh)}">` +
+        `${design}</svg>`;
+      try {
+        ctx.drawImage(await svgToImage(svgDesign), 0, 0, w / scale, h / scale);
+      } catch {
+        // Decoration: a failed paint must never abort the export.
+      }
     }
   }
   if (bg) {

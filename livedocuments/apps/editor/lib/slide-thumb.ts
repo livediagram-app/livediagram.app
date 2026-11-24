@@ -3,6 +3,8 @@
 // framed to the slide (a page slide to its page, on its background). Drawn for Contents' page
 // thumbnails. The markup is
 // our own renderer's output (user text is xmlEscaped inside it), so injecting it is safe.
+import { pageDesignExportSvg } from '@livedocuments/document';
+import { getTheme } from './themes';
 import {
   r2,
   resolveSlide,
@@ -90,6 +92,12 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
       idPrefix: `lvd-slide-${slide.id}`,
       imageHref: opts.resolveImageHref,
       ruling: pageRulingOf(tab, page),
+      // The page's design, still, on the paper the thumbnail shows (docs/specs/011-theme/page-designs.md).
+      design: pageDesignExportSvg(tab, page, {
+        theme: getTheme(tab.theme),
+        paperDark: canvasSurface === 'dark',
+        idPrefix: `lvd-slide-${slide.id}-`,
+      }),
     });
     if (page.background?.fill) surface = frame.surface;
     parts.push({ key: 'page', markup: frame.backgroundSvg });

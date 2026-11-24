@@ -21,11 +21,14 @@ import {
   layOutPages,
   pageKindOf,
   tabArrangesPages,
+  tabPageDesignOf,
   withContentOnAPage,
   type Element,
   type LaidOutPage,
   type NoteCard,
+  type PageDesign,
   type Tab,
+  type ThemeDefinition,
 } from '@livedocuments/document';
 import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
 import { computeReadingFrame } from '@/lib/reading-frame';
@@ -86,6 +89,9 @@ export type PagesModeView = {
   articles?: ArticlesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
   tabFont?: string;
+  // The tab's page design and theme (docs/specs/011-theme/page-designs.md): what each page's design layer draws.
+  pageDesign?: PageDesign;
+  theme?: ThemeDefinition;
   // The tab's elements, for the content a previewed layout carries over from its page.
   elements?: Element[];
   // A layout previewed on a page while its tile is hovered: the page's own content is hidden
@@ -461,6 +467,12 @@ export function usePagesMode(deps: {
   // Worked out once per theme, so the pages' sheets (CanvasPageSheet) keep their props while it holds.
   const themeBackgrounds = useMemo(() => themeBackgroundPresets(theme), [theme]);
   const tabFont = activeTab.font;
+  // Read once per stored design, so the pages keep their design while it holds.
+  const pageDesignStored = activeTab.pageDesign;
+  const pageDesign = useMemo(
+    () => tabPageDesignOf({ pageDesign: pageDesignStored }),
+    [pageDesignStored],
+  );
   // The page whose place holds the middle of the view (beside the docked Contents), read from the view itself.
   const pageIdInView = () => {
     const canvas = deps.canvasMainRef.current;
@@ -502,6 +514,8 @@ export function usePagesMode(deps: {
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     tabFont,
+    pageDesign,
+    theme,
     elements: activeTab.elements,
     layoutPreview,
     setLayoutPreview,

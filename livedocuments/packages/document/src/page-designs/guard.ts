@@ -51,9 +51,7 @@ type TextLike = {
 
 /** Which texts on the page fail on its design, and their scrims (page px). */
 export function designGuard(
-  d: Pick<PaintedDesign, 'palette' | 'intensity' | 'calm' | 'tuning'> & {
-    id: keyof typeof PAGE_DESIGN_BY_ID;
-  },
+  d: Pick<PaintedDesign, 'id' | 'palette' | 'intensity' | 'calm' | 'tuning'>,
   rect: PageRect,
   elements: readonly Element[],
 ): DesignGuardResult {

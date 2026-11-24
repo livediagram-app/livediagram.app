@@ -12,6 +12,8 @@ const CANVAS_STYLESHEETS = [
   'app/collab-cards.css',
   // A slide's animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
   'app/motion-page.css',
+  // A page design's motion (docs/specs/011-theme/page-designs.md "Animation").
+  'app/page-design.css',
 ];
 
 describe('editor motion budget', () => {

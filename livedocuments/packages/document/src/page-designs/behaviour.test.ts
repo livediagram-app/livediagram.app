@@ -202,7 +202,7 @@ describe('designGuard (spec "Readability")', () => {
     width: 960,
     height: 540,
   });
-  const g = { ...busy, id: 'split-fields' as const };
+  const g = busy;
 
   it('puts a scrim behind a text that would not read, none in warn mode', () => {
     const out = designGuard(g, rect, [text('t', 100, 100, { textColor: '#93c5fd' })]);

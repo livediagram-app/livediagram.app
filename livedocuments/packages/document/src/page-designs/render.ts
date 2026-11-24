@@ -1,7 +1,7 @@
 // Drawing a page design (docs/specs/011-theme/blueprints/page-designs.md "Drawing", "Still frame"): its layers for a
 // page, memoised so a deck of same-sized pages draws once, and the still frame every export, thumbnail and preview
 // paints. Pure.
-import { PAGE_DESIGN_BY_ID } from './catalogue';
+import { PAGE_DESIGN_BY_ID, type PageDesignId } from './catalogue';
 import { grainSvg, n, seeded, type DesignLayer, type DesignPalette } from './draw-kit';
 import { DESIGN_DRAWERS } from './drawers';
 import type { DesignTuning, PageDesign } from './tuning';
@@ -28,6 +28,7 @@ export type DesignPaintInput = {
 
 /** A design drawn for a page: its layers (ids unique to the drawing) and how its root shows them. */
 export type PaintedDesign = {
+  id: PageDesignId;
   key: string;
   uid: string;
   width: number;
@@ -112,6 +113,7 @@ export function paintPageDesign(input: DesignPaintInput): PaintedDesign {
     if (cache.size > DESIGN_CACHE_MAX) cache.delete(cache.keys().next().value!);
   }
   return {
+    id: input.design.id,
     key,
     uid,
     width: input.width,

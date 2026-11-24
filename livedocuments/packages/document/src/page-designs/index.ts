@@ -9,4 +9,5 @@ export * from './guard';
 export * from './sets';
 export * from './pick';
 export * from './edits';
+export * from './export';
 export type { DesignLayer, DesignPalette, LayerMotion } from './draw-kit';

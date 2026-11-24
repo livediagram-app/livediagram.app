@@ -38,6 +38,7 @@ import {
   usePageBackgroundPreview,
 } from '@/lib/page-background-preview';
 import { CanvasPageSheet, type PageSheetActions } from './CanvasPageSheet';
+import { usePageDesignViews } from './usePageDesignViews';
 
 // What a view without elements reads: one array, so the settled elements and the empty pages keep still.
 const NO_ELEMENTS: Element[] = [];
@@ -126,6 +127,8 @@ export function CanvasPages({
   // A background hovered in a page's panel: a shared preview (page-background-preview), so the
   // writing and the elements on the page take its ink too.
   const preview = usePageBackgroundPreview();
+  // Each page's design (docs/specs/011-theme/page-designs.md), its guard read from the settled elements.
+  const designs = usePageDesignViews(view, settled, preview);
   // The pages' pictures, each fetched once (Image backgrounds).
   const pictureOf = usePageImageSources(pages);
   const setPreview = (next: Parameters<typeof setPageBackgroundPreview>[0]) => {
@@ -229,6 +232,7 @@ export function CanvasPages({
             mobile={mobile}
             letterbox={!!view.letterbox}
             background={previewedBackground(page, pages, preview)}
+            design={designs.get(page.id)}
             pictureOf={pictureOf}
             // Its name: its own, else (an article page or a card) its article's title.
             shownName={shownPageName(page, flowTitles)}

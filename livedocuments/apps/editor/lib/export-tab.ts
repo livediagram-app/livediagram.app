@@ -41,7 +41,7 @@ import {
   resolveIconArtLoaded,
   resolveStickerArtLoaded,
 } from '@liveworkspace/workbench/lib/icon-registry';
-import { EXPORT_PAPER, pageExportFrame } from './export-page';
+import { EXPORT_PAPER, exportPageDesignSvg, pageExportFrame } from './export-page';
 import { exportChartInk } from './export-chart-ink';
 import { motionFrameHref } from './page-motion-canvas';
 
@@ -102,6 +102,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         ruling: pageRulingOf(tab, opts.page),
         imageHref: (id) => opts.images?.get(id)?.href,
         overFill: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
+        design: exportPageDesignSvg(tab, opts.page),
       })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
