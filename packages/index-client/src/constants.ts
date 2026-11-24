@@ -478,6 +478,7 @@ export const INDEX_ERRORS = [
   'not_for_spaces',
   'call_unavailable',
   'summary_refused',
+  'write_up_refused',
   'cannot_invite',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];

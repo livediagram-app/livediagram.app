@@ -65,6 +65,7 @@ import type {
   ItemCallsRead,
   SpaceCall,
 } from './item-calls';
+import type { WriteUpAnswer, WriteUpAsk, WriteUpTarget } from './write-up';
 import type { PlanDataAsk, PlanDataListing, PlanDataRead } from './live-data';
 import type {
   Approval,
@@ -391,6 +392,11 @@ export function createIndexClient({
         share: options.share ?? null,
         signal: options.signal,
       }),
+    // Write It Up (write-up.md): where a write-up from the item goes by default, and the page written as the person.
+    writeUpTarget: (itemId: string, options: RequestOptions = {}) =>
+      call<WriteUpTarget>(`/items/${enc(itemId)}/write-up`, { signal: options.signal }),
+    writeUp: (itemId: string, ask: WriteUpAsk) =>
+      call<WriteUpAnswer>(`/items/${enc(itemId)}/write-up`, { method: 'POST', body: ask }),
     sendCallSummary: (spaceId: string, ask: CallSummaryAsk) =>
       call<{ summary: { title: string; link: string } }>(`/items/${enc(spaceId)}/call/summary`, {
         method: 'POST',

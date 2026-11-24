@@ -635,3 +635,24 @@ describe('createIndexClient kits', () => {
     expect(seen[1]!.headers.get('Authorization')).toBe('Bearer tok');
   });
 });
+
+describe('createIndexClient write-up', () => {
+  it("reads an item's default knowledgebase and writes a page there", async () => {
+    const { seen, doFetch } = fakeFetch((s) =>
+      s.method === 'POST'
+        ? Response.json({ page: { title: 'T', link: 'https://k/p' } }, { status: 201 })
+        : Response.json({ knowledgebase: { id: 'kb1', title: 'Wiki' } }),
+    );
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    expect(await client.writeUpTarget('a/b')).toEqual({
+      knowledgebase: { id: 'kb1', title: 'Wiki' },
+    });
+    const ask = { knowledgebase: 'kb1', title: 'T', body: 'B' };
+    expect(await client.writeUp('i1', ask)).toEqual({ page: { title: 'T', link: 'https://k/p' } });
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'GET /api/index/items/a%2Fb/write-up',
+      'POST /api/index/items/i1/write-up',
+    ]);
+    expect(seen[1]!.body).toEqual(ask);
+  });
+});
