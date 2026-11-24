@@ -195,8 +195,11 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'send-to-diagram': (
     <Glyph>
       <Prims prims={lucideWorkflow} />
-      // A compass: Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md), the way
-      to the next app. suggestions: (
+    </Glyph>
+  ),
+  // A compass: Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md), the way to the next app.
+  suggestions: (
+    <Glyph>
       <Prims prims={lucideCompass} />
     </Glyph>
   ),
