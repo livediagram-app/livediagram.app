@@ -33,7 +33,10 @@ import { sameBars, writingBarsByPage } from '@/lib/article/page-writing-bars';
 export type PageThumbTab = Pick<
   Tab,
   'id' | 'name' | 'elements' | 'pages' | 'layers' | 'font' | 'finish' | 'articles'
->;
+> &
+  // The tab's theme and page design: each picture draws the design's still frame in the theme's colours
+  // (docs/specs/011-theme/page-designs.md "Exports and thumbnails").
+  Partial<Pick<Tab, 'theme' | 'pageDesign'>>;
 
 // One page's picture and what it was drawn from.
 // `hrefs`: its pictures' URLs as drawn, so a picture arriving redraws only the pages that show it.
@@ -67,7 +70,17 @@ export function usePageThumbnails(
   const live = useMemo(
     () => ({ tab, pageIds }),
     // oxlint-disable-next-line react/exhaustive-deps -- on the inputs a picture shows, not on the tab object's identity
-    [tab.elements, tab.pages, tab.layers, tab.font, tab.finish, tab.articles, key],
+    [
+      tab.elements,
+      tab.pages,
+      tab.layers,
+      tab.font,
+      tab.finish,
+      tab.articles,
+      tab.theme,
+      tab.pageDesign,
+      key,
+    ],
   );
   const drawn = useSettled(live, settleMs);
   const cache = useRef<{ shared: Shared; pages: Map<string, Drawn> }>({
@@ -97,6 +110,8 @@ export function usePageThumbnails(
       full.layers,
       full.font,
       full.finish,
+      full.theme,
+      full.pageDesign,
       iconsLoaded,
       surface,
       mapGeometry,

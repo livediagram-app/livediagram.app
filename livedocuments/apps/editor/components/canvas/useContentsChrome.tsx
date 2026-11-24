@@ -103,6 +103,9 @@ export function useContentsChrome({
     layers: props.layers,
     font: props.tabFont,
     finish: props.tabFinish,
+    // Each picture wears the page's design in the theme's colours, as the canvas does.
+    theme: props.tabThemeId,
+    ...(pagesMode.pageDesign ? { pageDesign: pagesMode.pageDesign } : {}),
   };
   return {
     contentsDocked,

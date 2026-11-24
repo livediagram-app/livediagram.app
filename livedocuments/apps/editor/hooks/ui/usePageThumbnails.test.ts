@@ -147,4 +147,22 @@ describe('usePageThumbnails', () => {
     renderHook(() => usePageThumbnails(tabWith([image]), ['p2']));
     expect(images.asked.at(-1)).toEqual([]);
   });
+
+  it('draws the tab’s design on every page, flowing, and redraws them when it changes', () => {
+    const elements = [boxOn(0, 'a')];
+    const designed = (id: 'aurora' | 'offset-border'): PageThumbTab => ({
+      ...tabWith(elements),
+      theme: 'ocean',
+      pageDesign: { id, flow: true },
+    });
+    const draw = vi.spyOn(slideThumb, 'slideThumbFor');
+    const { result, rerender } = renderHook(({ tab }) => usePageThumbnails(tab, ids), {
+      initialProps: { tab: designed('aurora') },
+    });
+    // Every page wears it, the empty ones too (the design is not an element of the page).
+    for (const id of ids) expect(JSON.stringify(result.current.get(id))).toContain('-clip');
+    draw.mockClear();
+    rerender({ tab: designed('offset-border') });
+    expect(draw).toHaveBeenCalledTimes(3);
+  });
 });
