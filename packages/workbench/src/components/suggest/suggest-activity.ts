@@ -20,9 +20,9 @@ const release = () => {
   last = Date.now();
 };
 
-/** Hears the page's keys and pointers; once per page. */
+/** Hears the page's keys and pointers; once per page. Called from an effect, so only in a browser. */
 export function watchActivity(): void {
-  if (installed || typeof window === 'undefined') return;
+  if (installed) return;
   installed = true;
   const opts = { capture: true, passive: true } as const;
   window.addEventListener('keydown', touch, opts);
@@ -35,7 +35,7 @@ export function watchActivity(): void {
 
 // A field, a text area or editable text with the focus: the person is writing, even between keys.
 function typingInFocus(): boolean {
-  const el = typeof document === 'undefined' ? null : document.activeElement;
+  const el = document.activeElement;
   if (!(el instanceof HTMLElement)) return false;
   if (el.isContentEditable) return true;
   const tag = el.tagName;
