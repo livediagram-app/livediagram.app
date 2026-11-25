@@ -51,8 +51,13 @@ export function parseDeviceSession(body: unknown): DeviceSession | null {
   };
 }
 
+// A code's lookup: the session, a code the MCP does not know (its 404), or no answer worth trusting (a 429, a 5xx,
+// no network), when the code may still be good and the person should try again shortly.
+export type DeviceLookup =
+  { kind: 'found'; session: DeviceSession } | { kind: 'unknown' } | { kind: 'unavailable' };
+
 export type DeviceSessionClient = {
-  fetchSession: (userCode: string) => Promise<DeviceSession | null>;
+  fetchSession: (userCode: string) => Promise<DeviceLookup>;
   complete: (userCode: string, token: string, expiresAt: number | null) => Promise<boolean>;
   deny: (userCode: string) => Promise<boolean>;
 };
@@ -76,10 +81,12 @@ export function deviceSessionClient(mcpOrigin: string): DeviceSessionClient {
         const res = await fetch(
           `${mcpOrigin}/oauth/device/session/${encodeURIComponent(userCode)}`,
         );
-        if (!res.ok) return null;
-        return parseDeviceSession(await res.json());
+        if (res.status === 404) return { kind: 'unknown' };
+        if (!res.ok) return { kind: 'unavailable' };
+        const session = parseDeviceSession(await res.json());
+        return session ? { kind: 'found', session } : { kind: 'unknown' };
       } catch {
-        return null;
+        return { kind: 'unavailable' };
       }
     },
     complete: (userCode, token, expiresAt) =>

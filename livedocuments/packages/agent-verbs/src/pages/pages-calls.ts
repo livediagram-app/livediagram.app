@@ -56,7 +56,34 @@ export async function pagesTabOf(
     const { tab } = await api.json<TabResponse>(tabPath(documentId, id));
     return { tabId: id, tab };
   } catch (err) {
+    // A tab the document does not hold answers a bare 404, which reads as "no such document"; the document is read
+    // to name its tabs, as read_document and update_document do.
+    if (tabId !== undefined && err instanceof ApiError && err.status === 404) {
+      const missing = await missingTab(api, documentId, tabId);
+      if (missing) return missing;
+    }
     return refusedBy(err);
+  }
+}
+
+// The refusal for a tab id the document does not hold, naming its tabs; null when the document cannot be read
+// either (then the document is what is missing) or does hold the tab.
+async function missingTab(
+  api: ApiClient,
+  documentId: string,
+  tabId: string,
+): Promise<PagesRefused | null> {
+  try {
+    const { document } = await api.json<DocumentResponse>(documentPath(documentId));
+    const tabs = document.tabs.filter((t) => !t.outOfScope);
+    if (tabs.some((t) => t.id === tabId)) return null;
+    return {
+      ok: false,
+      code: 'unknown_tab',
+      message: `No tab "${tabId}" in this document. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+    };
+  } catch {
+    return null;
   }
 }
 
