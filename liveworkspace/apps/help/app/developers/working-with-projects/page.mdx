@@ -213,7 +213,7 @@ curl -X POST https://www.liveplanner.app/api/trash/$DOC/restore \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`DELETE /trash/$DOC` deletes one trashed plan for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
+`DELETE /trash/$DOC` deletes one trashed plan for good; emptying the whole Trash is done in the Explorer. A read-only token can list the Trash but not restore or purge.
 
 ## Share a plan
 
