@@ -31,7 +31,10 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({
   useEditorChromeStore: () => ({ get: () => state.value }),
   useEditorChrome: (pick: (s: typeof state.value) => unknown) => pick(state.value),
 }));
-vi.mock('@/components/start/useTemplateStartShown', () => ({ templateStartShownOf: () => true }));
+vi.mock('@/components/start/useTemplateStartShown', () => ({
+  templateStartShownOf: () => true,
+  emptyCardShownOf: () => false,
+}));
 vi.mock('@/lib/knowledge-setup/setup-empty', () => ({ pageIsUntouched: () => true }));
 vi.mock('@/components/setup/useSetupOffered', () => ({ useSetupOffered: () => null }));
 vi.mock('@/components/setup/create-structure', () => ({ createStructure }));

@@ -14,7 +14,9 @@ import { MenuJoinBand } from './menu-join';
 import { ContentsOptions, type ContentsStackOption } from './ContentsOptions';
 import { useViewportStoreIfAny } from '../../hooks/canvas/useViewportStore';
 import { pageInView, type ContentsPageRect, type ContentsRowBase } from '../../lib/page-contents';
-import { CONTENTS_SIDEBAR_WIDTH, restingRect, sideInsetsOf } from '../../lib/contents-sidebar';
+import { CONTENTS_FILM_INSET, restingRect, sideInsetsOf } from '../../lib/contents-sidebar';
+import { useContentsSidebarWidth } from '../../hooks/ui/useContentsSidebarWidth';
+import { SidebarResizeHandle } from './SidebarResizeHandle';
 import { ContentsList, type ContentsBadges, type ContentsListState } from './PageContentsList';
 import { ContentsSummary } from './ContentsSummary';
 
@@ -62,6 +64,8 @@ export function ContentsSidebar<R extends ContentsRowBase>({
 }) {
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
+  // Its width steps up on wide windows and follows the person's drag (liveworkspace/docs/specs/011-workbench/sidebar-width.md).
+  const sized = useContentsSidebarWidth();
   const self = useRef<HTMLElement>(null);
   const viewport = useViewportStoreIfAny();
   // The page in view, read against what shows beside the sidebar.
@@ -118,6 +122,16 @@ export function ContentsSidebar<R extends ContentsRowBase>({
     };
   }, []);
 
+  // Its width settling somewhere new (a window step crossed, the first paint after hydration, a drag let go, a key, a
+  // reset) frames the page in view again beside it, so the sidebar never ends up over the page.
+  const framedAt = useRef(sized.settledWidth);
+  useEffect(() => {
+    if (framedAt.current === sized.settledWidth) return;
+    framedAt.current = sized.settledWidth;
+    const frame = requestAnimationFrame(reframe);
+    return () => cancelAnimationFrame(frame);
+  }, [sized.settledWidth]);
+
   // Contents Options (ContentsOptions): Collapse Contents, and the tab's Stack Pages where the editor offers it.
   const minimise = (
     <ContentsOptions
@@ -147,7 +161,10 @@ export function ContentsSidebar<R extends ContentsRowBase>({
         ...uiScaleStyle(scale),
         left: 0,
         top: joined ? 0 : px(top),
-        width: CONTENTS_SIDEBAR_WIDTH,
+        width: sized.width,
+        // The film's pictures and names fill the width; a drag changes this and no row renders.
+        // Its pictures and names fill the width once it settles: a drag moves the edge, not every picture, each frame.
+        ['--contents-film-w' as string]: `${sized.settledWidth - CONTENTS_FILM_INSET}px`,
       }}
       // Opaque, flush against its side and down to the canvas's foot, so no page shows round or
       // through it.
@@ -166,6 +183,15 @@ export function ContentsSidebar<R extends ContentsRowBase>({
         className="flex-1 gap-0.5 px-1.5 pb-2 pt-2"
       />
       {footer(minimise)}
+      <SidebarResizeHandle
+        label="Resize Contents"
+        width={sized.width}
+        scale={scale}
+        onResize={sized.set}
+        onCommit={sized.commit}
+        onReset={sized.reset}
+        onCancel={sized.cancel}
+      />
     </aside>
   );
 }

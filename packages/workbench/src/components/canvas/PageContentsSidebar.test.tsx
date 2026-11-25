@@ -4,7 +4,12 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { usePageContents } from '../../hooks/ui/usePageContents';
 import { ViewportStoreProvider } from '../../hooks/canvas/useViewportStore';
 import { createViewportStore } from '../../lib/viewport-store';
-import { contentsClusterLeft, CONTENTS_SIDEBAR_WIDTH } from '../../lib/contents-sidebar';
+import {
+  contentsClusterLeft,
+  CONTENTS_SIDEBAR_WIDTH,
+  CONTENTS_SIDEBAR_WIDTH_KEY,
+} from '../../lib/contents-sidebar';
+import { resetSidebarWidthStores } from '../../hooks/ui/useSidebarWidth';
 import { UNSCALED } from '../../lib/ui-scale';
 import { UiScaleProvider } from '../providers/ui-scale';
 import { CONTENTS_FOLLOW_SETTLE_MS, ContentsSidebar } from './PageContentsSidebar';
@@ -18,6 +23,8 @@ beforeAll(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  localStorage.clear();
+  resetSidebarWidthStores();
 });
 
 // Three 100 px pages side by side, 50 px apart.
@@ -234,5 +241,107 @@ describe('the sidebar summary', () => {
     unmount();
     render(<Sidebar />);
     expect(document.querySelector('[data-contents-summary]')).toBeNull();
+  });
+
+  // liveworkspace/docs/specs/011-workbench/sidebar-width.md: the width kept in this browser, the film filling it, the
+  // handle at its edge, and a cut-off name whole in its tooltip on the row's keyboard focus.
+  it('draws at the width kept in this browser, its film filling it, with its resize handle', () => {
+    localStorage.setItem(CONTENTS_SIDEBAR_WIDTH_KEY, '320');
+    render(<Sidebar />);
+    const aside = screen.getByRole('complementary', { name: 'Contents' });
+    expect(aside.style.width).toBe('320px');
+    expect(aside.style.getPropertyValue('--contents-film-w')).toBe('256px');
+    const handle = screen.getByRole('separator', { name: 'Resize Contents' });
+    fireEvent.doubleClick(handle);
+    expect(aside.style.width).toBe(`${CONTENTS_SIDEBAR_WIDTH}px`);
+    expect(contentsClusterLeft(true, 1, 320)).toBe(336);
+  });
+
+  it.each([
+    ['keyboard focus', () => true, true],
+    [
+      'an engine without :focus-visible',
+      () => {
+        throw new Error('unsupported');
+      },
+      true,
+    ],
+    ['a press', () => false, false],
+  ])('names a cut-off page in a tooltip on %s', (_how, visible, shown) => {
+    vi.useFakeTimers();
+    const matches = Element.prototype.matches;
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (
+      this: Element,
+      selector: string,
+    ) {
+      return selector === ':focus-visible' ? visible() : matches.call(this, selector);
+    });
+    render(<Sidebar />);
+    const name = screen.getAllByText('Page 2')[0]!;
+    Object.defineProperty(name, 'clientWidth', { configurable: true, value: 40 });
+    Object.defineProperty(name, 'scrollWidth', { configurable: true, value: 120 });
+    const row = screen.getByRole('button', { name: 'Page 2' });
+    act(() => row.focus());
+    expect(screen.queryByRole('tooltip')?.textContent ?? null).toBe(shown ? 'Page 2' : null);
+    act(() => row.blur());
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('frames the page again once its width settles somewhere new, never on each frame of a drag', () => {
+    vi.useFakeTimers({
+      toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout', 'clearTimeout'],
+    });
+    const focusPage = vi.fn();
+    render(<Sidebar focusPage={focusPage} />);
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    focusPage.mockClear();
+    const aside = screen.getByRole('complementary', { name: 'Contents' });
+    const handle = screen.getByRole('separator', { name: 'Resize Contents' });
+    // A drag: the edge moves each frame, the film and the framing wait for it to end.
+    fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 500 });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 564 });
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(aside.style.width).toBe('300px');
+    expect(aside.style.getPropertyValue('--contents-film-w')).toBe('172px');
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(focusPage).not.toHaveBeenCalled();
+    fireEvent.pointerUp(handle, { pointerId: 1 });
+    expect(aside.style.getPropertyValue('--contents-film-w')).toBe('236px');
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(focusPage).toHaveBeenCalledWith('p1');
+    // A key and a reset settle it too.
+    focusPage.mockClear();
+    fireEvent.keyDown(handle, { key: 'Enter' });
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(focusPage).toHaveBeenCalledTimes(1);
+  });
+
+  it("names a cut-off page in a tooltip on hover, its name raised over the row's button", () => {
+    vi.useFakeTimers();
+    render(<Sidebar />);
+    const name = screen.getAllByText('Page 2')[0]!;
+    // jsdom paints nothing: the stacking that lets the pointer reach the name is its classes.
+    expect(name.className).toMatch(/(^| )relative( |$)/);
+    expect(name.className).toMatch(/(^| )z-10( |$)/);
+    Object.defineProperty(name, 'clientWidth', { configurable: true, value: 40 });
+    Object.defineProperty(name, 'scrollWidth', { configurable: true, value: 120 });
+    fireEvent.pointerEnter(name, { pointerType: 'mouse' });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByRole('tooltip').textContent).toBe('Page 2');
   });
 });

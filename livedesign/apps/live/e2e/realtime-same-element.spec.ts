@@ -86,7 +86,8 @@ test('two peers dragging the same element at once end on the same position', asy
   const ownerPage = await openAs(browser, baseURL!, `/design/${id}`, owner);
   await ownerPage.locator(CANVAS).waitFor();
   const peerPage = await openAs(browser, baseURL!, `/design/shared?s=${code}`, null);
-  await peerPage.getByRole('button', { name: /^join$/i }).click();
+  // A visitor joins at once under a defaulted name (first-edit.md); Keep It confirms it from the name tray.
+  await peerPage.getByRole('button', { name: 'Keep It' }).click();
   await peerPage.locator(CANVAS).waitFor();
   for (const p of [ownerPage, peerPage]) {
     await dismissQuickTour(p);

@@ -5,83 +5,78 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Walkthroughs',
   description:
-    'Record yourself talking someone through the work, camera bubble and all, and let them play it back over it, pausing to look around.',
+    'Record your screen as you talk someone through the work, camera bubble and all, and share the video with a link.',
   path: '/help/collaboration/walkthroughs/',
 });
 
 <ArticleLayout
   path="collaboration/walkthroughs"
   title="Walkthroughs"
-  description="A recorded tour: your voice, your camera and where you went, played back over the work as it is now."
+  description="A recorded tour: a video of your tab with your voice and, if you like, your camera, played in the app or shared by a link."
   categoryTitle="Collaboration"
   categorySlug="collaboration"
   subArticles={getSubArticles('walkthroughs')}
 >
 
-A walkthrough is a recording of you talking someone through the <Noun />. It keeps your voice, your camera if you leave it on (shown as a round bubble in a corner), your pointer, and every pan, zoom and tab change you make. Whoever plays it watches it over the <Noun /> itself, not in a video, so they can pause, look around and resume.
-
-<AppNote app="livediagram,livedocuments">It also keeps every slide step you make.</AppNote>
+A walkthrough is a recording of you talking someone through the <Noun />. It films your browser tab as a video, with your voice and, if you leave it on, your camera (shown as a round bubble in a corner). Whoever plays it watches the video, and you can share it by a public link.
 
 ## Recording a Walkthrough
 
 <Step n={1}>
-  Open **Tools** in the footer, press **Walkthroughs**, then **Record Walkthrough**. The recording
-  dock opens at the bottom of the <Noun />.
+  Open **Tools** in the footer, press **Walkthroughs**, then **Record Walkthrough**. The set-up opens
+  beside Tools.
 </Step>
 
 <Step n={2}>
   Pick your **Microphone**. The **Camera** switch starts off, so a walkthrough records your voice
-  alone and the browser asks only for the microphone; turn it on to pick a camera and show yourself
-  in a round bubble. The dock remembers your choice in this browser. If the browser hasn't been
-  allowed to list your devices yet, press **Allow Microphone** (or **Allow Camera**) to ask it. The
-  level meter shows the microphone hears you.
+  alone and the browser asks only for the microphone; turn it on to pick a camera, and choose which
+  corner its round bubble sits in. The set-up remembers your choice in this browser. If the browser
+  hasn't been allowed to list your devices yet, press **Allow Microphone** (or **Allow Camera**) to
+  ask it. **Mic Level** moves as you speak, so you know you are heard.
 </Step>
 
 <Step n={3}>
-  Press **Start Recording**. After a 3, 2, 1 countdown, talk and move around the <Noun /> as you
-  would with someone beside you. Press **Finish** when you are done.
+  Press **Start Recording**. Your browser asks which to share: choose this tab. After a 3, 2, 1
+  countdown, talk and move around the <Noun /> as you would with someone beside you; the tab is
+  filmed as you see it, and the browser shows its own "sharing this tab" bar. Press **Finish** when
+  you are done, or stop sharing from the browser's bar. **Discard** throws the recording away.
 </Step>
 
 <Step n={4}>
-  Give it a **Title** and press **Save**. It is listed under Walkthroughs in Tools for everyone who
-  can open the <Noun />.
+  Finishing saves it at once as "Walkthrough of" and the tab's name, with a progress card while it
+  uploads. It is listed under Walkthroughs in Tools for everyone who can open the <Noun />. To
+  rename it, press its **⋯** and then **Rename**.
 </Step>
 
-A walkthrough can run for up to ten minutes; the bar turns amber with a minute left and finishes on its own at ten. With subscriptions on, a tier sets the length instead (5 minutes on Free, 30 on Pro and Pro for Teams, the better of yours and the tier of whoever owns the <Noun />), and Free keeps five walkthroughs. If saving is refused (it is too large, or you have reached your limit), the dock says why and offers **Download a Copy** so the recording isn't lost.
+A walkthrough can run for up to ten minutes; the bar turns amber with a minute left and finishes on its own at ten. With subscriptions on, a tier sets the length instead (5 minutes on Free, 30 on Pro and Pro for Teams, the better of yours and the tier of whoever owns the <Noun />), and Free keeps five walkthroughs. If saving is refused (it is too large, or you have reached your limit), the card says why and offers **Download a Copy** so the recording isn't lost. A browser that can't share a tab, such as Safari, says so in the set-up and records nothing.
 
 ## Hiding Elements From the Recording
 
-Press **Hide From Recording** in the dock, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. You still see hidden elements, faded inside a dashed outline; people playing the walkthrough never do, and presses and pointer moves over them are left out of what is stored. They stay on the <Noun /> itself for anyone who opens it.
+Press **Hide From Recording** in the set-up, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. While you choose, you see hidden elements faded inside a dashed outline. Once recording starts they are hidden on your own screen too, so the video never holds them. They stay on the <Noun /> itself for anyone who opens it.
 
 <AppNote app="liveplanner">
   What a press picks depends on the tab: an element on a plan tab (a card on a board drawn there is
   the card), a card on a **Board** tab, a widget on a **Dashboard** tab. **Hide Selection** also
   hides the cards you have selected on a board. A **Sheet** or **Form** tab has nothing to hide, so
-  the dock leaves Hide From Recording out there.
+  the set-up leaves Hide From Recording out there.
 </AppNote>
 
 ## Playing a Walkthrough
 
-Open **Tools** in the footer, press **Walkthroughs**, and press one to play it. The view follows the recording, fitted to your screen, with the presenter's pointer and, in the corner, their camera bubble, or a small chip with their name when they recorded without the camera.
+Open **Tools** in the footer, press **Walkthroughs**, and press one to play it. It opens in a player over the <Noun /> with its title, who recorded it and when, and the browser's own controls to play, seek and change speed. **Full Screen** fills your screen, and **Close** puts you back where you were.
 
-- **Pause, look around, resume.** Pan, zoom or press on the <Noun /> and it pauses, leaving the view with you. **Resume** puts the view back where the recording is and plays on.
-- **Keys.** `Space` plays and pauses, `←` and `→` skip five seconds, `Esc` closes. The bar also has a scrubber and a speed of 1x, 1.5x or 2x.
-- **Edited since recording.** If the <Noun /> has changed since, a line says so and it still plays over the <Noun /> as it is now.
+Walkthroughs recorded before screen recording came in are replays, not videos: they play over the <Noun /> itself, following the presenter's pointer, pans, zooms and tab changes (and, in livediagram and livedocuments, slide steps), with their camera bubble or a chip with their name in the corner. Pan, zoom or press on the <Noun /> and a replay pauses, leaving the view with you; **Resume** puts the view back where the recording is. `Space` plays and pauses, `←` and `→` skip five seconds, `Esc` closes, and the bar has a scrubber and a speed of 1x, 1.5x or 2x. If the <Noun /> has changed since, a line says so and it still plays over the <Noun /> as it is now.
 
-<AppNote app="livediagram,livedocuments">
-  Recorded while you present the slide deck, a walkthrough replays the deck too: it starts the
-  presentation at the slide you were on, moves through the slides as you did, and leaves it when you
-  left it.
-</AppNote>
+## Sharing a Walkthrough
 
-Closing puts you back where you were.
+Press **Share** in the player, or **⋯** and then **Share** on its row in Tools, and turn on **Public Link**. Press **Copy Link** and send it: anyone with the link watches the video without signing in, and sees its title and who made it, never the <Noun /> itself. Turn **Public Link** off and the link stops working at once. Replays have no public link.
 
 ## Who Can Record and Delete
 
-Editors record walkthroughs and can delete any of them. Everyone who can open the <Noun /> can play them, and anyone can delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a <Noun /> kept **Offline**, or through a link to one tab.
+Editors record walkthroughs and can rename, share and delete any of them. Everyone who can open the <Noun /> can play them, and anyone can rename, share or delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a <Noun /> kept **Offline**, or through a link to one tab.
 
 ## Privacy
 
-Calls are never recorded. A walkthrough is only made when you press Start Recording, and it is stored with the <Noun /> for the people who can open it. Deleting a walkthrough, purging its <Noun /> from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
+Calls are never recorded. A walkthrough is only made when you press Start Recording, and it is stored with the <Noun /> for the people who can open it, and for anyone you give its public link. Deleting a walkthrough, purging its <Noun /> from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
 
 </ArticleLayout>

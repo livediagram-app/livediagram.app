@@ -235,7 +235,7 @@ Explorer panel and every other page keep Steel.
   it reads at 4.5:1 on the pill's own surface, white or `slate-800` (`legibleColor`, `apps/live/lib/tab-accent.ts`).
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
 - **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
-  text node on `/new`, the editor, its dialogs and panels, and the Join dialog in dark mode, composites
+  text node on `/new`, the editor, its dialogs and panels, and the name card (its tray's Change Name) in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are the owner's to set
   ([#74](https://github.com/livedesign-app/livedesign.app/issues/74)).

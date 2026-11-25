@@ -5,7 +5,11 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { closeStartForBlank } from './close-start-for-blank';
-import { useTemplateStartOpen, useTemplateStartShown } from './useTemplateStartShown';
+import {
+  emptyCardShownOf,
+  useTemplateStartOpen,
+  useTemplateStartShown,
+} from './useTemplateStartShown';
 
 type Ctx = {
   hydrated: boolean;
@@ -64,5 +68,42 @@ describe('useTemplateStartOpen', () => {
     expect(renderHook(() => useTemplateStartShown()).result.current).toBe(true);
     ctx.value.activeTab = { id: 'other-tab', elements: [], pages: undefined };
     expect(renderHook(() => useTemplateStartOpen()).result.current).toBe(true);
+  });
+});
+
+// A Participant's or Viewer's empty tab shows the empty-canvas card where an Editor's would show the start
+// (liveworkspace/docs/specs/011-workbench/first-edit.md "The empty-canvas card").
+describe('emptyCardShownOf', () => {
+  const view = (over: Partial<Ctx> = {}) =>
+    ({
+      hydrated: true,
+      zenMode: false,
+      embedMode: false,
+      pendingDraw: null,
+      isReadOnly: true,
+      activeTabConnected: false,
+      activeTab: { id: 't', elements: [], pages: undefined },
+      ...over,
+    }) as unknown as Parameters<typeof emptyCardShownOf>[0];
+
+  it('is on for a Participant or Viewer on an empty tab, never for an Editor (who sees the start)', () => {
+    expect(emptyCardShownOf(view())).toBe(true);
+    expect(emptyCardShownOf(view({ isReadOnly: false }))).toBe(false);
+  });
+
+  it('is off once the tab has a chosen page, in zen or an embed', () => {
+    expect(
+      emptyCardShownOf(
+        view({
+          activeTab: {
+            id: 't',
+            elements: [],
+            pages: [{ id: 'p', orientation: 'landscape', kind: 'slide' }],
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(emptyCardShownOf(view({ zenMode: true }))).toBe(false);
+    expect(emptyCardShownOf(view({ embedMode: true }))).toBe(false);
   });
 });

@@ -457,10 +457,18 @@ map: Tidy Map, a Branching or Spacing pick, tidy growth, an Edit Outline save or
 its node ([Locking](../008-canvas/canvas-and-palette.md#locking) holds wherever the change comes
 from). The rest of the map is laid out around the layout as planned.
 
+The same holds for a node (and a connector) on a **locked layer** ([Layers](../006-document/layers.md)): it keeps
+its place and faces through every one of those re-layouts, as a locked node does, with the layer's lock
+read from the tab as it stands when the change is made. A map whose layer is locked is not left untidy for
+good: unlock the layer and Tidy Map again.
+
 Tidy Map always says what it did, in a notification at the foot of the screen: **Map tidied**
 when nodes moved, or **Map already tidy** when the map was already laid out and nothing changed,
 locked nodes it left in place included
-(so a click that seems to do nothing is never a mystery). The notifications follow the "Show
+(so a click that seems to do nothing is never a mystery). Nodes held by a locked layer are counted
+in it: **Map tidied, 2 nodes held by a locked layer** (or **Map already tidy, 1 node held by a locked
+layer**), so a node that stayed put is never a mystery either. A node a plan leaves where it is, or one that is
+locked itself, is not counted. The notifications follow the "Show
 notifications" preference, like every other confirmation.
 
 ## Edit Outline
@@ -617,7 +625,7 @@ and the root's flow, and laid out by `layoutMindTree`, so a template is a live,
 tidy map rather than a picture of one: select any node and Tab and Enter grow
 it in place, and the new nodes look like the template's own.
 
-- **Mind Map**: the bubble flow; a team-offsite plan, a root with five branches, each in its own hue with a glyph, carrying two or three leaves.
+- **Mind Map**: the **balanced** flow at **wide** spacing (the root's `mindSpacing`), so the branches are dealt to both sides with room to read; a team-offsite plan, a root with five branches, each in its own hue with a glyph, carrying two or three leaves. Bubble is still a pick in the Branching list, and a map already made keeps the flow and spacing it has.
 - **Tree Mind Map**: the tree flow; a bold root, four tinted branches, two small leaves each.
 - **Bubble Map**: the bubble flow with round nodes and a single ring; a brand voice, one adjective and its proof line per bubble, each bubble in its own hue.
 - **Sitemap**: the downward flow; Home over the nav sections and the dashed footer and utility groups, each page carrying its route on its second line ([Templates](../008-canvas/canvas-and-palette.md)).

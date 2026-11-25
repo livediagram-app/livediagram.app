@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
 import {
   Btn,
+  Chevron,
   ChoiceRow,
   DialogCard,
-  FieldRow,
   HAIR,
   Lines,
   Pill,
@@ -184,13 +184,33 @@ export function ReviewPeriodPopover({ asking = true }: { asking?: boolean }) {
   );
 }
 
-/** The right rail beside a page: On This Page, then the Page Health card. */
+/** A ring filled to `share` of its way round, centred on (cx, cy): the Health Score's and the freshness ring. */
+function Ring({ cx, cy, r, share }: { cx: number; cy: number; r: number; share: number }) {
+  const turn = 2 * Math.PI * share;
+  const ex = cx + r * Math.sin(turn);
+  const ey = cy - r * Math.cos(turn);
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={r} className="fill-none stroke-slate-200" strokeWidth={2.2} />
+      <path
+        d={`M${cx} ${cy - r} A${r} ${r} 0 ${share > 0.5 ? 1 : 0} 1 ${ex} ${ey}`}
+        className="fill-none stroke-brand-600"
+        strokeWidth={2.2}
+        strokeLinecap="round"
+      />
+    </g>
+  );
+}
+
+/** The right rail beside a page (PageHealthCard.tsx): On This Page, then Page Health, its Health Score (Score
+ *  Breakdown folded under it) over the Verified panel with Verify Again (Page Details folded under it), and Read This
+ *  Week at the rail's foot. */
 export function PageHealthRail() {
   const x = 242;
   return (
-    <Scene w={W} h={232} bg="plain">
+    <Scene w={W} h={244} bg="plain">
       {/* The page, beside the rail. */}
-      <Surface x={16} y={12} w={212} h={208} r={8}>
+      <Surface x={16} y={12} w={212} h={220} r={8}>
         <Label x={30} y={30} size={6.5} tone="muted">
           Engineering
         </Label>
@@ -217,41 +237,59 @@ export function PageHealthRail() {
       <Label x={x} y={49} size={7.5} tone="body">
         Rolling Back
       </Label>
-      <Surface x={x - 6} y={62} w={168} h={158} r={8}>
-        <Label x={x + 4} y={76} size={8.5} weight={700} tone="strong">
-          Page Health
+      <Surface x={x - 6} y={60} w={168} h={116} r={8}>
+        <Label x={x + 4} y={72} size={6.5} weight={700} tone="muted">
+          PAGE HEALTH
         </Label>
-        <Label x={x + 4} y={93} size={7} tone="muted">
-          Owner
+        {/* The Health Score: the ring, its word and the main reason; pressing it opens Score Breakdown. */}
+        <Ring cx={x + 16} cy={94} r={10} share={0.92} />
+        <Label x={x + 16} y={94.5} anchor="middle" size={7} weight={700} tone="strong">
+          92
         </Label>
-        <rect
-          x={x + 76}
-          y={86}
-          width={78}
-          height={14}
-          rx={4}
-          className="fill-white stroke-slate-300"
+        <Label x={x + 34} y={89} size={8.5} weight={700} tone="strong">
+          Healthy
+        </Label>
+        <Label x={x + 34} y={101} size={7} tone="muted">
+          1 open comment
+        </Label>
+        <Chevron cx={x + 150} cy={94} />
+        <line
+          x1={x - 2}
+          y1={113}
+          x2={x + 158}
+          y2={113}
+          className="stroke-slate-200"
           strokeWidth={HAIR}
         />
-        <Label x={x + 82} y={93.4} size={7} weight={600} tone="strong">
-          Maya Chen
+        {/* The Verified panel: its freshness ring, the state and its line; Page Details folded behind the chevron. */}
+        <rect x={x} y={119} width={156} height={50} rx={6} className="fill-brand-50" />
+        <Ring cx={x + 13} cy={133} r={6.5} share={0.58} />
+        <Label x={x + 26} y={129} size={8} weight={700} tone="strong">
+          Verified
         </Label>
-        <path
-          d={`M${x + 144} ${92} l2.4 2.6 l2.4 -2.6`}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.1}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <FieldRow x={x + 4} y={110} w={150} label="Last Verified" value="12 Mar by Maya Chen" />
-        <FieldRow x={x + 4} y={125} w={150} label="Review Due" value="10 Jun" />
-        <FieldRow x={x + 4} y={140} w={150} label="Review Period" value="Every 90 Days" />
-        <Label x={x + 154} y={151} anchor="end" size={7} weight={600} className="fill-brand-700">
-          Change
+        <Label x={x + 26} y={140} size={7} tone="muted">
+          Fresh for 52 more days
         </Label>
-        <FieldRow x={x + 4} y={166} w={150} label="Reads by People This Week" value="14" />
-        <FieldRow x={x + 4} y={181} w={150} label="Reads by Agents This Week" value="32" />
-        <Btn x={x + 4} y={196} w={150} h={16} label="Verify Again" />
+        <Chevron cx={x + 146} cy={133} />
+        <Btn x={x + 6} y={149} w={144} h={14} label="Verify Again" size={7.5} />
+      </Surface>
+      {/* Read This Week, at the rail's foot. */}
+      <Surface x={x - 6} y={184} w={168} h={48} r={8}>
+        <Label x={x + 4} y={196} size={6.5} weight={700} tone="muted">
+          READ THIS WEEK
+        </Label>
+        <Label x={x + 4} y={216} size={11} weight={800} tone="strong">
+          14
+        </Label>
+        <Label x={x + 20} y={216.5} size={7.5} tone="body">
+          by People
+        </Label>
+        <Label x={x + 82} y={216} size={11} weight={800} tone="strong">
+          32
+        </Label>
+        <Label x={x + 98} y={216.5} size={7.5} tone="body">
+          by Agents
+        </Label>
       </Surface>
     </Scene>
   );

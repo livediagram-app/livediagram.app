@@ -19,6 +19,8 @@ import {
 } from './PageTreeSidebar';
 import { SLIDE_MS } from '@/lib/ui/use-slide-out';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_TOUCH_ROW, PAGE_TREE_WIDTH } from './page-tree-view';
+import { PAGE_TREE_WIDTH_KEY } from './page-tree-width';
+import { resetSidebarWidthStores } from '@liveworkspace/workbench/hooks/ui/useSidebarWidth';
 
 const TABS = [
   { id: 'a', name: 'Start Here' },
@@ -96,9 +98,28 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  localStorage.clear();
+  resetSidebarWidthStores();
 });
 
 describe('PageTreeSidebar', () => {
+  // liveworkspace/docs/specs/011-workbench/sidebar-width.md: the width this browser keeps, the handle at the open
+  // tree's edge, and none on the rail.
+  it('draws at the width kept in this browser, resized from its edge, and the rail has no handle', () => {
+    localStorage.setItem(PAGE_TREE_WIDTH_KEY, '360');
+    const { rerender } = render(<PageTreeSidebar {...props()} />);
+    const aside = screen.getByRole('complementary', { name: 'Pages' });
+    expect(aside.style.width).toBe('360px');
+    const handle = within(aside).getByRole('separator', { name: 'Resize Pages' });
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' });
+    expect(aside.style.width).toBe('352px');
+    expect(localStorage.getItem(PAGE_TREE_WIDTH_KEY)).toBe('352');
+    fireEvent.doubleClick(handle);
+    expect(aside.style.width).toBe(`${PAGE_TREE_WIDTH}px`);
+    rerender(<PageTreeSidebar {...props({ collapsed: true })} />);
+    expect(screen.queryByRole('separator')).toBeNull();
+  });
+
   it('is the Pages landmark, 264px wide, measured as the docked sidebar', () => {
     render(<PageTreeSidebar {...props()} />);
     const aside = screen.getByRole('complementary', { name: 'Pages' });

@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('build')}
 >
 
-The **Build** elements hold what you lay a diagram _out_ with. In Diagram mode they sit on the palette strip after Draw as two categories: **Diagrams**, the structures that grow as you type (mind node, org chart, flowchart, sequence, table, entity), and **Layout**, what you arrange and label them with (lane, frame, stack, boundary, then the diagram key, card, badge and step number, then the image and avatar). Workshop mode has **Layout** too, with the Timeline in it. Everywhere else in the palette you are adding something to the canvas; here you are deciding how the canvas is arranged.
+The **Build** elements hold what you lay a diagram _out_ with. In Diagram mode they sit on the palette strip after Draw, spread over two categories: **Concepts**, which opens with a **Diagrams** group of the structures that grow as you type (mind node, org chart, flowchart, sequence diagram), and **Layout**, what you arrange and label them with (lane, frame, stack, boundary and table, then the diagram key, card, badge, step number and Infrastructure, then the image and avatar, then Embed File). Workshop mode has **Layout** too, with the Timeline in it. Everywhere else in the palette you are adding something to the canvas; here you are deciding how the canvas is arranged.
 
 What the first four have in common is that **each one holds other work**. A frame gathers a region, a lane carries the steps in a row, a table organises cells, and a mind node hangs children off itself. You reach for them at the same moment: once you know how the diagram is arranged, before you have decided what goes in it.
 
@@ -52,13 +52,13 @@ Layout has an **Infrastructure** tile, beside the Card and the Badge, for drawin
 
 The **C4 System Context**, **C4 Container Diagram** and **C4 Component Diagram** templates draw the three levels ready made. Add them to one document as separate tabs and they link up: the platform on the Context tab opens the Container tab, the Order service there opens the Component tab, and each boundary leads back out a level.
 
-Diagrams and Layout are in the palette in Diagram mode, and Layout in Workshop mode. In Draw mode the palette gives way to the dock, whose shape catalogue still offers the mind node, lane and frame.
+Concepts and Layout are in the palette in Diagram mode, and Layout in Workshop mode (without the Table, the C4 tiles and the Entity). In Draw mode the palette gives way to the dock, whose shape catalogue still offers the mind node, lane and frame.
 
 ## Cards, not pictures
 
-Shapes show as a grid of pictures, because the picture is the explanation. The containers here are, at tile size, all a rectangle. So the [palette panels](/help/palette/toolbar-layout/) list them as cards with a one-line description each, Layout's in four groups, **Containers**, **Parts**, **Pictures** (the image) and **People** (the avatar): "Tab adds a child, Enter a sibling" against "A titled band that carries its steps" is what you are actually choosing between, and no icon says that.
+Shapes show as a grid of pictures, because the picture is the explanation. The containers here are, at tile size, all a rectangle. So the [palette panels](/help/palette/toolbar-layout/) list them as cards with a one-line description each, Layout's in four groups, **Containers**, **Parts**, **Pictures** (the image and the avatar) and **Files** (Embed File): "Tab adds a child, Enter a sibling" against "A titled band that carries its steps" is what you are actually choosing between, and no icon says that.
 
-<Figure caption="Build's elements as cards, each with a line on what it does.">
+<Figure caption="Layout's Containers as cards, each with a line on what it does.">
   <BuildRows />
 </Figure>
 

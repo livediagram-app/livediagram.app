@@ -10,6 +10,7 @@ import { useState } from 'react';
 import {
   applyMindOutline,
   isMindNode,
+  lockedLayerElementIds,
   mindFlowOf,
   mindOutlineText,
   mindRootOf,
@@ -83,11 +84,18 @@ export function useMindOutline(opts: {
     };
     // Checked against the tab as it stands, then applied inside the commit to the elements as they
     // stand there (an edit that landed in between is kept).
-    if (!applyMindOutline(activeTab.elements, rootId, outline, dress)) return false;
+    const held = lockedLayerElementIds(activeTab.elements, activeTab.layers);
+    if (!applyMindOutline(activeTab.elements, rootId, outline, dress, held)) return false;
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;
-        const next = applyMindOutline(t.elements, rootId, outline, dress);
+        const next = applyMindOutline(
+          t.elements,
+          rootId,
+          outline,
+          dress,
+          lockedLayerElementIds(t.elements, t.layers),
+        );
         return next ? { ...t, elements: next } : t;
       }),
     );

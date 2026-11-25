@@ -169,6 +169,7 @@ export function applyMindOutline(
   rootId: ElementId,
   outline: MindOutlineNode,
   dress: MindOutlineDress,
+  held?: ReadonlySet<ElementId>,
 ): Element[] | null {
   const root = elements.find((el): el is ShapeElement => el.id === rootId && isMindNode(el));
   if (!root || mindRootOf(elements, root).id !== root.id) return null;
@@ -271,5 +272,5 @@ export function applyMindOutline(
   // Laid out again in the outline's order, connectors re-anchored, other trees moved aside.
   const order = new Map(ids.map((id, i) => [id, i]));
   const relayout = relayoutMindMap(next, root.id, undefined, order);
-  return relayout ? applyMindMoves(next, relayout.moves, relayout.reanchored) : next;
+  return relayout ? applyMindMoves(next, relayout.moves, relayout.reanchored, held) : next;
 }

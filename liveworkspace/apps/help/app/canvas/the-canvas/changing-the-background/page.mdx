@@ -23,8 +23,13 @@ export const metadata = helpMetadata({
 
 Each tab has its own backdrop, stored per tab. You change it from the **Tab Style** dialog, a focused modal that gives these controls plenty of room.
 
-<AppNote app="livediagram,livedesign,livedocuments">
+<AppNote app="livediagram">
   A backdrop is a pattern, a canvas colour, a pattern colour, an opacity and a pattern size.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  Pages sit on the canvas, so the backdrop is two things: the background new pages start on, and the
+  colour (on most tabs, with a calm pattern) of the canvas around the pages.
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -36,6 +41,11 @@ Each tab has its own backdrop, stored per tab. You change it from the **Tab Styl
 
 Open the **Tab Style** dialog. It opens on its home; press **Canvas** under **Fine-tune** to open the backdrop controls, and the **Tab Style** bar across the panel's top to return. You can also run **Open Canvas Options** from the [command palette](/help/search-panel/the-search-panel/command-palette/), which opens the dialog straight on the Canvas panel.
 
+<AppNote app="livedesign,livedocuments">
+  Here that row and panel are named **New Page Background**, and **Open Canvas Options** opens the
+  dialog straight on it.
+</AppNote>
+
 <AppNote app="livediagram,livedesign,livehuddle">
   Click the **Theme & Canvas** button in the bottom-right corner of the editor, beside the zoom
   controls (it is there on every screen size, phones included, and named **Style** on a wide
@@ -44,7 +54,8 @@ Open the **Tab Style** dialog. It opens on its home; press **Canvas** under **Fi
 
 <AppNote app="livedocuments">
   Click the **Style** button on a page's title bar (top right of every page; on an article page,
-  **Style** then **Tab Style**); it is there on every screen size, phones included.
+  **Style** then **Tab Style**). On a phone, open **Appearance** on the page's title bar and press
+  its **Style** row.
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -66,7 +77,7 @@ Every control applies to the active tab as you click, so the canvas updates behi
 
 ## The Backdrop Panel
 
-<AppNote app="livediagram,livedesign,livedocuments">
+<AppNote app="livediagram">
   The Canvas panel gathers the backdrop controls:
 
 - **Patterns** come in two carousels, each tile drawn in the pattern itself (nine to a page on a wider screen, six on a phone). **Static** holds thirteen: Grid, Blank, Lines, Graph, Crosshatch, Confetti, Stripes, Diagonal, Waves, Bricks, Checkerboard, Hexagonal and Engineering. **Animated** holds five (Flow, Drift, Aurora, Ripple, Ribbons) that bring the canvas to life with soft ambient motion.
@@ -83,6 +94,30 @@ The animated patterns are theme-matched and reduced-motion safe: if you prefer r
   **Static** holds a fourteenth pattern, **Isometric**, between Bricks and Checkerboard.
 </AppNote>
 
+<AppNote app="livedesign,livedocuments">
+  The **New Page Background** panel has two parts:
+
+- **New pages start** is a switch between **Like the Page Before** (each new page wears the
+  background of the page before it) and **Choose One** (every new page starts on the background you
+  pick). **Choose One** shows the page panel's own Background controls, with a solid colour, a
+  gradient or an animated background to choose from, and no pictures. **Apply to All** under it
+  gives every page of the tab that background, and a locked page keeps its own. A page keeps its own
+  background once it is made.
+- **Around the Pages** sets the canvas behind and between the pages: a colour, and a pattern of
+  **Blank**, **Grid**, **Lines** or **Graph**.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  On an article or a card tab, **Around the Pages** is the colour alone, and **Choose One** offers no
+  pattern.
+</AppNote>
+
+<AppNote app="livedesign">
+  A photo page is its picture, so it takes no background: the panel says so and keeps **Around the
+  Pages**.
+</AppNote>
+
 <AppNote app="livehuddle">
   The Room panel gathers the floor and wall controls:
 
@@ -97,7 +132,7 @@ A floor brings its own colours (grass is green, oak is honey), in a light versio
 </AppNote>
 
 <Figure
-  app="livediagram,livedesign,livedocuments"
+  app="livediagram"
   caption="The Canvas panel of the Tab Style dialog: the Static and Animated pattern carousels, the two colours, and the Opacity and Size sliders."
 >
   <DiagramCanvasBasics.LookAndFeelCanvas />
@@ -119,9 +154,14 @@ The same dialog also hosts the **Colours** panel, where every built-in theme but
   new tab starts with the backdrop of the tab you added it from.
 </Tip>
 
-<AppNote app="livediagram,livedesign,livedocuments">
+<AppNote app="livediagram">
   For instance, a clean grid for an overview and a darker backdrop for a detail view. A new tab
   starts with the pattern, colours and opacity of the tab you added it from.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  For instance, a plain surround for one tab and graph paper around the pages of another. A new tab
+  starts with the colour and pattern around the pages of the tab you added it from.
 </AppNote>
 
 <AppNote app="livehuddle">

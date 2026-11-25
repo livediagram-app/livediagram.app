@@ -10,8 +10,15 @@ import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // `showIdentityPrompt`, false on the common path (the owner opening their own design); for a visitor the empty
 // canvas underneath has already rendered, so the prompt fades in a frame later rather than blocking the route on its JS.
 import dynamic from 'next/dynamic';
+import { askNameCard, closeNameCard } from '@liveworkspace/workbench/lib/name-card';
 const IdentityPrompt = dynamic(
   () => import('@/components/palette/IdentityPrompt').then((m) => m.IdentityPrompt),
+  { ssr: false },
+);
+// The name tray a guest visitor sees instead of the card (liveworkspace/docs/specs/011-workbench/first-edit.md), loaded
+// only when it shows.
+const NameTray = dynamic(
+  () => import('@liveworkspace/workbench/components/chrome/NameTray').then((m) => m.NameTray),
   { ssr: false },
 );
 
@@ -22,10 +29,10 @@ import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import {
-  CONTENTS_SIDEBAR_WIDTH,
   contentsClusterLeft,
   contentsSidebarClearancePx,
 } from '@liveworkspace/workbench/lib/contents-sidebar';
+import { useContentsSidebarWidth } from '@liveworkspace/workbench/hooks/ui/useContentsSidebarWidth';
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PhotoClusterSegment } from './PhotoClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
@@ -125,6 +132,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     settings,
     snapGuideStore,
     showIdentityPrompt,
+    showIdentityTray = false,
     tabThemeId,
     identityLockedName,
     welcomeOpen,
@@ -232,10 +240,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // bottom-right cluster are drawn at it, so the clearances around them follow.
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
+  // Contents' live width: stepped up on wide windows, or dragged (liveworkspace/docs/specs/011-workbench/sidebar-width.md).
+  const contentsWidth = useContentsSidebarWidth().width;
   // Heading Pages mode's Contents sidebar while it is docked beneath it (docs/specs/007-editor/pages-mode.md "Joined
   // to the menu box"); never from the strip's row, where a phone (which has no sidebar) puts it.
-  const menuJoin =
-    menuJoined && !menuInStrip ? { joinedWidth: CONTENTS_SIDEBAR_WIDTH * panelScale } : {};
+  const menuJoin = menuJoined && !menuInStrip ? { joinedWidth: contentsWidth * panelScale } : {};
   // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
   const { workbenchBack } = props;
   const explorerMenuButton = workbenchBack ? (
@@ -258,7 +267,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const cornerScale = useUiScale('cornerButtons');
   // Beside Pages mode's Contents sidebar, never under it (useContentsChrome): short of it, where the cluster wraps
   // upward instead (contentsClusterLeft).
-  const clusterLeft = contentsClusterLeft(!isMobile && contentsDocked, panelScale);
+  const clusterLeft = contentsClusterLeft(!isMobile && contentsDocked, panelScale, contentsWidth);
   // The bar across the top that the top corners give way to: the strip.
   const topBar = !isMobile && stripShown ? STRIP_SELECTOR : null;
   const topBarCrowds = useStripCrowdsCorners(
@@ -301,7 +310,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   : undefined),
               // Beside Pages mode's Contents sidebar, never under it.
               ...(contentsDocked && corner.endsWith('left')
-                ? { left: contentsSidebarClearancePx(panelScale) }
+                ? { left: contentsSidebarClearancePx(panelScale, contentsWidth) }
                 : undefined),
             }}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
@@ -336,9 +345,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
           designName={designName}
           lockedName={identityLockedName}
           canComment={paletteShown}
-          onJoin={onConfirmIdentity}
-          onCancel={onCancelIdentity}
+          onJoin={(name) => {
+            closeNameCard();
+            onConfirmIdentity(name);
+          }}
+          onCancel={() => {
+            closeNameCard();
+            onCancelIdentity();
+          }}
         />
+      ) : null}
+      {/* A signed-in visitor's name is their account's: nothing to choose, so no tray. */}
+      {showIdentityTray && !identityLockedName ? (
+        <NameTray name={selfParticipant.name} onChange={askNameCard} onKeep={onCancelIdentity} />
       ) : null}
 
       <CanvasGuideOverlay
@@ -406,7 +425,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           photo={props.pagesMode?.photo}
           scale={toolbarScale}
           // Beside a Contents sidebar docked on the left, never under it.
-          left={contentsDocked ? contentsSidebarClearancePx(panelScale) : 12}
+          left={contentsDocked ? contentsSidebarClearancePx(panelScale, contentsWidth) : 12}
         />
       )}
 

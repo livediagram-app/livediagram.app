@@ -2,6 +2,7 @@ import {
   applyMindMoves,
   isMindNode,
   isMindTreeTidy,
+  lockedLayerElementIds,
   mindChildren,
   mindFlowOf,
   mindRootOf,
@@ -58,12 +59,12 @@ export function useMindGrowth(opts: GrowthHookOpts) {
   // A label written here never passed through an editor, so the node grows to fit it here
   // (docs/specs/009-elements/mind-node.md "A node grows to fit its label").
   const measureLabel = measureDrawnMindLabel(activeTab.font, activeTab.finish);
-  const withLabelOn = (els: Element[], id: string, label: string) =>
-    fitMindLabel(
-      els.map((el) => (el.id === id ? labelled(el, label) : el)),
-      id,
-      measureLabel,
-    );
+  // Nodes on a locked layer keep their place whatever re-lays the map (mind-node.md "Tidy Map").
+  const heldIn = (els: Element[]) => lockedLayerElementIds(els, activeTab.layers);
+  const withLabelOn = (els: Element[], id: string, label: string) => {
+    const labelledEls = els.map((el) => (el.id === id ? labelled(el, label) : el));
+    return fitMindLabel(labelledEls, id, measureLabel, heldIn(labelledEls));
+  };
 
   // What was typed for a node whose editor never opened (the handoff timed
   // out): written straight onto its label, so nothing typed is lost.
@@ -98,7 +99,10 @@ export function useMindGrowth(opts: GrowthHookOpts) {
       // Re-planned only when the tab moved on since this render: planning is O(nodes x map) and
       // the canvas keys (no label commit in between) need it once.
       const now = base === before ? plan : (planMindGrowth(base, id, kind, ids) ?? plan);
-      return [...applyMindMoves(base, now.moves, now.reanchored), ...build(now).added];
+      return [
+        ...applyMindMoves(base, now.moves, now.reanchored, heldIn(base)),
+        ...build(now).added,
+      ];
     };
     patchActive(grown);
     reveal(node, handoffActions);
@@ -126,7 +130,7 @@ export function useMindGrowth(opts: GrowthHookOpts) {
     const remove = (els: Element[]) => {
       const next = els.filter(keep);
       const plan = wasTidy ? relayoutMindMap(next, root.id) : null;
-      return plan ? applyMindMoves(next, plan.moves, plan.reanchored) : next;
+      return plan ? applyMindMoves(next, plan.moves, plan.reanchored, heldIn(next)) : next;
     };
     patchActive(remove);
     setEditingId(null);

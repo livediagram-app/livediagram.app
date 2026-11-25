@@ -19,7 +19,7 @@ A <Noun /> spread across many tabs is far more useful when you can move between 
 A single link on an element can target any one of these:
 
 - **A tab** in this <Noun />. Following the link switches to that tab.
-- **Another <Noun />.** Following it opens that <Noun />.
+- **A file.** Another <Noun />, or a file from any other liveworkspace app. Following it opens that file.
 - **An external URL.** Following it opens the address in a new browser tab.
 
 A linked element carries a small link badge (unless your [element indicators](/help/canvas/element-indicators/) are set to Off). Hover it and its card reads **Follow link** and names the target (for example `Goes to tab "DB internals"`), so you can tell where a link leads before you click it. Click the badge to follow the link.
@@ -35,16 +35,14 @@ A linked element carries a small link badge (unless your [element indicators](/h
 ## Linking an element to a tab
 
 <Step n={1}>
-  Right-click the element you want to turn into a jump point and open **Resources** at the foot of
-  its menu and press **Add Link**.
+  Right-click the element you want to turn into a jump point, open **Resources** at the foot of its
+  menu and press **Add Link** (**Edit Link** once it has one).
 </Step>
 
 <Step n={2}>
-  In the **Link element** dialog, switch to **Tab** and pick the target tab. The tab you are on is
-  marked "current". The **
-  <Noun capital />
-  ** list offers your eight most recent other <Noun plural />, and **External URL** takes a web
-  address.
+  In the Resources dialog's link list, press **Tab** and pick the target tab. The tab you are on is
+  marked **This tab**. **External URL** takes a web address and **Save Link**, and a row for each
+  app's files lists your recent ones there, with a search.
 </Step>
 
 <Step n={3}>
@@ -52,7 +50,7 @@ A linked element carries a small link badge (unless your [element indicators](/h
   it.
 </Step>
 
-To change or remove a link, right-click the element again and choose **Edit Link**: pick a new target, or use the Remove link button at the bottom of the dialog. Arrows can't carry links, and [link cards](/help/canvas/links/) manage their address in their own **Link** section instead.
+To change or remove a link, open **Resources** on the element again and press **Edit Link**: pick a new target, or press **Remove Link**, last in the list. Arrows can't carry links, and [link cards](/help/canvas/links/) manage their address in their own **Link** section instead.
 
 ## When the target tab goes away
 
@@ -73,9 +71,10 @@ Anyone who can open the <Noun /> can follow links, including on a view-only shar
 </Tip>
 
 <AppNote app="livedesign">
-  On a [wireframe](/help/pages/wireframe-pages/) tab the dialog offers a fourth choice first,
-  **Screen**, which links the element to another screen of the tab for a clickable prototype. A
-  Participant can set a Screen link on an element of their own; every other link needs edit access.
+  On a [wireframe](/help/pages/wireframe-pages/) tab you can also link an element to another screen
+  of the tab for a clickable prototype: drag the round link handle from the selected element onto a
+  screen, or press it to open the **Link Element** dialog on its **Screen** choice. A Participant
+  can set a Screen link on an element of their own; every other link needs edit access.
 </AppNote>
 
 </ArticleLayout>

@@ -2,6 +2,7 @@ import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
 import {
   AppFrame,
   Btn,
+  Chevron,
   DialogCard,
   FormatRow,
   HAIR,
@@ -25,12 +26,12 @@ const H = 250;
 const COL = SIDEBAR_W + 34;
 
 const TREE: TreeRowSpec[] = [
-  { label: 'Start Here', state: 'verified' },
+  { label: 'Start Here' },
   { label: 'Engineering', open: true },
   { label: 'Deploying', depth: 1, hover: true },
   { label: 'On-Call', depth: 1, state: 'due' },
   { label: 'Runbooks', depth: 1, open: false },
-  { label: 'People', open: false, state: 'verified' },
+  { label: 'People', open: false },
   { label: 'Glossary' },
 ];
 
@@ -52,7 +53,8 @@ export function DiscardDraft() {
   );
 }
 
-/** The page tree with one row's Page Options menu open: every verb an Editor has for a page. */
+/** The page tree with one row's Page Options menu open (PageTreeRowMenu.tsx): the tool row (Rename, Duplicate, Copy
+ *  Link, Delete), the page's rows, and the Move section open on Move Up, Move Down, Indent and Outdent. */
 export function PageTreeMenu() {
   return (
     <Scene w={W} h={H} bg="none">
@@ -60,28 +62,64 @@ export function PageTreeMenu() {
         <PageHead x={COL + 96} y={42} title="Deploying" crumb="Engineering" />
         <Lines x={COL + 96} y={76} widths={[150, 140, 96]} />
       </AppFrame>
-      <Surface x={104} y={28} w={118} h={186} r={8} lift>
-        <Label x={114} y={41} size={7.5} weight={700} tone="muted">
+      <Surface x={104} y={24} w={136} h={202} r={8} lift>
+        <Label x={114} y={37} size={7.5} weight={700} tone="muted">
           Deploying
         </Label>
-        <line x1={104} y1={49} x2={222} y2={49} className="stroke-slate-200" strokeWidth={HAIR} />
+        <line x1={104} y1={45} x2={240} y2={45} className="stroke-slate-200" strokeWidth={HAIR} />
+        {/* The tool row: Rename, Duplicate, Copy Link and Delete. */}
+        {['Rename', 'Duplicate', 'Copy Link', 'Delete'].map((tool, i) => (
+          <g key={tool}>
+            <rect
+              x={108 + i * 32}
+              y={49}
+              width={30}
+              height={24}
+              rx={4}
+              className="fill-slate-50 stroke-slate-200"
+              strokeWidth={HAIR}
+            />
+            <rect
+              x={119 + i * 32}
+              y={53}
+              width={8}
+              height={8}
+              rx={2}
+              className="fill-none stroke-slate-500"
+              strokeWidth={1}
+            />
+            <Label x={123 + i * 32} y={67} anchor="middle" size={5.4} weight={500} tone="body">
+              {tool}
+            </Label>
+          </g>
+        ))}
+        <line x1={108} y1={78} x2={236} y2={78} className="stroke-slate-200" strokeWidth={HAIR} />
         <MenuRows
           x={104}
-          y={53}
-          w={118}
+          y={81}
+          w={136}
           rows={[
-            { label: 'Rename' },
             { label: 'Add Subpage' },
-            { label: 'Duplicate' },
-            { label: 'Copy Link' },
             { label: 'Verify' },
+            { label: 'Watch' },
             { label: 'Always in Context' },
+          ]}
+        />
+        {/* The Move section, open. */}
+        <line x1={108} y1={135} x2={236} y2={135} className="stroke-slate-200" strokeWidth={HAIR} />
+        <Label x={123} y={145} size={7.5} weight={700} tone="strong">
+          Move
+        </Label>
+        <Chevron cx={230} cy={145} open />
+        <MenuRows
+          x={110}
+          y={152}
+          w={130}
+          rows={[
             { label: 'Move Up' },
             { label: 'Move Down' },
             { label: 'Indent', hover: true },
             { label: 'Outdent' },
-            'separator',
-            { label: 'Delete' },
           ]}
         />
       </Surface>
@@ -227,11 +265,33 @@ export function WritingOnAPage() {
   );
 }
 
-const SLASH_GROUPS: readonly { heading: string; items: readonly string[] }[] = [
-  { heading: 'TEXT', items: ['Text', 'Heading 1', 'Heading 2'] },
-  { heading: 'LISTS', items: ['Bulleted List', 'To-Do List'] },
-  { heading: 'BLOCKS', items: ['Quote', 'Table', 'Footnote'] },
-  { heading: 'INSERT', items: ['Link to Page', 'Image', 'Drawing', 'Embed'] },
+// The menu's five groups (lib/article/article-slash-items.ts), a few of each group's rows, and what the rest hold.
+const SLASH_GROUPS: readonly {
+  heading: string;
+  items: readonly string[];
+  note: readonly string[];
+}[] = [
+  {
+    heading: 'TEXT',
+    items: ['Text', 'Heading 1'],
+    note: ['Text: writing, Heading 1 to 3, Subtitle,', 'quote, code'],
+  },
+  {
+    heading: 'LISTS',
+    items: ['Bulleted List', 'To-Do List'],
+    note: ['Lists: bulleted, numbered, to-do'],
+  },
+  {
+    heading: 'MEDIA AND EMBEDS',
+    items: ['Image', 'Drawing'],
+    note: ['Media and Embeds: image, bar, pie and', 'line charts, drawing'],
+  },
+  {
+    heading: 'KNOWLEDGE',
+    items: ['Link to Page', 'Embed File', 'Footnote'],
+    note: ['Knowledge: page link, embed file,', 'footnote, table of contents'],
+  },
+  { heading: 'LAYOUT', items: ['Table', 'Divider'], note: ['Layout: table, divider'] },
 ];
 
 /** The slash menu: type / on a line and pick what to add, grouped as the menu groups it. */
@@ -241,12 +301,12 @@ export function SlashMenuScene() {
     SLASH_GROUPS.map((group) => 13 + group.items.length * 13 + 3),
   );
   return (
-    <Scene w={W} h={232} bg="plain">
+    <Scene w={W} h={256} bg="plain">
       <Label x={28} y={34} size={11} tone="strong">
         /
       </Label>
       <rect x={34} y={26} width={1.2} height={15} className="fill-brand-600" />
-      <Surface x={52} y={12} w={150} h={208} r={8} lift>
+      <Surface x={52} y={12} w={150} h={236} r={8} lift>
         {SLASH_GROUPS.map((group, groupIndex) => {
           const top = tops[groupIndex]!;
           return (
@@ -289,18 +349,19 @@ export function SlashMenuScene() {
         })}
       </Surface>
       {/* What each group holds, beside the menu. */}
-      {[
-        { y: 44, text: 'Text: plain writing, Title, Subtitle, Heading 1 to 3' },
-        { y: 92, text: 'Lists: bulleted, numbered, to-do' },
-        { y: 136, text: 'Blocks: quote, code, divider, table,' },
-        { y: 147, text: 'table of contents, footnote' },
-        { y: 190, text: 'Insert: page link, image, charts,' },
-        { y: 201, text: 'drawing, callout, sticky note, embed' },
-      ].map((note) => (
-        <Label key={note.y} x={216} y={note.y} size={7.5} tone="body">
-          {note.text}
-        </Label>
-      ))}
+      {SLASH_GROUPS.map((group, groupIndex) =>
+        group.note.map((line, i) => (
+          <Label
+            key={`${group.heading}-${i}`}
+            x={214}
+            y={tops[groupIndex]! + 17.5 + i * 11}
+            size={7.5}
+            tone="body"
+          >
+            {line}
+          </Label>
+        )),
+      )}
     </Scene>
   );
 }

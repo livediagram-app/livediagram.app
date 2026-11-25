@@ -4,8 +4,9 @@ import { Card } from './parts';
 
 // The palette's tool picker, opened: its tiles in three bands, the current tool tinted and a tool's key in its
 // tile's corner. This is the picker of the editors whose pages are made in Pages mode (the Select article in their
-// help: Edit holds Select, Hand and Format; Present holds Laser, Spotlight and Slide Deck; Preview holds Zen). Each
-// glyph is drawn about its centre in `currentColor`, so the tile tints it.
+// help: Edit holds Select, Hand and Format, with Eraser after Hand in livedesign; Present holds Laser and Spotlight;
+// Preview holds Zen; each app's palette/canvas-tool-options.tsx). Each glyph is drawn about its centre in
+// `currentColor`, so the tile tints it.
 
 const ICON = 'fill-none stroke-current';
 
@@ -45,11 +46,20 @@ const TOOL_GLYPHS: Record<string, ReactNode> = {
       <circle r={2.8} className="fill-amber-400" />
     </g>
   ),
-  'Slide Deck': (
+  Eraser: (
     <g>
-      <rect x={-7} y={-5.5} width={14} height={9} rx={1.5} className={ICON} strokeWidth={1.4} />
-      <path d="M-1.5 -3 l4 2 -4 2 Z" className="fill-current" />
-      <path d="M0 3.5 v3 M-3 6.5 h6" className={ICON} strokeWidth={1.3} strokeLinecap="round" />
+      <path
+        d="M-6 2.5 l6 -7 l6 5 l-5 6 h-4 Z"
+        className={ICON}
+        strokeWidth={1.4}
+        strokeLinejoin="round"
+      />
+      <path
+        d="M-3 -1 l5.5 4.5 M-1 6.5 h7"
+        className={ICON}
+        strokeWidth={1.3}
+        strokeLinecap="round"
+      />
     </g>
   ),
   Zen: (
@@ -57,14 +67,21 @@ const TOOL_GLYPHS: Record<string, ReactNode> = {
   ),
 };
 
-const BANDS: { name: string; tools: { name: string; key?: string }[] }[] = [
+type Tool = { name: string; key?: string };
+
+const bands = (eraser: boolean): { name: string; tools: Tool[] }[] => [
   {
     name: 'EDIT',
-    tools: [{ name: 'Select', key: 'V' }, { name: 'Hand', key: 'H' }, { name: 'Format' }],
+    tools: [
+      { name: 'Select', key: 'V' },
+      { name: 'Hand', key: 'H' },
+      ...(eraser ? [{ name: 'Eraser', key: 'E' }] : []),
+      { name: 'Format' },
+    ],
   },
   {
     name: 'PRESENT',
-    tools: [{ name: 'Laser', key: 'K' }, { name: 'Spotlight' }, { name: 'Slide Deck' }],
+    tools: [{ name: 'Laser', key: 'K' }, { name: 'Spotlight' }],
   },
   {
     name: 'PREVIEW',
@@ -72,27 +89,32 @@ const BANDS: { name: string; tools: { name: string; key?: string }[] }[] = [
   },
 ];
 
-/** The tool picker, 150 by 186 from (x, y), with `current` tinted. */
+/** The tool picker, 150 by 186 from (x, y), with `current` tinted. `eraser` puts livedesign's Eraser in Edit. */
 export function ToolPicker({
   x,
   y,
   current = 'Select',
+  eraser = false,
 }: {
   x: number;
   y: number;
   current?: string;
+  eraser?: boolean;
 }) {
   return (
     <Card x={x} y={y} w={150} h={186} r={12}>
-      {BANDS.map((band, b) => {
+      {bands(eraser).map((band, b) => {
         const by = y + 10 + b * 58;
+        // Three tiles 42 wide a band; four share the same width.
+        const tw = band.tools.length > 3 ? 31 : 42;
+        const step = tw + (band.tools.length > 3 ? 3 : 4);
         return (
           <g key={band.name}>
             <Label x={x + 10} y={by + 4} size={7} weight={700} tone="muted">
               {band.name}
             </Label>
             {band.tools.map((tool, t) => {
-              const tx = x + 8 + t * 46;
+              const tx = x + 8 + t * step;
               const ty = by + 11;
               const on = tool.name === current;
               return (
@@ -100,7 +122,7 @@ export function ToolPicker({
                   <rect
                     x={tx}
                     y={ty}
-                    width={42}
+                    width={tw}
                     height={40}
                     rx={7}
                     className={
@@ -109,13 +131,13 @@ export function ToolPicker({
                     strokeWidth={1}
                   />
                   <g
-                    transform={`translate(${tx + 21} ${ty + 15})`}
+                    transform={`translate(${tx + tw / 2} ${ty + 15})`}
                     className={on ? 'text-brand-700' : 'text-slate-500'}
                   >
                     {TOOL_GLYPHS[tool.name]}
                   </g>
                   <Label
-                    x={tx + 21}
+                    x={tx + tw / 2}
                     y={ty + 32}
                     anchor="middle"
                     size={6.5}
@@ -126,7 +148,7 @@ export function ToolPicker({
                   </Label>
                   {tool.key && (
                     <Label
-                      x={tx + 36}
+                      x={tx + tw - 6}
                       y={ty + 7}
                       anchor="middle"
                       size={6}

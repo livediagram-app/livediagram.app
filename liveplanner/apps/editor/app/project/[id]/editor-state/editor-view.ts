@@ -238,6 +238,7 @@ export function buildEditorView(slices: {
     handleCanvasDoubleClick: tabToolsSlice.handleCanvasDoubleClick,
     hydrated: projectSlice.hydrated,
     identityOnlyScreenOpen: commentsSlice.identityOnlyScreenOpen,
+    identityTrayOpen: commentsSlice.identityTrayOpen,
     importIntoActiveTab: tabsSlice.importIntoActiveTab,
     importTextIntoActiveTab: tabsSlice.importTextIntoActiveTab,
     trackerImport: tabsSlice.trackerImport,

@@ -14,7 +14,12 @@ import {
   type Element,
   type Tab,
 } from '@livehuddle/document';
-import { groupDuplicateOffset, placeDuplicate } from '@/lib/duplicate-placement';
+import {
+  duplicateWithWallPieces,
+  groupDuplicateOffset,
+  isWalled,
+  placeDuplicate,
+} from '@/lib/duplicate-placement';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { noteDuplicate } from '@/lib/duplicate-origin';
 
@@ -61,6 +66,18 @@ export function useElementDuplication(deps: {
     // plainly there (lib/duplicate-placement.ts). A retired arrow is never copied (docs/specs/002-project-scope/
     // blueprints/element-engine.md D21).
     if (!isBoxed(source)) return;
+    // A Room or a Corridor brings the Doors and Windows on its walls, all in the one commit, so one Undo removes the
+    // copy and its Doors together (Work Tracker 1452). Only the room's copy is selected.
+    if (isWalled(source)) {
+      const copies = duplicateWithWallPieces(source, activeTab.elements);
+      const room = copies[0];
+      if (!room) return;
+      commit((els) => [...els, ...copies]);
+      trackDuplicated(copies);
+      noteDuplicate([source.id], [room.id]);
+      setSelectedId(room.id);
+      return;
+    }
     const copy: BoxedElement = placeDuplicate(
       source,
       {

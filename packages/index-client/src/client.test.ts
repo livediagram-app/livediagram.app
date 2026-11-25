@@ -683,3 +683,13 @@ describe('startItemCall', () => {
     expect(seen.every((s) => s.method === 'POST' && s.url.endsWith('/items/i1/calls'))).toBe(true);
   });
 });
+
+describe('keepCallSpace', () => {
+  it('posts the chosen Space to its keep door', async () => {
+    const { seen, doFetch } = fakeFetch(() => new Response(null, { status: 204 }));
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await client.keepCallSpace('lh_room');
+    expect(seen).toEqual([expect.objectContaining({ method: 'POST' })]);
+    expect(seen[0]!.url.endsWith('/items/lh_room/call/keep')).toBe(true);
+  });
+});

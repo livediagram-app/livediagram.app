@@ -95,7 +95,7 @@ export async function shareLink(
   return ((await res.json()) as { link: { code: string } }).link.code;
 }
 
-// A visitor with no identity yet, so the share link greets them with the Join dialog.
+// A visitor with no identity yet, so the share link offers them the name tray, whose Change Name opens the card.
 export async function freshDarkPage(browser: Browser, deviceScaleFactor = 1): Promise<Page> {
   const context = await browser.newContext({
     colorScheme: 'dark',
