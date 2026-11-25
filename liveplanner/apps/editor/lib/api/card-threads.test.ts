@@ -9,6 +9,7 @@ vi.mock('./core', () => ({
     return (await res.json()) as unknown;
   }),
 }));
+vi.mock('./workbench-confinement', () => ({ workbenchAllows: vi.fn(() => true) }));
 vi.mock('../offline/offline-store', () => ({ isOfflineId: vi.fn(async () => false) }));
 vi.mock('../offline/offline-threads', () => ({
   offlineFetchThreads: vi.fn(async () => ['offline']),
@@ -19,6 +20,7 @@ import { apiFetch } from './core';
 import { isOfflineId } from '../offline/offline-store';
 import { offlineFetchThreads, offlineWriteThread } from '../offline/offline-threads';
 import { fetchThreads, writeThread, type ThreadAction } from './card-threads';
+import { workbenchAllows } from './workbench-confinement';
 
 // A card's threads on the api (docs/specs/026-plan/items.md "Writes"; blueprint item-store.md "Editor"): each action's
 // route, a tab-scoped session's tab, and an offline plan kept in this browser.
@@ -39,6 +41,13 @@ describe('the thread routes', () => {
       '/api/projects/p%201/threads',
       '/api/projects/p%201/threads?tabId=t%2F1',
     ]);
+  });
+
+  it('asks nothing in a workbench frame whose session may not read them (a live embed)', async () => {
+    vi.mocked(workbenchAllows).mockReturnValueOnce(false);
+    expect(await fetchThreads(SCOPE)).toEqual([]);
+    expect(apiFetch).not.toHaveBeenCalled();
+    expect(workbenchAllows).toHaveBeenCalledWith('/api/projects/p%201/threads');
   });
 
   it('sends each action to its route', async () => {

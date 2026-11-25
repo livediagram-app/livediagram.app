@@ -14,7 +14,7 @@ import { handleDiagramSends, readDiagramSends } from './diagram-sends';
 import { handleKnowledgeSends, readKnowledgeSends } from './knowledge-sends';
 import { handleItemCalls, handleSpaceCall } from './item-calls';
 import { handleWriteUp } from './write-up';
-import { callerOf } from './auth';
+import { callerOf, isGrantRoute } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
 import { sweepUnconfirmedConnections } from './connection-doors';
@@ -308,6 +308,8 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
       return notFound();
     }
   }
+  // A guest's delegate asks for one item's grant, and nothing else (a live embed's ticket and session).
+  if (caller.person?.grantOnly && !isGrantRoute(request.method, segments)) return notFound();
   // The data export lists, and nothing else: `GET /items`.
   if (caller.person?.export) {
     if (segments[0] !== 'items' || segments.length !== 1 || request.method !== 'GET')

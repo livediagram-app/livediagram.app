@@ -1023,7 +1023,8 @@ assigned to a person: the assistant becomes its Assignee, finds it, works it (it
   token is revoked is forgotten too ([When its token is revoked](#when-its-token-is-revoked)). Every assistant a card
   already holds is offered too. An AI tool connected but never pointed at the plan is not known yet: asking it to
   look at the plan (or to take a card, `"assignee": "me"`) makes it one. The list is the plan's own and travels with
-  no copy, export or Community post.
+  no copy, export or Community post. A board shown read-only in a live embed, or in a workbench frame whose session
+  may not read the list, asks for none (the picker there offers the assistants its cards hold).
 - **Who may**: handing a card to an assistant, or back, is assigning, so editing a card's fields: an Editor or a
   Participant, a guest and a link editor included. A Viewer can't, and the api refuses their write (403).
 - **The Assignee picker** (the card panel's, and the board selection bar's Assign menu) lists the people, then a

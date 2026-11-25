@@ -158,7 +158,9 @@ reading in one of our own apps, so there is nothing to approve.
   one of the apps' origins in this environment (any loopback origin in development), else `400 invalid_origin`. Limited
   per person by `WORKBENCH_LIMITER` (`workbench-embed:<personId>`). The index is asked for the person's own grant on
   the item (`ownerItemAccess`): `404 not_found` out of reach, `410 <noun>_trashed` in the Trash, `503
-index_unavailable` when it cannot answer. A guest token mints for the guest's own access, as an account's does. The answer, `201 { ticket, path, expiresAt }`, gives the frame's path
+index_unavailable` when it cannot answer. A guest token mints for the guest's own access, as an account's does: the
+  index answers accounts acting for a guest on the item's grant alone ([Reaching the index](../004-index/one-explorer-contracts.md#reaching-the-index)),
+  as it answers the target app's server serving the guest's embed session. The answer, `201 { ticket, path, expiresAt }`, gives the frame's path
   (`/embed/workbench?d=<itemId>`), which the host puts on the target's origin with `&live=1` added (the frame flag,
   [Live embeds "The frame"](../004-index/live-embeds.md#the-frame)), and the ticket for its fragment.
 - **On livehuddle's address too.** livehuddle pairs no workbench, so its router forwards this one route alone

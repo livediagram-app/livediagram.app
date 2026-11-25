@@ -145,7 +145,21 @@ frame's environment (`'self'` and any loopback port locally); every other path's
 
 ## Security and trust
 
-- Mint: only the person's own access or guest token; the reader's own index grant; level always `view`.
+- Mint: only the person's own access or guest token; the reader's own index grant; level always `view`. Who mints,
+  by role (accounts `workbench.test.ts` "live embed tickets", index `delegate.test.ts` "a guest, on the grant alone"):
+
+  | The reader                                                    | Mint                                             |
+  | ------------------------------------------------------------- | ------------------------------------------------ |
+  | the target's owner, or a joined member of its team            | `201`                                            |
+  | an Editor, Participant or Viewer through a link opened before | `201` (the session is `view` whatever the level) |
+  | a guest: their own item, or a link they opened before         | `201`                                            |
+  | anyone else, a guest included                                 | `404 not_found`                                  |
+  | a link visitor (a share code, no token of their own)          | `401 sign_in_required`                           |
+
+- The index takes a guest from a delegate (`ownerItemAccess`'s accounts merge key, and the target app's key for the
+  embed session's grant, `grantCallerOf`) on `POST /items/:id/grant` alone (`auth.ts` `delegatedPersonOf`, the
+  person's `grantOnly`; `index.ts` answers every other route `404`). The id must be `guest_<uuid>` (`GUEST_ID`);
+  `X-Index-Teams` is ignored.
 - Origin binding: the ticket's pairing origin is the host page's origin; the target page sends only to it and accepts
   only its parent there; the host hears only its own frame at the target origin.
 - No pass code in content: the element holds `{ app, itemId }`; a pasted code is held in the field only until resolve

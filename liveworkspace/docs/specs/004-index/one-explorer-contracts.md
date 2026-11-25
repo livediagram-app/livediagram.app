@@ -54,8 +54,13 @@ Two kinds of caller:
   and `X-Index-App` as above, plus `X-Index-Person: <account id>` and `X-Index-Teams: <team ids,
 comma-separated, ≤ 50>`. Every person route then answers as that account, but only for the app's own items:
   its lists are filtered to the app (the Trash among them, so `DELETE /trash` empties the app's items only),
-  `POST /items` makes only the app's kind, and any other app's item answers 404. A guest id, a link or a
-  malformed person is refused (401). The routes no agent may use answer `403` before the item is read, so the
+  `POST /items` makes only the app's kind, and any other app's item answers 404. A link or a malformed person is
+  refused (401). A guest id (`guest_<uuid>`) is taken for **one route alone**, `POST /items/:id/grant`: the
+  guest's own grant on one of the app's items, at whatever the access rule gives the guest (an item they own, or
+  one whose live link they opened before), for a [live embed](live-embeds.md) whose ticket accounts mints, and
+  whose view session the target app's server serves, with the guest's own token behind it. `X-Index-Teams` is
+  ignored for a guest (a guest has none) and every other route answers it `404`, so a guest's delegate lists,
+  makes, changes and shares nothing. The routes no agent may use answer `403` before the item is read, so the
   refusal says nothing about it: managing connections ([webhooks.md](webhooks.md), `webhooks_need_account`) and making
   a connection ([connected-tabs.md](connected-tabs.md)); opening a connection answers `404`.
   `createIndexDelegateClient` in `@liveworkspace/index-client` makes these calls.

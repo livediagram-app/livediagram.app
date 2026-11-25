@@ -6,6 +6,7 @@ import {
   subscribeWorkbenchSessionRefused,
   setWorkbenchConfinement,
   WorkbenchConfinedError,
+  workbenchAllows,
 } from './workbench-confinement';
 
 // Client confinement (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
@@ -24,6 +25,23 @@ beforeEach(() => {
 afterEach(() => {
   setWorkbenchConfinement(null);
   vi.restoreAllMocks();
+});
+
+describe('workbenchAllows', () => {
+  it('allows everything outside a workbench', () => {
+    expect(workbenchAllows('/api/projects/doc-1/items/assistants')).toBe(true);
+  });
+
+  it("answers the session's allow-list quietly, without a log", () => {
+    setWorkbenchConfinement(SESSION);
+    expect(workbenchAllows('/api/projects/doc-1/items')).toBe(true);
+    expect(workbenchAllows('https://api.example/api/projects/doc-1/tabs/t1', 'put')).toBe(true);
+    // A live embed's board: the assistants and the threads are not the session's to read.
+    expect(workbenchAllows('/api/projects/doc-1/items/assistants')).toBe(false);
+    expect(workbenchAllows('/api/projects/doc-1/threads?tabId=t1')).toBe(false);
+    expect(workbenchAllows('/api/projects/doc-2')).toBe(false);
+    expect(warn).not.toHaveBeenCalled();
+  });
 });
 
 describe('confinementRefusal', () => {

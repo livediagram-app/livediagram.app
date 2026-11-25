@@ -55,6 +55,14 @@ function segmentsOf(url: string): string[] {
   return at === -1 ? parts : parts.slice(at);
 }
 
+// Whether the session may make this request, asked quietly (no log, no refusal): for a read the editor can do
+// without (the plan's AI assistants, say), so a frame whose session can't read it skips it rather than logging a
+// confined request. True outside a workbench.
+export function workbenchAllows(url: string, method = 'GET'): boolean {
+  if (!confinement) return true;
+  return workbenchRouteVerdict(method.toUpperCase(), segmentsOf(url), confinement) === 'allow';
+}
+
 // The refusal for a request the session may not make, or null to send it.
 export function confinementRefusal(
   url: string,
