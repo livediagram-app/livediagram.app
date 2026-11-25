@@ -12,6 +12,6 @@ export const LISTING: McpListing = {
   version: '0.1.0',
   websiteUrl: 'https://www.liveworkspace.app',
   iconUrl: 'https://www.liveworkspace.app/liveworkspace-icon-512.png',
-  documentationUrl: 'https://www.liveworkspace.app',
+  documentationUrl: 'https://www.liveworkspace.app/help/account-and-data/connect-ai-mcp/',
   remoteUrl: 'https://mcp.liveworkspace.app/mcp',
 };
