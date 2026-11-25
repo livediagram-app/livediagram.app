@@ -150,9 +150,7 @@ describe('the Screen with a file', () => {
 
   it('opens a new file afresh when an Editor changes the file while it is open large', async () => {
     const { rerender } = render(
-      <ScreenView
-        element={{ ...screenEl, liveTab: { id: 't2', name: 'Roadmap' } } as ShapeElement}
-      />,
+      <ScreenView element={{ ...screenEl, liveTab: { id: 't2', name: 'Roadmap' } }} />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Open Launch Plan' }));
     await waitFor(() => expect(ticket.asked).toContainEqual({ itemId: 'P1', tabId: 't2' }));
