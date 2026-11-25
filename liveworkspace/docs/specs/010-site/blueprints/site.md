@@ -305,6 +305,15 @@ each build's own export: 381.2 KiB in 22 scripts. None of the tab's code is in t
 Turbopack cutting the largest subscription chunk (69.6 KB raw on main, byte-identical modules after) in two, as after
 the Webhooks rework above, and its framing is the 1 KiB.
 
+**Opening an item ahead loads with the first intent (2026-11-25, Work Tracker 1437).** The intent prefetch first
+came in whole: the prefetcher (`packages/explorer/src/explorer/intent-prefetch.ts`) and the site's warm with its
+`parseInert` took `/explorer` from 391,177 bytes (382.0 KiB) to 383.3 KiB gzipped (22 scripts), over its 382 KiB budget.
+Now the Explorer's first load holds only the listeners (`use-intent-prefetch.ts`) and the host's route check and
+once-per-app record (`lib/explorer/item-prefetch.ts`); the prefetcher arrives with the first link pointed at or
+focused, and the warm (`lib/explorer/item-warm.ts`) with the first editor actually warmed, so on liveworkspace.app,
+where every item is another site's, the warm never loads. Measured with each build's own export: 391,874 bytes (382.7 KiB,
+22 scripts), 697 bytes over main at the time; main itself measured 391,177 bytes, 9 over the budget.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from
@@ -391,6 +400,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `liveworkspace/apps/site/lib/explorer/offline-moves.tsx`         | Take Offline and Sync in the Explorer on an app's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address")                                                                                                                  |
 | `liveworkspace/apps/site/lib/explorer/page-app.ts`               | Where the Explorer page is being shown (liveworkspace/docs/specs/010-site/site.md "The Explorer")                                                                                                                                                                        |
 | `liveworkspace/apps/site/lib/explorer/item-prefetch.ts`          | Opening an item, ahead (liveworkspace/docs/specs/004-index/one-explorer.md "Cost and performance"): the Explorer's `prefetchItem`, warming the editor an item's address opens on this origin, once per app per page                                                      |
+| `liveworkspace/apps/site/lib/explorer/item-warm.ts`              | Opening an item, ahead: the warm itself (the editor page's scripts, styles and fonts into the browser's cache), loaded by the first warm so its HTML parsing stays out of the Explorer's first load                                                                      |
 | `liveworkspace/apps/site/lib/explorer/previews.tsx`              | Item previews in the Explorer (liveworkspace/docs/specs/006-media/previews.md): one address for every app's items, `/api/previews/items/<id>` on the page's own origin (liveworkspace.app'…                                                                              |
 | `liveworkspace/apps/site/lib/explorer/search.ts`                 | The Search panel's own entries on the Explorer (liveworkspace/docs/specs/010-site/site.md "The Explorer", Search): the Explorer's help articles in the app's help centre (in no app, liveworkspace.app's own, `lib/help/platform-help.ts`), and, signed in,…             |
 | `liveworkspace/apps/site/lib/explorer/settings.ts`               | The person's synced settings the Explorer on liveworkspace.app follows (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"): whether Home's banner is hidden (`homeBanner`, a commo…                                                                           |
@@ -598,7 +608,7 @@ in both environments to the sitemap's pages but the build's `--skip` (`/communit
 | `PREVIEW_CACHE_MAX`             | `200`                                                           | `previews.tsx`              |
 | `PREVIEW_CACHE_CEILING`         | `1000`                                                          | `previews.tsx`              |
 | `PREVIEW_CONCURRENCY`           | `4`                                                             | `previews.tsx`              |
-| `WARM_ASSETS_MAX`               | `80`                                                            | `item-prefetch.ts`          |
+| `WARM_ASSETS_MAX`               | `80`                                                            | `item-warm.ts`              |
 | `WARM_TIMEOUT_MS`               | `8000`                                                          | `item-prefetch.ts`          |
 | `WORKSPACE_TOKEN_URL`           | `'/api/auth/workspace-token'`                                   | `token.ts`                  |
 | `LEGAL_UPDATED`                 | `'25 October 2026'`                                             | `legal.ts`                  |

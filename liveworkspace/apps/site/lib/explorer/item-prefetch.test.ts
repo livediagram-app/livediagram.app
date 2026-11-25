@@ -3,14 +3,8 @@
 // Opening an item, ahead (item-prefetch.ts), on livediagram's local router (:3100): the Explorer on the app's own
 // address warms that app's editor, once per page, and never another site's.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  itemRoute,
-  pageAssets,
-  prefetchItem,
-  resetItemPrefetch,
-  WARM_ASSETS_MAX,
-  WARM_TIMEOUT_MS,
-} from './item-prefetch';
+import { itemRoute, prefetchItem, resetItemPrefetch, WARM_TIMEOUT_MS } from './item-prefetch';
+import { pageAssets, resetItemWarm, WARM_ASSETS_MAX } from './item-warm';
 
 const ORIGIN = 'http://localhost:3100';
 
@@ -47,6 +41,7 @@ function autoLoadLinks() {
 
 beforeEach(() => {
   resetItemPrefetch();
+  resetItemWarm();
   fetchMock = vi.fn(() =>
     Promise.resolve(
       new Response(EDITOR_PAGE, { headers: { 'content-type': 'text/html; charset=utf-8' } }),

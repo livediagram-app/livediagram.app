@@ -1,11 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, render } from '@testing-library/react';
-import { useRef } from 'react';
 import {
   createIntentPrefetcher,
   INTENT_DELAY_MS,
   prefetchAllowed,
-  useIntentPrefetch,
   type PrefetchItem,
 } from './intent-prefetch';
 
@@ -40,6 +37,14 @@ describe('prefetchAllowed', () => {
     try {
       expect(prefetchAllowed()).toBe(false);
       expect(query).toHaveBeenCalledWith('(any-hover: hover)');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+  it('allows it where there is no browser to read (a server render)', () => {
+    vi.stubGlobal('navigator', undefined);
+    try {
+      expect(prefetchAllowed()).toBe(true);
     } finally {
       vi.unstubAllGlobals();
     }
@@ -191,78 +196,5 @@ describe('createIntentPrefetcher', () => {
     await settle('/document/item-499');
     expect(prefetch).toHaveBeenCalledTimes(2);
     expect(prefetch).toHaveBeenLastCalledWith('/document/rest-499');
-  });
-});
-
-describe('useIntentPrefetch', () => {
-  beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
-
-  function Root({ prefetch }: { prefetch?: PrefetchItem }) {
-    const root = useRef<HTMLDivElement>(null);
-    useIntentPrefetch(root, prefetch);
-    return (
-      <div ref={root}>
-        <a href="https://www.livediagram.app/document/a">
-          <span data-testid="inner">A</span>
-        </a>
-        <a href="https://www.livediagram.app/document/b">B</a>
-        <button type="button">Menu</button>
-      </div>
-    );
-  }
-
-  const pointer = (type: string, target: Element, pointerType: string, related?: Element) => {
-    const e = new MouseEvent(type, { bubbles: true, relatedTarget: related ?? null });
-    Object.defineProperty(e, 'pointerType', { value: pointerType });
-    act(() => {
-      target.dispatchEvent(e);
-    });
-  };
-
-  it('prefetches the link a mouse rests on, and not one it leaves first', () => {
-    const prefetch = vi.fn<PrefetchItem>(() => Promise.resolve());
-    const { getByText, getByTestId } = render(<Root prefetch={prefetch} />);
-    const a = getByText('A').closest('a')!;
-    const b = getByText('B');
-    pointer('pointerover', b, 'mouse');
-    pointer('pointerout', b, 'mouse');
-    // Moving between a link's own children keeps intent.
-    pointer('pointerover', getByTestId('inner'), 'mouse');
-    pointer('pointerout', getByTestId('inner'), 'mouse', a);
-    act(() => void vi.advanceTimersByTime(INTENT_DELAY_MS));
-    expect(prefetch.mock.calls).toEqual([['https://www.livediagram.app/document/a']]);
-  });
-
-  it('never prefetches for a touch, nor for what is not a link', () => {
-    const prefetch = vi.fn<PrefetchItem>(() => Promise.resolve());
-    const { getByText } = render(<Root prefetch={prefetch} />);
-    pointer('pointerover', getByText('A'), 'touch');
-    pointer('pointerover', getByText('Menu'), 'mouse');
-    pointer('pointerout', getByText('Menu'), 'mouse');
-    act(() => void vi.advanceTimersByTime(INTENT_DELAY_MS));
-    expect(prefetch).not.toHaveBeenCalled();
-  });
-
-  it('prefetches the link focus reaches, and cancels when focus moves on first', () => {
-    const prefetch = vi.fn<PrefetchItem>(() => Promise.resolve());
-    const { getByText } = render(<Root prefetch={prefetch} />);
-    act(() => getByText('A').closest('a')!.focus());
-    act(() => getByText('Menu').focus());
-    act(() => getByText('B').focus());
-    act(() => void vi.advanceTimersByTime(INTENT_DELAY_MS));
-    expect(prefetch.mock.calls).toEqual([['https://www.livediagram.app/document/b']]);
-  });
-
-  it('listens for nothing without a host prefetch, and stops on unmount', () => {
-    const { getByText, unmount } = render(<Root />);
-    pointer('pointerover', getByText('B'), 'mouse');
-    unmount();
-    const prefetch = vi.fn<PrefetchItem>(() => Promise.resolve());
-    const again = render(<Root prefetch={prefetch} />);
-    pointer('pointerover', again.getByText('B'), 'mouse');
-    again.unmount();
-    act(() => void vi.advanceTimersByTime(INTENT_DELAY_MS));
-    expect(prefetch).not.toHaveBeenCalled();
   });
 });

@@ -8,10 +8,8 @@
 // for once per page (PREFETCH_SEEN_MAX, then the record starts again). Never on Save-Data, a slow connection or a
 // device with no hovering pointer, and never for a touch: there a press is the open itself.
 //
-// One pair of listeners on the Explorer's root (pointerover, focusin, with pointerout and focusout to cancel), so no
-// row carries a handler and memoised rows keep their props.
-
-import { useEffect, type RefObject } from 'react';
+// The listeners are use-intent-prefetch.ts's: one pair on the Explorer's root, and this module's code loads only with
+// the first intent, so the Explorer's first load carries none of it.
 
 /** How long a pointer rests on a link, or focus stays, before it counts as intent. */
 export const INTENT_DELAY_MS = 80;
@@ -130,56 +128,4 @@ export function createIntentPrefetcher({
       next = null;
     },
   };
-}
-
-// The address a link event is about: an <a href> inside the root, never one inside a field being typed in.
-function linkOf(target: EventTarget | null, root: HTMLElement): HTMLAnchorElement | null {
-  if (!(target instanceof Element)) return null;
-  const a = target.closest('a[href]');
-  if (!(a instanceof HTMLAnchorElement) || !root.contains(a)) return null;
-  return a;
-}
-
-/** Listens on `root` for intent on any item link inside it and hands it to `prefetch` (see the file's head). */
-export function useIntentPrefetch(
-  root: RefObject<HTMLElement | null>,
-  prefetch: PrefetchItem | undefined,
-): void {
-  useEffect(() => {
-    const el = root.current;
-    if (!el || !prefetch) return;
-    const prefetcher = createIntentPrefetcher({ prefetch });
-    const over = (e: PointerEvent) => {
-      // A touch is the open itself; prefetching then only adds a request.
-      if (e.pointerType === 'touch') return;
-      const a = linkOf(e.target, el);
-      if (a) prefetcher.intend(a.href);
-    };
-    const out = (e: PointerEvent) => {
-      const a = linkOf(e.target, el);
-      if (!a) return;
-      // Still inside the same link (moving between its children): intent stays.
-      if (e.relatedTarget instanceof Node && a.contains(e.relatedTarget)) return;
-      prefetcher.cancel(a.href);
-    };
-    const focus = (e: FocusEvent) => {
-      const a = linkOf(e.target, el);
-      if (a) prefetcher.intend(a.href);
-    };
-    const blur = (e: FocusEvent) => {
-      const a = linkOf(e.target, el);
-      if (a) prefetcher.cancel(a.href);
-    };
-    el.addEventListener('pointerover', over);
-    el.addEventListener('pointerout', out);
-    el.addEventListener('focusin', focus);
-    el.addEventListener('focusout', blur);
-    return () => {
-      el.removeEventListener('pointerover', over);
-      el.removeEventListener('pointerout', out);
-      el.removeEventListener('focusin', focus);
-      el.removeEventListener('focusout', blur);
-      prefetcher.dispose();
-    };
-  }, [root, prefetch]);
 }

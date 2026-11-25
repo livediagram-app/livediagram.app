@@ -43,7 +43,7 @@ import { ThisBrowserPane, useThisBrowserItems } from './ThisBrowser';
 import { WelcomeProvider } from '../welcome/context';
 import { WorkKinds, type TemplateHref } from '../hero/WorkKinds';
 import { ExtrasProvider } from './extras';
-import { useIntentPrefetch } from './intent-prefetch';
+import { useIntentPrefetch } from './use-intent-prefetch';
 import { TeamsProvider, useTeams } from '../teams/context';
 import { DriveReconnectBanner, withDriveMarks } from '../drive/DriveMarks';
 import { useDriveMarks } from '../drive/useDriveMarks';
@@ -163,7 +163,7 @@ function ExplorerInner({
   const openNav = useCallback(() => setNavOpenAt(viewKey), [viewKey]);
   const closeNav = useCallback(() => setNavOpenAt(null), []);
   const driveMarks = useDriveMarks(drive);
-  // An item's link pointed at or focused: the host fetches ahead what opening it needs (intent-prefetch.ts).
+  // An item's link pointed at or focused: the host fetches ahead what opening it needs (use-intent-prefetch.ts).
   const root = useRef<HTMLDivElement>(null);
   useIntentPrefetch(root, prefetchItem);
   useArrivedItem(arrivedItem);

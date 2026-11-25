@@ -425,7 +425,8 @@ link for 80 ms (`INTENT_DELAY_MS`), or focus reaching one, hands the host the li
 time, one prefetch runs at a time, and each address is asked for once per page (`PREFETCH_SEEN_MAX`, 500). Nothing
 is asked with Save-Data on, on a 3g or slower connection, on a device with no hovering pointer, or for a touch. The
 host answers null for an address it fetches nothing for (liveworkspace/docs/specs/004-index/one-explorer.md "Cost
-and performance").
+and performance"). The Explorer itself holds only the listeners (`src/explorer/use-intent-prefetch.ts`); the
+prefetcher's code loads with the first intent.
 
 Long lists stay small in the DOM:
 

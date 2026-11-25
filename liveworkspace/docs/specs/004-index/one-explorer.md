@@ -1190,7 +1190,9 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   older one waiting), and each address is asked for once per page (up to 500, then the record starts again). It
   never runs with Save-Data on, on a slow connection (`effectiveType` 3g or slower), on a device with no pointer that
   can hover (`any-hover: none`, a phone or a tablet alone) or for a touch, where the press is the open itself. One
-  pair of listeners on the Explorer's root does it, so rows carry no handler and stay memoised.
+  pair of listeners on the Explorer's root does it (`use-intent-prefetch.ts`), so rows carry no handler and stay
+  memoised; the prefetcher's code loads with the first intent, and the host's warm with the first warm, so neither
+  weighs on the Explorer's first load.
   The page's host (`liveworkspace/apps/site/lib/explorer/item-prefetch.ts`) warms the editor the address opens:
   it fetches the editor's page for that address, without cookies and without the item's share code or place (the
   same static page for every item of the app, its HTML carrying the first render's payload), and adds a low-priority
