@@ -282,3 +282,62 @@ describe('useCanvasPanAndMarquee tap', () => {
     expect(t.onDeselect).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "Marquee box-select" and "Hold Space": a gesture the system takes back
+// (pointercancel, no pointerup) ends there, rather than following a pointer with no button held and landing on the
+// next release.
+describe('useCanvasPanAndMarquee pointercancel', () => {
+  const square = { id: 'a', type: 'shape', shape: 'square', x: 10, y: 10, width: 20, height: 20 };
+  const deps = () => ({
+    viewportZoom: 1,
+    setViewportOffset: vi.fn(),
+    elements: [square] as never,
+    wrapperRef: {
+      current: { getBoundingClientRect: () => ({ left: 0, top: 0, width: 500, height: 500 }) },
+    } as never,
+    onDeselect: vi.fn(),
+    onSelectMarquee: vi.fn(),
+  });
+  const pointer = (type: string, x: number, y = x) =>
+    act(() => {
+      window.dispatchEvent(Object.assign(new Event(type), { clientX: x, clientY: y }));
+    });
+
+  it('ends a marquee with the selection as it was', () => {
+    const d = deps();
+    const hook = renderHook(() => useCanvasPanAndMarquee(d));
+    act(() => hook.result.current.setMarquee({ startX: 0, startY: 0, currentX: 0, currentY: 0 }));
+    pointer('pointermove', 100);
+    pointer('pointercancel', 100);
+    expect(hook.result.current.marquee).toBe(false);
+    pointer('pointerup', 200);
+    expect(d.onSelectMarquee).not.toHaveBeenCalled();
+    expect(d.onDeselect).not.toHaveBeenCalled();
+  });
+
+  it('stops a pan where it got to, with no tap, and stops following the pointer', () => {
+    const d = deps();
+    const onTap = vi.fn();
+    const hook = renderHook(() => useCanvasPanAndMarquee(d));
+    act(() =>
+      hook.result.current.setPan({
+        startClientX: 10,
+        startClientY: 10,
+        startOffsetX: 0,
+        startOffsetY: 0,
+        movedRef: { current: false },
+        onTap,
+      }),
+    );
+    pointer('pointermove', 12);
+    pointer('pointercancel', 12);
+    expect(hook.result.current.pan).toBeNull();
+    expect(d.setViewportOffset).toHaveBeenLastCalledWith({ x: 2, y: 2 });
+    const calls = d.setViewportOffset.mock.calls.length;
+    pointer('pointermove', 80);
+    pointer('pointerup', 80);
+    expect(d.setViewportOffset).toHaveBeenCalledTimes(calls);
+    expect(onTap).not.toHaveBeenCalled();
+    expect(d.onDeselect).not.toHaveBeenCalled();
+  });
+});
