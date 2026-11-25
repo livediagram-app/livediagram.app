@@ -357,25 +357,6 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     publishIdle(point);
   };
 
-  // Portals (docs/specs/009-elements/portal-element.md): drop the character at a point (the far portal's threshold),
-  // without walking there. `arrivedPortalId` is remembered so standing in the exit
-  // portal doesn't immediately trigger it again.
-  // `travel`: a jump to another tab (a lift, stairs, the Directory's Go), whose landing the next entry keeps.
-  const teleportTo = (point: AvatarPoint, arrivedPortalId?: string, travel = false) => {
-    stopWalk();
-    aimRef.current = null;
-    heldRef.current = { ...NO_KEYS_HELD };
-    posRef.current = point;
-    setPos(point);
-    arrivalRef.current = travel ? { at: point, when: performance.now() } : null;
-    arrivedPortalRef.current = arrivedPortalId ?? null;
-    lastUnderFeetRef.current = arrivedPortalId ?? null;
-    // A jump on this tab is told to the room at once (portal-element.md "Travelling"): nothing else would until the
-    // next step or heartbeat, so peers, and the call's hearing, kept the character where it left. Travel says
-    // nothing here: the packet would carry the tab being left.
-    if (!travel && activeRef.current) publishIdle(point);
-  };
-
   // Space: hop, and wave the flag for the hop plus a short tail. Ignored
   // while already airborne so the jump can't be re-triggered mid-flight.
   const jump = () => {
@@ -469,6 +450,25 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     drink,
     setDrink,
   });
+
+  // Portals (docs/specs/009-elements/portal-element.md): drop the character at a point (the far portal's threshold),
+  // without walking there. `arrivedPortalId` is remembered so standing in the exit
+  // portal doesn't immediately trigger it again.
+  // `travel`: a jump to another tab (a lift, stairs, the Directory's Go), whose landing the next entry keeps.
+  const teleportTo = (point: AvatarPoint, arrivedPortalId?: string, travel = false) => {
+    stopWalk();
+    aimRef.current = null;
+    heldRef.current = { ...NO_KEYS_HELD };
+    posRef.current = point;
+    setPos(point);
+    arrivalRef.current = travel ? { at: point, when: performance.now() } : null;
+    arrivedPortalRef.current = arrivedPortalId ?? null;
+    lastUnderFeetRef.current = arrivedPortalId ?? null;
+    // A jump on this tab is told to the room at once (portal-element.md "Travelling"): nothing else would until the
+    // next step or heartbeat, so peers, and the call's hearing, kept the character where it left. Travel says
+    // nothing here: the packet would carry the tab being left.
+    if (!travel && activeRef.current) publishIdle(point);
+  };
 
   // Carried with a seat, and arriving on a piece (useAvatarWalkArrivals.ts).
   useAvatarWalkArrivals({
