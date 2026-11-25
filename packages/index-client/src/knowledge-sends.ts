@@ -309,7 +309,8 @@ function readSource(v: unknown): KnowledgeSendSource | null {
   const tabId = v.tabId === null || v.tabId === undefined ? null : idOf(v.tabId);
   if (!itemId || (v.tabId && !tabId) || !Array.isArray(v.elementIds)) return null;
   const elementIds = [...new Set(v.elementIds.map(idOf))].filter((x): x is string => x !== null);
-  if (elementIds.length === 0 || elementIds.length > KNOWLEDGE_SEND_ITEMS_MAX) return null;
+  // None for words sent as written (an Ask AI answer): the item itself is the place.
+  if (elementIds.length > KNOWLEDGE_SEND_ITEMS_MAX) return null;
   return { app: v.app, itemId, tabId, elementIds };
 }
 

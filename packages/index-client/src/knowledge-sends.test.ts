@@ -181,6 +181,14 @@ describe('readKnowledgeSendAsk', () => {
     expect(read?.picture).toBeUndefined();
   });
 
+  it('reads words sent as written (an Ask AI answer): the item alone, no tab and no element', () => {
+    const read = readKnowledgeSendAsk({
+      ...ask,
+      source: { ...source, tabId: null, elementIds: [] },
+    });
+    expect(read?.source).toEqual({ ...source, tabId: null, elementIds: [] });
+  });
+
   it('refuses what does not read', () => {
     expect(readKnowledgeSendAsk(null)).toBeNull();
     expect(readKnowledgeSendAsk({ ...ask, markdown: '  ' })).toBeNull();
@@ -189,7 +197,12 @@ describe('readKnowledgeSendAsk', () => {
     expect(readKnowledgeSendAsk({ ...ask, place: { page: 'p', after: 5 } })).toBeNull();
     expect(readKnowledgeSendAsk({ ...ask, place: {} })).toBeNull();
     expect(readKnowledgeSendAsk({ ...ask, source: { ...source, app: 'nope' } })).toBeNull();
-    expect(readKnowledgeSendAsk({ ...ask, source: { ...source, elementIds: [] } })).toBeNull();
+    expect(
+      readKnowledgeSendAsk({
+        ...ask,
+        source: { ...source, elementIds: Array.from({ length: 81 }, (_, i) => `e${i}`) },
+      }),
+    ).toBeNull();
     expect(readKnowledgeSendAsk({ ...ask, source: { ...source, elementIds: 'a' } })).toBeNull();
     expect(
       readKnowledgeSendAsk({
