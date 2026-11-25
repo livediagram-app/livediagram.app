@@ -216,6 +216,29 @@ describe('applyMindMoves', () => {
     // The unlocked node still moves.
     expect(box(out, 'b')).not.toMatchObject({ x: 350, y: 700 });
   });
+
+  // A node (or connector) on a locked layer is held by id: the product resolves its layers.
+  it('leaves a node and a connector on a locked layer where they are', () => {
+    const arrow = createPinnedArrow('r', 's', 'a', 'n');
+    const els: Element[] = [
+      node('r', undefined, { x: 0, y: 0 }),
+      node('a', 'r', { x: 900, y: -400 }),
+      node('b', 'r', { x: 350, y: 700 }),
+      arrow,
+    ];
+    const plan = relayoutMindMap(els, 'b')!;
+    expect(plan.moves.map((m) => m.id)).toContain('a');
+    const held = new Set(['a', arrow.id]);
+    const out = applyMindMoves(
+      els,
+      plan.moves,
+      [...plan.reanchored, { ...arrow, from: { ...arrow.from, anchor: 'e' } } as ArrowElement],
+      held,
+    );
+    expect(box(out, 'a')).toMatchObject({ x: 900, y: -400 });
+    expect(out.find((e) => e.id === arrow.id)).toBe(arrow);
+    expect(box(out, 'b')).not.toMatchObject({ x: 350, y: 700 });
+  });
 });
 
 describe('withMindSubtrees', () => {

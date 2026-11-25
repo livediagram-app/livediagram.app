@@ -25,6 +25,7 @@ import {
   type SelectionMode,
   type CodeLanguage,
   type Element,
+  type Layer,
   type ProgressAnim,
   type ShapeElement,
 } from '@livediagram/document';
@@ -42,6 +43,8 @@ type DataShapeSetterDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // For Tidy Map's notification (useMindMapSetters).
   elements: () => Element[];
+  // The active tab's layers, for Tidy Map (useMindMapSetters).
+  layers?: () => Layer[] | undefined;
   notify: (tone: 'success' | 'info', message: string) => void;
 };
 
@@ -55,6 +58,7 @@ export function useDataShapeSetters({
   currentSelectionIds,
   commit,
   elements,
+  layers,
   notify,
 }: DataShapeSetterDeps) {
   // Progress elements (docs/specs/009-elements/progress.md): the percentage + how its fill animates, all
@@ -304,7 +308,7 @@ export function useDataShapeSetters({
   // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
   // Mind map flow + Tidy Map (docs/specs/009-elements/mind-node.md) — see useMindMapSetters.
-  const mindSetters = useMindMapSetters({ currentSelectionIds, commit, elements, notify });
+  const mindSetters = useMindMapSetters({ currentSelectionIds, commit, elements, layers, notify });
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) — see useWebComponentSetters.
   const webSetters = useWebComponentSetters({ currentSelectionIds, commit, elements });
 

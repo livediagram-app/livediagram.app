@@ -12,56 +12,56 @@ import { popGroup } from '@liveworkspace/template-previews/story-parts';
 export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'mindmap':
-      // A bold round topic, five branches each in its own hue (card and
-      // connector alike), two white leaves edged in the branch's hue.
+      // A bold round topic with its branches dealt to both sides (the balanced flow), each in its
+      // own hue (card and connector alike), two white leaves edged in the branch's hue.
       return (
         <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
           {[
             {
-              b: [17, 15],
+              b: [22, 15],
               l: [
-                [6, 6],
-                [6, 24],
+                [8, 12],
+                [8, 18],
               ],
               c: 'rgb(16 185 129)',
               f: 'rgb(209 250 229)',
               e: 'rgb(110 231 183)',
             },
             {
-              b: [40, 7],
+              b: [58, 9],
               l: [
-                [26, 2.5],
-                [54, 2.5],
+                [73, 6],
+                [73, 12],
               ],
               c: 'rgb(14 165 233)',
               f: 'rgb(224 242 254)',
               e: 'rgb(125 211 252)',
             },
             {
-              b: [63, 15],
+              b: [58, 25],
               l: [
-                [74, 7],
-                [74, 23],
+                [73, 22],
+                [73, 28],
               ],
               c: 'rgb(139 92 246)',
               f: 'rgb(237 233 254)',
               e: 'rgb(196 181 253)',
             },
             {
-              b: [60, 37],
+              b: [58, 41],
               l: [
-                [74, 44],
-                [48, 46],
+                [73, 38],
+                [73, 44],
               ],
               c: 'rgb(245 158 11)',
               f: 'rgb(254 243 199)',
               e: 'rgb(252 211 77)',
             },
             {
-              b: [20, 37],
+              b: [22, 35],
               l: [
-                [7, 44],
-                [31, 46],
+                [8, 32],
+                [8, 38],
               ],
               c: 'rgb(244 63 94)',
               f: 'rgb(255 228 230)',
@@ -110,10 +110,10 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
           <line
             className="pv-new"
             opacity="0"
-            x1="63"
-            y1="15"
-            x2="72"
-            y2="31"
+            x1="58"
+            y1="25"
+            x2="73"
+            y2="34"
             stroke="rgb(196 181 253)"
             strokeWidth="0.7"
             style={pv({ '--pv-at': '1700ms' })}
@@ -121,15 +121,15 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
           <rect
             className="pv-arrive"
             opacity="0"
-            x="67"
-            y="29"
+            x="68"
+            y="32"
             width="10"
             height="4"
             rx="1"
             fill="white"
             stroke="rgb(139 92 246)"
             strokeWidth="0.7"
-            style={pv({ '--pv-from-x': '-9px', '--pv-from-y': '-14px', '--pv-at': '900ms' })}
+            style={pv({ '--pv-from-x': '-10px', '--pv-from-y': '-8px', '--pv-at': '900ms' })}
           />
         </svg>
       );

@@ -58,6 +58,8 @@ export function buildMindMap(cx: number, cy: number): Element[] {
         colorPreset: 'bold',
         borderRadius: 'full',
         richText: rootRuns,
+        // Wide gaps: the nucleus is large and the branches carry leaves (mind-node.md "Spacing").
+        mindSpacing: 'wide',
       },
       children: OFFSITE_BRANCHES.map((b, i) => {
         const hue = MIND_HUES[i % MIND_HUES.length]!;
@@ -92,7 +94,7 @@ export function buildMindMap(cx: number, cy: number): Element[] {
         };
       }),
     },
-    'bubble',
+    'balanced',
     cx,
     cy,
   );

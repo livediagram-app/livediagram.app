@@ -7,6 +7,7 @@ import {
   createShape,
   relayoutMindMap,
   type Element,
+  type Layer,
   type ShapeElement,
 } from '@livediagram/document';
 import { useMindMapSetters } from './useMindMapSetters';
@@ -31,7 +32,7 @@ function map(): Element[] {
   ];
 }
 
-function setters(elements: Element[]) {
+function setters(elements: Element[], layers?: Layer[]) {
   const notify = vi.fn();
   let committed: Element[] | null = null;
   const { result } = renderHook(() =>
@@ -41,6 +42,7 @@ function setters(elements: Element[]) {
         committed = fn(elements);
       },
       elements: () => elements,
+      layers: () => layers,
       notify,
     }),
   );
@@ -85,6 +87,47 @@ describe('Tidy Map', () => {
     api.setMindFlowSelected('downward');
     const a = committed()!.find((e) => e.id === 'a') as ShapeElement;
     expect(a).toMatchObject({ x: 0, y: 0 });
+  });
+});
+
+// mind-node.md "Tidy Map": nodes on a locked layer stay put too, and the notice counts them.
+describe('Tidy Map on a locked layer', () => {
+  const layers: Layer[] = [
+    { id: 'base', name: 'Base' },
+    { id: 'frozen', name: 'Frozen', locked: true },
+  ];
+  const strayOnFrozen = () => {
+    const messy = map();
+    const plan = relayoutMindMap(messy, 'root')!;
+    return applyMindMoves(messy, plan.moves, plan.reanchored).map((el) =>
+      el.id === 'a' ? { ...el, x: (el as ShapeElement).x + 300, layerId: 'frozen' } : el,
+    );
+  };
+
+  it('keeps the node where it is and counts it', () => {
+    const { api, notify, committed } = setters(strayOnFrozen(), layers);
+    api.tidyMindMap('root');
+    expect(notify).toHaveBeenCalledWith('info', 'Map already tidy, 1 node held by a locked layer');
+    expect(committed()).toBeNull();
+  });
+
+  it('tidies the rest of the map and still counts the held node', () => {
+    const els = strayOnFrozen().map((el) =>
+      el.id === 'b' ? { ...el, y: (el as ShapeElement).y + 500 } : el,
+    );
+    const { api, notify, committed } = setters(els, layers);
+    api.tidyMindMap('root');
+    const out = committed()!;
+    expect(out.find((e) => e.id === 'a')).toBe(els.find((e) => e.id === 'a'));
+    expect(out.find((e) => e.id === 'b')).not.toBe(els.find((e) => e.id === 'b'));
+    expect(notify).toHaveBeenCalledWith('success', 'Map tidied, 1 node held by a locked layer');
+  });
+
+  it('moves the node once its layer is unlocked', () => {
+    const open = layers.map((l) => ({ ...l, locked: false }));
+    const { api, notify } = setters(strayOnFrozen(), open);
+    api.tidyMindMap('root');
+    expect(notify).toHaveBeenCalledWith('success', 'Map tidied');
   });
 });
 

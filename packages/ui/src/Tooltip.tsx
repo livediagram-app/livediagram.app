@@ -9,6 +9,9 @@ export type TooltipProps = {
   // The control's name: the same words as its aria-label or visible text.
   label: string;
   children: ReactElement;
+  // The control this tooltip names holds keyboard focus outside it (a row whose cut-off title it wraps): it opens as
+  // focus on the control itself would. Absent, only focus inside the wrapper opens it.
+  focused?: boolean | undefined;
 };
 
 // A tooltip: the control's name, after an 800 ms hover or at once on keyboard
@@ -17,9 +20,10 @@ export type TooltipProps = {
 //
 // The wrapper is `display: contents`, so the control keeps its place in any
 // grid or flex layout and callers need no layout props.
-export function Tooltip({ label, children }: TooltipProps) {
+export function Tooltip({ label, children, focused }: TooltipProps) {
   const { open, attach, anchor, triggerProps, surfaceProps } = useHint('tooltip', {
     quiet: (el) => showsOwnName(el, label),
+    focusHeld: focused,
   });
 
   useEffect(() => {

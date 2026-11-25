@@ -290,19 +290,21 @@ export function mindGrowFor<E extends ModelElement>(deps: MindGrowDeps<E>) {
    * committed a moment earlier (the one typed before Tab) is never overwritten by
    * the copy the plan was computed from. A locked node keeps its place and a locked
    * connector its faces, whatever re-lays the map (docs/specs/009-elements/mind-node.md
-   * "Tidy Map"): the lock holds wherever the change comes from.
+   * "Tidy Map"): the lock holds wherever the change comes from. `held` is the ids of the elements on
+   * a locked layer (the product's `lockedLayerElementIds`): they keep their place and faces too.
    */
   function applyMindMoves(
     elements: Element[],
     moves: readonly MindMove[],
     reanchored: readonly ArrowElement[] = [],
+    held?: ReadonlySet<ElementId>,
   ): Element[] {
     if (moves.length === 0 && reanchored.length === 0) return elements;
     const at = new Map(moves.map((m) => [m.id, m]));
     const faces = new Map(reanchored.map((a) => [a.id, a]));
     return elements.map((el) => {
       const m = at.get(el.id);
-      if (el.locked === true) return el;
+      if (el.locked === true || held?.has(el.id)) return el;
       if (m && isMindNode(el)) return { ...el, x: m.x, y: m.y };
       const a = faces.get(el.id);
       if (a && el.type === 'arrow' && el.from.kind === 'pinned' && el.to.kind === 'pinned') {

@@ -123,9 +123,16 @@ const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 // control already says what it is); a comment's reaction chip sets it, since its text is an emoji and a count and
 // the card is the only way to learn who reacted on a phone.
 // `quiet`: asked on every open; true keeps the hint shut (a tooltip whose control already shows its name).
+// `focusHeld`: the control the hint belongs to holds focus outside the wrapper (a tree row whose title the wrapper
+// holds, a list row's stretched button): it opens as keyboard focus opens it, and settles when it turns false
+// (liveworkspace/docs/specs/011-workbench/sidebar-width.md "Cut-off names").
 export function useHint(
   kind: HintKind,
-  opts: { pressWithText?: boolean; quiet?: (anchor: Element) => boolean } = {},
+  opts: {
+    pressWithText?: boolean;
+    quiet?: (anchor: Element) => boolean;
+    focusHeld?: boolean | undefined;
+  } = {},
 ): HintState {
   const pressWithText = opts.pressWithText === true;
   const quietRef = useRef(opts.quiet);
@@ -294,6 +301,21 @@ export function useHint(
     onDoubleClick: stop,
     onContextMenu: stop,
   };
+
+  const focusHeld = opts.focusHeld;
+  useEffect(() => {
+    if (focusHeld === undefined) return;
+    const m = machine.current;
+    if (focusHeld) {
+      const active = (m.wrapper?.ownerDocument ?? document).activeElement;
+      if (focusIsPlaced() || (active && !isFocusVisible(active))) return;
+      m.focused = true;
+      if (!m.dismissed) show('focus');
+    } else if (m.focused) {
+      m.focused = false;
+      settle();
+    }
+  }, [focusHeld, show, settle]);
 
   const open = source !== null;
 

@@ -48,9 +48,11 @@ describe('mind map template', () => {
     }
   });
 
-  it('is a tidy mind map in the bubble flow, so Tab and Enter keep it tidy', () => {
-    expect(root.mindFlow).toBe('bubble');
-    const layout = layoutMindTree(nodes, root.id, 'bubble');
+  // mind-node.md "Templates": the template starts balanced, with wide spacing; Bubble stays a pick.
+  it('is a tidy mind map in the balanced flow at wide spacing, so Tab and Enter keep it tidy', () => {
+    expect(root.mindFlow).toBe('balanced');
+    expect(root.mindSpacing).toBe('wide');
+    const layout = layoutMindTree(nodes, root.id, 'balanced');
     const dx = root.x - layout.get(root.id)!.x;
     const dy = root.y - layout.get(root.id)!.y;
     for (const n of nodes) {

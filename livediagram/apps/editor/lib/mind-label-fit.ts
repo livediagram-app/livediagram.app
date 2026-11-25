@@ -42,8 +42,9 @@ export function fitMindLabel(
   elements: Element[],
   id: ElementId,
   measureFor: (el: ShapeElement) => MeasureTextBlock,
+  held?: ReadonlySet<ElementId>,
 ): Element[] {
   const el = elements.find((e) => e.id === id);
   if (!el || !isMindNode(el)) return elements;
-  return fitMindNodeHeight(elements, id, mindLabelHeight(el, measureFor(el)));
+  return fitMindNodeHeight(elements, id, mindLabelHeight(el, measureFor(el)), held);
 }

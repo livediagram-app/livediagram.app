@@ -11,9 +11,15 @@ import type { Element, ElementId } from './index';
  * `elements` with mind node `id` at least `height` tall (rounded up to a whole pixel). Grows
  * only: a node already that tall comes back unchanged, as the same array. The node grows downward
  * (its top stays put); a map that was tidy before is laid out again around it, so siblings never
- * overlap it, while a hand-arranged map is left where it is.
+ * overlap it, while a hand-arranged map is left where it is. `held` is the ids on a locked layer,
+ * which keep their place.
  */
-export function fitMindNodeHeight(elements: Element[], id: ElementId, height: number): Element[] {
+export function fitMindNodeHeight(
+  elements: Element[],
+  id: ElementId,
+  height: number,
+  held?: ReadonlySet<ElementId>,
+): Element[] {
   const node = elements.find((el) => el.id === id);
   if (!node || !isMindNode(node) || !Number.isFinite(height)) return elements;
   const target = Math.ceil(height);
@@ -23,5 +29,5 @@ export function fitMindNodeHeight(elements: Element[], id: ElementId, height: nu
   const grown = elements.map((el) => (el.id === id ? { ...el, height: target } : el));
   if (!wasTidy) return grown;
   const plan = relayoutMindMap(grown, id);
-  return plan ? applyMindMoves(grown, plan.moves, plan.reanchored) : grown;
+  return plan ? applyMindMoves(grown, plan.moves, plan.reanchored, held) : grown;
 }

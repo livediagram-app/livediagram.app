@@ -8,13 +8,14 @@ import {
   Fragment,
   memo,
   useId,
+  useState,
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
 import { lucideGripVertical, lucideLock } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@liveworkspace/ui';
+import { lucideGlyph, Tooltip } from '@liveworkspace/ui';
 import { htmlProps } from '@liveworkspace/trusted-types';
 import { DropCaret } from '../primitives/DropCaret';
 import { ContentsVeil, veiledPictureClass } from './ContentsVeil';
@@ -32,14 +33,26 @@ import type { ContentsRowBase, ContentsThumb, ContentsThumbPart } from '../../li
 import type { PageContents } from '../../hooks/ui/usePageContents';
 
 const LockIcon = lucideGlyph(lucideLock, 12);
+
+// Keyboard focus shows the ring; a press's focus does not (an engine without :focus-visible counts every focus).
+function focusVisible(el: Element): boolean {
+  try {
+    return el.matches(':focus-visible');
+  } catch {
+    return true;
+  }
+}
 const GripIcon = lucideGlyph(lucideGripVertical, 14);
 
 // The popover's rows: a thumbnail this tall, its width following the page's shape, up to LIST_MAX_W.
 const LIST_THUMB_H = 52;
 const LIST_MAX_W = 92;
-// The sidebar's filmstrip: a picture as wide as the column, up to this tall (a portrait page).
+// The sidebar's filmstrip: a picture as wide as the column, up to this tall (a portrait page), at the base width. The
+// docked sidebar sets the column as `--contents-film-w` (its width less CONTENTS_FILM_INSET), and the picture and the
+// name scale with it: a wider sidebar draws larger pictures and longer names, with no row rendering.
 const FILM_MAX_W = 172;
 const FILM_MAX_H = 124;
+const FILM_W = `var(--contents-film-w, ${FILM_MAX_W}px)`;
 
 /** Contents' state as the list reads it: none of it depends on the editor's page or Add Page types. */
 export type ContentsListState<R extends ContentsRowBase> = Pick<
@@ -248,6 +261,8 @@ const ContentsRow = memo(function ContentsRow<R extends ContentsRowBase>({
 }: ContentsRowProps<R>) {
   const id = row.id;
   const actions = actionsFor(row);
+  // The row's button holds keyboard focus: a name cut off shows whole in its tooltip (sidebar-width.md "Cut-off names").
+  const [keyFocus, setKeyFocus] = useState(false);
   const asideId = row.setAside ? `${uid}-aside-${id}` : undefined;
   const Row = variant === 'film' ? FilmRow : ListRow;
   // The menu as the row's ⋯ reads it: open on this page or not, and the list's one menu behind it.
@@ -299,6 +314,8 @@ const ContentsRow = memo(function ContentsRow<R extends ContentsRowBase>({
           e.stopPropagation();
           on.go(row, e.timeStamp);
         }}
+        onFocus={(e) => setKeyFocus(focusVisible(e.currentTarget))}
+        onBlur={() => setKeyFocus(false)}
         className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
       />
       {asideId ? (
@@ -311,6 +328,7 @@ const ContentsRow = memo(function ContentsRow<R extends ContentsRowBase>({
         here={here}
         thumb={thumb}
         badges={badges?.(row)}
+        nameFocused={keyFocus}
         tools={
           variant === 'film' ? (
             actions ? (
@@ -351,6 +369,8 @@ const FILM_ROW_CLASS = (here: boolean) =>
 
 type RowProps = {
   row: ContentsRowBase;
+  // The row holds keyboard focus: its name's tooltip opens if the name is cut off.
+  nameFocused: boolean;
   here: boolean;
   thumb: ContentsThumb | undefined;
   // The editor's own marks after the name.
@@ -370,6 +390,7 @@ function Picture({
   here,
   large,
   aside = false,
+  fluid,
 }: {
   thumb: ContentsThumb | undefined;
   w: number;
@@ -377,6 +398,8 @@ function Picture({
   here: boolean;
   large?: boolean;
   aside?: boolean;
+  // The filmstrip's picture sizes from the column (`--contents-film-w`) rather than from `w` and `h`.
+  fluid?: CSSProperties | undefined;
 }) {
   return (
     <span
@@ -390,14 +413,14 @@ function Picture({
             ? 'outline-1 outline-offset-0 outline-dashed outline-slate-400 dark:outline-slate-500'
             : 'shadow-sm ring-1 ring-slate-900/10 group-hover:shadow-md group-hover:ring-slate-900/20 dark:ring-white/15 dark:group-hover:ring-white/30'
       }`}
-      style={{ width: w, height: h }}
+      style={fluid ?? { width: w, height: h }}
     >
       {thumb ? (
         <svg
           aria-hidden
           className={veiledPictureClass(aside)}
-          width={w}
-          height={h}
+          width={fluid ? '100%' : w}
+          height={fluid ? '100%' : h}
           viewBox={thumb.viewBox}
           preserveAspectRatio="xMidYMid slice"
           // The editor's own renderer's output (every label is xmlEscaped inside it).
@@ -426,20 +449,30 @@ function NameLine({
   row,
   badges,
   small,
+  focused,
 }: {
   row: ContentsRowBase;
   badges: ReactNode;
   small?: boolean;
+  focused: boolean;
 }) {
   return (
     <span className="flex h-6 min-w-0 items-center gap-1.5">
-      <span
-        className={`truncate font-medium transition-colors ${
-          row.setAside ? 'text-slate-500 dark:text-slate-400' : 'text-slate-800 dark:text-slate-100'
-        } ${small ? 'text-xs' : 'text-sm'}`}
-      >
-        {row.name}
-      </span>
+      {/* A name cut off shows whole in a tooltip, on hover and on the row's keyboard focus; a whole one stays quiet.
+          Raised over the row's stretched button, as its tools are, so the pointer reaches it; a press on it still
+          bubbles to the row, which opens the page. */}
+      <Tooltip label={row.name} focused={focused}>
+        <span
+          data-contents-name=""
+          className={`relative z-10 truncate font-medium transition-colors ${
+            row.setAside
+              ? 'text-slate-500 dark:text-slate-400'
+              : 'text-slate-800 dark:text-slate-100'
+          } ${small ? 'text-xs' : 'text-sm'}`}
+        >
+          {row.name}
+        </span>
+      </Tooltip>
       {badges}
       {row.locked ? (
         <span role="img" className="shrink-0 text-slate-400" aria-label="Locked">
@@ -450,7 +483,7 @@ function NameLine({
   );
 }
 
-function ListRow({ row, here, thumb, badges, tools, grip }: RowProps) {
+function ListRow({ row, here, thumb, badges, tools, grip, nameFocused }: RowProps) {
   const w = Math.min(LIST_MAX_W, Math.round(LIST_THUMB_H * row.aspect));
   const h = Math.round(w / row.aspect);
   return (
@@ -473,16 +506,18 @@ function ListRow({ row, here, thumb, badges, tools, grip }: RowProps) {
         <Picture thumb={thumb} w={w} h={h} here={here} aside={!!row.setAside} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <NameLine row={row} badges={badges} />
+        <NameLine row={row} badges={badges} focused={nameFocused} />
       </span>
       {grip}
     </>
   );
 }
 
-function FilmRow({ row, here, thumb, badges, tools }: RowProps) {
+function FilmRow({ row, here, thumb, badges, tools, nameFocused }: RowProps) {
   const w = Math.min(FILM_MAX_W, Math.round(FILM_MAX_H * row.aspect));
   const h = Math.round(w / row.aspect);
+  // The picture's share of the column, so it scales with the sidebar and keeps the page's shape.
+  const fluid = { width: `calc(${FILM_W} * ${w / FILM_MAX_W})`, aspectRatio: `${w} / ${h}` };
   return (
     <>
       <span className="flex w-6 shrink-0 flex-col items-center gap-1 pt-0.5">
@@ -495,15 +530,19 @@ function FilmRow({ row, here, thumb, badges, tools }: RowProps) {
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
         {/* A page narrower than the slot (a portrait page, a card) sits in its middle, not at its left. */}
-        <span
-          className="flex justify-center"
-          data-contents-film-frame=""
-          style={{ width: FILM_MAX_W }}
-        >
-          <Picture thumb={thumb} w={w} h={h} here={here} large aside={!!row.setAside} />
+        <span className="flex justify-center" data-contents-film-frame="" style={{ width: FILM_W }}>
+          <Picture
+            thumb={thumb}
+            w={w}
+            h={h}
+            here={here}
+            large
+            aside={!!row.setAside}
+            fluid={fluid}
+          />
         </span>
-        <span className="flex min-w-0 flex-col pl-0.5" style={{ width: FILM_MAX_W }}>
-          <NameLine row={row} badges={badges} small />
+        <span className="flex min-w-0 flex-col pl-0.5" style={{ width: FILM_W }}>
+          <NameLine row={row} badges={badges} small focused={nameFocused} />
         </span>
       </span>
     </>
