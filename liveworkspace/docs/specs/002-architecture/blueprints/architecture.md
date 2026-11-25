@@ -240,10 +240,10 @@ Each product's API Worker (`<product>-api`, `-staging`) binds `ACCOUNTS` to `liv
 when a binding is missing, throws or takes over 2 s (`BOUND_KEYS_TIMEOUT_MS`), as on a local run without that service.
 
 Each product's API Worker and media also read the four subscription vars (`SubscriptionEnv` in
-`packages/subscription`): `PRO_ENABLED` (`"false"` in every `[vars]`), the secret `SUBSCRIPTION_KEY`,
-`SUBSCRIPTION_URL` (staging's own in `[env.staging.vars]`) and the `SUBSCRIPTION` binding to
-`liveworkspace-subscription` (`-staging`). The binding is written in each `wrangler.toml` but commented out until
-the subscription Worker is deployed, because a binding to a Worker that does not exist fails the deploy; without it
+`packages/subscription`): `PRO_ENABLED` (`"false"` in every `[vars]`; our staging deploys turn it on, `PRO_ON` in
+`.github/scripts/deploy-group.mjs`), the secret `SUBSCRIPTION_KEY`, `SUBSCRIPTION_URL` (staging's own in
+`[env.staging.vars]`) and the `SUBSCRIPTION` binding to `liveworkspace-subscription` (`-staging`). Staging's binding is
+on; production's is written in each `wrangler.toml` but commented out until the production Worker is deployed, because a binding to a Worker that does not exist fails the deploy; without it
 the client fetches the public route. The subscription Worker deploys like any other; its first production deploy
 creates its database ([019-subscription/blueprints](../../019-subscription/blueprints/README.md#before-the-first-deploy)).
 

@@ -377,8 +377,8 @@ binding = "INDEX"
 service = "liveworkspace-index-staging"
 
 # The subscription service (liveworkspace/docs/specs/019-subscription/subscription.md), for entitlements and spends.
-# COMMENTED OUT until `liveworkspace-subscription-staging` is deployed: a binding to a Worker that does not exist fails
-# this Worker's deploy. Without it the client fetches the service's public route (SUBSCRIPTION_URL).
-# [[env.staging.services]]
-# binding = "SUBSCRIPTION"
-# service = "liveworkspace-subscription-staging"
+# On for staging, where `liveworkspace-subscription-staging` is deployed. Pro itself is switched on for our own
+# staging deploys by the deploy (PRO_ON in .github/scripts/deploy-group.mjs), not here.
+[[env.staging.services]]
+binding = "SUBSCRIPTION"
+service = "liveworkspace-subscription-staging"
