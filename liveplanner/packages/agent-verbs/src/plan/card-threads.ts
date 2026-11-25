@@ -352,12 +352,12 @@ export async function applyThreadChanges(
         case 'edit': {
           const t = thread(change.thread);
           const id = ownComment(change.comment, t).id;
-          const out = await post(
+          // The same text again (the api trims it) answers 204, nothing: the thread as it was.
+          const { body } = await api.text(
             `${threadPath(projectId, t.id)}/comments/${encodeURIComponent(id)}`,
-            { text: change.text },
-            'PUT',
+            { method: 'PUT', body: JSON.stringify({ text: change.text }) },
           );
-          keep(out.thread, t.id);
+          if (body) keep((JSON.parse(body) as CardThreadWriteResponse).thread, t.id);
           applied.push(`~ comment ${id} on "${t.title}"`);
           break;
         }

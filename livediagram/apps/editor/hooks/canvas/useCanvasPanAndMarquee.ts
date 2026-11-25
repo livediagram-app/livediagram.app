@@ -222,12 +222,20 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       if (!pan.movedRef.current) (pan.onTap ?? depsRef.current.onDeselect)();
       setPan(null);
     };
+    // A pointer the system took back (a touch interrupted) ends with `pointercancel` and no `pointerup`: the pan
+    // stops where it got to and is no tap, rather than following a pointer with no button held.
+    const onCancel = () => {
+      if (pending) depsRef.current.setViewportOffset(pending);
+      setPan(null);
+    };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
     };
   }, [depsRef, pan]);
 
@@ -326,12 +334,16 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       }
       setMarquee(null);
     };
+    // Taken back by the system (`pointercancel`): the marquee ends there and the selection stays as it was.
+    const onCancel = () => setMarquee(null);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
     };
   }, [depsRef, marqueeing, marqueeStore, setMarquee]);
 

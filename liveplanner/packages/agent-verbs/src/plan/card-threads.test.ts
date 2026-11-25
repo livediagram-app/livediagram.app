@@ -371,6 +371,28 @@ describe('changing threads', () => {
     ]);
   });
 
+  it('edits its own comment to the text it already holds (204) and goes on', async () => {
+    const { api } = writes((_method, path) =>
+      path.endsWith('/comments/cm-agent1')
+        ? new Response(null, { status: 204 })
+        : Response.json({ thread: T1, commentId: 'cm-2' }),
+    );
+    const out = await applyThreadChanges(
+      api,
+      P,
+      [
+        { op: 'edit', thread: T1.id, comment: 'cm-agent1', text: 'text of cm-agent1 ' },
+        { op: 'reply', thread: T1.id, text: 'Next' },
+      ],
+      STATE,
+    );
+    expect(out.refusal).toBeUndefined();
+    expect(out.applied).toEqual([
+      `~ comment cm-agent1 on "${T1.title}"`,
+      `+ comment cm-2 on "${T1.title}"`,
+    ]);
+  });
+
   it('refuses to edit or delete a comment a person wrote, sending nothing', async () => {
     const { api, sent } = writes(() => Response.json({ thread: T1 }));
     for (const change of [
