@@ -33,7 +33,10 @@ One shared helper makes it, so every app says it the same way (`useUndoableActio
   (the server refuses), an error toast says so.
 - Accessibility: the toast is a polite live region (`role="status"`), so the sentence and its Undo are announced; the
   Undo button is a real button in the page's tab order with an accessible name that says what it undoes ("Undo
-  deleting Layer 2"); Escape or the close button dismisses it.
+  deleting Layer 2"); Escape or the close button dismisses it. **F6** reaches it from anywhere, a focus-trapping
+  panel included (Tools, a phone's drawer), says so to a screen reader, and hands focus back once it is used; an Escape
+  that closes a panel never takes the toast with it ([Toasts](../016-notifications/toasts.md) "Keyboard and screen
+  readers"). It stands beside an open Tools popover, never over its controls.
 
 ## Undo through the room, never a stale copy
 

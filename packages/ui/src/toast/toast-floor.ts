@@ -12,7 +12,11 @@ export const BOTTOM_CHROME_SELECTOR =
 
 /** Bottom chrome the stack clears: the editor's, a template start's foot row (the Save switch, on a phone sheet), plus
  *  anything that opts in with `data-toast-floor` (the Explorer's bottom bar, a popover opened up from the bottom chrome). */
-export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], [data-toast-side], [data-toast-start], ${BOTTOM_CHROME_SELECTOR}`;
+export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], [data-toast-side], [data-toast-beside], [data-toast-start], ${BOTTOM_CHROME_SELECTOR}`;
+
+/** A popover risen above a footer button (Tools): from 640px the stack stands left of it, however tall it is, on the
+ *  cluster's line, so a toast never covers a control in it (its footer's Present). */
+export const TOAST_BESIDE_SELECTOR = '[data-toast-beside]';
 
 /** A column whose left edge the stack aligns to, from 640px, while it stands on a side's line (liveknowledge's page
  *  column: its toasts sit at the page's left, level with Edit and Zen, owner 2026-11-22). Never a floor. */
@@ -55,6 +59,8 @@ export type FloorRect = {
   rises?: boolean;
   // A floor on a phone only (TOAST_PHONE_FLOOR_SELECTOR): from 640px it is not bottom chrome.
   phoneOnly?: boolean;
+  // A popover the stack stands beside, never above (TOAST_BESIDE_SELECTOR).
+  beside?: boolean;
 };
 
 /** Floors that count on a phone alone: a template start's foot row, which is the screen's foot only where the start
@@ -115,7 +121,11 @@ export function toastPlacement(input: {
   const { viewportWidth: w, viewportHeight: h, floors, sides, start = null } = input;
   if (w <= TOAST_PHONE_MAX_PX) {
     return {
-      bottom: toastFloor({ viewportWidth: w, viewportHeight: h, obstacles: [...floors, ...sides] }),
+      bottom: toastFloor({
+        viewportWidth: w,
+        viewportHeight: h,
+        obstacles: [...floors, ...sides.map((r) => (r.beside ? { ...r, rises: true } : r))],
+      }),
       right: null,
     };
   }
@@ -131,10 +141,12 @@ export function toastPlacement(input: {
   let onLine = false;
   for (const r of sides) {
     if (r.width <= 0 || r.height <= 0) continue;
-    if (r.top >= h || r.top < h / 2) continue;
-    // On the cluster's line wherever it is: a centred toast 8px lower than Undo read as out of line.
-    bottom = Math.max(bottom, h - (r.top + r.height));
-    onLine = true;
+    if (r.top >= h || (r.top < h / 2 && !r.beside)) continue;
+    if (!r.beside) {
+      // On the cluster's line wherever it is: a centred toast 8px lower than Undo read as out of line.
+      bottom = Math.max(bottom, h - (r.top + r.height));
+      onLine = true;
+    }
     if (r.right <= left || r.left >= right) continue;
     edge = Math.max(edge ?? 0, w - r.left + TOAST_FLOOR_GAP_PX);
   }

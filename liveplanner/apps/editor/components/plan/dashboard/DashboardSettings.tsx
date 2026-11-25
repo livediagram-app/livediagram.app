@@ -5,7 +5,7 @@
 // Dashboard Setup (its name, Add Row, Clear Dashboard), Background (plain or tinted, as two swatches) and Layouts
 // (start over from one, drawn small), built from the same parts as a Sheet's Sheet Settings; each change one undo
 // step; starting over and clearing act at once, with Undo in a toast (undo-not-confirm.md).
-import { useState, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DASHBOARD_PRESETS,
@@ -92,12 +92,16 @@ export function DashboardSettings({
     <div
       data-dashboard-settings
       data-floating-panel=""
+      // It stands left of the top-right corner card (Share, Sign In; EditorCornerActions' --corner-card-span, in
+      // screen px, so divided by the scale), which otherwise covers it. With no card the span is 0.
       style={
-        scale === 1
-          ? undefined
-          : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), right: toSurfacePx(12, scale) }
+        {
+          ...(scale === 1 ? {} : uiScaleStyle(scale)),
+          '--cog-edge': `${toSurfacePx(12, scale)}px`,
+          '--cog-zoom': scale,
+        } as CSSProperties
       }
-      className={`pointer-events-auto absolute right-3 top-3 z-[var(--z-toolbar)] [&_button]:h-9 [&_button]:w-9 ${TOOLBAR_CARD}`}
+      className={`pointer-events-auto absolute right-[calc(var(--corner-card-span,0px)/var(--cog-zoom)+var(--cog-edge))] top-[var(--cog-edge)] z-[var(--z-toolbar)] [&_button]:h-9 [&_button]:w-9 ${TOOLBAR_CARD}`}
     >
       <SettingsCog
         label="Dashboard Settings"

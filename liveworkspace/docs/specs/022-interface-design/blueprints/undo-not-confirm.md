@@ -33,6 +33,13 @@ undoLabel, onSelect }] })`. Its own key per action, so two quick deletes keep tw
 - It lasts `TOAST_ANSWER_TIMEOUT_MS` (10 s), longer than an info toast (4 s). The card is `role="status"`, a polite
   live region; Undo is a real button in the tab order.
 - `onSelect` runs once: it dismisses the toast (`dismissAction(key)`), then `undo`. Expiry does nothing.
+- Keys live in the stack, not here (`packages/ui/src/toast/ToastStack.tsx`): one window capture listener takes
+  `TOAST_REACH_KEY` (F6) to the newest card's primary `[data-toast-action]`, keeping where focus was, and Escape on a
+  card (`data-toast-id`) closes it; either way focus goes back. `keyInToastStack` (`toast-keys.ts`) keeps the popover
+  stack's and `useEscape`'s Escape off a key pressed in a toast. Each card with an action says `Press F6 to reach <label>.`
+  in an `sr-only` span (`ToastCard` `hint`).
+- Placement: the shared anchored popover marks itself `data-toast-beside` while it rises above its button, and
+  `toastPlacement` stands the stack left of it on the cluster's line (`toast-floor.ts`).
 
 ## `revertStep(before, after, current)`
 

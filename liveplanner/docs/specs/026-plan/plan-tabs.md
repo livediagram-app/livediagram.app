@@ -615,7 +615,8 @@ leaves it out of a smaller slot and names charts in its line.
 ## Dashboard Settings
 
 An Editor's **Dashboard Settings** cog sits in a card of its own at the page's top right, 12 px from the corner at the
-toolbar's UI scale, as the menu box sits at the top left (and as a board's or Sheet's cog sits in its header). While a
+toolbar's UI scale, left of the top-right corner card (Share, Sign In) where the app has one (`--corner-card-span`,
+which covered the cog at 1440 px), as the menu box sits at the top left (and as a board's or Sheet's cog sits in its header). While a
 board, view or Sheet maximised from a slot covers the page, the cog is not shown (the covering element's own cog sits
 in that corner); it is back the moment it is restored. It
 opens the settings popover boards and Sheets use, built from the same parts as Sheet Settings (a labelled field,

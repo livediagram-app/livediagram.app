@@ -62,6 +62,13 @@ describe('Dashboard Settings', () => {
     expect(track).toHaveBeenCalledWith('Plan', 'Opened', 'DashboardSettings');
   });
 
+  // The top-right corner card (Share, Sign In) covered the cog at 1440px: it stands left of the card's span.
+  it('stands clear of the top-right corner card', () => {
+    show(dashboardFromPreset('two-by-two', id));
+    const card = document.querySelector<HTMLElement>('[data-dashboard-settings]')!;
+    expect(card.className).toContain('right-[calc(var(--corner-card-span,0px)');
+  });
+
   // A board maximised from a slot puts its own cog in this corner: the dashboard's steps aside until it is restored.
   it('steps aside while a slot’s board is maximised over the page', () => {
     show(dashboardFromPreset('two-by-two', id));
