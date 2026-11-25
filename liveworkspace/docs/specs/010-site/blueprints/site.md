@@ -299,6 +299,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `/account`                  | `liveworkspace/apps/site/app/account/page.tsx`                  |                                                                                                                                                                             |
 | `/account/settings`         | `liveworkspace/apps/site/app/account/settings/page.tsx`         |                                                                                                                                                                             |
 | `/account/tokens`           | `liveworkspace/apps/site/app/account/tokens/page.tsx`           |                                                                                                                                                                             |
+| `/ai`                       | `liveworkspace/apps/site/app/ai/page.tsx`                       | Build with AI: the shared BuildWithAi bound to the one MCP (lib/ai.ts), with its cross-app art and app cards (components/ai/).                                              |
 | `/community`                | `liveworkspace/apps/site/app/community/page.tsx`                | The Community, every app's posts; each app's router serves it at its own `/community`.                                                                                      |
 | `/community/post`           | `liveworkspace/apps/site/app/community/post/page.tsx`           | A post's shell; its head is filled by the post's app's router.                                                                                                              |
 | `/compare`                  | `liveworkspace/apps/site/app/compare/page.tsx`                  |                                                                                                                                                                             |
@@ -535,13 +536,13 @@ in both environments to the sitemap's pages but the build's `--skip` (`/communit
 
 **Production**
 
-| Setting     | Value                                                          |
-| ----------- | -------------------------------------------------------------- |
-| Worker name | `liveworkspace-site`                                           |
-| Route       | `liveworkspace.app` (custom domain)                            |
-| Route       | `www.liveworkspace.app` (custom domain)                        |
-| Assets      | `./out`, binding `ASSETS`                                      |
-| Runs first  | `/`, `/compare`, `/pricing`, `/privacy`, `/terms`, `/licences` |
+| Setting     | Value                                                                 |
+| ----------- | --------------------------------------------------------------------- |
+| Worker name | `liveworkspace-site`                                                  |
+| Route       | `liveworkspace.app` (custom domain)                                   |
+| Route       | `www.liveworkspace.app` (custom domain)                               |
+| Assets      | `./out`, binding `ASSETS`                                             |
+| Runs first  | `/`, `/ai`, `/compare`, `/pricing`, `/privacy`, `/terms`, `/licences` |
 
 **`env.staging`**
 
