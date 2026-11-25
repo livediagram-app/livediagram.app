@@ -83,6 +83,7 @@ const SPOOFED = {
   'X-Verified-Workbench-Pairing': 'evil',
   'X-Verified-Document': 'evil',
   'X-Verified-Grant-Exp': '99999999999',
+  'X-Verified-Grant-Issued': '99999999999999',
   'X-Verified-Owner': '1',
   'X-Verified-Adder': 'forged',
   'X-Verified-Network': 'forged',
@@ -121,6 +122,7 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
     expect(h.get('X-Verified-Document')).toBe('p1');
     expect(h.get('X-Verified-Grant-Exp')).toBe(String(NOW + 600));
+    expect(h.get('X-Verified-Grant-Issued')).toBe(String(NOW * 1000));
   });
 
   it('never reaches the room without a ticket, with a forged one, or with a lapsed one', async () => {

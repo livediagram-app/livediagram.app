@@ -84,6 +84,7 @@ const SPOOFED = {
   'X-Verified-Adder': 'evil',
   'X-Verified-Design': 'evil',
   'X-Verified-Grant-Exp': '99999999999',
+  'X-Verified-Grant-Issued': '99999999999999',
   'X-Verified-Owner': 'user_evil',
   'X-Verified-Team': 'team_evil',
 };
@@ -117,6 +118,7 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Adder')).toBe('');
     expect(h.get('X-Verified-Design')).toBe('p1');
     expect(h.get('X-Verified-Grant-Exp')).toBe(String(NOW + 600));
+    expect(h.get('X-Verified-Grant-Issued')).toBe(String(NOW * 1000));
     // The design's owner and team as the index has them, for the room's own copy.
     expect(h.get('X-Verified-Owner')).toBe('user_o');
     expect(h.get('X-Verified-Team')).toBe('t1');

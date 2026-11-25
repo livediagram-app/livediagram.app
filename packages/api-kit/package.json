@@ -46,6 +46,7 @@
     "./room-access-client": "./src/room-access-client.ts",
     "./room-agent-presence": "./src/room-agent-presence.ts",
     "./room-alarm": "./src/room-alarm.ts",
+    "./room-link-changes": "./src/room-link-changes.ts",
     "./room-client": "./src/room-client.ts",
     "./room-element-ops": "./src/room-element-ops.ts",
     "./room-follows": "./src/room-follows.ts",

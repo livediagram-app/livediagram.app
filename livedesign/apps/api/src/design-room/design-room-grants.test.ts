@@ -232,6 +232,13 @@ describe('a revoked share link', () => {
     expect(visitor.closed).not.toBeNull();
     expect(owner.closed).toBeNull();
   });
+
+  it('notes when the link changed, so a join on a grant signed before it is turned away', async () => {
+    const { design } = room();
+    await design.revokeCodes('P', ['CODE2345'], 'rescoped');
+    expect(design.linkChanges.changedSince('CODE2345', T0 - 400)).toBe(true);
+    expect(design.linkChanges.changedSince('CODE2345', T0 + 1)).toBe(false);
+  });
 });
 
 // A time already due must never fire the alarm back to back (liveworkspace/docs/specs/002-architecture/architecture.md

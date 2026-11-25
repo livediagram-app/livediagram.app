@@ -77,6 +77,8 @@ The room confines a scoped session to its tab (`apps/api/src/room-scope.ts`), bo
 the editor rejoins as what it now is. A revoked link's sessions are closed when their grant lapses (`4007`) and stay
 out ([API](../015-api/api.md) "A grant lapses; the session renews it").
 
+A socket still joining when its link is revoked or rescoped would miss both the op and the close and keep what the link opened before, so the room notes when each link changed and closes a joining socket whose grant was signed before that change (`4005`) as it joins: its editor reloads into what the link opens now (`@liveworkspace/api-kit/room-link-changes`).
+
 ## Visitor experience
 
 - A scoped visitor lands **on their tab**, whatever tab the canvas last had open.
