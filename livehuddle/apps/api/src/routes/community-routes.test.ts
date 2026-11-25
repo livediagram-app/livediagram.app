@@ -769,6 +769,55 @@ describe('what a community link reveals', () => {
     const overview = await (await readDocument(post.shareCode, '?view=overview')).text();
     expect(overview).not.toContain('threads');
   });
+
+  it("names nobody on a Space's pieces, nor reads out the presenter's notes", async () => {
+    const post = await publish();
+    const tab = JSON.stringify({
+      elements: [
+        { id: 's1', type: 'sticky', x: 0, y: 0, width: 80, height: 80, addedBy: 'adder-of-jo' },
+        {
+          id: 'b1',
+          type: 'shape',
+          shape: 'notice-board',
+          x: 0,
+          y: 0,
+          width: 176,
+          height: 128,
+          noticeNotes: [{ id: 'n1', text: 'Lunch', author: 'Jo Bloggs', by: AUTHOR, at: 1 }],
+          arcadeScores: [{ id: 'r1', name: 'Jo Bloggs', score: 9, ms: 1, by: AUTHOR, at: 1 }],
+        },
+      ],
+    });
+    db.sql
+      .prepare("UPDATE tabs SET data = ?, element_count = 2, rev = rev + 1 WHERE id = 'tab-d1'")
+      .run(tab);
+    const deck = {
+      decks: [
+        { slides: [{ id: 'sl1', tabId: 'tab-d1', elementIds: ['b1'], notes: 'say the salary' }] },
+      ],
+    };
+    db.sql
+      .prepare("UPDATE document SET presentation = ? WHERE id = 'd1'")
+      .run(JSON.stringify(deck));
+    const read = await handleDocuments(
+      viaWorker(
+        makeTestRouteContext('GET', '/api/documents/d1/tabs/tab-d1', {
+          env,
+          owner: 'guest-visitor',
+          headers: { 'X-Share-Code': post.shareCode },
+        }),
+      ),
+    );
+    expect(read.status).toBe(200);
+    const text = await read.text();
+    expect(text).toContain('Lunch');
+    for (const secret of ['Jo Bloggs', AUTHOR, 'adder-of-jo']) expect(text).not.toContain(secret);
+    const doc = await (
+      await readDocument(post.shareCode)
+    ).json<{ document: { presentation: string } }>();
+    expect(doc.document.presentation).toContain('sl1');
+    expect(doc.document.presentation).not.toContain('salary');
+  });
 });
 
 describe('a document that changes hands', () => {

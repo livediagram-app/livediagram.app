@@ -182,8 +182,10 @@ export type EditorContextMenuProps = {
   // Code block (docs/specs/009-elements/code-block.md): open the code edit modal for the given element
   // (same too-big-for-the-menu rationale as the line chart's grid).
   onEditCodeBlock: (elementId: string) => void;
-  // Opens an element's rows in their dialog: a checklist's, a legend's, a chart's slices.
-  onEditRows: (elementId: string, kind: RowsEditorKind) => void;
+  // Opens an element's rows in their dialog: a checklist's, a legend's, a chart's slices. Absent on a locked element,
+  // whose rows are not edited (docs/specs/008-canvas/canvas-and-palette.md "A category that opens a dialog"), so the
+  // menu offers no row that opens one.
+  onEditRows?: (elementId: string, kind: RowsEditorKind) => void;
   // Long-line wrapping on a code block (docs/specs/009-elements/code-block.md), on by default.
   // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array, committed in one step.
   onSetLegendItems: (items: LegendItem[]) => void;

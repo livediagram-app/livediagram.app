@@ -104,7 +104,8 @@ export const deleteDocumentShape = {
   documentId: z.string().describe('The knowledgebase to delete (from find_documents).'),
   page: onePage('Delete only').describe(
     'Delete only this ONE page (its id, or its title when one page alone has it) instead of the whole ' +
-      'knowledgebase. A page is deleted outright, with no Trash; a knowledgebase keeps at least one page.',
+      'knowledgebase. The page goes to the knowledgebase’s page Trash, where a person can restore it for 30 ' +
+      'days; a knowledgebase keeps at least one page.',
   ),
 };
 

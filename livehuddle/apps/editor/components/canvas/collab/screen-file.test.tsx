@@ -173,6 +173,12 @@ describe('the Screen with a file', () => {
 });
 
 describe('the file opened large', () => {
+  // The frame shows once its ticket lands, and the frame's message listener attaches in the effect after: wait for
+  // both, or a message sent under a slow runner (CI with coverage) is dropped before anyone listens.
+  const framed = async () => {
+    await waitFor(() => expect(document.querySelector('iframe')).toBeTruthy());
+    await act(async () => {});
+  };
   const say = (data: unknown) =>
     act(() => {
       const frame = document.querySelector('iframe')!;
@@ -198,7 +204,7 @@ describe('the file opened large', () => {
     render(
       <ScreenFileOverlay file={FILE} canShowTab={false} onShowTab={vi.fn()} onClose={vi.fn()} />,
     );
-    await waitFor(() => expect(document.querySelector('iframe')).toBeTruthy());
+    await framed();
     const frame = document.querySelector('iframe')!;
     expect(frame.getAttribute('src')).toBe(
       'https://www.liveplanner.app/embed/workbench?d=P1&live=1#ticket=t.1',
@@ -214,7 +220,7 @@ describe('the file opened large', () => {
     const { rerender } = render(
       <ScreenFileOverlay file={FILE} canShowTab onShowTab={onShowTab} onClose={vi.fn()} />,
     );
-    await waitFor(() => expect(document.querySelector('iframe')).toBeTruthy());
+    await framed();
     say({ type: 'liveplanner:ready', v: 1, tabId: 't1', tabName: 'Board' });
     expect(screen.queryByRole('button', { name: /Show This Tab/ })).toBeNull();
     say({ type: 'liveplanner:tab', v: 1, tabId: 't2', tabName: 'Roadmap' });
@@ -230,7 +236,7 @@ describe('the file opened large', () => {
     const setScreenSourceOf = vi.fn();
     editor = { can: { level: 'edit' }, setScreenSourceOf };
     render(<ScreenFileOverlayHost elementId="s1" file={FILE} onClose={vi.fn()} />);
-    await waitFor(() => expect(document.querySelector('iframe')).toBeTruthy());
+    await framed();
     say({ type: 'liveplanner:ready', v: 1, tabId: 't1', tabName: 'Board' });
     say({ type: 'liveplanner:tab', v: 1, tabId: 't2', tabName: 'Roadmap' });
     fireEvent.click(await screen.findByRole('button', { name: /Show This Tab|On the Screen/ }));
@@ -242,7 +248,7 @@ describe('the file opened large', () => {
     cleanup();
     editor = { can: { level: 'participate' }, setScreenSourceOf };
     render(<ScreenFileOverlayHost elementId="s1" file={FILE} onClose={vi.fn()} />);
-    await waitFor(() => expect(document.querySelector('iframe')).toBeTruthy());
+    await framed();
     say({ type: 'liveplanner:ready', v: 1, tabId: 't1', tabName: 'Board' });
     say({ type: 'liveplanner:tab', v: 1, tabId: 't2', tabName: 'Roadmap' });
     expect(screen.queryByRole('button', { name: /Show This Tab|On the Screen/ })).toBeNull();

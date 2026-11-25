@@ -878,11 +878,11 @@ which is how the gap was found.
 Three behaviours cover the nineteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                            |
-| --------------- | -------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                                     |
-| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `change_tabs`, `share_design`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image` |
-| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`                          |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                   |
+| --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                            |
+| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `change_tabs`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image`        |
+| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`, `share_design` |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
 `mcpTool`) and `@liveworkspace/mcp-kit`'s `toolAnnotations`: `delete_image` is `idempotentHint: true` (removing
@@ -896,8 +896,9 @@ client sees and the rule the api enforces can't drift apart.
 mode swaps a tab's whole element set, so an edit can overwrite work the user
 already had. (Its `ops` mode is surgical, but a hint describes the tool, not
 the argument, and the cautious reading is the right one.) `share_design`
-stays a plain write: it mints a new link and changes nothing that existed,
-and the link is revocable. `destructiveHint` is deliberately omitted where
+is **destructive** too: it opens the design to anyone with the link, and an edit link lets them change
+or delete what is there, and its sign-in rule changes every link it already has, so a client asks first (Claude's connector review reads a share tool as one
+that must not claim to be harmless). `destructiveHint` is deliberately omitted where
 `readOnlyHint` is `true`: MCP ignores it there, and stating it would imply the
 tool writes.
 

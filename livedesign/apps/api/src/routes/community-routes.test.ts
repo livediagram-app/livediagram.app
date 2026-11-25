@@ -613,6 +613,25 @@ describe('the community link', () => {
     expect([ticket.status, await ticket.json()]).toEqual([403, { error: 'community_link' }]);
   });
 
+  it("names nobody on a component's open edit session or a Participant's sticky", async () => {
+    const res = await community('PUT', { body });
+    const { shareCode } = (await res.json<{ post: { shareCode: string } }>()).post;
+    const elements = [
+      { id: 'e0', type: 'shape', shape: 'rectangle', x: -20, y: -20, width: 40, height: 40 },
+      { id: 'i1', type: 'instance', componentId: 'c1', x: 0, y: 0, width: 40, height: 40 },
+      { id: 's1', type: 'sticky', x: 0, y: 0, width: 80, height: 80, addedBy: 'adder-of-jo' },
+    ];
+    Object.assign(elements[1]!, { componentEditBy: AUTHOR });
+    db.sql
+      .prepare("UPDATE tabs SET data = ?, element_count = 3, rev = rev + 1 WHERE id = 'tab-d1'")
+      .run(JSON.stringify({ elements }));
+    const read = await visitor('GET', '/api/designs/d1/tabs/tab-d1', shareCode);
+    expect(read.status).toBe(200);
+    const text = await read.text();
+    expect(text).toContain('"componentEditBy":"someone"');
+    for (const secret of [AUTHOR, 'adder-of-jo']) expect(text).not.toContain(secret);
+  });
+
   // A photo's pixels are the design's content; writing them is not a Viewer's.
   it("reads a photo's pixels, and nothing it would write", async () => {
     const blobId = 'abcdefghijklmnopqrstuv';

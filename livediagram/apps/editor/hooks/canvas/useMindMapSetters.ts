@@ -87,13 +87,15 @@ export function useMindMapSetters({
   };
 
   // Tidy Map on the maps of `ids`, saying what it did: "Map tidied", or "Map already tidy" when
-  // no node moves and no connector re-anchors.
+  // no node moves and no connector re-anchors, a locked one that keeps its place included.
   const tidy = (ids: Set<string>) => {
     if (ids.size === 0) return;
     const all = elements();
     const changes = selectedRoots(all, ids).some((rootId) => {
       const plan = relayoutMindMap(all, rootId);
-      return !!plan && (plan.moves.length > 0 || plan.reanchored.length > 0);
+      if (!plan) return false;
+      const next = applyMindMoves(all, plan.moves, plan.reanchored);
+      return next.some((el, i) => el !== all[i]);
     });
     if (changes) relayoutSelected(undefined, ids);
     debugLog(`[mind-layout] tidy changed=${changes}`);

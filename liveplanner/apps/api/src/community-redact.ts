@@ -4,7 +4,7 @@
 // each tab's image) and the copy apply these same rules, so what a stranger sees and what they take are one thing.
 //
 // - A tab: comment threads, cell comments, assigned actions and votes go as every app's do
-//   (@liveworkspace/community/app redactTabForCommunity), and a Participant's adder key (`addedBy`) with them.
+//   (@liveworkspace/community/app redactTabForCommunity), a Participant's adder key (`addedBy`) with them.
 // - A card: who it is assigned to, every People field (any value that is a person or a list of people), its votes
 //   (built-in and a type's own Votes fields), its comment thread and comment count, and who made and last changed it
 //   (one neutral person). A Time Spent field keeps its entries' minutes and loses who tracked them.
@@ -191,18 +191,9 @@ type TabLike = {
   vote?: { votes?: Record<string, string[]>; startedBy?: string };
 };
 
-// A tab as a stranger sees it: every app's rule, and no Participant's adder key.
+// A tab as a stranger sees it: every app's rule (a Participant's adder key goes with it).
 export function redactPlanTabForCommunity<T extends TabLike>(tab: T): T {
-  const out = redactTabForCommunity(tab);
-  if (!Array.isArray(out.elements)) return out;
-  return {
-    ...out,
-    elements: out.elements.map((el) => {
-      if (!('addedBy' in el)) return el;
-      const { addedBy: _adder, ...rest } = el as { addedBy?: unknown };
-      return rest;
-    }),
-  };
+  return redactTabForCommunity(tab);
 }
 
 // The same over a tab's stored `data` JSON, for the copy. Data that does not parse, or has no elements, is copied

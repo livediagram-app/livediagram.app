@@ -298,7 +298,7 @@ Participant never manages who has access.
 | Verify a page, change its owner, set Always in Context          | yes    | yes         | no     |
 | Request Approval; Approve or Reject another's request           | yes    | yes         | no     |
 | Describe to Add Pages, Import                                   | yes    | yes         | no     |
-| Accept or dismiss an agent's suggestion                         | yes    | yes         | no     |
+| Accept or dismiss an agent's suggestion                         | yes    | no          | no     |
 | Change the Review Period                                        | yes    | no          | no     |
 | Knowledgebase Style                                             | yes    | no          | no     |
 | Automations (none built yet; the rule stands for when they are) | yes    | no          | no     |
@@ -308,6 +308,10 @@ Participant never manages who has access.
 | Publish to the Web, change what is published, Unpublish         | yes    | no          | no     |
 | Export, from the knowledgebase's menu                           | yes    | yes         | yes    |
 | Copy a page's link, fold the tree                               | yes    | yes         | yes    |
+
+Accepting or dismissing an agent's suggestion is an Editor's of the whole knowledgebase
+([Insights](insights.md#share-roles), Work Tracker 1362): a Participant's agent suggests, and someone who may change
+every page decides.
 
 "Participant" is a person in their own session. An agent's token keeps its scopes as
 [Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md) has them: a token below `write` acts as a

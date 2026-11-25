@@ -328,7 +328,7 @@ describe('tool annotations', () => {
     search_icons: 'read',
     create_document: 'write',
     add_tab: 'write',
-    share_document: 'write',
+    share_document: 'destructive',
     rename_document: 'write',
     change_tabs: 'write',
     list_trash: 'read',
@@ -426,6 +426,7 @@ describe('tool annotations', () => {
       'change_threads',
       'delete_document',
       'delete_image',
+      'share_document',
       'update_document',
     ]);
   });

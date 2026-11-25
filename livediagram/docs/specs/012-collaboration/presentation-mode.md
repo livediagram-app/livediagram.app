@@ -283,6 +283,7 @@ They are deliberately NOT the elements' existing `note?` field ([Document struct
 
 - Plain text in v1, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold.
 - During a presentation they live behind the HUD's notes button, opened on demand. See The HUD above.
+- A Community post's link ([Community](../025-community/community.md) "Viewing a post's document") reads the deck without them: they are the presenter's, not what the document shows.
 
 ## Realtime: presenting is local, and that is the design
 

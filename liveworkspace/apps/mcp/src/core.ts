@@ -145,7 +145,8 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       required: ['ref'],
       additionalProperties: false,
     },
-    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    // A link opens the item to anyone who has it (an edit link to change or delete it), so a client asks first.
+    annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
   },
   {
     name: 'rename_item',

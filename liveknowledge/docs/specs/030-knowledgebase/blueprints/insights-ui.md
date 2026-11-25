@@ -162,7 +162,7 @@ Knowledge". Failed: an error callout, **Try Again**. Offline: one `EmptyState` f
 | See every section, open a page, Connect an Agent, open AI Settings | yes    | yes         | yes    |
 | Is Right; Not a Conflict                                           | yes    | yes         | no     |
 | Draft a Page; dismiss a question                                   | yes    | yes         | no     |
-| Accept or dismiss a suggestion                                     | yes    | yes         | no     |
+| Accept or dismiss a suggestion                                     | yes    | no          | no     |
 | Add a page to Always in Context, or take one out                   | yes    | yes         | no     |
 | Allow Writing; Stop Writing                                        | yes    | no          | no     |
 | Ask Both Owners; Remind the Owners (signed in)                     | yes    | yes         | no     |
