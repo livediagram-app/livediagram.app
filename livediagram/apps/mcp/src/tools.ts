@@ -44,6 +44,7 @@ import { createdTabRev } from '@liveworkspace/mcp-kit/app-view-step';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from '@liveworkspace/mcp-kit/env';
+import { refuseUnknownTab } from '@liveworkspace/mcp-kit/tab-named';
 import { deleteRefusal, searchDocuments } from '@livediagram/agent-verbs';
 import {
   deepLink,
@@ -553,13 +554,32 @@ export function registerTools(server: McpServer, env: Env): void {
     if (args.tabId) {
       // The tab name route: the name only, relayed to anyone with the document open
       // (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames").
-      const { tab } = await apiJson<{ tab: { name: string } }>(
-        env,
-        token,
-        `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
-        { method: 'PUT', body: JSON.stringify({ name: args.name }) },
-      );
-      return textResult({ renamed: 'tab', tabId: args.tabId, name: tab.name });
+      let renamed: { tab: { name: string } };
+      try {
+        renamed = await apiJson<{ tab: { name: string } }>(
+          env,
+          token,
+          `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
+          { method: 'PUT', body: JSON.stringify({ name: args.name }) },
+        );
+      } catch (err) {
+        // The route answers a bare 404 for a tab the document does not hold, which read as "no such document".
+        if (err instanceof ApiError && err.status === 404)
+          await refuseUnknownTab(
+            async () =>
+              (
+                await apiJson<DocumentResponse>(
+                  env,
+                  token,
+                  `/documents/${encodeURIComponent(args.documentId)}`,
+                )
+              ).document.tabs,
+            args.tabId,
+            'document',
+          );
+        throw err;
+      }
+      return textResult({ renamed: 'tab', tabId: args.tabId, name: renamed.tab.name });
     }
     const { document: liveDoc } = await apiJson<DocumentResponse>(
       env,

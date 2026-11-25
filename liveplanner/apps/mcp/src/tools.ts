@@ -28,6 +28,7 @@ import { createdFolderLabel } from '@liveworkspace/mcp-kit/created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readProject } from './read-project';
 import type { Env } from '@liveworkspace/mcp-kit/env';
+import { refuseUnknownTab } from '@liveworkspace/mcp-kit/tab-named';
 import {
   deleteRefusal,
   searchProjects,
@@ -311,13 +312,32 @@ export function registerTools(server: McpServer, env: Env): void {
     if (args.tabId) {
       // The tab name route: the name only, relayed to anyone with the project open
       // (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames").
-      const { tab } = await apiJson<{ tab: { name: string } }>(
-        env,
-        token,
-        `/projects/${encodeURIComponent(args.projectId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
-        { method: 'PUT', body: JSON.stringify({ name: args.name }) },
-      );
-      return textResult({ renamed: 'tab', tabId: args.tabId, name: tab.name });
+      let renamed: { tab: { name: string } };
+      try {
+        renamed = await apiJson<{ tab: { name: string } }>(
+          env,
+          token,
+          `/projects/${encodeURIComponent(args.projectId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
+          { method: 'PUT', body: JSON.stringify({ name: args.name }) },
+        );
+      } catch (err) {
+        // The route answers a bare 404 for a tab the plan does not hold, which read as "no such plan".
+        if (err instanceof ApiError && err.status === 404)
+          await refuseUnknownTab(
+            async () =>
+              (
+                await apiJson<ProjectResponse>(
+                  env,
+                  token,
+                  `/projects/${encodeURIComponent(args.projectId)}`,
+                )
+              ).project.tabs,
+            args.tabId,
+            'plan',
+          );
+        throw err;
+      }
+      return textResult({ renamed: 'tab', tabId: args.tabId, name: renamed.tab.name });
     }
     const { project: liveDoc } = await apiJson<ProjectResponse>(
       env,

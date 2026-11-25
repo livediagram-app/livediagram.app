@@ -80,24 +80,33 @@ describe('fetchSession', () => {
   it('asks the MCP origin and returns the session', async () => {
     const calls = stubFetch(() => Response.json({ clientName: 'example CLI', startedAt: 1 }));
     expect(await device.fetchSession('BCDF-GHJK')).toEqual({
-      clientName: 'example CLI',
-      startedAt: 1,
-      startedIn: null,
+      kind: 'found',
+      session: { clientName: 'example CLI', startedAt: 1, startedIn: null },
     });
     expect(calls[0]!.url).toBe(`${MCP_ORIGIN}/oauth/device/session/BCDF-GHJK`);
   });
 
-  it('is null for an unknown code, a malformed answer and a network failure', async () => {
+  it('is unknown for a 404 and a malformed answer', async () => {
+    const unknown = { kind: 'unknown' };
     stubFetch(() => Response.json({ error: 'invalid_code' }, { status: 404 }));
-    expect(await device.fetchSession('X')).toBeNull();
+    expect(await device.fetchSession('X')).toEqual(unknown);
     stubFetch(() => Response.json({ clientName: '' }));
-    expect(await device.fetchSession('X')).toBeNull();
+    expect(await device.fetchSession('X')).toEqual(unknown);
     stubFetch(() => Response.json(null));
-    expect(await device.fetchSession('X')).toBeNull();
+    expect(await device.fetchSession('X')).toEqual(unknown);
+  });
+
+  // A busy or unreachable MCP says nothing about the code, which may still be good.
+  it('is unavailable for a 429, a 5xx and a network failure', async () => {
+    const unavailable = { kind: 'unavailable' };
+    stubFetch(() => Response.json({ error: 'rate_limited' }, { status: 429 }));
+    expect(await device.fetchSession('X')).toEqual(unavailable);
+    stubFetch(() => new Response('oops', { status: 503 }));
+    expect(await device.fetchSession('X')).toEqual(unavailable);
     stubFetch(() => {
       throw new Error('offline');
     });
-    expect(await device.fetchSession('X')).toBeNull();
+    expect(await device.fetchSession('X')).toEqual(unavailable);
   });
 });
 

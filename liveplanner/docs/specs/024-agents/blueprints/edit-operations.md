@@ -264,8 +264,8 @@ Worst case: `MAX_ELEMENTS_PER_TAB` (10,000) elements, `CHANGESET_MAX_OPERATIONS`
 - **Selectors.** A ref is `resolveRef` over the `RefTable`, recomputed only after an add or remove; a filter selector
   is one pass, `O(n)`.
 - **Targets.** `noteTarget` keeps a `Set` beside the ordered `targets`, so a `set … all` notes each element in `O(1)`.
-- **Nearest candidates** run only on a miss: banded Levenshtein over labels cut to 60 characters, at most
-  `EDIT_MAX_ERRORS` passes a request.
+- **Nearest candidates** run only on a miss: banded Levenshtein over labels cut to 60 characters (the selector cut
+  the same, so a slip in a longer label is still found), at most `EDIT_MAX_ERRORS` passes a request.
 - The gate is `performance.test.ts`: four times the tab, or four times the changeset, costs under eight times as much
   (CPU time); `noteTarget` is timed alone at 2,400 and 9,600 elements.
 

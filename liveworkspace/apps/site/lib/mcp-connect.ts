@@ -174,7 +174,9 @@ export async function connectDevice(
   clientName: string,
   readOnly: boolean,
 ): Promise<{ ok: true } | { ok: false; reason: 'expired' | 'token_limit' | 'failed' }> {
-  if (!(await device.fetchSession(userCode))) return { ok: false, reason: 'expired' };
+  const lookup = await device.fetchSession(userCode);
+  if (lookup.kind !== 'found')
+    return { ok: false, reason: lookup.kind === 'unknown' ? 'expired' : 'failed' };
   const minted = await accountApi<{ id: string; secret: string; expiresAt: number }>(
     '/tokens',
     'POST',

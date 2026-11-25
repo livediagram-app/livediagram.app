@@ -657,7 +657,8 @@ Worst case: `MAX_ELEMENTS_PER_TAB` (10,000) elements, `CHANGESET_MAX_OPERATIONS`
 - **Targets.** `noteTarget` keeps a `Set` beside the ordered `targets`, so a `set … all` notes each element in
   `O(1)`; the old `includes` was quadratic in the elements resolved.
 - **Nearest candidates** run only on `target_not_found` / `unknown_field`: banded Levenshtein with band
-  `NEAREST_MAX_DISTANCE` over labels cut to 60 characters, `O(n × 60 × band)`, about 6,000,000 cells a miss at
+  `NEAREST_MAX_DISTANCE` over labels cut to 60 characters (the selector cut the same, so a slip in a longer label is
+  still found), `O(n × 60 × band)`, about 6,000,000 cells a miss at
   worst; a request gathers at most `EDIT_MAX_ERRORS` (10) misses, so at most ten such passes.
 - **Layout** costs one `sweepEdgelessNodes` over the selection's boxes.
 - **Budget.** `EDIT_APPLY_BUDGET_MS` is the aim for a 500-operation changeset on a 2,000-element tab, measured, not

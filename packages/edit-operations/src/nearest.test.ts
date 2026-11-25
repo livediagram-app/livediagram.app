@@ -61,6 +61,13 @@ describe('nearestElements', () => {
     ]);
   });
 
+  it('finds a long label from a slip in it, both cut at the same length', () => {
+    const label = 'Customer confirms the delivery address and the payment method on file';
+    const long = [...elements, { id: 's1', type: 'sticky', label }];
+    const slip = label.replace('delivery', 'delivry');
+    expect(nearestElements(slip, long, { labelsOnly: true }).map((el) => el.id)).toEqual(['s1']);
+  });
+
   it('reads an element without a label by its id alone', () => {
     const bare = [{ id: 'x1', type: 'arrow' }];
     expect(nearestElements('x2', bare).map((el) => el.id)).toEqual(['x1']);

@@ -42,6 +42,7 @@ type Step =
   | { kind: 'enter' }
   | { kind: 'checking' }
   | { kind: 'unknown' }
+  | { kind: 'unavailable' }
   | Consent
   | { kind: 'done' }
   | { kind: 'cancelled' };
@@ -122,16 +123,16 @@ function DeviceCard() {
   const check = async () => {
     const userCode = userCodeOf(typed);
     setStep({ kind: 'checking' });
-    const session = userCode ? await device.fetchSession(userCode) : null;
+    const lookup = userCode ? await device.fetchSession(userCode) : { kind: 'unknown' as const };
     setStep(
-      userCode && session
+      userCode && lookup.kind === 'found'
         ? {
             kind: 'consent',
             userCode,
-            clientName: session.clientName,
-            started: startedLine(session, Date.now()),
+            clientName: lookup.session.clientName,
+            started: startedLine(lookup.session, Date.now()),
           }
-        : { kind: 'unknown' },
+        : { kind: lookup.kind === 'unavailable' ? 'unavailable' : 'unknown' },
     );
   };
 
@@ -164,12 +165,18 @@ function DeviceCard() {
       </AccountCard>
     );
 
-  if (step.kind === 'unknown')
+  if (step.kind === 'unknown' || step.kind === 'unavailable')
     return (
       <AccountCard narrow>
-        <AccountHeading title="We couldn’t find that code">
-          Check it and try again. Codes last 10 minutes.
-        </AccountHeading>
+        {step.kind === 'unknown' ? (
+          <AccountHeading title="We couldn’t find that code">
+            Check it and try again. Codes last 10 minutes.
+          </AccountHeading>
+        ) : (
+          <AccountHeading title="We couldn’t check that code">
+            We’re busy, or you’re offline. Wait a moment and try again: your code still works.
+          </AccountHeading>
+        )}
         <button type="button" onClick={() => setStep({ kind: 'enter' })} className={PRIMARY_BUTTON}>
           Try again
         </button>
