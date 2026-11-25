@@ -7,7 +7,7 @@ import type { KnowledgeCaller } from '@/lib/api/knowledge';
 import { apiAskKnowledge } from '@/lib/api/knowledge-ask';
 import { track } from '@/lib/telemetry';
 import { aiSettingsStore } from './ai-settings-store';
-import { askAiChoiceStore } from './ask-ai-choice';
+import { askAiChoiceStore, askAiOf } from './ask-ai-choice';
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import { askLabelScopeStore, chosenOf } from '@/lib/page-labels/label-selection-store';
 import { createAskConversation, type AskConversation, type AskTurnView } from './ask-conversation';
@@ -125,13 +125,21 @@ export function askConversationFor(who: KnowledgeCaller, documentId: string): As
   if (held) return held;
   const conversation = createAskConversation({
     // The choice of AI in force when the question is asked: switching mid-chat applies to the next question.
-    send: (request, opts) =>
-      apiAskKnowledge(
+    send: (request, opts) => {
+      const ai = aiSettingsStore.get(documentId);
+      return apiAskKnowledge(
         who,
         documentId,
-        { ...request, ai: askAiChoiceStore.get(who, documentId) },
+        {
+          ...request,
+          ai: askAiOf(
+            askAiChoiceStore.get(who, documentId),
+            ai.status === 'ready' ? ai.settings : null,
+          ),
+        },
         opts,
-      ),
+      );
+    },
     // Answer From's labels that still exist (search-and-ask.md "Answer From").
     labels: () =>
       chosenOf(

@@ -56,7 +56,8 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   AI, or the built in AI"). Once a key applies ([Which key answers](#which-key-answers)), the AI pill's menu,
   **Answer With**, offers two: **Built-In AI** and the key that applies, named by whose it is ("This Knowledgebase’s
   Key", "Your Team’s Key", "Your Key") with its provider and model; the pill says the one in use ("Claude Fable 5.2
-  (Your Team’s Key)"). On a server with no built-in AI the menu holds the key alone. The key is chosen
+  (Your Team’s Key)"). On a server with no built-in AI the menu holds the key alone, and every question asks for the
+  key, a Built-In AI choice kept from before included. The key is chosen
   until the person picks otherwise; the choice is kept per person, per knowledgebase, in this browser, beside the
   chats. Each question carries it (`ai: 'built-in' | 'key'`); a follow-up uses the choice in force when it is asked,
   so switching mid-chat applies to the next question. The server honours `built-in` even when a key is set, under

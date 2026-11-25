@@ -69,6 +69,14 @@ export const offersAiChoice = (
 ): boolean =>
   settings.builtIn && (settings.hasKey || settings.uses === 'team' || settings.uses === 'personal');
 
+/** The AI a question asks for: the person's choice, but the key wherever this server has no built-in AI (the menu
+ *  then holds the key alone), so a choice kept from before is never sent to a server that would refuse it. Until
+ *  `GET ai` answers, the choice stands. */
+export const askAiOf = (
+  choice: AskAiChoice,
+  settings: Pick<KnowledgeAiSettings, 'builtIn'> | null,
+): AskAiChoice => (settings && !settings.builtIn ? 'key' : choice);
+
 export const BUILT_IN_LABEL = 'Built-In AI';
 
 /** Which AI answered a turn, for its card: "Built-In AI", the model's label, or nothing for a turn kept from before

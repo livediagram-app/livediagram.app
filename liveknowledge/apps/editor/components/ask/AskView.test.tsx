@@ -939,6 +939,18 @@ describe('choosing which AI answers', () => {
     expect(ask('Q?').request.ai).toBe('built-in');
   });
 
+  it('asks on the key when a kept Built-In AI choice meets a server with no built-in AI', async () => {
+    await open('view');
+    await pick(KB_KEY, 0);
+    cleanup();
+    resetAskSession();
+    aiSettingsStore.reset();
+    api.apiKnowledgeAi.mockResolvedValue(settings({ builtIn: false }));
+    await open('view');
+    expect(pill(KB_KEY)).toBeTruthy();
+    expect(ask('Q?').request.ai).toBe('key');
+  });
+
   it("names built-in AI's failure when built-in AI is chosen", async () => {
     await open('view');
     await pick(KB_KEY, 0);
