@@ -4,8 +4,9 @@
 // (LIST_PAGE a page, the index's maximum), a superseded request cancelled rather than left to land late, and
 // the optimistic overlay laid over what came back. `belongs` says whether an item still belongs in the view
 // once patched (a folder's list drops an item moved out; the Trash drops one restored), so a change shows at
-// once and its rollback brings the row back. A read that raced a move (overlay.raced) reads again, quietly: its rows
-// stay on screen until the new read lands.
+// once and its rollback brings the row back. A read that raced a move (overlay.raced), or a `fresh` bump (the editors'
+// panel on a return to the page), reads again, quietly: its rows stay on screen until the new read lands, and stay when
+// it fails.
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Item } from '@liveworkspace/index-client';
@@ -54,6 +55,7 @@ export function useItemList({
   belongs,
   cap,
   epoch = 0,
+  fresh = 0,
   enabled = true,
 }: {
   // What the list is: a new key starts again from the first page.
@@ -65,6 +67,8 @@ export function useItemList({
   cap?: number;
   // Bumped to reload every list (after a copy, a restore, a folder delete).
   epoch?: number;
+  // Bumped to read the same list again quietly, its rows kept on screen (no loading state).
+  fresh?: number;
   enabled?: boolean;
 }): ItemListState {
   const [attempt, setAttempt] = useState(0);
@@ -104,19 +108,24 @@ export function useItemList({
       })
       .catch((error: unknown) => {
         if (isAbort(error)) return;
-        setLoaded({
-          key: fullKey,
-          startedAt,
-          items: [],
-          cursor: null,
-          error: true,
-          missing: error instanceof IndexError && error.status === 404,
-          done: true,
-          moreError: false,
-        });
+        // A quiet read again that fails keeps the rows this list already shows.
+        setLoaded((had) =>
+          had && had.key === fullKey && !had.error
+            ? had
+            : {
+                key: fullKey,
+                startedAt,
+                items: [],
+                cursor: null,
+                error: true,
+                missing: error instanceof IndexError && error.status === 404,
+                done: true,
+                moreError: false,
+              },
+        );
       });
     return () => controller.abort();
-  }, [fullKey, enabled, quiet]);
+  }, [fullKey, enabled, quiet, fresh]);
 
   useEffect(() => () => more.current?.abort(), []);
 

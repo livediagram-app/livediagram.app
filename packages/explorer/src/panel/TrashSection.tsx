@@ -26,7 +26,8 @@ import {
 // ---- The Trash ------------------------------------------------------------------------------------------
 
 export function TrashSection() {
-  const { client, app, filter, overlay, epoch, actions, teamName, words, kind } = useExplorer();
+  const { client, app, filter, overlay, epoch, actions, teamName, words, kind, returns } =
+    useExplorer();
   const list = useMemo(
     () => viewList(client, { kind: 'trash' }, app, filter),
     [client, app, filter],
@@ -37,6 +38,7 @@ export function TrashSection() {
     overlay,
     belongs: list?.belongs,
     epoch,
+    fresh: returns,
   });
   const now = useNow();
   const [confirming, setConfirming] = useState<ShownItem | null>(null);
