@@ -27,6 +27,9 @@ import {
   pageKindOf,
   pageLaidOut,
   themedForTab,
+  pickStyleRecipe,
+  STYLE_RECIPES,
+  tabWithTheme,
   pageIsDark,
   pageLockSet,
   pageMovedTo,
@@ -50,7 +53,7 @@ import {
   plural,
 } from '@livedocuments/document';
 import { buildPageLayout, layoutCatalogueFor } from '@livedocuments/templates';
-import { tabDesignFor } from './design-input';
+import { tabDesignFor, tabWords } from './design-input';
 import { enterPages, type PagesIds } from './enter';
 import { layoutTextOf } from './layout-text';
 import { pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';
@@ -345,6 +348,40 @@ export function applyPageChanges(
             d
               ? `Set the tab's page design: ${describeDesign(d)}${change.design === 'auto' ? ' (picked for the tab\u2019s words)' : ''}.`
               : "Cleared the tab's page design.",
+          );
+          return;
+        }
+        case 'tab_style': {
+          // A recipe ("auto": the one the tab's words suit) gives every part; a part named beside it wins.
+          const recipe = change.style
+            ? change.style === 'auto'
+              ? (pickStyleRecipe(tabWords(current)) ?? STYLE_RECIPES[0]!)
+              : STYLE_RECIPES.find((r) => r.id === change.style)!
+            : undefined;
+          const theme = change.theme ?? recipe?.theme;
+          const font = change.font ?? recipe?.font;
+          const finish = change.finish ?? recipe?.finish;
+          const said: string[] = [];
+          // The light half, as every agent's change paints: the editor shows each viewer their own half.
+          if (theme) {
+            current = tabWithTheme(current, theme, 'light');
+            said.push(`theme ${theme}`);
+          }
+          if (font) {
+            current = { ...current, font };
+            said.push(`font ${font}`);
+          }
+          if (finish) {
+            current = { ...current, finish };
+            said.push(`finish ${finish}`);
+          }
+          if (recipe && recipe.design !== 'none') {
+            const d = tabDesignFor(current, { id: recipe.design });
+            current = withTabPageDesign(current, d);
+            if (d) said.push(`page design ${describeDesign(d)}`);
+          }
+          lines.push(
+            `Restyled the tab${recipe ? ` as ${recipe.id}` : ''}: ${said.join(', ')}. A page with its own background or design keeps it.`,
           );
           return;
         }

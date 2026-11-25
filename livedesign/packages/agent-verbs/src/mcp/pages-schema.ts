@@ -110,21 +110,19 @@ const text = z
     body: slotList
       .optional()
       .describe(
-        "Every other text with words, in the layout's order (top to bottom, then the next column), a stat's caption, a process step and a timeline or checklist row among them; fewer keeps the rest's sample.",
+        "Every other text with words (a stat's caption, a step) in the layout's order (top to bottom, then the next column); fewer keeps the rest's sample.",
       ),
     figures: slotList
       .optional()
       .describe(
-        "Each figure (a number, a time, a price, 73%), a stat's value and a timeline's year among them, in the layout's order.",
+        "Each figure (a number, a time, a price, 73%, a stat's value), in the layout's order.",
       ),
     table: z
       .array(z.array(slotText).max(LAYOUT_TABLE_COLUMNS_MAX))
       .min(1)
       .max(LAYOUT_SLOT_ITEMS_MAX)
       .optional()
-      .describe(
-        "The layout's table (a pricing or comparison slide's), every row at once, the header row first: it takes as many rows and columns as given.",
-      ),
+      .describe("The layout's table, every row, header first."),
   })
   .strict()
   .describe(

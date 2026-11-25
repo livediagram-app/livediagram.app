@@ -225,13 +225,14 @@ export const mcpChangePages = mcpTool('change_pages', {
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
     "other page of its kind, every slide say, takes that page's background), tab_design {design} (decoration " +
     'drawn behind every page in the theme\u2019s colours: an id such as "aurora", {"id", ...tuning}, "auto" or null; ' +
-    'set and add take a page\u2019s own "design", or "none" / "tab"). The answer gives every page with its rectangle in canvas ' +
+    'set and add take a page\u2019s own "design", or "none" / "tab"), tab_style {style, theme, font, finish} (restyle an ' +
+    'existing tab: a recipe such as "editorial" or "auto", or a theme, typeface or finish alone). The answer gives every page with its rectangle in canvas ' +
     'coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text; its "text" replaces it by slot in the same change ' +
     '({"op": "add", "kind": ..., "layout": ..., "text": {"title": ..., "bullets": [...], "figures": [...]}}), and each page a change ' +
     'lays out answers its texts, each with its ref (for update_document), slot and words. ' +
-    "A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
+    "A layout's colours are the tab's theme (create_document's and add_tab's theme, or tab_style's: " +
     'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
     'Everyone with the document open sees it at once.',
   inputSchema: changePagesShape,

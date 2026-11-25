@@ -182,6 +182,13 @@ body[0] "Presenter name · October 2026"`), so a page is not shared still readin
   well under the cap (`page-texts-budget.test.ts`). Charts, tables and the other content kinds keep their sample data
   and are not listed: the `pages` view prints them by ref.
 
+### Restyling a tab
+
+`tab_style {style, theme, font, finish}` changes the whole tab's look in one change, as the
+[style guide](../011-theme/style-guide.md) "Agents" says: a recipe id or `"auto"`, or a theme, typeface or finish alone.
+Unknown ids are refused naming the valid ones. The answer says what it set (`Restyled the tab as editorial: theme
+cream, font lora, finish professional, page design Paper Grain`); a page with its own background or design keeps it.
+
 ## `write_article`
 
 Writes an article's text from **Markdown**.
