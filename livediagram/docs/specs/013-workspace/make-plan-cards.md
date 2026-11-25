@@ -77,7 +77,8 @@ On a tab drawn by liveplanner's [View As Diagram](../../../../liveplanner/docs/s
 box is a card (`card:<lane>:<card>`), each lane a column (`lane:<lane>`) and each of the plan's arrows a Blocked By link
 (`dep:<blocker>:<card>`). Editing the drawing's structure offers the change to the plan, never makes it:
 
-- **An arrow drawn from one card's box to another's** offers "Launch waits on Design".
+- **An arrow drawn from one card's box to another's** offers "Launch waits on Design". One with heads at both ends
+  or none says no order and offers nothing, as in the preview.
 - **A box dragged into another lane** offers "Move Launch to Done".
 
 The offers gather in a pill at the top centre of the canvas, "2 changes to the plan", opening a list: each with
