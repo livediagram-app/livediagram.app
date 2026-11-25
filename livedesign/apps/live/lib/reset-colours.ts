@@ -39,9 +39,9 @@ export function resetElementColours(el: Element, theme: ThemeDefinition): Elemen
     };
   }
   if (el.type === 'sticky') {
-    // A sticky's amber palette is its identity: wipe any user overrides,
+    // A sticky's amber palette is its identity: wipe any user overrides (its named text colour too),
     // but never apply theme colours.
-    const { fillColor: _f, strokeColor: _s, textColor: _t, ...rest } = el;
+    const { fillColor: _f, strokeColor: _s, textColor: _t, penTextColour: _p, ...rest } = el;
     return rest;
   }
   if (el.type === 'table') {
@@ -68,6 +68,8 @@ export function resetElementColours(el: Element, theme: ThemeDefinition): Elemen
         : { strokeColor: undefined }),
       strokeSwatch: undefined,
       penColour: undefined,
+      // The Pointer row beside the Line row: unset, the heads take the line's colour again.
+      arrowheadColor: undefined,
     };
   }
   return el;

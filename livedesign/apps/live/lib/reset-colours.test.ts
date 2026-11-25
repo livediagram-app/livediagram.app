@@ -63,12 +63,22 @@ describe('resetElementColours', () => {
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'free', x: 9, y: 9 },
       penColour: 'teal',
+      arrowheadColor: '#ff0000',
     };
-    expect((resetElementColours(arrow, theme) as ArrowElement).penColour).toBeUndefined();
+    const out = resetElementColours(arrow, theme) as ArrowElement;
+    expect(out.penColour).toBeUndefined();
+    // The Pointer colour sits in the same Colours section: its heads follow the line again.
+    expect(out.arrowheadColor).toBeUndefined();
   });
 
   it('keeps a sticky’s own paper, dropping only its overrides', () => {
-    const sticky: StickyElement = { id: 'n', type: 'sticky', ...box, fillColor: '#bae6fd' };
+    const sticky: StickyElement = {
+      id: 'n',
+      type: 'sticky',
+      ...box,
+      fillColor: '#bae6fd',
+      penTextColour: 'red',
+    };
     expect(resetElementColours(sticky, theme)).toEqual({ id: 'n', type: 'sticky', ...box });
   });
 });

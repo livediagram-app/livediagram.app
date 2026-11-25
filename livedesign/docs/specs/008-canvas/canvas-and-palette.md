@@ -201,8 +201,9 @@ Control groups (rendered as context-menu categories, hidden when their gate does
   - **Text** swatch: colours the element's label. Shown for every boxed kind (shape, text, sticky).
   - **Background** swatch: fill colour. Shapes & sticky notes only.
   - **Border** swatch: outline colour. Shapes & sticky notes only.
-  - **Line** swatch _(arrows)_: the arrow's `strokeColor`. An arrow's Colours section holds just this swatch + Reset to Theme (caption colours live in the content **Caption** category once the arrow has a label). In the multi-selection menu an arrow-only selection shows the same Line swatch; a mixed selection's Border swatch recolours the arrows too (one stroke setter selection-wide).
+  - **Line** swatch _(arrows)_: the arrow's `strokeColor`. An arrow's Colours section holds this swatch, the **Pointer** swatch (its heads' `arrowheadColor`, unset taking the line's colour) and Reset to Theme, which clears both (caption colours live in the content **Caption** category once the arrow has a label). In the multi-selection menu an arrow-only selection shows the same Line swatch; a mixed selection's Border swatch recolours the arrows too (one stroke setter selection-wide).
   - See [Colours](#colours). Text elements show only the Text swatch; shapes and sticky notes show all three.
+  - **Reset to Theme** clears every colour the section sets, a stock colour stored by name included: a sticky note keeps its own paper and drops its overrides and its named text colour.
 - **Pointer** _(arrows only)_
   - **Line thickness**: four snapped presets (Thin / Medium / Thick / Extra-thick → 1 / 2 / 4 / 7 px on the arrow's `strokeWidth`). Snapping is one-way for display so legacy free-number widths still highlight the nearest preset.
   - **Line style**: Straight / Curved / Angled. Drives the geometry (single line / quadratic bezier: elbow-corner control for pinned ends, ¼-chord bow for free ones / axis-aligned L-elbow). See [Arrows → Data model](#data-model).
