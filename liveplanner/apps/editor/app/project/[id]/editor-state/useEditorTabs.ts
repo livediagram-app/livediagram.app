@@ -86,8 +86,7 @@ export function useEditorTabs(
   } = collaborationSlice;
   const { activeTab, itemTypes, planItems, sheets, teams } = planDataSlice;
   const { getViewportCenter, requestFit, viewport } = viewportSlice;
-  const { activeTabLocked, commit, createBlocked, editsBlocked, structureCreateBlocked } =
-    editingSlice;
+  const { activeTabLocked, createBlocked, editsBlocked, structureCreateBlocked } = editingSlice;
   const { forms, plan, presetCardTypes, teamPeople } = planSlice;
   // An import's undo puts the view back where it was before the import, and its redo frames it again
   // (docs/specs/008-canvas/canvas-and-palette.md "Undoing an import brings its view back").
@@ -164,7 +163,6 @@ export function useEditorTabs(
     activeId,
     canEditStructure: !isStructureReadOnly,
     createTab,
-    commit,
     commitTabs,
     markTabLoaded,
     isTabLoaded: (id: string) => loadedTabIdsRef.current.has(id),
@@ -174,7 +172,6 @@ export function useEditorTabs(
     setImportError,
     requestFit,
     noteImport: importUndoView.noteImport,
-    confirm,
     toast,
     importPlanItems,
     retitleSheets: sheets.retitleSheets,

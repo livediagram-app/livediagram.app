@@ -111,11 +111,12 @@ test('Delete names the subpages it takes, and Undo brings them all back', async 
 }) => {
   await threeLevels(page);
 
+  // It goes at once, its toast naming the count and offering Undo
+  // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
   await rowVerb(page, 'Guides', 'Delete');
-  const confirm = page.getByRole('dialog', { name: 'Delete Guides and 2 Subpages?' });
-  await expect(confirm).toContainText('Undo (Cmd/Ctrl-Z) brings them back.');
-  await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
-  await expect(confirm).toBeHidden();
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Deleted “Guides” and 2 subpages.' }),
+  ).toBeVisible();
   expect(await treeShape(page)).toEqual(['1 Notes']);
 
   // The last page is never deleted.
@@ -123,7 +124,7 @@ test('Delete names the subpages it takes, and Undo brings them all back', async 
   await expect(menu.getByRole('menuitem', { name: 'Delete', exact: true })).toBeDisabled();
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await page.getByRole('button', { name: 'Undo deleting Guides', exact: true }).click();
   await expect(pageTree(page).getByRole('treeitem')).toHaveCount(4);
   expect(await treeShape(page)).toEqual(['1 Guides', '2 Setup', '2 Deploy', '1 Notes']);
   expectNoPageErrors(pageErrors);

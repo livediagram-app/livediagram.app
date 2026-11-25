@@ -99,7 +99,7 @@ export function usePageTreeModel(): PageTreeModel {
       onRename: (id, next) => chrome.get().renameTab(id, next),
       onAdd: (parent) => chrome.get().addTab(parent),
       onDuplicate: (id) => chrome.get().duplicateTab(id),
-      onDelete: (id) => void chrome.get().deleteTab(id),
+      onDelete: (id, focus) => void chrome.get().deleteTab(id, focus),
       onMove: (id, to) => chrome.get().movePage(id, to),
       onStep: (id, by) => chrome.get().stepPage(id, by),
       onIndent: (id) => chrome.get().indentPage(id),

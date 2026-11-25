@@ -24,6 +24,7 @@ import type { TrustMark } from '@/lib/knowledge/page-trust';
 import type { ApprovalMark } from '@/lib/knowledge/approval-view';
 import { PageTreeRowMenu, type PageMenuVerb } from './PageTreeRowMenu';
 import { createPageTreeUi } from './page-tree-ui';
+import { rowFocus, type RowFocus } from '@liveworkspace/workbench/lib/row-focus';
 import { runConnectedVerb, runPageVerb } from './page-tree-verbs';
 import { useRowLongPress } from './useRowLongPress';
 import type { MenuPoint } from '@liveworkspace/workbench/components/primitives/usePortalMenuPlacement';
@@ -45,7 +46,8 @@ export type PageTreeActions = {
   onRename: (id: string, name: string) => void;
   onAdd: (parent?: string) => void;
   onDuplicate: (id: string) => void;
-  onDelete: (id: string) => void;
+  // `focus`: where keyboard focus goes once the rows have gone, and after their Undo (row-focus.ts).
+  onDelete: (id: string, focus?: RowFocus) => void;
   onMove: (id: string, to: PageMove) => void;
   onStep: (id: string, by: -1 | 1) => void;
   onIndent: (id: string) => void;
@@ -217,8 +219,25 @@ export function PageTree({
   // A row that may open its menu from a right-click or a long press: on screen, not being renamed, not out of scope.
   const menuable = (id: string) => id !== editingId && !latest.current.isOutOfScope?.(id);
 
+  // A deleted page's focus: the row after it and its subpages, else the one before, and the page again after Undo.
+  const deleteFocus = (id: string): RowFocus => {
+    const now = latest.current.rows;
+    const at = now.findIndex((r) => r.id === id);
+    const gone = new Set<string>();
+    for (let i = at; at >= 0 && i < now.length; i++) {
+      if (i > at && now[i]!.level <= now[at]!.level) break;
+      gone.add(now[i]!.id);
+    }
+    return rowFocus({
+      ids: now.map((r) => r.id),
+      id,
+      gone,
+      control: (rowId) =>
+        tree.current?.querySelector<HTMLElement>(`[data-page-row="${CSS.escape(rowId)}"]`) ?? null,
+    });
+  };
   const onVerb = (verb: PageMenuVerb, id: string) =>
-    runPageVerb(verb, id, { ...latest.current, rename: setEditingId });
+    runPageVerb(verb, id, { ...latest.current, rename: setEditingId, deleteFocus });
   const onConnectedVerb = (verb: ConnectedMenuVerb, id: string) =>
     runConnectedVerb(verb, id, latest.current);
 

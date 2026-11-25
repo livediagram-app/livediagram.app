@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react';
+import { act, fireEvent, renderHook, screen } from '@testing-library/react';
+import { ToastProvider } from '@liveworkspace/ui/toast';
 import { describe, expect, it, vi } from 'vitest';
 import type { AccessLevel } from '@liveknowledge/api-schema';
 import {
@@ -13,7 +14,7 @@ import { takeTitleFocus } from '@/lib/page-title-focus';
 import { useTabActions } from './useTabActions';
 
 // The tab actions in tree terms (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree" and "Share
-// roles"): a page added under a parent, deleted with its subpages after one confirmation, duplicated beside itself,
+// roles"): a page added under a parent, deleted with its subpages at once with an Undo toast, duplicated beside itself,
 // moved with the tree's checks, and named with its Title.
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -50,7 +51,6 @@ function setup(over: Record<string, unknown> = {}) {
     tickTabs: vi.fn(apply),
     isTabLoaded: () => true,
     setActiveId: vi.fn(),
-    confirm: vi.fn(() => Promise.resolve(true)),
     toast: { error: vi.fn(), success: vi.fn(), info: vi.fn() },
     ...over,
   };
@@ -60,7 +60,7 @@ function setup(over: Record<string, unknown> = {}) {
       // Every other dependency the hook takes is a no-op here.
       { get: (target, key: string) => (key in target ? target[key] : vi.fn()) },
     );
-  const hook = renderHook(() => useTabActions(deps() as never));
+  const hook = renderHook(() => useTabActions(deps() as never), { wrapper: ToastProvider });
   return {
     actions: () => hook.result.current,
     rerender: () => hook.rerender(),
@@ -69,7 +69,6 @@ function setup(over: Record<string, unknown> = {}) {
       commitTabs: ReturnType<typeof vi.fn>;
       tickTabs: ReturnType<typeof vi.fn>;
       setActiveId: ReturnType<typeof vi.fn>;
-      confirm: ReturnType<typeof vi.fn>;
       toast: { error: ReturnType<typeof vi.fn> };
     },
   };
@@ -162,77 +161,106 @@ describe('a subpage made from a page link', () => {
   });
 });
 
+// liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md: a page goes at once, and its toast offers Undo.
+const del = (s: ReturnType<typeof setup>, id: string) =>
+  act(async () => {
+    s.actions().deleteTab(id);
+  });
+const undoButton = () => screen.queryByRole('button', { name: /^Undo deleting/ });
+
 describe('deleting a page', () => {
-  it('asks once, naming the count, then removes the page and its subpages in one commit', async () => {
+  it('removes the page and its subpages at once in one commit, and names the count in its toast', async () => {
     const s = setup();
-    await act(() => s.actions().deleteTab('b'));
-    expect(s.deps.confirm).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Delete Release Process and 1 Subpage?',
-        confirmLabel: 'Delete',
-      }),
-    );
+    await del(s, 'b');
     expect(s.deps.commitTabs).toHaveBeenCalledTimes(1);
     expect(shape(s.tabs())).toBe('a c<a e');
+    expect(screen.getByText('Deleted “Release Process” and 1 subpage.')).toBeTruthy();
+    expect(undoButton()).toBeTruthy();
   });
 
-  it('names several subpages, and none', async () => {
-    const s = setup();
-    await act(() => s.actions().deleteTab('a'));
-    expect(s.deps.confirm.mock.calls[0]![0]).toMatchObject({
-      title: 'Delete Handbook and 3 Subpages?',
-      message: expect.stringContaining('Undo'),
-    });
-    const t = setup();
-    await act(() => t.actions().deleteTab('e'));
-    expect(t.deps.confirm.mock.calls[0]![0]).toMatchObject({ title: 'Delete Notes?' });
-  });
-
-  it("moves a saved knowledgebase's pages to the Trash, and says they can be restored", async () => {
+  it("moves a saved knowledgebase's pages to the Trash, and says so", async () => {
     const s = setup({ documentId: 'kb' });
-    await act(() => s.actions().deleteTab('b'));
-    expect(s.deps.confirm).toHaveBeenCalledWith({
-      title: 'Move Release Process and 1 Subpage to the Trash?',
-      message:
-        'You can restore them from the Trash for 30 days. Undo (Cmd/Ctrl-Z) brings them straight back.',
-      confirmLabel: 'Move to Trash',
-    });
-    expect(shape(s.tabs())).toBe('a c<a e');
-    const t = setup({ documentId: 'kb' });
-    await act(() => t.actions().deleteTab('e'));
-    expect(t.deps.confirm.mock.calls[0]![0]).toMatchObject({
-      title: 'Move Notes to the Trash?',
-      message: expect.stringContaining('restore it from the Trash'),
-    });
+    await del(s, 'a');
+    expect(shape(s.tabs())).toBe('e');
+    expect(screen.getByText('Moved “Handbook” and 3 subpages to the Trash.')).toBeTruthy();
   });
 
-  it('removes nothing when the confirmation is declined', async () => {
-    const s = setup({ confirm: vi.fn(() => Promise.resolve(false)) });
-    await act(() => s.actions().deleteTab('b'));
-    expect(s.deps.commitTabs).not.toHaveBeenCalled();
+  it('Undo puts the pages back in their places in the tree, and the page that was open', async () => {
+    const s = setup({ activeId: 'd' });
+    await del(s, 'b');
+    expect(s.deps.setActiveId).toHaveBeenLastCalledWith('c');
+    fireEvent.click(undoButton()!);
+    await act(async () => {});
+    expect(s.tabs()).toEqual(TABS);
+    expect(s.deps.setActiveId).toHaveBeenLastCalledWith('d');
+    // Taken back once: its toast is gone.
+    expect(undoButton()).toBeNull();
+  });
+
+  it('Undo keeps what a collaborator did since, and never their page', async () => {
+    const s = setup();
+    await del(s, 'b');
+    // A collaborator renames Notes and adds a page meanwhile.
+    (s.deps.tickTabs as (map: (ts: Tab[]) => Tab[]) => void)((ts) => [
+      ...ts.map((t) => (t.id === 'e' ? { ...t, name: 'Meeting Notes' } : t)),
+      page('z', 'Theirs'),
+    ]);
+    fireEvent.click(undoButton()!);
+    await act(async () => {});
+    expect(shape(s.tabs())).toBe('a b<a d<b c<a e z');
+    expect(s.tabs().find((t) => t.id === 'e')!.name).toBe('Meeting Notes');
+  });
+
+  it('moves focus off the gone rows, and back onto the page after Undo', async () => {
+    const s = setup();
+    const focus = { removed: vi.fn(), restored: vi.fn() };
+    await act(async () => {
+      s.actions().deleteTab('b', focus);
+    });
+    expect(focus.removed).toHaveBeenCalledOnce();
+    fireEvent.click(undoButton()!);
+    await act(async () => {});
+    expect(focus.restored).toHaveBeenCalledOnce();
   });
 
   it('opens the page after the deleted ones when the current page goes with them', async () => {
     const s = setup({ activeId: 'd' });
-    await act(() => s.actions().deleteTab('b'));
+    await del(s, 'b');
     expect(s.deps.setActiveId).toHaveBeenCalledWith('c');
   });
 
-  it('never deletes the last page, and asks nothing', async () => {
+  it('never deletes the last page, and offers nothing', async () => {
     const s = setup({ tabs: [page('a', 'Handbook'), page('b', 'Sub', 'a')] });
-    await act(() => s.actions().deleteTab('a'));
-    expect(s.deps.confirm).not.toHaveBeenCalled();
+    await del(s, 'a');
+    expect(undoButton()).toBeNull();
     expect(s.tabs()).toHaveLength(2);
   });
 
   it('never deletes a locked page, or a page with a locked subpage', async () => {
     const locked = TABS.map((t) => (t.id === 'd' ? { ...t, locked: true } : t));
     const s = setup({ tabs: locked });
-    await act(() => s.actions().deleteTab('b'));
-    expect(s.deps.confirm).not.toHaveBeenCalled();
+    await del(s, 'b');
+    expect(undoButton()).toBeNull();
     expect(s.deps.toast.error).toHaveBeenCalledWith(
       expect.stringMatching(/^Unlock .+ before deleting it\.$/),
     );
+  });
+});
+
+describe('resetting a page', () => {
+  it('clears it at once, and Undo puts everything back', async () => {
+    const full = [
+      { ...page('a', 'Handbook'), elements: [{ id: 'x' }, { id: 'y' }] } as unknown as Tab,
+    ];
+    const s = setup({ tabs: full });
+    await act(async () => {
+      await s.actions().clearTabContent();
+    });
+    expect(s.tabs()[0]!.elements).toEqual([]);
+    expect(screen.getByText('Cleared the page.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Undo clearing the page' }));
+    await act(async () => {});
+    expect(s.tabs()[0]!.elements.map((e) => e.id)).toEqual(['x', 'y']);
   });
 });
 
@@ -346,6 +374,7 @@ describe.each(['edit', 'participate', 'view'] as AccessLevel[])('share roles: %s
       await action(s.actions());
     });
     expect(s.tabs() !== before).toBe(may);
-    if (!may) expect(s.deps.confirm).not.toHaveBeenCalled();
+    // A Participant or a Viewer never gets the delete, so never its Undo.
+    if (!may) expect(undoButton()).toBeNull();
   });
 });

@@ -21,7 +21,6 @@ import {
   tabFolderName,
   tabInFolder,
   truncateName,
-  type Element,
   type Tab,
 } from '@livedesign/design';
 import { apiLinkTab } from '@/lib/api-client';
@@ -33,9 +32,10 @@ import {
 } from '@liveworkspace/workbench/components/connect/tab-connection';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
+import { useUndoableAction } from '@liveworkspace/ui/undo';
+import { resetTabUndoable } from '@liveworkspace/workbench/lib/tab-reset-undo';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from '@liveworkspace/workbench/hooks/persistence/tab-folder-reporting';
-import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
@@ -55,7 +55,6 @@ type TabActionsDeps = {
   // Factory for a blank tab (kept in the page because the initial-state
   // initialiser also uses it).
   createTab: (name: string) => Tab;
-  commit: (mapElements: (els: Element[]) => Element[]) => void;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   // Mark a freshly-created tab as loaded so the lazy per-tab fetch
   // (docs/specs/006-design/per-tab-storage.md) skips it — a locally-created tab has no server row to
@@ -80,7 +79,6 @@ type TabActionsDeps = {
   noteImport?: (tabId: string, elements: readonly { id: string }[]) => void;
   // Re-pulls the owner's design list after a cross-design tab link.
   refreshDesignList: (ownerId: string) => void;
-  confirm: ReturnType<typeof useConfirm>;
   toast: ReturnType<typeof useToast>;
 };
 
@@ -92,7 +90,6 @@ export function useTabActions(deps: TabActionsDeps) {
     ownerId,
     designId,
     createTab,
-    commit,
     commitTabs,
     markTabLoaded,
     isTabLoaded,
@@ -104,7 +101,6 @@ export function useTabActions(deps: TabActionsDeps) {
     requestFit,
     noteImport,
     refreshDesignList,
-    confirm,
     toast,
   } = deps;
 
@@ -338,22 +334,21 @@ export function useTabActions(deps: TabActionsDeps) {
     }
   };
 
-  const clearTabContent = async () => {
-    // Wiping a whole tab is a big, easy-to-misfire action, so gate it on
-    // the branded confirm dialog (same as deleting a tab) rather than
-    // clearing the instant the menu item is clicked. It IS undoable
-    // (one commit), which the message notes.
-    const ok = await confirm({
-      title: 'Reset This Canvas?',
-      message: 'Every element on this tab is removed. Undo brings it back.',
-      confirmLabel: 'Reset canvas',
+  // Reset canvas empties the tab at once, and a toast offers Undo, which puts every element back
+  // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
+  const offerUndo = useUndoableAction();
+  const clearTabContent = () =>
+    resetTabUndoable({
+      tabId: activeId,
+      tabs,
+      commitTabs,
+      offerUndo,
+      onReset: () => {
+        setSelectedId(null);
+        setEditingId(null);
+        track('Tab', 'Cleared');
+      },
     });
-    if (!ok) return;
-    commit(() => []);
-    setSelectedId(null);
-    setEditingId(null);
-    track('Tab', 'Cleared');
-  };
 
   return {
     addTab,

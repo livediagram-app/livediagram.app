@@ -6,6 +6,7 @@
 // went (TOAST_FLOOR_CHANGED_EVENT). Nothing runs while the stack is empty.
 import { useLayoutEffect, useRef, useState } from 'react';
 import {
+  TOAST_BESIDE_SELECTOR,
   TOAST_EDGE_PX,
   TOAST_FLOOR_CHANGED_EVENT,
   TOAST_FLOOR_SELECTOR,
@@ -37,7 +38,8 @@ export function useToastFloor(active: boolean, count: number): ToastPlacement {
       const r: FloorRect = el.getBoundingClientRect();
       r.rises = el.matches(TOAST_RISEN_SELECTOR);
       r.phoneOnly = el.matches(TOAST_PHONE_FLOOR_SELECTOR);
-      (el.matches(TOAST_SIDE_SELECTOR) ? sides : floors).push(r);
+      r.beside = el.matches(TOAST_BESIDE_SELECTOR);
+      (r.beside || el.matches(TOAST_SIDE_SELECTOR) ? sides : floors).push(r);
     }
     const next = toastPlacement({
       viewportWidth: window.innerWidth,

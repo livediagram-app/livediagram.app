@@ -93,24 +93,14 @@ export function pageAfterDelete(tabs: readonly Tab[], id: string): string | unde
   );
 }
 
-/** The delete confirmation's title, naming the count ("Delete Release Process and 3 Subpages?"). */
-export function deletePageTitle(name: string, subpages: number, toTrash = false): string {
-  const page = name.trim() || 'This Page';
+/** What deleting a page says, in its Undo toast (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md):
+ *  to the knowledgebase's Trash, or (an Offline knowledgebase, which has none) deleted, naming the subpages that went
+ *  with it ("Moved “Release Process” and 3 subpages to the Trash."). */
+export function deletedPageMessage(name: string, subpages: number, toTrash: boolean): string {
+  const page = name.trim() ? `“${name.trim()}”` : 'the page';
   const what =
-    subpages === 0 ? page : `${page} and ${subpages} ${subpages === 1 ? 'Subpage' : 'Subpages'}`;
-  return toTrash ? `Move ${what} to the Trash?` : `Delete ${what}?`;
-}
-
-/** The delete confirmation's words: to the knowledgebase's Trash, or (an Offline knowledgebase, which has none)
- *  removed, with Undo to bring it back (knowledgebases-and-pages.md "The page Trash"). */
-export function deletePageMessage(subpages: number, toTrash: boolean): string {
-  if (toTrash)
-    return subpages === 0
-      ? 'You can restore it from the Trash for 30 days. Undo (Cmd/Ctrl-Z) brings it straight back.'
-      : 'You can restore them from the Trash for 30 days. Undo (Cmd/Ctrl-Z) brings them straight back.';
-  return subpages === 0
-    ? 'The page is removed for everyone. Undo (Cmd/Ctrl-Z) brings it back.'
-    : 'The page and its subpages are removed for everyone. Undo (Cmd/Ctrl-Z) brings them back.';
+    subpages === 0 ? page : `${page} and ${subpages} ${subpages === 1 ? 'subpage' : 'subpages'}`;
+  return toTrash ? `Moved ${what} to the Trash.` : `Deleted ${what}.`;
 }
 
 /** Why the tree refuses an edit, as a person reads it in a tooltip or a toast. */

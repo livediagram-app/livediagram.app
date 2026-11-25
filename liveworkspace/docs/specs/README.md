@@ -37,7 +37,7 @@ Paths in these specs are relative to `liveworkspace/` (`apps/accounts/…`), exc
 - ./019-subscription/README.md - when working on Pro: the flag, the tiers and their limits, the subscription Worker, meters, prices, billing and what people see of it
 - ./020-ask/README.md - when working on Ask AI in any app but liveknowledge: the tool in the footer's Tools, what is sent, which AI answers and how the person switches, Sources, built-in AI's allowance, `@liveworkspace/ask`
 - ./021-mcp/README.md - when working on the one liveworkspace MCP server: one connection to every app's tools, the core verbs, tool names, per-app consent, the tool-pick eval
-- ./022-interface-design/README.md - when adding, renaming or moving an action every app shares (share, rename, duplicate, Trash, restore, export, search, recent, copy link): the parity matrix, its rule and the shared Keyboard section
+- ./022-interface-design/README.md - when adding, renaming or moving an action every app shares (share, rename, duplicate, Trash, restore, export, search, recent, copy link): the parity matrix, its rule and the shared Keyboard section; Undo, not confirm, for what can be taken back, and every confirm sorted
 
 ## Workflow
 
