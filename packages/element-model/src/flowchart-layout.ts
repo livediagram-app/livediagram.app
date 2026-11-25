@@ -511,8 +511,10 @@ function layoutUnlaned(
     const s = steps.find((x) => x.id === k)!;
     return { ...p, width: s.width, height: s.height };
   });
-  if (anchor && !connected.has(anchor.id) && ids.has(anchor.id)) block.push(anchor);
-  if (block.length === 0) block.push(loose[0]!);
+  // The first step stands in the block even when locked (it never moves either way). Lined up beside the first loose
+  // step instead, the loose steps moved one column further on every layout of the chart.
+  if (anchor && !connected.has(anchor.id)) block.push(anchor);
+  if (block.length === 0) return { steps: pos, lanes: new Map() };
   const left = Math.min(...block.map((b) => b.x));
   const top = Math.min(...block.map((b) => b.y));
   const right = Math.max(...block.map((b) => b.x + b.width));
