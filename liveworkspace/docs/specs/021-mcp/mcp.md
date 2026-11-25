@@ -73,7 +73,10 @@ The server is built to be listed in Claude's connector directory, so it meets it
 
 - **Every tool has a `title` and the hints that apply**, said in full rather than left to the defaults:
   `readOnlyHint: true` on a tool that only reads, `destructiveHint` true or false on every other. An editing tool
-  keeps its app's own annotations, title and all, under its new name.
+  keeps its app's own annotations, title and all, under its new name. A tool that deletes, trashes, archives,
+  overwrites or shares is destructive (`share_item` and every app's share tool among them: a link opens the item to
+  anyone who has it), so a client asks before each call; a tool named for reading (`find_`, `read_`, `list_`,
+  `search_`, `get_`) only reads. A test over every listed tool, the core verbs and `?tools=all`, keeps it so.
 - **Reading and changing never share a tool.** The directory refuses one tool that does both, so an editing tool
   runs through `read_with_app_tool` (read-only, and it refuses a tool that changes anything) or
   `change_with_app_tool` (marked destructive, and it refuses a read-only tool, naming the other).
@@ -108,7 +111,10 @@ A router in front of each app's tools, in one Worker. Each app's MCP is a packag
 (`<app>/apps/mcp`: its tools, prompts, resources and views, with their tests), and this Worker runs each one in
 process, as the person, with the person's own `Authorization: Bearer lwt_…` (an account token works on every app).
 An app's tools reach its api over this Worker's service binding to that api. An app's answer comes back as it is,
-the old tool names in its guidance and refusals rewritten, never in what a person wrote. A refused token (401 from any app) makes the whole request answer 401 with the sign-in
+the old tool names in its guidance and refusals rewritten, never in what a person wrote. A tool call the app's MCP
+answers with a JSON-RPC error comes back as a tool error (`isError`) in the app's own words, so the assistant can
+correct the call; only a tool name this server doesn't have is a protocol error, and only a failure to reach the app
+answers "try again". A refused token (401 from any app) makes the whole request answer 401 with the sign-in
 challenge.
 
 The core verbs map to each app's existing tools: `find_items` to `find_documents`, `find_projects` or

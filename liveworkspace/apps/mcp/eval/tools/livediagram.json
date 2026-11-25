@@ -984,7 +984,7 @@
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
-    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "share_diagram",
@@ -996,7 +996,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
     },
-    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "rename_document",

@@ -111,3 +111,38 @@ describe('nameRewriter', () => {
     expect(nameRewriter(new Map([['a_b', 'a_b']]))('a_b')).toBe('a_b');
   });
 });
+
+// Claude's connector review reads a tool's hints against what it does (liveworkspace/docs/specs/021-mcp/mcp.md "Fit
+// for Claude's connector directory"): every tool listed, the core verbs and with ?tools=all every app's, says it only
+// reads when its name says so, and never claims to be harmless when it deletes, trashes, archives, overwrites or shares.
+describe('every listed tool’s hints', () => {
+  const listed = [...CORE_TOOLS, ...catalogues.flatMap((c) => c.tools)];
+  const verb = (name: string) => name.split('_')[0]!;
+  const READS = new Set(['find', 'read', 'list', 'search', 'get']);
+  const DESTROYS = new Set(['delete', 'trash', 'archive', 'update', 'write', 'overwrite', 'share']);
+
+  it('marks every tool named for reading read-only', () => {
+    const wrong = listed
+      .filter((t) => READS.has(verb(t.name)) && t.annotations?.readOnlyHint !== true)
+      .map((t) => t.name);
+    expect(wrong).toEqual([]);
+  });
+
+  it('marks every delete, trash, archive, overwrite and share tool destructive', () => {
+    const wrong = listed
+      .filter(
+        (t) =>
+          DESTROYS.has(verb(t.name)) &&
+          (t.annotations?.readOnlyHint !== false || t.annotations?.destructiveHint !== true),
+      )
+      .map((t) => t.name);
+    expect(wrong).toEqual([]);
+  });
+
+  it('gives every tool a title, and a description under 2,000 characters', () => {
+    for (const t of listed) {
+      expect(t.title?.trim(), t.name).toBeTruthy();
+      expect((t.description ?? '').length, t.name).toBeLessThan(2000);
+    }
+  });
+});

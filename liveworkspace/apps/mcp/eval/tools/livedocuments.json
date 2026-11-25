@@ -2,7 +2,7 @@
   {
     "name": "change_pages",
     "title": "Change pages",
-    "description": "Build a slide deck or presentation or an infographic: change the pages of a tab, in order, as one edit. Each change is an object with its \"op\" (never a bare string): add {kind, layout, ...} an infographic or slide page, set {page, name, size, orientation, background, locked}, layout {page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every other page of its kind, every slide say, takes that page's background). The answer gives every page with its rectangle in canvas coordinates, the same as an element's x and y in update_document (the layout view prints positions from the content's corner instead). A layout fills a page with sample text; its \"text\" replaces it by slot in the same change ({\"op\": \"add\", \"kind\": ..., \"layout\": ..., \"text\": {\"title\": ..., \"bullets\": [...], \"figures\": [...]}}), and each page a change lays out answers its texts, each with its ref (for update_document), slot and words. A layout's colours are the tab's theme (create_document's and add_tab's theme: mocha, ocean, forest...), a page’s background its own. Articles are written with write_article. Everyone with the document open sees it at once.",
+    "description": "Build a slide deck or presentation or an infographic: change the pages of a tab, in order, as one edit. Each change is an object with its \"op\" (never a bare string): add {kind, layout, ...} an infographic or slide page, set {page, name, size, orientation, background, locked}, layout {page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every other page of its kind, every slide say, takes that page's background), tab_design {design} (decoration drawn behind every page in the theme’s colours: an id such as \"aurora\", {\"id\", ...tuning}, \"auto\" or null; set and add take a page’s own \"design\", or \"none\" / \"tab\"). The answer gives every page with its rectangle in canvas coordinates, the same as an element's x and y in update_document (the layout view prints positions from the content's corner instead). A layout fills a page with sample text; its \"text\" replaces it by slot in the same change ({\"op\": \"add\", \"kind\": ..., \"layout\": ..., \"text\": {\"title\": ..., \"bullets\": [...], \"figures\": [...]}}), and each page a change lays out answers its texts, each with its ref (for update_document), slot and words. A layout's colours are the tab's theme (create_document's and add_tab's theme: mocha, ocean, forest...), a page’s background its own. Articles are written with write_article. Everyone with the document open sees it at once.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -124,6 +124,18 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 9007199254740991
+                  },
+                  "design": {
+                    "anyOf": [
+                      { "type": "string" },
+                      {
+                        "type": "object",
+                        "properties": { "id": { "type": "string" } },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                      }
+                    ],
+                    "description": "The page’s own design: a design id (or {\"id\", ...tuning} as tab_design takes, but rhythm and flow), \"none\" for no design on this page, or \"tab\" for the tab’s."
                   }
                 },
                 "required": ["op", "kind"],
@@ -179,10 +191,21 @@
                   "locked": {
                     "description": "Lock or unlock the page (unlocking comes first).",
                     "type": "boolean"
+                  },
+                  "design": {
+                    "anyOf": [
+                      { "type": "string" },
+                      {
+                        "type": "object",
+                        "properties": { "id": { "type": "string" } },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                      }
+                    ]
                   }
                 },
                 "required": ["op", "page"],
-                "description": "A page’s name, size, orientation, background or lock; on an article, all its pages."
+                "description": "A page’s name, size, orientation, background, lock or design; on an article, all its pages."
               },
               {
                 "type": "object",
@@ -276,6 +299,120 @@
                 },
                 "required": ["op", "page"],
                 "description": "Every other page of the same kind (every slide, say) takes this page’s background and pattern, as the Background tab’s Apply to All; a locked page keeps its own."
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "type": "string",
+                    "const": "tab_design",
+                    "description": "Set the page design every page of the tab wears."
+                  },
+                  "design": {
+                    "anyOf": [
+                      { "type": "string" },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "The design. Gradients: soft-mesh, aurora, duotone-sweep, radial-glow, sunset-bands; Geometric: grid, dots, isometric, hexagons, triangles, concentric-rings, diagonal-stripes; Organic: blobs, waves, topographic, ribbons, marbled; Texture: paper-grain, noise, linen, risograph, halftone, blueprint; Light: glass-panels, spotlight, bokeh, soft-shadows, layered-cards; Frames: corner-accents, edge-bands, side-rail, torn-paper, offset-border; Bold: brutalist-blocks, memphis, swiss-grid, split-fields, type-watermark; Tech: circuit, starfield, constellations, data-grid, scanlines."
+                          },
+                          "colors": {
+                            "description": "Three colours of its own; absent: the theme’s, so a theme change recolours it.",
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "description": "A hex colour such as #0f172a."
+                            },
+                            "minItems": 3,
+                            "maxItems": 3
+                          },
+                          "intensity": {
+                            "description": "How strongly it shows, 0.1 to 1.",
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 1
+                          },
+                          "scale": {
+                            "description": "How large its parts are, 0.5 to 2.",
+                            "type": "number",
+                            "minimum": 0.5,
+                            "maximum": 2
+                          },
+                          "angle": {
+                            "description": "Which way it runs, in degrees.",
+                            "type": "number"
+                          },
+                          "focus": {
+                            "description": "Where its focus sits, [x, y] each 0 to 1 across the page.",
+                            "type": "array",
+                            "items": { "type": "number", "minimum": 0, "maximum": 1 },
+                            "minItems": 2,
+                            "maxItems": 2
+                          },
+                          "seed": {
+                            "description": "Which variation, 1 to 9999.",
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9999
+                          },
+                          "blur": {
+                            "description": "How soft its edges are, 0 to 1.",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "grain": {
+                            "description": "Film grain over it, 0 to 1.",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "calm": {
+                            "description": "Safe area: how calm the middle of the page stays, 0 to 1.",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "variant": {
+                            "description": "One of the design’s own styles (a refusal lists them).",
+                            "type": "string"
+                          },
+                          "animate": {
+                            "description": "Move gently on screen (exports stay still): soft-mesh, aurora, duotone-sweep, radial-glow, blobs, waves, ribbons, spotlight, bokeh, circuit, starfield, constellations, scanlines.",
+                            "type": "boolean"
+                          },
+                          "speed": {
+                            "description": "Its pace while it moves, 0.25 to 3.",
+                            "type": "number",
+                            "minimum": 0.25,
+                            "maximum": 3
+                          },
+                          "guard": {
+                            "description": "scrim (default): a soft plate under a text the design makes hard to read; warn: none.",
+                            "type": "string",
+                            "enum": ["scrim", "warn"]
+                          },
+                          "rhythm": {
+                            "description": "Bold on title and section pages, quieter on content pages.",
+                            "type": "boolean"
+                          },
+                          "flow": {
+                            "description": "One long strip across the pages in order: soft-mesh, aurora, duotone-sweep, diagonal-stripes, blobs, waves, topographic, ribbons, starfield.",
+                            "type": "boolean"
+                          }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                      },
+                      { "type": "null" }
+                    ],
+                    "description": "A design id (or {\"id\", ...tuning}), a saved design’s \"saved:<id>\" (list_templates), \"auto\" for one picked for the tab’s words, or null to clear it."
+                  }
+                },
+                "required": ["op", "design"],
+                "description": "The tab’s page design: decoration drawn behind every element of every page in the theme’s colours (a page with its own keeps it). Text stays readable: a soft plate goes under any text it would make hard to read."
               },
               {
                 "type": "object",
@@ -539,7 +676,7 @@
   {
     "name": "list_templates",
     "title": "List templates",
-    "description": "Browse the template library: the same ready-made pages the editor’s Quick Start offers (slide decks, articles, posters, infographics, résumés, ...). Returns categories plus { kind, title, description, category } per template. Pass a kind as \"template\" on create_document / add_tab to start from it, then replace its sample text with update_document.",
+    "description": "Browse the template library: the same ready-made pages the editor’s Quick Start offers (slide decks, articles, posters, infographics, résumés, ...). Returns categories plus { kind, title, description, category } per template. Pass a kind as \"template\" on create_document / add_tab to start from it, then replace its sample text with update_document. savedDesigns: the Page Designs saved to the caller’s Library.",
     "inputSchema": {
       "type": "object",
       "properties": {},
@@ -631,6 +768,10 @@
           "description": "How the tab is drawn (docs/specs/008-canvas/finish.md): \"flexible\" (the default), \"professional\" (crisp corners, thin lines, no shadows), \"sketch\" (hand-drawn pencil lines, hatched fills, a handwriting font) or \"marker\" (bold felt-tip lines, coloured-in fills, marker lettering). An element can carry its own \"finish\" too.",
           "type": "string",
           "enum": ["flexible", "professional", "sketch", "marker"]
+        },
+        "design": {
+          "description": "A page design every page wears, drawn behind everything in the theme’s colours: a design id such as \"aurora\" (change_pages’ tab_design lists them and tunes it), a saved design’s \"saved:<id>\" (list_templates), or \"auto\" for one that suits the words.",
+          "type": "string"
         },
         "markUsed": {
           "description": "Whether this document joins the user's Most Used and Recent on Home (their most used and recent documents) at once. Default true. Pass false when making many documents in one go, so a batch never pushes the user's own work out of reach.",
@@ -804,7 +945,7 @@
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
-    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "rename_document",

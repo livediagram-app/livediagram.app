@@ -268,7 +268,7 @@ export const mcpCreateDocument = mcpTool('create_document', {
 });
 
 export const mcpShareDocument = mcpTool('share_document', {
-  behaviour: 'write',
+  behaviour: 'destructive',
   title: 'Share a knowledgebase',
   description:
     'Create a shareable link to a knowledgebase so anyone with the URL can open it, with no ' +
