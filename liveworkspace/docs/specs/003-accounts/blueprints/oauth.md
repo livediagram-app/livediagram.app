@@ -183,6 +183,11 @@ Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client'
   camel case (`Live Diagram`, `my-Claude`, `C.l.a.u.d.e`) (`reservedNameRefusal`, `oauth-names.ts`).
 - `POST /oauth/token` with `authorization_code` requires `client_id` and `redirect_uri`, each equal to the one the
   code was issued for (RFC 6749 §4.1.3); a missing one is `400 invalid_request`.
+- `GET /oauth/authorize` answers `400` in words, on the page, only without `client_id` or `redirect_uri`, or for an
+  unknown client or a redirect URI it did not register (RFC 6749 §4.1.2.1: never redirect to one). After that, every
+  refusal redirects to the redirect URI with `error`, `error_description` and the request's `state`: a
+  `response_type` other than `code` is `unsupported_response_type`; a missing `code_challenge`, one shorter than 43
+  characters or a `code_challenge_method` other than `S256` is `invalid_request`.
 - A registration lives `CLIENT_TTL` (200 days, past the six-month token it mints) and every `/oauth/authorize` renews
   it, so a client that keeps its `client_id` (claude.ai does) can always sign in again.
 - Registration is limited 20 an hour per address, but Anthropic's egress range `160.79.104.0/21`, where every claude.ai

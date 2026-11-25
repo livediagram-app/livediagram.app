@@ -522,7 +522,10 @@ describe('full authorize -> complete -> token flow', () => {
       {},
       env,
     );
-    expect(shortChallenge.status).toBe(400);
+    expect(shortChallenge.status).toBe(302);
+    expect(new URL(shortChallenge.headers.get('location')!).searchParams.get('error')).toBe(
+      'invalid_request',
+    );
 
     // token: short verifier against a valid code.
     const verifier = 'z'.repeat(64);
@@ -853,18 +856,46 @@ describe('Claude connector directory', () => {
     expect(json.body.error_description).toContain('form-encoded');
   });
 
-  it('refuses an authorize that is missing a part, not S256 or not a code flow, in words', async () => {
+  it('answers on the page only without a client or a redirect uri, or for one not registered', async () => {
     const clientId = await register();
-    const base = `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}`;
-    const challenge = `&code_challenge=${'c'.repeat(43)}`;
-    for (const [query, words] of [
-      [base, 'missing client_id, redirect_uri, or code_challenge'],
-      [`${base}${challenge}&code_challenge_method=plain`, 'only S256 PKCE is supported'],
-      [`${base}${challenge}&response_type=token`, 'only response_type=code is supported'],
-    ] as const) {
+    for (const query of [
+      `/oauth/authorize?client_id=${clientId}`,
+      `/oauth/authorize?redirect_uri=${encodeURIComponent(REDIRECT)}`,
+    ]) {
       const res = await app.request(query, {}, env);
       expect(res.status).toBe(400);
-      expect(await res.text()).toBe(words);
+      expect(await res.text()).toBe('missing client_id or redirect_uri');
+    }
+    const unknown = await app.request(
+      `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent('https://other.test/cb')}&response_type=token`,
+      {},
+      env,
+    );
+    expect(unknown.status).toBe(400);
+    expect(unknown.headers.get('location')).toBeNull();
+  });
+
+  it('sends a known client’s wrong authorize back to it: the error, words and its state', async () => {
+    const clientId = await register();
+    const base = `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}&state=st9`;
+    const challenge = `&code_challenge=${'c'.repeat(43)}`;
+    for (const [query, error, words] of [
+      [base, 'invalid_request', 'Missing code_challenge'],
+      [`${base}${challenge}&code_challenge_method=plain`, 'invalid_request', 'S256'],
+      [
+        `${base}${challenge}&response_type=token`,
+        'unsupported_response_type',
+        'response_type=code',
+      ],
+    ] as const) {
+      const res = await app.request(query, {}, env);
+      expect(res.status).toBe(302);
+      const to = new URL(res.headers.get('location')!);
+      expect(`${to.origin}${to.pathname}`).toBe(REDIRECT);
+      expect(to.searchParams.get('error')).toBe(error);
+      expect(to.searchParams.get('error_description')).toContain(words);
+      expect(to.searchParams.get('state')).toBe('st9');
+      expect(to.searchParams.get('session')).toBeNull();
     }
   });
 

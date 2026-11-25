@@ -86,7 +86,10 @@ The server is built to be listed in Claude's connector directory, so it meets it
   redirects accepted (mcp-kit's authorization server). Every answer that carries a token says
   `Cache-Control: no-store` (RFC 6749 §5.1), and Cancel on the consent page sends the person back to the client
   with `error=access_denied` (RFC 6749 §4.1.2.1), so the AI tool stops waiting rather than hanging on a page that
-  says to close it.
+  says to close it. Once the client and its redirect URI are known good, an authorize request it got wrong (a
+  `response_type` other than `code`, no S256 `code_challenge`) goes back to the client the same way, with
+  `error=unsupported_response_type` or `invalid_request`, words and its `state`; only an unknown client or redirect
+  URI is answered on the page itself.
 - **Streamable HTTP, stateless**: every request is answered on its own, with no session id. `POST /mcp` carries
   the JSON-RPC; `GET /mcp` with a token answers `405 Method Not Allowed` (the spec's way to say the server opens no
   stream of its own: it never sends a message nobody asked for), so a client never holds an empty stream open or
