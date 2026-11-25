@@ -16,6 +16,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
+import { useRefreshSubscription } from '@liveworkspace/subscription-ui';
 import type { TeamRef } from '../types';
 import { isAbort } from '../data/errors';
 import { applyTeamChanges, teamChanges } from '../data/teamChanges';
@@ -134,6 +135,7 @@ export function TeamsProvider({
 }) {
   const live = signedIn ? host : null;
   const [myTeams, setMyTeams, refresh, myTeamsFailed] = useMyTeams(live, eager);
+  const refreshSubscription = useRefreshSubscription();
   const changes = useSyncExternalStore(
     teamChanges.subscribe,
     teamChanges.snapshot,
@@ -147,9 +149,13 @@ export function TeamsProvider({
 
   // After a change to the person's teams: the host renews its token, and the page reads the list again.
   const changed = useCallback(() => {
-    void Promise.resolve(live?.onTeamsChanged?.()).catch(() => {});
+    // The subscription is read again with the renewed token, so a team just joined or made shows its tier (the Pro
+    // badge after its name).
+    void Promise.resolve(live?.onTeamsChanged?.())
+      .then(() => refreshSubscription())
+      .catch(() => {});
     if (eager) refresh();
-  }, [live, eager, refresh]);
+  }, [live, eager, refresh, refreshSubscription]);
 
   const value = useMemo<TeamsContext>(() => {
     if (!live) return { ...QUIET, teams, myTeams };

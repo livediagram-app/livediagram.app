@@ -431,6 +431,11 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   until the service answers.
   Its **Usage** tab (owner, 2026-11-25) shows the team's usage against its limits for everyone in it, the same list
   as Settings' Your Usage, with what Pro for Teams allows beside each row on Free.
+  A paid space wears the solid Pro badge after its name (owner 2026-11-25), and nothing more: a subscribed team on
+  every tab of its page, on its sidebar row and on its tile in Home's Spaces; My Work on its sidebar row and its Home
+  tile while the person has Pro. So anyone in a team can see it is on Pro from the library; a Free team's header
+  keeps "Free Plan".
+  Joining or making a team reads the subscription again with the renewed token, so the badge shows at once.
 - **The upgrade dialog:** Subscribe For Just Me or A Team, and the comparison of every limit by tier beside your
   usage now, grouped (Automation; Publishing; AI; Storage and History; Recording and Calls; Knowledgebases),
   each row with the logos of the apps it applies to and an explanation. A limit shared by several apps shows each of

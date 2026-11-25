@@ -5,14 +5,16 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   GARDEN,
+  ME,
   meResponse,
   serviceFetch,
+  summary,
   setProForTests,
   team,
   type Service,
 } from '@liveworkspace/subscription-ui/testing';
 import { proOnForTests, withPro } from '@liveworkspace/subscription-ui/testing/who';
-import { TeamPlan, TeamUsage } from './TeamPlan';
+import { TeamPlan, SpaceProBadge, TeamUsage } from './TeamPlan';
 
 proOnForTests();
 afterEach(cleanup);
@@ -100,5 +102,23 @@ describe('TeamPlan', () => {
     expect(runs.textContent).toContain('40 of 500');
     expect(runs.textContent).toContain('a member on Pro for Teams');
     expect(screen.getByText(/counts toward these limits, shared by everyone/)).toBeTruthy();
+  });
+
+  it('puts the Pro badge after a subscribed team’s name, and nothing after a Free one’s', async () => {
+    const { fetcher } = serviceFetch({
+      me: meResponse({ teams: [team(GARDEN, 'Garden', 'member', 'team')] }),
+    });
+    render(withPro(<SpaceProBadge teamId={TEAM_ID} />, fetcher));
+    expect(await screen.findByLabelText('Pro')).toBeTruthy();
+    cleanup();
+    // My Work: the person's own Pro.
+    const mine = serviceFetch({ me: meResponse({ personal: summary(ME, 'pro') }) });
+    render(withPro(<SpaceProBadge teamId={null} />, mine.fetcher));
+    expect(await screen.findByLabelText('Pro')).toBeTruthy();
+    cleanup();
+    const free = serviceFetch({ me: meResponse({ teams: [team(GARDEN, 'Garden', 'admin')] }) });
+    const { container } = render(withPro(<SpaceProBadge teamId={TEAM_ID} />, free.fetcher));
+    await waitFor(() => expect(free.calls.length).toBeGreaterThan(0));
+    expect(container.textContent).toBe('');
   });
 });
