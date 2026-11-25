@@ -73,6 +73,9 @@ export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
 
 export type ArticleWriteMode = 'replace' | 'append';
 
+/** A picture an append places (`ArticleWrite.picture`): the stored image and its size in pixels. */
+export type ArticleWritePicture = { imageId: string; width: number; height: number; alt?: string };
+
 // A page holds one article on the continuous page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The
 // continuous page"): a write names no new article, paper size, turn or page numbers.
 export type ArticleWrite = {
@@ -80,6 +83,13 @@ export type ArticleWrite = {
   article?: string;
   markdown: string;
   mode?: ArticleWriteMode;
+  // An append under one heading (liveworkspace/docs/specs/004-index/send-to-knowledge.md "The section"): the heading
+  // block's id, or its words (the first heading that reads so), the new blocks going at the end of that heading's
+  // part, before the next heading of the same or a higher level. Absent: after the last block.
+  after?: string;
+  // A picture appended with the written blocks: an image of the knowledgebase's in an object zone, aligned left, where
+  // a `[picture]` line of the Markdown stands, else after the words.
+  picture?: ArticleWritePicture;
   // No `look` and no `accent`: a page has no style of its own. The look is the knowledgebase's
   // (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"), in the document's metadata.
 };
@@ -177,6 +187,7 @@ const PAGES_REFUSAL_CODES = [
   'zone_unknown',
   'article_too_large',
   'invalid_cover',
+  'heading_unknown',
 ] as const;
 
 export type PagesRefusalCode = (typeof PAGES_REFUSAL_CODES)[number];

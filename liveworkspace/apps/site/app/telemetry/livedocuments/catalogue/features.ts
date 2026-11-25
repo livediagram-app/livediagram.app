@@ -775,6 +775,8 @@ OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!, FIND_BAR_OPENED.typeIn!);
 OPENED_HOMES.push(
   (t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram' || t === 'SentDiagram',
 );
+// Send to Knowledge Base's code is shared too (_shared/send-to-knowledge-metrics.ts).
+OPENED_HOMES.push((t) => t === 'SendToKnowledge');
 // Suggestions have a stack each (_shared/suggestion-metrics.ts).
 OPENED_HOMES.push(isSuggestionType);
 OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');

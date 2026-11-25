@@ -15,6 +15,7 @@
 
 import { MAKE_PLAN_CARDS_EXACT } from '../_shared/diagrams-and-plans-metrics';
 import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
+import { SEND_TO_KNOWLEDGE_EXACT } from '../_shared/send-to-knowledge-metrics';
 import { SEND_TO_DIAGRAM_EXACT } from '../_shared/send-to-diagram-metrics';
 import { SUGGESTIONS_SWITCH_EXACT, SUGGEST_MAKE_PLAN_EXACT } from '../_shared/suggestion-metrics';
 import { ITEM_CALL_EXACT } from '../_shared/item-call-metrics';
@@ -41,6 +42,7 @@ const perReportReason = Object.fromEntries(
 
 export const EXACT: Readonly<Record<string, string>> = {
   ...SEND_TO_PLAN_EXACT,
+  ...SEND_TO_KNOWLEDGE_EXACT,
   ...MAKE_PLAN_CARDS_EXACT,
   ...SEND_TO_DIAGRAM_EXACT,
   ...SUGGESTIONS_SWITCH_EXACT,

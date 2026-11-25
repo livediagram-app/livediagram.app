@@ -20,6 +20,9 @@ export const AI_CREDIT_COSTS = {
   /** Ask AI in any app's Tools, on built-in AI (2,000 tokens written at most: built-in AI's own cap). Charged to the
    *  item's owner for an Editor or a Participant, to a Viewer themself (020-ask "AI credits"). */
   ask: 1,
+  /** Send to Knowledge Base: one summary of the selected items (1,500 tokens written at most), paid as Ask's are and
+   *  spent only once the model has answered (004-index send-to-knowledge.md "The summary"). */
+  knowledgeSummary: 1,
 } as const;
 
 /** livediagram: notes read from a photo for one credit. A photo's notes are read six to a request, so 24 is four

@@ -17,6 +17,7 @@ import {
   withOverride,
   INSTANCE_SHAPE,
   type ComponentOverride,
+  type DesignComponent,
   type Element,
   type InstanceElement,
   type MakeComponentRefusal,
@@ -195,12 +196,43 @@ export function useComponentActions(opts: {
     library.changeComponent({ ...main, archived: true, updatedAt: now() });
   };
 
+  // The main as a session's members finally stand, saved when it changed; the main to use afterwards (the derived
+  // one, which the library may not hand back yet). Only this person's own session derives.
+  const deriveOnDone = (instanceId: string) => {
+    const inst = elements.find((e) => e.id === instanceId);
+    const main =
+      isInstance(inst) && inst.componentEditBy === selfId ? lookup(inst.componentId) : undefined;
+    const derived = main ? deriveComponentFromSession(elements, instanceId, main, now()) : null;
+    if (main && derived && diffComponent(main, derived)) {
+      library.changeComponent(derived);
+      return derived;
+    }
+    return main;
+  };
+
   const startEdit = (instanceId: string) => {
     if (!canEdit) return;
     const inst = elements.find((e) => e.id === instanceId);
-    const main = isInstance(inst) ? lookup(inst.componentId) : undefined;
-    if (!main) return;
-    const run = (els: Element[]) => startComponentEdit(els, instanceId, main, selfId);
+    if (!isInstance(inst) || !lookup(inst.componentId)) return;
+    // Edit Component on another instance is Done on this person's open session first (the spec's "Editing the
+    // main" 5), in the same commit: two sessions of one person left the second underived and its drawing unjoined.
+    const open = elements
+      .filter((e) => isInstance(e) && e.componentEditBy === selfId && e.id !== instanceId)
+      .map((e) => e.id);
+    const derived = new Map<string, DesignComponent>();
+    for (const id of open) {
+      const done = deriveOnDone(id);
+      if (done) derived.set(done.id, done);
+      opts.owned.current.delete(id);
+    }
+    const main = derived.get(inst.componentId) ?? lookup(inst.componentId)!;
+    const run = (els: Element[]) =>
+      startComponentEdit(
+        open.reduce((out, id) => finishComponentEdit(out, id), els),
+        instanceId,
+        main,
+        selfId,
+      );
     const before = new Set(elements.map((e) => e.id));
     const members = run([...elements])
       .filter((e) => !before.has(e.id))
@@ -214,11 +246,7 @@ export function useComponentActions(opts: {
   const finishEdit = (instanceId: string) => {
     if (!canEdit) return;
     // The main as the members finally stand, for a session this screen did not derive live (useComponentSession).
-    const inst = elements.find((e) => e.id === instanceId);
-    const main =
-      isInstance(inst) && inst.componentEditBy === selfId ? lookup(inst.componentId) : undefined;
-    const derived = main ? deriveComponentFromSession(elements, instanceId, main, now()) : null;
-    if (main && derived && diffComponent(main, derived)) library.changeComponent(derived);
+    deriveOnDone(instanceId);
     opts.owned.current.delete(instanceId);
     commit((els) => finishComponentEdit(els, instanceId));
     select([instanceId]);

@@ -102,6 +102,7 @@ import type { DocumentDTO } from '../types';
 import { refreshAfterRead } from './changesets';
 import { handleTabPages } from './tab-pages-route';
 import { requireOwner, writesPages } from './context';
+import { withAgentSentFrom } from './agent-sent-from';
 import { labelNamesOf, labelScopeOf, labelsParam } from '../knowledge/label-scope';
 import type { KnowledgeRoute } from './knowledge-routes';
 
@@ -306,6 +307,8 @@ async function handleWrite(route: KnowledgeRoute, tab: string): Promise<Response
     markdown?: unknown;
     mode?: unknown;
     cover?: unknown;
+    after?: unknown;
+    picture?: unknown;
   } | null;
   // A cover alone changes no writing (docs/specs/030-knowledgebase/page-surface.md "The cover"): it is sent on its
   // own, and read strictly by the Pages route.
@@ -331,8 +334,14 @@ async function handleWrite(route: KnowledgeRoute, tab: string): Promise<Response
       : body.markdown;
   // The article write every agent's write takes (tab-pages-route.ts): its gate, its verified-page refusal, its
   // held paragraphs and its relay to open editors.
+  // Under a heading, with a picture (send-to-knowledge.md): read strictly by the Pages route, with an append alone.
   const request = pagesRequest(ctx.request, {
-    article: { markdown, ...(body.mode ? { mode: body.mode } : {}) },
+    article: {
+      markdown,
+      ...(body.mode ? { mode: body.mode } : {}),
+      ...(body.after !== undefined ? { after: body.after } : {}),
+      ...(body.picture !== undefined ? { picture: body.picture } : {}),
+    },
     ...cover,
   });
   return handleTabPages({ ...ctx, request }, document.id, tab);
@@ -595,12 +604,21 @@ async function handleScopes(route: KnowledgeRoute, tokenId: string): Promise<Res
   return json({ tokenId, scopes });
 }
 
+const createdPage = (answer: Record<string, unknown>) => {
+  const page = answer.page as { tab?: unknown; title?: unknown } | undefined;
+  return typeof page?.tab === 'string'
+    ? { id: page.tab, title: typeof page.title === 'string' ? page.title : '' }
+    : null;
+};
+
 /** Null when the path is none of these routes. `pages/<tab>/...` arrives with its page checked. */
 export async function handleAgentRoutes(route: KnowledgeRoute): Promise<Response | null> {
   const { segments, request } = route.ctx;
   if (segments[3] === 'pages' && segments.length === 4) {
     if (request.method === 'GET') return handleList(route);
-    return request.method === 'POST' ? handleCreate(route) : methodNotAllowed();
+    if (request.method !== 'POST') return methodNotAllowed();
+    // A page made from another app's item names it (send-to-knowledge.md "Agents").
+    return withAgentSentFrom(route, createdPage, handleCreate);
   }
   if (segments[3] === 'context' && segments.length === 4)
     return request.method === 'GET' ? handleContext(route) : methodNotAllowed();
@@ -626,7 +644,12 @@ export function handleAgentPageRoute(
     );
   if (segments.length === 5) {
     if (request.method === 'GET') return handleRead(route, summary);
-    return request.method === 'PUT' ? handleWrite(route, summary.id) : methodNotAllowed();
+    if (request.method !== 'PUT') return methodNotAllowed();
+    return withAgentSentFrom(
+      route,
+      () => ({ id: summary.id, title: summary.name }),
+      (r) => handleWrite(r, summary.id),
+    );
   }
   if (segments.length === 6 && segments[5] === 'move')
     return request.method === 'POST' ? handleMove(route, summary.id) : methodNotAllowed();

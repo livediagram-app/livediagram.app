@@ -480,6 +480,10 @@ export const INDEX_ERRORS = [
   // Send to Diagram: the diagram a new tab or an update was for is no longer there.
   'diagram_gone',
   'invalid_graph',
+  // Send to Knowledge Base (send-to-knowledge.md): liveknowledge could not be reached, or refused the section (422,
+  // its code and reason).
+  'knowledge_unavailable',
+  'knowledge_refused',
   // Start a Call Here (item-calls.md): a Space asked for a call of its own, a call that could not be made, a summary
   // the knowledgebase turned away (422, its reason), an invite naming someone who can't reach the item.
   'not_for_spaces',

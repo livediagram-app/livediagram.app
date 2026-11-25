@@ -33,6 +33,7 @@ import {
   type IndicatorKind,
 } from './indicator-items';
 import { SENT_CARD_GLYPHS } from '@liveworkspace/workbench/components/send-to-plan/sent-card-indicator';
+import { SENT_KNOWLEDGE_GLYPHS } from '@liveworkspace/workbench/components/send-to-knowledge/sent-knowledge-indicator';
 
 // A corner this round or rounder gets a fully round pip; sharper ones a softly squared pip.
 const ROUND_PIP_FROM_PX = 10;
@@ -57,6 +58,8 @@ const GLYPHS: Record<IndicatorKind, typeof NoteIcon> = {
   comment: CommentIcon,
   // A card Send to Plan made from the element (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
   ...SENT_CARD_GLYPHS,
+  // A section Send to Knowledge Base wrote from it (liveworkspace/docs/specs/004-index/send-to-knowledge.md).
+  ...SENT_KNOWLEDGE_GLYPHS,
 };
 
 export function ElementIndicators({

@@ -654,8 +654,9 @@ html[data-presenting] .article-flow .article-note {
   cursor: default;
 }
 .article-flow .article-page-slot-meta {
-  margin: 0.5rem 0 1.25rem;
-  min-height: 1.75rem;
+  /* PAGE_META_ROW (@liveknowledge/document page-meta-row.ts), which the layout estimate leaves room for. */
+  margin: var(--page-meta-above, 0.5rem) 0 var(--page-meta-below, 1.25rem);
+  min-height: var(--page-meta-height, 1.75rem);
 }
 /* A meta row with nothing to say is not drawn (verification.md "The meta row"), and its slot takes no room either, so
    a page never verified has its writing right under the title. */

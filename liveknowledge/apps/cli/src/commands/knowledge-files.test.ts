@@ -297,6 +297,18 @@ describe('a page as its file', () => {
     );
   });
 
+  it('keeps a code block that reads like a zone line as code', () => {
+    const blocks = [
+      { id: 'c1', type: 'code', text: 'Before.\n[zone abc]\n\nAfter.' },
+      { id: 'z1', type: 'zone', zone: 'object', width: 100, height: 100 },
+      { id: 'c2', type: 'code', text: '[zone z1]' },
+    ];
+    const tab = page('p', 'P', blocks);
+    expect(pageFileMarkdown(tab, 'p.md', new Map(), () => '')).toBe(
+      '```\nBefore.\n[zone abc]\n\nAfter.\n```\n\n```\n[zone z1]\n```\n',
+    );
+  });
+
   it('reads the first article of a tab whose pages show none', () => {
     const tab = {
       id: 't',

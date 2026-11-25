@@ -81,6 +81,7 @@ import {
 } from '@liveworkspace/index-client';
 import { automationStepDoor, automationTargetDoor } from './automation-step-door';
 import { planSendDoor } from './plan-send-door';
+import { knowledgeSendDoor } from './knowledge-send-door';
 import { planDiagramDoor, planDiagramDrawDoor } from './plan-diagram-door';
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
@@ -411,6 +412,12 @@ export async function handleInternalItems(
   if (rest.length === 2 && rest[1] === 'plan-send' && request.method === 'POST') {
     return handlers.planSend && verifyGrant
       ? planSendDoor(request, id, verifyGrant, handlers.planSend)
+      : notFound();
+  }
+  // Send to Knowledge Base (knowledge-send-door.ts): a section written, or a page's headings read, as the person.
+  if (rest.length === 2 && rest[1] === 'knowledge-send' && request.method === 'POST') {
+    return handlers.knowledgeSend && verifyGrant
+      ? knowledgeSendDoor(request, id, verifyGrant, handlers.knowledgeSend)
       : notFound();
   }
   // Diagrams and Plans (plan-diagram-door.ts): a make, a graph, a watch or an edit here as the person, their grant checked.

@@ -218,6 +218,28 @@ describe('useComponentActions', () => {
     expect(theirs.library.changeComponent).not.toHaveBeenCalled();
   });
 
+  it('ends this person’s open session first when Edit Component opens another, in one commit', () => {
+    const member = {
+      ...box('i-a', 100, 100),
+      label: 'Edited',
+      componentMember: { instanceId: 'i', elementId: 'a' },
+    };
+    const s = setup([inst({ componentEditBy: 'me' }), member, inst({ id: 'j', x: 300 })]);
+    s.owned.current.add('i');
+    s.actions.startEdit('j');
+    expect(s.commit).toHaveBeenCalledTimes(1);
+    // The first session's main is derived and saved, its members folded away, its instance shown again.
+    expect(s.library.changeComponent).toHaveBeenCalledWith(
+      expect.objectContaining({ elements: [expect.objectContaining({ label: 'Edited' })] }),
+    );
+    const out = s.get();
+    expect(out.map((e) => e.id)).toEqual(['i', 'j', 'j-a']);
+    expect(out[0]).not.toHaveProperty('componentEditBy');
+    // The new session starts from the main as just derived, and is the only one this screen owns.
+    expect(out[2]).toMatchObject({ label: 'Edited', x: 300 });
+    expect([...s.owned.current]).toEqual(['j']);
+  });
+
   it('does nothing for a Participant or a Viewer', () => {
     const s = setup([box('x'), inst()], false);
     s.actions.makeFromSelection(new Set(['x']));

@@ -46,6 +46,18 @@ export const articles: Article[] = [
     byApp: { livediagram: { group: 'Other Apps' } },
   },
   {
+    slug: 'send-to-knowledge-base',
+    title: 'Send to Knowledge Base',
+    description:
+      'Pick part of a diagram, and AI writes it up on a liveknowledge page with a picture and a link back.',
+    keywords:
+      'send to knowledge base knowledgebase liveknowledge wiki page section summary summarise summarize document write up ai picture sent from chip handbook docs',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+    apps: ['livediagram', 'liveknowledge'],
+    byApp: { livediagram: { group: 'Other Apps' } },
+  },
+  {
     slug: 'suggestions',
     title: 'Suggestions',
     description:

@@ -17,7 +17,13 @@ import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/Com
 import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
 import { useSentCardIndicator } from '@liveworkspace/workbench/components/send-to-plan/sent-card-indicator';
-import { buildIndicatorItems, type IndicatorItem, type SentCardIndicator } from './indicator-items';
+import { useSentKnowledgeIndicator } from '@liveworkspace/workbench/components/send-to-knowledge/sent-knowledge-indicator';
+import {
+  buildIndicatorItems,
+  type IndicatorItem,
+  type SentCardIndicator,
+  type SentKnowledgeIndicator,
+} from './indicator-items';
 import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
@@ -36,6 +42,8 @@ export function elementIndicatorItems(
   showComments = true,
   // The card Send to Plan made from the element (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
   card?: SentCardIndicator,
+  // The section Send to Knowledge Base wrote from it (liveworkspace/docs/specs/004-index/send-to-knowledge.md).
+  knowledge?: SentKnowledgeIndicator,
 ): IndicatorItem[] {
   const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
   const shape = element.type === 'shape' ? element.shape : undefined;
@@ -71,6 +79,7 @@ export function elementIndicatorItems(
         }
       : undefined,
     card,
+    knowledge,
     comments: {
       count:
         shape === 'comment-pin' || !showComments ? 0 : activeCommentCount(element.commentThread),
@@ -100,6 +109,7 @@ export function useElementIndicators(
     useMindOutlineBadge(element.id),
     useCommentBadges(),
     useSentCardIndicator(element.id),
+    useSentKnowledgeIndicator(element.id),
   );
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A circle or a pill is fully round however its corner preset reads.

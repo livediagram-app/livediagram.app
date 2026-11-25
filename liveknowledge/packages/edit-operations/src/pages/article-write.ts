@@ -30,6 +30,7 @@ import {
 } from '@liveknowledge/document';
 import { enterPages, type PagesIds } from './enter';
 import { kindNotOffered } from './page-changes';
+import { isPictureMark, pictureZone, sectionEndOf, withPictureZonePlaced } from './section';
 
 type ArticleWriteOutcome =
   { tab: Tab; flow: string; created: boolean; lines: string[] } | { refusal: PagesRefusal };
@@ -128,6 +129,8 @@ export function applyArticleWrite(
   let gone: ArticleZoneBlock[] = [];
   // Front matter an append sets in place: the article's own title or subtitle block.
   let headsSet = 0;
+  // The picture's zone, placed once the writing is in.
+  let pictureZoneId: string | null = null;
   if (append) {
     // An empty new article's placeholder Title and paragraph give way to what is appended. A `[zone <id>]` line
     // names a zone the article already holds, which stays where it is: appended again, the article held two blocks
@@ -144,7 +147,24 @@ export function applyArticleWrite(
       blocks = set.blocks;
       if (set.replaced) headsSet++;
     }
-    blocks.push(...added.slice(front));
+    // The new blocks, and after them the picture's zone (section.ts), go at the end, or at the end of a heading's part.
+    const body = added.slice(front);
+    if (write.picture) {
+      const placed = pictureZone(current, flow!, doc, write.picture);
+      current = placed.tab;
+      pictureZoneId = placed.zone.id;
+      // A `[picture]` line marks where it goes; without one it follows the words.
+      const marked = body.findIndex(isPictureMark);
+      if (marked >= 0) body.splice(marked, 1, placed.zone);
+      else body.push(placed.zone);
+    }
+    const at = write.after === undefined ? blocks.length : sectionEndOf(blocks, write.after);
+    if (at === null)
+      return refuse(
+        'heading_unknown',
+        `The page has no heading "${write.after}". Its headings are the lines starting with #, ## or ### that read_page shows.`,
+      );
+    blocks.splice(at, 0, ...body);
   } else {
     blocks = read.blocks;
     gone = doc.blocks.filter(
@@ -174,6 +194,7 @@ export function applyArticleWrite(
   // The continuous page as tall as the writing is estimated to need, so it reads whole before an editor lays it out
   // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page").
   current = withArticleHeightEstimated(current, flow!);
+  if (pictureZoneId) current = withPictureZonePlaced(current, flow!, pictureZoneId);
 
   const title = articleTitleOf(next);
   lines.push(

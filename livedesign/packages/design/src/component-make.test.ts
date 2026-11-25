@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { detachInstance, makeComponent, makeComponentRefusal } from './component-make';
 import { arrow, box, instanceOf, navMain, text } from './components.test.fixtures';
 import { MAX_COMPONENT_ELEMENTS, type DesignComponent } from './components';
-import type { ArrowElement, Element } from './index';
+import { settleChips, type ArrowElement, type Element } from './index';
 
 const opts = { componentId: 'c1', instanceId: 'i1', name: 'Component 1', now: 5 };
 let n = 0;
@@ -144,6 +144,22 @@ describe('detachInstance', () => {
     expect(ar.from).toEqual({ kind: 'free', x: 100, y: 70 });
     expect(ar.to).toEqual({ kind: 'pinned', elementId: 'a', anchor: 'e' });
     expect((out.find((e) => e.id === 'hung') as ArrowElement).from.kind).toBe('free');
+  });
+
+  it('keeps a badge on the instance where it is, let go, so the settle does not delete it', () => {
+    const main = navMain();
+    const badge = box('b', 290, 40, 20, 20, {
+      shape: 'badge',
+      label: 'New',
+      attachedTo: 'inst',
+      attachAt: 'ne',
+    });
+    const els: Element[] = [instanceOf(main), badge];
+    const out = settleChips(els, detachInstance(els, 'inst', main, newId));
+    const kept = out.find((e) => e.id === 'b');
+    expect(kept).toBeTruthy();
+    expect(kept).not.toHaveProperty('attachedTo');
+    expect(kept).not.toHaveProperty('attachAt');
   });
 
   it('leaves the list alone for an id that is not an instance', () => {

@@ -65,7 +65,7 @@ export function setOf(b: ArticleBlock, para: number, rules: 'none' | 'title' | '
     return { scale: 1, weight: '400', leading: null, above: 0, below: 0, indent: 0 };
   switch (b.style) {
     case 'title':
-      return { ...head(36 / 16, '700', 0, 0.5, 1.15), ruled: rules !== 'none' };
+      return { ...head(40 / 16, '700', 0, 0.5, 1.15), ruled: rules !== 'none' };
     case 'subtitle':
       return {
         scale: 20 / 16,

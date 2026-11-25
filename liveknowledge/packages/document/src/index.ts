@@ -157,6 +157,7 @@ export * from './continuous-page-width';
 export * from './speaking-time';
 export * from './article-style';
 export * from './article-zones';
+export * from './page-meta-row';
 export * from './article-notes';
 export * from './article-intake';
 export * from './article-markdown';

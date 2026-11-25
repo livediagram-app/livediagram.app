@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Send to Knowledge Base',
+  description:
+    'Pick part of a diagram and AI writes it up on a liveknowledge page, with a picture of it and a link back, previewed before anything is written.',
+  path: '/help/collaboration/send-to-knowledge-base/',
+});
+
+<ArticleLayout path="collaboration/send-to-knowledge-base" title="Send to Knowledge Base" description="Pick part of a diagram, and AI writes it up as a section on a page in your team's knowledgebase, with a picture and a link back." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("send-to-knowledge-base")}>
+
+A diagram explains how something works, but the team's knowledgebase is where people look for it. **Send to Knowledge Base** writes the items you picked up as a section on a liveknowledge page: a short summary, a picture of what you picked and a link back to it. The diagram stays as it is; a chip on each sent element opens the page, and a chip on the page opens the diagram.
+
+<AppNote app="livediagram">
+
+You need to be signed in, and able to edit the knowledgebase you pick. Reading the diagram is enough to send from it: a Viewer can send too. Sending is not offered to a guest, in an embed, for a diagram saved only in this browser (Offline), or on Community.
+
+## Sending
+
+<Step n={1}>
+  Pick what to send:
+
+- **Several at once**: select them and press **Send to Knowledge Base** (liveknowledge's logo) on the selection's toolbar, right after **Send to Plan**. A frame or a lane brings everything inside it.
+- **One element**: right-click it (long-press on a touch screen), open **Resources** and press **Knowledge Base**. Without an element menu (a Participant or a Viewer), select it and press the button on its toolbar.
+
+</Step>
+
+<Step n={2}>
+  Pick a **Knowledgebase**. Only the ones you can edit are listed, your most recent first; the
+  search finds the rest. The picker opens on the one you last sent to from this diagram.
+</Step>
+
+<Step n={3}>
+  Pick the **Page**: an **Existing Page** from its tree, and **Where** on it (**At the End**, or
+  under one of its headings), or a **New Page** with its **Title** and **Parent**. Check the
+  section's **Heading**, and add a **Focus** if you want the summary to stress something ("what
+  happens when a payment fails").
+</Step>
+
+<Step n={4}>
+  Press **Write With AI**. The AI reads only what you picked: the labels, notes and arrows, never
+  the rest of the diagram. It writes what they show and nothing more. Or press **Add Without
+  Summary** for a plain list of the items.
+</Step>
+
+<Step n={5}>
+  Read the **preview**: the heading, the words, the picture and the Sent From line, as they will
+  read on the page. Press **Edit** to change the words, **Back** to change the page, or **Cancel**
+  to leave without writing anything. Press **Insert** and the section is added; a message says
+  where, with **Open Page**.
+</Step>
+
+## The chips
+
+Each element you sent shows liveknowledge's logo among its badges. Hover it to see the page and the knowledgebase; click it to open the page in a new browser tab. The section on the page ends with a **Sent from** chip that opens the diagram at those elements. You see a chip only for a page, or a diagram, you can open.
+
+## Which AI writes it
+
+The diagram's team's AI key answers first, then yours, as Ask does. Without one, livediagram's built-in AI writes it, counting toward Ask's 30 questions a day. What you picked goes to that AI alone, and is never kept.
+
+With subscriptions on, a summary on built-in AI spends 1 AI credit from the diagram owner's month (a Viewer's own), taken only once the summary is written: a summary that fails costs nothing, and your own key spends none. With the month's credits used, **Add Without Summary** still adds the selection, or you can upgrade.
+
+</AppNote>
+
+<AppNote app="liveknowledge">
+
+Other apps can write a section onto a page here: livediagram's **Send to Knowledge Base** turns a picked part of a diagram into a summary, a picture and a link back. Only someone who can edit the knowledgebase can send to it, and the section is written as them, so it shows in the page's history like any edit.
+
+A section sent this way ends with a **Sent from** chip naming where it came from. Click it to open the diagram at the elements it was written from. You see the chip only when you can open that diagram; otherwise the line is a plain link.
+
+Agents can do the same through the knowledgebase's MCP: **write_page** and **create_page** take a **sentFrom** that adds the Sent From line and records it, and **after** to place the section under a heading.
+
+</AppNote>
+
+<Tip>
+  A summary is only as good as the labels it reads. Give boxes and arrows short, plain labels, and
+  put the detail in their notes.
+</Tip>
+
+</ArticleLayout>

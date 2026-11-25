@@ -134,7 +134,9 @@ design open on.
 
 **Detach** (an instance's menu, `⌥⌘B`) replaces the instance with plain elements: the main as this instance draws
 it, overrides applied, in the instance's place, scale, rotation and layer, with fresh ids, selected. Arrows pinned to
-the instance keep their end as a free point where it was. One undo step. Detaching never changes the main.
+the instance keep their end as a free point where it was, and a badge, step number or pointer note attached to the
+instance stays where it is, let go of it (never deleted with it, as a deleted host's marks are). One undo step.
+Detaching never changes the main.
 
 ## The library
 

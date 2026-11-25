@@ -4,10 +4,12 @@
 // so placement is pure and runs before anything is drawn (blueprint D76).
 
 export type IndicatorKind =
-  'outline' | 'tidy' | 'link' | 'note' | 'action' | 'comment' | 'card' | 'card-done';
+  'outline' | 'tidy' | 'link' | 'note' | 'action' | 'comment' | 'card' | 'card-done' | 'knowledge';
 
 // A sent card's indicator: its title, where it stands ("To Do · Sprint 12") and whether it is done.
 export type SentCardIndicator = { onOpen: () => void; done: boolean; title: string; where: string };
+// A section Send to Knowledge Base wrote from it: the page's title and where it is ("On Payments · Team Wiki").
+export type SentKnowledgeIndicator = { onOpen: () => void; title: string; where: string };
 
 export type IndicatorItem = {
   kind: IndicatorKind;
@@ -89,6 +91,8 @@ export function buildIndicatorItems(input: {
   comments?: { count: number; onOpen: () => void };
   // A card Send to Plan made from the element (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
   card?: SentCardIndicator;
+  // A section Send to Knowledge Base wrote from the element (liveworkspace/docs/specs/004-index/send-to-knowledge.md).
+  knowledge?: SentKnowledgeIndicator;
 }): IndicatorItem[] {
   const items: IndicatorItem[] = [];
   if (input.outline) {
@@ -146,6 +150,17 @@ export function buildIndicatorItems(input: {
       onClick: onOpen,
       hoverCard: { title, description: `${where}. Opens in liveplanner.` },
       dataAttr: 'data-sent-card',
+    });
+  }
+  if (input.knowledge) {
+    const { onOpen, title, where } = input.knowledge;
+    items.push({
+      kind: 'knowledge',
+      label: `Open the page “${title}”, ${where}, in liveknowledge`,
+      word: 'Page',
+      onClick: onOpen,
+      hoverCard: { title, description: `${where}. Opens in liveknowledge.` },
+      dataAttr: 'data-sent-knowledge',
     });
   }
   if (input.comments && input.comments.count > 0) {

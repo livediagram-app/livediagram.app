@@ -24,6 +24,7 @@
   "dependencies": {
     "@liveworkspace/ai": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/subscription": "workspace:*",

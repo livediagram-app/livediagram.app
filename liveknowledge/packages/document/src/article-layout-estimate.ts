@@ -22,6 +22,7 @@ import { articleTocEntries, tocDepthOf } from './article-toc';
 import { isLightColor } from './colors';
 import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { legibleOn, pageFillTone } from './page-content';
+import { drawsPageMetaRow, PAGE_META_ROW } from './page-meta-row';
 import type { LaidOutPage } from './page';
 import { isContinuousPage } from './page-sizes';
 import {
@@ -67,7 +68,10 @@ const CELL_PAD_X = 10;
 const CELL_PAD_Y = 6;
 const TOC_INDENT = 20;
 // The title's letter spacing (app/article-pages.css .article-title), in em.
-const TITLE_TRACKING_EM = -0.01;
+const TITLE_TRACKING_EM = -0.02;
+// A zone's margins (app/article-pages.css .article-zone), in lines.
+const ZONE_ABOVE = 0.4;
+const ZONE_BELOW = 0.6;
 
 // The article `flow`'s writing set on its pages (`pages`, every laid-out page of the tab, in order), in the tab
 // theme's accent `accent`. A contents block's page numbers come from a first pass that sets the writing once to
@@ -130,6 +134,12 @@ function layoutOnce(
   let at = 0;
   let y = own[0]!.rect.y + top;
   let first = true;
+  // The space the block before left under it, in lines: the stylesheet's margins collapse, so a block's own space above
+  // adds only what it asks past that (the larger of the two stands between them, as in the browser).
+  let below = 0;
+  const gap = (above: number) => Math.max(0, above - below) * line;
+  // A knowledgebase page's meta row under its Title (page-meta-row.ts), as the editor's writing leaves room for it.
+  const metaRow = drawsPageMetaRow(doc.blocks);
   let overflows = false;
   const zoneTops = new Map<string, number>();
   const page = () => own[at]!;
@@ -167,7 +177,7 @@ function layoutOnce(
     first = true;
     return true;
   };
-  for (const b of doc.blocks) {
+  for (const [bi, b] of doc.blocks.entries()) {
     if (overflows) break;
     if (b.type === 'pageBreak') {
       // Honoured only where the writing is paginated (PDF, Word): the continuous page has no page to break to.
@@ -182,21 +192,23 @@ function layoutOnce(
       continue;
     }
     if (b.type === 'table') {
-      if (!first) y += 0.5 * line;
+      if (!first) y += gap(0.5);
       if (!placeTable(b)) break;
-      y += ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing] * line;
+      below = ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing];
+      y += below * line;
       first = false;
       continue;
     }
     if (b.type === 'toc') {
-      if (!first) y += line;
+      if (!first) y += gap(1);
       if (!placeToc(tocDepthOf(b))) break;
-      y += ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing] * line;
+      below = ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing];
+      y += below * line;
       first = false;
       continue;
     }
     const set = setOf(b, ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing], style.rules);
-    if (!first) y += set.above * line;
+    if (!first && b.type !== 'zone') y += gap(set.above);
     const p = page();
     const ink = inkOf(p);
     const width = p.rect.width - margin * 2;
@@ -214,14 +226,17 @@ function layoutOnce(
         width: 1,
       });
       y += pad * 2;
+      below = 0;
       first = false;
       continue;
     }
     if (b.type === 'zone') {
       // A zone keeps its room in the writing (its elements are drawn as elements).
+      if (!first) y += gap(ZONE_ABOVE);
       if (!room(b.height)) break;
       if (continuous) zoneTops.set(b.id, y - own[0]!.rect.y);
-      y += b.height + 0.6 * line;
+      below = ZONE_BELOW;
+      y += b.height + below * line;
       first = false;
       continue;
     }
@@ -351,8 +366,19 @@ function layoutOnce(
         stroke: ink.accent,
         width: 1.5,
       });
-    y += codePad * 2 + set.below * line;
+    // The last item of a list run keeps a paragraph's space under it (app/article-pages.css), the others a quarter line.
+    const next = doc.blocks[bi + 1];
+    below =
+      b.type === 'list' && next && next.type !== 'list'
+        ? ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing]
+        : set.below;
+    y += codePad * 2 + below * line;
     first = false;
+    if (bi === 0 && metaRow) {
+      y += gap(PAGE_META_ROW.above / line) + PAGE_META_ROW.height;
+      below = PAGE_META_ROW.below / line;
+      y += below * line;
+    }
   }
   // Each page's header and footer (and page number), as the page draws them (the document's name unknown here).
   const date = bandDate();
