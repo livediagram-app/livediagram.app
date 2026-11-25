@@ -370,6 +370,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     arrivalRef.current = travel ? { at: point, when: performance.now() } : null;
     arrivedPortalRef.current = arrivedPortalId ?? null;
     lastUnderFeetRef.current = arrivedPortalId ?? null;
+    // A jump on this tab is told to the room at once (portal-element.md "Travelling"): nothing else would until the
+    // next step or heartbeat, so peers, and the call's hearing, kept the character where it left. Travel says
+    // nothing here: the packet would carry the tab being left.
+    if (!travel && activeRef.current) publishIdle(point);
   };
 
   // Space: hop, and wave the flag for the hop plus a short tail. Ignored

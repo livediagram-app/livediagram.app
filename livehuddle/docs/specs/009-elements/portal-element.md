@@ -40,7 +40,7 @@ Pressing a linked portal does up to three things:
 
 1. **Switches tab**, when the far portal is on another one, through the same path a tab link takes, so selection / edit state is cleaned up identically.
 2. **Centres the camera** on the far portal.
-3. **An Avatar-mode character steps out of it**, at the far portal's base (centred, bottom edge; the avatar's position is its feet).
+3. **An Avatar-mode character steps out of it**, at the far portal's base (centred, bottom edge; the avatar's position is its feet). On the same tab the room is told at once, so everyone sees the character land there (and the call hears it there) in that moment, not at its next step or heartbeat. Across tabs the switch is travel ([Changing tab](../008-canvas/avatar-mode.md#changing-tab)): the landing is kept for the new tab, and nothing is said on the tab being left.
 
 **Walking into a portal does the same thing.** The walk hook already knows which element the character is standing on; arriving on a portal fires the same travel. Two rules stop that becoming a trap:
 
