@@ -59,3 +59,17 @@ export function standing(summary: SubscriptionSummary, locale?: string): string 
   if (summary.state === 'active') return `Renews ${formatDay(summary.periodEnd, locale)}`;
   return null;
 }
+
+/**
+ * A subscribed team whose joined members no longer match the seats it pays for (subscription.md "Billing": seats
+ * follow members at the hourly sweep, which leaves time to undo a wrong invite): "5 members now, seats update within
+ * the hour". Null on Free, and when the seats already match.
+ */
+export function seatsCatchingUp(team: {
+  tier: string;
+  members: number;
+  seats: number;
+}): string | null {
+  if (team.tier === 'free' || seatsFor(team.members) === team.seats) return null;
+  return `${team.members} ${team.members === 1 ? 'member' : 'members'} now, seats update within the hour`;
+}

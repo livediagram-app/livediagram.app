@@ -63,6 +63,7 @@ export {
   formatShortDay,
   monthlyCost,
   pricePeriod,
+  seatsCatchingUp,
   standing,
   teamTotal,
   tierPrice,

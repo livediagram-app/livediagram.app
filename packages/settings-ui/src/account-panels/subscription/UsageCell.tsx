@@ -37,11 +37,6 @@ export function SubscriptionUsageCell() {
   const free = personal.tier === 'free';
   return (
     <div className="flex flex-col">
-      {free ? (
-        <p className="px-4 pt-3 text-xs text-slate-500 dark:text-slate-400">
-          The grey figure is the limit on Pro.
-        </p>
-      ) : null}
       {GROUPED.map(({ group, rows }) => (
         <section key={group} aria-label={group} className={`flex flex-col ${SETTINGS_CARD_SLOT}`}>
           <h4 className="px-4 pt-3.5 pb-1 text-xs font-bold tracking-[0.02em] text-slate-900 dark:text-slate-100">

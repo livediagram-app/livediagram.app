@@ -418,7 +418,9 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   seats, limits and how much is used: what the team pays, when it renews or lapses and the names of its items are
   its admins' to see. The rail's Subscription row names your tier at its right (Free or Pro) once the service has
   answered. A team on Free is counted in members, as accounts has them at most 30 seconds ago, so someone who just
-  joined is counted on the next read; a subscribed team in the seats it pays for. In Your Usage every
+  joined is counted on the next read; a subscribed team in the seats it pays for. When a subscribed team's joined
+  members no longer match its seats, its line (and the Plan card on its page) adds "5 members now, seats update within
+  the hour": seats follow at the hourly sweep, which leaves time to undo a wrong invite (owner, 2026-11-25). In Your Usage every
   row's bar and figures keep their own columns, so the bars line up.
 - **A team's page in the Explorer** (owner, 2026-11-22): its card carries the team's plan as a row under its header,
   so the way to upgrade is where the team is run. The row reads the team's tier: "Free Plan", or "Pro for Teams" with its badge
