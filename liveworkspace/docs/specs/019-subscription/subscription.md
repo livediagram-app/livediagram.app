@@ -439,8 +439,9 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   Signed in, Pro for Teams acts in its own card, never by opening the upgrade dialog (its table is already on the page,
   owner 2026-11-25): the team (a picker when the person is in more than one, starting on the first they run that is
   still on Free), what it would pay ("Garden Club: 6 members, so 6 seats, £36 a month") and the one button the upgrade
-  dialog would show for it: Get Pro for Teams straight to the checkout, Manage Billing, or Ask an Admin. With no team
-  yet it says so and links to Create a Team in the Explorer. Every Limit,
+  dialog would show for it: Get Pro for Teams straight to the checkout, Manage Billing, or Ask an Admin. Create a
+  Team is there too (the card's button with no team yet, a link under it otherwise): the Explorer's own New Team
+  dialog, and the team made is picked, ready to subscribe, without leaving the page (owner 2026-11-25). Every Limit,
   Side by Side is a section of its own below them, in a band of its own with its own heading and lede, so the
   comparison reads apart from the hero and the cards. Its lede is "What each tier includes. The limits are the same in
   every app." (own keys are not its subject, owner 2026-11-23), and signed in, the line beside it says "Comparing your

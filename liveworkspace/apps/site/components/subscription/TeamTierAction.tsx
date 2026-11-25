@@ -1,19 +1,24 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { lazy, Suspense, useId, useState } from 'react';
 import { seatsFor, type MeResponse, type OwnerScope } from '@liveworkspace/subscription';
 import {
   initialTeam,
   teamTotal,
   upgradeAction,
   usePrices,
+  useRefreshSubscription,
   useUpgrade,
 } from '@liveworkspace/subscription-ui';
-import { Button, buttonClassName, ButtonContent, Select, Spinner } from '@liveworkspace/ui';
+import { Button, Select, Spinner } from '@liveworkspace/ui';
+
+// The team dialog's code, fetched only when Create a Team is pressed.
+const PricingNewTeam = lazy(() => import('./PricingNewTeam'));
 
 /**
  * Pro for Teams on the pricing page (subscription.md "The pricing page"): the team, what it would pay and the one
  * button for it, in the card itself. The comparison is already on the page, so nothing opens the upgrade dialog.
+ * Create a Team makes one here, with the Explorer's own dialog, and picks it, ready to subscribe.
  */
 export function TeamTierAction({
   me,
@@ -26,6 +31,8 @@ export function TeamTierAction({
 }) {
   const prices = usePrices();
   const upgrade = useUpgrade();
+  const refresh = useRefreshSubscription();
+  const [creating, setCreating] = useState(false);
   const fieldId = useId();
   const [picked, setPicked] = useState<string | null>(null);
   const teams = me?.teams ?? [];
@@ -33,18 +40,42 @@ export function TeamTierAction({
   const action = upgradeAction(me, false, 'team', team);
 
   const wide = 'min-h-11 w-full';
+  const newTeam = creating ? (
+    <Suspense fallback={null}>
+      <PricingNewTeam
+        onClose={() => setCreating(false)}
+        onMade={async (made) => {
+          setPicked(made.id);
+          await refresh();
+        }}
+      />
+    </Suspense>
+  ) : null;
+  const create = (
+    <Button
+      variant={me && !team ? 'secondary' : 'none'}
+      size="md"
+      className={
+        me && !team
+          ? wide
+          : 'cursor-pointer self-center rounded-sm text-xs font-semibold text-brand-700 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 dark:text-brand-300'
+      }
+      aria-haspopup="dialog"
+      disabled={busy !== null}
+      onClick={() => setCreating(true)}
+    >
+      {me && !team ? 'Create a Team' : 'Or Create a New Team'}
+    </Button>
+  );
+
   if (me && !team) {
     return (
       <div className="flex flex-col gap-2">
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Pro for Teams covers a team’s library. Create a team first, then subscribe it here.
+          Pro for Teams covers a team’s library. Create one here, then subscribe it.
         </p>
-        <a
-          href="/explorer"
-          className={buttonClassName({ variant: 'secondary', size: 'md', className: wide })}
-        >
-          <ButtonContent>Create a Team</ButtonContent>
-        </a>
+        {create}
+        {newTeam}
       </div>
     );
   }
@@ -99,6 +130,8 @@ export function TeamTierAction({
         {team && busy === team.owner ? <Spinner /> : null}
         {action.label}
       </Button>
+      {me ? create : null}
+      {newTeam}
     </div>
   );
 }
