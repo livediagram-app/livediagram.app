@@ -634,11 +634,11 @@ deployment of that commit to the `staging` or `production` environment with the 
 `success` status (`deploy-record.mjs`, which every reader goes through). A deploy asks Turborepo which workspaces changed since
 then, with everything depending on them, using the plan CI uses (`ci-plan.mjs`, `PLAN_MODE=deploy`).
 The Workers among them build and deploy, and the rest are left as they are; a held product's Workers (none today)
-are never among them, even with **all**, and neither is a held Worker (`HELD_WORKERS` in `ci-plan.mjs`). One is
-held today: the subscription service (`liveworkspace/apps/subscription`), until its D1 databases exist and their
-ids replace the placeholders in its `wrangler.toml`. It is still linted, typechecked, tested and built like any
-other. Releasing it also means uncommenting the `SUBSCRIPTION` service binding in each api's and media's
-`wrangler.toml`: a binding to a Worker that is not deployed fails the deploy of the Worker that names it. A Worker none of whose
+are never among them, even with **all**, and neither is a held Worker (`HELD_WORKERS` in `ci-plan.mjs`, none
+today; a held Worker is still linted, typechecked, tested and built like any other). A binding to a Worker that is
+not deployed fails the deploy of the Worker that names it, so a new Worker's service bindings in other Workers stay
+commented out until it has deployed once (the subscription service's `SUBSCRIPTION` binding in each api's and
+media's `wrangler.toml`, today). A Worker none of whose
 files or dependencies changed is never rebuilt or redeployed. A change to `.github/` or the Prettier
 config alone deploys nothing. The record is written only when every Worker in the deploy succeeded, so a
 failed one is retried by the next deploy. With no record yet, everything deploys.
@@ -706,6 +706,14 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
   log and the job summary say when a Worker retried. A healthy deploy pays nothing for it; during a
   Cloudflare incident each affected Worker takes at most about 2.5 minutes longer, which the job's
   limit allows for.
+- **A new database.** Before its migrations, each Worker with D1 runs `ensure-d1.mjs`. A pinned `database_id`
+  costs nothing: no API call. A new Worker can leave the id as the placeholder
+  `00000000-0000-0000-0000-000000000000`: the step finds the database by its `database_name` (`wrangler d1 list`),
+  or creates it in Western Europe (`--location weur`, where every other database is), and writes the id into that
+  job's checkout of `wrangler.toml` for the migrations and the deploy. The repository is never changed: the job's
+  notice names the id, to pin in `wrangler.toml` so remote reads and the next deploy go straight to it (until then
+  each deploy finds it by name again). Before 2026-11-25 the owner created each database by hand and the Worker was
+  held until then.
 - **A retry is safe.** Re-running a failed job deploys its whole group again, the Workers that
   succeeded included. That is harmless: `wrangler deploy` of the same commit puts up the same code and
   vars again, and `wrangler d1 migrations apply` skips the migrations already applied.

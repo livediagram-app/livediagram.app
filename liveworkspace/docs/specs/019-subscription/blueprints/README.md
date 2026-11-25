@@ -263,8 +263,8 @@ The Worker, `liveworkspace-subscription` (`-staging`), from `liveworkspace/apps/
 | `ACCOUNTS`                                     | Service    | `liveworkspace-accounts` (`-staging`): the token keys and a team's members                                                                                                                                                                                                                                                                              |
 | `SUBSCRIPTION_RATE_LIMITER`                    | Rate limit | 60 a minute a key; namespaces `1111` and `2111`                                                                                                                                                                                                                                                                                                         |
 | `ENVIRONMENT`                                  | Var        | `production`, `staging` or `development`                                                                                                                                                                                                                                                                                                                |
-| `PRO_ENABLED`                                  | Var        | `"false"` in `wrangler.toml`; `true` locally (`.dev.vars.example`)                                                                                                                                                                                                                                                                                      |
-| `BILLING_PROVIDER`                             | Var        | `none` in production (the mock never runs there, whatever this says); `mock` on staging and locally                                                                                                                                                                                                                                                     |
+| `PRO_ENABLED`                                  | Var        | `"false"` in production; `"true"` on staging; `true` locally (`.dev.vars.example`)                                                                                                                                                                                                                                                                      |
+| `BILLING_PROVIDER`                             | Var        | `stripe` in production and on staging (its sandbox); `mock` locally. The mock never runs in production                                                                                                                                                                                                                                                  |
 | `MEDIA`                                        | Service    | `liveworkspace-media` (`-staging`): what each owner holds. The public route (`MEDIA_URL`) when it is absent or fails                                                                                                                                                                                                                                    |
 | `MEDIA_URL`                                    | Var        | Media's API; `<SITE_ORIGIN>/api/media` when unset; `http://localhost:8792/api/media` locally                                                                                                                                                                                                                                                            |
 | `SITE_ORIGIN`                                  | Var        | Where the mock pages live: the site                                                                                                                                                                                                                                                                                                                     |
@@ -436,22 +436,21 @@ The e2e stacks (`scripts/e2e-stack/stack.mjs`, media's `scripts/e2e-media.mjs`) 
 
 ## Before the first deploy
 
-The Worker is held out of every deploy (`HELD_WORKERS` in `.github/scripts/ci-plan.mjs`), because its
-`wrangler.toml` holds placeholder database ids. To release it:
+The Worker deploys like any other. Its staging database is pinned in `wrangler.toml`; production's still holds the
+placeholder id, so its first production deploy finds or creates `liveworkspace-subscription` (`ensure-d1.mjs`,
+docs/ci.md "A new database") and its notice names the id to pin. Then:
 
-1. Create `liveworkspace-subscription` and `liveworkspace-subscription-staging` (D1) and put their ids in
-   `liveworkspace/apps/subscription/wrangler.toml`.
-2. Set the secrets on both Workers: one `SUBSCRIPTION_KEY_<APP>` per app, and `ACCOUNTS_CLIENT_ID` and
+1. Set the secrets on both Workers: one `SUBSCRIPTION_KEY_<APP>` per app, `ACCOUNTS_CLIENT_ID` and
    `ACCOUNTS_CLIENT_SECRET` (a team cannot be subscribed or its billing changed without them, and seats follow
-   members with them). Set `SUBSCRIPTION_KEY` on each api, on media and on the index.
-3. Remove the Worker from `HELD_WORKERS`. The deploy applies the migration, then the code.
-4. Once it is deployed, uncomment the `SUBSCRIPTION` service binding in each api's, media's and the index's
+   members with them), and Stripe's `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (the sandbox's on staging).
+   Set `SUBSCRIPTION_KEY` on each api, on media and on the index.
+2. Once it is deployed, uncomment the `SUBSCRIPTION` service binding in each api's, media's and the index's
    `wrangler.toml`.
-5. Turn `PRO_ENABLED` on where Pro should be live: the subscription Worker, each api, media, the index, and
-   `NEXT_PUBLIC_PRO_ENABLED` for the pages.
+3. Turn `PRO_ENABLED` on where Pro should be live: the subscription Worker (already on for staging), each api, media,
+   the index, and `NEXT_PUBLIC_PRO_ENABLED` for the pages.
 
-Production has no billing provider (`BILLING_PROVIDER = "none"`), and the mock cannot be turned on there: with Pro on
-in production before a real provider is wired in, every owner is Free and Subscribe answers that billing is
+Production's Stripe Prices and portal are empty until `stripe:setup` runs with the live key, and the mock cannot be
+turned on there: with Pro on in production before then, every owner is Free and Subscribe answers that billing is
 unavailable. Deploying media with this Worker matters too: the `MEDIA` binding names `liveworkspace-media`.
 
 The status page has no check for it yet (`liveworkspace/packages/status`): a check would read red while Pro is off.

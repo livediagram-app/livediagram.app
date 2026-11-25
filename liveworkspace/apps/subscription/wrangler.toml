@@ -56,9 +56,9 @@ INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https
 crons = ["17 * * * *"]
 
 # Its own database, apart from accounts, telemetry and every app's own data.
-# PLACEHOLDER: the owner creates this database before the first deploy
-# (`wrangler d1 create liveworkspace-subscription`) and puts its id here. Until then this Worker is in no deploy list
-# (docs/ci.md "Deploys"). Local development needs no id: `wrangler d1 migrations apply liveworkspace-subscription --local`.
+# PLACEHOLDER: the first production deploy finds or creates this database by name and names its id in a notice
+# (docs/ci.md "A new database"); put that id here. Local development needs no id:
+# `wrangler d1 migrations apply liveworkspace-subscription --local`.
 [[d1_databases]]
 binding = "SUBSCRIPTION_DB"
 database_name = "liveworkspace-subscription"
@@ -91,10 +91,15 @@ workers_dev = false
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
-PRO_ENABLED = "false"
-# Staging keeps the mock provider, for trying billing without a card. Its own controls are bounded (a renewal only
-# near the period's end, seats up to a team's 200).
-BILLING_PROVIDER = "mock"
+# On for staging alone, where Stripe's sandbox takes test cards. No app asks it yet: each api's and media's own flag
+# stays off until their SUBSCRIPTION_KEY secrets are set (subscription.md "The flag").
+PRO_ENABLED = "true"
+# Staging bills through Stripe's sandbox (account liveworkspace sandbox), set up by `stripe:setup` with its test key
+# and the staging webhook URL. Its secrets STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET are the sandbox's.
+BILLING_PROVIDER = "stripe"
+STRIPE_PRICE_PRO = "price_1UfbclCqBPzPcNNfkITKfwBW"
+STRIPE_PRICE_TEAM = "price_1UfbcmCqBPzPcNNf7J3gLs0h"
+STRIPE_PORTAL_CONFIGURATION = "bpc_1UfbcnCqBPzPcNNfswenK2EY"
 MEDIA_URL = "https://staging.liveworkspace.app/api/media"
 SITE_ORIGIN = "https://staging.liveworkspace.app"
 ACCOUNTS_URL = "https://staging.liveworkspace.app"
@@ -103,12 +108,10 @@ INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplann
 [env.staging.triggers]
 crons = ["17 * * * *"]
 
-# PLACEHOLDER: the owner creates this database before the first staging deploy
-# (`wrangler d1 create liveworkspace-subscription-staging`) and puts its id here.
 [[env.staging.d1_databases]]
 binding = "SUBSCRIPTION_DB"
 database_name = "liveworkspace-subscription-staging"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "56f5a8c6-523c-40d7-a16d-c92e88064d44"
 migrations_dir = "migrations"
 
 [[env.staging.ratelimits]]

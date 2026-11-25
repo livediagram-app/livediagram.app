@@ -244,9 +244,8 @@ Each product's API Worker and media also read the four subscription vars (`Subsc
 `SUBSCRIPTION_URL` (staging's own in `[env.staging.vars]`) and the `SUBSCRIPTION` binding to
 `liveworkspace-subscription` (`-staging`). The binding is written in each `wrangler.toml` but commented out until
 the subscription Worker is deployed, because a binding to a Worker that does not exist fails the deploy; without it
-the client fetches the public route. The subscription Worker itself is held out of every deploy
-(`HELD_WORKERS` in `.github/scripts/ci-plan.mjs`) until its D1 databases exist
-([019-subscription/blueprints](../../019-subscription/blueprints/README.md#before-the-first-deploy)).
+the client fetches the public route. The subscription Worker deploys like any other; its first production deploy
+creates its database ([019-subscription/blueprints](../../019-subscription/blueprints/README.md#before-the-first-deploy)).
 
 ## Root scripts
 
