@@ -249,7 +249,7 @@ function ConsentCard() {
                 // An app scheme (mcp.md "Redirect addresses"): any app on this computer can claim it.
                 <p>
                   Access goes to an app on this computer that opens{' '}
-                  <strong className="break-all font-mono">{request.localScheme}://</strong> links.
+                  <strong className="break-words font-mono">{request.localScheme}://</strong> links.
                   Any app here can claim those links, so only continue if you just started this in{' '}
                   <bdi>{client}</bdi>.
                 </p>
