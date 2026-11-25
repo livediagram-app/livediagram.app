@@ -20,8 +20,9 @@ import { endMoveCurrent, useMoveCurrentRequest } from './move-current-request';
 // ---- The current item's card ----------------------------------------------------------------------------
 
 // The open item as the index has it: its picture, visibility badge and the Explorer's item menu, renamed through
-// the index (the editor's title follows, onItemRenamed). Its name is the editor's own title when given (a header,
-// collaborator's or agent's rename since the read), under the overlay's while a rename from the panel is in flight.
+// the index (the editor's title follows, onItemRenamed). Its name is the index's, or the editor's own title once that
+// changes after the read (a collaborator's or agent's rename through the live room), under the overlay's while a
+// rename from the panel is in flight (one-explorer.md "Its name follows the newest rename").
 export function CurrentItem({
   item: read,
   title,
@@ -35,7 +36,8 @@ export function CurrentItem({
 } & RenameRequestProps) {
   const { overlay, renderThumbnail, actions, openItem, renamingId, setRenamingId, openDialog } =
     useExplorer();
-  const item = overlay.apply(title && title !== read.title ? { ...read, title } : read);
+  const newer = useTitleSince(read, title);
+  const item = overlay.apply(newer && newer !== read.title ? { ...read, title: newer } : read);
   // The editor's Team stop (move-current-request): Change Folder on the item, for someone its menu offers it to.
   const moveRequest = useMoveCurrentRequest();
   const moveNow = useLatest({ item, manage: canManage(item) && !item.archivedAt });
@@ -121,6 +123,20 @@ export function LocalCurrentItem({
       ) : null}
     </CurrentCard>
   );
+}
+
+/**
+ * The editor's title when it changed after `read` was read, else null. The editor's own title can be older than the
+ * index's (an app keeps a name of its own that a rename on the Explorer page or in another app never reaches, Work
+ * Tracker 1461), so only a change made since the read is newer than it.
+ */
+function useTitleSince(read: Item, title: string | null | undefined): string | null {
+  const [seen, setSeen] = useState({ read, title: title ?? null });
+  if (seen.read !== read) {
+    setSeen({ read, title: title ?? null });
+    return null;
+  }
+  return title && title !== seen.title ? title : null;
 }
 
 type RenameRequestProps = {
