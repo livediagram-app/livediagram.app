@@ -53,7 +53,10 @@ function separatorOf(text: string): Separator {
   let quoted = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i]!;
-    if (c === '"') quoted = !quoted;
+    // As the row parser reads it: only a field's first character opens quotes, so a stray `"`
+    // mid-cell (`5" screen`) can't hide the rest of the header's separators; `""` inside quotes is a quote.
+    if (quoted && c === '"' && text[i + 1] === '"') i++;
+    else if (c === '"' && (quoted || i === 0 || ',;\t'.includes(text[i - 1]!))) quoted = !quoted;
     else if (!quoted && c === '\n') break;
     else if (!quoted && (c === ',' || c === ';' || c === '\t')) counts[c] += 1;
   }

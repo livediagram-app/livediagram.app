@@ -79,15 +79,19 @@ export function typeaheadQuery(prev: TypeaheadState, char: string, now: number):
 }
 
 /**
- * The next label starting with `query`, searched from after `current` and wrapping; -1 when none.
- * One letter typed again ("dd") searches for that letter alone, so repeating it cycles the items
- * that share it.
+ * The next label starting with `query`, wrapping; -1 when none. A first letter searches from after
+ * `current`; a search being built ("mo" after "m") from `current` itself, which the letters before
+ * already found, so focus stays put while it still matches rather than hopping between the items
+ * that share the start. One letter typed again ("dd") searches for that letter alone, so repeating
+ * it cycles the items that share it.
  */
 export function typeaheadIndex(labels: readonly string[], current: number, query: string): number {
   if (labels.length === 0 || query === '') return -1;
   const repeated = [...query].every((c) => c === query[0]);
   const needle = repeated ? query[0]! : query;
-  for (let step = 1; step <= labels.length; step += 1) {
+  // With nothing focused (-1), step 1 is the first item.
+  const first = repeated || current < 0 ? 1 : 0;
+  for (let step = first; step < labels.length + first; step += 1) {
     const index = (current + step + labels.length) % labels.length;
     if (labels[index]!.trim().toLowerCase().startsWith(needle)) return index;
   }

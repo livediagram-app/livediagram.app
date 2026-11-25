@@ -89,6 +89,10 @@ describe('untrusted graph text stays linear', () => {
       'A["Start"] -- yes --> B(Done)',
       'A -. maybe .-> C{Check}',
       'A == strong ==> D[(Store)]',
+      'A--tight-->B--more---C',
+      'A-.tight.->C',
+      'A==tight==>D',
+      'A--B--C--D',
       'B -->|label| C',
       'C & D --> E',
       'subgraph s1 [Title]',
@@ -97,6 +101,8 @@ describe('untrusted graph text stays linear', () => {
     ];
     expectLinear(cases(lines, 'graph TD\n'), (t) => parseMermaid(t));
     expectLinear([{ build: (n) => `graph${' '.repeat(n)}x\nA --> B` }], (t) => parseMermaid(t));
+    // A chain of tight hops whose labels never close: each hop's scan stops at the next `--`.
+    expectLinear([{ build: (n) => `graph TD\nA${'--b c'.repeat(n)}` }], (t) => parseMermaid(t));
   });
 
   it(

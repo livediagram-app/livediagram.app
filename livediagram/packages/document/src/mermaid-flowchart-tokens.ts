@@ -3,7 +3,7 @@
 // label. mermaid.ts parses statements from them.
 
 import type { GraphEdge, GraphNode } from './graph-authoring';
-import { readInlineLabel } from './mermaid-scan';
+import { readInlineLabel, readTightInlineLabel } from './mermaid-scan';
 import { decodeLabel } from './mermaid-shared';
 
 // --- Shape mapping -------------------------------------------------------
@@ -192,7 +192,7 @@ function opAttrs(
 // front of `s`, or null when the segment isn't an edge.
 export function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
   {
-    const m = readInlineLabel(s);
+    const m = readInlineLabel(s) ?? readTightInlineLabel(s);
     if (m) {
       const label = decodeLabel(m.label);
       // The inline forms draw the stroke their opener implies; the markers either side decide the
