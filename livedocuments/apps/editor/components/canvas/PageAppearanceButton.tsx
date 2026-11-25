@@ -61,9 +61,10 @@ const ROWS: Record<AppearanceRow, { name: string; line: string; icon: () => Reac
     line: 'Start the page from a layout',
     icon: lucideGlyph(lucidePanelsTopLeft, 16),
   },
+  // Page Design (PageDesignButton): the page's background and the art over it.
   background: {
-    name: 'Background',
-    line: "The page's colour, picture or pattern",
+    name: 'Design',
+    line: 'Background and art behind your pages',
     icon: lucideGlyph(lucidePaintRoller, 16),
   },
 };
@@ -73,7 +74,7 @@ function rowEvent(row: AppearanceRow, article: boolean): string {
   if (row === 'style') return article ? 'PageArticleStyleButton' : 'ThemePicker';
   if (row === 'text') return 'PageArticleTextButton';
   if (row === 'layout') return 'PageLayoutsButton';
-  return 'PageBackgroundButton';
+  return 'PageDesignButton';
 }
 
 export function PageAppearanceButton({

@@ -16,7 +16,8 @@ export const SITE = 'https://www.liveworkspace.app';
 export type Signer = {
   /** What the env needs for the account check to pass against this signer's key. */
   env: Pick<Env, 'ACCOUNTS_URL' | 'INDEX_AUDIENCES' | 'ACCOUNTS'>;
-  token: (sub: string, claims?: Record<string, unknown>) => Promise<string>;
+  /** An access token for `sub`, addressed to `audience` (livediagram's API unless named). */
+  token: (sub: string, claims?: Record<string, unknown>, audience?: string) => Promise<string>;
   /** A token signed by a key accounts never published. */
   forged: (sub: string) => Promise<string>;
 };
@@ -25,11 +26,16 @@ export async function signer(): Promise<Signer> {
   const pair = await generateKeyPair('EdDSA', { crv: 'Ed25519' });
   const jwk: JWK = { ...(await exportJWK(pair.publicKey)), kid: 'acc1', alg: 'EdDSA' };
   const stranger = (await generateKeyPair('EdDSA', { crv: 'Ed25519' })).privateKey;
-  const sign = (sub: string, claims: Record<string, unknown>, key: CryptoKey) =>
+  const sign = (
+    sub: string,
+    claims: Record<string, unknown>,
+    key: CryptoKey,
+    audience: string = AUDIENCE,
+  ) =>
     new SignJWT(claims)
       .setProtectedHeader({ alg: 'EdDSA', kid: 'acc1' })
       .setIssuer(`${ACCOUNTS}/api/auth`)
-      .setAudience(AUDIENCE)
+      .setAudience(audience)
       .setSubject(sub)
       .setIssuedAt()
       .setExpirationTime('5m')
@@ -40,7 +46,7 @@ export async function signer(): Promise<Signer> {
       INDEX_AUDIENCES: AUDIENCE,
       ACCOUNTS: { fetch: async () => Response.json({ keys: [jwk] }) },
     },
-    token: (sub, claims = {}) => sign(sub, claims, pair.privateKey),
+    token: (sub, claims = {}, audience) => sign(sub, claims, pair.privateKey, audience),
     forged: (sub) => sign(sub, {}, stranger),
   };
 }

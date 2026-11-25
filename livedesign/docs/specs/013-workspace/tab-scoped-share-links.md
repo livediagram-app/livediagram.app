@@ -82,6 +82,8 @@ For a scoped session:
 
 `share-revoked` and `share-rescoped` (below) now also **close** every room socket that joined with that code, after delivering the op. Before, a client had to honour the redirect itself; a modified client could ignore it and keep receiving ops.
 
+A socket still joining when its link is revoked or rescoped would miss both the op and the close and keep what the link opened before, so the room notes when each link changed and closes a joining socket whose grant was signed before that change (`4005`) as it joins: its editor reloads into what the link opens now (`@liveworkspace/api-kit/room-link-changes`).
+
 ### Revoking and rescoping
 
 Links are liveworkspace's index's. When a link is revoked or rescoped (another level or tab), the index tells the

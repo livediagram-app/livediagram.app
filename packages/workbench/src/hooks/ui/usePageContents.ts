@@ -30,6 +30,8 @@ export type ContentsPageEdits<A extends unknown[]> = {
   addPage?: (...args: A) => void;
   // Another page like `pageId`, right after `after` (the page Contents marks as here), else after `pageId`.
   addPageLike?: (pageId: string, after?: string) => void;
+  // A new page like `pageId` straight above or below its unit (livedocuments'); absent at the page limit.
+  insertPageLike?: (pageId: string, where: 'above' | 'below') => void;
   duplicatePage?: (pageId: string) => void;
   canDuplicate: (pageId: string) => boolean;
   removePage?: (pageId: string) => void;
@@ -174,7 +176,19 @@ export function usePageContents<
   };
   const onListKey = (e: KeyboardEvent) => {
     const order = rows.map((r) => r.id);
-    const at = order.indexOf((document.activeElement as HTMLElement | null)?.dataset.pageRow ?? '');
+    const focused = (document.activeElement as HTMLElement | null)?.dataset.pageRow ?? '';
+    const at = order.indexOf(focused);
+    // Delete or Backspace on a row (pressed, so focused) deletes its page, as its bin does: an Editor's, never a
+    // locked page's (its actions have no remove then). The keys stop here, so the canvas never deletes its selection.
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      const row = rows.find((r) => r.id === focused);
+      const remove = row ? actionsFor(row)?.remove : undefined;
+      if (!remove) return;
+      e.preventDefault();
+      e.stopPropagation();
+      remove();
+      return;
+    }
     const to =
       e.key === 'ArrowDown'
         ? Math.min(order.length - 1, at + 1)
@@ -220,6 +234,18 @@ export function usePageContents<
         requestAnimationFrame(() => openSettings(row.id));
       },
       ...(extraActions ? { extra: extraActions(row) } : {}),
+      ...(edit.insertPageLike && !full
+        ? {
+            insertAbove: () => {
+              setAdded(pages.map((p) => p.id));
+              edit.insertPageLike!(row.id, 'above');
+            },
+            insertBelow: () => {
+              setAdded(pages.map((p) => p.id));
+              edit.insertPageLike!(row.id, 'below');
+            },
+          }
+        : {}),
       ...(edit.duplicatePage && edit.canDuplicate(row.id) && !full
         ? { duplicate: () => edit.duplicatePage!(row.id) }
         : {}),

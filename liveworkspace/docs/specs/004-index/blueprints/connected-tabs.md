@@ -248,7 +248,10 @@ tabId, level, both }, grant)`, then the app's `addTab(made)` (its whole-tab save
   `rate_limited`, `not_found`, else the network line).
 - **`components/connect/useRecentFiles.ts`**: one `listItems({ view: 'recent', limit: CONNECT_RECENT_LIMIT })`
   with no `app`, so every app's items come back, newest first; the host left out. States `loading`, `ready`,
-  `failed` with `retry`. An unmount aborts it.
+  `failed` with `retry`. An unmount aborts it. Read on mount (each opening mounts it) and again, quietly, on each
+  return to the page (`useReturnCount` from `@liveworkspace/explorer/return-to-tab`, `RETURN_REREAD_GAP_MS` apart):
+  the rows held stay while it reads and when it fails (Work Tracker 1460). The send-to and link pickers' lists
+  (`DiagramWhere`, `SendToPlanDialog`, `SendToKnowledgeDialog`, `LinkSheetDialog`) read again on the same count.
 - **`components/connect/ConnectPicker.tsx`**: the list in a start panel's content area, painted from `ink` (the
   start panel's palette: `text`, `muted`, `border`, `surface`, `column`, `accent`) through CSS variables, else the
   app's light or dark look. The role is a `radiogroup` of three (`ConnectRolePicker`, over `@liveworkspace/ui`

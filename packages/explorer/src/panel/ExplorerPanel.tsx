@@ -25,6 +25,7 @@ import { ToastProvider } from '../ui/Toasts';
 import { LibraryHostProvider, useLibraryHost } from '../library/context';
 import type { LibraryHostProps } from '../library/types';
 import { useLatest } from '../ui/useLatest';
+import { useReturnCount } from '../data/useReturnToTab';
 import type { ExplorerView } from '../views';
 import type { TeamsHost } from '../data/teams';
 import { TeamsProvider, useTeams } from '../teams/context';
@@ -241,6 +242,9 @@ function PanelInner({
   );
   const sheet = layout === 'sheet';
   const stacked = layout !== 'side';
+  // Back on the page while the panel shows: the pane's lists read again, quietly, as the Current card does, so a rename
+  // made in another tab shows on its row with no reopening (one-explorer.md, Work Tracker 1461).
+  const returns = useReturnCount(open);
   const { gallery, shapeLibraries, walkthroughs } = useLibraryHost();
   const library = Boolean(gallery || shapeLibraries || walkthroughs);
   const { host: localHost, live: thisBrowserLive } = useThisBrowserItems();
@@ -364,6 +368,7 @@ function PanelInner({
       shareHost={share}
       inboxHost={inboxHost}
       onOrganise={onOrganise}
+      returns={returns}
     >
       <div
         data-explorer-panel=""

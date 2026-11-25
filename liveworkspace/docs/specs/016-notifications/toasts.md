@@ -241,6 +241,9 @@ A toast is easy to miss. Every one is also written to a list the person can open
   opens upward) is a side too, however tall: the stack stands 8px left of it, still on the cluster's line, so an Undo
   toast never covers a control in it (Tools' Present, the verifier, 2026-11-25); on a phone it is a floor. Any bottom-right control a product marks `data-toast-side` counts as that cluster: liveknowledge's floating
   Edit, Cancel and Save buttons, so a toast stands on their line, not below it (the owner, 2026-11-21).
+- **At the editing zone's left in livedocuments.** Its canvas marks the editing zone's left edge `data-toast-start`
+  (right of a docked Contents sidebar, else the canvas's own left), so from 640px its toasts stand there, 16px in, on
+  the zoom cluster's line, never over Contents (the owner, 2026-11-25).
 - **At a start column's left edge.** From 640px, while the stack stands on a side's line, a product can mark a
   column `data-toast-start`: the stack then aligns to that column's left edge, 16px in, its toasts left aligned, still
   level with the side. liveknowledge marks the page itself, so toasts sit over the document at the page's left, never

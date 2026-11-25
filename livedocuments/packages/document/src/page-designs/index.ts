@@ -6,7 +6,6 @@ export * from './palette';
 export * from './render';
 export * from './resolve';
 export * from './guard';
-export * from './sets';
 export * from './pick';
 export * from './edits';
 export * from './export';

@@ -121,6 +121,7 @@ import type {
   PlanSendDoorCall,
   SourceChange,
 } from '@liveworkspace/index-client';
+import { LinkChanges } from '@liveworkspace/api-kit/room-link-changes';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -295,6 +296,9 @@ export class PlanRoom extends DurableObject<Env> {
   // made that a structured-clone read per peer per packet. Lost with the
   // object when the room hibernates, and read again on the next frame.
   readonly scopes = new WeakMap<WebSocket, string | null>();
+  // When each share link last changed, so a socket still joining on a grant signed before it is turned away
+  // (@liveworkspace/api-kit/room-link-changes, docs/specs/013-workspace/tab-scoped-share-links.md).
+  readonly linkChanges = new LinkChanges();
 
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);

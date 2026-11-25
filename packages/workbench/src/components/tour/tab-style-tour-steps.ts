@@ -12,6 +12,9 @@ import type { TourEngine } from './useTourEngine';
 export type TabStyleTourApi = {
   // The Fine-tune panels the surface shows: the steps that open one it leaves out are dropped.
   panels: readonly TabStylePanel[];
+  // The product draws its own home (TabStyleSurface `renderHome`, livedocuments' Page Design): its steps, not the
+  // looks'.
+  ownHome?: boolean;
   // Brings the home (the looks and the Fine-tune rows) forward.
   showHome: () => void;
   // Opens the Finish panel.
@@ -62,6 +65,26 @@ const FINE_TUNE = step(
   'tab-style-fine-tune',
 );
 
+// A product's own home (livedocuments' Page Design): its style cards, Quick Picks and the reach of a change.
+const STYLE_CARDS = step(
+  'style-cards',
+  'Every Part of the Style',
+  'Design, Background, Colours, Text and Finish: open any card to change just that.',
+  'tab-style-cards',
+);
+const QUICK_PICKS = step(
+  'quick-picks',
+  'Quick Picks',
+  'Whole styles to try in one press, fresh each time you open Style. Shuffle for more.',
+  'tab-style-quick-picks',
+);
+const REACH = step(
+  'reach',
+  'Affect All Pages',
+  'On, a change reaches every page. Off, only the page you are on.',
+  'tab-style-reach',
+);
+
 const FINISH_GROUP = '[role="radiogroup"][aria-label="Finish"]';
 
 const FINISH: TabStyleTourStep = {
@@ -108,8 +131,10 @@ const OUTRO: TabStyleTourStep = {
  *  left out. */
 export function tabStyleTourSteps(
   panels: readonly TabStylePanel[] = TAB_STYLE_PANELS,
+  ownHome = false,
 ): TabStyleTourStep[] {
-  return [LOOKS, MASHUP, PAGES, FINE_TUNE, FINISH, TRY_FINISH, OUTRO].filter(
+  const home = ownHome ? [STYLE_CARDS, QUICK_PICKS, REACH] : [LOOKS, MASHUP, PAGES, FINE_TUNE];
+  return [...home, FINISH, TRY_FINISH, OUTRO].filter(
     (s) => s.panel === undefined || panels.includes(s.panel),
   );
 }

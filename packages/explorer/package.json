@@ -25,6 +25,8 @@
     "./approvals": "./src/approvals/index.ts",
     "./move-current-request": "./src/panel/move-current-request.ts",
     "./new-team": "./src/teams/new-team-entry.ts",
+    "./return-to-tab": "./src/data/useReturnToTab.ts",
+    "./return-to-tab-testing": "./src/data/return-to-tab-testing.ts",
     "./explorer.css": "./explorer.css"
   },
   "scripts": {

@@ -34,6 +34,7 @@ import { isCommunityCode } from './community-link';
 import { type RouteContext, grantCallerOf } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import { documentRoom } from '../document-client';
+import { GRANT_ISSUED_HEADER, grantIssuedMs } from '@liveworkspace/api-kit/room-link-changes';
 
 // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
 // stickies and text they add. Only a Participant with an identity has one; with none, they may edit, never add.
@@ -171,6 +172,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (document-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    // When the grant was signed (epoch ms): a link changed since turns the join away (room-link-changes.ts).
+    forwarded.headers.set(GRANT_ISSUED_HEADER, String(grantIssuedMs(claims)));
     // The canvas's owner and team as the index has them now: the room keeps its copy from these.
     forwarded.headers.set('X-Verified-Item-Owner', claims.owner ?? '');
     forwarded.headers.set('X-Verified-Item-Team', claims.team ?? '');

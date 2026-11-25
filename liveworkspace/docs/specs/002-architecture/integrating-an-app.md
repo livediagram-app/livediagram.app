@@ -245,7 +245,10 @@ person sees lists it.
 - **Accepted:** accounts takes its API resource, its OAuth client, its sign-in hand-off origins, its settings scope,
   its sign-ups and its phone devices; the index takes its items; media takes its uploads and previews; telemetry takes
   its events and its Workers' key; the Drive mirror writes its items' files (its format in `APP_FILE_FORMATS`, its
-  doors in the service's `DRIVE_KEY_<APP>` and `APP_ORIGIN_<APP>`); its browser settings keys are known.
+  doors in the service's `DRIVE_KEY_<APP>` and `APP_ORIGIN_<APP>`); its browser settings keys are known. Its API
+  resource is in `INDEX_AUDIENCES` of every Worker that checks a person's token (the index, Drive, the Community and
+  the subscription service, production and staging), or its pages read as signed out there: Pro's badges, plans and
+  meters vanish from its Explorer and Settings ([subscription.md](../019-subscription/subscription.md#the-subscription-worker)).
 - **Its own address:** the Explorer its router serves at `<app>.app/explorer` is its page, read with its session
   (`lib/explorer/page-app.ts` on the site), as a launched app's is; its own address is no list.
 - **Held out of every list:** the site switcher, the sign-in pages' "one account for ..." line and the sign-in

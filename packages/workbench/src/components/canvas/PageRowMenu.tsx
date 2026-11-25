@@ -8,6 +8,8 @@ import { Fragment, useCallback, useRef, useState, type PointerEvent, type ReactN
 import {
   lucideArrowDown,
   lucideArrowUp,
+  lucideBetweenHorizontalEnd,
+  lucideBetweenHorizontalStart,
   lucideCopy,
   lucideLock,
   lucideLockOpen,
@@ -17,15 +19,13 @@ import {
 import { lucideGlyph, Tooltip } from '@liveworkspace/ui';
 import { useLongPress } from '../../hooks/ui/useLongPress';
 import { EllipsisTriggerButton } from '../primitives/EllipsisTriggerButton';
-import {
-  MenuActionRow,
-  MenuGroupSeparator,
-  MenuHeader,
-  PortalMenu,
-} from '../primitives/PortalMenu';
+import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '../primitives/PortalMenu';
+import { MenuToolButton, MenuToolbar } from '../primitives/MenuTiles';
 
 const SettingsIcon = lucideGlyph(lucideSettings, 14);
 const CopyIcon = lucideGlyph(lucideCopy, 14);
+const InsertAboveIcon = lucideGlyph(lucideBetweenHorizontalStart, 14);
+const InsertBelowIcon = lucideGlyph(lucideBetweenHorizontalEnd, 14);
 const UpIcon = lucideGlyph(lucideArrowUp, 14);
 const DownIcon = lucideGlyph(lucideArrowDown, 14);
 const LockIcon = lucideGlyph(lucideLock, 14);
@@ -34,14 +34,22 @@ const DeleteIcon = lucideGlyph(lucideTrash2, 14);
 
 export type PageRowAction = { key: string; label: string; icon: ReactNode; run: () => void };
 
-// A page's verbs as its menu shows them: groups parted by a separator, then Delete last.
-export type PageRowModel = { groups: PageRowAction[][]; remove?: () => void };
+// A page's verbs as its menu shows them: a toolbar across its top (Duplicate left; Lock, Page Settings and Delete
+// right), then groups parted by a separator.
+export type PageRowModel = {
+  tools: { duplicate?: () => void; settings?: () => void; locked: boolean; toggleLock: () => void };
+  groups: PageRowAction[][];
+  remove?: () => void;
+};
 
 /** A page's menu from its verbs, each left out where the page cannot take it. `extra` is the
  *  product's own group (livedocuments' place in the slide deck), after Page Settings. */
 export function pageRowModel(verbs: {
   settings?: () => void;
   extra?: PageRowAction[];
+  // A new page like this one straight above or below it (livedocuments').
+  insertAbove?: () => void;
+  insertBelow?: () => void;
   duplicate?: () => void;
   moveUp?: () => void;
   moveDown?: () => void;
@@ -49,27 +57,38 @@ export function pageRowModel(verbs: {
   toggleLock: () => void;
   remove?: () => void;
 }): PageRowModel {
+  // Insert Page Above and Below, a group of their own; then the page's moves.
+  const insert: PageRowAction[] = [];
+  if (verbs.insertAbove)
+    insert.push({
+      key: 'insert-above',
+      label: 'Insert Page Above',
+      icon: <InsertAboveIcon />,
+      run: verbs.insertAbove,
+    });
+  if (verbs.insertBelow)
+    insert.push({
+      key: 'insert-below',
+      label: 'Insert Page Below',
+      icon: <InsertBelowIcon />,
+      run: verbs.insertBelow,
+    });
   const page: PageRowAction[] = [];
-  if (verbs.duplicate)
-    page.push({ key: 'duplicate', label: 'Duplicate', icon: <CopyIcon />, run: verbs.duplicate });
   if (verbs.moveUp)
     page.push({ key: 'move-up', label: 'Move Up', icon: <UpIcon />, run: verbs.moveUp });
   if (verbs.moveDown)
     page.push({ key: 'move-down', label: 'Move Down', icon: <DownIcon />, run: verbs.moveDown });
-  page.push({
-    key: 'lock',
-    label: verbs.locked ? 'Unlock' : 'Lock',
-    icon: verbs.locked ? <UnlockIcon /> : <LockIcon />,
-    run: verbs.toggleLock,
-  });
-  const groups = [
-    verbs.settings
-      ? [{ key: 'settings', label: 'Page Settings', icon: <SettingsIcon />, run: verbs.settings }]
-      : [],
-    verbs.extra ?? [],
-    page,
-  ].filter((g) => g.length > 0);
-  return { groups, ...(verbs.remove ? { remove: verbs.remove } : {}) };
+  const groups = [verbs.extra ?? [], insert, page].filter((g) => g.length > 0);
+  return {
+    tools: {
+      ...(verbs.duplicate ? { duplicate: verbs.duplicate } : {}),
+      ...(verbs.settings ? { settings: verbs.settings } : {}),
+      locked: verbs.locked,
+      toggleLock: verbs.toggleLock,
+    },
+    groups,
+    ...(verbs.remove ? { remove: verbs.remove } : {}),
+  };
 }
 
 // A row control's own keys stay its own (no row-to-row arrows, no nudge of the canvas's selection), but
@@ -191,8 +210,9 @@ export type PageRowMenuState = ReturnType<typeof usePageRowMenu>;
 /** The menu as a row's ⋯ and tools read it: which page's is open, and the ⋯ that anchors and toggles it. */
 export type PageRowMenuHandle = Pick<PageRowMenuState, 'openId' | 'registerTrigger' | 'toggle'>;
 
-// The menu itself: a header naming the page, its groups, Delete last under its own separator (in
-// the menu's own tones: docs/specs/004-interface-design/destructive-actions.md).
+// The menu itself: its toolbar (Duplicate on the left; Lock, Page Settings and Delete on the right), then its groups.
+// No header:
+// the row it hangs from names the page, and the menu's landmark says it to a screen reader.
 export function PageRowMenu({
   title,
   model,
@@ -222,10 +242,47 @@ export function PageRowMenu({
         onClose={onClose}
         landmark={`${title} actions`}
       >
-        <MenuHeader title={title} />
-        {model.groups.map((group, i) => (
+        <MenuToolbar>
+          {model.tools.duplicate ? (
+            <MenuToolButton
+              icon={<CopyIcon />}
+              label="Duplicate"
+              description="A copy right after it, content and all."
+              onClick={then(model.tools.duplicate)}
+            />
+          ) : null}
+          <span className="flex-1" />
+          <MenuToolButton
+            icon={model.tools.locked ? <LockIcon /> : <UnlockIcon />}
+            label={model.tools.locked ? 'Unlock' : 'Lock'}
+            description={
+              model.tools.locked
+                ? 'Let this page and what is on it be changed again.'
+                : 'Keep this page and what is on it from being changed.'
+            }
+            active={model.tools.locked}
+            onClick={then(model.tools.toggleLock)}
+          />
+          {model.tools.settings ? (
+            <MenuToolButton
+              icon={<SettingsIcon />}
+              label="Page Settings"
+              description="Name, size and the rest of this page."
+              onClick={then(model.tools.settings)}
+            />
+          ) : null}
+          {model.remove ? (
+            <MenuToolButton
+              icon={<DeleteIcon />}
+              label="Delete"
+              description="This page and everything on it."
+              onClick={then(model.remove)}
+            />
+          ) : null}
+        </MenuToolbar>
+        {model.groups.map((group) => (
           <Fragment key={group[0]!.key}>
-            {i > 0 ? <MenuGroupSeparator /> : null}
+            <MenuGroupSeparator />
             {group.map((action) => (
               <MenuActionRow
                 key={action.key}
@@ -237,17 +294,6 @@ export function PageRowMenu({
             ))}
           </Fragment>
         ))}
-        {model.remove ? (
-          <>
-            <MenuGroupSeparator />
-            <MenuActionRow
-              plain
-              icon={<DeleteIcon />}
-              label="Delete"
-              onClick={then(model.remove)}
-            />
-          </>
-        ) : null}
       </PortalMenu>
     </span>
   );

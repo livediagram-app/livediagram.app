@@ -30,6 +30,7 @@ import { personTagFor } from '../person-tag';
 import { isAccountOwner } from '../person/owner';
 import { documentRoom } from '../document-client';
 import type { Env } from '../types';
+import { GRANT_ISSUED_HEADER, grantIssuedMs } from '@liveworkspace/api-kit/room-link-changes';
 
 // A Community visitor never joins the author's room (docs/specs/025-community/community.md "Viewing a post's
 // document"): no presence, no cursors, no live stream. A link visitor's code is checked against the document's post.
@@ -151,6 +152,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (document-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    // When the grant was signed (epoch ms): a link changed since turns the join away (room-link-changes.ts).
+    forwarded.headers.set(GRANT_ISSUED_HEADER, String(grantIssuedMs(claims)));
     // The document's owner and team as the index has them now: the room keeps its copy in line
     // (@liveworkspace/index-app item-head.ts).
     forwarded.headers.set('X-Verified-Owner', claims.owner ?? '');

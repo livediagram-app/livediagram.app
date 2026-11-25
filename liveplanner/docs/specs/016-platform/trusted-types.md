@@ -9,7 +9,7 @@ injection then needs a policy's help, and every policy is small, named and liste
 ## The header
 
 - **Every HTML response carries** `Content-Security-Policy: require-trusted-types-for 'script'; trusted-types
-liveworkspace-markup nextjs ProseMirrorClipboard default`, enforced from the start, never
+liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default`, enforced from the start, never
   report-only.
 - **Where it is set**: the editor's worker (`apps/editor/src/worker.ts`) beside its other security headers; the four
   static apps (marketing, help, telemetry) in their `public/_headers`. The router adds nothing; it holds no
@@ -43,6 +43,11 @@ in its header.
   itself does not sanitise: the trust is that the markup came from one of those builders, so the escape hatch
   (`trustedConstant`, `builtMarkup`) may be used only in a layout and the files listed as builder markup. Markup that
   carries people's content goes through the sanitiser instead ([The sanitiser](#the-sanitiser)).
+- **`liveworkspace-inert-parse`** lets `DOMParser` parse markup inertly through `parseInert(source, type)`.
+  Nothing in liveplanner parses with it today; it is in the header because the Explorer under liveplanner's address creates
+  it (it reads an editor page's HTML for the scripts and styles to warm before an item opens,
+  liveworkspace/docs/specs/004-index/one-explorer.md "Cost and performance"). What it parses is inert: nothing in it
+  runs, and nothing from it is inserted as markup; only its text and attributes are read.
 - **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
 
 ### Server-rendered markup

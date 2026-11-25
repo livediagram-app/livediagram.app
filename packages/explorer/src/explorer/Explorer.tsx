@@ -44,6 +44,7 @@ import { useThisBrowserItems } from './ThisBrowser';
 import { WelcomeProvider } from '../welcome/context';
 import { WorkKinds, type TemplateHref } from '../hero/WorkKinds';
 import { ExtrasProvider } from './extras';
+import { useIntentPrefetch } from './use-intent-prefetch';
 import { TeamsProvider, useTeams } from '../teams/context';
 import { DriveReconnectBanner, withDriveMarks } from '../drive/DriveMarks';
 import { useDriveMarks } from '../drive/useDriveMarks';
@@ -135,6 +136,7 @@ function ExplorerInner({
   signInHref,
   signUpHref,
   prefetchThumbnail,
+  prefetchItem,
   onViewToggled,
 }: Omit<ExplorerProps, keyof LibraryHostProps | 'teamsHost'>) {
   // An app with no Inbox (appHasInbox) opens Home at the Inbox's address, an old link or a bookmark.
@@ -162,6 +164,9 @@ function ExplorerInner({
   const openNav = useCallback(() => setNavOpenAt(viewKey), [viewKey]);
   const closeNav = useCallback(() => setNavOpenAt(null), []);
   const driveMarks = useDriveMarks(drive);
+  // An item's link pointed at or focused: the host fetches ahead what opening it needs (use-intent-prefetch.ts).
+  const root = useRef<HTMLDivElement>(null);
+  useIntentPrefetch(root, prefetchItem);
   useArrivedItem(arrivedItem);
   const renderItemMark = useMemo(
     () => withDriveMarks(hostItemMark, driveMarks),
@@ -218,7 +223,7 @@ function ExplorerInner({
       >
         <HostExtrasProvider value={extras}>
           <WelcomeProvider welcome={welcome} active={view.kind === 'home'}>
-            <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
+            <div ref={root} data-explorer="" className="flex min-w-0 flex-1 flex-col">
               {/* The header and, on a phone, the sections bar under it: one sticky block, so they stay at the top
                   together as the page scrolls, never overlapping, whatever the host's header measures. */}
               <div data-explorer-top="" className="sticky top-0 z-40 shrink-0">

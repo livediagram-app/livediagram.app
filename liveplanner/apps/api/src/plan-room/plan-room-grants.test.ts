@@ -254,6 +254,16 @@ describe('a revoked share link', () => {
     expect(visitor.closed).not.toBeNull();
     expect(owner.closed).toBeNull();
   });
+
+  it('notes when the link changed, so a join still on its way on an older grant is turned away', async () => {
+    const { plan } = room();
+    await plan.revokeCodes('P', ['CODE2345'], 'rescoped');
+    // A grant signed before the rescope (the visitor's ticket was minted on it) joins as nothing; one signed after,
+    // as the reload gets, and another link's, join as before.
+    expect(plan.linkChanges.changedSince('CODE2345', T0 - 400)).toBe(true);
+    expect(plan.linkChanges.changedSince('CODE2345', T0 + 1)).toBe(false);
+    expect(plan.linkChanges.changedSince('OTHER234', T0 - 400)).toBe(false);
+  });
 });
 
 // A time already due must never fire the alarm back to back (liveworkspace/docs/specs/002-architecture/architecture.md

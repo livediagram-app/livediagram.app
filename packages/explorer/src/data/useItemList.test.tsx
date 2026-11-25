@@ -15,6 +15,7 @@ function useView(
   index: ReturnType<typeof createFakeIndex>,
   view: ExplorerView,
   overlay = createItemOverlay(),
+  fresh = 0,
 ) {
   // The lens a search carries, as the pane makes it.
   const q = view.kind === 'search' ? view.q : '';
@@ -27,6 +28,7 @@ function useView(
     overlay,
     belongs: list.belongs,
     enabled: list.enabled,
+    fresh,
   });
 }
 
@@ -274,5 +276,62 @@ describe('useItemList with the overlay over time', () => {
     const fresh = renderHook(() => useMyWork(index, overlay, 0));
     await waitFor(() => expect(fresh.result.current.items[0]?.title).toBe('Theirs'));
     expect(stale.result.current.items[0]?.title).toBe('Theirs');
+  });
+});
+
+// Work Tracker 1460, 1461: a quiet read again (a return to the page, a raced move) reads the first page and keeps the
+// later pages already loaded, so rows the person scrolled to never drop and the next scroll goes on from there.
+describe('useItemList, a quiet read again past the first page', () => {
+  it('swaps in the first page and keeps the later pages and their cursor', async () => {
+    const index = createFakeIndex({ items: many(450) });
+    const { result, rerender } = renderHook(
+      ({ fresh }) => useView(index, { kind: 'all' }, undefined, fresh),
+      {
+        initialProps: { fresh: 0 },
+      },
+    );
+    await waitFor(() => expect(result.current.items).toHaveLength(200));
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.items).toHaveLength(400));
+    const before = result.current.items.map((i) => i.id);
+    const firstRow = before[0]!;
+    const laterRow = before[300]!;
+    index.items.find((i) => i.id === firstRow)!.title = 'Renamed on page one';
+    index.items.find((i) => i.id === laterRow)!.title = 'Renamed on page two';
+
+    rerender({ fresh: 1 });
+    await waitFor(() =>
+      expect(result.current.items.find((i) => i.id === firstRow)?.title).toBe(
+        'Renamed on page one',
+      ),
+    );
+    expect(index.count('listItems')).toBe(3);
+    // Every row stays, once each, in order; a later page's row keeps the copy its page read.
+    expect(result.current.items.map((i) => i.id)).toEqual(before);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.hasMore).toBe(true);
+
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.items).toHaveLength(450));
+    expect(new Set(result.current.items.map((i) => i.id)).size).toBe(450);
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('reads one page again when only one was loaded', async () => {
+    const index = createFakeIndex({ items: many(450) });
+    const { result, rerender } = renderHook(
+      ({ fresh }) => useView(index, { kind: 'all' }, undefined, fresh),
+      {
+        initialProps: { fresh: 0 },
+      },
+    );
+    await waitFor(() => expect(result.current.items).toHaveLength(200));
+    const firstRow = result.current.items[0]!.id;
+    index.items.find((i) => i.id === firstRow)!.title = 'Renamed';
+    rerender({ fresh: 1 });
+    await waitFor(() => expect(result.current.items[0]!.title).toBe('Renamed'));
+    expect(result.current.items).toHaveLength(200);
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.items).toHaveLength(400));
   });
 });

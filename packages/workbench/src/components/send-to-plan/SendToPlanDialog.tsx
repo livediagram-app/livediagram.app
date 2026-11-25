@@ -37,6 +37,7 @@ import { SendPlanList, type PlanList } from './SendPlanList';
 import { chipWords, openSentCard } from './SentChip';
 import { LinkTabsOption } from '../link-tabs/LinkTabsOption';
 import { useLinkTabs } from '../link-tabs/useLinkTabs';
+import { useReturnCount } from '@liveworkspace/explorer/return-to-tab';
 
 const PLAN_LIST_LIMIT = 30;
 const SEARCH_SETTLE_MS = 250;
@@ -123,7 +124,9 @@ export function SendToPlanDialog({
     workbench.track('UI', 'Opened', 'SendToPlan');
   }, []);
 
-  // The person's plans, most recent across every app first.
+  // The person's plans, most recent across every app first; read again on each return to the page (one renamed in
+  // another tab), the rows held kept meanwhile (Work Tracker 1460).
+  const returns = useReturnCount();
   useEffect(() => {
     const abort = new AbortController();
     client
@@ -140,10 +143,15 @@ export function SendToPlanDialog({
         setPlansFor({ key: settledQuery, list: { state: 'ready', items: page.items } }),
       )
       .catch(() => {
-        if (!abort.signal.aborted) setPlansFor({ key: settledQuery, list: { state: 'failed' } });
+        if (abort.signal.aborted) return;
+        setPlansFor((had) =>
+          had?.key === settledQuery && had.list.state === 'ready'
+            ? had
+            : { key: settledQuery, list: { state: 'failed' } },
+        );
       });
     return () => abort.abort();
-  }, [client, settledQuery]);
+  }, [client, settledQuery, returns]);
   const listed: PlanList =
     plansFor?.key !== settledQuery
       ? { state: 'loading' }

@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 // The picker's Where (DiagramWhere.tsx): New Diagram, New Tab with its searched list, Update for a place sent before.
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { DiagramSend, Item } from '@liveworkspace/index-client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { comeBackToPage, leaveReturnClock } from '@liveworkspace/explorer/return-to-tab-testing';
 
 vi.mock('../../lib/index-client', () => ({ indexClient: {} }));
 
@@ -115,5 +116,25 @@ describe('DiagramWhere', () => {
     fail(new Error('late'));
     await Promise.resolve();
     expect(screen.queryByText("Couldn't load your diagrams")).toBeNull();
+  });
+});
+
+describe('DiagramWhere, back on the page (Work Tracker 1460)', () => {
+  afterEach(leaveReturnClock);
+
+  it('reads the diagrams again, showing a rename, and keeps them when that read fails', async () => {
+    const listItems = vi
+      .fn()
+      .mockResolvedValueOnce({ items: [item('1', 'Flows')] })
+      .mockResolvedValueOnce({ items: [item('1', 'Payment Flows')] })
+      .mockRejectedValueOnce(new Error('offline'));
+    mount({ mode: 'tab', item: null }, { listItems });
+    await screen.findByRole('option', { name: 'Flows' });
+    act(() => comeBackToPage());
+    expect(await screen.findByRole('option', { name: 'Payment Flows' })).toBeTruthy();
+    act(() => comeBackToPage());
+    await waitFor(() => expect(listItems).toHaveBeenCalledTimes(3));
+    await act(async () => {});
+    expect(screen.getByRole('option', { name: 'Payment Flows' })).toBeTruthy();
   });
 });

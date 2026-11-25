@@ -11,7 +11,7 @@
 import { lazy, Suspense, useMemo, useState, type ComponentType, type ReactNode } from 'react';
 import { useSnapshotsDoor, type SnapshotsDoor } from './door';
 import { SnapshotGlyph } from './glyphs';
-import { SnapshotButton, SnapshotNotices } from './snapshot-parts';
+import { SnapshotButton, SnapshotListFailed, SnapshotNotices } from './snapshot-parts';
 import { SnapshotRow, type RowConfirm } from './SnapshotRow';
 import { useSnapshots } from './useSnapshots';
 import type { SnapshotRetentionInfo } from '../wire';
@@ -55,8 +55,9 @@ export function useSnapshotsExtras(door: SnapshotsDoor, now = Date.now): History
   // Only while there is a notice, or the owner's tier keeps snapshots for a time (the quiet line, with Pro on): an
   // empty block drew a second rule under the filter.
   const top =
-    state.error || state.reverted || keepsForATime(state.retention) ? (
+    state.error || state.reverted || state.listFailed || keepsForATime(state.retention) ? (
       <div data-history-snapshots="" className="flex flex-col gap-2">
+        <SnapshotListFailed state={state} />
         <SnapshotNotices state={state} className="" />
         {keepsForATime(state.retention) ? (
           <Suspense fallback={null}>

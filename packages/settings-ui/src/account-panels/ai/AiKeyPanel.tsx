@@ -31,7 +31,7 @@ export function AiKeyPanel() {
     );
   if (load.state === 'error' && !data)
     return (
-      <ErrorNote action={{ label: 'Try Again', onSelect: () => void refresh() }}>
+      <ErrorNote error={load.error} action={{ label: 'Try Again', onSelect: () => void refresh() }}>
         {accountErrorMessage(load.error)}
       </ErrorNote>
     );

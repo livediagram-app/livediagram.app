@@ -4,19 +4,20 @@ Derived from [Trusted Types](../trusted-types.md).
 
 ## Domain and naming
 
-| Term             | Identifier                                                                                                         | Meaning                                                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| The header value | `TRUSTED_TYPES_CSP`                                                                                                | `require-trusted-types-for 'script'; trusted-types liveworkspace-markup nextjs ProseMirrorClipboard default`                             |
-| Markup policy    | `MARKUP_POLICY` (`'liveworkspace-markup'`)                                                                         | Makes `TrustedHTML` from liveplanner's own builders' markup                                                                              |
-| Default policy   | `'default'`                                                                                                        | The browser's fallback for a plain string at a sink                                                                                      |
-| Boot script      | `trustedTypesBootScript(assetPrefix, origins)`                                                                     | Inline, first in each layout's `<head>`: the default policy and the violation log                                                        |
-| Asset prefix     | `''`, `/live`, `/help`, `/telemetry`                                                                               | Where an app's own build is served from (`assetPrefix` or `basePath`)                                                                    |
-| Markup sinks     | `htmlProps(markup)`, `setHtml(el, markup)`, `setSrcdoc(frame, markup)`                                             | The one path to a sink (`@liveworkspace/trusted-types` `html.ts`): `TrustedHTML` in a browser with Trusted Types, else the string itself |
-| Vetted markup    | `SafeHtml`: `trustedConstant(source)`, `builtMarkup(markup)`, `jsonScript(data)`, `sanitizedHtml(markup, profile)` | A branded string, the only thing a sink takes: our own constant, our escaping builders' output, inline JSON, or the sanitiser's output   |
-| Allowed origin   | `origins` (default `[]`)                                                                                           | Third-party script origins the default policy lets through; none since sign-in left the page                                             |
-| Sanitiser        | `sanitizedHtml(markup, profile)`                                                                                   | DOMPurify over people's markup, answering a `SafeHtml` for html.ts's sinks                                                               |
-| Profile          | `MarkupProfile`: `svg`, `svg-content`, `document`                                                                  | Where the markup goes: into an HTML element, into an `<svg>`, an iframe                                                                  |
-| Builder markup   | `builderMarkup` (each product's sinks test)                                                                        | The files that may use the escape hatch (`trustedConstant`, `builtMarkup`) besides a layout                                              |
+| Term               | Identifier                                                                                                         | Meaning                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| The header value   | `TRUSTED_TYPES_CSP`                                                                                                | `require-trusted-types-for 'script'; trusted-types liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default`   |
+| Markup policy      | `MARKUP_POLICY` (`'liveworkspace-markup'`)                                                                         | Makes `TrustedHTML` from liveplanner's own builders' markup                                                                              |
+| Inert-parse policy | `INERT_PARSE_POLICY` (`'liveworkspace-inert-parse'`), `parseInert(source, type)`                                   | Lets `DOMParser` parse markup inertly (the Explorer's editor warm)                                                                       |
+| Default policy     | `'default'`                                                                                                        | The browser's fallback for a plain string at a sink                                                                                      |
+| Boot script        | `trustedTypesBootScript(assetPrefix, origins)`                                                                     | Inline, first in each layout's `<head>`: the default policy and the violation log                                                        |
+| Asset prefix       | `''`, `/live`, `/help`, `/telemetry`                                                                               | Where an app's own build is served from (`assetPrefix` or `basePath`)                                                                    |
+| Markup sinks       | `htmlProps(markup)`, `setHtml(el, markup)`, `setSrcdoc(frame, markup)`                                             | The one path to a sink (`@liveworkspace/trusted-types` `html.ts`): `TrustedHTML` in a browser with Trusted Types, else the string itself |
+| Vetted markup      | `SafeHtml`: `trustedConstant(source)`, `builtMarkup(markup)`, `jsonScript(data)`, `sanitizedHtml(markup, profile)` | A branded string, the only thing a sink takes: our own constant, our escaping builders' output, inline JSON, or the sanitiser's output   |
+| Allowed origin     | `origins` (default `[]`)                                                                                           | Third-party script origins the default policy lets through; none since sign-in left the page                                             |
+| Sanitiser          | `sanitizedHtml(markup, profile)`                                                                                   | DOMPurify over people's markup, answering a `SafeHtml` for html.ts's sinks                                                               |
+| Profile            | `MarkupProfile`: `svg`, `svg-content`, `document`                                                                  | Where the markup goes: into an HTML element, into an `<svg>`, an iframe                                                                  |
+| Builder markup     | `builderMarkup` (each product's sinks test)                                                                        | The files that may use the escape hatch (`trustedConstant`, `builtMarkup`) besides a layout                                              |
 
 ## Modules
 
@@ -119,6 +120,7 @@ export function sanitizeMarkup(markup: string, profile?: MarkupProfile): string;
 
 export const TRUSTED_TYPES_CSP: string;
 export const MARKUP_POLICY: 'liveworkspace-markup';
+export const INERT_PARSE_POLICY: 'liveworkspace-inert-parse';
 // html.ts, the one path to a sink
 export type SafeHtml = string & { readonly [vetted]: true };
 export function trustedConstant(source: string): SafeHtml;
@@ -156,7 +158,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins?: readonly s
   the raw HTML guard fails a sink anywhere else. The escape hatch (`trustedConstant`, `builtMarkup`) is for the
   layouts and the files listed as builder markup; every other sink, and every sink of a plan's drawing, takes
   `sanitizedHtml`'s output. The sinks test holds the list: a new escape-hatch call outside it fails, and so does a
-  listed file that no longer uses it. No file is parsed with `DOMParser`, which no policy lets through.
+  listed file that no longer uses it. No file is parsed with `DOMParser` except through `parseInert` (the inert-parse policy).
 - The default policy allows script URLs only: this app's own `/_next/`, named origins, and same-origin `blob:` for a
   worker. `trusted-types` names every policy, so no other code can create one.
 

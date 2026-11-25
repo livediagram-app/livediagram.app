@@ -771,6 +771,7 @@
     "./components/dialogs/tab-style/TextPanel": "./src/components/dialogs/tab-style/TextPanel.tsx",
     "./components/dialogs/tab-style/tab-style-fonts": "./src/components/dialogs/tab-style/tab-style-fonts.ts",
     "./components/dialogs/tab-style/tab-style-profile": "./src/components/dialogs/tab-style/tab-style-profile.ts",
+    "./components/dialogs/tab-style/tab-style-subview": "./src/components/dialogs/tab-style/tab-style-subview.ts",
     "./components/dialogs/tab-style/useTabStyleAnchor": "./src/components/dialogs/tab-style/useTabStyleAnchor.ts",
     "./hooks/persistence/useDocumentShareState": "./src/hooks/persistence/useDocumentShareState.ts",
     "./lib/document-tombstones": "./src/lib/document-tombstones.ts",

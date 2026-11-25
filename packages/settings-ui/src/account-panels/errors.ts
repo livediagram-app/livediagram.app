@@ -1,8 +1,10 @@
 import { MAX_API_TOKENS_PER_ACCOUNT } from '@liveworkspace/api-schema/api-tokens';
 import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
+import { ownErrorWords } from '@liveworkspace/ui/error-words';
 
 // The accounts API's refusals in words, as every account panel (and liveworkspace.app's own account pages) says
-// them: a code the API answers with, else the one general line.
+// them: a code the API answers with, else the shared words for its class (offline, signed out, no access, server…:
+// liveworkspace/docs/specs/022-interface-design/error-words.md).
 const MESSAGES: Record<string, string> = {
   name_required: 'Give it a name.',
   email_invalid: 'That doesn’t look like an email address.',
@@ -33,8 +35,8 @@ const MESSAGES: Record<string, string> = {
 };
 
 /** What to tell the person when the accounts API says no. */
-export function accountErrorMessage(error: string): string {
-  return MESSAGES[error] ?? 'Something went wrong. Please try again.';
+export function accountErrorMessage(error: string, status?: number): string {
+  return ownErrorWords(MESSAGES, error, status);
 }
 
 /** "3 Nov 2026", in the reader's locale. */

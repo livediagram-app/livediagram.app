@@ -1,6 +1,7 @@
 // The account pages' side of the account API (liveworkspace/apps/accounts src/account-api.ts), on
 // this same origin under /api/account: joining and declining a team, and pairing a workbench.
 
+import { errorCodeForStatus } from '@liveworkspace/ui/error-words';
 import { pageApp } from './explorer/page-app';
 
 export const ACCOUNT_API = '/api/account';
@@ -51,7 +52,8 @@ export async function accountApi<T>(
     return {
       ok: false,
       status: response.status,
-      error: typeof data.error === 'string' ? data.error : 'failed',
+      // No code of the API's own: named by its status, so it reads as its class (error-words.md).
+      error: typeof data.error === 'string' ? data.error : errorCodeForStatus(response.status),
     };
   } catch {
     return { ok: false, status: 0, error: 'offline' };

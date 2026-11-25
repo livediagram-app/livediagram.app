@@ -86,6 +86,8 @@ list's: the role first, then the files, in the same rows and ink:
   index's `view=search` with `q` and `apps`, at most `LIVE_PICKER_SEARCH_MAX`, 20, a `LIVE_PICKER_SEARCH_SETTLE_MS`,
   250 ms, pause after the last key), in place of Recent; archived files are left out. Under two characters it filters
   Recent and the connected files as before (Work Tracker 1427).
+- **Newest names.** Recent and Find a File are read again, quietly, when the page comes back into view while the picker
+  shows, as the Connect list is ([connected-tabs.md](connected-tabs.md) "Always the newest names", Work Tracker 1460).
 - **Paste a share link**: any share link of a target app. The editor resolves it through the index
   (`GET /api/index/share/:code`, as opening it would, which records it under the person's Shared), keeps the item's id
   and drops the code at once. A link with a share password asks the person to open it once first; a revoked or unknown

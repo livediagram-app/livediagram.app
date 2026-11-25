@@ -264,6 +264,68 @@ describe('usePageContents', () => {
     expect(end.preventDefault).not.toHaveBeenCalled();
   });
 
+  it('deletes the focused row’s page on Delete or Backspace, never a locked page’s or under a chord', () => {
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+    const edit = editsOf();
+    const pages = pagesOf(3);
+    const rows = pages.map((p, i) => rowOf(p, i, i === 1));
+    const { result } = setup({ edit, pages, rows });
+    const els = register(result, ['p1', 'p2', 'p3']);
+    const press = (
+      k: string,
+      over: Partial<Record<'metaKey' | 'ctrlKey' | 'altKey', boolean>> = {},
+    ) => {
+      const e = { ...key(k), stopPropagation: vi.fn(), ...over } as unknown as KeyboardEvent;
+      act(() => result.current.onListKey(e));
+      return e;
+    };
+    els.get('p1')!.focus();
+    const chord = press('Backspace', { metaKey: true });
+    expect(edit.removePage).not.toHaveBeenCalled();
+    expect(chord.preventDefault).not.toHaveBeenCalled();
+    press('Backspace', { ctrlKey: true });
+    press('Delete', { altKey: true });
+    expect(edit.removePage).not.toHaveBeenCalled();
+    const del = press('Delete');
+    expect(edit.removePage).toHaveBeenCalledWith('p1');
+    expect(del.preventDefault).toHaveBeenCalled();
+    expect(del.stopPropagation).toHaveBeenCalled();
+    // A locked page's row: the keys do nothing.
+    els.get('p2')!.focus();
+    const lockedKey = press('Backspace');
+    expect(edit.removePage).toHaveBeenCalledTimes(1);
+    expect(lockedKey.preventDefault).not.toHaveBeenCalled();
+    // No row focused: nothing to delete.
+    (document.activeElement as HTMLElement).blur();
+    press('Delete');
+    expect(edit.removePage).toHaveBeenCalledTimes(1);
+  });
+
+  it('inserts a page like this one above or below it, marking the new one, and not at the page limit', () => {
+    const insertPageLike = vi.fn();
+    const edit = editsOf({ insertPageLike });
+    const { result, rerender } = setup({ edit });
+    const model = result.current.actionsFor(result.current.rows[1]!)!;
+    const run = (k: string) =>
+      model.groups
+        .flat()
+        .find((a) => a.key === k)!
+        .run();
+    act(() => run('insert-above'));
+    expect(insertPageLike).toHaveBeenCalledWith('p2', 'above');
+    act(() => run('insert-below'));
+    expect(insertPageLike).toHaveBeenCalledWith('p2', 'below');
+    rerender({ edit, pages: pagesOf(4) });
+    expect(result.current.current).toBe('p4');
+    const full = setup({ edit, maxPages: 3 });
+    const keys = full.result.current
+      .actionsFor(full.result.current.rows[0]!)!
+      .groups.flat()
+      .map((a) => a.key);
+    expect(keys).not.toContain('insert-above');
+    expect(keys).not.toContain('insert-below');
+  });
+
   it('adds a page, and once it arrives marks it as here wherever it lands', () => {
     const edit = editsOf();
     const pages = pagesOf(3);
@@ -330,23 +392,17 @@ describe('usePageContents', () => {
         .flat()
         .find((a) => a.key === k)!
         .run();
-    expect(first.groups.flat().map((a) => a.key)).toEqual([
-      'settings',
-      'own',
-      'duplicate',
-      'move-down',
-      'lock',
-    ]);
-    run(first, 'settings');
+    expect(first.groups.flat().map((a) => a.key)).toEqual(['own', 'move-down']);
+    first.tools.settings!();
     expect(spies.focusPage).toHaveBeenCalledWith('p1');
     expect(onWent).toHaveBeenCalled();
     frames.shift()!(0);
     expect(spies.openSettings).toHaveBeenCalledWith('p1');
-    run(first, 'duplicate');
+    first.tools.duplicate!();
     expect(edit.duplicatePage).toHaveBeenCalledWith('p1');
     run(first, 'move-down');
     expect(edit.movePage).toHaveBeenCalledWith('p1', 1);
-    run(first, 'lock');
+    first.tools.toggleLock();
     expect(edit.setLocked).toHaveBeenCalledWith('p1', true);
     // Delete, then the focus goes to the row after the first.
     first.remove!();
@@ -355,7 +411,7 @@ describe('usePageContents', () => {
     expect(document.activeElement).toBe(els.get('p2'));
     // A locked page unlocks and cannot be deleted; the last moves up only.
     const locked = result.current.actionsFor(rows[1]!)!;
-    run(locked, 'lock');
+    locked.tools.toggleLock();
     expect(edit.setLocked).toHaveBeenCalledWith('p2', false);
     expect(locked.remove).toBeUndefined();
     const last = result.current.actionsFor(rows[2]!)!;
@@ -365,8 +421,8 @@ describe('usePageContents', () => {
     // Settings with no sheet to close still glides there.
     const bare = setup({ edit: editsOf({ canDuplicate: () => false, duplicatePage: undefined }) });
     const plain = bare.result.current.actionsFor(bare.result.current.rows[0]!)!;
-    expect(plain.groups.flat().map((a) => a.key)).not.toContain('duplicate');
-    run(plain, 'settings');
+    expect(plain.tools.duplicate).toBeUndefined();
+    plain.tools.settings!();
     expect(bare.spies.focusPage).toHaveBeenCalledWith('p1');
     const noDelete = setup({ edit: editsOf({ removePage: undefined }) });
     expect(

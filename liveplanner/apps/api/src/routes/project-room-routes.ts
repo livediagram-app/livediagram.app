@@ -31,6 +31,7 @@ import { personTagFor } from '../person-tag';
 import { isAccountId } from '@liveworkspace/auth-client';
 import { planRoom } from '../plan-client';
 import type { Env } from '../types';
+import { GRANT_ISSUED_HEADER, grantIssuedMs } from '@liveworkspace/api-kit/room-link-changes';
 
 // A Community visitor never joins the author's room (docs/specs/025-community/community.md "Viewing a post's
 // plan"): no presence, no cursors, no live stream. The code the access came through is checked against the plan's
@@ -160,6 +161,8 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (plan-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    // When the grant was signed (epoch ms): a link changed since turns the join away (room-link-changes.ts).
+    forwarded.headers.set(GRANT_ISSUED_HEADER, String(grantIssuedMs(claims)));
     // The plan's owner and team as the index has them now: the room keeps its copy from these.
     forwarded.headers.set('X-Verified-Owner', claims.owner ?? '');
     forwarded.headers.set('X-Verified-Team', claims.team ?? '');

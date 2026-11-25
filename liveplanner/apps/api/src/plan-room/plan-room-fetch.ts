@@ -6,6 +6,7 @@ import { verifiedSessionOf } from '../room-session';
 import { scopedTabShowsAll } from './plan-room-grants';
 import { purgedAt } from './plan-room-purged';
 import type { PlanRoom } from './plan-room';
+import { turnAwayStaleLinkJoin } from '@liveworkspace/api-kit/room-link-changes';
 
 export async function roomFetch(
   room: PlanRoom,
@@ -34,6 +35,10 @@ export async function roomFetch(
   const client = pair[0];
   const server = pair[1];
   const tabShowsAll = await scopedTabShowsAll(room, v.projectId, v.tabScope);
+  // A grant signed before its link last changed (a rescope or revoke this socket's join raced) joins as nothing:
+  // closed at once, access changed, so its editor reloads into what the link opens now.
+  if (turnAwayStaleLinkJoin(room.linkChanges, v.shareCode, request, server))
+    return new Response(null, { status: 101, webSocket: client });
   room.acceptSession(
     server,
     v.verifiedRole,
