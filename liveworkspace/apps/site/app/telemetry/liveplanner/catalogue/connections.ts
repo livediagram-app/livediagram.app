@@ -52,6 +52,7 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('UpdateProject', 'Update Project', 'Editing a project’s elements.'),
   mcpTool('ShareProject', 'Share Project', 'Creating a share link for a project.'),
   mcpTool('RenameProject', 'Rename Project', 'Renaming a project.'),
+  mcpTool('StyleProject', 'Style Project', 'Changing a project’s theme, font or finish.'),
   mcpTool(
     'ChangeTabs',
     'Change Tabs',

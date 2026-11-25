@@ -97,6 +97,18 @@ describe('tab_style', () => {
     expect(out.lines.join(' ')).toContain(`as ${STYLE_RECIPES[0]!.id}`);
   });
 
+  it('puts the slides on the dark canvas for a stage recipe, keeps them dark on a theme alone and returns them to Steel for another recipe', () => {
+    const stage = STYLE_RECIPES.find((r) => r.darkSlides)!;
+    const dark = run(tabOf(), [{ op: 'tab_style', style: stage.id }]);
+    expect(dark.lines.join(' ')).toContain('dark slides');
+    const themed = run(dark.tab, [{ op: 'tab_style', theme: 'forest' }]);
+    expect(themed.lines.join(' ')).toContain('dark slides');
+    const same = run(themed.tab, [{ op: 'tab_style', theme: 'forest' }]);
+    expect(same.lines.join(' ')).not.toContain('slides');
+    const back = run(dark.tab, [{ op: 'tab_style', style: 'technical' }]);
+    expect(back.lines.join(' ')).toContain('Steel slides');
+  });
+
   it('sets its articles in the typeface too', () => {
     const out = run(tabOf({ articles: { a: { blocks: [], style: { look: 'bold' } } } }), [
       { op: 'tab_style', font: 'lora' },

@@ -228,6 +228,15 @@ describe('tab_style', () => {
     });
   });
 
+  it('reads each of finish and font alone', () => {
+    expect(parsePagesRequest({ pages: [{ op: 'tab_style', finish: 'marker' }] })).toEqual({
+      pages: [{ op: 'tab_style', finish: 'marker' }],
+    });
+    expect(parsePagesRequest({ pages: [{ op: 'tab_style', font: 'inter' }] })).toEqual({
+      pages: [{ op: 'tab_style', font: 'inter' }],
+    });
+  });
+
   it('refuses an empty style and stray fields', () => {
     expect(refusal({ pages: [{ op: 'tab_style' }] }).message).toContain('at least one');
     expect(refusal({ pages: [{ op: 'tab_style', theme: 'forest', page: 1 }] }).message).toContain(

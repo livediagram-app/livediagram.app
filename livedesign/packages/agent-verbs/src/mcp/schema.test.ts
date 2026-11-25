@@ -10,6 +10,7 @@ import {
   readDesignShape,
   renameDesignShape,
   SERVER_INSTRUCTIONS,
+  styleDesignShape,
   updateDesignShape,
 } from './schema';
 import { resolveTemplate } from '@livedesign/templates';
@@ -210,5 +211,16 @@ describe('change_components', () => {
     );
     expect(elementSchemaDoc()).toContain('shape "instance"');
     expect(updateDesignShape.edits.description).toContain('detach <instance>');
+  });
+});
+
+describe('style_design', () => {
+  it('takes a known font and refuses an unknown one, naming the fonts there are', () => {
+    const s = z.object(styleDesignShape);
+    expect(s.parse({ designId: 'd', font: 'inter' }).font).toBe('inter');
+    expect(s.parse({ designId: 'd' }).font).toBeUndefined();
+    const bad = s.safeParse({ designId: 'd', font: 'comic' });
+    expect(bad.success).toBe(false);
+    expect(JSON.stringify(bad.error?.issues)).toContain('Unknown font. One of:');
   });
 });

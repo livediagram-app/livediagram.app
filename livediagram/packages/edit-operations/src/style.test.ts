@@ -62,6 +62,16 @@ describe('applyTabStyle', () => {
     ]);
   });
 
+  it('reports a field from what the tab had set before, and no element line when none changed', () => {
+    const out = applied(
+      applyTabStyle({ ...onForest(), elements: [], finish: 'marker' }, { finish: 'sketch' }),
+    );
+    expect(out.results).toEqual([
+      { mark: '~', ref: 'tab', changes: [{ key: 'finish', from: 'marker', to: 'sketch' }] },
+    ]);
+    expect(out.elementOps).toEqual([]);
+  });
+
   it('refuses a locked tab', () => {
     expect(refused(applyTabStyle({ ...onForest(), locked: true }, { theme: 'sunset' })).code).toBe(
       'element_locked',

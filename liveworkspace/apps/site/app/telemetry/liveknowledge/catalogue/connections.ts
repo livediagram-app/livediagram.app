@@ -93,6 +93,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('FindDocuments', 'Find Knowledgebases', 'Searching the user’s knowledgebases by name.'),
   mcpTool('CreateDocument', 'Create Knowledgebase', 'Making a new knowledgebase.'),
   mcpTool('RenameDocument', 'Rename Knowledgebase', 'Renaming a knowledgebase.'),
+  mcpTool(
+    'StyleDocument',
+    'Style Knowledgebase',
+    'Changing a knowledgebase’s theme, font or finish.',
+  ),
   mcpTool('ShareDocument', 'Share Knowledgebase', 'Creating a share link for a knowledgebase.'),
   mcpTool('ArchiveDocument', 'Archive Knowledgebase', 'Putting a knowledgebase away in Archived.'),
   mcpTool(

@@ -353,9 +353,9 @@ export function fillLayoutSlots<E extends SlotElement>(
   if (unnamed.length > 0) {
     const labelOf = (id: string) => {
       const { id: base, part } = splitPartId(id);
-      const el = elements.find((e) => e.id === id) ?? elements.find((e) => e.id === base);
-      const words = el && part !== null && el.id !== id ? partsOf(el)[part]?.text : el?.label;
-      const t = typeof words === 'string' ? words : '';
+      // Every slot is a text of the layout or a part of one, so its element and words are there.
+      const el = (elements.find((e) => e.id === id) ?? elements.find((e) => e.id === base))!;
+      const t = (part !== null && el.id !== id ? partsOf(el)[part]!.text : el.label) as string;
       return t.length > 40 ? `${t.slice(0, 39)}…` : t;
     };
     lines.push(

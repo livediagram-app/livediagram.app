@@ -391,69 +391,66 @@ describe('compound elements, tables and sample left unnamed', () => {
     ).toEqual(['This layout has no table, so the 1 row given was not placed.']);
   });
 
-  it('skips a part with no words, and names a step by its place', () => {
-    const odd = {
-      id: 'o',
+  it('names a part by where it is kept, keyed or not', () => {
+    expect(partPath({ field: 'processSteps', index: 2 })).toBe('processSteps[2]');
+    expect(partPath({ field: 'conceptRows', key: 'note', index: 0 })).toBe('conceptRows[0].note');
+  });
+
+  it('reads the words of checklists and concept rows, skipping rows and texts that are not words', () => {
+    const el = {
+      id: 'c',
       type: 'shape',
-      size: 0,
-      stats: [null, 'loose', { value: '', caption: 'Kept' }],
-      processSteps: [3, ' ', 'Ship'],
+      checklistItems: [{ text: 'Ship' }, null, 'plain', { text: '  ' }, { text: 4 }],
+      conceptRows: [{ label: 'Idea', note: 'Why' }, { label: 'Only label' }],
+      processSteps: ['Plan', '', 3],
+    } as unknown as SlotElement;
+    expect(partsOf(el).map((p) => p.text)).toEqual(['Plan', 'Ship', 'Idea', 'Why', 'Only label']);
+    expect(partsOf({ id: 'n', type: 'shape', stats: 'none' } as unknown as SlotElement)).toEqual(
+      [],
+    );
+  });
+
+  it('puts a table in words by its header row, or nothing for an element without cells', () => {
+    const table = (cells: unknown) => ({ id: 't', type: 'table', cells }) as unknown as SlotElement;
+    expect(tableInWords(table([['A', 'B'], ['c']]))).toBe('A | B');
+    expect(tableInWords(table('no'))).toBeNull();
+    expect(tableInWords(table(['flat']))).toBeNull();
+  });
+
+  it('writes a bare table, and keeps widths and the highlight where they still fit', () => {
+    const base = { id: 'tb', type: 'table', x: 0, y: 0, width: 600, height: 300, size: 0 };
+    const bare = { ...base, cells: [['a', 'b']] } as unknown as El;
+    const out = fillLayoutSlots([bare], { table: [['x', 'y']] }, sizeOf, relabel);
+    const written = out.elements[0] as unknown as Record<string, unknown>;
+    expect(written.cells).toEqual([['x', 'y']]);
+    for (const key of ['cellStyles', 'colWidths', 'rowHeights', 'highlightColumn'])
+      expect(written).not.toHaveProperty(key);
+    const kept = {
+      ...base,
+      cells: [['a', 'b']],
+      cellStyles: [[{ alignX: 'left' }]],
+      colWidths: [100, null],
+      highlightColumn: 1,
     } as unknown as El;
-    expect(partsOf(odd).map((p) => [partPath(p.at), p.text])).toEqual([
-      ['stats[2].caption', 'Kept'],
-      ['processSteps[2]', 'Ship'],
+    const again = fillLayoutSlots([kept], { table: [['x', 'y'], ['z']] }, sizeOf, relabel)
+      .elements[0] as unknown as Record<string, unknown>;
+    expect(again.colWidths).toEqual([100, null]);
+    const unsized = { ...base, cells: [['a']], colWidths: [] } as unknown as El;
+    const widths = fillLayoutSlots([unsized], { table: [['x', 'y']] }, sizeOf, relabel)
+      .elements[0] as unknown as { colWidths: unknown };
+    expect(widths.colWidths).toEqual([null, null]);
+    expect(again.highlightColumn).toBe(1);
+    expect(again.cellStyles).toEqual([
+      [{ alignX: 'left' }, null],
+      [{ alignX: 'left' }, null],
     ]);
   });
 
-  it('reads a table’s header row in words, and none from what is not a table', () => {
-    const t = {
-      id: 'tb',
-      type: 'table',
-      cells: [
-        ['a', 'b'],
-        ['c', 'd'],
-      ],
-    } as unknown as El;
-    expect(tableInWords(t)).toBe('a | b');
-    expect(tableInWords(text('h', 'H', 60, 0))).toBeNull();
-    expect(tableInWords({ ...t, cells: [] } as unknown as El)).toBeNull();
-  });
-
-  it('writes a plain table, and keeps sizes and the recommended column that still fit', () => {
-    const plain = { id: 'tb', type: 'table', size: 0, cells: [['x']] } as unknown as El;
-    const bare = fillLayoutSlots([plain], { table: [['a', 'b']] }, sizeOf, relabel);
-    expect(bare.elements[0]).toEqual({ ...plain, cells: [['a', 'b']] });
-    const sized = {
-      ...plain,
-      cells: [['x', 'y']],
-      colWidths: [120, 80],
-      highlightColumn: 1,
-    } as unknown as El;
-    const same = fillLayoutSlots([sized], { table: [['a', 'b']] }, sizeOf, relabel);
-    expect(same.elements[0]).toMatchObject({ colWidths: [120, 80], highlightColumn: 1 });
-    const unsized = { ...sized, colWidths: [] } as unknown as El;
-    const wider = fillLayoutSlots([unsized], { table: [['a', 'b', 'c']] }, sizeOf, relabel);
-    expect(wider.elements[0]).toMatchObject({ colWidths: [null, null, null] });
-  });
-
-  it('cuts long sample words in what it names, and names a part it cannot find as empty', () => {
-    const long = 'A subtitle long enough to run past forty characters';
-    const out = fillLayoutSlots(
-      [text('h', 'Heading', 60, 0, { textBold: true }), text('s', long, 30, 80)],
-      { title: 'New' },
-      sizeOf,
-      relabel,
-    );
-    expect(out.lines[0]).toContain(`subtitle "${long.slice(0, 39)}…"`);
-    // Two elements share an id: the slot for the stat row's part finds the plain text first.
-    const twin = [
-      text('h', 'Heading', 60, 0, { textBold: true }),
-      text('r', 'Plain words', 30, 80),
-      { ...KEY_STATS[2]!, id: 'r' },
-    ];
-    expect(fillLayoutSlots(twin, { title: 'New' }, sizeOf, relabel).lines[0]).toContain(
-      'figures[0] ""',
-    );
+  it('shortens a long sample in the line about words left unnamed, and reads an id with a hash as the element', () => {
+    const long = 'A sample sentence that runs well past the forty character mark';
+    const els: El[] = [text('h', 'Title', 60, 0), text('card#1', long, 30, 100)];
+    const line = fillLayoutSlots(els, { title: 'T' }, sizeOf, relabel).lines[0]!;
+    expect(line).toContain('subtitle "A sample sentence that runs well past t…"');
   });
 
   it('reads and refuses a table slot', () => {
