@@ -846,13 +846,19 @@ through the package's `useOpenItem`.
   list does not hold it yet (a fresh **/new** item before the list has heard of it), the card is drawn from
   the editor's own title, with the **Offline** pill and Offline's menu all the same (Work Tracker 1165).
   Signed in or out makes no difference: only Sync needs an account, and its row is there only then.
-- **Asking again.** The index is asked once per item, again when the item stops being local (a Sync in place), and
-  again on an opening of the panel while the index had nothing for it (a cloud item created since the last read).
-  An item the index answered is never read again for opening the panel.
-- **Its name follows the editor.** The card shows the editor's own title for the open item, so a rename from the
-  editor's header, a collaborator's or an agent's (which reach the editor through its live room) shows on the card at
-  once, while the panel is open or the next time it opens, with no read of the index (Work Tracker 1028). A rename
-  from the card or a menu lays the Explorer's overlay over it while the index takes it, as on every row.
+- **Asking again.** The index is asked for the item on every opening of the panel, again when the item stops being
+  local (a Sync in place), and again when the page comes back into view while the panel shows (a rename, a move or an
+  edit made in another tab). So the card's name, place, picture and "Updated" time are the index's as of the opening,
+  never a copy from an earlier one: a rename made anywhere (the Explorer page, another app, an agent) shows the next
+  time the panel opens or the page is looked at again, with no reload, and the picture is asked for at the item's
+  current version (Work Tracker 1461, 1471). While a read is on its way the card keeps the copy it has; a read that
+  fails keeps it too, and one that finds nothing (an item the index has not registered yet) draws no index card.
+- **Its name follows the newest rename.** The index holds the item's title; the editor's own title can be older (an
+  app keeps a name of its own that a rename on the Explorer page or in another app never reaches, Work Tracker 1461).
+  So the card shows the index's title as read, and the editor's only once the editor's changes after that read: a
+  collaborator's or an agent's rename that reaches the editor through its live room shows on the card at once, while
+  the panel is open, with no read of the index (Work Tracker 1028). A rename from the card or a menu lays the
+  Explorer's overlay over it while the index takes it, as on every row.
 - **Rename from the search.** Each editor's command palette offers **Rename <Kind>** (Rename Canvas, Plan, Design,
   Document, Space). The editors have no header bar, so the card's name is where the open item is renamed: the command
   opens the panel from its menu button (left open when it already is) and the card's name field opens with the name
