@@ -259,6 +259,9 @@ export function buildServer(env: RequestEnv): McpServer {
         state.refused = true;
         return textResult('This token is no longer accepted. Sign in again.', true);
       }
+      // The app's MCP refused the call itself (its arguments, a tool it no longer has): a tool error in its words, so
+      // the assistant can correct the call, not a "try again" that would send it round the same refusal.
+      if (err instanceof AppRpcError) return textResult(err.message, true);
       console.error('[mcp] tool failed', { tool: request.params.name, err });
       return textResult(
         `Something went wrong reaching ${request.params.name}’s app. Try again in a moment.`,

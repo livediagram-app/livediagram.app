@@ -71,7 +71,7 @@ export function SearchOverview() {
   );
 }
 
-/** Your own canvases first, then shared and team canvases under Every App. */
+/** Canvases: your own and your teams' (the 100 most recent), then shared canvases and other apps' work under Every App. */
 export function SearchDocuments() {
   return (
     <SearchOverlay
@@ -79,12 +79,15 @@ export function SearchDocuments() {
       groups={[
         {
           title: 'Canvases',
-          rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
+          rows: [
+            { icon: <DocumentIcon />, label: 'Onboarding flow', active: true },
+            { icon: <DocumentIcon />, label: 'Onboarding v2' },
+          ],
         },
         {
           title: 'Every App',
           rows: [
-            { icon: <SharedIcon />, label: 'Onboarding v2', meta: 'livediagram' },
+            { icon: <SharedIcon />, label: 'Onboarding v1', meta: 'livediagram' },
             { icon: <DocumentIcon />, label: 'Onboarding checklist', meta: 'liveplanner' },
           ],
         },
@@ -93,19 +96,19 @@ export function SearchDocuments() {
   );
 }
 
-/** A team found by name, with one of its canvases under Every App. */
+/** A team found by name, with one of its canvases under Canvases. */
 export function SearchTeams() {
   return (
     <SearchOverlay
       query="platform"
       groups={[
         {
-          title: 'Teams',
-          rows: [{ icon: <TeamIcon />, label: 'Platform team', active: true }],
+          title: 'Canvases',
+          rows: [{ icon: <DocumentIcon />, label: 'Platform overview', active: true }],
         },
         {
-          title: 'Every App',
-          rows: [{ icon: <DocumentIcon />, label: 'Platform overview', meta: 'livediagram' }],
+          title: 'Teams',
+          rows: [{ icon: <TeamIcon />, label: 'Platform team' }],
         },
       ]}
     />

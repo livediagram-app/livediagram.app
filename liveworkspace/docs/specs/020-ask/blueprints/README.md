@@ -31,6 +31,12 @@ Implements [ask.md](../ask.md).
 | `src/ui/ask-ai-choice.ts`     | the person's choice, in `localStorage`                                                           |
 | `src/ui/answer-lite.ts`       | the light Markdown a finished answer is drawn from                                               |
 
+Sending an answer on (ask.md "Sending an answer on") is the workbench's, so liveknowledge's Ask uses the same row:
+`components/send-to-plan/AnswerSendActions.tsx` (the two buttons, shown only while the host lets this session send),
+`components/send-to-plan/answer-items.ts` (`answerItems`, the list items read left to right, a CPU-time test on a
+huge input), Send to Plan's `sendFromHere('text', 'answer', …)` with no tab or element, and Send to Knowledge Base's
+`sendWordsToKnowledge`. `AskTool` hands the row the answer without its markers and the question.
+
 ## Constants
 
 | Constant                                              | Value   |

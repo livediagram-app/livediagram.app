@@ -64,7 +64,7 @@ export const metadata = helpMetadata({
 - **Bring to Front** and **Send to Back**.
 - **Lock** (or **Unlock**) and **Delete**.
 
-Which buttons show depends on the element: an image has no text to add, a design kept only [Offline](/help/privacy-and-security/offline-mode/) has no Library to save to, and a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds show no comments).
+Which buttons show depends on the element: an image has no text to add, a design kept only [Offline](/help/privacy-and-security/offline-mode/) has no Library to save to, and a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button and, on an element with words, **Send to Plan** instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds show no comments).
 </AppNote>
 
 <AppNote app="livediagram">
@@ -74,7 +74,7 @@ Which buttons show depends on the element: an image has no text to add, a design
 - **Bring to Front** and **Send to Back**.
 - **Lock** (or **Unlock**) and **Delete**.
 
-Which buttons show depends on the element: an image has no text to add, a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. An element kind's own verbs, such as **Add Child** on a [mind map](/help/palette/mind-maps/) node or **Add Step** on a [flowchart](/help/palette/flowcharts/) step, and **Save to Library**, are in the row along the top of the **More** menu instead. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds and Community posts show no comments).
+Which buttons show depends on the element: an image has no text to add, a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. An element kind's own verbs, such as **Add Child** on a [mind map](/help/palette/mind-maps/) node or **Add Step** on a [flowchart](/help/palette/flowcharts/) step, and **Save to Library**, are in the row along the top of the **More** menu instead. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button, **Send to Plan** (on an element with words) and **Send to Knowledge Base** instead, and a right-click opens a [short element menu](/help/user-interface/context-menus/). The comments button is **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds and Community posts show no comments).
 </AppNote>
 
 <AppNote app="livedocuments">
@@ -90,11 +90,12 @@ On a Participant or view-only link the same right-click opens a short menu with 
 - **Duplicate**.
 - **Format Painter**: takes this element's style, ready to paint onto the next elements you press. See [Format Painter](/help/selection-modes/format-painter/).
 - **Bring to Front** and **Send to Back**.
+- **Send to Plan**, on an element with words: makes a card from it in one of your plans. See [Send to Plan](/help/collaboration/send-to-plan/).
 - **Delete**.
 
 Which buttons show depends on the element: an image has no text to add, and only furniture turns. An element from a feature <AppName /> no longer has keeps **Delete** alone.
 
-The toolbar is an Editor's. On a Participant or Viewer link, selecting an element shows no toolbar, and a right-click opens a [short element menu](/help/user-interface/context-menus/#on-a-participant-or-view-only-link) instead.
+The toolbar is an Editor's. On a Participant or Viewer link, selecting an element shows no toolbar, except **Send to Plan** alone on an element with words, and a right-click opens a [short element menu](/help/user-interface/context-menus/#on-a-participant-or-view-only-link) instead.
 </AppNote>
 
 ## Several elements selected
@@ -151,6 +152,16 @@ The toolbar is an Editor's. On a Participant or Viewer link, selecting an elemen
 
 <AppNote app="livedesign,livediagram,livehuddle">
   The caption reads "Selected Elements" with a count.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments,livehuddle">
+  **Send to Plan** sits beside **Export** whenever something selected has words.
+</AppNote>
+
+<AppNote app="livediagram">
+  **Send to Plan** sits beside **Export** whenever something selected has words, and **Send to
+  Knowledge Base** beside it. **Make Plan Cards** joins them when the selection holds two or more
+  shapes.
 </AppNote>
 
 <Figure app="livedesign,livediagram"

@@ -15,6 +15,8 @@ export type CardChoices = {
   mode: SendMode;
   // The one card's title (one place, or a checklist), as the person left it.
   title: string;
+  // One Card Each: each card's title, as the person left it, in the places' order.
+  titles?: readonly string[];
   // A plan person's name, or '' for nobody.
   assignee: string;
   // `YYYY-MM-DD`, or '' for none.
@@ -53,7 +55,11 @@ export function sendCards(
         : undefined;
     return [{ title, places: [...places], ...extra, ...(checklist ? { checklist } : {}) }];
   }
-  return places.map((p) => ({ title: clip(placeTitle(p, today)), places: [p], ...extra }));
+  return places.map((p, at) => ({
+    title: clip(choices.titles?.[at]?.trim() || placeTitle(p, today)),
+    places: [p],
+    ...extra,
+  }));
 }
 
 /** The newest send already made from any of these places, to offer it rather than make another unasked. */

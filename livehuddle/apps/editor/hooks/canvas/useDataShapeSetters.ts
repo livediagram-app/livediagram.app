@@ -11,12 +11,14 @@ import {
   GLASS_ROOM_VARIANT,
   type ClockZone,
   retypePiece,
+  retypeCorridorDoors,
   screenSourcePatch,
   type ScreenSource,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
+import { corridorDoorsNotice } from '@/lib/corridor-doors-notice';
 import type { StagePatch } from '@/components/palette/StageMenuSection';
 
 type DataShapeSetterDeps = {
@@ -24,6 +26,8 @@ type DataShapeSetterDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // The board as it stands.
   elements: () => Element[];
+  // Says something to the person (the editor's info toast): a corridor's Doors a Type change removed.
+  notify?: (message: string) => void;
 };
 
 // The selection-wide setters for the content-bearing pieces: the
@@ -34,6 +38,7 @@ export function useDataShapeSetters({
   currentSelectionIds,
   commit,
   elements,
+  notify,
 }: DataShapeSetterDeps) {
   // Every piece of furniture that turns (docs/specs/009-elements/furniture-facing.md "A turn"): a facing picked from
   // the element menu, or a quarter turn from the Rotate buttons, the command palette or a multi-selection. Each piece
@@ -76,10 +81,16 @@ export function useDataShapeSetters({
     const ids = currentSelectionIds();
     const retype = (els: readonly Element[]) => (el: Element) =>
       ids.has(el.id) && el.type === 'shape' && el.shape === kind ? retypePiece(el, type, els) : el;
+    // A corridor's Doors and Windows move onto its new walls in the same change, one no wall holds removed
+    // (office.md "A Corridor's Doors move to its new walls", Work Tracker 1453): one Undo puts them all back.
+    const step = (els: Element[]) => retypeCorridorDoors(els, els.map(retype(els)));
     const now = elements();
     if (!now.some((el) => retype(now)(el) !== el)) return;
-    commit((els) => els.map(retype(els)));
+    const { removed } = step(now);
+    commit((els) => step(els).elements);
     track('Element', 'Changed', shapeTelemetryToken(kind));
+    const notice = corridorDoorsNotice(removed);
+    if (notice) notify?.(notice);
   };
 
   // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in"): Who Can Speak and Show

@@ -10,7 +10,8 @@ import { Button, Chip, HoverCard } from '@liveknowledge/ui';
 import { useCopiedFlash } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { REVIEW_DUE_PILL, VERIFIED_PILL } from '@/components/knowledge/TrustBadge';
-import { answerMarkdown } from '@/lib/knowledge-ask/answer-parts';
+import { AnswerSendActions } from '@liveworkspace/workbench/components/send-to-plan/AnswerSendActions';
+import { answerMarkdown, answerWithoutMarkers } from '@/lib/knowledge-ask/answer-parts';
 import type { AskConversation, AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
 import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
 import { AnsweredFromLabels } from '@/components/page-labels/AskLabelScope';
@@ -260,6 +261,13 @@ export const AskAnswerCard = memo(function AskAnswerCard(props: AskAnswerCardPro
             </Callout>
           ))}
           <AnswerFooter {...props} />
+          {/* Sending it on (liveworkspace/docs/specs/020-ask/ask.md "Sending an answer on"): a card of each listed
+              item, or the answer on a page of another knowledgebase. */}
+          <AnswerSendActions
+            markdown={answerWithoutMarkers(turn.text).trim()}
+            question={turn.question}
+            className="mt-2.5"
+          />
         </>
       ) : null}
     </article>

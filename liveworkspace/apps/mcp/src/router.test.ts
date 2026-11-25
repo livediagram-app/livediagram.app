@@ -51,6 +51,8 @@ let calls: Call[];
 let answers: Partial<Record<string, (args: Record<string, unknown>) => unknown>>;
 let refusing: AppId | null;
 let failing: AppId | null;
+// An app whose MCP answers every tool call with a JSON-RPC error.
+let rpcRefusing: AppId | null;
 // An app whose MCP can't be reached at all.
 let down: AppId | null;
 let env: Env;
@@ -95,6 +97,12 @@ function appWorker(app: AppId): Fetcher {
       if (body.method === 'tools/list')
         return Response.json({ jsonrpc: '2.0', id: body.id, result: { tools: recorded(app) } });
       if (failing === app) return new Response('boom', { status: 503 });
+      if (rpcRefusing === app && body.method === 'tools/call')
+        return Response.json({
+          jsonrpc: '2.0',
+          id: body.id,
+          error: { code: -32602, message: 'MCP error -32602: Input validation error: documentId' },
+        });
       const answer = answers[`${app}.${body.params.name}`];
       const value = answer ? answer(body.params.arguments ?? {}) : { ok: true };
       // An answer can be a whole tool result (a refusal, a plain text view) under `result`.
@@ -224,6 +232,7 @@ beforeEach(() => {
   answers = {};
   refusing = null;
   failing = null;
+  rpcRefusing = null;
   down = null;
   const bindings = Object.fromEntries(APPS.map((a) => [a.binding, appWorker(a.app)])) as Record<
     Binding,
@@ -448,6 +457,13 @@ describe('routing', () => {
     const result = await tool('change_with_app_tool', { tool: 'update_document' });
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toContain('list_app_tools');
+  });
+
+  it('answers an app’s JSON-RPC refusal of a call as a tool error in its words', async () => {
+    rpcRefusing = 'livediagram';
+    const result = await tool('read_item', { ref: 'diagram:D1' });
+    expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toBe('livediagram: Input validation error: documentId');
   });
 
   it('answers 401 with the sign-in challenge when an app refuses the token', async () => {

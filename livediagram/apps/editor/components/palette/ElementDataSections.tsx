@@ -150,8 +150,11 @@ export function ElementDataSections({
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
   const isChip = shapeTarget ? isChipShape(shapeTarget.shape) : false;
+  // A locked element's rows dialogs are not offered (onEditRows absent), so a kind whose only section opens one
+  // has no Tools of its own then.
+  const rowsOffered = !!props.onEditRows;
   const showTools =
-    hasWebRowsSection(target) ||
+    (hasWebRowsSection(target) && (rowsOffered || shapeTarget?.shape === 'card')) ||
     isChip ||
     shapeTarget?.shape === 'boundary' ||
     (shapeTarget ? !!bpmnSymbolOf(shapeTarget) : false) ||
@@ -163,18 +166,18 @@ export function ElementDataSections({
     isRating ||
     isChart ||
     isCodeBlock ||
-    isChecklist ||
-    isLegend ||
+    (isChecklist && rowsOffered) ||
+    (isLegend && rowsOffered) ||
     isSankey ||
     isMindNode ||
-    isEntity ||
+    (isEntity && !!props.onEditEntityFields) ||
     isModeButton ||
     isSessionButton ||
     isReveal ||
     isPicker ||
     isReactionPad ||
     isEstimate ||
-    isAgenda ||
+    (isAgenda && rowsOffered) ||
     isDecision ||
     !!props.flowchart;
   return (
@@ -268,7 +271,11 @@ export function ElementDataSections({
                       <PieDataSummary
                         palette={chartFallbackPalette}
                         slices={shapeTarget.pieSlices ?? DEFAULT_PIE_ROWS}
-                        onEdit={() => shapeTarget && props.onEditRows(shapeTarget.id, 'slices')}
+                        onEdit={
+                          props.onEditRows
+                            ? () => props.onEditRows?.(shapeTarget.id, 'slices')
+                            : undefined
+                        }
                       />
                     )
                   }
@@ -296,11 +303,11 @@ export function ElementDataSections({
             />
           ) : null}
           {/* Agenda (docs/specs/012-collaboration/agenda.md): the row opens its segments in the Segments dialog. */}
-          {isAgenda && shapeTarget ? (
+          {isAgenda && shapeTarget && props.onEditRows ? (
             <MenuDialogSection
               title="Segments"
               icon={<DataMenuGlyph />}
-              onOpen={() => props.onEditRows(shapeTarget.id, 'segments')}
+              onOpen={() => props.onEditRows?.(shapeTarget.id, 'segments')}
               flush
             />
           ) : null}
@@ -317,29 +324,29 @@ export function ElementDataSections({
           {ElementLayoutToolSections({ props, shapeTarget, isChip, sectionProps })}
           {/* Entity (docs/specs/009-elements/entity.md "The Fields dialog"): the row opens the fields in a dialog,
             where a row of key, name and type has room. */}
-          {isEntity && shapeTarget ? (
+          {isEntity && shapeTarget && props.onEditEntityFields ? (
             <MenuDialogSection
               title="Fields"
               icon={<DataMenuGlyph />}
-              onOpen={() => props.onEditEntityFields(shapeTarget.id)}
+              onOpen={() => props.onEditEntityFields?.(shapeTarget.id)}
               flush
             />
           ) : null}
           {/* Checklist (docs/specs/009-elements/checklist.md): the row opens its rows in the Checklist dialog. */}
-          {isChecklist && shapeTarget ? (
+          {isChecklist && shapeTarget && props.onEditRows ? (
             <MenuDialogSection
               title="Checklist"
               icon={<DataMenuGlyph />}
-              onOpen={() => props.onEditRows(shapeTarget.id, 'checklist')}
+              onOpen={() => props.onEditRows?.(shapeTarget.id, 'checklist')}
               flush
             />
           ) : null}
           {/* Legend (docs/specs/009-elements/pie-chart.md): the key's rows, a colour and a word each. */}
-          {isLegend && shapeTarget ? (
+          {isLegend && shapeTarget && props.onEditRows ? (
             <MenuDialogSection
               title="Legend"
               icon={<DataMenuGlyph />}
-              onOpen={() => props.onEditRows(shapeTarget.id, 'legend')}
+              onOpen={() => props.onEditRows?.(shapeTarget.id, 'legend')}
               flush
             />
           ) : null}

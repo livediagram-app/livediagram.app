@@ -63,7 +63,7 @@ export function SlideRowMenu({
   onToggleHidden: () => void;
   onDuplicate: () => void;
   /** Absent where the slide cannot be deleted. */
-  onDelete?: (anchor: HTMLElement | null) => void;
+  onDelete?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<string | null>(null);
@@ -140,12 +140,11 @@ export function SlideRowMenu({
                       ? 'Remove this slide from the deck. The element stays on the canvas.'
                       : 'Remove this slide from the deck. The elements stay on the canvas.'
                   }
+                  // At once: the deck's toast offers Undo
+                  // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
                   onClick={() => {
-                    // Hand the menu button up as the anchor so the panel can
-                    // open the confirm beside it — the same pattern the
-                    // Explorer's row menu uses for its own Delete.
-                    onDelete(button);
                     close();
+                    onDelete();
                   }}
                 />
               </div>

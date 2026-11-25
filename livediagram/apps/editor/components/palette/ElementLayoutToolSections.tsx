@@ -91,10 +91,10 @@ export function ElementLayoutToolSections({
           }
         />
       ) : null}
-      {shapeTarget && hasWebRowsSection(shapeTarget) ? (
+      {shapeTarget && hasWebRowsSection(shapeTarget) && props.onEditRows ? (
         <WebRowsMenuSection
           target={shapeTarget}
-          onOpen={() => props.onEditRows(shapeTarget.id, 'web-rows')}
+          onOpen={() => props.onEditRows?.(shapeTarget.id, 'web-rows')}
         />
       ) : null}
     </>

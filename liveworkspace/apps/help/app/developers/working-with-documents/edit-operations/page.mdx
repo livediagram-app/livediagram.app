@@ -34,7 +34,7 @@ The same vocabulary reaches a tab three ways:
 <AppNote app="livediagram">
 
 - **The API**: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
-- **The CLI**: `livediagram edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livediagram element add|set|rm|move|connect|insert|wrap` sends one operation. `livediagram guide edit` explains the line form, and `livediagram schema view sticky` lists the fields a kind takes.
+- **The CLI**: `livediagram edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livediagram element add|set|rm|move|connect|insert|wrap` sends one operation. `livediagram guide edit` explains the line form, and `livediagram schema sticky` lists the fields a kind takes.
 - **The MCP server**: `update_document` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
 
 </AppNote>
@@ -42,7 +42,7 @@ The same vocabulary reaches a tab three ways:
 <AppNote app="livedocuments">
 
 - **The API**: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
-- **The CLI**: `livedocuments edit "Launch deck" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livedocuments element add|set|rm|move|connect|insert` sends one operation. `livedocuments guide edit` explains the line form, and `livedocuments schema view sticky` lists the fields a kind takes.
+- **The CLI**: `livedocuments edit "Launch deck" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livedocuments element add|set|rm|move|connect|insert` sends one operation. `livedocuments guide edit` explains the line form, and `livedocuments schema sticky` lists the fields a kind takes.
 - **The MCP server**: `update_document` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
 
 </AppNote>
@@ -658,6 +658,7 @@ W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=a
 | `label-collision`   | warning  | An arrow's label overlaps a box                                  | A shorter arrow label                      |
 | `label-overflow`    | warning  | A label needs more lines than its box holds                      | `text=sm`, or a shorter label and a `note` |
 | `node-isolated`     | warning  | A shape with no arrows, on a tab that is otherwise a graph       | `connect <ref> -> a`                       |
+| `text-overflow`     | warning  | Two texts whose lines print over each other                      | `move b below:a`                           |
 | `group-escape`      | warning  | A member lies outside its frame                                  | `move a inside:<frame>`                    |
 | `group-split-edges` | info     | Most of a frame's arrows cross its border                        | `unwrap <frame>`                           |
 | `duplicate-label`   | info     | Two boxes share a label                                          | Rename one                                 |

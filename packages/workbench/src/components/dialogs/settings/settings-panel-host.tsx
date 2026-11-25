@@ -26,6 +26,9 @@ export const listCallSpaces = async () =>
   (await indexClient.listItems({ app: 'livehuddle', view: 'all', limit: CALL_SPACES_LISTED }))
     .items;
 
+/** The Space chosen as the Calls Space stays when its call ends (item-calls.md "When a call ends"). */
+export const keepCallSpace = (spaceId: string) => indexClient.keepCallSpace(spaceId);
+
 // What an editor hands the shared Settings panel (@liveworkspace/settings-ui SettingsPanel; each app's
 // docs/specs/007-editor/user-preferences.md "This app or All"), one copy for every editor: which app it is, the logos,
 // and the way to the account's other settings. The other apps' settings are read and written over liveworkspace's
@@ -63,8 +66,9 @@ export function createSettingsPanelHost(app: AppName) {
     ...accountPanels({
       request: settingsRequest,
       // Settings › Calls (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): the person's
-      // livehuddle Spaces from the index through this app's router, read only when the category is shown.
-      callSpaces: { list: listCallSpaces, token },
+      // livehuddle Spaces from the index through this app's router, read only when the category is shown, and the
+      // chosen one kept.
+      callSpaces: { list: listCallSpaces, token, keep: keepCallSpace },
       // Settings' Subscription (liveworkspace/docs/specs/019-subscription/subscription.md "A person's browser"):
       // liveworkspace's subscription service, with the person's token. Listed only in a build with Pro on.
       subscription: {

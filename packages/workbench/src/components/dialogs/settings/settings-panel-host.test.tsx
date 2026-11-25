@@ -9,6 +9,7 @@ import { indexClient } from '../../../lib/index-client';
 import {
   ACCOUNT_SETTINGS_PARAM,
   createSettingsPanelHost,
+  keepCallSpace,
   listCallSpaces,
 } from './settings-panel-host';
 
@@ -104,5 +105,11 @@ describe('createSettingsPanelHost', () => {
       view: 'all',
       limit: CALL_SPACES_LISTED,
     });
+  });
+
+  it('keeps the Space chosen as the Calls Space through the index', async () => {
+    const keep = vi.spyOn(indexClient, 'keepCallSpace').mockResolvedValue(undefined);
+    await keepCallSpace('lh_1');
+    expect(keep).toHaveBeenCalledWith('lh_1');
   });
 });

@@ -4,7 +4,7 @@ import { layersHeroArt } from './LayersHeroArt';
 import { useRef, useState } from 'react';
 import { type Element, type Layer } from '@livediagram/document';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
-import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
+import { rowFocus, type RowFocus } from '@liveworkspace/workbench/lib/row-focus';
 import { LayerRow } from '@/components/panels/LayerRow';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -30,7 +30,7 @@ const NO_MOVE = () => {};
 // The Layers panel (docs/specs/006-document/layers.md "The Layers panel"): a header line (layer
 // count), one roomy row per layer, TOP layer first (the panel mirrors the paint stack
 // like every design tool; see LayerRow), and a footer acting on the ACTIVE layer (Merge Up / Merge
-// Down / Delete, with an anchored confirm when it still has elements; the last layer can't be
+// Down / Delete, which acts at once and offers Undo in a toast when the layer held elements; the last layer can't be
 // deleted), then New Layer pinned at the foot. Rows drag to restack. Pure view: every mutation is a callback into useLayersState.
 
 // Shared look of the footer's labelled buttons.
@@ -72,7 +72,8 @@ export function LayersPanel({
   tabFont?: string;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
-  onRemoveLayer: (layerId: string) => void;
+  // `focus`: where keyboard focus goes once the row has gone, and after its Undo (row-focus.ts).
+  onRemoveLayer: (layerId: string, focus?: RowFocus) => void;
   onRenameLayer: (layerId: string, name: string) => void;
   onToggleVisibility: (layerId: string) => void;
   onToggleLock: (layerId: string) => void;
@@ -101,9 +102,6 @@ export function LayersPanel({
   // inside InlineRenameInput, so a re-render of this panel mid-rename
   // cannot reach in and reset what has been typed.
   const [renamingId, setRenamingId] = useState<string | null>(null);
-  // Footer-delete confirm popover (only for a non-empty layer): the
-  // clicked Delete button is the anchor; null = closed.
-  const [confirmAnchor, setConfirmAnchor] = useState<HTMLElement | null>(null);
   // Row drag-to-restack, driven by POINTER events on the grip handle
   // (native HTML5 drag-and-drop is unreliable inside the panel and dead
   // on touch): the dragged layer id + the row currently under the
@@ -171,8 +169,16 @@ export function LayersPanel({
 
   // Top layer first, matching the paint stack top-down.
   const rows = [...layers].reverse();
-  const activeLayer = layers.find((l) => l.id === activeLayerId);
-  const activeCount = counts.get(activeLayerId) ?? 0;
+  // A deleted row's focus: the row below it, else above (as drawn, top first), and that row again after its Undo.
+  const focusAround = (id: string) =>
+    rowFocus({
+      ids: rows.map((l) => l.id),
+      id,
+      control: (rowId) =>
+        listRef.current?.querySelector<HTMLElement>(
+          `[data-layer-id="${CSS.escape(rowId)}"] button[aria-haspopup="menu"]`,
+        ) ?? null,
+    });
   // Merge availability: needs a neighbour in that direction.
   const activeIndex = layers.findIndex((l) => l.id === activeLayerId);
   const canMergeUp = activeIndex >= 0 && activeIndex < layers.length - 1;
@@ -319,12 +325,8 @@ export function LayersPanel({
               type="button"
               disabled={layers.length <= 1}
               aria-label="Delete Layer"
-              onClick={(e) => {
-                // Empty layers delete straight away; a populated one
-                // asks first via an anchored popover (docs/specs/006-document/layers.md).
-                if (activeCount === 0) onRemoveLayer(activeLayerId);
-                else setConfirmAnchor(e.currentTarget);
-              }}
+              // At once; a populated layer's toast offers Undo (docs/specs/006-document/layers.md).
+              onClick={() => onRemoveLayer(activeLayerId, focusAround(activeLayerId))}
               className={FOOTER_BUTTON}
             >
               <FooterDeleteIcon />
@@ -357,7 +359,7 @@ export function LayersPanel({
                   onClose={() => setRowMenu(null)}
                   onRename={() => setRenamingId(menuLayer.id)}
                   canDelete={layers.length > 1}
-                  onDelete={() => onRemoveLayer(menuLayer.id)}
+                  onDelete={() => onRemoveLayer(menuLayer.id, focusAround(menuLayer.id))}
                   onSetOpacity={(v) => onSetLayerOpacity(menuLayer.id, v)}
                   onBringToTop={() => onReorderLayer(menuLayer.id, layers.length - 1)}
                   onSendToBottom={() => onReorderLayer(menuLayer.id, 0)}
@@ -371,20 +373,6 @@ export function LayersPanel({
               );
             })()
           : null}
-        {confirmAnchor && activeLayer ? (
-          <ConfirmPopover
-            anchor={confirmAnchor}
-            message={`Delete “${activeLayer.name}” and its ${activeCount} ${
-              activeCount === 1 ? 'element' : 'elements'
-            }?`}
-            confirmLabel="Delete"
-            onConfirm={() => {
-              setConfirmAnchor(null);
-              onRemoveLayer(activeLayerId);
-            }}
-            onCancel={() => setConfirmAnchor(null)}
-          />
-        ) : null}
       </div>
     </MovablePanel>
   );

@@ -110,11 +110,9 @@ test('a link to a deleted page reads Deleted Page and goes nowhere', async ({
   const link = pageLinks(page);
   await expect.poll(() => shownLinkText(link)).toBe('Onboarding');
 
+  // It goes at once, with Undo in a toast (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
   await rowVerb(page, 'Onboarding', 'Delete');
-  await page
-    .getByRole('dialog', { name: 'Delete Onboarding?' })
-    .getByRole('button', { name: 'Delete', exact: true })
-    .click();
+  await expect(page.getByRole('button', { name: 'Undo deleting Onboarding' })).toBeVisible();
   await expect(pageRow(page, 'Onboarding')).toHaveCount(0);
 
   // The link stays in the writing, struck through, and pressing it opens nothing.

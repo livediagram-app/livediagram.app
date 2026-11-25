@@ -144,6 +144,8 @@ function ActionButton({
         href={action.href}
         onClick={action.onSelect}
         aria-label={action.ariaLabel}
+        data-toast-action=""
+        data-toast-primary={action.primary ? '' : undefined}
         className={className}
       >
         {action.label}
@@ -155,6 +157,8 @@ function ActionButton({
       onClick={action.onSelect}
       disabled={action.disabled}
       aria-label={action.ariaLabel}
+      data-toast-action=""
+      data-toast-primary={action.primary ? '' : undefined}
       data-toast-destructive={action.destructive ? '' : undefined}
       data-toast-quiet={action.quiet ? '' : undefined}
       className={className}
@@ -205,6 +209,7 @@ export function ToastCard({
   full = false,
   highlight = false,
   role,
+  hint,
   className = '',
   ref,
   ...rest
@@ -231,6 +236,8 @@ export function ToastCard({
   highlight?: boolean;
   // A notice that announces itself elsewhere (an Inbox notice's own live line) is a plain group.
   role?: 'alert' | 'status' | 'group';
+  // Said to a screen reader after the message, never shown: how to reach the card's action from the keyboard.
+  hint?: string;
 } & Omit<HTMLAttributes<HTMLDivElement>, 'role' | 'children' | 'title'>) {
   const Icon = highlight ? HIGHLIGHT_ICON : TOAST_ICONS[tone];
   const shape = layout ?? toastCardLayout({ title, body, toggle, actions });
@@ -254,6 +261,9 @@ export function ToastCard({
       </button>
     </Tooltip>
   ) : null;
+  // Beside the message, never inside it: the message's own text stays exactly the sentence (a test or a screen
+  // reader's find reads it whole), and the hint is read after it, inside the card's live region.
+  const said = hint ? <span className="sr-only"> {hint}</span> : null;
   const buttons = actions.map((action) => (
     <ActionButton key={action.label} action={action} highlight={highlight} stacked={stacked} />
   ));
@@ -298,6 +308,7 @@ export function ToastCard({
               {message}
             </div>
           ) : null}
+          {said}
           {body ? <div className="mt-1">{body}</div> : null}
           {buttons.length > 0 || toggle ? (
             <div
@@ -337,6 +348,7 @@ export function ToastCard({
       </span>
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-0.5">
         <p className="min-w-0 flex-[1_1_10rem] py-1.5 text-sm leading-5">{message}</p>
+        {said}
         {buttons.length > 0 ? (
           <div className="ml-auto flex shrink-0 items-center gap-1">{buttons}</div>
         ) : null}

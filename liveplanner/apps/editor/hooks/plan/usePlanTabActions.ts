@@ -28,6 +28,7 @@ import {
 } from '@liveplanner/project';
 import type { PlanVisualisation } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
+import { revertTabStep } from '@liveworkspace/workbench/lib/revert-tab-step';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { placedSheetTitle } from '@/lib/sheet-seeds';
 import { insertTabsAfter } from '@/app/project/[id]/template-tab-set';
@@ -59,12 +60,14 @@ export type PlanTabActions = {
   // A Dashboard built from the project's own work (suggested-dashboards.ts): its rows, its views made as elements.
   startSuggestedDashboard: (suggestion: SuggestedDashboard) => void;
   // A layout change; nothing when it returns the same layout. `prune`: the slots' elements the new layout no longer
-  // holds leave the tab with it (Clear Dashboard, Start Over From a Layout).
+  // holds leave the tab with it (Clear Dashboard, Start Over From a Layout). Returns its Undo for a toast
+  // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md): the layout and the pruned elements back on
+  // that tab, unless someone changed them since; false when there is nothing to take back.
   changeDashboard: (
     change: (layout: DashboardLayout) => DashboardLayout,
     kind: DashboardChange,
     opts?: { prune?: boolean },
-  ) => void;
+  ) => () => boolean;
   // A slot's content set (a tab or a note) or cleared; an element it held leaves the tab with it.
   setSlotContent: (slotId: string, content: DashboardContent | undefined) => void;
   // Something from the palette, dropped on `at` (or pressed: null slot and row). A plan view, a new Board or Sheet tab
@@ -116,6 +119,7 @@ export function usePlanTabActions({
   tickTabs,
   bringCardTypes,
   markTabLoaded,
+  readTabs,
 }: {
   activeId: string;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
@@ -125,6 +129,9 @@ export function usePlanTabActions({
   bringCardTypes?: (elements: Tab['elements']) => void;
   // A tab made here has nothing to fetch.
   markTabLoaded?: (tabId: string) => void;
+  // The tabs as they are now, so a change decides its step before it commits (Clear Dashboard and Start Over's
+  // Undo). Without it a change still applies, and hands back an Undo with nothing to take back.
+  readTabs?: () => readonly Tab[];
 }): PlanTabActions {
   // Read when used, so a caller handing new functions each render never remakes the actions (the Dashboard's context).
   const tabHooks = useLatest({ bringCardTypes, markTabLoaded });
@@ -248,26 +255,51 @@ export function usePlanTabActions({
   );
   const changeDashboard = useCallback<PlanTabActions['changeDashboard']>(
     (change, kind, opts) => {
-      commitTabs((ts) => {
-        const tab = ts.find((t) => t.id === activeId);
-        if (!tab) return ts;
+      const tabId = activeId;
+      // The tab changed, or null when the change changes nothing.
+      const planned = (tab: Tab): Tab | null => {
         const before = dashboardOf(tab);
         const after = change(before);
-        if (after === before) return ts;
+        if (after === before) return null;
         const held = opts?.prune ? dashboardElementIds(after) : null;
-        return ts.map((t) =>
-          t.id === activeId
-            ? {
-                ...t,
-                dashboard: after,
-                ...(held ? { elements: t.elements.filter((e) => held.has(e.id)) } : {}),
-              }
-            : t,
-        );
+        return {
+          ...tab,
+          dashboard: after,
+          ...(held ? { elements: tab.elements.filter((e) => held.has(e.id)) } : {}),
+        };
+      };
+      // Decided before the commit (react-state-and-effects.md "A handler decides before it commits"), from the tabs
+      // as they are now; a locked tab changes nothing (commitTabs refuses it).
+      const now = readTabs?.().find((t) => t.id === tabId);
+      const next = now && !now.locked ? planned(now) : null;
+      let step: { before: Tab; after: Tab } | null =
+        now && next ? { before: now, after: next } : null;
+      const decided = step;
+      commitTabs((ts) => {
+        const tab = ts.find((t) => t.id === tabId);
+        if (!tab) return ts;
+        const out = decided && tab === decided.before ? decided.after : planned(tab);
+        return out ? ts.map((t) => (t.id === tabId ? out : t)) : ts;
       });
       track('Plan', 'Changed', kind);
+      return () => {
+        const taken = step;
+        if (!taken) return false;
+        step = null;
+        commitTabs((ts) =>
+          ts.map((t) => {
+            if (t.id !== tabId) return t;
+            // The layout back only if nobody has changed it since; the pruned elements back in their places.
+            const reverted = revertTabStep(taken.before, taken.after, t);
+            return t.dashboard === taken.after.dashboard
+              ? { ...reverted, dashboard: taken.before.dashboard }
+              : reverted;
+          }),
+        );
+        return true;
+      };
     },
-    [commitTabs, activeId],
+    [commitTabs, activeId, readTabs],
   );
   const setSlotContent = useCallback<PlanTabActions['setSlotContent']>(
     (slotId, content) => {

@@ -17,7 +17,7 @@ Every write here reaches anyone with the design open straight away, credited to 
 
 ## Images
 
-Upload the raw bytes of a PNG, JPEG, WebP or GIF, up to 10 MB (with subscriptions on, your tier's limit instead: 5 MB on Free, 25 MB on Pro and Pro for Teams), with its pixel size in two headers:
+Upload the raw bytes of a PNG, JPEG, WebP or GIF, up to 10 MB (with subscriptions on, 25 MB on every plan), with its pixel size in two headers:
 
 ```bash
 curl -X POST https://www.livedesign.app/api/images \
@@ -51,7 +51,7 @@ curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/changesets \
   -d '{ "operations": [ { "op": "add", "element": { "type": "image", "imageId": "'"$IMAGE"'", "x": 0, "y": 0, "width": 600, "height": 400, "naturalWidth": 1200, "naturalHeight": 800, "alt": "Architecture overview" } } ] }'
 ```
 
-`GET /images` lists your uploads, `GET /images/usage` maps each to the designs that use it, `GET /images/{id}` downloads one, and `DELETE /images/{id}` removes it from your gallery. Refusals are `415 unsupported_type`, `413 file_too_large`, and `403 gallery_full` once your gallery holds 500 images or 1 GB, counted across every liveworkspace app.
+`GET /images` lists your uploads, `GET /images/usage` maps each to the designs that use it, `GET /images/{id}` downloads one, and `DELETE /images/{id}` removes it from your gallery. Refusals are `415 unsupported_type`, `413 file_too_large`, and `403 gallery_full` once your gallery holds 500 images or 1 GB, counted across every liveworkspace app. With subscriptions on, only storage counts, by tier: 500 MB on Free, 50 GB on Pro and 250 GB for each member of Pro for Teams.
 
 ## Pages
 

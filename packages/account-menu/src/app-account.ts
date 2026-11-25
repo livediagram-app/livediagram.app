@@ -147,15 +147,16 @@ export function useAppAccount(hint: string): AppAccount {
 /** Signs out of the app this page is on, and so of every liveworkspace app in this browser (its API clears its cookies
  *  and ends the liveworkspace session, or, should that fail, remembers not to sign in silently here;
  *  liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"), then goes through the accounts site's hop, or
- *  straight back to this page, as a visitor.
+ *  straight back to this page (or `returnTo`), as a visitor.
  *  Resolves false when the API refused, leaving everything as it was. Signed out of this app alone (no hop), it notes
  *  that in the tab for the page it lands on to say so (SignedOutHereNotice), unless `noteHereOnly` is false (the
  *  sign-out after Delete Account, when no app is left signed in). */
 export async function appSignOut(
   go: (to: string) => void = (to) => window.location.assign(to),
-  { noteHereOnly = true }: { noteHereOnly?: boolean } = {},
+  { noteHereOnly = true, returnTo }: { noteHereOnly?: boolean; returnTo?: string } = {},
 ): Promise<boolean> {
-  const here = pageHere();
+  // `returnTo`: a path on this origin to land on instead of this page (the Explorer's: its landing page).
+  const here = returnTo ?? pageHere();
   const { ok, next } = await askSignOut(here, { noteHereOnly });
   if (!ok) return false;
   go(next ?? here);

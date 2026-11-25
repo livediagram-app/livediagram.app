@@ -274,7 +274,13 @@ Inside one commit: the roots of every selected mind node, once each; per root
 `relayoutMindMap(next, rootId, flow?)` with sibling order read in the current flow, its moves and
 re-anchors applied, other trees pushed down by `makeRoom`, and `mindFlow` written on the root when
 a flow is picked. Logs `[mind-layout] relayout`; tracks `Element·Changed·MindFlow` or
-`Element·Changed·MindTidy`.
+`Element·Changed·MindTidy`. Tidy Map's notice reads `changed` off what `applyMindMoves` actually
+changed (an element no longer the same object), so a plan whose only moves are locked nodes says
+"Map already tidy".
+
+`applyMindMoves` (every caller: growth, abandon, fit, outline save, Tidy Map, flow and spacing)
+skips a move onto a node with `locked: true` and a re-anchor of a connector with `locked: true`
+(mind-node.md "Tidy Map"; canvas-and-palette.md "Locking").
 
 **Spacing pick** (`setMindSpacingSelected(spacing)`): inside one commit, per selected root once,
 `mindSpacing` written on the root first, then `relayoutMindMap(next, rootId)` (which reads the new

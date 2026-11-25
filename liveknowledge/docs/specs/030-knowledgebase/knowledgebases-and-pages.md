@@ -131,9 +131,11 @@ Web](publishing.md)): its "public site", never its "Public".
 - **Search** stands at the sidebar's head, under the knowledgebase's name ([Search and Ask](search-and-ask.md)).
 - **Duplicate** copies the page beside it, under the same parent, without its subpages.
 - **Copy Link** copies the page's address: the knowledgebase's, with the page in its fragment (`#t=<page>`).
-- **Delete** moves the page and its subpages to the knowledgebase's [Trash](#the-page-trash) after one confirmation
-  that names the count ("Move Release Process and 3 Subpages to the Trash?", its button Move to Trash). The
-  confirmation says they can be restored from the Trash for 30 days, and Undo brings them straight back. The last
+- **Delete** moves the page and its subpages to the knowledgebase's [Trash](#the-page-trash) at once, and
+  a toast names the count ("Moved “Release Process” and 3 subpages to the Trash.") with **Undo**, which puts them back
+  in their places in the tree and reopens the page that was open ([Undo, not
+  confirm](../../../../liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md)). They can also be restored from
+  the Trash for 30 days, and Undo (Cmd/Ctrl-Z) brings them back too. The last
   page is never deleted, and a locked page is unlocked first. Links to a page in the Trash show struck through with
   "In the Trash"; to a page deleted for good, "Deleted Page" ([Links and embeds](links-and-embeds.md)). An Offline
   knowledgebase has no Trash (it has no server to keep one): its Delete removes the pages, and Undo brings them back.
@@ -302,7 +304,7 @@ Participant never manages who has access.
 | Verify a page, change its owner, set Always in Context          | yes    | yes         | no     |
 | Request Approval; Approve or Reject another's request           | yes    | yes         | no     |
 | Describe to Add Pages, Import                                   | yes    | yes         | no     |
-| Accept or dismiss an agent's suggestion                         | yes    | yes         | no     |
+| Accept or dismiss an agent's suggestion                         | yes    | no          | no     |
 | Change the Review Period                                        | yes    | no          | no     |
 | Knowledgebase Style                                             | yes    | no          | no     |
 | Automations (none built yet; the rule stands for when they are) | yes    | no          | no     |
@@ -312,6 +314,10 @@ Participant never manages who has access.
 | Publish to the Web, change what is published, Unpublish         | yes    | no          | no     |
 | Export, from the knowledgebase's menu                           | yes    | yes         | yes    |
 | Copy a page's link, fold the tree                               | yes    | yes         | yes    |
+
+Accepting or dismissing an agent's suggestion is an Editor's of the whole knowledgebase
+([Insights](insights.md#share-roles), Work Tracker 1362): a Participant's agent suggests, and someone who may change
+every page decides.
 
 "Participant" is a person in their own session. An agent's token keeps its scopes as
 [Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md) has them: a token below `write` acts as a

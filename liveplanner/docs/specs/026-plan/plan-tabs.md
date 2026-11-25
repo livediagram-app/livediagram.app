@@ -615,7 +615,8 @@ leaves it out of a smaller slot and names charts in its line.
 ## Dashboard Settings
 
 An Editor's **Dashboard Settings** cog sits in a card of its own at the page's top right, 12 px from the corner at the
-toolbar's UI scale, as the menu box sits at the top left (and as a board's or Sheet's cog sits in its header). While a
+toolbar's UI scale, left of the top-right corner card (Share, Sign In) where the app has one (`--corner-card-span`,
+which covered the cog at 1440 px), as the menu box sits at the top left (and as a board's or Sheet's cog sits in its header). While a
 board, view or Sheet maximised from a slot covers the page, the cog is not shown (the covering element's own cog sits
 in that corner); it is back the moment it is restored. It
 opens the settings popover boards and Sheets use, built from the same parts as Sheet Settings (a labelled field,
@@ -625,18 +626,19 @@ compact action buttons with their icon left of their label, picture choices), it
   characters; Escape puts it back; the tab bar and the menu box follow; untouched, it follows a rename made
   elsewhere); then two action buttons, **Add Row** (two
   empty slots at the foot; dimmed at 12 rows, with a line saying so; the cog closes and the page scrolls the new row
-  into view, smoothly, at once under reduced motion) and **Clear Dashboard** (empties every slot, the
-  rows and their sizes kept, after asking in a popover beside the button, "Empty every slot on this dashboard? Its rows
-  and their sizes stay." (**Clear**, **Cancel**); dimmed while every slot is empty).
+  into view, smoothly, at once under reduced motion) and **Clear Dashboard** (empties every slot at once, the
+  rows and their sizes kept, and a toast, "Cleared the dashboard.", offers **Undo**, which puts the slots' contents and
+  their elements back; dimmed while every slot is empty).
 - **Background**: two swatches side by side, each its look drawn above its name and line: **Plain** (the canvas as it
   is) or **Tinted** (a soft wash of the theme's brand behind the slots, 7%, 9% in dark), the chosen one ringed. Kept on
   the layout as `background: 'tint'` (absent when plain), read safely (anything else is plain), and carried through
   every layout change.
 - **Layouts**: start over from a layout: each preset of Start Planning (Two by Two, Overview, Focus, Three Columns,
   Stacked, Report) as a tile in a two-column grid, its rows drawn small above its name. Picked, its empty rows replace
-  the dashboard's, the background kept, and the popover closes; when any slot holds something it asks first, beside
-  the tile, "Start over as Focus? Current slots are removed." (**Start Over**, **Cancel**), and the
-  slots' elements leave the tab with them (a Sheet's cells stay in the project).
+  the dashboard's, the background kept, and the popover closes; when any slot holds something, the
+  slots' elements leave the tab with them (a Sheet's cells stay in the project) and a toast, "Started over as Focus.",
+  offers **Undo**, which puts the old layout and its elements back unless someone has changed the layout since
+  ([Undo, not confirm](../../../../liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md)).
 
 Each change is one undo step. A Participant and a Viewer have no cog (the dashboard is an Editor's to change).
 

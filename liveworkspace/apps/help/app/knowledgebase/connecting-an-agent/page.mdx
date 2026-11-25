@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
 
 A Knowledgebase is written for agents as much as for people. Connect Claude, a coding agent or your own script, and it can search the pages, read them with how far each can be trusted, and suggest edits for a person to accept.
 
-There are three ways in: the MCP server, the command line and an API token. The **Connect** tab walks you through each, with the address and the commands to copy.
+There are three ways in: the MCP server, the command line and an API token. The **Connect MCP** tab walks you through each, with the address and the commands to copy.
 
 <Figure caption="Connect: pick your AI app, follow its steps with the address to copy, and watch for it to connect.">
   <ConnectAgentScene />
@@ -25,7 +25,7 @@ There are three ways in: the MCP server, the command line and an API token. The 
 ## Open Connect
 
 <Step n={1}>
-  Sign in, then press the **Connect** tab in the footer, after Insights. **Connect an Agent** in Insights opens it too.
+  Sign in, then press the **Connect MCP** tab in the footer, after Insights. **Connect an Agent** in Insights opens it too.
 </Step>
 
 <Step n={2}>
@@ -55,7 +55,7 @@ This is the way for Claude and any other AI tool that speaks the Model Context P
 </Step>
 
 <Step n={4}>
-  Ask it something about your pages, naming the Knowledgebase: Connect gives you a first prompt to copy. **Check It Worked** says **Connected** with the app's name once it reads a page here; it checks every 10 seconds for 5 minutes, and **Check Again** starts again. The app calls `get_context` first, then `search_pages`, `read_page` and `suggest_edit`. Every tool is listed in [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/).
+  Ask it something about your pages, naming the Knowledgebase: Connect gives you a first prompt to copy. **Check It Worked** says **Connected** with the app's name once it reads a page here; it checks every 10 seconds for 5 minutes, and **Check Again** starts again. The app calls `get_knowledge_context` first, then `search_knowledge_pages`, `read_knowledge_page` and `suggest_knowledge_edit`. Every tool is listed in [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/).
 </Step>
 
 ## Through the Command Line

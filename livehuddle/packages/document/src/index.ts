@@ -219,6 +219,7 @@ export * from './retired-placeholder';
 export * from './shape-variants';
 export * from './piece-variants';
 export * from './piece-type';
+export * from './corridor-retype-doors';
 export * from './door-art';
 export * from './back-wall-doors';
 export * from './window-art';

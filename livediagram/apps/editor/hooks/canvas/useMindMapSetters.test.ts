@@ -64,6 +64,28 @@ describe('Tidy Map', () => {
     expect(notify).toHaveBeenCalledWith('info', 'Map already tidy');
     expect(committed()).toBeNull();
   });
+
+  // A locked node keeps its place (mind-node.md "Tidy Map"), so a map whose only stray node is locked is
+  // already as tidy as Tidy Map can make it.
+  it('leaves a locked stray node in place and says the map is already tidy', () => {
+    const messy = map();
+    const plan = relayoutMindMap(messy, 'root')!;
+    const tidy = applyMindMoves(messy, plan.moves, plan.reanchored).map((el) =>
+      el.id === 'a' ? { ...el, x: (el as ShapeElement).x + 300, locked: true } : el,
+    );
+    const { api, notify, committed } = setters(tidy);
+    api.tidyMindMap('root');
+    expect(notify).toHaveBeenCalledWith('info', 'Map already tidy');
+    expect(committed()).toBeNull();
+  });
+
+  it('re-lays the map around a locked node without moving it', () => {
+    const els = map().map((el) => (el.id === 'a' ? { ...el, locked: true } : el));
+    const { api, committed } = setters(els);
+    api.setMindFlowSelected('downward');
+    const a = committed()!.find((e) => e.id === 'a') as ShapeElement;
+    expect(a).toMatchObject({ x: 0, y: 0 });
+  });
 });
 
 // docs/specs/009-elements/mind-node.md "Spacing": stored on the root and the map re-laid out, in one commit.

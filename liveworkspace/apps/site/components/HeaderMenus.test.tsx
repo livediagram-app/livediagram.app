@@ -74,12 +74,26 @@ describe('HeaderMenus', () => {
     ]);
   });
 
-  it('opens Support with Help, Status and Telemetry, current under a subpath', () => {
+  it('opens Support with Help, Build with AI, Status and Telemetry, current under a subpath', () => {
     state.path = '/help/livediagram';
     act(() => root.render(<HeaderMenus />));
     const rows = open('Support');
-    expect(rows.map((row) => row.getAttribute('href'))).toEqual(['/help', '/status', '/telemetry']);
-    expect(rows.map((row) => row.getAttribute('aria-current'))).toEqual(['page', null, null]);
+    expect(rows.map((row) => row.getAttribute('href'))).toEqual([
+      '/help',
+      '/ai',
+      '/status',
+      '/telemetry',
+    ]);
+    expect(rows.map((row) => row.getAttribute('aria-current'))).toEqual(['page', null, null, null]);
+  });
+
+  it('lists Build with AI in Support, current on /ai', () => {
+    state.path = '/ai';
+    act(() => root.render(<HeaderMenus />));
+    expect(trigger('Support').className).toContain('text-slate-900 dark:text-white');
+    const row = open('Support').find((r) => r.getAttribute('href') === '/ai')!;
+    expect(row.textContent).toContain('Build with AIConnect your AI to every app');
+    expect(row.getAttribute('aria-current')).toBe('page');
   });
 
   it.each([true, false])('each button knows its menu’s pages without the rows (Pro %s)', (pro) => {

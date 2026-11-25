@@ -24,6 +24,16 @@ control in a positioned box with `SignedOutHereNotice` (`@liveworkspace/account-
 sign-out of that app alone the reloaded page says so (`components/explorer/app-account-control.test.tsx`; Work Tracker
 1283, accounts.md "Signed out of this app only"); on liveworkspace.app (`pageApp()` null) it draws none.
 
+Signing out from the Explorer leaves it (Work Tracker 1443, accounts.md "From the Explorer"). On liveworkspace.app,
+`useExplorerIdentity` sees the session go `in` then `out` and, instead of asking for a token again (which made a
+guest and reloaded a team's page as that guest), forgets the cached token, sets `identity` to null (the Explorer's
+skeleton, none of the old account's teams or items) and replaces the page with `SIGNED_OUT_HREF` (`/`,
+`lib/explorer/signed-out.ts`); after that the hook asks nothing, Try Again included. On an app's address the site's
+`appSignOut` passes `returnTo: SIGNED_OUT_HREF` to the account menu's, so the hop (or the straight return) lands on
+the app's landing page rather than the Explorer, whose reload would take a guest hand-off. Pinned by
+`components/explorer/explorer-sign-out.test.tsx` (the real session and token modules: after `POST …/sign-out`, no
+request at all), `useExplorerIdentity.test.tsx` and `lib/explorer/app-sign-out.test.ts`.
+
 ### Opening from an open item (`components/explorer/useItemArrival.ts`)
 
 `/explorer?item=<id>` ([one-explorer.md](../../004-index/one-explorer.md#opening-from-an-open-item)): `pending` while
@@ -121,10 +131,10 @@ beside an editor's own Delete Account.
 ### Settings' Sign Out and Delete Account on an app's address (Work Tracker 1228)
 
 On an app's address (`pageApp()`), the site's `AccountHost` carries `onSignOut: () => appSignOut()` (`lib/explorer/
-app-session.ts`, the account menu's own app sign-out: `POST /api/auth/sign-out?return=<this page>` on the page's own
+app-session.ts`, the account menu's own app sign-out: `POST /api/auth/sign-out?return=/` (the app's landing page) on the page's own
 origin, then the accounts site's hop it answers; `lib/explorer/app-sign-out.test.ts` pins that it signs out
 everywhere, as the row's copy says, and `site-settings-app-account.test.tsx` pins the copy, Work Tracker 1283; when
-the accounts site didn't answer it notes "Signed out of this app only" for the reloaded page, see above) and
+the accounts site didn't answer it notes "Signed out of this app only" for the landing page, see above) and
 `deleteAccount`, which opens
 `components/settings/AppDeleteAccountDialog.tsx`, loaded with `next/dynamic` the first time it is asked for. That
 dialog is `DeleteAccountDialog` from `@liveworkspace/workbench/components/dialogs/DeleteAccountDialog`, unchanged,
@@ -286,6 +296,15 @@ saved; `/explorer` 370.9 to 370.7 KiB (379,623 bytes). What `/` still carries ov
 menu buttons as client code, the Pro flag and the account menu's lazy Pro parts. `app/first-load-lazy.test.ts`
 keeps both imports dynamic. The budget stays at 212 KiB.
 
+**A team's Usage tab stays with the team card (2026-11-25).** The tab's list (`UsageList`, its app logos and the
+comparison rows' app line) first came in through `teams/TeamPlan.tsx`, which the sidebar also draws, and from the
+`@liveworkspace/subscription-ui` barrel: `/explorer` went from 380.2 to 387.4 KiB (21 to 23 scripts), over its 382 KiB
+budget. Now the tab and the hook that finds the team are `teams/page/TeamUsage.tsx`, imported only by the lazy team
+card, and the list is its own entry, `@liveworkspace/subscription-ui/usage-list`, out of the barrel. Measured with
+each build's own export: 381.2 KiB in 22 scripts. None of the tab's code is in the first load; the extra script is
+Turbopack cutting the largest subscription chunk (69.6 KB raw on main, byte-identical modules after) in two, as after
+the Webhooks rework above, and its framing is the 1 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from
@@ -299,6 +318,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `/account`                  | `liveworkspace/apps/site/app/account/page.tsx`                  |                                                                                                                                                                             |
 | `/account/settings`         | `liveworkspace/apps/site/app/account/settings/page.tsx`         |                                                                                                                                                                             |
 | `/account/tokens`           | `liveworkspace/apps/site/app/account/tokens/page.tsx`           |                                                                                                                                                                             |
+| `/ai`                       | `liveworkspace/apps/site/app/ai/page.tsx`                       | Build with AI: the shared BuildWithAi bound to the one MCP (lib/ai.ts), with its cross-app art and app cards (components/ai/).                                              |
 | `/community`                | `liveworkspace/apps/site/app/community/page.tsx`                | The Community, every app's posts; each app's router serves it at its own `/community`.                                                                                      |
 | `/community/post`           | `liveworkspace/apps/site/app/community/post/page.tsx`           | A post's shell; its head is filled by the post's app's router.                                                                                                              |
 | `/compare`                  | `liveworkspace/apps/site/app/compare/page.tsx`                  |                                                                                                                                                                             |
@@ -361,6 +381,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `liveworkspace/apps/site/lib/drive/client.ts`                    | The Drive service as this site's pages call it (liveworkspace/docs/specs/005-drive/drive.md "The service"): `/api/drive` on this origin, liveworkspace.app or an app's router, with the pe…                                                                              |
 | `liveworkspace/apps/site/lib/drive/pages.ts`                     | What liveworkspace's three Drive pages decide (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "Open with"), pure so every outcome is tested: /drive/connect asks for a consent …                                                                              |
 | `liveworkspace/apps/site/lib/explorer/app-session.ts`            | The app's own session, for the Explorer shown on that app's address (page-app.ts): its signed-in account from the app's API, its sign-in and sign-out, and its guest token                                                                                               |
+| `liveworkspace/apps/site/lib/explorer/signed-out.ts`             | Where signing out from the Explorer goes (`SIGNED_OUT_HREF`, `/`), never the Explorer again (Work Tracker 1443)                                                                                                                                                          |
 | `liveworkspace/apps/site/lib/explorer/daily-return.ts`           | The app's returning visitor (liveworkspace/docs/specs/008-telemetry/telemetry.md "The Explorer on liveworkspace.app"), counted by the Explorer on the app's own address the way the app's edit…                                                                          |
 | `liveworkspace/apps/site/lib/explorer/host.ts`                   | What liveworkspace.app hands the shared Explorer (@liveworkspace/explorer) to be its host (liveworkspace/docs/specs/010-site/site.md "The Explorer"): which app the person came from, and…                                                                               |
 | `liveworkspace/apps/site/lib/explorer/imports.tsx`               | "Import from" on liveworkspace.app's Explorer: the shared Import From host (@liveworkspace/explorer/imports), over each app's own address                                                                                                                                |
@@ -535,13 +556,13 @@ in both environments to the sitemap's pages but the build's `--skip` (`/communit
 
 **Production**
 
-| Setting     | Value                                                          |
-| ----------- | -------------------------------------------------------------- |
-| Worker name | `liveworkspace-site`                                           |
-| Route       | `liveworkspace.app` (custom domain)                            |
-| Route       | `www.liveworkspace.app` (custom domain)                        |
-| Assets      | `./out`, binding `ASSETS`                                      |
-| Runs first  | `/`, `/compare`, `/pricing`, `/privacy`, `/terms`, `/licences` |
+| Setting     | Value                                                                 |
+| ----------- | --------------------------------------------------------------------- |
+| Worker name | `liveworkspace-site`                                                  |
+| Route       | `liveworkspace.app` (custom domain)                                   |
+| Route       | `www.liveworkspace.app` (custom domain)                               |
+| Assets      | `./out`, binding `ASSETS`                                             |
+| Runs first  | `/`, `/ai`, `/compare`, `/pricing`, `/privacy`, `/terms`, `/licences` |
 
 **`env.staging`**
 

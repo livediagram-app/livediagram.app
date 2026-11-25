@@ -452,8 +452,14 @@ sibling order as drawn, and re-anchors its connectors. Other trees in the way
 slide down, as they do for growth. It is the way back to a tidy map after
 dragging nodes around, and from then on growth keeps it tidy.
 
+A **locked** node stays where it is, and so does a locked connector's faces, whatever re-lays the
+map: Tidy Map, a Branching or Spacing pick, tidy growth, an Edit Outline save or a label growing
+its node ([Locking](../008-canvas/canvas-and-palette.md#locking) holds wherever the change comes
+from). The rest of the map is laid out around the layout as planned.
+
 Tidy Map always says what it did, in a notification at the foot of the screen: **Map tidied**
-when nodes moved, or **Map already tidy** when the map was already laid out and nothing changed
+when nodes moved, or **Map already tidy** when the map was already laid out and nothing changed,
+locked nodes it left in place included
 (so a click that seems to do nothing is never a mystery). The notifications follow the "Show
 notifications" preference, like every other confirmation.
 

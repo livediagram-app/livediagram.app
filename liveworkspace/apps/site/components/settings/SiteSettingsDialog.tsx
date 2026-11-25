@@ -41,6 +41,7 @@ import { SITE_SUBSCRIPTION } from '@/lib/subscription';
 import { pageApp } from '@/lib/explorer/page-app';
 import { workspaceToken } from '@/lib/explorer/token';
 import { setExplorerConsent, setGuestTelemetryChoice } from '@/lib/explorer/telemetry';
+import { SIGNED_OUT_HREF } from '@/lib/explorer/signed-out';
 import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry';
 import { APP_SETTINGS_KIT } from './app-settings-kit';
 import { siteSettingsHeroArt } from './SiteSettingsHeroArt';
@@ -61,6 +62,8 @@ const ACCOUNT_PANELS = accountPanels({
       (await callIndex.listItems({ app: 'livehuddle', view: 'all', limit: CALL_SPACES_LISTED }))
         .items,
     token: workspaceToken,
+    // The chosen Space stays when its call ends (item-calls.md "When a call ends").
+    keep: (spaceId) => callIndex.keepCallSpace(spaceId),
   },
 });
 
@@ -178,7 +181,9 @@ export default function SiteSettingsDialog({
               security: accountSecurity,
               onSignOut: async () => {
                 const left = await signOut();
-                if (left) window.location.assign('/');
+                // Replacing this page, so Back never reopens the Explorer it was opened over, which would start a
+                // guest (Work Tracker 1443).
+                if (left) window.location.replace(SIGNED_OUT_HREF);
                 return left;
               },
               closeAccountHelp: closeAccountHelp(site),

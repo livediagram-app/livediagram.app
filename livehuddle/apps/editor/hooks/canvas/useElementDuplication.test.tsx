@@ -129,3 +129,41 @@ describe('duplicate with nothing to copy', () => {
     expect(commit).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "Duplicate" (Work Tracker 1452): a Room's copy brings its Doors in one
+// commit, so one Undo takes the copy and its Doors away together; the Room's copy is selected.
+describe('duplicateSelected: a Room', () => {
+  it('copies the Room and the Doors on its walls in one commit, selecting the Room', () => {
+    const room = shape('r', {
+      shape: 'room',
+      x: 0,
+      y: 0,
+      width: 480,
+      height: 360,
+      roomDoor: 'none',
+    });
+    // On the front wall (its line at y = 355).
+    const door = shape('d', { shape: 'door', x: 192, y: 343, width: 96, height: 24 });
+    let committed: Element[] = [room, door];
+    let commits = 0;
+    const setSelectedId = vi.fn();
+    const { result } = renderHook(() =>
+      useElementDuplication({
+        readSelection: () => ({ selectedId: 'r', multiSelectedIds: new Set() }),
+        activeTab: { id: 't', name: 'T', elements: [room, door] },
+        commit: (m) => {
+          commits++;
+          committed = m(committed);
+        },
+        setSelectedId,
+        setMultiSelectedIds: vi.fn(),
+      }),
+    );
+    result.current.duplicateSelected();
+    expect(commits).toBe(1);
+    const copies = committed.slice(2) as ShapeElement[];
+    expect(copies.map((c) => c.shape)).toEqual(['room', 'door']);
+    expect(copies[1]).toMatchObject({ x: 192 + 470, y: 343 });
+    expect(setSelectedId).toHaveBeenCalledExactlyOnceWith(copies[0]!.id);
+  });
+});

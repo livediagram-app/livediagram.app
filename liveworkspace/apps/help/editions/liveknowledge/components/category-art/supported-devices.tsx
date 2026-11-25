@@ -13,7 +13,7 @@ import {
 } from '../illustrations/kit';
 
 const ROWS: TreeRowSpec[] = [
-  { label: 'Start Here', state: 'verified' },
+  { label: 'Start Here' },
   { label: 'Engineering', open: true },
   { label: 'Deploying', depth: 1, current: true },
   { label: 'On-Call', depth: 1, state: 'due' },

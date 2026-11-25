@@ -24,7 +24,7 @@
 // visitor always has their own code already (the one they arrived with), and
 // only the owner manages links, so nobody else needs it.
 
-import { parseStoredPresentation } from '@livedocuments/document';
+import { presentationForCommunity } from '@liveworkspace/api-kit/redact-item';
 import type { DocumentDTO } from './types';
 
 // `caller` is the resolved owner of the request (account id, API-token owner,
@@ -51,24 +51,11 @@ export function redactDocumentForCommunity(liveDoc: DocumentDTO): DocumentDTO {
     ownerColor: null,
     folderId: null,
     source: null,
-    presentation: withoutPresenterNotes(liveDoc.presentation),
+    presentation: presentationForCommunity(liveDoc.presentation),
     // A connected tab keeps its name and loses its connection (connected-tabs.md): a stranger is told of no other
     // item.
     tabs: liveDoc.tabs.map(({ connection: _connection, ...tab }) => tab),
   };
-}
-
-function withoutPresenterNotes(presentation: string | null): string | null {
-  const stored = parseStoredPresentation(presentation);
-  if (!stored) return null;
-  return JSON.stringify({
-    ...stored,
-    decks: stored.decks.map((deck) => ({
-      ...deck,
-      // The notes and the note cards they mirror (docs/specs/012-collaboration/speaker-note-cards.md "Community").
-      slides: deck.slides.map(({ notes: _notes, noteCards: _cards, ...slide }) => slide),
-    })),
-  });
 }
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps

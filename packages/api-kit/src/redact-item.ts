@@ -36,13 +36,51 @@ export type CommunityRedactable = {
   folderId: string | null;
   source: string | null;
   tabs: readonly { connection?: unknown }[];
+  // A slide deck's stored JSON (`{ decks: [{ slides }] }`), where an app has one.
+  presentation?: string | null;
 };
+
+/**
+ * A slide deck's stored JSON as a Community visitor reads it: every slide without its presenter notes (`notes`, and
+ * livedocuments' and liveknowledge's `noteCards` they mirror), which are what the presenter means to say, not what
+ * the item shows. A deck that does not read as one is none (null), never served unredacted. One pass over the
+ * slides.
+ */
+export function presentationForCommunity(presentation: string | null): string | null {
+  if (presentation === null) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(presentation);
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  const stored = parsed as { decks?: unknown };
+  if (!Array.isArray(stored.decks)) return null;
+  return JSON.stringify({
+    ...stored,
+    decks: stored.decks.map((deck: unknown) => {
+      if (!deck || typeof deck !== 'object') return deck;
+      const d = deck as { slides?: unknown };
+      if (!Array.isArray(d.slides)) return deck;
+      return {
+        ...d,
+        slides: d.slides.map((slide: unknown) => {
+          if (!slide || typeof slide !== 'object') return slide;
+          const { notes: _notes, noteCards: _cards, ...rest } = slide as Record<string, unknown>;
+          return rest;
+        }),
+      };
+    }),
+  });
+}
 
 /**
  * A Community visitor's copy (each product's docs/specs/025-community/community.md), on top of the reader
  * redaction: the post names its author (or "Anonymous") itself, so the item carries nobody's name or colour, and
  * nothing about where it sits in its owner's library or came from. A connected tab keeps its name and loses its
- * connection (connected-tabs.md): a stranger is told of no other item.
+ * connection (connected-tabs.md): a stranger is told of no other item. A slide deck keeps its slides without their
+ * presenter notes (presentationForCommunity).
  */
 export function redactItemForCommunity<T extends CommunityRedactable>(item: T): T {
   return {
@@ -51,6 +89,9 @@ export function redactItemForCommunity<T extends CommunityRedactable>(item: T): 
     ownerColor: null,
     folderId: null,
     source: null,
+    ...(item.presentation !== undefined
+      ? { presentation: presentationForCommunity(item.presentation) }
+      : {}),
     tabs: item.tabs.map(({ connection: _connection, ...tab }) => tab),
   };
 }

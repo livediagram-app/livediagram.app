@@ -7,7 +7,7 @@ import { ToolPicker } from '@liveworkspace/help-site/art/tool-picker';
 export function SelectionModesArt() {
   return (
     <Stage>
-      <ToolPicker x={22} y={18} current="Select" />
+      <ToolPicker x={22} y={18} current="Select" eraser />
 
       {/* The wireframe screen. */}
       <Label x={226} y={14} size={8.5} weight={600} tone="muted">

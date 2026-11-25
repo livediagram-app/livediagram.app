@@ -335,7 +335,11 @@ share link's visitor, a page's link and a Community post's reader get pages alon
 - **The conversation.** A question is a dark bubble at the right. An answer is a white bordered card that streams
   in, then shows numbered citation chips (each goes to its source card and lights it), the trust line, an amber note
   for each part the pages do not cover ("One thing the knowledgebase does not cover."), and a footer: helpful, not
-  helpful, **Copy Answer** and **Save as Page**. Each uncovered part also gets a **Knowledge Gap** card.
+  helpful, **Copy Answer** and **Save as Page**. Under the footer, the platform's row of **Send to Plan** and **Send
+  to Knowledge Base** ([Ask AI](../../../../liveworkspace/docs/specs/020-ask/ask.md) "Sending an answer on"; Work
+  Tracker 1433): a card of each listed item (or one card of the whole answer), and the answer as written on a page of
+  another knowledgebase, with no AI pass and no AI credit (Save as Page writes into this one). Each uncovered part also
+  gets a **Knowledge Gap** card.
 - **Answers and passages are text.** They are drawn as characters with the page's own marks (a citation chip, a
   matched word), never as HTML or Markdown.
 - **No outside links in an answer** (security review, 2026-11-21): a page's writing could carry a prompt injection
@@ -422,6 +426,7 @@ share link's visitor, a page's link and a Community post's reader get pages alon
 | Copy an answer, mark it helpful or not  | yes    | yes         | yes    |
 | Accept an answer, reopen, delete a chat | yes    | yes         | yes    |
 | Save an answer as a page                | yes    | yes         | no     |
+| Send an answer on (plan, knowledgebase) | yes    | yes         | yes    |
 
 ## AI Settings
 

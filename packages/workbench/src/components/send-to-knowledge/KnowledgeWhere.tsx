@@ -152,7 +152,8 @@ export function KnowledgebasePicker({
         <SearchInput
           value={query}
           onChange={onQuery}
-          placeholder="Search your knowledgebases"
+          // Short enough to show whole in the picker's narrower column at desktop width; the label says it all.
+          placeholder="Search knowledgebases"
           ariaLabel="Search your knowledgebases"
           clearAriaLabel="Clear the search"
           clearDescription="Clear the knowledgebase search."

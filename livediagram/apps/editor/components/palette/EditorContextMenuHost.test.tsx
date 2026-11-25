@@ -135,3 +135,28 @@ describe('EditorContextMenuHost: the Live Status row', () => {
     expect(offered()).toBeUndefined();
   });
 });
+
+// A locked element's rows are not edited (canvas-and-palette.md "A category that opens a dialog"): its rows and Fields
+// dialogs would close the moment they opened, so the menu is handed no way to open them.
+describe('EditorContextMenuHost: the rows dialogs', () => {
+  const handlers = () => {
+    state.menuProps = [];
+    render(<EditorContextMenuHost />);
+    const props = state.menuProps.at(-1)!;
+    return { rows: props.onEditRows, fields: props.onEditEntityFields };
+  };
+
+  it('are offered on an unlocked element', () => {
+    state.element = shape({ shape: 'checklist' });
+    const { rows, fields } = handlers();
+    expect(rows).toBeTypeOf('function');
+    expect(fields).toBeTypeOf('function');
+  });
+
+  it('are not offered on a locked element', () => {
+    state.element = shape({ shape: 'checklist', locked: true });
+    const { rows, fields } = handlers();
+    expect(rows).toBeUndefined();
+    expect(fields).toBeUndefined();
+  });
+});

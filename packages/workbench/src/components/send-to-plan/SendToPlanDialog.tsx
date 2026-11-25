@@ -65,6 +65,7 @@ const NOUNS: Record<SendNoun, string> = {
   thread: 'this thread',
   action: 'this action',
   stickies: 'these stickies',
+  answer: 'this answer',
 };
 
 export function SendToPlanDialog({
@@ -103,6 +104,8 @@ export function SendToPlanDialog({
   const [title, setTitle] = useState(() =>
     several ? `${sourceTitle || 'Untitled'} actions` : placeTitle(places[0]!, today),
   );
+  // One Card Each: a title a card, each editable before sending.
+  const [titles, setTitles] = useState(() => places.map((p) => placeTitle(p, today)));
   const [assignee, setAssignee] = useState('');
   const [due, setDue] = useState(words.due ?? '');
   const [creating, setCreating] = useState(false);
@@ -112,7 +115,9 @@ export function SendToPlanDialog({
     alreadySent(places, currentSends(), planSendRef),
   );
   // Connect as tabs (connected-tabs.md "Linked from a Send to"): the source and the plan, once the cards are made.
-  const link = useLinkTabs({ sourceId, targetId: plan?.id ?? null, client });
+  // Never for an answer: it is not a file (ask.md "Sending an answer on").
+  const linkable = request.noun !== 'answer';
+  const link = useLinkTabs({ sourceId, targetId: linkable ? (plan?.id ?? null) : null, client });
 
   useEffect(() => {
     workbench.track('UI', 'Opened', 'SendToPlan');
@@ -204,7 +209,7 @@ export function SendToPlanDialog({
     if (!plan || !ready) return;
     setSending(true);
     setError(null);
-    const cards = sendCards(places, { mode, title, assignee, due }, today);
+    const cards = sendCards(places, { mode, title, titles, assignee, due }, today);
     try {
       const { sends } = await client.sendToPlan(plan.id, {
         board,
@@ -221,7 +226,7 @@ export function SendToPlanDialog({
         at: Date.now(),
       });
       workbench.track('UI', 'Created', 'SendToPlan');
-      void link.finish(plan.id, { source: sourceTitle, target: plan.title });
+      if (linkable) void link.finish(plan.id, { source: sourceTitle, target: plan.title });
       const first = sends[0];
       const count = new Set(sends.map((s) => s.card.id)).size;
       toast.success(
@@ -260,7 +265,11 @@ export function SendToPlanDialog({
           void send(existing !== null);
         }}
       >
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-6 gap-y-5 overflow-y-auto px-6 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+        {/* Rows sit at the top (content-start): a phone's tall sheet otherwise stretches them, a gap under the plans. */}
+        <div
+          data-send-body=""
+          className="grid min-h-0 flex-1 grid-cols-1 content-start gap-x-6 gap-y-5 overflow-y-auto px-6 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
+        >
           {existing ? (
             <div data-already-sent="" ref={showBanner} className="sm:col-span-2">
               <Callout
@@ -317,6 +326,8 @@ export function SendToPlanDialog({
                 onMode={setMode}
                 title={title}
                 onTitle={setTitle}
+                titles={titles}
+                onTitles={setTitles}
                 // With "Already sent" showing, the field takes no focus: on a phone the keyboard would push the
                 // banner out of view.
                 focusTitle={existing === null}
@@ -334,7 +345,8 @@ export function SendToPlanDialog({
               </p>
             ) : null}
           </section>
-          {plan && target.state !== 'refused' ? (
+          {/* An answer is not a file: sending one says nothing about the two belonging together (ask.md). */}
+          {plan && target.state !== 'refused' && linkable ? (
             <LinkTabsOption
               link={link}
               sourceApp={places[0]!.app}
@@ -396,6 +408,8 @@ function CardFields(props: {
   onMode: (m: SendMode) => void;
   title: string;
   onTitle: (t: string) => void;
+  titles: string[];
+  onTitles: (t: string[]) => void;
   focusTitle: boolean;
   people: { name: string }[];
   assignee: string;
@@ -493,7 +507,9 @@ function CardFields(props: {
             autoFocus={props.focusTitle}
           />
         </div>
-      ) : null}
+      ) : (
+        <CardTitles titles={props.titles} onTitles={props.onTitles} />
+      )}
       <div className="grid grid-cols-2 gap-3">
         <div className={field}>
           <label htmlFor={ids.who} className={label}>
@@ -532,5 +548,37 @@ function CardFields(props: {
         </div>
       </div>
     </div>
+  );
+}
+
+// One Card Each's titles: a numbered field a card, each editable before sending (send-to-plan.md "The picker" step 3).
+function CardTitles({ titles, onTitles }: { titles: string[]; onTitles: (t: string[]) => void }) {
+  const id = useId();
+  return (
+    <fieldset className="flex min-w-0 flex-col gap-1.5" data-send-titles="">
+      <legend className="mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+        Titles
+      </legend>
+      <ol className="flex max-h-60 flex-col gap-1.5 overflow-y-auto pr-0.5">
+        {titles.map((t, at) => (
+          <li key={at} className="flex min-w-0 items-center gap-2">
+            <span
+              aria-hidden
+              className="w-5 shrink-0 text-right text-xs font-semibold tabular-nums text-slate-500 dark:text-slate-400"
+            >
+              {at + 1}
+            </span>
+            <TextInput
+              id={`${id}-${at}`}
+              aria-label={`Card ${at + 1} title`}
+              value={t}
+              onChange={(e) => onTitles(titles.map((was, i) => (i === at ? e.target.value : was)))}
+              maxLength={200}
+              className="min-w-0 flex-1"
+            />
+          </li>
+        ))}
+      </ol>
+    </fieldset>
   );
 }

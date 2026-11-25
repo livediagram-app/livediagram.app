@@ -234,6 +234,9 @@ const HELD_AT_100 = [
   'src/components/send-to-plan/sent-card-indicator.ts',
   'src/components/send-to-plan/SentChip.tsx',
   'src/components/send-to-plan/ThreadSendToPlan.tsx',
+  // An Ask AI answer sent on (liveworkspace/docs/specs/020-ask/ask.md "Sending an answer on", Work Tracker 1433).
+  'src/components/send-to-plan/AnswerSendActions.tsx',
+  'src/components/send-to-plan/answer-items.ts',
   // The Table dialog's controls and the text style glyphs, the editors' one copy (each editor's 008-canvas
   // canvas-and-palette.md "The Table dialog").
   'src/components/dialogs/TableSettings.tsx',

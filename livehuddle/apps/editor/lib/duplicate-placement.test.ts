@@ -5,7 +5,10 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { ROOM_BACK_FACE, ROOM_WALL } from '@livehuddle/avatar/office-geometry';
 import {
+  doorsFollowRooms,
+  onRoomWall,
   rectsIntersect,
+  snapDoorToWall,
   wallUnder,
   type Element,
   type RetiredArrowElement,
@@ -15,6 +18,8 @@ import {
   DUPLICATE_GAP,
   DUPLICATE_SPOT_STEPS,
   duplicateOffset,
+  duplicateWithWallPieces,
+  isWalled,
   groupDuplicateOffset,
   placeDuplicate,
 } from './duplicate-placement';
@@ -225,5 +230,76 @@ describe('duplicateOffset budget', () => {
     });
     expect(d.dx !== 0 || d.dy !== 0).toBe(true);
     expect(ms).toBeLessThan(cpuBudgetMs(50));
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Duplicate" (Work Tracker 1452): a Room or a Corridor brings the Doors
+// and Windows on its walls, on the copy's same walls, never stacked on one already there.
+describe('duplicateWithWallPieces', () => {
+  const office = room('room', 0, 0);
+  const snap = (el: ShapeElement, on: ShapeElement) => snapDoorToWall(el, [on]);
+  // A Door in the middle of the front wall and a Window on the left wall, and a plant on the floor.
+  const front = snap(door('front', 192, 360 - ROOM_WALL / 2 - 12), office);
+  const win = snap({ ...piece('win', ROOM_WALL / 2 - 60, 150, 120, 24, 'window') }, office);
+  const plant = piece('plant', 100, 100, 40, 40, 'plant');
+
+  it("copies the Room with its Doors and Windows, each on the copy's same wall, under fresh ids", () => {
+    const els = [office, front, win, plant];
+    const copies = duplicateWithWallPieces(office, els) as ShapeElement[];
+    expect(copies.map((c) => c.shape)).toEqual(['room', 'door', 'window']);
+    const [copy, d, w] = copies;
+    const dx = copy!.x - office.x;
+    expect(dx).toBe(480 - ROOM_WALL);
+    expect(d).toMatchObject({ x: front.x + dx, y: front.y });
+    expect(d!.rotation ?? 0).toBe(front.rotation ?? 0);
+    expect(w).toMatchObject({ x: win.x + dx, y: win.y, rotation: win.rotation });
+    for (const c of copies) expect(els.some((e) => e.id === c.id)).toBe(false);
+    expect(onRoomWall(d!, copy!)).toBe(true);
+    expect(onRoomWall(w!, copy!)).toBe(true);
+  });
+
+  it('leaves out a copied Door that would stand on one already on the shared wall', () => {
+    // Doors on the left and right walls at the same height: the copy (to the right) shares the original's right wall,
+    // where the copy's left Door would land on the original's right one.
+    const left = snap(door('left', ROOM_WALL / 2 - 48, 200), office);
+    const right = snap(door('right', 480 - ROOM_WALL / 2 - 48, 200), office);
+    const copies = duplicateWithWallPieces(office, [office, left, right]) as ShapeElement[];
+    expect(copies).toHaveLength(2);
+    const [copy, kept] = copies;
+    expect(kept!.x).toBeCloseTo(right.x + copy!.x - office.x);
+  });
+
+  it('brings a Door standing on a wall the original shares with a neighbour', () => {
+    const neighbour = room('n', 0, 360 - ROOM_BACK_FACE);
+    // The original's front wall is the neighbour's back wall line: a Door there stands on both.
+    const shared = snap(door('shared', 192, 360 - ROOM_WALL / 2 - 12), office);
+    expect(onRoomWall(shared, neighbour)).toBe(true);
+    const copies = duplicateWithWallPieces(office, [office, neighbour, shared]);
+    expect(copies.map((c) => (c as ShapeElement).shape)).toEqual(['room', 'door']);
+  });
+
+  it('copies a Corridor with the Doors on its walls', () => {
+    const corridor = piece('c', 0, 0, 480, 120, 'corridor');
+    const d = snap(door('d', 192, -7), corridor);
+    const copies = duplicateWithWallPieces(corridor, [corridor, d]) as ShapeElement[];
+    expect(copies.map((c) => c.shape)).toEqual(['corridor', 'door']);
+    expect(onRoomWall(copies[1]!, copies[0]!)).toBe(true);
+  });
+
+  it('copies a Room with no Doors on its own, and nothing for a Room not on the tab', () => {
+    expect(duplicateWithWallPieces(office, [office, plant])).toHaveLength(1);
+    expect(duplicateWithWallPieces(office, [plant])).toEqual([]);
+    expect(isWalled(office)).toBe(true);
+    expect(isWalled(plant)).toBe(false);
+  });
+
+  it("places a turned Room's copy a gap away, its Doors riding the same move", () => {
+    const turned = { ...office, rotation: 45 };
+    const d = snap(door('d', 192, 360 - ROOM_WALL / 2 - 12), office);
+    // Put the Door on the turned room's wall by turning the board as the menu does.
+    const [, onTurned] = doorsFollowRooms([office, d], [turned, d]) as ShapeElement[];
+    const copies = duplicateWithWallPieces(turned, [turned, onTurned!]) as ShapeElement[];
+    expect(copies[0]!.x - turned.x).toBe(480 + DUPLICATE_GAP);
+    expect(onRoomWall(copies[1]!, copies[0]!)).toBe(true);
   });
 });

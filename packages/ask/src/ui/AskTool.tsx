@@ -35,6 +35,7 @@ import {
 import { useAuthHrefs } from '@liveworkspace/workbench/components/chrome/auth-routes';
 import type { ToolViewContext } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { requestOpenSettings } from '@liveworkspace/workbench/lib/open-settings';
+import { AnswerSendActions } from '@liveworkspace/workbench/components/send-to-plan/AnswerSendActions';
 import { answerWithoutMarkers } from '../answer-parts';
 import type { AskSource } from '../wire';
 import { AnswerText } from './AnswerText';
@@ -191,6 +192,14 @@ const Turn = memo(function Turn({
                   </button>
                 </Tooltip>
               </div>
+            ) : null}
+            {turn.status === 'done' ? (
+              // Sending it on (ask.md "Sending an answer on"): a card of each listed item, or the answer on a page.
+              <AnswerSendActions
+                markdown={answerWithoutMarkers(turn.text).trim()}
+                question={turn.question}
+                className="mt-2"
+              />
             ) : null}
           </article>
         </div>

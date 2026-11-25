@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
 
 The pages of a Knowledgebase are arranged in a tree in the sidebar on the left. A page sits at the top level or under another page, and a page with subpages has a chevron to open and close it. The page you are reading is tinted, and the pages above it are always open, so a page you reached by a link shows where it lives.
 
-<Figure caption="The page tree with one row's Page Options menu open. A tick marks a verified page and Due a page whose review is due.">
+<Figure caption="The page tree with one row's Page Options menu open. Due marks a page whose review is due.">
   <PageTreeMenu />
 </Figure>
 
@@ -43,8 +43,8 @@ A page's name and its title are one thing. Type in the title at the top of the p
 A page always moves with its subpages.
 
 - **Drag** a row up or down to reorder it among its siblings, or drop it on another page to make it that page's subpage. A line shows where it will land.
-- **Move Up** and **Move Down** in the row's menu step it past the page before or after it.
-- **Indent** puts it under the page above it. **Outdent** lifts it one level, to sit after the page it was under.
+- **Move Up** and **Move Down**, in the **Move** section of the row's menu, step it past the page before or after it.
+- **Indent** and **Outdent**, in the same section: **Indent** puts it under the page above it, and **Outdent** lifts it one level, to sit after the page it was under.
 
 A page is never dropped inside its own subpages. A verb that cannot run stays in the menu, greyed, and says why when you hover it ("This is the first page here.", "This page is already at the top level.").
 
@@ -55,7 +55,7 @@ A page is never dropped inside its own subpages. A verb that cannot run stays in
 
 ## Delete a Page, and Undo It
 
-<Step n={1}>Open the row's menu and choose **Delete**, the last row.</Step>
+<Step n={1}>Open the row's menu and choose **Delete**, in the row of tools at its top.</Step>
 
 <Step n={2}>
   Confirm. The dialog names the page and counts its subpages ("Move Runbooks and 3 Subpages to the
@@ -73,7 +73,7 @@ A page is never dropped inside its own subpages. A verb that cannot run stays in
 
 ## The Trash
 
-**Trash** sits at the foot of the page tree, directly above **New Page**, with a count of the pages it holds. Press it to open the Trash.
+**Trash** is the last row of the page tree, below the last page, with a count of the pages it holds. It appears once a page is in it. Press it to open the Trash.
 
 - Each page you deleted is one row, with the subpages it took, who deleted it and when, and the days it has left.
 - **Restore** puts the page and its subpages back where they were, with their writing, cover, icon, owner, comments and versions. If the page it sat under is gone, it comes back at the top level and says so.
@@ -86,7 +86,7 @@ The last page of a Knowledgebase cannot be deleted: **Delete** is greyed and say
 
 ## Fold the Tree and the Sidebar
 
-Press a row's chevron to open or close its subpages. Which pages are open is remembered in this browser, for each Knowledgebase. **Hide Pages**, at the foot of the sidebar beside **New Page**, collapses the sidebar to a narrow rail with **Show Pages**, **Search** and **New Page**; that is remembered in this browser too.
+Press a row's chevron to open or close its subpages. Which pages are open is remembered in this browser, for each Knowledgebase. **Hide Pages**, at the foot of the sidebar beside **New Page**, collapses the sidebar to a narrow rail with **Show Pages**, **Search**, **New Page** and, once a page is in it, **Trash**; that is remembered in this browser too.
 
 The sidebar grows on a wide window, so long page names fit. To set its width yourself, drag its right edge; double-click the edge to go back to the usual width. With the keyboard, Tab to the edge and use the Left and Right arrow keys, or Enter to reset. Your width is remembered in this browser. A name that is still too long shows in full when you rest the pointer on it.
 
@@ -105,7 +105,7 @@ On a phone the tree is a sheet: press **Pages** in the top row to open it.
 
 ## What a Row Shows
 
-- A **tick** for a page that is verified, and a small amber **Due** for one whose review is due. A page never verified shows neither. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+- A small amber **Due** for a page whose review is due. A verified page and a page never verified show nothing in the tree; the page's own row under its title carries the tick. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
 - The avatars of the people on that page now.
 
 ## Limits

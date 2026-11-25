@@ -19,7 +19,9 @@ Where each app's button sits is that app's spec (`<app>/docs/specs/013-workspace
 - A **call** is a livehuddle Space made for one item, with a Participant link that lets its people in, or the host's
   **Calls Space** when they chose one ([below](#your-calls-space)). It is **live** while anyone is in it.
 - The **host** is the account that started it. A Space made for the call is theirs, in their own space, named
-  "<item title> Call".
+  "<item title> Call", and **made by Call**: a mark on the call's record, which only the index sets, and only on a
+  Space it made for that call. A Space made by Call goes to the Trash when its call ends ([When a call
+  ends](#when-a-call-ends)).
 - A **meeting** is a call as the item remembers it: when it started and ended, who was in it, its summary page and the
   plan its actions went to.
 
@@ -82,10 +84,11 @@ a person's Call opens (Work Tracker 1409). It is one setting on the account, the
   latest call there started. So someone who joined one call can't come back to the Space for good: the Space's own
   roles and links decide that, as before. The link shows in the Space's Share like any other, so its owner can stop
   it sooner. Settings says so under the picker.
-- **When a call there ends.** A Space made for one item stays that item's call: opening it again later makes the call
-  live again. A Calls Space is used for other things too, so a call in it that has been live and has stood empty for
-  `ITEM_CALL_START_GRACE_MS` (2 minutes) has ended for good: people coming back to the Space later are not that item's
-  call. Starting a call in it ends any earlier call there that hadn't ended.
+- **When a call there ends.** A Calls Space is used for other things too, so a call in it that has been live and has
+  stood empty for `ITEM_CALL_START_GRACE_MS` (2 minutes) has ended for good: people coming back to the Space later are
+  not that item's call. Starting a call in it ends any earlier call there that hadn't ended. A Calls Space is never
+  made by Call, so it is never deleted ([When a call ends](#when-a-call-ends)); choosing a Space made by Call as your
+  Calls Space keeps it.
 - **Meetings.** Each call in a Calls Space is its own meeting on its own item, with its own summary and actions. Wrap
   Up is the host's of each.
 - **Guests and everyone without the setting** see no change: a guest never starts a call, and a call without the
@@ -106,10 +109,35 @@ While a call about the item has someone in it, **Call** becomes a pill in its pl
   reads the item's calls again with its own access. Every open of the item reads them once, and again when its tab comes back into view. A missed signal costs only
   freshness.
 - A call whose last person leaves has ended: the pill goes back to **Call**, and the item's Meetings list it. Someone
-  who opens the Space again later brings it back to live.
+  who comes back into its Space while it is still there brings it back to live.
 - A call nobody has joined yet has not ended: the room's first word, an empty Space while the starter's tab is still on
   its way, ends nothing, so for `ITEM_CALL_START_GRACE_MS` after its start it is still the item's call and a second
   press joins it rather than making another.
+
+## When a call ends
+
+A Space made by Call exists for its call alone (owner, 2026-11-25, Work Tracker 1445), so it does not stay behind in
+the host's Explorer once the call is over.
+
+- **Deleted when its call ends.** A call that has been live and has then stood empty for `ITEM_CALL_START_GRACE_MS`
+  (2 minutes) has ended, and its Space, when made by Call, goes to the Trash, as an Explorer Delete would put it there:
+  the host's Trash, restorable for 30 days, then gone. The index's quarter-hourly run does it, so the Space goes within
+  15 minutes of the grace running out. A call nobody ever joined has not been live, so its
+  Space is left.
+- **Someone back in time keeps it.** Anyone who comes back into the Space before then makes the call live again, and
+  the Space and everything on it stay. When they leave, it ends again, and the count starts over.
+- **Only a Space made by Call.** The mark is the only gate, never a Space's name or template. It is never on a Space
+  the person chose as their [Calls Space](#your-calls-space), nor on any Space the index did not make for the call. A
+  Space made before the mark existed has none and is left as it is.
+- **Made your own, kept.** The host makes a Space made by Call their own, and it loses the mark for good, by renaming
+  it, moving it to a folder or a team, archiving it, choosing it as their Calls Space, or restoring it from the Trash.
+  It is then a Space like any other, and its later calls end without deleting it.
+- **What goes, what stays.** Whatever was drawn or written on the Space goes to the Trash with it. The meeting stays on
+  the item: its time, who was in it, its summary page and the plan its actions went to stay in the item's Meetings,
+  even once the Trash has purged the Space. The summary and the actions are in a knowledgebase and a plan of their
+  own, never in the Space.
+- **The next Call makes a new Space.** An ended call is never joined again, so pressing Call afterwards starts a fresh
+  call in a fresh Space.
 
 ## Invites
 
@@ -142,7 +170,7 @@ Every editor's [Tools](./footer-tools-menu.md) has **Meetings**, under Collabora
 calls: an account or a guest holding the item, the item in the cloud (not Offline, an embed, a workbench frame or a
 Community copy). It opens inside Tools: the live call first, with **Join**, then the meetings, newest first, at most
 `ITEM_CALLS_READ_MAX` (20). Each says when it started and how long it ran, who was in it (eight names, then "+N"), and
-offers **Summary** (the page), **Actions** (the plan) and **Open Space**. Summary and Actions show only to a reader who
+offers **Summary** (the page), **Actions** (the plan) and, while it is live, **Join**. Summary and Actions show only to a reader who
 can open that knowledgebase or plan themselves, so neither name reaches anyone who could not see it. With none:
 "No calls yet. Press Call at the top right to start one."
 
@@ -172,6 +200,7 @@ host's choice alone, off until they turn it on, with a notice to everyone in the
 | `ITEM_CALL_INVITE_DAYS` | 1     | Days an invite stays in the Inbox                                   |
 | `CALL_SPACES_LISTED`    | 200   | Spaces Settings › Calls lists to choose from                        |
 | `CALL_SPACE_LINK_DAYS`  | 7     | Days a Calls Space's call link works after its latest call started  |
+| `ITEM_CALL_SWEEP_MAX`   | 50    | Spaces made by Call one quarter-hourly run moves to the Trash       |
 | Starts, invites, wraps  | 10/m  | The kit run limiter (`KIT_RUN_LIMITER`), under `item-call:<person>` |
 
 ## Cost
@@ -192,8 +221,12 @@ Built-in AI for the summary is Ask AI's allowance ([Ask AI](../020-ask/ask.md) "
 - **No backdoor.** The summary is written by the knowledgebase's own door with the host's grant at their own access;
   the actions are Send to Plan's sends, each checked as any.
 - **The signal carries ids only.** A `source-changed` with `calls` says nothing of who or how many.
-- **Purges.** A meeting goes with its item or its Space (a Calls Space takes every meeting held in it); an invite
-  with its meeting or its person.
+- **Purges.** A meeting goes with its item. Its Space going (to the Trash and then purged) leaves the meeting, with
+  no Space: it can't be joined again. An invite goes with its meeting or its person.
+- **Deleting only what Call made.** The quarter-hourly run trashes a Space only when its call's record carries the
+  made-by-Call mark, the call has been live and has stood empty past the grace, and the Space is still livehuddle's,
+  out of the Trash and Archived. Each move to the Trash is one statement that checks all of it again, so someone
+  rejoining a moment before is never cut off.
 
 ## Telemetry
 

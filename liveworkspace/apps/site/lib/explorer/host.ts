@@ -22,6 +22,7 @@ import {
   EXPLORER_FROM_PARAM,
   isAppName,
   siteOfApp,
+  siteUrlHere,
   type AppName,
 } from '@liveworkspace/sites';
 import { explorerViewArticlePath } from '@/lib/help/platform-help';
@@ -90,8 +91,8 @@ export function rememberApp(app: AppName) {
 // Where the person works on an item: on an app's own address, that app's own origin (the page's), so its links stay
 // there; anywhere else, the app's site.
 const appUrl = (app: App) => appOrigin(app);
-// What is handed to other people (a share link): always the app's own site.
-const publicUrl = (app: App) => siteOfApp(app).url;
+// What is handed to other people (a share link): the app's own site, its staging one from a staging page.
+const publicUrl = (app: App) => siteUrlHere(siteOfApp(app));
 
 /** An item, in its own app: its share code when the person reaches it through a link, and the place an Inbox row
  *  points at (`#t=<tab>&el=<element>&open=…`, or a card's `&item=`: the editors' deep link, `placeHash`). */

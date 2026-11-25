@@ -45,7 +45,8 @@ A shape kind of its own, `corridor`, whose type is stored in `variant` (the fiel
 - **Dropped, then sized**, as a Room (`dropsAtOwnSize`): with its tile armed, the corridor follows the pointer at its
   type's size, and a click or a press drops it there; it keeps its resize handles.
 - **Its type changes in place**: the element menu's **Type** turns a placed corridor into any of the four, keeping its
-  rotation and centre ([A piece's type](office.md#a-pieces-type)).
+  rotation and centre ([A piece's type](office.md#a-pieces-type)). The Doors and Windows on its walls move to the
+  nearest stretch of its new walls; one no wall can hold is removed with a notice, all in the one Undo step.
 
 ## Walls block, doors cut them
 
@@ -81,4 +82,3 @@ A shape kind of its own, `corridor`, whose type is stored in `variant` (the fiel
 - Corridors that join each other into one floor (two corridors meeting draw their own walls; place a Crossroads or
   a T-Junction for a junction).
 - A corridor that is a call of its own.
-- Changing a placed corridor's type from its element menu (place another type; a follow-up).
