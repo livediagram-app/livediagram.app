@@ -47,7 +47,7 @@ The first time your tool connects, it opens a liveworkspace page in your browser
   Choose **Connect**. The browser hands you back to your tool, and the connection is ready.
 </Step>
 
-Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke in **Settings**, **Developers**, **API Tokens** (in any liveworkspace app, or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)) to disconnect it. It lasts six months; reconnect the tool after that. Connecting the same tool again replaces its earlier token, so it doesn't use up another.
+Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke in **Settings**, **Developers**, **API Tokens** (in any liveworkspace app, or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)) to disconnect it. The token stays with liveworkspace: the tool holds keys for this connection alone, which last an hour and renew themselves while you use it, for up to the token's six months; reconnect the tool after that. Connecting the same tool again replaces its earlier token, so it doesn't use up another.
 
 ## Claude
 
@@ -75,13 +75,6 @@ Then, in a Claude Code session, run `/mcp`, choose `liveworkspace`, and authenti
   `--scope user` makes it available in every project on your computer.
 </AppNote>
 
-If you'd rather use an API token than sign in through the browser, pass it as a header instead:
-
-```bash
-claude mcp add --transport http NAME ADDRESS \
-  --header "Authorization: Bearer lwt_..."
-```
-
 For coding agents working in a repository, the [<AppName /> CLI](/help/developers/cli/) is an alternative to the MCP server: both use the same API and the same kind of token.
 
 ## Cursor
@@ -98,11 +91,7 @@ Add liveworkspace to Cursor's MCP configuration: `~/.cursor/mcp.json` for every 
 }
 ```
 
-Use `liveworkspace` as NAME and the address above as ADDRESS. Cursor then lists it in its MCP settings and offers to sign in to it, which opens the liveworkspace approval page. To use an API token instead, add a `headers` entry beside `url`:
-
-```json
-"headers": { "Authorization": "Bearer lwt_..." }
-```
+Use `liveworkspace` as NAME and the address above as ADDRESS. Cursor then lists it in its MCP settings and offers to sign in to it, which opens the liveworkspace approval page. The page says the sign-in goes to an app on this computer that opens `cursor://` links: that is Cursor itself, taking the sign-in back. Continue only if you just started it in Cursor.
 
 ## ChatGPT
 
@@ -110,11 +99,11 @@ Where your ChatGPT plan lets you add custom connectors (it is part of ChatGPT's 
 
 ## Any Other MCP Client
 
-Any tool that supports remote MCP servers can connect. Add a remote server (HTTP) with the address above. If the tool supports signing in to servers (OAuth), it finds the sign-in by itself: there is no client id or secret to enter. If it doesn't, use an API token, below.
+Any tool that supports remote MCP servers can connect. Add a remote server (HTTP) with the address above. If the tool supports signing in to servers (OAuth), it finds the sign-in by itself: there is no client id or secret to enter. If it doesn't, an API token works until 27 December 2026, below.
 
 ## Using an API Token Instead
 
-Some tools can't sign in to a server, or you may want to set one up from a script or a config file. Instead of approving the connection in the browser, you can give the tool an API token as a header on every request:
+Until 27 December 2026, a tool that can't sign in to a server can be given an API token as a header on every request instead. From that date the address takes only connections made by signing in, so set the tool up to sign in where it can; for your own scripts, the [API](/help/developers/api-overview/) and the [CLI](/help/developers/cli/) take API tokens as before.
 
 ```text
 Authorization: Bearer lwt_...
@@ -147,7 +136,7 @@ Each app also has its own starter prompts on its Build with AI page, and [livewo
 
 ## Moving From an Old App Address
 
-Before the one address, each app had its own (for example `mcp.livediagram.app`). Those addresses take no new connections: a connection you made to one keeps working only until its token ends, and signing in there again points you to the one address. To switch:
+Before the one address, each app had its own (for example `mcp.livediagram.app`). Those addresses take no new connections: a connection you made to one keeps working until 27 December 2026 at the latest, and signing in there again points you to the one address. To switch:
 
 <Step n={1}>
   In your tool, remove the server you added for the app.
@@ -166,5 +155,6 @@ Your work isn't affected: it lives in your account, not in the connection.
 - **The page says "This link has expired" or "This request has expired"**: a connection request lasts ten minutes. Start the connection again from your tool.
 - **It says your account has reached its limit of API tokens**: you can have 20 unexpired tokens. The page lists them under the message: choose **Revoke** on one you no longer use (the least recently used come first), then **Connect**.
 - **The tool keeps asking you to sign in**: the token it held may have expired or been revoked. Remove the connection in the tool and add it again.
+- **A tool you connected before December 2026 asks you to sign in again**: connections now use short-lived keys that only this server accepts, and a connection made before them works until 27 December 2026. Sign in and approve it once more; nothing else changes.
 
 </ArticleLayout>

@@ -13,9 +13,10 @@ export const metadata = helpMetadata({
 An API token lets your own scripts and integrations talk to the <AppName /> API as you, outside the editor. Tokens belong to your liveworkspace account, so one token works with the API of every liveworkspace app, <AppName /> included. A token carries your account's **full read and write access** unless you make it read-only, so treat it like a password.
 
 <AppNote app="livediagram,liveplanner,livedocuments,livedesign">
-  The same token also works with liveworkspace's one MCP server, for every app. To connect an AI tool
-  like Claude rather than write your own script, see [Connect an AI Tool
-  (MCP)](/help/account-and-data/connect-ai-mcp/): it creates and uses one of these tokens for you.
+  Until 27 December 2026, the same token also works with liveworkspace's one MCP server, for every
+  app; from then on an AI tool connects by signing in. To connect an AI tool like Claude rather than
+  write your own script, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/): it
+  creates one of these tokens for you and keeps it with liveworkspace.
   So does [the <AppName /> CLI](/help/developers/cli/) when you sign in with{' '}
   <code>
     <AppName /> auth login
