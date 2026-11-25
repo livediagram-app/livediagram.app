@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="account-and-data/connect-ai-mcp/ai-clients" title="Connecting AI Tools" description="Add the app to Claude, Claude Code, Cursor, ChatGPT or another MCP client, step by step." categoryTitle="Account and Data" categorySlug="account-and-data" parentArticle={{ title: "Connect an AI Tool (MCP)", slug: "connect-ai-mcp" }} subArticles={getSubArticles("connect-ai-mcp").filter((a) => a.slug !== "ai-clients")}>
 
-Every AI tool connects to <AppName /> the same way: you give it one address, and the first time it uses it, you approve the connection on a liveworkspace page. This article walks through that for the tools people use most. For what the AI can do once it is connected, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/).
+Every AI tool connects to <AppName /> the same way: you give it one address, the same for every liveworkspace app, and the first time it uses it, you approve the connection on a liveworkspace page. Connect once and the tool reaches every app you tick there, so you never add a server per app. This article walks through that for the tools people use most. For what the AI can do once it is connected, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/).
 
 You need a <AppName /> account: connecting an AI tool is a signed-in-only feature.
 
@@ -53,7 +53,7 @@ Approving creates an [API token](/help/account-and-data/api-tokens/) named after
 
 Once <AppName /> is listed in Claude's connector directory, open **Settings**, then **Connectors**, browse the directory, find **<AppName />** and choose **Connect**: no address to paste. Until then, add it as a custom connector:
 
-In Claude on the web, open **Settings**, then **Connectors**, and add a custom connector. Give it a name such as "<AppName />", paste the address above as its URL, and add it. Then choose to connect it, and approve the connection on the liveworkspace page that opens.
+In Claude on the web, open **Settings**, then **Connectors**, and add a custom connector. Name it "liveworkspace", paste the address above as its URL, and add it. Then choose to connect it, and approve the connection on the liveworkspace page that opens.
 
 On a Team or Enterprise plan, an owner of your Claude organisation may need to add the connector before members can connect it. Exact menu names in Claude can change between versions; look for custom connectors in its settings.
 
@@ -63,13 +63,13 @@ Claude Desktop uses the same connectors as Claude on the web: a connector you ad
 
 ## Claude Code
 
-Add the server from your terminal, with <code><AppName /></code> as NAME and the address above as ADDRESS:
+Add the server from your terminal, with `liveworkspace` as NAME and the address above as ADDRESS:
 
 ```bash
 claude mcp add --transport http NAME ADDRESS
 ```
 
-Then, in a Claude Code session, run `/mcp`, choose <code><AppName /></code>, and authenticate: your browser opens the liveworkspace approval page. Add `--scope user` to the `claude mcp add` command to make <AppName /> available in every project rather than only the current one.
+Then, in a Claude Code session, run `/mcp`, choose `liveworkspace`, and authenticate: your browser opens the liveworkspace approval page. Add `--scope user` to the `claude mcp add` command to make it available in every project rather than only the current one.
 
 <AppNote app="liveplanner">
   `--scope user` makes it available in every project on your computer.
@@ -86,7 +86,7 @@ For coding agents working in a repository, the [<AppName /> CLI](/help/developer
 
 ## Cursor
 
-Add <AppName /> to Cursor's MCP configuration: `~/.cursor/mcp.json` for every project, or `.cursor/mcp.json` inside one project.
+Add liveworkspace to Cursor's MCP configuration: `~/.cursor/mcp.json` for every project, or `.cursor/mcp.json` inside one project.
 
 ```json
 {
@@ -98,7 +98,7 @@ Add <AppName /> to Cursor's MCP configuration: `~/.cursor/mcp.json` for every pr
 }
 ```
 
-Use <code><AppName /></code> as NAME and the address above as ADDRESS. Cursor then lists <AppName /> in its MCP settings and offers to sign in to it, which opens the liveworkspace approval page. To use an API token instead, add a `headers` entry beside `url`:
+Use `liveworkspace` as NAME and the address above as ADDRESS. Cursor then lists it in its MCP settings and offers to sign in to it, which opens the liveworkspace approval page. To use an API token instead, add a `headers` entry beside `url`:
 
 ```json
 "headers": { "Authorization": "Bearer lwt_..." }
@@ -110,7 +110,7 @@ Where your ChatGPT plan lets you add custom connectors (it is part of ChatGPT's 
 
 ## Any Other MCP Client
 
-Any tool that supports remote MCP servers can connect. Add a remote server (HTTP) with the address above. If the tool supports signing in to servers (OAuth), it finds <AppName />'s sign-in by itself: there is no client id or secret to enter. If it doesn't, use an API token, below.
+Any tool that supports remote MCP servers can connect. Add a remote server (HTTP) with the address above. If the tool supports signing in to servers (OAuth), it finds the sign-in by itself: there is no client id or secret to enter. If it doesn't, use an API token, below.
 
 ## Using an API Token Instead
 
@@ -132,6 +132,34 @@ Authorization: Bearer lwt_...
 
 Tick **Read only** when you make the token if the tool only needs to look. Treat the secret like a password, keep it out of files you share or commit, and revoke the token when you stop using the tool.
 
+
+## Ask Across Apps
+
+One connection reaches every app you ticked, so a single request can start in one app and finish in another. Name the app, or the thing you want made, so the tool picks the right one:
+
+- "Find my **liveplanner** plan about the launch, then write its status up as a **livedocuments** article and share a link."
+- "Turn the cards in my **liveplanner** retro board into a **livediagram** mind map."
+- "Read the Release Runbook in our **liveknowledge** knowledgebase and draw its steps as a **livediagram** flowchart."
+- "Make a five-slide **livedocuments** deck from my **livediagram** diagram about onboarding."
+- "Search our **liveknowledge** knowledgebase for how we handle refunds, then add a card for each gap to my **liveplanner** support board."
+
+Each app also has its own starter prompts on its Build with AI page. Every one names its app for the same reason.
+
+## Moving From an Old App Address
+
+Before the one address, each app had its own (for example `mcp.livediagram.app`). Those addresses take no new connections: a connection you made to one keeps working only until its token ends, and some no longer resolve at all. To switch:
+
+<Step n={1}>
+  In your tool, remove the server you added for the app.
+</Step>
+<Step n={2}>
+  Add the one address above once, named `liveworkspace`, and approve it, keeping every app you use ticked.
+</Step>
+<Step n={3}>
+  Revoke the old connection's token in **Settings**, **Developers**, **API Tokens**, if it is still listed.
+</Step>
+
+Your work isn't affected: it lives in your account, not in the connection.
 
 ## If It Doesn't Connect
 

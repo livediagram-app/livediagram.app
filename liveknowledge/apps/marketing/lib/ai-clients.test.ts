@@ -39,7 +39,10 @@ describe('the agent transcript', () => {
     expect(tools.size).toBeGreaterThan(5);
   });
 
+  // The one MCP names each knowledgebase tool after what it makes (`get_context` is `get_knowledge_context`,
+  // liveworkspace/docs/specs/021-mcp/mcp.md "Names by what they make"): the app's own name is the one declared.
   it.each(TRANSCRIPT_TOOLS)('%s is a tool the MCP server has', (tool) => {
-    expect(tools.has(tool)).toBe(true);
+    expect(tool).toContain('knowledge_');
+    expect(tools.has(tool.replace('knowledge_', ''))).toBe(true);
   });
 });

@@ -7,12 +7,12 @@ const facts = (name: string) => [
   {
     icon: lucideGlyph(lucideShieldCheck, 18),
     title: 'You approve every connection',
-    body: 'The approval page says exactly which site the access goes to. Nothing connects until you choose Connect.',
+    body: 'The approval page lists each app, ticked, and says exactly which site the access goes to. Clear an app and the AI never reaches it. Nothing connects until you choose Connect.',
   },
   {
     icon: lucideGlyph(lucideEye, 18),
     title: 'Read-only, if you prefer',
-    body: 'Switch on Read-only access and the AI can find and read your documents, but never change them. Our server enforces it.',
+    body: 'Switch on Read-only access and the AI can find and read your work, but never change it. Our server enforces it.',
   },
   {
     icon: lucideGlyph(lucideKey, 18),

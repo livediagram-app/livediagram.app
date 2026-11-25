@@ -9,7 +9,11 @@
 import type { ReactNode } from 'react';
 
 /** The tools the transcript calls, in order. Read by the test that checks each against the MCP's own names. */
-export const TRANSCRIPT_TOOLS = ['get_context', 'search_pages', 'suggest_edit'] as const;
+export const TRANSCRIPT_TOOLS = [
+  'get_knowledge_context',
+  'search_knowledge_pages',
+  'suggest_knowledge_edit',
+] as const;
 
 const KEY = 'text-slate-400';
 const VALUE = 'text-slate-100';
@@ -46,8 +50,9 @@ export function AgentTranscript() {
   return (
     <figure className="w-full max-w-xl min-w-0 pr-2 pb-2 [contain-intrinsic-size:auto_22rem] [content-visibility:auto]">
       <figcaption className="sr-only">
-        An agent calls get_context, search_pages and suggest_edit on a knowledgebase. Each answer
-        says how far the page can be trusted, and the edit waits for a person to accept it.
+        An agent calls get_knowledge_context, search_knowledge_pages and suggest_knowledge_edit on a
+        knowledgebase. Each answer says how far the page can be trusted, and the edit waits for a
+        person to accept it.
       </figcaption>
       <div className="relative">
         {/* The lime shadow set off down and right, as on every card in the site's art. */}
@@ -65,12 +70,12 @@ export function AgentTranscript() {
             <span className="text-xs text-slate-400">connected to Acme Handbook</span>
           </div>
           <div className="overflow-x-auto px-4 py-4 font-mono text-[12.5px] leading-[1.65] whitespace-nowrap">
-            <Call tool="get_context" />
+            <Call tool="get_knowledge_context" />
             <Field name="knowledgebase">Acme Handbook</Field>
             <Field name="scopes">read, suggest</Field>
             <Field name="pages">2 Always in Context, 3,120 of 8,000 tokens</Field>
 
-            <Call tool="search_pages" args={'{ query: "when do we deploy" }'} />
+            <Call tool="search_knowledge_pages" args={'{ query: "when do we deploy" }'} />
             <Field name="page">Release Runbook</Field>
             <Field name="heading">When We Deploy</Field>
             <Field name="verified">
@@ -80,7 +85,7 @@ export function AgentTranscript() {
             <Field name="passage">Deploys go out Monday to Thursday.</Field>
 
             <Call
-              tool="suggest_edit"
+              tool="suggest_knowledge_edit"
               args={'{ page: "Release Runbook",'}
               more={'reason: "The freeze now starts Thursday at 16:00." }'}
             />

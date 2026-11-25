@@ -1,7 +1,10 @@
 // The Build with AI page's clients, as data (docs/specs/019-marketing/build-with-ai.md "The clients", in each
 // product). One address feeds every snippet, so the page can never show two: the product hands over its name and
 // this deployment's MCP address (production, staging or local development, from NEXT_PUBLIC_MCP_ORIGIN), and
-// keeps its starter prompts, which are its own.
+// keeps its starter prompts, which are its own. The address is liveworkspace's one MCP, one connection for every
+// app, so every product writes the same steps and the same connector name (CONNECTOR_NAME): a person who follows
+// two products' pages adds it once, not twice. The product's name appears only where it matters: tick it on the
+// approval page.
 
 export type AiClientGroup = 'Chat apps' | 'Coding agents' | 'Editors' | 'Anything else';
 
@@ -47,9 +50,12 @@ export function vscodeInstallLink(url: string, name: string): string {
 
 const json = (value: unknown) => JSON.stringify(value, null, 2);
 
+/** The one connection's name in every client (`claude mcp add ... liveworkspace`), the same on every product's page. */
+export const CONNECTOR_NAME = 'liveworkspace';
+
 /** What the client list says about the product it connects. */
 export type AiProduct = {
-  /** The product's name, as people see it and as each client names the server (`livediagram`). */
+  /** The product's name, as people see it (`livediagram`): the page's copy and the app to keep ticked on approval. */
   name: string;
   /** This deployment's MCP address, from the product's api schema (`mcpEndpoint(resolveMcpOrigin(...))`). */
   mcpUrl: string;
@@ -58,7 +64,8 @@ export type AiProduct = {
 /** The clients the page walks through, in the spec's order, each pointed at the product's one MCP address. */
 export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
   const MCP_URL = mcpUrl;
-  const MCP_NAME = name;
+  const MCP_NAME = CONNECTOR_NAME;
+  const approve = `approve on the liveworkspace page that opens, with ${name} ticked`;
   return [
     {
       id: 'claude',
@@ -75,11 +82,11 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           },
         },
         {
-          text: `Choose **Add custom connector**, name it ${name} and paste the address as its URL.`,
+          text: `Choose **Add custom connector**, name it ${MCP_NAME} and paste the address as its URL.`,
           code: { lang: 'text', code: MCP_URL, label: 'URL' },
         },
         {
-          text: `Choose **Connect**, then approve on the ${name} page that opens.`,
+          text: `Choose **Connect**, then ${approve}.`,
         },
       ],
       note: 'A connector you add on the web shows up in Claude Desktop too. On a Team or Enterprise plan, an owner may need to add it first.',
@@ -99,11 +106,11 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           },
         },
         {
-          text: `Choose **Create**, name it ${name}, paste the address as the MCP server URL and pick **OAuth**.`,
+          text: `Choose **Create**, name it ${MCP_NAME}, paste the address as the MCP server URL and pick **OAuth**.`,
           code: { lang: 'text', code: MCP_URL, label: 'URL' },
         },
         {
-          text: `Approve on the ${name} page that opens, then pick ${name} from the tools menu in a new chat.`,
+          text: `Approve on the liveworkspace page that opens, with ${name} ticked, then pick ${MCP_NAME} from the tools menu in a new chat.`,
         },
       ],
       note: 'Developer mode depends on your ChatGPT plan, and OpenAI moves its menus now and then: look for custom connectors in Settings.',
@@ -115,14 +122,14 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
       blurb: 'One command in your terminal',
       steps: [
         {
-          text: `Add ${name} for every project:`,
+          text: `Add liveworkspace for every project:`,
           code: {
             lang: 'bash',
             code: `claude mcp add --transport http --scope user ${MCP_NAME} ${MCP_URL}`,
           },
         },
         {
-          text: `In a Claude Code session, run **/mcp**, choose ${name} and **Authenticate**. Approve in the browser.`,
+          text: `In a Claude Code session, run **/mcp**, choose ${MCP_NAME} and **Authenticate**. Approve in the browser, with ${name} ticked.`,
           code: { lang: 'text', code: '/mcp', label: 'In Claude Code' },
         },
       ],
@@ -168,7 +175,7 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
       blurb: 'One click, or one line of config',
       steps: [
         {
-          text: `Add ${name} to Cursor in one click:`,
+          text: `Add liveworkspace to Cursor in one click:`,
           action: { href: cursorInstallLink(MCP_URL, MCP_NAME), label: 'Add to Cursor' },
         },
         {
@@ -180,7 +187,7 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           },
         },
         {
-          text: `In Cursor’s MCP settings, choose to sign in to ${name}, then approve in the browser.`,
+          text: `In Cursor’s MCP settings, choose to sign in to ${MCP_NAME}, then approve in the browser, with ${name} ticked.`,
         },
       ],
     },
@@ -191,7 +198,7 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
       blurb: 'GitHub Copilot’s agent mode',
       steps: [
         {
-          text: `Add ${name} to VS Code in one click:`,
+          text: `Add liveworkspace to VS Code in one click:`,
           action: { href: vscodeInstallLink(MCP_URL, MCP_NAME), label: 'Add to VS Code' },
         },
         {
@@ -216,14 +223,14 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           text: 'In Cascade, open the MCP settings and choose to view the raw config (**mcp_config.json**).',
         },
         {
-          text: `Add ${name} to it:`,
+          text: `Add liveworkspace to it:`,
           code: {
             lang: 'json',
             code: json({ mcpServers: { [MCP_NAME]: { serverUrl: MCP_URL } } }),
           },
         },
         {
-          text: `Refresh the servers, then sign in to ${name} and approve in the browser.`,
+          text: `Refresh the servers, then sign in to ${MCP_NAME} and approve in the browser, with ${name} ticked.`,
         },
       ],
     },
@@ -238,10 +245,10 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           code: { lang: 'text', code: MCP_URL, label: 'URL' },
         },
         {
-          text: `If the tool can sign in to servers (OAuth), it finds ${name}’s sign-in by itself: there is no client id or secret to enter.`,
+          text: `If the tool can sign in to servers (OAuth), it finds the sign-in by itself: there is no client id or secret to enter.`,
         },
         {
-          text: `If it can’t, create an API token in ${name}’s **Settings**, under **Account**, **API Tokens**, and send it as a header:`,
+          text: `If it can’t, create an API token in **Settings**, under **Developers**, **API Tokens** (it works for every app), and send it as a header:`,
           code: { lang: 'text', code: 'Authorization: Bearer lwt_…', label: 'Header' },
         },
       ],

@@ -164,6 +164,27 @@ sign-in uses liveworkspace.app's `/oauth/device`.
 **Moving the old addresses.** A custom domain belongs to one Worker, so each app's MCP Worker is deleted before this
 Worker's deploy claims its address (docs/ci.md "Deploys"); between the two, the old address does not answer.
 
+## What people are told
+
+One address, in every place a person could copy one (Work Tracker 1423):
+
+- **Every Build with AI page and help article** names `https://mcp.liveworkspace.app/mcp` and nothing else. The
+  client steps are written once, in `@liveworkspace/marketing-site`'s `aiClients`, and every product's page and
+  liveknowledge's Connect view render them: the connection is named `liveworkspace` in every client, and the
+  product's name appears only where it says which app to keep ticked on the approval page.
+- **Prompts name their app or what they make** ("In liveplanner, make a kanban board for ..."), because one
+  connection holds every app's tools and a vague request could land in the wrong one. The help article "Connecting AI
+  Tools" has a few that cross apps (a plan's status as a livedocuments article, a retro board as a livediagram mind
+  map), which is what one connection is for.
+- **Tool names in copy are this server's** (`create_item`, `change_cards`, `get_knowledge_context`), never an app's
+  own name for the tool.
+- **Someone still on an app's old address** is told it takes no new connections, that a connection made before
+  keeps working until its token ends, and that some old hosts no longer resolve; they remove the server and add the
+  one address once, ticking every app they use. The note lives in the shared troubleshooting list and the help
+  article "Connecting AI Tools", and nowhere else.
+- **A guard keeps it so**: `.github/scripts/old-mcp-host-guard.mjs` (the Checks job's **One MCP address** step, so every change runs it) fails when a tracked text file names
+  `mcp.<app>.app` (or its staging host) outside this Worker, tests, the migration note, specs and the developer docs.
+
 ## The tool-pick eval
 
 Before the server is listed anywhere, an eval measures whether it picks better than the five servers:

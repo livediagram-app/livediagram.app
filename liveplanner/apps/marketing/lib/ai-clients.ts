@@ -20,8 +20,8 @@ export const AI_PRODUCT: AiProduct = {
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): a Plan template with change_items,
-// add_sheet, add_form + share_form, change_card_types, find + list_items, add_tab for a dashboard.
+// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): a Plan template with change_cards,
+// add_sheet, add_form + share_form, change_card_types, find_plans + list_cards, add_plan_tab for a dashboard.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Plan a launch',

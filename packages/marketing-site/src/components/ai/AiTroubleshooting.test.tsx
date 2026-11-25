@@ -13,4 +13,12 @@ describe('AiTroubleshooting', () => {
     expect(text).toContain('The approval page lists them');
     expect(text).not.toContain('ten unexpired');
   });
+
+  it('tells someone on an old per-app address to move to the one address', () => {
+    const { container } = render(<AiTroubleshooting />);
+    const text = container.textContent ?? '';
+    expect(text).toContain('older address');
+    expect(text).toContain('take no new connections');
+    expect(text).toContain('the one address above');
+  });
 });

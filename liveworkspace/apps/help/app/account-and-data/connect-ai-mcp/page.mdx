@@ -12,9 +12,10 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="account-and-data/connect-ai-mcp" title="Connect an AI Tool (MCP)" description="Drive your work from Claude or any MCP client. A signed-in-only feature for advanced users." categoryTitle="Account and Data" categorySlug="account-and-data" subArticles={getSubArticles("connect-ai-mcp")}>
 
-<AppName /> has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI
-tool you already use, like Claude, and then find, view, create, and edit your <Noun plural /> from
-inside that tool. The result is saved to your account.
+<AppName /> works with liveworkspace's one [MCP](https://modelcontextprotocol.io) server, so you can
+connect an AI tool you already use, like Claude, once, and then find, view, create, and edit your
+<Noun plural /> from inside that tool. The same connection reaches your other liveworkspace apps too.
+The result is saved to your account.
 
 <AppNote app="livediagram">
   Point the AI at a codebase and ask for a control-flow diagram, or ask it to tweak an existing one.
@@ -40,7 +41,7 @@ Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](
 
 ## Connecting
 
-In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.liveworkspace.app/mcp`**, the one address for every liveworkspace app. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. The first time, your tool opens a liveworkspace page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It lists each app, ticked (clear any you don't want the tool to reach), and says which site the access will be sent to: only continue if you recognise it. A tool running on your own computer, such as Claude Code or Cursor, takes its sign-in back on your own computer, so for one of those the page says the access goes back to the app on this computer, with an address such as `localhost:55884`: continue if you started the connection yourself. Anyone can register a tool under any name, so every tool but the CLI shows **Unverified App** beside its name. Choose **Connect** to approve, or **Cancel**.
+In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.liveworkspace.app/mcp`**, the one address for every liveworkspace app. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. Already connected to an app's own address, such as `mcp.livediagram.app`? Those take no new connections: [switch to the one address](/help/account-and-data/connect-ai-mcp/ai-clients/#moving-from-an-old-app-address). The first time, your tool opens a liveworkspace page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It lists each app, ticked (clear any you don't want the tool to reach), and says which site the access will be sent to: only continue if you recognise it. A tool running on your own computer, such as Claude Code or Cursor, takes its sign-in back on your own computer, so for one of those the page says the access goes back to the app on this computer, with an address such as `localhost:55884`: continue if you started the connection yourself. Anyone can register a tool under any name, so every tool but the CLI shows **Unverified App** beside its name. Choose **Connect** to approve, or **Cancel**.
 
 <AppNote app="livediagram">
 
@@ -94,11 +95,11 @@ Approving creates an [API token](/help/account-and-data/api-tokens/) behind the 
 
 ### From Claude's Connector Directory
 
-Once <AppName /> is listed in Claude's connector directory, you won't need the address. In Claude, on the web or in the desktop app, open **Settings**, then **Connectors**, browse the directory, find **<AppName />** and choose **Connect**. The same liveworkspace approval page opens, and everything below works the same way. Until it is listed there, add it as a custom connector with the address above.
+Once liveworkspace is listed in Claude's connector directory, you won't need the address. In Claude, on the web or in the desktop app, open **Settings**, then **Connectors**, browse the directory, find **liveworkspace** and choose **Connect**. The same liveworkspace approval page opens, and everything below works the same way. Until it is listed there, add it as a custom connector with the address above.
 
 ## What the AI can do
 
-The connection gives your AI tool these tools:
+The connection gives your AI tool ten core tools that work on any item: `find_items`, `read_item`, `create_item`, `share_item`, `rename_item`, `trash_item`, `restore_item`, `list_app_tools`, `read_with_app_tool` and `change_with_app_tool`. An item is named by a ref, its kind and its id (`diagram:` followed by the id, for example). The editing tools of each app (boxes and arrows, slides, article text, cards, sheet cells, knowledgebase pages) come on request: the AI asks `list_app_tools` for the kind it is working on, then runs one with `read_with_app_tool` or `change_with_app_tool`, so it sees ten tools to start with, not every app's whole list. Between them they can:
 
 - **Find <Noun plural capital />**: search your <Noun plural /> by name, across your personal library and the shared libraries of every [team](/help/collaboration/teams/) you belong to.
 - **Read a <Noun />**: get a tab's contents as a text outline, and a picture of it when the AI asks for one.
@@ -135,8 +136,7 @@ The connection gives your AI tool these tools:
   - Create: ask for "a retrospective" and the AI can lay down the curated scaffold, then fill in
   your content. - Add a tab: a tab is its own canvas, for example a detail view of one part. -
   Share: the **Participant** link lets people add stickies, write and vote, but not reshape the
-  board. - Some tools list each canvas tool twice, once under an older _diagram_ name marked
-  deprecated: they do the same thing.
+  board. 
 </AppNote>
 
 <AppNote app="livedocuments">
@@ -166,7 +166,7 @@ The connection gives your AI tool these tools:
 </AppNote>
 
 <AppNote app="liveplanner">
-  The connection gives your AI tool 34 tools. The ones above are `find_projects`, `read_project`, `list_templates`, `create_project`, `add_tab`, `change_tabs`, `update_project`, `share_project`, `rename_project`, `delete_project`, `list_trash`, `restore_project`, `archive_project` and `unarchive_project`. Here they work like this:
+  liveplanner has 36 editing tools, named by what they make: `find_plans`, `read_plan`, `list_plan_templates`, `create_plan`, `add_plan_tab`, `change_plan_tabs`, `update_plan`, `share_plan`, `rename_plan`, `delete_plan`, `list_plan_trash`, `restore_plan`, `archive_plan` and `unarchive_plan` do what the list above says, and `view_plan_tab` and `view_plan_live` draw the interactive view. Here they work like this:
 
 - **List templates**: the same templates **Start Planning** offers: boards, spreadsheets, forms and dashboards.
 - **Create a plan**: ask for "a kanban board" or "a budget sheet" and the AI starts from the ready-made one, then fills in your content. It can also build a dashboard over the plan's other tabs.
@@ -176,14 +176,14 @@ The connection gives your AI tool these tools:
 
 **Boards and cards**
 
-- **List items** (`list_items`) and **Change items** (`change_items`): read and update the [cards](/help/plan/cards/) on a plan's boards (add a task, move it to another column, change its fields). List items also names the [widgets](/help/plan/boards/#widgets) in each board's header, so the AI knows what a board already shows before it changes them. The AI names things the way your board shows them, so it says "In Progress" or "Bug" or "Severity", and liveplanner refuses a column, card type or field the plan doesn't have instead of filing a card where no board shows it. To empty a field, the AI lists it in `clear` (`"clear": ["Blocked By"]`); a field that holds several values, such as Blocked By, also clears when its value is `[]` or `null`. The AI can [flag a card](/help/plan/cards/#flag-a-card) for your attention with `"flagged": true` and take the flag off with `"flagged": false` (or `"clear": ["flagged"]`), and List items shows `"flagged": true` on every flagged card. When you [hand cards to the AI](/help/plan/cards/#hand-a-card-to-an-ai-assistant), it lists just those with `handedToMe`, takes one with the assignee `"me"`, and gives each back to you with `hand_back` when it is done. The **Work my cards** prompt asks it to do all of that in one go.
-- **Upload an image** (`upload_image`): add a picture for a plan's cards, from a public web address or the picture itself, into your Image Gallery. Change items then places it on a card's Image field or its attachments.
-- **List threads** (`list_threads`) and **Change threads** (`change_threads`): read a card's [comment threads](/help/plan/cards/#comment-threads), start a new one, reply, resolve and reopen them, and edit or delete the AI's own comments.
-- **List rules** (`list_rules`) and **Change rules** (`change_rules`): read a plan's [Automations](/help/plan/automations/#agents-and-the-cli) rules and their Audit Trail, and add, change, turn on or off, copy, delete, test and run them. The AI needs you to be an Editor of the whole plan, and a read-only connection can only list them.
+- **List cards** (`list_cards`) and **Change cards** (`change_cards`): read and update the [cards](/help/plan/cards/) on a plan's boards (add a task, move it to another column, change its fields). List cards also names the [widgets](/help/plan/boards/#widgets) in each board's header, so the AI knows what a board already shows before it changes them. The AI names things the way your board shows them, so it says "In Progress" or "Bug" or "Severity", and liveplanner refuses a column, card type or field the plan doesn't have instead of filing a card where no board shows it. To empty a field, the AI lists it in `clear` (`"clear": ["Blocked By"]`); a field that holds several values, such as Blocked By, also clears when its value is `[]` or `null`. The AI can [flag a card](/help/plan/cards/#flag-a-card) for your attention with `"flagged": true` and take the flag off with `"flagged": false` (or `"clear": ["flagged"]`), and List items shows `"flagged": true` on every flagged card. When you [hand cards to the AI](/help/plan/cards/#hand-a-card-to-an-ai-assistant), it lists just those with `handedToMe`, takes one with the assignee `"me"`, and gives each back to you with `hand_back` when it is done. The **Work my cards** prompt asks it to do all of that in one go.
+- **Upload an image** (`upload_plan_image`): add a picture for a plan's cards, from a public web address or the picture itself, into your Image Gallery. Change cards then places it on a card's Image field or its attachments.
+- **List threads** (`list_plan_threads`) and **Change threads** (`change_plan_threads`): read a card's [comment threads](/help/plan/cards/#comment-threads), start a new one, reply, resolve and reopen them, and edit or delete the AI's own comments.
+- **List rules** (`list_plan_rules`) and **Change rules** (`change_plan_rules`): read a plan's [Automations](/help/plan/automations/#agents-and-the-cli) rules and their Audit Trail, and add, change, turn on or off, copy, delete, test and run them. The AI needs you to be an Editor of the whole plan, and a read-only connection can only list them.
 - **Add a board** (`add_board`) and **Change a board** (`change_board`): put a [board](/help/plan/boards/) on a tab, from a ready-made one (Kanban, Sprint, Bug Triage...) or with the columns you name, and later rename it, change its columns, choose which card types it shows, or add and remove the [widgets](/help/plan/boards/#widgets) in its header (a field widget by its name, such as Budget Sum).
 - **Import a board** (`import_board`): bring a Trello board's JSON export, or an Asana, Jira or Linear CSV export, in as a new Board tab or a new plan, as the editor's [Import dialog](/help/tabs/import-tabs/) does. People are matched to the plan's team by email when you are in that team, and by name otherwise. Ask for a preview first to see the columns, fields and what would be left out.
 - **A whole plan's <code>.liveplanner</code> file** is the editor's alone: the AI tools can import a board from another tool, but they can't import or export a whole plan. Use **Export** › **Whole Plan** and the Import dialog's **liveplanner Plan** row ([Importing into a Tab](/help/tabs/import-tabs/)) yourself.
-- **Change card types** (`change_card_types`): add, edit or delete the [card types](/help/plan/card-types/) a plan's boards hold, with their own fields and card templates. Deleting a type moves its cards to the Trash, as it does in the editor. Change items can then start a card from a template (`"template": "Bug Report"`), with any title or fields the AI gives winning over the template's.
+- **Change card types** (`change_card_types`): add, edit or delete the [card types](/help/plan/card-types/) a plan's boards hold, with their own fields and card templates. Deleting a type moves its cards to the Trash, as it does in the editor. Change cards can then start a card from a template (`"template": "Bug Report"`), with any title or fields the AI gives winning over the template's.
 
 **Sheets**
 

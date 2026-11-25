@@ -3,7 +3,7 @@ import { Btn, Code, DialogCard, HAIR, Lines, Surface, Tick } from './kit';
 
 // The Style, Developers and Roles figures (liveworkspace/docs/specs/017-help/help-centre.md "Figures and card
 // icons"): Knowledgebase Style's looks, a terminal running the liveknowledge CLI, what an agent reads back from
-// search_pages, and the three roles side by side.
+// search_knowledge_pages, and the three roles side by side.
 
 const W = 420;
 
@@ -161,7 +161,7 @@ export function CliScene() {
   );
 }
 
-/** What an agent reads back from search_pages: the passage, its page, its heading and how far to trust it. */
+/** What an agent reads back from search_knowledge_pages: the passage, its page, its heading and how far to trust it. */
 export function McpResultScene() {
   return (
     <Scene w={W} h={176} bg="plain">
@@ -170,7 +170,7 @@ export function McpResultScene() {
         y={10}
         w={380}
         h={156}
-        title="search_pages"
+        title="search_knowledge_pages"
         lines={[
           { text: '{ "query": "when do we deploy" }', kind: 'command' },
           { text: '"page": "c7e2", "title": "Deploying",', kind: 'out' },

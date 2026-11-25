@@ -33,7 +33,7 @@ describe('the apps', () => {
   it('gives Claude Code its command', () => {
     const code = connectApps(URL).find((app) => app.id === 'claude-code')!;
     expect(code.steps[0]!.code!.code).toBe(
-      `claude mcp add --transport http --scope user liveknowledge ${URL}`,
+      `claude mcp add --transport http --scope user liveworkspace ${URL}`,
     );
   });
 });

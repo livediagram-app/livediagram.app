@@ -30,7 +30,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Telemetry** is anonymous usage events sent to liveworkspace's telemetry service, published on its public dashboard (`/telemetry` redirects there; off in OSS forks by default).
 - **Help** at `/help` is livediagram's scope of liveworkspace's one help centre (`liveworkspace/apps/help`), which the router forwards to.
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
-- **MCP** (`apps/mcp`) is a package of the document tools, not a Worker: people connect AI clients (Claude and other MCP hosts) through liveworkspace's one MCP at `mcp.liveworkspace.app`, which runs it in process. `mcp.livediagram.app` is a domain on that Worker that carries connections made before.
+- **MCP** (`apps/mcp`) is a package of the document tools, not a Worker: people connect AI clients (Claude and other MCP hosts) through liveworkspace's one MCP at `mcp.liveworkspace.app`, which runs it in process. Its old own address is a domain on that Worker that carries only connections made before.
 - **Router** stitches the web apps (marketing, editor, community, api) and liveworkspace's help centre under one hostname.
 - **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with, published on npm as `@livediagram/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 

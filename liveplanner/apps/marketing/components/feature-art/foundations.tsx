@@ -113,8 +113,8 @@ function Sparkle({ x, y, r = 4 }: { x: number; y: number; r?: number }) {
 }
 
 /** MCP: you ask your AI tool for something; it calls liveplanner's tool for it and the result lands in the plan:
- *  cards on a board, a Dashboard tab of slots, or an automation rule (the MCP server's change_items, add_tab and
- *  change_rules tools, apps/mcp/src). */
+ *  cards on a board, a Dashboard tab of slots, or an automation rule (the MCP server's change_cards, add_plan_tab and
+ *  change_plan_rules tools, apps/mcp/src). */
 export function McpArt({ lands = 'cards' }: { lands?: keyof typeof MCP_ASKS }) {
   const ask = MCP_ASKS[lands];
   return (
@@ -205,8 +205,8 @@ export function McpArt({ lands = 'cards' }: { lands?: keyof typeof MCP_ASKS }) {
 
 // What each card asks for, and the tool the AI tool calls to do it.
 const MCP_ASKS = {
-  cards: { say: 'Add the launch tasks', tool: 'liveplanner.change_items' },
-  dashboard: { say: 'Make a sprint dashboard', tool: 'liveplanner.add_tab' },
+  cards: { say: 'Add the launch tasks', tool: 'liveplanner.change_cards' },
+  dashboard: { say: 'Make a sprint dashboard', tool: 'liveplanner.add_plan_tab' },
   rule: { say: 'Assign new bugs in turn', tool: 'liveplanner.change_rules' },
 };
 

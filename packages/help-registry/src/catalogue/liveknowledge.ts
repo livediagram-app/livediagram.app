@@ -516,7 +516,7 @@ export const articles: Article[] = [
     description:
       'The tools an AI agent gets from the liveknowledge MCP server, what each returns and which scope it needs.',
     keywords:
-      'mcp tools get_context list_pages search_pages read_page create_page suggest_edit write_page move_page request_approval list_page_comments change_page_comments report_gap scopes read suggest write trust fields verified stale',
+      'mcp tools get_knowledge_context list_knowledge_pages search_knowledge_pages read_knowledge_page create_knowledge_page suggest_knowledge_edit write_knowledge_page move_knowledge_page request_knowledge_approval list_knowledge_page_comments change_knowledge_page_comments report_knowledge_gap get_context list_pages search_pages read_page create_page suggest_edit write_page move_page request_approval list_page_comments change_page_comments report_gap scopes read suggest write trust fields verified stale',
     category: 'Developers',
     categorySlug: 'developers',
     ...APPS,

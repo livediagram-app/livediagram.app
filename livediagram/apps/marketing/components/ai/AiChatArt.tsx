@@ -32,7 +32,7 @@ export function AiChatArt() {
         </p>
         <p className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
           <CheckIcon className="text-emerald-600 dark:text-emerald-400" />
-          livediagram · create_document
+          livediagram · create_item
         </p>
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 [background-image:radial-gradient(rgb(148_163_184/0.35)_1px,transparent_1px)] [background-size:14px_14px] px-4 py-5 dark:border-slate-800 dark:bg-slate-950 dark:[background-image:radial-gradient(rgb(71_85_105/0.5)_1px,transparent_1px)]">
           <DiagramBuildAnimation className="max-w-[300px]" cursorLabel="AI" label="" />

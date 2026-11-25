@@ -20,8 +20,8 @@ export const AI_PRODUCT: AiProduct = {
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,
-// a template, find + read_document.
+// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_item with a graph,
+// a template, find_items + read_item.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Map a codebase',
@@ -51,6 +51,6 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Find and improve',
     prompt:
-      'Find my livediagram canvas about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
+      'Find my livediagram diagram about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
   },
 ];

@@ -65,7 +65,7 @@ it, the steps, numbered, in one column; beside them on a wide screen (one column
    (`@liveworkspace/marketing-site` `aiClients`, one list for both): menu names in bold, a button that opens the
    app's settings where there is one (Claude's connectors, ChatGPT's settings, Cursor's and VS Code's one-click
    install), and the address, command or JSON to copy, each with **Copy** and "Copied" for two seconds. The address
-   is liveworkspace's one MCP, `https://mcp.liveworkspace.app/mcp` when hosted. A closing line where the app's
+   is liveworkspace's one MCP, `https://mcp.liveworkspace.app/mcp` when hosted, and the connection is named `liveworkspace` in every app (the same on every product's page), with liveknowledge to keep ticked on the approval page. A closing line where the app's
    menus move or its plan matters.
 3. **Approve and Choose Access.** Your app opens a liveknowledge page titled Connect and the app's name. Check the
    site it says the access is sent to, switch on **Read-only access** if the app should only read, and choose

@@ -20,8 +20,8 @@ export const AI_PRODUCT: AiProduct = {
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): change_pages for wireframe
-// and logo pages, create_design from a template, find + read_design, share_design.
+// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): change_design_pages for wireframe
+// and logo pages, create_item from a template, find_items + read_item, share_item.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Wireframe a website',

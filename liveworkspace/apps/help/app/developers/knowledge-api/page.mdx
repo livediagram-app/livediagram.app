@@ -47,9 +47,9 @@ Every route is under `/api/documents/{id}`, where `{id}` is the Knowledgebase's 
 
 | Route                                   | Does                                                         | MCP tool       |
 | --------------------------------------- | ------------------------------------------------------------ | -------------- |
-| `GET search`                            | Titles first, then passages, at most 20                      | `search_pages` |
+| `GET search`                            | Titles first, then passages, at most 20                      | `search_knowledge_pages` |
 | `POST ask`                              | Ask, streamed as server-sent events                          |                |
-| `GET context`                           | The Always in Context pages within 8,000 tokens              | `get_context`  |
+| `GET context`                           | The Always in Context pages within 8,000 tokens              | `get_knowledge_context`  |
 | `GET ai`, `PUT ai/key`, `PUT ai/model`, `DELETE ai/key` | AI Settings                                  |                |
 
 **Insights**
@@ -57,13 +57,13 @@ Every route is under `/api/documents/{id}`, where `{id}` is the Knowledgebase's 
 | Route                                   | Does                                                         | MCP tool       |
 | --------------------------------------- | ------------------------------------------------------------ | -------------- |
 | `GET knowledge`                         | The whole Insights view in one read                      |                |
-| `POST pages/{tabId}/suggestions`        | Suggest an edit                                              | `suggest_edit` |
+| `POST pages/{tabId}/suggestions`        | Suggest an edit                                              | `suggest_knowledge_edit` |
 | `GET suggestions`                       | The suggestions waiting                                      |                |
 | `POST suggestions/{id}/accept`, `…/dismiss` | Accept or dismiss one                                    |                |
 | `POST questions`                        | Report a question nobody could answer                        | `report_gap`   |
 | `PUT agents/{tokenId}/scopes`           | Allow a connection to write, or stop it (an Editor in person) |               |
 
-<Figure caption="Every page and passage answer carries its trust, here as search_pages shows it.">
+<Figure caption="Every page and passage answer carries its trust, here as search_knowledge_pages shows it.">
   <McpResultScene />
 </Figure>
 

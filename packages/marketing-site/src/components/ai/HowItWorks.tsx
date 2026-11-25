@@ -10,13 +10,13 @@ import { lucideGlyph } from '@liveworkspace/ui';
 const steps = (name: string, ask: string) => [
   {
     icon: lucideGlyph(lucideClipboardPaste, 20),
-    title: `Add ${name}`,
-    body: 'Paste the address into your AI tool, or click once in Cursor and VS Code.',
+    title: 'Add liveworkspace',
+    body: 'Paste the address into your AI tool, or click once in Cursor and VS Code. It is the same one for every liveworkspace app.',
   },
   {
     icon: lucideGlyph(lucideCircleCheck, 20),
     title: 'Approve',
-    body: `A ${name} page opens. Sign in or create a free account, check where access goes, and choose Connect.`,
+    body: `A liveworkspace page opens. Sign in or create a free account, keep ${name} ticked, check where access goes, and choose Connect.`,
   },
   {
     icon: lucideGlyph(lucideWandSparkles, 20),

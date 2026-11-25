@@ -152,7 +152,7 @@ export function BuildWithAi({
             id="connect-title"
             eyebrow="Connect"
             title="Pick your AI tool"
-            lead={`Step-by-step for the tools people use most. Choose yours, follow the steps, and approve when ${name} asks.`}
+            lead={`Step-by-step for the tools people use most. Choose yours, follow the steps, and approve when liveworkspace asks.`}
           />
           <div className="mt-12">
             <ClientPicker clients={clients} />
@@ -170,7 +170,7 @@ export function BuildWithAi({
             id="prompts-title"
             eyebrow="Try it"
             title="Your first prompts"
-            lead={`Connected? Paste one of these into your AI tool, or ask in your own words. Mentioning ${name} helps it pick the right tool.`}
+            lead={`Connected? Paste one of these into your AI tool, or ask in your own words. One connection reaches every liveworkspace app, so each prompt names ${name}: do the same in yours.`}
           />
           <div className="mt-12">
             <StarterPrompts prompts={prompts} />

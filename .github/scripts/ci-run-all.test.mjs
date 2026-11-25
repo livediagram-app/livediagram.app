@@ -89,7 +89,14 @@ function reachedFrom(path) {
 // the whole repository from that job as from any other; main-base runs only on a push to main; the drift
 // and coverage reports are information, never a failure. Each has its own tests.
 const PLATFORM_ENOUGH = new Set(
-  ['duplicate-guard', 'file-size-guard', 'raw-html-guard', 'main-base', 'drift-report']
+  [
+    'duplicate-guard',
+    'file-size-guard',
+    'raw-html-guard',
+    'old-mcp-host-guard',
+    'main-base',
+    'drift-report',
+  ]
     .concat(['coverage-report'])
     .map((s) => `.github/scripts/${s}.mjs`),
 );

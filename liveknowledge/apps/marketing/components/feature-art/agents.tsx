@@ -4,7 +4,7 @@ import { ArtPanel, AgentGlyph, Board, Button, Card, Label, T, at } from './kit';
 
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 
-// What search_pages hands back with a passage: the names are the MCP server's own
+// What search_knowledge_pages hands back with a passage: the names are the MCP server's own
 // (docs/specs/024-agents/knowledgebase-for-agents.md "What is built").
 const FIELDS: readonly [string, string, boolean?][] = [
   ['page', 'Release Runbook'],
@@ -55,7 +55,7 @@ export function AgentsArt() {
           className="fill-slate-900 stroke-slate-900 dark:fill-slate-950 dark:stroke-slate-200"
         />
         <Mono x={30} y={46} className="fill-brand-300">
-          {'search_pages("when do we deploy")'}
+          {'search_knowledge_pages("when do we deploy")'}
         </Mono>
         {FIELDS.map(([key, value, trust], i) => (
           <g key={key} className="kb-in" style={at(0.4 + i * 0.25)}>
