@@ -378,7 +378,8 @@ it has not heard of in a day, so a missed webhook is put right within a day.
   Stripe's retries do. Stripe's retries are set to give up after 7 days and cancel.
 - A subscription for an owner who already holds a live one (which the one-open-checkout rule makes nearly
   impossible) is cancelled at once and logged, for the owner of the service to refund.
-- A team's seats: when the sweep finds its joined members changed, it sets the Stripe subscription's quantity, and
+- A team's seats: when the sweep finds its joined members changed (each team checked once a day), it sets the Stripe
+  subscription's quantity, and
   the change is charged for the rest of the month on the next invoice. The row changes once Stripe has taken it.
 
 **To confirm in Stripe's test mode before going live**, as Stripe's Managed Payments pages do not say: that a
@@ -420,7 +421,8 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   answered. A team on Free is counted in members, as accounts has them at most 30 seconds ago, so someone who just
   joined is counted on the next read; a subscribed team in the seats it pays for. When a subscribed team's joined
   members no longer match its seats, its line (and the Plan card on its page) adds "5 members now, seats update within
-  the hour": seats follow at the hourly sweep, which leaves time to undo a wrong invite (owner, 2026-11-25). In Your Usage every
+  a day": the hourly sweep sets each team's seats from its members once a day (`SEATS_CHECK_EVERY_MS`), which leaves
+  time to undo a wrong invite (owner, 2026-11-25). In Your Usage every
   row's bar and figures keep their own columns, so the bars line up.
 - **A team's page in the Explorer** (owner, 2026-11-22): its card carries the team's plan as a row under its header,
   so the way to upgrade is where the team is run. The row reads the team's tier: "Free Plan", or "Pro for Teams" with its badge

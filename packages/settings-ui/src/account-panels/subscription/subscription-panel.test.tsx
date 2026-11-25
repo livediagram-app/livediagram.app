@@ -536,7 +536,7 @@ describe('Settings › Subscription, your teams', () => {
     expect(north.querySelector('button')).toBeNull();
   });
 
-  it('a subscribed team whose members changed says its seats update within the hour', async () => {
+  it('a subscribed team whose members changed says its seats update within a day', async () => {
     const { tier, teams } = await panel({
       me: meResponse({
         teams: [
@@ -547,7 +547,7 @@ describe('Settings › Subscription, your teams', () => {
     });
     await ready(tier);
     expect(row(teams, 'team_north').textContent).toContain(
-      'You’re a member · 3 seats · Pro for Teams · 5 members now, seats update within the hour',
+      'You’re a member · 3 seats · Pro for Teams · 5 members now, seats update within a day',
     );
     // Two members pay for the smallest team's 3 seats: nothing to catch up.
     expect(row(teams, 'team_south').textContent).not.toContain('seats update');

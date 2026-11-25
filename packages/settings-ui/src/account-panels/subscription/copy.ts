@@ -47,7 +47,7 @@ export function cancellingBody(summary: SubscriptionSummary): string {
 
 /** A team's line: "You’re an admin · 12 seats · £72 a month · Renews 20 December 2026". A team on Free counts its
  *  members; a subscribed team counts the seats it pays for, which is what the service knows of it and never fewer
- *  than the smallest team; when its members have changed since, it says the seats update within the hour. */
+ *  than the smallest team; when its members have changed since, it says the seats update within a day. */
 export function teamLine(team: TeamSubscription): string {
   const role = team.role === 'admin' ? 'You’re an admin' : 'You’re a member';
   if (team.tier === 'free') {
