@@ -3,17 +3,19 @@
 // profile's surfaces decide, the two frames, the looks carousel and the panels. Each editor's CanvasThemeDialog.test
 // drives it over the real profile.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import type { ComponentProps, ReactNode } from 'react';
+import { useState, type ComponentProps, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORKBENCH_DEFAULTS, configureWorkbench } from '../../../bindings';
 import { createTabStyleTour } from '../../tour/TabStyleTour';
 import { acrossPages } from '../../primitives/paged-carousel-testing';
 import { TabStyleDialog } from './TabStyleDialog';
+import { useTabStyleSubView } from './tab-style-subview';
 import {
   TAB_STYLE_COPY,
   TAB_STYLE_PANELS,
   type TabStyleCanvasPanelProps,
   type TabStyleFrameParts,
+  type TabStyleHome,
   type TabStyleLook,
   type TabStyleProfile,
 } from './tab-style-profile';
@@ -586,12 +588,14 @@ describe('a frame of the product’s own', () => {
 describe('a profile that names and cuts the dialog', () => {
   const base = profileWith().base;
 
-  it('is named by the profile, in its header, its accessible name and the back bar', () => {
-    open({ tab: 'theme', profile: profileWith({ title: 'Knowledgebase Style' }) });
+  it('is named by the profile, in its header and accessible name, and a panel’s way back', () => {
+    open({ profile: profileWith({ title: 'Knowledgebase Style' }) });
     const dialog = screen.getByRole('dialog', { name: 'Knowledgebase Style' });
     expect(dialog.querySelector('h2')?.textContent).toBe('Knowledgebase Style');
-    expect(button(/Knowledgebase Style/)).toBeTruthy();
     expect(screen.queryByText('Tab Style')).toBeNull();
+    cleanup();
+    open({ tab: 'theme', profile: profileWith({ title: 'Knowledgebase Style' }) });
+    expect(button('Back to Knowledgebase Style')).toBeTruthy();
   });
 
   it('hands a frame of the product’s own the name, Tab Style when the profile gives none', () => {
@@ -694,6 +698,163 @@ describe('a profile that names and cuts the dialog', () => {
     // A surface that leaves it out has no row.
     open();
     expect(screen.queryByRole('button', { name: /^Page Design:/ })).toBeNull();
+  });
+
+  it('keeps the breadcrumb back home in a frame of the product’s own, which has no header back', () => {
+    const custom = profileWith({
+      frame: { kind: 'custom', render: (parts) => <section>{parts.children}</section> },
+    });
+    const { p } = open({ tab: 'finish', profile: custom });
+    fireEvent.click(button(/^Tab Style/));
+    expect(p.onTabChange).toHaveBeenCalledWith('looks');
+  });
+
+  it('hands the header and breadcrumb to a panel’s own level while it shows, and back once it goes', () => {
+    const seen: TabStyleFrameParts[] = [];
+    const onLevelBack = vi.fn();
+    function Level() {
+      const [level, setLevel] = useState<'none' | 'lined' | 'bare'>('none');
+      useTabStyleSubView(
+        level === 'none'
+          ? null
+          : {
+              current: 'Layers',
+              ...(level === 'lined' ? { line: 'Each layer of the page.' } : {}),
+              onBack: onLevelBack,
+            },
+      );
+      return (
+        <div>
+          <button type="button" onClick={() => setLevel('lined')}>
+            Open Lined
+          </button>
+          <button type="button" onClick={() => setLevel('bare')}>
+            Open Bare
+          </button>
+          <button type="button" onClick={() => setLevel('none')}>
+            Close Level
+          </button>
+        </div>
+      );
+    }
+    const profile = (kind: 'modal' | 'custom') =>
+      profileWith({
+        ...(kind === 'custom'
+          ? {
+              frame: {
+                kind: 'custom' as const,
+                render: (parts: TabStyleFrameParts) => {
+                  seen.push(parts);
+                  return <section>{parts.children}</section>;
+                },
+              },
+            }
+          : {}),
+        base: {
+          ...base,
+          panels: ['theme', 'design'],
+          renderPanel: (panel) => (panel === 'design' ? <Level /> : null),
+        },
+      });
+    open({ tab: 'design', profile: profile('custom') });
+    const last = () => seen.at(-1)!;
+    expect(last().title).toBe('Page Design');
+    fireEvent.click(button('Open Lined'));
+    expect(last().title).toBe('Layers');
+    expect(last().subtitle).toBe('Each layer of the page.');
+    expect(last().backLabel).toBe('Back to Page Design');
+    last().onBack!();
+    expect(onLevelBack).toHaveBeenCalledTimes(1);
+    // The breadcrumb is the level's, back to the panel.
+    fireEvent.click(button(/^Page Design\s*Layers/));
+    expect(onLevelBack).toHaveBeenCalledTimes(2);
+    fireEvent.click(button('Open Bare'));
+    expect(last().subtitle).toBe(TAB_STYLE_COPY.viewLines.design);
+    fireEvent.click(button('Close Level'));
+    expect(last().title).toBe('Page Design');
+    expect(last().backLabel).toBe('Back to Tab Style');
+    cleanup();
+    // In the modal the level's back is the header's, named by the home on the home.
+    open({ tab: 'design', profile: profile('modal') });
+    fireEvent.click(button('Open Lined'));
+    expect(screen.getByRole('dialog').querySelector('h2')?.textContent).toBe('Layers');
+  });
+
+  it('draws the product’s own home, handed its rows, extra, fallback and help', () => {
+    const homes: TabStyleHome[] = [];
+    const profile = profileWith({
+      base: {
+        ...base,
+        panels: ['theme', 'font'],
+        renderHomeExtra: () => <span data-testid="home-extra" />,
+        homeHelp: <a href="#own-home">Home help</a>,
+        renderHome: (home) => {
+          homes.push(home);
+          return (
+            <div data-testid="own-home">
+              {home.extra}
+              <button type="button" onClick={() => home.onOpenPanel('font')}>
+                Own Text
+              </button>
+            </div>
+          );
+        },
+      },
+    });
+    const allTabs = { tabCount: 3, applying: false, onApply: vi.fn() };
+    const { p } = open({ profile, allTabs });
+    expect(screen.getByTestId('own-home')).toBeTruthy();
+    expect(screen.getByTestId('home-extra')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Home help' })).toBeTruthy();
+    const home = homes.at(-1)!;
+    expect(home.rows.map((r) => [r.panel, r.label])).toEqual([
+      ['theme', 'Colours'],
+      ['font', 'Text'],
+    ]);
+    expect(home.allTabs).toBe(allTabs);
+    expect(home.fallback).toBeTruthy();
+    expect(home.openId).toMatch(/-/);
+    // The shared Apply to All Tabs row is the product home's to place.
+    expect(screen.queryByRole('button', { name: /All Tabs/ })).toBeNull();
+    fireEvent.click(button('Own Text'));
+    expect(p.onTabChange).toHaveBeenCalledWith('font');
+    cleanup();
+    homes.length = 0;
+    open({ profile });
+    expect(homes.at(-1)!.allTabs).toBeUndefined();
+  });
+
+  it('lets the product’s own home open a level of its own, backing to the dialog, and hands no extra it lacks', () => {
+    const seen: TabStyleFrameParts[] = [];
+    const onBack = vi.fn();
+    function HomeLevel({ home }: { home: TabStyleHome }) {
+      useTabStyleSubView({ current: 'All Designs', onBack });
+      return <div data-testid="extra">{home.extra === null ? 'none' : 'some'}</div>;
+    }
+    open({
+      profile: profileWith({
+        frame: {
+          kind: 'custom',
+          render: (parts) => {
+            seen.push(parts);
+            return <section>{parts.children}</section>;
+          },
+        },
+        base: { ...base, renderHome: (home) => <HomeLevel home={home} /> },
+      }),
+    });
+    expect(seen.at(-1)!.title).toBe('All Designs');
+    expect(seen.at(-1)!.backLabel).toBe('Back to Tab Style');
+    expect(screen.getByTestId('extra').textContent).toBe('none');
+  });
+
+  it('sets no level outside the dialog', () => {
+    function Alone() {
+      useTabStyleSubView({ current: 'Layers', onBack: () => {} });
+      return <p>alone</p>;
+    }
+    render(<Alone />);
+    expect(screen.getByText('alone')).toBeTruthy();
   });
 
   it('gives a product’s own panel the shared line and picture when its surface names none', () => {

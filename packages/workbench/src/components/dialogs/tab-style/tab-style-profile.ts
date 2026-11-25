@@ -122,12 +122,37 @@ export type TabStyleFrameParts = {
   subtitle: string;
   // The help link for the view that is up.
   help: ReactNode;
-  // The dialog's name (the profile's, else "Tab Style").
+  // The header's name: the dialog's (the profile's, else "Tab Style") on its home, else the screen's.
   title: string;
+  // The dialog's own name (the profile's, else "Tab Style") on every screen: its accessible name.
+  dialogTitle?: string;
+  // Back to the screen before, on any screen but the home (the header's back button), named by `backLabel`.
+  onBack?: () => void;
+  backLabel?: string;
   // Show Me's targets: the home, the Finish panel and the tab's finish.
   tourApi: TabStyleTourApi;
   onClose: () => void;
   children: ReactNode;
+};
+
+/** What a product's own home is handed (TabStyleSurface `renderHome`). */
+export type TabStyleHome<Look = TabStyleLook> = {
+  // The surface's panels with a title, value and picture each, in its order.
+  rows: readonly { panel: TabStylePanel; label: string; value: string; icon: ReactNode }[];
+  onOpenPanel: (panel: TabStylePanel) => void;
+  // The surface's home extra (an article's Style row).
+  extra: ReactNode;
+  // The shared home, for where the product's has nothing to show (a tab with no pages).
+  fallback: ReactNode;
+  // Puts a whole look on the tab (theme, finish, font, surround), as a Looks card does.
+  applyLook: (look: Look) => void;
+  // One id per opening of the dialog: what is rolled fresh each opening keeps across its screens.
+  openId: string;
+  // Copy the tab's style to every other tab, where the editor offers it (the shared home's Apply to All Tabs).
+  allTabs?: { tabCount: number; applying: boolean; onApply: () => void };
+  // The tab's type and finish now, for a product's own row pictures.
+  font: string | null;
+  finish: Finish;
 };
 
 /** The shared modal, or a frame of the product's own. */
@@ -169,6 +194,11 @@ export type TabStyleSurface<Look extends TabStyleLook, Pattern extends string> =
   // A panel's body of the product's own, in place of the shared one (a Text panel that sets a heading and a body
   // face); the shared body for a panel it answers nothing for, and for every panel when unset.
   renderPanel?: (panel: TabStylePanel) => ReactNode;
+  // The home the product draws itself, in place of the looks and Fine-tune (livedocuments' Page Design home), handed
+  // the panels' rows, how to open one, the surface's extra and the shared home to show where it has nothing.
+  renderHome?: (home: TabStyleHome<Look>) => ReactNode;
+  // The home's help link, where the product's home is its own (livedocuments' Choosing a Page Design).
+  homeHelp?: ReactNode;
   // A Fine-tune row's line of the product's own, per panel; the shared line when unset.
   panelValues?: Partial<Record<TabStylePanel, string>>;
   // A Fine-tune row's picture of the product's own, per panel (a Page Design's tile); the shared one when unset.

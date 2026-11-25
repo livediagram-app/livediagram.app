@@ -106,6 +106,15 @@ The surface settings say, for a surface:
   surface (liveplanner's Board Configure on a board, say). Each has a name and a line saying what it holds; pressing
   one closes the dialog and runs the product's opener. None by default.
 
+### A product's own home
+
+A surface may draw the home itself (`renderHome`, livedocuments' Page Design home, 2026-11-25). It is handed the
+surface's panels as rows (title, value now, picture: the same the shared Fine-tune rows show), how to open one, the
+surface's home extra, and the shared home to show where it has nothing (a tab with no pages). A panel opened from
+it comes back to it with the header's back button. Inside any screen the header names that screen, and its mark is a
+back button to the one before (a panel's own level, `useTabStyleSubView`, names its own); the modal has no breadcrumb,
+and a frame of a product's own keeps one.
+
 ## Placement
 
 The popover carries **an arrow pointing at what it hangs from**, as the cluster's other popovers (Tidy Up, Layers)

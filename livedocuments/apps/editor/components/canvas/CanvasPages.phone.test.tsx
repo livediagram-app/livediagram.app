@@ -60,14 +60,17 @@ const label = (container: HTMLElement) =>
   container.querySelector('button.group\\/label')?.parentElement?.closest('div.absolute');
 
 describe("a page's title bar on a phone", () => {
-  it('holds Appearance and the cog alone: no Style, Layout, Background, Tidy or lock', () => {
+  it('holds Appearance alone: no Style, Layout, Background, Tidy, lock or cog (those are in Contents)', () => {
     const { container } = render(<CanvasPages view={view(true)} zoom={1} />);
-    expect(names()).toEqual(['Appearance', 'Page settings']);
+    expect(names()).toEqual(['Appearance']);
     // No page label above the page's top-left corner either.
     expect(label(container)?.className).toContain('hidden');
   });
 
-  it("lists the page's look controls and opens each one's own sheet", () => {
+  it("lists the page's look controls; Background opens Tab Style on its Design", () => {
+    act(() => undo());
+    const open = vi.fn();
+    undo = registerTabStyleOpen(open);
     render(<CanvasPages view={view(true)} zoom={1} />);
     fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PageAppearance');
@@ -78,8 +81,8 @@ describe("a page's title bar on a phone", () => {
     expect(rows).toEqual(['style', 'layout', 'background']);
     fireEvent.click(sheet.querySelector('[data-appearance-row="background"]')!);
     expect(screen.queryByRole('dialog', { name: 'Appearance' })).toBeNull();
-    expect(screen.getByRole('dialog', { name: 'Background' })).toBeTruthy();
-    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PageBackgroundButton');
+    expect(open).toHaveBeenCalledWith('design');
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PageDesignButton');
   });
 
   it("opens Tab Style from Appearance's Style row", () => {
@@ -112,14 +115,12 @@ describe("a page's title bar on a phone", () => {
 });
 
 describe("a page's title bar on a desktop", () => {
-  it('keeps every control and the label, and has no Appearance', () => {
+  it('keeps Layout, Tidy and the label, and has no Appearance (Style, Background, lock and cog live elsewhere)', () => {
     phone.on = false;
     const { container } = render(<CanvasPages view={view(true)} zoom={1} />);
     const shown = names();
     expect(shown).not.toContain('Appearance');
-    for (const name of ['Style', 'Layout', 'Background', 'Lock page', 'Page settings'])
-      expect(shown).toContain(name);
-    expect(shown).toContain('Tidy');
+    expect(shown).toEqual(['Layout', 'Tidy']);
     expect(label(container)?.className ?? '').not.toContain('hidden');
   });
 });

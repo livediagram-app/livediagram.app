@@ -682,7 +682,8 @@ describe('emailing the owners', () => {
       ),
     );
     expect(emailsApi.apiRemindOwners).toHaveBeenCalledWith(WHO, 'd1');
-    expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(2);
+    // The toast is said inside the action and the overview re-read follows it on a later render, so wait for it.
+    await waitFor(() => expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(2));
   });
 
   it('shows when the owners were reminded instead of the button, for a week', async () => {

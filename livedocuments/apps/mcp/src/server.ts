@@ -9,6 +9,8 @@ import {
   elementSchemaDoc,
   SCHEMA_RESOURCE_URI,
   SERVER_INSTRUCTIONS,
+  STYLE_GUIDE_RESOURCE_URI,
+  styleGuideDoc,
 } from '@livedocuments/agent-verbs/mcp';
 import { LISTING } from './listing';
 import { registerTools } from './tools';
@@ -30,6 +32,22 @@ export function buildServer(env: Env): McpServer {
     },
     async (uri) => ({
       contents: [{ uri: uri.href, mimeType: 'text/markdown', text: elementSchemaDoc() }],
+    }),
+  );
+
+  // The style guide (docs/specs/011-theme/style-guide.md): when to use each look, for create_document's "style".
+  server.registerResource(
+    'style-guide',
+    STYLE_GUIDE_RESOURCE_URI,
+    {
+      title: 'livedocuments style guide',
+      description:
+        'When to use each style recipe, theme, page design, typeface and finish, by content and tone. Read before ' +
+        'choosing a look for create_document.',
+      mimeType: 'text/markdown',
+    },
+    async (uri) => ({
+      contents: [{ uri: uri.href, mimeType: 'text/markdown', text: styleGuideDoc() }],
     }),
   );
 

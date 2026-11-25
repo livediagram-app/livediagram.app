@@ -147,7 +147,7 @@ function TitleSheet({
     sheet,
     onClose,
     true,
-    `[data-anchored-popover], [data-title-popover-trigger], ${TOUR_CARD}`,
+    `[data-anchored-popover], [data-title-popover-trigger], [data-toast-id], ${TOUR_CARD}`,
   );
   useEscape(
     () => {

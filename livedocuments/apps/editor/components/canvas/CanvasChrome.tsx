@@ -364,6 +364,14 @@ function CanvasChromeView(props: CanvasChromeProps) {
           against the canvas, so it renders outside the corner layer. */}
       {zenMode ? null : collaborateEl}
       {contentsSidebarEl}
+      {/* The editing zone's left edge: toasts stand there, on the zoom cluster's line, never over Contents
+          (liveworkspace/docs/specs/016-notifications/toasts.md "Placement", TOAST_START_SELECTOR). */}
+      <div
+        aria-hidden
+        data-toast-start=""
+        className="pointer-events-none absolute bottom-0 right-0 h-px"
+        style={{ left: contentsDocked && !isMobile ? contentsWidth * panelScale : 0 }}
+      />
       {contentsPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
@@ -489,7 +497,13 @@ function CanvasChromeView(props: CanvasChromeProps) {
             ) : null}
             {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
                 read-only sessions pass no handler): see ThemeStrip. */}
-            {!zenMode ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
+            {!zenMode ? (
+              <ThemeStrip
+                onOpenTheme={onOpenCanvasTheme}
+                title="Style"
+                description="Your pages' design, background, colours, text and finish."
+              />
+            ) : null}
             <ViewZoomControls
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}

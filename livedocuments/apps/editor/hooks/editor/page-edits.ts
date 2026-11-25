@@ -25,6 +25,7 @@ import {
   withPageInkFor,
   pageAdded,
   pageAddedLike,
+  pageInsertedLike,
   pageBackgroundSet,
   pageDuplicated,
   pageLaidOut,
@@ -328,6 +329,20 @@ export function pageEdits({
     onGoTo(id);
     debugLog('[page] page added like another', { tabId, from: pageId, kind });
   };
+  // A new page like `pageId` straight above or below it (Contents' Insert Page Above and Below).
+  const insertPageLike = (pageId: string, where: 'above' | 'below') => {
+    if (!takesEdits()) return;
+    const source = page(pageId);
+    if (!source) return;
+    const kind = pageKindOf(source);
+    track('Tab', 'Changed', where === 'above' ? 'PageInsertedAbove' : 'PageInsertedBelow');
+    const id = nextPageId(current);
+    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
+    commitTab((t) => themed(edited(t, pageInsertedLike(t, pageId, id, flow, where)), id));
+    onGoTo(id);
+    if (kind === 'article' || kind === 'flashcard') onArticleCreated?.(flow);
+    debugLog('[page] page inserted', { tabId, from: pageId, where, kind });
+  };
   const duplicatePage = (pageId: string) => {
     if (!takesEdits()) return;
     const target = page(pageId);
@@ -474,6 +489,7 @@ export function pageEdits({
     canMove,
     addPage: room ? addPage : undefined,
     addPageLike: room ? addPageLike : undefined,
+    insertPageLike: room ? insertPageLike : undefined,
     choosePageKind,
     duplicatePage: room ? duplicatePage : undefined,
     canDuplicate: (pageId: string) => {
