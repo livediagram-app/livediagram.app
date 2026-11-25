@@ -15,6 +15,20 @@ import {
   type DiagramSendRequest,
 } from '../send-to-diagram/send-to-diagram-entry';
 import { elementDiagramSends, setDiagramSendSource } from '../send-to-diagram/diagram-send-store';
+import {
+  onSendToKnowledge,
+  setKnowledgeSummariser,
+  type KnowledgeCapture,
+  type KnowledgeSummariser,
+} from '../send-to-knowledge/send-to-knowledge-entry';
+import { setKnowledgeSendSource } from '../send-to-knowledge/knowledge-send-store';
+import { setKnowledgeReceivedSource } from '../send-to-knowledge/knowledge-received-store';
+
+const SendToKnowledgeDialog = lazy(() =>
+  import('../send-to-knowledge/SendToKnowledgeDialog').then((m) => ({
+    default: m.SendToKnowledgeDialog,
+  })),
+);
 
 const SendToDiagramDialog = lazy(() =>
   import('../send-to-diagram/SendToDiagramDialog').then((m) => ({
@@ -35,6 +49,7 @@ export function SendToPlanHost({
   enabled,
   diagram = null,
   tabTitle = '',
+  knowledge = null,
 }: {
   // The app this editor is, and the open item, the source of every send from here.
   app: App;
@@ -50,9 +65,12 @@ export function SendToPlanHost({
   diagram?: DiagramDrafter | null;
   // The shown tab's name (a page's title): what a diagram from it is named after and its caption says.
   tabTitle?: string;
+  // Send to Knowledge Base's summary on the app's own AI (send-to-knowledge.md); without it no entry offers it.
+  knowledge?: KnowledgeSummariser | null;
 }) {
   const [request, setRequest] = useState<SendRequest | null>(null);
   const [diagramRequest, setDiagramRequest] = useState<DiagramSendRequest | null>(null);
+  const [knowledgeRequest, setKnowledgeRequest] = useState<KnowledgeCapture | null>(null);
   const live = enabled && itemId ? itemId : null;
   const code = share?.code ?? null;
 
@@ -86,6 +104,42 @@ export function SendToPlanHost({
     };
   }, [live, diagram]);
 
+  // Send to Knowledge Base's sends from here, for the chips, and the picker's entries, for an app that summarises.
+  const knowledgeLive = live && knowledge ? live : null;
+  useEffect(() => {
+    setKnowledgeSendSource(knowledgeLive, code ? { code } : null);
+    return () => setKnowledgeSendSource(null);
+  }, [knowledgeLive, code]);
+
+  useEffect(() => {
+    if (!live || !knowledge) return undefined;
+    setKnowledgeSummariser(knowledge);
+    const off = onSendToKnowledge(setKnowledgeRequest);
+    return () => {
+      off();
+      setKnowledgeSummariser(null);
+    };
+  }, [live, knowledge]);
+
+  // A knowledgebase's pages show the Sent From chips of what other apps sent to it.
+  const receivedLive = live && app === 'liveknowledge' ? live : null;
+  useEffect(() => {
+    setKnowledgeReceivedSource(receivedLive, code ? { code } : null);
+    return () => setKnowledgeReceivedSource(null);
+  }, [receivedLive, code]);
+
+  if (live && knowledge && knowledgeRequest)
+    return (
+      <Suspense fallback={null}>
+        <SendToKnowledgeDialog
+          capture={knowledgeRequest}
+          source={{ app, itemId: live }}
+          sourceTitle={title}
+          summarise={knowledge}
+          onClose={() => setKnowledgeRequest(null)}
+        />
+      </Suspense>
+    );
   if (live && diagram && diagramRequest)
     return (
       <Suspense fallback={null}>

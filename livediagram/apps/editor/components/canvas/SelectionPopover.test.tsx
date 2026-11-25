@@ -113,6 +113,26 @@ describe('SelectionPopover tap areas', () => {
     expect(screen.getByTestId('selection-popover-strip').className).toMatch(/\bisolate\b/);
     expect(screen.getByRole('button', { name: 'Duplicate' }).className).toMatch(/\bh-8\b/);
   });
+
+  // Work Tracker 1425: the phone's way in to Send to Knowledge Base is one of those buttons, so its tap area is 44px too.
+  it('gives Send to Knowledge Base the same 44px pad', () => {
+    setTouch(true);
+    render(
+      <SelectionPopover
+        bounds={BOUNDS}
+        canvasOffset={{ x: 0, y: 0 }}
+        zoom={1}
+        title="Selected Square"
+        onSendToKnowledge={() => {}}
+      />,
+    );
+    expect(screen.getByTestId('selection-popover').className).toContain(
+      '[&_.h-8]:touch-target-packed',
+    );
+    expect(screen.getByRole('button', { name: 'Send to Knowledge Base' }).className).toMatch(
+      /\bh-8\b/,
+    );
+  });
 });
 
 // A click locks every member unless all are locked already, so the button says what it will do: Lock for a

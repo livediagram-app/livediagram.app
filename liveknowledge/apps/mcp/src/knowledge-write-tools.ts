@@ -26,12 +26,15 @@ import { deepLink, errorResult, textResult } from './tool-helpers';
 export function registerKnowledgeWriteTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpCreatePage, async (args, extra) => {
     const api = await knowledgeApi(server, env, extra);
-    const { page, trust } = await api.json<CreatePageResponse>(
+    const { page, trust, sentFrom } = await api.json<
+      CreatePageResponse & { sentFrom?: 'recorded' | 'not recorded' }
+    >(
       knowledgePath(args.documentId, 'pages'),
       jsonBody('POST', {
         title: args.title,
         markdown: args.markdown,
         ...(args.parent ? { parent: args.parent } : {}),
+        ...(args.sentFrom ? { sentFrom: args.sentFrom } : {}),
       }),
     );
     return textResult({
@@ -39,6 +42,7 @@ export function registerKnowledgeWriteTools(server: McpServer, env: Env): void {
       title: page.title,
       ...(page.parent ? { parent: page.parent } : {}),
       verified: trust ?? 'never-verified',
+      ...(sentFrom ? { sentFrom } : {}),
       url: deepLink(env, args.documentId),
       // Verification off (review_period "never"): nobody verifies it, so it is not called a draft.
       next:
@@ -77,11 +81,14 @@ export function registerKnowledgeWriteTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpWritePage, async (args, extra) => {
     const api = await knowledgeApi(server, env, extra);
-    const answer = await api.json<PagesAnswer>(
+    const answer = await api.json<PagesAnswer & { sentFrom?: 'recorded' | 'not recorded' }>(
       knowledgePath(args.documentId, 'pages', args.page),
       jsonBody('PUT', {
         ...(args.markdown !== undefined ? { markdown: args.markdown } : {}),
         ...(args.mode ? { mode: args.mode } : {}),
+        // Under one heading of the page, and from another app's item (send-to-knowledge.md "Agents").
+        ...(args.after ? { after: args.after } : {}),
+        ...(args.sentFrom ? { sentFrom: args.sentFrom } : {}),
         // The page's cover (page-surface.md "The cover"): null takes it away.
         ...(args.cover !== undefined ? { cover: args.cover } : {}),
       }),
@@ -90,6 +97,7 @@ export function registerKnowledgeWriteTools(server: McpServer, env: Env): void {
       page: answer.tab.id,
       rev: answer.tab.rev,
       lines: answer.lines,
+      ...(answer.sentFrom ? { sentFrom: answer.sentFrom } : {}),
       url: deepLink(env, args.documentId),
       next:
         args.markdown === undefined

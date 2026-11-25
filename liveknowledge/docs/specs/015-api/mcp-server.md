@@ -1080,6 +1080,8 @@ descriptions.
   reaching onto it cut at its edges, in rows (two slides or three tall pages to a row) with each page's place and name
   under it; `page` (an id, place or name) draws one page alone at its own size. An article page draws its writing as
   estimated without a browser (`article-layout-estimate.ts`: each block set as the editor's stylesheet sets it,
+  its margins collapsing as the browser's do (the larger of one block's space below and the next one's above stands
+  between them; a list run's last item keeps a paragraph's space under it, a zone 0.4 line above and 0.6 below it),
   wrapped at an estimated width, flowed down the article's pages), with the pages the editor would add after its last
   shown and labelled as such. An emoji icon or sticker, which needs a colour-emoji font a Worker lacks,
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its

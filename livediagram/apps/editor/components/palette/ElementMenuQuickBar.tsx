@@ -5,6 +5,8 @@
 // flowchart step's, a relationship's cardinality), which the floating selection toolbar no longer carries. Not drawn on
 // an element with none. Also here: quickBarItems, the Resources category's rows.
 import { elementSendItem } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
+import { elementKnowledgeItem } from '@liveworkspace/workbench/components/send-to-knowledge/knowledge-menu-item';
+import { captureSelected } from '@/lib/knowledge-send';
 import {
   elementResourceOptions,
   appLinkModes,
@@ -79,6 +81,9 @@ export function quickBarItems(
   // may send.
   const send = elementSendItem(target);
   if (send) options.push(send);
+  // Send to Knowledge Base (docs/specs/013-workspace/send-to-knowledge.md): right after Send to Plan.
+  const knowledge = elementKnowledgeItem(target.id, () => captureSelected([target.id]));
+  if (knowledge) options.push(knowledge);
   return options;
 }
 

@@ -34,6 +34,7 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livediagram supplies (the platform's `004-index/inbox-notices.md`)
 - ./automations.md - when working on Automations: rules a document runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./start-a-call.md - when working on Start a Call Here in livediagram: where Call, the live pill with Join and Meetings sit (the platform's `004-index/item-calls.md`), roles
+- ./send-to-knowledge.md - when working on Send to Knowledge Base: what livediagram sends to a knowledgebase page (the platform's `004-index/send-to-knowledge.md`), the selection captured, the picture, the summary route, entries, chip, roles
 - ./send-to-plan.md - when working on Send to Plan: what livediagram sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
 - ./make-plan-cards.md - when working on Make Plan Cards: a selection or a tab made liveplanner cards (arrows to Blocked By, lanes, dates), the preview, making again, and the changes a plan-drawn tab offers (the platform's `004-index/diagrams-and-plans.md`)
 - ./suggestions.md - when working on the Make These a Plan suggestion: its trigger, its one click, who sees it

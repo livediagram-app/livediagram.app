@@ -1135,6 +1135,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ArticleWrite": {
     "additionalProperties": false,
     "properties": {
+      "after": {
+        "type": "string"
+      },
       "article": {
         "type": "string"
       },
@@ -1143,6 +1146,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mode": {
         "$ref": "#/components/schemas/ArticleWriteMode"
+      },
+      "picture": {
+        "$ref": "#/components/schemas/ArticleWritePicture"
       }
     },
     "required": [
@@ -1156,6 +1162,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "append"
     ],
     "type": "string"
+  },
+  "ArticleWritePicture": {
+    "additionalProperties": false,
+    "description": "A picture an append places (`ArticleWrite.picture`): the stored image and its size in pixels.",
+    "properties": {
+      "alt": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "imageId": {
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "imageId",
+      "width",
+      "height"
+    ],
+    "type": "object"
   },
   "ArticleZoneAlign": {
     "enum": [

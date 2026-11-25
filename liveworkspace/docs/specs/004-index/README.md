@@ -8,6 +8,7 @@ Follow the references below only as needed; never upfront.
 - ./kits.md - when working on project kits: one click making a plan, a deck, a diagram and a Space from templates, in a new folder, connected both ways
 - ./live-embeds.md - when one item shows another live, read-only, inside it: each reader's own access, the embed ticket, loading on screen, snapshots for exports and Community
 - ./sheet-sources.md - when a chart in one app draws from a sheet in another: the range read on each reader's own access, the door, the change signal, freezing
+- ./send-to-knowledge.md - when working on Send to Knowledge Base: a selection in any app documented by AI on a liveknowledge page, the summary, the picker and preview, the section, chips on both sides, agents
 - ./send-to-diagram.md - when working on Send to Diagram: words in any app drawn by its AI as a new livediagram diagram of the person's own, the graph, the index route and livediagram's door
 - ./knowledge-sources.md - when a knowledgebase answers from other apps' items: the indexable-text door, the index's source, reach and likely routes, the change signal, each reader's own access
 - ./send-to-plan.md - when working on Send to Plan: a sticky, a comment, words or an action in any app made a liveplanner card as the person, the send's record, the live status chip, the picker, agents

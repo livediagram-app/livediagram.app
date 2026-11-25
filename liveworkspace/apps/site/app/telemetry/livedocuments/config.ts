@@ -19,6 +19,7 @@ import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SEND_TO_PLAN } from '../_shared/send-to-plan-metrics';
+import { SEND_TO_KNOWLEDGE_PICKER } from '../_shared/send-to-knowledge-metrics';
 import { SEND_TO_DIAGRAM_WITH_CHIPS } from '../_shared/send-to-diagram-metrics';
 import { SUGGEST_ADD_TO_KNOWLEDGEBASE } from '../_shared/suggestion-metrics';
 import { ITEM_CALLS } from '../_shared/item-call-metrics';
@@ -301,6 +302,7 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
           CONNECTED_TABS,
           SNAPSHOTS,
           SEND_TO_PLAN,
+          SEND_TO_KNOWLEDGE_PICKER,
           SEND_TO_DIAGRAM_WITH_CHIPS,
           SUGGEST_ADD_TO_KNOWLEDGEBASE,
           ITEM_CALLS,

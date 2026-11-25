@@ -676,6 +676,8 @@ export const PLAN_DESCRIBE_OPENED = opened(
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
 // Start a Call Here has its own stack too (_shared/item-call-metrics.ts).
 OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram');
+// Send to Knowledge Base's code is shared too (_shared/send-to-knowledge-metrics.ts).
+OPENED_HOMES.push((t) => t === 'SendToKnowledge');
 // Diagrams and Plans' too (_shared/diagrams-and-plans-metrics.ts).
 OPENED_HOMES.push((t) => t !== null && DIAGRAMS_AND_PLANS_OPENED.has(t));
 // Suggestions have a stack each (_shared/suggestion-metrics.ts).

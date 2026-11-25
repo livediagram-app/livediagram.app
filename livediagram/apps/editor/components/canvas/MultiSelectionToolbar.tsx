@@ -1,6 +1,8 @@
 import type { Element } from '@livediagram/document';
 import { MakePlanCardsButton } from '@/components/plan-cards/MakePlanCardsButton';
 import { SendToPlanButton } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanButton';
+import { SendToKnowledgeButton } from '@liveworkspace/workbench/components/send-to-knowledge/SendToKnowledgeButton';
+import { captureSelected } from '@/lib/knowledge-send';
 import {
   DuplicateIcon,
   EllipsisIcon,
@@ -114,6 +116,10 @@ export function MultiSelectionToolbar({
           what makes the Delete beside it refuse. A divider between them read
           as Lock belonging with Export, which it does not. */}
       <SendToPlanButton elements={selectedElements} className={TOOLBAR_BTN} />
+      <SendToKnowledgeButton
+        capture={() => captureSelected(selectedElements.map((el) => el.id))}
+        className={TOOLBAR_BTN}
+      />
       <MakePlanCardsButton elements={selectedElements} className={TOOLBAR_BTN} />
       <HoverCard title="Export" description="Export just these elements.">
         <button

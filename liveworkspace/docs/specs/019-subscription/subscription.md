@@ -178,6 +178,7 @@ spend these amounts and the screens say them from one table (`AI_CREDIT_COSTS` i
 | liveplanner: Describe a Plan, Describe a Form          | 1                    | 2,000 tokens written                                |
 | livediagram: read a photo's notes                      | 1 for every 24 notes | six notes a request, 2,000 tokens written a request |
 | Ask AI in any app's Tools (built-in)                   | 1                    | 24,000 characters of passages read, 2,000 written   |
+| Send to Knowledge Base: a selection's summary          | 1                    | 12,000 characters of items read, 1,500 written      |
 
 - **Said before, in the words the operation's own screen uses:** "Uses 2 AI credits" beside the button that starts
   it, "Each run of this step uses 1 AI credit." in a step's panel, and for a photo, "Read 60 notes with AI · Uses 3
@@ -186,6 +187,9 @@ spend these amounts and the screens say them from one table (`AI_CREDIT_COSTS` i
   is never more than the table says.
 - **A refused spend costs nothing**, and an operation the model then fails is not given back (each app's own
   caps bound retries).
+  Send to Knowledge Base's summary is the one exception (Work Tracker 1425: "charge only on a successful summary"):
+  its credit is spent after the model answers, so a failed summary costs nothing, and a month used up meanwhile
+  refuses the summary rather than lend it ([send-to-knowledge.md](../004-index/send-to-knowledge.md#the-summary)).
 - **Ask AI** (owner's open choice, decided 2026-11-23 in Work Tracker 1391; the owner may overturn it) costs 1
   credit, as liveknowledge's Ask does: on built-in AI the model writes at most 2,000 tokens (`BUILT_IN_MAX_TOKENS`
   caps Ask's 8,000, which is room for a key's model, and a key spends no credits), and it reads at most 24,000

@@ -101,7 +101,7 @@ describe('an article estimated', () => {
       ]),
     );
     const title = ops.find((o) => o.k === 'text' && o.text === 'Report')!;
-    expect(title).toMatchObject({ size: 36, weight: '700', color: '#0369a1' });
+    expect(title).toMatchObject({ size: 40, weight: '700', color: '#0369a1' });
     expect(ops.find((o) => o.k === 'text' && o.text === 'Body text')).toMatchObject({
       anchor: 'middle',
     });
@@ -150,13 +150,14 @@ describe('an article estimated', () => {
   });
 
   it('keeps a heading with what follows it, starting the next page rather than ending one', () => {
-    const fill = Array.from({ length: 20 }, (_, i) => p(`Line ${i + 1}`));
+    const fill = Array.from({ length: 21 }, (_, i) => p(`Line ${i + 1}`));
     // Normal margins, the room this fill was counted for (a knowledgebase page's own default is Narrow).
     const tab = article([...fill, p('Next quarter', 'h1'), p('After it')], {
       pages: 2,
       style: { margins: 'normal' },
     });
     const est = estimateArticle(tab, 'f', laid(tab), '#000000');
+    expect(texts(est.ops, 'a1')).toContain('Line 21');
     expect(texts(est.ops, 'a1')).not.toContain('Next quarter');
     expect(texts(est.ops, 'a2').slice(0, 2)).toEqual(['Next quarter', 'After it']);
   });

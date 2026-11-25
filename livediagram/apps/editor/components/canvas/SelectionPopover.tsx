@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from 'react';
 import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
+import { KnowledgeLogo } from '@liveworkspace/workbench/components/send-to-knowledge/SendToKnowledgeButton';
 import { useEdgeAwarePlacement } from '@liveworkspace/workbench/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
 import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
@@ -51,6 +52,8 @@ type SelectionPopoverProps = {
   onOpenComments?: () => void;
   // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md), where this session may send and it has words.
   onSendToPlan?: () => void;
+  // Send to Knowledge Base (docs/specs/013-workspace/send-to-knowledge.md), right after Send to Plan.
+  onSendToKnowledge?: () => void;
   // Someone who may comment adds one; a Viewer only reads the thread there is (docs/specs/013-workspace/share-roles.md).
   commentsReadOnly?: boolean;
   // Open the same context menu that a right-click on the element
@@ -94,6 +97,7 @@ export function SelectionPopover({
   onSendToBack,
   onOpenComments,
   onSendToPlan,
+  onSendToKnowledge,
   commentsReadOnly = false,
   onOpenContextMenu,
   compact = false,
@@ -255,6 +259,15 @@ export function SelectionPopover({
               onClick={onSendToPlan}
             >
               <SendToPlanMenuIcon size={16} />
+            </PopoverButton>
+          ) : null}
+          {onSendToKnowledge ? (
+            <PopoverButton
+              label="Send to Knowledge Base"
+              description="Write it up on a page in liveknowledge."
+              onClick={onSendToKnowledge}
+            >
+              <KnowledgeLogo size={16} />
             </PopoverButton>
           ) : null}
 

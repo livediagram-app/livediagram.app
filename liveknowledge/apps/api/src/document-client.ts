@@ -10,6 +10,8 @@ import type {
   AutomationStepAnswer,
   AutomationStepDoorCall,
   AutomationTargetDescription,
+  KnowledgeSendDoorAnswer,
+  KnowledgeSendDoorCall,
 } from '@liveworkspace/index-client';
 import type { ItemStanding, SourceChange } from '@liveworkspace/index-client';
 import type { HookAnswer, HookCall } from '@liveworkspace/automations/room';
@@ -92,6 +94,11 @@ export type DocumentRoomClient = {
   // the step's pickers may name here.
   automationStep(call: AutomationStepDoorCall, grant: DocumentGrant): Promise<AutomationStepAnswer>;
   automationTarget(): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
+  // Send to Knowledge Base (knowledge-send-door.ts): a page's headings, or a section written as the person.
+  knowledgeSend(
+    call: KnowledgeSendDoorCall,
+    grant: DocumentGrant,
+  ): Promise<KnowledgeSendDoorAnswer>;
   emailOptOut(token: string): Promise<boolean>;
   // Where the document stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run
   // nothing.
@@ -141,6 +148,7 @@ export function documentRoom(
     incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
     automationStep: (call, grant) => room.automationStep(documentId, call, grant),
     automationTarget: () => room.automationTarget(documentId),
+    knowledgeSend: (call, grant) => room.knowledgeSend(documentId, call, grant),
     emailOptOut: (token) => room.emailOptOut(documentId, token),
     takeStanding: (standing) => room.takeStanding(documentId, standing),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
@@ -188,6 +196,11 @@ export type DocumentRoomRpc = {
     grant: DocumentGrant,
   ): Promise<AutomationStepAnswer>;
   automationTarget(documentId: string): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
+  knowledgeSend(
+    documentId: string,
+    call: KnowledgeSendDoorCall,
+    grant: DocumentGrant,
+  ): Promise<KnowledgeSendDoorAnswer>;
   emailOptOut(documentId: string, token: string): Promise<boolean>;
   takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;

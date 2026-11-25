@@ -31,6 +31,7 @@ import {
   articleSentSpec,
   onlySent,
 } from '@liveworkspace/workbench/components/send-to-plan/article-sent';
+import { articleReceivedSpec } from '@liveworkspace/workbench/components/send-to-knowledge/article-received';
 import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
 import { noteArticleTyping, releaseArticleHold } from '@/lib/article/article-holds-store';
 import { announceArticleHeld } from '@/lib/article/article-hold-notice';
@@ -67,6 +68,16 @@ import { articleClipboardSerializer } from '@/lib/article/article-clipboard-list
 const sentPlugin = (editable: () => boolean) =>
   new Plugin(
     articleSentSpec<Decoration, DecorationSet, EditorState>(editable, {
+      widget: (pos, toDOM, spec) => Decoration.widget(pos, toDOM, spec),
+      set: (doc, decos) => DecorationSet.create(doc, decos),
+      empty: DecorationSet.empty,
+    }),
+  );
+// Sent From chips on the lines other apps' Send to Knowledge Base wrote here
+// (liveworkspace/docs/specs/004-index/send-to-knowledge.md "The chips").
+const receivedPlugin = () =>
+  new Plugin(
+    articleReceivedSpec<Decoration, DecorationSet, EditorState>({
       widget: (pos, toDOM, spec) => Decoration.widget(pos, toDOM, spec),
       set: (doc, decos) => DecorationSet.create(doc, decos),
       empty: DecorationSet.empty,
@@ -221,6 +232,7 @@ export function mountArticleView({
       // (docs/specs/007-editor/article-pages.md "Holding a paragraph").
       articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
       sentPlugin(isEditable),
+      receivedPlugin(),
       // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
       findHighlightPlugin(() => latest.current.flow),
       // Agents' suggested edits on the page (docs/specs/030-knowledgebase/insights.md "On the page").

@@ -413,6 +413,37 @@ const markdown = (what: string) =>
         'for a link to the page of that title.',
     );
 
+// Send to Knowledge Base from an agent (liveworkspace/docs/specs/004-index/send-to-knowledge.md "Agents"): the item
+// in another app the writing came from. The write ends with a Sent From line linking back, and the send is kept so
+// both sides show it.
+const sentFrom = z
+  .object({
+    app: z
+      .enum(['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'])
+      .describe('The app the item is in.'),
+    itemId: z
+      .string()
+      .min(1)
+      .max(200)
+      .describe('The item’s id in that app (a diagram, a plan, a document).'),
+    tabId: z.string().min(1).max(200).optional().describe('The tab the writing is about.'),
+    elementIds: z
+      .array(z.string().min(1).max(200))
+      .max(80)
+      .optional()
+      .describe('The elements on that tab the writing describes; the link opens the first.'),
+  })
+  .optional()
+  .describe(
+    'The item in another app this writing describes, when it does: the page ends with a "Sent from" line linking ' +
+      'back to it and the item shows it was sent here. Only an item the user can read is named; otherwise the page ' +
+      'is still written and the answer says sentFrom "not recorded".',
+  );
+const sentFromAnswer = z
+  .enum(['recorded', 'not recorded'])
+  .optional()
+  .describe('With sentFrom: whether the link back was written and kept.');
+
 export const createPageShape = {
   documentId,
   title,
@@ -420,6 +451,7 @@ export const createPageShape = {
   parent: page
     .optional()
     .describe('The page to put it under: its id or title. Absent: the top level.'),
+  sentFrom,
 };
 export const createPageOutput = {
   ...pageRef.shape,
@@ -429,6 +461,7 @@ export const createPageOutput = {
     .describe(
       'A new page is a draft until a person verifies it; "off" where the knowledgebase does not verify pages.',
     ),
+  sentFrom: sentFromAnswer,
   url,
   next,
 };
@@ -492,11 +525,22 @@ export const writePageShape = {
     .describe(
       '"replace" (default) swaps the page’s whole writing; "append" adds after its last block.',
     ),
+  after: z
+    .string()
+    .min(1)
+    .max(200)
+    .optional()
+    .describe(
+      'With mode "append": a heading of the page, by its words (as read_page shows it), to add the writing at the ' +
+        'end of that heading’s part, before the next heading of its level, instead of at the end of the page.',
+    ),
+  sentFrom,
 };
 export const writePageOutput = {
   page: z.string().describe('The page id.'),
   rev: z.number().describe('The page’s revision now.'),
   lines: z.array(z.string()).describe('What the write did, in words.'),
+  sentFrom: sentFromAnswer,
   url,
   next,
 };

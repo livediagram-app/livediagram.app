@@ -1,7 +1,12 @@
 // A Pages request read from the wire (docs/specs/024-agents/blueprints/pages-for-agents.md
 // "Interfaces and contracts"): strictly, so a misspelt field is refused by name rather than ignored.
 // Answers the request, or the refusal that says what was wrong and where.
-import { type ArticleWrite, type PagesRefusal, type PagesRequest } from '@liveknowledge/api-schema';
+import {
+  type ArticleWrite,
+  type ArticleWritePicture,
+  type PagesRefusal,
+  type PagesRequest,
+} from '@liveknowledge/api-schema';
 import { isRecord, ARTICLE_MARKDOWN_MAX, type TabCover } from '@liveknowledge/document';
 import { parseAgentCover } from './cover';
 
@@ -49,7 +54,7 @@ function articleWrite(v: unknown): ArticleWrite {
   onlyKeys(
     v,
     // No "new", "size", "orientation" or "pageNumbers": a page holds one article, on the continuous page.
-    ['article', 'markdown', 'mode', 'as'],
+    ['article', 'markdown', 'mode', 'as', 'after', 'picture'],
     '"article"',
   );
   if (typeof v.markdown !== 'string') bad('"markdown" is the article\'s text, in Markdown.');
@@ -58,12 +63,36 @@ function articleWrite(v: unknown): ArticleWrite {
       'article_too_large',
       `The Markdown is ${(v.markdown as string).length.toLocaleString('en')} characters; one write takes at most ${ARTICLE_MARKDOWN_MAX.toLocaleString('en')}. Write the rest with mode "append".`,
     );
+  const mode =
+    v.mode === undefined ? undefined : oneOf(['replace', 'append'] as const, v.mode, 'mode');
+  if ((v.after !== undefined || v.picture !== undefined) && mode !== 'append')
+    bad('"after" and "picture" go with "mode": "append".');
   return {
     markdown: v.markdown as string,
     ...(v.article === undefined ? {} : { article: text(v.article, 'article', 200) }),
-    ...(v.mode === undefined
-      ? {}
-      : { mode: oneOf(['replace', 'append'] as const, v.mode, 'mode') }),
+    ...(mode === undefined ? {} : { mode }),
+    ...(v.after === undefined ? {} : { after: text(v.after, 'after', 200) }),
+    ...(v.picture === undefined ? {} : { picture: pictureOf(v.picture) }),
+  };
+}
+
+const PICTURE_SIDE_MAX = 8_192;
+
+function pictureOf(v: unknown): ArticleWritePicture {
+  if (!isRecord(v)) return bad('"picture" is an object with "imageId", "width" and "height".');
+  onlyKeys(v, ['imageId', 'width', 'height', 'alt'], '"picture"');
+  const side = (n: unknown, field: string): number =>
+    typeof n === 'number' && Number.isInteger(n) && n >= 1 && n <= PICTURE_SIDE_MAX
+      ? n
+      : bad(`"picture.${field}" is a whole number of pixels from 1 to ${PICTURE_SIDE_MAX}.`);
+  const imageId = text(v.imageId, 'picture.imageId', 200);
+  if (!imageId)
+    bad('"picture.imageId" is an image of the knowledgebase (upload_image answers one).');
+  return {
+    imageId,
+    width: side(v.width, 'width'),
+    height: side(v.height, 'height'),
+    ...(v.alt === undefined ? {} : { alt: text(v.alt, 'picture.alt', 300) }),
   };
 }
 

@@ -68,12 +68,14 @@ export type AskCreditRefusal = {
   more?: { limit: 'aiCreditsPerMonth'; owner: OwnerScope; used?: number; max?: number };
 };
 
-/** Spend the question's credit (`AI_CREDIT_COSTS.ask`) from whoever pays: null to go ahead, else the refusal. */
+/** Spend the question's credit (`AI_CREDIT_COSTS.ask`, or `cost` for another built-in operation paid as Ask's are,
+ *  such as Send to Knowledge Base's summary) from whoever pays: null to go ahead, else the refusal. */
 export async function chargeAsk(
   door: AskCreditsDoor,
   accountId: string,
   itemId: string | null,
   now: number,
+  cost: number = AI_CREDIT_COSTS.ask,
 ): Promise<AskCreditRefusal | null> {
   const payer = await askPayer(door, accountId, itemId);
   if (!payer) return null;
@@ -85,7 +87,7 @@ export async function chargeAsk(
     if (!taken)
       return { status: 429, error: 'ask_by_others_limit', message: ASK_CREDITS_WORDS.byOthers };
   }
-  const spent = await door.client.spend(payer.scope, 'aiCredits', AI_CREDIT_COSTS.ask);
+  const spent = await door.client.spend(payer.scope, 'aiCredits', cost);
   if (spent.ok) return null;
   // The service refused this api's request (its key, never the month): not asked, and no offer.
   if (refusedByService(spent)) {

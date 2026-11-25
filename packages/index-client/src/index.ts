@@ -21,6 +21,7 @@ export * from './automation-steps';
 export * from './plan-sends';
 export * from './plan-diagrams';
 export * from './diagram-sends';
+export * from './knowledge-sends';
 export * from './item-calls';
 export * from './write-up';
 export * from './updates';

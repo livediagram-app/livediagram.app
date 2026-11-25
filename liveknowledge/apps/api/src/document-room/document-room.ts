@@ -10,6 +10,7 @@ import {
 } from '@liveworkspace/index-app';
 import type { DocumentGrant } from '../index-service';
 import * as crossApp from './automations/cross-app-door';
+import { knowledgeSendDoor, type SendAnswer, type SendCall } from './knowledge-send-door';
 import { roomFetch } from './room-fetch';
 import { roomTier } from '@liveworkspace/automations/room';
 import type { ItemTier } from '@liveworkspace/subscription';
@@ -559,6 +560,11 @@ export class DocumentRoom extends DurableObject<Env> {
 
   automationTarget(documentId: string): Promise<crossApp.TargetHere> {
     return crossApp.itemAutomationTarget(this, documentId);
+  }
+
+  // Send to Knowledge Base: a page's headings, or a section written as the person (knowledge-send-door.ts).
+  knowledgeSend(id: string, call: SendCall, grant: DocumentGrant): Promise<SendAnswer> {
+    return knowledgeSendDoor(this, id, call, grant);
   }
 
   // An Incoming Webhook call to one rule, proved by the rule's secret.
