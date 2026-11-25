@@ -94,7 +94,6 @@ const NEVER_DRAWN = new Set([
   'metadata',
   'title',
   'desc',
-  'switch',
 ]);
 const CONTAINERS = new Set(['g', 'a', 'svg']);
 const INHERITED: readonly StyleProperty[] = [
@@ -318,6 +317,15 @@ export function walkSvg(root: Element, pxPerUnit: number): WalkResult {
         const next: Ctx = { matrix, style, opacity, useDepth: ctx.useDepth + 1 };
         visit(target, next, depth + 1, chain);
       }
+      return;
+    }
+    if (tag === 'switch') {
+      // The first child a browser would pick: Illustrator puts its private data in a `foreignObject` that asks for
+      // its own extension, then the artwork.
+      const picked = Array.from(el.children).find(
+        (c) => c.localName !== 'foreignObject' && !c.getAttribute('requiredExtensions')?.trim(),
+      );
+      if (picked) visit(picked, { ...ctx, matrix, style, opacity }, depth + 1, useChain);
       return;
     }
     if (CONTAINERS.has(tag)) {

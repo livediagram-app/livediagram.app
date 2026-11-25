@@ -18,6 +18,29 @@ function walk(body: string, attrs = 'viewBox="0 0 48 48"'): Drawn[] {
 const lucide = `<symbol id="i" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" opacity="0.5">
   <path d="M2 2 L22 22"/></symbol>`;
 
+describe('walkSvg: a switch', () => {
+  it("draws an Illustrator file's artwork, the first child a browser picks, and nothing else", () => {
+    const drawn = walk(
+      `<switch>
+        <foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/" width="1" height="1"/>
+        <g transform="translate(10 0)" fill="red"><rect width="5" height="5"/></g>
+        <rect width="9" height="9"/>
+      </switch>`,
+    );
+    expect(drawn).toHaveLength(1);
+    expect(drawn[0]!.fill).toMatchObject({ hex: '#ff0000' });
+    expect(drawn[0]!.contours[0]!.start).toEqual({ x: 10, y: 0 });
+  });
+
+  it('carries its own transform and style to the picked child', () => {
+    const [dot] = walk(
+      `<switch transform="translate(0 4)" fill="blue"><rect requiredExtensions="x" width="1" height="1"/><rect width="2" height="2"/></switch>`,
+    );
+    expect(dot!.fill).toMatchObject({ hex: '#0000ff' });
+    expect(dot!.contours[0]!.start).toEqual({ x: 0, y: 4 });
+  });
+});
+
 describe('walkSvg: a use of a symbol', () => {
   it("draws the members with the symbol's own fill, stroke and opacity", () => {
     const [line] = walk(`${lucide}<use href="#i" width="48" height="48"/>`);

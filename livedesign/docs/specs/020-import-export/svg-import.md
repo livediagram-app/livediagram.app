@@ -48,7 +48,9 @@ they may paste. Import to Tab keeps the tab menu's own gate, and refuses a locke
 - **The file's groups.** livedesign has no groups ([Web components are elements; groups are
   gone](../009-elements/web-components-and-no-groups.md)), so the file's `<g>` structure is kept the way the canvas can
   keep it: each group's members stay together and in the file's order in the stacking, and a group's transform,
-  opacity and inherited style (fill, stroke, colour) reach every member.
+  opacity and inherited style (fill, stroke, colour) reach every member. A `<switch>` (Illustrator wraps its whole
+  artwork in one, behind a `<foreignObject>` of its own private data) draws its first child that asks for no
+  `requiredExtensions` and is not a `<foreignObject>`, as a browser does; the rest of its children draw nothing.
 - **One undo step.** The import is one commit, undone with one undo.
 
 ## Geometry
