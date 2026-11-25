@@ -70,8 +70,8 @@ Body `ConnectionInput { targetId, tabId, level?, both? }` (`readConnectionInput`
 1. A person, by their own token: none is `401 unauthorized`; an app acting for one (an API token's, the Drive
    mirror, the data export) is `403 forbidden`, since agents never make connections.
 2. `targetId === id`: `400 connection_self`.
-3. The host grant must verify, be for this item and the host's app, name this person, be at `edit`, and its tab (if
-   scoped) be `tabId`: else `403 forbidden`. The host must be live: else `404 not_found`.
+3. The host grant must verify, be for this item and the host's app, name this person, be at `edit`, and be for the
+   whole item (no tab: a link to one tab connects nothing, even into that tab): else `403 forbidden`. The host must be live: else `404 not_found`.
 4. The target must be live and managed by the person (`loadItem(edit, { manage })`, a link's access refused):
    `404 not_found` or `403 forbidden`, as for its Share.
 5. `level` defaults to `connectionDefaultLevel(target app)`; one not in `connectionLevels(target app)` is

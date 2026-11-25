@@ -131,11 +131,14 @@ existing row (no backfill: a Space made before it is left alone); the partial in
   `loadItem(view)` on the Space with the caller. `summaryDefault` only for the host: the knowledgebase connected to the
   item (`connections` either way, the target's app liveknowledge, not trashed), else the newest liveknowledge item in
   the item's team the host can edit.
+- `GET /items/:space/call/people`: an account at `participate` or above on the Space (as invite) who reaches the
+  item; `{teamId, people}` from `approvalCandidates`.
 - `POST /items/:space/call/summary`: the host alone (`host_id`), limiter; the knowledgebase `loadItem(edit)` as the
   host through the cross-app step (`takeTargetedStep` in automation-steps.ts, factored out of `pushAutomationStep`)
   with a `kb_page` step `{target, title, body}`, rule `{id: 'call-summary', name: 'Meeting Summary'}`, from `{title:
 <item title>, url: <the item's address>}`. On `ok`, the row keeps the page's link and title, and the item is told.
-- `POST /items/:space/call/invite`: an account in the call's Space (view on it) who reaches the item; limiter; each
+- `POST /items/:space/call/invite`: an account in the call's Space at `participate` or above (a Viewer of the Space
+  `403`, Work Tracker 1458) who reaches the item; limiter; each
   person must reach the whole item (`checkNameable` from approval-people.ts); one `item_call_invites` row each
   (`INSERT OR IGNORE`, so asking twice writes nothing new), `by_name` the inviter's token name.
 - `PUT /app/items/:space/call-people` (livehuddle's key only, the Space livehuddle's): `UPDATE … RETURNING item_id,
