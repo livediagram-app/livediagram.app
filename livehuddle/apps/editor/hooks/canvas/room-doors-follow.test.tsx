@@ -44,6 +44,27 @@ describe('a typed room size', () => {
   });
 });
 
+describe('a Rotate command on a corridor', () => {
+  it('turns the Doors on its walls with it', () => {
+    const corridor = { ...createShape('corridor', 0, 0), id: 'c' } as ShapeElement;
+    const onWall = snapDoorToWall({ ...createShape('door', 150, 100), id: 'd' }, [corridor]);
+    let elements: Element[] = [corridor, onWall];
+    const setters = renderHook(() =>
+      useShapeStyleSetters({
+        currentSelectionIds: () => new Set(['c']),
+        commit: (map) => {
+          elements = map(elements);
+        },
+        activeTab: { id: 't', name: 'T', elements } as Tab,
+        readSelection: () => ({ selectedId: 'c', multiSelectedIds: new Set() }),
+      }),
+    ).result.current;
+    setters.setRotationSelected(90);
+    expect(find(elements, 'c').rotation).toBe(90);
+    expect(doorOnRoom(find(elements, 'd'), find(elements, 'c'))).toBe(true);
+  });
+});
+
 describe('turning a corridor from the menu', () => {
   it('turns the Doors on its walls with it, in the one commit', () => {
     const corridor = { ...createShape('corridor', 0, 0), id: 'c' } as ShapeElement;

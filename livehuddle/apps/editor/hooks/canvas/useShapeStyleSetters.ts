@@ -143,7 +143,13 @@ export function useShapeStyleSetters({
   const setRotationSelected = (deg: number) => {
     const { selectedId } = readSelection();
     if (!selectedId) return;
-    commit((els) => els.map((el) => (el.id === selectedId ? applyRotationToEl(el, deg) : el)));
+    // A turned corridor carries the Doors on its walls (docs/specs/009-elements/corridor.md "It turns").
+    commit((els) =>
+      doorsFollowRooms(
+        els,
+        els.map((el) => (el.id === selectedId ? applyRotationToEl(el, deg) : el)),
+      ),
+    );
     track('Element', 'Changed', 'Rotation');
   };
 
