@@ -45,3 +45,24 @@ describe('raw box text size by count', () => {
     ).toBe(true);
   });
 });
+
+// docs/specs/009-elements/pie-chart.md "Below zero on a column or bar chart": only a pie's data stops at zero.
+describe('chart data below zero', () => {
+  const chart = (shape: string) => ({
+    id: shape,
+    type: 'shape',
+    shape,
+    x: 0,
+    y: 0,
+    width: 260,
+    height: 220,
+    pieSlices: [{ label: 'Q1', value: -20 }],
+  });
+  it('keeps a column chart negative and floors a pie at zero', () => {
+    const [bar, pie] = normaliseElements([chart('bar-chart'), chart('pie-chart')]) as {
+      pieSlices: { value: number }[];
+    }[];
+    expect(bar!.pieSlices[0]!.value).toBe(-20);
+    expect(pie!.pieSlices[0]!.value).toBe(0);
+  });
+});

@@ -91,11 +91,14 @@ export function elementNormaliserFor<E extends ModelElement, K extends string>(
     // type anyway; dropped, so what is stored says what is drawn.
     if (out.chartVariant !== undefined && !variantFitsKind(String(el.shape), out.chartVariant))
       delete out.chartVariant;
+    // Only a pie stops at zero: a column or bar chart draws below it (pie-chart.md "Below zero on a column or bar
+    // chart"), so an agent's negative, or one already stored, is kept.
+    const floor = el.shape === 'pie-chart' ? 0 : -Infinity;
     if (Array.isArray(el.pieSlices))
       out.pieSlices = el.pieSlices.filter(isRecord).map((s) => ({
         ...s,
         label: str(s.label),
-        value: Math.max(0, num(s.value)),
+        value: Math.max(floor, num(s.value)),
       }));
     if (Array.isArray(el.lineCategories)) out.lineCategories = el.lineCategories.map(str);
     if (Array.isArray(el.lineSeries)) {
