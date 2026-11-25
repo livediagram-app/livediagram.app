@@ -14,6 +14,7 @@ import { conflict, forbidden, json } from './http';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
 import { eventStatements } from './events';
 import { tellStanding } from './standing';
+import { keepMadeSpace } from './item-call-sweep';
 
 /** Whether a row is in its owner's Archived. */
 export const isArchived = (row: Pick<ItemRow, 'archived_at'>) => row.archived_at != null;
@@ -68,6 +69,8 @@ export function archiveStatements(
     byItem('use_days'),
     // Its Inbox: threads, the people in them, actions, forms and who read them.
     ...INBOX_TABLES.map(byItem),
+    // A Space made by Call, put away by its owner, is kept when its call ends (item-calls.md "When a call ends").
+    keepMadeSpace(db, row.id),
   ];
 }
 

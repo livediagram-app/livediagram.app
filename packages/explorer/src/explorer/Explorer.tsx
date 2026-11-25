@@ -27,6 +27,7 @@ import { HomePane } from './HomePane';
 import {
   GalleryView,
   InboxPane,
+  ThisBrowserPane,
   InvitesPane,
   preloadExplorerPanesWhenIdle,
   ShapeLibrariesView,
@@ -39,7 +40,7 @@ import { SectionsBar, SectionsDrawer } from './PhoneSections';
 import { useHeroPresence } from './useHeroPresence';
 import { ArrivedItemContext, useArrivedItem } from './arrived-item';
 import { HostExtrasProvider } from './host';
-import { ThisBrowserPane, useThisBrowserItems } from './ThisBrowser';
+import { useThisBrowserItems } from './ThisBrowser';
 import { WelcomeProvider } from '../welcome/context';
 import { WorkKinds, type TemplateHref } from '../hero/WorkKinds';
 import { ExtrasProvider } from './extras';
@@ -387,7 +388,7 @@ function Pane({ view, hero }: { view: ExplorerView; hero: boolean }) {
     case 'walkthroughs':
       return <WalkthroughsView />;
     case 'offline':
-      return <ThisBrowserPane />;
+      return <ThisBrowserPane folder={view.folder ?? null} />;
     default:
       return <ItemsPane view={view} />;
   }

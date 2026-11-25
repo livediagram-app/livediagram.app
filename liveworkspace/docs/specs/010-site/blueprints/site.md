@@ -305,14 +305,28 @@ each build's own export: 381.2 KiB in 22 scripts. None of the tab's code is in t
 Turbopack cutting the largest subscription chunk (69.6 KB raw on main, byte-identical modules after) in two, as after
 the Webhooks rework above, and its framing is the 1 KiB.
 
+**The lens's chips, Offline's view and the Details layout leave the first load (2026-11-25).** Main failed its own
+`/explorer` budget: 391,177 bytes against 391,168 (382.0 KiB), so any addition to the Explorer was over. Three things
+only some screens draw were static imports of every first load: the lens's chip row and the filtered list's empty
+card (`packages/explorer/src/explorer/Lens.tsx`), Offline's own view (now `ThisBrowserPane.tsx`, with its folder
+cards and the lens matching for this browser's items) and the Details layout (`DetailsView.tsx`). Each now loads from
+its own chunk (`lazy-lens.tsx`, `lazy-panes.ts`), fetched by the Explorer's idle preload with the other sections. The
+field (`SearchField.tsx`), the lens's parsing and the list's filtering stay in the first load, so a lens in the address
+filters the list as it loads; the chip row's place is kept at its height until its code lands, a list that opens in
+Details fetches that layout while its items load, and the live region (`LensAnnouncer.tsx`) stays in the page.
+Measured with each build's own export: 391,192 to 384,884 bytes (382.0 to 375.9 KiB), the same 22 scripts; `/` is
+unchanged. `panes-lazy-load.test.ts` keeps all three out of a static import anywhere in the package, and
+`app/first-load-lazy.test.ts` keeps the chips' import dynamic. The budget stays at 382 KiB.
+
 **Opening an item ahead loads with the first intent (2026-11-25, Work Tracker 1437).** The intent prefetch first
 came in whole: the prefetcher (`packages/explorer/src/explorer/intent-prefetch.ts`) and the site's warm with its
 `parseInert` took `/explorer` from 391,177 bytes (382.0 KiB) to 383.3 KiB gzipped (22 scripts), over its 382 KiB budget.
 Now the Explorer's first load holds only the listeners (`use-intent-prefetch.ts`) and the host's route check and
 once-per-app record (`lib/explorer/item-prefetch.ts`); the prefetcher arrives with the first link pointed at or
 focused, and the warm (`lib/explorer/item-warm.ts`) with the first editor actually warmed, so on liveworkspace.app,
-where every item is another site's, the warm never loads. Measured with each build's own export: 391,874 bytes (382.7 KiB,
-22 scripts), 697 bytes over main at the time; main itself measured 391,177 bytes, 9 over the budget.
+where every item is another site's, the warm never loads. Its +~0.7 KiB lands on top of the lens change above:
+measured with each build's own export, 384,884 to 385,600 bytes (375.9 to 376.6 KiB, +716 bytes), the same 22
+scripts, under the 382 KiB budget.
 
 ## Presentation and UX
 

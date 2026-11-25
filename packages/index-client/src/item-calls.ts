@@ -18,8 +18,11 @@ export const ITEM_CALL_CHECKS_MAX = 10;
 export const ITEM_CALL_INVITES_MAX = 10;
 /** Days an invite stays in the Inbox. */
 export const ITEM_CALL_INVITE_DAYS = 1;
-/** A call nobody has joined yet is still the item's call for this long, so two quick presses never make two. */
+/** A call nobody has joined yet is still the item's call for this long, so two quick presses never make two. A call
+ *  that has been live and stood empty this long has ended, and a Space made by Call then goes to the Trash. */
 export const ITEM_CALL_START_GRACE_MS = 120_000;
+/** Spaces made by Call one quarter-hourly run of the index moves to the Trash (item-calls.md "When a call ends"). */
+export const ITEM_CALL_SWEEP_MAX = 50;
 /** The livehuddle template a call's Space is made from: the Document Room, its wall Screen showing the call's item. */
 export const ITEM_CALL_TEMPLATE = 'document-room';
 /** What a call's Space is called after its item's title. */
@@ -41,8 +44,9 @@ export const CALL_SPACE_LINK_DAYS = 7;
 /** A call as the item's readers see it: its Space, the link that lets them in, and who is in it now. */
 export type ItemCall = {
   id: string;
-  spaceId: string;
-  // The Space's Participant link, the way in.
+  // Null once its Space is purged from the Trash: the meeting outlives it.
+  spaceId: string | null;
+  // The Space's Participant link, the way in; '' with no Space.
   link: string;
   people: number;
   names: string[];

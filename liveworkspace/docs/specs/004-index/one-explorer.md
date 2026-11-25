@@ -1182,6 +1182,12 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   one-symbol import of the panel's module had put the whole panel in the first load. Together with Lucide's
   glyphs a module each, `/explorer/*` on liveworkspace.app went from 408 to 380 KiB gzipped (measured
   2026-11-09). `panes-lazy-load.test.ts` and `settings-panel-preload.test.ts` keep them out.
+- **What only some lists draw loads with them.** The lens's chip row and the filtered list's empty card, Offline's own
+  view and the Details layout are each their own chunk too, fetched with the sections once the page is idle. The
+  field, the lens's parsing and the filtering stay in the first load, so a lens in the address filters the list as it
+  loads; until the chips' code is in, their row keeps its place (the same height, empty and hidden from assistive
+  tech), and a list that opens in Details fetches it while its items load, its skeleton rows standing in. Together
+  about 6.2 KiB gzipped off `/explorer` (2026-11-25).
 - **Opening an item, ahead.** A pointer resting on an item's link for 80 ms (`INTENT_DELAY_MS`), or focus reaching
   one (a tile, a card, a row, a search result: any item link in the page), counts as intent, and the Explorer asks its
   host to fetch what that open will need (`prefetchItem`, `packages/explorer/src/explorer/intent-prefetch.ts`). It is
