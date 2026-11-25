@@ -2,7 +2,13 @@
 // JSON-RPC over its service binding, carrying the person's own Bearer token, which works on every app. Its tool
 // list is kept per isolate for ten minutes.
 import type { AppSpec } from './apps';
-import { buildAppCatalogue, type AppCatalogue, type ListedTool } from './catalogue';
+import {
+  buildAppCatalogue,
+  rewriteGuidance,
+  rewriteUnquoted,
+  type AppCatalogue,
+  type ListedTool,
+} from './catalogue';
 import type { Env } from './env';
 
 /** An app refused the token: the whole request answers 401 so the client signs in again. */
@@ -108,7 +114,29 @@ export async function appGuide(
   return guide;
 }
 
-/** Calls the app's own tool by its own name; the answer comes back with old tool names rewritten. */
+/** A text part that is the answer's JSON (mcp-kit's `textResult`): its guidance rewritten; any other text as it is. */
+function guidedText(text: string, rewrite: (text: string) => string): string {
+  if (!text.startsWith('{')) return text;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return text;
+  }
+  // Re-serialised only when a name changed, so an answer with nothing to rewrite keeps its exact text.
+  let changed = false;
+  const guided = rewriteGuidance(parsed, (s) => {
+    const out = rewrite(s);
+    if (out !== s) changed = true;
+    return out;
+  });
+  return changed ? JSON.stringify(guided) : text;
+}
+
+/**
+ * Calls the app's own tool by its own name. Old tool names are rewritten in a refusal and in the answer's own
+ * guidance (`next`, `note`), never in what a person wrote: a page that says "get_context" reads back as it is.
+ */
 export async function callAppTool(
   env: Env,
   spec: AppSpec,
@@ -119,20 +147,22 @@ export async function callAppTool(
 ): Promise<ToolResult> {
   const result = await appRpc(env, spec, token, 'tools/call', { name: appTool, arguments: args });
   const content = Array.isArray(result.content) ? (result.content as ToolResult['content']) : [];
+  const refusal = result.isError === true;
   const out: ToolResult = {
     ...result,
     content: content.map((part) =>
       part.type === 'text' && typeof part.text === 'string'
-        ? { ...part, text: rewrite(part.text) }
+        ? {
+            ...part,
+            text: refusal ? rewriteUnquoted(part.text, rewrite) : guidedText(part.text, rewrite),
+          }
         : part,
     ),
   };
-  if (result.structuredContent && typeof result.structuredContent === 'object') {
-    const structured = JSON.parse(rewrite(JSON.stringify(result.structuredContent))) as Record<
-      string,
-      unknown
-    >;
-    out.structuredContent = structured;
-  }
+  if (result.structuredContent && typeof result.structuredContent === 'object')
+    out.structuredContent = rewriteGuidance(
+      result.structuredContent as Record<string, unknown>,
+      rewrite,
+    );
   return out;
 }
