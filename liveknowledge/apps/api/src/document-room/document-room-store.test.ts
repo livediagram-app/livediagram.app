@@ -584,6 +584,47 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(again.status).toBe(409);
   });
 
+  // A copy takes the saved pages (editing.md "What reads the saved page only"), its tree and its page links at the
+  // copy's ids (page-tree.md "Copies").
+  it("copies the saved pages, without a draft, their tree and links at the copy's ids", async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    const para = (text: string, page?: string) => ({
+      blocks: [{ id: 'b1', type: 'paragraph', runs: [{ text, ...(page ? { page } : {}) }] }],
+    });
+    await createDocument(w, 'A', [
+      { id: 't1', name: 'Guides', elements: [], articles: { main: para('Saved') } } as never,
+      {
+        id: 't2',
+        name: 'Setup',
+        elements: [],
+        parent: 't1',
+        articles: { main: para('Guides', 't1'), draft: para('Unpublished plan') },
+        draft: { by: 'Priya', at: 1 },
+      } as never,
+    ]);
+    const copied = await w.send('POST', '/api/internal/items/A/copy-to/C', {}, auth);
+    expect(copied.status).toBe(201);
+    const rows = w.documents
+      .get('C')!
+      .db.prepare(
+        'SELECT t.id, t.name, t.data FROM tabs t JOIN document_tabs dt ON dt.tab_id = t.id',
+      )
+      .all() as { id: string; name: string; data: string }[];
+    const byName = new Map(rows.map((r) => [r.name, r]));
+    const guides = byName.get('Guides')!;
+    const setup = byName.get('Setup')!;
+    expect(setup.data).not.toContain('Unpublished plan');
+    const body = JSON.parse(setup.data) as {
+      parent?: string;
+      draft?: unknown;
+      articles: Record<string, ReturnType<typeof para>>;
+    };
+    expect(body.draft).toBeUndefined();
+    expect(Object.keys(body.articles)).toEqual(['main']);
+    expect(body.parent).toBe(guides.id);
+    expect(body.articles.main!.blocks[0]!.runs[0]!.page).toBe(guides.id);
+  });
+
   // Work Tracker #671: Make a Copy opened the copy as Untitled while the Explorer listed "<name> (copy)".
   it('starts a copy with the title the index gave it, and as Untitled from an index that names none', async () => {
     const w = world({ INDEX_KEY: 'index-key' });

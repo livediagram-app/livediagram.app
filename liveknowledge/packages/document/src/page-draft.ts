@@ -118,6 +118,21 @@ export function withoutDraft<T extends object>(tab: T): T {
   return rest as T;
 }
 
+/** A stored tab's `data` JSON without its draft (withoutDraft), for a copy of the knowledgebase, which takes the
+ *  saved page only (docs/specs/030-knowledgebase/editing.md "What reads the saved page only"). Parsed only when it may
+ *  hold one; the same text back when it holds none or does not parse. */
+export function withoutDraftData(data: string): string {
+  if (!data.includes(`"${DRAFT_FLOW}"`)) return data;
+  try {
+    const parsed: unknown = JSON.parse(data);
+    if (!isRecord(parsed)) return data;
+    const out = withoutDraft(parsed);
+    return out === parsed ? data : JSON.stringify(out);
+  } catch {
+    return data;
+  }
+}
+
 // FNV-1a, 32 bits, over a string: a block's print. Not a security hash: it tells two versions of a block apart.
 function fnv1a(text: string): string {
   let h = 0x811c9dc5;

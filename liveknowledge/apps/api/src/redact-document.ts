@@ -25,6 +25,7 @@
 // only the owner manages links, so nobody else needs it.
 
 import { parseStoredPresentation } from '@liveknowledge/document';
+import { withKnowledgeForCommunity } from '@liveknowledge/knowledge';
 import type { DocumentDTO } from './types';
 
 // `caller` is the resolved owner of the request (account id, API-token owner,
@@ -53,8 +54,8 @@ export function redactDocumentForCommunity(liveDoc: DocumentDTO): DocumentDTO {
     source: null,
     presentation: withoutPresenterNotes(liveDoc.presentation),
     // A connected tab keeps its name and loses its connection (connected-tabs.md): a stranger is told of no other
-    // item.
-    tabs: liveDoc.tabs.map(({ connection: _connection, ...tab }) => tab),
+    // item. A page's summary keeps its knowledge fields without their people (community-redact.ts).
+    tabs: liveDoc.tabs.map(({ connection: _connection, ...tab }) => withKnowledgeForCommunity(tab)),
   };
 }
 

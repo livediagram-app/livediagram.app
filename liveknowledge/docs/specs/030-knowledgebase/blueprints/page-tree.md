@@ -73,8 +73,11 @@ tab summaries and the api's rows can all be read by the same functions.
   (`withSummaryParent`: a summary with the key sets it, one without, such as the room's rename relay, leaves the
   tab's own). A resync reads the stored list back the same way (`tabListOf`). The `tab-meta` patch of a loaded
   page's `parent` still travels and says the same thing.
-- **Copies.** A copy re-points each `parent` at the page's copy (`remapTabDataLinks`); a parent the copy does not
-  carry (a tab-scoped copy) is dropped, so the page surfaces at the top level.
+- **Copies.** Every copy with fresh tab ids (Make a Copy, a Community post's copy: `remapTabDataLinks`; a
+  `.liveknowledge` file's import, a template's start: `copyDocumentEnvelope`) re-points each `parent` at the page's
+  copy, and each page link in the writing at its page's copy (`withPageRefsRemapped`,
+  `packages/document/src/article-page-links.ts`). A parent the copy does not carry (a tab-scoped copy) is dropped,
+  so the page surfaces at the top level; a link to a page it does not carry stays as it was and reads Deleted Page.
 - **Known gap.** A page moved while its body is still loading takes the fetched body's parent when the load lands
   before the save does (`usePerTabLoad` swaps the placeholder for the fetched tab): the move is lost and has to be
   made again. Not seen in a test; the window is one fetch.

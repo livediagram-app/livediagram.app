@@ -14,7 +14,9 @@ import {
   relativePagePath,
   withPageLinkTitles,
   withPageLinksAsFiles,
+  withPageLinksRemapped,
   withPageLinksResolved,
+  withPageRefsRemapped,
 } from './article-page-links';
 
 // docs/specs/030-knowledgebase/links-and-embeds.md "Page links".
@@ -193,5 +195,48 @@ describe('a Markdown export to files', () => {
       return to && relativePagePath(paths.get('setup')!, to);
     });
     expect(articleToMarkdown(out).trim()).toBe('[Deploys](../runbooks/deploys.md) and Gone');
+  });
+});
+
+// A knowledgebase copied with fresh tab ids (docs/specs/030-knowledgebase/blueprints/page-tree.md "Copies").
+describe('page references in a copy', () => {
+  const map = new Map([
+    ['guides', 'guides-copy'],
+    ['setup', 'setup-copy'],
+  ]);
+  const table = {
+    id: 't1',
+    type: 'table',
+    rows: [{ cells: [[{ text: 'Setup', page: 'setup' }]] }],
+  } as unknown as ArticleBlock;
+
+  it('re-points page links, in tables too, and leaves a link to a page the copy lacks', () => {
+    const flow = {
+      blocks: [
+        para([{ text: 'Guides', page: 'guides' }, { text: ' and ' }, { text: 'X', page: 'other' }]),
+        table,
+      ],
+    };
+    const out = withPageLinksRemapped(flow, map);
+    const runs = (out.blocks[0] as unknown as { runs: { page?: string }[] }).runs;
+    expect(runs.map((r) => r.page)).toEqual(['guides-copy', undefined, 'other']);
+    const rows = (out.blocks[1] as unknown as { rows: { cells: { page?: string }[][] }[] }).rows;
+    expect(rows[0]!.cells[0]![0]!.page).toBe('setup-copy');
+  });
+
+  it('answers the same flow and tab when nothing names a page', () => {
+    const flow = { blocks: [para([{ text: 'plain' }])] };
+    expect(withPageLinksRemapped(flow, map)).toBe(flow);
+    const tab = { id: 'x', articles: { main: flow } };
+    expect(withPageRefsRemapped(tab, map)).toBe(tab);
+  });
+
+  it('re-points a parent, drops one the copy lacks, and reads odd stored shapes without throwing', () => {
+    expect(withPageRefsRemapped({ parent: 'guides' }, map)).toEqual({ parent: 'guides-copy' });
+    expect(withPageRefsRemapped({ parent: 'other' }, map)).toEqual({});
+    const odd = {
+      articles: { a: null, b: { blocks: 'x' }, c: { blocks: [{ type: 'paragraph' }] } },
+    };
+    expect(withPageRefsRemapped(odd, map)).toBe(odd);
   });
 });

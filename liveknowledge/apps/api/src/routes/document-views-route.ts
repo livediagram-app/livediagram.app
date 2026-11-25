@@ -34,7 +34,7 @@ import {
   type OverviewTabInput,
   type ViewRequest,
 } from '@liveknowledge/document-views';
-import { redactTabForCommunity } from '@liveworkspace/community/app';
+import { redactPageForCommunity } from '../community-redact';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
@@ -324,7 +324,7 @@ async function inScopeFacts(
       // (docs/specs/025-community/community.md "Viewing a post's document").
       // A view reads the saved page: never a draft (docs/specs/030-knowledgebase/editing.md).
       const saved = withoutDraft(tab);
-      const seen = community ? redactTabForCommunity(saved) : saved;
+      const seen = community ? redactPageForCommunity(saved) : saved;
       facts.set(tab.id, headerFactsOf(seen, { rev: tab.rev, tabIds }));
     }
   };
