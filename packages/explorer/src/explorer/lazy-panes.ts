@@ -1,12 +1,14 @@
 'use client';
 
 import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
+import { SkeletonRows } from './EmptyPane';
+import { FilteredEmpty, LensBar } from './lazy-lens';
 import { preloadTeamCard } from './TeamPane';
 import { whenIdle } from './when-idle';
 
 // The sections most visits never open, each from its own chunk (liveworkspace/docs/specs/004-index/one-explorer.md
-// "Cost and performance"): Inbox, Invites, Gallery and Shape Libraries, kept out of the
-// Explorer's first load. The Explorer fetches them all once it has drawn and the page is idle (preloadExplorerPanes),
+// "Cost and performance"): Inbox, Invites, Gallery, Shape Libraries and Offline, the Details layout and the lens's
+// chips (lazy-lens.tsx), kept out of the Explorer's first load. The Explorer fetches them all once it has drawn and the page is idle (preloadExplorerPanes),
 // so moving to one later draws it in the move's own commit, as a static import would. Landing on one, its section
 // draws as soon as its code is in.
 
@@ -25,7 +27,30 @@ export const WalkthroughsView = lazyPanel('walkthroughs', () =>
   import('../library/WalkthroughsPane').then((m) => m.WalkthroughsView),
 );
 
-const PANES = [InboxPane, InvitesPane, GalleryView, ShapeLibrariesView, WalkthroughsView];
+/** Offline's own view (`/explorer/offline`). */
+export const ThisBrowserPane = lazyPanel('offline', () =>
+  import('./ThisBrowserPane').then((m) => m.ThisBrowserPane),
+);
+
+/** The Details layout of a list: the list's skeleton rows stand in while its code lands. A list that opens in Details
+ *  fetches it as it mounts (ItemsPane), while its items load. */
+export const DetailsView = lazyPanel(
+  'details',
+  () => import('./DetailsView').then((m) => m.DetailsView),
+  { fallback: SkeletonRows },
+);
+
+const PANES = [
+  InboxPane,
+  InvitesPane,
+  GalleryView,
+  ShapeLibrariesView,
+  WalkthroughsView,
+  ThisBrowserPane,
+  DetailsView,
+  LensBar,
+  FilteredEmpty,
+];
 
 /** Fetches every section's code, and the team view's card. Never rejects. */
 export function preloadExplorerPanes(): Promise<void> {
