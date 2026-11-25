@@ -57,6 +57,19 @@ describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/c
       { text: 'one', done: true },
     ]);
   });
+
+  // docs/specs/004-interface-design/colour-picker.md "Custom colours": recorded outside history, so undo never
+  // takes one away.
+  it("keeps the tab's custom colours as they are now", () => {
+    const now: Tab = { ...tab('t1', [shape('a')]), customColours: ['#123456'] };
+    const before = tab('t1', []);
+    const restored = graftLiveTabState([now], [before]);
+    expect(restored[0]!.customColours).toEqual(['#123456']);
+    expect(restored[0]!.elements).toEqual([]);
+    // And none comes back that was never picked.
+    const cleared = graftLiveTabState([tab('t1', [])], [{ ...before, customColours: ['#abcdef'] }]);
+    expect('customColours' in cleared[0]!).toBe(false);
+  });
 });
 
 describe('opForTheWire on a changeset (docs/specs/024-agents/agent-changesets.md)', () => {

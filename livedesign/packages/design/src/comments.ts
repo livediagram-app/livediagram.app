@@ -209,11 +209,17 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 // broadcasts the restored tab).
 export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
   if (from === onto) return onto;
-  return onto.map((tab) => {
-    const src = from.find((t) => t.id === tab.id);
-    if (!src) return tab;
+  return onto.map((restored) => {
+    const src = from.find((t) => t.id === restored.id);
+    if (!src) return restored;
     // The same tab object: nothing live can differ, so no element is walked (an undo leaves most tabs untouched).
-    if (src === tab) return tab;
+    if (src === restored) return restored;
+    // A tab's custom colours are recorded outside history (docs/specs/004-interface-design/colour-picker.md
+    // "Custom colours"): a snapshot from before a pick would otherwise take the colour away from every picker.
+    const tab =
+      src.customColours === restored.customColours
+        ? restored
+        : withLiveTabField(restored, 'customColours', src.customColours);
     const srcById = new Map(src.elements.map((el) => [el.id, el] as const));
     const liveFields = new Map<string, LiveFieldBag>(
       src.elements.map((el) => {
@@ -256,4 +262,11 @@ export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
     });
     return changed ? { ...tab, elements } : tab;
   });
+}
+
+function withLiveTabField<K extends 'customColours'>(tab: Tab, field: K, value: Tab[K]): Tab {
+  const next = { ...tab };
+  if (value === undefined) delete next[field];
+  else next[field] = value;
+  return next;
 }
