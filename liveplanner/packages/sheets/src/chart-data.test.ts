@@ -85,6 +85,32 @@ describe('a chart from a range', () => {
     expect(sheetChartTable(b.wb, l, 'en-GB')!.categories).toEqual(['b']);
   });
 
+  it('leaves out rows a filter hides', () => {
+    const { b, link, apply } = setup({
+      A1: 'Name',
+      B1: 'Amount',
+      A2: 'a',
+      B2: '1',
+      A3: 'b',
+      B3: '2',
+    });
+    const l = link(0, 0, 2, 1);
+    const { rows, cols } = b.sheets[0]!.layout;
+    const filter = { r1: rows[0]!, c1: cols[0]!, r2: rows[2]!, c2: cols[1]!, conds: {} };
+    apply({ kind: 'layout', changes: [{ k: 'filter', filter }] });
+    expect(sheetChartTable(b.wb, l, 'en-GB')!.categories).toEqual(['a', 'b']);
+    apply({
+      kind: 'layout',
+      changes: [
+        { k: 'filter', filter: { ...filter, conds: { [cols[1]!]: { op: 'gt', a: '1' } } } },
+      ],
+    });
+    expect(sheetChartTable(b.wb, l, 'en-GB')).toEqual({
+      categories: ['b'],
+      series: [{ name: 'Amount', values: [2] }],
+    });
+  });
+
   it('is null when the sheet or a corner is gone, and empty when every row is hidden', () => {
     const { b, link, apply } = setup({ A1: '1' });
     const l = link(0, 0, 0, 0);

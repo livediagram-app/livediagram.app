@@ -63,7 +63,8 @@ src/engine/spill-shape.ts  which formulas may spill (static)
 src/engine/workbook.ts     Workbook: the sheets of one tab, lazy values, spills, cycles, budgets, cards
 src/engine/render.ts       renderWindow, renderModelsForTab, sheetFramesOf -> SheetRenderModel (exports, images)
 src/store.ts               SheetWrite, applySheetWrite, inverseSheetWrite, mergeSheetChange, rebase
-src/chart-data.ts          sheetChartTable (a range as categories and series), regionAround, CHART_*_MAX
+src/chart-data.ts          sheetChartTable (a range as categories and series, hidden and filtered-out rows left
+                           out, the filter's rows kept per workbook version), regionAround, CHART_*_MAX
 src/store-layout.ts        applyLayoutChange (insert, delete, move, order, size, hide, freeze, merge(s), filter, options)
 src/validate.ts            validateWrite(sheet, write) -> ok | rejection; validateSheetCreate
 src/write-caps.ts          writesCapsProblem(sheet, writes, projectCells) -> sheet_full | sheet_too_large |
@@ -390,10 +391,10 @@ type SheetWrite =
 - A sort (`orderRows` / `orderCols`) keeps every range over more than one sorted line on its slots: the sheet's
   own formulas (`sortRewrites`, `pinRef`, derived cell changes that ride in `applied.cells`), other sheets' formulas
   on the tab (`shrinkReadersOf`, run by the api route and the editor's store for a sort as for a delete), and the
-  layout's named ranges, validation rules (and a range dropdown's source) and format rules (`pinLayoutRanges`, a
+  layout's named ranges, validation rules (and a range dropdown's source), format rules and the filter (`pinLayoutRanges`, a
   format rule's custom formula reanchored to its pinned corner). A corner id becomes the id now at that corner's
   old position (`pinSpan`); a single cell or a range within one line moves with it. One pass over the formulas,
-  linear in references. Undo's `orderRows` back pins them back.
+  linear in references. Undo's `orderRows` back pins them back. A move's undo is moves back, never a reorder.
 - `inverseSheetWrite(before, applied, now?)`: cells → their old inputs and formats (exact keys touched); insert →
   delete of the same ids; delete → insert of the same ids after their old neighbours, plus their cells and sizes;
   move → move back after the old neighbour; orderRows → the old order; size/hide/freeze/merge/filter/options → old

@@ -7,6 +7,7 @@ import { columnLetters } from './address';
 import { cellKey, type IdRange, type NumberFormatKind } from './sheet';
 import { displayValue } from './number-format';
 import { isError, type Value } from './formula/values';
+import { filteredOutRows } from './filter';
 import type { Workbook } from './engine/workbook';
 
 // A chart's link to its sheet: the sheet and the range, by ids, and only some of its columns when several ranges were
@@ -29,6 +30,21 @@ const DATE_FORMATS: ReadonlySet<NumberFormatKind> = new Set(['date', 'time', 'da
 const isNumber = (v: Value): v is number => typeof v === 'number' && Number.isFinite(v);
 const isBlank = (v: Value) => v === null || v === '';
 
+// The rows each sheet's filter hides, worked out once per recalculation: a filter reads its whole range, and every
+// chart on the sheet (twice each, in two locales) reads it after each change.
+const FILTERED = new WeakMap<Workbook, { version: number; bySheet: Map<string, Set<string>> }>();
+
+function filteredRowsOf(wb: Workbook, sheetId: string): Set<string> {
+  let cache = FILTERED.get(wb);
+  if (!cache || cache.version !== wb.version) {
+    cache = { version: wb.version, bySheet: new Map() };
+    FILTERED.set(wb, cache);
+  }
+  let rows = cache.bySheet.get(sheetId);
+  if (!rows) cache.bySheet.set(sheetId, (rows = filteredOutRows(wb, sheetId)));
+  return rows;
+}
+
 // The table a range holds now, or null when the sheet or a corner of the range is gone.
 export function sheetChartTable(
   wb: Workbook,
@@ -41,9 +57,13 @@ export function sheetChartTable(
   const p = posRangeOf(layout, link.range);
   if (!p) return null;
   const ix = layoutIndex(layout);
+  // Rows someone hid, and rows the sheet's filter hides (sheet.md "Charts").
+  const filtered = layout.filter ? filteredRowsOf(wb, link.sheetId) : null;
   const rows: number[] = [];
-  for (let r = p.r1; r <= p.r2 && rows.length <= CHART_CATEGORIES_MAX; r++)
-    if (!ix.hiddenRows.has(layout.rows[r]!)) rows.push(r);
+  for (let r = p.r1; r <= p.r2 && rows.length <= CHART_CATEGORIES_MAX; r++) {
+    const id = layout.rows[r]!;
+    if (!ix.hiddenRows.has(id) && !filtered?.has(id)) rows.push(r);
+  }
   const picked = link.cols ? new Set(link.cols) : null;
   const cols: number[] = [];
   for (let c = p.c1; c <= p.c2 && cols.length <= CHART_SERIES_MAX; c++) {
