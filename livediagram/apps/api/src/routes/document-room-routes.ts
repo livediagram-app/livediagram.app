@@ -40,6 +40,7 @@ import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
 import { type RouteContext, grantCallerOf } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import type { Env } from '../types';
+import { GRANT_ISSUED_HEADER, grantIssuedMs } from '@liveworkspace/api-kit/room-link-changes';
 
 // A Community visitor never joins the author's room (docs/specs/025-community/community.md): no presence, no
 // cursors on the author's board, no live stream. A link visitor's code is checked against the canvas's post.
@@ -193,6 +194,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (document-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    // When the grant was signed (epoch ms): a link changed since turns the join away (room-link-changes.ts).
+    forwarded.headers.set(GRANT_ISSUED_HEADER, String(grantIssuedMs(claims)));
     // The canvas's owner and team as the index has them now: the room keeps its copy from these.
     forwarded.headers.set('X-Verified-Item-Owner', claims.owner ?? '');
     forwarded.headers.set('X-Verified-Item-Team', claims.team ?? '');

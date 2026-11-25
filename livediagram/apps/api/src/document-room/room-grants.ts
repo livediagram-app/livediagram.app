@@ -14,6 +14,7 @@ import { indexService } from '../index-service';
 import { answerInternal } from '../room-internal';
 import { verifiedSessionOf, type SessionAttachment } from '../room-session';
 import type { DocumentRoom } from './document-room';
+import { turnAwayStaleLinkJoin } from '@liveworkspace/api-kit/room-link-changes';
 
 // The room's doors and its sessions' grants (document-room.ts): the WebSocket upgrade, and each session's grant
 // asked for, renewed or lapsed. Each function takes the room it acts for.
@@ -43,6 +44,10 @@ export async function roomFetch(
   // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
   const v = verifiedSessionOf(request);
   if (room.turnAwayIfFull(server, v.viewOnly))
+    return new Response(null, { status: 101, webSocket: client });
+  // A grant signed before its link last changed (a rescope or revoke this socket's join raced) joins as nothing:
+  // closed at once, access changed, so its editor reloads into what the link opens now.
+  if (turnAwayStaleLinkJoin(room.linkChanges, v.shareCode, request, server))
     return new Response(null, { status: 101, webSocket: client });
   room.acceptSession(
     server,

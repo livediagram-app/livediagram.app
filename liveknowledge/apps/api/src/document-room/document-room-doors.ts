@@ -310,6 +310,8 @@ export async function revokeCodes(
   room.bindDocument(documentId);
   let closed = 0;
   for (const code of codes) {
+    // Noted first, so a socket whose join is still on its way is turned away as it lands.
+    room.linkChanges.note(code);
     const op = { kind: reason === 'rescoped' ? 'share-rescoped' : 'share-revoked', code };
     const before = openRoomSockets(room.state.getWebSockets()).length;
     room.broadcastSystemOp(op);

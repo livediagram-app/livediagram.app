@@ -114,6 +114,7 @@ import {
   newStanding,
   runDesignAutomations,
 } from './automations/design-automations';
+import { LinkChanges, turnAwayStaleLinkJoin } from '@liveworkspace/api-kit/room-link-changes';
 
 // One SQLite-backed Durable Object per design id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -278,6 +279,9 @@ export class DesignRoom extends DurableObject<Env> {
   // made that a structured-clone read per peer per packet. Lost with the
   // object when the room hibernates, and read again on the next frame.
   readonly scopes = new WeakMap<WebSocket, string | null>();
+  // When each share link last changed, so a socket still joining on a grant signed before it is turned away
+  // (@liveworkspace/api-kit/room-link-changes, docs/specs/013-workspace/tab-scoped-share-links.md).
+  readonly linkChanges = new LinkChanges();
 
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);
@@ -574,6 +578,10 @@ export class DesignRoom extends DurableObject<Env> {
     const server = pair[1];
     // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
     const v = verifiedSessionOf(request);
+    // A grant signed before its link last changed (a rescope or revoke this socket's join raced) joins as nothing:
+    // closed at once, access changed, so its editor reloads into what the link opens now.
+    if (turnAwayStaleLinkJoin(this.linkChanges, v.shareCode, request, server))
+      return new Response(null, { status: 101, webSocket: client });
     this.acceptSession(
       server,
       v.verifiedRole,

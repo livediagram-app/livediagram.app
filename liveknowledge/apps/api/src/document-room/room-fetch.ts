@@ -4,6 +4,7 @@ import { tokenRoomRole } from '../knowledge/agent-grants';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { verifiedSessionOf } from '../room-session';
 import type { DocumentRoom } from './document-room';
+import { turnAwayStaleLinkJoin } from '@liveworkspace/api-kit/room-link-changes';
 
 export async function roomFetch(
   room: DocumentRoom,
@@ -32,6 +33,10 @@ export async function roomFetch(
     : v.apiToken
       ? 'view'
       : v.verifiedRole;
+  // A grant signed before its link last changed (a rescope or revoke this socket's join raced) joins as nothing:
+  // closed at once, access changed, so its editor reloads into what the link opens now.
+  if (turnAwayStaleLinkJoin(room.linkChanges, v.shareCode, request, server))
+    return new Response(null, { status: 101, webSocket: client });
   room.acceptSession(
     server,
     role,
