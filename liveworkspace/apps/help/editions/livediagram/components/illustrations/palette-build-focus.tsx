@@ -1,4 +1,4 @@
-// Scenes for the palette articles on Bring Focus and the Build category
+// Scenes for the palette articles on Bring Focus and the Build elements (Diagram mode's Concepts and Layout)
 // (docs/specs/012-collaboration/bring-focus.md, docs/specs/010-palette/build-category.md),
 // drawn with the labels the editor prints.
 
@@ -35,28 +35,30 @@ export function BringFocusInvite() {
   );
 }
 
-/** The Build category: rows with a one-line description, because five containers look alike as
- *  icons. Blurbs as the palette prints them. */
+/** Diagram mode's Layout category open on its Containers group: rows with a one-line description, because five
+ *  containers look alike as icons. Names and blurbs as the palette prints them (tile-defs, palette-layouts.ts). */
 export function BuildRows() {
   const rows: {
     name: string;
     blurb: string;
-    glyph: 'mind' | 'lane' | 'frame' | 'timeline' | 'table' | 'sankey';
+    glyph: 'lane' | 'frame' | 'stack' | 'boundary' | 'table';
   }[] = [
-    { name: 'Mind Node', blurb: 'Tab adds a child, Enter a sibling', glyph: 'mind' },
-    { name: 'Table', blurb: 'An editable grid of cells', glyph: 'table' },
     { name: 'Lane', blurb: 'A titled band that carries its steps', glyph: 'lane' },
     { name: 'Frame', blurb: 'A labelled box that groups a section', glyph: 'frame' },
-    { name: 'Timeline', blurb: 'A track for sequencing events', glyph: 'timeline' },
-    { name: 'Sankey', blurb: 'Flows drawn as wide as the amount they carry', glyph: 'sankey' },
+    { name: 'Stack', blurb: 'Lines things up with even gaps', glyph: 'stack' },
+    { name: 'Boundary', blurb: 'A titled zone: a region, a VPC, a system', glyph: 'boundary' },
+    { name: 'Table', blurb: 'An editable grid of cells', glyph: 'table' },
   ];
   const px = 62;
   const py = 12;
   return (
     <Scene w={420} h={260} bg="plain">
-      <Panel x={px} y={py} w={296} h={238} title="BUILD">
+      <Panel x={px} y={py} w={296} h={238} title="LAYOUT">
+        <Label x={px + 12} y={py + 36} size={9} weight={700} tone="muted">
+          Containers
+        </Label>
         {rows.map((r, i) => {
-          const y = py + 32 + i * 34;
+          const y = py + 48 + i * 37;
           const gx = px + 26;
           const gy = y + 15;
           return (
@@ -71,14 +73,7 @@ export function BuildRows() {
                 strokeWidth={1.5}
               />
               <g className="stroke-brand-600" strokeWidth={1.6} fill="none" strokeLinecap="round">
-                {r.glyph === 'mind' ? (
-                  <>
-                    <circle cx={gx - 4} cy={gy - 1} r={4} />
-                    <path
-                      d={`M${gx} ${gy - 1} L${gx + 6} ${gy - 6} M${gx} ${gy - 1} L${gx + 6} ${gy + 4}`}
-                    />
-                  </>
-                ) : r.glyph === 'table' ? (
+                {r.glyph === 'table' ? (
                   <>
                     <rect x={gx - 8} y={gy - 8} width={16} height={14} rx={1.5} />
                     <path d={`M${gx - 8} ${gy - 3} H${gx + 8} M${gx} ${gy - 8} V${gy + 6}`} />
@@ -93,27 +88,23 @@ export function BuildRows() {
                     <rect x={gx - 8} y={gy - 7} width={16} height={13} />
                     <path d={`M${gx + 1} ${gy - 3} H${gx + 5}`} />
                   </>
-                ) : r.glyph === 'sankey' ? (
+                ) : r.glyph === 'stack' ? (
                   <>
-                    <path
-                      d={`M${gx - 9} ${gy - 6} C${gx - 3} ${gy - 6} ${gx - 3} ${gy - 1} ${gx + 1} ${gy - 1}`}
-                    />
-                    <path
-                      d={`M${gx - 9} ${gy + 5} C${gx - 3} ${gy + 5} ${gx - 3} ${gy + 2} ${gx + 1} ${gy + 2}`}
-                    />
-                    <path
-                      d={`M${gx + 1} ${gy - 1} C${gx + 5} ${gy - 1} ${gx + 5} ${gy - 6} ${gx + 9} ${gy - 6}`}
-                    />
-                    <path
-                      d={`M${gx + 1} ${gy + 2} C${gx + 5} ${gy + 2} ${gx + 5} ${gy + 6} ${gx + 9} ${gy + 6}`}
-                    />
+                    <rect x={gx - 9} y={gy - 5} width={5} height={9} rx={1} />
+                    <rect x={gx - 2.5} y={gy - 5} width={5} height={9} rx={1} />
+                    <rect x={gx + 4} y={gy - 5} width={5} height={9} rx={1} />
                   </>
                 ) : (
                   <>
-                    <path d={`M${gx - 9} ${gy + 3} H${gx + 9}`} />
-                    <circle cx={gx - 5} cy={gy - 3} r={1.6} />
-                    <circle cx={gx + 1} cy={gy - 3} r={1.6} />
-                    <circle cx={gx + 7} cy={gy - 3} r={1.6} />
+                    <rect
+                      x={gx - 9}
+                      y={gy - 7}
+                      width={18}
+                      height={13}
+                      rx={2}
+                      strokeDasharray="2.5 2"
+                    />
+                    <path d={`M${gx - 6} ${gy + 3} H${gx - 1}`} />
                   </>
                 )}
               </g>

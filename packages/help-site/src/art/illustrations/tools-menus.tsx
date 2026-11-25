@@ -200,8 +200,8 @@ export function ProgressAnimationMenu() {
   );
 }
 
-/** Tools → Data for a pie or bar chart: a swatch, a label and a value per
- *  slice, then + Add Slice. */
+/** Tools → Data for a pie, column or bar chart (PieDataSummary, SheetLinkSection): each slice's swatch, label
+ *  and value as a summary, Edit Data that opens the Chart Data dialog, then From a Plan… under them. */
 export function ChartDataMenu() {
   const rows: [string, string, number][] = [
     ['fill-brand-500', 'Design', 40],
@@ -209,21 +209,36 @@ export function ChartDataMenu() {
     ['fill-emerald-500', 'Test', 20],
   ];
   return (
-    <ToolsFlyout section="Data" flyoutH={160} sceneH={204}>
+    <ToolsFlyout section="Data" flyoutH={172} sceneH={216}>
       {rows.map(([cls, label, value], i) => {
-        const ry = 68 + i * 28;
+        const ry = 74 + i * 18;
         return (
           <g key={label}>
-            <rect x={158} y={ry + 3} width={14} height={14} rx={3} className={cls} />
-            <Field x={180} y={ry} w={118} value={label} />
-            <Field x={306} y={ry} w={52} value={String(value)} />
-            <Label x={376} y={ry + 11} anchor="middle" size={12} tone="muted">
-              ×
+            <rect x={160} y={ry - 5} width={10} height={10} rx={2} className={cls} />
+            <Label x={178} y={ry} size={10.5} tone="strong">
+              {label}
+            </Label>
+            <Label x={384} y={ry} anchor="end" size={10.5} tone="muted">
+              {String(value)}
             </Label>
           </g>
         );
       })}
-      <SectionButton y={156} label="+ Add Slice" />
+      <SectionButton y={126} label="Edit Data" />
+      <rect
+        x={158}
+        y={156}
+        width={228}
+        height={26}
+        rx={7}
+        fill="none"
+        className="stroke-slate-300"
+        strokeWidth={1}
+        strokeDasharray="3 3"
+      />
+      <Label x={170} y={169.5} size={10.5} weight={500} tone="body">
+        From a Plan…
+      </Label>
     </ToolsFlyout>
   );
 }

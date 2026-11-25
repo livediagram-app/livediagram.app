@@ -1,23 +1,34 @@
 // Side by side tabs (docs/specs/007-editor/split-view.md, liveworkspace/docs/specs/017-help/help-centre.md): a tab
-// dragged to the right edge with the drop ghost showing, and the open split, one header and one tab
-// bar across both panes, the editor's chrome in the pane being edited and the seam's two buttons.
+// dragged to the right edge with the drop ghost showing, and the open split, one tab bar across both panes, the
+// editor's chrome in the pane being edited, Share and the account floating top right, and the seam's two buttons.
+// There is no header bar across the top: the tab bar names the tabs.
 // Composed only from the shared primitives so the house style holds.
 
-import { Arrow, BarTab, Cursor, Label, Scene, Shape } from '../primitives';
+import { Arrow, Avatar, BarTab, Cursor, Label, Scene, Shape } from '../primitives';
 
 const W = 440;
 const H = 230;
-const HEADER = 26;
+// No header bar: the panes start at the window's top.
+const TOP = 0;
 const FOOTER = 26;
 
-/** The site header strip, across the whole window. */
-function Header({ title }: { title: string }) {
+/** Share and the account, floating in their card at the window's top right. */
+function TopRightCard() {
   return (
     <g>
-      <rect x={0} y={0} width={W} height={HEADER} className="fill-white stroke-slate-200" />
-      <Label x={W / 2} y={17} size={10} weight={600} tone="strong" anchor="middle">
-        {title}
+      <rect
+        x={W - 84}
+        y={8}
+        width={76}
+        height={22}
+        rx={6}
+        className="fill-white stroke-slate-300"
+      />
+      <rect x={W - 80} y={11} width={44} height={16} rx={5} className="fill-brand-600" />
+      <Label x={W - 58} y={19.5} size={8.5} weight={600} tone="onAccent" anchor="middle">
+        Share
       </Label>
+      <Avatar cx={W - 20} cy={19} r={7.5} initial="A" colour="emerald" />
     </g>
   );
 }
@@ -49,16 +60,17 @@ function Footer({
   );
 }
 
-/** The editor's top row in a pane, from (x, y) to `right`: the menu button card, then the palette
- *  strip, its category bar a run of glyph buttons (a pane has no room for the names). */
+/** The editor's top row in a pane, from (x, y) to `right`: the top-left card with the logo and the menu button,
+ *  then the palette strip, its category bar a run of glyph buttons (a pane has no room for the names). */
 function ChromeTopRow({ x, y, right }: { x: number; y: number; right: number }) {
-  const sx = x + 22;
+  const sx = x + 38;
   const tiles = Math.floor((right - sx - 12) / 14);
   return (
     <g>
-      <rect x={x} y={y} width={18} height={18} rx={4} className="fill-white stroke-slate-300" />
+      <rect x={x} y={y} width={34} height={18} rx={4} className="fill-white stroke-slate-300" />
+      <rect x={x + 4} y={y + 4} width={10} height={10} rx={3} className="fill-brand-500" />
       <path
-        d={`M${x + 5} ${y + 5.5}h8M${x + 5} ${y + 9}h8M${x + 5} ${y + 12.5}h8`}
+        d={`M${x + 20} ${y + 5.5}h8M${x + 20} ${y + 9}h8M${x + 20} ${y + 12.5}h8`}
         className="stroke-slate-400"
         strokeWidth={1.2}
         strokeLinecap="round"
@@ -94,25 +106,24 @@ export function SideBySideDrag({ firstTab = 'Plan' }: FirstTab = {}) {
   const ghostX = W * 0.52;
   return (
     <Scene w={W} h={H}>
-      <Header title="Launch plan" />
       <Shape x={40} y={50} w={70} h={34} label="Goals" />
       <Shape x={40} y={112} w={70} h={34} label="Risks" />
       <Arrow connector from={[75, 84]} to={[75, 112]} tone="muted" width={1.5} />
       {/* The ghost of the pane, at the width it will open. */}
       <rect
         x={ghostX}
-        y={HEADER}
+        y={TOP}
         width={W - ghostX}
-        height={H - HEADER - FOOTER}
+        height={H - TOP - FOOTER}
         rx={8}
         className="fill-brand-50 stroke-brand-500"
         strokeWidth={2}
       />
-      <Label x={ghostX + 12} y={HEADER + 18} size={9} weight={600} tone="accent">
+      <Label x={ghostX + 12} y={TOP + 18} size={9} weight={600} tone="accent">
         Open Timeline Side by Side
       </Label>
-      <Shape x={ghostX + 30} y={HEADER + 50} w={60} h={28} label="Q1" />
-      <Shape x={ghostX + 110} y={HEADER + 50} w={60} h={28} label="Q2" />
+      <Shape x={ghostX + 30} y={TOP + 50} w={60} h={28} label="Q1" />
+      <Shape x={ghostX + 110} y={TOP + 50} w={60} h={28} label="Q2" />
       <rect
         x={ghostX + (W - ghostX) / 2 - 44}
         y={H - FOOTER - 32}
@@ -146,16 +157,17 @@ export function SideBySideDrag({ firstTab = 'Plan' }: FirstTab = {}) {
         dashed
         width={1.5}
       />
+      <TopRightCard />
       <Cursor x={ghostX + 100} y={136} />
     </Scene>
   );
 }
 
-/** The open split: one header and one tab bar across both panes, the editor's chrome in the left
+/** The open split: one tab bar across both panes, Share and the account top right, the editor's chrome in the left
  *  pane (being edited), the other tab live on the right, and the seam's Fit and Close buttons. */
 export function SideBySideOpen({ firstTab = 'Plan' }: FirstTab = {}) {
   const seam = W / 2;
-  const top = HEADER;
+  const top = TOP;
   return (
     <Scene w={W} h={H}>
       {/* Left pane: the editor, with its panels. */}
@@ -226,7 +238,7 @@ export function SideBySideOpen({ firstTab = 'Plan' }: FirstTab = {}) {
         rx={3}
         className="fill-white stroke-slate-300"
       />
-      <Header title="Launch plan" />
+      <TopRightCard />
       <Footer
         tabs={[
           { label: firstTab, x: 10, w: 48, active: true },

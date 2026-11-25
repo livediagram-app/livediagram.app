@@ -65,19 +65,8 @@ function Chair({
           rx={5}
           className="fill-brand-100 stroke-brand-300"
         />
-        {/* Taken: a soft ring in the sitter's colour on the seat, where their feet land. */}
-        {sitter ? (
-          <ellipse
-            cx={0}
-            cy={3}
-            rx={21}
-            ry={13}
-            className="fill-none stroke-emerald-500"
-            strokeWidth={3}
-            strokeOpacity={0.85}
-          />
-        ) : null}
       </g>
+      {/* Taken: the sitter in it and their name pill, with no ring (chair.md "Occupied"). */}
       {sitter ? (
         <g>
           <Avatar cx={x} cy={y + 2} r={9} initial={sitter.initial} colour="emerald" />

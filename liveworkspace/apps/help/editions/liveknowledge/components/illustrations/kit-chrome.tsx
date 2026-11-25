@@ -1,16 +1,6 @@
 import type { ReactNode } from 'react';
 import { Label, Lift } from '@liveworkspace/help-site/art/primitives';
-import {
-  Chevron,
-  FOOT_H,
-  HAIR,
-  Pill,
-  ROW_H,
-  SIDEBAR_W,
-  TOP_H,
-  Tick,
-  runningStarts,
-} from './kit-base';
+import { Chevron, FOOT_H, HAIR, Pill, ROW_H, SIDEBAR_W, TOP_H, runningStarts } from './kit-base';
 
 // The editor's chrome in liveknowledge's figures (kit.tsx): the page tree, the sidebar, search, the footer's
 // view tabs, the top and formatting rows, and the AppFrame that holds them.
@@ -23,7 +13,8 @@ export type TreeRowSpec = {
   open?: boolean;
   /** The page being read: the brand tint. */
   current?: boolean;
-  state?: 'verified' | 'due';
+  /** Review Due: the only trust mark a tree row shows (PageTree.tsx), no Verified tick. */
+  state?: 'due';
   /** Hovered: the row's + and ⋯ show at its right. */
   hover?: boolean;
   /** A faint row, for a page being dragged away or one not ticked. */
@@ -90,8 +81,6 @@ export function TreeRows({
                   />
                 ))}
               </>
-            ) : row.state === 'verified' ? (
-              <Tick cx={x + w - 8} cy={mid} r={3} className="stroke-brand-600" />
             ) : row.state === 'due' ? (
               <Pill x={x + w - 22} y={mid} label="Due" tone="amber" size={6} w={18} h={9.5} />
             ) : null}
@@ -415,10 +404,6 @@ export function FormatRow({ x, y }: { x: number; y: number }) {
           ))}
         </g>
       ))}
-      <rect x={x + 130} y={y + 4} width={30} height={12} rx={3.5} className="fill-slate-100" />
-      <Label x={x + 145} y={mid + 0.4} anchor="middle" size={7} weight={600} tone="body">
-        Insert
-      </Label>
     </g>
   );
 }
