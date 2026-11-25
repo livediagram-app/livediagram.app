@@ -68,8 +68,8 @@ storage directly.
   account, settings and teams are kept by liveworkspace's accounts service. - **Images** you add are
   kept by liveworkspace's media service, in Cloudflare R2 object storage, and served back through
   the same API, which checks who may see them. Location and camera details are stripped from a JPEG
-  before it is stored. A cached picture of each design, used for its thumbnail and live image, is
-  kept in the API's own R2 storage.
+  before it is stored. Each design's preview picture, for its thumbnail and live image, is drawn on
+  request and kept by the same media service.
 </AppNote>
 
 <AppNote app="liveplanner">
@@ -120,7 +120,7 @@ feature that needs one:
   until you import a photo.
 </AppNote>
 
-<AppNote app="livediagram,livehuddle">
+<AppNote app="livediagram,livedesign,livehuddle">
   **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your{' '}
   <Noun plural /> in your own Drive, written by liveworkspace's Drive service (it holds your Google
   grant, sealed, and never hands it to your browser). **Image search** sends what you type in the
