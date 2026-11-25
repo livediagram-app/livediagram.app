@@ -35,7 +35,7 @@ export function SaveFailedToast() {
         strokeLinecap="round"
       />
       <Label x={86} y={181.5} size={9.5} weight={600} className="fill-rose-700 dark:fill-rose-300">
-        Couldn&rsquo;t save your changes. Check your connection.
+        Couldn&rsquo;t save Roadmap. Check your connection.
       </Label>
     </Scene>
   );
