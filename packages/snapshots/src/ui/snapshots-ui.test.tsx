@@ -451,6 +451,26 @@ describe('Snapshots in the History timeline', () => {
     expect(api.remove).toHaveBeenCalledWith('s_1');
   });
 
+  it('says why the list failed over the timeline, with Try Again only where it can help', async () => {
+    const api = fakeApi([snap(1)]);
+    api.list.mockRejectedValueOnce(new SnapshotsApiError(503, null, 'The server is busy.'));
+    const { unmount } = render(<Timeline door={{ api, noun: 'canvas', viewerId: null }} />);
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      "Couldn't load snapshots. The server is busy.",
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    expect(await screen.findByText('Snap 1')).toBeTruthy();
+    expect(screen.queryByText(/Couldn't load snapshots/)).toBeNull();
+    unmount();
+
+    api.list.mockRejectedValueOnce(new SnapshotsApiError(403, 'forbidden', 'Not yours.'));
+    render(<Timeline door={{ api, noun: 'canvas', viewerId: null }} />);
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      "Couldn't load snapshots. Not yours.",
+    );
+    expect(screen.queryByRole('button', { name: 'Try Again' })).toBeNull();
+  });
+
   it('reverts from a pin and says so over the timeline', async () => {
     const reload = vi.fn();
     Object.defineProperty(window, 'location', { value: { reload }, configurable: true });

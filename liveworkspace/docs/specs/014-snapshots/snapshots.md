@@ -208,8 +208,9 @@ On the timeline:
   People, the faces of those involved alone (up to five, then +N; names on hover). Two by two in Tools, four across
   in a wide dialog.
 - An item with snapshots but no events yet shows the snapshots, not the empty state.
-- A failed list leaves the timeline as it is (no snapshots on it); a refused action shows its message under Take
-  Snapshot.
+- A failed list leaves the timeline as it is (no snapshots on it) and says so over it: "Couldn't load snapshots." and
+  why ([Error words](../022-interface-design/error-words.md)), with **Try Again** only where trying again can help;
+  offline, the list loads again by itself once back online. A refused action shows its message under Take Snapshot.
 
 On their own (no timeline), the same parts in a list:
 
