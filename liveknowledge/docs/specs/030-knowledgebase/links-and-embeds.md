@@ -12,7 +12,8 @@ embed, placed from the slash menu, which is not the card described below: the bl
   picker makes a subpage of the current page with the typed title and links to it.
 - A page link is a run with `page: <tab id>`, so it follows the page through renames and moves. It always shows the
   page's current title. Pressing it opens the page; hovering shows a card with the title, its verified state and its
-  first lines.
+  first lines. A copy of the knowledgebase (Make a Copy, a Community post's copy, a file's import) keeps its links:
+  each points at its page's copy.
 - A link to a deleted page stays in the writing, struck through, labelled "Deleted Page", and goes nowhere. A link
   to a page in the knowledgebase's Trash ([The page Trash](knowledgebases-and-pages.md#the-page-trash)) reads "In the
   Trash", struck through; pressing it opens the Trash at that page for a person who may restore it, and for anyone

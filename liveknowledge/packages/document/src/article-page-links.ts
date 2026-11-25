@@ -31,7 +31,9 @@ function mapRuns(
   blocks: readonly ArticleBlock[],
   change: (run: ArticleRun) => ArticleRun | readonly ArticleRun[],
 ): ArticleBlock[] {
-  const runsOf = (runs: readonly ArticleRun[]): ArticleRun[] | null => {
+  const runsOf = (runs: readonly ArticleRun[] | undefined): ArticleRun[] | null => {
+    // Stored writing read back as it was saved: a block without its runs is left alone.
+    if (!runs) return null;
     let next: ArticleRun[] | null = null;
     runs.forEach((run, i) => {
       const out = change(run);
@@ -50,10 +52,11 @@ function mapRuns(
       const runs = runsOf(block.runs);
       return runs ? { ...block, runs } : block;
     }
-    if (block.type !== 'table') return block;
+    if (block.type !== 'table' || !Array.isArray(block.rows)) return block;
     let changed = false;
     const rows = block.rows.map((row) => {
       let rowChanged = false;
+      if (!Array.isArray(row.cells)) return row;
       const cells = row.cells.map((cell) => {
         const runs = runsOf(cell);
         if (runs) rowChanged = true;
@@ -79,6 +82,56 @@ export function withPageLinkTitles<F extends Pick<ArticleFlow, 'blocks'>>(
     return title === run.text ? run : { ...run, text: title };
   });
   return { ...flow, blocks };
+}
+
+/** The writing with every page link re-pointed at its page's copy (old id to new in `tabIdMap`), for a knowledgebase
+ *  copied with fresh tab ids. A link to a page the copy does not carry is left as it is: it reads "Deleted Page". The
+ *  same flow back when no link moved. */
+export function withPageLinksRemapped<F extends Pick<ArticleFlow, 'blocks'>>(
+  flow: F,
+  tabIdMap: ReadonlyMap<string, string>,
+): F {
+  if (!Array.isArray(flow.blocks)) return flow;
+  const blocks = mapRuns(flow.blocks, (run) => {
+    const page = pageOfRun(run);
+    const to = typeof page === 'string' ? tabIdMap.get(page) : undefined;
+    return to === undefined ? run : ({ ...run, page: to } as ArticlePageLinkRun);
+  });
+  return blocks.every((block, i) => block === flow.blocks[i]) ? flow : { ...flow, blocks };
+}
+
+/**
+ * A copied tab's references to the knowledgebase's other pages, re-pointed at their copies (old id to new in
+ * `tabIdMap`): its `parent` (dropped when the copy does not carry that page, so it surfaces at the top level) and the
+ * page links in each of its flows (withPageLinksRemapped). Every copy with fresh tab ids goes through it: the api's
+ * copy and a `.liveknowledge` file's import (docs/specs/030-knowledgebase/blueprints/page-tree.md "Copies"). The
+ * same tab back when nothing in it names a page.
+ */
+export function withPageRefsRemapped<T extends object>(
+  tab: T,
+  tabIdMap: ReadonlyMap<string, string>,
+): T {
+  const body = tab as { parent?: unknown; articles?: unknown };
+  let out: Record<string, unknown> | null = null;
+  if ('parent' in body) {
+    const parent = typeof body.parent === 'string' ? tabIdMap.get(body.parent) : undefined;
+    if (parent !== body.parent) {
+      const { parent: _was, ...rest } = body;
+      void _was;
+      out = parent === undefined ? rest : { ...rest, parent };
+    }
+  }
+  const articles = body.articles;
+  if (articles && typeof articles === 'object' && !Array.isArray(articles)) {
+    let moved: Record<string, unknown> | null = null;
+    for (const [key, flow] of Object.entries(articles)) {
+      if (!flow || typeof flow !== 'object') continue;
+      const next = withPageLinksRemapped(flow as ArticleFlow, tabIdMap);
+      if (next !== flow) (moved ??= { ...articles })[key] = next;
+    }
+    if (moved) out = { ...(out ?? body), articles: moved };
+  }
+  return (out ?? tab) as T;
 }
 
 /** The writing for a Markdown export to files: each page link becomes a link to that page's file

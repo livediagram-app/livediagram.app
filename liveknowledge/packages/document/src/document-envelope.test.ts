@@ -141,3 +141,36 @@ describe('the rules in the file', () => {
     expect(copy.tabIds.get('t1')).toBe(copy.tabs[0]!.id);
   });
 });
+
+// A file's import is a copy with fresh tab ids (docs/specs/030-knowledgebase/blueprints/page-tree.md "Copies"): the
+// page tree and the page links follow the pages into it.
+describe('a copy of a knowledgebase file', () => {
+  const linkTo = (page: string) => ({
+    main: { blocks: [{ id: 'b1', type: 'paragraph', runs: [{ text: 'See', page }] }] },
+  });
+  const tabs = [
+    { id: 'guides', name: 'Guides', elements: [] },
+    { id: 'setup', name: 'Setup', elements: [], parent: 'guides', articles: linkTo('guides') },
+    { id: 'gone', name: 'Gone', elements: [], parent: 'nowhere', articles: linkTo('nowhere') },
+  ] as unknown as EnvelopeTab[];
+
+  it('keeps each page under its parent and each page link on its page, at the copy’s ids', () => {
+    const parsed = parseDocumentEnvelope(
+      documentToEnvelopeText({ id: 'd1', name: 'Wiki', presentation: null }, tabs, 5),
+    );
+    if (!parsed.ok) throw new Error(parsed.failure);
+    const copy = copyDocumentEnvelope(parsed.envelope);
+    const [guides, setup, gone] = copy.tabs as unknown as {
+      id: string;
+      parent?: string;
+      articles?: ReturnType<typeof linkTo>;
+    }[];
+    expect(guides!.id).not.toBe('guides');
+    expect(setup!.parent).toBe(guides!.id);
+    expect(setup!.articles!.main.blocks[0]!.runs[0]!.page).toBe(guides!.id);
+    // A parent the file does not hold is dropped (the page comes in at the top level); a link to a page it does not
+    // hold stays as it was, and reads "Deleted Page".
+    expect(gone).not.toHaveProperty('parent');
+    expect(gone!.articles!.main.blocks[0]!.runs[0]!.page).toBe('nowhere');
+  });
+});
