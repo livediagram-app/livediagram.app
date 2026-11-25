@@ -330,6 +330,7 @@ Resolved where `lwt_` is, only when no account access token verified:
 | POST             | `projects/:doc/items/bulk`, `items/import`, `items/:itemId`, `items/:itemId/move`, `items/tally`, `items/:itemId/comments`, `items/:itemId/comments/resolve`, `items/:itemId/comments/reopen` |
 | DELETE           | `projects/:doc/items/:itemId`, `projects/:doc/items/:itemId/comments/:commentId`                                                                                                              |
 | PUT              | `projects/:doc/item-types`                                                                                                                                                                    |
+| GET, POST        | `projects/:doc/sheets` (a Sheet tab's cells), `projects/:doc/sheets/:sheetId` `DELETE`, `sheets/:sheetId/writes`                                                                              |
 | DELETE           | `workbench/sessions/current`                                                                                                                                                                  |
 
 Everything else is `confined`, among it: `projects/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
