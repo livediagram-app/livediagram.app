@@ -43,7 +43,8 @@ export type PortalTravelDeps = {
   mainRef?: Ref<HTMLElement> | null;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   /** Places the walking character, and names the portal to ignore on arrival. */
-  teleportTo: (point: { x: number; y: number }, ignorePortalId: string) => void;
+  // `travel`: the far portal is on another tab, whose landing the walk keeps (avatar-mode.md "Changing tab").
+  teleportTo: (point: { x: number; y: number }, ignorePortalId: string, travel?: boolean) => void;
 };
 
 // The board a portal face resolves against: the portals alone, on the active tab and on every tab. Its identity
@@ -101,9 +102,10 @@ export function usePortalTravel({
     // path a tab link uses, so selection / edit state is cleaned up the same
     // way. The camera + character then land on the far side.
     // Travel keeps Avatar mode: the switch is marked as travel, and the character is placed in the same update.
-    if (activeTabId && to.tabId && to.tabId !== activeTabId) {
-      if (onTravelToTab) onTravelToTab(to.tabId);
-      else onFollowLink({ kind: 'tab', tabId: to.tabId });
+    const farTab = activeTabId && to.tabId && to.tabId !== activeTabId ? to.tabId : null;
+    if (farTab) {
+      if (onTravelToTab) onTravelToTab(farTab);
+      else onFollowLink({ kind: 'tab', tabId: farTab });
     }
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     const rect = node?.getBoundingClientRect();
@@ -114,7 +116,7 @@ export function usePortalTravel({
     }
     // Step out of the far portal, and tell the walk hook to ignore that portal until
     // the character leaves it, so it doesn't bounce straight back.
-    teleportTo(portalExitPoint(to.portal), to.portal.id);
+    teleportTo(portalExitPoint(to.portal), to.portal.id, farTab !== null);
   };
 
   // What the portal face needs: the far portal's name for the hover card, and the

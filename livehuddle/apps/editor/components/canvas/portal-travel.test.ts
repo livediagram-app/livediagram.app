@@ -50,8 +50,10 @@ describe('usePortalTravel', () => {
     });
     travel.enterPortal(here);
     expect(onFollowLink).toHaveBeenCalledWith({ kind: 'tab', tabId: 't2' });
-    // And still lands: the tab switch replaces the elements, it doesn't abort.
+    // And still lands: the tab switch replaces the elements, it doesn't abort. As travel, so the landing is kept for
+    // the new tab and nothing is told on this one (portal-element.md "Travelling").
     expect(teleportTo).toHaveBeenCalledTimes(1);
+    expect(teleportTo).toHaveBeenCalledWith(expect.anything(), 'b', true);
   });
 
   it('does not switch tab when the far portal is on this one', () => {
@@ -64,6 +66,7 @@ describe('usePortalTravel', () => {
     travel.enterPortal(here);
     expect(onFollowLink).not.toHaveBeenCalled();
     expect(teleportTo).toHaveBeenCalledTimes(1);
+    expect(teleportTo).toHaveBeenCalledWith(expect.anything(), 'b', false);
   });
 
   it('steps the character out at the far portal’s base, and names it as the one to ignore', () => {
@@ -73,7 +76,7 @@ describe('usePortalTravel', () => {
     const there = portal('b', { x: 100, y: 200, width: 60, height: 40 });
     const { travel, teleportTo } = setup({ elements: [here, there] });
     travel.enterPortal(here);
-    expect(teleportTo).toHaveBeenCalledWith({ x: 130, y: 240 }, 'b');
+    expect(teleportTo).toHaveBeenCalledWith({ x: 130, y: 240 }, 'b', false);
   });
 
   it('centres the camera on the far portal', () => {
