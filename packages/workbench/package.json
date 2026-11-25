@@ -6,6 +6,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./lib/element-dialog-mounts": "./src/lib/element-dialog-mounts.ts",
     "./styles/image-backing.css": "./src/styles/image-backing.css",
     "./styles/corner-actions.css": "./src/styles/corner-actions.css",
     "./components/chrome/EditorCornerActions": "./src/components/chrome/EditorCornerActions.tsx",
