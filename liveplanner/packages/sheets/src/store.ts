@@ -315,6 +315,37 @@ function without(ids: readonly string[], list: readonly string[]): string[] {
   return ids.filter((id) => !has.has(id));
 }
 
+// More runs than this (only an api write of scattered ids makes them) undo as one reorder instead, within a write's
+// 100 changes.
+const MOVE_UNDO_RUNS_MAX = 50;
+
+// A move's undo: each run of moved ids back after the id it followed. Never a reorder: a reorder pins ranges to their
+// slots as a sort does (sheet.md "Sort"), and a move carries them with its rows, so undoing a move as a reorder slid
+// every range and formula range over the moved rows. Null past the run bound.
+function inverseMove(
+  list: readonly string[],
+  ids: readonly string[],
+  k: 'moveRows' | 'moveCols',
+): LayoutChange[] | null {
+  const moving = new Set(ids);
+  const out: { k: 'moveRows' | 'moveCols'; ids: string[]; after: string | null }[] = [];
+  let run: string[] | null = null;
+  for (let i = 0; i < list.length; i++) {
+    const id = list[i]!;
+    if (!moving.has(id)) {
+      run = null;
+      continue;
+    }
+    if (!run) {
+      if (out.length === MOVE_UNDO_RUNS_MAX) return null;
+      run = [];
+      out.push({ k, ids: run, after: i === 0 ? null : list[i - 1]! });
+    }
+    run.push(id);
+  }
+  return out;
+}
+
 // `now` is the layout the undo lands on: a deletion's undo puts back what it took into that (./store-inverse-delete).
 function inverseLayout(before: SheetLayout, ch: LayoutChange, now: SheetLayout): LayoutChange[] {
   switch (ch.k) {
@@ -333,9 +364,15 @@ function inverseLayout(before: SheetLayout, ch: LayoutChange, now: SheetLayout):
     case 'deleteCols':
       return inverseDelete(before, ch, now);
     case 'moveRows':
+      return (
+        inverseMove(before.rows, ch.ids, 'moveRows') ?? [{ k: 'orderRows', ids: [...before.rows] }]
+      );
+    case 'moveCols':
+      return (
+        inverseMove(before.cols, ch.ids, 'moveCols') ?? [{ k: 'orderCols', ids: [...before.cols] }]
+      );
     case 'orderRows':
       return [{ k: 'orderRows', ids: [...before.rows] }];
-    case 'moveCols':
     case 'orderCols':
       return [{ k: 'orderCols', ids: [...before.cols] }];
     case 'size': {

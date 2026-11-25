@@ -259,6 +259,8 @@ when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from ea
   pressed (`inverseLayoutChanges` against the sheet's view, each sheet's later parts against what the earlier ones
   leave), so the undo merges into the sheet as it is then; redo writes the change again. A change sent in parts (a big paste), or reaching several
   sheets (Insert Cells, a cut whose cells other sheets' formulas read, a replacing CSV import), is one step.
+- A move's inverse (`inverseMove` in `store.ts`) is a `moveRows` / `moveCols` per run of moved ids, each back after the
+  id it followed; past 50 runs (only an api write of scattered ids) it falls back to one `orderRows` / `orderCols`.
 
 ## Deleting a sheet
 
@@ -438,6 +440,7 @@ inputs, formats or titles.
 | Store client: optimistic, reconcile, gap, queue, split, undo    | `apps/editor/components/sheets/sheet-store-client.test.ts`                                                                                                                                                                                      |
 | Transient write failures resent with backoff, refusals dropped  | `apps/editor/components/sheets/sheet-store-client.test.ts`, `components/sheets/sheet-write-retry.test.ts`                                                                                                                                       |
 | Undo of a deletion merges into the sheet as it is               | `packages/sheets/src/store-inverse-delete.test.ts`, `apps/editor/components/sheets/sheet-store-client.test.ts`                                                                                                                                  |
+| Undo of a move keeps ranges and formulas on the moved lines     | `packages/sheets/src/store.test.ts`                                                                                                                                                                                                             |
 | Presence: receive, throttle, re-say                             | `apps/editor/components/sheets/sheet-presence-store.test.ts`                                                                                                                                                                                    |
 | Model: attach, load, placed and copied sheets, cards            | `apps/editor/components/sheets/useSheetModel.test.tsx`                                                                                                                                                                                          |
 | Bridge: room ops, attach, undo journal                          | `apps/editor/hooks/sheets/useSheetsBridge.test.tsx`                                                                                                                                                                                             |

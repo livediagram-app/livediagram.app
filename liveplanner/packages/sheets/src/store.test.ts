@@ -382,6 +382,47 @@ describe('applySheetWrite', () => {
 
   // A sort keeps named ranges, validation rules (and their source) and format rules on their rows; a format rule's
   // custom formula keeps its relative rows' offsets from the pinned corner; a one-row rule moves with its row.
+  // A move carries its ranges with the rows (by id); its undo must too. Undone as a reorder (which pins ranges to
+  // their slots, as a sort does), a named range, a rule and `SUM(A2:A4)` slid one row down on every undo of a move.
+  it('undoes a row or column move without sliding ranges or formulas', () => {
+    const [sheet] = makeSheets(
+      { S: { A1: '1', A2: '2', A3: '3', A4: '4', A5: '5', B1: '=SUM(A2:A4)' } },
+      { rows: 6, cols: 3 },
+    ) as [Sheet];
+    const span = { r1: R(1), c1: C(0), r2: R(3), c2: C(1) };
+    const s: Sheet = {
+      ...sheet,
+      layout: {
+        ...sheet.layout,
+        names: [{ name: 'Span', ...span }],
+        rules: [{ id: 'v', is: 'num', op: 'gt', a: '0', ...span }],
+        formatRules: [{ id: 'f', is: 'when', op: 'notEmpty', style: { bg: '#ff0000' }, ...span }],
+        filter: { ...span, conds: {} },
+      },
+    };
+    roundTrip(s, { kind: 'layout', changes: [{ k: 'moveRows', ids: [R(4)], after: null }] });
+    roundTrip(s, { kind: 'layout', changes: [{ k: 'moveRows', ids: [R(0)], after: R(5) }] });
+    roundTrip(s, { kind: 'layout', changes: [{ k: 'moveCols', ids: [C(2)], after: null }] });
+    // Ids that are not contiguous, moved together.
+    roundTrip(s, {
+      kind: 'layout',
+      changes: [{ k: 'moveRows', ids: [R(0), R(2), R(5)], after: R(3) }],
+    });
+    // Past 50 scattered runs the undo is one reorder, still putting the rows back.
+    const tall = makeSheets({ S: {} }, { rows: 120, cols: 1 })[0]!;
+    const every = tall.layout.rows.filter((_, i) => i % 2 === 0);
+    const r = applySheetWrite(
+      tall,
+      { kind: 'layout', changes: [{ k: 'moveRows', ids: every, after: null }] },
+      ctx,
+    );
+    const inv = inverseSheetWrite(tall, r);
+    expect(inv.kind === 'layout' && inv.changes).toEqual([
+      { k: 'orderRows', ids: tall.layout.rows },
+    ]);
+    expect(applySheetWrite(r.sheet, inv, ctx).sheet.layout.rows).toEqual(tall.layout.rows);
+  });
+
   it('keeps layout ranges on sorted rows', () => {
     const [sheet] = makeSheets({ S: { A1: '1' } }, { rows: 5, cols: 3 }) as [Sheet];
     const span = { r1: 's0r1', c1: 's0c0', r2: 's0r3', c2: 's0c1' };
