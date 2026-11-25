@@ -8,7 +8,7 @@ Derived from [mcp.md](../mcp.md). The spec decides; this file adds engineering p
 | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/mcp/src/index.ts`                | The Worker entry: per request, the token's allowed apps and `?tools=all`, then mcp-kit's app; a refused token becomes the 401 challenge |
 | `apps/mcp/src/apps.ts`                 | The five apps: kind, binding, item word and noun, id argument, the tools the core verbs map to, hand-made names                         |
-| `apps/mcp/src/catalogue.ts`            | Renaming (`renameTool`), the rewrite of old names in texts (`nameRewriter`, `rewriteJson`), `namingProblems`                            |
+| `apps/mcp/src/catalogue.ts`            | Renaming (`renameTool`), the rewrite of old names in texts (`nameRewriter`, `rewriteJson`, `rewriteGuidance`), `namingProblems`         |
 | `apps/mcp/src/core.ts`                 | The ten core verbs: their schemas (`CORE_TOOLS`) and `runCore`                                                                          |
 | `apps/mcp/src/app-client.ts`           | JSON-RPC to an app's MCP package in process; the per-isolate tool lists; `TokenRefused`                                                 |
 | `apps/mcp/src/app-workers.ts`          | Each app's MCP package bound to its env (api binding, base URL, telemetry key) as an in-process `Fetcher`                               |
@@ -73,7 +73,10 @@ answers `401 invalid_token` with `bearerChallenge(origin, true)`. Any other fail
 
 Renaming, in order: a hand-made name (`overrides`); in liveknowledge, `page(s)` → `knowledge_page(s)`; the app's
 item word (`document`, `project`, `design`) → its noun (`diagram`, `doc`, `plan`, `design`, `knowledgebase`); a
-name still without a subject word gets the insert noun after its verb. Subject words: diagram, doc, plan, design,
+name still without a subject word gets the insert noun after its verb. An answer's old names are rewritten in its refusal text
+(`isError`) and in the `next`, `note` and `hint` strings of its JSON (`rewriteGuidance`, on the `structuredContent`
+and on a text part that is that JSON); a plain text part of a success (a tab's view) and every other string are
+left as the app sent them, since they hold what a person wrote. Subject words: diagram, doc, plan, design,
 knowledge, knowledgebase, card, sheet, board, form, article, item (and plurals). A tool whose title ends
 "(deprecated)" or whose description starts "Deprecated:" is left out. Descriptions open `For <noun phrase> (<app>).`
 

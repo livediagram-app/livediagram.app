@@ -97,13 +97,18 @@ function appWorker(app: AppId): Fetcher {
       if (failing === app) return new Response('boom', { status: 503 });
       const answer = answers[`${app}.${body.params.name}`];
       const value = answer ? answer(body.params.arguments ?? {}) : { ok: true };
+      // An answer can be a whole tool result (a refusal, a plain text view) under `result`.
+      const whole = (value as { result?: unknown }).result;
       return Response.json({
         jsonrpc: '2.0',
         id: body.id,
-        result: {
-          content: [{ type: 'text', text: JSON.stringify(value) }],
-          structuredContent: value,
-        },
+        result:
+          whole !== undefined
+            ? whole
+            : {
+                content: [{ type: 'text', text: JSON.stringify(value) }],
+                structuredContent: value,
+              },
       });
     },
     connect: () => {
@@ -345,6 +350,46 @@ describe('routing', () => {
     expect(call.args).toEqual({ documentId: 'D1', elements: [] });
     expect(result.content[0]!.text).toContain('read_diagram');
     expect(result.content[0]!.text).not.toContain('read_document');
+  });
+
+  it('never rewrites what a person wrote, only the answer’s guidance and its refusals', async () => {
+    const markdown = 'Ask the agent to call get_context first.';
+    answers['liveknowledge.read_page'] = () => ({
+      page: { title: 'get_context', markdown, tags: ['read_page'] },
+      next: 'suggest_edit proposes a change to this page.',
+    });
+    const read = await tool('read_with_app_tool', {
+      tool: 'read_knowledge_page',
+      arguments: { documentId: 'K1', page: 'p1' },
+    });
+    const text = JSON.parse(read.content[0]!.text) as Record<string, unknown>;
+    for (const value of [text, read.structuredContent!])
+      expect(value).toEqual({
+        page: { title: 'get_context', markdown, tags: ['read_page'] },
+        next: 'suggest_knowledge_edit proposes a change to this page.',
+      });
+    answers['liveknowledge.list_pages'] = () => ({ pages: [{ title: 'search_pages' }] });
+    const listed = await tool('read_with_app_tool', {
+      tool: 'list_knowledge_pages',
+      arguments: { documentId: 'K1' },
+    });
+    expect(listed.content[0]!.text).toBe(JSON.stringify({ pages: [{ title: 'search_pages' }] }));
+    answers['liveknowledge.write_page'] = () => ({
+      result: {
+        content: [{ type: 'text', text: 'No such page: list_pages lists them.' }],
+        isError: true,
+      },
+    });
+    const refused = await tool('change_with_app_tool', {
+      tool: 'write_knowledge_page',
+      arguments: { documentId: 'K1', page: 'p9', markdown: 'x' },
+    });
+    expect(refused.content[0]!.text).toBe('No such page: list_knowledge_pages lists them.');
+    answers['livediagram.read_document'] = () => ({
+      result: { content: [{ type: 'text', text: 'Box "read_document"\n{"id":"D1"}' }] },
+    });
+    const view = await tool('read_item', { ref: 'diagram:D1' });
+    expect(view.content[0]!.text).toBe('Box "read_document"\n{"id":"D1"}');
   });
 
   it('calls an editing tool directly with tools=all', async () => {

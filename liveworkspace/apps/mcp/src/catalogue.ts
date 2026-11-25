@@ -110,6 +110,26 @@ export function rewriteJson<T>(value: T, rewrite: (text: string) => string): T {
   return walk(value) as T;
 }
 
+// The keys under which an app's answer carries its own guidance ("read_page reads it back"). Every other string in
+// an answer may be what a person wrote (a page's Markdown, a card's title, a comment) and is never rewritten.
+const GUIDANCE_KEYS: ReadonlySet<string> = new Set(['next', 'note', 'hint']);
+
+/** The strings under an answer's guidance keys, rewritten, at any depth; everything else exactly as it was. */
+export function rewriteGuidance<T>(value: T, rewrite: (text: string) => string): T {
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (node && typeof node === 'object')
+      return Object.fromEntries(
+        Object.entries(node).map(([k, v]) => [
+          k,
+          GUIDANCE_KEYS.has(k) ? rewriteJson(v, rewrite) : walk(v),
+        ]),
+      );
+    return node;
+  };
+  return walk(value) as T;
+}
+
 export function opening(spec: AppSpec): string {
   return `For ${spec.nounPhrase} (${spec.app}).`;
 }
