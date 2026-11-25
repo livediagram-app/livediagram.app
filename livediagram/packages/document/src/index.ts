@@ -363,6 +363,10 @@ export * from '@liveworkspace/element-model/theme-halves';
 export * from './label-backdrop';
 // A tab as one appearance sees it, for exports and the Explorer's previews.
 export * from './tab-as-seen';
+// A theme, finish or font applied to a whole tab, by the editor and the api's `style` changeset
+// (docs/specs/011-theme/canvas-and-theme-dialog.md "Agents").
+export * from './tab-theme-apply';
+export * from './tab-style-transforms';
 export * from '@liveworkspace/element-model/theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),

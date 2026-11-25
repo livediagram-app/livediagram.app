@@ -390,6 +390,31 @@ const answerOut = {
 
 export const changePagesOutput = answerOut;
 
+// style_document (docs/specs/024-agents/pages-for-agents.md "Restyling a tab"): tab_style over one tab or every tab.
+export const styleDocumentShape = {
+  documentId,
+  tabId: z.string().optional().describe('One tab; else all.'),
+  style: z.string().optional().describe('A recipe, as create_document’s.'),
+  theme: z.string().optional().describe('A theme id.'),
+  font: z.string().optional().describe('A font id.'),
+  finish: z.enum(['flexible', 'professional', 'sketch', 'marker']).optional().describe('A finish.'),
+};
+
+const restyled = z
+  .object({
+    tabId: z.string().describe('Its id.'),
+    name: z.string().describe('Its name.'),
+    rev: z.number().describe('Its revision.'),
+  })
+  .describe('A tab restyled.');
+
+export const styleDocumentOutput = {
+  documentId: z.string().describe('The document id.'),
+  tabs: z.array(restyled).describe('Each tab restyled.'),
+  lines: z.array(z.string()).describe('What was done.'),
+  url,
+};
+
 export const writeArticleShape = {
   documentId,
   tabId,

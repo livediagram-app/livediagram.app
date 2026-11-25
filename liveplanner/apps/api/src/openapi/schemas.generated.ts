@@ -4954,6 +4954,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "strict": {
         "type": "boolean"
       },
+      "style": {
+        "$ref": "#/components/schemas/ChangesetStyleBody"
+      },
       "summary": {
         "type": "string"
       }
@@ -4999,6 +5002,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "text",
       "warnings"
     ],
+    "type": "object"
+  },
+  "ChangesetStyleBody": {
+    "additionalProperties": false,
+    "properties": {
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
+      "font": {
+        "type": "string"
+      },
+      "theme": {
+        "type": "string"
+      }
+    },
     "type": "object"
   },
   "ChangesetSummary": {

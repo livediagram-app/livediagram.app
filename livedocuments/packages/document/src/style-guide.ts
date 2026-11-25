@@ -156,6 +156,8 @@ export type StyleRecipe = {
   design: PageDesignId | 'none';
   font: string;
   finish: Finish;
+  // Slides on the theme's night canvas (withRecipeSlides), for a recipe made for the stage.
+  darkSlides?: true;
 };
 
 export const STYLE_RECIPES: readonly StyleRecipe[] = [
@@ -265,6 +267,7 @@ export const STYLE_RECIPES: readonly StyleRecipe[] = [
     design: 'aurora',
     font: 'space-grotesk',
     finish: 'flexible',
+    darkSlides: true,
   },
   {
     id: 'technical',

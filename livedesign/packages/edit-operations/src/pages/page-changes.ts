@@ -40,6 +40,7 @@ import {
   withPhoto,
   blankPhoto,
   photoOfPage,
+  tabWithTheme,
   type Page,
   type PageBackground,
   type PageEdit,
@@ -359,6 +360,28 @@ export function applyPageChanges(
           lines.push(
             `Gave ${done.applied} other ${kindWord(pageKindOf(page))} page${done.applied === 1 ? '' : 's'} the background of page ${placeOf(page.id)}${kept}.`,
           );
+          return;
+        }
+        case 'tab_style': {
+          const said: string[] = [];
+          // The light half, as every agent's change paints (the editor shows each viewer their own), under the tab's
+          // own Element Colours choice, as a pick in the editor is.
+          if (change.theme !== undefined) {
+            current = tabWithTheme(current, change.theme, 'light', {
+              keepElementColours: current.keepElementColours === true,
+            });
+            said.push(`theme ${change.theme}`);
+          }
+          // The tab's own value; an element with its own finish or font keeps it.
+          if (change.finish !== undefined) {
+            current = { ...current, finish: change.finish };
+            said.push(`finish ${change.finish}`);
+          }
+          if (change.font !== undefined) {
+            current = { ...current, font: change.font };
+            said.push(`font ${change.font}`);
+          }
+          lines.push(`Restyled the tab: ${said.join(', ')}.`);
           return;
         }
         case 'delete': {

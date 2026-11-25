@@ -27,6 +27,7 @@ import {
   FINISHES,
   type Finish,
   NAME_MAX_LENGTH,
+  PLANNER_FONTS,
   THEMES,
   truncateName,
 } from '@liveplanner/project';
@@ -456,6 +457,24 @@ export const updateProjectShape = {
         'Keys are the fields the element format names. Values with spaces are quoted: label="Team load"; a ' +
         'value starting [ or { is JSON; key= unsets.',
     ),
+};
+
+// style_project (docs/specs/024-agents/agent-changesets.md "Style"): the ids are checked by the tool and the api, so an
+// unknown one is refused naming the valid ones rather than listed here a second time.
+export const styleProjectShape = {
+  projectId: z.string().describe('The plan to restyle.'),
+  tabId: z.string().optional().describe('One tab, by id or name; every tab when left out.'),
+  theme: z
+    .string()
+    .optional()
+    .describe(
+      'A theme id, as create_project takes. Colours still on the old theme follow; set ones stay.',
+    ),
+  finish: finishField,
+  font: z
+    .string()
+    .optional()
+    .describe(`The tab's font: ${PLANNER_FONTS.map((f) => f.id).join(', ')}.`),
 };
 
 export const shareProjectShape = {

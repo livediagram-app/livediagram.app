@@ -114,6 +114,23 @@ drag previews stay for projects with an audience.
   their next tab reorder carries it rather than writing the old name back. An editor's rename is not relayed again;
   the editor sends it to the room itself.
 
+## Style
+
+A changeset body may be `{ style: { theme?, finish?, font? } }` instead of `operations` or `replace`: an existing tab
+of any kind restyled, as the editor's Tab Style pickers restyle it. At least one part, each an id the catalogue holds
+(`THEMES` with the Board themes, `FINISHES`, the faces liveplanner offers); an empty style or a key it does not take
+is `400 invalid_body`, an unknown id `422 invalid_value` with the valid ids in `valid`, and nothing is stored. Sent
+alone, never with `operations` or `replace`.
+
+- **Applied** with the project package's `tabWithStyle` in the light half, as agents paint: a new theme recolours
+  what is still on the old theme's colours (element fills, lines and text, the canvas background and pattern) and
+  keeps a hand-set colour; the finish and font set the tab's fields. A Form tab, which holds no elements, takes its
+  theme the same way.
+- **Written** as any changeset: one revision, recorded, its result line `~ tab  theme brand→forest · finish →sketch`.
+  The changed element colours relay as element ops, then the tab's own look fields as the `tab-meta` an editor's
+  pick sends. A style the tab already has writes nothing (`changeset: null`).
+- A Form's own `set_form` theme ([Forms](../030-forms/forms.md) "Agents") is checked against the same catalogue.
+
 ## Conflicts
 
 The api compares the changeset's base with the stored tab:

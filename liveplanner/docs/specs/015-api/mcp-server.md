@@ -247,6 +247,18 @@ passes every element of every template, so a tab read back as JSON writes again 
 kept as stored but no longer offered (a font the pickers leave out, [Fonts](../004-interface-design/fonts.md) "Not
 offered in liveplanner"), which an ops `update` (a `set`) refuses; the values a refusal names are the offered ones.
 
+### 4.4b `style_project`
+
+Change the **theme, finish or font** of an existing tab of any kind (Board, Sheet, Canvas, Dashboard, Form), or of
+every tab when `tabId` is left out. Input: `projectId`, `tabId?` (an id, or a name one tab alone has), and at least one
+of `theme` (a theme id, Board themes included), `finish` (`flexible`, `professional`, `sketch`, `marker`) and `font`
+(a face liveplanner offers). An unknown id is refused before any write, naming the valid ones, as `create_project`
+refuses one. Each tab is one `style` [changeset](../024-agents/agent-changesets.md#style), so the api recolours it as
+the editor's pick does, records it and relays it to anyone with the tab open. Behaviour `write`. Answers
+`{ projectId, tabs: [{ tabId, name, rev }], lines }`, one line a tab (`Restyled tab "Board": theme forest, finish
+sketch.`); `rev` is null for a tab that already had that style. A refused tab stops the run, the error naming the tabs
+restyled before it. `update_project` does not change a tab's look; its description points here.
+
 ### 4.5 `list_templates`
 
 Browse the template library: the same hand-tuned catalogue the editor's
@@ -661,7 +673,7 @@ Three behaviours cover the tools, and each is a preset in
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                                                      |
 | --------------- | -------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_rules`, `list_sheets`, `read_sheet`, `read_form`                                                      |
-| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `change_tabs`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `import_board`, `add_sheet`, `add_form`, `try_form`, `upload_image`                     |
+| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `style_project`, `change_tabs`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `import_board`, `add_sheet`, `add_form`, `try_form`, `upload_image`    |
 | **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `archive_project`, `change_items`, `change_threads`, `change_rules`, `change_card_types`, `change_sheet`, `change_form`, `share_project`, `change_board`, `share_form` |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a

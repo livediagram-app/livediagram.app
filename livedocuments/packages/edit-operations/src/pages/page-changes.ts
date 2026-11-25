@@ -52,6 +52,8 @@ import {
   type Tab,
   plural,
   withArticlesInFont,
+  withRecipeSlides,
+  slidesAreDark,
 } from '@livedocuments/document';
 import { buildPageLayout, layoutCatalogueFor } from '@livedocuments/templates';
 import { tabDesignFor, tabWords } from './design-input';
@@ -382,6 +384,14 @@ export function applyPageChanges(
             const d = tabDesignFor(current, { id: recipe.design })!;
             current = withTabPageDesign(current, d);
             said.push(`page design ${describeDesign(d)}`);
+          }
+          // A stage recipe's slides go dark, another's come back to Steel; a theme alone keeps them as they are, in
+          // the new theme's night.
+          if (recipe || theme) {
+            const dark = recipe ? !!recipe.darkSlides : slidesAreDark(current);
+            const before = current;
+            current = withRecipeSlides(current, dark);
+            if (current !== before) said.push(dark ? 'dark slides' : 'Steel slides');
           }
           lines.push(
             `Restyled the tab${recipe ? ` as ${recipe.id}` : ''}: ${said.join(', ')}. A page with its own background or design keeps it.`,

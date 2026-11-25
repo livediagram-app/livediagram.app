@@ -13,6 +13,7 @@ export {
 } from './element-format';
 export { applyEditOperations } from './apply';
 export { applyReplace } from './replace';
+export { applyTabStyle } from './style';
 export { graphBodyIssue } from './graph-body';
 export { formatResultFooter, formatResultLines } from './format-results';
 export { formatRejections } from './rejections';

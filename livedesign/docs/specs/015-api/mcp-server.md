@@ -377,7 +377,7 @@ touched element that changed is a conflict, an element a person has selected is
 refused as held. Both return the changeset's result lines, its [lint](../024-agents/page-lint.md) summary line
 (also as its own text block; `create_design` carries one per created tab) and
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
-tweak → `ops`.
+tweak → `ops`. The tab's theme stays as it is in both modes; `style_design` changes it ([§4.9g](#49g-restyling-a-tab-style_design)).
 
 **Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
 form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
@@ -802,6 +802,26 @@ unknown tab or folder answers an error naming the tabs or folders, before anythi
 Viewer's grant answers "Only an Editor can change tab folders". Declared once for every product
 (`@liveworkspace/agent-verbs/mcp/tab-folder-tools`).
 
+### 4.9g Restyling a tab: `style_design`
+
+`{ designId, tabId?, theme?, finish?, font? }`. Write. Changes the style of tabs that already exist, as the Tab Style
+dialog does: `theme` (a theme id, the list `create_design` takes), `finish` (`flexible`, `professional`, `sketch`,
+`marker`) and `font` (a tab font id: `inter`, `poppins`, ...). At least one is given; an unknown theme or font is
+refused by the input check, naming the ids there are, as `create_design` refuses one. `tabId` names one tab; absent,
+every tab of the design is restyled, in tab order. `create_design` and `add_tab` set a new tab's theme and finish;
+this is how a tab's theme changes later (`update_design` keeps the tab's theme).
+
+- **Theme** lands exactly as the editor's theme pick does (`tabWithTheme`, `packages/design/src/tab-theme-apply.ts`):
+  each colour still on the old theme's takes the new theme's, a colour someone chose stays (arrows included), the
+  backdrop and the pages' theme fills follow, and the tab's own Element Colours choice (Keep as They Are) is kept. It
+  is painted in the light half, as every agent's change is; each viewer sees their own half.
+- **Finish** and **font** set the tab's own value; an element with its own finish or font keeps it.
+- Each tab is one `tab_style` change on the Pages route ([§4.9d](#49d-the-pages-tools),
+  [Pages for agents](../024-agents/pages-for-agents.md#tab_style)): its elements through the changeset write, its
+  style fields as a `tab-meta` patch, so everyone with the design open sees it at once. A locked tab is refused.
+- Answers `{ designId, tabs: [{ tabId, name, rev }], lines, url }`, a line a tab (`Restyled tab "Logos": theme forest,
+finish sketch.`). A tab refused stops the call, naming it; the tabs before it stay restyled and are listed.
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts**: pre-canned templates a client surfaces as slash
@@ -878,11 +898,11 @@ which is how the gap was found.
 Three behaviours cover the nineteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                   |
-| --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                            |
-| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `change_tabs`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image`        |
-| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`, `share_design` |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                            |
+| --------------- | -------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                                     |
+| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `change_tabs`, `style_design`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image` |
+| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`, `share_design`          |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
 `mcpTool`) and `@liveworkspace/mcp-kit`'s `toolAnnotations`: `delete_image` is `idempotentHint: true` (removing

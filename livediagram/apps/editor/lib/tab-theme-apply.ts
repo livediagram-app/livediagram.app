@@ -4,101 +4,22 @@
 // exactly as picking that theme does.
 import { keepUnchangedElements } from '@liveworkspace/workbench/lib/keep-unchanged-elements';
 import { withTabStyleOf } from '@liveworkspace/workbench/lib/tab-style-to-all';
-import {
-  viewElementInTheme,
-  withReadableLabelInks,
-  type Appearance,
-  type Tab,
-} from '@livediagram/document';
+import { tabWithTheme, type Appearance, type Tab } from '@livediagram/document';
 import { getResolvedAppearance } from '@livediagram/ui';
-import {
-  getTheme,
-  resetArrowsToTheme,
-  resetThemeElementsToTheme,
-  resolveTheme,
-  switchThemeBackdrop,
-  switchThemeElements,
-  themeViewMap,
-} from '@/lib/themes';
-
-// The tab restyled from scratch: each of its elements a new object (withThemeApplied keeps the unchanged ones).
-function themeAppliedAnew(
-  source: Tab,
-  id: string,
-  appearance: Appearance = getResolvedAppearance(),
-): Tab {
-  const theme = getTheme(id, appearance);
-  // The tab as the applier sees it (docs/specs/011-theme/light-and-dark.md): its theme colours in the applier's half,
-  // so colours written by someone in the other appearance still read as the theme's, not as choices.
-  const viewMap = themeViewMap(source.theme, appearance);
-  const t = { ...source, elements: source.elements.map((el) => viewElementInTheme(el, viewMap)) };
-  // When the tab's PREVIOUS theme can't be resolved (an id no catalogue
-  // entry names), there's no baseline to diff against:
-  // the elements carry the dead theme's colours, which match neither
-  // the default nor the new theme, so the preserve-customs walk would
-  // treat them all as user overrides and recolour nothing — the tab
-  // reads as "stuck on the deleted theme". Hard-reset to the new
-  // theme instead so picking a theme always visibly applies.
-  //
-  // A tab whose theme was simply NEVER SET (a fresh document, an
-  // added tab, the Blank template) is NOT that case: its baseline
-  // is the default theme, and the preserve-customs walk against it
-  // works — hard-resetting here wiped a user's hand-picked colours
-  // on their FIRST theme pick. Only a named theme that fails to
-  // resolve takes the hard-reset branch.
-  const prevTheme =
-    t.theme === undefined ? getTheme(undefined, appearance) : resolveTheme(t.theme, appearance);
-  if (!prevTheme) {
-    return {
-      ...t,
-      elements: resetThemeElementsToTheme(t.elements, theme),
-      theme: id,
-      backgroundColor: theme.backgroundColor,
-      backgroundPattern: theme.backgroundPattern,
-      patternColor: theme.patternColor,
-      backgroundOpacity: theme.backgroundOpacity,
-    };
-  }
-  // Per-field, preserve-customs walk. See `switchThemeElement`
-  // in lib/themes.ts for the rule (a field is replaced when
-  // it's unset or still matches the previous theme's value,
-  // and kept when the user has set it to something else). The
-  // graph-aware wrapper additionally rainbows the branches when
-  // either side is a multi-colour theme (docs/specs/011-theme/multicolour-themes.md).
-  // Arrows are the exception to preserve-customs: they ALWAYS snap
-  // to the new theme's stroke (resetArrowsToTheme), so a theme pick
-  // re-tints every connector instead of leaving hand-coloured ones
-  // on the old hue. Shapes / text keep their customisations.
-  const switched = resetArrowsToTheme(switchThemeElements(t.elements, prevTheme, theme), theme);
-  // Backdrop follows the same preserve-customs rule as the
-  // elements: a deliberately-chosen pattern / colour survives a
-  // theme change instead of being reset to the theme's backdrop.
-  const backdrop = switchThemeBackdrop(t, prevTheme, theme);
-  // A label the pick sank into what is behind it gets an ink that reads there (docs/specs/011-theme/light-and-dark.md
-  // "A theme never sinks a label into what is behind it").
-  const elements = [
-    ...withReadableLabelInks(
-      t.elements,
-      viewedCanvas(t.backgroundColor ?? prevTheme.backgroundColor, viewMap),
-      switched,
-      backdrop.backgroundColor,
-    ),
-  ];
-  return { ...t, elements, theme: id, ...backdrop };
-}
 
 /** The tab with theme `id` applied: preserve-customs for shapes, text and backdrop; arrows always re-tinted.
  *  An element the pick leaves as it was is handed back as the same object, so its view does not render again
  *  (keepUnchangedElements; docs/specs/008-canvas/canvas-performance.md "A theme pick on a big board keeps the page
  *  answering"). */
-export function withThemeApplied(source: Tab, id: string, appearance?: Appearance): Tab {
-  const tab = themeAppliedAnew(source, id, appearance);
+export function withThemeApplied(
+  source: Tab,
+  id: string,
+  appearance: Appearance = getResolvedAppearance(),
+): Tab {
+  // The pure transform lives in the package, which the api's `style` changeset runs too.
+  const tab = tabWithTheme(source, id, appearance);
   return { ...tab, elements: keepUnchangedElements(source.elements, tab.elements) };
 }
-
-// A stored canvas colour as the applier sees it: the theme's, in their half; any other colour as it is.
-const viewedCanvas = (colour: string, map: ReadonlyMap<string, string>): string =>
-  map.get(colour.toLowerCase()) ?? colour;
 
 /** `target` restyled from `source` for Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): `source`'s
  *  theme applied as picking it does, then its canvas, text defaults and finish exactly (withTabStyleOf). */

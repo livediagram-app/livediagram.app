@@ -4,7 +4,7 @@
 // on but past its Close On or at its Response Limit takes none, so it is not locked (unless the write would open it
 // again). A lost race repeats once from the read.
 import type { RoomOp } from '@liveplanner/api-schema';
-import { tabKindOf, type Tab } from '@liveplanner/project';
+import { THEMES, isTabThemeId, tabKindOf, type Tab } from '@liveplanner/project';
 import {
   changesBeyondSettings,
   closedBySettings,
@@ -18,6 +18,8 @@ import { relayRoomOps } from '../room-client';
 import type { PlanEnv } from '../types';
 import { readStoredTab } from '../changesets/stored-tab';
 import { SUBMIT_ATTEMPTS } from '../changesets/submit';
+
+const THEME_IDS = THEMES.map((t) => t.id);
 
 const FORM_LOCKED_MESSAGE =
   'This form is taking responses, so only its settings can change. Close it first: its link stays.';
@@ -39,8 +41,18 @@ export async function writeAgentForm(
   if (!form)
     return refused(400, 'invalid_body', '"form" is a form: a heading and sections of questions');
   const theme = body['theme'];
-  if (theme !== undefined && !(typeof theme === 'string' && theme.trim() && theme.length <= 64))
+  if (theme !== undefined && !(typeof theme === 'string' && theme.trim()))
     return refused(400, 'invalid_body', '"theme" is a theme id');
+  // An unknown id is refused, never stored: no one could resolve it, and the next pick would hard-reset the tab.
+  if (typeof theme === 'string' && !isTabThemeId(theme))
+    return refused(
+      422,
+      'invalid_value',
+      `"theme" "${theme}" is not one; use one of: ${THEME_IDS.join(', ')}`,
+      {
+        valid: THEME_IDS,
+      },
+    );
   const rev = body['rev'];
   if (rev !== undefined && !(typeof rev === 'number' && Number.isSafeInteger(rev) && rev >= 0))
     return refused(400, 'invalid_body', '"rev" is the tab revision you read');

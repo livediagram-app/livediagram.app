@@ -4,12 +4,11 @@ import {
   getBuiltInTheme,
   pagesOf,
   type PageFill,
+  themePresetColors,
   type Tab,
-} from '@livedesign/design';
-import { themeBackgroundPresets } from './page-paint';
-import { motionFill } from './page-motion';
+} from './index';
+import { motionFill, themeBackgroundPresets } from './page-theme-fills';
 import { followedFill, withPageBackgroundsFollowingTheme } from './page-theme-follow';
-import { themePresetColors } from './themes';
 
 // docs/specs/007-editor/pages-mode.md "Backgrounds": a page on a fill of the theme's own
 // follows a theme change; a colour someone picked stays.

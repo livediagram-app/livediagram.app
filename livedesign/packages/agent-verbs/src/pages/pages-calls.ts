@@ -93,7 +93,9 @@ async function firstTabId(api: ApiClient, designId: string): Promise<string | nu
   return first?.id ?? null;
 }
 
-async function send(
+/** One request to the pages route for a tab already known (style_design restyles each tab it read from the design),
+ *  answered as changePages answers. */
+export async function sendPageChanges(
   api: ApiClient,
   designId: string,
   tabId: string,
@@ -121,5 +123,5 @@ export async function changePages(
 ): Promise<PagesDone | PagesRefused> {
   const found = await pagesTabOf(api, designId, input.tabId);
   if ('ok' in found) return found;
-  return send(api, designId, found.tabId, { pages: input.changes }, door);
+  return sendPageChanges(api, designId, found.tabId, { pages: input.changes }, door);
 }

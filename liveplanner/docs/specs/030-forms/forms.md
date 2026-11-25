@@ -1293,7 +1293,7 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
   `{ question, section?, after?, before? }` (`before` the first question puts it first), `add_section` `{ title?, description?, after? }` (after a question splits there,
   as Add Section does; else an empty section at the end), `set_section` `{ section, title?, description?,
 showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the section before), `set_form`
-  `{ heading?, description?, cover?, theme? }` (the theme is the Form tab's, which the form's look follows), `settings` `{ closesAt?, limit?, confirmation?, closedMessage? }` (null
+  `{ heading?, description?, cover?, theme? }` (the theme is the Form tab's, which the form's look follows; an id no theme has is refused naming the ones there are, by the tool and by `POST tabs/<id>/form`, never stored), `settings` `{ closesAt?, limit?, confirmation?, closedMessage? }` (null
   clears one), `responds_to` (as `add_form`'s), and the values filled in automatically:
   - `set_field` `{ field, value?, submitted? }` (board forms, [Set Automatically](#responses-go-to-and-settings)):
     the card field by name (or id) gets `value` on every response's card (a Choice field's option, Multiple Choice

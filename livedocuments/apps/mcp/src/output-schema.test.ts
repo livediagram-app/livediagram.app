@@ -305,6 +305,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'writeArticleOutput',
     args: { documentId: 'd1', markdown: '# Brief', look: 'report' },
   },
+  {
+    tool: 'style_document',
+    output: 'styleDocumentOutput',
+    args: { documentId: 'd1', tabId: 't1', theme: 'forest' },
+  },
   { tool: 'list_versions', output: 'listVersionsOutput', args: { documentId: 'd1' } },
   {
     tool: 'restore_version',

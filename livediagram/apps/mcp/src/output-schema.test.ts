@@ -219,6 +219,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { documentId: 'd1', tabId: 't1', name: 'Renamed' },
   },
   {
+    tool: 'style_document',
+    output: 'styleDocumentOutput',
+    args: { documentId: 'd1', theme: 'forest', finish: 'sketch' },
+  },
+  {
     tool: 'change_tabs',
     output: 'changeTabsOutput',
     args: { documentId: 'd1', changes: [{ op: 'move', tab: 't1', folder: 'Plans' }] },

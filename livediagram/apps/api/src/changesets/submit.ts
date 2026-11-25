@@ -10,6 +10,7 @@ import { migrateIncomingTab, preferNewerQaAll, type Tab } from '@livediagram/doc
 import {
   applyEditOperations,
   applyReplace,
+  applyTabStyle,
   formatResultFooter,
   formatResultLines,
   type ApplySuccess,
@@ -231,6 +232,7 @@ function compile(
   }
   if (!stored)
     return { errors: [{ code: 'target_not_found', details: ['the tab does not exist'] }] };
+  if (body.kind === 'style') return applyTabStyle(stored.tab, body.style, { log: options.log });
   return applyEditOperations(stored.tab, body.operations, options);
 }
 

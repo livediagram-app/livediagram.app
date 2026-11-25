@@ -250,13 +250,14 @@ beforeEach(() => {
 });
 
 describe('tools/list', () => {
-  it('lists the ten core verbs by default', async () => {
+  it('lists the eleven core verbs by default', async () => {
     expect(await listNames()).toEqual([
       'find_items',
       'read_item',
       'create_item',
       'share_item',
       'rename_item',
+      'style_item',
       'trash_item',
       'restore_item',
       'list_app_tools',
@@ -279,7 +280,7 @@ describe('tools/list', () => {
     const tools = (
       await without.json<{ result: { tools: { name: string; description: string }[] } }>()
     ).result.tools;
-    expect(tools).toHaveLength(10);
+    expect(tools).toHaveLength(11);
     expect(tools.find((t) => t.name === 'list_app_tools')!.description).not.toContain('doc: reads');
   });
 
@@ -616,6 +617,17 @@ describe('core verbs', () => {
     ]);
   });
 
+  it.each([
+    [{ ref: 'diagram:D1' }, /at least one of theme, font, finish and style/],
+    [{ ref: 'plan:P1', style: 'keynote' }, /a doc’s/],
+    [{ ref: 'knowledgebase:K1', finish: 'sketch' }, /no finish/],
+    [{ ref: 'knowledgebase:K1', theme: 'forest', tab: 'T1' }, /one look/],
+  ] as const)('style_item refuses %j without calling the app', async (args, refusal) => {
+    const result = await tool('style_item', args);
+    expect(JSON.stringify(result)).toMatch(refusal);
+    expect(calls.filter((c) => c.method === 'tools/call')).toEqual([]);
+  });
+
   it('create_item starts a plan from the kanban template and a diagram with a blank tab', async () => {
     await tool('create_item', { kind: 'plan', name: 'Redesign' });
     await tool('create_item', { kind: 'diagram', name: 'Signup' });
@@ -662,6 +674,34 @@ describe('core verbs', () => {
       { documentId: 'L1', name: 'New' },
     ],
     ['trash_item', { ref: 'diagram:D1' }, 'livediagram', 'delete_document', { documentId: 'D1' }],
+    [
+      'style_item',
+      { ref: 'diagram:D1', theme: 'forest', tab: 'T1' },
+      'livediagram',
+      'style_document',
+      { documentId: 'D1', tabId: 'T1', theme: 'forest' },
+    ],
+    [
+      'style_item',
+      { ref: 'doc:L1', style: 'keynote' },
+      'livedocuments',
+      'style_document',
+      { documentId: 'L1', style: 'keynote' },
+    ],
+    [
+      'style_item',
+      { ref: 'plan:P1', finish: 'sketch' },
+      'liveplanner',
+      'style_project',
+      { projectId: 'P1', finish: 'sketch' },
+    ],
+    [
+      'style_item',
+      { ref: 'knowledgebase:K1', font: 'lora' },
+      'liveknowledge',
+      'style_document',
+      { documentId: 'K1', font: 'lora' },
+    ],
     [
       'restore_item',
       { ref: 'diagram:D1' },

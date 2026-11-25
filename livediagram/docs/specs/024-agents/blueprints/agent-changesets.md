@@ -114,7 +114,9 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
 1. **Read.** In parallel: `getTab(env, documentId, tabId)` (null means create), `lastChangesetRev(env, tabId)`,
    and `readRoomSelections(env, documentId, tabId, personTagFor(documentId, author))`.
 2. **Compile.** Operations: `applyEditOperations(stored, operations, { selected, log })`. Replace:
-   `applyReplace(stored ?? null, replace, { tabId, name, themeId, selected, log })`. Both return
+   `applyReplace(stored ?? null, replace, { tabId, name, themeId, selected, log })`. Style (an existing tab only):
+   `applyTabStyle(stored, style, { log })`, the theme through `tabWithTheme(tab, id, 'light')`, then `withTabFinish`
+   and `withTabFont`. All return
    `{ tab, results, elementOps, inverse, warnings, targets, createdIds } | { errors }`. The engine resolves
    selectors, normalises and coerces values, lands workshop notes on lanes, lays out what it touched and ends with
    `isValidTab`. `selected` is the union of `elementIds` of the selections marked `mine`, or `null` when the room
@@ -124,7 +126,8 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
 4. **Check held**, agent changesets only: `heldTargets(targets, selections)` over the selections not marked
    `mine`, any role. A person's changeset or revert is never held.
 5. **Dry run** stops here and answers the plan.
-6. **No-op.** No element op and no new tab: answer 200 with `changeset: null`; nothing is written (CS11).
+6. **No-op.** No element op, no new tab, no changed sources record and no changed style field (`TAB_STYLE_FIELDS`:
+   theme, the backdrop's four, finish, font): answer 200 with `changeset: null`; nothing is written (CS11).
 7. **Bound.** `CHANGESET_MAX_OPERATIONS` is checked before compile; after it, each part against
    `CHANGESET_PART_MAX_BYTES` (CS43) and the tab through `storeTab`, all `too_large`.
 8. **Write and record** in one batch in the document's SQLite: `upsertTabAtRev(env, documentId, tab, orderIndex, stored?.rev ?? 0)`,
@@ -134,7 +137,9 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
    a second loss answers `409 tab_busy` (CS40).
 10. **Relay** `relayChangeset(env, documentId, changesetRoomOp(record))` to the submitting document's room only,
     awaited with `ROOM_RELAY_TIMEOUT_MS`; a failure logs `[changeset] relay-failed` and the answer stays 200.
-    Other documents linking the tab are protected by the merge on save.
+    Other documents linking the tab are protected by the merge on save. A write that changed a style field of an
+    existing tab then relays `{ kind: 'tab-meta', tabId, patch, clear? }` with those fields, as an editor's own
+    Tab Style change sends, so open editors take the theme, backdrop, finish and font with the recoloured elements.
 11. **After**, off the response path (`ctx.waitUntil`, `apps/api/src/changesets/after.ts`): the new-comment email
     exactly as a save does (CS29), and the `Agent` telemetry; the Timeline hears of the edit from the canvas. The
     agent presence refresh (`refreshAgentPresence`, [agent presence blueprint](agent-presence.md)) joins here.
@@ -306,7 +311,8 @@ submit answers the same 200 shape with `dryRun: true`, `changeset: null`; any ot
 type ChangesetBase = { rev: number; elements?: Record<string, string> }; // id -> fingerprint
 type ChangesetRequest = {
   operations?: unknown[] | string; // JSON form (validateEditOperations) or line form (parseEditOperations) (CS8)
-  replace?: ReplaceBody; // { graph | mermaid | template | elements, layout?, theme?, name?, sources? }; exactly one of the two
+  replace?: ReplaceBody; // { graph | mermaid | template | elements, layout?, theme?, name?, sources? }
+  style?: { theme?: string; finish?: Finish; font?: string }; // at least one; exactly one of operations, replace, style
   base?: ChangesetBase;
   strict?: boolean;
   summary?: string; // trimmed, control characters removed, at most CHANGESET_SUMMARY_MAX (CS10)
@@ -435,6 +441,8 @@ layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). 
   tool loads at call time. Input gains optional `rev`, the revision `read_document`
   returned.
 - `rename_document` with `tabId`: `PUT .../tabs/:tabId/name { name }`.
+- `style_document`: `POST .../tabs/<tabId>/changesets` with `{ style: { theme?, finish?, font? } }` for the tab
+  named, or each tab of the document in order; the theme, finish and font are checked before the first.
 - A 4xx from the route returns `errorResult(changesetErrorText(err))` (the route's `text` or `message`, never
   reported to the Error category); a 5xx is reported as today.
 
@@ -513,7 +521,9 @@ document's object from its alarm once a day (`MAINTENANCE_EVERY_MS`); parts foll
 - **E1** Submit to a trashed document: 410 through `missingDocument`. A stranger: 404.
 - **E2** `replace` on a tab id this document lacks: a new tab (each document stores only its own tabs, so the id
   cannot name another document's); an id over 128 characters: 422 `invalid_value` (CS31).
-- **E3** Both `operations` and `replace`, or neither: `400 invalid_body`. More than `CHANGESET_MAX_OPERATIONS`
+- **E3** Not exactly one of `operations`, `replace` and `style`: `400 invalid_body`. A `style` with none of its
+  fields, or a field of the wrong type: `400 invalid_body`; a theme, finish or font nobody knows: `422 invalid_value`
+  with `valid`. A `style` on a tab the document lacks: `404`. More than `CHANGESET_MAX_OPERATIONS`
   operations (comment lines excluded; a `replace` counts as one): 413 `too_large` before compile.
 - **E4** Engine refusal: nothing written; codes and the engine's text returned; `[changeset] rejected` logged.
 - **E5** The room cannot answer `/selections` (throws, non-2xx, timeout `ROOM_SELECTIONS_TIMEOUT_MS`): nothing is

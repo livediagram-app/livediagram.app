@@ -117,6 +117,46 @@ describe('page changes', () => {
     expect(stored(db).elements.length).toBe(body.pages[0]!.elements);
   });
 
+  // pages-for-agents.md "tab_style": the recoloured elements as a changeset, the style as a tab-meta.
+  it('restyles the tab: its elements as a changeset, its theme and finish relayed', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { db, room } = await setUp(204, {
+      theme: 'ocean',
+      elements: [
+        {
+          id: 'b',
+          type: 'shape',
+          shape: 'square',
+          x: 0,
+          y: 0,
+          width: 40,
+          height: 40,
+          fillColor: '#cffafe',
+        },
+        {
+          id: 'c',
+          type: 'shape',
+          shape: 'square',
+          x: 60,
+          y: 0,
+          width: 40,
+          height: 40,
+          fillColor: '#123456',
+        },
+      ],
+    });
+    const res = await call(db, { pages: [{ op: 'tab_style', theme: 'forest', finish: 'sketch' }] });
+    expect(res.status).toBe(200);
+    const body = await res.json<PagesAnswer>();
+    expect(body.lines).toEqual(['Restyled the tab: theme forest, finish sketch.']);
+    expect(body.changesetId).toMatch(/^cs_/);
+    const tab = stored(db) as StoredTab & { theme?: string; finish?: string };
+    expect(tab).toMatchObject({ theme: 'forest', finish: 'sketch' });
+    expect(tab.elements).toMatchObject([{ fillColor: '#dcfce7' }, { fillColor: '#123456' }]);
+    expect(room.bodies.map((b) => b.op.kind)).toEqual(['changeset', 'tab-meta']);
+    expect(room.bodies[1]!.op).toMatchObject({ patch: { theme: 'forest', finish: 'sketch' } });
+  });
+
   it('refuses a malformed body and an engine refusal with 400 and the code', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db } = await setUp();
@@ -190,6 +230,26 @@ describe('the room ops', () => {
       },
     ]);
     expect(pagesRoomOps(after, after)).toEqual([]);
+  });
+
+  // A tab_style's fields reach open editors (pages-for-agents.md "tab_style"): the theme, what it moved, the finish.
+  it('patches a restyle’s theme, backdrop and finish', () => {
+    const before = { id: 't', name: 'T', elements: [], theme: 'ocean', backgroundColor: '#ecfeff' };
+    const after = {
+      id: 't',
+      name: 'T',
+      elements: [],
+      theme: 'forest',
+      backgroundColor: '#f0fdf4',
+      finish: 'sketch' as const,
+    };
+    expect(pagesRoomOps(before, after)).toEqual([
+      {
+        kind: 'tab-meta',
+        tabId: 't',
+        patch: { theme: 'forest', backgroundColor: '#f0fdf4', finish: 'sketch' },
+      },
+    ]);
   });
 
   // An open editor drops `photos` from a tab-meta: a photo page an agent added or duplicated reached it

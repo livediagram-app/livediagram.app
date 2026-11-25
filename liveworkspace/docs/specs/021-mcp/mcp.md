@@ -19,20 +19,26 @@ server is shaped to pick better than five servers, and the eval says whether it 
 
 ## Three layers
 
-1. **Core verbs, always listed.** Ten tools that work on any item:
+1. **Core verbs, always listed.** Eleven tools that work on any item:
 
-   | Tool                   | Does                                                                                                 |
-   | ---------------------- | ---------------------------------------------------------------------------------------------------- |
-   | `find_items`           | Finds items by name across the apps; `kind` narrows to one kind, `where` reads archived or the Trash |
-   | `read_item`            | Reads one item (its tabs and their content, as the app's own read tool does)                         |
-   | `create_item`          | Makes an item of a `kind`: diagram, deck, article, infographic, plan, design, knowledgebase          |
-   | `share_item`           | Shares an item by link with a role                                                                   |
-   | `rename_item`          | Renames an item                                                                                      |
-   | `trash_item`           | Moves an item to the Trash                                                                           |
-   | `restore_item`         | Restores an item from the Trash                                                                      |
-   | `list_app_tools`       | Lists one kind's editing tools, with their input schemas                                             |
-   | `read_with_app_tool`   | Calls one of those tools that only reads (`readOnlyHint`), by name                                   |
-   | `change_with_app_tool` | Calls one of those tools that changes something, by name                                             |
+   | Tool                   | Does                                                                                                  |
+   | ---------------------- | ----------------------------------------------------------------------------------------------------- |
+   | `find_items`           | Finds items by name across the apps; `kind` narrows to one kind, `where` reads archived or the Trash  |
+   | `read_item`            | Reads one item (its tabs and their content, as the app's own read tool does)                          |
+   | `create_item`          | Makes an item of a `kind`: diagram, deck, article, infographic, plan, design, knowledgebase           |
+   | `share_item`           | Shares an item by link with a role                                                                    |
+   | `rename_item`          | Renames an item                                                                                       |
+   | `trash_item`           | Moves an item to the Trash                                                                            |
+   | `restore_item`         | Restores an item from the Trash                                                                       |
+   | `style_item`           | Changes an item's theme, font or finish at any time (one tab or every tab); a doc also takes a recipe |
+   | `list_app_tools`       | Lists one kind's editing tools, with their input schemas                                              |
+   | `read_with_app_tool`   | Calls one of those tools that only reads (`readOnlyHint`), by name                                    |
+   | `change_with_app_tool` | Calls one of those tools that changes something, by name                                              |
+
+   `style_item` calls the app's own restyle tool (`style_document`, `style_project`, `style_design`): a theme
+   recolours what still wears the old theme's colours and keeps colours set by hand. `tab` narrows it to one tab.
+   `style` (a recipe, as `create_item` takes) is a doc's alone, and a knowledgebase has one look, so it takes no
+   `tab` or `finish`; each is refused by name rather than ignored.
 
    An item is named by its **ref**, `<kind>:<id>` (`diagram:Ab3…`), which `find_items` and `create_item` answer.
    The kinds and the app each belongs to: `diagram` (livediagram), `doc` (livedocuments: a deck, an article or an
@@ -41,7 +47,7 @@ server is shaped to pick better than five servers, and the eval says whether it 
 
 2. **Editing tools, on demand.** Each app's other tools (diagram elements, board cards, sheet cells, article
    writing, knowledgebase pages) come back from `list_app_tools(kind)`, each marked `readOnly` or not, and run through
-   `read_with_app_tool` or `change_with_app_tool`. An assistant normally sees ten tools, not about 150.
+   `read_with_app_tool` or `change_with_app_tool`. An assistant normally sees eleven tools, not about 150.
    So that finding a tool takes one call, not two, `list_app_tools`' description names every kind's tools, reads
    and changes apart (about 1,250 tokens more); a name it gets wrong answers with the names it has. And the item a
    tool works on can be given as a ref, on the verb (`ref`) or in its arguments: it goes in as the app's own id

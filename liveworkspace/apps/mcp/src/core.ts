@@ -178,6 +178,39 @@ export const CORE_TOOLS: readonly ListedTool[] = [
     },
   },
   {
+    name: 'style_item',
+    title: 'Restyle an item',
+    description:
+      'Change an item’s theme (and font, finish) at any time, on one tab or all; colours set by hand stay. ' +
+      'A doc also takes a whole style recipe.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ref: REF,
+        tab: { type: 'string', description: 'One tab’s id; every tab when left out.' },
+        theme: { type: 'string', description: 'A preset theme id.' },
+        font: { type: 'string', description: 'A font id.' },
+        finish: {
+          type: 'string',
+          enum: ['flexible', 'professional', 'sketch', 'marker'],
+          description: 'How shapes are drawn (not a knowledgebase).',
+        },
+        style: {
+          type: 'string',
+          description: 'A doc only: a style recipe, as create_item’s, or "auto".',
+        },
+      },
+      required: ['ref'],
+      additionalProperties: false,
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
     name: 'trash_item',
     title: 'Move an item to the Trash',
     description: 'Move an item to the Trash. restore_item brings it back.',
@@ -585,6 +618,7 @@ async function inCoreWords(
     [spec.core.rename, 'rename_item'],
     [spec.core.trash, 'trash_item'],
     [spec.core.restore, 'restore_item'],
+    [spec.core.style, 'style_item'],
   ];
   const renames = new Map<string, string>();
   for (const [own, verb] of core) {
@@ -623,6 +657,7 @@ export async function runCore(
     case 'share_item':
     case 'rename_item':
     case 'trash_item':
+    case 'style_item':
     case 'restore_item': {
       const target = byRef(ctx, args);
       if ('error' in target) return target.error!;
@@ -632,6 +667,35 @@ export async function runCore(
     default:
       return null;
   }
+}
+
+const STYLE_FIELDS = ['theme', 'font', 'finish', 'style'] as const;
+
+// style_item as the app's own style tool: a knowledgebase has one look and no finish, only a doc takes a recipe.
+function styleCall(
+  ctx: CoreContext,
+  spec: AppSpec,
+  idArg: Record<string, string>,
+  args: Record<string, unknown>,
+): Promise<ToolResult> {
+  const given = Object.fromEntries(
+    STYLE_FIELDS.filter((k) => typeof args[k] === 'string').map((k) => [k, args[k]]),
+  );
+  const refuse = (text: string) =>
+    Promise.resolve({ content: [{ type: 'text' as const, text }], isError: true });
+  if (Object.keys(given).length === 0)
+    return refuse('Give at least one of theme, font, finish and style.');
+  if (given.style !== undefined && spec.kind !== 'doc')
+    return refuse('"style" (a recipe) is a doc’s: give a theme, font or finish instead.');
+  if (spec.kind === 'knowledgebase' && (given.finish !== undefined || typeof args.tab === 'string'))
+    return refuse(
+      'A knowledgebase has one look and no finish: give its theme or font (style_knowledgebase, by list_app_tools, takes its sizes too).',
+    );
+  return ctx.call(spec, spec.core.style, {
+    ...idArg,
+    ...(typeof args.tab === 'string' ? { tabId: args.tab } : {}),
+    ...given,
+  });
 }
 
 // One of the verbs on a single item, as its app's own tool.
@@ -659,6 +723,7 @@ function coreCall(
   if (name === 'rename_item')
     return ctx.call(spec, spec.core.rename, { ...idArg, name: args.name });
   if (name === 'trash_item') return ctx.call(spec, spec.core.trash, idArg);
+  if (name === 'style_item') return styleCall(ctx, spec, idArg, args);
   return ctx.call(spec, spec.core.restore, idArg);
 }
 

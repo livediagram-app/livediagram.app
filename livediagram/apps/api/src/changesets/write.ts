@@ -24,7 +24,7 @@ import {
 import { AGENT_CHANGED_EVENT } from '@livediagram/document/automations';
 import { asTabWriter, queueEvent, writerOf } from '@liveworkspace/automations/room';
 import { TabTooLargeError } from '../limits';
-import { relayChangeset } from '../room-client';
+import { relayChangeset, relayTabStyle } from '../room-client';
 import { lockTabWrite } from '../whole-tab-lock';
 import type { DocumentEnv } from '../types';
 import { mintChangesetId } from './changeset-id';
@@ -86,7 +86,10 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
   // The sources record rides the tab (diagram-sources.md "Writing the record"): a re-read whose drawing is the same but
   // whose files changed still writes, and the editors with the tab open hear the record.
   const sourcesChanged = recordOf(w.stored?.tab.sources) !== recordOf(next.sources);
-  if (elementOps.length === 0 && !creates && !sourcesChanged) return { kind: 'unchanged' };
+  // A restyle may change only the tab's own fields (a finish on a tab whose elements carry none): still a write.
+  const style = creates ? null : styleChangeOf(w.stored!.tab, next);
+  if (elementOps.length === 0 && !creates && !sourcesChanged && !style)
+    return { kind: 'unchanged' };
   const inverse = invertElementOps(before, elementOps);
   const expected = w.stored?.rev ?? 0;
   const rev = expected + 1;
@@ -182,8 +185,37 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
       revertOf: w.revertOf,
     }),
   );
+  // After the changeset op, so an editor recolours the elements and then takes the theme they were recoloured for.
+  if (style) await relayTabStyle(env, w.documentId, w.tabId, style.patch, style.clear);
   const written = writtenAs(record.id);
   return { kind: 'written', record, written, text: w.textFor(written) };
+}
+
+// The Tab Style fields of a tab (docs/specs/011-theme/canvas-and-theme-dialog.md): what a `style` changeset changes
+// besides elements, and what the editors must hear of it. Only a style changes them on an existing tab.
+export const TAB_STYLE_FIELDS = [
+  'theme',
+  'backgroundColor',
+  'backgroundPattern',
+  'patternColor',
+  'backgroundOpacity',
+  'finish',
+  'font',
+] as const;
+
+// The style fields `next` changed from `before`, as a tab-meta patch and the fields it removed; null when none changed.
+export function styleChangeOf(
+  before: Tab,
+  next: Tab,
+): { patch: Record<string, unknown>; clear: string[] } | null {
+  const patch: Record<string, unknown> = {};
+  const clear: string[] = [];
+  for (const key of TAB_STYLE_FIELDS) {
+    if (JSON.stringify(before[key]) === JSON.stringify(next[key])) continue;
+    if (next[key] === undefined) clear.push(key);
+    else patch[key] = next[key];
+  }
+  return Object.keys(patch).length > 0 || clear.length > 0 ? { patch, clear } : null;
 }
 
 // A sources record as compared for a change: its time of reading left out, so a re-read of the same files is no change.

@@ -174,6 +174,8 @@ const ARGS = {
   // upload_image's picture: the first bytes of a 64 by 48 PNG, which is all its checks read.
   data: 'iVBORw0KGgoAAAANSUhEUgAAAEAAAAAwCAYAAAA=',
   imageIds: ['img-1'],
+  // style_design refuses a call with nothing to change.
+  theme: 'forest',
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -188,7 +190,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-five documented tools, each with a description', () => {
+  it('registers the twenty-seven documented tools, each with a description', () => {
     const { registered } = harness();
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
@@ -212,6 +214,7 @@ describe('registerTools', () => {
       'restore_design',
       'search_icons',
       'share_design',
+      'style_design',
       'unarchive_design',
       'update_design',
       'upload_image',
@@ -326,6 +329,8 @@ describe('tool annotations', () => {
     add_tab: 'write',
     share_design: 'destructive',
     rename_design: 'write',
+    // docs/specs/015-api/mcp-server.md §4.9g: a restyle keeps every element, only their colours move.
+    style_design: 'write',
     change_tabs: 'write',
     list_trash: 'read',
     restore_design: 'write',

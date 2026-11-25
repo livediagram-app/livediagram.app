@@ -32,6 +32,7 @@ import {
   renameProjectOutput,
   restoreProjectOutput,
   shareProjectOutput,
+  styleProjectOutput,
   updateProjectOutput,
 } from '../mcp/output-schema';
 import {
@@ -44,6 +45,7 @@ import {
   renameProjectShape,
   restoreProjectShape,
   shareProjectShape,
+  styleProjectShape,
   updateProjectShape,
 } from '../mcp/schema';
 import {
@@ -159,9 +161,19 @@ export const mcpUpdateProject = mcpTool('update_project', {
     'rebuilt from "dashboard") and paints every element in the tab\u2019s theme; mode "ops" applies an ordered ' +
     'list of add/update/remove against existing elements (by id, or the ref read_project prints), keeping positions, ' +
     'or takes "edits": edit operations as text. Cards, boards, sheets and forms change through their own tools ' +
-    '(change_items, change_board, change_sheet, change_form). Returns an inline PNG.',
+    '(change_items, change_board, change_sheet, change_form); its theme, finish and font through style_project. ' +
+    'Returns an inline PNG.',
   inputSchema: updateProjectShape,
   outputSchema: updateProjectOutput,
+});
+
+export const mcpStyleProject = mcpTool('style_project', {
+  behaviour: 'write',
+  title: 'Restyle a plan',
+  description:
+    'Change the theme, finish or font of one tab of a plan, or every tab, of any kind. Live editors see it at once.',
+  inputSchema: styleProjectShape,
+  outputSchema: styleProjectOutput,
 });
 
 export const mcpShareProject = mcpTool('share_project', {
@@ -559,6 +571,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpCreateProject,
   mcpAddTab,
   mcpUpdateProject,
+  mcpStyleProject,
   mcpShareProject,
   mcpRenameProject,
   mcpChangeTabs,

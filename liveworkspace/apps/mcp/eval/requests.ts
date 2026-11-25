@@ -354,6 +354,16 @@ export const REQUESTS: readonly EvalRequest[] = [
     expect: [e('liveknowledge', 'share_document', { ...HB, role: 'view' })],
   },
   {
+    id: 'restyle-diagram',
+    ask: 'Switch the Checkout flow diagram to the forest theme.',
+    expect: [e('livediagram', 'style_document', { ...D, theme: 'forest' })],
+  },
+  {
+    id: 'restyle-deck',
+    ask: 'Give the Q3 review deck a sketchy hand-drawn finish.',
+    expect: [e('livedocuments', 'style_document', { ...Q3, finish: 'sketch' })],
+  },
+  {
     id: 'rename-deck',
     ask: 'Rename the Q3 review deck to "Q3 board review".',
     expect: [e('livedocuments', 'rename_document', { ...Q3, name: 'Q3 board review' })],

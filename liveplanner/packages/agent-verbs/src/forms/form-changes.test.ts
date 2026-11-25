@@ -372,11 +372,18 @@ describe('every refusal, named', () => {
     ['a cover that is no cover', [{ op: 'set_form', cover: 'red' }], 'cover_invalid'],
     ['an empty cover', [{ op: 'set_form', cover: {} }], 'cover_invalid'],
     ['an empty theme', [{ op: 'set_form', theme: ' ' }], 'invalid_value'],
+    ['a theme no catalogue names', [{ op: 'set_form', theme: 'nope' }], 'invalid_value'],
     ['a closing time that is none', [{ op: 'settings', closesAt: 'soon' }], 'invalid_value'],
     ['a message too long', [{ op: 'settings', confirmation: 'x'.repeat(501) }], 'too_long'],
   ];
   for (const [what, changes, code] of cases)
     it(`refuses ${what}`, () => expect(run(changes).refused).toMatchObject({ code }));
+
+  it('names the themes there are when refusing an unknown one', () => {
+    const refused = run([{ op: 'set_form', theme: 'nope' }]).refused;
+    expect(refused?.message).toContain('Unknown theme "nope"');
+    expect(refused?.message).toContain('forest');
+  });
 
   it('says there is no earlier question to decide a rule', () => {
     const d = formDraft({

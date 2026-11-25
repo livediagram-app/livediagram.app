@@ -256,7 +256,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the thirty-five documented tools, each with a description', () => {
+  it('registers the thirty-six documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered;
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -290,6 +290,7 @@ describe('registerTools', () => {
       'restore_project',
       'share_form',
       'share_project',
+      'style_project',
       'try_form',
       'unarchive_project',
       'update_project',
@@ -314,7 +315,12 @@ describe('registerTools', () => {
       const before = emitted.length;
       // A board or Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is not.
       const planOnly = tool.name === 'add_sheet' || tool.name === 'add_board';
-      const args = planOnly ? { ...ARGS, tabId: 'f_1' } : ARGS;
+      // style_project needs a part to change: the other tools' arguments name none.
+      const args = planOnly
+        ? { ...ARGS, tabId: 'f_1' }
+        : tool.name === 'style_project'
+          ? { ...ARGS, theme: 'forest' }
+          : ARGS;
       const result = (await tool.handler(args, AUTHED)) as { isError?: boolean };
       // Guards the harness itself: a tool that failed here would pass the
       // "no emit" half vacuously.
@@ -408,6 +414,8 @@ describe('tool annotations', () => {
     archive_project: 'destructive',
     unarchive_project: 'write',
     update_project: 'destructive',
+    // docs/specs/015-api/mcp-server.md §4.4b: a restyle recolours, never removes.
+    style_project: 'write',
     delete_project: 'destructive',
     // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
     list_items: 'read',

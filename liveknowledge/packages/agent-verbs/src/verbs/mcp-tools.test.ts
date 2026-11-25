@@ -23,6 +23,7 @@ describe('the MCP tool verbs', () => {
       'find_documents',
       'create_document',
       'rename_document',
+      'style_document',
       'share_document',
       'archive_document',
       'unarchive_document',

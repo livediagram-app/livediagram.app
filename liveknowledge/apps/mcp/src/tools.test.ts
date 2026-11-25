@@ -309,3 +309,47 @@ describe('the other knowledgebase tools', () => {
     expect((out.templates as object[]).length).toBeGreaterThan(0);
   });
 });
+
+describe('style_document', () => {
+  it('writes the knowledgebase’s style, one font for both parts unless a part is named', async () => {
+    const { call, sent } = await connect({
+      'PUT /documents/kb': () =>
+        Response.json({
+          document: { id: 'kb', name: 'Handbook', tabs: [], knowledgeStyle: { theme: 'forest' } },
+        }),
+    });
+    const { out } = await call('style_document', {
+      documentId: 'kb',
+      theme: 'forest',
+      font: 'lora',
+      headingFont: 'oswald',
+    });
+    expect(sent).toEqual([
+      {
+        method: 'PUT',
+        path: '/documents/kb',
+        body: { knowledgeStyle: { theme: 'forest', headingFont: 'oswald', bodyFont: 'lora' } },
+      },
+    ]);
+    expect(out).toMatchObject({ documentId: 'kb', style: { theme: 'forest' } });
+  });
+
+  it('answers the api’s refusal, and refuses a call that names nothing', async () => {
+    const { call } = await connect({
+      'PUT /documents/kb': () =>
+        Response.json(
+          {
+            error: 'invalid_knowledge_style',
+            field: 'theme',
+            message: 'theme is one of: forest, …',
+          },
+          { status: 400 },
+        ),
+    });
+    const refused = await call('style_document', { documentId: 'kb', theme: 'nope' });
+    expect(refused.isError).toBe(true);
+    expect(refused.text).toContain('theme is one of');
+    const empty = await call('style_document', { documentId: 'kb' });
+    expect(empty.isError).toBe(true);
+  });
+});

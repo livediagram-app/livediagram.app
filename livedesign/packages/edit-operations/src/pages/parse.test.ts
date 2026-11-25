@@ -214,3 +214,34 @@ describe('text slots', () => {
     ).toContain('"text" takes no "heading"');
   });
 });
+
+// pages-for-agents.md "tab_style".
+describe('tab_style', () => {
+  it('reads a theme, a finish and a font', () => {
+    expect(
+      parsePagesRequest({
+        pages: [{ op: 'tab_style', theme: 'forest', finish: 'sketch', font: 'poppins' }],
+      }),
+    ).toEqual({ pages: [{ op: 'tab_style', theme: 'forest', finish: 'sketch', font: 'poppins' }] });
+    expect(parsePagesRequest({ pages: [{ op: 'tab_style', theme: 'brand' }] })).toEqual({
+      pages: [{ op: 'tab_style', theme: 'brand' }],
+    });
+  });
+
+  it('refuses an empty style and stray fields', () => {
+    expect(refusal({ pages: [{ op: 'tab_style' }] }).message).toContain('at least one');
+    expect(refusal({ pages: [{ op: 'tab_style', theme: 'forest', page: 1 }] }).message).toContain(
+      '"page"',
+    );
+  });
+
+  it('refuses an unknown id, naming the ids there are', () => {
+    const theme = refusal({ pages: [{ op: 'tab_style', theme: 'Forest' }] });
+    expect(theme).toMatchObject({ code: 'invalid_value', change: 0 });
+    expect(theme.message).toContain('forest');
+    expect(refusal({ pages: [{ op: 'tab_style', finish: 'glossy' }] }).message).toBe(
+      '"finish" is one of flexible, professional, sketch, marker.',
+    );
+    expect(refusal({ pages: [{ op: 'tab_style', font: 'comic' }] }).message).toContain('inter');
+  });
+});

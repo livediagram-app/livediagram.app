@@ -8,14 +8,13 @@ import {
   pagesOf,
   pagesInkFor,
   sameFill,
+  themePresetColors,
   withPages,
   type PageFill,
   type Tab,
   type ThemeDefinition,
-} from '@livedesign/design';
-import { themeBackgroundPresets } from './page-paint';
-import { colouringOf, motionFill } from './page-motion';
-import { themePresetColors } from './themes';
+} from './index';
+import { colouringOf, motionFill, themeBackgroundPresets } from './page-theme-fills';
 
 type Theme = ThemeDefinition;
 

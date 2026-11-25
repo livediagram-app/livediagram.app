@@ -338,6 +338,8 @@ export * from './theme-graph';
 export * from './themes';
 export * from '@liveworkspace/element-model/theme-halves';
 export * from './label-backdrop';
+// A theme, a finish and a font applied to a whole tab, as the editor's pickers and the api's style changeset do.
+export * from './tab-theme-apply';
 export * from '@liveworkspace/element-model/theme-presets';
 // A Form tab's look: its theme, finish and font as the builder and the form link's page draw them.
 export * from './form-look';
