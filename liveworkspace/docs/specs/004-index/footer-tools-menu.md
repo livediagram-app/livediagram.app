@@ -91,13 +91,15 @@ between tools, never in a modal of its own on top of the editor.
   `@liveworkspace/ui/tool-explainer`). An empty tool then fills in where it stands, nothing moving; the
   Connections list shows its real footer, Add Connection waiting, from the first frame.
 - **The drill-in.** Choosing a row replaces the list with that tool's view. Tools' illustrated hero band stays at the top
-  of every view (owner, 2026-11-17), with its close in the corner; under it the shared
-  [back bar](../../../../livediagram/docs/specs/004-interface-design/back-bar.md) is the breadcrumb: **Tools**, with the
-  tool's name in its chip ("Tools > History"), and no close beside it (the band's is the one close). The tool's own header loses its
-  title (the chip names it) and its close (the popover's closes it), and its one line too (owner, 2026-11-17: the tool explains
-  itself below), keeping only its actions in a slim row under the bar. Everything else is the tool as it was: its form, its list, its
-  footer, its sides coming in to the bar's 16px so the whole view shares one left edge.
-- **Back.** The back bar returns to the list, as does the tool's own Cancel or Done. A tool that holds unsaved work
+  of every view (owner, 2026-11-17), with its close in the corner, and the band itself is the way back (Work Tracker 1476,
+  as Tab Style's header is): its title mark becomes a **back button** (the same 36px tile, a left chevron in it, named
+  and tooltipped "Back to Tools"), its title becomes the tool's name and its line the tool's one line from the list
+  ("History", "Who changed what, and when."). The art stays Tools' pegboard for every tool, as Tab Style keeps its
+  own art on every panel. There is no breadcrumb row under the band. The tool's own header loses its title (the band
+  names it) and its close (the popover's closes it), and its one line too (the band carries the row's line), keeping
+  only its actions in a slim row under the band. Everything else is the tool as it was: its form, its list, its
+  footer. Back on the list the band reads **Tools** again, its mark and line restored.
+- **Back.** The band's back button returns to the list, as does the tool's own Cancel or Done. A tool that holds unsaved work
   (Automations' rule builder) asks first, as its own close did. Escape steps back one level (a confirm or a menu open
   in the tool first, a snapshot's in-place confirm among them), then closes Tools from the list. The close shuts Tools from any level.
 - **Sizes.** Every tool takes Tools' own width, 480px (owner, 2026-11-17), so the popover's sides never move. Each view takes
@@ -116,12 +118,12 @@ between tools, never in a modal of its own on top of the editor.
 - **Inside a tool.** A dialog a tool opens on top of itself (Automations' Describe a Rule, a Discard Changes confirm,
   Connections from a rule) is still a dialog, drawn over Tools; a press in it, or in a menu a tool opens, never closes
   Tools.
-- **Focus.** Opening a tool moves focus into its view (the back bar, or the control the tool focuses itself, such as a
+- **Focus.** Opening a tool moves focus to the band's back button (or the control the tool focuses itself, such as a
   confirm's button); stepping back puts focus on that tool's row. A polite live region says where focus went
   ("History", "Tools"), and the popover's name follows ("Tools, History").
 - **On a phone** the drawer keeps the full width and its own height cap (85% of the screen), the tool scrolling inside
   it.
-- **Waiting.** A tool whose code has not loaded yet shows skeleton rows under its back bar until it arrives, at about the
+- **Waiting.** A tool whose code has not loaded yet shows skeleton rows under the band until it arrives, at about the
   height its view will have.
 - **From elsewhere.** Coming back from signing in with a tool asked open (`?calendarFeed=1`, `?emailIntake=1`) opens
   Tools at that tool. Automations always opens its own full-screen dialog, so `?automations=1` opens that dialog on the
