@@ -465,7 +465,7 @@ status, fields, template }` (`template` starts the card from one of its type's [
   person ([Cards handed to an assistant](../026-plan/plan-agents.md#cards-handed-to-an-assistant)).
 - **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset
   ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
-- **`change_board`** (write): a board's title, columns (by name), the card types it takes or its header widgets
+- **`change_board`** (destructive, as columns and widgets left out go): a board's title, columns (by name), the card types it takes or its header widgets
   (`widgets` `{ add, remove }`, by kind id or field widget name), as one changeset.
 - **`import_board`** (write): a board from a Trello, Asana, Jira or Linear export (`content`, the file's text), in a
   new Board tab of `projectId` or a new plan, with its card type, cards and imported comments; `preview` writes
@@ -554,7 +554,7 @@ built with the editor's own edits (`@liveplanner/forms`) and started as Start Pl
   `delete_column` (a sheet's extra columns), checked whole and written as one changeset; a refusal writes nothing and
   names the change. Every new field is optional, so an agent that sends none keeps the form's set values and extra
   columns as they are. While the form takes responses only `settings` changes go through.
-- **`share_form`** (write): `publish`, `close` or `delete_link`, through the form link routes as Share Form calls
+- **`share_form`** (destructive, as `delete_link` ends a link people may have): `publish`, `close` or `delete_link`, through the form link routes as Share Form calls
   them; a form not ready answers every problem.
 - **`try_form`** (write): fills the form in as the builder's Preview does, answers by question id or prompt checked
   first (a wrong one refused with why, nothing sent), then the "Preview: ..." card or row a response makes: through
@@ -658,11 +658,11 @@ which is how the gap was found.
 Three behaviours cover the tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                                                                                 |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_rules`, `list_sheets`, `read_sheet`, `read_form`                                                                                 |
-| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `change_tabs`, `share_project`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `change_board`, `import_board`, `add_sheet`, `add_form`, `share_form`, `try_form`, `upload_image` |
-| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `archive_project`, `change_items`, `change_threads`, `change_rules`, `change_card_types`, `change_sheet`, `change_form`                                                                           |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                                                      |
+| --------------- | -------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_rules`, `list_sheets`, `read_sheet`, `read_form`                                                      |
+| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `change_tabs`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `import_board`, `add_sheet`, `add_form`, `try_form`, `upload_image`                     |
+| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `archive_project`, `change_items`, `change_threads`, `change_rules`, `change_card_types`, `change_sheet`, `change_form`, `share_project`, `change_board`, `share_form` |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -672,8 +672,10 @@ client sees and the rule the api enforces can't drift apart.
 mode swaps a tab's whole element set, so an edit can overwrite work the user
 already had. (Its `ops` mode is surgical, but a hint describes the tool, not
 the argument, and the cautious reading is the right one.) `share_project`
-stays a plain write: it mints a new link and changes nothing that existed,
-and the link is revocable. `destructiveHint` is deliberately omitted where
+is **destructive** too: it opens the plan to anyone with the link, an edit link lets them change or
+delete what is there, and its sign-in rule changes every link the plan already has, so a client asks first.
+`share_form` is destructive for its `delete_link`, which ends a link people may already have, and
+`change_board` for the columns and widgets it leaves out, which take cards off the board and widgets away. `destructiveHint` is deliberately omitted where
 `readOnlyHint` is `true`: MCP ignores it there, and stating it would imply the
 tool writes.
 

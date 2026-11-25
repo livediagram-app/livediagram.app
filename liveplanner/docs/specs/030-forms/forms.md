@@ -1317,7 +1317,7 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
   write it; it is read for this only when the form now asks for a header it did not. `read_form` names each
   question's sheet column (`column`) on a sheet form.
 
-- **`share_form`** (write): `publish` (makes the form link; on a closed form, opens it again), `close`, or
+- **`share_form`** (destructive, as `delete_link` ends a link people may have): `publish` (makes the form link; on a closed form, opens it again), `close`, or
   `delete_link`. A form its own Settings close (past its Close On, or at its Response Limit) stays closed after a
   publish, so the answer says so and names the setting to change with `change_form` (`closesAt`, `limit`), never
   "already taking responses". A form with problems is refused with every problem, as Share Form lists them. The answer is the
