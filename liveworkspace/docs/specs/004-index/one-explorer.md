@@ -1198,6 +1198,8 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   is prefetched names no item (the page is the same for all of them), so a prefetch says nothing about an item the
   reader could not open. The item's own data is not prefetched: the editor reads it with the reader's token and it is
   never cacheable (`no-cache`, a bearer header), so a copy fetched here could not be used by the page that opens.
+  Reading the editor's page goes through `parseInert`, so every header the Explorer is served under (liveworkspace.app's
+  and each app's) names the `liveworkspace-inert-parse` policy (each app's `016-platform/trusted-types.md`).
 - **Changes show at once.** Rename, move, Trash, restore, archive, hide from Recent and dismiss lay their change over
   every loaded list before the index answers (the overlay, `packages/explorer/src/data/overlay.ts`), and a refusal
   takes it back with a toast naming the item and why ("Couldn’t rename “X”. Try again."). Taking one back removes
