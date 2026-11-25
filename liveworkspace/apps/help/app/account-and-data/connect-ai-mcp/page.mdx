@@ -281,14 +281,12 @@ The AI does the thinking; <AppName /> validates, saves and shows what it produce
 
 <AppNote app="liveplanner">
   New plans an AI creates go where any new plan goes: into your default folder when you have set one
-  (**Settings**, **Plans**, **Where New Plans Go**), otherwise at the root of **My Work**.
+  (**Settings**, **Explorer**, **Where New Plans Go**), otherwise at the root of **My Work**.
 </AppNote>
 
 ## What a connection can and can't touch
 
-By default the token behind a connection has full read and write access to your <Noun plural />, including the <Noun plural /> in your teams' shared libraries, so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, switch on **Read-only access** on the approval page when you connect it: the connection can then find and read your <Noun plural /> (and list your Trash) but can't create, edit, share, rename, delete or restore anything. The block is enforced by our server, not just the tool. Its token shows a **Read-only** badge in the [API Tokens](/help/account-and-data/api-tokens/) list.
-
-<AppNote app="liveplanner">The badge reads **Read only**.</AppNote>
+By default the token behind a connection has full read and write access to your <Noun plural />, including the <Noun plural /> in your teams' shared libraries, so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, switch on **Read-only access** on the approval page when you connect it: the connection can then find and read your <Noun plural /> (and list your Trash) but can't create, edit, share, rename, delete or restore anything. The block is enforced by our server, not just the tool. Its token shows a **Read only** badge in the [API Tokens](/help/account-and-data/api-tokens/) list.
 
 Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than <Noun plural /> stay with you, signed in. It can never delete a <Noun /> for good either; that stays with you, in the Trash. (A tab it deletes is gone for good.)
 

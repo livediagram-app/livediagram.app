@@ -65,19 +65,18 @@ Changes are saved automatically after you make them, per tab: to the server, not
   storage rather than the server.
 </AppNote>
 
-There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** (If your browser is offline it says **You're offline. Keep this tab open to save when you reconnect.**) Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Other messages mean retrying will not help on its own:
+There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says it couldn't save, such as **Couldn't save your changes. Check your connection.** (If your browser is offline it says **You're offline. Keep this tab open to save when you reconnect.**) Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Other messages mean retrying will not help on its own:
 
 - **Your sign-in has lapsed**: sign in again to keep the changes.
 - **You can no longer edit this**: the share link was revoked or you were removed from the team, so autosave has stopped. Export a copy of the tab to keep your recent work.
 
-<AppNote app="livedocuments,livehuddle">
-  - **This tab is too big to save**: the connection is fine, but the tab holds more than one tab can
-  store. Move some of it to another tab and it saves again.
+- **This tab is too big to save**: the connection is fine, but the tab holds more than one tab can store. Move some of it to another tab and it saves again.
+
+<AppNote app="livedesign,livedocuments,liveplanner">
+  The message names the <Noun /> it couldn't save, in place of "your changes".
 </AppNote>
 
-<AppNote app="livedocuments,liveplanner">
-  While autosave keeps trying, a banner at the top of the screen says so.
-</AppNote>
+While autosave keeps trying, a banner at the top of the screen says so.
 
 <AppNote app="liveplanner">
   Changes to cards and Sheet cells made without a connection wait in this browser instead, even

@@ -426,7 +426,7 @@ export const articles: Article[] = [
   {
     slug: 'shared-with-you',
     title: 'Shared With Me',
-    description: 'Canvases other people have shared with you, collected in one place.',
+    description: 'Work other people have shared with you, collected in one place.',
     keywords:
       'shared with me received from others incoming shares collaborations dismiss role owner document links remove project plan design',
     category: 'Explorer',

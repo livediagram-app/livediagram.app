@@ -9,14 +9,14 @@ import { TitleBarParts as PlannerTitleBarParts } from '@/editions/liveplanner/co
 export const metadata = helpMetadata({
   title: 'The Top Corners',
   description:
-    'There is no bar across the top of the editor: the logo and the menu sit in the top-left corner, and Share or Copy and your account in the top right.',
+    'No bar across the top: the logo and menu sit at the top left, and Call, Share or Copy and your account at the top right. On a phone, Apps holds them.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
   path="user-interface/title-bar"
   title="The Top Corners"
-  description="The logo and the menu at the top left, and Share or Copy and your account at the top right, floating over your work."
+  description="The logo and the menu at the top left, and Call, Share or Copy and your account at the top right, floating over your work. On a phone, Apps holds them."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
@@ -25,8 +25,8 @@ export const metadata = helpMetadata({
   <AppName /> has no title bar: the canvas runs all the way to the top of the window. The <Noun />
   's main actions float in a small card at the **top right** of the canvas, level with the palette
   strip and the menu button at the top left. Reading from left to right, it holds **Prototype** on a
-  wireframe tab, then **Share** if the <Noun /> is yours or **Copy** if it is someone else's, and
-  your account at the end.
+  wireframe tab, then **Call**, then **Share** if the <Noun /> is yours or **Copy** if it is someone
+  else's, and your account at the end.
 </AppNote>
 
 <AppNote app="livediagram">
@@ -40,7 +40,7 @@ export const metadata = helpMetadata({
   <AppName /> has **no title bar** across the top of the editor. The canvas runs all the way up, and the few controls a title bar would hold float over it in two cards, in line with the [palette strip](/help/palette/toolbar-layout/):
 
 - **Top left**, the menu card: the <AppName /> logo, the menu button that opens the [Explorer](/help/explorer/explorer-panel/), and on a computer the open tab's name.
-- **Top right**, the actions card: **Copy**, **Present** and **Share** when they apply, then your account.
+- **Top right**, the actions card: **Call**, then **Copy**, **Present** and **Share** when they apply, then your account.
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -54,7 +54,7 @@ export const metadata = helpMetadata({
   <AppName /> has no bar across the top of the editor, so your board, sheet, dashboard or form gets the whole height of the window. What used to sit in a title bar sits at the top corners of the tab:
 
 - **Top left**: the <AppName /> logo, then the menu button that opens the [Explorer](/help/explorer/explorer-panel/).
-- **Top right**: **Copy** if the plan is someone else's, **Share** if it is yours, and your account.
+- **Top right**: **Call**, then **Copy** if the plan is someone else's or **Share** if it is yours, and your account.
 
 On a board that fills its tab, both sit in the board's own header row, around the board's name, card type buttons and widgets. On a Sheet, Dashboard or Form tab they float in two small cards over the tab instead.
 
@@ -74,12 +74,12 @@ Both take the tab's style, so they read as part of the tab rather than a frame a
 <Figure app="livehuddle" caption="The editor's top row: the logo and menu cards, the strip, and Share and your account in the corner.">
   <TopCorners />
 </Figure>
-<Figure app="liveplanner" caption="The top of a shared plan, as its owner sees it: on a board, the logo, the menu and the board's name lead its header row, with a solid Share and the account at the end; a Sheet, Dashboard or Form keeps them in two floating cards.">
+<Figure app="liveplanner" caption="The top of a shared plan, as its owner sees it: on a board, the logo, the menu and the board's name lead its header row, with Share and the account at the end; a Sheet, Dashboard or Form keeps them in two floating cards.">
   <PlannerTitleBarParts />
 </Figure>
 
 <AppNote app="livedesign">
-  On a computer each button shows its name beside its icon. On a phone, or when the top row is too crowded for names, the card shows its icons alone. The card hides in [Zen mode](/help/tools/zen-mode/) and inside an [embed](/help/collaboration/sharing/embeds/).
+  On a computer each button shows its name beside its icon. When the top row is too crowded for names, the card shows its icons alone. The card hides in [Zen mode](/help/tools/zen-mode/) and inside an [embed](/help/collaboration/sharing/embeds/).
 
 **Prototype.** On a [wireframe tab](/help/pages/wireframe-pages/), **Prototype** comes first in the card, for every role, and plays the screens as a clickable prototype.
 
@@ -92,16 +92,17 @@ Both take the tab's style, so they read as part of the tab rather than a frame a
 - **The menu button** opens the [Explorer panel](/help/explorer/explorer-panel/) under it, with your canvases and folders, and closes it again.
 - **The editor mode switch** sits beside the menu button and shows the tab's [editor mode](/help/canvas/editor-modes/) (Diagram, Draw or Workshop). Pick another mode from it. Only an Editor gets it, and not on a locked tab or an [Event Storming board](/help/canvas/event-storming-boards/).
 
-On a phone the menu button and the mode switch (its icon alone) move into a card of their own at the left of the strip.
+On a phone the logo takes the menu button's place, and the mode switch moves into the Apps drawer (see [On a Phone](#on-a-phone)).
 
 **Top right.** The card at the top right holds, from left to right:
 
+- **Call**, which starts a video call about this canvas, or **Join** while one is on. See [Start a Call Here](/help/collaboration/start-a-call/).
 - **Copy**, for anyone who cannot share this canvas (see below).
 - **Present**, while the canvas's [slide deck](/help/selection-modes/slide-deck/) has a slide to show. It starts the presentation. Not on a phone. See [Presenting](/help/selection-modes/slide-deck/presenting/).
 - **Share**, for those who can share the canvas (see below).
 - **Your account** (see below).
 
-When the strip needs the room, the card drops its words and keeps its icons. On a phone it shows icons alone.
+When the strip needs the room, the card drops its words and keeps its icons.
 
 </AppNote>
 
@@ -115,7 +116,7 @@ Both cards hide in [Zen mode](/help/tools/zen-mode/), and an [embed](/help/colla
 </AppNote>
 
 <AppNote app="liveplanner">
-  **The top left.** The **logo** opens the Explorer on the place that holds this plan (its folder, its team's library, Offline or Shared With Me), so you land beside it. On a narrower screen it shows the mark without the wordmark, and on a phone the logo is left off to make room.
+  **The top left.** The **logo** opens the Explorer on the place that holds this plan (its folder, its team's library, Offline or Shared With Me), so you land beside it. On a narrower screen it shows the mark without the wordmark, and on a phone the logo stands in for the menu button (see [On a Phone](#on-a-phone)).
 
 Beside it, the **menu button** (three lines) opens the [Explorer panel](/help/explorer/explorer-panel/) under it: your plans and folders, with links to the full Explorer, Help and more along its foot. Press it again to close it.
 
@@ -128,7 +129,7 @@ When a board or a Sheet fills its tab, or the tab is a Dashboard, its name rides
 ## Share or Copy
 
 <AppNote app="liveknowledge">
-  liveknowledge has no floating corner card. The logo heads the page tree at the top left and opens the Explorer on the place that holds the Knowledgebase; with the tree folded away, the top row leads with the menu button. **Share** and your account stand at the right end of the top row, always. On a window narrower than 1,280 pixels the **Page Info** button sits in the row too, left of **Share**.
+  liveknowledge has no floating corner card. The logo heads the page tree at the top left and opens the Explorer on the place that holds the Knowledgebase; with the tree folded away, the top row leads with the menu button. **Call**, then **Share** (or **Copy** for a visitor) and your account stand at the right end of the top row on a computer; on a phone they open from Apps. On a window narrower than 1,280 pixels the **Page Info** button sits in the row too, left of **Share**.
 </AppNote>
 
 <AppNote app="livedesign,livedocuments,liveplanner">
@@ -138,8 +139,8 @@ When a board or a Sheet fills its tab, or the tab is a Dashboard, its name rides
 <AppNote app="livehuddle">Which button you get depends on whose space it is.</AppNote>
 
 <AppNote app="livedocuments">
-  On a computer each button shows its name beside its icon; on a phone, or when the strip needs the
-  room, it shows the icon alone.
+  On a computer each button shows its name beside its icon; when the strip needs the room, it shows
+  the icon alone.
 </AppNote>
 
 <AppNote app="livedesign">
@@ -160,12 +161,12 @@ When a board or a Sheet fills its tab, or the tab is a Dashboard, its name rides
   **Share** is for the owner (and, on a team plan, the team's members).
 </AppNote>
 
-It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid once the <Noun /> has a live link, so you can tell at a glance that it is shared. On an [Offline](/help/privacy-and-security/offline-mode/) <Noun /> it asks you to save the <Noun /> to your account first, since there is nothing on a server to share yet.
+It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. Its word wears the <Noun />'s colour for who can see it: grey for Offline, green for Private, blue for Shared, violet for Team and pink for Public, blended when more than one applies. On a computer, hover it for a key to those colours, with **Change Access** to open the Share dialog. On an [Offline](/help/privacy-and-security/offline-mode/) <Noun /> it asks you to save the <Noun /> to your account first, since there is nothing on a server to share yet.
 
 <AppNote app="livehuddle">In the Share dialog you also choose who can see the space.</AppNote>
 
 <AppNote app="liveplanner">
-  Hovering the solid button reads **Shared**. While a [Form](/help/plan/forms/) tab is open, **Share
+  While a [Form](/help/plan/forms/) tab is open, **Share
   Form** takes Share's place: it publishes the form and copies its link.
 </AppNote>
 
@@ -204,14 +205,28 @@ Your copy starts **Private**: no share links come with it, and nothing you do to
 <AppNote app="livehuddle">
   Someone who opened a space from the [Community](/help/collaboration/sharing/finding-community-documents/) does not get **Copy** in this card. A slim bar under the top of the canvas offers **Make a Copy** instead, which works the same way.
 
-On a phone the card meets the right edge of the screen and its buttons show their icons alone. Share and Copy wait while the welcome screen of a new space is open, and the whole card is hidden inside an [embed](/help/collaboration/sharing/embeds/).
+Share and Copy wait while the welcome screen of a new space is open, and the whole card is hidden inside an [embed](/help/collaboration/sharing/embeds/).
 
 </AppNote>
 
 <AppNote app="liveplanner">
-  On a phone, and whenever the card would crowd the tab's own toolbar, its buttons show their icons
-  without their names.
+  Whenever the card would crowd the tab's own toolbar, its buttons show their icons without their
+  names.
 </AppNote>
+
+## On a Phone
+
+On a phone the actions at the top right are not drawn, so the palette strip gets more of the row. At the top left are the <AppName /> logo, which opens the [Explorer panel](/help/explorer/explorer-panel/), and **Apps** (nine dots). **Apps** opens a drawer from the bottom of the screen:
+
+- At the top, the <Noun />'s name, with <AppName /> and who can see it.
+- A grid of tiles, each only when it applies to you: **Explorer**, **Call**, **Share**, **Present**, **Copy Link**, **Make a Copy** and **Inbox** (with a count of unread items).
+- Last, your account: **Account** opens Settings on your account, where Sign Out lives. Not signed in, it reads **Sign In**.
+
+<AppNote app="livediagram">
+  For an Editor, **Editor mode** leads the drawer, under its top: Diagram, Draw or Workshop, one press to switch.
+</AppNote>
+
+A red dot on **Apps** means your Inbox has unread items.
 
 ## Your account
 
@@ -251,8 +266,8 @@ All of these cards hide in [Zen mode](/help/tools/zen-mode/), and an [embed](/he
 <AppNote app="livedocuments">
   **The document's name and who can see it.** The editor itself does not show the document's name or
   a visibility pill. To rename a document, or see whether it is Private, Shared or in a team, use
-  its row in the [Explorer](/help/explorer/explorer-page/). Whether it is shared also shows on the
-  **Share** button, which turns solid once the document has a live link.
+  its row in the [Explorer](/help/explorer/explorer-page/). Who can see it also shows in the colour
+  of the **Share** button's word.
 </AppNote>
 
 <AppNote app="livehuddle">

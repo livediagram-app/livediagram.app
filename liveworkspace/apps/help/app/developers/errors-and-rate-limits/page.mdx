@@ -46,7 +46,7 @@ Branch on the status code and the `error` token, not on `message`.
 | `412`         | `stale_tab`: a changeset sent with `"strict": true` on a tab that moved since its `base`.                                                                                                                                                                                     |
 | `413`         | The request body is over the size cap.                                                                                                                                                                                                                                        |
 | `422`         | A changeset the edit operations refuse (an element nothing matches, a field the element does not have, a `test` that found another value); `text` says what and how to fix it.                                                                                                |
-| `429`         | Rate limited. Slow down and retry.                                                                                                                                                                                                                                            |
+| `429`         | `rate_limited`: slow down and retry.                                                                                                                                                                                                                                          |
 | `5xx`         | A server-side error. Safe to retry idempotent reads after a pause.                                                                                                                                                                                                            |
 
 Where an app's answer differs, it is listed here:
@@ -107,8 +107,12 @@ On the hosted service the budgets are **300 writes a minute** and **120 token re
 </AppNote>
 
 <AppNote app="liveplanner">
-  Two more tight limits: 60 form reads and 60 form responses a minute on a form's public link, each
-  counted per network rather than per token.
+  More tight limits: 60 form reads and 60 form responses a minute on a form's public link, and 60
+  reads and votes a minute on a public roadmap, each counted per network rather than per token. A form
+  also takes at most 500 responses an hour from everyone (`429 form_busy`), and refuses new ones with
+  `409 form_closed` once its owner's monthly responses are used. Running an automation answers `429
+  automation_budget_spent` past a plan's 1,000 runs a day, and `429 automation_runs_used` (with
+  `Retry-After`) once the owner's monthly runs are used.
 </AppNote>
 
 <AppNote app="livedocuments,livedesign,livehuddle">
@@ -130,7 +134,7 @@ Request bodies are capped at 8 MB (image uploads have their own cap), and one ta
 
 <AppNote app="liveplanner">
 
-Request bodies are capped at 8 MB (a whole plan's `.liveplanner` file at 20 MB), and one tab's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized tab or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller tabs or plans.
+Request bodies are capped at 8 MB (image uploads have their own cap, and a whole plan's `.liveplanner` file is capped at 20 MB), and one tab's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized tab or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller tabs or plans.
 
 </AppNote>
 

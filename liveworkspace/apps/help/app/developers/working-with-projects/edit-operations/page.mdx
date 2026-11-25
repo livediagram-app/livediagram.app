@@ -160,7 +160,7 @@ To rebuild a tab rather than change it, send `"replace"` instead of `"operations
 | ----------- | ---------------------------------------------------------------------------------------------- |
 | `template`  | The tab a template makes, by its kind from `GET /templates` (such as `kanban`)                 |
 | `dashboard` | A Dashboard tab over the plan's Board and Sheet tabs: its `tabs`, `metrics`, `charts`, `notes` |
-| `form`      | A Form tab's form                                                                              |
+| `form`      | A new Form tab's form (an existing form changes through its form calls)                        |
 | `elements`  | The tab's elements, as the tab JSON gives them, kept at the `x` and `y` given                  |
 
 A replace may also carry a `name` for the tab. Nothing is laid out for you, so a replace carrying `layout` is refused. A replace on a tab id the plan does not have yet creates that tab, which is how a new tab is added in one write:

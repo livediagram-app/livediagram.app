@@ -35,7 +35,7 @@ When an agent or a script changes one of your tabs through the [API](/help/devel
 <AppNote app="liveplanner">
   In liveplanner a changeset can be a change to a board's settings, a dashboard's charts or a new
   tab from a template. Cards, Sheet cells and card types change through their own calls rather than
-  changesets. Those changes arrive live too, credited to the token's owner, but they have no change
+  changesets. Those changes arrive live too, and a card's History names the agent and whom it works for ("Claude Code for Priya Shah", from the `X-Liveplanner-Agent` header or the token's name), but they have no change
   note and no changeset to revert: to put one back, change it again.
 </AppNote>
 
