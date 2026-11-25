@@ -123,6 +123,34 @@ describe('reading how two files stand', () => {
       target: 'can',
     });
   });
+  it('answers missing for no other file, an unreadable source, and a file in the trash or archived', async () => {
+    const { ada, doc, plan } = await world();
+    expect((await call(`/items/${doc.id}/linked-tabs`, { auth: ada.auth })).status).toBe(404);
+    const ben = await person('user_b');
+    const bens = await makeItem(ben.auth, { app: 'liveplanner' });
+    expect((await read(ada.auth, bens.id, plan.id)).status).toBe(404);
+    h.db.sql.prepare('UPDATE items SET trashed_at = 1 WHERE id = ?').run(plan.id);
+    expect((await read(ada.auth, doc.id, plan.id)).status).toBe(404);
+    h.db.sql
+      .prepare('UPDATE items SET trashed_at = NULL, archived_at = 1 WHERE id = ?')
+      .run(plan.id);
+    expect((await link(ada.auth, doc.id, plan.id)).status).toBe(404);
+    expect(doorCalls()).toEqual([]);
+  });
+
+  it('counts a linked tab still on its way in as connected', async () => {
+    const { ada, doc, plan } = await world();
+    h.db.sql
+      .prepare(
+        `INSERT INTO connections (id, host_item_id, host_tab_id, target_item_id, share_code, pair_id, created_at, linked)
+         VALUES ('cn_inflight000000000000', ?, NULL, ?, NULL, NULL, 1, 1)`,
+      )
+      .run(doc.id, plan.id);
+    expect(await body<LinkedTabsRead>(await read(ada.auth, doc.id, plan.id))).toEqual({
+      source: 'connected',
+      target: 'can',
+    });
+  });
 });
 
 describe('linking two files', () => {
@@ -253,6 +281,48 @@ describe('linking two files', () => {
     expect((await link(ada.auth, doc.id, 7)).status).toBe(400);
     expect((await link(null, doc.id, doc.id)).status).toBe(401);
   });
+
+  it('refuses to link a file with itself', async () => {
+    const { ada, doc } = await world();
+    const res = await link(ada.auth, doc.id, doc.id);
+    expect(res.status).toBe(400);
+    expect(await body(res)).toEqual({ error: 'connection_self' });
+    expect(rows('connections')).toEqual([]);
+  });
+
+  it('names a tab for a file without a title Untitled', async () => {
+    const { ada, doc, plan } = await world();
+    h.db.sql.prepare("UPDATE items SET title = '  ' WHERE id = ?").run(plan.id);
+    expect((await link(ada.auth, doc.id, plan.id)).status).toBe(201);
+    const toDoc = doorCalls().find((c) => c.url.includes('livediagram'))!.body as {
+      name: string;
+    };
+    expect(toDoc.name).toBe('Untitled');
+  });
+
+  it('answers 429 past the per-person limit, before anything is made', async () => {
+    const { ada, doc, plan } = await world();
+    const keys: string[] = [];
+    const env = {
+      ...h.db.env,
+      KIT_RUN_LIMITER: {
+        limit: async ({ key }: { key: string }) => {
+          keys.push(key);
+          return { success: false };
+        },
+      },
+    };
+    const res = await call(`/items/${doc.id}/linked-tabs`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: { targetId: plan.id },
+      env,
+    });
+    expect(res.status).toBe(429);
+    expect(keys).toEqual(['linked-tabs:user_a']);
+    expect(doorCalls()).toEqual([]);
+    expect(rows('connections')).toEqual([]);
+  });
 });
 
 describe("liveplanner's agents", () => {
@@ -320,6 +390,42 @@ describe('opening a linked tab', () => {
       app: 'liveplanner',
       itemId: plan.id,
       name: 'Launch',
+      via: 'item',
+      level: null,
+    });
+  });
+
+  it("opens a team's file for a member who joined since their token was minted", async () => {
+    const bea = await person('user_b', { teams: [{ id: 'team2' }] });
+    const plan = await makeItem(bea.auth, {
+      app: 'liveplanner',
+      title: 'Team plan',
+      teamId: 'team2',
+    });
+    const ada = await person('user_a', { teams: [] });
+    const doc = await makeItem(ada.auth, { app: 'livediagram', title: 'Retro' });
+    await settle();
+    answerTabs();
+    const tabs = h.appAnswer;
+    // accounts says Ada is in team2 now, though her token predates it.
+    h.appAnswer = (c) =>
+      c.url.endsWith('/api/account/index/teams')
+        ? Response.json({ teams: [{ id: 'team2', name: 'team2', role: 'member' }] })
+        : tabs(c);
+    expect(await body<LinkedTabsMade>(await link(ada.auth, doc.id, plan.id))).toEqual({
+      source: 'made',
+      target: 'made',
+    });
+    const [toPlan] = rows('connections', 'host_item_id = ?', doc.id);
+    const grant = await grantFor(ada.auth, doc.id);
+    const res = await call(`/connections/${toPlan!.id as string}`, {
+      auth: ada.auth,
+      headers: { [GRANT]: grant },
+    });
+    expect(res.status).toBe(200);
+    expect(await body<ConnectionOpen>(res)).toMatchObject({
+      itemId: plan.id,
+      name: 'Team plan',
       via: 'item',
       level: null,
     });
