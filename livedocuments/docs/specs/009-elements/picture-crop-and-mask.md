@@ -84,6 +84,9 @@ image on the canvas:
   then undoes as usual), the image leaving the tab or losing its picture ends cropping without a change.
 - **What Done stores**, one edit and one undo step: the box becomes the frame (it can move and change size) and
   `crop` the part of the picture under it. Nothing is stored when the frame and the picture are where they began.
+- **A new picture starts whole.** Change Image and Remove Image drop the crop, in the same edit: it named a part
+  of the old picture, and a locked image (which cannot be cropped) would otherwise be stuck showing that part of
+  the new one. The box keeps its place and size, and the mask and greyscale stay, as they shape any picture.
 - **Rotation**: a rotated image is cropped in its own frame: the veil, the frame and the handles turn with it, and a
   drag moves along its edges.
 
