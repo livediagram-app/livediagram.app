@@ -5,7 +5,10 @@ import {
   PAGE_DESIGN_BY_ID,
   SAVED_DESIGN_HEIGHT,
   SAVED_DESIGN_WIDTH,
+  compactPageDesign,
   designFromPreview,
+  parsePageDesign,
+  samePageDesign,
   savedDesignElement,
   type PageDesign,
 } from '@livedocuments/document';
@@ -42,6 +45,22 @@ export function savedDesignsOf(
     });
   }
   return out.sort((a, b) => b.item.createdAt - a.item.createdAt);
+}
+
+// A design as stored, so two read different ways compare alike; a page's own without the tab's switches.
+function canonical(design: PageDesign, onPage: boolean): PageDesign | undefined {
+  const { rhythm, flow, ...own } = design;
+  const parsed = parsePageDesign(onPage ? own : { ...own, rhythm, flow });
+  return parsed && compactPageDesign(parsed);
+}
+
+/** Whether the tab (or, on This Page, the page) wears this saved design as saved: its tile shows selected. */
+export function wearsSaved(
+  worn: PageDesign | undefined,
+  saved: PageDesign,
+  onPage: boolean,
+): boolean {
+  return worn !== undefined && samePageDesign(canonical(worn, onPage), canonical(saved, onPage));
 }
 
 /** What Save This Design hands the Library: the design as tuned, named after it to start with. */
