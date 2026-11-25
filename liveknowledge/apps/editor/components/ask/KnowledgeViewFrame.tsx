@@ -9,6 +9,11 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } f
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { KnowledgeTopRow } from '@/components/chrome/KnowledgeTopRow';
 import { KnowledgeLogo } from '@/components/chrome/KnowledgeLogo';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
+import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
+import { ViewBackChevron } from './ViewBackChevron';
 
 /** A zero-height mark in the editor's column: the frame starts at its top, under anything in the flow above it (an
  *  approver's banner). */
@@ -96,8 +101,11 @@ export function KnowledgeViewFrame({ label, children }: { label: string; childre
   );
 }
 
-/** A view's header, the top row every view shares: the logo, its name, one line about it where there is room, its own
- *  buttons, then Share and the account button (the row's slot). */
+/** A view's header, the top row every view shares: the logo, the way back, its name, one line about it where there is
+ *  room, its own buttons, then Share and the account button (the row's slot). On a desktop it is as tall as the page
+ *  tree's head (the menu box's row, `toolbarTopClearancePx`) and its logo is drawn at the same scale, so switching
+ *  between Pages and a view leaves the logo where it was and the header reads as the same band (Work Tracker 1467). On
+ *  a phone it keeps the top row's 56 px, as Pages has. */
 export function KnowledgeViewHeader({
   title,
   about,
@@ -108,15 +116,27 @@ export function KnowledgeViewHeader({
   children?: ReactNode;
 }) {
   const titleId = useId();
+  const phone = useIsMobileViewport();
+  const toolbarScale = useUiScale('toolbar');
+  const band = phone ? undefined : Math.round(toolbarTopClearancePx(toolbarScale));
   return (
     <header aria-labelledby={titleId} className="shrink-0">
-      <KnowledgeTopRow rank="view" className="pl-4 sm:pl-6 phone:pl-3">
-        {/* The logo leads every view's row, as it heads the page tree on a page. */}
-        <KnowledgeLogo className="shrink-0" />
+      <KnowledgeTopRow
+        rank="view"
+        // 20 px in, and the row's middle a pixel under its hairline-less middle: the logo then stands where it does at
+        // the head of the page tree, to the pixel (measured 19.9, 26.8 against 24, 25.5 before).
+        className="pl-4 sm:pl-5 phone:pl-3"
+        style={band === undefined ? undefined : { height: band, paddingTop: 2 }}
+      >
+        {/* The logo leads every view's row, as it heads the page tree on a page, at the tree's scale. */}
+        <span className="flex shrink-0" style={phone ? undefined : uiScaleStyle(toolbarScale)}>
+          <KnowledgeLogo className="shrink-0" />
+        </span>
         <span
           aria-hidden
           className="mx-3 h-5 w-px shrink-0 bg-slate-200 phone:mx-2 dark:bg-slate-700"
         />
+        <ViewBackChevron />
         {/* The name over its line, in one column with one left edge (WI-1337): set side by side, the 12px line
             and the 14px name were each centred in the row, so their baselines missed by a pixel and read crooked. */}
         <div data-view-heading="" className="flex min-w-0 flex-1 flex-col justify-center">
@@ -130,7 +150,11 @@ export function KnowledgeViewHeader({
         {children ? (
           <div className="ml-auto flex shrink-0 items-center gap-1.5 pl-2">{children}</div>
         ) : null}
-        <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />
+        {/* Before Share and the account button, which a phone keeps elsewhere: there it would stand alone. */}
+        <span
+          aria-hidden
+          className="mx-1 h-5 w-px shrink-0 bg-slate-200 phone:hidden dark:bg-slate-700"
+        />
       </KnowledgeTopRow>
     </header>
   );

@@ -93,6 +93,38 @@ export function BackBar({
   );
 }
 
+/**
+ * The back bar's chevron alone: a header's way back where a full-width row has no room (a view's title row,
+ * liveknowledge's Ask and Insights). The bar's well, grown to a 32 px target, on the same hover: the chevron nudges
+ * left and the well takes the brand. `label` names where it goes back to ("Back to Pages"); the host gives it a hover
+ * card. The same rules as the bar: one step back, to the host's own target.
+ */
+export function BackChevron({
+  label,
+  onClick,
+  className = '',
+  'aria-describedby': describedBy,
+}: {
+  label: string;
+  onClick: () => void;
+  className?: string;
+  // A hover card's description, which it hands its control.
+  'aria-describedby'?: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-describedby={describedBy}
+      data-back-chevron=""
+      onClick={onClick}
+      className={`group flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition hover:bg-brand-100 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-brand-500/25 dark:hover:text-brand-200 ${className}`}
+    >
+      <ChevronGlyph />
+    </button>
+  );
+}
+
 // Sets the bar's sticky `top` to minus its scroll box's top padding, read once as it mounts (a walk up a few
 // ancestors; the padding is fixed per host). The scroll box is the first ancestor that does not let overflow through:
 // a `hidden` one (a capped AnimatedHeightBox before it overflows) keeps `top: 0`, as does having none.

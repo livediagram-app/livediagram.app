@@ -464,7 +464,14 @@ share link's visitor, a page's link and a Community post's reader get pages alon
   open page's. A reload keeps it, each change is a history entry, so Back returns to the view before, and each tab
   is a link.
 - Ask, Insights and Connect cover the canvas and the page tree, down to the footer; their header is the top row
-  every view shares, with Share and the account button at its right end. The editor under them takes no key, press
-  or focus.
+  every view shares, with Share and the account button at its right end, as tall on a desktop as the page tree's
+  head ([The page surface](page-surface.md) "The footer"). The editor under them takes no key, press or focus.
+- **The way back** (owner 2026-11-25, Work Tracker 1467). A back chevron stands left of the view's name and its line
+  in the header, the back bar's chevron ([Back bar](../004-interface-design/back-bar.md) "The header chevron"),
+  named and carded **Back to Pages**, **Back to Ask**, **Back to Insights** or **Back to Connect MCP**. It returns to
+  the view this one was opened from in this knowledgebase, as it was left: the open page and where it was scrolled,
+  Ask's conversation, by taking the browser's Back over this view's own entry. Opened by its link, or from another
+  knowledgebase, a view has nothing before it, and the chevron opens **Pages** (a history entry, as a footer tab is).
+  It is navigation only: every role has it.
 - Not offered in an embed, in zen mode, in a workbench, behind the welcome flow, to a Community visitor or through a
   link confined to one page.

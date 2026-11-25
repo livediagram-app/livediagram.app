@@ -52,6 +52,14 @@ to the top of the scroll area, so the way back never leaves the screen.
   height box, `AnimatedHeightBox`, does).
 - Before the content scrolls, nothing changes: the bar sits where it always did.
 
+## The header chevron
+
+Where a header has no room for a full-width row (liveknowledge's Ask, Insights and Connect views), the way back is the
+bar's chevron alone, `BackChevron` from the same file: the bar's well grown to a 32 px square (44 px where the host
+makes it a touch target), on the bar's hover (the well takes the brand, the chevron nudges left) and a focus ring. It
+is named for where it goes ("Back to Pages") and the host gives it a hover card. The bar's rules hold: one step back,
+to the host's own target. Nothing hand-rolls another.
+
 ## Not the back bar
 
 - The help centre's and marketing pages' site breadcrumb (home, then the section, then the page), a page trail with

@@ -82,6 +82,52 @@ export function knowledgeViewHref(href: string, view: KnowledgeView): string {
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((listener) => listener());
 
+// The way back from a view's header (search-and-ask.md "The way back"): the views this tab stepped through by a history
+// entry, newest last, each with the knowledgebase it was in. A press of a footer tab (or any `showKnowledgeView`) adds
+// the view it left; Back and Forward walk it as the browser walks its entries. Replacing an entry adds nothing, and
+// a page switch never touches the history (useTabEntryEffects replaces it), so the top is always the entry the
+// browser's Back would land on.
+type Step = { view: KnowledgeView; path: string };
+const trail: Step[] = [];
+// The view and knowledgebase last shown, to tell a Back (to the trail's top) from a Forward.
+let seen: Step | null = null;
+const here = (): Step => ({ view: currentKnowledgeView(), path: window.location.pathname });
+
+function onHistoryMove(): void {
+  const now = here();
+  const top = trail.at(-1);
+  if (top && top.view === now.view && top.path === now.path) trail.pop();
+  else if (seen && (seen.view !== now.view || seen.path !== now.path)) trail.push(seen);
+  seen = now;
+  notify();
+}
+
+/** The view the header's chevron goes back to: the one before this, in this knowledgebase, else Pages. */
+export function previousKnowledgeView(): KnowledgeView {
+  if (typeof window === 'undefined') return 'pages';
+  const top = trail.at(-1);
+  return top && top.path === window.location.pathname ? top.view : 'pages';
+}
+
+/** Back from a view's header: the browser's Back when the entry before is a view of this knowledgebase (so the view is
+ *  as it was left, the open page and the address with it), else Pages as a new entry (a view opened by its link). */
+export function backFromKnowledgeView(): void {
+  const top = trail.at(-1);
+  if (top && top.path === window.location.pathname) {
+    window.history.back();
+    return;
+  }
+  // Another knowledgebase's steps are no way back from this one.
+  trail.length = 0;
+  showKnowledgeView('pages');
+}
+
+/** Forgets the steps (a test's reset). */
+export function resetKnowledgeViewTrail(): void {
+  trail.length = 0;
+  seen = null;
+}
+
 /** The view the address names now. */
 export function currentKnowledgeView(): KnowledgeView {
   return typeof window === 'undefined' ? 'pages' : knowledgeViewOf(window.location.search);
@@ -90,21 +136,26 @@ export function currentKnowledgeView(): KnowledgeView {
 /** Show a view: a new history entry (so Back returns to the view before), or `replace` to stay on this one. */
 export function showKnowledgeView(view: KnowledgeView, opts: { replace?: boolean } = {}): void {
   if (typeof window === 'undefined' || view === currentKnowledgeView()) return;
+  if (!opts.replace) trail.push(here());
   const href = knowledgeViewHref(window.location.href, view);
   // Null, never history.state: Next skips its own state handed back (so useSearchParams keeps the old address),
   // and given null it copies that state across itself, so its Back and Forward still know the page
   // (packages/next-config history-state.test.js).
   if (opts.replace) window.history.replaceState(null, '', href);
   else window.history.pushState(null, '', href);
+  seen = here();
   notify();
 }
 
 /** Tells `listener` when the view changes: a press here, or the browser's Back and Forward. */
 export function subscribeKnowledgeView(listener: () => void): () => void {
   listeners.add(listener);
-  if (listeners.size === 1) window.addEventListener('popstate', notify);
+  if (listeners.size === 1) {
+    seen ??= here();
+    window.addEventListener('popstate', onHistoryMove);
+  }
   return () => {
     listeners.delete(listener);
-    if (listeners.size === 0) window.removeEventListener('popstate', notify);
+    if (listeners.size === 0) window.removeEventListener('popstate', onHistoryMove);
   };
 }

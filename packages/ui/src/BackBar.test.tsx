@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BackBar } from './BackBar';
+import { BackBar, BackChevron } from './BackBar';
 
 // docs/specs/004-interface-design/back-bar.md: the one back bar every app draws. "Always in view": it sticks to
 // the top of its scroller, flush with its edge, in every host.
@@ -73,5 +73,27 @@ describe('BackBar as the way back', () => {
     );
     expect(fireEvent.mouseDown(screen.getByRole('button', { name: /All events/ }))).toBe(false);
     expect(fireEvent.mouseDown(screen.getByRole('button', { name: /Tab Style/ }))).toBe(true);
+  });
+});
+
+// back-bar.md "The header chevron": the bar's chevron alone, for a header with no room for the row.
+describe('BackChevron', () => {
+  it('is a button named for where it goes back to, and goes there', () => {
+    const onClick = vi.fn();
+    render(<BackChevron label="Back to Pages" onClick={onClick} aria-describedby="card" />);
+    const button = screen.getByRole('button', { name: 'Back to Pages' });
+    expect(button.getAttribute('aria-describedby')).toBe('card');
+    expect(button.hasAttribute('data-back-chevron')).toBe(true);
+    fireEvent.click(button);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('wears the bar well and its hover, and takes the host size', () => {
+    render(<BackChevron label="Back to Ask" onClick={() => {}} className="phone:h-11" />);
+    const cls = screen.getByRole('button', { name: 'Back to Ask' }).className;
+    expect(cls).toMatch(/\bh-8 w-8\b/);
+    expect(cls).toMatch(/\bhover:bg-brand-100\b/);
+    expect(cls).toMatch(/\bfocus-visible:outline-2\b/);
+    expect(cls).toMatch(/\bphone:h-11\b/);
   });
 });
