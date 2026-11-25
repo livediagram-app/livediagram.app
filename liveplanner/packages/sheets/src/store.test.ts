@@ -438,6 +438,7 @@ describe('applySheetWrite', () => {
         ],
         rules: [{ id: 'v', is: 'range', ...span, src: span }],
         formatRules: [{ id: 'f', is: 'when', op: 'formula', fx, ...span }],
+        filter: { ...span, conds: { s0c1: { op: 'notEmpty' } } },
       },
     };
     const changes = [{ k: 'orderRows' as const, ids: ['s0r3', 's0r2', 's0r1', 's0r0'] }];
@@ -451,6 +452,8 @@ describe('applySheetWrite', () => {
     expect(r.rules).toEqual([{ id: 'v', is: 'range', ...pinned, src: pinned }]);
     expect(r.formatRules![0]).toMatchObject(pinned);
     expect(r.formatRules![0]!.fx!.r[0]).toEqual({ r1: 's0r2', c1: 's0c0' });
+    // The filter too (Sort Sheet with a filter on): it covers the same rows on screen, its conditions kept.
+    expect(r.filter).toEqual({ ...pinned, conds: { s0c1: { op: 'notEmpty' } } });
     // Columns too, and a reorder that moves nothing pins nothing.
     const cols = applySheetWrite(
       withRanges,
