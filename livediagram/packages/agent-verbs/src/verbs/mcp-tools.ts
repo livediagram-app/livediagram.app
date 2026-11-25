@@ -143,7 +143,7 @@ export const mcpUpdateDocument = mcpTool('update_document', {
 });
 
 export const mcpShareDocument = mcpTool('share_document', {
-  behaviour: 'write',
+  behaviour: 'destructive',
   title: 'Share a document',
   description:
     'Create a shareable link to a document so anyone with the URL can open it, with no ' +

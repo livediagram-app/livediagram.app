@@ -142,7 +142,7 @@ export const mcpUpdateDesign = mcpTool('update_design', {
 });
 
 export const mcpShareDesign = mcpTool('share_design', {
-  behaviour: 'write',
+  behaviour: 'destructive',
   title: 'Share a design',
   description:
     'Create a shareable link to a design so anyone with the URL can open it, with no ' +

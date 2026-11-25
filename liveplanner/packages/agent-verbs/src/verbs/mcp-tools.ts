@@ -165,7 +165,7 @@ export const mcpUpdateProject = mcpTool('update_project', {
 });
 
 export const mcpShareProject = mcpTool('share_project', {
-  behaviour: 'write',
+  behaviour: 'destructive',
   title: 'Share a plan',
   description:
     'Create a shareable link to a plan so anyone with the URL can open it, with no ' +
@@ -372,7 +372,7 @@ export const mcpImportBoard = mcpTool('import_board', {
 });
 
 export const mcpChangeBoard = mcpTool('change_board', {
-  behaviour: 'write',
+  behaviour: 'destructive',
   title: 'Change a Plan board',
   description:
     'Change a board’s title, its columns (every column by name, left to right: names it has keep their ' +
@@ -508,7 +508,7 @@ export const mcpChangeForm = mcpTool('change_form', {
 });
 
 export const mcpShareForm = mcpTool('share_form', {
-  behaviour: 'write',
+  behaviour: 'destructive',
   title: 'Publish or close a form',
   description:
     'Publish a form (make the link anyone can fill it in at, which shows nothing else of the plan), close it ' +

@@ -400,7 +400,7 @@ describe('tool annotations', () => {
     list_templates: 'read',
     create_project: 'write',
     add_tab: 'write',
-    share_project: 'write',
+    share_project: 'destructive',
     rename_project: 'write',
     change_tabs: 'write',
     list_trash: 'read',
@@ -424,7 +424,7 @@ describe('tool annotations', () => {
     add_board: 'write',
     // docs/specs/026-plan/tracker-import.md "Agents": an import makes a tab, a card type and cards.
     import_board: 'write',
-    change_board: 'write',
+    change_board: 'destructive',
     change_card_types: 'destructive',
     // docs/specs/029-sheets/sheet-store.md "Agents": change_sheet clears and deletes cells, rows and columns.
     list_sheets: 'read',
@@ -435,7 +435,7 @@ describe('tool annotations', () => {
     read_form: 'read',
     add_form: 'write',
     change_form: 'destructive',
-    share_form: 'write',
+    share_form: 'destructive',
     try_form: 'write',
   };
 

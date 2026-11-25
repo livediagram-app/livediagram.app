@@ -324,7 +324,7 @@ describe('tool annotations', () => {
     search_icons: 'read',
     create_design: 'write',
     add_tab: 'write',
-    share_design: 'write',
+    share_design: 'destructive',
     rename_design: 'write',
     change_tabs: 'write',
     list_trash: 'read',
