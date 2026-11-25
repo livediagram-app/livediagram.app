@@ -12,6 +12,7 @@ afterEach(cleanup);
 
 const VALUE: CustomFieldDef = { id: 'f-value', label: 'Value', kind: 'currency', currency: 'USD' };
 const CONTACT: CustomFieldDef = { id: 'f-contact', label: 'Contact', kind: 'email' };
+const COUNT: CustomFieldDef = { id: 'f-n', label: 'Count', kind: 'number' };
 
 describe('CustomFieldEditor', () => {
   it('saves a currency amount to the penny, beside its code, and clears an empty one', () => {
@@ -30,7 +31,7 @@ describe('CustomFieldEditor', () => {
   // A number box with text it can't read (some browsers let "£12" in) reads as '': that is no clearing.
   it.each([
     ['currency', VALUE],
-    ['number', { id: 'f-n', label: 'Count', kind: 'number' } as CustomFieldDef],
+    ['number', COUNT],
   ])('puts a %s back, never clears it, when the box holds no number', (_kind, field) => {
     const onSave = vi.fn();
     render(<CustomFieldEditor id="v" field={field} value={12} disabled={false} onSave={onSave} />);
