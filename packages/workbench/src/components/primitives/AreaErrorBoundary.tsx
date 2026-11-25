@@ -3,6 +3,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { errorNameToken, errorTypeToken } from '@liveworkspace/telemetry/error-tokens';
 import { Button } from '@liveworkspace/ui';
+import { errorWords, type ErrorWords } from '@liveworkspace/ui/error-words';
 import { browserNavigationDeps, recoverInBrowser } from '../../lib/stale-build-navigation';
 import { isChunkLoadError } from '../../lib/stale-chunks';
 import { getOnline } from '../../lib/online-status';
@@ -26,6 +27,10 @@ import { getOnline } from '../../lib/online-status';
 // Code that has not loaded yet cannot come while the browser is offline (docs/specs/007-editor/load-recovery.md
 // "Offline"): such a failure waits for the connection instead, and the area mounts again on its own once the
 // browser is back online. A panel says so, with no Try Again (it could only fail again).
+//
+// What a panel says follows the error's class (liveworkspace/docs/specs/022-interface-design/error-words.md): a thrown
+// refusal reads "<Area> couldn’t load." and why (signed out, no access, the server's), with Try Again only where trying
+// again can help; a fault with no class keeps "Something went wrong in <area>." and Try Again.
 
 type Track = (category: 'Error', action: 'Client', type: string) => void;
 
@@ -53,17 +58,24 @@ type BoundaryProps<Area extends string = string> = {
   children: ReactNode;
 };
 
-type State = { failed: boolean; offline: boolean };
+type State = { failed: boolean; offline: boolean; words: ErrorWords | null };
+
+const capitalised = (label: string) => label.charAt(0).toUpperCase() + label.slice(1);
 
 // The class lives at module scope and is handed the area's label and the telemetry as props, never through a
 // closure. Declared inside the factory, the editor build (React Compiler, then the minifier) renamed the factory's
 // parameters but not the class body's uses of them, so the fallback threw "labels is not defined", which hid the real
 // error and took the page down, and the report (inside its try) quietly sent nothing. A test keeps it out of there.
 class Boundary extends Component<BoundaryProps & { label: string; track: Track }, State> {
-  override state: State = { failed: false, offline: false };
+  override state: State = { failed: false, offline: false, words: null };
 
   static getDerivedStateFromError(error: unknown): State {
-    return { failed: true, offline: isChunkLoadError(error) && !getOnline() };
+    const words = errorWords(error);
+    return {
+      failed: true,
+      offline: (isChunkLoadError(error) && !getOnline()) || words.kind === 'offline',
+      words,
+    };
   }
 
   override componentWillUnmount() {
@@ -104,12 +116,14 @@ class Boundary extends Component<BoundaryProps & { label: string; track: Track }
     else window.addEventListener('online', this.retry);
   }
 
-  private readonly retry = () => this.setState({ failed: false, offline: false });
+  private readonly retry = () => this.setState({ failed: false, offline: false, words: null });
 
   override render() {
     if (!this.state.failed) return this.props.children;
     if (this.props.fallback !== 'panel') return null;
     const { label } = this.props;
+    const { words } = this.state;
+    const known = words !== null && words.kind !== 'unknown';
     return (
       <div
         role="alert"
@@ -123,10 +137,16 @@ class Boundary extends Component<BoundaryProps & { label: string; track: Track }
           </span>
         ) : (
           <>
-            <span>Something went wrong in {label}.</span>
-            <Button variant="secondary" size="xs" onClick={this.retry}>
-              Try Again
-            </Button>
+            <span>
+              {known
+                ? `${capitalised(label)} couldn’t load. ${words.message}`
+                : `Something went wrong in ${label}.`}
+            </span>
+            {known && !words.canRetry ? null : (
+              <Button variant="secondary" size="xs" onClick={this.retry}>
+                Try Again
+              </Button>
+            )}
           </>
         )}
       </div>

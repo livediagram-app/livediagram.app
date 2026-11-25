@@ -318,6 +318,16 @@ Measured with each build's own export: 391,192 to 384,884 bytes (382.0 to 375.9 
 unchanged. `panes-lazy-load.test.ts` keeps all three out of a static import anywhere in the package, and
 `app/first-load-lazy.test.ts` keeps the chips' import dynamic. The budget stays at 382 KiB.
 
+**Opening an item ahead loads with the first intent (2026-11-25, Work Tracker 1437).** The intent prefetch first
+came in whole: the prefetcher (`packages/explorer/src/explorer/intent-prefetch.ts`) and the site's warm with its
+`parseInert` took `/explorer` from 391,177 bytes (382.0 KiB) to 383.3 KiB gzipped (22 scripts), over its 382 KiB budget.
+Now the Explorer's first load holds only the listeners (`use-intent-prefetch.ts`) and the host's route check and
+once-per-app record (`lib/explorer/item-prefetch.ts`); the prefetcher arrives with the first link pointed at or
+focused, and the warm (`lib/explorer/item-warm.ts`) with the first editor actually warmed, so on liveworkspace.app,
+where every item is another site's, the warm never loads. Its +~0.7 KiB lands on top of the lens change above:
+measured with each build's own export, 384,884 to 385,600 bytes (375.9 to 376.6 KiB, +716 bytes), the same 22
+scripts, under the 382 KiB budget.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from
@@ -403,6 +413,8 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `liveworkspace/apps/site/lib/explorer/new-team.ts`               | After a team is made, joined, renamed, left or deleted in the Explorer (its TeamsHost's onTeamsChanged; liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in the Explorer"…                                                                              |
 | `liveworkspace/apps/site/lib/explorer/offline-moves.tsx`         | Take Offline and Sync in the Explorer on an app's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address")                                                                                                                  |
 | `liveworkspace/apps/site/lib/explorer/page-app.ts`               | Where the Explorer page is being shown (liveworkspace/docs/specs/010-site/site.md "The Explorer")                                                                                                                                                                        |
+| `liveworkspace/apps/site/lib/explorer/item-prefetch.ts`          | Opening an item, ahead (liveworkspace/docs/specs/004-index/one-explorer.md "Cost and performance"): the Explorer's `prefetchItem`, warming the editor an item's address opens on this origin, once per app per page                                                      |
+| `liveworkspace/apps/site/lib/explorer/item-warm.ts`              | Opening an item, ahead: the warm itself (the editor page's scripts, styles and fonts into the browser's cache), loaded by the first warm so its HTML parsing stays out of the Explorer's first load                                                                      |
 | `liveworkspace/apps/site/lib/explorer/previews.tsx`              | Item previews in the Explorer (liveworkspace/docs/specs/006-media/previews.md): one address for every app's items, `/api/previews/items/<id>` on the page's own origin (liveworkspace.app'…                                                                              |
 | `liveworkspace/apps/site/lib/explorer/search.ts`                 | The Search panel's own entries on the Explorer (liveworkspace/docs/specs/010-site/site.md "The Explorer", Search): the Explorer's help articles in the app's help centre (in no app, liveworkspace.app's own, `lib/help/platform-help.ts`), and, signed in,…             |
 | `liveworkspace/apps/site/lib/explorer/settings.ts`               | The person's synced settings the Explorer on liveworkspace.app follows (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"): whether Home's banner is hidden (`homeBanner`, a commo…                                                                           |
@@ -610,6 +622,8 @@ in both environments to the sitemap's pages but the build's `--skip` (`/communit
 | `PREVIEW_CACHE_MAX`             | `200`                                                           | `previews.tsx`              |
 | `PREVIEW_CACHE_CEILING`         | `1000`                                                          | `previews.tsx`              |
 | `PREVIEW_CONCURRENCY`           | `4`                                                             | `previews.tsx`              |
+| `WARM_ASSETS_MAX`               | `80`                                                            | `item-warm.ts`              |
+| `WARM_TIMEOUT_MS`               | `8000`                                                          | `item-prefetch.ts`          |
 | `WORKSPACE_TOKEN_URL`           | `'/api/auth/workspace-token'`                                   | `token.ts`                  |
 | `LEGAL_UPDATED`                 | `'25 October 2026'`                                             | `legal.ts`                  |
 | `CONTACT_URL`                   | `'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj'`     | `legal.ts`                  |

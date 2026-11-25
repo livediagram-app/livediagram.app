@@ -145,7 +145,8 @@ test('two people play ping-pong to 11 and both see the same score', async ({
   // The guest joins as a Participant, who plays.
   const guestPage = await personIn(browser, baseURL!, null);
   await guestPage.goto(`/document/shared?s=${code}`);
-  await guestPage.getByRole('button', { name: /^join$/i }).click();
+  // A visitor joins at once under a defaulted name (first-edit.md); Keep It confirms it from the name tray.
+  await guestPage.getByRole('button', { name: 'Keep It' }).click();
   await guestPage.locator(CANVAS).waitFor();
   await expect(self(guestPage)).toHaveCount(1, { timeout: 15_000 });
 

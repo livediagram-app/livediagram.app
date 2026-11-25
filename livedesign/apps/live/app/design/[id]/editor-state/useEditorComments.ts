@@ -1,3 +1,4 @@
+import { nameChoiceViews, useNameCardAsked } from '@liveworkspace/workbench/lib/name-card';
 import { useMemo } from 'react';
 import { isBoxed, elementActions, type BoxedElement } from '@livedesign/design';
 import { apiNotifyActionAssigned } from '@/lib/api-client';
@@ -186,7 +187,11 @@ export function useEditorComments({
     loadedExistingDesign &&
     !nameConfirmed &&
     identityPromptOpen;
-  const identityOnlyScreenOpen = joinScreenOpen;
+  // A visitor's name is defaulted, not asked (liveworkspace/docs/specs/011-workbench/first-edit.md "A visitor's
+  // name"): the offer is the name tray, and the card only opens from its Change Name.
+  const nameViews = nameChoiceViews(joinScreenOpen, useNameCardAsked());
+  const identityOnlyScreenOpen = nameViews.card;
+  const identityTrayOpen = nameViews.tray;
   // Combined gate for chrome-hide. Only the join-existing flow lives
   // on this route now; the historical new-design welcome lives on
   // /live/new.
@@ -215,6 +220,7 @@ export function useEditorComments({
     deleteAction,
     actionRows,
     identityOnlyScreenOpen,
+    identityTrayOpen,
     anyWelcomeOpen,
   };
 }

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { createPortal } from 'react-dom';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
-import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
+import { emptyCardShownOf, templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import {
   closeKnowledgebaseStart,
   takeStructurePick,
@@ -19,6 +19,13 @@ import { pageIsUntouched } from '@/lib/knowledge-setup/setup-empty';
 import { takeTitleFocus, wantTitleFocus } from '@/lib/page-title-focus';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
+
+// The empty-canvas card a Participant or Viewer sees on an empty tab (liveworkspace/docs/specs/011-workbench/
+// first-edit.md): loaded only when one is shown, never on an Editor's first load.
+const EmptyCanvasBanner = dynamic(
+  () => import('@/components/canvas/EmptyCanvasBanner').then((m) => m.EmptyCanvasBanner),
+  { ssr: false },
+);
 
 // The start (docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen") carries every template's preview:
 // loaded the first time a new knowledgebase offers it, never on the editor's first load.
@@ -89,6 +96,9 @@ export function EditorStartPanels() {
   // Whether the page has writing (someone else wrote, an import landed): read once per page object.
   const written = useEditorChrome((s) => s.hydrated && !pageIsUntouched(s.activeTab));
   const mayShow = useEditorChrome(templateStartShownOf);
+  // A Participant's or Viewer's untouched knowledgebase: the empty-canvas card (new-document-route.md).
+  const emptyCard = useEditorChrome(emptyCardShownOf);
+  const tabName = useEditorChrome((s) => s.activeTab.name);
   const offered = useKnowledgebaseStartOffered(tabId);
   const setup = useSetupOffered();
   const editor = useEditorChrome((s) => s.can.editPages && !s.isStructureReadOnly);
@@ -131,8 +141,13 @@ export function EditorStartPanels() {
   }, [shown, queued]);
 
   if (!shown) {
-    // A template's example content, once it has landed: Clear Example Content or Keep It.
-    return <ExampleContentTray />;
+    return (
+      <>
+        {emptyCard ? <EmptyCanvasBanner key={tabId} tabId={tabId} tabName={tabName} /> : null}
+        {/* A template's example content, once it has landed: Clear Example Content or Keep It. */}
+        <ExampleContentTray />
+      </>
+    );
   }
   // The start is never drawn under a pick asked for by link.
   if (queued) return null;

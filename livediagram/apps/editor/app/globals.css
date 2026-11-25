@@ -840,6 +840,12 @@ body:has([data-mode-message]) [data-yields-to-mode] {
   display: none;
 }
 
+/* The name tray goes first among standing messages (liveworkspace/docs/specs/011-workbench/first-edit.md "A visitor's
+   name"): the template example tray and Show Templates step aside while it shows, as they share its slot. */
+body:has([data-standing-first]) [data-yields-to-mode]:not([data-standing-first]) {
+  display: none;
+}
+
 /* Frames still settle BELOW the base plane rather than taking their index:
    a frame is a backdrop its contents sit on, and it is often added after the
    things inside it, so paint order alone would float it over them. */

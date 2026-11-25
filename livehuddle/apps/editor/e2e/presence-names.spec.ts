@@ -64,6 +64,8 @@ test("a visitor's typed join name reaches the owner, and a reload keeps it", asy
   const ownerPage = await openAs(browser, baseURL!, `/document/${id}`, owner, true);
   await ownerPage.locator(CANVAS).waitFor();
   const visitorPage = await openAs(browser, baseURL!, `/document/shared?s=${code}`, visitor, false);
+  // A visitor joins at once under a defaulted name (first-edit.md); the name tray's Change Name opens the card.
+  await visitorPage.getByRole('button', { name: 'Change Name' }).click();
   const nameField = visitorPage.getByRole('textbox', { name: 'Your name' });
   await nameField.fill('Grace Hopper');
   await visitorPage.getByRole('button', { name: /^join$/i }).click();

@@ -106,3 +106,21 @@ describe('the Explorer’s lens on the first load', () => {
     }
   });
 });
+
+describe('opening an item ahead in the Explorer’s first load', () => {
+  const explorer = (path: string) => read(join('../../../packages/explorer/src/explorer', path));
+
+  it('holds only the listeners; the prefetcher loads with the first intent', () => {
+    // The prefetcher and the warm came in whole and took `/explorer` past its budget (2026-11-25, Work Tracker 1437).
+    const listeners = explorer('use-intent-prefetch.ts');
+    expect(staticImports(listeners)).toEqual(['react']);
+    expect(listeners).toContain("import('./intent-prefetch')");
+    expect(staticImports(explorer('Explorer.tsx'))).not.toContain('./intent-prefetch');
+  });
+
+  it('loads the warm, and the HTML parsing it needs, only with the first warm', () => {
+    const prefetch = read('lib/explorer/item-prefetch.ts');
+    expect(staticImports(prefetch)).toEqual(['@liveworkspace/sites']);
+    expect(prefetch).toContain("import('./item-warm')");
+  });
+});

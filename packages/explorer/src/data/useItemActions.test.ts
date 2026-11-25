@@ -37,6 +37,36 @@ describe('item actions: optimistic, with rollback', () => {
     expect(toast.error).toHaveBeenCalledWith('You can’t change “⁨Item 1⁩” here.');
   });
 
+  it('shows a collaborator’s change that landed between the action and its refusal, never the old copy', async () => {
+    const { item, index, overlay, toast, actions } = setup();
+    index.fail.set('updateItem', new IndexError(500, 'unknown'));
+    const renamed = actions.rename(item, 'Mine');
+    const moved = actions.move(item, { folderId: 'f1', teamId: null });
+    // A list reads the index while both wait: someone else renamed and moved it meanwhile.
+    const theirs = { ...item, title: 'Theirs', folderId: 'f9' };
+    overlay.observe([theirs], overlay.stamp());
+    expect(overlay.apply(theirs)).toMatchObject({ title: 'Mine', folderId: 'f1' });
+    await expect(renamed).resolves.toBe(false);
+    await expect(moved).resolves.toBe(false);
+    // Taken back to what the index now holds, the collaborator's, with a toast for each.
+    expect(overlay.apply(theirs)).toMatchObject({ title: 'Theirs', folderId: 'f9' });
+    expect(toast.error).toHaveBeenCalledTimes(2);
+  });
+
+  it('takes a refused Trash back, with no Undo, and says why', async () => {
+    const { item, index, overlay, toast, actions } = setup();
+    index.fail.set('deleteItem', new IndexError(500, 'unknown'));
+    const done = actions.trash(item);
+    expect(overlay.apply(item).trashedAt).not.toBeNull();
+    await expect(done).resolves.toBe(false);
+    expect(overlay.apply(item).trashedAt).toBeNull();
+    expect(toast.show).not.toHaveBeenCalled();
+    // The server's trouble, said after what failed (error-words.md).
+    expect(toast.error).toHaveBeenCalledWith(
+      'Couldn’t delete “\u2068Item 1\u2069”. Something went wrong on our side. Try again in a moment.',
+    );
+  });
+
   it('does not call the index for an unchanged or empty name', async () => {
     const { item, index, actions } = setup();
     await actions.rename(item, 'Item 1');
@@ -143,7 +173,10 @@ describe('item actions: what the toasts say', () => {
     );
     index.fail.set('updateItem', new IndexError(500, 'unknown'));
     await actions.move(item, { folderId: null, teamId: null });
-    expect(toast.error).toHaveBeenLastCalledWith('Couldn’t move “\u2068Item 1\u2069”. Try again.');
+    // The server's trouble, said after what failed (error-words.md).
+    expect(toast.error).toHaveBeenLastCalledWith(
+      'Couldn’t move “\u2068Item 1\u2069”. Something went wrong on our side. Try again in a moment.',
+    );
   });
 
   it('isolates a name holding a bidi override, so the words after it still read forwards', async () => {
@@ -173,7 +206,7 @@ describe('item actions: what the toasts say', () => {
     index.fail.set('restoreItem', new IndexError(500, 'unknown'));
     await actions.restore(item);
     expect(toast.error).toHaveBeenLastCalledWith(
-      'Couldn’t restore “\u2068Item 1\u2069”. It is still in the Trash.',
+      'Couldn’t restore “\u2068Item 1\u2069”. It is still in the Trash. Something went wrong on our side. Try again in a moment.',
     );
     await actions.purge(item);
     expect(toast.show).toHaveBeenLastCalledWith('“\u2068Item 1\u2069” deleted for good.');

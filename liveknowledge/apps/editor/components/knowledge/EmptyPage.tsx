@@ -4,10 +4,16 @@
 // a quiet drawing of a blank page and a line saying so, instead of a white sheet. Whoever may edit gets Start Writing,
 // which opens edit mode as Edit and a double-click do; a reader is told the page has nothing yet. It never shows while
 // the page is being edited, so the writing starts on a clean page.
+import { useSyncExternalStore } from 'react';
 import { DRAFT_FLOW } from '@liveknowledge/document';
+import {
+  emptyCardDismissed,
+  subscribeEmptyCardDismissed,
+} from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { Button } from '@liveknowledge/ui';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { PencilIcon } from '@/components/primitives/explorer-icons';
+import { emptyCardShownOf } from '@/components/start/useTemplateStartShown';
 import { wantTitleFocus } from '@/lib/page-title-focus';
 
 type Run = { text?: string };
@@ -35,7 +41,15 @@ export function EmptyPage() {
   const empty = useEditorChrome((s) => isEmptyPage(s.pageTab.articles));
   const editing = useEditorChrome((s) => s.pageEditing.editing);
   const mayEdit = useEditorChrome((s) => s.pageEditing.mayEdit);
-  if (!empty || editing) return null;
+  // A reader of the untouched page /new made gets the empty-canvas card over it instead (docs/specs/007-editor/
+  // new-document-route.md "The empty-canvas hint"): one empty state, not two. Once its x closes it, this one is back.
+  const cardTab = useEditorChrome((s) => (emptyCardShownOf(s) ? s.activeTab.id : null));
+  const cardUp = useSyncExternalStore(
+    subscribeEmptyCardDismissed,
+    () => !!cardTab && !emptyCardDismissed(cardTab),
+    () => false,
+  );
+  if (!empty || editing || (cardUp && !mayEdit)) return null;
   return (
     <div
       data-empty-page=""

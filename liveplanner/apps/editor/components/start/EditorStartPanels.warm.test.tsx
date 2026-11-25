@@ -14,16 +14,36 @@ vi.mock('@/app/project/[id]/useSelectTab', () => ({ useSelectTab: () => vi.fn() 
 vi.mock('@/components/start/useTemplatePickMove', () => ({ useTemplatePickMove: () => vi.fn() }));
 vi.mock('@/hooks/persistence/useIsOfflineProject', () => ({ useIsOfflineProject: () => false }));
 // Only the Dashboard page draws here (a Viewer sees no Start Planning; no Form tab): it names what it was handed.
-vi.mock('next/dynamic', () => ({
-  default: () =>
-    function Page(props: { tab?: Tab; standIns?: readonly Tab[] }) {
-      return (
-        <p>
-          Page {props.tab?.id} with {props.standIns?.map((t) => t.name).join(', ')}
-        </p>
-      );
-    },
-}));
+// The empty-canvas card, loaded the same way, is drawn for real (it takes a tab's name, not the tab).
+vi.mock('next/dynamic', async () => {
+  const { EmptyCanvasBanner } = await vi.importActual<
+    typeof import('@/components/canvas/EmptyCanvasBanner')
+  >('@/components/canvas/EmptyCanvasBanner');
+  return {
+    default: () =>
+      function Page(props: {
+        tab?: Tab;
+        standIns?: readonly Tab[];
+        tabId?: string;
+        tabName?: string;
+        participant?: boolean;
+      }) {
+        if (props.tabName !== undefined && !props.tab)
+          return (
+            <EmptyCanvasBanner
+              tabId={props.tabId!}
+              tabName={props.tabName}
+              participant={!!props.participant}
+            />
+          );
+        return (
+          <p>
+            Page {props.tab?.id} with {props.standIns?.map((t) => t.name).join(', ')}
+          </p>
+        );
+      },
+  };
+});
 
 import { EditorStartPanels } from './EditorStartPanels';
 
@@ -81,5 +101,39 @@ describe('EditorStartPanels, a warm-opened Dashboard', () => {
   it('draws it once hydrated, as always', () => {
     mount({ hydrated: true });
     expect(screen.getByText(/^Page d1/)).toBeTruthy();
+  });
+});
+
+// An empty tab for someone who cannot edit: the empty-canvas card every editor shares, in place of Start Planning
+// (liveworkspace/docs/specs/011-workbench/first-edit.md "The empty-canvas card"; plan-mode.md).
+describe('EditorStartPanels, an empty tab', () => {
+  const empty = { id: 'e1', name: 'Board', kind: 'board', elements: [] } as unknown as Tab;
+
+  it("shows a Viewer the card with the Viewer's line", () => {
+    localStorage.clear();
+    mount({ hydrated: true, activeTab: empty, tabs: [empty] });
+    expect(screen.getByRole('region', { name: 'Board is empty' })).toBeTruthy();
+    expect(screen.getByText(/The owner can build it out/)).toBeTruthy();
+  });
+
+  it('tells a Participant what they may add', () => {
+    localStorage.clear();
+    mount({ hydrated: true, activeTab: empty, tabs: [empty], can: { level: 'participate' } });
+    expect(screen.getByText(/Add a sticky, text or an image/)).toBeTruthy();
+  });
+
+  it('shows an Editor no card (their empty tab is Start Planning)', () => {
+    mount({
+      hydrated: true,
+      activeTab: empty,
+      tabs: [empty],
+      isReadOnly: false,
+      can: { level: 'edit' },
+      planTabs: {},
+      forms: {},
+      trackerImport: {},
+      plan: {},
+    });
+    expect(screen.queryByRole('region', { name: /is empty/ })).toBeNull();
   });
 });

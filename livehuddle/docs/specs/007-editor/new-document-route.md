@@ -208,7 +208,7 @@ and no `?s=` code is set, it redirects to `/new` (via `window.location.assign`) 
 navigation completes. It keeps:
 
 - The visitor identity confirmation (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
-  `identityOnlyScreenOpen`).
+  `identityOnlyScreenOpen`), opening from the name tray's **Change Name** only: a visitor's name is defaulted, not asked, and the tray (`NameTray`, while `identityTrayOpen`) says which name they show under, with Change Name and Keep It ([From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "A visitor's name").
 - Everything else: autosave, room, tab management, document metadata, the Share dialog.
 
 ## `/new` state

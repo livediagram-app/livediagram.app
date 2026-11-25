@@ -1,8 +1,11 @@
 import { IndexError, SHARE_DOMAINS_MAX, SHARE_PASSWORD_MIN } from '@liveworkspace/index-client';
+import { errorKindOf, failedBecause } from '@liveworkspace/ui/error-words';
 
 // A refusal from the index, said in words a person can act on.
 // `subject` names what was acted on (“Roadmap”), so a refusal still reads right in the
-// notification list later.
+// notification list later. A refusal the index has no words for here keeps the caller's lead (“Couldn’t rename
+// “Roadmap”.”) and says why by its class: offline, signed out, the server's (error-words.md).
+const TRY_AGAIN = ' Try again.';
 export function failureText(error: unknown, fallback: string, subject?: string): string {
   if (error instanceof IndexError) {
     switch (error.code) {
@@ -28,13 +31,11 @@ export function failureText(error: unknown, fallback: string, subject?: string):
         return 'One of those isn’t an email domain. Use names like acme.com.';
       case 'too_many_domains':
         return `Up to ${SHARE_DOMAINS_MAX} domains.`;
-      case 'rate_limited':
-        return 'Too many tries just now. Wait a minute and try again.';
-      case 'unauthorized':
-        return 'Your session ended. Sign in again and try once more.';
     }
   }
-  return fallback;
+  if (errorKindOf(error) === 'unknown') return fallback;
+  const lead = fallback.endsWith(TRY_AGAIN) ? fallback.slice(0, -TRY_AGAIN.length) : fallback;
+  return failedBecause(lead, error);
 }
 
 export function isAbort(error: unknown): boolean {

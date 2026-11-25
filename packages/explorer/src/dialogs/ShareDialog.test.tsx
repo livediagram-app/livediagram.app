@@ -507,7 +507,7 @@ describe('share helpers', () => {
       'A password needs at least 6 characters.',
     );
     expect(failureText(new IndexError(429, 'rate_limited'), 'x')).toBe(
-      'Too many tries just now. Wait a minute and try again.',
+      'x Too many tries just now. Wait a minute and try again.',
     );
     expect(failureText(new IndexError(400, 'level_not_offered'), 'x')).toBe(
       'This app doesn’t offer that kind of pass. Pick another role.',

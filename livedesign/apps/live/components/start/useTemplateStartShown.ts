@@ -10,6 +10,19 @@ import { templateStartMode } from '@/components/start/template-start-mode';
 import { startClosedKey } from '@/components/start/start-closed-key';
 
 export function useTemplateStartShown(): EditorMode | null {
+  return useStartModeFor(false);
+}
+
+// Whether a Participant's or Viewer's empty tab shows the empty-canvas card (new-design-route.md "The empty-canvas
+// hint"): the tab is as empty as an Editor's start asks for, and the person cannot edit it.
+export function useEmptyCardShown(): boolean {
+  const { isReadOnly } = useEditorContext();
+  const asEditor = useStartModeFor(true);
+  return isReadOnly && asEditor !== null;
+}
+
+// The start's mode for the tab, read as an Editor would (`asEditor`) or as this person is.
+function useStartModeFor(asEditor: boolean): EditorMode | null {
   const {
     hydrated,
     zenMode,
@@ -25,7 +38,7 @@ export function useTemplateStartShown(): EditorMode | null {
     hydrated: hydrated && !activeTabConnected,
     zen: zenMode,
     embed: embedMode,
-    readOnly: isReadOnly,
+    readOnly: asEditor ? false : isReadOnly,
     drawToolArmed: !!pendingDraw,
     mode: editorMode.mode,
     elementCount: activeTab.elements.length,

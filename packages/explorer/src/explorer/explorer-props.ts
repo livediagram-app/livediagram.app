@@ -30,6 +30,7 @@ import { type ViewModeTelemetry } from './extras';
 import type { ExplorerAccounts } from '../data/accounts';
 import type { TeamsHost } from '../data/teams';
 import { type ExplorerDriveHost } from '../drive/useDriveMarks';
+import type { PrefetchItem } from './intent-prefetch';
 
 export type ExplorerProps = {
   /** The host app: its kind is what New makes and what "this app" shows. */
@@ -153,6 +154,10 @@ export type ExplorerProps = {
   /** Loads an item's preview ahead, as its Details row comes near the screen (the hover preview then paints at
    *  once). */
   prefetchThumbnail?: (item: Item) => void;
+  /** Fetches ahead what opening an item's address needs, once a pointer rests on its link or focus reaches it
+   *  (intent-prefetch.ts: gated, delayed, one at a time, once per address). Null when it fetches nothing for that
+   *  address. Without it nothing is prefetched. */
+  prefetchItem?: PrefetchItem;
   /** The List / Card / Details toggle switched (`UI / Toggled / <type>`), for the host's telemetry. */
   onViewToggled?: (type: ViewModeTelemetry) => void;
 } & LibraryHostProps;

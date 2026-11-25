@@ -167,7 +167,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
 - Every list of board types (the palette's Boards, Start Planning) is one list (`PLAN_BOARD_TILES`), and **All
   Cards is always its last option**: a new board type goes before it (and before Archive, which sits just ahead of
   All Cards in the palette).
-- There is no empty-canvas card: Start Planning is every empty tab's start, and it cannot be closed.
+- An Editor sees no empty-canvas card: Start Planning is every empty tab's start, and it cannot be closed. A Participant or Viewer, who is never offered Start Planning, sees the empty-canvas card in its place (`showEmptyCard`; [From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "The empty-canvas card"): a Viewer reads that the owner can build it out, a Participant that they can add a sticky, text or an image from the Palette.
 - **Describe a Plan** ([Describe a Plan](describe-a-plan.md)): for a signed-in Editor, a rail entry at the foot
   above Connect File and Import that drafts a board's columns and card types from their own words with AI, shown as a
   preview to change before Make Plan makes anything; a guest sees it with a sign-in nudge.

@@ -1,3 +1,5 @@
+import { errorCodeForStatus } from '@liveworkspace/ui/error-words';
+
 // How the Settings panel reaches the accounts API (liveworkspace/docs/specs/003-accounts/accounts.md "Who calls what"). Its own module,
 // apart from the store, so an editor's Settings carries only this until All is first chosen.
 
@@ -48,7 +50,8 @@ export function bearerSettingsRequest({
       return {
         ok: false,
         status: response.status,
-        error: typeof data.error === 'string' ? data.error : 'failed',
+        // No code of the API's own: name it by its status, so it reads as its class (error-words.md).
+        error: typeof data.error === 'string' ? data.error : errorCodeForStatus(response.status),
       } as const;
     } catch {
       return { ok: false, status: 0, error: 'offline' } as const;
