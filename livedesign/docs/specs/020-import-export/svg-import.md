@@ -42,7 +42,9 @@ they may paste. Import to Tab keeps the tab menu's own gate, and refuses a locke
   traced outline would carry more than four points for each node a path may hold) stays a stroke, decided before any
   outlining work, so a very detailed file imports at once rather than stalling.
 - **One path per SVG element.** Each `<path>`, `<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>` and
-  `<polygon>` becomes one path element; a `<use>` of one of them inside the file becomes one more.
+  `<polygon>` becomes one path element; a `<use>` of one of them inside the file becomes one more. A `<use>` of a
+  `<symbol>` (an icon sprite) draws the symbol's members with the symbol's own style (fill, stroke, opacity) passed
+  down to them, its viewBox fitted into the use's width and height (the whole viewport when they are absent), centred.
 - **The file's groups.** livedesign has no groups ([Web components are elements; groups are
   gone](../009-elements/web-components-and-no-groups.md)), so the file's `<g>` structure is kept the way the canvas can
   keep it: each group's members stay together and in the file's order in the stacking, and a group's transform,
