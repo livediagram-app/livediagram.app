@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="troubleshooting/review-due-everywhere" title="Review Due on Every Page" description="Why many pages turned Review Due at once after the Review Period changed, and how to put it right." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-Yesterday the tree was full of ticks. Today most rows read **Due** and the pages wear an amber **Review Due** pill. Nothing has happened to the pages: the Knowledgebase's **Review Period** was made shorter.
+Yesterday the tree was quiet. Today most rows read **Due**, and the pages wear an amber **Review Due** pill. Nothing has happened to the pages: the Knowledgebase's **Review Period** was made shorter.
 
 ## Why It Happens
 
@@ -28,7 +28,8 @@ Open any page's [Page Health](/help/knowledgebase/page-health/) card and read **
 ## Put It Back
 
 <Step n={1}>
-  As an Editor, press **Change** beside **Review Period** on the Page Health card.
+  As an Editor, press the period beside **Review Period** on the Page Health card (for example
+  **Every 30 Days**).
 </Step>
 
 <Step n={2}>
@@ -53,6 +54,6 @@ For a Knowledgebase whose pages do not go stale (a glossary, an archive), choose
 ## Still Wrong?
 
 - A page shows **Review Due** though it was verified this week: check the date under **Last Verified** on its Page Health card. Verifying an older copy, or a page with a similar name, is the usual cause.
-- You cannot see **Change**: only an Editor of the whole Knowledgebase can change the period. See [Roles in a Knowledgebase](/help/knowledgebase/knowledgebase-roles/).
+- The period is plain text, not a button: only an Editor of the whole Knowledgebase can change it. See [Roles in a Knowledgebase](/help/knowledgebase/knowledgebase-roles/).
 
 </ArticleLayout>
