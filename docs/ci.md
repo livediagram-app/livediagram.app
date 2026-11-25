@@ -490,6 +490,10 @@ so a deterministic failure shows up on the machine in minutes rather than on CI 
 the editors' coverage floors and E2E are CI's: running them on every push took up to half an hour, loaded a
 machine several agents share, and timed out tests the change never touched.
 
+The hook clears git's `GIT_DIR` and its kin before it runs anything: the tests it runs make throwaway repositories,
+and with those set their git commands reached the repository being pushed instead (on 2026-11-25 one made it bare and
+committed to the branch).
+
 **What still got through** (pull request runs of CI and E2E, 18 to 23 November 2026: 926 runs, 144 with a
 failed job), and what the hook does about each since 2026-11-23:
 
@@ -717,7 +721,8 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
 - **A new database.** Before its migrations, each Worker with D1 runs `ensure-d1.mjs`. A pinned `database_id`
   costs nothing: no API call. A new Worker can leave the id as the placeholder
   `00000000-0000-0000-0000-000000000000`: the step finds the database by its `database_name` (`wrangler d1 list`),
-  or creates it in Western Europe (`--location weur`, where every other database is), and writes the id into that
+  or creates it in Western Europe (`--location weur`, where every other database is) and reads its id (from wrangler's
+  output, JSON or TOML, else by name), and writes the id into that
   job's checkout of `wrangler.toml` for the migrations and the deploy. The repository is never changed: the job's
   notice names the id, to pin in `wrangler.toml` so remote reads and the next deploy go straight to it (until then
   each deploy finds it by name again). Before 2026-11-25 the owner created each database by hand and the Worker was

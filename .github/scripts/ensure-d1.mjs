@@ -88,7 +88,17 @@ export function ensureDatabase({ binding, environment, config, wrangler }) {
 
   const made = wrangler(['d1', 'create', found.name, '--location', LOCATION]);
   if (made.status !== 0) return { ok: false, message: `wrangler d1 create ${found.name} failed` };
-  const id = made.stdout.match(/"database_id":\s*"([0-9a-f-]{36})"/)?.[1];
+  // wrangler prints the new database's binding as JSON or, in newer versions, as TOML (`database_id = "…"`); failing
+  // both, the database is looked up by name, as it now exists.
+  let id = made.stdout.match(/"?database_id"?\s*[:=]\s*"([0-9a-f-]{36})"/)?.[1];
+  if (!id || !UUID.test(id)) {
+    const after = wrangler(['d1', 'list', '--json']);
+    try {
+      id = JSON.parse(after.stdout).find((d) => d.name === found.name)?.uuid;
+    } catch {
+      id = undefined;
+    }
+  }
   if (!id || !UUID.test(id)) {
     return { ok: false, message: `created ${found.name} but could not read its id` };
   }

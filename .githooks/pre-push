@@ -1,3 +1,7 @@
 #!/bin/sh
 # docs/ci.md "Before a push"; installed by `pnpm install`.
+# git hands a hook GIT_DIR and its kin for this repository; the tests the hook runs make throwaway repositories, and
+# left set these would point them back here (making it bare, committing to the branch being pushed). The hook runs at
+# the checkout's root, so git still finds this repository without them.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX GIT_COMMON_DIR GIT_OBJECT_DIRECTORY
 exec node scripts/git-hooks/pre-push.mjs
