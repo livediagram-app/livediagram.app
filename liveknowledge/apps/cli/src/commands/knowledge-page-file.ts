@@ -17,6 +17,9 @@ import {
 
 type Picture = { id: string; imageId: string; alt: string };
 
+// The line articleToMarkdown writes for a zone of the writing.
+const ZONE_LINE = /^\[zone ([^\]\s]{1,64})\]$/;
+
 const pictureOf = (element: Element): Picture | null => {
   const { imageId, alt, name } = element as { imageId?: unknown; alt?: unknown; name?: unknown };
   if (element.type !== 'image' || typeof imageId !== 'string' || !imageId) return null;
@@ -66,6 +69,10 @@ export function pageFileMarkdown(
       held.forEach((p) => placed.add(p.id));
       inZone.set(block.id, held);
     }
+    // A code block's lines are its own: a line in one that reads `[zone x]` is code, not a zone (the writer opens a
+    // fence with its backticks and a language, and closes it with the backticks alone).
+    let fence: string | null = null;
+    let afterEmptyZone = false;
     markdown = articleToMarkdown(
       withPageLinksAsFiles(flow, (page) => {
         const to = files.get(page);
@@ -73,13 +80,26 @@ export function pageFileMarkdown(
       }),
     )
       .split('\n')
-      .flatMap((text, i, lines) => {
-        const zone = /^\[zone ([^\]\s]{1,64})\]$/.exec(text);
-        // Every zone the writing holds was looked up above.
-        if (zone) return inZone.get(zone[1]!)!.map(line);
-        // The blank line after a zone that holds no picture goes with it.
-        const before = /^\[zone ([^\]\s]{1,64})\]$/.exec(lines[i - 1] ?? '');
-        return text === '' && before && !inZone.get(before[1]!)?.length ? [] : [text];
+      .flatMap((text) => {
+        const dropBlank = afterEmptyZone;
+        afterEmptyZone = false;
+        if (fence !== null) {
+          if (text === fence) fence = null;
+          return [text];
+        }
+        const opening = /^`{3,}/.exec(text);
+        if (opening) {
+          fence = opening[0];
+          return [text];
+        }
+        const zone = ZONE_LINE.exec(text);
+        const held = zone ? inZone.get(zone[1]!) : undefined;
+        if (held) {
+          // The blank line after a zone that holds no picture goes with it.
+          afterEmptyZone = held.length === 0;
+          return held.map(line);
+        }
+        return text === '' && dropBlank ? [] : [text];
       })
       .join('\n');
   }
