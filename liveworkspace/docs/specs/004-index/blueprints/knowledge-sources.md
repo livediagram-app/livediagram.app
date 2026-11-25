@@ -43,7 +43,9 @@ All `POST /app/items/:kb/<route>` with liveknowledge's app key; `:kb` must be a 
   scope, connected to it or in its folder, then to those `lookupItems` grants the person (owner, team member, or a
   link they opened). Never a connection's pass. A guest id is refused.
 - `knowledge-likely {personId, teams, words, exclude}`: live items of `:kb`'s scope in a source app whose title holds
-  every word (escaped `LIKE`, at most `KNOWLEDGE_LIKELY_WORDS_MAX` (8) words), not excluded, at most 20 candidates, kept
+  any of the words (`instr` on the lowered title, never a bound `LIKE`: D1 refuses a pattern over 50 bytes, and a
+  Chinese or Japanese question's one word of up to 40 letters is up to 120; at most `KNOWLEDGE_LIKELY_WORDS_MAX` (8)
+  words), not excluded, at most 20 candidates, kept
   to the person's own access, the first `KNOWLEDGE_LIKELY_MAX` (3) answered.
 
 ## Keeping in step
