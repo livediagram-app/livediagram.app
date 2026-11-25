@@ -132,14 +132,30 @@ SentChip.tsx           the chip, and SentChipFor (a place's chip from the store)
 SentChipsLayer.tsx     the canvases' chips over their elements, in canvas space, counter-scaled
 send-to-plan-entry.ts  the entry's words and icon every menu uses, and sendToPlanOpen(request)
 press-hold.ts          pressHold(): the words read as a press starts, taken by its click within PRESS_HOLD_MS (1 s)
-article-send-dom.ts    the reader's pills: held through a press on them (releaseReadSendPill), placed
-                       READ_PILL_GAP_PX under the words (24 on a coarse pointer, 8 else), flipped above at the screen's foot
+article-send-dom.ts    a sent block's chip in an article's writing, and sendArticleWords / sendArticleWordsToDiagram
+```
+
+The selection menu (send-to-plan.md "The selection menu", Work Tracker 1462), `src/components/selection-menu/`:
+
+```
+selection-menu-store.ts    the one open request (anchor, point, placement, docked, the rows' verbs), a module relay
+article-selection-menu.ts  bindSelectionMenu(view, editable), bound by articleSentSpec's view: `contextmenu` on the
+                           writing (a mouse or pen on the words picked, or the keyboard's menu key; never a touch's,
+                           Shift, or a session that can't send), and `selectionchange` (a touch's words dock it after
+                           DOCK_SETTLE_MS, 350 ms; the words going close it unless a press on its rows began within
+                           PRESS_HOLD_MS); dockSpot() centres it at the visual viewport's foot, or its top while the
+                           words sit in the bottom DOCK_ROOM_PX
+selection-clipboard.ts     runClipboardCommand (execCommand copy/cut), writeClipboardText (the fallback; a cut deletes
+                           only once the words are on it), pasteClipboard (clipboard.read, else readText, into
+                           view.pasteHTML / pasteText with a ClipboardEvent carrying a DataTransfer)
+SelectionMenu.tsx          SelectionMenuHost, mounted by SendToPlanHost while the session may send; the shared
+                           PortalMenu at the request's point, plain rows with keyLabel shortcuts (none docked), Paste
+                           greyed without a clipboard read, Escape on the document closes it, focus moves only off-dock
 ```
 
 Touch (send-to-plan.md "On a touch screen"): SendWordsButton, SendWordsToDiagramButton and each app's article page
-toolbar hold the words on `pointerdown` (`pressHold`) and send `take() ?? now` on click; the article plugin's
-`selectionchange` calls `releaseReadSendPill()`, which hides at once unless a pill's press is under way, and then at
-the hold's end. The toolbars hosting an entry (the shared FloatingToolbar, each SelectionPopover, each rich-text and
+toolbar hold the words on `pointerdown` (`pressHold`) and send `take() ?? now` on click; the selection menu holds through a
+press on its rows (`data-selection-menu`) the same way, and its verbs act on the words as they were when it opened. The toolbars hosting an entry (the shared FloatingToolbar, each SelectionPopover, each rich-text and
 article page toolbar) are stacking contexts (`isolate`) whose square buttons carry `touch-target-packed`; the thread
 header's entry carries `touch-target`.
 
@@ -156,5 +172,7 @@ Each editor binds its own parts: what a place's words are, its menu entries, whe
   the agents' create recorded; the Sent From row.
 - Editors: the words (titles, mentions, dates, a 50,000-character worst case in a CPU budget), the memory, the store's
   reads and its signal, the picker's flow and its keyboard, the chip's states, each app's entries and its roles.
-- Touch: a touch press's words sent though the selection cleared before the click; a stale hold ignored; the reader's
-  pill kept through its own press, gone after it, placed clear of the handles and flipped at the screen's foot.
+- Touch: a touch press's words sent though the selection cleared before the click; a stale hold ignored.
+- Selection menu: a right-click on the words (reading: Copy and the sends; editing: Cut and Paste too), off the words,
+  Shift, a touch, a session that can't send, the keyboard's menu key; the dock after the words hold still, at the foot
+  or the top, held through a tap on a row; the clipboard's every fallback; each app's real view cutting and pasting.

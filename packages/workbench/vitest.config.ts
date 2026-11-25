@@ -228,6 +228,12 @@ const HELD_AT_100 = [
   'src/components/send-to-plan/send-store.ts',
   'src/components/send-to-plan/press-hold.ts',
   'src/components/send-to-plan/send-to-plan-entry.ts',
+  // The selection menu in an article's writing (liveworkspace/docs/specs/004-index/send-to-plan.md "The selection menu",
+  // Work Tracker 1462).
+  'src/components/selection-menu/article-selection-menu.ts',
+  'src/components/selection-menu/selection-clipboard.ts',
+  'src/components/selection-menu/selection-menu-store.ts',
+  'src/components/selection-menu/SelectionMenu.tsx',
   'src/components/send-to-plan/send-words.ts',
   // Send to Diagram (liveworkspace/docs/specs/004-index/send-to-diagram.md, Work Tracker 1393).
   'src/components/send-to-diagram/**',
