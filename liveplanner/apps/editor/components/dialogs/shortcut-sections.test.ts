@@ -3,7 +3,11 @@ import { presetSetup, projectBoard, type Item } from '@liveplanner/items';
 import { coveredKeyRole } from '@/hooks/canvas/editor-shortcut-keys';
 import { planBoardKey } from '@/components/plan/plan-board-keys';
 import { sheetKey } from '@/components/sheets/sheet-keys';
-import { SHORTCUT_SECTIONS, type ShortcutRow } from './shortcut-sections';
+import {
+  IN_EVERY_APP_SECTION,
+  type ShortcutRow,
+} from '@liveworkspace/workbench/lib/shortcut-sections';
+import { SHORTCUT_SECTIONS } from './shortcut-sections';
 
 // The Keyboard settings list and the handlers are two hand-kept lists of one thing. The list is the reference the
 // help centre tells people to trust, so a row for a key that does nothing on a Board, Sheet, Dashboard or Form tab is
@@ -37,6 +41,7 @@ const ZOOM_ROWS = new Set(['+', '-', '0']);
 describe('the Keyboard settings list matches the keys a Plan tab answers', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.map((s) => s.heading)).toEqual([
+      'In Every App',
       'Everywhere',
       'On a Board',
       'In a Sheet',
@@ -47,7 +52,7 @@ describe('the Keyboard settings list matches the keys a Plan tab answers', () =>
   it('lists only editor-wide keys that run on a Plan tab', () => {
     // On a Plan tab the canvas is covered, so the editor runs just what coveredKeyRole lets through. F6 is the
     // region cycle's own listener (@liveworkspace/workbench/hooks/ui/useRegionCycle.ts), not the editor's.
-    const dead = section('Everywhere')
+    const dead = [...section('In Every App'), ...section('Everywhere')]
       .filter((row) => row.keys[0] !== 'F6')
       .filter((row) => coveredKeyRole(eventOf(row), false) !== 'run')
       .map((row) => row.label);
@@ -122,5 +127,22 @@ describe('the Keyboard settings list matches the keys a Plan tab answers', () =>
     expect(labels).not.toMatch(
       /shape|element|tool|frame|isometric|mind node|flowchart|palette|nudge|canvas/i,
     );
+  });
+});
+
+// liveworkspace/docs/specs/022-interface-design/action-parity.md "Shortcuts": the list opens with the section every
+// editor shares, as itself rather than a copy, and says none of it again. The workbench's own test reads every
+// editor's list to hold the same across apps.
+describe('In Every App', () => {
+  it('opens the list as the shared section itself', () => {
+    expect(SHORTCUT_SECTIONS[0]).toBe(IN_EVERY_APP_SECTION);
+  });
+
+  it('is not restated in this editor’s own sections', () => {
+    const shared = new Set(IN_EVERY_APP_SECTION.rows.map((row) => row.label));
+    const again = SHORTCUT_SECTIONS.slice(1).flatMap((section) =>
+      section.rows.filter((row) => shared.has(row.label)).map((row) => row.label),
+    );
+    expect(again).toEqual([]);
   });
 });

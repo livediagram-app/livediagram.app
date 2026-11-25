@@ -17,6 +17,11 @@ import { requestToolsView } from '@liveworkspace/workbench/components/chrome/too
 import type { ShapeMarker } from '@livediagram/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
+import { itemCommandNames } from '@liveworkspace/workbench/lib/item-command-names';
+
+// Share, Rename and Delete in this app's noun, named as every editor names them
+// (liveworkspace/docs/specs/022-interface-design/action-parity.md "The rule").
+const ITEM_COMMANDS = itemCommandNames('livediagram');
 
 // A runnable command: the searchable shape (id / name / keywords) plus the
 // thunk the editor runs when it's picked.
@@ -326,7 +331,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (!ctx.zenMode && !ctx.workbench) {
     out.push({
       id: 'rename-document',
-      name: 'Rename Canvas',
+      name: ITEM_COMMANDS.rename,
       keywords: 'rename canvas document diagram title name relabel',
       run: h.renameDocument,
     });
@@ -334,7 +339,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (!ctx.workbench) {
     out.push({
       id: 'delete-document',
-      name: 'Delete Canvas',
+      name: ITEM_COMMANDS.delete,
       keywords: 'delete canvas document diagram remove trash destroy',
       run: h.deleteDocument,
     });
@@ -358,7 +363,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
-      name: 'Share Canvas',
+      name: ITEM_COMMANDS.share,
       keywords: 'share canvas document diagram link invite collaborate publish embed export',
       run: h.openShare,
     });

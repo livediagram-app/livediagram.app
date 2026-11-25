@@ -41,12 +41,12 @@ Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](
 
 ## Connecting
 
-In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.liveworkspace.app/mcp`**, the one address for every liveworkspace app. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. Already connected to an app's own address, such as `mcp.livediagram.app`? Those take no new connections: [switch to the one address](/help/account-and-data/connect-ai-mcp/ai-clients/#moving-from-an-old-app-address). The first time, your tool opens a liveworkspace page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It lists each app, ticked (clear any you don't want the tool to reach), and says which site the access will be sent to: only continue if you recognise it. A tool running on your own computer, such as Claude Code or Cursor, takes its sign-in back on your own computer, so for one of those the page says the access goes back to the app on this computer, with an address such as `localhost:55884`: continue if you started the connection yourself. Anyone can register a tool under any name, so every tool but the CLI shows **Unverified App** beside its name. Choose **Connect** to approve, or **Cancel**.
+In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.liveworkspace.app/mcp`**, the one address for every liveworkspace app. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. Already connected to an app's own address, such as `mcp.livediagram.app`? Those take no new connections: [switch to the one address](/help/account-and-data/connect-ai-mcp/ai-clients/#moving-from-an-old-app-address). The first time, your tool opens a liveworkspace page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). Under **Apps it can use** it lists each app, ticked (clear any you don't want the tool to reach), and it says where the access goes. Anyone can register a tool under any name, so for every tool but the CLI a warning says the tool isn't made by liveworkspace, names where the access goes and asks you to continue only if you started this. A tool running on your own computer, such as Claude Code or Cursor, takes its sign-in back on your own computer, so for one of those the access goes to an address such as `localhost:55884`: continue if you started the connection yourself. Choose **Connect** to approve, or **Cancel**.
 
 <AppNote app="livediagram">
 
 <Figure
-  caption="The approval page: an optional Read-only access switch, where the access goes, then Connect."
+  caption="The approval page: who made the tool and where the access goes, the apps it can use, an optional Read-only access switch, then Connect."
   width="narrow"
 >
   <McpConsent product="livediagram" noun="canvas" />
@@ -57,7 +57,7 @@ In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.live
 <AppNote app="liveplanner">
 
 <Figure
-  caption="The approval page: an optional Read-only access switch, where the access goes, then Connect."
+  caption="The approval page: who made the tool and where the access goes, the apps it can use, an optional Read-only access switch, then Connect."
   width="narrow"
 >
   <McpConsent product="liveplanner" noun="plan" />
@@ -68,7 +68,7 @@ In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.live
 <AppNote app="livedocuments">
 
 <Figure
-  caption="The approval page: an optional Read-only access switch, where the access goes, then Connect."
+  caption="The approval page: who made the tool and where the access goes, the apps it can use, an optional Read-only access switch, then Connect."
   width="narrow"
 >
   <McpConsent product="livedocuments" noun="document" />
@@ -79,7 +79,7 @@ In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.live
 <AppNote app="livedesign">
 
 <Figure
-  caption="The approval page: an optional Read-only access switch, where the access goes, then Connect."
+  caption="The approval page: who made the tool and where the access goes, the apps it can use, an optional Read-only access switch, then Connect."
   width="narrow"
 >
   <McpConsent product="livedesign" noun="design" />

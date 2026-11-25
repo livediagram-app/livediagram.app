@@ -11,6 +11,11 @@
 import type { ShapeMarker } from '@livehuddle/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
+import { itemCommandNames } from '@liveworkspace/workbench/lib/item-command-names';
+
+// Share, Rename and Delete in this app's noun, named as every editor names them
+// (liveworkspace/docs/specs/022-interface-design/action-parity.md "The rule").
+const ITEM_COMMANDS = itemCommandNames('livehuddle');
 
 // A runnable command: the searchable shape (id / name / keywords) plus the
 // thunk the editor runs when it's picked.
@@ -185,13 +190,13 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   });
   out.push({
     id: 'rename-document',
-    name: 'Rename Space',
+    name: ITEM_COMMANDS.rename,
     keywords: 'rename space canvas document diagram title name relabel',
     run: h.renameDocument,
   });
   out.push({
     id: 'delete-document',
-    name: 'Delete Space',
+    name: ITEM_COMMANDS.delete,
     keywords: 'delete space canvas document diagram remove trash destroy',
     run: h.deleteDocument,
   });
@@ -213,7 +218,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.canShare && !ctx.isOffline) {
     out.push({
       id: 'share',
-      name: 'Share Space',
+      name: ITEM_COMMANDS.share,
       keywords: 'share space canvas document diagram link invite collaborate publish embed export',
       run: h.openShare,
     });

@@ -10,24 +10,21 @@
 // hooks/canvas/editor-shortcut-keys.ts (the editor-wide keys, which on a Plan tab are only those `coveredKeyRole`
 // runs), components/plan/plan-board-keys.ts (a focused card) and components/sheets/sheet-keys.ts (a Sheet's grid).
 // shortcut-sections.test.ts pins it to them.
+//
+// It opens with In Every App (Search & Commands, Undo, Redo), the section every liveworkspace editor lists word for
+// word (liveworkspace/docs/specs/022-interface-design/action-parity.md "Shortcuts"); only this editor's own keys
+// follow it.
 
-export type ShortcutRow = {
-  keys: string[];
-  label: string;
-};
+import {
+  IN_EVERY_APP_SECTION,
+  type ShortcutSection,
+} from '@liveworkspace/workbench/lib/shortcut-sections';
 
-export type ShortcutSection = {
-  heading: string;
-  rows: ShortcutRow[];
-};
-
-export const SHORTCUT_SECTIONS: ShortcutSection[] = [
+export const SHORTCUT_SECTIONS: readonly ShortcutSection[] = [
+  IN_EVERY_APP_SECTION,
   {
     heading: 'Everywhere',
     rows: [
-      { keys: ['⌘', 'K'], label: 'Search & Commands  (or ⌘ .)' },
-      { keys: ['⌘', 'Z'], label: 'Undo' },
-      { keys: ['⌘', '⇧', 'Z'], label: 'Redo  (or Ctrl Y)' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
       { keys: ['Escape'], label: 'Close what is open, or leave Zen Mode' },
       {

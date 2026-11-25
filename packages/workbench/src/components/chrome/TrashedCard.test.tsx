@@ -28,6 +28,27 @@ describe('TrashedCard', () => {
     expect(
       trashedCardLead({ trashedAt: now - TRASH_RETENTION_MS + 3 * DAY, reason: 'empty' }, now),
     ).toBe('It was empty, so it moved to the Trash (3 days left).');
+    expect(
+      trashedCardLead({ trashedAt: now - TRASH_RETENTION_MS + 3 * DAY, reason: null }, now),
+    ).toBe('It is in the Trash (3 days left).');
+  });
+
+  // livediagram's and livehuddle's empty-document cleanup: the card says how long it waited.
+  it('names how long an empty item waited, where the app gives it', () => {
+    const now = 1_000 * DAY;
+    expect(
+      trashedCardLead({ trashedAt: now - TRASH_RETENTION_MS + 3 * DAY, reason: 'empty' }, now, 30),
+    ).toBe('It was empty for 30 days, so it moved to the Trash (3 days left).');
+    render(
+      <TrashedCard
+        noun="canvas"
+        emptyDays={30}
+        restorable={{ trashedAt: Date.now(), reason: 'empty' }}
+        onRestore={() => Promise.resolve()}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'This canvas is in the Trash' })).toBeTruthy();
+    expect(screen.getByText(/It was empty for 30 days, so it moved to the Trash/)).toBeTruthy();
   });
 
   it('offers Restore to someone who may, and says so when it fails', async () => {
