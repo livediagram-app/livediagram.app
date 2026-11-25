@@ -61,7 +61,10 @@ describe('item actions: optimistic, with rollback', () => {
     await expect(done).resolves.toBe(false);
     expect(overlay.apply(item).trashedAt).toBeNull();
     expect(toast.show).not.toHaveBeenCalled();
-    expect(toast.error).toHaveBeenCalledWith('Couldn’t delete “⁨Item 1⁩”. Try again.');
+    // The server's trouble, said after what failed (error-words.md).
+    expect(toast.error).toHaveBeenCalledWith(
+      'Couldn’t delete “\u2068Item 1\u2069”. Something went wrong on our side. Try again in a moment.',
+    );
   });
 
   it('does not call the index for an unchanged or empty name', async () => {
