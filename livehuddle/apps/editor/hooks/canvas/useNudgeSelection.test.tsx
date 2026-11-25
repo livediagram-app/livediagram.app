@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livehuddle/document';
+import {
+  createShape,
+  doorOnRoom,
+  withDoorPiece,
+  type Element,
+  type ShapeElement,
+  type Tab,
+} from '@livehuddle/document';
 import { useNudgeSelection } from './useNudgeSelection';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -64,5 +71,22 @@ describe('nudging an element saved locked', () => {
     const alone = harness({ elements: [locked], selected: 'l' });
     alone.press(10, 0);
     expect(alone.at('l').x).toBe(10);
+  });
+});
+
+// docs/specs/009-elements/room-builder.md "It rides its room": a nudge carries a room's Doors, as a drag does.
+describe('nudging a room', () => {
+  it('carries the Door on its wall, and the door still cuts it', () => {
+    const [room, door] = withDoorPiece({
+      ...createShape('room', 0, 0),
+      width: 400,
+      height: 300,
+    }) as [ShapeElement, ShapeElement];
+    const h = harness({ elements: [room, door], selected: room.id });
+    h.press(10, 0);
+    h.press(0, 10);
+    expect(h.at(door.id).x).toBe(door.x + 10);
+    expect(h.at(door.id).y).toBe(door.y + 10);
+    expect(doorOnRoom(h.at(door.id) as ShapeElement, h.at(room.id) as ShapeElement)).toBe(true);
   });
 });

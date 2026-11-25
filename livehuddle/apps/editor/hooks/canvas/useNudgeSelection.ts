@@ -21,7 +21,7 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef } from 'react';
-import { isBoxed, type Element, type Tab } from '@livehuddle/document';
+import { isBoxed, withAttachedDoors, type Element, type Tab } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {
@@ -77,8 +77,13 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
       burstActiveRef.current = false;
       burstTimerRef.current = null;
     }, 500);
-    deps.tick((els) =>
-      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, x: el.x + dx, y: el.y + dy } : el)),
-    );
+    deps.tick((els) => {
+      // A nudged room carries the Doors and Windows on its walls, as a drag does
+      // (docs/specs/009-elements/room-builder.md "It rides its room").
+      const moving = withAttachedDoors(els, ids);
+      return els.map((el) =>
+        moving.has(el.id) && isBoxed(el) ? { ...el, x: el.x + dx, y: el.y + dy } : el,
+      );
+    });
   };
 }

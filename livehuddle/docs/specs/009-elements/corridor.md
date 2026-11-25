@@ -53,8 +53,9 @@ A shape kind of its own, `corridor`, whose type is stored in `variant` (the fiel
   from either side. The open ends do not.
 - **Doors snap onto them.** A Door dropped or moved within 48 canvas px of a corridor's wall jumps onto it as it does
   onto a room's (centred on the wall's centre line, turned to its angle, in the corridor's floor colour), and cuts it:
-  a character walks through an open Door in a corridor wall, and a closed one blocks it again. Moving or resizing a
-  corridor carries the Doors standing on its walls, as a room does (`doorsFollowRooms`, `withAttachedDoors`).
+  a character walks through an open Door in a corridor wall, and a closed one blocks it again. Moving, resizing or
+  turning a corridor carries the Doors standing on its walls, as a room does (`doorsFollowRooms`, `withAttachedDoors`):
+  turned, each keeps its place along its wall and turns to the wall's new angle.
 - **Windows snap onto them too** ([Window](room-builder.md#window)): a Window on a corridor wall faces into the
   corridor, rides it and follows its resize, and never cuts the wall.
 - **Not a call of its own**: a corridor is open at its ends, so people in it hear the people near them as on open

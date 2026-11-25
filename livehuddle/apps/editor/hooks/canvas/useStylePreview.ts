@@ -25,7 +25,11 @@
 // the direct setters in useElementStyle use).
 
 import { useRef, type MutableRefObject } from 'react';
-import { ANIMATION_SET_TELEMETRY_TYPE, type AnimationSetId } from '@livehuddle/document';
+import {
+  ANIMATION_SET_TELEMETRY_TYPE,
+  doorsFollowRooms,
+  type AnimationSetId,
+} from '@livehuddle/document';
 import { withSetAnimation } from '@/lib/animation-set-writes';
 import type {
   BorderStroke,
@@ -184,7 +188,12 @@ export function useStylePreview(deps: {
     const before = elementsNow().map((el) =>
       snap.originals.has(el.id) ? snap.originals.get(el.id)! : el,
     );
-    const after = before.map((el) => (snap.ids.has(el.id) ? mapEl(el) : el));
+    // A corridor turned from the menu carries the Doors on its walls (docs/specs/009-elements/corridor.md "It
+    // turns"), in the same history step.
+    const after = doorsFollowRooms(
+      before,
+      before.map((el) => (snap.ids.has(el.id) ? mapEl(el) : el)),
+    );
     // Restore originals into the present (no history), THEN commit the result:
     // the composed updaters snapshot the original onto the undo stack.
     writeElements(before);

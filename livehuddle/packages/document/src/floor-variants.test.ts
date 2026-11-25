@@ -244,6 +244,16 @@ describe('doors in a corridor', () => {
     expect((moved as ShapeElement).x).toBeGreaterThan(door.x);
   });
 
+  it('turn with it (corridor.md "It turns")', () => {
+    const free = { ...createShape('door', 0, 0), id: 'd', x: 150, y: 100 } as ShapeElement;
+    const door = snapDoorToWall(free, [corridor]);
+    const turned = { ...corridor, rotation: 90 };
+    const [, moved] = doorsFollowRooms([corridor, door], [turned, door]);
+    expect(moved).not.toBe(door);
+    expect(doorOnRoom(moved as ShapeElement, turned)).toBe(true);
+    expect((moved as ShapeElement).rotation).toBe(90);
+  });
+
   it('is not a room for a door standing nowhere near', () => {
     const far = { ...createShape('door', 0, 0), x: 900, y: 900 } as ShapeElement;
     expect(doorOnRoom(far, corridor)).toBe(false);
