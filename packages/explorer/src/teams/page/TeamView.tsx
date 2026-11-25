@@ -17,7 +17,7 @@ import { useToast } from '../../ui/Toasts';
 import { LogOutIcon } from '../../ui/icons';
 import { memberName } from '../rules';
 import { initialsOf, teamFacts } from '../team-details';
-import { TeamPlan, TeamProBadge, useTeamTier } from '../TeamPlan';
+import { TeamPlan, SpaceProBadge, useTeamTier } from '../TeamPlan';
 import { useTeamActions, type TeamActions } from '../useTeamActions';
 import { copyText } from './copy-link';
 import { InviteComposer, type InviteComposerHandle } from './InviteComposer';
@@ -157,7 +157,7 @@ function TeamHeader({
                 <span className="text-optical-line">Free Plan</span>
               </span>
             ) : (
-              <TeamProBadge teamId={team.id} size="md" />
+              <SpaceProBadge teamId={team.id} size="md" />
             )}
           </div>
           <p className={`m-0 truncate text-[13px] ${MUTED}`}>

@@ -6,6 +6,7 @@
 // Offline's row follows the teams while this browser holds anything. One request for every space's preview
 // (useSpacePreviews), whatever the number of spaces.
 
+import { SpaceProBadge } from '../teams/TeamPlan';
 import { useId, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { APP_KINDS, type SpacePreview } from '@liveworkspace/index-client';
 import { useSpacePreviews, type SpacePreviews } from '../data/useSpacePreviews';
@@ -252,7 +253,10 @@ function SpaceTile({
           {space.teamId === null ? <MyWorkIcon /> : initialsOf(space.name)}
         </SpaceDisc>
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className={`${CARD_NAME} text-sm leading-5`}>{space.name}</span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className={`${CARD_NAME} min-w-0 text-sm leading-5`}>{space.name}</span>
+            <SpaceProBadge teamId={space.teamId} />
+          </span>
           <span id={lineId} className={`block h-4 truncate text-xs leading-4 ${MUTED}`}>
             {line}
             {team ? <span className="sr-only">{`, ${team} members`}</span> : null}

@@ -24,19 +24,26 @@ export function useTeamTier(teamId: string): string | null {
   return team ? TIER_NAMES[team.tier] : null;
 }
 
-/** Whether the team is on Pro for Teams, for the Pro badge after its name (its page's header, the sidebar): false with
- *  Pro off, until the service answers, or for a team the service doesn't list yet. */
-export function useTeamPro(teamId: string): boolean {
+/** Whether a space is on a paid tier, for the Pro badge after its name: My Work (`null`) on the person's own Pro, a
+ *  team on Pro for Teams. False with Pro off, until the service answers, or for a team it doesn't list yet. */
+export function useSpacePro(teamId: string | null): boolean {
   const load = useSubscription();
   if (!proOn() || load.status !== 'ready') return false;
+  if (teamId === null) return load.me.personal.tier !== 'free';
   const team = load.me.teams.find((t) => t.teamId === teamId);
   return !!team && team.tier !== 'free';
 }
 
-/** The Pro badge after a subscribed team's name; nothing otherwise. */
-export function TeamProBadge({ teamId, size = 'sm' }: { teamId: string; size?: 'sm' | 'md' }) {
-  return useTeamPro(teamId) ? (
-    <ProBadge form="solid" size={size} label="Pro for Teams" className="shrink-0" />
+/** The Pro badge after a paid space's name (a team's page header, the sidebar, Home's Spaces); nothing otherwise. */
+export function SpaceProBadge({
+  teamId,
+  size = 'sm',
+}: {
+  teamId: string | null;
+  size?: 'sm' | 'md';
+}) {
+  return useSpacePro(teamId) ? (
+    <ProBadge form="solid" size={size} label="Pro" className="shrink-0" />
   ) : null;
 }
 

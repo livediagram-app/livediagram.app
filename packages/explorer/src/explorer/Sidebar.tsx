@@ -10,7 +10,7 @@
 //
 // It is one keyboard tree (sidebar/useTreeNavigation): one tab stop, arrows, Home and End, Left and Right to fold and
 // open, type-ahead. Folder rows and My Work carry a menu (⋯, right-click, Shift+F10) and rename in place.
-import { TeamProBadge } from '../teams/TeamPlan';
+import { SpaceProBadge } from '../teams/TeamPlan';
 import {
   useId,
   useMemo,
@@ -360,6 +360,7 @@ export function Sidebar() {
           icon={<MyWorkIcon />}
           tone="sky"
           label={SIDEBAR_LABELS.myWork}
+          marker={<SpaceProBadge teamId={null} />}
           selected={view.kind === 'all' || inFolded(MY_WORK)}
           onActivate={() => navigate({ kind: 'all' })}
           depth={0}
@@ -399,7 +400,7 @@ export function Sidebar() {
               expandable={roots.length > 0}
               expanded={expanded.has(key)}
               onToggleExpand={() => toggle(key)}
-              marker={<TeamProBadge teamId={t.id} />}
+              marker={<SpaceProBadge teamId={t.id} />}
               {...teamMemberBadge(memberCounts.get(t.id))}
             >
               {roots.map((f) => (

@@ -427,8 +427,10 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   Free, Manage Billing for an admin of a subscribed team, Ask an Admin for a member of a Free team, and nothing for a
   member of a subscribed team. It loads with the team card, never in the first load, and is absent with Pro off or
   until the service answers.
-  A subscribed team also wears the Pro badge after its name (owner 2026-11-25), on every tab of its page and on its
-  row in the sidebar, so anyone in it can see it is on Pro from the library; a Free team's header keeps "Free Plan".
+  A paid space wears the solid Pro badge after its name (owner 2026-11-25), and nothing more: a subscribed team on
+  every tab of its page, on its sidebar row and on its tile in Home's Spaces; My Work on its sidebar row and its Home
+  tile while the person has Pro. So anyone in a team can see it is on Pro from the library; a Free team's header
+  keeps "Free Plan".
   Joining or making a team reads the subscription again with the renewed token, so the badge shows at once.
 - **The upgrade dialog:** Subscribe For Just Me or A Team, and the comparison of every limit by tier beside your
   usage now, grouped (Automation; Publishing; AI; Storage and History; Recording and Calls; Knowledgebases),
