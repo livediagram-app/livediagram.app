@@ -259,7 +259,9 @@ CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component
   `startEdit` opened); `finishEdit` derives once from the members as they stand when this person presses Done there.
 - A library op older than one already seen for that main (ops can pass each other): dropped (`noteStored`).
 - Two sessions on one tab: each instance's own; `stampSessionMembers` stamps only while exactly one is open on the
-  tab (D196).
+  tab (D196). One person never holds two: `startEdit` first finishes this person's open session on the tab (its main
+  derived, its members folded away) in the same commit as the new start, and a new session of the same main starts
+  from that derived main.
 - Deleting a session's instance (it is hidden, but an undo can do it): its members stay as plain elements.
 - A patch to a main that is gone: 404; the editor drops its pending patch and refetches.
 - Paste of an instance with no main in the payload or library: kept; draws missing until the library has it.
