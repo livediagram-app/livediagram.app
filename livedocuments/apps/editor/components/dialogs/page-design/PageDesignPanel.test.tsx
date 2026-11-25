@@ -110,6 +110,29 @@ describe('the Page Design home (canvas-and-theme-dialog.md "Page Design")', () =
     expect(allPagesSwitch().getAttribute('aria-checked')).toBe('true');
   });
 
+  it('puts Keep Theme in Shuffle’s row, straight left of it, and hides it alone while Affect All Pages is off', async () => {
+    open(undefined, undefined, { withHome: true });
+    const shuffle = q('[data-page-design-quick-shuffle]');
+    const keep = q('[data-page-design-keep-theme]');
+    // One row: the same parent, Keep Theme first, Shuffle next to it.
+    expect(keep.parentElement).toBe(shuffle.parentElement);
+    expect(keep.nextElementSibling).toBe(shuffle);
+    expect(keep.parentElement!.className).toContain('items-center');
+    // Nothing left under the picks.
+    const picks = screen.getByRole('region', { name: 'Quick Picks' });
+    expect(picks.lastElementChild!.contains(shuffle)).toBe(true);
+    const keepSwitch = within(keep).getByRole('switch', { name: 'Keep Theme' });
+    fireEvent.click(keepSwitch);
+    expect(
+      (await screen.findByRole('switch', { name: 'Keep Theme' })).getAttribute('aria-checked'),
+    ).toBe('true');
+    fireEvent.click(allPagesSwitch());
+    await waitFor(() => expect(document.querySelector('[data-page-design-keep-theme]')).toBeNull());
+    expect(q('[data-page-design-quick-shuffle]').parentElement).toBe(
+      q('[data-page-design-quick-controls]'),
+    );
+  });
+
   it('opens a tab row’s panel, and disables the tab’s rows while Affect All Pages is off', () => {
     const { home } = open(undefined, undefined, { withHome: true });
     fireEvent.click(q('[data-page-layer="font"]'));

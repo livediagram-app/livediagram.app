@@ -527,19 +527,37 @@ export function QuickPicks({
           </h3>
         }
         controls={
-          <button
-            type="button"
-            onClick={() => {
-              const picks = rollQuick(look.paperDark);
-              if (openId) rolled = { openId, picks };
-              setRoll(picks);
-              setSeq((n) => n + 1);
-            }}
-            className="cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-            data-page-design-quick-shuffle=""
-          >
-            Shuffle
-          </button>
+          // Keep Theme sits straight left of Shuffle, one row centred with it (owner, 2026-11-25, Work Tracker 1477);
+          // not while Affect All Pages is off, which keeps the theme already, and Shuffle keeps its place then.
+          <span className="flex items-center gap-1.5" data-page-design-quick-controls="">
+            {pageOnly ? null : (
+              <label
+                className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md py-1 pl-1 text-[11px] font-medium text-slate-600 dark:text-slate-300"
+                data-page-design-keep-theme=""
+              >
+                <span id="quick-keep-theme">Keep Theme</span>
+                <Switch
+                  checked={keepTheme}
+                  onChange={setKeepTheme}
+                  labelledBy="quick-keep-theme"
+                  size="sm"
+                />
+              </label>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                const picks = rollQuick(look.paperDark);
+                if (openId) rolled = { openId, picks };
+                setRoll(picks);
+                setSeq((n) => n + 1);
+              }}
+              className="cursor-pointer whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              data-page-design-quick-shuffle=""
+            >
+              Shuffle
+            </button>
+          </span>
         }
         gridClass="grid grid-cols-3 gap-1.5"
         renderItem={(p) => {
@@ -570,18 +588,6 @@ export function QuickPicks({
           );
         }}
       />
-      {/* Keep Theme: a small switch under the picks (not while Affect All Pages is off, which keeps it already). */}
-      {pageOnly ? null : (
-        <label className="flex cursor-pointer items-center justify-end gap-2 px-1 text-[11px] font-medium text-slate-600 dark:text-slate-300">
-          <span id="quick-keep-theme">Keep Theme</span>
-          <Switch
-            checked={keepTheme}
-            onChange={setKeepTheme}
-            labelledBy="quick-keep-theme"
-            size="sm"
-          />
-        </label>
-      )}
     </section>
   );
 }
