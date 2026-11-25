@@ -108,7 +108,16 @@ furniture-art` `longTableArt(width, height, facing)` (re-exported by `office.ts`
   retypes every selected piece of that kind in one commit through `retypePiece(el, type, elements)` (a Door on a
   wall, `wallUnder` in room-builder.ts, is re-snapped by `snapDoorToWall` to clear the wall's ends, and kept as it was
   when the type is wider than the wall; `pieceTypeFits` disables that tile under a HoverCard), no commit and no
-  telemetry when nothing changes, then `Element · Changed · <Kind>`. The selection menu (`MultiSelectionContextMenu`)
+  telemetry when nothing changes, then `Element · Changed · <Kind>`. A Corridor's Doors (Work Tracker 1453):
+  the same commit runs `retypeCorridorDoors(before, after)` (`packages/document/src/corridor-retype-doors.ts`) over the
+  retyped board: for every corridor whose `variant` changed, each wall piece that stood on its old walls
+  (`onRoomWall(piece, old)`) is re-seated, in board order, on the new corridor's wall segments (`corridorWalls`) that
+  are at least the piece's width long: the nearest such segment to its centre (`nearestWall` with the piece's half
+  width, so clear of the segment's ends), skipping a spot whose centre stands nearer than half the two widths to a wall
+  piece already there (one not on the old walls, or one re-seated before it); then `snapDoorToWall(piece, [corridor])`
+  turns it to the wall and the corridor's floor colour (a Window to face in). A piece no segment can hold is removed;
+  `removed` counts Doors and Windows apart, and `setPieceTypeSelected` hands `corridorDoorsNotice(removed)` to the
+  `notify` dep (the editor's `toast.info`) after the commit. Nothing removed, no notice. The selection menu (`MultiSelectionContextMenu`)
   renders the section for `selectionTypeTarget(selection, menu.elementId)`: the `multi` menu state carries the member
   right-clicked (`elementId`), passed by `@liveworkspace/workbench`'s `useCanvasSelectHandlers` as
   `onMultiContextMenu(x, y, id)`.

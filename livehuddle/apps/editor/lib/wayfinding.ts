@@ -20,6 +20,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
+import { rotatePoint } from '@liveworkspace/model-core/geometry-primitives';
 import { podDoorway } from '@livehuddle/avatar/pod';
 import { doorLine, pointInPolygon } from '@livehuddle/avatar/room-outline';
 import { avatarPadCore } from '@livehuddle/avatar/pad-art';
@@ -148,20 +149,42 @@ export function placePoints(
       arrival: { x: at.x - out.x * POD_IN, y: at.y - out.y * POD_IN },
     };
   }
+  // A turned room (docs/specs/009-elements/office.md "A Room turns"): its walls and doorway turn about its centre.
+  const turn = turner(el);
   if (isRoomOutline(el.roomOutline)) {
-    const outline = el.roomOutline.map((p) => ({
-      x: el.x + p.x * el.width,
-      y: el.y + p.y * el.height,
-    }));
+    const outline = el.roomOutline.map((p) =>
+      turn({
+        x: el.x + p.x * el.width,
+        y: el.y + p.y * el.height,
+      }),
+    );
     return doorPiecePoints(el, outline, elements);
   }
-  const inner = roomInterior(el);
   const door = el.roomDoor ?? DEFAULT_ROOM_DOOR;
-  const half = ROOM_WALL / 2;
   const along = door === 'n' || door === 's' ? el.width : el.height;
   const span = roomDoorSpan(along, door);
   // No built-in doorway (every new Room, docs/specs/009-elements/office.md "The doorway is a Door"): its Doors.
-  if (!span) return doorPiecePoints(el, rectWalls(el), elements);
+  if (!span) return doorPiecePoints(el, rectWalls(el).map(turn), elements);
+  const { approach, arrival } = builtInDoorwayPoints(el, door, span);
+  return { approach: turn(approach), arrival: turn(arrival) };
+}
+
+// A point of a room as it stands upright, where the room's turn puts it.
+function turner(el: ShapeElement): (p: WayPoint) => WayPoint {
+  const deg = el.rotation ?? 0;
+  if (!Number.isFinite(deg) || deg % 360 === 0) return (p) => p;
+  const c = centre(el);
+  return (p) => rotatePoint(p, c, deg);
+}
+
+// An older room's built-in doorway (office.md "Older rooms keep their built-in doorway"), the room upright.
+function builtInDoorwayPoints(
+  el: ShapeElement,
+  door: string,
+  span: [number, number],
+): { approach: WayPoint; arrival: WayPoint } {
+  const inner = roomInterior(el);
+  const half = ROOM_WALL / 2;
   const mid = (span[0] + span[1]) / 2;
   switch (door) {
     case 'n':

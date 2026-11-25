@@ -1,4 +1,9 @@
-import { clampScreenBox, isFixedSizeElement, rotationOf } from '@livehuddle/document';
+import {
+  clampScreenBox,
+  isFixedSizeElement,
+  rotationOf,
+  sharesWallsByBox,
+} from '@livehuddle/document';
 import {
   alignmentGuides,
   distributionSnap,
@@ -53,7 +58,8 @@ const FIXED_SIGN: Partial<Record<DragMode, { sx: number; sy: number }>> = {
 // Whether the element is a rectangular Room, which snaps wall to wall (a custom room's walls are not on its box).
 function isBoxRoomId(elements: readonly Element[], id: string): boolean {
   const el = elements.find((e) => e.id === id);
-  return !!el && el.type === 'shape' && el.shape === 'room' && !el.roomOutline;
+  // A custom room's or a turned room's walls are not on its box (office.md "A Room turns"): it snaps by its edges only.
+  return !!el && sharesWallsByBox(el);
 }
 
 // Resolve one move frame: snap the primary's candidate bounds to align

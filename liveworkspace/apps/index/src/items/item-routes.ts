@@ -21,7 +21,8 @@ import { insertItem, itemFor, optionalId } from './create';
 import { clientIpOf } from './shared';
 import { tellStanding } from '../standing';
 import { readAutomationTarget } from '../automation-steps';
-import { signalKnowledgeSources } from '../knowledge-sources';
+import { keepMadeSpace } from '../item-call-sweep';
+import { afterTrashed } from './trash';
 
 export async function handleItem(ctx: RouteContext, id: string): Promise<Response> {
   const { request, segments } = ctx;
@@ -151,6 +152,8 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
       )
       .bind(title, ownerId, teamId, scope, folderId, updatedAt, archivedAt, id),
     ...events,
+    // Renamed or moved: a Space made by Call is its owner's own now, kept when its call ends (item-calls.md).
+    ...(events.length > 0 ? [keepMadeSpace(db, id)] : []),
   ]);
   // Moved out of Archived: its app starts what it runs on its own clock for it again (one-explorer-contracts.md
   // "Where an item stands").
@@ -225,17 +228,8 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
     );
   }
   await db.batch(statements);
-  if (row.trashed_at === null) {
-    touchItem(ctx.drive, row);
-    // Into the Trash: its app stops what it runs on its own clock for it. One already there was told.
-    tellStanding(env, ctx.waitUntil, row.app, id, {
-      archived: isArchived(row),
-      trashed: true,
-      at: now,
-    });
-    // Into the Trash: a knowledgebase reading it drops it now (knowledge-sources.md "Keeping in step").
-    ctx.waitUntil(signalKnowledgeSources(env, id, true));
-  }
+  // Into the Trash: its mirror, its app and the knowledgebases reading it hear. One already there was told.
+  if (row.trashed_at === null) afterTrashed(env, ctx.waitUntil, ctx.drive, row, now);
   return noContent();
 }
 
@@ -256,6 +250,8 @@ async function restoreItem(ctx: RouteContext, id: string): Promise<Response> {
         actorId: caller.person?.id ?? null,
         at: now,
       }),
+      // Restored: a Space made by Call is kept from now on (item-calls.md "When a call ends").
+      keepMadeSpace(db, id),
     );
   }
   await db.batch(statements);

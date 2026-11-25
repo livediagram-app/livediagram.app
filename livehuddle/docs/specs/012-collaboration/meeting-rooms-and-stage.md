@@ -25,6 +25,8 @@ are the zones, not a separate element). Its walls block sound fully, as they blo
   stays inside exactly as a solid room's does (`roomZones` takes every `room` whatever its `variant`, and so does the
   server's hearing check). People outside see who is in it through the glass and hear none of them; people inside hear
   nobody outside. A [Window](../009-elements/room-builder.md#window) in any wall changes nothing either.
+- **A turned room** ([A Room turns](../009-elements/office.md#room), Work Tracker 1454) is the floor inside its turned
+  walls: `roomZones` gives it the turned floor as a polygon, so its threshold is the turned wall line.
 - **Two rooms side by side do not hear each other** through their shared wall (#436: walls block, they do not damp).
 - **Outside every room** (the open floor, a corridor, a lawn), hearing is by distance exactly as before.
 - **The doorway is the threshold.** You are inside once your feet are past the line of the walls (the wall's centre
