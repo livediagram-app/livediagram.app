@@ -97,6 +97,20 @@ describe('articleTabMarkdown', () => {
     expect(blocks.at(-2)).toMatchObject({ type: 'paragraph', style: 'h1' });
   });
 
+  it('numbers footnotes on through the file, so each article keeps its own notes', () => {
+    const noted = (text: string, note: string): ArticleFlow => ({
+      blocks: [{ id: 'n', type: 'paragraph', runs: [{ text }, { text: '*', fn: note }] }],
+    });
+    const { markdown } = articleTabMarkdown(
+      tabOf({ f: noted('First', 'Note one'), g: noted('Second', 'Note two') }),
+    );
+    expect(markdown).toContain('Second[^2]');
+    const notes = readBack(markdown).flatMap((b) =>
+      'runs' in b ? b.runs.flatMap((r) => (r.fn !== undefined ? [r.fn] : [])) : [],
+    );
+    expect(notes).toEqual(['Note one', 'Note two']);
+  });
+
   it('writes a tab with no article as nothing', () => {
     expect(articleTabMarkdown(tabOf({})).markdown).toBe('');
   });
