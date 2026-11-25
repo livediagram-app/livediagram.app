@@ -1151,7 +1151,7 @@ An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema. Every mistake the caller can fix is
 such a result, never a thrown protocol error: the `registerTool` wrapper answers an api 4xx in words (by its
 code or status: a document in the Trash, a view-only grant, an id that names nothing) and a named input error
-(a tab id the document lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
+(a tab id the document lacks names its tabs, `rename_document` included, whose tab routes answer a bare 404 that would otherwise read as "no such document"); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
 | Tool                 | Result object                                                                                                                                     |

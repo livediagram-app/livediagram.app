@@ -33,9 +33,9 @@ import {
   requireToken,
   shareUrl,
   textResult,
-  ToolInputError,
   type Extra,
 } from './tool-helpers';
+import { refuseUnknownTab } from '@liveworkspace/mcp-kit/tab-named';
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue, tabElementsIssue } from './element-values';
@@ -286,7 +286,18 @@ export function registerTools(server: McpServer, env: Env): void {
       } catch (err) {
         // The route answers a bare 404 for a tab the design does not hold, which read as "no such design".
         if (err instanceof ApiError && err.status === 404)
-          await refuseUnknownTab(env, token, args.designId, args.tabId);
+          await refuseUnknownTab(
+            async () =>
+              (
+                await apiJson<DesignResponse>(
+                  env,
+                  token,
+                  `/designs/${encodeURIComponent(args.designId)}`,
+                )
+              ).design.tabs,
+            args.tabId,
+            'design',
+          );
         throw err;
       }
       return textResult({ renamed: 'tab', tabId: args.tabId, name: renamed.tab.name });
@@ -390,27 +401,4 @@ export function registerTools(server: McpServer, env: Env): void {
 
   // The interactive view's own call (docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)").
   registerViewTool(server, env);
-}
-
-// Why a delete was refused, by what was deleted and the status.
-// Throws the ToolInputError naming the design's tabs when it holds no tab `tabId`; returns when the design cannot be
-// read (then the design is what is missing) or does hold it.
-async function refuseUnknownTab(
-  env: Env,
-  token: string,
-  designId: string,
-  tabId: string,
-): Promise<void> {
-  let tabs: { id: string; name: string }[];
-  try {
-    ({
-      design: { tabs },
-    } = await apiJson<DesignResponse>(env, token, `/designs/${encodeURIComponent(designId)}`));
-  } catch {
-    return;
-  }
-  if (tabs.some((t) => t.id === tabId)) return;
-  throw new ToolInputError(
-    `No tab "${tabId}" in this design. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
-  );
 }

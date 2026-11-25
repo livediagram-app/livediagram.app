@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { tabIdNamed } from './tab-named';
+import { refuseUnknownTab, tabIdNamed } from './tab-named';
+import { ToolInputError } from './tool-result';
 
 const TABS = [
   { id: 't1', name: 'Overview' },
@@ -22,5 +23,23 @@ describe('tabIdNamed', () => {
   it('answers nothing for a name two tabs share, or one no tab has', () => {
     expect(tabIdNamed(TABS, 'Notes')).toBeUndefined();
     expect(tabIdNamed(TABS, 'Budget')).toBeUndefined();
+  });
+});
+
+describe('refuseUnknownTab', () => {
+  const tabs = [{ id: 't1', name: 'Plan' }];
+
+  it('names the tabs when the file holds no such tab', async () => {
+    const refused = refuseUnknownTab(async () => tabs, 'nope', 'design');
+    await expect(refused).rejects.toBeInstanceOf(ToolInputError);
+    await expect(refused).rejects.toThrow('No tab "nope" in this design. Tabs: Plan (t1).');
+  });
+
+  it('returns when the file holds the tab, or cannot be read, so the 404 stands', async () => {
+    await expect(refuseUnknownTab(async () => tabs, 't1', 'design')).resolves.toBeUndefined();
+    const gone = async () => {
+      throw new Error('404');
+    };
+    await expect(refuseUnknownTab(gone, 't1', 'design')).resolves.toBeUndefined();
   });
 });
