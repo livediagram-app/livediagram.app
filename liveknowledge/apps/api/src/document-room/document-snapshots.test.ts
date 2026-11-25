@@ -10,7 +10,8 @@ import type { DocumentGrant as ItemGrant } from '../index-service';
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { sqliteD1 } from '../test-sqlite-d1';
 import type { DocumentEnv } from '../types';
-import { initDocument, readDocumentHead } from './document-content';
+import { exportDocumentCopy, initDocument, readDocumentHead } from './document-content';
+import { exportDocumentFile } from './document-file';
 import { serveDocumentSnapshots } from './document-snapshots';
 
 const OWNER = 'user_ada';
@@ -79,6 +80,49 @@ async function arrange() {
 }
 
 describe('document snapshots', () => {
+  // Work Tracker 1455: the Drive export keeps a page's unpublished draft (it goes only to the owner's own Drive, and a
+  // snapshot is the same file, so a revert gives the draft back); a copy, shared with others, strips it.
+  it("keeps a page's draft in the Drive export and a snapshot revert, and strips it from a copy", async () => {
+    const { db, env, send } = await arrange();
+    const para = (text: string) => ({
+      blocks: [{ id: 'p1', type: 'paragraph', runs: [{ text }] }],
+    });
+    const page = {
+      id: 't1',
+      name: 'One',
+      elements: [],
+      articles: { main: para('Saved words'), draft: para('Unpublished words') },
+      draft: { by: 'Priya', at: 1 },
+    } as never;
+    await upsertTab(env, 'A', page, 0);
+    const storedT1 = () =>
+      (db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get() as { data: string }).data;
+
+    const exported = await exportDocumentFile(env, 'A', null);
+    expect(exported.status).toBe('ok');
+    const text = (exported as { body: string }).body;
+    expect(text).toContain('Unpublished words');
+    expect(text).toContain('Priya');
+
+    const copy = await exportDocumentCopy(env, 'A', null, null);
+    expect(JSON.stringify(copy)).not.toContain('Unpublished words');
+
+    const taken = await send('POST', '/snapshots', { body: { name: 'With draft' } });
+    const { snapshot } = await taken.json<{ snapshot: { id: string } }>();
+    await upsertTab(
+      env,
+      'A',
+      { id: 't1', name: 'One', elements: [], articles: { main: para('Edited') } } as never,
+      0,
+    );
+    expect(storedT1()).not.toContain('Unpublished words');
+
+    const res = await send('POST', `/snapshots/${snapshot.id}/revert`);
+    expect(res.status).toBe(200);
+    expect(storedT1()).toContain('Unpublished words');
+    expect(storedT1()).toContain('Saved words');
+  });
+
   it('snapshot, edit, revert gives the snapshot back: tabs, ids, order, folders and deck', async () => {
     const { db, env, send, reverted } = await arrange();
     const taken = await send('POST', '/snapshots', { body: { name: 'Before' } });

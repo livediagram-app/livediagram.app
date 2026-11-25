@@ -9,7 +9,7 @@ API. This spec says only what is liveknowledge's own. (Not the previews in `006-
 
 ## What a snapshot holds here
 
-The document as its own export file, the `liveknowledge.document` envelope (`exportDocumentFile`, document-room/document-file.ts): every tab with its folder, and what else that file carries.
+The document as its own export file, the `liveknowledge.document` envelope (`exportDocumentFile`, document-room/document-file.ts): every tab with its folder, and what else that file carries. That file keeps each page's unpublished draft (a revert gives it back; [editing](../030-knowledgebase/editing.md#what-reads-the-saved-page-only)); a copy does not.
 
 ## What a revert puts back
 

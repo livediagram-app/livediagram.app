@@ -112,9 +112,15 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 ## What reads the saved page only
 
 Search and its index, Ask and its sources, every agent read (MCP, CLI, the API), page links' hover cards, backlinks,
-reading time, On This Page, exports, a copy of the knowledgebase (Make a Copy, a Community post's copy: the copy
+reading time, On This Page, exports (all but the Drive file, below), a copy of the knowledgebase (Make a Copy, a Community post's copy: the copy
 starts with no draft), the Explorer preview, emails and Page Health's checks: always the saved page.
 A draft is visible only to the people in edit mode on it (everyone on the page who may edit, "Everyone joins").
+
+**The Drive file keeps drafts.** The `.liveknowledge` file the Drive mirror writes carries each page's draft and its
+draft record, because it goes only to the owner's own Google Drive and is the same file a snapshot holds
+([Snapshots](../013-workspace/snapshots.md)): stripping drafts there would make a revert lose unpublished writing.
+Whatever is shared with anyone else (a copy, a Community post's copy, a published page) never carries a draft. Tests:
+`document-room/document-snapshots.test.ts`.
 
 ## Agents
 
