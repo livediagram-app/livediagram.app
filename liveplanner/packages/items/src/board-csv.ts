@@ -39,6 +39,7 @@ import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogu
 import { missingRequiredFields } from './required-fields';
 import { parsePercent } from './percent-fields';
 import { durationMinutes, durationText, isTimeSpent, parseDuration } from './duration-fields';
+import { amountOf } from './amount-text';
 import { instantIso, parseDateTime } from './date-time-fields';
 import { isTimedRange, parseDateRange, rangeIso } from './date-range-fields';
 import { isPhoneNumber } from './phone-fields';
@@ -320,11 +321,10 @@ function customValue(
     // "2h 30m", "90m", "1.5h", "2:30" or minutes; a Time Spent field's entries are tracked, never read from a file.
     case 'duration':
       return isTimeSpent(f) ? undefined : parseDuration(text);
-    // An amount, as the card stores it: a number of up to two decimals, "£12,500" read as 12500.
-    case 'currency': {
-      const n = Number(text.replace(/[^\d.-]/g, ''));
-      return /\d/.test(text) && Number.isFinite(n) ? Math.round(n * 100) / 100 : undefined;
-    }
+    // An amount, as the card stores it: a number of up to two decimals, "£12,500" read as 12500, "1.234,50 €" as
+    // 1234.5.
+    case 'currency':
+      return amountOf(text);
     case 'email':
       return isEmailAddress(text) ? text : undefined;
     // Any address of a pull request, kept canonical (github-pull-requests.md "The Pull Request field").
