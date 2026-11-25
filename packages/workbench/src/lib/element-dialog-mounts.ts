@@ -27,7 +27,9 @@ function sourceFiles(dir: string): string[] {
 export function declaredOpenForStates(root: string): string[] {
   const names = new Set<string>();
   for (const file of sourceFiles(root)) {
-    for (const match of readFileSync(file, 'utf8').matchAll(DECLARED)) names.add(match[1]);
+    for (const match of readFileSync(file, 'utf8').matchAll(DECLARED)) {
+      if (match[1]) names.add(match[1]);
+    }
   }
   return [...names].sort();
 }
