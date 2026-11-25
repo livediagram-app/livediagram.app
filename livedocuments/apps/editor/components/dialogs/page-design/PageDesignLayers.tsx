@@ -87,6 +87,8 @@ export function LayerRows({
           type="button"
           className={CELL}
           onClick={() => onOpen('design')}
+          // Named as the other cards are: its kind, then what the page wears.
+          aria-label={`Design: ${designName(worn, background)}`}
           data-page-layer="design"
         >
           <span className={`${CELL_THUMB} bg-white dark:bg-slate-900`}>
@@ -104,6 +106,7 @@ export function LayerRows({
           type="button"
           className={CELL}
           onClick={() => onOpen('background')}
+          aria-label={`Background: ${backgroundName(background, presets)}`}
           data-page-layer="background"
         >
           <span
@@ -125,6 +128,7 @@ export function LayerRows({
             className={`${CELL} disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-slate-200 disabled:hover:bg-transparent dark:disabled:hover:border-slate-700`}
             onClick={row.onOpen}
             disabled={row.disabled}
+            aria-label={`${row.label}: ${row.value}`}
             data-page-layer={row.key}
           >
             <span
