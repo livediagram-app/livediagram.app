@@ -16,6 +16,7 @@ It belongs on the canvas rather than in a menu for the same reason the other Beh
 - **`ShapeElement.pickerSource`**: `'participants'` (default) or `'options'`.
 - **`ShapeElement.pickerOptions`**: the written list, used when the source is `options`. Empty falls back to "nothing to pick from" rather than picking nothing silently.
 - **`ShapeElement.pickerResult`**: the last result, so the canvas still shows it after a reload and to anyone who joins later.
+  Through a Community post's link ([Community](../025-community/community.md) "Viewing a post's document"), and in a copy taken through it, a result drawn from the room (source Participants, or none set) is left out: it is a person's name. A result from written options stays.
 
 ## Rolling
 

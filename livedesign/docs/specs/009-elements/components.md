@@ -129,6 +129,9 @@ design open on.
   and shows the instance again.
 - A session is data on the tab, so it survives a reload and reaches peers. Exports during a session draw the members
   (the instance is hidden).
+- Through a Community post's link ([Community](../025-community/community.md)), and in a copy taken through it, an open
+  session's person is not named: `componentEditBy` reads `someone`, so the design draws as it did and no person's id
+  travels.
 
 ## Detach
 

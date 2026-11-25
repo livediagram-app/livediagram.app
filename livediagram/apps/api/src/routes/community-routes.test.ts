@@ -769,6 +769,55 @@ describe('what a community link reveals', () => {
     const overview = await (await readDocument(post.shareCode, '?view=overview')).text();
     expect(overview).not.toContain('threads');
   });
+
+  it("names nobody a picker landed on or a Participant's adder key, nor reads out the presenter's notes", async () => {
+    const post = await publish();
+    const tab = JSON.stringify({
+      elements: [
+        { id: 's1', type: 'sticky', x: 0, y: 0, width: 80, height: 80, addedBy: 'adder-of-jo' },
+        {
+          id: 'p1',
+          type: 'shape',
+          shape: 'picker',
+          x: 0,
+          y: 0,
+          width: 160,
+          height: 80,
+          pickerSource: 'participants',
+          pickerResult: 'Jo Bloggs',
+        },
+      ],
+    });
+    db.sql
+      .prepare("UPDATE tabs SET data = ?, element_count = 2, rev = rev + 1 WHERE id = 'tab-d1'")
+      .run(tab);
+    const deck = {
+      decks: [
+        { slides: [{ id: 'sl1', tabId: 'tab-d1', elementIds: ['p1'], notes: 'say the salary' }] },
+      ],
+    };
+    db.sql
+      .prepare("UPDATE document SET presentation = ? WHERE id = 'd1'")
+      .run(JSON.stringify(deck));
+    const read = await handleDocuments(
+      viaWorker(
+        makeTestRouteContext('GET', '/api/documents/d1/tabs/tab-d1', {
+          env,
+          owner: 'guest-visitor',
+          headers: { 'X-Share-Code': post.shareCode },
+        }),
+      ),
+    );
+    expect(read.status).toBe(200);
+    const text = await read.text();
+    expect(text).toContain('"p1"');
+    for (const secret of ['Jo Bloggs', 'adder-of-jo']) expect(text).not.toContain(secret);
+    const doc = await (
+      await readDocument(post.shareCode)
+    ).json<{ document: { presentation: string } }>();
+    expect(doc.document.presentation).toContain('sl1');
+    expect(doc.document.presentation).not.toContain('salary');
+  });
 });
 
 describe('a document that changes hands', () => {
