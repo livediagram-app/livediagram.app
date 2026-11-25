@@ -34,6 +34,23 @@ export interface Recipient {
   home: SettingsApp | null;
 }
 
+// The number of apps one account signs in to, as a word, so the welcome never falls behind APP_SITES.
+const COUNT_WORDS = [
+  'no',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+];
+export const appCountWord = (count: number = APP_SITES.length): string =>
+  COUNT_WORDS[count] ?? String(count);
+
 const appName = (app: SiteId) => APP_SITES.find((site) => site.id === app)?.name ?? app;
 
 // The calls to action that go to an app: starting something, the Explorer, and their work in it.
@@ -135,8 +152,7 @@ export function lifecycleEmail(
       return render(env, {
         subject: 'Welcome to liveworkspace',
         heading: 'Welcome, let’s make something',
-        intro:
-          'Your liveworkspace account signs you in to five free apps for working together in real time. Everything you make in one shows in all of them:',
+        intro: `Your liveworkspace account signs you in to ${appCountWord()} apps for working together in real time. Everything you make in one shows in all of them:`,
         points: appLines(env),
         outro:
           'Each starts from a blank page or a template, and saves as you go, so you can just start and come back later.',

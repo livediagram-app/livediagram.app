@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { recordSighting } from './account-apps.ts';
 import type { Env } from './env.ts';
-import { appUrl, lifecycleEmail } from './lifecycle-email.ts';
+import { appCountWord, appUrl, lifecycleEmail } from './lifecycle-email.ts';
 import {
   ACTIVATION_DELAY_MS,
   MAX_SEND_ATTEMPTS,
@@ -99,6 +99,10 @@ describe('the welcome', () => {
       subject: 'Welcome to liveworkspace',
     });
     expect(sent[0]!.html).toContain('https://www.liveplanner.app/new');
+    // The count follows the apps one account signs in to, never a number typed in the copy.
+    expect(sent[0]!.text).toContain(`signs you in to ${appCountWord()} apps`);
+    expect(appCountWord()).toBe('six');
+    expect(appCountWord(12)).toBe('12');
     // The welcome carries no opt-out: nothing could have been turned off yet.
     expect(sent[0]!.unsubscribeUrl).toBeUndefined();
     // The catch-up run sends Bea's, and not Ada's again.
