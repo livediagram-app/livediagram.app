@@ -80,6 +80,25 @@ export function parseKnowledgeFields(v: unknown): KnowledgeFields {
   return fields;
 }
 
+/** A page's knowledge fields as a Community post's reader sees them, and a copy through its link carries them
+ *  (docs/specs/025-community/community.md "Viewing a post's document"): without its people. The owner, who verified it
+ *  and the approval (who asked, who decided, their names and the note) stay out; when it was verified and Always in
+ *  Context stay. Undefined when nothing is left. */
+export function knowledgeForCommunity(v: unknown): KnowledgeFields | undefined {
+  const { verifiedAt, context } = parseKnowledgeFields(v);
+  if (verifiedAt === undefined && context === undefined) return undefined;
+  return { ...(verifiedAt !== undefined ? { verifiedAt } : {}), ...(context ? { context } : {}) };
+}
+
+/** A page (a stored body, a read's tab or its summary) with its knowledge fields as knowledgeForCommunity keeps them.
+ *  The same page back when it carries none. */
+export function withKnowledgeForCommunity<T extends object>(page: T): T {
+  if (!('knowledge' in page)) return page;
+  const { knowledge, ...rest } = page as T & { knowledge?: unknown };
+  const kept = knowledgeForCommunity(knowledge);
+  return (kept ? { ...rest, knowledge: kept } : rest) as T;
+}
+
 export type TrustStateName = 'verified' | 'review-due' | 'never-verified';
 
 export type TrustState =

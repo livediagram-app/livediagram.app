@@ -169,6 +169,33 @@ describe('redactDocumentForCommunity', () => {
     expect(out.presentation).not.toContain('Card to keep private');
   });
 
+  it("keeps each page's verified state and none of its people", () => {
+    const knowledge = {
+      owner: 'acct_owner',
+      verifiedAt: 5,
+      verifiedBy: 'acct_verifier',
+      approval: {
+        state: 'pending',
+        requestedBy: 'acct_asker',
+        requestedAt: 4,
+        requestedByName: 'Grace Hopper',
+      },
+    };
+    const page = { id: 'p1', documentId: 'd1', name: 'Runbook', orderIndex: 1, updatedAt: 1 };
+    const out = redactDocumentForCommunity({
+      ...posted,
+      tabs: [
+        { ...page, knowledge },
+        { ...page, id: 'p2', knowledge: { owner: 'acct_owner' } },
+      ],
+    } as DocumentDTO);
+    expect(out.tabs).toEqual([
+      { ...page, knowledge: { verifiedAt: 5 } },
+      { ...page, id: 'p2' },
+    ]);
+    expect(JSON.stringify(out)).not.toMatch(/acct_|Grace/);
+  });
+
   it('carries no deck when the document has none, or it does not parse', () => {
     expect(redactDocumentForCommunity({ ...posted, presentation: null }).presentation).toBeNull();
     expect(redactDocumentForCommunity({ ...posted, presentation: '{' }).presentation).toBeNull();

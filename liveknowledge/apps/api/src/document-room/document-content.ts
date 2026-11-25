@@ -19,7 +19,7 @@ import {
   type KnowledgeStyle,
 } from '@liveknowledge/document';
 import { MAX_DECK_LEN } from '../limits';
-import { redactTabDataForCommunity } from '@liveworkspace/community/app';
+import { redactPageDataForCommunity } from '../community-redact';
 import { redactTabDataAuthors } from '../comments';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { servableImageIds } from '../db/image-grants';
@@ -468,7 +468,7 @@ export async function exportDocumentCopy(
         orderIndex: row.order_index,
         folder: row.folder,
         data: redactForCommunity
-          ? redactTabDataForCommunity(remapped).data
+          ? redactPageDataForCommunity(remapped)
           : redactAuthorsFor !== null
             ? redactTabDataAuthors(remapped, redactAuthorsFor)
             : remapped,

@@ -9,6 +9,7 @@ import {
   declinesOwner,
   UNOWNED_PAGE,
   GUEST_VERIFIER,
+  knowledgeForCommunity,
   knowledgeHealth,
   parseKnowledgeFields,
   reviewDays,
@@ -16,6 +17,7 @@ import {
   trustState,
   verificationOn,
   verified,
+  withKnowledgeForCommunity,
 } from './trust';
 
 const DAY = 86_400_000;
@@ -204,5 +206,21 @@ describe('an import\'s page declines an owner (verification.md "The owner")', ()
 
   it('is never kept as a field', () => {
     expect(parseKnowledgeFields(UNOWNED_PAGE)).toEqual({});
+  });
+});
+
+// docs/specs/025-community/community.md "Viewing a post's document".
+describe('knowledgeForCommunity', () => {
+  it('keeps when the page was verified and Always in Context, never who', () => {
+    const stored = { owner: 'acct_a', verifiedAt: 9, verifiedBy: 'acct_b', context: true };
+    expect(knowledgeForCommunity(stored)).toEqual({ verifiedAt: 9, context: true });
+    expect(knowledgeForCommunity({ owner: 'acct_a' })).toBeUndefined();
+    expect(knowledgeForCommunity('odd')).toBeUndefined();
+  });
+
+  it('answers a page without the field as it is, and drops a field with nothing left', () => {
+    const page = { id: 'p1' };
+    expect(withKnowledgeForCommunity(page)).toBe(page);
+    expect(withKnowledgeForCommunity({ id: 'p1', knowledge: { owner: 'acct_a' } })).toEqual(page);
   });
 });

@@ -27,7 +27,8 @@ fields"), written only by the api's approval route:
 | `note`             | a rejection's note, up to 500 characters, as written; absent when none was written      |
 
 A page with no `approval` has never been asked about, and shows nothing. The field travels with the page as its
-other knowledge fields do (copies, exports, a snapshot) and is synced in the same `tab-meta` patch.
+other knowledge fields do (copies, exports, a snapshot) and is synced in the same `tab-meta` patch. A Community post's
+reader never sees it, and a copy through the post's link carries none (community.md "Viewing a post's document").
 
 The knowledgebase also keeps one row a page in its own SQLite, `page_approvals` (schema step after the automations'
 steps), the page's current approval as the field holds it, so Home and agents list the pages waiting without reading
