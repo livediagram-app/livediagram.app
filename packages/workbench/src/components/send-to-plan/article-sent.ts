@@ -1,7 +1,7 @@
 // Send to Plan in an article's writing (livedocuments' and liveknowledge's docs/specs/013-workspace/send-to-plan.md
 // "What it sends", "The chip"), its ProseMirror side: what a send from the writing names (the block the caret or the
-// words picked are in, and those words), a sent block's chip after its last word, and, for a reader who cannot write
-// there, the Send to Plan pill under the words picked (both drawn by article-send-dom).
+// words picked are in, and those words), a sent block's chip after its last word (drawn by article-send-dom), and the
+// selection menu on the words picked (../selection-menu, Work Tracker 1462).
 //
 // This package holds no ProseMirror of its own: each editor hands in its own Decoration and DecorationSet (`draw`) and
 // builds its Plugin from `articleSentSpec`, so one copy of ProseMirror runs and the types below are only the few
@@ -9,13 +9,8 @@
 import { elementSends, onSendsChanged } from './send-store';
 import { elementDiagramSends, onDiagramSendsChanged } from '../send-to-diagram/diagram-send-store';
 import { diagramChipDom } from '../send-to-diagram/diagram-chip-dom';
-import {
-  hideReadSendPill,
-  releaseReadSendPill,
-  sentChipDom,
-  showReadSendPill,
-  type ArticlePick,
-} from './article-send-dom';
+import { sentChipDom, type ArticlePick } from './article-send-dom';
+import { bindSelectionMenu } from '../selection-menu/article-selection-menu';
 
 type PMNode = {
   readonly attrs: { readonly [attr: string]: unknown };
@@ -35,7 +30,11 @@ type PMDoc = PMNode & {
     leafText?: string | null,
   ): string;
 };
-type PMTr = { setMeta(key: string, value: unknown): PMTr; getMeta(key: string): unknown };
+type PMTr = {
+  setMeta(key: string, value: unknown): PMTr;
+  getMeta(key: string): unknown;
+  deleteSelection(): PMTr;
+};
 /** The editor state, as read here. */
 export type PMState = {
   readonly doc: PMDoc;
@@ -44,10 +43,13 @@ export type PMState = {
 };
 type PMView = {
   readonly state: PMState;
-  readonly dom: Element;
+  readonly dom: HTMLElement;
   readonly isDestroyed: boolean;
   dispatch(tr: PMTr): void;
   posAtDOM(node: Node, offset: number): number;
+  focus(): void;
+  pasteHTML(html: string, event?: ClipboardEvent): boolean;
+  pasteText(text: string, event?: ClipboardEvent): boolean;
 };
 
 /** The editor's own decoration makers, over its own document (`State['doc']`). */
@@ -80,24 +82,9 @@ export function articleSendPick(state: PMState): ArticlePick | null {
 /** A transaction that only redraws the chips: no commit, no toolbar update. */
 export const onlySent = (tr: PMTr): boolean => tr.getMeta(SENT) === true;
 
-// The words a reader picked in this writing, as the browser holds them, or null (none, or outside it).
-function readerPick(view: PMView): { pick: ArticlePick; rect: DOMRect } | null {
-  const sel = document.getSelection();
-  if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
-  const range = sel.getRangeAt(0);
-  if (!view.dom.contains(range.startContainer) || !view.dom.contains(range.endContainer))
-    return null;
-  const text = sel.toString().trim();
-  const at = view.posAtDOM(range.startContainer, range.startOffset);
-  const $at = view.state.doc.resolve(Math.min(at, view.state.doc.content.size));
-  const blockId = $at.depth > 0 ? $at.node(1).attrs.id : null;
-  if (!text || typeof blockId !== 'string' || !blockId) return null;
-  return { pick: { blockId, text }, rect: range.getBoundingClientRect() };
-}
-
 /**
- * The plugin's spec: the chips, kept live (redrawn whenever the open item's sends change), and the reader's pill:
- * while the writing is not `editable`, words picked in it show Send to Plan under them.
+ * The plugin's spec: the chips, kept live (redrawn whenever the open item's sends change), and the selection menu on
+ * the words picked, read or edited (Cut and Paste only while `editable`).
  */
 export function articleSentSpec<Deco, Set, State extends PMState>(
   editable: () => boolean,
@@ -154,19 +141,11 @@ export function articleSentSpec<Deco, Set, State extends PMState>(
         stopPlans();
         stopDiagrams();
       };
-      const onSelection = () => {
-        const read = editable() ? null : readerPick(view);
-        // The words went: the pills go too, unless a tap on one cleared them (send-to-plan.md "On a touch screen").
-        if (!read) return releaseReadSendPill();
-        const { pick, rect } = read;
-        showReadSendPill({ left: rect.left, bottom: rect.bottom, top: rect.top }, () => pick);
-      };
-      document.addEventListener('selectionchange', onSelection);
+      const unbindMenu = bindSelectionMenu(view, editable);
       return {
         destroy() {
           stop();
-          document.removeEventListener('selectionchange', onSelection);
-          hideReadSendPill();
+          unbindMenu();
         },
       };
     },

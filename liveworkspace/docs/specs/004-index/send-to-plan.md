@@ -133,16 +133,49 @@ Send to Plan or Send to Diagram did nothing). The same entries show in the same 
   after. So an entry that sends words reads them as the press starts and sends those on its click; a press read more
   than a second before its click counts for nothing (a held press, a keyboard press later).
 - **A mouse picks a reader's words.** A read-only writing (livedocuments' and liveknowledge's article read view)
-  leaves a press to the browser, so a drag, a double-click or a triple-click picks words natively for the pills under
-  them (prosemirror-view 1.43 otherwise prevents the press's default even when the writing can't be edited).
-- **The reader's pills stay for their own tap.** The pills under a reader's picked words go when the words do, except
-  while a press on one is under way: they stay until its click sends, or the press is let go elsewhere.
-- **Clear of the system's handles.** On a coarse pointer the pills sit 24px under the words, not 8px, clear of the
-  selection's drag handle; where that would leave the screen they sit above the words instead.
+  leaves a press to the browser, so a drag, a double-click or a triple-click picks words natively for the selection
+  menu (prosemirror-view 1.43 otherwise prevents the press's default even when the writing can't be edited).
+- **The selection menu holds through its own tap.** A tap on one of its rows may clear the words before its click
+  lands; the menu stays for that click, which acts on the words as they were when the menu opened.
 - **44px to tap.** Each entry's tap area is at least 44px both ways on a coarse pointer (the toolbars' packed pads,
   [touch targets](../../../../livediagram/docs/specs/004-interface-design/touch-targets.md)), whatever size it is drawn;
   a mouse sees no change.
 - Whether a keyboard is attached changes nothing: every entry is a button that a tap, a click, Enter and Space press.
+
+## The selection menu
+
+Words picked in an article's writing (livedocuments' and liveknowledge's, read or edited) get their own menu in place
+of the browser's (Work Tracker 1462). It holds **Cut**, **Copy** and **Paste**, then **Send to Plan** and **Send to
+Diagram**:
+
+- **Opened by a right-click on the words picked** (or the keyboard's menu key, Shift+F10, with words picked), at the
+  pointer, or under the words from the keyboard, its first row focused (while editing too, so Arrow keys and Enter
+  work the menu rather than the words). The menu key opens it while reading as well, wherever focus is on the page,
+  except in a field of its own (a search box, a comment), whose menu stays the browser's. A right-click anywhere else, with nothing
+  picked, or with Shift held keeps the browser's own menu (a misspelt word's suggestions, a link's or an image's
+  entries).
+- **Opened by a long press on a touch screen.** A long press picks a word as it always has, and the browser's own
+  callout still shows beside it: neither iOS Safari nor Android Chrome lets a page replace or hide that callout
+  without turning off picking words altogether (Safari fires no `contextmenu` for a touch, ignores
+  `-webkit-touch-callout` on text, and Chrome's `contextmenu` cancels its long-press menu but not the selection's
+  bar). So the menu docks to the edge of the writing's part of the screen away from the words: at the foot, above the
+  keyboard when one is up, or at the top when the words are low on the screen. It stays inside the box the writing
+  scrolls in, so it clears the app's header and tab bar, and rises above a control floating over the writing's foot
+  (the corner's Edit, Save and Cancel). The callout always sits against the words, so it never
+  covers the menu, and the menu never covers the words. It opens once the words have held still for 350 ms, follows
+  them as the handles move, and goes when they do.
+- **Cut, Copy and Paste do what the keys do.** Copy and Cut run the browser's own copy and cut on the words picked, so
+  the writing's rich copy (lists stay lists) and its plain text are what land on the clipboard; Paste reads the
+  clipboard (the browser may ask first, and Safari shows its own Paste button) and pastes it through the writing's
+  own paste, so tables, Markdown and whole blocks paste as Cmd/Ctrl+V pastes them. Each row shows its shortcut
+  (⌘X, ⌘C, ⌘V on an Apple device, Ctrl+X, Ctrl+C, Ctrl+V elsewhere), and the keys themselves are untouched. A
+  writing that can't be edited (a Viewer, a locked page, reading) shows only Copy and the sends. Paste is greyed where
+  the browser has no clipboard to read.
+- **Send to Plan** and **Send to Diagram** open their pickers with the words picked and the block they start in, as
+  the page toolbar's do. Send to Diagram shows only in an app that drafts diagrams.
+- **Only while the session may send** (the "Who may send" above). Where it can't (a guest, Offline, an embed,
+  Community), the browser's own menu is left alone, since the custom one would only repeat it.
+- Escape, a press outside it, or the words going close it; a row's press closes it and does its verb.
 
 ## Agents
 

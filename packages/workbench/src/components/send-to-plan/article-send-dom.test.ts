@@ -1,25 +1,15 @@
 // @vitest-environment jsdom
 // Send to Plan in an article's writing (livedocuments' and liveknowledge's docs/specs/013-workspace/send-to-plan.md
-// "What it sends", "The chip"): a sent block's chip, drawn outside React, and a reader's pill under the words picked.
+// "What it sends", "The chip"): a sent block's chip, drawn outside React, and the words a send from the writing takes.
 import type { IconPrim } from '@liveworkspace/icons';
 import type { PlanSend } from '@liveworkspace/index-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../lib/index-client', () => ({ indexClient: {} }));
 
-import {
-  glyphDom,
-  hideReadSendPill,
-  readPillTop,
-  READ_PILL_GAP_PX,
-  releaseReadSendPill,
-  sendArticleWords,
-  sentChipDom,
-  showReadSendPill,
-} from './article-send-dom';
+import { glyphDom, sendArticleWords, sentChipDom } from './article-send-dom';
 import { addSends, elementSends, onSendsChanged, setSendSource } from './send-store';
 import { onSendToPlan, setSendHere, type SendRequest } from './send-to-plan-entry';
-import { PRESS_HOLD_MS } from './press-hold';
 
 const sent = (id: string, over: Partial<PlanSend['card']> = {}): PlanSend => ({
   id,
@@ -43,13 +33,10 @@ beforeEach(() => {
 });
 afterEach(() => {
   stop();
-  hideReadSendPill();
   setSendSource(null);
   setSendHere(null);
   vi.restoreAllMocks();
 });
-
-const pill = () => document.querySelector<HTMLButtonElement>('[data-read-send-pill]');
 
 describe('a glyph drawn outside React', () => {
   it('draws each kind of line-art primitive, and nothing for a text glyph', () => {
@@ -138,94 +125,5 @@ describe('sending words from the writing', () => {
     off();
     addSends([sent('b')]);
     expect(told).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe("a reader's pill", () => {
-  it('shows only while the session may send and words are picked', () => {
-    showReadSendPill({ left: 40, bottom: 100 }, () => null);
-    expect(pill()).toBeNull();
-    up();
-    showReadSendPill(null, () => null);
-    expect(pill()).toBeNull();
-    showReadSendPill({ left: 2, bottom: 100 }, () => null);
-    expect(pill()!.style.left).toBe('8px');
-    expect(pill()!.style.top).toBe('108px');
-    expect(pill()!.getAttribute('aria-label')).toBe('Send the words to a plan');
-    showReadSendPill({ left: 60, bottom: 120 }, () => null);
-    expect(document.querySelectorAll('[data-read-send-pill]')).toHaveLength(1);
-    expect(pill()!.style.left).toBe('60px');
-    showReadSendPill(null, () => null);
-    expect(pill()).toBeNull();
-  });
-
-  it('keeps the words picked as it is pressed, then sends them and goes', () => {
-    up();
-    showReadSendPill({ left: 40, bottom: 100 }, () => ({ blockId: 'b2', text: 'Book the venue' }));
-    const down = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
-    pill()!.dispatchEvent(down);
-    expect(down.defaultPrevented).toBe(true);
-    pill()!.click();
-    expect(pill()).toBeNull();
-    expect(heard[0]!.places[0]).toMatchObject({ elementId: 'b2', text: 'Book the venue' });
-  });
-});
-
-describe('a reader\'s pill on a touch screen (send-to-plan.md "On a touch screen")', () => {
-  it('stays through a tap that clears the words, sends them, then goes', () => {
-    up();
-    showReadSendPill({ left: 40, bottom: 100 }, () => ({ blockId: 'b2', text: 'Book the venue' }));
-    pill()!.dispatchEvent(new Event('pointerdown', { bubbles: true }));
-    // The tap cleared the words picked before its click landed.
-    releaseReadSendPill();
-    expect(pill()).not.toBeNull();
-    pill()!.click();
-    expect(pill()).toBeNull();
-    expect(heard[0]!.places[0]).toMatchObject({ elementId: 'b2', text: 'Book the venue' });
-  });
-
-  it('goes with the words when no press is under way, or once the press is let go elsewhere', () => {
-    vi.useFakeTimers();
-    try {
-      up();
-      showReadSendPill({ left: 40, bottom: 100 }, () => null);
-      releaseReadSendPill();
-      expect(pill()).toBeNull();
-      showReadSendPill({ left: 40, bottom: 100 }, () => null);
-      pill()!.dispatchEvent(new Event('pointerdown', { bubbles: true }));
-      releaseReadSendPill();
-      vi.advanceTimersByTime(PRESS_HOLD_MS - 1);
-      expect(pill()).not.toBeNull();
-      vi.advanceTimersByTime(1);
-      expect(pill()).toBeNull();
-      // Words picked again before the hold ran out keep their pill.
-      showReadSendPill({ left: 40, bottom: 100 }, () => null);
-      pill()!.dispatchEvent(new Event('pointerdown', { bubbles: true }));
-      releaseReadSendPill();
-      showReadSendPill({ left: 40, bottom: 100 }, () => null);
-      vi.advanceTimersByTime(PRESS_HOLD_MS * 2);
-      expect(pill()).not.toBeNull();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it('sits clear of the selection handles on a coarse pointer, and above the words at the foot', () => {
-    const tall = window.innerHeight;
-    expect(readPillTop({ bottom: 100 }, false)).toBe(100 + READ_PILL_GAP_PX.fine);
-    expect(readPillTop({ top: 80, bottom: 100 }, true)).toBe(100 + READ_PILL_GAP_PX.coarse);
-    expect(readPillTop({ top: tall - 60, bottom: tall - 40 }, true)).toBe(
-      tall - 60 - READ_PILL_GAP_PX.coarse - 44,
-    );
-    expect(readPillTop({ top: 10, bottom: tall - 4 }, true)).toBe(8);
-    const before = window.matchMedia;
-    window.matchMedia = vi.fn().mockReturnValue({ matches: true });
-    try {
-      up();
-      showReadSendPill({ left: 40, bottom: 100, top: 80 }, () => null);
-      expect(pill()!.style.top).toBe(`${100 + READ_PILL_GAP_PX.coarse}px`);
-    } finally {
-      window.matchMedia = before;
-    }
   });
 });

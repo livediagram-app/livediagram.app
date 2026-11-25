@@ -11,10 +11,11 @@ The same words [Send to Plan](send-to-plan.md) sends, from the same places, each
 - **The text toolbar**, while a text element is edited: the words picked, or the whole text.
 - **The page toolbar**, after Send to Plan: the words picked in the page's writing, or with only the caret there, its
   whole paragraph, list item or checklist item.
-- **The reader's pills**: someone who reads the writing but cannot write in it picks words, and **Send to Diagram**
-  shows beside **Send to Plan** under them.
+- **The selection menu**: a right-click on words picked in the writing, or a long press on a touch screen, offers
+  **Send to Diagram** under **Send to Plan**, for anyone reading or writing
+  ([the selection menu](../../../../liveworkspace/docs/specs/004-index/send-to-plan.md#the-selection-menu)).
 
-Send to Plan wears liveplanner's logo and Send to Diagram livediagram's, on every entry and pill (owner, 2026-11-23).
+Send to Plan wears liveplanner's logo and Send to Diagram livediagram's, on every entry and menu row (owner, 2026-11-23).
 
 The diagram (or its new tab) is named after the page ("Onboarding diagram"), and its caption reads "From
 <knowledgebase>, <page>", linking back to the block the words start in (`#t=<tab>&el=<block>`). The block then shows
@@ -47,11 +48,11 @@ the graph to the index.
 
 ## Who sees it
 
-| Role                             | Entry                                             |
-| -------------------------------- | ------------------------------------------------- |
-| Editor, Participant              | Text toolbar, page toolbar                        |
-| Viewer                           | The pill beside Send to Plan's under words picked |
-| Guest, Offline, embed, Community | None (the platform's "Who may send")              |
+| Role                             | Entry                                          |
+| -------------------------------- | ---------------------------------------------- |
+| Editor, Participant              | Text toolbar, page toolbar, the selection menu |
+| Viewer                           | The selection menu in the writing              |
+| Guest, Offline, embed, Community | None (the platform's "Who may send")           |
 
 ## Telemetry
 

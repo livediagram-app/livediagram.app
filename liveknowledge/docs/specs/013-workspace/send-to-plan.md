@@ -13,9 +13,10 @@ liveknowledge's own.
 - **An element's thread**: the thread's header, **Send to Plan** beside Resolve; **a page's thread**: its card's
   **Send to Plan**. The words are the thread's first comment.
 - **Words in a page's writing**: the page toolbar's **Send to Plan**, after Assign Action: the words picked (a
-  sentence, several lines), or, with only the caret there, its whole paragraph, list item or checklist item. Someone who
-  reads the writing but cannot write in it (a Viewer, a locked page) picks the words and presses the **Send to Plan**
-  pill that shows under them. The place is the block the words start in: its link (`#t=<tab>&el=<block>`) opens the
+  sentence, several lines), or, with only the caret there, its whole paragraph, list item or checklist item. And
+  in the writing itself, the [selection menu](../../../../liveworkspace/docs/specs/004-index/send-to-plan.md#the-selection-menu)
+  (Work Tracker 1462): a right-click on the words picked, or a long press on a touch screen, offers **Send to Plan**
+  beside Cut, Copy and Paste, for anyone reading or writing. The place is the block the words start in: its link (`#t=<tab>&el=<block>`) opens the
   tab and brings that block into view once the page lays it out.
 
 Each place's link opens this knowledgebase at the place (`#t=<tab>&el=<element>`, with `&open=comments` for a thread), as
@@ -33,12 +34,12 @@ keys.
 
 ## Who sees it
 
-| Role                             | Entry                                                                            | Chips |
-| -------------------------------- | -------------------------------------------------------------------------------- | ----- |
-| Editor                           | Text toolbar, page toolbar, element menu (Resources), a thread's header          | Yes   |
-| Participant                      | Page toolbar, selection toolbar, a thread's header                               | Yes   |
-| Viewer                           | The pill under words picked in the writing, selection toolbar, a thread's header | Yes   |
-| Guest, Offline, embed, Community | None (the platform's "Who may send")                                             | No    |
+| Role                             | Entry                                                                                       | Chips |
+| -------------------------------- | ------------------------------------------------------------------------------------------- | ----- |
+| Editor                           | Text toolbar, page toolbar, element menu (Resources), a thread's header, the selection menu | Yes   |
+| Participant                      | Page toolbar, selection toolbar, a thread's header, the selection menu                      | Yes   |
+| Viewer                           | The selection menu in the writing, selection toolbar, a thread's header                     | Yes   |
+| Guest, Offline, embed, Community | None (the platform's "Who may send")                                                        | No    |
 
 A send needs only read access here: what decides is the person's Edit on the plan they pick, which the picker and the
 index check. A chip shows only to a reader who can open its plan.
