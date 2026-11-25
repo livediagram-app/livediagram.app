@@ -18,7 +18,7 @@ import {
 // holds no bracket and its address only balanced parentheses one deep (`…/Mercury_(planet)`), so each `[` or `(`
 // scans only to the next: linear on `[[[[` and `((((`.
 const MARKDOWN_SIGNAL =
-  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$|\[TOC(?: [12])?\]\s*$)|\*\*[^*]+\*\*|\[[^\][]+\]\((?:[^()]|\([^()]*\))+\)|`[^`]+`/m;
+  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$|\[TOC(?: [12])?\]\s*$)|\*\*(?:[^*]|\*[^*]+\*)+\*\*|\[[^\][]+\]\((?:[^()]|\([^()]*\))+\)|`[^`]+`/m;
 
 // A footnote's definition line opens a line: `[^label]: `.
 const FOOTNOTE_SIGNAL = /^\[\^[^\]\s[]{1,64}\]:/m;
@@ -140,9 +140,11 @@ const TOC_LINE = /^\[TOC(?: ([12]))?\]$/;
 // two literal stars. A link's text holds no bracket (as MARKDOWN_SIGNAL's), so each `[` scans only to the next one: a
 // long run of `[^` with one `]` far after it was quadratic. An underscore run marks nothing inside a word, as
 // CommonMark has it (`snake_case_name`, `my__private__helper` stay as written): it opens after no letter or digit
-// and closes before none.
+// and closes before none. Emphasis nests as CommonMark has it: bold may hold an italic of its own character
+// (`**bold *italic* bold**`) and italic a bold (`*italic **bold** italic*`), read again inside (readInline). The inner
+// pair opens on a single marker followed by no marker, so a group never crosses a `**` and each `*` is tried once.
 const INLINE =
-  /(\*\*\*([^*]+)\*\*\*|(?<![\p{L}\p{N}_])___([^_]+)___(?![\p{L}\p{N}_])|\*\*([^*]+)\*\*|(?<![\p{L}\p{N}_])__([^_]+)__(?![\p{L}\p{N}_])|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\][]+)\]\(((?:[^()\s]|\([^()\s]*\))+)\)|\*([^*\s][^*]*)\*|(?<![\p{L}\p{N}_])_([^_\s][^_]*)_(?![\p{L}\p{N}_]))/u;
+  /(\*\*\*([^*]+)\*\*\*|(?<![\p{L}\p{N}_])___([^_]+)___(?![\p{L}\p{N}_])|\*\*((?:[^*]|\*[^*]+\*)+)\*\*|(?<![\p{L}\p{N}_])__((?:[^_]|_[^_]+_)+)__(?![\p{L}\p{N}_])|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\][]+)\]\(((?:[^()\s]|\([^()\s]*\))+)\)|\*([^*\s](?:[^*]|\*\*[^*]+\*\*)*)\*|(?<![\p{L}\p{N}_])_([^_\s](?:[^_]|__[^_]+__)*)_(?![\p{L}\p{N}_]))/u;
 
 // Markdown's backslash escapes (`\\*` is a literal `*`): held as private-use characters while the
 // marks are read, so an escaped character never opens or closes one, then put back as the character.

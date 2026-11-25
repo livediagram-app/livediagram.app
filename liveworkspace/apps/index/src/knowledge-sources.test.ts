@@ -259,6 +259,26 @@ describe('knowledge-likely', () => {
         }),
       ),
     ).toEqual({ items: [] });
+    // A Japanese question has no spaces, so it is one word: 20 letters are 60 bytes, past D1's 50-byte LIKE pattern.
+    addItem('ja', ADA, { title: 'デプロイの手順はどこに書いてありますかを確認する' });
+    expect(
+      await body(
+        await post('kb', 'knowledge-likely', {
+          personId: ADA,
+          teams: [],
+          words: ['デプロイの手順はどこに書いてありますか'],
+          exclude: [],
+        }),
+      ),
+    ).toEqual({
+      items: [
+        {
+          itemId: 'ja',
+          app: 'livediagram',
+          title: 'デプロイの手順はどこに書いてありますかを確認する',
+        },
+      ],
+    });
     expect(
       await body(
         await post('kb', 'knowledge-likely', {

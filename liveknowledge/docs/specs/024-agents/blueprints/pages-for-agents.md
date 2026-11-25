@@ -129,7 +129,8 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
   (`#`, `##`, `###`, `>`, body), list by level (two spaces a level, `-`, `1.`, `- [ ]` / `- [x]`), code fenced,
   divider `---`, page break `\pagebreak`, zone `[zone <id>]`; runs: `**b**`, `*i*`, `~~s~~`, `` `code` ``,
   `[text](href)` (read with unescaped parentheses balanced one deep in `href`), emphasis kept inside a run's own
-  spaces; Markdown's characters escaped with a backslash, and a
+  spaces (a link's brackets around them, `runMarkdown`'s `lead` / `tail`; a heading's edge line break written as a
+  space); bold read holding an italic of its own character and italic a bold (`INLINE`); Markdown's characters escaped with a backslash, and a
   block's text that would open a heading, quote, list or divider escaped at the line start; a line break inside a
   body paragraph, a quote or a list item prints as a backslash hard break (`brokenMarkdown`: the quote's next line
   led by `> `, the item's by its indent and as many spaces as its marker and space), inside a heading or code as a

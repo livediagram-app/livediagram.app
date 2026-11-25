@@ -218,9 +218,6 @@ async function reach(
   return json({ itemIds: reached.map((item) => item.id) });
 }
 
-// LIKE's own characters escaped, so a word is matched as written.
-const likeWord = (word: string) => `%${word.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-
 // Up to three items of the knowledgebase's scope the person can open, of a source app and not excluded, whose title
 // holds any of the words: what an Unanswered question was likely answered in.
 async function likely(
@@ -236,14 +233,16 @@ async function likely(
     : [];
   const exclude = idsOf(body.exclude, KNOWLEDGE_SOURCES_MAX) ?? [];
   if (!person || words.length === 0) return json({ items: [] });
-  const titleMatch = words.map(() => "i.title LIKE ? ESCAPE '\\'").join(' OR ');
+  // `instr`, never a bound LIKE: D1 refuses a LIKE pattern over 50 bytes, and a word of 40 letters in Chinese or
+  // Japanese (a question with no spaces is one word) is 120. `lower` folds ASCII alone, as LIKE did.
+  const titleMatch = words.map(() => 'instr(lower(i.title), lower(?)) > 0').join(' OR ');
   const { results } = await env.INDEX_DB.prepare(
     `SELECT i.id, i.app, i.title FROM items i
       WHERE i.scope = ? AND i.trashed_at IS NULL AND i.app IN (SELECT value FROM json_each(?))
         AND i.id NOT IN (SELECT value FROM json_each(?)) AND (${titleMatch})
       ORDER BY i.updated_at DESC LIMIT ?`,
   )
-    .bind(kb.scope, SOURCE_APPS, JSON.stringify(exclude), ...words.map(likeWord), LIKELY_CANDIDATES)
+    .bind(kb.scope, SOURCE_APPS, JSON.stringify(exclude), ...words, LIKELY_CANDIDATES)
     .all<{ id: string; app: App; title: string }>();
   if (results.length === 0) return json({ items: [] });
   const reached = new Set(

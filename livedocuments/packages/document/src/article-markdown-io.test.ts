@@ -221,6 +221,51 @@ describe('a written article read back', () => {
     ).toEqual([runs]);
   });
 
+  // A link's edge space was written outside its brackets (`[world](…) next`), so it left the link on a round trip.
+  it("keeps a link's edge spaces inside the link", () => {
+    const runs = [
+      { text: 'see' },
+      { text: ' world ', href: 'https://x.dev' },
+      { text: 'and', b: true as const },
+      { text: ' bold ', b: true as const, href: 'https://y.dev' },
+      { text: 'next' },
+    ];
+    const md = articleToMarkdown({ blocks: [{ id: 'p', type: 'paragraph', runs }] });
+    expect(md).toBe('see[ world ](https://x.dev)**and**[ **bold** ](https://y.dev)next\n');
+    const back = articleFromMarkdown(md);
+    expect(
+      'blocks' in back && back.blocks.map((b) => (b.type === 'paragraph' ? b.runs : null)),
+    ).toEqual([
+      [
+        { text: 'see' },
+        { text: ' world ', href: 'https://x.dev' },
+        { text: 'and', b: true },
+        { text: ' ', href: 'https://y.dev' },
+        { text: 'bold', b: true, href: 'https://y.dev' },
+        { text: ' ', href: 'https://y.dev' },
+        { text: 'next' },
+      ],
+    ]);
+  });
+
+  // A heading's line break at the edge of a bold run was written raw, so the heading ended there and the text after it
+  // read back as a paragraph of its own.
+  it("keeps a heading whole when a marked run's edge holds a line break", () => {
+    const md = articleToMarkdown({
+      blocks: [
+        {
+          id: 'h',
+          type: 'paragraph',
+          style: 'h2',
+          runs: [{ text: 'Title\n', b: true }, { text: 'more' }],
+        },
+      ],
+    });
+    expect(md).toBe('## **Title** more\n');
+    const back = articleFromMarkdown(md);
+    expect('blocks' in back && back.blocks.length).toBe(1);
+  });
+
   it('keeps inline code holding backticks, backslashes and edge spaces', () => {
     for (const code of ['a`b', '``x', '`', 'x`', 'a ``` b', 'a\\*b \\`', ' padded ', '  ']) {
       const runs = [{ text: 'see ' }, { text: code, code: true as const }, { text: ' end' }];
