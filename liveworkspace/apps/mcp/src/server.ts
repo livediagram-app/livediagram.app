@@ -15,6 +15,7 @@ import {
 import { serverIdentity } from '@liveworkspace/mcp-kit/listing';
 import type { AppSpec } from './apps';
 import {
+  AppRpcError,
   appCatalogue,
   appGuide,
   appRpc,
@@ -138,19 +139,32 @@ function registerPromptsAndResources(server: McpServer, env: Env, state: Request
       prompts: (await listPrompts(env, state)).map((p) => p.prompt),
     })),
   );
-  server.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-    const found = (await listPrompts(env, state)).find(
-      (p) => p.prompt.name === request.params.name,
-    );
-    if (!found)
-      throw new McpError(ErrorCode.InvalidParams, `Prompt ${request.params.name} not found`);
-    const catalogue = await appCatalogue(env, found.spec, state.token ?? '');
-    const result = await appRpc(env, found.spec, state.token ?? '', 'prompts/get', {
-      name: found.own,
-      arguments: request.params.arguments ?? {},
-    });
-    return rewriteJson(result, catalogue.rewrite) as { messages: [] };
-  });
+  // A one-item read through an app: the app's own refusal (a missing prompt argument is its -32602) keeps its code,
+  // and a refused token marks the request so it answers 401, as a listing does.
+  const passedOn = async <T>(run: () => Promise<T>): Promise<T> => {
+    try {
+      return await run();
+    } catch (err) {
+      if (err instanceof TokenRefused) state.refused = true;
+      if (err instanceof AppRpcError) throw new McpError(err.code, err.message);
+      throw err;
+    }
+  };
+  server.server.setRequestHandler(GetPromptRequestSchema, (request) =>
+    passedOn(async () => {
+      const found = (await listPrompts(env, state)).find(
+        (p) => p.prompt.name === request.params.name,
+      );
+      if (!found)
+        throw new McpError(ErrorCode.InvalidParams, `Prompt ${request.params.name} not found`);
+      const catalogue = await appCatalogue(env, found.spec, state.token ?? '');
+      const result = await appRpc(env, found.spec, state.token ?? '', 'prompts/get', {
+        name: found.own,
+        arguments: request.params.arguments ?? {},
+      });
+      return rewriteJson(result, catalogue.rewrite) as { messages: [] };
+    }),
+  );
   server.server.setRequestHandler(ListResourcesRequestSchema, () =>
     guarded({ resources: [] as Resource[] }, async () => ({
       resources: (await fromEachApp<Resource>(env, state, 'resources/list', 'resources')).flatMap(
@@ -165,21 +179,23 @@ function registerPromptsAndResources(server: McpServer, env: Env, state: Request
       ).flatMap(({ items }) => items),
     })),
   );
-  server.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-    const spec = resourceApp(state.allowed, request.params.uri);
-    if (!spec)
-      throw new McpError(ErrorCode.InvalidParams, `Resource ${request.params.uri} not found`);
-    const token = state.token ?? '';
-    const catalogue = await appCatalogue(env, spec, token);
-    const result = await appRpc(env, spec, token, 'resources/read', { uri: request.params.uri });
-    // Texts only: a view's page calls its tools by the names they have here.
-    const contents = Array.isArray(result.contents)
-      ? (result.contents as { text?: unknown }[]).map((c) =>
-          typeof c.text === 'string' ? { ...c, text: catalogue.rewrite(c.text) } : c,
-        )
-      : [];
-    return { ...result, contents };
-  });
+  server.server.setRequestHandler(ReadResourceRequestSchema, (request) =>
+    passedOn(async () => {
+      const spec = resourceApp(state.allowed, request.params.uri);
+      if (!spec)
+        throw new McpError(ErrorCode.InvalidParams, `Resource ${request.params.uri} not found`);
+      const token = state.token ?? '';
+      const catalogue = await appCatalogue(env, spec, token);
+      const result = await appRpc(env, spec, token, 'resources/read', { uri: request.params.uri });
+      // Texts only: a view's page calls its tools by the names they have here.
+      const contents = Array.isArray(result.contents)
+        ? (result.contents as { text?: unknown }[]).map((c) =>
+            typeof c.text === 'string' ? { ...c, text: catalogue.rewrite(c.text) } : c,
+          )
+        : [];
+      return { ...result, contents };
+    }),
+  );
 }
 
 async function listed(ctx: CoreContext, all: boolean): Promise<ListedTool[]> {

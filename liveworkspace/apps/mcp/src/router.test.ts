@@ -82,6 +82,15 @@ function appWorker(app: AppId): Fetcher {
           id: body.id,
           error: { code: -32601, message: 'Method not found' },
         });
+      if (extra === 'invalid')
+        return Response.json({
+          jsonrpc: '2.0',
+          id: body.id,
+          error: {
+            code: -32602,
+            message: 'MCP error -32602: Invalid arguments for prompt diagram_this',
+          },
+        });
       if (extra !== undefined) return reply(extra);
       if (body.method === 'tools/list')
         return Response.json({ jsonrpc: '2.0', id: body.id, result: { tools: recorded(app) } });
@@ -123,6 +132,9 @@ function appExtras(app: AppId, method: string, params: Record<string, unknown>):
         ],
       };
     case 'prompts/get':
+      // A prompt's required argument left out: the app's MCP refuses it as invalid params.
+      if (params.name === 'diagram_this' && !(params.arguments as { text?: unknown })?.text)
+        return 'invalid';
       return {
         messages: [
           {
@@ -608,6 +620,21 @@ describe('everything an app’s MCP offers', () => {
     });
     expect(got.messages[0]!.content.text).toBe('show_my_document: use read_diagram.');
     expect(calls.find((c) => c.method === 'prompts/get')).toMatchObject({ app: 'livediagram' });
+  });
+
+  it('passes on an app’s refusal of a prompt’s arguments as invalid params, not an internal error', async () => {
+    const response = await rpc('prompts/get', { name: 'diagram_this', arguments: {} });
+    const { error } = await response.json<{ error: { code: number; message: string } }>();
+    expect(error.code).toBe(-32602);
+    expect(error.message).toBe(
+      'MCP error -32602: livediagram: Invalid arguments for prompt diagram_this',
+    );
+  });
+
+  it('answers 401 when an app refuses the token while reading a resource', async () => {
+    refusing = 'livediagram';
+    const response = await rpc('resources/read', { uri: 'ui://livediagram/view.html' });
+    expect(response.status).toBe(401);
   });
 
   it('lists every app’s resources and reads one through the app that owns it, names rewritten', async () => {
