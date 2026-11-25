@@ -185,6 +185,23 @@ describe('GET search', () => {
     expect(own.results.map((r) => r.tab)).toEqual(['holidays']);
   });
 
+  it("finds a confined link's own page however many other pages match better", async () => {
+    // Thirty pages that match "december" in their titles outrank the holidays page's one mention of it; searched
+    // across the knowledgebase and cut to the best twenty, the link's own page fell out of its results.
+    const many = Array.from({ length: 30 }, (_, i) =>
+      page(`p${i}`, `December Notes ${i}`, [
+        { id: 'b1', type: 'paragraph', runs: [{ text: 'December, December, December.' }] },
+      ]),
+    );
+    const kit = await knowledgeKit({}, [...many, ...PAGES]);
+    // A create indexes a batch of its pages; the room settles the rest a turn at a time.
+    while (settleQueued(nodeItemSql(kit.db.sql)).queued > 0);
+    const own = await body<Results>(
+      await kit.call('page-link', 'GET', '/api/documents/kb/search?q=december'),
+    );
+    expect(own.results.map((r) => r.tab)).toEqual(['holidays']);
+  });
+
   it('bounds the query, reads operators as words and answers nothing for no words', async () => {
     const kit = await knowledgeKit();
     const long = await kit.call('viewer', 'GET', `/api/documents/kb/search?q=${'a'.repeat(201)}`);
