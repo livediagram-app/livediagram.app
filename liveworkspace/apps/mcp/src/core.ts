@@ -1,7 +1,7 @@
 // The core verbs, always listed (liveworkspace/docs/specs/021-mcp/mcp.md "Three layers"): nine tools that work on
 // any item by its ref, each mapped onto the app's own tools, plus the two that reach an app's editing tools.
 import { APPS, CREATE_KINDS, KINDS, appOfKind, parseRef, refOf, type AppSpec } from './apps';
-import type { AppCatalogue, ListedTool } from './catalogue';
+import { nameRewriter, rewriteUnquoted, type AppCatalogue, type ListedTool } from './catalogue';
 import { TokenRefused, type ToolResult } from './app-client';
 
 // What a core verb needs from the request: the apps this connection may reach, each one's catalogue, and a call
@@ -388,7 +388,7 @@ async function createItem(ctx: CoreContext, args: Record<string, unknown>): Prom
           ...look,
         };
   const result = await ctx.call(spec, spec.core.create, appArgs);
-  if (result.isError) return result;
+  if (result.isError) return inCoreWords(ctx, spec, result);
   return withRef(spec, result);
 }
 
@@ -560,6 +560,49 @@ async function callEditingTool(
   return ctx.call(found.spec, found.appTool, withAppId(found.spec, found.tool, toolArgs, args.ref));
 }
 
+/**
+ * A core verb's refusal in this server's words: the app's tools it names for what a core verb does (`restore_doc`,
+ * `find_docs`) become that verb, so an assistant is pointed at the tool it just used the family of. Quoted words
+ * (a name someone gave) stay; an answer that is not a refusal is as the app gave it.
+ */
+async function inCoreWords(
+  ctx: CoreContext,
+  spec: AppSpec,
+  result: ToolResult,
+): Promise<ToolResult> {
+  if (!result.isError) return result;
+  const catalogue = await ctx.catalogue(spec).catch((err: unknown) => {
+    if (err instanceof TokenRefused) throw err;
+    return null;
+  });
+  if (!catalogue) return result;
+  const here = new Map([...catalogue.toApp].map(([name, own]) => [own, name]));
+  const core: [string, string][] = [
+    [spec.core.find, 'find_items'],
+    [spec.core.listTrash, 'find_items'],
+    [spec.core.create, 'create_item'],
+    [spec.core.share, 'share_item'],
+    [spec.core.rename, 'rename_item'],
+    [spec.core.trash, 'trash_item'],
+    [spec.core.restore, 'restore_item'],
+  ];
+  const renames = new Map<string, string>();
+  for (const [own, verb] of core) {
+    renames.set(own, verb);
+    const name = here.get(own);
+    if (name) renames.set(name, verb);
+  }
+  const rewrite = nameRewriter(renames);
+  return {
+    ...result,
+    content: result.content.map((part) =>
+      part.type === 'text' && typeof part.text === 'string'
+        ? { ...part, text: rewriteUnquoted(part.text, rewrite) }
+        : part,
+    ),
+  };
+}
+
 /** Runs a core verb; null when the name is not one. */
 export async function runCore(
   ctx: CoreContext,
@@ -584,28 +627,39 @@ export async function runCore(
       const target = byRef(ctx, args);
       if ('error' in target) return target.error!;
       const { spec, id } = target as { spec: AppSpec; id: string };
-      const idArg = { [spec.idParam]: id };
-      if (name === 'read_item')
-        return ctx.call(spec, spec.core.read, {
-          ...idArg,
-          ...(typeof args.tabId === 'string' && spec.kind !== 'knowledgebase'
-            ? { tabId: args.tabId }
-            : {}),
-        });
-      if (name === 'share_item')
-        return ctx.call(spec, spec.core.share, {
-          ...idArg,
-          ...(typeof args.role === 'string' ? { role: args.role } : {}),
-          ...(typeof args.expiry === 'string' ? { expiry: args.expiry } : {}),
-        });
-      if (name === 'rename_item')
-        return ctx.call(spec, spec.core.rename, { ...idArg, name: args.name });
-      if (name === 'trash_item') return ctx.call(spec, spec.core.trash, idArg);
-      return ctx.call(spec, spec.core.restore, idArg);
+      return inCoreWords(ctx, spec, await coreCall(ctx, name, spec, id, args));
     }
     default:
       return null;
   }
+}
+
+// One of the verbs on a single item, as its app's own tool.
+function coreCall(
+  ctx: CoreContext,
+  name: string,
+  spec: AppSpec,
+  id: string,
+  args: Record<string, unknown>,
+): Promise<ToolResult> {
+  const idArg = { [spec.idParam]: id };
+  if (name === 'read_item')
+    return ctx.call(spec, spec.core.read, {
+      ...idArg,
+      ...(typeof args.tabId === 'string' && spec.kind !== 'knowledgebase'
+        ? { tabId: args.tabId }
+        : {}),
+    });
+  if (name === 'share_item')
+    return ctx.call(spec, spec.core.share, {
+      ...idArg,
+      ...(typeof args.role === 'string' ? { role: args.role } : {}),
+      ...(typeof args.expiry === 'string' ? { expiry: args.expiry } : {}),
+    });
+  if (name === 'rename_item')
+    return ctx.call(spec, spec.core.rename, { ...idArg, name: args.name });
+  if (name === 'trash_item') return ctx.call(spec, spec.core.trash, idArg);
+  return ctx.call(spec, spec.core.restore, idArg);
 }
 
 export { APPS };

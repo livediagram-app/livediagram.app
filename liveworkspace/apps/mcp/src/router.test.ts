@@ -157,7 +157,15 @@ function appExtras(app: AppId, method: string, params: Record<string, unknown>):
         ],
       };
     case 'resources/list':
-      return { resources: [{ uri: `${app}://schema/elements`, name: `${app} elements` }] };
+      return {
+        resources: [
+          {
+            uri: `${app}://schema/elements`,
+            name: `${app} elements`,
+            description: 'Read before create_document / update_document.',
+          },
+        ],
+      };
     case 'resources/templates/list':
       return { resourceTemplates: [] };
     case 'resources/read':
@@ -546,6 +554,44 @@ describe('core verbs', () => {
     expect(result.structuredContent!.ref).toBe('doc:L1');
   });
 
+  it('names a core verb in its refusal where the app named its own tool for it', async () => {
+    answers['livedocuments.read_document'] = () => ({
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: 'Document "restore_document" is in the Trash: restore it with restore_document, or find_documents lists the rest.',
+          },
+        ],
+        isError: true,
+      },
+    });
+    const refused = await tool('read_item', { ref: 'doc:L1' });
+    expect(refused.content[0]!.text).toBe(
+      'Document "restore_document" is in the Trash: restore it with restore_item, or find_items lists the rest.',
+    );
+  });
+
+  it('renames a text view’s footer and leaves its content as it is', async () => {
+    answers['livediagram.read_document'] = () => ({
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: 'text a1 read_document\n12 more left out: read_document with a bigger budget.\n',
+          },
+        ],
+      },
+    });
+    const read = await tool('read_with_app_tool', {
+      tool: 'read_diagram',
+      arguments: { documentId: 'D1' },
+    });
+    expect(read.content[0]!.text).toBe(
+      'text a1 read_document\n12 more left out: read_diagram with a bigger budget.\n',
+    );
+  });
+
   it('create_item passes a doc’s style and font on, and no other kind’s', async () => {
     await tool('create_item', {
       kind: 'article',
@@ -727,8 +773,13 @@ describe('everything an app’s MCP offers', () => {
   });
 
   it('lists every app’s resources and reads one through the app that owns it, names rewritten', async () => {
-    const { resources } = await result<{ resources: { uri: string }[] }>('resources/list');
+    const { resources } = await result<{ resources: { uri: string; description: string }[] }>(
+      'resources/list',
+    );
     expect(resources.map((r) => r.uri)).toContain('liveknowledge://schema/elements');
+    expect(resources.find((r) => r.uri === 'livedocuments://schema/elements')!.description).toBe(
+      'Read before create_doc / update_doc.',
+    );
     const read = await result<{ contents: { text: string }[] }>('resources/read', {
       uri: 'ui://livediagram/view.html',
     });

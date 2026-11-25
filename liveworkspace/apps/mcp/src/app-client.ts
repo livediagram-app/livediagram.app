@@ -114,9 +114,21 @@ export async function appGuide(
   return guide;
 }
 
+/**
+ * A text view (read_document's outline) with its last line, the app's own footer ("… read_document with budget …"),
+ * rewritten outside quotes; every line above it is the item's content and stays as it is.
+ */
+function footerRewritten(text: string, rewrite: (text: string) => string): string {
+  const end = text.trimEnd();
+  const at = end.lastIndexOf('\n');
+  const last = end.slice(at + 1);
+  const out = rewriteUnquoted(last, rewrite);
+  return out === last ? text : `${end.slice(0, at + 1)}${out}${text.slice(end.length)}`;
+}
+
 /** A text part that is the answer's JSON (mcp-kit's `textResult`): its guidance rewritten; any other text as it is. */
 function guidedText(text: string, rewrite: (text: string) => string): string {
-  if (!text.startsWith('{')) return text;
+  if (!text.startsWith('{')) return footerRewritten(text, rewrite);
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);

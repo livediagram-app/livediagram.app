@@ -203,7 +203,10 @@ One address, in every place a person could copy one (Work Tracker 1423):
   Tools" has a few that cross apps (a plan's status as a livedocuments article, a retro board as a livediagram mind
   map), which is what one connection is for.
 - **Tool names in copy are this server's** (`create_item`, `change_cards`, `get_knowledge_context`), never an app's
-  own name for the tool.
+  own name for the tool. That holds in what the apps answer too: a resource's description, a text view's last line
+  (its "left out: read with a bigger budget" footer; the lines above it are the item's own words and stay), and a core
+  verb's refusal, where the app's tool for what a core verb does is named as that verb (`restore it with
+restore_item`, `find_items lists them`).
 - **Someone still on an app's old address** is told it takes no new connections, that a connection made before
   keeps working until its token ends, and that some old hosts no longer resolve; they remove the server and add the
   one address once, ticking every app they use. The note lives in the shared troubleshooting list and the help
