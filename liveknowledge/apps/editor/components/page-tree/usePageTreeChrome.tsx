@@ -14,7 +14,8 @@ import { track } from '@/lib/telemetry';
 import { TOP_ROW_HEIGHT_PX } from '@/lib/page-surface/top-row-slot';
 import { PageTreeSheet } from './PageTreeSheet';
 import { PageTreeSidebar } from './PageTreeSidebar';
-import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
+import { PAGE_TREE_RAIL_WIDTH } from './page-tree-view';
+import { usePageTreeWidth } from './page-tree-width';
 import { usePageTreeModel } from './usePageTreeModel';
 import { KnowledgebaseMenu } from '@/components/knowledge-menu/KnowledgebaseMenu';
 import { usePageTrashSync } from '@/components/page-trash/usePageTrash';
@@ -102,6 +103,8 @@ export function usePageTreeChrome({
     () => false,
   );
   const [collapsed, setCollapsedState] = useState(readTreeCollapsed);
+  // Open, the tree's live width: stepped up on wide windows, or dragged (sidebar-width.md).
+  const treeWidth = usePageTreeWidth().width;
   const setCollapsed = useCallback((next: boolean) => {
     // Sent before the change is kept, as every settings flip is.
     track('UI', 'Changed', next ? 'PageTreeCollapsed' : 'PageTreeExpanded');
@@ -119,7 +122,7 @@ export function usePageTreeChrome({
   return {
     docked,
     menuJoined: docked && !collapsed,
-    width: collapsed ? PAGE_TREE_RAIL_WIDTH : PAGE_TREE_WIDTH,
+    width: collapsed ? PAGE_TREE_RAIL_WIDTH : treeWidth,
     sidebarEl: docked ? (
       <PageTreeSidebarHost
         collapsed={collapsed}

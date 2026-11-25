@@ -1012,7 +1012,11 @@
     "./components/send-to-diagram/diagram-kinds": "./src/components/send-to-diagram/diagram-kinds.tsx",
     "./components/send-to-diagram/diagram-send-store": "./src/components/send-to-diagram/diagram-send-store.ts",
     "./components/send-to-diagram/graph-sketch": "./src/components/send-to-diagram/graph-sketch.ts",
-    "./hooks/ui/useSettled": "./src/hooks/ui/useSettled.ts"
+    "./hooks/ui/useSettled": "./src/hooks/ui/useSettled.ts",
+    "./components/canvas/SidebarResizeHandle": "./src/components/canvas/SidebarResizeHandle.tsx",
+    "./hooks/ui/useSidebarWidth": "./src/hooks/ui/useSidebarWidth.ts",
+    "./hooks/ui/useContentsSidebarWidth": "./src/hooks/ui/useContentsSidebarWidth.ts",
+    "./lib/sidebar-width": "./src/lib/sidebar-width.ts"
   },
   "scripts": {
     "lint": "oxlint",

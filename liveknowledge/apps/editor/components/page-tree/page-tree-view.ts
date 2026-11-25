@@ -11,7 +11,8 @@ import {
 import type { App } from '@liveworkspace/index-client';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 
-/** The sidebar's width, in px at the panels' UI scale. */
+/** The sidebar's base width, in px at the panels' UI scale, up to a 1,439 px window; wider windows step it up and the
+ *  person can drag it (usePageTreeWidth, liveworkspace/docs/specs/011-workbench/sidebar-width.md). */
 export const PAGE_TREE_WIDTH = 264;
 /** Collapsed, the sidebar is a rail this wide. */
 export const PAGE_TREE_RAIL_WIDTH = 48;

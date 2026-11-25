@@ -14,7 +14,9 @@ import { MenuJoinBand } from './menu-join';
 import { ContentsOptions, type ContentsStackOption } from './ContentsOptions';
 import { useViewportStoreIfAny } from '../../hooks/canvas/useViewportStore';
 import { pageInView, type ContentsPageRect, type ContentsRowBase } from '../../lib/page-contents';
-import { CONTENTS_SIDEBAR_WIDTH, restingRect, sideInsetsOf } from '../../lib/contents-sidebar';
+import { CONTENTS_FILM_INSET, restingRect, sideInsetsOf } from '../../lib/contents-sidebar';
+import { useContentsSidebarWidth } from '../../hooks/ui/useContentsSidebarWidth';
+import { SidebarResizeHandle } from './SidebarResizeHandle';
 import { ContentsList, type ContentsBadges, type ContentsListState } from './PageContentsList';
 import { ContentsSummary } from './ContentsSummary';
 
@@ -62,6 +64,8 @@ export function ContentsSidebar<R extends ContentsRowBase>({
 }) {
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
+  // Its width steps up on wide windows and follows the person's drag (liveworkspace/docs/specs/011-workbench/sidebar-width.md).
+  const sized = useContentsSidebarWidth();
   const self = useRef<HTMLElement>(null);
   const viewport = useViewportStoreIfAny();
   // The page in view, read against what shows beside the sidebar.
@@ -147,7 +151,9 @@ export function ContentsSidebar<R extends ContentsRowBase>({
         ...uiScaleStyle(scale),
         left: 0,
         top: joined ? 0 : px(top),
-        width: CONTENTS_SIDEBAR_WIDTH,
+        width: sized.width,
+        // The film's pictures and names fill the width; a drag changes this and no row renders.
+        ['--contents-film-w' as string]: `${sized.width - CONTENTS_FILM_INSET}px`,
       }}
       // Opaque, flush against its side and down to the canvas's foot, so no page shows round or
       // through it.
@@ -166,6 +172,14 @@ export function ContentsSidebar<R extends ContentsRowBase>({
         className="flex-1 gap-0.5 px-1.5 pb-2 pt-2"
       />
       {footer(minimise)}
+      <SidebarResizeHandle
+        label="Resize Contents"
+        width={sized.width}
+        scale={scale}
+        onResize={sized.set}
+        onCommit={sized.commit}
+        onReset={sized.reset}
+      />
     </aside>
   );
 }
