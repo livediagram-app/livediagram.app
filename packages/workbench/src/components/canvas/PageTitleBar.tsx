@@ -36,8 +36,9 @@ export function titleBarChromeRoom(buttons: number, groups: number): number {
 export function titleBarButtonClass(on: boolean | undefined, labelled: boolean): string {
   return `relative flex h-7 shrink-0 items-center justify-center rounded-md text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-600 ${
     // The same 18 px as before, split so a bar holding one named button centres its ink (optical audit): the
-    // icon's side bearing and the word's tail weigh the two edges differently.
-    labelled ? 'gap-1.5 pl-[8.5px] pr-[9.5px]' : 'w-7'
+    // icon's side bearing and the word's tail weigh the two edges differently. The name (the button's one span) is
+    // held to its cap band (text-optical-line), so the word centres on the bar whatever face the system resolves.
+    labelled ? 'gap-1.5 pl-[8.5px] pr-[9.5px] [&>span]:text-optical-line' : 'w-7'
   } ${
     on
       ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
