@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import {
   ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY,
@@ -20,7 +20,15 @@ vi.mock('../index-service', async (original) => {
   };
 });
 
+// Pin the clock to mid-day UTC: these tests step past 10 minutes and count per-day limits, so a
+// real clock near midnight would roll into a new day and reset the counter mid-test.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-06-15T12:00:00Z'));
+});
+
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
