@@ -229,7 +229,8 @@ AI tool:
 - **Refresh.** `grant_type=refresh_token` with the client's `client_id` answers a new access token and a new
   refresh token; the old refresh token is spent. Presenting a spent refresh token ends the whole sign-in: the
   refresh chain and every access token from it stop (they are checked against the chain's record on every request),
-  and the client signs in again. A refused account token (revoked in Settings, or ended) ends the chain the same way,
+  and the client signs in again. The one just spent, presented again within 30 seconds, is a client's own two
+  calls at once: refused, nothing ended. A refused account token (revoked in Settings, or ended) ends the chain the same way,
   so a client never loops refreshing a dead sign-in. Discovery advertises `refresh_token` among the grants.
 - **Storage.** One record per sign-in (`mcp-fam:<id>`, as long as its refresh token) and one per live access token
   (`mcp-at:<hash>`, an hour), both with KV expirations, so nothing outlives its token. Refresh tokens carry their
@@ -239,7 +240,8 @@ AI tool:
 
 ### Existing connections
 
-Tokens handed out before this change are account tokens (`lwt_…`), and the clients holding them keep them (owner,
+Tokens handed out before this change are account tokens (`lwt_…`, or `lvd_…` carried over from the old
+livediagram.app, docs/migration.md), and the clients holding them keep them (owner,
 2026-11-25: accept them for 30 days, then refuse). `/mcp`, and the old addresses, accept an account token until
 **2026-12-27** (00:00 UTC), checked with liveworkspace first, so a revoked or made-up one is refused; each use logs
 `[mcp] legacy token` (once per token per isolate every ten minutes). From that date an account token answers `401
