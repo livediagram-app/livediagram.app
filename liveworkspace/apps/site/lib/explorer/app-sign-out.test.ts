@@ -62,13 +62,12 @@ describe('Sign Out in the Explorer on an app’s address', () => {
 
     expect(await appSignOut(go)).toBe(true);
 
-    // The app's API on this address, with its cookies, coming back to this very page: the editors' sign-out, which
-    // ends the liveworkspace session and every app's tokens from it.
+    // The app's API on this address, with its cookies, coming back to the app's landing page: the editors' sign-out,
+    // which ends the liveworkspace session and every app's tokens from it. Never back to the Explorer, whose reload
+    // would start a guest (Work Tracker 1443).
     expect(signOutCalls()).toHaveLength(1);
     const [call] = signOutCalls();
-    expect(call!.url).toBe(
-      `/api/auth/sign-out?return=${encodeURIComponent('/explorer?folder=f1')}`,
-    );
+    expect(call!.url).toBe(`/api/auth/sign-out?return=${encodeURIComponent('/')}`);
     expect(call!.init).toMatchObject({ method: 'POST', credentials: 'same-origin' });
     // Then the full-page hop through liveworkspace.app, which clears its session cookie there.
     expect(go).toHaveBeenCalledExactlyOnceWith(HOP);
@@ -79,12 +78,12 @@ describe('Sign Out in the Explorer on an app’s address', () => {
     expect(calls.at(-1)!.url).toBe('/api/auth/token');
   });
 
-  it('comes straight back when the accounts site didn’t answer: this app alone, as in the editors', async () => {
+  it('goes straight to the landing page when the accounts site didn’t answer: this app alone, as in the editors', async () => {
     signOutAnswer = () => json(200, { signedIn: false, next: null });
     const go = vi.fn();
     expect(await appSignOut(go)).toBe(true);
-    expect(go).toHaveBeenCalledExactlyOnceWith('/explorer?folder=f1');
-    // And the page it reloads to says so, under its account control (AppAccountControl, Work Tracker 1283).
+    expect(go).toHaveBeenCalledExactlyOnceWith('/');
+    // And the page it lands on says so, under its account control (the landing page's header, Work Tracker 1283).
     expect(takeSignedOutHere()).toBe(true);
   });
 

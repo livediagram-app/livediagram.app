@@ -31,7 +31,7 @@ An architecture diagram usually says what a system looks like, not whether it is
   to every 8 minutes, until it answers again.
 </Step>
 
-To change the address, open **Live Status…** again; **Remove** takes the binding off. Both are one step you can undo.
+To change the address, open **Live Status…** again; **Remove** takes the binding off. Both are one step you can undo. A locked shape takes no status address.
 
 ## Which Addresses Work
 
@@ -55,7 +55,7 @@ Addresses that can't be checked are refused as you type: anything that isn't `ht
 | **Up**       | The service answered and says it is working.                                                                                                                                         |
 | **Degraded** | The service reports a partial outage or maintenance.                                                                                                                                 |
 | **Down**     | The service reports an outage, answered with an error, or didn't answer.                                                                                                             |
-| **Unknown**  | The address redirects or can't be checked, the canvas holds too many status links (more than 25), or it hasn't been checked in the last 3 minutes (10 for one that isn't answering). |
+| **Unknown**  | The address redirects or can't be checked, the canvas holds more than 25 different status addresses, or it hasn't been checked in the last 3 minutes (10 for one that isn't answering). |
 
 Hover the badge to see why, when it was last checked and which host it asked.
 

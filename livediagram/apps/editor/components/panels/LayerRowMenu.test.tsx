@@ -85,25 +85,14 @@ describe('LayerRowMenu', () => {
     expect(button('Send to Bottom')).toBeTruthy();
   });
 
-  it('asks before deleting a populated layer', () => {
+  // Delete and Clear act at once, closing the menu; the layer's toast offers Undo
+  // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
+  it('deletes a populated layer at once, with no question, and closes', () => {
     const p = renderMenu();
     fireEvent.click(button('Delete Layer'));
-    expect(p.onDelete).not.toHaveBeenCalled();
-    expect(screen.getByText('Delete “Notes” and its 3 elements?')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(p.onDelete).toHaveBeenCalledOnce();
-  });
-
-  // The confirm anchors to the row that asked, named by the click itself: no wrapper node carries a ref for it
-  // (docs/specs/003-system-architecture/react-state-and-effects.md "Fragments and DOM events").
-  it('anchors the confirm to the asking row, with no wrapper around it', () => {
-    renderMenu();
-    for (const name of ['Clear Layer', 'Delete Layer'])
-      expect(button(name).parentElement?.attributes.length).toBeGreaterThan(0);
-    fireEvent.click(button('Clear Layer'));
-    expect(
-      screen.getByRole('alertdialog', { name: 'Clear the 3 elements on “Notes”?', description: 'The layer stays.' }),
-    ).toBeTruthy();
+    expect(p.onClose).toHaveBeenCalled();
+    expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
   it('deletes an empty layer straight away and cannot clear it', () => {
@@ -113,13 +102,10 @@ describe('LayerRowMenu', () => {
     expect(p.onDelete).toHaveBeenCalledOnce();
   });
 
-  it('asks before clearing', () => {
+  it('clears at once, with no question', () => {
     const p = renderMenu();
     fireEvent.click(button('Clear Layer'));
-    expect(
-      screen.getByRole('alertdialog', { name: 'Clear the 3 elements on “Notes”?', description: 'The layer stays.' }),
-    ).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(p.onClear).toHaveBeenCalledOnce();
   });
 });

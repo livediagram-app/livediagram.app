@@ -11,6 +11,7 @@
 // with `scrim`, a dim layer behind it sets it apart from everything else.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal, useClickOutside } from '@liveworkspace/ui';
+import { announceToastFloorChange } from '@liveworkspace/ui/toast';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
 import { usePopoverLayer } from './popover-stack';
 
@@ -228,6 +229,13 @@ export function AnchoredPopover({
 
   const arrow = pointer && !beside && pos && arrowX !== null;
   const z = layer === 'modal' ? 'z-[var(--z-modal)]' : 'z-[calc(var(--z-popover)+1)]';
+  const rises = pos?.side === 'above' && !hidden;
+  // A toast already up moves beside it as it rises, and back as it goes.
+  useEffect(() => {
+    if (!rises) return;
+    announceToastFloorChange();
+    return announceToastFloorChange;
+  }, [rises]);
   return (
     <Portal>
       {scrim && !hidden ? (
@@ -272,6 +280,9 @@ export function AnchoredPopover({
         // Over its dialog, over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
         // menu opened mid-tour is never dimmed, and over a menu's flyout (z-popover) it opens from.
         data-stepped-aside={hidden ? '' : undefined}
+        // Risen above its button (a footer popover, Tools): the toast stack stands beside it, never over a control
+        // in it (liveworkspace/docs/specs/016-notifications/toasts.md "Placement").
+        data-toast-beside={rises ? '' : undefined}
         className={`fixed ${z} ${hidden ? 'invisible' : ''} overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none ${
           pointer ? 'border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900' : ''
         }`}

@@ -1237,7 +1237,7 @@ The active tab carries a **`⋯` ellipsis button** to the right of its name. Cli
 
 - **Rename**: enters inline rename mode.
 - **Duplicate**: creates a copy of the tab (same elements, same pattern, name suffixed with " copy") inserted directly after the source, and switches to it.
-- **Clear content**: wipes every element from the tab in one undoable commit. Disabled when the tab is already empty or when the tab is locked.
+- **Clear content**: wipes every element from the tab at once, in one undoable commit, and a toast ("Reset the canvas.") offers Undo, which puts every element back on that tab while keeping what anyone added since ([Undo, not confirm](../../../../liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md)). Disabled when the tab is already empty or when the tab is locked.
 - **Lock / Unlock**: toggles `tab.locked`. While locked, every element on the tab is read-only (matches per-element lock semantics), the palette's Add buttons stop firing, theme / canvas changes are blocked, **the tab itself can't be deleted** (the Delete row is disabled; unlock first), and the tab pill shows the padlock icon (see above).
 - **Add to another document**: submenu listing every other document the participant owns. Picking one links the tab into that document via `POST /api/documents/:id/tabs/:tabId/link` (the source tab stays put; both documents now share the same `tabs.data` row so edits propagate, see [Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)).
 - **Delete**: removes the tab and falls back to a neighbouring tab. Disabled when only one tab remains.

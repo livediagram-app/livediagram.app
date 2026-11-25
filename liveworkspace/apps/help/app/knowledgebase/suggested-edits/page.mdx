@@ -16,7 +16,7 @@ An agent that holds the suggest scope never changes a page directly. Its change 
 ## Review a Suggestion
 
 <Step n={1}>
-  Press the **Insights** tab in the footer and scroll to **Edits Suggested by Agents**.
+  Press the **Insights** tab in the footer and find **Needs Attention**. Each waiting edit is a **Suggested Edit** row; the **Edits** filter shows only those. The page's own side panel also lists its waiting edits under **Suggested Edits**; open one for **Accept**, **Show in Page** and **Dismiss**.
 </Step>
 
 <Step n={2}>
@@ -51,10 +51,11 @@ A suggestion replaces a passage by its exact words. If someone has changed those
 | ---------------------------- | ----------------- |
 | A suggestion's new writing   | 20,000 characters |
 | A suggestion's reason        | 500 characters    |
+| Suggestions waiting          | 50 a Knowledgebase, kept 90 days |
 
 ## Good to Know
 
-- With nothing waiting, the section reads **No Suggested Edits Yet**.
+- With nothing waiting, the **Edits** filter reads **No Suggested Edits Yet**, and under **All** Needs Attention reads **Nothing Needs Attention**.
 - A suggestion's lines are drawn as plain text: nothing in it runs.
 - An agent sends a suggestion with the MCP tool `suggest_knowledge_edit` or the CLI's `suggest`. See [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/).
 

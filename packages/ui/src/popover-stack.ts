@@ -10,6 +10,7 @@
 // control fell to the page body, then to the editor behind the modal. Focus outside it (a field driving its list)
 // is left alone.
 import { useEffect, useRef, type RefObject } from 'react';
+import { keyInToastStack } from './toast/toast-keys';
 import { tabbables } from './useFocusTrap';
 
 type Layer = {
@@ -21,7 +22,8 @@ const layers: Layer[] = [];
 
 function onKeyDown(e: KeyboardEvent): void {
   const top = layers.at(-1);
-  if (!top) return;
+  // A key in a toast is the toast's (toast-keys.ts): Escape there closes the toast, never the popover.
+  if (!top || keyInToastStack(e)) return;
   top.onKey(e);
   if (e.key !== 'Tab' || e.defaultPrevented) return;
   // Decided once the key has been through the page (the window's own bubble, after every handler under it), so a

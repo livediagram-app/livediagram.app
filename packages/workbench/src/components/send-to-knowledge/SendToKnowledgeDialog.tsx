@@ -5,7 +5,8 @@
 // heading) or a new one, the section's heading and an optional focus; then Write With AI or Add Without Summary, and a
 // preview with Insert, Edit and Cancel before anything is written. Centred on screen, a bottom sheet on a phone. With
 // the month's AI credits used, the platform's limit notice stands in the summary's place, Add Without Summary beside
-// its upgrade. Loaded on its first open (SendToPlanHost).
+// its upgrade. An Ask AI answer's words come as written (`words`): no picture, no Focus and no AI, Preview straight to
+// the preview, and never into the knowledgebase they came from. Loaded on its first open (SendToPlanHost).
 import { useEffect, useId, useMemo, useState } from 'react';
 import {
   IndexError,
@@ -35,6 +36,7 @@ import type {
   KnowledgeCapture,
   KnowledgeSummariser,
   KnowledgeSummaryAnswer,
+  KnowledgeWords,
 } from './send-to-knowledge-entry';
 import {
   KnowledgebasePicker,
@@ -70,18 +72,22 @@ type Step =
   | { at: 'preview'; markdown: string; byAi: boolean; editing: boolean }
   | { at: 'credits'; refused: Extract<KnowledgeSummaryAnswer, { ok: false }> };
 
+/** What is sent: a selection with the app's summariser, or words as written (an Ask AI answer). */
+type Sent =
+  | { capture: KnowledgeCapture; summarise: KnowledgeSummariser; words?: undefined }
+  | { words: KnowledgeWords; capture?: undefined; summarise?: undefined };
+
 export function SendToKnowledgeDialog({
   capture,
+  summarise,
+  words,
   source,
   sourceTitle,
-  summarise,
   onClose,
   client = indexClient,
-}: {
-  capture: KnowledgeCapture;
+}: Sent & {
   source: { app: App; itemId: string };
   sourceTitle: string;
-  summarise: KnowledgeSummariser;
   onClose: () => void;
   client?: Client;
 }) {
@@ -106,10 +112,15 @@ export function SendToKnowledgeDialog({
   const [newTitle, setNewTitle] = useState(sourceTitle.trim() || 'Untitled');
   const [parent, setParent] = useState('');
   // Connect as tabs (connected-tabs.md "Linked from a Send to"): the source and the knowledgebase, once written.
-  const link = useLinkTabs({ sourceId: source.itemId, targetId: kb?.id ?? null, client });
-  const [heading, setHeading] = useState(capture.heading.slice(0, HEADING_MAX));
+  // Never for an answer's words: an answer is not a file (ask.md "Sending an answer on").
+  const link = useLinkTabs({
+    sourceId: source.itemId,
+    targetId: capture ? (kb?.id ?? null) : null,
+    client,
+  });
+  const [heading, setHeading] = useState((words ?? capture).heading.slice(0, HEADING_MAX));
   const [focus, setFocus] = useState('');
-  const [picture, setPicture] = useState<Picture>({ state: 'drawing' });
+  const [picture, setPicture] = useState<Picture>(words ? { state: 'none' } : { state: 'drawing' });
   const [step, setStep] = useState<Step>({ at: 'form' });
   const [inserting, setInserting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,8 +129,9 @@ export function SendToKnowledgeDialog({
     workbench.track('UI', 'Opened', 'SendToKnowledge');
   }, []);
 
-  // The picture, drawn once when the picker opens.
+  // The picture, drawn once when the picker opens (words have none).
   useEffect(() => {
+    if (!capture) return undefined;
     let live = true;
     capture
       .picture()
@@ -149,7 +161,13 @@ export function SendToKnowledgeDialog({
       });
     return () => abort.abort();
   }, [client, settledQuery]);
-  const kbs: KnowledgebaseList = kbsFor?.key === settledQuery ? kbsFor.list : { state: 'loading' };
+  // Never the item itself: liveknowledge's own Save as Page writes there, and the index refuses it.
+  const kbs: KnowledgebaseList =
+    kbsFor?.key !== settledQuery
+      ? { state: 'loading' }
+      : kbsFor.list.state === 'ready'
+        ? { state: 'ready', items: kbsFor.list.items.filter((i) => i.id !== source.itemId) }
+        : kbsFor.list;
 
   // The knowledgebase's pages, through liveknowledge's own door with the person's grant (an Editor's alone).
   const kbId = kb?.id ?? null;
@@ -213,11 +231,13 @@ export function SendToKnowledgeDialog({
     pages.state === 'ready' &&
     (mode === 'existing' ? !!page : newTitle.trim().length > 0) &&
     picture.state !== 'drawing';
-  const countWords = selectionWords(capture.selection.items.length, capture.selection.links.length);
-  const fallback = () => knowledgeSendFallback(capture.selection);
+  const countWords = capture
+    ? selectionWords(capture.selection.items.length, capture.selection.links.length)
+    : '';
+  const fallback = () => (capture ? knowledgeSendFallback(capture.selection) : words.markdown);
 
   const writeWithAi = async () => {
-    if (!placeReady) return;
+    if (!placeReady || !capture) return;
     setError(null);
     setStep({ at: 'writing' });
     const answer = await summarise({
@@ -262,17 +282,18 @@ export function SendToKnowledgeDialog({
         heading: heading.trim(),
         markdown,
         ...(picture.state === 'ready' ? { picture: picture.picture } : {}),
+        // Words are the item's own: no tab, no element (the link back opens the item).
         source: {
           app: source.app,
           itemId: source.itemId,
-          tabId: capture.tabId,
-          elementIds: capture.elementIds,
+          tabId: capture ? capture.tabId : null,
+          elementIds: capture ? capture.elementIds : [],
         },
       });
       addKnowledgeSend(send);
       rememberKnowledgeSend(source.itemId, { kbId: kb.id, kbTitle: kb.title, at: Date.now() });
       workbench.track('UI', 'Created', 'SendToKnowledge');
-      void link.finish(kb.id, { source: sourceTitle, target: kb.title });
+      if (capture) void link.finish(kb.id, { source: sourceTitle, target: kb.title });
       toast.success(`Added to ${send.page.title || 'the page'}`, {
         action: {
           label: 'Open Page',
@@ -297,17 +318,25 @@ export function SendToKnowledgeDialog({
         art={sendToKnowledgeHeroArt}
         titleId={titleId}
         title="Send to Knowledge Base"
-        subtitle="AI writes up these items on a page in liveknowledge. They stay as they are here."
+        subtitle={
+          words
+            ? 'Adds this answer, as written, to a page in liveknowledge. It stays as it is here.'
+            : 'AI writes up these items on a page in liveknowledge. They stay as they are here.'
+        }
         onClose={onClose}
       />
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-4">
-          <WhatsSent
-            picture={picture}
-            url={pictureUrl}
-            words={countWords}
-            cut={!!capture.selection.cut}
-          />
+          {capture ? (
+            <WhatsSent
+              picture={picture}
+              url={pictureUrl}
+              words={countWords}
+              cut={!!capture.selection.cut}
+            />
+          ) : step.at === 'form' ? (
+            <WordsSent markdown={words.markdown} />
+          ) : null}
           {step.at === 'form' || step.at === 'writing' ? (
             <>
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
@@ -342,7 +371,7 @@ export function SendToKnowledgeDialog({
                   />
                 </section>
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className={`grid grid-cols-1 gap-3 ${capture ? 'sm:grid-cols-2' : ''}`}>
                 <div className="flex min-w-0 flex-col gap-1.5">
                   <label htmlFor={headingId} className={LABEL}>
                     Heading
@@ -355,21 +384,23 @@ export function SendToKnowledgeDialog({
                     placeholder="No heading"
                   />
                 </div>
-                <div className="flex min-w-0 flex-col gap-1.5">
-                  <label htmlFor={focusId} className={LABEL}>
-                    Focus{' '}
-                    <span className="font-normal normal-case tracking-normal">(optional)</span>
-                  </label>
-                  <TextInput
-                    id={focusId}
-                    value={focus}
-                    onChange={(e) => setFocus(e.target.value)}
-                    maxLength={FOCUS_MAX}
-                    placeholder="What should it focus on?"
-                  />
-                </div>
+                {capture ? (
+                  <div className="flex min-w-0 flex-col gap-1.5">
+                    <label htmlFor={focusId} className={LABEL}>
+                      Focus{' '}
+                      <span className="font-normal normal-case tracking-normal">(optional)</span>
+                    </label>
+                    <TextInput
+                      id={focusId}
+                      value={focus}
+                      onChange={(e) => setFocus(e.target.value)}
+                      maxLength={FOCUS_MAX}
+                      placeholder="What should it focus on?"
+                    />
+                  </div>
+                ) : null}
               </div>
-              {kb ? (
+              {kb && capture ? (
                 <LinkTabsOption
                   link={link}
                   sourceApp={source.app}
@@ -437,6 +468,23 @@ export function SendToKnowledgeDialog({
                 </>
               ) : null}
             </>
+          ) : words ? (
+            <div className="flex w-full flex-wrap items-center justify-end gap-x-2 gap-y-1.5">
+              <p className="mr-auto hidden text-xs text-slate-500 sm:block dark:text-slate-400">
+                Nothing is written until you insert it.
+              </p>
+              <Button type="button" variant="secondary" onClick={onClose} className="shrink-0">
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={withoutSummary}
+                disabled={!placeReady}
+                className="shrink-0 whitespace-nowrap"
+              >
+                Preview
+              </Button>
+            </div>
           ) : (
             // The buttons on one row (wrapping on a phone, where the three are wider than the sheet), and under them a
             // quiet line: nothing is written yet, and what Write With AI costs.
@@ -472,6 +520,27 @@ export function SendToKnowledgeDialog({
         </DialogFooter>
       </div>
     </Dialog>
+  );
+}
+
+// An answer's words, its first lines, where a selection's picture would be.
+function WordsSent({ markdown }: { markdown: string }) {
+  return (
+    <section
+      aria-label="What's sent"
+      data-knowledge-words=""
+      className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50"
+    >
+      <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+        The answer, as written
+      </p>
+      <p className="line-clamp-4 whitespace-pre-line break-words text-[13px] leading-5 text-slate-600 dark:text-slate-300">
+        {markdown.trim()}
+      </p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">
+        No AI writes it up: you see it before it is added.
+      </p>
+    </section>
   );
 }
 

@@ -17,7 +17,9 @@ vi.mock('../../hooks/ui/useToast', () => ({ useToast: () => ({ success: vi.fn() 
 import { SendToPlanHost } from './SendToPlanHost';
 import {
   canSendKnowledgeHere,
+  canSendWordsToKnowledgeHere,
   sendToKnowledge,
+  sendWordsToKnowledge,
   type KnowledgeCapture,
 } from '../send-to-knowledge/send-to-knowledge-entry';
 
@@ -82,5 +84,27 @@ describe('SendToPlanHost with Send to Knowledge Base', () => {
     );
     act(() => sendToKnowledge(capture));
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it("opens the picker on an Ask AI answer's words in any app, no summariser needed", async () => {
+    const { unmount } = render(
+      <SendToPlanHost app="liveknowledge" itemId="K" title="Wiki" enabled />,
+    );
+    expect(canSendWordsToKnowledgeHere()).toBe(true);
+    // No words, no picker.
+    act(() => sendWordsToKnowledge({ heading: 'Why?', markdown: '  ' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    act(() => sendWordsToKnowledge({ heading: 'Why?', markdown: 'Because.' }));
+    expect(await screen.findByRole('dialog')).toBeTruthy();
+    expect(screen.getByText('The answer, as written')).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    unmount();
+    expect(canSendWordsToKnowledgeHere()).toBe(false);
+  });
+
+  it('offers no words to a session that cannot send', () => {
+    render(<SendToPlanHost app="livediagram" itemId="D" title="P" enabled={false} />);
+    expect(canSendWordsToKnowledgeHere()).toBe(false);
   });
 });

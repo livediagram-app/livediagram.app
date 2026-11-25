@@ -31,11 +31,10 @@ test('a deleted page waits in the Trash, and Restore puts it back with its subpa
   await saveAndGoOn(page);
   await expect(trashRow(page)).toHaveCount(0);
 
+  // It goes at once, and the toast offers Undo (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
   await rowVerb(page, 'Guides', 'Delete');
-  const confirm = page.getByRole('dialog', { name: 'Move Guides and 1 Subpage to the Trash?' });
-  await expect(confirm).toContainText('restore them from the Trash for 30 days');
-  await confirm.getByRole('button', { name: 'Move to Trash', exact: true }).click();
-  await expect(confirm).toBeHidden();
+  await expect(page.getByText('Moved “Guides” and 1 subpage to the Trash.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Undo deleting Guides' })).toBeVisible();
   expect(await treeShape(page)).not.toContain('1 Guides');
 
   // The row counts the page and its subpage once the delete has landed, and keeps them across a reload.

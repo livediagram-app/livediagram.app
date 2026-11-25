@@ -3,9 +3,9 @@ import { Chip, Stage } from '@liveworkspace/help-site/art/parts';
 import { AppFrame, Lines, PageHead, VerifiedBadge, type TreeRowSpec } from '../illustrations/kit';
 
 const ROWS: TreeRowSpec[] = [
-  { label: 'Start Here', state: 'verified' },
+  { label: 'Start Here' },
   { label: 'Engineering', open: true },
-  { label: 'Deploying', depth: 1, current: true, state: 'verified' },
+  { label: 'Deploying', depth: 1, current: true },
   { label: 'On-Call', depth: 1, state: 'due' },
   { label: 'People', open: false },
 ];

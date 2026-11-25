@@ -15,14 +15,14 @@ import type {
   TeamRef,
 } from '@liveworkspace/explorer';
 import { placeHash } from '@liveworkspace/explorer';
-import { APP_ITEMS, siteOfApp } from '@liveworkspace/sites';
+import { APP_ITEMS, siteOfApp, siteUrlHere } from '@liveworkspace/sites';
 import { helpArticleHref, type HelpArticleKey } from './help-articles';
 import { currentBearer } from './api/core';
 
 // Where each app opens its own items (@liveworkspace/sites APP_ITEMS). livehuddle's open here; another app's open on
 // its own site.
 export const itemHref: ItemHref = (item, at) => {
-  const origin = item.app === 'livehuddle' ? '' : siteOfApp(item.app).url;
+  const origin = item.app === 'livehuddle' ? '' : siteUrlHere(siteOfApp(item.app));
   const query = item.sharedVia ? `?s=${encodeURIComponent(item.sharedVia)}` : '';
   // The editor's deep link (lib/collab-deep-link.ts), built by the Explorer.
   const pin = placeHash(at);

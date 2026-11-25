@@ -15,6 +15,7 @@ import {
 } from '@liveworkspace/subscription-ui/testing';
 import { proOnForTests, withPro } from '@liveworkspace/subscription-ui/testing/who';
 import { TeamPlan, SpaceProBadge } from './TeamPlan';
+import { TeamUsage } from './page/TeamUsage';
 
 proOnForTests();
 afterEach(cleanup);
@@ -81,6 +82,27 @@ describe('TeamPlan', () => {
     setProForTests(false);
     show({ me: meResponse({ teams: [team(GARDEN, 'Garden', 'admin')] }) });
     expect(row()).toBeNull();
+  });
+
+  it('the Usage tab lists the team’s usage against its limits, with Pro for Teams beside each on Free', async () => {
+    const { fetcher } = serviceFetch({
+      me: meResponse({
+        teams: [
+          team(GARDEN, 'Garden', 'member', 'free', { usage: { automationRuns: { used: 40 } } }),
+        ],
+      }),
+    });
+    render(withPro(<TeamUsage teamId={TEAM_ID} />, fetcher));
+    const list = await waitFor(() => {
+      const found = document.querySelector('[data-usage-list]');
+      if (!found) throw new Error('not yet');
+      return found as HTMLElement;
+    });
+    expect(list.getAttribute('data-usage-list')).toBe(GARDEN);
+    const runs = list.querySelector('[data-usage-row="automationRunsPerMonth"]') as HTMLElement;
+    expect(runs.textContent).toContain('40 of 500');
+    expect(runs.textContent).toContain('a member on Pro for Teams');
+    expect(screen.getByText(/counts toward these limits, shared by everyone/)).toBeTruthy();
   });
 
   it('puts the Pro badge after a subscribed team’s name, and nothing after a Free one’s', async () => {

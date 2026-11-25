@@ -33,6 +33,19 @@ export function siteHrefFrom(site: Site, href: string, host: string): string {
   return `${stagingOrigin(site.id)}${href.slice(site.url.length)}`;
 }
 
+/** `site`'s address as a page on `host` reaches it: its staging origin from a staging page, its live address anywhere
+ *  else (production, and locally). The origin a link to another app is built on. */
+export function siteUrlFrom(site: Site, host: string): string {
+  return isStagingHost(host) ? stagingOrigin(site.id) : site.url;
+}
+
+/** The same, for the page this code is running on (the live address while there is no page, as when prerendered). */
+export function siteUrlHere(site: Site): string {
+  // Read off globalThis, so a Worker that imports this module (with no DOM types) still compiles.
+  const page = (globalThis as { window?: { location?: { host?: string } } }).window;
+  return siteUrlFrom(site, page?.location?.host ?? '');
+}
+
 /** The app an origin belongs to in `environment`, or null (liveworkspace.app itself, or anywhere else). Only an exact
  *  origin matches: no other port, scheme or subdomain. A held app's origins count: the services accept it before it
  *  is listed anywhere. */

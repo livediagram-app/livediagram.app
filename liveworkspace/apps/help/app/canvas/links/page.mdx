@@ -26,36 +26,39 @@ Links connect your <Noun /> to the rest of your work. Shapes, text, sticky notes
 Give a shape, text, sticky note, image or table a link (arrows and lines take none), and it gains a small "Follow link" badge whose hover card names the target. A link can point at:
 
 - **A tab** in the same <Noun />, or **a specific element** on another tab.
-- **Another <Noun />** entirely.
+- **Another <Noun />** entirely, or **a file from another product**.
 - **An external URL**, which opens in a new browser tab.
 
-To add one, right-click the element, open **Resources** at the foot of its menu and press **Add Link** (it reads **Edit Link** once there is one). The **Link element** dialog opens on three choices:
+To add one, right-click the element, open **Resources** at the foot of its menu and press **Add Link** (it reads **Edit Link** once there is one). The **Link** screen lists where it can go:
 
-- **External URL**: type a **Web address** and press **Save link** (or Enter). Leave off the `https://` and it is added for you.
-- **Tab**: pick one of the <Noun />'s tabs.
-- **<Noun capital />**: pick one of your other <Noun plural />.
+- **External URL**: type a **Web address** and press **Save Link** (or Enter). Leave off the `https://` and it is added for you.
+- **Tab**: pick one of the <Noun />'s tabs. The one you are on is marked **This tab**.
+- **Files**: pick one of your recent files, from this app's own list first (your other <Noun plural />), then one list for each other product. Each list has a search box.
 
 <AppNote app="livedesign">
-  On a wireframe tab the dialog has a fourth choice, listed first. **Screen**: pick the screen that
-  pressing the element goes to in Prototype mode, or **Back** for the screen shown before. Choose
-  **Instant**, **Slide** or **Dissolve** above the list for the transition. The screen the element
-  sits on is marked **This screen** and can't be picked.
+  On a wireframe tab, a link can also go to a screen, for Prototype mode. Select the element and
+  drag the small round link handle at its bottom-right corner onto another screen, or press the
+  handle to open the **Link element** dialog on **Screen**, listed first among its choices. There,
+  pick the screen that pressing the element goes to, or **Back** for the screen shown before, and
+  choose **Instant**, **Slide** or **Dissolve** above the list for the transition. The screen the
+  element sits on is marked **This screen** and can't be picked. The handle shows once the tab has
+  two or more screens.
 </AppNote>
 
-To change a link, open the same dialog again and pick a new target; the Remove link button at its foot takes the link off. The link follows the element if you move it, and like any edit it can be undone. For more on tab and element targets, see [Linking Across Tabs](/help/tabs/linking-tabs/).
+To change a link, open the same screen again and pick a new target; **Remove Link**, last on the screen, takes the link off. The link follows the element if you move it, and like any edit it can be undone. For more on tab and element targets, see [Linking Across Tabs](/help/tabs/linking-tabs/).
 
 <Figure
   app="livediagram"
-  caption="The Link element dialog, open on External URL: type the web address and save the link."
+  caption="Resources, on its Link screen: the link it has now, the places it can go (External URL, Tab, then each app's files, your canvases first) and Remove Link last."
 >
-  <LinkElementDialogScene noun="canvas" />
+  <LinkElementDialogScene product="livediagram" />
 </Figure>
 
 <Figure
   app="livedesign"
-  caption="The Link element dialog, open on External URL: type the web address and save the link."
+  caption="Resources, on its Link screen: the link it has now, the places it can go (External URL, Tab, then each app's files, your designs first) and Remove Link last."
 >
-  <LinkElementDialogScene noun="design" />
+  <LinkElementDialogScene product="livedesign" />
 </Figure>
 
 <Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="A linked element gains a follow-link badge; clicking it jumps to the target, here another tab.">

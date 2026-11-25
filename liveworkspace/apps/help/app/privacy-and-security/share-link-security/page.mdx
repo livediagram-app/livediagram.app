@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
 
 A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role. That is what makes sharing frictionless, but it also means a link left lying around keeps working. <AppName /> gives you two controls to tighten that up, a password on the <Noun /> and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
 
-<AppNote app="livediagram,livedesign,livedocuments">
+<AppNote app="livediagram,livedesign,livedocuments,liveknowledge">
   The roles are **Editor**, **Participant** or **Viewer**.
 </AppNote>
 
@@ -150,6 +150,11 @@ So if a Space's name or first tab is sensitive, set a share password before you 
 <AppNote app="livedocuments">
   Prefer a **Viewer** pass when people only need to look, or a **Participant** pass when they only
   need to edit the text and comment.
+</AppNote>
+
+<AppNote app="liveknowledge">
+  Prefer a **Viewer** pass when people only need to read, or a **Participant** pass when they should
+  edit pages without changing the knowledgebase's settings.
 </AppNote>
 
 <AppNote app="livehuddle">

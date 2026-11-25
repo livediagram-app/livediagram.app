@@ -12,6 +12,9 @@ place's link back, the index's record of the send, the chips on both sides and t
 spec (`<app>/docs/specs/013-workspace/send-to-knowledge.md`). Another app adds it by capturing its selection in the
 platform's shape (below) and handing the picker a summariser; nothing else is copied.
 
+An [Ask AI answer](../020-ask/ask.md#sending-an-answer-on) is the one source that is words rather than a selection:
+it goes through the same picker with the answer as written (below, "Words, not a selection").
+
 ## Names
 
 - The **source** is the item the selection came from (a diagram); its **place** is the tab and the elements picked.
@@ -47,6 +50,25 @@ What the source app sends is plain text, never markup, an image's bytes or a per
 - Capped before it leaves the editor: at most `KNOWLEDGE_SEND_ITEMS_MAX` (80) items and `KNOWLEDGE_SEND_LINKS_MAX`
   (120) arrows, labels at 300 characters, notes at 600, and `KNOWLEDGE_SEND_TEXT_MAX` (12,000) characters in all. The
   person sees "The first 80 items are sent" when it was cut.
+
+## Words, not a selection
+
+An Ask AI answer (`sendWordsToKnowledge({heading, markdown})`, any app, liveknowledge's own Ask included) opens the
+picker with its words in place of a selection:
+
+- **No AI pass and no AI credit**: the section is the answer as written (Markdown, its citation markers taken out),
+  at most `KNOWLEDGE_SEND_MARKDOWN_MAX`. The subtitle says "Adds this answer, as written, to a page in liveknowledge.
+  It stays as it is here."
+- **What's sent** shows the answer's first lines in place of a picture and a count; there is no picture, no Focus
+  and no Write With AI or Add Without Summary: **Preview** goes straight to the preview (Insert, Edit, Back, Cancel).
+- **Heading**: the question asked, editable, may be empty.
+- **The source** is the item with no tab and no elements (`elementIds` empty): its Sent From line opens the item, and
+  no element on it shows a chip.
+- **Not into itself**: the knowledgebase the answer was asked in is not listed (its own **Save as Page** writes
+  there); the index refuses it too.
+- **Who sees it**: any session that may send (a signed-in account in person, the item in the cloud, not an embed,
+  Offline or a Community copy), in every app, with no summariser needed.
+- No Connect as tabs: an answer is not a file.
 
 ## The summary
 
@@ -150,7 +172,7 @@ of the source through that app's MCP: no AI credit is spent for it here.
 
 | Limit                              | Value   | What it bounds                                                                     |
 | ---------------------------------- | ------- | ---------------------------------------------------------------------------------- |
-| `KNOWLEDGE_SEND_ITEMS_MAX`         | 80      | Items one selection sends                                                          |
+| `KNOWLEDGE_SEND_ITEMS_MAX`         | 80      | Items one selection sends (an answer's words send none)                            |
 | `KNOWLEDGE_SEND_LINKS_MAX`         | 120     | Arrows one selection sends                                                         |
 | `KNOWLEDGE_SEND_TEXT_MAX`          | 12,000  | Characters of labels and notes one selection sends                                 |
 | `KNOWLEDGE_SEND_FOCUS_MAX`         | 300     | Characters in the focus note                                                       |

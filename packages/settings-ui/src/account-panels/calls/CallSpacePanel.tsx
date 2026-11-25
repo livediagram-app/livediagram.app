@@ -6,7 +6,7 @@
 // Drawn in place wherever a signed-in account opens Settings, its own chunk.
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
-import { siteOfApp } from '@liveworkspace/sites';
+import { siteOfApp, siteUrlHere } from '@liveworkspace/sites';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { lucideCheck, lucidePlus, lucideSearch, lucideVideo } from '@liveworkspace/icons/lucide';
 import type { CallSpaceChoice } from '../../account-model';
@@ -177,7 +177,7 @@ export function CallSpacePanel({
 
   const unavailable = isUnavailable(value, spaces);
   const chosen = value !== null && !unavailable ? value : null;
-  const livehuddle = siteOfApp('livehuddle').url;
+  const livehuddle = siteUrlHere(siteOfApp('livehuddle'));
 
   return (
     <div className="space-y-5" data-call-spaces="">

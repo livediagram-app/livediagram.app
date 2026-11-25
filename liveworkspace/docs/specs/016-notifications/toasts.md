@@ -237,7 +237,9 @@ A toast is easy to miss. Every one is also written to a list the person can open
   2026-11-20: a centred toast 8px lower looked out of line). Where the cluster would sit beneath the centred stack, the
   stack's right edge stands 8px left of Undo, the toasts aligned to that edge; where it leaves the centre clear, the
   stack stays centred. On a phone the cluster is a floor like the
-  rest. Any bottom-right control a product marks `data-toast-side` counts as that cluster: liveknowledge's floating
+  rest. A popover risen above a footer button (Tools, `data-toast-beside`, set by the shared anchored popover when it
+  opens upward) is a side too, however tall: the stack stands 8px left of it, still on the cluster's line, so an Undo
+  toast never covers a control in it (Tools' Present, the verifier, 2026-11-25); on a phone it is a floor. Any bottom-right control a product marks `data-toast-side` counts as that cluster: liveknowledge's floating
   Edit, Cancel and Save buttons, so a toast stands on their line, not below it (the owner, 2026-11-21).
 - **At a start column's left edge.** From 640px, while the stack stands on a side's line, a product can mark a
   column `data-toast-start`: the stack then aligns to that column's left edge, 16px in, its toasts left aligned, still
@@ -277,7 +279,14 @@ Toasts follow each product's Motion spec (`docs/specs/004-interface-design/motio
 - The stack is a labelled region ("Notifications"), always mounted, so a toast added to it is announced: an error as an
   `alert`, everything else as a polite `status`. A toast never takes the focus.
 - Every button is a real button in the tab order. **Escape**, with the focus inside a toast, closes it without
-  reaching anything behind it.
+  reaching anything behind it, a popover or drawer included. An Escape anywhere else (one that closes Tools or a
+  drawer) never closes a toast.
+- **F6 reaches the newest toast's action from anywhere**, a focus-trapping popover or drawer included (Tools, a phone's
+  Layers drawer), where Tab alone never leaves the panel. The stack takes F6 before anything else while a toast with
+  an action is up and the focus is outside it; from inside it, F6 goes on to the editor's next region as before. Focus
+  goes back where F6 found it once the toast is answered, closed or sent away with Escape. Each such toast tells a
+  screen reader so after its message ("Press F6 to reach Undo."), never shown. Settings › Keyboard lists it in **In
+  Every App**.
 - The bell is a button with `aria-haspopup="dialog"` and `aria-expanded`; the popover is a labelled dialog, its list a
   plain list.
 

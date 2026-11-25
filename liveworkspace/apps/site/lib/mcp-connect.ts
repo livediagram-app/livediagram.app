@@ -1,6 +1,7 @@
 // The one MCP's consent (liveworkspace/docs/specs/021-mcp/mcp.md "Sign-in and per-app consent"): which MCP this
 // site's page talks to, what the connection request is, and the hand-over: mint an account token for the client,
 // give it and the ticked apps to the MCP, retire the client's earlier token, and send the browser on.
+import { ONE_MCP_ORIGIN } from '@liveworkspace/api-schema/mcp-origin';
 import { accountApi } from './account-api';
 import type { DeviceSessionClient } from './mcp-device-session';
 
@@ -20,7 +21,7 @@ export function mcpOrigin(location: { hostname: string; protocol: string }): str
   if (location.hostname.startsWith('staging.')) return 'https://mcp-staging.liveworkspace.app';
   if (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
     return 'http://localhost:3013';
-  return 'https://mcp.liveworkspace.app';
+  return ONE_MCP_ORIGIN;
 }
 
 export type ConsentSession = {

@@ -632,6 +632,17 @@ describe('appSignOut', () => {
     window.history.replaceState(null, '', '/');
   });
 
+  // The Explorer on an app's address lands on the app's landing page instead (Work Tracker 1443).
+  it('comes back to `returnTo` instead of this page when given one', async () => {
+    window.history.replaceState(null, '', '/explorer?folder=f1');
+    fetchMock.mockResolvedValue(new Response('{}', { status: 200 }));
+    const go = vi.fn();
+    expect(await appSignOut(go, { returnTo: '/' })).toBe(true);
+    expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/sign-out?return=%2F');
+    expect(go).toHaveBeenCalledWith('/');
+    window.history.replaceState(null, '', '/');
+  });
+
   // liveworkspace/docs/specs/003-accounts/accounts.md "Signing out".
   it("goes through the accounts site's hop when the API answers one", async () => {
     const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';

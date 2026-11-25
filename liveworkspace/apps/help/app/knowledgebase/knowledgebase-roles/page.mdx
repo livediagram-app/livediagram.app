@@ -17,7 +17,7 @@ Everyone who opens a Knowledgebase has one of three roles: **Editor**, **Partici
   <RolesScene />
 </Figure>
 
-In short: an **Editor** writes and runs the Knowledgebase, a **Participant** reads and comments, and a **Viewer** reads. Everyone can search, Ask and export a page.
+In short: an **Editor** writes and runs the Knowledgebase, a **Participant** writes it too but does not run it (no Review Period, Style, AI settings, publishing or sharing), and a **Viewer** reads. Everyone can search, Ask and export a page.
 
 ## Pages and Writing
 
@@ -25,21 +25,25 @@ In short: an **Editor** writes and runs the Knowledgebase, a **Participant** rea
 | --------------------------------------------------- | ------ | ----------- | ------ |
 | Read pages, follow links, fold the tree             | Yes    | Yes         | Yes    |
 | Copy a page's link                                  | Yes    | Yes         | Yes    |
-| Write and format on a page                          | Yes    | No          | No     |
-| Add, rename, move, duplicate and delete pages       | Yes    | No          | No     |
-| Add or remove a page link, add an embed             | Yes    | No          | No     |
+| Write and format on a page                          | Yes    | Yes         | No     |
+| Add, rename, move, duplicate and delete pages       | Yes    | Yes         | No     |
+| Set, change or remove a page's cover                | Yes    | Yes         | No     |
+| See the page Trash, restore a page from it          | Yes    | Yes         | No     |
+| Delete a page forever, empty the Trash              | Yes    | No          | No     |
+| Add or remove a page link, add an embed             | Yes    | Yes         | No     |
 | Reply in a comment thread                           | Yes    | Yes         | No     |
-| Start a margin note on words in the writing         | Yes    | No          | No     |
+| Start a margin note on words in the writing         | Yes    | Yes         | No     |
 
 ## Trust
 
 | Action                                              | Editor | Participant | Viewer |
 | --------------------------------------------------- | ------ | ----------- | ------ |
 | See a page's state, owner and Page Health           | Yes    | Yes         | Yes    |
-| Verify a page, change its owner                     | Yes    | No          | No     |
+| Verify a page, change its owner                     | Yes    | Yes         | No     |
+| Ask for approval, approve or reject a request       | Yes    | Yes         | No     |
 | Change the Review Period                            | Yes    | No          | No     |
 | See Knowledge Health                                | Yes    | Yes         | Yes    |
-| Remind the owners, ask both owners of a disagreement | Yes   | No          | No     |
+| Remind the owners, ask both owners of a disagreement | Yes   | Yes         | No     |
 | Turn your own review emails off or on               | Yes    | Yes         | Yes    |
 
 ## Finding Things
@@ -48,7 +52,7 @@ In short: an **Editor** writes and runs the Knowledgebase, a **Participant** rea
 | --------------------------------------------------- | ------ | ----------- | ------ |
 | Search                                              | Yes    | Yes         | Yes    |
 | Ask, copy an answer, mark it helpful or not         | Yes    | Yes         | Yes    |
-| Save an answer as a page, draft a page from a gap   | Yes    | No          | No     |
+| Save an answer as a page, draft a page from a gap   | Yes    | Yes         | No     |
 | See AI Settings                                     | Yes    | Yes         | Yes    |
 | Add, replace or remove the key; choose the model    | Yes    | No          | No     |
 
@@ -60,9 +64,9 @@ Ask needs you to be signed in, whatever your role.
 | --------------------------------------------------- | ------ | ----------- | ------ |
 | See every section of Insights                   | Yes    | Yes         | Yes    |
 | Accept or dismiss a suggested edit                  | Yes    | No          | No     |
-| Settle pages that disagree                          | Yes    | No          | No     |
-| Draft a page for a question, dismiss a question     | Yes    | No          | No     |
-| Add or remove an Always in Context page             | Yes    | No          | No     |
+| Settle pages that disagree                          | Yes    | Yes         | No     |
+| Draft a page for a question, dismiss a question     | Yes    | Yes         | No     |
+| Add or remove an Always in Context page             | Yes    | Yes         | No     |
 | Allow an agent to write, or stop it                 | Yes    | No          | No     |
 
 An agent acts with its person's role, narrowed by its scopes. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
@@ -72,13 +76,15 @@ An agent acts with its person's role, narrowed by its scopes. See [What Agents C
 | Action                                              | Editor | Participant | Viewer |
 | --------------------------------------------------- | ------ | ----------- | ------ |
 | Rename the Knowledgebase                            | Yes    | No          | No     |
-| Knowledgebase Style                                 | Yes    | No          | No     |
-| Describe to Add Pages                               | Yes    | No          | No     |
-| Import                                              | Yes    | No          | No     |
+| Knowledgebase Style (**Style** in the footer)       | Yes    | No          | No     |
+| Describe to Add Pages                               | Yes    | Yes         | No     |
+| Import                                              | Yes    | Yes         | No     |
 | Export                                              | Yes    | Yes         | Yes    |
+| Publish to the Web                                  | Yes    | No          | No     |
+| AI Settings, AI Editing                             | Yes    | No          | No     |
 | Delete the Knowledgebase                            | Yes    | No          | No     |
 
-A row a person is not offered is not in their menu at all.
+A row a person is not offered is not in their menu at all. Knowledgebase Style is not in the menu: it is the footer's **Style** button, which only an Editor sees.
 
 ## Good to Know
 

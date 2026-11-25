@@ -172,6 +172,7 @@ export function useEditorPlan(
     tickTabs,
     bringCardTypes: presetCardTypes.bring,
     markTabLoaded,
+    readTabs: () => tabsRef.current,
   });
   // Form tabs (docs/specs/030-forms/forms.md): starting one and every builder edit.
   const forms = useFormActions({

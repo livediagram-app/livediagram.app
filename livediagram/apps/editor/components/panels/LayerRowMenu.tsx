@@ -1,7 +1,7 @@
 'use client';
 
 import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livediagram/document';
 import {
   BringToTopIcon,
@@ -17,7 +17,6 @@ import {
   SoloIcon,
   UnlockIcon,
 } from '@/components/panels/layers-panel-icons';
-import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import {
   MenuActionRow,
   MenuGroupSeparator,
@@ -57,8 +56,9 @@ export function layerMenuPosition(
 // Right-click menu for a Layers-panel row (docs/specs/006-document/layers.md "Row context menu"):
 // a header naming the layer, the opacity slider, then every verb as a plain row, grouped by
 // separators. Nothing hides behind a category: the old accordion menu took two clicks to reach
-// anything. Anchored to the LEFT of the panel so it never covers the rows it acts on. Destructive
-// verbs (Delete on a populated layer, Clear) confirm via the shared ConfirmPopover before firing.
+// anything. Anchored to the LEFT of the panel so it never covers the rows it acts on. Delete and Clear act at once:
+// a layer that held elements says so in a toast with Undo (liveworkspace/docs/specs/022-interface-design/
+// undo-not-confirm.md).
 export function LayerRowMenu({
   layer,
   elementCount,
@@ -106,8 +106,7 @@ export function LayerRowMenu({
   onMergeDown: () => void;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
-  // A control menu (it holds the opacity slider; docs/specs/004-interface-design/menus.md). The
-  // ConfirmPopover claims Escape while it is open, so Escape here only ever closes the menu.
+  // A control menu (it holds the opacity slider; docs/specs/004-interface-design/menus.md).
   const { attach, tree, surfaceProps } = useControlMenu({
     onClose,
     label: `${layer.name} layer menu`,
@@ -119,12 +118,7 @@ export function LayerRowMenu({
     },
     [attach],
   );
-  // Which destructive verb is awaiting its ConfirmPopover, plus the row it anchors to.
-  const [confirm, setConfirm] = useState<{ kind: 'delete' | 'clear'; anchor: HTMLElement } | null>(
-    null,
-  );
-
-  useClickOutside(ref, onClose, true, '[data-confirm-popover]');
+  useClickOutside(ref, onClose, true);
 
   // Place the menu once it has a height; written straight to the style so the first paint is
   // already in place (no flash at the old position).
@@ -142,8 +136,6 @@ export function LayerRowMenu({
   const locked = isLayerLocked(layer);
   const visible = isLayerVisible(layer);
   const plural = elementCount === 1 ? 'element' : 'elements';
-  // The confirm popover anchors to the row that asked: the click names it.
-  const ask = (kind: 'delete' | 'clear', row: HTMLElement) => setConfirm({ kind, anchor: row });
   // Run a one-shot verb and close: the result shows on the canvas and in the panel.
   const thenClose = (fn: () => void) => () => {
     onClose();
@@ -249,38 +241,17 @@ export function LayerRowMenu({
             icon={<ClearIcon />}
             label="Clear Layer"
             disabled={elementCount === 0}
-            onClick={(e) => ask('clear', e.currentTarget)}
+            onClick={thenClose(onClear)}
           />
           <MenuActionRow
             plain
             icon={<DeleteIcon />}
             label="Delete Layer"
             disabled={!canDelete}
-            onClick={
-              // An empty layer goes straight away; a populated one asks first.
-              elementCount === 0 ? thenClose(onDelete) : (e) => ask('delete', e.currentTarget)
-            }
+            onClick={thenClose(onDelete)}
           />
         </div>
       </MenuTreeContext.Provider>
-      {confirm ? (
-        <ConfirmPopover
-          anchor={confirm.anchor}
-          message={
-            confirm.kind === 'delete'
-              ? `Delete “${layer.name}” and its ${elementCount} ${plural}?`
-              : `Clear the ${elementCount} ${plural} on “${layer.name}”? The layer stays.`
-          }
-          confirmLabel={confirm.kind === 'delete' ? 'Delete' : 'Clear'}
-          onConfirm={() => {
-            setConfirm(null);
-            onClose();
-            if (confirm.kind === 'delete') onDelete();
-            else onClear();
-          }}
-          onCancel={() => setConfirm(null)}
-        />
-      ) : null}
     </Portal>
   );
 }

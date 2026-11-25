@@ -12,7 +12,6 @@
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Panel, Label, Lift } from '@liveworkspace/help-site/art/primitives';
 import {
-  EraserGlyph,
   HandGlyph,
   LaserGlyph,
   PainterGlyph,
@@ -29,7 +28,6 @@ import { BarChart, Heading, Page, Sheet } from './doc-page';
 const TOOLS = [
   { key: 'select', label: 'Select', shortcut: 'V', band: 0, Glyph: SelectGlyph },
   { key: 'hand', label: 'Hand', shortcut: 'H', band: 0, Glyph: HandGlyph },
-  { key: 'eraser', label: 'Eraser', shortcut: 'E', band: 0, Glyph: EraserGlyph },
   { key: 'format', label: 'Format', shortcut: undefined, band: 0, Glyph: PainterGlyph },
   { key: 'laser', label: 'Laser', shortcut: 'K', band: 1, Glyph: LaserGlyph },
   { key: 'spotlight', label: 'Spotlight', shortcut: undefined, band: 1, Glyph: SpotlightGlyph },
@@ -171,7 +169,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
 
 type PanelRow = { label: string; value: string; amber?: boolean };
 
-/** A tool's own panel (Eraser, Format, Laser, Spotlight): a titled panel that
+/** A tool's own panel (Format, Laser, Spotlight): a titled panel that
  *  docks top-right while the tool is active, a preview strip at the
  *  top, then one collapsed row per setting naming its current value. */
 function ToolPanel({

@@ -16,14 +16,16 @@ in `@liveworkspace/workbench`). What each app sends, and where its entry and chi
 
 - The **source** is the item the thing came from (a diagram, a design, a document, a knowledgebase, a Space, or a
   plan); its **place** is the exact thing in it: an element, the words picked in an element's text, an element's comment
-  thread, a knowledgebase page's thread, a card's thread, or an element's assigned action.
+  thread, a knowledgebase page's thread, a card's thread, or an element's assigned action. An
+  [Ask AI answer](../020-ask/ask.md#sending-an-answer-on) is sent as words of the item itself: no tab and no element,
+  since an answer lives only while the page is open.
 - The **target** is the plan the card is made in, always a liveplanner item.
 - A **send** is the index's record of one card made from one place: the source item and its place, the plan and its
   card, and the card's title, column and whether it is done, as the plan last said (`PlanSend`). One card made from
   several places (a selection sent as one card with a checklist) has one send per place.
 - A place is named by its **ref**, `kind:tab:element:part` (`planSendRef`), the same for every app: `element` (a sticky
   or a shape), `text` (picked words in an element: `part` is a short hash of the words, so the same words sent again
-  match), `thread` (an element's thread, `part` empty; a knowledgebase page's or a card's thread, `part` the thread id),
+  match; an Ask AI answer's item is `text` with no tab or element), `thread` (an element's thread, `part` empty; a knowledgebase page's or a card's thread, `part` the thread id),
   `action` (`part` the action id).
 
 ## Who may send
@@ -56,7 +58,8 @@ Plan art.
 3. **The card**: its **Title**, from the words (below), editable; **Assignee**, the plan person a mention names, or
    anyone of the plan's people, or nobody; **Due**, a date the words name, or one picked, or none. A send of several
    places offers **One Card Each** (the default) or **One Card with a Checklist** (the first place's words the title,
-   every place a checklist row).
+   every place a checklist row). With One Card Each, every card's title is its own field, numbered in a list, each
+   editable before sending (a blank one falls back to its words' own title).
 4. **Connect as tabs** (a switch under the card, on unless the files are already connected): once the cards are made,
    the source and the plan each get a connected tab that opens the other ([Connect as tabs](connected-tabs.md#linked-from-a-send-to)). Sending again
    between the same two files adds no tab.

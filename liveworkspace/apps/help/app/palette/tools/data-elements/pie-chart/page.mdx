@@ -42,26 +42,17 @@ A pie chart shows how a total divides into parts. Each slice is sized by its val
 
 ## Editing the data
 
-Right-click the chart, open **Tools**, then **Data**. It edits inline, one row per slice, and each row has:
+Right-click the chart, open **Tools**, then **Data**, and press **Edit Data**. The **Chart Data** dialog has one row per slice, and each row has:
 
 - A recolourable **swatch** to set that slice's colour.
 - A **label** for the slice name.
 - A **value** that sizes the slice.
 
-Remove a slice with its **×**, or add one with **+ Add Slice**; the chart updates as soon as you leave a field. New slices default to variants of the active theme, so the chart reads as part of your <Noun /> out of the box, but you can override any slice's colour with its swatch.
+Remove a slice with its **×**, or add one with **+ Add Slice** (a chart always keeps one); the chart updates as soon as you leave a field. New slices default to variants of the active theme, so the chart reads as part of your <Noun /> out of the box, but you can override any slice's colour with its swatch.
 
-<AppNote app="livedesign">
-  To keep the slices in step with a plan instead, choose **From a Plan…** under the rows and pick a
-  range of a liveplanner Sheet, a board's counts or a Dashboard metric: the chart then takes its
-  numbers from the plan and updates when it changes. See [Live Data From a Plan](/help/palette/tools/data-elements/live-data/).
-</AppNote>
+Instead of typing the slices in, choose **From a Plan…** under the rows in **Data** to take them from a liveplanner plan: a Sheet range, a board's cards counted, or a Dashboard metric. The chart then keeps in step with the plan. See [Live Data From a Plan](/help/palette/tools/data-elements/live-data/).
 
-<AppNote app="livedocuments">
-  To take the slices from a liveplanner plan instead, use **From a Plan…** under the rows: see [Live
-  Data From a Plan](/help/palette/tools/data-elements/live-data/).
-</AppNote>
-
-<Figure caption="Right-click, Tools, then Data: a swatch, a label and a value for each slice, with + Add Slice underneath.">
+<Figure caption="Tools, then Data: each slice's colour, label and value, Edit Data to open them in the Chart Data dialog, and From a Plan… underneath.">
   <ChartDataMenu />
 </Figure>
 
@@ -72,15 +63,7 @@ Remove a slice with its **×**, or add one with **+ Add Slice**; the chart updat
 - **Appearance** holds the chart's **Presets**: eight palettes (**Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** and **Contrast**) that recolour every slice you haven't coloured by hand, including slices you add later. A chart has no Colours or Border controls: its colour lives in its slices.
 - **Animation**, then **Chart**, carries chart-specific animations: **Grow**, **Pop**, **Spin** and **Pulse**. Grow and Pop play once as an entrance, while Spin and Pulse loop. Once you pick one, a speed row (**Slowest**, **Slow**, **Normal**, **Fast**) and a **Repeat** toggle appear. In livedesign its **Shape** section moves the whole chart instead.
 
-<AppNote app="livediagram">
-
-**Chart type and linked data.**
-
 **Chart Type**, first in **Tools**, turns the pie into a **Doughnut** (the middle left open) or into a column, bar, line, area or scatter chart, keeping its size, colours and legend. See [Bar and Line Charts](/help/palette/tools/data-elements/bar-and-line-charts/#chart-types).
-
-Instead of typing the slices in, choose **From a Plan…** under the rows in **Data** to take them from a liveplanner plan: a Sheet range, a board's cards counted, or a Dashboard metric. The chart then keeps in step with the plan. See [Live Data From a Plan](/help/palette/tools/data-elements/live-data/).
-
-</AppNote>
 
 <Tip>
   Because slice colours default to your theme, changing the tab's theme restyles the chart to match

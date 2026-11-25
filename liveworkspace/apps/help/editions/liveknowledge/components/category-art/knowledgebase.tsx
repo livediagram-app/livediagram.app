@@ -11,16 +11,16 @@ import {
 } from '../illustrations/kit';
 
 const ROWS: TreeRowSpec[] = [
-  { label: 'Start Here', state: 'verified' },
+  { label: 'Start Here' },
   { label: 'Engineering', open: true },
-  { label: 'Deploying', depth: 1, current: true, state: 'verified' },
+  { label: 'Deploying', depth: 1, current: true },
   { label: 'Rollbacks', depth: 2 },
   { label: 'On-Call', depth: 1, state: 'due' },
-  { label: 'People', open: false, state: 'verified' },
+  { label: 'People', open: false },
   { label: 'Holidays', depth: 0 },
 ];
 
-// Knowledgebase: the editor itself. The page tree with its verified ticks and a Review Due pill, the formatting row,
+// Knowledgebase: the editor itself. The page tree with a Review Due pill (no Verified ticks), the formatting row,
 // and a verified page of writing with a link to another page.
 export function KnowledgebaseArt() {
   return (

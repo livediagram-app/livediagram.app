@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Metadata } from 'next';
 import { metadata as root } from './layout';
+import { metadata as ai } from './ai/page';
 import { metadata as community } from './community/page';
 import { metadata as compare } from './compare/page';
 import { metadata as licences } from './licences/page';
@@ -12,6 +13,7 @@ import { metadata as terms } from './terms/page';
 // Every indexable page but the front door (liveworkspace/docs/specs/010-site/site.md, sitemap.ts) speaks for itself when shared: an
 // Open Graph block of its own, whose address is its canonical, never the root layout's `/` and home-page title.
 const PAGES: Record<string, Metadata> = {
+  '/ai': ai,
   '/community': community,
   '/compare': compare,
   '/licences': licences,

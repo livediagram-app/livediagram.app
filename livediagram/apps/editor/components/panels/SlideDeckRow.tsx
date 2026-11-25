@@ -149,6 +149,8 @@ export function SlideDeckRow({
         <button
           type="button"
           onClick={onOpen}
+          // Where focus goes back to after a delete beside it, or its Undo (row-focus.ts).
+          data-slide-row={slide.id}
           className="flex min-w-0 flex-1 cursor-pointer flex-col gap-0.5 text-left"
         >
           <span

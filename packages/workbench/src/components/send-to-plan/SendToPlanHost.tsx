@@ -17,9 +17,11 @@ import {
 import { elementDiagramSends, setDiagramSendSource } from '../send-to-diagram/diagram-send-store';
 import {
   onSendToKnowledge,
+  onSendWordsToKnowledge,
   setKnowledgeSummariser,
   type KnowledgeCapture,
   type KnowledgeSummariser,
+  type KnowledgeWords,
 } from '../send-to-knowledge/send-to-knowledge-entry';
 import { setKnowledgeSendSource } from '../send-to-knowledge/knowledge-send-store';
 import { setKnowledgeReceivedSource } from '../send-to-knowledge/knowledge-received-store';
@@ -71,6 +73,7 @@ export function SendToPlanHost({
   const [request, setRequest] = useState<SendRequest | null>(null);
   const [diagramRequest, setDiagramRequest] = useState<DiagramSendRequest | null>(null);
   const [knowledgeRequest, setKnowledgeRequest] = useState<KnowledgeCapture | null>(null);
+  const [wordsRequest, setWordsRequest] = useState<KnowledgeWords | null>(null);
   const live = enabled && itemId ? itemId : null;
   const code = share?.code ?? null;
 
@@ -121,6 +124,9 @@ export function SendToPlanHost({
     };
   }, [live, knowledge]);
 
+  // Words sent as written (an Ask AI answer): every app, no summariser needed.
+  useEffect(() => (live ? onSendWordsToKnowledge(setWordsRequest) : undefined), [live]);
+
   // A knowledgebase's pages show the Sent From chips of what other apps sent to it.
   const receivedLive = live && app === 'liveknowledge' ? live : null;
   useEffect(() => {
@@ -128,6 +134,17 @@ export function SendToPlanHost({
     return () => setKnowledgeReceivedSource(null);
   }, [receivedLive, code]);
 
+  if (live && wordsRequest)
+    return (
+      <Suspense fallback={null}>
+        <SendToKnowledgeDialog
+          words={wordsRequest}
+          source={{ app, itemId: live }}
+          sourceTitle={title}
+          onClose={() => setWordsRequest(null)}
+        />
+      </Suspense>
+    );
   if (live && knowledge && knowledgeRequest)
     return (
       <Suspense fallback={null}>

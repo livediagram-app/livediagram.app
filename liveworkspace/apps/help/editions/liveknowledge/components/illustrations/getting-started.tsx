@@ -295,11 +295,11 @@ export function HomeScene() {
 /** liveknowledge in one picture: a verified page in its tree, and Ask answering from it with a citation. */
 export function KnowledgebaseAtAGlance() {
   const rows: TreeRowSpec[] = [
-    { label: 'Start Here', state: 'verified' },
+    { label: 'Start Here' },
     { label: 'Engineering', open: true },
     { label: 'Deploying', depth: 1, current: true },
     { label: 'On-Call', depth: 1, state: 'due' },
-    { label: 'People', open: false, state: 'verified' },
+    { label: 'People', open: false },
   ];
   return (
     <Scene w={W} h={H} bg="none">

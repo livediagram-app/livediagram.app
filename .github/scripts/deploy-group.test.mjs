@@ -176,6 +176,25 @@ test("a site's steps: its build with the build id and hosted build vars, then de
   assert.deepEqual(build.env, { NEXT_PUBLIC_BUILD_ID: REF, NEXT_PUBLIC_PRO_ENABLED: 'true' });
   assert.equal(build.envFrom, undefined);
 
+  // It names staging's one MCP all the same, for its Build with AI page (liveworkspace/apps/mcp is the one MCP).
+  const [platformBuild] = workerSteps(platform, {
+    environment: 'staging',
+    ref: REF,
+    exists: (path) => path === 'liveworkspace/apps/mcp/package.json',
+  });
+  assert.deepEqual(platformBuild.env, {
+    NEXT_PUBLIC_BUILD_ID: REF,
+    NEXT_PUBLIC_PRO_ENABLED: 'true',
+    NEXT_PUBLIC_MCP_ORIGIN: 'https://mcp-staging.liveworkspace.app',
+  });
+  assert.equal(platformBuild.envFrom, undefined);
+  const [platformProduction] = workerSteps(platform, {
+    environment: 'production',
+    ref: REF,
+    exists: (path) => path === 'liveworkspace/apps/mcp/package.json',
+  });
+  assert.equal(platformProduction.env.NEXT_PUBLIC_MCP_ORIGIN, undefined);
+
   // A product with hosted vars but no mcp worker (livehuddle) names no staging MCP origin.
   const huddle = EVERY.find((w) => w.name === '@livehuddle/editor');
   const [huddleBuild] = workerSteps(huddle, {
