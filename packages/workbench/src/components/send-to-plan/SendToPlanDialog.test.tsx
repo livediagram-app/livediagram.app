@@ -180,6 +180,8 @@ describe('SendToPlanDialog', () => {
       />,
     );
     expect(screen.getByText(/from this answer/)).toBeTruthy();
+    // Its rows sit at the top, so a phone's tall sheet leaves no gap between the plans and the card.
+    expect(document.querySelector('[data-send-body]')!.className).toContain('content-start');
     fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
     const second = await screen.findByLabelText<HTMLInputElement>('Card 2 title');
     expect(screen.getByLabelText<HTMLInputElement>('Card 1 title').value).toBe('Book the venue');

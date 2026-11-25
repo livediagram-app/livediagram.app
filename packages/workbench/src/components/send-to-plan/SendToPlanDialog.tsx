@@ -265,7 +265,11 @@ export function SendToPlanDialog({
           void send(existing !== null);
         }}
       >
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-6 gap-y-5 overflow-y-auto px-6 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+        {/* Rows sit at the top (content-start): a phone's tall sheet otherwise stretches them, a gap under the plans. */}
+        <div
+          data-send-body=""
+          className="grid min-h-0 flex-1 grid-cols-1 content-start gap-x-6 gap-y-5 overflow-y-auto px-6 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
+        >
           {existing ? (
             <div data-already-sent="" ref={showBanner} className="sm:col-span-2">
               <Callout

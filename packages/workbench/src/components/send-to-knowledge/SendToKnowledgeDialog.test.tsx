@@ -296,6 +296,10 @@ describe('SendToKnowledgeDialog with words', () => {
     expect(screen.getByText('The answer, as written')).toBeTruthy();
     expect(await screen.findByRole('button', { name: /Team Wiki/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /This One/ })).toBeNull();
+    // A placeholder short enough to show whole; the field's name says it in full.
+    expect(screen.getByLabelText('Search your knowledgebases').getAttribute('placeholder')).toBe(
+      'Search knowledgebases',
+    );
     expect(screen.queryByLabelText(/Focus/)).toBeNull();
     expect(screen.queryByRole('button', { name: /Write With AI/ })).toBeNull();
     expect(screen.getByLabelText<HTMLInputElement>('Heading').value).toBe('What are the steps?');
