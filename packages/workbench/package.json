@@ -563,6 +563,8 @@
     "./lib/element-keyed-store": "./src/lib/element-keyed-store.ts",
     "./lib/embed": "./src/lib/embed.ts",
     "./lib/explorer-href": "./src/lib/explorer-href.ts",
+    "./lib/item-command-names": "./src/lib/item-command-names.ts",
+    "./lib/shortcut-sections": "./src/lib/shortcut-sections.ts",
     "./lib/explorer-teams-host": "./src/lib/explorer-teams-host.ts",
     "./lib/fit-clear-of-panel": "./src/lib/fit-clear-of-panel.ts",
     "./lib/top-strip-inset": "./src/lib/top-strip-inset.ts",

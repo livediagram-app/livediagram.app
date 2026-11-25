@@ -39,17 +39,17 @@ What a person meets for each action today. "Every editor" is the six product edi
 (`@liveworkspace/explorer`), so they never differ. `<Noun>` is the app's word for its item (Canvas, Plan, Document,
 Design, Space, Knowledgebase).
 
-| Action | Where (Explorer) | Where (every editor) | Label | Shortcut | Feedback |
-| --- | --- | --- | --- | --- | --- |
-| Share | ⋯ menu | Share button in the header's corner card; Search & Commands | Share; Share <Noun> | none | the Share dialog opens |
-| Rename | ⋯ menu (typed in the row) | Search & Commands (typed in the Explorer panel) | Rename; Rename <Noun> | none | the new name in place; a refusal toasts and puts the old name back |
-| Duplicate | ⋯ menu | Copy in the corner card and Make a Copy in the Community bar, for someone who cannot edit it | Duplicate; Make a Copy | none | toast "Made “<title> (copy)”."; a copy made from the editor opens |
-| Move to Trash | ⋯ menu | Search & Commands | Delete <Noun> | none | the row slides out, toast "Moved “<title>” to the Trash." with Undo; from the editor, the Explorer opens with that toast |
-| Restore | Trash's ⋯ menu | the deleted card, when the open item is in the Trash | Restore | none | toast "“<title>” restored."; in the editor the item reopens |
-| Export | not offered (it is a tab's) | the tab's menu; Search & Commands | Export; Export… | none | the Export dialog, then a download or Copied |
-| Search | the footer's Search | the footer's Search | Search & Commands | ⌘ K (or ⌘ .), Ctrl on Windows and Linux | the Search panel opens |
-| Open recent | Home's Recent timeline | the Explorer panel's Home, Recent | Recent | none | the item opens |
-| Copy link | Share dialog | Share dialog (the same one) | Copy Link | none | the button says Copied |
+| Action        | Where (Explorer)            | Where (every editor)                                                                         | Label                  | Shortcut                                | Feedback                                                                                                                 |
+| ------------- | --------------------------- | -------------------------------------------------------------------------------------------- | ---------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Share         | ⋯ menu                      | Share button in the header's corner card; Search & Commands                                  | Share; Share <Noun>    | none                                    | the Share dialog opens                                                                                                   |
+| Rename        | ⋯ menu (typed in the row)   | Search & Commands (typed in the Explorer panel)                                              | Rename; Rename <Noun>  | none                                    | the new name in place; a refusal toasts and puts the old name back                                                       |
+| Duplicate     | ⋯ menu                      | Copy in the corner card and Make a Copy in the Community bar, for someone who cannot edit it | Duplicate; Make a Copy | none                                    | toast "Made “<title> (copy)”."; a copy made from the editor opens                                                        |
+| Move to Trash | ⋯ menu                      | Search & Commands                                                                            | Delete <Noun>          | none                                    | the row slides out, toast "Moved “<title>” to the Trash." with Undo; from the editor, the Explorer opens with that toast |
+| Restore       | Trash's ⋯ menu              | the deleted card, when the open item is in the Trash                                         | Restore                | none                                    | toast "“<title>” restored."; in the editor the item reopens                                                              |
+| Export        | not offered (it is a tab's) | the tab's menu; Search & Commands                                                            | Export; Export…        | none                                    | the Export dialog, then a download or Copied                                                                             |
+| Search        | the footer's Search         | the footer's Search                                                                          | Search & Commands      | ⌘ K (or ⌘ .), Ctrl on Windows and Linux | the Search panel opens                                                                                                   |
+| Open recent   | Home's Recent timeline      | the Explorer panel's Home, Recent                                                            | Recent                 | none                                    | the item opens                                                                                                           |
+| Copy link     | Share dialog                | Share dialog (the same one)                                                                  | Copy Link              | none                                    | the button says Copied                                                                                                   |
 
 Where an app adds to these, it adds the same way in each: liveknowledge's page tree has Rename, Duplicate, Copy Link
 and Delete on a page's row (a page is its tab), and a tab's menu has Rename, Duplicate, Delete and Export in every
@@ -60,11 +60,11 @@ editor.
 The keys the matrix names, and the two every editor shares with them, are the **In Every App** section of every
 editor's Keyboard list:
 
-| Keys | Label |
-| --- | --- |
-| ⌘ K | Search & Commands (or ⌘ .) |
-| ⌘ Z | Undo |
-| ⌘ ⇧ Z | Redo (or Ctrl Y) |
+| Keys  | Label                      |
+| ----- | -------------------------- |
+| ⌘ K   | Search & Commands (or ⌘ .) |
+| ⌘ Z   | Undo                       |
+| ⌘ ⇧ Z | Redo (or Ctrl Y)           |
 
 The Explorer on liveworkspace.app has no Keyboard list; it binds the same ⌘ K and ⌘ . to the same panel.
 

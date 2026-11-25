@@ -8,23 +8,21 @@
 // The list is the reference users are told to trust ("every binding the
 // editor knows"), and it is a hand-kept list beside the hand-kept key maps in
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
+//
+// It opens with In Every App (Search & Commands, Undo, Redo), the section every liveworkspace editor lists word for
+// word (liveworkspace/docs/specs/022-interface-design/action-parity.md "Shortcuts"); only this editor's own keys
+// follow it.
 
-export type ShortcutRow = {
-  keys: string[];
-  label: string;
-};
+import {
+  IN_EVERY_APP_SECTION,
+  type ShortcutSection,
+} from '@liveworkspace/workbench/lib/shortcut-sections';
 
-export type ShortcutSection = {
-  heading: string;
-  rows: ShortcutRow[];
-};
-
-export const SHORTCUT_SECTIONS: ShortcutSection[] = [
+export const SHORTCUT_SECTIONS: readonly ShortcutSection[] = [
+  IN_EVERY_APP_SECTION,
   {
     heading: 'Edit',
     rows: [
-      { keys: ['⌘', 'Z'], label: 'Undo' },
-      { keys: ['⌘', '⇧', 'Z'], label: 'Redo  (or Ctrl Y)' },
       { keys: ['⌘', 'X'], label: 'Cut Selection' },
       { keys: ['⌘', 'C'], label: 'Copy Selection' },
       { keys: ['⌘', 'V'], label: 'Paste (offset copy)' },
@@ -69,7 +67,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
     heading: 'Navigate & select',
     rows: [
-      { keys: ['⌘', 'K'], label: 'Search & Commands  (or ⌘ .)' },
       { keys: ['⌘', '+'], label: 'Zoom In' },
       { keys: ['⌘', '-'], label: 'Zoom Out' },
       { keys: ['⌘', '0'], label: 'Reset Zoom to 100%' },

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { IN_EVERY_APP_SECTION } from '@liveworkspace/workbench/lib/shortcut-sections';
 import { EDIT_KEYS, VIEW_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import { SHORTCUT_SECTIONS } from './shortcut-sections';
 
@@ -76,5 +77,22 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
       (key) => !documented.has(key) && !(numberRowSummarised && /^[0-9]$/.test(key)),
     );
     expect(undocumented.sort()).toEqual([]);
+  });
+});
+
+// liveworkspace/docs/specs/022-interface-design/action-parity.md "Shortcuts": the list opens with the section every
+// editor shares, as itself rather than a copy, and says none of it again. The workbench's own test reads every
+// editor's list to hold the same across apps.
+describe('In Every App', () => {
+  it('opens the list as the shared section itself', () => {
+    expect(SHORTCUT_SECTIONS[0]).toBe(IN_EVERY_APP_SECTION);
+  });
+
+  it('is not restated in this editor’s own sections', () => {
+    const shared = new Set(IN_EVERY_APP_SECTION.rows.map((row) => row.label));
+    const again = SHORTCUT_SECTIONS.slice(1).flatMap((section) =>
+      section.rows.filter((row) => shared.has(row.label)).map((row) => row.label),
+    );
+    expect(again).toEqual([]);
   });
 });

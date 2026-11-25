@@ -8,13 +8,14 @@ Derived from [Action parity](../action-parity.md). Paths start at the repo root.
   `ShortcutRow` and `ShortcutSection` types every editor's list uses, and `IN_EVERY_APP_SECTION`, heading
   **In Every App**, rows in this order:
 
-  | `keys` | `label` |
-  | --- | --- |
-  | `['⌘', 'K']` | `Search & Commands  (or ⌘ .)` |
-  | `['⌘', 'Z']` | `Undo` |
-  | `['⌘', '⇧', 'Z']` | `Redo  (or Ctrl Y)` |
+  | `keys`            | `label`                       |
+  | ----------------- | ----------------------------- |
+  | `['⌘', 'K']`      | `Search & Commands  (or ⌘ .)` |
+  | `['⌘', 'Z']`      | `Undo`                        |
+  | `['⌘', '⇧', 'Z']` | `Redo  (or Ctrl Y)`           |
 
   Frozen (`Object.freeze` on the section, its rows and each row's keys), so an app cannot edit the shared rows.
+
 - Each editor's `apps/<editor>/components/dialogs/shortcut-sections.ts` (livediagram, liveplanner, livedocuments,
   livedesign's `apps/live`, livehuddle, liveknowledge) imports the types and the section from there, puts the section
   first in `SHORTCUT_SECTIONS`, and lists none of its rows in its own sections. liveplanner's own Everywhere section
@@ -32,7 +33,7 @@ Derived from [Action parity](../action-parity.md). Paths start at the repo root.
 - `packages/workbench/src/lib/item-command-names.ts` (`@liveworkspace/workbench/lib/item-command-names`):
   `itemCommandNames(app)` returns `{ share, rename, delete }` as `Share <Noun>`, `Rename <Noun>`, `Delete <Noun>`, the
   noun from `APP_ITEMS[app].noun` (`@liveworkspace/sites`). Each editor's `lib/editor-commands.ts` names its Share,
-  Rename and Delete commands from it, once at module load.
+  Rename and Delete commands from it, once at module load (`ITEM_COMMANDS`).
 - Guard: `item-command-names.test.ts` checks the names for every app in `APP_ITEMS`.
 
 ## The deleted card (Restore)
@@ -48,9 +49,9 @@ Derived from [Action parity](../action-parity.md). Paths start at the repo root.
 ## The Community bar (Make a Copy)
 
 - `packages/community-ui/src/editor/CommunityBar.tsx` (`@liveworkspace/community-ui/community-bar`) is the one bar.
-  Each editor renders it with `own` set to its own item's address and **Edit Your <Noun>** when the visitor is the
-  post's author, as liveplanner does, and loads it with `next/dynamic` so only a Community link's view pays for it.
-  The per-app `components/chrome/CommunityBar.tsx` copies are removed.
+  liveplanner renders it directly; each other editor's `components/chrome/CommunityBar.tsx` is a binding of a few
+  lines that renders it with `own` set to its own item's address and **Edit Your <Noun>** when the visitor is the
+  post's author (`ownDocumentId`, or livedesign's `ownDesignId`). The bar's markup lives only in the package.
 
 ## Tests to run
 
