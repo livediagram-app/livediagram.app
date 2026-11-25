@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlanCardChange, PlanSendDoorCall } from '@liveworkspace/index-client';
-import { readSentFrom } from '@liveplanner/items';
+import { defaultCatalogue, readSentFrom } from '@liveplanner/items';
 import { endRepeatWorld } from './test-repeat-world';
+import { archiveTab } from './test-board-tabs';
 import { automationWorld, USER, type AutomationWorld } from './automations/test-automation-world';
 
 // Send to Plan at this plan (docs/specs/026-plan/items.md "Sent From"; liveworkspace send-to-plan.md "The card"),
@@ -95,6 +96,19 @@ describe('Send to Plan at the plan', () => {
     const second = items.find((i) => i.fields['title'] === 'Second')!;
     expect(second.fields['description']).toBeUndefined();
     expect(second.key).not.toBe(card.key);
+  });
+
+  it('refuses an Archive or All Cards board, where the card would land on no board', async () => {
+    // The built-in types, so the board's card type is not what turns it away.
+    await w.send('PUT', '/api/projects/A/item-types', { itemTypes: defaultCatalogue() });
+    expect((await w.send('PUT', '/api/projects/A/tabs/t2', archiveTab)).status).toBeLessThan(300);
+    for (const board of ['b-arch', 'b-all'])
+      expect(await room().planSend('A', call({ board, column: 'Archived' }))).toMatchObject({
+        ok: false,
+        code: 'invalid',
+        reason: "Cards can't be added to that board",
+      });
+    expect(await w.items('A')).toEqual([]);
   });
 
   it('answers a board gone', async () => {

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlanDiagramDoorCall, PlanViewRedraw, SentFrom } from '@liveworkspace/index-client';
 import { defaultCatalogue, presetSetup, readSentFrom, type Item } from '@liveplanner/items';
 import { endRepeatWorld } from './test-repeat-world';
+import { archiveTab } from './test-board-tabs';
 import { automationWorld, USER, type AutomationWorld } from './automations/test-automation-world';
 
 // Diagrams and Plans at this plan (liveworkspace's diagrams-and-plans.md "The doors"), through the real room: Make
@@ -128,6 +129,16 @@ describe('Make Plan Cards at the plan', () => {
       make({ cards: [shape('a', { blockedBy: ['b'] }), shape('b', { blockedBy: ['a'] })] }),
     )) as MakeAnswer;
     expect(answer.skipped).toBe(1);
+  });
+
+  it('makes no card on an Archive or All Cards board', async () => {
+    expect((await w.send('PUT', '/api/projects/A/tabs/t2', archiveTab)).status).toBeLessThan(300);
+    for (const board of ['b-arch', 'b-all'])
+      expect(await run(make({ board, column: 'Archived' }))).toMatchObject({
+        ok: false,
+        code: 'invalid',
+      });
+    expect(await w.items('A')).toEqual([]);
   });
 
   it('answers a board gone', async () => {

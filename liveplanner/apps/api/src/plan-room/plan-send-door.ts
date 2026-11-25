@@ -25,7 +25,7 @@ import type {
 import { appendItemHistory } from '../db/item-history';
 import { getItemStoreHead, insertItems, listItems } from '../db/items';
 import { planTabs } from '../routes/plan-route';
-import { authorPerson } from './automations/cross-app-door';
+import { authorPerson, NO_NEW_CARDS, takesNewCards } from './automations/cross-app-door';
 import { readAutomationPlan } from './automations/automation-plan';
 import { automationDeps } from './automations/plan-room-automations';
 import { readPlanOutline } from './plan-content';
@@ -60,6 +60,7 @@ export async function planSendHere(
   ]);
   const board = planOutline(tabs, head.itemTypes).boards.find((b) => b.elementId === call.board);
   if (!board) return { ok: false, code: 'target_gone', reason: 'The board is gone' };
+  if (!takesNewCards(board)) return { ok: false, code: 'invalid', reason: NO_NEW_CARDS };
   const column = board.columns.find((c) => sameName(c.name, call.column)) ?? board.columns[0];
   const types = typesOf(head.itemTypes);
   const type = board.types?.[0] ?? types[0]?.id;

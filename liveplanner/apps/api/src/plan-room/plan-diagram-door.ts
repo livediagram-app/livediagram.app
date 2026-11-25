@@ -51,7 +51,7 @@ import { appendItemHistory } from '../db/item-history';
 import { getItemStoreHead, insertItems, listItems, updateItemsAtRev } from '../db/items';
 import { planTabs } from '../routes/plan-route';
 import type { PlanEnv } from '../types';
-import { authorPerson } from './automations/cross-app-door';
+import { authorPerson, NO_NEW_CARDS } from './automations/cross-app-door';
 import { cardUrl } from './automations/automation-plan';
 import { automationDeps } from './automations/plan-room-automations';
 import { readPlanOutline, setPlanItemTypes } from './plan-content';
@@ -166,6 +166,8 @@ async function makeHere(
     getItemStoreHead(env, planId),
   ]);
   if (!board) return { ok: false, code: 'target_gone', reason: 'The board is gone' };
+  if (board.setup.allCards || board.setup.archive)
+    return { ok: false, code: 'invalid', reason: NO_NEW_CARDS };
   const catalogue = board.head.itemTypes;
   const types = typesOf(catalogue);
   const type = board.setup.addTypes?.[0] ?? types[0]?.id;

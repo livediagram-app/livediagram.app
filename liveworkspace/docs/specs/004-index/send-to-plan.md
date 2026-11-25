@@ -49,9 +49,10 @@ Plan art.
    alone, no example cards, sample people, Requests, form or Flow tab) and picks it. A plan they cannot edit is not listed:
    the boards read (below) refuses it, and the row says "You can't add cards to this plan". The plan picked, or the one
    last sent to, stays listed first and picked when Recent has not got it (one made with New Plan and never opened).
-2. **Board** and **Column**: the plan's boards and each one's columns, read through liveplanner's own door with the
-   person's grant (`GET /items/:id/automation-target`, an Editor's alone). The first board and its first column are
-   picked until the person picks another.
+2. **Board** and **Column**: the plan's boards and each one's columns (only boards that file cards by column: an All
+   Cards or Archive board holds no column a new card could sit in, so it is not offered, and a send naming one is
+   refused), read through liveplanner's own door with the person's grant (`GET /items/:id/automation-target`, an
+   Editor's alone). The first board and its first column are picked until the person picks another.
 3. **The card**: its **Title**, from the words (below), editable; **Assignee**, the plan person a mention names, or
    anyone of the plan's people, or nobody; **Due**, a date the words name, or one picked, or none. A send of several
    places offers **One Card Each** (the default) or **One Card with a Checklist** (the first place's words the title,
