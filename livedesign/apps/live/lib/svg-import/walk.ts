@@ -94,7 +94,6 @@ const NEVER_DRAWN = new Set([
   'metadata',
   'title',
   'desc',
-  'switch',
 ]);
 const CONTAINERS = new Set(['g', 'a', 'svg']);
 const INHERITED: readonly StyleProperty[] = [
@@ -299,11 +298,34 @@ export function walkSvg(root: Element, pxPerUnit: number): WalkResult {
       const x = parseLength(el.getAttribute('x'), 'x', viewport);
       const y = parseLength(el.getAttribute('y'), 'y', viewport);
       matrix = multiply(matrix, [1, 0, 0, 1, x, y]);
-      const next: Ctx = { matrix, style, opacity, useDepth: ctx.useDepth + 1 };
       const chain = [...useChain, el, target];
       if (target.localName === 'symbol') {
+        // The symbol is never visited itself (it is never drawn where it stands), so its own style, opacity and
+        // viewBox are applied here: an icon sprite's `fill="none" stroke="currentColor"` lives on the symbol.
+        const symbolOwn = declared(target);
+        if (symbolOwn.display?.trim() === 'none') return;
+        const w = parseLength(el.getAttribute('width'), 'x', viewport, viewport.width);
+        const h = parseLength(el.getAttribute('height'), 'y', viewport, viewport.height);
+        const next: Ctx = {
+          matrix: multiply(matrix, viewBoxInto(target, 0, 0, w, h)),
+          style: computed(symbolOwn, style),
+          opacity: opacity * fraction(symbolOwn.opacity),
+          useDepth: ctx.useDepth + 1,
+        };
         for (const child of Array.from(target.children)) visit(child, next, depth + 1, chain);
-      } else visit(target, next, depth + 1, chain);
+      } else {
+        const next: Ctx = { matrix, style, opacity, useDepth: ctx.useDepth + 1 };
+        visit(target, next, depth + 1, chain);
+      }
+      return;
+    }
+    if (tag === 'switch') {
+      // The first child a browser would pick: Illustrator puts its private data in a `foreignObject` that asks for
+      // its own extension, then the artwork.
+      const picked = Array.from(el.children).find(
+        (c) => c.localName !== 'foreignObject' && !c.getAttribute('requiredExtensions')?.trim(),
+      );
+      if (picked) visit(picked, { ...ctx, matrix, style, opacity }, depth + 1, useChain);
       return;
     }
     if (CONTAINERS.has(tag)) {
@@ -339,6 +361,15 @@ function nestedViewBox(el: Element, vp: Viewport): Matrix {
   if (vb.length !== 4 || !(vb[2]! > 0) || !(vb[3]! > 0)) return [1, 0, 0, 1, x, y];
   const w = parseLength(el.getAttribute('width'), 'x', vp, vb[2]);
   const h = parseLength(el.getAttribute('height'), 'y', vp, vb[3]);
+  return viewBoxInto(el, x, y, w, h);
+}
+
+// An element's viewBox fitted into the box at x, y of w by h, centred (`xMidYMid meet`); a translate to x, y when it
+// has no usable viewBox or the box is empty.
+function viewBoxInto(el: Element, x: number, y: number, w: number, h: number): Matrix {
+  const vb = numberList(el.getAttribute('viewBox') ?? '');
+  if (vb.length !== 4 || !(vb[2]! > 0) || !(vb[3]! > 0) || !(w > 0) || !(h > 0))
+    return [1, 0, 0, 1, x, y];
   const s = Math.min(w / vb[2]!, h / vb[3]!);
   const tx = x + (w - vb[2]! * s) / 2 - vb[0]! * s;
   const ty = y + (h - vb[3]! * s) / 2 - vb[1]! * s;

@@ -96,7 +96,9 @@ when it holds no instance. Linear: one pass, one map lookup per instance.
 
 `detachInstance(elements, instanceId, main, newId)`: the instance replaced (same index) by
 `resolveInstance(instance, main, { rotate: true })` with ids from `newId()` (mapping arrow ends), `locked` cleared,
-`layerId` kept. An arrow end pinned to the instance becomes `free` at its resolved point. The `detach` edit
+`layerId` kept. An arrow end pinned to the instance becomes `free` at its resolved point. A chip or pointer note
+attached to the instance is let go in place (`detachChip`), so the settle that follows the commit never deletes it
+with its host. The `detach` edit
 operation (agents) refuses by name a main whose arrow is attached to an element the main no longer holds (a patch's
 `remove` can leave one): `<instance>: its main's arrow <id> is attached to <gone>, which the main no longer holds`. It
 mints one id a main element, and a plain one for any further call (a badge's host the main no longer holds), so it
@@ -257,7 +259,9 @@ CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component
   `startEdit` opened); `finishEdit` derives once from the members as they stand when this person presses Done there.
 - A library op older than one already seen for that main (ops can pass each other): dropped (`noteStored`).
 - Two sessions on one tab: each instance's own; `stampSessionMembers` stamps only while exactly one is open on the
-  tab (D196).
+  tab (D196). One person never holds two: `startEdit` first finishes this person's open session on the tab (its main
+  derived, its members folded away) in the same commit as the new start, and a new session of the same main starts
+  from that derived main.
 - Deleting a session's instance (it is hidden, but an undo can do it): its members stay as plain elements.
 - A patch to a main that is gone: 404; the editor drops its pending patch and refetches.
 - Paste of an instance with no main in the payload or library: kept; draws missing until the library has it.

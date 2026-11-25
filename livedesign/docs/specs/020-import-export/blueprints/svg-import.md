@@ -77,7 +77,10 @@ by specificity then order, then `style`); `display: none` skips the subtree; inh
 parent's; opacity multiplies down; `clip-path`, `mask`, `filter` other than `none` count once per element. `text` and
 `image` count (unless hidden) and stop. `use` follows a local `href` (`href`, else `xlink:href`) when the target is not
 already in its chain and the depth is under `SVG_USE_MAX_DEPTH`, translated by its `x` and `y`; a `symbol` target walks
-its children. `g`, `a` and `svg` walk their children (a nested `svg` placed by `x`, `y` and its viewBox, D16). A shape
+its children under the symbol's own computed style and opacity (a `display: none` symbol draws nothing), placed by its
+viewBox fitted into the use's `width` and `height` (default 100% of the root viewport), `xMidYMid meet`, as a nested
+`svg` is. `switch` walks (as a container) only its first element child that is not `foreignObject` and carries no
+non-empty `requiredExtensions`. `g`, `a` and `svg` walk their children (a nested `svg` placed by `x`, `y` and its viewBox, D16). A shape
 draws when visible and painted.
 
 `useSvgImport.importSvg(text, route, opts)`: read-only or `refuseCreate()` answers `cancelled`; a given file past the
