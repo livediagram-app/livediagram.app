@@ -9,6 +9,7 @@ import { CompactEmptyState, NoMatches, lucideGlyph } from '@liveworkspace/ui';
 import { lucideCopyPlus, lucideFilePlus, lucideRefreshCw } from '@liveworkspace/icons/lucide';
 import { BrandMark } from '@liveworkspace/brand';
 import { useSettled } from '../../hooks/ui/useSettled';
+import { useReturnCount } from '@liveworkspace/explorer/return-to-tab';
 import { indexClient } from '../../lib/index-client';
 import { SearchInput } from '../primitives/SearchInput';
 
@@ -91,6 +92,9 @@ function DiagramList({
   const [query, setQuery] = useState('');
   const settled = useSettled(query.trim(), 250);
   const [listed, setListed] = useState<{ key: string; list: Listed } | null>(null);
+  // Read again on each return to the page (a diagram renamed in another tab), the rows held kept meanwhile (Work
+  // Tracker 1460).
+  const returns = useReturnCount();
 
   useEffect(() => {
     const abort = new AbortController();
@@ -114,10 +118,15 @@ function DiagramList({
         }),
       )
       .catch(() => {
-        if (!abort.signal.aborted) setListed({ key: settled, list: { state: 'failed' } });
+        if (abort.signal.aborted) return;
+        setListed((had) =>
+          had?.key === settled && had.list.state === 'ready'
+            ? had
+            : { key: settled, list: { state: 'failed' } },
+        );
       });
     return () => abort.abort();
-  }, [client, settled]);
+  }, [client, settled, returns]);
 
   const list: Listed = listed?.key === settled ? listed.list : { state: 'loading' };
   return (

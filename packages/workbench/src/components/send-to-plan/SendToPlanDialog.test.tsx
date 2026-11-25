@@ -5,6 +5,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { IndexError, type PlanSend, type PlanSendPlace } from '@liveworkspace/index-client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { comeBackToPage, leaveReturnClock } from '@liveworkspace/explorer/return-to-tab-testing';
 
 const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), warning: vi.fn() }));
 vi.mock('../../hooks/ui/useToast', () => ({ useToast: () => toast }));
@@ -613,5 +614,25 @@ describe('connect as tabs', () => {
         'Sent. The two files could not be connected as tabs just now.',
       ),
     );
+  });
+});
+
+describe('SendToPlanDialog, back on the page (Work Tracker 1460)', () => {
+  afterEach(leaveReturnClock);
+
+  it('reads the plans again, showing a rename, and keeps them when that read fails', async () => {
+    const c = client();
+    c.listItems
+      .mockResolvedValueOnce({ items: [plan('P', 'Sprint')] })
+      .mockResolvedValueOnce({ items: [plan('P', 'Sprint 12')] })
+      .mockRejectedValueOnce(new Error('offline'));
+    open(c);
+    await screen.findByRole('button', { name: /Sprint/ });
+    act(() => comeBackToPage());
+    expect(await screen.findByRole('button', { name: /Sprint 12/ })).toBeTruthy();
+    act(() => comeBackToPage());
+    await waitFor(() => expect(c.listItems).toHaveBeenCalledTimes(3));
+    await act(async () => {});
+    expect(screen.getByRole('button', { name: /Sprint 12/ })).toBeTruthy();
   });
 });

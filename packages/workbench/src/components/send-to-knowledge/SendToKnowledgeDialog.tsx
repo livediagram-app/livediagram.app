@@ -32,6 +32,7 @@ import { pageTree, selectionWords } from './knowledge-pages';
 import { KnowledgePreview } from './KnowledgePreview';
 import { LinkTabsOption } from '../link-tabs/LinkTabsOption';
 import { useLinkTabs } from '../link-tabs/useLinkTabs';
+import { useReturnCount } from '@liveworkspace/explorer/return-to-tab';
 import type {
   KnowledgeCapture,
   KnowledgeSummariser,
@@ -142,7 +143,9 @@ export function SendToKnowledgeDialog({
     };
   }, [capture]);
 
-  // The person's knowledgebases, most recent first.
+  // The person's knowledgebases, most recent first; read again on each return to the page (one renamed in another
+  // tab), the rows held kept meanwhile (Work Tracker 1460).
+  const returns = useReturnCount();
   useEffect(() => {
     const abort = new AbortController();
     client
@@ -157,10 +160,15 @@ export function SendToKnowledgeDialog({
       )
       .then((read) => setKbsFor({ key: settledQuery, list: { state: 'ready', items: read.items } }))
       .catch(() => {
-        if (!abort.signal.aborted) setKbsFor({ key: settledQuery, list: { state: 'failed' } });
+        if (abort.signal.aborted) return;
+        setKbsFor((had) =>
+          had?.key === settledQuery && had.list.state === 'ready'
+            ? had
+            : { key: settledQuery, list: { state: 'failed' } },
+        );
       });
     return () => abort.abort();
-  }, [client, settledQuery]);
+  }, [client, settledQuery, returns]);
   // Never the item itself: liveknowledge's own Save as Page writes there, and the index refuses it.
   const kbs: KnowledgebaseList =
     kbsFor?.key !== settledQuery

@@ -1,10 +1,13 @@
 'use client';
 
 // The Connect list's files (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting"): the person's Recent
-// across every app, newest first, the host left out. One read when the list mounts, and again on Try Again; an unmount
-// or a newer read aborts the one in flight.
+// across every app, newest first, the host left out. A read when the list mounts (each opening mounts it, so nothing is
+// kept from page load), again on Try Again, and again, quietly, each time the person comes back to the page while it
+// shows (a file renamed in another tab, Work Tracker 1460): the rows held stay while it reads and when it fails. An
+// unmount or a newer read aborts the one in flight.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { IndexClient, Item } from '@liveworkspace/index-client';
+import { useReturnCount } from '@liveworkspace/explorer/return-to-tab';
 
 // IDX35: enough to fill the start panel twice without paging.
 export const CONNECT_RECENT_LIMIT = 40;
@@ -25,6 +28,8 @@ export function useRecentFiles(
   useLayoutEffect(() => {
     clientRef.current = client;
   });
+  // A return is no new key: the list on screen stays until the answer lands.
+  const returns = useReturnCount();
   useEffect(() => {
     const abort = new AbortController();
     clientRef.current
@@ -36,12 +41,21 @@ export function useRecentFiles(
           setAnswer({ key, files: { state: 'ready', items } });
         },
         () => {
-          if (!abort.signal.aborted) setAnswer({ key, files: { state: 'failed' } });
+          if (abort.signal.aborted) return;
+          setAnswer((had) => (keptOnFailure(had, key) ? had : { key, files: { state: 'failed' } }));
         },
       );
     return () => abort.abort();
-  }, [key, hostId]);
+  }, [key, hostId, returns]);
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
   const files: RecentFiles = answer?.key === key ? answer.files : { state: 'loading' };
   return { ...files, retry };
+}
+
+// A quiet read again (a return to the page) that fails keeps the list this read already showed.
+function keptOnFailure(
+  had: { key: string; files: RecentFiles } | null,
+  key: string,
+): had is { key: string; files: RecentFiles } {
+  return had?.key === key && had.files.state === 'ready';
 }

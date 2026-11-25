@@ -52,6 +52,7 @@ import {
   type LiveRead,
 } from './sheet-links';
 import { readSheetLink, type SheetLinkGrantOf } from './useSheetLinkedCharts';
+import { useReturnCount } from '@liveworkspace/explorer/return-to-tab';
 
 // Spec constants (each reader app's blueprints/data-charts.md): how long typing settles before the preview reads, and how many plans
 // the picker lists.
@@ -167,7 +168,9 @@ export function LinkSheetDialog({
   const [previewFor, setPreviewFor] = useState<Keyed<Preview> | null>(null);
   const planData = usePlanDataListing(planId, kind !== 'sheet');
 
-  // The person's plans, the most recent first, narrowed by the search.
+  // The person's plans, the most recent first, narrowed by the search; read again on each return to the page (one
+  // renamed in another tab), the rows held kept meanwhile (Work Tracker 1460).
+  const returns = useReturnCount();
   useEffect(() => {
     const abort = new AbortController();
     indexClient
@@ -184,10 +187,15 @@ export function LinkSheetDialog({
         setPlansFor({ key: settledQuery, value: { state: 'ready', value: page.items } }),
       )
       .catch(() => {
-        if (!abort.signal.aborted) setPlansFor({ key: settledQuery, value: { state: 'failed' } });
+        if (abort.signal.aborted) return;
+        setPlansFor((had) =>
+          had?.key === settledQuery && had.value.state === 'ready'
+            ? had
+            : { key: settledQuery, value: { state: 'failed' } },
+        );
       });
     return () => abort.abort();
-  }, [settledQuery]);
+  }, [settledQuery, returns]);
   const plans: Load<Item[]> =
     plansFor?.key === settledQuery ? plansFor.value : { state: 'loading' };
 
