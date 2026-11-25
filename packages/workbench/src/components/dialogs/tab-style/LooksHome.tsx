@@ -67,34 +67,17 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
   // A link row's press: the dialog closes, then the product's setting opens.
   onOpenLink: (open: () => void) => void;
 }) {
-  const { label: themeLabel, swatch } = profile.themeSummary(themeId);
-  const { FinishSwatch } = profile;
   const titles = surface.copy.panelTitles;
-  const fontLabel = tabStyleFontLabel(font);
-  const rows: Record<TabStylePanel, { value: string; icon: ReactNode }> = {
-    theme: {
-      value: `${themeLabel} theme`,
-      icon: <span className="block w-8 overflow-hidden rounded">{swatch}</span>,
-    },
-    finish: { value: profile.finishLabels[finish], icon: <FinishSwatch finish={finish} /> },
-    font: {
-      value: surface.hiddenControls.includes('defaultTextSize')
-        ? fontLabel
-        : `${fontLabel}, ${sizeLabel(defaultTextSize)}`,
-      // In the face worn now, so the row shows the type change as a look or a font is picked.
-      icon: (
-        <span
-          className="text-[15px] font-semibold"
-          style={{ fontFamily: resolveFontStack(surface.textFont ?? font) }}
-        >
-          Aa
-        </span>
-      ),
-    },
-    canvas: { value: canvasSummary ?? profile.patternLabel(pattern), icon: <CanvasGlyph /> },
-    // A product's own panel: its line and picture come from the surface.
-    design: { value: 'None', icon: <DesignGlyph /> },
-  };
+  const rows = tabStylePanelRows({
+    profile,
+    surface,
+    themeId,
+    finish,
+    font,
+    defaultTextSize,
+    pattern,
+    canvasSummary,
+  });
   const activeLook = profile.looks.activeId(settings);
   return (
     <div className="flex flex-col gap-5">
@@ -122,8 +105,8 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
             <FineTuneRow
               key={panel}
               label={titles[panel]}
-              value={surface.panelValues?.[panel] ?? rows[panel].value}
-              icon={surface.panelIcons?.[panel] ?? rows[panel].icon}
+              value={rows[panel].value}
+              icon={rows[panel].icon}
               onOpen={() => onOpenPanel(panel)}
             />
           ))}
@@ -141,6 +124,63 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
       </section>
     </div>
   );
+}
+
+/** Each panel's row: its value now and its picture (the surface's own where it gives one). Shared by the home here
+ *  and a product's own home (TabStyleSurface `renderHome`). */
+export function tabStylePanelRows<Look extends TabStyleLook, Pattern extends string>({
+  profile,
+  surface,
+  themeId,
+  finish,
+  font,
+  defaultTextSize,
+  pattern,
+  canvasSummary,
+}: {
+  profile: TabStyleProfile<Look, Pattern>;
+  surface: TabStyleSurface<Look, Pattern>;
+  themeId: string;
+  finish: Finish;
+  font: string | null;
+  defaultTextSize: TextSize | undefined;
+  pattern: Pattern;
+  canvasSummary?: string;
+}): Record<TabStylePanel, { value: string; icon: ReactNode }> {
+  const { label: themeLabel, swatch } = profile.themeSummary(themeId);
+  const { FinishSwatch } = profile;
+  const fontLabel = tabStyleFontLabel(font);
+  const rows: Record<TabStylePanel, { value: string; icon: ReactNode }> = {
+    theme: {
+      value: `${themeLabel} theme`,
+      icon: <span className="block w-8 overflow-hidden rounded">{swatch}</span>,
+    },
+    finish: { value: profile.finishLabels[finish], icon: <FinishSwatch finish={finish} /> },
+    font: {
+      value: surface.hiddenControls.includes('defaultTextSize')
+        ? fontLabel
+        : `${fontLabel}, ${sizeLabel(defaultTextSize)}`,
+      // In the face worn now, so the row shows the type change as a look or a font is picked.
+      icon: (
+        <span
+          className="text-[15px] font-semibold"
+          style={{ fontFamily: resolveFontStack(surface.textFont ?? font) }}
+        >
+          Aa
+        </span>
+      ),
+    },
+    canvas: { value: canvasSummary ?? profile.patternLabel(pattern), icon: <CanvasGlyph /> },
+    // A product's own panel: its line and picture come from the surface.
+    design: { value: 'None', icon: <DesignGlyph /> },
+  };
+  for (const panel of Object.keys(rows) as TabStylePanel[]) {
+    rows[panel] = {
+      value: surface.panelValues?.[panel] ?? rows[panel].value,
+      icon: surface.panelIcons?.[panel] ?? rows[panel].icon,
+    };
+  }
+  return rows;
 }
 
 function FineTuneRow({

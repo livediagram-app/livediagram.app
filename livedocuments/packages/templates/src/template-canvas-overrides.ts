@@ -2,7 +2,15 @@
 // writing. Its own module, apart from the template catalogue in templates.ts: these read the template builders (a
 // template's pages are built here), and the editor reads the catalogue (a template's title) on every load, which
 // drew every builder into its first load while the two shared a module.
-import type { BackgroundPattern, Tab } from '@livedocuments/document';
+import {
+  PAGE_DESIGN_NONE,
+  type BackgroundPattern,
+  type PageDesignNone,
+  type Tab,
+} from '@livedocuments/document';
+
+// A page that wears no design, whatever the tab's.
+const NO_DESIGN: PageDesignNone = { id: PAGE_DESIGN_NONE };
 import { articleTemplateOverrides } from './article-template';
 import { workingBackwardsOverrides } from './template-working-backwards';
 import { articleTemplateOverridesFor, isArticleTemplate } from './article-templates';
@@ -13,6 +21,7 @@ import { templateLayers } from './template-layers';
 import { templatePages } from './template-pages';
 import type { TemplateKind } from './templates';
 
+import { templateStyleOverrides } from './template-style';
 // The templates whose surround stays plain: the pages are the paper. The Design templates (Floor Plan, Storyboard)
 // carry their own paper on their page and keep the theme's pattern round it, as does Blank Tab.
 const THEME_PATTERN: ReadonlySet<TemplateKind> = new Set<TemplateKind>([
@@ -47,5 +56,14 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   if (pages) overrides.pages = pages;
   // Stacked where a sequence is the point (template-arrangement.ts).
   Object.assign(overrides, templateArrangement(kind));
+  // Its design, typeface and finish (template-style.ts), from the style guide.
+  Object.assign(overrides, templateStyleOverrides(kind));
+  // One design to a page: a slide on a moving background wears no design over it.
+  if (overrides.pageDesign && overrides.pages)
+    overrides.pages = overrides.pages.map((p) =>
+      p.background?.fill?.kind === 'gradient' && p.background.fill.motion
+        ? { ...p, design: NO_DESIGN }
+        : p,
+    );
   return overrides;
 }

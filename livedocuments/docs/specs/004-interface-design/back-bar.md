@@ -58,3 +58,9 @@ to the top of the scroll area, so the way back never leaves the screen.
 
 The bar is navigation only. Editor, Participant and Viewer see and use it alike wherever the surface it sits in is
 open to them; it never changes the document.
+
+## Flush
+
+A `flush` bar runs edge to edge across its scroll box: flush with its top, left and right, square, a hairline under
+it alone. Tab Style's modal has no bar (its header's back button is the way back, owner 2026-11-25); a Tab Style in a
+frame of a product's own keeps the bar, flush.

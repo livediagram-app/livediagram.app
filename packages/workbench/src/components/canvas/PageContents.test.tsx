@@ -222,19 +222,16 @@ describe('the shared Contents popover', () => {
     expect(document.activeElement).toBe(rowButton('Page 1'));
   });
 
-  it('gives an Editor a page’s menu, with the editor’s own verbs after Page Settings', () => {
+  it('gives an Editor a page’s menu, its toolbar first, then the editor’s own verbs', () => {
     const h = harness();
     render(<Panel h={h} />);
     fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 1' }));
-    const items = screen.getAllByRole('menuitem').map((m) => m.textContent);
-    expect(items).toEqual([
-      'Page Settings',
-      'Hide in Slides',
-      'Duplicate',
-      'Move Down',
-      'Lock',
-      'Delete',
-    ]);
+    // Its toolbar's icons (named by aria-label), then its rows.
+    const items = screen
+      .getAllByRole('menuitem')
+      .map((m) => m.getAttribute('aria-label') || m.textContent);
+    expect(items).toEqual(['Duplicate', 'Page Settings', 'Delete', 'Hide in Slides', 'Move Down']);
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Lock' })).toBeTruthy();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
     expect(h.spies.duplicatePage).toHaveBeenCalledWith('p1');
   });

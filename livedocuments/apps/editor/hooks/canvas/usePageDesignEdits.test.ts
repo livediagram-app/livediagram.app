@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  PAGE_DESIGN_SETS,
   pageDesignIdOf,
   pagesOf,
   tabPageDesignOf,
@@ -96,15 +95,24 @@ describe('page design edits', () => {
     expect(s.notify).toHaveBeenCalledWith(expect.stringContaining('locked'));
   });
 
-  it('applies a design set as one step: theme, design and a layout on each empty slide', async () => {
-    const s = setup([slide('a'), slide('b')]);
-    const set = PAGE_DESIGN_SETS[0]!;
-    await s.make().applyDesignSet(set.id);
-    expect(s.commitTabs).toHaveBeenCalledTimes(1);
-    expect(s.tab().theme).toBe(set.theme);
-    expect(tabPageDesignOf(s.tab())?.id).toBe(set.design.id);
-    expect(s.tab().elements.length).toBeGreaterThan(0);
-    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'PageDesignSet');
+  it('a design picked over a moving background stills it in the same step: one design to a page', () => {
+    const moving = {
+      fill: { kind: 'gradient', from: '#111111', to: '#222222', motion: 'drift' },
+    } as Page['background'];
+    const motion = (t: Tab) =>
+      pagesOf(t).map(
+        (p) => (p.background?.fill as { motion?: string } | undefined)?.motion ?? null,
+      );
+    const s = setup([slide('a', { background: moving }), slide('b', { background: moving })]);
+    s.make().setPageDesign('a', { id: 'grid' });
+    expect(motion(s.tab())).toEqual([null, 'drift']);
+    s.make().setTabDesign({ id: 'aurora' }, { everyPage: true });
+    expect(motion(s.tab())).toEqual([null, null]);
+    expect(s.commitTabs).toHaveBeenCalledTimes(2);
+    // 'none' leaves the motion: it is the page's one design.
+    const n = setup([slide('a', { background: moving })]);
+    n.make().setPageDesign('a', 'none');
+    expect(motion(n.tab())).toEqual(['drift']);
   });
 
   it('applies a saved design to the tab or a page as one step, a page’s without rhythm or flow', () => {
@@ -131,7 +139,6 @@ describe('page design edits', () => {
     e.tuneTabDesign({ id: 'aurora' });
     e.setPageDesign('a', { id: 'aurora' });
     e.tunePageDesign('a', { id: 'aurora' });
-    await e.applyDesignSet(PAGE_DESIGN_SETS[0]!.id);
     e.applySavedDesign({ id: 'aurora', scale: 1.4 }, null);
     e.applySavedDesign({ id: 'aurora', scale: 1.4 }, 'a');
     // Nor may it save one: the panel reads `blocked` and offers no Save This Design.

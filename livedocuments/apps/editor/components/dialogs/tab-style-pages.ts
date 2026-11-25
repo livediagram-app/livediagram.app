@@ -4,8 +4,9 @@
 // Background"): the kind it styles, the background new pages start on and its setters. The door (CanvasThemeDialog)
 // provides it; the profile's New Page Background panel, page preview and article row read it, so the profile itself
 // stays one constant.
+import type { TabLook } from '@/lib/tab-looks';
 import { createContext, useContext } from 'react';
-import type { PageBackground, PageKind } from '@livedocuments/document';
+import type { Page, PageBackground, PageDesign, PageKind } from '@livedocuments/document';
 import type { PageDesignDoor } from './page-design/page-design-door';
 
 export type TabStylePages = {
@@ -23,6 +24,18 @@ export type TabStylePages = {
   onOpenArticleStyle?: () => void;
   // The Page Design panel's door (page-design/page-design-door.ts); undefined while the dialog has no pages to style.
   design?: PageDesignDoor;
+  // Page Design's Background layer (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design"): the page someone
+  // is on, as stored, and its setters; undefined while the dialog has no pages to style.
+  background?: PageBackgroundDoor;
+};
+
+export type PageBackgroundDoor = {
+  page: Page;
+  // All Pages: every page and every new page, one undo step; with `design`, the tab's design in the same step.
+  // With a design (and a Quick Pick's look), all of it in one step.
+  onAll: (patch: Partial<PageBackground>, design?: PageDesign | null, look?: TabLook) => void;
+  // This Page: the page someone is on alone.
+  onPage: (patch: Partial<PageBackground>, design?: PageDesign) => void;
 };
 
 const NONE: TabStylePages = {

@@ -228,10 +228,11 @@ export function SaveThisDesign({ design }: { design: PageDesign }) {
   const library = useLibrary();
   if (!library) return null;
   return (
-    <div className="px-3">
+    <div>
       <Button
         variant="secondary"
         size="sm"
+        className="w-full"
         onClick={() => library.requestSave(saveDraftOf(design))}
         data-page-design-save=""
       >

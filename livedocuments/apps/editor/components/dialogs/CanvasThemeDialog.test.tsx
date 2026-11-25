@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { openTabStyleFrom, registerTabStyleOpen } from '@/lib/tab-style-opener';
@@ -237,32 +237,28 @@ describe('CanvasThemeDialog home', () => {
     expect(screen.getByRole('button', { name: 'Finish: Professional' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Text: Inter, large/ }));
     expect(onTabChange).toHaveBeenLastCalledWith('font');
-    fireEvent.click(
-      screen.getByRole('button', { name: 'New Page Background: Like the page before' }),
-    );
-    expect(onTabChange).toHaveBeenLastCalledWith('canvas');
+    // The background is Page Design's (its Background layer), not a row of its own.
+    expect(screen.queryByRole('button', { name: /^New Page Background/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /^Colours: / }));
     expect(onTabChange).toHaveBeenLastCalledWith('theme');
   });
 
-  it('has no breadcrumb on the home; a panel’s shared breadcrumb names it and goes back', () => {
+  it('has no way back on the home; a panel’s header goes back to it', () => {
     const { unmount } = home();
-    expect(screen.queryByRole('button', { name: /^Tab Style/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Back to Tab Style' })).toBeNull();
     unmount();
     const onTabChange = vi.fn();
     render(<CanvasThemeDialog {...props} tab="font" onTabChange={onTabChange} />);
-    const crumb = screen.getByRole('button', { name: /^Tab Style/ });
-    expect(crumb.textContent).toContain('Text');
-    fireEvent.click(crumb);
+    fireEvent.click(screen.getByRole('button', { name: 'Back to Tab Style' }));
     expect(onTabChange).toHaveBeenCalledWith('looks');
   });
 });
 
-// docs/specs/011-theme/canvas-and-theme-dialog.md "Apply to All Tabs": the home's last row, an Editor's only.
-describe('CanvasThemeDialog Apply to All Tabs', () => {
-  const row = () => screen.queryByRole('button', { name: /Apply to All Tabs/ });
+// docs/specs/011-theme/canvas-and-theme-dialog.md "Copy to All Tabs": the home's last row, an Editor's only.
+describe('CanvasThemeDialog Copy to All Tabs', () => {
+  const row = () => screen.queryByRole('button', { name: /^Copy/ });
 
-  it('ends the home with the row for an Editor, applying on a press', () => {
+  it('ends the home with the row for an Editor, copying on a press', () => {
     const onApply = vi.fn();
     render(
       <CanvasThemeDialog
@@ -284,7 +280,7 @@ describe('CanvasThemeDialog Apply to All Tabs', () => {
     render(
       <CanvasThemeDialog
         {...props}
-        tab="canvas"
+        tab="font"
         allTabs={{ tabCount: 3, applying: false, onApply: vi.fn() }}
       />,
     );
@@ -292,66 +288,19 @@ describe('CanvasThemeDialog Apply to All Tabs', () => {
   });
 });
 
-// docs/specs/011-theme/canvas-and-theme-dialog.md "New Page Background": the Canvas panel's place.
-describe('CanvasThemeDialog New Page Background', () => {
-  const mint = { kind: 'solid' as const, color: '#ccfbf1' };
-  const panel = (pages: Partial<ComponentProps<typeof CanvasThemeDialog>['pages']> = {}) => {
-    const all = { ...props.pages, onSet: vi.fn(), onApplyToEveryPage: vi.fn(), ...pages };
-    render(<CanvasThemeDialog {...props} tab="canvas" pages={all} />);
-    return all;
-  };
-
-  it('carries over the page before until Choose One starts on the paper', () => {
-    const pages = panel();
-    expect(document.querySelector('[data-new-page-background-all]')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Choose One/ }));
-    expect(pages.onSet).toHaveBeenCalledWith({});
-  });
-
-  it('with one chosen, offers the background and Apply to All, and Like the Page Before clears it', () => {
-    const pages = panel({ newPageBackground: { fill: mint } });
-    fireEvent.click(document.querySelector('[data-new-page-background-all]')!);
-    expect(pages.onApplyToEveryPage).toHaveBeenCalledTimes(1);
-    expect(screen.getByText(/Gives the 2 pages this background/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /Like the Page Before/ }));
-    expect(pages.onSet).toHaveBeenCalledWith(null);
-  });
-
-  it('sets the surround’s pattern from Around the Pages, which an article leaves out', () => {
-    const onSetBackgroundPattern = vi.fn();
-    const { unmount } = render(
-      <CanvasThemeDialog {...props} tab="canvas" onSetBackgroundPattern={onSetBackgroundPattern} />,
-    );
-    const group = screen.getByRole('group', { name: 'Pattern around the pages' });
-    fireEvent.click(within(group).getByRole('button', { name: /Lines/ }));
-    expect(onSetBackgroundPattern).toHaveBeenCalledWith('lines');
-    unmount();
-    panel({ kind: 'article' });
-    expect(screen.queryByRole('group', { name: 'Pattern around the pages' })).toBeNull();
-  });
-
-  it('previews on a page wearing the background new pages start on, and names it on the home', () => {
-    const { unmount } = render(
+// docs/specs/011-theme/canvas-and-theme-dialog.md "Finish": its preview is a page wearing what new pages start on.
+describe('CanvasThemeDialog Finish preview', () => {
+  it('previews on a page wearing the background new pages start on', () => {
+    render(
       <CanvasThemeDialog
         {...props}
         tab="finish"
-        pages={{ ...props.pages, newPageBackground: { fill: mint } }}
+        pages={{ ...props.pages, newPageBackground: { fill: { kind: 'solid', color: '#ccfbf1' } } }}
       />,
     );
     const preview = screen.getByRole('img', { name: /sample page/ });
     expect(preview.getAttribute('data-preview-page')).toBe('slide');
     expect(preview.innerHTML.toLowerCase()).toContain('#ccfbf1');
-    unmount();
-    render(
-      <CanvasThemeDialog
-        {...props}
-        tab="looks"
-        pages={{ ...props.pages, newPageBackground: { fill: mint, pattern: 'dots' } }}
-      />,
-    );
-    expect(
-      screen.getByRole('button', { name: 'New Page Background: Solid colour, dots' }),
-    ).toBeTruthy();
   });
 });
 
@@ -373,7 +322,7 @@ describe('CanvasThemeDialog on an article', () => {
     expect(onOpenArticleStyle).toHaveBeenCalledTimes(1);
   });
 
-  it('names the row Card Style on a card', () => {
+  it('has no Card Style row on a card (owner, 2026-11-25)', () => {
     render(
       <CanvasThemeDialog
         {...props}
@@ -382,6 +331,6 @@ describe('CanvasThemeDialog on an article', () => {
         pages={{ ...props.pages, kind: 'flashcard', onOpenArticleStyle: vi.fn() }}
       />,
     );
-    expect(screen.getByRole('button', { name: /Card Style/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Card Style/ })).toBeNull();
   });
 });

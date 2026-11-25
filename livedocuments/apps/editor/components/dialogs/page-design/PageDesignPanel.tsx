@@ -1,7 +1,8 @@
 'use client';
 
-// Tab Style's Page Design panel (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design"): a preview of the page
-// someone is on wearing the design, Applies to (Whole Tab or This Page), the Design Sets, the catalogue and Fine Tune.
+// Tab Style's Page Design panel (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design"): Applies to (All Pages
+// or This Page), then the page as two layers (PageDesignLayers.tsx), each opening its picker in place: Design (the
+// catalogue and Fine Tune) and Background (the page panel's Background section), with Quick Picks under them.
 // Every pick applies live as one undo step, every slider's drag as one; the canvas behind shows it as it moves.
 import { useMemo, useState } from 'react';
 import {
@@ -11,85 +12,139 @@ import {
   isNoDesign,
   resolvePageDesigns,
   resolveTuning,
+  pageKindOf,
+  type Page,
+  type PageBackground,
   type PageDesign,
   type PageDesignId,
+  type PageFill,
 } from '@livedocuments/document';
-import { Button, SegmentedToggle } from '@livedocuments/ui';
+import { useTabStyleSubView } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-subview';
+import { BackgroundSection } from '@/components/canvas/page-background-section';
+import { AnimatedBackgroundChoices } from '@/components/canvas/page-background-animated';
+import { themeBackgroundPresets } from '@/lib/page-paint';
+import { getTheme } from '@/lib/themes';
+import { FineTuneButton } from './FineTuneButton';
+import { FinishRowArt, TextRowArt } from './StyleRowArt';
+import type { TabLook } from '@/lib/tab-looks';
+import { AllPagesRow, AllTabsRow, LayerRows, QuickPicks, type PageLayer } from './PageDesignLayers';
+import type { TabStyleHome } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 import { useTabStylePages } from '../tab-style-pages';
-import { DesignFineTune } from './DesignFineTune';
+import { DesignFineTune, resetDesign } from './DesignFineTune';
 import { DesignGrid, type TileLook } from './DesignGrid';
-import { DesignSetCards } from './DesignSetCards';
-import { svgDataUri } from './DesignTile';
 import { designTileSvg } from './design-tile-svg';
 import { SaveThisDesign, SavedDesignGrid, useSavedDesigns } from './SavedDesigns';
 import { picked, wornDesign, type DesignScope } from './design-tune';
 
-const HEAD =
-  'px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
-
-const SCOPES = [
-  {
-    value: 'tab' as const,
-    label: 'Whole Tab',
-    description: 'Every page of the tab wears this design, but a page with its own.',
-  },
-  {
-    value: 'page' as const,
-    label: 'This Page',
-    description: 'Only the page you are on, over the tab’s design.',
-  },
-];
-
-export function PageDesignPanel() {
-  const { design: door } = useTabStylePages();
-  const [scope, setScope] = useState<DesignScope>('tab');
+export function PageDesignPanel({ home }: { home?: TabStyleHome<TabLook> } = {}) {
+  const { design: door, background: bgDoor, themeId } = useTabStylePages();
+  // Affect All Pages, kept for the dialog's opening as its screens come and go (Colours and back remounts this).
+  const [scope, setScope] = useOpeningScope(home?.openId);
+  // Home shows the layers; a layer's row opens its picker in place (Layers).
+  const [layer, setLayer] = useState<PageLayer | null>(null);
   // The designs saved to My Work and the person's teams (null without the Library).
   const saved = useSavedDesigns();
-  if (!door) return null;
+  const look = useTileLookOrNull();
+  // A layer's picker replaces the panel whole: the dialog's breadcrumb is the layer's, back to Page Design.
+  useTabStyleSubView(
+    layer
+      ? {
+          current: layer === 'design' ? 'Design' : 'Background',
+          line:
+            layer === 'design'
+              ? 'Art drawn over the background, in the theme’s colours.'
+              : 'What the page sits on: a colour, a gradient, a picture or one that moves.',
+          onBack: () => setLayer(null),
+        }
+      : null,
+  );
+  // A tab with no pages has no page to design: the shared home.
+  // A tab with no pages: the shared home, still with Copy to All Tabs.
+  if (!door || !look)
+    return (
+      <>
+        {home?.fallback ?? null}
+        {home?.allTabs ? (
+          <div className="px-4 pb-4">
+            <AllTabsRow allTabs={home.allTabs} />
+          </div>
+        ) : null}
+      </>
+    );
   const page = door.page;
   const onPage = scope === 'page' && !!page;
   const worn = wornDesign(onPage ? 'page' : 'tab', door.tabDesign, page?.design);
   const own = onPage && page?.design !== undefined;
+  const paint = {
+    theme: door.theme,
+    page: { background: page?.background },
+    paperDark: door.paperDark,
+  };
   const set = (d: PageDesign | null) =>
     onPage && page ? door.edits.setPageDesign(page.id, d ?? 'none') : door.edits.setTabDesign(d);
   const tune = (d: PageDesign) =>
     onPage && page ? door.edits.tunePageDesign(page.id, d) : door.edits.tuneTabDesign(d);
-  const pick = (id: PageDesignId | 'none') =>
-    set(id === 'none' ? null : worn?.id === id ? worn : picked(id, worn ?? door.tabDesign));
-  return (
-    <div className="mt-3 flex flex-col gap-4" data-page-design-panel="">
-      <Preview />
-      {page ? (
-        <div className="flex flex-wrap items-center gap-2 px-3">
-          <SegmentedToggle<DesignScope>
-            label="Applies to"
-            value={onPage ? 'page' : 'tab'}
-            options={SCOPES}
-            onChange={setScope}
-          />
-          {onPage && own ? (
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={() => door.edits.setPageDesign(page.id, null)}
-              data-page-design-use-tab=""
-            >
-              Use the Tab’s Design
-            </Button>
+  // A pick on All Pages reaches every page: a page's own design gives way to it.
+  // A pick on All Pages reaches every page; a design stills a moving background in the same step (one design to a
+  // page, usePageDesignEdits).
+  const pick = (id: PageDesignId | 'none') => {
+    const d = id === 'none' ? null : worn?.id === id ? worn : picked(id, worn ?? door.tabDesign);
+    if (onPage) set(d);
+    else door.edits.setTabDesign(d, { everyPage: true });
+  };
+  // A moving background: the page's one design, so any design over it stops showing (resolvePageDesigns).
+  const pickMoving = (fill: PageFill) =>
+    onPage ? bgDoor?.onPage({ fill }) : bgDoor?.onAll({ fill });
+  const setBackground = (patch: Partial<PageBackground>) =>
+    onPage ? bgDoor?.onPage(patch) : bgDoor?.onAll(patch);
+  // Fine Tune: a full-width row pinned to the foot of the home and the Design picker, its controls beside the dialog
+  // (FineTuneButton).
+  const fineTune = worn ? (
+    <FineTuneButton
+      title={PAGE_DESIGN_BY_ID[worn.id].label}
+      onReset={() => set(resetDesign(worn))}
+      footer={saved && !door.edits.blocked ? <SaveThisDesign design={worn} /> : undefined}
+    >
+      <Tune design={worn} onTab={!onPage} onSet={set} onTune={tune} />
+    </FineTuneButton>
+  ) : null;
+  // The screen's pinned foot: Affect All Pages (Fine Tune is the Design picker's alone, first in its foot), rows of one card (owner, 2026-11-25).
+  const footOf = (withTune: boolean) =>
+    (withTune && fineTune) || page ? (
+      <div className="sticky -bottom-4 z-[2] mt-1 bg-white px-3 pb-4 pt-2 dark:bg-slate-900">
+        <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
+          {withTune ? fineTune : null}
+          {page ? (
+            <AllPagesRow
+              allPages={{
+                on: !onPage,
+                onChange: (on: boolean) => setScope(on ? 'tab' : 'page'),
+                ...(own ? { useAll: () => door.edits.setPageDesign(page.id, null) } : {}),
+              }}
+            />
           ) : null}
+          {home?.allTabs && !withTune ? <AllTabsRow allTabs={home.allTabs} /> : null}
         </div>
-      ) : null}
-      {!onPage ? (
-        <section aria-label="Design Sets" className="flex flex-col gap-2">
-          <h3 className={HEAD}>Design Sets</h3>
-          <div className="px-3">
-            <DesignSetCards onApply={(id) => void door.edits.applyDesignSet(id)} />
-          </div>
-        </section>
-      ) : null}
-      <section aria-label="Designs" className="flex flex-col gap-2">
-        <h3 className={HEAD}>Designs</h3>
-        <div className="flex flex-col gap-3 px-2">
+      </div>
+    ) : null;
+  if (layer === 'background' && bgDoor) {
+    return (
+      <div className="mt-3 flex flex-col gap-3" data-page-design-panel="background">
+        <BackgroundSection
+          page={bgDoor.page}
+          themePresets={themeBackgroundPresets(getTheme(themeId))}
+          onBackground={setBackground}
+          onPreview={noPreview}
+          // The animated backgrounds are Design's Moving chip.
+          only={['solid', 'gradient', 'image']}
+        />
+      </div>
+    );
+  }
+  if (layer === 'design') {
+    return (
+      <div className="mt-3 flex flex-col gap-4" data-page-design-panel="design">
+        <section aria-label="Designs" className="flex flex-col gap-3 px-2">
           {saved && saved.length > 0 ? (
             <SavedGrid
               saved={saved}
@@ -98,24 +153,121 @@ export function PageDesignPanel() {
               onApply={(d) => door.edits.applySavedDesign(d, onPage && page ? page.id : null)}
             />
           ) : null}
-          <Grid worn={worn?.id ?? 'none'} onPage={onPage} onPick={pick} />
-        </div>
-      </section>
-      {worn ? (
-        <section
-          aria-label="Fine Tune"
-          className="flex flex-col gap-3 border-t border-slate-100 pt-3 dark:border-slate-800"
-        >
-          <h3 className={HEAD}>Fine Tune · {PAGE_DESIGN_BY_ID[worn.id].label}</h3>
-          <Tune design={worn} onTab={!onPage} onSet={set} onTune={tune} />
-          {saved && !door.edits.blocked ? <SaveThisDesign design={worn} /> : null}
+          <Grid
+            worn={worn?.id ?? 'none'}
+            onPage={onPage}
+            onPick={pick}
+            {...(bgDoor && moves(bgDoor.page)
+              ? {
+                  moving: {
+                    open: !!movingFill(bgDoor.page),
+                    body: (
+                      <AnimatedBackgroundChoices
+                        fill={bgDoor.page.background?.fill}
+                        themePresets={themeBackgroundPresets(getTheme(themeId))}
+                        onPick={pickMoving}
+                        onPreview={noPreview}
+                      />
+                    ),
+                  },
+                }
+              : {})}
+          />
         </section>
+        {footOf(true)}
+      </div>
+    );
+  }
+  return (
+    <div className="mt-3 flex flex-col gap-4" data-page-design-panel="">
+      <LayerRows
+        look={look}
+        worn={worn}
+        background={bgDoor?.page.background}
+        themeId={themeId}
+        onOpen={setLayer}
+        {...(home
+          ? {
+              extra: home.rows.map((r) => ({
+                key: r.panel,
+                // Colours, Text and Finish are the tab's, so with Affect All Pages off they are shown but disabled
+                // (owner, 2026-11-25).
+                label: r.label,
+                disabled: onPage,
+                value: r.value,
+                // Text and Finish as small pages in the tab's colours, as Design and Background are.
+                icon:
+                  r.panel === 'font' ? (
+                    <TextRowArt {...paint} font={home.font} />
+                  ) : r.panel === 'finish' ? (
+                    <FinishRowArt {...paint} finish={home.finish} />
+                  ) : (
+                    r.icon
+                  ),
+                onOpen: () => home.onOpenPanel(r.panel),
+              })),
+            }
+          : {})}
+      />
+      {home?.extra}
+      {bgDoor ? (
+        <QuickPicks
+          look={look}
+          themeId={themeId}
+          worn={worn?.id}
+          fill={bgDoor.page.background?.fill}
+          openId={home?.openId}
+          pageOnly={onPage}
+          onPick={(q) => {
+            // One step either way. On All Pages the look (colours, text, finish: the tab's), the design and the
+            // background together; off, the page alone: its design and background, the tab's look left as it is.
+            const d = picked(q.design, worn ?? door.tabDesign);
+            if (onPage) bgDoor.onPage({ fill: q.fill }, d);
+            else bgDoor.onAll({ fill: q.fill }, d, home ? q.look : undefined);
+          }}
+        />
       ) : null}
+      {footOf(false)}
     </div>
   );
 }
 
+// Affect All Pages for one opening of the dialog: on as it opens, then as the person leaves it.
+let openingScope: { openId: string; scope: DesignScope } | null = null;
+function useOpeningScope(openId: string | undefined) {
+  const [scope, setScope] = useState<DesignScope>(() =>
+    openId && openingScope?.openId === openId ? openingScope.scope : 'tab',
+  );
+  const set = (next: DesignScope) => {
+    if (openId) openingScope = { openId, scope: next };
+    setScope(next);
+  };
+  return [scope, set] as const;
+}
+
+// Whether the page's background can move (a slide or a flashcard), and its moving fill when it does.
+const moves = (page: Page) => pageKindOf(page) === 'slide' || pageKindOf(page) === 'flashcard';
+const movingFill = (page: Page) => {
+  const fill = page.background?.fill;
+  return fill?.kind === 'gradient' && fill.motion ? fill : undefined;
+};
+
+// Hovers preview nothing here: the page behind the dialog shows each pick once made.
+const noPreview = () => {};
+
 // The tiles' look: the page someone is on's background (the paper on a tab with none), in the tab's theme and font.
+function useTileLookOrNull(): TileLook | null {
+  const door = useTabStylePages().design;
+  const background = door?.page?.background;
+  return useMemo<TileLook | null>(
+    () =>
+      door
+        ? { theme: door.theme, paperDark: door.paperDark, background, font: door.tabFont }
+        : null,
+    [door, background],
+  );
+}
+
 function useTileLook(): TileLook {
   const door = useTabStylePages().design!;
   const background = door.page?.background;
@@ -134,14 +286,22 @@ function Grid({
   worn,
   onPage,
   onPick,
+  moving,
 }: {
   worn: PageDesignId | 'none';
   onPage: boolean;
   onPick: (id: PageDesignId | 'none') => void;
+  moving?: Parameters<typeof DesignGrid>[0]['moving'];
 }) {
   const look = useTileLook();
   return (
-    <DesignGrid look={look} worn={worn} noneLabel={onPage ? 'No Design' : 'None'} onPick={onPick} />
+    <DesignGrid
+      look={look}
+      worn={worn}
+      noneLabel={onPage ? 'No Design' : 'None'}
+      onPick={onPick}
+      {...(moving ? { moving } : {})}
+    />
   );
 }
 
@@ -168,32 +328,6 @@ function usePageDrawn() {
     });
     return { ...out, page };
   }, [page, pages, elements, tabDesign, door.theme, door.paperDark, door.tabFont]);
-}
-
-function Preview() {
-  const drawn = usePageDrawn();
-  if (!drawn) return null;
-  const { width, height } = drawn.page.rect;
-  return (
-    <div className="flex justify-center px-3" data-page-design-preview="">
-      <div
-        className="relative overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700"
-        style={{ aspectRatio: `${width} / ${height}`, width: width >= height ? '100%' : '46%' }}
-      >
-        {drawn.svg ? (
-          <img
-            src={svgDataUri(drawn.svg)}
-            alt="The page you are on, wearing its design"
-            className="block h-full w-full"
-          />
-        ) : (
-          <span className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-500 dark:text-slate-400">
-            No design on this page
-          </span>
-        )}
-      </div>
-    </div>
-  );
 }
 
 function Tune({

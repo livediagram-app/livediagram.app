@@ -106,7 +106,6 @@ livedocuments/apps/editor/components/canvas/boxed-element-style.ts	liveknowledge
 livedocuments/apps/editor/components/canvas/canvas-main-style.ts	liveknowledge/apps/editor/components/canvas/canvas-main-style.ts
 livedocuments/apps/editor/components/canvas/collab/comment/MentionContext.tsx	liveknowledge/apps/editor/components/canvas/collab/comment/MentionContext.tsx
 livedocuments/apps/editor/components/canvas/editor-canvas-host/useEditCanvasProps.ts	liveknowledge/apps/editor/components/canvas/editor-canvas-host/useEditCanvasProps.ts
-livedocuments/apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts	liveknowledge/apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts
 livedocuments/apps/editor/components/canvas/text-hug-measure.ts	liveknowledge/apps/editor/components/canvas/text-hug-measure.ts
 livedocuments/apps/editor/components/canvas/tool-panels.ts	liveknowledge/apps/editor/components/canvas/tool-panels.ts
 livedocuments/apps/editor/components/canvas/useCanvasHostBrush.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostBrush.ts
@@ -167,7 +166,6 @@ livedocuments/apps/editor/lib/page-tidy-guard.ts	liveknowledge/apps/editor/lib/p
 livedocuments/apps/editor/lib/page-tidy-index.ts	liveknowledge/apps/editor/lib/page-tidy-index.ts
 livedocuments/apps/editor/lib/presented-pages.ts	liveknowledge/apps/editor/lib/presented-pages.ts
 livedocuments/apps/editor/lib/quick-style-bar-slots.ts	liveknowledge/apps/editor/lib/quick-style-bar-slots.ts
-livedocuments/apps/editor/lib/tab-style-opener.ts	liveknowledge/apps/editor/lib/tab-style-opener.ts
 livedocuments/apps/editor/lib/thumbnail-cache.ts	liveknowledge/apps/editor/lib/thumbnail-cache.ts
 livedocuments/apps/editor/lib/version-history-store.ts	liveknowledge/apps/editor/lib/version-history-store.ts
 livedocuments/apps/editor/lib/workbench-bindings.ts	liveknowledge/apps/editor/lib/workbench-bindings.ts

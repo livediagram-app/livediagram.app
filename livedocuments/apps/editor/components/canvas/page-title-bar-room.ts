@@ -3,20 +3,14 @@
 // named at all, so the page's label has what is left.
 import { appearanceRows, pageAppearanceRoom } from './PageAppearanceButton';
 import { pageArticleRoom } from './PageArticleButtons';
-import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
-import { pageLockRoom } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { pageNotesRoom } from './PageNotesButton';
 import { pageTabStyleRoom } from './PageTabStyleButton';
 import { pageTidyUpRoom } from './PageTidyUpButton';
-import {
-  TITLE_BAR_BUTTON,
-  titleBarChromeRoom,
-} from '@liveworkspace/workbench/components/canvas/PageTitleBar';
+import { titleBarChromeRoom } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
 
-// Screen px: the cog's width, a gap between the bar and the label, and the narrowest a label is
+// Screen px (no cog and no lock on the page since 2026-11-25: Contents' ⋯ menu holds them): a gap between the bar and the label, and the narrowest a label is
 // still worth showing.
-const COG_ROOM = TITLE_BAR_BUTTON;
 const LABEL_GAP = 8;
 export const LABEL_MIN = 40;
 
@@ -45,25 +39,22 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean, phone = fa
     const appearance = appearanceRows(b).length > 0 ? 1 : 0;
     const notes = b.notes ? 1 : 0;
     return (
-      COG_ROOM +
       appearance * pageAppearanceRoom(named) +
       (notes ? pageNotesRoom(false) : 0) +
-      titleBarChromeRoom(appearance + notes + 1, appearance + notes + 1) +
+      titleBarChromeRoom(appearance + notes, appearance + notes) +
       LABEL_GAP
     );
   }
   const look = (b.style ? 1 : 0) + (b.page ? 2 : 0) + (b.article ? 3 : 0);
   const tools = (b.notes ? 1 : 0) + (b.tidy ? 1 : 0);
   const buttons =
-    COG_ROOM +
-    pageLockRoom(b.locked, named) +
     (b.notes ? pageNotesRoom(named) : 0) +
-    (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
-    (b.article ? pageArticleRoom(named) + pageBackgroundRoom(named) : 0) +
+    (b.page ? pageLayoutsRoom(named) : 0) +
+    (b.article ? pageArticleRoom(named) : 0) +
     (b.style ? pageTabStyleRoom(named) : 0) +
     (b.tidy ? pageTidyUpRoom(named) : 0);
-  const groups = (look ? 1 : 0) + (tools ? 1 : 0) + 1;
-  return buttons + titleBarChromeRoom(look + tools + 2, groups) + LABEL_GAP;
+  const groups = (look ? 1 : 0) + (tools ? 1 : 0);
+  return buttons + titleBarChromeRoom(look + tools, groups) + LABEL_GAP;
 }
 
 /** Whether the buttons name themselves: on a desktop, while the page on screen (`room`, its width at

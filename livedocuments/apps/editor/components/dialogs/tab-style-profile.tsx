@@ -10,7 +10,6 @@
 
 import { textPxRangeFor, type BackgroundPattern } from '@livedocuments/document';
 import {
-  TAB_STYLE_PANELS,
   tabStyleCopy,
   type TabStyleProfile,
   type TabStyleSurfaceChanges,
@@ -51,9 +50,11 @@ function useViewerAppearance() {
 // The writing of an article or a card: its own Style sets its text, so only the colours and the pages' background
 // reach it from here (docs/specs/011-theme/canvas-and-theme-dialog.md "Articles").
 const written = (what: string): TabStyleSurfaceChanges<TabLook, BackgroundPattern> => ({
-  panels: ['theme', 'canvas', 'design'],
+  // No New Page Background (2026-11-25): a new page takes the page before's background, and Design dresses them all.
+  panels: ['theme'],
   hiddenControls: ['defaultTextSize', 'animationSpeed', 'patternScale', 'patternColor'],
-  renderHomeExtra: () => <ArticleStyleRow />,
+  // An article's Style row; a card has none here (owner, 2026-11-25), its Style sits by the page's cog.
+  renderHomeExtra: what === 'a card' ? undefined : () => <ArticleStyleRow />,
   copy: {
     viewLines: {
       looks: 'The colours and page background. Its text has its own Style.',
@@ -88,10 +89,11 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
   renderHelp: (article) => <HelpArticleLink size="md" article={article} />,
   frame: { kind: 'modal', tour, opener: tabStyleOpener },
   base: {
-    // Page Design (page-design/PageDesignPanel.tsx) after the shared panels.
-    panels: [...TAB_STYLE_PANELS, 'design'],
-    renderPanel: (view) => (view === 'design' ? <PageDesignPanel /> : undefined),
-    panelHelp: { design: <HelpArticleLink size="md" article="choosingAPageDesign" /> },
+    // The home is Page Design (page-design/PageDesignPanel.tsx, owner 2026-11-25): its layers, then a row for each of
+    // these panels (Colours, Text, Finish), in place of the looks and Fine-tune. Page Design is no panel of its own.
+    panels: ['theme', 'font', 'finish'],
+    renderHome: (home) => <PageDesignPanel home={home} />,
+    homeHelp: <HelpArticleLink size="md" article="choosingAPageDesign" />,
     hiddenControls: [],
     renderCanvasPanel: (canvas) => <NewPageBackgroundPanel canvas={canvas} />,
     renderPreview: (kind, p) => (
@@ -110,9 +112,10 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
     ),
     copy: tabStyleCopy({
       viewLines: {
-        looks: 'Pick a look for the tab’s pages, then fine-tune any part of it.',
+        looks: 'How your pages look: their design, background, colours, text and finish.',
         canvas: 'The background new pages start on, and the canvas around the pages.',
-        design: 'Decoration behind every page, in the theme’s colours. A page can have its own.',
+        design:
+          'The background and the art drawn over it, behind every page. A page can have its own.',
       },
       panelTitles: { canvas: 'New Page Background' },
     }),
