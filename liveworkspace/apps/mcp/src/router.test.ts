@@ -376,7 +376,7 @@ describe('routing', () => {
     expect(listed.content[0]!.text).toBe(JSON.stringify({ pages: [{ title: 'search_pages' }] }));
     answers['liveknowledge.write_page'] = () => ({
       result: {
-        content: [{ type: 'text', text: 'No such page: list_pages lists them.' }],
+        content: [{ type: 'text', text: 'No page "read_page" here: list_pages lists them.' }],
         isError: true,
       },
     });
@@ -384,7 +384,9 @@ describe('routing', () => {
       tool: 'write_knowledge_page',
       arguments: { documentId: 'K1', page: 'p9', markdown: 'x' },
     });
-    expect(refused.content[0]!.text).toBe('No such page: list_knowledge_pages lists them.');
+    expect(refused.content[0]!.text).toBe(
+      'No page "read_page" here: list_knowledge_pages lists them.',
+    );
     answers['livediagram.read_document'] = () => ({
       result: { content: [{ type: 'text', text: 'Box "read_document"\n{"id":"D1"}' }] },
     });

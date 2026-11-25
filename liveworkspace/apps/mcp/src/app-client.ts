@@ -132,6 +132,14 @@ function guidedText(text: string, rewrite: (text: string) => string): string {
   return changed ? JSON.stringify(guided) : text;
 }
 
+/** A refusal's words rewritten, but never what it quotes ("No page \"get_context\" here"): a name or text a person wrote. */
+function refusalText(text: string, rewrite: (text: string) => string): string {
+  return text
+    .split(/("[^"\n]*")/)
+    .map((part, i) => (i % 2 === 1 ? part : rewrite(part)))
+    .join('');
+}
+
 /**
  * Calls the app's own tool by its own name. Old tool names are rewritten in a refusal and in the answer's own
  * guidance (`next`, `note`), never in what a person wrote: a page that says "get_context" reads back as it is.
@@ -151,7 +159,10 @@ export async function callAppTool(
     ...result,
     content: content.map((part) =>
       part.type === 'text' && typeof part.text === 'string'
-        ? { ...part, text: refusal ? rewrite(part.text) : guidedText(part.text, rewrite) }
+        ? {
+            ...part,
+            text: refusal ? refusalText(part.text, rewrite) : guidedText(part.text, rewrite),
+          }
         : part,
     ),
   };
