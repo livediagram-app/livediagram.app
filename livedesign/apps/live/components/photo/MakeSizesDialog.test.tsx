@@ -121,6 +121,16 @@ describe('the Make Sizes dialog', () => {
     expect(screen.getByText('Room for 1 more photo page in this tab.')).toBeTruthy();
   });
 
+  it('says the one size that fits in the singular', () => {
+    // With room for one page, one tick filled it: it read "These is all that fit".
+    sizeTicks.set({ ticked: ['x-post'], custom: { width: 10, height: 10 } });
+    open({ photoRoom: 1 });
+    expect(make().textContent).toBe('Make 1 Size');
+    expect(
+      screen.getByText(/A tab holds up to 10 photo pages\. This is all that fits\./),
+    ).toBeTruthy();
+  });
+
   it('takes a custom size, refusing one past the cap', () => {
     open();
     fireEvent.click(tile(/^Custom/));
