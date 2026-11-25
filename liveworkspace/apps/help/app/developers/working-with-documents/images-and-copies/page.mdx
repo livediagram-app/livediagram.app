@@ -20,7 +20,7 @@ Every write here reaches anyone with the <Noun /> open straight away, credited t
 
 ## Images
 
-Upload the raw bytes of a PNG, JPEG, WebP or GIF, up to 10 MB (with subscriptions on, your tier's limit instead: 5 MB on Free, 25 MB on Pro and Pro for Teams), with its pixel size in two headers:
+Upload the raw bytes of a PNG, JPEG, WebP or GIF, up to 10 MB (25 MB on every plan when subscriptions are on), with its pixel size in two headers:
 
 <AppNote app="livediagram">
 
@@ -133,7 +133,7 @@ curl -X POST https://www.livehuddle.app/api/documents/$DOC/copy \
 
 </AppNote>
 
-Makes a copy in your own files and answers `201` with the new `document`. Leave out `name` for `<name> (copy)`. Anything you can read can be copied; share links are not copied with it.
+Makes a copy beside the original (in your files, or the same team's; a <Noun /> you reached through a share link lands in your own files) and answers `201` with the new `document`. Leave out `name` for `<name> (copy)`. Anything you can read can be copied; share links are not copied with it.
 
 ## Shape Libraries
 

@@ -80,7 +80,7 @@ A link can cover a team folder, so several repositories can link the same diagra
 
 ## Drawing Your Infrastructure
 
-Your repository already describes what you deploy. `link from-code` reads Cloudflare `wrangler.toml` and Docker Compose files and draws them as one laid-out architecture tab, each Worker, binding and service a box with its technology's icon:
+Your repository already describes what you deploy. `link from-code` reads Cloudflare `wrangler.toml`, Docker Compose, Terraform (`.tf`) and Kubernetes files and draws them as one laid-out architecture tab, each Worker, binding and service a box with its technology's icon:
 
 ```bash
 livediagram link from-code                                     # wrangler.toml and compose files here, as a new canvas
@@ -89,7 +89,16 @@ livediagram link from-code --env staging                       # a wrangler.toml
 livediagram link from-code --dry-run | livediagram graph render - --png arch.png
 ```
 
-Service bindings join Workers across files, so a monorepo's Workers draw as one system. Keys it doesn't draw, such as `vars`, are listed on stderr, never an error. `--dry-run` prints the graph without signing in. Each run draws a fresh tab: to bring a changed file into a diagram you've already arranged, run it again into a new tab. The editor's [Import](/help/tabs/import-tabs/#import-formats) draws one file the same way.
+Service bindings join Workers across files, so a monorepo's Workers draw as one system. Keys it doesn't draw, such as `vars`, are listed on stderr, never an error. `--dry-run` prints the graph without signing in. The tab remembers the files it came from. When they change, `livediagram link from-code --doc "Arch" --tab Infra --update` reads them into the same tab again, keeping your layout and edits. To do that for several tabs at once, bind each tab to its files in `livediagram.toml` and run `link from-code` with nothing named:
+
+```toml
+[[sources]]
+files = ["wrangler.toml", "infra/main.tf"]   # relative to livediagram.toml
+tab = "doc_3h9x2a/0b34"                      # <document>/<tab>
+env = "staging"                              # optional: the wrangler.toml environment
+```
+
+ The editor's [Import](/help/tabs/import-tabs/#import-formats) draws one file the same way, and its **Update From Files** does what `--update` does.
 
 ## Diagram Changes in Pull Requests
 

@@ -63,22 +63,23 @@ Where an app's answer differs, it is listed here:
 
 <AppNote app="livedocuments">
   **`409`**: for an article write, `paragraphs_held` (someone is typing in a paragraph it would
-  change); for a comment, `thread_full`.
+  change).
 </AppNote>
 
 <AppNote app="liveknowledge">
   **`409`**: `ai_editing_suggest_only` when the Knowledgebase's AI Editing keeps agents to suggesting,
   `page_verified` or `page_review_due` when an agent writes a page a person vouched for under Edit Unverified Pages
   (see [An Agent Cannot Write](/help/troubleshooting/an-agent-cannot-write/)), and `context_budget`
-  when a page would take Always in Context past 8,000 tokens. **`403`**: `scope_needed` when a
+  when a page would take Always in Context past 8,000 tokens. For a page write, `paragraphs_held`
+  (someone is typing in a paragraph it would change). **`403`**: `scope_needed` when a
   connection lacks the scope the call needs.
 </AppNote>
 
-<AppNote app="livedesign">
+<AppNote app="livediagram,livedocuments,livedesign,liveknowledge">
   **`409`**: commenting on a thread already holding 500 comments answers `thread_full`.
 </AppNote>
 
-<AppNote app="livediagram,livedocuments,livehuddle">
+<AppNote app="livediagram,livedocuments,livehuddle,liveknowledge">
   **`410`**: the code is `document_trashed`.
 </AppNote>
 
@@ -119,6 +120,11 @@ On the hosted service the budgets are **300 writes a minute** and **120 token re
   One more tight limit: 60 link unfurls, counted per IP rather than per token.
 </AppNote>
 
+<AppNote app="liveknowledge">
+  Two more tight limits: 60 link unfurls, counted per IP rather than per token, and 120 searches a
+  minute, counted per token, person or link visitor's network.
+</AppNote>
+
 <Tip>
   Treat `429` as routine for bulk work: pause and retry rather than hammering. Spread large imports
   or backups out instead of firing every request at once.
@@ -129,6 +135,12 @@ On the hosted service the budgets are **300 writes a minute** and **120 token re
 <AppNote app="livediagram,livedocuments,livedesign,livehuddle">
 
 Request bodies are capped at 8 MB (image uploads have their own cap), and one tab's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized tab or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller tabs or <Noun plural />.
+
+</AppNote>
+
+<AppNote app="liveknowledge">
+
+Request bodies are capped at 8 MB (image uploads have their own cap), and one page's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized page or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller pages or Knowledgebases.
 
 </AppNote>
 
@@ -153,7 +165,7 @@ You can hold up to **20** live tokens at once, across every liveworkspace app. A
 
 </AppNote>
 
-<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle,liveknowledge">
 
 You can hold up to **20** live tokens at once, across every liveworkspace app. Tokens are made and revoked in **Settings**, **Developers**, **API Tokens**, in any liveworkspace app or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens).
 

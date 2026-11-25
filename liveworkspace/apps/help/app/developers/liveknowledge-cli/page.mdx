@@ -47,7 +47,7 @@ Every command takes the Knowledgebase first: its name, the start of its id, or i
 | `new <kb> <title> [<file>] [--parent <page>]` | A new page from a Markdown file, or `-` for what is piped in               |
 | `suggest <kb> <page> --reason <r> [--old <text>] --new <text>` | A suggested edit for a person to accept. Leave out `--old` to append. `--new-file` reads the Markdown from a file |
 | `write <kb> <page> <file> [--append]`       | Replaces a page's writing, or adds after it. Needs the write scope            |
-| `move <kb> <page> [--parent <page> \| --top] [--before <page>]` | Moves a page and its subpages. Needs the write scope       |
+| `move <kb> <page> [--parent <page> \| --top] [--before <page>]` | Moves a page and its subpages. A verified subtree needs the write scope |
 | `gap <kb> <question…>`                      | Records a question the Knowledgebase could not answer                         |
 | `import <path> [--name <n> \| --to <kb> [--into <page>]] [--source markdown\|notion] [--dry-run]` | A Markdown folder, a `.zip` or a Notion export into a new or existing Knowledgebase |
 | `export <kb> <dir>`                         | The Knowledgebase as a folder of Markdown                                     |
@@ -82,7 +82,7 @@ liveknowledge import ./docs --name Handbook --dry-run
 
 ## Good to Know
 
-- `write` and `move` need the write scope, which an Editor allows in Insights. Without it the command is refused and says to use `suggest`. `write` also goes only as far as the Knowledgebase's AI Editing allows: refused everywhere under Suggest Edits Only (the default), and on a Verified or Review Due page under Edit Unverified Pages. `context` prints the level. See [An Agent Cannot Write](/help/troubleshooting/an-agent-cannot-write/).
+- `write` needs the write scope, which an Editor allows in Insights, and so does `move` for a page that is Verified or Review Due or has such a page under it. Without it the command is refused and says why. `write` also goes only as far as the Knowledgebase's AI Editing allows: refused everywhere under Suggest Edits Only (the default), and on a Verified or Review Due page under Edit Unverified Pages. `context` prints the level. See [An Agent Cannot Write](/help/troubleshooting/an-agent-cannot-write/).
 - The CLI's reads are counted under "CLI" in [Connected Agents](/help/knowledgebase/connecting-an-agent/).
 - `liveknowledge --help` lists every command, and `liveknowledge <command> --help` its flags.
 

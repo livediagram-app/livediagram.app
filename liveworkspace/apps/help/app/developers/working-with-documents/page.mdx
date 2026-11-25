@@ -52,7 +52,7 @@ Paths are relative to `https://www.livehuddle.app/api`. For the exact request an
 
 <AppNote app="livehuddle">
 
-A space **list** returns the spaces in your personal library (spaces in a team library are not included), as metadata only, not the tab contents:
+A space **list** returns the spaces in your personal library, as metadata only, not the tab contents. Add `team=all` to include every team you have joined, `q=` to search names, and `limit=` for one page of that many, newest first:
 
 ```bash
 curl https://www.livehuddle.app/api/documents \
@@ -63,7 +63,7 @@ curl https://www.livehuddle.app/api/documents \
 
 <AppNote app="livediagram">
 
-A canvas **list** returns the canvases in your personal library, as metadata only, not the tab contents. Add `team=all` to include every team you have joined, `q=` to search names, and `limit=` for one page of that many, newest first:
+A canvas **list** returns the canvases in your personal library, as metadata only, not the tab contents. Add `team=all` to include every team you have joined, `q=` to search names, `limit=` for one page of that many, newest first, or `archived=1` to list your Archived canvases instead:
 
 ```bash
 curl https://www.livediagram.app/api/documents \
@@ -263,7 +263,7 @@ Other views answer other questions:
 
 <AppNote app="livediagram">
 
-`view=lint` checks how the tab is drawn: boxes that overlap, arrows that cross or run behind boxes, labels too long for their box. One summary line, then one finding a line, each ending with a fix you can send as a changeset:
+`view=lint` checks how the tab is drawn: boxes that overlap, arrows that cross or run behind boxes, labels too long for their box, and text that prints over other text. One summary line, then one finding a line, each ending with a fix you can send as a changeset:
 
 </AppNote>
 
@@ -705,15 +705,9 @@ To put a canvas you own away instead, `POST /documents/$DOC/archive` moves it to
 
 ## Share a <Noun />
 
-<AppNote app="livedocuments">
+<AppNote app="livediagram,livedocuments">
 
 Create a share link with a role of `view`, `participate` or `edit`. Add `"tabId"` to share one tab, and `"expiry"` (`never`, the default, `week`, `month` or `sixMonths`) to make the link lapse:
-
-</AppNote>
-
-<AppNote app="livediagram">
-
-Create a share link with a role of `view`, `participate` or `edit`:
 
 </AppNote>
 
