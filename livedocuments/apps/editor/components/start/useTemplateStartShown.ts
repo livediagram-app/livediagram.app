@@ -13,6 +13,12 @@ export function useTemplateStartShown(): boolean {
   return templateStartShownOf(useEditorContext());
 }
 
+/** Whether a Participant's or Viewer's empty tab shows the empty-canvas card (new-document-route.md "The empty-canvas
+ *  hint"): the tab is as empty as an Editor's start asks for, and the person cannot edit it. */
+export function emptyCardShownOf(editor: Parameters<typeof templateStartShownOf>[0]): boolean {
+  return editor.isReadOnly && templateStartShownOf({ ...editor, isReadOnly: false });
+}
+
 /** The same answer off any copy of the editor's view-model (the chrome store's, read as a slice). */
 export function templateStartShownOf(
   editor: Pick<

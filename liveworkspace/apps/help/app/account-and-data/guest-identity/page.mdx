@@ -16,6 +16,10 @@ export const metadata = helpMetadata({
 possible, <AppName /> gives every guest a quiet identity, kept per browser, that owns whatever you
 put on the server.
 
+## Your name on a share link
+
+When you open someone's share link as a guest, you go straight in under a name picked for you (such as Clever Marlin): no box to fill in first. A small bar at the top of the canvas says **You're Clever Marlin here**, with **Change Name** to type your own (or shuffle for another) and **Keep It** to keep that one. Either way the bar goes, and your name follows you to the other liveworkspace apps. Signed in, your account name is used and there is nothing to choose.
+
 ## Your per-browser id
 
 The first time you visit, your browser takes a quick trip to the liveworkspace accounts site and comes back with a guest token, which it keeps in `localStorage`. The token names your guest id and lasts 45 days, renewed when you visit in its last 15 days. Everything of yours on the server as a guest (<Noun plural /> you share or sync, folders, images) is owned by that id, which is how the app knows which content to show you when you come back. The editor sends the token with each request; you never see or type it.

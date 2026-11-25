@@ -487,6 +487,8 @@ export type CanvasProps = {
   onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
   // The visitor name prompt (IdentityPrompt).
   showIdentityPrompt: boolean;
+  // The name tray: a guest visitor's name, defaulted, with Change Name and Keep It (first-edit.md).
+  showIdentityTray?: boolean;
   // True after the page has resolved its initial identity + design
   // fetch. Used to suppress the empty-state card during the brief
   // window between "loader dropped" and "welcome modal mounted" so

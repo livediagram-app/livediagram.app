@@ -7,7 +7,11 @@ import { renderHook, act } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { newKnowledgebasePageContent, type Tab } from '@liveknowledge/document';
 import { closeKnowledgebaseStart, offerKnowledgebaseStart } from './knowledgebase-start';
-import { useTemplateStartOpen, useTemplateStartShown } from './useTemplateStartShown';
+import {
+  emptyCardShownOf,
+  useTemplateStartOpen,
+  useTemplateStartShown,
+} from './useTemplateStartShown';
 
 type Ctx = {
   hydrated: boolean;
@@ -100,5 +104,24 @@ describe('useTemplateStartOpen', () => {
     offerKnowledgebaseStart('t');
     expect(renderHook(() => useTemplateStartOpen()).result.current).toBe(false);
     get.mockRestore();
+  });
+});
+
+// A Participant's or Viewer's untouched tab shows the empty-canvas card where an Editor's would show the start
+// (liveworkspace/docs/specs/011-workbench/first-edit.md "The empty-canvas card").
+describe('emptyCardShownOf', () => {
+  const view = (over: Partial<Ctx>) =>
+    ({ ...ctx.value, activeTabConnected: false, ...over }) as unknown as Parameters<
+      typeof emptyCardShownOf
+    >[0];
+
+  it('is on for a Participant or Viewer on an untouched tab, never for an Editor (who sees the start)', () => {
+    expect(emptyCardShownOf(view({ isReadOnly: true }))).toBe(true);
+    expect(emptyCardShownOf(view({ isReadOnly: false }))).toBe(false);
+  });
+
+  it('is off on a connected tab or in zen', () => {
+    expect(emptyCardShownOf(view({ isReadOnly: true, activeTabConnected: true }))).toBe(false);
+    expect(emptyCardShownOf(view({ isReadOnly: true, zenMode: true }))).toBe(false);
   });
 });

@@ -104,7 +104,8 @@ test('two people renaming different columns of one board both keep their rename'
   const a = await openAs(browser, baseURL!, `/project/${id}`, owner);
   await a.locator(CANVAS).waitFor();
   const b = await openAs(browser, baseURL!, `/project/${id}?s=${code}`, null);
-  await b.getByRole('button', { name: /^join$/i }).click();
+  // A visitor joins at once under a defaulted name (first-edit.md); Keep It confirms it from the name tray.
+  await b.getByRole('button', { name: 'Keep It' }).click();
   await b.locator(CANVAS).waitFor();
   await dismissQuickTour(a);
   await dismissQuickTour(b);
@@ -195,7 +196,8 @@ test('someone who joins after a card was opened sees it held', async ({
 
   // B joins late, and sees A's tag on that card without A doing anything more.
   const b = await openAs(browser, baseURL!, `/project/${id}?s=${code}`, null);
-  await b.getByRole('button', { name: /^join$/i }).click();
+  // A visitor joins at once under a defaulted name (first-edit.md); Keep It confirms it from the name tray.
+  await b.getByRole('button', { name: 'Keep It' }).click();
   await b.locator(CANVAS).waitFor();
   await dismissQuickTour(b);
   const cardB = b.locator('[data-plan-board] [data-plan-card]').filter({ hasText: 'New task' });

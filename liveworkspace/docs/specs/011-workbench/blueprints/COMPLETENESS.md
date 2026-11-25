@@ -53,6 +53,15 @@
 - [x] Testing
 - [x] Constants and configuration
 
+## first-edit
+
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Performance and limits
+- [x] Accessibility
+- [x] Testing
+- [ ] Presentation and UX
+
 ## sidebar-width
 
 - [x] Domain and naming

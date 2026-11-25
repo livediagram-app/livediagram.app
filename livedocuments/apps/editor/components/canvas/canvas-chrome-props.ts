@@ -59,6 +59,7 @@ export const CANVAS_CHROME_PROP_KEYS = [
   'setViewportOffset',
   'setViewportZoom',
   'showIdentityPrompt',
+  'showIdentityTray',
   'snapGuideStore',
   'tabBackgroundColor',
   'tabFinish',
