@@ -4,7 +4,7 @@
 // Cut, Copy and Paste, then Send to Plan and Send to Diagram, for the words picked in an article's writing. Drawn by
 // the editor's SendToPlanHost from the one open request (selection-menu-store), on the shared PortalMenu: at the
 // pointer for a right-click, under the words from the keyboard, docked to the screen's edge on a touch screen.
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { lucideClipboardPaste, lucideCopy, lucideScissors } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { keyLabel } from '../../lib/key-label';
@@ -19,6 +19,9 @@ import {
   SELECTION_MENU_ATTR,
   type SelectionMenuRequest,
 } from './selection-menu-store';
+
+// Frames to wait for the placed menu before giving up on focusing its first row.
+const FOCUS_TRIES = 10;
 
 const CutIcon = lucideGlyph(lucideScissors, 16);
 const CopyIcon = lucideGlyph(lucideCopy, 16);
@@ -51,7 +54,7 @@ export function SelectionMenu({ request }: { request: SelectionMenuRequest }) {
     close();
     fn();
   };
-  // Escape closes it wherever focus is: while editing, the caret stays in the writing rather than in the menu.
+  // Escape closes it wherever focus is (a docked menu leaves focus in the writing).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeSelectionMenu(request.id);
@@ -59,6 +62,27 @@ export function SelectionMenu({ request }: { request: SelectionMenuRequest }) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [request.id]);
+  // Not docked, focus goes to the first row, as the menu key promises. The shared menu leaves focus in the writing
+  // while it is being edited (useMenu), where Arrow keys would move the caret and Enter replace the words. The rows
+  // put the caret back on the words before they act (article-selection-menu's restore).
+  const rows = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (docked) return;
+    // The menu shows once it is placed, a frame or two after it mounts: keep trying until a row has focus.
+    let tries = FOCUS_TRIES;
+    let frame = 0;
+    const focusFirst = () => {
+      const box = rows.current;
+      if (box?.contains(document.activeElement)) return;
+      box
+        ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')
+        ?.focus({ preventScroll: true });
+      if (!box?.contains(document.activeElement) && --tries > 0)
+        frame = requestAnimationFrame(focusFirst);
+    };
+    focusFirst();
+    return () => cancelAnimationFrame(frame);
+  }, [docked, request.id]);
   // A touch screen has no keys to show.
   const keys = (k: string) => (docked ? undefined : <Keys k={k} />);
   return (
@@ -72,7 +96,7 @@ export function SelectionMenu({ request }: { request: SelectionMenuRequest }) {
       // Docked, focus stays put: moving it could clear the words a touch picked.
       initialFocus={docked ? 'none' : 'first'}
     >
-      <div {...{ [SELECTION_MENU_ATTR]: '' }} className="contents">
+      <div ref={rows} {...{ [SELECTION_MENU_ATTR]: '' }} className="contents">
         {actions.cut ? (
           <MenuActionRow
             plain

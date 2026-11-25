@@ -2,7 +2,7 @@
 // The selection menu as drawn (liveworkspace/docs/specs/004-index/send-to-plan.md "The selection menu"): Cut, Copy and
 // Paste with their shortcuts, then Send to Plan and Send to Diagram; only the rows the words can take; a row's press
 // closes it and does its verb; Escape closes it wherever focus is.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SelectionMenuHost } from './SelectionMenu';
 import {
@@ -101,6 +101,33 @@ describe('the selection menu', () => {
     const copy = await screen.findByRole('menuitem', { name: 'Copy' });
     expect(copy.textContent).toBe('Copy');
     expect(document.activeElement).toBe(before);
+  });
+
+  // The menu key's promise: from the writing being edited (where the shared menu leaves focus), the first row takes it,
+  // so Arrow keys and Enter work the menu rather than the words.
+  it('takes focus to its first row, even from the writing being edited', async () => {
+    const writing = document.createElement('div');
+    writing.contentEditable = 'true';
+    writing.tabIndex = 0;
+    document.body.append(writing);
+    writing.focus();
+    render(<SelectionMenuHost />);
+    open(verbs());
+    const cut = await screen.findByRole('menuitem', { name: /^Cut/ });
+    await waitFor(() => expect(document.activeElement).toBe(cut));
+  });
+
+  it('stops trying for focus after a few frames when no row will take it', async () => {
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(() => {});
+    render(<SelectionMenuHost />);
+    open(verbs());
+    await screen.findByRole('menu');
+    await new Promise((done) => setTimeout(done, 400));
+    const tries = focus.mock.calls.length;
+    await new Promise((done) => setTimeout(done, 100));
+    expect(focus.mock.calls.length).toBe(tries);
+    expect(document.activeElement).toBe(document.body);
+    focus.mockRestore();
   });
 
   it('closes on Escape wherever focus is, and on no other key', async () => {
