@@ -202,7 +202,8 @@ const encodeWhiteSpace = (href: string) =>
   /\s/.test(href) ? href.replaceAll(' ', '%20').replace(/\s/g, (c) => encodeURIComponent(c)) : href;
 const escapeHref = (href: string) => encodeWhiteSpace(href.replace(/[\\()]/g, '\\$&'));
 
-function runMarkdown(run: ArticleRun): string {
+// `lead` and `tail` are the run's edge white space (runsMarkdown): outside its emphasis, but inside a link's brackets.
+function runMarkdown(run: ArticleRun, lead = '', tail = ''): string {
   // Inline code keeps its other marks around it (a linked or bold `npm i`): they were dropped with the code's text
   // alone written. A line break inside a heading or code reads back as a space (a body paragraph's, a quote's or a
   // list item's is held as LINE_BREAK and written as a hard break, brokenMarkdown).
@@ -212,12 +213,15 @@ function runMarkdown(run: ArticleRun): string {
   if (run.s) out = `~~${out}~~`;
   if (run.i) out = `*${out}*`;
   if (run.b) out = `**${out}**`;
-  if (run.href) out = `[${out}](${escapeHref(run.href)})`;
-  return out;
+  if (run.href) return `[${lead}${out}${tail}](${escapeHref(run.href)})`;
+  return lead + out + tail;
 }
 
 // Emphasis markers wrap the run's own text, so a run whose text starts or ends in a space keeps the
-// space outside them (`**bold** text`, never `**bold **text`).
+// space outside them (`**bold** text`, never `**bold **text`, which CommonMark does not read as bold). A link keeps
+// it inside its brackets (`[see ](…)`), where CommonMark keeps it: written outside, the space left the link on a
+// round trip. A line break among a heading's edge white space is written as a space, as one inside its marks is:
+// written raw, it split the heading in two, the text after it read back as a paragraph of its own.
 // A footnote is written as its number, `[^3]`, its note put in `notes` (written after the last block, articleToMarkdown).
 function runsMarkdown(runs: readonly ArticleRun[], notes: NoteList): string {
   return runs
@@ -230,7 +234,8 @@ function runsMarkdown(runs: readonly ArticleRun[], notes: NoteList): string {
       const lead = run.text.slice(0, run.text.length - run.text.trimStart().length);
       const tail = run.text.slice(run.text.trimEnd().length);
       const inner = run.text.slice(lead.length, run.text.length - tail.length);
-      return inner ? lead + runMarkdown({ ...run, text: inner }) + tail : run.text;
+      const edge = (space: string) => space.replace(/\n/g, ' ');
+      return inner ? runMarkdown({ ...run, text: inner }, edge(lead), edge(tail)) : edge(run.text);
     })
     .join('');
 }

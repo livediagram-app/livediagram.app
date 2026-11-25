@@ -80,6 +80,51 @@ describe('Markdown pasted into an article', () => {
     ]);
   });
 
+  // Emphasis nests as CommonMark has it: bold holding an italic of the same character read as a literal `*`, an italic
+  // and leftover stars, so an agent's `**Note: *this* matters**` lost its bold.
+  it('reads emphasis nested in emphasis of the same character', () => {
+    const bold = (text: string) => ({ text, b: true as const });
+    const ital = (text: string) => ({ text, i: true as const });
+    const both = (text: string) => ({ text, b: true as const, i: true as const });
+    expect(parseInline('**bold *italic* bold**')).toEqual([
+      bold('bold '),
+      both('italic'),
+      bold(' bold'),
+    ]);
+    expect(parseInline('__bold _italic_ bold__')).toEqual([
+      bold('bold '),
+      both('italic'),
+      bold(' bold'),
+    ]);
+    expect(parseInline('*it **bold** it*')).toEqual([ital('it '), both('bold'), ital(' it')]);
+    expect(parseInline('_it __bold__ it_')).toEqual([ital('it '), both('bold'), ital(' it')]);
+    expect(parseInline('**bold *italic***')).toEqual([bold('bold '), both('italic')]);
+    expect(parseInline('***italic* bold**')).toEqual([both('italic'), bold(' bold')]);
+    expect(parseInline('__my_var_name__')).toEqual([bold('my_var_name')]);
+    // Side by side, as the writer puts runs, they stay apart.
+    expect(parseInline('**a** *b* **c**')).toEqual([
+      bold('a'),
+      { text: ' ' },
+      ital('b'),
+      { text: ' ' },
+      bold('c'),
+    ]);
+    expect(looksLikeMarkdown('**bold *italic* bold**')).toBe(true);
+  });
+
+  it('reads unclosed nested emphasis in linear time', () => {
+    const n = 20_000;
+    let took = 0;
+    for (const text of [
+      '**' + 'a *b* '.repeat(n),
+      '*a' + ' **b**'.repeat(n),
+      '__' + 'a _b_ '.repeat(n),
+    ])
+      took += cpuMsOf(() => parseInline(text));
+    // Measured about 50 ms for the three: each group stops at a `**`, so no marker is tried twice.
+    expect(took).toBeLessThan(cpuBudgetMs(500));
+  });
+
   it('reads no emphasis from an underscore inside a word, as CommonMark', () => {
     expect(parseInline('snake_case_name and my__private__helper or a___b___c')).toEqual([
       { text: 'snake_case_name and my__private__helper or a___b___c' },
