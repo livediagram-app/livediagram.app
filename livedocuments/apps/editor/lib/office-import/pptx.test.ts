@@ -309,4 +309,34 @@ describe('readPptx, the edges', () => {
       'a. x\nb. y\n• z\nw',
     ]);
   });
+
+  // docs/specs/020-import-export/office-import.md "Rotation".
+  it('brings a shape’s, a picture’s and a group’s turn across, members turned about the group’s centre', async () => {
+    const turned = (x: number, y: number, cx: number, cy: number, rot: number) =>
+      `<a:xfrm rot="${rot}"><a:off x="${x}" y="${y}"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>`;
+    const deck = await read({
+      slides: [
+        {
+          tree: [
+            sp({ id: 2, box: turned(0, 0, 400, 100, 5_400_000), paras: ap('Sideways') }),
+            pic('rIdImg', turned(0, 0, 10, 10, -1_800_000)),
+            sp({ id: 3, box: xfrm(0, 0, 10, 10), paras: ap('Level') }),
+            // A 200 x 200 group at (1000, 1000), turned a quarter: a member at its top-left corner swings to its
+            // top-right, turned with it.
+            `<p:grpSp><p:nvGrpSpPr><p:cNvPr id="20" name="Group"/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm rot="5400000"><a:off x="1000" y="1000"/><a:ext cx="200" cy="200"/><a:chOff x="0" y="0"/><a:chExt cx="200" cy="200"/></a:xfrm></p:grpSpPr>${sp({ id: 21, box: turned(0, 0, 100, 50, 600_000), paras: ap('In a turned group') })}</p:grpSp>`,
+          ].join(''),
+          rels: [{ id: 'rIdImg', type: 'image', target: '../media/a.png' }],
+        },
+      ],
+    });
+    const [sideways, photo, level, member] = deck.slides[0]!.items;
+    expect(sideways!.box.rot).toBe(90);
+    expect(photo!.box.rot).toBe(330);
+    expect(level!.box.rot).toBeUndefined();
+    expect(member!.box.rot).toBe(100);
+    // The member's centre (1050, 1025) turns a quarter about (1100, 1100) to (1175, 1050).
+    expect(member!.box.x + member!.box.cx / 2).toBeCloseTo(1175);
+    expect(member!.box.y + member!.box.cy / 2).toBeCloseTo(1050);
+    expect([member!.box.cx, member!.box.cy]).toEqual([100, 50]);
+  });
 });

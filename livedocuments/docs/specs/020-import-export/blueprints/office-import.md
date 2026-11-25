@@ -222,6 +222,10 @@ Follows the spec's table. Precisely:
   picture carrying `a:videoFile` /
   `a:audioFile` / a media extension is `media`, not a picture; `r:link` `linkedImages`.
 - `p:grpSp`: its children mapped through `a:off`, `a:ext`, `a:chOff`, `a:chExt`.
+- Rotation: `a:xfrm rot` (60,000ths of a degree, clockwise) on the box a shape or picture takes (its own, else its
+  placeholder's) is the item's `rot`, in degrees `0..360`. A group's `rot` turns each member's centre about the
+  group's centre and adds to the member's own (`groupMap`). `buildDeckTab` writes it as the element's `rotation`
+  (absent at 0).
 - `p:graphicFrame`: by `a:graphicData uri`: a table `tables`, a chart `charts`, a diagram `diagrams`, an OLE
   object `embedded`. `p:cxnSp`, `p:contentPart` and text-less `p:sp` (not a placeholder) are `shapes`.
 - Any shape, picture, group, frame or connector whose `p:cNvPr` has `hidden` `1` or `true` (hidden in the

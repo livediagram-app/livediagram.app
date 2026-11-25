@@ -121,6 +121,38 @@ describe('buildDeckTab', () => {
   });
 });
 
+describe('buildDeckTab, rotation', () => {
+  // docs/specs/020-import-export/office-import.md "Rotation".
+  it('turns an element as far as its item was turned on the slide', () => {
+    const { tab } = buildDeckTab(
+      {
+        cx: 12192000,
+        cy: 6858000,
+        slides: [
+          {
+            items: [
+              { ...text(0, 0, 'Sideways'), box: { x: 0, y: 0, cx: 6096000, cy: 1000000, rot: 90 } },
+              {
+                kind: 'picture',
+                box: { x: 0, y: 0, cx: 1219200, cy: 685800, rot: 330 },
+                picture: { path: 'ppt/media/a.png', widthPx: 128, heightPx: 72 },
+              },
+              text(0, 0, 'Level'),
+            ],
+          },
+        ],
+      },
+      new Map(),
+      'Deck',
+    );
+    expect(tab.elements.map((e) => ('rotation' in e ? e.rotation : undefined))).toEqual([
+      90,
+      330,
+      undefined,
+    ]);
+  });
+});
+
 describe('slideSizeFor', () => {
   it('picks the nearer of 16:9 and 4:3', () => {
     expect(slideSizeFor(9144000, 5143500)).toBe('slide');
