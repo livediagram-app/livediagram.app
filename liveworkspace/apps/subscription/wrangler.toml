@@ -48,7 +48,7 @@ SITE_ORIGIN = "https://www.liveworkspace.app"
 # The account check (subscription.md "The subscription Worker"): access tokens are checked offline against
 # `${ACCOUNTS_URL}/api/auth`'s keys, addressed to any app API, as the index, Drive and the Community's Forum check them.
 ACCOUNTS_URL = "https://www.liveworkspace.app"
-INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api,https://livehuddle.app/api"
+INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api,https://livehuddle.app/api,https://liveknowledge.app/api"
 
 # Hourly: the sweep renews the mock provider's subscriptions, marks lapsed ones ended, drops expired mock sessions and
 # old counters, and sets a few subscribed teams' seats from their joined members (src/sweep.ts).
@@ -103,7 +103,7 @@ STRIPE_PORTAL_CONFIGURATION = "bpc_1UfbcnCqBPzPcNNfswenK2EY"
 MEDIA_URL = "https://staging.liveworkspace.app/api/media"
 SITE_ORIGIN = "https://staging.liveworkspace.app"
 ACCOUNTS_URL = "https://staging.liveworkspace.app"
-INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api,https://staging.livehuddle.app/api"
+INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api,https://staging.livehuddle.app/api,https://staging.liveknowledge.app/api"
 
 [env.staging.triggers]
 crons = ["17 * * * *"]
