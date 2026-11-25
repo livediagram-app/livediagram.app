@@ -68,7 +68,7 @@ describe('the Health Score', () => {
   });
 
   describe('verification', () => {
-    it('a page never verified has none of its 30, and Verify raises it', () => {
+    it('a page never verified has none of its 20, and Verify raises it', () => {
       const facts = healthy({
         state: 'never-verified',
         verifiedAt: undefined,
@@ -77,15 +77,16 @@ describe('the Health Score', () => {
       expect(factor(facts, 'verification')).toEqual({
         factor: 'verification',
         points: 0,
-        max: 30,
-        raise: 'Verify this page: +30',
-        gain: 30,
+        max: 20,
+        reason: 'Never verified',
+        raise: 'Verify this page: +20',
+        gain: 20,
         fix: 'verify',
       });
       expect(pageHealth(facts, NOW).reason).toBe('Never verified');
     });
 
-    it('a page whose review is due keeps 10 and says how long ago', () => {
+    it('a page whose review is due keeps 5 and says how long ago', () => {
       const due = (ago: number) =>
         healthy({
           state: 'review-due',
@@ -93,8 +94,8 @@ describe('the Health Score', () => {
           reviewAt: NOW - ago * DAY,
         });
       expect(factor(due(40), 'verification')).toMatchObject({
-        points: 10,
-        raise: 'Verify again: +20',
+        points: 5,
+        raise: 'Verify again: +15',
       });
       expect(pageHealth(due(40), NOW).reason).toBe('Review due 40 days ago');
       expect(pageHealth(due(1), NOW).reason).toBe('Review due 1 day ago');
@@ -105,6 +106,63 @@ describe('the Health Score', () => {
     });
   });
 
+  describe('weight and edits since verifying', () => {
+    const empty = (over: Partial<PageHealthFacts> = {}) =>
+      healthy({ band: 'empty', headings: 0, ...over });
+
+    it('an empty verified page no longer scores 100: 65, Fair', () => {
+      const health = pageHealth(empty(), NOW);
+      expect(health.score).toBe(65);
+      expect(health.label).toBe('fair');
+      expect(pageHealth(healthy(), NOW).score).toBe(100);
+    });
+
+    it('verification is 20 of the 100, the writing and its care 80', () => {
+      expect(HEALTH_FACTORS.map((f) => factor(healthy(), f).max)).toEqual([
+        20, 15, 10, 25, 10, 5, 10, 5,
+      ]);
+    });
+
+    it('an edit after the last Verify halves verification and says why', () => {
+      const edited = healthy({ verifiedAt: NOW - 3 * DAY, updatedAt: NOW - DAY });
+      expect(factor(edited, 'verification')).toEqual({
+        factor: 'verification',
+        points: 10,
+        max: 20,
+        reason: 'Edited since verified',
+        raise: 'Verify again: +10',
+        gain: 10,
+        fix: 'verify',
+      });
+      expect(pageHealth(edited, NOW)).toMatchObject({
+        score: 90,
+        reason: 'Edited since verified',
+      });
+    });
+
+    it('verifying again restores the full 20', () => {
+      const edited = healthy({ verifiedAt: NOW - 3 * DAY, updatedAt: NOW - DAY });
+      expect(factor(edited, 'verification').points).toBe(10);
+      expect(factor({ ...edited, verifiedAt: NOW }, 'verification').points).toBe(20);
+      // Saved and verified in the same instant: not edited since.
+      expect(factor({ ...edited, verifiedAt: NOW - DAY }, 'verification').points).toBe(20);
+    });
+
+    it('a page with no edit kept is not marked as edited', () => {
+      expect(factor(healthy({ updatedAt: undefined }), 'verification').points).toBe(20);
+    });
+
+    it('a Review Due page stays at 5 however it was edited', () => {
+      const due = healthy({
+        state: 'review-due',
+        verifiedAt: NOW - 120 * DAY,
+        reviewAt: NOW - 30 * DAY,
+        updatedAt: NOW - DAY,
+      });
+      expect(factor(due, 'verification').points).toBe(5);
+    });
+  });
+
   describe('freshness', () => {
     it('counts the share of the Review Period left', () => {
       const at = (left: number) =>
@@ -112,17 +170,24 @@ describe('the Health Score', () => {
           healthy({ verifiedAt: NOW - (90 - left) * DAY, reviewAt: NOW + left * DAY }),
           'freshness',
         );
-      expect(at(90).points).toBe(20);
-      expect(at(45)).toMatchObject({ points: 15, raise: 'Verify again: +5', fix: 'verify' });
-      // Rounded: 10 * 4 / 90 = 0.44.
-      expect(at(4).points).toBe(10);
+      expect(at(90).points).toBe(15);
+      expect(at(45)).toMatchObject({ points: 11, raise: 'Verify again: +4', fix: 'verify' });
+      // Rounded: 8 * 4 / 90 = 0.36.
+      expect(at(4).points).toBe(7);
       expect(
-        pageHealth(healthy({ verifiedAt: NOW - 50 * DAY, reviewAt: NOW + 40 * DAY }), NOW).reason,
+        pageHealth(
+          healthy({
+            verifiedAt: NOW - 50 * DAY,
+            reviewAt: NOW + 40 * DAY,
+            updatedAt: NOW - 60 * DAY,
+          }),
+          NOW,
+        ).reason,
       ).toBe('Review due in 40 days');
     });
 
     it('a verified page with no review date keeps the review share whole', () => {
-      expect(factor(healthy({ reviewAt: undefined }), 'freshness').points).toBe(20);
+      expect(factor(healthy({ reviewAt: undefined }), 'freshness').points).toBe(15);
     });
 
     it('runs down evenly from 90 days untouched to none at 455', () => {
@@ -136,10 +201,10 @@ describe('the Health Score', () => {
           }),
           'freshness',
         );
-      expect(touched(90).points).toBe(20);
-      expect(touched(272).points).toBe(15);
-      expect(touched(455).points).toBe(10);
-      expect(touched(900).points).toBe(10);
+      expect(touched(90).points).toBe(15);
+      expect(touched(272).points).toBe(12);
+      expect(touched(455).points).toBe(8);
+      expect(touched(900).points).toBe(8);
     });
 
     it('takes the later of the last edit and the last Verify', () => {
@@ -148,7 +213,7 @@ describe('the Health Score', () => {
         verifiedAt: NOW - 2 * DAY,
         updatedAt: NOW - 800 * DAY,
       });
-      expect(factor(facts, 'freshness').points).toBe(20);
+      expect(factor(facts, 'freshness').points).toBe(15);
     });
 
     it('says how long since a page was touched when that is what it lost', () => {
@@ -160,7 +225,7 @@ describe('the Health Score', () => {
       });
       expect(factor(facts, 'freshness')).toMatchObject({
         points: 1,
-        raise: 'Verify this page: +19',
+        raise: 'Verify this page: +14',
       });
       const owned = {
         ...facts,
@@ -173,7 +238,7 @@ describe('the Health Score', () => {
       expect(pageHealth(month, NOW).reason).toBe('Not touched in 5 months');
     });
 
-    it('a page never verified, with nothing kept of its edits, guesses nothing: the touched 10', () => {
+    it('a page never verified, with nothing kept of its edits, guesses nothing: the touched 7', () => {
       const facts = healthy({
         state: 'never-verified',
         verifiedAt: undefined,
@@ -181,8 +246,8 @@ describe('the Health Score', () => {
         updatedAt: undefined,
       });
       expect(factor(facts, 'freshness')).toMatchObject({
-        points: 10,
-        raise: 'Verify this page: +10',
+        points: 7,
+        raise: 'Verify this page: +8',
       });
       // Verification lost more, so it is the reason; with it full, freshness's own words show.
       expect(pageHealth(facts, NOW).reason).toBe('Never verified');
@@ -191,7 +256,7 @@ describe('the Health Score', () => {
     it('a due page, touched lately, says it is not fresh because it is not verified', () => {
       const facts = healthy({ state: 'review-due', reviewAt: undefined, verifiedAt: NOW - DAY });
       const health = pageHealth({ ...facts, owned: true }, NOW);
-      expect(health.factors[1]).toMatchObject({ points: 10 });
+      expect(health.factors[1]).toMatchObject({ points: 7 });
     });
   });
 
@@ -223,11 +288,11 @@ describe('the Health Score', () => {
 
     it('a short page loses points, a page of 50 words or more none', () => {
       const lengthOf = (band: PageHealthFacts['band']) => factor(healthy({ band }), 'length');
-      expect(lengthOf('empty')).toMatchObject({ points: 0, raise: 'Write at least 50 words: +10' });
-      expect(lengthOf('few').points).toBe(3);
-      expect(lengthOf('short').points).toBe(6);
-      expect(lengthOf('brief').points).toBe(10);
-      expect(lengthOf('long').points).toBe(10);
+      expect(lengthOf('empty')).toMatchObject({ points: 0, raise: 'Write at least 50 words: +25' });
+      expect(lengthOf('few').points).toBe(8);
+      expect(lengthOf('short').points).toBe(16);
+      expect(lengthOf('brief').points).toBe(25);
+      expect(lengthOf('long').points).toBe(25);
       expect(pageHealth(healthy({ band: 'empty' }), NOW).reason).toBe('Empty page');
       expect(pageHealth(healthy({ band: 'few' }), NOW).reason).toBe('Under 20 words');
       expect(pageHealth(healthy({ band: 'short' }), NOW).reason).toBe('Under 50 words');
@@ -325,11 +390,14 @@ describe('the Health Score', () => {
   });
 
   it('the reason is the factor that lost the most, the first on a tie', () => {
-    // Owner (10) and length empty (10) tie: owner comes first.
-    expect(pageHealth(healthy({ owned: false, band: 'empty' }), NOW).reason).toBe('No owner');
+    // Owner (10) and a page of few words (17 short) : length leads; at a tie the first in order wins.
+    expect(pageHealth(healthy({ owned: false, band: 'few' }), NOW).reason).toBe('Under 20 words');
+    expect(pageHealth(healthy({ owned: false, headings: 0, band: 'medium' }), NOW).reason).toBe(
+      'No owner',
+    );
   });
 
-  it('the worst a page scores: an empty page needs no headings', () => {
+  it('the worst a page scores: nothing, an empty page gets no structure', () => {
     const worst = pageHealth(
       {
         state: 'never-verified',
@@ -348,8 +416,8 @@ describe('the Health Score', () => {
       },
       NOW,
     );
-    expect(worst.score).toBe(10);
-    expect(worst.factors.find((f) => f.factor === 'structure')!.points).toBe(10);
+    expect(worst.score).toBe(0);
+    expect(worst.factors.find((f) => f.factor === 'structure')!.points).toBe(0);
     expect(worst.label).toBe('needs-work');
   });
 
@@ -373,7 +441,7 @@ describe('the Health Score', () => {
       max: 10,
       raise: 'Set an owner: +10',
     });
-    expect(wire.factors[0]).toEqual({ factor: 'verification', points: 30, max: 30 });
+    expect(wire.factors[0]).toEqual({ factor: 'verification', points: 20, max: 20 });
   });
 
   it('takes a 100,000-word page in constant time: the words arrive as a band', () => {
@@ -430,6 +498,7 @@ describe('under a Review Period of Never', () => {
       factor: 'freshness',
       points: 2,
       max: 15,
+      reason: 'Not edited in 14 months',
       raise: 'Bring it up to date: +13',
       gain: 13,
     });

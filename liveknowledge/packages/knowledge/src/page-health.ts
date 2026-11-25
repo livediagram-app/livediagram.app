@@ -53,10 +53,10 @@ export const HEALTH_FACTOR_WORDS: Record<PageHealthFactorName, string> = {
   use: 'Use',
 };
 const MAX: Record<PageHealthFactorName, number> = {
-  verification: 30,
-  freshness: 20,
+  verification: 20,
+  freshness: 15,
   owner: 10,
-  length: 10,
+  length: 25,
   structure: 10,
   links: 5,
   issues: 10,
@@ -83,7 +83,9 @@ export type PageHealthFactor = {
   factor: PageHealthFactorName;
   points: number;
   max: number;
-  /** What would raise it, with the points it gains ("Verify this page: +30"); absent at full. */
+  /** Why it is short of its maximum ("Edited since verified"); absent at full. */
+  reason?: string;
+  /** What would raise it, with the points it gains ("Verify this page: +20"); absent at full. */
   raise?: string;
   gain?: number;
   fix?: PageHealthFix;
@@ -127,13 +129,24 @@ const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 type Part = { points: number; reason?: string; raise?: string; gain?: number; fix?: PageHealthFix };
 
 function verification(f: PageHealthFacts, now: number): Part {
-  if (f.state === 'verified') return { points: 30 };
+  if (f.state === 'verified') {
+    // Edited since: the page was saved after the last Verify, so half the points wait for the next one.
+    if (f.updatedAt !== undefined && f.verifiedAt !== undefined && f.updatedAt > f.verifiedAt)
+      return {
+        points: 10,
+        reason: 'Edited since verified',
+        raise: 'Verify again',
+        gain: 10,
+        fix: 'verify',
+      };
+    return { points: 20 };
+  }
   if (f.state === 'never-verified')
     return {
       points: 0,
       reason: 'Never verified',
       raise: 'Verify this page',
-      gain: 30,
+      gain: 20,
       fix: 'verify',
     };
   const ago = f.reviewAt === undefined ? undefined : Math.floor((now - f.reviewAt) / DAY_MS);
@@ -143,7 +156,7 @@ function verification(f: PageHealthFacts, now: number): Part {
       : ago <= 0
         ? 'Review due today'
         : `Review due ${plural(ago, 'day')} ago`;
-  return { points: 10, reason, raise: 'Verify again', gain: 20, fix: 'verify' };
+  return { points: 5, reason, raise: 'Verify again', gain: 15, fix: 'verify' };
 }
 
 // Under a Review Period of Never (owner 2026-11-21: "don't include it in the health scorings"): no verification
@@ -165,17 +178,17 @@ function freshness(f: PageHealthFacts, now: number): Part {
   if (f.state === 'verified')
     left =
       f.reviewAt === undefined
-        ? 10
-        : Math.round(10 * clamp01((f.reviewAt - now) / (f.reviewDays! * DAY_MS)));
+        ? 8
+        : Math.round(8 * clamp01((f.reviewAt - now) / (f.reviewDays! * DAY_MS)));
   // Touched: the later of the last edit and the last Verify. Neither kept: nothing is guessed, the full 10.
   const touched = Math.max(f.updatedAt ?? 0, f.verifiedAt ?? 0);
   const days = touched > 0 ? Math.max(0, (now - touched) / DAY_MS) : 0;
-  const recent = Math.round(10 * clamp01(1 - (days - FRESH_DAYS) / STALE_OVER_DAYS));
+  const recent = Math.round(7 * clamp01(1 - (days - FRESH_DAYS) / STALE_OVER_DAYS));
   const points = left + recent;
-  if (points === 20) return { points };
+  if (points === 15) return { points };
   const months = Math.floor(days / 30);
   const reason =
-    recent < 10
+    recent < 7
       ? `Not touched in ${plural(months, 'month')}`
       : f.state === 'verified' && f.reviewAt !== undefined
         ? `Review due in ${plural(Math.max(0, Math.ceil((f.reviewAt - now) / DAY_MS)), 'day')}`
@@ -184,7 +197,7 @@ function freshness(f: PageHealthFacts, now: number): Part {
     points,
     reason,
     raise: f.state === 'never-verified' ? 'Verify this page' : 'Verify again',
-    gain: 20 - points,
+    gain: 15 - points,
     fix: 'verify',
   };
 }
@@ -197,11 +210,11 @@ function owner(f: PageHealthFacts): Part {
 
 const LENGTH: Record<WordBand, number> = {
   empty: 0,
-  few: 3,
-  short: 6,
-  brief: 10,
-  medium: 10,
-  long: 10,
+  few: 8,
+  short: 16,
+  brief: 25,
+  medium: 25,
+  long: 25,
 };
 const SHORT_WORDS: Partial<Record<WordBand, string>> = {
   empty: 'Empty page',
@@ -211,16 +224,18 @@ const SHORT_WORDS: Partial<Record<WordBand, string>> = {
 
 function length(f: PageHealthFacts): Part {
   const points = LENGTH[f.band];
-  if (points === 10) return { points };
+  if (points === 25) return { points };
   return {
     points,
     reason: SHORT_WORDS[f.band]!,
     raise: 'Write at least 50 words',
-    gain: 10 - points,
+    gain: 25 - points,
   };
 }
 
 function structure(f: PageHealthFacts): Part {
+  // Nothing written has nothing to structure: no points, so an empty page cannot pass on its other checks.
+  if (f.band === 'empty') return { points: 0, reason: 'Empty page' };
   if (f.headings > 0 || (f.band !== 'medium' && f.band !== 'long')) return { points: 10 };
   const points = f.band === 'long' ? 0 : 5;
   return {
@@ -350,6 +365,7 @@ export function pageHealth(facts: PageHealthFacts, now: number): PageHealthScore
       factor,
       points,
       max,
+      ...(raw.reason && points < max ? { reason: raw.reason } : {}),
       ...(raw.raise ? { raise: `${raw.raise}: +${gain}`, gain: gain! } : {}),
       ...(raw.fix ? { fix: raw.fix } : {}),
     };

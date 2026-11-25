@@ -174,9 +174,27 @@ export function PageHealthScore({
                       style={{ width: `${(100 * f.points) / f.max}%` }}
                     />
                   </span>
+                  {f.reason && !f.raise ? (
+                    <p
+                      data-health-factor-reason=""
+                      className="mt-1 text-slate-500 dark:text-slate-400"
+                    >
+                      {f.reason}
+                    </p>
+                  ) : null}
                   {f.raise ? (
                     <div className="mt-1 flex items-center justify-between gap-2">
-                      <span className="min-w-0 text-slate-500 dark:text-slate-400">{f.raise}</span>
+                      <span className="min-w-0 text-slate-500 dark:text-slate-400">
+                        {f.reason ? (
+                          <span
+                            data-health-factor-reason=""
+                            className="block font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            {f.reason}
+                          </span>
+                        ) : null}
+                        {f.raise}
+                      </span>
                       {fix && f.fix && Icon ? (
                         <button
                           type="button"

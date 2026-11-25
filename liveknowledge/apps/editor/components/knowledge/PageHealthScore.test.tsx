@@ -38,10 +38,10 @@ describe('the score at the top of Page Health', () => {
     render(<PageHealthScore health={pageHealth(facts(), NOW)} fixes={{}} />);
     // The whole score is the breakdown's toggle, its name the score said in words.
     const toggle = screen.getByRole('button', {
-      name: /^Health Score \d+ of 100, Needs Work: Never verified\. Score Breakdown$/,
+      name: /^Health Score \d+ of 100, Fair: Never verified\. Score Breakdown$/,
     });
-    expect(toggle.textContent).toContain('Needs Work');
-    expect(screen.getByText('Never verified')).toBeTruthy();
+    expect(toggle.textContent).toContain('Fair');
+    expect(document.querySelector('[data-health-reason]')!.textContent).toBe('Never verified');
     expect(screen.queryByText('Health Score')).toBeNull();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(screen.queryByRole('list', { name: 'Score Breakdown' })).toBeNull();
@@ -52,10 +52,41 @@ describe('the score at the top of Page Health', () => {
     fireEvent.click(screen.getByRole('button', { name: /Score Breakdown$/ }));
     const list = screen.getByRole('list', { name: 'Score Breakdown' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(8);
-    expect(within(list).getByText('Verify this page: +30')).toBeTruthy();
+    expect(within(list).getByText('Verify this page: +20')).toBeTruthy();
     expect(within(list).getByText('Fix 1 broken link: +2')).toBeTruthy();
     // A Viewer: no fixes offered, only the words.
     expect(within(list).queryAllByRole('button')).toHaveLength(0);
+  });
+
+  it('says a verified page was edited since, and what verifying again gives back', () => {
+    const edited = facts({
+      state: 'verified',
+      verifiedAt: NOW - 3 * DAY,
+      reviewAt: NOW + 80 * DAY,
+      owned: true,
+      headings: 1,
+      brokenLinks: 0,
+      backlinks: 1,
+      updatedAt: NOW - DAY,
+    });
+    render(<PageHealthScore health={pageHealth(edited, NOW)} fixes={{}} />);
+    expect(
+      screen.getByRole('button', { name: /: Edited since verified\. Score Breakdown$/ }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Score Breakdown$/ }));
+    const row = within(screen.getByRole('list', { name: 'Score Breakdown' }))
+      .getByText('Verify again: +10')
+      .closest('li')!;
+    expect(row.getAttribute('data-health-factor')).toBe('verification');
+    expect(within(row).getByText('Edited since verified')).toBeTruthy();
+    expect(row.textContent).toContain('10 / 20');
+  });
+
+  it('shows a reason on a factor that has nothing to press', () => {
+    render(<PageHealthScore health={pageHealth(facts({ band: 'empty' }), NOW)} fixes={{}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Score Breakdown$/ }));
+    const row = document.querySelector('[data-health-factor="structure"]')!;
+    expect(row.textContent).toContain('Empty page');
   });
 
   it('offers each fix as a button only where the person may make it', () => {
