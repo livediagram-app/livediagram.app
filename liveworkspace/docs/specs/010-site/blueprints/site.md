@@ -286,6 +286,15 @@ saved; `/explorer` 370.9 to 370.7 KiB (379,623 bytes). What `/` still carries ov
 menu buttons as client code, the Pro flag and the account menu's lazy Pro parts. `app/first-load-lazy.test.ts`
 keeps both imports dynamic. The budget stays at 212 KiB.
 
+**A team's Usage tab stays with the team card (2026-11-25).** The tab's list (`UsageList`, its app logos and the
+comparison rows' app line) first came in through `teams/TeamPlan.tsx`, which the sidebar also draws, and from the
+`@liveworkspace/subscription-ui` barrel: `/explorer` went from 380.2 to 387.4 KiB (21 to 23 scripts), over its 382 KiB
+budget. Now the tab and the hook that finds the team are `teams/page/TeamUsage.tsx`, imported only by the lazy team
+card, and the list is its own entry, `@liveworkspace/subscription-ui/usage-list`, out of the barrel. Measured with
+each build's own export: 381.2 KiB in 22 scripts. None of the tab's code is in the first load; the extra script is
+Turbopack cutting the largest subscription chunk (69.6 KB raw on main, byte-identical modules after) in two, as after
+the Webhooks rework above, and its framing is the 1 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from

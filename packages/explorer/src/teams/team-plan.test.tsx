@@ -14,7 +14,8 @@ import {
   type Service,
 } from '@liveworkspace/subscription-ui/testing';
 import { proOnForTests, withPro } from '@liveworkspace/subscription-ui/testing/who';
-import { TeamPlan, SpaceProBadge, TeamUsage } from './TeamPlan';
+import { TeamPlan, SpaceProBadge } from './TeamPlan';
+import { TeamUsage } from './page/TeamUsage';
 
 proOnForTests();
 afterEach(cleanup);

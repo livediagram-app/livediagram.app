@@ -1,6 +1,7 @@
 'use client';
 
-import { UsageList, useSubscription } from '@liveworkspace/subscription-ui';
+import { useSubscription } from '@liveworkspace/subscription-ui';
+import { UsageList } from '@liveworkspace/subscription-ui/usage-list';
 import { SETTINGS_CARD_SLOT } from '../../SettingsGroup';
 import { CellFallback, CellSkeleton } from './states';
 

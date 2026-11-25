@@ -11,7 +11,8 @@
     "./item-tier": "./src/item-tier/index.ts",
     "./provider": "./src/provider/index.ts",
     "./testing": "./src/testing.ts",
-    "./testing/who": "./src/testing-who.tsx"
+    "./testing/who": "./src/testing-who.tsx",
+    "./usage-list": "./src/usage-list/UsageList.tsx"
   },
   "scripts": {
     "lint": "oxlint",
