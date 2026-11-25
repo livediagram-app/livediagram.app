@@ -245,6 +245,8 @@ export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from '@liveworkspace/element-model/readable-colour';
 export * from '@liveworkspace/element-model/quick-swatches';
 export * from '@liveworkspace/element-model/quick-swatch-rederive';
+// Reset to Theme for one element (docs/specs/008-canvas/canvas-and-palette.md, the Colours category).
+export * from '@liveworkspace/element-model/reset-colours';
 export * from './web-components';
 // A stat's change line and count-up (docs/specs/009-elements/stat-row.md); the quote (docs/specs/009-elements/quote.md);
 // the table's marks and highlighted column (docs/specs/009-elements/comparison-tables.md).

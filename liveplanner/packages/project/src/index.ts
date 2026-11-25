@@ -233,6 +233,8 @@ export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from '@liveworkspace/element-model/readable-colour';
 export * from '@liveworkspace/element-model/quick-swatches';
 export * from '@liveworkspace/element-model/quick-swatch-rederive';
+// Reset to Theme for one element (docs/specs/008-canvas/canvas-and-palette.md, the Colours category).
+export * from '@liveworkspace/element-model/reset-colours';
 export * from '@liveworkspace/element-model/web-components';
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.

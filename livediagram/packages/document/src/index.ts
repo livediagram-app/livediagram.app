@@ -238,6 +238,8 @@ export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from '@liveworkspace/element-model/readable-colour';
 export * from '@liveworkspace/element-model/quick-swatches';
 export * from '@liveworkspace/element-model/quick-swatch-rederive';
+// Reset to Theme for one element (docs/specs/008-canvas/canvas-and-palette.md, the Colours category).
+export * from '@liveworkspace/element-model/reset-colours';
 // The Q&A board (docs/specs/012-collaboration/qa-board.md)
 export * from './qa-board';
 export * from '@liveworkspace/element-model/web-components';
