@@ -187,6 +187,7 @@ describe('the call card', () => {
         call={CALL}
         spaceId="S1"
         accountId="user_ada"
+        mayInvite
         tabs={TABS}
         activeTabId="t1"
         onSent={vi.fn()}
@@ -194,7 +195,7 @@ describe('the call card', () => {
       />,
     );
 
-  it('shows the host Open Item, Invite and Wrap Up; an account Invite; a guest Open Item alone', () => {
+  it('shows the host Open Item, Invite and Wrap Up; a Participant Invite; a Viewer and a guest Open Item alone', () => {
     const { unmount } = card();
     expect(screen.getByText('Retro board')).toBeTruthy();
     expect(screen.getByRole('button', { name: /Invite/ })).toBeTruthy();
@@ -204,6 +205,12 @@ describe('the call card', () => {
     expect(screen.queryByRole('button', { name: /Wrap Up/ })).toBeNull();
     expect(screen.getByRole('button', { name: /Invite/ })).toBeTruthy();
     member.unmount();
+    // A Viewer of the Space (Work Tracker 1458): Open Item alone, no Invite, as the index refuses theirs.
+    const viewer = card({ call: { ...CALL, host: false }, mayInvite: false });
+    expect(screen.queryByRole('button', { name: /Invite/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Wrap Up/ })).toBeNull();
+    expect(screen.getByText('Retro board')).toBeTruthy();
+    viewer.unmount();
     card({ accountId: null });
     expect(screen.queryByRole('button', { name: /Invite/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Wrap Up/ })).toBeNull();
@@ -294,6 +301,7 @@ describe('Wrap Up', () => {
         call={CALL}
         spaceId="S1"
         accountId="user_ada"
+        mayInvite
         tabs={TABS}
         activeTabId="t1"
         onSent={onSent}
@@ -364,6 +372,7 @@ describe('Wrap Up', () => {
         call={{ ...CALL, summaryDefault: null }}
         spaceId="S1"
         accountId="user_ada"
+        mayInvite
         tabs={[]}
         activeTabId="t1"
         onSent={vi.fn()}

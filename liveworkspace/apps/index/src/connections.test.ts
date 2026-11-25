@@ -224,7 +224,7 @@ describe('making a connection', () => {
     expect(theirs.status).toBe(403);
   });
 
-  it('lets a team member connect a team item, and keeps a tab-scoped grant to its tab', async () => {
+  it('lets a team member connect a team item, and refuses an Editor link limited to one tab, even into that tab', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team-1' }] });
     const host = await makeItem(ada.auth, { app: 'livediagram', teamId: 'team-1' });
     const target = await makeItem(ada.auth, { teamId: 'team-1' });
@@ -234,16 +234,24 @@ describe('making a connection', () => {
       (await connect(cyd.auth, host.id, { targetId: target.id, tabId: 't', both: true }, grant))
         .status,
     ).toBe(201);
-    // A link to one tab grants that tab alone.
+    // Only a whole-file Editor connects a file (Work Tracker 1457): an Editor link to one tab connects nothing, into
+    // another tab or its own, even with a file of the person's own, and writes nothing.
     const bob = await person('user_b');
     const scoped = (await link(ada.auth, host.id, { level: 'edit', tabId: 'only' })).code;
     const scopedGrant = await grantFor(bob.auth, host.id, scoped);
     const bobs = await makeItem(bob.auth);
+    for (const tabId of ['other', 'only']) {
+      const res = await connect(bob.auth, host.id, { targetId: bobs.id, tabId }, scopedGrant);
+      expect(res.status).toBe(403);
+    }
     expect(
-      (await connect(bob.auth, host.id, { targetId: bobs.id, tabId: 'other' }, scopedGrant)).status,
-    ).toBe(403);
+      h.db.sql.prepare('SELECT id FROM connections WHERE target_item_id = ?').all(bobs.id),
+    ).toEqual([]);
+    // The same person through a whole-file Editor link connects it.
+    const whole = (await link(ada.auth, host.id, { level: 'edit' })).code;
+    const wholeGrant = await grantFor(bob.auth, host.id, whole);
     expect(
-      (await connect(bob.auth, host.id, { targetId: bobs.id, tabId: 'only' }, scopedGrant)).status,
+      (await connect(bob.auth, host.id, { targetId: bobs.id, tabId: 'only' }, wholeGrant)).status,
     ).toBe(201);
   });
 

@@ -149,6 +149,12 @@ to a call about Launch Plan", whose reading pane reads the call as it stands and
 while the call is, and never counted in the Inbox's badge. Only accounts who reach the item can be invited; anyone
 else is refused before any row is written.
 
+**Who may invite** is whoever may speak in the call: an account at Participant or above on the call's Space, who
+reaches the item (owner, Work Tracker 1458). A Viewer of the Space watches and invites no one: livehuddle shows them
+no Invite, and the index refuses their invite and the list of whom to invite (`403`). A call's Space is shared by its
+Participant link, so everyone who joins from the item may invite; a Viewer is someone holding a view link to the Space
+itself (a public link, or a Viewer link made before livehuddle stopped offering them).
+
 ## After the call
 
 livehuddle's **Wrap Up**, the host's alone, asks where the meeting goes
@@ -185,6 +191,7 @@ host's choice alone, off until they turn it on, with a notice to everyone in the
 | Who                                        | Start | Join          | Invite | Wrap Up    | Meetings |
 | ------------------------------------------ | ----- | ------------- | ------ | ---------- | -------- |
 | Editor, Participant, Viewer (an account)   | Yes   | Yes           | Yes    | The host's | Yes      |
+| A Viewer of the call's Space (an account)  | n/a   | Watches       | No     | No         | n/a      |
 | A guest holding the item's link            | No    | Yes, as guest | No     | No         | Yes      |
 | Offline, embed, workbench frame, Community | No    | No            | No     | No         | No       |
 

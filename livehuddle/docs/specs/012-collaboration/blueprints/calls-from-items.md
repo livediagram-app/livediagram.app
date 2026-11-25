@@ -25,7 +25,7 @@ Derived from [calls-from-items.md](../calls-from-items.md) and the platform's
   kept with the Space it is for, so another Space shows nothing until its own read lands. The first answer that is a
   call shows the toast "This call is about <item>. It isn't recorded." once a session (session storage, per Space).
 - `components/item-call/CallItemCard.tsx`: the `leadAction` of the corner card: Open Item (the item's mark,
-  `ItemAppMark` from `@liveworkspace/workbench`, and its name cut to 22 characters), Invite (accounts), Wrap Up (the
+  `ItemAppMark` from `@liveworkspace/workbench`, and its name cut to 22 characters), Invite (accounts at Participant or above in the Space, `mayInvite`), Wrap Up (the
   host with an account). Open Item is `focusOrOpen(itemTabName(id), url)` from `@liveworkspace/index-client/browser`,
   with a `window.open(url, '_blank', 'noopener')` fallback when the named tab is blocked.
 - `components/item-call/InviteDialog.tsx` (lazy): a centred dialog, never a popover. `indexClient.callInvitePeople(spaceId,
