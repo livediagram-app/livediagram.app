@@ -112,7 +112,7 @@ function Pair({ sourceApp, targetApp, lit }: { sourceApp: App; targetApp: App; l
       <span
         className={`-mx-0.5 flex size-4 items-center justify-center rounded-full ${
           lit
-            ? 'bg-brand-600 text-white dark:bg-brand-500'
+            ? 'bg-brand-700 text-white dark:bg-brand-600'
             : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
         } z-10 ring-2 ring-white dark:ring-slate-900`}
       >
