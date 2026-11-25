@@ -57,8 +57,8 @@ SDK, a WASM rasteriser), and `apps/api` stays a pure REST/WS surface.
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
   validation, geometry, or theme-colour resolution.
 - **Routing + deploy.** No worker of its own: it deploys with liveworkspace's one MCP Worker. `mcp.livedocuments.app`
-  (`mcp-staging.livedocuments.app` in staging) is a custom domain on that Worker, serving old connections narrowed to this
-  app until their token ends. `GET /health` returns `{ status: 'ok' }`.
+  (`mcp-staging.livedocuments.app` in staging) is a custom domain on that Worker, passing old connections to this package as it
+  is until their token ends. `GET /health` returns `{ status: 'ok' }`.
 - **Endpoints:** `POST /mcp` (the MCP transport, Bearer-gated) and `/health`; the sign-in answers and discovery metadata
   that point at the one MCP are that Worker's ([§3](#3-authentication-the-one-mcps-oauth)).
 

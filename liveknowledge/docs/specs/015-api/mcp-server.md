@@ -59,7 +59,7 @@ and `apps/api` stays a pure REST/WS surface. It has no Worker, `wrangler.toml` o
   validation, geometry, or theme-colour resolution.
 - **Routing + deploy.** Reached by people at liveworkspace's one MCP, which deploys it with the rest. The old hostname
   **`mcp.liveknowledge.app`** (`mcp-staging.liveknowledge.app` in staging) is a custom domain on the one MCP Worker,
-  serving connections made before, narrowed to this app (`?apps=liveknowledge&tools=all`), until their token ends
+  passing connections made before to this package as it is (its own tool names), until their token ends
   ([Deployment](../016-platform/deployment.md#custom-domain)). The `router` worker is unchanged. `GET /health`
   returns `{ status: 'ok' }`.
 - **Endpoints the package serves:** `POST /mcp` (the MCP transport, Bearer-gated) and `/health`, mounted by the one

@@ -5,10 +5,10 @@ import { createMcpApp } from '@liveworkspace/mcp-kit/app';
 import { bearerChallenge } from '@liveworkspace/mcp-kit/token-refusal';
 import { bearerTokenOf } from '@liveworkspace/api-kit/request-auth';
 import type { Env } from './env';
-import { allowedApps, narrowedApps } from './grants';
+import { allowedApps } from './grants';
 import { LISTING } from './listing';
 import { OAUTH } from './oauth';
-import { movedChallenge, oldHostApp, oldHostSignIn } from './old-hosts';
+import { movedChallenge, oldHostApp, oldHostMcp, oldHostSignIn } from './old-hosts';
 import { buildServer, type RequestEnv, type RequestState } from './server';
 
 const app = createMcpApp<RequestEnv>({ buildServer, oauth: OAUTH, listing: LISTING });
@@ -33,16 +33,16 @@ export function oneMcp<E extends { OAUTH_KV: KVNamespace }>(
       const token = bearerTokenOf(request.headers.get('Authorization'));
       // Nobody signs in at an old address: no token there is the pointer, not a sign-in challenge.
       if (oldApp && !token) return movedChallenge(url);
+      // An old address is that app's own MCP, as it was before the fold.
+      if (oldApp && token) return oldHostMcp(request, url, oldApp, token, routed);
       const state: RequestState = {
         token,
-        // An old address is that one app with every tool.
-        allowed: token ? narrowedApps(await allowedApps(env.OAUTH_KV, token), oldApp) : [],
-        all: oldApp !== null || url.searchParams.get('tools') === 'all',
+        allowed: token ? await allowedApps(env.OAUTH_KV, token) : [],
+        all: url.searchParams.get('tools') === 'all',
         refused: false,
       };
       const response = await app.fetch(request, { ...routed, REQUEST: state }, ctx);
       if (!state.refused) return response;
-      if (oldApp) return movedChallenge(url);
       console.warn('[mcp] token refused by an app: asking the client to sign in again');
       return Response.json(
         {
