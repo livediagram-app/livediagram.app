@@ -20,6 +20,7 @@ import { API_PATH, JWKS_MAX_AGE_S } from './config';
 import { sweepUnconfirmedConnections } from './connection-doors';
 import { makeBeside } from './beside';
 import { handleConnection, makeConnection } from './connections';
+import { handleLinkedTabs } from './linked-tabs';
 import type { PersonContext, RouteContext } from './context';
 import { indexEnabled, type Env } from './env';
 import { handleFolders } from './folders';
@@ -123,6 +124,10 @@ async function route(ctx: RouteContext): Promise<Response> {
     }
     if (segments[2] === 'connections') {
       return segments.length === 3 ? makeConnection(ctx, id) : notFound();
+    }
+    // Connect as tabs after a Send to (linked-tabs.ts): how two files stand, and each given a tab for the other.
+    if (segments[2] === 'linked-tabs') {
+      return segments.length === 3 ? handleLinkedTabs(ctx, id) : notFound();
     }
     // A file made beside the item from a template's offer, then connected (beside.ts).
     if (segments[2] === 'beside') {
@@ -230,6 +235,7 @@ const routeLabel = createApiRouteLabel(
     'card-moves',
     'automation-sends',
     'connections',
+    'linked-tabs',
     'beside',
     'sheets',
     'sheet-range',

@@ -11,6 +11,7 @@ export * from './standing';
 export * from './beside';
 export * from './card-ref';
 export * from './connections';
+export * from './linked-tabs';
 export * from './kits';
 export * from './webhooks';
 export * from './sheet-sources';

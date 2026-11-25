@@ -53,6 +53,7 @@ import { overRunLimit } from './kits';
 import { getItemRow, toItem, type ItemRow } from './rows';
 import { SOURCE_SIGNAL_CONCURRENCY } from './sheet-sources';
 import { callLineOf, keepCallPlan } from './item-call-plans';
+import { linkFiles } from './linked-tabs';
 
 const PLAN_APP = 'liveplanner' as const;
 const COLUMN_MAX = 120;
@@ -555,5 +556,16 @@ export async function handleAgentPlanSends(
   }
   await insertSendRows(env, rows);
   console.info('[index] agent plan sends', { cards: read.cards.length, recorded: rows.length });
+  // Connect as tabs (connected-tabs.md "Linked from a Send to"): each source the person reads, asked by any of its
+  // cards, linked with the plan as that person may. Its outcome never refuses the cards.
+  const linking = new Set(
+    read.cards
+      .filter((c) => c.sentFrom.connectTabs && sources.get(c.sentFrom.itemId))
+      .map((c) => c.sentFrom.itemId),
+  );
+  for (const sourceId of linking) {
+    const made = await linkFiles(env, asPerson(read.person).person!, sourceId, planId);
+    if (made instanceof Response) await made.body?.cancel();
+  }
   return json({ sentFrom });
 }

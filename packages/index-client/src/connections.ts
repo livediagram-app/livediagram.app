@@ -125,10 +125,12 @@ export type ConnectionOpen = {
 };
 
 // Why a connection opens nothing, as `{ error }` on the open door: the target in the Trash or gone (410), the pass
-// deleted or lapsed (410), not this host's or tab's (a copy, 404).
+// deleted or lapsed (410), a linked tab whose file the reader cannot open themselves (403), not this host's or tab's
+// (a copy, 404).
 export const CONNECTION_REFUSALS = [
   'connection_target_gone',
   'connection_link_removed',
+  'connection_locked',
   'not_found',
 ] as const;
 export type ConnectionRefusal = (typeof CONNECTION_REFUSALS)[number];
