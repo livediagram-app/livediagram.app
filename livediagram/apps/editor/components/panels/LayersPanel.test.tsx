@@ -104,7 +104,10 @@ describe('LayersPanel', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Delete Layer' }));
     expect(screen.queryByRole('alertdialog')).toBeNull();
-    expect(p.onRemoveLayer).toHaveBeenCalledWith('b');
+    expect(p.onRemoveLayer).toHaveBeenCalledWith(
+      'b',
+      expect.objectContaining({ removed: expect.any(Function) }),
+    );
   });
 
   it('deletes an empty active layer at once', () => {
@@ -113,7 +116,10 @@ describe('LayersPanel', () => {
       { id: 'b', name: 'B' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: 'Delete Layer' }));
-    expect(p.onRemoveLayer).toHaveBeenCalledWith('b');
+    expect(p.onRemoveLayer).toHaveBeenCalledWith(
+      'b',
+      expect.objectContaining({ removed: expect.any(Function) }),
+    );
   });
 });
 

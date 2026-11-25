@@ -9,6 +9,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -223,7 +224,8 @@ describe('the row menu', () => {
       ['Move Up', 'onStep', ['c', -1]],
       ['Indent', 'onIndent', ['c']],
       ['Outdent', 'onOutdent', ['c']],
-      ['Delete', 'onDelete', ['c']],
+      // With where focus goes once it has gone (row-focus.ts).
+      ['Delete', 'onDelete', ['c', expect.objectContaining({ removed: expect.any(Function) })]],
     ];
     for (const [label, action, args] of verbs) {
       const { actions: a } = mount();
@@ -234,6 +236,19 @@ describe('the row menu', () => {
       expect(screen.queryByRole('menuitem')).toBeNull();
       cleanup();
     }
+  });
+
+  // liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md "Focus": a deleted page's focus goes to the row
+  // after it and its subpages, and back to the page after its Undo.
+  it('hands Delete the row after the page and its subpages to focus, and the page again for its Undo', async () => {
+    const { actions: a } = mount();
+    openMenu('Release Process');
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' }));
+    const focus = vi.mocked(a.onDelete).mock.calls[0]![1]!;
+    focus.removed();
+    await waitFor(() => expect(document.activeElement?.getAttribute('data-page-row')).toBe('c'));
+    focus.restored();
+    await waitFor(() => expect(document.activeElement?.getAttribute('data-page-row')).toBe('b'));
   });
 
   it('renames in place from the menu', () => {

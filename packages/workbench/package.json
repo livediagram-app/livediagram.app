@@ -687,6 +687,7 @@
     "./lib/reload-guard": "./src/lib/reload-guard.ts",
     "./lib/reload-when-saved": "./src/lib/reload-when-saved.ts",
     "./lib/revert-tab-step": "./src/lib/revert-tab-step.ts",
+    "./lib/row-focus": "./src/lib/row-focus.ts",
     "./lib/remote-op-log": "./src/lib/remote-op-log.ts",
     "./lib/room-presence": "./src/lib/room-presence.ts",
     "./lib/room-client": "./src/lib/room-client.ts",

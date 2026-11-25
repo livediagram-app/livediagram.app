@@ -68,6 +68,16 @@ describe('deleting a layer', () => {
     expect(screen.queryByRole('button', { name: 'Undo deleting Notes' })).toBeNull();
   });
 
+  it('moves focus off the gone row, and back onto it after Undo', async () => {
+    const s = setup();
+    const focus = { removed: vi.fn(), restored: vi.fn() };
+    await run(() => s.layers().removeLayer('b', focus));
+    expect(focus.removed).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Undo deleting Notes' }));
+    await run(() => {});
+    expect(focus.restored).toHaveBeenCalledOnce();
+  });
+
   it('just deletes an empty layer, with no toast', async () => {
     const s = setup();
     await run(() => s.layers().removeLayer('c'));

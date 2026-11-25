@@ -52,6 +52,7 @@ import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-co
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { revertStep, useUndoableAction } from '@liveworkspace/ui/undo';
+import type { RowFocus } from '@liveworkspace/workbench/lib/row-focus';
 import { RESET_TAB_WORDS, resetTabUndoable } from '@liveworkspace/workbench/lib/tab-reset-undo';
 import { remintTabElements, useTabImport } from './useTabImport';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -322,7 +323,8 @@ export function useTabActions(deps: TabActionsDeps) {
   // Deletes a page and its subpages at once; the toast names the count and offers Undo. One commit, so Cmd/Ctrl-Z
   // brings them all back too. The row menu's Delete is already disabled on the last page and on a locked one; the
   // guards here are belt-and-suspenders.
-  const deleteTab = (id: string) => {
+  // `focus` (the page tree's RowFocus) moves keyboard focus off the gone rows, and onto the page again after Undo.
+  const deleteTab = (id: string, focus?: RowFocus) => {
     if (!deps.canEditStructure) return;
     const target = tabs.find((t) => t.id === id);
     const gone = new Set(pageSubtreeIds(tabs, id));
@@ -366,6 +368,7 @@ export function useTabActions(deps: TabActionsDeps) {
         }
         setSelectedId(null);
         setEditingId(null);
+        focus?.removed();
       },
       // The pages back in their places in the tree, and the links on other pages, unless someone changed them since.
       undo: () => {
@@ -374,6 +377,7 @@ export function useTabActions(deps: TabActionsDeps) {
         step = null;
         commitTabs((ts) => revertStep(taken.before, taken.after, ts));
         if (wasActive) setActiveId(wasActive);
+        focus?.restored();
         return true;
       },
     });

@@ -42,6 +42,7 @@ import {
   useRowReorderDrag,
 } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
+import { rowFocus } from '@liveworkspace/workbench/lib/row-focus';
 import { SOLID_BRAND_DARK_CONTROL, Chip } from '@livediagram/ui';
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
@@ -189,7 +190,23 @@ export function SlideDeckPanel({
                         onRemoveSelection={() => removeFromSlide(slide.id, currentSelectionIds)}
                         onToggleHidden={() => toggleSlideHidden(slide.id)}
                         onDuplicate={() => duplicateSlide(slide.id)}
-                        onDelete={() => deleteSlide(slide.id)}
+                        onDelete={() =>
+                          deleteSlide(
+                            slide.id,
+                            rowFocus({
+                              ids: deck.slides.map((s) => s.id),
+                              id: slide.id,
+                              control: (id) =>
+                                document.querySelector<HTMLElement>(
+                                  `[data-slide-row="${CSS.escape(id)}"]`,
+                                ),
+                              fallback: () =>
+                                document.querySelector<HTMLElement>(
+                                  '[data-slide-deck-tools] button:not([disabled])',
+                                ),
+                            }),
+                          )
+                        }
                       />
                     )
                   }

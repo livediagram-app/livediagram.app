@@ -211,6 +211,18 @@ describe('deleting a page', () => {
     expect(s.tabs().find((t) => t.id === 'e')!.name).toBe('Meeting Notes');
   });
 
+  it('moves focus off the gone rows, and back onto the page after Undo', async () => {
+    const s = setup();
+    const focus = { removed: vi.fn(), restored: vi.fn() };
+    await act(async () => {
+      s.actions().deleteTab('b', focus);
+    });
+    expect(focus.removed).toHaveBeenCalledOnce();
+    fireEvent.click(undoButton()!);
+    await act(async () => {});
+    expect(focus.restored).toHaveBeenCalledOnce();
+  });
+
   it('opens the page after the deleted ones when the current page goes with them', async () => {
     const s = setup({ activeId: 'd' });
     await del(s, 'b');

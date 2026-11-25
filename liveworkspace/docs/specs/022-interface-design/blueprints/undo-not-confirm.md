@@ -41,6 +41,13 @@ undoLabel, onSelect }] })`. Its own key per action, so two quick deletes keep tw
 - Placement: the shared anchored popover marks itself `data-toast-beside` while it rises above its button, and
   `toastPlacement` stands the stack left of it on the cluster's line (`toast-floor.ts`).
 
+## Row focus
+
+`rowFocus({ ids, id, gone?, control, fallback? })` (`packages/workbench/src/lib/row-focus.ts`) gives a `RowFocus`
+(`removed`, `restored`) that `deleteSlide`, `removeLayer` and liveknowledge's `deleteTab` call after their commit and
+after their Undo. `focusWhenDrawn` looks for the row on the next turns, at most `FOCUS_TRIES` times, since a row put
+back is drawn a render later.
+
 ## `revertStep(before, after, current)`
 
 Linear in the three lists (one `Map` per list). Returns `current` itself when there is nothing to take back, so a

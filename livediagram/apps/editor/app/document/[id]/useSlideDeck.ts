@@ -16,6 +16,7 @@
 
 import { slideHeadlines } from '@/lib/slide-headline';
 import { revertStep, useUndoableAction } from '@liveworkspace/ui/undo';
+import type { RowFocus } from '@liveworkspace/workbench/lib/row-focus';
 import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 
 const idsOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
@@ -359,10 +360,11 @@ export function useSlideDeck({
 
   // Deleting a slide acts at once and offers Undo in a toast (liveworkspace/docs/specs/022-interface-design/
   // undo-not-confirm.md): the deck is not in the canvas's undo history, so the toast is its way back. Undo puts the
-  // slide back at its place in the deck, unless someone has changed the deck's slides since.
+  // slide back at its place in the deck, unless someone has changed the deck's slides since. `focus` (the panel's
+  // RowFocus) moves keyboard focus off the gone row, and onto it again after Undo.
   const offerUndo = useUndoableAction();
   const deleteSlide = useCallback(
-    (slideId: string) => {
+    (slideId: string, focus?: RowFocus) => {
       if (isReadOnly) return;
       const at = deckRef.current.slides.findIndex((s) => s.id === slideId);
       const slide = deckRef.current.slides[at];
@@ -382,6 +384,7 @@ export function useSlideDeck({
           }));
           setOpenSlideId((cur) => (cur === slideId ? null : cur));
           track('UI', 'Removed', 'Slide');
+          focus?.removed();
         },
         undo: () => {
           const taken = step;
@@ -391,6 +394,7 @@ export function useSlideDeck({
             const slides = revertStep(taken.before, taken.after, prev.slides);
             return slides === prev.slides ? prev : { slides };
           });
+          focus?.restored();
           return true;
         },
       });

@@ -76,6 +76,19 @@ describe('deleting a slide', () => {
     expect(d.ids()).toEqual(['s1', 's2', 's4']);
   });
 
+  it('moves focus off the gone row, and back onto it after Undo', async () => {
+    const d = deck();
+    const focus = { removed: vi.fn(), restored: vi.fn() };
+    await act(async () => {
+      d.deck().deleteSlide('s2', focus);
+    });
+    expect(focus.removed).toHaveBeenCalledOnce();
+    expect(focus.restored).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Undo deleting Roadmap' }));
+    await act(async () => {});
+    expect(focus.restored).toHaveBeenCalledOnce();
+  });
+
   it('in a read-only session deletes nothing and offers nothing', async () => {
     const d = deck(true);
     await act(async () => {

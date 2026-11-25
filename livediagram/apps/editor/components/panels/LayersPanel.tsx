@@ -4,6 +4,7 @@ import { layersHeroArt } from './LayersHeroArt';
 import { useRef, useState } from 'react';
 import { type Element, type Layer } from '@livediagram/document';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
+import { rowFocus, type RowFocus } from '@liveworkspace/workbench/lib/row-focus';
 import { LayerRow } from '@/components/panels/LayerRow';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -71,7 +72,8 @@ export function LayersPanel({
   tabFont?: string;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
-  onRemoveLayer: (layerId: string) => void;
+  // `focus`: where keyboard focus goes once the row has gone, and after its Undo (row-focus.ts).
+  onRemoveLayer: (layerId: string, focus?: RowFocus) => void;
   onRenameLayer: (layerId: string, name: string) => void;
   onToggleVisibility: (layerId: string) => void;
   onToggleLock: (layerId: string) => void;
@@ -167,6 +169,16 @@ export function LayersPanel({
 
   // Top layer first, matching the paint stack top-down.
   const rows = [...layers].reverse();
+  // A deleted row's focus: the row below it, else above (as drawn, top first), and that row again after its Undo.
+  const focusAround = (id: string) =>
+    rowFocus({
+      ids: rows.map((l) => l.id),
+      id,
+      control: (rowId) =>
+        listRef.current?.querySelector<HTMLElement>(
+          `[data-layer-id="${CSS.escape(rowId)}"] button[aria-haspopup="menu"]`,
+        ) ?? null,
+    });
   // Merge availability: needs a neighbour in that direction.
   const activeIndex = layers.findIndex((l) => l.id === activeLayerId);
   const canMergeUp = activeIndex >= 0 && activeIndex < layers.length - 1;
@@ -314,7 +326,7 @@ export function LayersPanel({
               disabled={layers.length <= 1}
               aria-label="Delete Layer"
               // At once; a populated layer's toast offers Undo (docs/specs/006-document/layers.md).
-              onClick={() => onRemoveLayer(activeLayerId)}
+              onClick={() => onRemoveLayer(activeLayerId, focusAround(activeLayerId))}
               className={FOOTER_BUTTON}
             >
               <FooterDeleteIcon />
@@ -347,7 +359,7 @@ export function LayersPanel({
                   onClose={() => setRowMenu(null)}
                   onRename={() => setRenamingId(menuLayer.id)}
                   canDelete={layers.length > 1}
-                  onDelete={() => onRemoveLayer(menuLayer.id)}
+                  onDelete={() => onRemoveLayer(menuLayer.id, focusAround(menuLayer.id))}
                   onSetOpacity={(v) => onSetLayerOpacity(menuLayer.id, v)}
                   onBringToTop={() => onReorderLayer(menuLayer.id, layers.length - 1)}
                   onSendToBottom={() => onReorderLayer(menuLayer.id, 0)}

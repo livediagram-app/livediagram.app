@@ -38,6 +38,13 @@ One shared helper makes it, so every app says it the same way (`useUndoableActio
   that closes a panel never takes the toast with it ([Toasts](../016-notifications/toasts.md) "Keyboard and screen
   readers"). It stands beside an open Tools popover, never over its controls.
 
+## Focus
+
+A row deleted from the keyboard never leaves focus on the page itself, where F6 would have nowhere to hand it back
+to: focus moves to the neighbouring row's control (the next, else the previous, else the list's add button), and after
+Undo to the restored row's control. The slide deck, the Layers panel and the page tree do this
+(`../packages/workbench/src/lib/row-focus.ts`).
+
 ## Undo through the room, never a stale copy
 
 Undo is a new step through the same path as any edit (the editor's commit, so the room's ops carry it to every

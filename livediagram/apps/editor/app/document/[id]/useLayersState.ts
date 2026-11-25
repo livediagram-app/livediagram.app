@@ -26,6 +26,7 @@ import {
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useUndoableAction } from '@liveworkspace/ui/undo';
+import type { RowFocus } from '@liveworkspace/workbench/lib/row-focus';
 import { revertTabStep } from '@liveworkspace/workbench/lib/revert-tab-step';
 
 // Layers domain slice (docs/specs/006-document/layers.md): the per-tab ACTIVE layer (session-scoped
@@ -154,6 +155,7 @@ export function useLayersState(opts: {
     words: { message: string; undoLabel: string },
     change: (t: Tab) => Tab,
     then: () => void,
+    undone?: () => void,
   ) => {
     const tabId = activeId;
     // Decided before the commit (react-state-and-effects.md "A handler decides before it commits"): the step from the
@@ -176,6 +178,7 @@ export function useLayersState(opts: {
         commitTabs((ts) =>
           ts.map((t) => (t.id === tabId ? revertTabStep(taken.before, taken.after, t) : t)),
         );
+        undone?.();
         return true;
       },
     });
@@ -185,7 +188,8 @@ export function useLayersState(opts: {
   // Delete the layer AND its elements. When the active layer goes, activate its lower neighbour (or the new
   // bottom), Photoshop-style. An empty layer just goes (Cmd/Ctrl-Z brings it back); one with elements says so with
   // Undo.
-  const removeLayer = (layerId: string) => {
+  // `focus` (the panel's RowFocus) moves keyboard focus off the gone row, and onto it again after Undo.
+  const removeLayer = (layerId: string, focus?: RowFocus) => {
     if (editsBlocked || layers.length <= 1) return;
     const at = layers.findIndex((l) => l.id === layerId);
     if (at < 0) return;
@@ -197,6 +201,7 @@ export function useLayersState(opts: {
         setActiveLayerByTab((m) => ({ ...m, [activeId]: neighbour.id }));
       }
       track('Layer', 'Deleted');
+      focus?.removed();
     };
     if (count === 0) {
       commitActiveTab((t) => deleteLayer(t, layerId));
@@ -210,6 +215,7 @@ export function useLayersState(opts: {
       },
       (t) => deleteLayer(t, layerId),
       then,
+      focus?.restored,
     );
   };
 
