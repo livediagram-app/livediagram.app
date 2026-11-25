@@ -536,6 +536,23 @@ describe('Settings › Subscription, your teams', () => {
     expect(north.querySelector('button')).toBeNull();
   });
 
+  it('a subscribed team whose members changed says its seats update within the hour', async () => {
+    const { tier, teams } = await panel({
+      me: meResponse({
+        teams: [
+          team(NORTH, 'Northwind Studio', 'member', 'team', { members: 5, seats: 3 }),
+          team('t:team_south', 'South', 'member', 'team', { members: 2, seats: 3 }),
+        ],
+      }),
+    });
+    await ready(tier);
+    expect(row(teams, 'team_north').textContent).toContain(
+      'You’re a member · 3 seats · Pro for Teams · 5 members now, seats update within the hour',
+    );
+    // Two members pay for the smallest team's 3 seats: nothing to catch up.
+    expect(row(teams, 'team_south').textContent).not.toContain('seats update');
+  });
+
   it('a member is sent a team’s tier and counts alone, and the panel draws that without its billing', async () => {
     // What the service sends someone who is not an admin: no currency, amount, renewal or grace day, on a paid tier.
     const stripped = team(NORTH, 'Northwind Studio', 'member', 'team', {
@@ -595,7 +612,8 @@ describe('Settings › Subscription, your usage', () => {
       name: 'Automation Runs',
     });
     expect(runs.getAttribute('aria-valuetext')).toBe('205 of 500 this month');
-    // Counted across every item, none named, and the grey figure is the limit on Pro.
+    // Counted across every item, none named, with the limit on Pro beside it, which needs no key above the list.
+    expect(usage.textContent).not.toContain('The grey figure');
     expect(line('automationRunsPerMonth').textContent).toContain('Every app');
     expect(line('automationRunsPerMonth').textContent).not.toContain('per item');
     expect(line('automationRunsPerMonth').textContent).toContain('10,000 a month on Pro');
