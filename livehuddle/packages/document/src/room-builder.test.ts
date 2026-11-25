@@ -410,3 +410,86 @@ describe('doorsFollowRooms', () => {
     expect(doorsFollowRooms([room, door], moved)).toBe(moved);
   });
 });
+
+// docs/specs/009-elements/office.md "A Room turns" (Work Tracker 1454): a turned room's Doors turn with it, a Door snaps
+// onto its turned walls, a Window faces into its turned floor, and its call is its turned floor.
+describe('a turned room', () => {
+  const upright: ShapeElement = {
+    ...createShape('room', 0, 0),
+    id: 'room',
+    width: 400,
+    height: 300,
+    roomDoor: 'none',
+  };
+  // Its Door in the middle of the front wall (y = 295).
+  const door = snapDoorToWall({ ...createShape('door', 0, 0), id: 'door', x: 152, y: 283 }, [
+    upright,
+  ]);
+
+  it('carries its Doors through the turn, each on the turned wall at the turned angle', () => {
+    const turned = { ...upright, rotation: 90 };
+    const [, moved] = doorsFollowRooms([upright, door], [turned, door]) as ShapeElement[];
+    expect(moved).not.toBe(door);
+    // The front wall turned a quarter about (200, 150) runs down x = 55; the Door stays in its middle, upright.
+    expect(moved!.x + moved!.width / 2).toBeCloseTo(55);
+    expect(moved!.y + moved!.height / 2).toBeCloseTo(150);
+    expect(moved!.rotation).toBe(90);
+    expect(doorOnRoom(moved!, turned)).toBe(true);
+    expect(withAttachedDoors([turned, moved!], new Set(['room'])).has('door')).toBe(true);
+  });
+
+  it('snaps a Door dropped by a turned wall onto it, turned to the wall', () => {
+    const turned = { ...upright, rotation: 45 };
+    const [wall] = roomWalls(turned);
+    const mid = { x: (wall!.a.x + wall!.b.x) / 2 + 10, y: (wall!.a.y + wall!.b.y) / 2 - 10 };
+    const snapped = snapDoorToWall(
+      { ...createShape('door', 0, 0), id: 'd2', x: mid.x - 48, y: mid.y - 12 },
+      [turned],
+    );
+    expect(snapped.rotation).toBeCloseTo(45);
+    expect(doorOnRoom(snapped, turned)).toBe(true);
+  });
+
+  it('faces a Window on a turned wall into the room', () => {
+    const turned = { ...upright, rotation: 90 };
+    // The turned front wall runs down x = 55; the floor is to its right (larger x).
+    const win = snapDoorToWall(
+      { ...createShape('window', 0, 0), id: 'w', x: 55 - 60, y: 150 - 12 },
+      [turned],
+    );
+    const r = ((win.rotation ?? 0) * Math.PI) / 180;
+    // Its light (its +y turned by its rotation) points along +x, into the floor.
+    expect(-Math.sin(r)).toBeGreaterThan(0.9);
+  });
+
+  it('is in its call when standing on the turned floor, and not where the upright floor was', () => {
+    const turned = { ...upright, rotation: 90 };
+    const zones = roomZones([turned]);
+    expect(zones).toHaveLength(1);
+    expect(zones[0]!.polygon).toHaveLength(4);
+    // Above the box, inside the turned floor.
+    expect(zoneAt({ x: 200, y: -20 }, zones)).toBe('room');
+    // Inside the upright floor's far right, outside the turned one.
+    expect(zoneAt({ x: 380, y: 150 }, zones)).toBeNull();
+    // An upright room keeps its box zone.
+    expect(roomZones([upright])[0]!.polygon).toBeUndefined();
+  });
+
+  it('turns a Room Builder room call with it', () => {
+    const custom = createOutlinedRoom([
+      { x: 0, y: 0 },
+      { x: 400, y: 0 },
+      { x: 400, y: 300 },
+      { x: 0, y: 300 },
+    ])!;
+    const turned = { ...custom, id: 'custom', rotation: 90 };
+    const zones = roomZones([turned]);
+    expect(zoneAt({ x: 200, y: -20 }, zones)).toBe('custom');
+    expect(zoneAt({ x: 390, y: 150 }, zones)).toBeNull();
+  });
+
+  it('takes no turned floor for a room too small to stand in', () => {
+    const tiny = { ...upright, width: 4, height: 4, rotation: 30 };
+    expect(roomZones([tiny])).toEqual([]);
+  });
+});

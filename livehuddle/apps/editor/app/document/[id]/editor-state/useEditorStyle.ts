@@ -41,7 +41,7 @@ export function useEditorStyle({
   fromTabs: EditorTabsSlice;
   fromCreation: EditorCreationSlice;
 }) {
-  const { previewingRef } = fromDocument;
+  const { previewingRef, toast } = fromDocument;
   const { commitTabs, tabs, tickTabs } = fromHistory;
   const { activeId, readSelection, setSelectedId } = fromSelection;
   const { contextMenu } = fromDialogs;
@@ -122,6 +122,7 @@ export function useEditorStyle({
     commit: rememberingCommit,
     tickTabs: rememberingTickTabs,
     checkpointBurst,
+    notify: toast.info,
   });
 
   // The Quick Style view (docs/specs/008-canvas/element-menu-quick-bar.md): what the element menu's Clear Styles resets.

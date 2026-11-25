@@ -7,12 +7,14 @@ import type { Element, ElementId, ShapeElement } from './index';
 
 type Box = { x: number; y: number; width: number; height: number };
 
-// A rectangular Room another room can share a wall with (a custom room's walls are not on its box).
-function isBoxRoom(el: Element): el is ShapeElement {
+// A rectangular, upright Room another room can share a wall with (a custom room's walls are not on its box, nor a
+// turned room's: office.md "A Room turns").
+export function sharesWallsByBox(el: Element): el is ShapeElement {
   return (
     el.type === 'shape' &&
     el.shape === 'room' &&
-    !(Array.isArray(el.roomOutline) && el.roomOutline.length >= 3)
+    !(Array.isArray(el.roomOutline) && el.roomOutline.length >= 3) &&
+    (el.rotation ?? 0) % 360 === 0
   );
 }
 
@@ -46,7 +48,7 @@ export function snapRoomWalls(
   let bx: Best = null;
   let by: Best = null;
   for (const el of elements) {
-    if (!isBoxRoom(el) || excludeIds.has(el.id)) continue;
+    if (!sharesWallsByBox(el) || excludeIds.has(el.id)) continue;
     const t = sharedWallTargets(el);
     const spanY: [number, number] = [el.y, el.y + el.height];
     const spanX: [number, number] = [el.x, el.x + el.width];
@@ -87,7 +89,7 @@ export function snapRoomWallsResize(
   let bx: Best = null;
   let by: Best = null;
   for (const el of elements) {
-    if (!isBoxRoom(el) || excludeIds.has(el.id)) continue;
+    if (!sharesWallsByBox(el) || excludeIds.has(el.id)) continue;
     const t = sharedWallTargets(el);
     const spanY: [number, number] = [el.y, el.y + el.height];
     const spanX: [number, number] = [el.x, el.x + el.width];

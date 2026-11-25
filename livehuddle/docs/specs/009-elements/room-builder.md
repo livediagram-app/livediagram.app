@@ -81,7 +81,7 @@ A doorway with a door in it, placed on any wall.
   door's width (the door's ends keep the wall's reach, as a Room's doorway does). A door that is not on a wall
   blocks nothing.
 - **It rides its room.** Moving a room (a drag, or an arrow-key nudge) carries the doors standing on its walls with
-  it, and resizing one (a drag of its handles, a typed size, Reset Aspect Ratio) carries them too: each door keeps its place along its wall as a fraction of the wall's length (a door in the middle of a
+  it, resizing one (a drag of its handles, a typed size, Reset Aspect Ratio) and turning one (its Rotation, [Office](office.md) "A Room turns") carry them too: each door keeps its place along its wall as a fraction of the wall's length (a door in the middle of a
   wall stays in the middle), clamped clear of the wall's ends when the wall shrinks, turning with the wall. Which
   doors ride is derived at the time, not stored: a door rides the room whose wall it stands on, so doors from before
   this rule follow too. The resize and the doors it carries are one change, one undo (`doorsFollowRooms`).
@@ -90,6 +90,9 @@ A doorway with a door in it, placed on any wall.
   never lands on the original or another Door or Window on that wall. A wall with no clear stretch keeps the copy
   beside the original's spot, snapped onto the nearest wall ([Canvas and palette](../008-canvas/canvas-and-palette.md)
   "Duplicate"). A Window duplicates the same way.
+- **A duplicated room brings its doors.** Duplicating a Room or a Corridor on its own copies the Doors and Windows
+  on its walls with it, on the same walls of the copy ([Canvas and palette](../008-canvas/canvas-and-palette.md)
+  "Duplicate", Work Tracker 1452), in the same Undo step.
 - Any number of doors per room, on any wall. A new Room comes with one, in the middle of its front wall
   ([Office](office.md) "Room"); it is an ordinary Door, so it is selected, slid along the walls and deleted like
   any other. An older Room's own doorway (`roomDoor`) keeps working, and a Door on its wall is a second way in.
