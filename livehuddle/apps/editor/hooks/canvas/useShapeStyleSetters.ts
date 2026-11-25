@@ -3,6 +3,7 @@ import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   SHAPE_DEFAULT_SIZE,
   clampScreenBox,
+  doorsFollowRooms,
   isRetiredElement,
   type BorderStroke,
   type BoxedElement,
@@ -82,20 +83,24 @@ export function useShapeStyleSetters({
   const resetAspectRatioSelected = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
+    // A resized room carries the Doors on its walls (docs/specs/009-elements/room-builder.md "It rides its room").
     commit((els) =>
-      els.map((el) => {
-        // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") keeps its stored
-        // box: its kind has no default size.
-        if (!ids.has(el.id) || el.type !== 'shape' || isRetiredElement(el)) return el;
-        const def = SHAPE_DEFAULT_SIZE[el.shape];
-        const ratio = def.width / def.height;
-        const area = el.width * el.height;
-        const height = Math.round(Math.sqrt(area / ratio));
-        const width = Math.round(height * ratio);
-        const cx = el.x + el.width / 2;
-        const cy = el.y + el.height / 2;
-        return { ...el, width, height, x: cx - width / 2, y: cy - height / 2 };
-      }),
+      doorsFollowRooms(
+        els,
+        els.map((el) => {
+          // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") keeps its stored
+          // box: its kind has no default size.
+          if (!ids.has(el.id) || el.type !== 'shape' || isRetiredElement(el)) return el;
+          const def = SHAPE_DEFAULT_SIZE[el.shape];
+          const ratio = def.width / def.height;
+          const area = el.width * el.height;
+          const height = Math.round(Math.sqrt(area / ratio));
+          const width = Math.round(height * ratio);
+          const cx = el.x + el.width / 2;
+          const cy = el.y + el.height / 2;
+          return { ...el, width, height, x: cx - width / 2, y: cy - height / 2 };
+        }),
+      ),
     );
     track('Element', 'Changed', 'AspectRatioReset');
   };
@@ -116,12 +121,16 @@ export function useShapeStyleSetters({
   const setSizeSelected = (size: { width?: number; height?: number }) => {
     const { selectedId } = readSelection();
     if (!selectedId) return;
+    // A room given a size carries the Doors on its walls (docs/specs/009-elements/room-builder.md "It rides its room").
     commit((els) =>
-      els.map((el) => {
-        // A retired element never resizes (docs/specs/002-project-scope/blueprints/element-engine.md).
-        if (el.id !== selectedId || !isStyleable(el)) return el;
-        return typedSize(el, size);
-      }),
+      doorsFollowRooms(
+        els,
+        els.map((el) => {
+          // A retired element never resizes (docs/specs/002-project-scope/blueprints/element-engine.md).
+          if (el.id !== selectedId || !isStyleable(el)) return el;
+          return typedSize(el, size);
+        }),
+      ),
     );
     track('Element', 'Changed', 'Size');
   };

@@ -347,7 +347,7 @@ function wholeWalls(room: ShapeElement) {
 
 /**
  * The Doors and Windows standing on a room's walls carried through the room's resize (docs/specs/009-elements/room-builder.md
- * "It rides its room"): for every room whose box changed between `before` and `after`, each door that stood on one of
+ * "It rides its room"): for every room whose box or turn changed between `before` and `after`, each door that stood on one of
  * its walls keeps its place along that wall as a fraction of the wall's length, clamped clear of the wall's ends, and
  * turns with it. Derived, not stored: a door is on a wall when it stands on it, so older doors follow too. `after`
  * unchanged (the same array) when no room changed or no door stood on one.
@@ -362,7 +362,12 @@ export function doorsFollowRooms(before: readonly Element[], after: Element[]): 
     if (
       from &&
       from !== el &&
-      (from.x !== el.x || from.y !== el.y || from.width !== el.width || from.height !== el.height)
+      (from.x !== el.x ||
+        from.y !== el.y ||
+        from.width !== el.width ||
+        from.height !== el.height ||
+        // A corridor's walls turn with it (corridor.md "It turns"), so a turn carries its Doors too.
+        (from.rotation ?? 0) !== (el.rotation ?? 0))
     )
       changed.push({ from, to: el });
   }
