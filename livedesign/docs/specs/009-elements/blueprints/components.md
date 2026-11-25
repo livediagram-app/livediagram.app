@@ -96,7 +96,9 @@ when it holds no instance. Linear: one pass, one map lookup per instance.
 
 `detachInstance(elements, instanceId, main, newId)`: the instance replaced (same index) by
 `resolveInstance(instance, main, { rotate: true })` with ids from `newId()` (mapping arrow ends), `locked` cleared,
-`layerId` kept. An arrow end pinned to the instance becomes `free` at its resolved point. The `detach` edit
+`layerId` kept. An arrow end pinned to the instance becomes `free` at its resolved point. A chip or pointer note
+attached to the instance is let go in place (`detachChip`), so the settle that follows the commit never deletes it
+with its host. The `detach` edit
 operation (agents) refuses by name a main whose arrow is attached to an element the main no longer holds (a patch's
 `remove` can leave one): `<instance>: its main's arrow <id> is attached to <gone>, which the main no longer holds`. It
 mints one id a main element, and a plain one for any further call (a badge's host the main no longer holds), so it

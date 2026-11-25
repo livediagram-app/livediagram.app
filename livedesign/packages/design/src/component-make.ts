@@ -1,6 +1,7 @@
 // Make Component and Detach (docs/specs/009-elements/components.md "Making a component", "Detach"): a selection
 // becomes a main plus one instance in its place, and an instance becomes plain elements again. Pure.
 import type { Endpoint } from './arrow-types';
+import { detachChip } from '@liveworkspace/element-model/attachment';
 import { endpointPosition, elementIndexFor } from '@liveworkspace/element-model/geometry';
 import { isBoxed, type Element } from './index';
 import {
@@ -226,7 +227,10 @@ export function detachInstance(
       out.push(from === el.from && to === el.to ? el : { ...el, from, to });
       return;
     }
-    out.push(el);
+    // A badge or pointer note on the instance stays where it is, let go: left attached to a host that is gone, the
+    // settle after the commit deleted it as it deletes a deleted host's marks.
+    const host = (el as { attachedTo?: unknown }).attachedTo;
+    out.push(host === instanceId ? detachChip(el) : el);
   });
   return out;
 }
