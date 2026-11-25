@@ -2,6 +2,7 @@
 // §4.9d): change_pages and write_article, over the verbs the CLI shares (@livedocuments/agent-verbs). Pages are
 // named by id, place or name, articles by id or title; a refusal is a tool error that says what is there.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { PageChange } from '@livedocuments/api-schema';
 import { changePages, writeArticle, type PagesDone } from '@livedocuments/agent-verbs';
 import { mcpChangePages, mcpWriteArticle } from '@livedocuments/agent-verbs/mcp';
 import { clientFor } from './api';
@@ -34,7 +35,8 @@ export function registerPagesTools(server: McpServer, env: Env): void {
       const done = await changePages(
         api,
         args.documentId,
-        { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes },
+        // A design by name passes as text: the api reads each change strictly and names the closest design.
+        { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes as PageChange[] },
         'mcp',
       );
       if (!done.ok) return errorResult(refusalText(done));

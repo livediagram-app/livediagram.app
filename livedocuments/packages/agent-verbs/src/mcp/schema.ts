@@ -166,6 +166,15 @@ const nameField = (what: string, schema: z.ZodString = z.string()) =>
     )
     .transform(truncateName);
 
+// Every new tab's page design (docs/specs/011-theme/page-designs.md "Agents"), as change_pages' tab_design takes it.
+const designField = z
+  .string()
+  .optional()
+  .describe(
+    'A page design every page wears, drawn behind everything in the theme’s colours: a design id such as "aurora" ' +
+      '(change_pages’ tab_design lists them and tunes it), or "auto" for one that suits the words.',
+  );
+
 export const createDocumentTab = z.object({
   name: nameField(
     'Name of the tab. Optional with a template (its own first tab name is used); otherwise "Tab n".',
@@ -201,6 +210,7 @@ export const createDocumentShape = {
   layout: layoutField,
   theme: themeField,
   finish: finishField,
+  design: designField,
   // Making a document is a use (docs/specs/015-api/mcp-server.md §4.3).
   markUsed: z
     .boolean()

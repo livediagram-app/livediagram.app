@@ -36,6 +36,7 @@ import { tabStyleOpener } from '@/lib/tab-style-opener';
 import { TabStylePreview } from './TabStylePreview';
 import { ArticleStyleRow } from './ArticleStyleRow';
 import { NewPageBackgroundPanel } from './NewPageBackgroundPanel';
+import { PageDesignPanel } from './page-design/PageDesignPanel';
 
 // New text's size, so a text's range: a document's 24 to 72 px.
 const TEXT_RANGE = textPxRangeFor('text');
@@ -50,7 +51,7 @@ function useViewerAppearance() {
 // The writing of an article or a card: its own Style sets its text, so only the colours and the pages' background
 // reach it from here (docs/specs/011-theme/canvas-and-theme-dialog.md "Articles").
 const written = (what: string): TabStyleSurfaceChanges<TabLook, BackgroundPattern> => ({
-  panels: ['theme', 'canvas'],
+  panels: ['theme', 'canvas', 'design'],
   hiddenControls: ['defaultTextSize', 'animationSpeed', 'patternScale', 'patternColor'],
   renderHomeExtra: () => <ArticleStyleRow />,
   copy: {
@@ -87,7 +88,10 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
   renderHelp: (article) => <HelpArticleLink size="md" article={article} />,
   frame: { kind: 'modal', tour, opener: tabStyleOpener },
   base: {
-    panels: TAB_STYLE_PANELS,
+    // Page Design (page-design/PageDesignPanel.tsx) after the shared panels.
+    panels: [...TAB_STYLE_PANELS, 'design'],
+    renderPanel: (view) => (view === 'design' ? <PageDesignPanel /> : undefined),
+    panelHelp: { design: <HelpArticleLink size="md" article="choosingAPageDesign" /> },
     hiddenControls: [],
     renderCanvasPanel: (canvas) => <NewPageBackgroundPanel canvas={canvas} />,
     renderPreview: (kind, p) => (
@@ -108,6 +112,7 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
       viewLines: {
         looks: 'Pick a look for the tab’s pages, then fine-tune any part of it.',
         canvas: 'The background new pages start on, and the canvas around the pages.',
+        design: 'Decoration behind every page, in the theme’s colours. A page can have its own.',
       },
       panelTitles: { canvas: 'New Page Background' },
     }),

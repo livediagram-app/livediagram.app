@@ -167,6 +167,21 @@ describe('the pages view', () => {
     expect(out.text).not.toContain('layouts ');
   });
 
+  it('names the tab’s page design and a page’s own', () => {
+    const tab = pagesTab();
+    const designed = {
+      ...tab,
+      pageDesign: { id: 'aurora', rhythm: true },
+      pages: [{ ...pages[0]!, design: { id: 'none' } }, ...pages.slice(1)],
+    } as unknown as Tab;
+    const out = pagesOf(designed);
+    const lines = out.text.split('\n');
+    expect(lines).toContain('tab design {"id":"aurora","rhythm":true}');
+    expect(lines.find((l) => l.startsWith('page 1 '))).toContain('· design none');
+    expect((out.json as PagesView).tabDesign).toEqual({ id: 'aurora', rhythm: true });
+    expect(pagesOf(tab).text).not.toContain('tab design');
+  });
+
   it('keeps to a budget, saying what it left out', () => {
     const out = pagesOf(pagesTab(), 60);
     expect(out.text).toMatch(/hidden/);

@@ -15,8 +15,8 @@ import type { TabStyleView } from '@liveworkspace/workbench/components/dialogs/t
 import type { TabLook } from '@/lib/tab-looks';
 import { newPageBackgroundLabel } from '@/lib/new-page-background';
 import { getTheme } from '@/lib/themes';
-import { TAB_STYLE_PROFILE } from './tab-style-profile';
 import { TabStylePagesContext, type TabStylePages } from './tab-style-pages';
+import { useDesignRow } from './page-design/useDesignRow';
 
 // 'looks' is the home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"); the others are its Fine-tune panels.
 export type CanvasThemeTab = TabStyleView;
@@ -35,9 +35,10 @@ export function CanvasThemeDialog({
       ),
     [pages.newPageBackground, pages.themeId],
   );
+  const profile = useDesignRow(pages);
   return (
     <TabStylePagesContext.Provider value={pages}>
-      <TabStyleDialog profile={TAB_STYLE_PROFILE} canvasSummary={summary} {...props} />
+      <TabStyleDialog profile={profile} canvasSummary={summary} {...props} />
     </TabStylePagesContext.Provider>
   );
 }

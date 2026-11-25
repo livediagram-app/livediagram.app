@@ -1,7 +1,7 @@
 // Document views (docs/specs/024-agents/document-views.md): the view names, the query the api's two
 // doors take, and every view's JSON form, shared by the api, the MCP, the CLI and
 // `@livedocuments/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
-import type { Finish, PageKind } from '@livedocuments/document';
+import type { Finish, PageDesign, PageKind } from '@livedocuments/document';
 import type { ArticleSummary, PageSummary } from './pages';
 
 // Every view. `lint` is answered by `@livedocuments/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
@@ -245,5 +245,7 @@ export type PagesView = {
   pages: (PageSummary & { refs: string[] })[];
   articles: (ArticleSummary & { markdown: string })[];
   layouts: { kind: PageKind; layouts: { id: string; label: string }[] }[];
+  // The tab's page design, as stored; absent when it has none.
+  tabDesign?: PageDesign;
   elision: Elision;
 };

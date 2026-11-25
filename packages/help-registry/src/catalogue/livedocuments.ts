@@ -165,6 +165,19 @@ export const categories: Category[] = [
 ];
 
 export const articles: Article[] = [
+  // ---- Canvas: Themes ----
+  {
+    slug: 'page-designs',
+    title: 'Page Designs',
+    description:
+      'Decoration behind every page in your theme’s colours: forty designs, design sets, fine tuning and animation.',
+    keywords:
+      'page design designs backdrop backdrops background decoration decorative gradient mesh aurora glow pattern grid dots waves blobs ribbons topographic marble paper grain noise halftone blueprint glass spotlight bokeh frame corner border torn memphis swiss watermark circuit starfield constellations design set sets keynote editorial pitch animate animated animation moving motion speed tune fine tune intensity scale angle blur seed shuffle safe area contrast scrim readable readability this page whole tab',
+    category: 'Canvas',
+    categorySlug: 'canvas/themes',
+    parentSlug: 'themes',
+    apps: ['livedocuments'],
+  },
   // ---- About ----
   {
     slug: 'what-is-livedocuments',

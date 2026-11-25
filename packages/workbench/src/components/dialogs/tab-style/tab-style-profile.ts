@@ -10,8 +10,9 @@ import type { TabStyleTourApi, TabStyleTourBinding } from '../../tour/tab-style-
 import type { TabLookFields, TabLookSettings } from '../../../lib/tab-looks';
 import type { Season } from '../../../lib/seasonal-looks';
 
-/** A Fine-tune panel. */
-export type TabStylePanel = 'theme' | 'finish' | 'font' | 'canvas';
+/** A Fine-tune panel. `design` (a Page Design) is a product's own: it shows only where a surface lists it and draws
+ *  its body (renderPanel). */
+export type TabStylePanel = 'theme' | 'finish' | 'font' | 'canvas' | 'design';
 /** What the dialog shows: the home (`looks`) or one of its panels. */
 export type TabStyleView = 'looks' | TabStylePanel;
 /** A control a panel can leave out. */
@@ -170,6 +171,10 @@ export type TabStyleSurface<Look extends TabStyleLook, Pattern extends string> =
   renderPanel?: (panel: TabStylePanel) => ReactNode;
   // A Fine-tune row's line of the product's own, per panel; the shared line when unset.
   panelValues?: Partial<Record<TabStylePanel, string>>;
+  // A Fine-tune row's picture of the product's own, per panel (a Page Design's tile); the shared one when unset.
+  panelIcons?: Partial<Record<TabStylePanel, ReactNode>>;
+  // A panel's help link of the product's own (an article only it has); the shared article's when unset.
+  panelHelp?: Partial<Record<TabStylePanel, ReactNode>>;
   // The typeface the home's Text row draws its "Aa" in, a font id of the product's own (a knowledgebase's heading
   // font); the tab font when unset.
   textFont?: string;
@@ -225,8 +230,15 @@ export const TAB_STYLE_COPY: TabStyleCopy = {
     finish: 'How every element on the tab is drawn.',
     font: 'The tab’s font, and the size new text starts at.',
     canvas: 'The pattern and colours behind everything.',
+    design: 'Decoration behind every page, drawn in the theme’s colours.',
   },
-  panelTitles: { theme: 'Colours', finish: 'Finish', font: 'Text', canvas: 'Canvas' },
+  panelTitles: {
+    theme: 'Colours',
+    finish: 'Finish',
+    font: 'Text',
+    canvas: 'Canvas',
+    design: 'Page Design',
+  },
 };
 
 /** The help article each view links to. */
@@ -236,6 +248,8 @@ export const TAB_STYLE_HELP: Record<TabStyleView, TabStyleHelpArticle> = {
   finish: 'choosingAFinish',
   font: 'choosingFonts',
   canvas: 'changingTheBackground',
+  // A product with a Page Design links its own article (panelHelp); the background's otherwise.
+  design: 'changingTheBackground',
 };
 
 /** The copy with a profile's changes over the shared lines. */

@@ -1230,6 +1230,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: false,
     statuses: [200, 400, 403, 404, 503],
   },
+  {
+    method: 'GET',
+    path: '/page-designs',
+    segment: 'page-designs',
+    tag: 'Library',
+    summary:
+      "The Page Designs saved to the caller's Library and their teams'; each id, saved:<id>, is a design to apply.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [200, 401, 503],
+  },
 
   // ---- API tokens ----
   {

@@ -55,6 +55,7 @@ export const HELP_ARTICLES = {
   // Teams
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
+  choosingAPageDesign: 'canvas/themes/page-designs',
   changingTheme: 'canvas/themes/changing-theme',
   choosingAFinish: 'canvas/finish',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
@@ -203,6 +204,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   markdownImport: {
     title: 'Learn about Markdown import',
     description: 'How a Markdown file becomes an article.',
+  },
+  choosingAPageDesign: {
+    title: 'Learn about page designs',
+    description: 'Tips for picking, tuning and animating the decoration behind your pages.',
   },
   changingTheBackground: {
     title: 'Learn about the canvas',

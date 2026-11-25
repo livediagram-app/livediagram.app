@@ -20,6 +20,7 @@ import {
   type PagePattern,
 } from '@liveworkspace/page-background';
 import { parsePageImageFill, type PageImageFill } from './page-image';
+import { parsePageDesignOverride, type PageDesignOverride } from './page-designs/tuning';
 import {
   FLASHCARD_PAGE_SIZE_IDS,
   MAX_PAGES,
@@ -128,6 +129,9 @@ export type Page = {
   // Locked (docs/specs/007-editor/pages-mode.md "Locking a page"): it and what is on it stay
   // as they are. Absent is unlocked.
   locked?: true;
+  // Its own page design (docs/specs/011-theme/page-designs.md "Stored data"), over the tab's; `{ id: 'none' }` wears
+  // none. Absent wears the tab's.
+  design?: PageDesignOverride;
 };
 
 export type PageRect = { x: number; y: number; width: number; height: number };
@@ -176,6 +180,8 @@ function parsePageFields(v: unknown): Page | undefined {
   const background = parseBackground(p.background);
   const name = typeof p.name === 'string' ? cutText(p.name.trim(), PAGE_NAME_MAX) : '';
   const lock = p.locked === true ? { locked: true as const } : {};
+  const designOverride = parsePageDesignOverride(p.design);
+  const design = designOverride ? { design: designOverride } : {};
   // An article page (or a card) without a readable flow is an article of its own.
   const ownFlow =
     typeof p.flow === 'string' && p.flow.length > 0 && p.flow.length <= 64 ? p.flow : p.id;
@@ -189,6 +195,7 @@ function parsePageFields(v: unknown): Page | undefined {
       ...(name ? { name } : {}),
       kind: 'flashcard',
       flow: ownFlow,
+      ...design,
       ...lock,
     };
   }
@@ -210,6 +217,7 @@ function parsePageFields(v: unknown): Page | undefined {
       ...(background ? { background } : {}),
       ...(name ? { name } : {}),
       kind: 'slide',
+      ...design,
       ...lock,
     };
   }
@@ -225,6 +233,7 @@ function parsePageFields(v: unknown): Page | undefined {
     ...(background ? { background } : {}),
     ...(name ? { name } : {}),
     ...kindFields,
+    ...design,
     ...lock,
   };
 }

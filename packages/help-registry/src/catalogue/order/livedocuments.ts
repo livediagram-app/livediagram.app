@@ -194,6 +194,7 @@ export const ORDER: readonly string[] = [
   'canvas/text-and-fonts/formatting-label-text',
   'canvas/themes/changing-theme',
   'canvas/themes/multicolour-themes',
+  'canvas/themes/page-designs',
   'collaboration/teams/audit-log',
   'collaboration/teams/roles-and-invites',
   'collaboration/teams/team-shared-documents',

@@ -59,7 +59,13 @@ export async function pageDrawer(
       return imageBytes(canvas);
     },
     async background(page: LaidOutPage) {
-      const canvas = await renderTabToCanvas(bare, { ...base, page, scale: BACKGROUND_SCALE });
+      // The design reads the real tab: its rhythm and its guard's scrims follow what is on the page.
+      const canvas = await renderTabToCanvas(bare, {
+        ...base,
+        page,
+        scale: BACKGROUND_SCALE,
+        designTab: tab,
+      });
       return imageBytes(canvas, 'image/jpeg');
     },
   };

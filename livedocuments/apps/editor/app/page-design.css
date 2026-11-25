@@ -1,0 +1,104 @@
+/*
+ * A page design's motion (docs/specs/011-theme/page-designs.md "Animation"), drawn by
+ * components/canvas/PageDesignLayer.tsx. Canvas motion, not chrome: the chrome motion budget does
+ * not read this file (apps/editor/motion-budget.test.ts lists it).
+ *
+ * Every layer moves by transform and opacity alone, so the compositor runs it without a repaint.
+ * Each layer sets its pace through custom properties: --pd-d (one loop at speed 1), --pd-x and
+ * --pd-y (how far a drift or pan goes), --pd-s (a breathe's scale), --pd-r (a spin's or swing's
+ * turn). The root's --pd-rate (the design's speed) divides every loop. Every keyframe starts at
+ * rest, so the first frame is the still frame exports draw. A layer runs only while its page is on
+ * screen ([data-pd-run], set by an IntersectionObserver) and never under reduced motion.
+ */
+
+.pd-layer {
+  position: absolute;
+  inset: 0;
+  transform-origin: var(--pd-ox, 50%) var(--pd-oy, 50%);
+}
+.pd-layer > svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+[data-pd-run] .pd-drift {
+  animation: pd-drift calc(var(--pd-d) / var(--pd-rate, 1)) ease-in-out infinite alternate;
+}
+[data-pd-run] .pd-pan {
+  animation: pd-pan calc(var(--pd-d) / var(--pd-rate, 1)) linear infinite;
+}
+[data-pd-run] .pd-spin {
+  animation: pd-spin calc(var(--pd-d) / var(--pd-rate, 1)) linear infinite;
+}
+[data-pd-run] .pd-breathe {
+  animation: pd-breathe calc(var(--pd-d) / var(--pd-rate, 1)) ease-in-out infinite;
+}
+[data-pd-run] .pd-twinkle {
+  animation: pd-twinkle calc(var(--pd-d) / var(--pd-rate, 1)) ease-in-out infinite;
+}
+[data-pd-run] .pd-swing {
+  animation: pd-swing calc(var(--pd-d) / var(--pd-rate, 1)) ease-in-out infinite;
+}
+
+@keyframes pd-drift {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--pd-x, 0px), var(--pd-y, 0px));
+  }
+}
+@keyframes pd-pan {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--pd-x, 0px), var(--pd-y, 0px));
+  }
+}
+@keyframes pd-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(var(--pd-r, 360deg));
+  }
+}
+@keyframes pd-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(var(--pd-s, 1.06));
+  }
+}
+@keyframes pd-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes pd-swing {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(var(--pd-r, 6deg));
+  }
+}
+
+/* Reduced motion shows the still frame. */
+@media (prefers-reduced-motion: reduce) {
+  [data-page-design] .pd-layer {
+    animation: none !important;
+  }
+}
+:root.reduce-motion [data-page-design] .pd-layer {
+  animation: none !important;
+}

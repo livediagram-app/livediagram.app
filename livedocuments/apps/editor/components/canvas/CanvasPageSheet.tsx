@@ -10,6 +10,8 @@ import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/Empt
 import { layoutInviteShows } from '@/lib/layout-invite';
 import { track } from '@/lib/telemetry';
 import { PageMotionLayer } from './PageMotionLayer';
+import { PageDesignLayer } from './PageDesignLayer';
+import type { PageDesignView } from '@/lib/page-design-views';
 import { PageSheetTitleBar, steady } from './PageSheetTitleBar';
 import { useQuickStyleBarRoom } from '@/lib/quick-style-bar-slots';
 import {
@@ -83,6 +85,8 @@ export type PageSheetProps = {
   mobile: boolean;
   letterbox: boolean;
   background: PageBackground | undefined;
+  // Its page design, drawn over the background and under everything on it; absent, none.
+  design: PageDesignView | undefined;
   pictureOf: (imageId: string) => string | undefined;
   // Its name (its own, else its article's title).
   shownName: string | undefined;
@@ -128,6 +132,7 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   mobile,
   letterbox,
   background,
+  design,
   pictureOf,
   shownName,
   articleStyle,
@@ -270,6 +275,7 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           height={page.rect.height}
         />
       ) : null}
+      {design ? <PageDesignLayer view={design} scope={id} /> : null}
       <div
         // As tall as the title bar beside it, so the two sit on one line.
         // None on a phone ("Beside the cog"): the name is in Contents and the cog sheet.

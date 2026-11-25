@@ -16,7 +16,8 @@ import {
 } from '../pages/pages-calls';
 import { resolveTab } from '../addressing';
 import { HELD_RETRY_INTERVAL_MS, writeFlags } from '../write';
-import { documentOf, tabPath } from './shared';
+import { columns, documentOf, tabPath } from './shared';
+import { savedDesigns } from '../pages/saved-designs';
 
 const docArg = z.string().describe('A name, id prefix or livedocuments URL');
 const tabFlag = z
@@ -100,6 +101,36 @@ export const pageLs = defineVerb({
   },
 });
 
+export const pageDesigns = defineVerb({
+  id: 'page.designs',
+  summary: 'The Page Designs saved to your Library',
+  description:
+    'Lists the designs saved to My Work and your teams’ Library: id, whose, name. Pass an id to page set --design or --tab-design.',
+  behaviour: 'read',
+  input: z.object({}),
+  output: z.object({
+    designs: z.array(z.object({ id: z.string(), title: z.string(), whose: z.string() })),
+  }),
+  listKey: 'designs',
+  run: async (ctx) => ({
+    designs: (await savedDesigns(ctx.api)).map((d) => ({
+      id: d.id,
+      title: d.title,
+      whose: d.scope === 'personal' ? 'My Work' : (d.team ?? 'a team'),
+    })),
+  }),
+  text: ({ designs }) => columns(designs.map((d) => [d.id, d.whose, JSON.stringify(d.title)])),
+  quiet: ({ designs }) => designs.map((d) => d.id),
+  cli: {
+    positionals: [],
+    examples: [
+      'livedocuments page designs',
+      'livedocuments page set "Deck" --tab-design saved:3f9c',
+    ],
+    prints: 'one saved design a line: id, whose, name',
+  },
+});
+
 const sizeArg = z
   .string()
   .optional()
@@ -109,7 +140,7 @@ export const pageSet = defineVerb({
   id: 'page.set',
   summary: "Change a tab's pages",
   description:
-    'Adds, changes, lays out, moves, duplicates or deletes pages, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one.',
+    'Adds, changes, lays out, moves, duplicates or deletes pages in one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50; the flags make one.',
   behaviour: 'destructive',
   input: z.object({
     doc: docArg,
@@ -119,20 +150,25 @@ export const pageSet = defineVerb({
       .enum(['infographic', 'slide', 'flashcard'])
       .optional()
       .describe('Add a page of this kind'),
-    page: z.string().optional().describe('The page to change: its id, place or name'),
+    page: z.string().optional().describe('The page: its id, place or name'),
     name: z.string().optional().describe('Name the page'),
     size: sizeArg,
     orientation: z.enum(['portrait', 'landscape']).optional().describe('Turn the page'),
-    layout: z.string().optional().describe('Lay the page out (a layout id from page ls)'),
+    layout: z.string().optional().describe('A layout id from page ls'),
     move: z.coerce
       .number()
       .int()
       .min(1)
       .optional()
-      .describe('Move the page to this place (with --add, add it there)'),
+      .describe('Move it here (with --add, add it here)'),
     duplicate: z.boolean().optional().describe('Copy the page'),
-    backgroundToAll: z.boolean().optional().describe('Its background onto every page of its kind'),
-    delete: z.boolean().optional().describe('Delete the page and what is on it'),
+    backgroundToAll: z.boolean().optional().describe('Its background on every page of its kind'),
+    delete: z.boolean().optional().describe('Delete it and what is on it'),
+    design: z.string().optional().describe('Its own design: an id, saved:<id>, none, or tab'),
+    tabDesign: z
+      .string()
+      .optional()
+      .describe('Every page’s design: an id, saved:<id>, auto or none'),
   }),
   output: doneOutput,
   run: async (ctx, input) => {
@@ -159,7 +195,7 @@ export const pageSet = defineVerb({
       'livedocuments page set "Pitch deck" --add slide --layout slide-title',
       'livedocuments page set 3f9c --changes changes.json',
     ],
-    prints: 'what changed, then each page: place, kind, size, rectangle, name',
+    prints: 'what changed, then each page: place, kind, size, rectangle',
   },
 });
 
@@ -198,6 +234,8 @@ type ChangeFlags = {
   duplicate?: boolean;
   backgroundToAll?: boolean;
   delete?: boolean;
+  design?: string;
+  tabDesign?: string;
 };
 
 // Each change flag by its name on the command line, when given.
@@ -212,6 +250,8 @@ const FLAG_NAMES: [keyof ChangeFlags, string][] = [
   ['name', '--name'],
   ['size', '--size'],
   ['orientation', '--orientation'],
+  ['design', '--design'],
+  ['tabDesign', '--tab-design'],
 ];
 const given = (flags: ChangeFlags, key: keyof ChangeFlags) =>
   flags[key] !== undefined && flags[key] !== false && flags[key] !== '';
@@ -228,11 +268,26 @@ const combined = (names: readonly string[]) =>
     hint: CHANGES_HINT,
   });
 
+// A design as the flags name it; the api reads it strictly (an id or a name) and names the closest when unknown.
+const designOf = (v: string) =>
+  (v === 'none' || v === 'tab' ? v : { id: v }) as Extract<PageChange, { op: 'set' }>['design'];
+
 function changeFrom(flags: ChangeFlags): PageChange {
+  // The tab's design is a change of its own (docs/specs/011-theme/page-designs.md "Agents").
+  if (given(flags, 'tabDesign')) {
+    const other = changeFlagsGiven(flags).filter((n) => n !== '--tab-design');
+    if (other.length) throw combined(['--tab-design', ...other]);
+    const v = flags.tabDesign!;
+    return {
+      op: 'tab_design',
+      design: v === 'none' ? null : v === 'auto' ? 'auto' : (designOf(v) as { id: never }),
+    };
+  }
   const fields = {
     ...(flags.name !== undefined ? { name: flags.name } : {}),
     ...(flags.size ? { size: flags.size as PageSizeId } : {}),
     ...(flags.orientation ? { orientation: flags.orientation } : {}),
+    ...(flags.design ? { design: designOf(flags.design) } : {}),
   };
   if (flags.add) {
     // An add is named, sized, turned, laid out and put at a place (--move) in one change; nothing else goes with it.
@@ -258,7 +313,7 @@ function changeFrom(flags: ChangeFlags): PageChange {
   if (!flags.page) throw none();
   const page = /^\d+$/.test(flags.page) ? Number(flags.page) : flags.page;
   // The changes the flags ask of the page: one each for delete, duplicate, background to all, move and layout, and
-  // one set for any of name, size and orientation.
+  // one set for any of name, size, orientation and design.
   const asked: PageChange[] = [
     ...(flags.delete ? [{ op: 'delete', page } as const] : []),
     ...(flags.duplicate ? [{ op: 'duplicate', page } as const] : []),
@@ -384,4 +439,10 @@ export const articleSet = defineVerb({
   },
 });
 
-export const pagesVerbs: readonly Verb[] = [pageLs, pageSet, articleGet, articleSet] as Verb[];
+export const pagesVerbs: readonly Verb[] = [
+  pageLs,
+  pageSet,
+  pageDesigns,
+  articleGet,
+  articleSet,
+] as Verb[];

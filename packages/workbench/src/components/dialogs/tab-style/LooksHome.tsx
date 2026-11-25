@@ -92,6 +92,8 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
       ),
     },
     canvas: { value: canvasSummary ?? profile.patternLabel(pattern), icon: <CanvasGlyph /> },
+    // A product's own panel: its line and picture come from the surface.
+    design: { value: 'None', icon: <DesignGlyph /> },
   };
   const activeLook = profile.looks.activeId(settings);
   return (
@@ -121,7 +123,7 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
               key={panel}
               label={titles[panel]}
               value={surface.panelValues?.[panel] ?? rows[panel].value}
-              icon={rows[panel].icon}
+              icon={surface.panelIcons?.[panel] ?? rows[panel].icon}
               onOpen={() => onOpenPanel(panel)}
             />
           ))}
@@ -184,6 +186,16 @@ function FineTuneRow({
 const ChevronIcon = lucideGlyph(lucideChevronRight, 16);
 // A link row's glyph: the settings it opens live elsewhere.
 const SettingsGlyph = lucideGlyph(lucideSlidersHorizontal, 18);
+
+// A Page Design's glyph: a page with a wave across it.
+function DesignGlyph() {
+  return (
+    <Glyph size={20} units={20}>
+      <rect x="2" y="3" width="16" height="14" rx="3" />
+      <path d="M2 13c3-3 5 1 8-1.5S15 9 18 11" />
+    </Glyph>
+  );
+}
 
 function CanvasGlyph() {
   return (

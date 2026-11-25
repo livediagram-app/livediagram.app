@@ -4,6 +4,7 @@
 // verbs (CLI and MCP) and the views.
 import type {
   ArticleLookId,
+  PageDesign,
   PageKind,
   PageOrientation,
   PagePattern,
@@ -47,6 +48,26 @@ export type PageBackgroundInput = {
   paper?: true;
 };
 
+// A page's own design (docs/specs/011-theme/page-designs.md): a design as stored, "none" (no design on this page)
+// or "tab" (back to the tab's design).
+export type PageDesignChoice = PageDesign | 'none' | 'tab';
+
+// The tab's design: a design, null to clear it, or "auto" (one picked for the tab's words).
+export type TabDesignChoice = PageDesign | null | 'auto';
+
+// A Page Design saved to the caller's Library (docs/specs/011-theme/page-designs.md "Saved designs"): `id` is the
+// `saved:<itemId>` a design is named by, whose it is (`personal`: My Work, or a team by name), and the design.
+export type SavedPageDesign = {
+  id: string;
+  title: string;
+  scope: 'personal' | 'team';
+  team: string | null;
+  design: PageDesign;
+};
+
+// GET /api/page-designs.
+export type SavedPageDesignsResponse = { designs: SavedPageDesign[] };
+
 export type PageChange =
   | {
       op: 'add';
@@ -60,6 +81,7 @@ export type PageChange =
       text?: LayoutText;
       // The 1-based place it goes to; absent is the end.
       at?: number;
+      design?: PageDesignChoice;
     }
   | {
       op: 'set';
@@ -69,13 +91,16 @@ export type PageChange =
       orientation?: PageOrientation;
       background?: PageBackgroundInput;
       locked?: boolean;
+      design?: PageDesignChoice;
     }
   | { op: 'layout'; page: PageRef; layout: string; text?: LayoutText }
   | { op: 'move'; page: PageRef; to: number }
   | { op: 'duplicate'; page: PageRef }
   | { op: 'delete'; page: PageRef }
   // Every other page of the page's kind takes its background, as the Background tab's Apply to All.
-  | { op: 'apply_background_to_all'; page: PageRef };
+  | { op: 'apply_background_to_all'; page: PageRef }
+  // The design every page of the tab wears (Tab Style's Page Design).
+  | { op: 'tab_design'; design: TabDesignChoice };
 
 type PageChangeOp = PageChange['op'];
 export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
@@ -86,6 +111,7 @@ export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
   'duplicate',
   'delete',
   'apply_background_to_all',
+  'tab_design',
 ];
 
 export type ArticleWriteMode = 'replace' | 'append';
@@ -126,6 +152,8 @@ export type PageSummary = {
   flow: string | null;
   // How many elements are on it.
   elements: number;
+  // Its own design, when it has one: a design id, or "none" (it wears none). Absent: the tab's.
+  design?: string;
   // A page this call laid out: its texts in the layout's order (pages-for-agents.md "A laid-out page's texts").
   texts?: PageText[];
 };
@@ -183,6 +211,7 @@ const PAGES_REFUSAL_CODES = [
   'article_ambiguous',
   'zone_unknown',
   'article_too_large',
+  'design_unknown',
 ] as const;
 
 export type PagesRefusalCode = (typeof PAGES_REFUSAL_CODES)[number];

@@ -5,7 +5,14 @@
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DocumentResponse, ShareLinkResponse } from '@livedocuments/api-schema';
-import { buildTab, isValidTab, normaliseElements, type Tab } from '@livedocuments/document';
+import {
+  buildTab,
+  isValidTab,
+  normaliseElements,
+  withTabPageDesign,
+  type Tab,
+} from '@livedocuments/document';
+import { readTabDesign, tabDesignFor } from '@livedocuments/edit-operations';
 import {
   buildTemplateTabs,
   templateTabName,
@@ -26,7 +33,7 @@ import { createdTabRev } from '@liveworkspace/mcp-kit/app-view-step';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { deleteRefusal, searchDocuments } from '@livedocuments/agent-verbs';
+import { deleteRefusal, savedDesigns, searchDocuments } from '@livedocuments/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -92,8 +99,22 @@ export function registerTools(server: McpServer, env: Env): void {
   );
 
   registerTool(server, env, mcpListTemplates, async (_args, extra) => {
-    requireToken(extra);
-    return textResult(templateCatalogue());
+    const token = requireToken(extra);
+    // The Page Designs saved to the caller's Library (docs/specs/011-theme/page-designs.md "Agents"); the
+    // templates stand without them when the Library can't be read.
+    const saved = await savedDesigns(clientFor(env, token)).catch(() => []);
+    return textResult({
+      ...templateCatalogue(),
+      ...(saved.length
+        ? {
+            savedDesigns: saved.map((d) => ({
+              id: d.id,
+              title: d.title,
+              whose: d.scope === 'personal' ? 'My Work' : (d.team ?? 'a team'),
+            })),
+          }
+        : {}),
+    });
   });
 
   // The icon catalogue is bundled, so a search needs no api call (docs/specs/015-api/mcp-server.md §4.5a).
@@ -181,6 +202,15 @@ export function registerTools(server: McpServer, env: Env): void {
       }
       // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
       if (args.finish) for (const t of tabs) t.finish = args.finish;
+      // The page design asked for (docs/specs/011-theme/page-designs.md "Agents") is every new tab's, "auto" picked
+      // for each tab's own words.
+      if (args.design !== undefined) {
+        const choice = readTabDesign(args.design);
+        if (choice !== null && typeof choice === 'object' && 'refused' in choice)
+          return errorResult(`"design": ${choice.refused.message}`);
+        for (const [i, t] of tabs.entries())
+          tabs[i] = withTabPageDesign(t, tabDesignFor(t, choice));
+      }
       const id = crypto.randomUUID();
       // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
       // filter and badge read source != null, wherever the document is filed.

@@ -168,3 +168,26 @@ describe('create_document themes', () => {
     expect(tabs).toEqual(['mocha', 'ocean']);
   });
 });
+
+// A page design for every new tab (docs/specs/011-theme/page-designs.md "Agents").
+describe('create_document design', () => {
+  it('gives every tab the design, "auto" one for its words, and refuses an unknown one by name', async () => {
+    const { run, posted } = harness(undefined);
+    await run([elements, { name: 'Two', elements: [] }], { design: 'aurora' });
+    const tabs = posted[0]!.tabs as { pageDesign?: unknown }[];
+    expect(tabs.map((t) => t.pageDesign)).toEqual([{ id: 'aurora' }, { id: 'aurora' }]);
+    const auto = harness(undefined);
+    await auto.run([{ name: 'Startup pitch', elements: [] }], { design: 'auto' });
+    expect((auto.posted[0]!.tabs as { pageDesign?: { id: string } }[])[0]!.pageDesign?.id).toBe(
+      'soft-mesh',
+    );
+    const bad = harness(undefined);
+    const out = (await bad.run([elements], { design: 'auroa' })) as unknown as {
+      isError?: boolean;
+      content: { text: string }[];
+    };
+    expect(out.isError).toBe(true);
+    expect(out.content[0]!.text).toContain('Closest: aurora');
+    expect(bad.posted).toHaveLength(0);
+  });
+});

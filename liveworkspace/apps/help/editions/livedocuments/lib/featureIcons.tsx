@@ -845,6 +845,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11 15.5h4.5" />
     </Glyph>
   ),
+  // A page with a wave across its lower half and a glow in its corner: a design behind the page.
+  'page-designs': (
+    <Glyph>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M4 16c3-2.5 5.5 1 8-1s5-2 8 .5" />
+      <circle cx="16" cy="7.5" r="1.8" fill="currentColor" stroke="none" />
+    </Glyph>
+  ),
   // A hierarchy whose branches are tinted differently, the whole feature.
   'multicolour-themes': (
     <Glyph>

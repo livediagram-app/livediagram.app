@@ -12,7 +12,11 @@ import type { LibraryInsertItem } from '../../hooks/canvas/useLibraryItemInsert'
 import { libraryErrorMessage, type LibraryApi } from '../../lib/library/library-api';
 import type { LibraryGroup } from '../../lib/library/library-groups';
 import { libraryPictures, type LibraryPictureSource } from '../../lib/library/library-pictures';
-import { SaveToLibraryDialog, type SaveToLibraryChoice } from './SaveToLibraryDialog';
+import {
+  SaveToLibraryDialog,
+  type SaveToLibraryChoice,
+  type SaveToLibraryCopy,
+} from './SaveToLibraryDialog';
 
 // An item the editor holds itself (livediagram's own shape libraries), placed without a request.
 export type LocalLibraryItem = { summary: LibraryItemSummary; elements: readonly unknown[] };
@@ -22,14 +26,21 @@ export type LibraryStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 export type LibraryState = {
   status: LibraryStatus;
+  // What the palette places.
   items: LibraryItemSummary[];
+  // Items of the kinds the app keeps apart (`apartKinds`): used elsewhere in the editor, never placed.
+  apart: LibraryItemSummary[];
   teams: LibraryTeam[];
   hidden: number;
   legacyWritable: boolean;
 };
 
 // What a save starts from: a selection already copied to the origin, and a name to suggest.
-export type LibrarySaveDraft = LibraryInsertItem<unknown> & { suggestedTitle: string };
+// `copy`: a save that isn't a selection's (a saved Page Design) names itself, and has no folder.
+export type LibrarySaveDraft = LibraryInsertItem<unknown> & {
+  suggestedTitle: string;
+  copy?: SaveToLibraryCopy;
+};
 
 export type LibraryContextValue = {
   state: LibraryState;
@@ -55,6 +66,7 @@ export function useLibrary(): LibraryContextValue | null {
 const EMPTY: LibraryState = {
   status: 'idle',
   items: [],
+  apart: [],
   teams: [],
   hidden: 0,
   legacyWritable: false,
@@ -63,8 +75,10 @@ const EMPTY: LibraryState = {
 type LibraryProviderProps = {
   api: LibraryApi | null;
   localItems?: readonly LocalLibraryItem[];
-  // Told after each save, with where it went (for the app's own telemetry).
-  onSaved?: (scope: 'personal' | 'team') => void;
+  // Kinds the app keeps out of the palette (livedocuments' saved Page Designs): an item using any is in `apart`.
+  apartKinds?: readonly string[];
+  // Told after each save, with where it went and what was saved (for the app's own telemetry).
+  onSaved?: (scope: 'personal' | 'team', elements: readonly unknown[]) => void;
   // Told after each place the door answered (a click or a drop), with whose library it came from (the same).
   onPlaced?: (scope: 'personal' | 'team') => void;
   // Told when a place the door refused or failed, with the same words the Library's notice shows: the editor shows them
@@ -84,6 +98,7 @@ export function LibraryProvider(props: LibraryProviderProps) {
 function LoadedLibraryProvider({
   api,
   localItems,
+  apartKinds,
   onSaved,
   onPlaced,
   onPlaceFailed,
@@ -104,9 +119,12 @@ function LoadedLibraryProvider({
       (list) => {
         if (seq !== loadSeq.current) return;
         setCopied(new Set(list.legacy.copied));
+        const isApart = (item: LibraryItemSummary) =>
+          !!apartKinds?.length && item.kinds.some((k) => apartKinds.includes(k));
         setRemote({
           status: 'ready',
-          items: list.items,
+          items: list.items.filter((i) => !isApart(i)),
+          apart: list.items.filter(isApart),
           teams: list.teams,
           hidden: list.hidden,
           legacyWritable: list.legacy.writable,
@@ -118,7 +136,7 @@ function LoadedLibraryProvider({
         setRemote((s) => ({ ...s, status: 'error' }));
       },
     );
-  }, [api]);
+  }, [api, apartKinds]);
 
   // Loaded once per api: a new one (another owner) loads afresh on its first need.
   const askedFor = useRef<LibraryApi | null>(null);
@@ -220,7 +238,7 @@ function LoadedLibraryProvider({
         elements: draft.elements,
         ...(Object.keys(copies).length > 0 ? { pictures: copies } : {}),
       });
-      onSaved?.(choice.scope);
+      onSaved?.(choice.scope, draft.elements);
       setDraft(null);
       reload();
     },
@@ -232,6 +250,7 @@ function LoadedLibraryProvider({
       {children}
       <SaveToLibraryDialog
         open={api !== null && draft !== null}
+        {...(draft?.copy ? { copy: draft.copy } : {})}
         count={draft?.elements.length ?? 0}
         suggestedTitle={draft?.suggestedTitle ?? ''}
         teams={state.teams}

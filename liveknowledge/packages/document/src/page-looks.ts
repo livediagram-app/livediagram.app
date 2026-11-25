@@ -25,6 +25,7 @@ export const RETIRED_TAB_STYLE_KEYS = [
   'finish',
   'newPageBackground',
   'keepElementColours',
+  'pageDesign',
 ] as const;
 
 function pageWithoutLooks(page: unknown): unknown {

@@ -277,7 +277,9 @@ Its `tabs` list gives each tab in a [tab folder](../006-document/tab-folders.md#
 Create a new document from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
 document in one call, an overview plus a detail tab per subsystem), the
-optional `layout`, and the optional `markUsed` (boolean, default `true`). Each tab may instead pass `template: TemplateKind` in place
+optional `layout`, the optional `markUsed` (boolean, default `true`) and the optional `design` (a page design for
+every tab made: a design id, a design object as `change_pages` takes it, or `"auto"` for one fitting each tab's
+words, [Page Designs](../011-theme/page-designs.md)). Each tab may instead pass `template: TemplateKind` in place
 of `elements`: the server materialises the hand-tuned scaffold from
 `@livedocuments/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
@@ -402,6 +404,10 @@ metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit (or accidentally mangle) a curated layout.
 The recommended flow for "make me a pitch deck"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
+
+It also lists the Page Designs saved to the caller's Library and their teams' (`savedDesigns`: `{ id, title, whose }`,
+read from the api's `GET /page-designs`, left out when there are none or the Library can't be read): each `id`, as
+`saved:<itemId>`, is a design `change_pages` takes ([Page Designs](../011-theme/page-designs.md) "Agents").
 
 A `template` that names no kind is refused before anything is written, offering the kinds it most likely meant first:
 those whose kind or title has a word starting with a word of it of 3 letters or more (`closestTemplateKinds`, at most
@@ -700,8 +706,9 @@ Pages are named by id, place (`2`) or name; articles by flow id or title. Both t
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
   `add` `{ kind, size, orientation, name, background, layout, at }` (infographic or slide), `set`
   `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
-  `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
-  takes its background), written as one edit; a refusal writes nothing and names the
+  `duplicate` `{ page }`, `delete` `{ page }`, `apply_background_to_all` `{ page }` (every other page of its kind
+  takes its background) and `tab_design` `{ design }` (the tab's page design; `add` and `set` take a page's own
+  `design` too, [Page Designs](../011-theme/page-designs.md)), written as one edit; a refusal writes nothing and names the
   change. The answer lists each page with its rectangle on the canvas, where `update_document` puts elements.
   An `add` with a `layout`, or a `layout` change, takes `text` by slot (`title`, `subtitle`, `bullets`, `body`), and
   each page the call laid out answers its `texts` (`{ ref, slot, text }`), so a six-slide deck with real text is
