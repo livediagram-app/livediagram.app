@@ -106,6 +106,26 @@ export async function connect(
   return { ok: true, redirectTo: done.redirectTo };
 }
 
+/**
+ * Cancel (mcp.md "Sign-in and per-app consent"): the MCP forgets the request and answers where to send the browser,
+ * the client's redirect address with `error=access_denied`, so the AI tool stops waiting. Null when the request has
+ * expired or the MCP can't be reached: the page then just says the connection was cancelled.
+ */
+export async function cancelConnect(origin: string, session: string): Promise<string | null> {
+  try {
+    const response = await fetch(`${origin}/oauth/deny`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session }),
+    });
+    if (!response.ok) return null;
+    const { redirectTo } = (await response.json()) as { redirectTo?: unknown };
+    return safeRedirect(redirectTo) ? (redirectTo as string) : null;
+  } catch {
+    return null;
+  }
+}
+
 function safeRedirect(url: unknown): boolean {
   if (typeof url !== 'string') return false;
   try {

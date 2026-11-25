@@ -345,6 +345,9 @@ describe('full authorize -> complete -> token flow', () => {
     );
     const token = await tok.json<{ access_token: string; expires_in: number }>();
     expect(token.access_token).toBe('lwt_secret');
+    // RFC 6749 §5.1: an answer carrying a token is never cached.
+    expect(tok.headers.get('Cache-Control')).toBe('no-store');
+    expect(tok.headers.get('Pragma')).toBe('no-cache');
     // expires_in reflects the ~6-month token life (docs/specs/015-api/mcp-server.md §3.5).
     expect(token.expires_in).toBeGreaterThan(60 * 60 * 24 * 179);
   });
@@ -905,6 +908,57 @@ describe('Claude connector directory', () => {
     expect(await expired.json()).toMatchObject({
       error_description: expect.stringContaining('expired'),
     });
+  });
+});
+
+describe('POST /oauth/deny (the consent page’s Cancel)', () => {
+  const deny = (session: unknown) =>
+    app.request(
+      '/oauth/deny',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+
+  it('sends the person back to the client with access_denied and its state, and forgets the request', async () => {
+    const clientId = await register();
+    const auth = await app.request(
+      `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}` +
+        `&code_challenge=${await pkceChallenge('d'.repeat(64))}&code_challenge_method=S256&state=st8`,
+      {},
+      env,
+    );
+    const session = new URL(auth.headers.get('location')!).searchParams.get('session')!;
+    const res = await deny(session);
+    expect(res.status).toBe(200);
+    const redirect = new URL((await res.json<{ redirectTo: string }>()).redirectTo);
+    expect(`${redirect.origin}${redirect.pathname}`).toBe(REDIRECT);
+    expect(redirect.searchParams.get('error')).toBe('access_denied');
+    expect(redirect.searchParams.get('state')).toBe('st8');
+    expect(redirect.searchParams.get('code')).toBeNull();
+    // The request is gone: neither Connect nor a second Cancel can use it.
+    const after = await app.request(
+      '/oauth/complete',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session, token: 'lwt_secret' }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    expect(after.status).toBe(400);
+    expect((await deny(session)).status).toBe(400);
+  });
+
+  it('refuses an unknown session, or none, in words', async () => {
+    for (const session of ['nope', undefined, 7]) {
+      const res = await deny(session);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ error: 'invalid_session' });
+    }
   });
 });
 

@@ -63,6 +63,19 @@ describe('refusals in words', () => {
     expect(await res.json()).toMatchObject({
       error_description: expect.stringContaining('Sign in'),
     });
+    // A client in a page can read the challenge: it is exposed to CORS.
+    expect(res.headers.get('Access-Control-Expose-Headers')).toContain('WWW-Authenticate');
+  });
+
+  it('answers a GET with a token 405, the spec’s way to say no stream opens, not an empty one', async () => {
+    const res = await app.request(
+      'https://mcp.liveexample.app/mcp',
+      { headers: { Authorization: 'Bearer lwt_x', Accept: 'text/event-stream' } },
+      { OAUTH_KV: KV },
+    );
+    expect(res.status).toBe(405);
+    expect(res.headers.get('Allow')).toBe('POST, DELETE');
+    expect(res.headers.get('Content-Type')).not.toContain('text/event-stream');
   });
 
   it('names the MCP endpoint for an unknown path', async () => {

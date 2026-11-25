@@ -30,12 +30,28 @@ const ALLOWED_TTL_MS = 60 * 1000;
 const MAX_KEPT = 500;
 const kept = new Map<string, { at: number; apps: AppSpec[] }>();
 
+/** The store holding a token's ticked apps couldn't be read; the entry answers 503 rather than widening the grant. */
+export class GrantUnreadable extends Error {
+  constructor(cause: unknown) {
+    super('grant unreadable', { cause });
+    this.name = 'GrantUnreadable';
+  }
+}
+
 export async function allowedApps(kv: KVNamespace, token: string): Promise<AppSpec[]> {
   const key = await tokenKey(token);
   const hit = kept.get(key);
   if (hit && Date.now() - hit.at < ALLOWED_TTL_MS) return hit.apps;
-  const stored = await kv.get<string[]>(key, 'json').catch(() => null);
-  const apps = (stored ?? [])
+  // A failed read throws rather than reading as no record: no record is every app, so a store failure would widen a
+  // connection the person narrowed (the entry answers 503).
+  let stored: unknown;
+  try {
+    stored = await kv.get<unknown>(key, 'json');
+  } catch (err) {
+    throw new GrantUnreadable(err);
+  }
+  const apps = (Array.isArray(stored) ? stored : [])
+    .filter((app): app is string => typeof app === 'string')
     .map((app) => appById(app))
     .filter((spec): spec is AppSpec => spec !== null);
   const result = apps.length > 0 ? apps : [...APPS];

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  cancelConnect,
   connect,
   connectDevice,
   fetchConsentSession,
@@ -48,6 +49,30 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe('cancelConnect', () => {
+  it('asks the MCP to forget the request and answers where the AI tool hears it was declined', async () => {
+    routes['POST https://mcp.test/oauth/deny'] = () =>
+      Response.json({ redirectTo: 'https://claude.ai/cb?error=access_denied&state=s' });
+    expect(await cancelConnect('https://mcp.test', 's1')).toBe(
+      'https://claude.ai/cb?error=access_denied&state=s',
+    );
+    expect(seen).toEqual([
+      { url: 'https://mcp.test/oauth/deny', method: 'POST', body: { session: 's1' } },
+    ]);
+  });
+
+  it('answers null for an expired request, an unsafe address or no answer', async () => {
+    expect(await cancelConnect('https://mcp.test', 's1')).toBeNull();
+    routes['POST https://mcp.test/oauth/deny'] = () =>
+      Response.json({ redirectTo: 'javascript:alert(1)' });
+    expect(await cancelConnect('https://mcp.test', 's1')).toBeNull();
+    vi.stubGlobal('fetch', async () => {
+      throw new Error('offline');
+    });
+    expect(await cancelConnect('https://mcp.test', 's1')).toBeNull();
+  });
 });
 
 describe('mcpOrigin', () => {

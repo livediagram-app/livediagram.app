@@ -21,6 +21,9 @@ import { compactToolListResponse, isToolListCall } from './tool-list-compact';
 // transport reads the body through a counter and answers 413 past it, so no request holds more than this.
 export const MCP_MAX_REQUEST_BYTES = 15 * 1024 * 1024;
 
+// The response headers a client in a page may read: the session id and the 401's sign-in challenge.
+export const MCP_EXPOSED_HEADERS: readonly string[] = ['Mcp-Session-Id', 'WWW-Authenticate'];
+
 // Query parameters that would carry a credential in the URL, where logs, proxies and browser history keep it. The MCP
 // authorization spec forbids an access token there, so /mcp refuses a request naming one rather than ignoring it.
 export const URL_TOKEN_PARAMS: readonly string[] = ['access_token', 'token', 'api_key', 'apikey'];
@@ -47,13 +50,14 @@ export function createMcpApp<E extends OauthEnv>(options: {
   const cards = new Map<string, Record<string, unknown>>();
 
   // MCP clients call from arbitrary origins; the Bearer token is the
-  // authorization, not the origin, so CORS is permissive.
+  // authorization, not the origin, so CORS is permissive. A client in a page reads the 401's challenge to find where
+  // to sign in, so `WWW-Authenticate` is exposed beside the session id.
   app.use(
     '*',
     cors({
       origin: '*',
       allowHeaders: ['Authorization', 'Content-Type', 'Mcp-Session-Id', 'Mcp-Protocol-Version'],
-      exposeHeaders: ['Mcp-Session-Id'],
+      exposeHeaders: [...MCP_EXPOSED_HEADERS],
     }),
   );
 
@@ -129,6 +133,19 @@ export function createMcpApp<E extends OauthEnv>(options: {
         },
       );
     }
+    // Stateless: the server never sends a message nobody asked for, so it opens no stream for a GET. The spec's
+    // answer for that is 405 (Streamable HTTP, "Listening for messages from the server"); the SDK would otherwise
+    // hold an SSE stream open that nothing ever writes to.
+    if (c.req.method === 'GET')
+      return c.json(
+        {
+          error: 'method_not_allowed',
+          error_description:
+            'This server sends no messages of its own, so it opens no stream. POST JSON-RPC to /mcp.',
+        },
+        405,
+        { Allow: 'POST, DELETE' },
+      );
     // A handshake's client name is remembered beside the request (agent-name.ts), never in its way: the answer does
     // not wait for it. The body's copy is taken before anything reads it.
     const remembering = rememberClientName(c.env, c.req.raw);

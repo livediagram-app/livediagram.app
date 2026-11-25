@@ -82,6 +82,15 @@ function appWorker(app: AppId): Fetcher {
           id: body.id,
           error: { code: -32601, message: 'Method not found' },
         });
+      if (extra === 'invalid')
+        return Response.json({
+          jsonrpc: '2.0',
+          id: body.id,
+          error: {
+            code: -32602,
+            message: 'MCP error -32602: Invalid arguments for prompt diagram_this',
+          },
+        });
       if (extra !== undefined) return reply(extra);
       if (body.method === 'tools/list')
         return Response.json({ jsonrpc: '2.0', id: body.id, result: { tools: recorded(app) } });
@@ -123,6 +132,9 @@ function appExtras(app: AppId, method: string, params: Record<string, unknown>):
         ],
       };
     case 'prompts/get':
+      // A prompt's required argument left out: the app's MCP refuses it as invalid params.
+      if (params.name === 'diagram_this' && !(params.arguments as { text?: unknown })?.text)
+        return 'invalid';
       return {
         messages: [
           {
@@ -275,9 +287,13 @@ describe('tools/list', () => {
     expect(calls.find((c) => c.method === 'tools/call')).toMatchObject({ app: 'liveplanner' });
   });
 
-  it('answers 401 when an app refuses the token while listing', async () => {
+  it('answers 401 when an app refuses the token while listing, readable from a page', async () => {
     refusing = 'liveplanner';
-    expect((await rpc('tools/list', {}, { all: true })).status).toBe(401);
+    const response = await rpc('tools/list', {}, { all: true });
+    expect(response.status).toBe(401);
+    // A client in a page reads the challenge only when CORS lets it.
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(response.headers.get('Access-Control-Expose-Headers')).toContain('WWW-Authenticate');
   });
 
   it('gives every tool a title and its hints in full, as Claude’s connector directory requires', async () => {
@@ -606,6 +622,21 @@ describe('everything an app’s MCP offers', () => {
     expect(calls.find((c) => c.method === 'prompts/get')).toMatchObject({ app: 'livediagram' });
   });
 
+  it('passes on an app’s refusal of a prompt’s arguments as invalid params, not an internal error', async () => {
+    const response = await rpc('prompts/get', { name: 'diagram_this', arguments: {} });
+    const { error } = await response.json<{ error: { code: number; message: string } }>();
+    expect(error.code).toBe(-32602);
+    expect(error.message).toBe(
+      'MCP error -32602: livediagram: Invalid arguments for prompt diagram_this',
+    );
+  });
+
+  it('answers 401 when an app refuses the token while reading a resource', async () => {
+    refusing = 'livediagram';
+    const response = await rpc('resources/read', { uri: 'ui://livediagram/view.html' });
+    expect(response.status).toBe(401);
+  });
+
   it('lists every app’s resources and reads one through the app that owns it, names rewritten', async () => {
     const { resources } = await result<{ resources: { uri: string }[] }>('resources/list');
     expect(resources.map((r) => r.uri)).toContain('liveknowledge://schema/elements');
@@ -653,6 +684,23 @@ describe('per-app consent', () => {
         .map((c) => c.app)
         .toSorted(),
     ).toEqual(['livediagram', 'liveplanner']);
+  });
+
+  it('answers 503 rather than every app when the grant can’t be read', async () => {
+    await grant(['livediagram'], 'lwt_narrow');
+    const kv = env.OAUTH_KV;
+    env = {
+      ...env,
+      OAUTH_KV: {
+        ...kv,
+        get: async () => {
+          throw new Error('KV GET failed: 503');
+        },
+      },
+    };
+    const response = await rpc('tools/list', {}, { all: true, token: 'lwt_narrow' });
+    expect(response.status).toBe(503);
+    expect(calls).toEqual([]);
   });
 
   it('keeps nothing when every app is ticked, or none is named', async () => {
@@ -737,7 +785,39 @@ describe('an app’s old address (mcp.<app>.app)', () => {
     refusing = 'livediagram';
     const response = await rpc('tools/list', {}, { host: 'mcp.livediagram.app' });
     expect(response.status).toBe(401);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(await response.text()).toContain('https://mcp.liveworkspace.app/mcp');
+  });
+
+  it('answers a page’s preflight and its sign-in refusals with CORS, as the one MCP does', async () => {
+    const preflight = await worker.fetch(
+      new Request('https://mcp.livediagram.app/mcp', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://inspector.test',
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'authorization, content-type',
+        },
+      }),
+      env,
+      ctx,
+    );
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    const register = await worker.fetch(
+      new Request('https://mcp.livediagram.app/oauth/register', { method: 'POST', body: '{}' }),
+      env,
+      ctx,
+    );
+    expect(register.status).toBe(400);
+    expect(register.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    const noToken = await worker.fetch(
+      new Request('https://mcp.livediagram.app/mcp', { method: 'POST', body: '{}' }),
+      env,
+      ctx,
+    );
+    expect(noToken.status).toBe(401);
+    expect(noToken.headers.get('Access-Control-Expose-Headers')).toContain('WWW-Authenticate');
   });
 
   it('points a staging address’s refusal at staging’s one MCP', async () => {
