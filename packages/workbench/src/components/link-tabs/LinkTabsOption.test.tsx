@@ -91,9 +91,7 @@ describe('useLinkTabs', () => {
   it('links nothing when switched off or for the source, and says nothing when both hold', async () => {
     const c = client();
     c.linkTabs.mockResolvedValueOnce({ source: 'made', target: 'connected' });
-    const { result } = renderHook(() =>
-      useLinkTabs({ sourceId: 'S', targetId: null, client: c }),
-    );
+    const { result } = renderHook(() => useLinkTabs({ sourceId: 'S', targetId: null, client: c }));
     expect(await result.current.finish('S', { source: 'a', target: 'b' })).toBeNull();
     expect(await result.current.finish('P', { source: 'a', target: 'b' })).toEqual({
       source: 'made',
