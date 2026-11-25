@@ -1,4 +1,4 @@
-import { migrateStoredTab, type Tab } from '@livedocuments/document';
+import { migrateStoredTab, tabPageDesignOf, type Tab } from '@livedocuments/document';
 
 // How an imported tab lands on top of the tab receiving it (docs/specs/020-import-export/markdown-import.md).
 //
@@ -32,6 +32,18 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     // exported tab using a tab font came back rendering in the default face.
     font: imported.font ?? receiving.font,
     defaultTextSize: imported.defaultTextSize ?? receiving.defaultTextSize,
+    // The rest of a tab's style and its pages' setup ride it too, so a JSON export comes back as it was
+    // (markdown-import.md "restored exactly"): its finish, page design (read leniently, an unknown one dropped),
+    // the background a new page takes, its pages' orientation and arrangement, and its colours.
+    finish: imported.finish ?? receiving.finish,
+    pageDesign: tabPageDesignOf(imported) ?? receiving.pageDesign,
+    newPageBackground: imported.newPageBackground ?? receiving.newPageBackground,
+    backgroundAnimationSpeed:
+      imported.backgroundAnimationSpeed ?? receiving.backgroundAnimationSpeed,
+    pageOrientation: imported.pageOrientation ?? receiving.pageOrientation,
+    pageArrangement: imported.pageArrangement ?? receiving.pageArrangement,
+    customColours: imported.customColours ?? receiving.customColours,
+    tagColours: imported.tagColours ?? receiving.tagColours,
     templateChosen: true,
   };
 }
