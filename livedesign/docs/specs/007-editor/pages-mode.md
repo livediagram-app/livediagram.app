@@ -1215,6 +1215,9 @@ is while the rest of the tab is worked on.
   zoomed out past a page. Pan and zoom as freely as ever while a hand is on it (a drag, a finger, a
   pinch, a wheel or trackpad); the moment it lets go, the view glides (`VIEW_GLIDE_MS`, at once
   under reduced motion) onto one page:
+  - **A glide under way wins**: while a page is being framed with a glide (a page asked for, Contents
+    framing the page beside it as it docks), a rest that comes due gives way to it rather than stopping it
+    short; the view rests again once the glide lands.
   - **Which page**: the one holding the middle of what shows (beside the Contents sidebar), else
     the nearest. From a page seen whole, a pan of a fifth of the view's width toward a neighbour,
     or a quicker flick of at least 24 px, turns to that neighbour, as swiping through photos does, so
