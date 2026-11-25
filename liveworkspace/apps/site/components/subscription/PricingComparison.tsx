@@ -24,7 +24,7 @@ function useOwnAiKey(account: AccountKnown): boolean | 'loading' | null {
 
 /**
  * Every limit, side by side (subscription.md "The pricing page"): the same comparison the upgrade dialog draws, from
- * the same rows. Signed in, a Your Usage Now column from the personal library; signed out, the way to sign in and see
+ * the same rows. Signed in, a Your Personal Usage column from the personal library; signed out, the way to sign in and see
  * it.
  */
 export function PricingComparison({ account }: { account: AccountKnown }) {
@@ -73,7 +73,7 @@ export function PricingComparison({ account }: { account: AccountKnown }) {
       <ComparisonGrid
         label="What each tier allows"
         usage={usage}
-        usageHeading="Your Usage Now"
+        usageHeading="Your Personal Usage"
         ownAiKey={ownAiKey}
         highlight="pro"
       />

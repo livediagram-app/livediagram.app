@@ -65,7 +65,7 @@ describe('UpgradeDialog', () => {
         .getAllByRole('columnheader')
         .map((cell) => cell.textContent)
         .filter((text) => !LIMIT_GROUPS.some((group) => group === text)),
-    ).toEqual(['What You Get', 'Your Usage Now', 'Free', 'Pro', 'Pro for Teams']);
+    ).toEqual(['What You Get', 'Your Personal Usage', 'Free', 'Pro', 'Pro for Teams']);
     // The groups, in the contract's order, each heading its own rows.
     const groups = within(table)
       .getAllByRole('rowgroup')
@@ -247,7 +247,7 @@ describe('UpgradeDialog', () => {
         .getAllByRole('columnheader')
         .slice(0, 5)
         .map((header) => header.textContent);
-    await waitFor(() => expect(headers()).toContain('Your Usage Now'));
+    await waitFor(() => expect(headers()).toContain('Your Personal Usage'));
     fireEvent.click(within(dialog).getByRole('button', { name: 'A Team' }));
     expect(headers()).not.toContain('Team Usage Now');
     expect(dialog.querySelector('[role="table"] .animate-pulse')).toBeNull();
@@ -373,7 +373,7 @@ describe('UpgradeDialog', () => {
       </SubscriptionProvider>,
     );
     const dialog = await screen.findByRole('dialog', { name: 'One Upgrade, Every App' });
-    expect(within(dialog).queryByRole('columnheader', { name: 'Your Usage Now' })).toBeNull();
+    expect(within(dialog).queryByRole('columnheader', { name: 'Your Personal Usage' })).toBeNull();
     const link = within(dialog).getByRole('link', { name: 'Sign In to Upgrade' });
     expect(link.getAttribute('href')).toBe(
       `/sign-in?return=${encodeURIComponent(window.location.href)}`,

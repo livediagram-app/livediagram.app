@@ -205,7 +205,7 @@ export function UpgradeDialog({ target, onClose }: { target: UpgradeTarget; onCl
           // No usage column for a visitor, a failed read, or A Team with no team to count: a place kept for figures
           // that will never come would pulse for ever.
           usage={signedOut || unread ? null : me ? source : 'loading'}
-          usageHeading={who === 'team' ? 'Team Usage Now' : 'Your Usage Now'}
+          usageHeading={who === 'team' ? 'Team Usage Now' : 'Your Personal Usage'}
           highlight={tier}
           focus={focusKey}
           // What You Get and the tiers stay at the top as the rows scroll, as Subscribe For does above them.

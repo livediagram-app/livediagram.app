@@ -165,7 +165,7 @@ describe('the pricing page, signed out', () => {
     );
     // Largest Image is the same on every tier, so it is not compared (owner, 2026-11-23).
     expect(table.querySelector('[data-limit-row="imageMaxBytes"]')).toBeNull();
-    expect(within(table).queryByRole('columnheader', { name: 'Your Usage Now' })).toBeNull();
+    expect(within(table).queryByRole('columnheader', { name: 'Your Personal Usage' })).toBeNull();
     const link = screen.getByRole('link', { name: 'Sign In to See Your Own Usage' });
     expect(link.getAttribute('href')).toContain(encodeURIComponent('/pricing'));
   });
@@ -206,7 +206,7 @@ describe('the pricing page, signed in', () => {
     await waitFor(() => expect(within(card('free')).getByText('Your Tier')).toBeTruthy());
     expect(screen.getByText('Comparing your personal usage')).toBeTruthy();
     const table = screen.getByRole('table', { name: 'What each tier allows' });
-    expect(within(table).getByRole('columnheader', { name: 'Your Usage Now' })).toBeTruthy();
+    expect(within(table).getByRole('columnheader', { name: 'Your Personal Usage' })).toBeTruthy();
     expect(
       within(
         table.querySelector('[data-limit-row="automationRunsPerMonth"]') as HTMLElement,
@@ -352,7 +352,9 @@ describe('the pricing page, signed in', () => {
     expect(within(card('pro')).getByRole('link', { name: 'Get Pro' })).toBeTruthy();
     expect(within(card('free')).getByRole('link', { name: 'Start Free' })).toBeTruthy();
     expect(
-      within(screen.getByRole('table')).queryByRole('columnheader', { name: 'Your Usage Now' }),
+      within(screen.getByRole('table')).queryByRole('columnheader', {
+        name: 'Your Personal Usage',
+      }),
     ).toBeNull();
     expect(calls).toEqual([]);
   });

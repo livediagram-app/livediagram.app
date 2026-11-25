@@ -431,7 +431,9 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   their logos, a small block of them, never liveworkspace's own; each logo names its app in a tooltip, and the line
   under the row's name says "Every app", "Every app but livehuddle", or the apps by name (owner, 2026-11-22). Its header is the [dialog hero header](../004-index/dialog-hero-header.md) with the Upgrade art, title and
   sentence read first at every width; the price sits among the header's actions on a wide screen, and on a phone in the footer, beside the button that buys it.
-- **The pricing page** on liveworkspace.app: the three tiers and the same comparison, with your usage when signed in.
+- **The pricing page** on liveworkspace.app: the three tiers and the same comparison, with your usage when signed in,
+  in a column headed **Your Personal Usage** (owner, 2026-11-25: what a team's library uses counts against the team, so
+  the heading says whose it is; the upgrade dialog's Just Me side says the same, its A Team side Team Usage Now).
   It opens with an illustrated hero (the shared marketing PageHero, its art beside the words: three tiers rising,
   each a step up from the last, every app's tile on the first): "Pricing", "Free for Everyone. Pro When You Need
   More.", the lede, and See Limits, which scrolls to the comparison. The tier cards sit in the same hero band, under the words and art, with no rule

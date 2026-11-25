@@ -23,7 +23,7 @@ export type ComparisonGridProps = {
   /** Whose usage the "now" column shows: the person's own or a team's summary. Null leaves the column out (a
    *  visitor who is not signed in); `loading` keeps its place while the service answers. */
   usage: Pick<SubscriptionSummary, 'limits' | 'usage'> | 'loading' | null;
-  /** The usage column's heading: "Your Usage Now", "Team Usage Now". */
+  /** The usage column's heading: "Your Personal Usage", "Team Usage Now". */
   usageHeading?: string;
   /** Whether this person has their own AI key set, for Bring Your Own AI's usage cell (Configured or Not
    *  Configured); `loading` while it is read, null or absent to leave the cell quiet. */
@@ -88,7 +88,7 @@ export function rowAppLine(row: LimitRow): string {
 export function ComparisonGrid({
   label,
   usage,
-  usageHeading = 'Your Usage Now',
+  usageHeading = 'Your Personal Usage',
   ownAiKey = null,
   highlight = null,
   focus = null,
