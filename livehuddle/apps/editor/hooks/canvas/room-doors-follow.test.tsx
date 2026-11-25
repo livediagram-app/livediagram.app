@@ -33,7 +33,7 @@ describe('a typed room size', () => {
         commit: (map) => {
           elements = map(elements);
         },
-        activeTab: { id: 't', name: 'T', elements } as Tab,
+        activeTab: { id: 't', name: 'T', elements },
         readSelection: () => ({ selectedId: room.id, multiSelectedIds: new Set() }),
       }),
     ).result.current;
@@ -55,7 +55,7 @@ describe('a Rotate command on a corridor', () => {
         commit: (map) => {
           elements = map(elements);
         },
-        activeTab: { id: 't', name: 'T', elements } as Tab,
+        activeTab: { id: 't', name: 'T', elements },
         readSelection: () => ({ selectedId: 'c', multiSelectedIds: new Set() }),
       }),
     ).result.current;
