@@ -1176,6 +1176,34 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   one-symbol import of the panel's module had put the whole panel in the first load. Together with Lucide's
   glyphs a module each, `/explorer/*` on liveworkspace.app went from 408 to 380 KiB gzipped (measured
   2026-11-09). `panes-lazy-load.test.ts` and `settings-panel-preload.test.ts` keep them out.
+- **Opening an item, ahead.** A pointer resting on an item's link for 80 ms (`INTENT_DELAY_MS`), or focus reaching
+  one (a tile, a card, a row, a search result: any item link in the page), counts as intent, and the Explorer asks its
+  host to fetch what that open will need (`prefetchItem`, `packages/explorer/src/explorer/intent-prefetch.ts`). It is
+  bounded so a large grid never fans out: one link waits at a time (moving on cancels it, so sweeping the pointer
+  across 500 rows starts nothing), one prefetch is in flight at a time (a newer intent waits for it, replacing any
+  older one waiting), and each address is asked for once per page (up to 500, then the record starts again). It
+  never runs with Save-Data on, on a slow connection (`effectiveType` 3g or slower), on a device with no pointer that
+  can hover (`any-hover: none`, a phone or a tablet alone) or for a touch, where the press is the open itself. One
+  pair of listeners on the Explorer's root does it, so rows carry no handler and stay memoised.
+  The page's host (`liveworkspace/apps/site/lib/explorer/item-prefetch.ts`) warms the editor the address opens:
+  it fetches the editor's page for that address, without cookies and without the item's share code or place (the
+  same static page for every item of the app, its HTML carrying the first render's payload), and adds a low-priority
+  `<link rel="prefetch">` for each script, stylesheet and font the page names on its own origin (at most 80), each
+  with the `crossorigin` it loads with, so the open finds them in the browser's cache. Once per app per page: every
+  later intent on that app's items costs nothing, so a 500-item library visit asks for one page and its assets per
+  app, however many items are pointed at. A warm still running after 8 s counts as done, so it never holds the slot;
+  a failed one is tried again by the next intent. Only on the page's own origin (the Explorer on an app's address
+  opening that app's items): the browser keeps one cache per site, so warming another site's editor from here (every
+  item on liveworkspace.app, another app's item on an app's address) would never be read, and is skipped. What
+  is prefetched names no item (the page is the same for all of them), so a prefetch says nothing about an item the
+  reader could not open. The item's own data is not prefetched: the editor reads it with the reader's token and it is
+  never cacheable (`no-cache`, a bearer header), so a copy fetched here could not be used by the page that opens.
+- **Changes show at once.** Rename, move, Trash, restore, archive, hide from Recent and dismiss lay their change over
+  every loaded list before the index answers (the overlay, `packages/explorer/src/data/overlay.ts`), and a refusal
+  takes it back with a toast naming the item and why ("Couldn’t rename “X”. Try again."). Taking one back removes
+  only that change: a collaborator's rename or move that a list read in the meantime is what shows after, never the
+  copy from before the action. Folders' rename, move and delete do the same over the folder tree. There is no star:
+  Favourites were removed ([Favourites removed](#favourites-removed)).
 - **A tile's picture** waits until the tile nears the screen: one IntersectionObserver per tile, attached once
   as the tile mounts and dropped once it fires (`library/blobs.ts`), never re-attached on a re-render.
 - **Durable Objects** cost what the RFC estimates (roughly $14 a month at a million items), with
