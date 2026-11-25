@@ -277,6 +277,65 @@ describe('<ExplorerPanel>', () => {
     expect(within(card()).getByText('Old name')).toBeTruthy();
   });
 
+  // Work Tracker 1461: duplicated, then renamed on the Explorer page, the editor still holds the copy's name; the
+  // index's newer title wins until the editor's own changes after the read.
+  it("shows the index's title over an editor title older than the read, then each rename after it", () => {
+    const read = makeItem(1, { title: 'Renamed on the Explorer page' });
+    const index = createFakeIndex({ items: [read] });
+    const props = {
+      app: 'liveplanner' as const,
+      client: index.client,
+      itemHref,
+      onCreate: vi.fn(),
+      currentId: read.id,
+    };
+    const card = () => screen.getByRole('region', { name: 'Current plan' });
+    const { rerender } = render(
+      <ExplorerPanel {...props} current={read} currentTitle="Item 1 (copy)" />,
+    );
+    expect(within(card()).getByText('Renamed on the Explorer page')).toBeTruthy();
+    expect(within(card()).queryByText('Item 1 (copy)')).toBeNull();
+    // A collaborator's rename reaching the editor after the read.
+    rerender(<ExplorerPanel {...props} current={read} currentTitle="Renamed by a collaborator" />);
+    expect(within(card()).getByText('Renamed by a collaborator')).toBeTruthy();
+    // The next opening's read is the index's again.
+    const again = { ...read, title: 'Renamed in another app' };
+    rerender(<ExplorerPanel {...props} current={again} currentTitle="Renamed by a collaborator" />);
+    expect(within(card()).getByText('Renamed in another app')).toBeTruthy();
+  });
+
+  // Work Tracker 1471: a team item's card draws the host's picture of it, as the read gives it (its team, its version),
+  // and the next opening's read draws it at its new version.
+  it("draws a team item's preview on the current card, at the version each read gives", () => {
+    const read = makeItem(1, { teamId: 'team-1', updatedAt: 100, summary: { empty: false } });
+    const index = createFakeIndex({ items: [read] });
+    const renderThumbnail: NonNullable<ExplorerPanelProps['renderThumbnail']> = (item, size) => (
+      <img
+        alt=""
+        data-testid="preview"
+        data-team={item.teamId ?? ''}
+        data-version={item.updatedAt}
+        data-size={size}
+      />
+    );
+    const props = {
+      app: 'liveplanner' as const,
+      client: index.client,
+      itemHref,
+      onCreate: vi.fn(),
+      currentId: read.id,
+      renderThumbnail,
+      teams: [{ id: 'team-1', name: 'Design' }],
+    };
+    const { rerender } = render(<ExplorerPanel {...props} current={read} />);
+    const card = () => screen.getByRole('region', { name: 'Current plan' });
+    const picture = () => within(card()).getByTestId('preview');
+    expect(picture().dataset).toMatchObject({ team: 'team-1', version: '100', size: 'card' });
+    expect(card().querySelector('[data-current-picture]')?.contains(picture())).toBe(true);
+    rerender(<ExplorerPanel {...props} current={{ ...read, updatedAt: 200 }} />);
+    expect(picture().dataset.version).toBe('200');
+  });
+
   it("shows the editor's title on an offline item's card ahead of the list", () => {
     renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: {
