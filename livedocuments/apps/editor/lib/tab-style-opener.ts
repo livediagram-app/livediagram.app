@@ -4,8 +4,10 @@
 // bottom-right cluster.
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
+import type { TabStyleView } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 
-type Open = () => void;
+// Opens on `view` (an empty page's Change Design opens Page Design), else on Looks.
+type Open = (view?: TabStyleView) => void;
 
 let open: Open | null = null;
 let opener: { el: HTMLElement; at: number } | null = null;
@@ -36,10 +38,10 @@ export function useTabStyleOpen(): Open | null {
 }
 
 /** Opens Tab Style from `button`, which the dialog then drops from. */
-export function openTabStyleFrom(button: HTMLElement | null): void {
+export function openTabStyleFrom(button: HTMLElement | null, view?: TabStyleView): void {
   if (!open) return;
   opener = button ? { el: button, at: Date.now() } : null;
-  open();
+  open(view);
 }
 
 /** The button the dialog was just opened from (the dialog reads it as it opens). Null when it was opened another

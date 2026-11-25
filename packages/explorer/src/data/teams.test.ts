@@ -18,13 +18,17 @@ describe('New Team with no answer in time', () => {
     expect(router).toEqual({ ok: false, error: 'team_create_unconfirmed' });
   });
 
-  it('keeps a bare 504 on any other change a plain failure, and a 503 too', async () => {
+  it('keeps a bare 504 on any other change a plain failure, and words a 503 as the server’s', async () => {
     const renamed = await answering(new Response('', { status: 504 })).update('t1', {
       name: 'Ops',
     });
     const created = await answering(new Response('', { status: 503 })).create({ name: 'Ops' });
     expect(renamed).toEqual({ ok: false, error: 'failed' });
-    expect(created).toEqual({ ok: false, error: 'failed' });
+    expect(created).toEqual({ ok: false, error: 'server_error' });
+    expect(teamErrorMessage('server_error')).toBe(
+      'Something went wrong on our side. Try again in a moment.',
+    );
+    expect(teamErrorMessage('failed')).toBe('Something went wrong. Try again.');
   });
 
   it('words it as a check, never a retry', () => {

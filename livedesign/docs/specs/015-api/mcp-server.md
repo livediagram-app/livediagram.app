@@ -160,8 +160,8 @@ This implements the OAuth flow Manager Toolkit uses:
    the per-account cap. The failure line names the cause: an expired request ("This
    request has expired. Start the connection again from your app."), the token cap
    (409 `token_limit_reached`: "Your account has reached its limit of 20 API tokens.
-   Revoke one below, then connect."), or anything else ("Something went wrong. Please
-   try again."). The number is `MAX_API_TOKENS_PER_ACCOUNT`
+   Revoke one below, then connect."), or anything else in its class's words (the platform's `error-words.md`;
+   "Something went wrong. Try again." when nothing explains it). The number is `MAX_API_TOKENS_PER_ACCOUNT`
    (`../packages/api-schema/src/api-tokens.ts`), the one the accounts Worker counts
    against. At the cap the page lists the account's live tokens under that line,
    least recently used first, each with Revoke (Revoke now, Keep), over the account

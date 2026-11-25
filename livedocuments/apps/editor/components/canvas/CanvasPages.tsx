@@ -32,11 +32,7 @@ import { FlashcardStackSheets, PageStackNav } from './FlashcardStack';
 import { FLASHCARD_STACK_MAX } from '@/lib/flashcard-stack';
 import { useStylePanelRequest } from '@/lib/article/article-editor-store';
 import { useBandDocumentName } from '@/lib/article/article-band-layout';
-import {
-  previewedBackground,
-  setPageBackgroundPreview,
-  usePageBackgroundPreview,
-} from '@/lib/page-background-preview';
+import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-background-preview';
 import { CanvasPageSheet, type PageSheetActions } from './CanvasPageSheet';
 import { usePageDesignViews } from './usePageDesignViews';
 
@@ -87,7 +83,7 @@ export function CanvasPages({
   const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab; seq?: number } | null>(
     null,
   );
-  const cogs = useRef(new Map<string, HTMLButtonElement>());
+  const cogs = useRef(new Map<string, HTMLElement>());
   const mobile = useIsMobileViewport();
   // Being on a page (opened on one, adding one, going to one, pressing into one) turns the palette
   // to its kind (lib/palette-kind.ts).
@@ -131,10 +127,6 @@ export function CanvasPages({
   const designs = usePageDesignViews(view, settled, preview);
   // The pages' pictures, each fetched once (Image backgrounds).
   const pictureOf = usePageImageSources(pages);
-  const setPreview = (next: Parameters<typeof setPageBackgroundPreview>[0]) => {
-    setPageBackgroundPreview(next);
-    edit?.previewInk(next);
-  };
   const last = pages[pages.length - 1]!;
   const openId = opened?.id ?? null;
   const open = edit && opened ? pages.find((p) => p.id === opened.id) : undefined;
@@ -182,8 +174,6 @@ export function CanvasPages({
     applyLayout: (id, layout) => void edit?.applyLayout(id, layout),
     previewLayout: (id, layout) => view.setLayoutPreview(layout ? { pageId: id, layout } : null),
     setBackground: (id, patch) => edit?.setBackground(id, patch),
-    previewBackground: (id, patch) => setPreview(patch ? { pageId: id, patch } : null),
-    applyBackgroundToAll: (id) => edit?.applyBackgroundToAll(id),
     setLocked: (id, locked) => edit?.setLocked(id, locked),
     choosePageKind: (id, kind) => edit?.choosePageKind(id, kind),
     setArticleStyle: (flow, change) => articles?.setStyle(flow, change),
@@ -210,7 +200,6 @@ export function CanvasPages({
           !page.flow &&
           (page.kind === 'slide' || pageKindOf(page) === 'infographic');
         const hasArticle = !!page.flow && !!articles?.flows[page.flow];
-        const articleButtons = !!edit && !locked && hasArticle;
         const tidy = pageButtons && edit.canTidy?.(page.id) === true;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice). Judged on the whole row: on a
         // stack `pages` holds the page in front alone, which is not the tab's only page.
@@ -241,14 +230,12 @@ export function CanvasPages({
             hasArticle={hasArticle}
             documentName={documentName}
             themeAccent={view.themeAccent}
-            themePresets={view.themeBackgrounds}
             editable={!!edit}
             tabStyle={!!tabStyleOpen}
             tidy={tidy}
             choosing={choosing}
             deck={notes ? view.deck : undefined}
             tidyEdit={tidy ? edit : undefined}
-            applyReach={edit && (pageButtons || articleButtons) ? edit.applyToAllReach(page.id) : 0}
             open={openId === page.id}
             styleRequest={styleRequestFor(page.id) + askOf(page.id, 'style')}
             textRequest={askOf(page.id, 'text')}

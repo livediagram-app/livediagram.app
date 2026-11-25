@@ -41,6 +41,9 @@ function state(over: Partial<ContentsListState<ContentsRowBase>> = {}) {
   return { contents, reorder, go };
 }
 
+// A row menu's tools, none of them under test here.
+const TOOLS = { locked: false, toggleLock: () => {} };
+
 describe('ContentsList', () => {
   it('drags a row by a mouse, its grip by a finger, and opens the page on a click anywhere on the row', () => {
     const { contents, reorder, go } = state();
@@ -141,6 +144,7 @@ describe('ContentsList rows', () => {
         } as unknown as ContentsListState<ContentsRowBase>['reorder'],
         // A new function on every render, as the hook makes it.
         actionsFor: (row) => ({
+          tools: TOOLS,
           groups: [],
           ...(row.locked ? {} : { remove: () => remove(row.id) }),
         }),
@@ -212,7 +216,7 @@ describe('ContentsList rows', () => {
     const first = vi.fn();
     const { rerender, container } = render(
       <ContentsList
-        contents={edit(rows, { actionsFor: () => ({ groups: [], remove: first }) })}
+        contents={edit(rows, { actionsFor: () => ({ tools: TOOLS, groups: [], remove: first }) })}
         variant="film"
       />,
     );
@@ -223,7 +227,10 @@ describe('ContentsList rows', () => {
     expect(remove).toHaveBeenCalledWith('p1');
     // The page's Delete gone since the row drew it (no remove, or no actions at all): the press does nothing.
     rerender(
-      <ContentsList contents={edit(rows, { actionsFor: () => ({ groups: [] }) })} variant="film" />,
+      <ContentsList
+        contents={edit(rows, { actionsFor: () => ({ tools: TOOLS, groups: [] }) })}
+        variant="film"
+      />,
     );
     fireEvent.click(container.querySelector('[aria-label="Delete Card 2"]')!);
     rerender(<ContentsList contents={edit(rows, { actionsFor: () => null })} variant="film" />);

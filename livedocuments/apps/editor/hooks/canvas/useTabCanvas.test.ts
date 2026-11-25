@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livedocuments/document';
+import {
+  pagesOf,
+  tabPageDesignOf,
+  type Element,
+  type Page,
+  type Tab,
+} from '@livedocuments/document';
 import { rollMashup } from '@/lib/look-mashup';
 import { useTabCanvas } from './useTabCanvas';
 import { loadTidyEngine } from '@/lib/tidy-engine';
@@ -29,9 +35,9 @@ const box = (id: string, over: Record<string, unknown> = {}): Element => ({
   ...over,
 });
 
-function setup(elements: Element[], editsBlocked = false, notify = vi.fn()) {
+function setup(elements: Element[], editsBlocked = false, notify = vi.fn(), pages?: Page[]) {
   let tabs: Tab[] = [
-    { id: 't1', name: 'One', elements },
+    { id: 't1', name: 'One', elements, ...(pages ? { pages } : {}) },
     { id: 't2', name: 'Two', elements: [] },
   ];
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
@@ -208,6 +214,57 @@ describe('useTabCanvas New Page Background', () => {
     const blocked = setup([], true);
     blocked.api.setNewPageBackground({ fill: mint });
     blocked.api.applyNewPageBackgroundToEveryPage();
+    expect(blocked.commitTabs).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md "Quick Picks": a pick is one step, on every page or on one.
+describe('useTabCanvas Quick Picks', () => {
+  const slide = (id: string): Page => ({
+    id,
+    orientation: 'landscape',
+    size: 'slide',
+    kind: 'slide',
+  });
+  const mint = { kind: 'solid' as const, color: '#ccfbf1' };
+
+  it('on All Pages puts the look, the design and the background on in one step', () => {
+    const look = rollMashup({});
+    const h = setup([], false, vi.fn(), [slide('a'), slide('b')]);
+    h.api.setEveryPageBackground({ fill: mint }, { id: 'grid' }, look);
+    expect(h.commitTabs).toHaveBeenCalledTimes(1);
+    const tab = h.tabs()[0]!;
+    expect(tab.theme).toBe(look.theme);
+    expect(tabPageDesignOf(tab)?.id).toBe('grid');
+    expect(pagesOf(tab).every((p) => p.background?.fill?.kind === 'solid')).toBe(true);
+  });
+
+  it('a moving background reaches slides and flashcards alone, and new pages keep starting as they did', () => {
+    const article: Page = { id: 'r', orientation: 'portrait', size: 'a4', kind: 'article' };
+    const h = setup([], false, vi.fn(), [slide('a'), article]);
+    const motion = {
+      kind: 'gradient' as const,
+      from: '#111111',
+      to: '#222222',
+      motion: 'drift' as const,
+    };
+    h.api.setEveryPageBackground({ fill: motion } as never);
+    const [a, r] = pagesOf(h.tabs()[0]);
+    expect((a!.background?.fill as { motion?: string } | undefined)?.motion).toBe('drift');
+    expect(r!.background).toBeUndefined();
+    expect(h.tabs()[0]!.newPageBackground).toBeUndefined();
+  });
+
+  it('on one page sets its background and own design in one step, and refuses a blocked session', () => {
+    const h = setup([], false, vi.fn(), [slide('a'), slide('b')]);
+    h.api.setPageStyle('a', { fill: mint }, { id: 'waves' });
+    expect(h.commitTabs).toHaveBeenCalledTimes(1);
+    const [a, b] = pagesOf(h.tabs()[0]);
+    expect(a!.background?.fill).toEqual(mint);
+    expect(a!.design).toMatchObject({ id: 'waves' });
+    expect(b!.background).toBeUndefined();
+    const blocked = setup([], true, vi.fn(), [slide('a')]);
+    blocked.api.setPageStyle('a', { fill: mint }, { id: 'waves' });
     expect(blocked.commitTabs).not.toHaveBeenCalled();
   });
 });

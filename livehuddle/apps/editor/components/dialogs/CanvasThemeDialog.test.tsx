@@ -213,15 +213,16 @@ describe('CanvasThemeDialog home', () => {
     expect(onTabChange).toHaveBeenLastCalledWith('theme');
   });
 
-  it('has no breadcrumb on the home; a panel’s shared breadcrumb names it and goes back', () => {
+  it('has no way back on the home; a panel’s header names it and goes back', () => {
     const { unmount } = home();
-    expect(screen.queryByRole('button', { name: /^Tab Style/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Back to Tab Style' })).toBeNull();
     unmount();
     const onTabChange = vi.fn();
     render(<CanvasThemeDialog {...props} tab="font" onTabChange={onTabChange} />);
-    const crumb = screen.getByRole('button', { name: /^Tab Style/ });
-    expect(crumb.textContent).toContain('Text');
-    fireEvent.click(crumb);
+    expect(screen.getByRole('dialog', { name: 'Tab style' }).querySelector('h2')?.textContent).toBe(
+      'Text',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Back to Tab Style' }));
     expect(onTabChange).toHaveBeenCalledWith('looks');
   });
 });

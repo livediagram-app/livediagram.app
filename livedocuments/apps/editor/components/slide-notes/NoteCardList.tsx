@@ -5,6 +5,7 @@
 // for writing at a time; add, reorder (drag by the grip, the Move buttons or Alt+arrows) and remove with an Undo.
 // Every change hands the whole list to `onChange`, which writes the deck.
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useUndoableAction } from '@liveworkspace/ui/undo';
 import { lucidePlus } from '@liveworkspace/icons/lucide';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -36,9 +37,6 @@ import { NoteCardsIcon } from './NoteCardsIcon';
 
 const PlusIcon = lucideGlyph(lucidePlus, 12);
 
-// How long a removed card's Undo stays (blueprint NC3).
-export const NOTE_CARD_UNDO_MS = 6000;
-
 /** "3 cards · 2 min": how many cards have words, and the slide's speaking time; null for none. */
 export function noteCardsSummary(cards: readonly NoteCard[]): string | null {
   const spoken = cards.filter((c) => !isBlankNoteCard(c));
@@ -65,7 +63,8 @@ export function NoteCardList({
 }) {
   const touch = useCoarsePointer();
   const [openId, setOpenId] = useState<string | null>(null);
-  const [undo, setUndo] = useState<RemovedNoteCard | null>(null);
+  // A removed card's Undo is the shared Undo toast (undo-not-confirm), never a bar in the popover.
+  const offerUndo = useUndoableAction();
   // The cards already counted for `UI · Changed · SlideNotes`: once per opening, on its first keystroke.
   const counted = useRef<string | null>(null);
   const list = useRef<HTMLDivElement>(null);
@@ -123,14 +122,21 @@ export function NoteCardList({
     track('UI', 'Removed', 'NoteCard');
     if (id === openId) setOpenId(null);
     // Undo only for a card with words: a blank one had nothing to lose.
-    setUndo(isBlankNoteCard(removed.card) ? null : removed);
-    write(next, 'remove');
+    if (isBlankNoteCard(removed.card)) {
+      write(next, 'remove');
+      return;
+    }
+    void offerUndo({
+      message: 'Card removed.',
+      undoLabel: 'Undo removing the card',
+      act: () => write(next, 'remove'),
+      undo: () => restore(removed),
+    });
   };
 
-  const restore = (removed: RemovedNoteCard) => {
-    setUndo(null);
-    write(restoreNoteCard(cards, removed), 'restore');
-  };
+  // Against the cards as they are when Undo is pressed, not as they were at the removal.
+  const restore = (removed: RemovedNoteCard) =>
+    write(restoreNoteCard(latest.current.cards, removed), 'restore');
 
   const focusCard = (id: string) =>
     requestAnimationFrame(() =>
@@ -166,13 +172,6 @@ export function NoteCardList({
     takeEscape(() => escape());
     return () => takeEscape(null);
   }, [takeEscape]);
-
-  // The Undo bar goes on its own after a while.
-  useEffect(() => {
-    if (!undo) return;
-    const timer = window.setTimeout(() => setUndo(null), NOTE_CARD_UNDO_MS);
-    return () => window.clearTimeout(timer);
-  }, [undo]);
 
   // An outside press closes the open card (a blank one going). The press itself may open another card or add one:
   // those run their own close.
@@ -232,7 +231,6 @@ export function NoteCardList({
             </Button>
           }
         />
-        {undo ? <UndoBar onUndo={() => restore(undo)} /> : null}
       </div>
     );
   }
@@ -301,7 +299,6 @@ export function NoteCardList({
           Add Card
         </button>
       </Tooltip>
-      {undo ? <UndoBar onUndo={() => restore(undo)} /> : null}
     </div>
   );
 }
@@ -320,24 +317,6 @@ function ListHeading({ summary }: { summary: string | null }) {
           {summary}
         </span>
       ) : null}
-    </div>
-  );
-}
-
-function UndoBar({ onUndo }: { onUndo: () => void }) {
-  return (
-    <div
-      role="status"
-      className="flex items-center justify-between gap-2 rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] text-white shadow-md dark:bg-slate-700"
-    >
-      <span>Card removed</span>
-      <button
-        type="button"
-        onClick={onUndo}
-        className="cursor-pointer rounded px-1.5 py-0.5 font-semibold text-brand-200 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-brand-300"
-      >
-        Undo
-      </button>
     </div>
   );
 }

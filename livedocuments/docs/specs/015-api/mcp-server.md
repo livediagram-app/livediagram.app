@@ -208,6 +208,9 @@ read: the page is centred on (0, 0), `blank-infographic` (an infographic or post
 900 x 540 from (-450, -270). The numbers are typed into the description (building the templates when a Worker starts would cost its first request) and a test (`first-page.test.ts` in `packages/agent-verbs`) builds each named template and holds the numbers to its first page, so a template's change fails it. An
 eval run that knew only `create_document` had to guess both the template's name and where its page was.
 
+**Style** (owner, 2026-11-25): `style` (a recipe or `"auto"`) and `font` dress every new tab, as
+[the style guide](../011-theme/style-guide.md) "Agents" says; the guide is the `livedocuments://guide/styles` resource.
+
 ### 4.3a `add_tab`
 
 Add a **new tab** (its own canvas) to an existing document. The motivating case:

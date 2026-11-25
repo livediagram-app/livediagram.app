@@ -13,12 +13,20 @@ import {
   pagesGivenNewPageBackground,
   pagesOf,
   withNewPageBackground,
+  withEveryPageOnTabDesign,
+  withTabPageDesign,
+  type PageDesign,
   type BackgroundPattern,
   type Finish,
   type Element,
   type PageBackground,
   type Tab,
   type TextSize,
+  pageBackgroundSet,
+  pageDesignSet,
+  pageKindOf,
+  newPageBackgroundOf,
+  type Page,
 } from '@livedocuments/document';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { everyPageMessage } from '@liveworkspace/page-background/new-page-background-label';
@@ -257,6 +265,68 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     notify?.(everyPageMessage(reached, kept));
   };
 
+  // Page Design's Background on All Pages (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design", Layers):
+  // the background every page wears and every new page starts on, in one undo step, re-inked; a locked page keeps
+  // its own, and only then a notice says so. With `design`, the tab's design changes in the same step (Quick picks).
+  const setEveryPageBackground = (
+    patch: Partial<PageBackground>,
+    design?: PageDesign | null,
+    // A Quick Pick's whole look (theme, finish, font, surround), put on first in the same step.
+    look?: TabLook,
+  ) => {
+    if (editsBlocked) return;
+    // A moving background is a slide's or a flashcard's alone (Design's Moving chip): it reaches those pages, and new
+    // pages keep starting as they did.
+    const fill = patch.fill;
+    const moving = fill?.kind === 'gradient' && !!fill.motion;
+    const reaches = (p: Pick<Page, 'kind'>) =>
+      !moving || pageKindOf(p) === 'slide' || pageKindOf(p) === 'flashcard';
+    const pages = pagesOf(activeTab);
+    const units = pageUnits(pages).filter((u) =>
+      reaches(pages.find((p) => p.id === u.pageIds[0])!),
+    );
+    const kept = units.filter((u) => pageLockRefuses(pages, u.pageIds[0]!)).length;
+    track(
+      'Tab',
+      'Changed',
+      design === undefined ? 'PageBackgroundEveryPage' : 'PageDesignQuickPick',
+    );
+    commitTabs((ts) =>
+      ts.map((t) => {
+        if (t.id !== activeId) return t;
+        const out = pagesGivenNewPageBackground(
+          withNewPageBackground(look ? withLookApplied(t, look) : t, patch),
+          pageInkMemory(activeId),
+          reaches,
+        );
+        if (out.memory) rememberPageInk(activeId, out.memory);
+        const spread = moving
+          ? withNewPageBackground(out.tab, newPageBackgroundOf(t) ?? null)
+          : out.tab;
+        return design === undefined
+          ? spread
+          : withEveryPageOnTabDesign(withTabPageDesign(spread, design));
+      }),
+    );
+    if (kept > 0) notify?.(everyPageMessage(units.length - kept, kept));
+  };
+
+  // A page's background and its own design as one step (a Quick Pick on one page), re-inking as a background does.
+  const setPageStyle = (pageId: string, patch: Partial<PageBackground>, design: PageDesign) => {
+    if (editsBlocked) return;
+    track('Tab', 'Changed', 'PageDesignQuickPick');
+    commitTabs((ts) =>
+      ts.map((t) => {
+        if (t.id !== activeId) return t;
+        const bg = pageBackgroundSet(t, pageId, patch, pageInkMemory(activeId));
+        if (!('tab' in bg)) return t;
+        if (bg.memory) rememberPageInk(activeId, bg.memory);
+        const d = pageDesignSet(bg.tab, pageId, design);
+        return 'tab' in d ? d.tab : bg.tab;
+      }),
+    );
+  };
+
   // Page Design (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design").
   const pageDesign = pageDesignEdits({
     editsBlocked,
@@ -272,6 +342,8 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     pageDesignEdits: pageDesign,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
+    setEveryPageBackground,
+    setPageStyle,
     autoAlignTab,
     autoLayoutTab,
     setTabFont,

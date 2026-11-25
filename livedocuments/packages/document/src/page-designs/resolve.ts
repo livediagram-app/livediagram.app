@@ -22,7 +22,8 @@ export type ResolvedPageDesign = {
   strip?: DesignStrip;
 };
 
-type PageLike = Pick<LaidOutPage, 'id' | 'design' | 'rect' | 'index'>;
+type PageLike = Pick<LaidOutPage, 'id' | 'design' | 'rect' | 'index'> &
+  Partial<Pick<LaidOutPage, 'background'>>;
 
 /** Elements by the page holding their centre (pages lie in one row, so a page's x range finds it). */
 function elementsByPage(
@@ -90,6 +91,9 @@ export function resolvePageDesigns(
   for (const page of pages) {
     const own = page.design;
     if (isNoDesign(own)) continue;
+    // One design to a page (owner, 2026-11-25): a page on a moving background wears no design over it.
+    const fill = page.background?.fill;
+    if (fill?.kind === 'gradient' && fill.motion) continue;
     const design = own ?? tabDesign;
     if (!design) continue;
     const base = own ? resolveTuning(own) : tabTuning!;

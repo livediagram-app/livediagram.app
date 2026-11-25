@@ -88,6 +88,53 @@ describe('AreaErrorBoundary', () => {
     expect(screen.getByText('Canvas content')).toBeTruthy();
   });
 
+  // error-words.md: a thrown refusal says what happened and what to do, with Try Again only where it can help.
+  describe('a thrown refusal', () => {
+    function Refused({ error }: { error: unknown }): never {
+      throw error;
+    }
+
+    it('says no access, with no Try Again', () => {
+      render(
+        <AreaErrorBoundary area="Canvas" fallback="panel">
+          <Refused error={Object.assign(new Error('nope'), { status: 403 })} />
+        </AreaErrorBoundary>,
+      );
+      expect(screen.getByRole('alert').textContent).toBe(
+        'The canvas couldn’t load. You don’t have access to that. Ask its owner for access.',
+      );
+      expect(screen.queryByRole('button', { name: 'Try Again' })).toBeNull();
+    });
+
+    it('says the server’s trouble, with Try Again', () => {
+      render(
+        <AreaErrorBoundary area="ExplorerPane" fallback="panel">
+          <Refused error={Object.assign(new Error('oops'), { status: 503 })} />
+        </AreaErrorBoundary>,
+      );
+      expect(screen.getByRole('alert').textContent).toContain(
+        'This page couldn’t load. Something went wrong on our side. Try again in a moment.',
+      );
+      expect(screen.getByRole('button', { name: 'Try Again' })).toBeTruthy();
+    });
+
+    it('waits for the connection when a request got no answer offline', () => {
+      const onLine = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+      try {
+        render(
+          <AreaErrorBoundary area="Canvas" fallback="panel">
+            <Refused error={new TypeError('Failed to fetch')} />
+          </AreaErrorBoundary>,
+        );
+        expect(screen.getByRole('alert').textContent).toBe(
+          "You're offline, so the canvas couldn't load. It comes back when you reconnect.",
+        );
+      } finally {
+        onLine.mockRestore();
+      }
+    });
+  });
+
   it('renders nothing for an overlay and lets the owner close it', () => {
     const onError = vi.fn();
     const { container } = render(

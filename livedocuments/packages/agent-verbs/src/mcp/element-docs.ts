@@ -34,9 +34,14 @@ import {
   STICKY_PRESETS,
   THEMES,
   IMAGE_MASKS,
+  FONTS,
+  PAGE_DESIGN_BY_ID,
+  styleGuideMarkdown,
 } from '@livedocuments/document';
 
 export const SCHEMA_RESOURCE_URI = 'livedocuments://schema/elements';
+/** The style guide (docs/specs/011-theme/style-guide.md): when to use each recipe, theme, design, typeface, finish. */
+export const STYLE_GUIDE_RESOURCE_URI = 'livedocuments://guide/styles';
 
 const types = [...ELEMENT_TYPES].join(', ');
 const anchors = [...ANCHORS].join(', ');
@@ -316,6 +321,10 @@ argument carries the element format in brief; every field and value of it is in 
 livedocuments://schema/elements. Each element has a unique "id"; nodes are "shape" elements (a labelled box) NOT "text" (text is only for titles,
 captions and running copy); pinned arrows (node -> node) track their boxes; and the theme owns colours (a sticky keeps
 its own). Stickies, tables, code blocks and charts carry content fields, documented on each tool's element argument.
+Dress every document for its content and tone: create_document's "style" takes a whole look (theme, page design,
+typeface, finish) in one choice, "auto" or a recipe such as formal-report, product-pitch or workshop; the
+livedocuments://guide/styles resource says when to use each. Formal work wants the Professional finish and a quiet
+design; bold designs suit title and section pages.
 Pictures make a document its subject's own: asked about a product, a place, a team or a game, use real pictures of it,
 never only shapes and sample text. Use what the person gave you or what list_images already holds; else, when you can
 search the web, find pictures they may use, add each with upload_image (a public https URL is enough) and put it on an
@@ -324,3 +333,13 @@ or pick a layout without one. With no way to find pictures, say so and ask the p
 search_icons finds icon ids for "iconId"; list_images lists the user's pictures for an image element's "imageId".
 list_versions lists a tab's earlier versions (kept after a pause in editing and before each of your changes), and
 restore_version makes one the tab's content again; restoring the undoVersionId it answers takes that back.`;
+
+/** The style guide as Markdown, labelled from the catalogues. */
+export function styleGuideDoc(): string {
+  return styleGuideMarkdown({
+    // Every guide entry is one of the catalogue's (style-guide.test.ts), so each lookup finds it.
+    theme: (id) => THEMES.find((t) => t.id === id)!.label,
+    design: (id) => PAGE_DESIGN_BY_ID[id].label,
+    font: (id) => FONTS.find((f) => f.id === id)!.label,
+  });
+}

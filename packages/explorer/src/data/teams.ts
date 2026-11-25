@@ -6,6 +6,7 @@
 
 import type { TeamRef } from '../types';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
+import { errorCodeForStatus, ownErrorWords } from '@liveworkspace/ui/error-words';
 
 export type TeamRole = 'admin' | 'member';
 
@@ -130,7 +131,7 @@ export const TEAM_CREATE_UNCONFIRMED = 'team_create_unconfirmed';
 
 /** A change's refusal, in words. */
 export function teamErrorMessage(error: string): string {
-  return MESSAGES[error] ?? 'Something went wrong. Please try again.';
+  return ownErrorWords(MESSAGES, error);
 }
 
 export class TeamsError extends Error {
@@ -211,7 +212,8 @@ export function createTeamsHost({
             ? 'signed_out'
             : res.status === 504
               ? timedOut
-              : 'failed';
+              : // Named by its status, so it reads as its class (error-words.md).
+                errorCodeForStatus(res.status);
       return { ok: false, error };
     }
     return { ok: true, value: shape(raw) };
