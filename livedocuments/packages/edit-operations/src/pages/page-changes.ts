@@ -51,6 +51,7 @@ import {
   type PageEditRefusal,
   type Tab,
   plural,
+  withArticlesInFont,
 } from '@livedocuments/document';
 import { buildPageLayout, layoutCatalogueFor } from '@livedocuments/templates';
 import { tabDesignFor, tabWords } from './design-input';
@@ -368,7 +369,8 @@ export function applyPageChanges(
             said.push(`theme ${theme}`);
           }
           if (font) {
-            current = { ...current, font };
+            // Its articles too: their headings in it, their paragraphs when it is a face long text reads in.
+            current = withArticlesInFont({ ...current, font }, font);
             said.push(`font ${font}`);
           }
           if (finish) {

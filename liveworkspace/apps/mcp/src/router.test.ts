@@ -578,7 +578,7 @@ describe('core verbs', () => {
         content: [
           {
             type: 'text',
-            text: 'text a1 read_document\n12 more left out: read_document with a bigger budget.\n',
+            text: 'text a1 read_document\n… 3 lines hidden: read_document {"budget":900}\ntext b2 x\n12 more left out: read_document with a bigger budget.\n',
           },
         ],
       },
@@ -588,7 +588,7 @@ describe('core verbs', () => {
       arguments: { documentId: 'D1' },
     });
     expect(read.content[0]!.text).toBe(
-      'text a1 read_document\n12 more left out: read_diagram with a bigger budget.\n',
+      'text a1 read_document\n… 3 lines hidden: read_diagram {"budget":900}\ntext b2 x\n12 more left out: read_diagram with a bigger budget.\n',
     );
   });
 

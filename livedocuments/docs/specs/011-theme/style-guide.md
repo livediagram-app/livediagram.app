@@ -27,6 +27,10 @@ design (paper, corner accents, side rail); bold designs suit title and section p
   shared with the editor, in the light half): colours still on the old theme's take the new one's, colours set by hand
   stay, arrows always take the new stroke, and pages on the old theme's own fill take the new one's. Asked to "make it
   look like X", an agent had no way to change an existing document's look.
+- A tab's typeface reaches its articles: `create_document`'s font (or its style's), a new article written into a tab
+  with one, and `tab_style`'s font set each article's headings in it, and its paragraphs too when it is a face long
+  text reads in (Inter, Poppins, Nunito, Space Grotesk, Lora, Roboto Slab); a display, condensed, handwritten or
+  monospace face leaves them in the look's body font. A look named in `write_article` sets its own fonts.
 - The one liveworkspace MCP's `create_item` passes a doc's `style` and `font` on to `create_document`.
 
 ## Templates

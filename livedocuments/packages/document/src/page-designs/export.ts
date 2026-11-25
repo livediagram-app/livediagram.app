@@ -46,7 +46,10 @@ export function pageDesignExportSvg(
 ): string {
   const tabDesign = tabPageDesignOf(tab);
   if (!tabDesign && !page.design) return '';
-  const row = layOutPages(pagesOf(tab));
+  const own = layOutPages(pagesOf(tab));
+  // A page an article's estimate adds past the tab's own (the preview's "added as the writing is laid out") wears the
+  // tab's design as the page the editor adds will: it is resolved as the next page of the row.
+  const row = own.some((p) => p.id === page.id) ? own : [...own, page];
   const r = resolvePageDesigns(tabDesign, row, tab.elements).get(page.id);
   if (!r) return '';
   const laid = row.find((p) => p.id === page.id);

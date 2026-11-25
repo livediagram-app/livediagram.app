@@ -81,4 +81,15 @@ describe('tab_style', () => {
     const out = run(tabOf(), [{ op: 'tab_style', style: 'auto' }]);
     expect(out.lines.join(' ')).toContain('as formal-report');
   });
+
+  it('sets its articles in the typeface too', () => {
+    const out = run(tabOf({ articles: { a: { blocks: [], style: { look: 'bold' } } } }), [
+      { op: 'tab_style', font: 'lora' },
+    ]);
+    expect(out.tab.articles!.a!.style).toEqual({
+      look: 'bold',
+      headingFont: 'lora',
+      bodyFont: 'lora',
+    });
+  });
 });

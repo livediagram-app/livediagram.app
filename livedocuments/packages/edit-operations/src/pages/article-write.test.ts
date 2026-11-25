@@ -66,6 +66,13 @@ describe('a new article', () => {
     expect(out.lines).toEqual(['Started the article "Brief" (art-1): 2 blocks.']);
   });
 
+  it('takes the tab’s typeface, unless a look is named', () => {
+    const out = write(tabOf({ font: 'abril-fatface' }), { markdown: 'Hello' });
+    expect(articlesOf(out.tab)['art-1']!.style).toEqual({ headingFont: 'abril-fatface' });
+    const looked = write(tabOf({ font: 'lora' }), { markdown: 'Hello', look: 'bold' });
+    expect(articlesOf(looked.tab)['art-1']!.style).toEqual({ look: 'bold' });
+  });
+
   it('goes after the last page otherwise, on the paper asked for', () => {
     const tab = withArticle('f', { blocks: [para('b', 'Old', 'title')] });
     const out = write(tab, { markdown: 'Hi', new: true, size: 'letter', orientation: 'landscape' });
