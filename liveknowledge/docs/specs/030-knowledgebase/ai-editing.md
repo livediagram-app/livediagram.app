@@ -80,7 +80,8 @@ writing on a verified page does not clear the tick, and a large change adds "Cha
   raises its own scopes.
 - The api enforces it (`PUT knowledge-settings` with `aiEditing` or `aiEditUnverifies`); the menu row is absent for
   everyone else, so the UI never offers what the api would refuse.
-- A knowledgebase kept Offline has no row: it has no server for an agent to reach.
+- A knowledgebase kept Offline has no row: it has no server for an agent to reach. Take Offline keeps its level in
+  this browser, and Sync Document carries it back, as the Review Period is.
 
 ## The dialog
 

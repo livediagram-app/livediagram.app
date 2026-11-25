@@ -85,7 +85,8 @@ unlimited; owner, 2026-11-22): a team's for a knowledgebase in a team's library,
   knowledgebase's id) before anything goes public. At the limit it is refused with **409** `publish_limit_reached`,
   carrying `limit` (`publicKnowledgebases`), `used` and `max`, and nothing is published. If the subscription service
   refuses the api's own request, nothing is published uncounted and the request fails as a server error, never as
-  a limit.
+  a limit. A publish that fails or is refused after its place was claimed (an address another knowledgebase holds)
+  gives the place back.
 - **Changing** a published site (another section, address or option) never counts, and is never refused by a tier.
 - **Unpublish**, the knowledgebase's purge and the knowledgebase moving to another owner each give the place back.
   A knowledgebase in the Trash or archived keeps its place: it can come back.

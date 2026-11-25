@@ -282,6 +282,11 @@ describe('the Health Score', () => {
         points: 0,
         raise: 'Resolve the conflicts: +10',
       });
+      // Resolving the conflicts leaves the comments open: the raise counts only what they give back.
+      expect(of({ openConflicts: 2, openThreads: 3 })).toMatchObject({
+        points: 0,
+        raise: 'Resolve the conflicts: +7',
+      });
       expect(of({ pendingApproval: true })).toMatchObject({
         points: 8,
         raise: 'Approve or reject it: +2',

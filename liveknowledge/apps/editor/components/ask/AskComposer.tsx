@@ -9,7 +9,7 @@ import { ASK_BUILT_IN_PER_PERSON_PER_DAY } from '@liveknowledge/knowledge';
 import { AskLabelScope } from '@/components/page-labels/AskLabelScope';
 import type { KnowledgeCaller } from '@/lib/api/knowledge';
 import type { AiSettingsState } from '@/lib/knowledge-ask/ai-settings-store';
-import { askAiChoiceStore, useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
+import { askAiChoiceStore, askAiOf, useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
 import { track } from '@/lib/telemetry';
 import {
   ITEM_KEY_NAME,
@@ -55,7 +55,11 @@ export function AskComposer({
   const choice = useAskAiChoice(who, documentId);
   // A server with no built-in AI has nothing to choose: the key answers whatever was picked before.
   const builtIn = ai.status !== 'ready' || ai.settings.builtIn;
-  const view = askAiView(line, builtIn ? choice : 'key', ITEM_KEY_NAME);
+  const view = askAiView(
+    line,
+    askAiOf(choice, ai.status === 'ready' ? ai.settings : null),
+    ITEM_KEY_NAME,
+  );
   return (
     <div className="flex flex-col gap-1.5">
       {/* Answer From, above the box, where the knowledgebase has labels (search-and-ask.md "Answer From"). */}
