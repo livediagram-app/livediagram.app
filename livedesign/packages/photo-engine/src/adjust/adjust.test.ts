@@ -207,6 +207,16 @@ describe('Levels and Curves', () => {
     const empty = autoTone(histogramOf(createRaster(1, 1)));
     expect(empty.red.inWhite).toBe(255);
   });
+  it('auto tone keeps a one-value channel inside 0..255', () => {
+    const white = createRaster(2, 1);
+    setPixel(white, 0, 0, [255, 255, 255, 255]);
+    setPixel(white, 1, 0, [255, 255, 255, 255]);
+    const tone = autoTone(histogramOf(white));
+    expect(tone.red).toMatchObject({ inBlack: 253, inWhite: 255 });
+    const black = createRaster(1, 1);
+    setPixel(black, 0, 0, [0, 0, 0, 255]);
+    expect(autoTone(histogramOf(black)).red).toMatchObject({ inBlack: 0, inWhite: 2 });
+  });
 });
 
 describe('colour adjustments', () => {

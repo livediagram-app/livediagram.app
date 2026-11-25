@@ -77,6 +77,10 @@ export function ScreenView({ element, animClass }: { element: ShapeElement; anim
   const video = share || file ? null : screenVideoTarget(element.screenUrl);
   const [playing, setPlaying] = useState(false);
   const [reading, setReading] = useState(false);
+  // What was opened large went away (an Editor cleared or swapped the source, or a share in the room took the Screen
+  // over): it closes, rather than coming back by itself the next time the Screen shows something.
+  if (reading && !file) setReading(false);
+  if (playing && !video) setPlaying(false);
   const open = share
     ? () => {
         track('Canvas', 'Used', 'ScreenOpen');
@@ -240,6 +244,8 @@ export function ScreenView({ element, animClass }: { element: ShapeElement; anim
       {playing && video ? <ScreenPlayer target={video} onClose={() => setPlaying(false)} /> : null}
       {reading && file ? (
         <ScreenFileOverlayPanel
+          // Another file chosen while open large opens afresh, on its own first tab, not the last file's.
+          key={`${file.liveItem.app}:${file.liveItem.itemId}`}
           elementId={element.id}
           file={file}
           onClose={() => setReading(false)}

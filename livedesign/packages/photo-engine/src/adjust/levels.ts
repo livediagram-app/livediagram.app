@@ -225,8 +225,11 @@ function clipPoints(h: Uint32Array, clip = AUTO_CLIP): [number, number] {
   let hi = 255;
   acc = 0;
   while (hi > 0 && acc + h[hi]! <= cut) acc += h[hi--]!;
-  if (hi - lo < 2) return [Math.max(0, Math.min(lo, 253)), Math.max(lo + 2, Math.min(255, hi))];
-  return [lo, hi];
+  if (hi - lo >= 2) return [lo, hi];
+  // A channel of (nearly) one value: the two points two levels apart, both inside 0..255. A channel all
+  // at 255 put its white point at 257, which Levels' fields and the Curves graph could not show.
+  const black = Math.min(lo, 253);
+  return [black, Math.max(black + 2, Math.min(255, hi))];
 }
 
 /** Auto Tone: Levels per channel, each stretched to its own range. */
