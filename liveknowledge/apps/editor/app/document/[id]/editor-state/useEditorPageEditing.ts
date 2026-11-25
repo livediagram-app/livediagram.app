@@ -1,9 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { guestName } from '@liveknowledge/knowledge';
 import {
-  articlesOf,
-  sameArticleValue,
-  withArticleFlow,
   draftDiffers,
   draftOf,
   holdsDraft,
@@ -11,7 +8,6 @@ import {
   savedFlowOf,
   withDraftDiscarded,
   withDraftSaved,
-  savedArticleOf,
   type ArticleBlock,
   type Tab,
 } from '@liveknowledge/document';
@@ -19,6 +15,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { mayEditPage } from '@/lib/page-edit/page-edit-roles';
+import { pageEditDirty, withTypedWriting } from '@/lib/page-edit/page-edit-dirty';
 import {
   onPeerSaved,
   pageEditorsOf,
@@ -63,6 +60,7 @@ export function useEditorPageEditing({
     editingTabId,
     setEditingTabIdState,
     pageEditRef,
+    throughLens,
     commitTabs,
     commitRealTabs,
     resetTabs,
@@ -130,14 +128,7 @@ export function useEditorPageEditing({
     if (!flow || !handle) return null;
     handle.flush();
     const typed = handle.takeBlocks();
-    commitTabs((ts) =>
-      ts.map((t) => {
-        if (t.id !== tab.id) return t;
-        const doc = articlesOf(t)[flow];
-        if (!doc || sameArticleValue(doc.blocks, typed)) return t;
-        return withArticleFlow(t, flow, { ...doc, blocks: typed });
-      }),
-    );
+    commitTabs(withTypedWriting(tab.id, flow, typed));
     return typed;
   };
 
@@ -208,10 +199,10 @@ export function useEditorPageEditing({
       clearLivePageTitle();
       return;
     }
-    // What is typed counts though its commit has not rendered yet: the tabs here are this render's.
-    const saved = real ? savedArticleOf(real) : undefined;
-    const typedDiffers = typed !== null && (!saved || !sameArticleValue(typed, saved.blocks));
-    if (!real || (!draftDiffers(real) && !typedDiffers)) {
+    // What is typed counts though its commit has not rendered yet: the tabs here are this render's, and the writing
+    // goes through the commit's own lenses, so a picture the narrow view draws narrower is no change (Work Tracker
+    // 1432).
+    if (!real || !pageEditDirty(tabsNow.current, tabId, savedFlowOf(real), typed, throughLens)) {
       discard(tabId);
       return;
     }
@@ -251,10 +242,7 @@ export function useEditorPageEditing({
     const real = realOf(tabId);
     if (!real) return false;
     const typed = flushWriting(real);
-    const saved = savedArticleOf(real);
-    return (
-      draftDiffers(real) || (typed !== null && (!saved || !sameArticleValue(typed, saved.blocks)))
-    );
+    return pageEditDirty(tabsNow.current, tabId, savedFlowOf(real), typed, throughLens);
   };
   const leaveRef = useRef({ unsavedNow, save });
   leaveRef.current = { unsavedNow, save };

@@ -90,6 +90,9 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **Cancel** leaves edit mode. If others are still editing, the draft stays theirs and nothing is lost. If you are the
   last one editing and the draft has unsaved changes, Cancel asks first: "Discard your changes to this page?" with
   **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away, with any comment or action started on words only the draft held (its margin marker goes too).
+  What counts as a change is what the saved page would store, never how this window draws it: in the narrow view
+  ([Page surface](page-surface.md), a phone or a desktop with the page tree and rail open) a picture drawn fitted to
+  the narrow column is not a change, so Edit then Cancel on an untouched page asks nothing and stores nothing.
 - **Only on a page:** while Version History is open, or the footer shows Ask or Insights, the floating Edit button
   and double-click to edit are gone
   (owner 2026-11-21). So are the floating Edit, Cancel and Save while a new knowledgebase's start screen covers its
