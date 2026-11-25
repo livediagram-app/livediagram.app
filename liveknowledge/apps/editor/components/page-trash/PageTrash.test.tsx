@@ -5,6 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TrashedPage } from '@liveknowledge/api-schema';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
+import {
+  forgetKnowledgeTiersForTests,
+  setKnowledgeTier,
+  setOpenPagesBound,
+} from '@/lib/knowledge-tier';
 
 // The page Trash in the editor (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page Trash"; blueprint
 // page-tree.md "The page Trash"): the store, the tree's row, the dialog.
@@ -201,7 +206,19 @@ describe('the words', () => {
     expect(trashedLine({ trashedAt: NOW - 31 * DAY, trashedBy: null }, NOW)).toContain(
       'Removed at the next clean-up',
     );
-    expect(restoreFailure(new ApiError('restore page', 409, 'page_limit'))).toContain('500 pages');
+    const full = new ApiError('restore page', 409, 'page_limit');
+    expect(restoreFailure(full)).toBe(
+      'A knowledgebase holds 500 pages at most: delete a page before restoring this one.',
+    );
+    // With Pro on, the owner's Knowledgebase Pages: the tree's own words.
+    setKnowledgeTier('kb', { pagesMax: 500, pagesLimit: 500, historyDays: 30 });
+    setOpenPagesBound('kb', { max: 3, account: { limit: 500, whose: 'yours' } });
+    expect(restoreFailure(full)).toBe(
+      'You have 500 pages, the most Free holds across your Knowledgebases. Delete a page before restoring this one.',
+    );
+    setOpenPagesBound('kb', { max: 3, account: null });
+    expect(restoreFailure(full)).toContain('holds 3 pages at most');
+    forgetKnowledgeTiersForTests();
     expect(restoreFailure(new Error('x'))).toBe('Could not restore the page. Try again.');
     expect(restoreFailure(new Error('x'), 'Onboarding')).toBe(
       'Could not restore “Onboarding”. Try again.',

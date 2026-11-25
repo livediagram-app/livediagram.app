@@ -213,8 +213,10 @@ export function withPageAdded<T extends TreePage>(
   pages: readonly T[],
   page: T,
   parent?: string,
+  // The most pages the knowledgebase holds, as for pageAddRefusal.
+  max: number = MAX_KNOWLEDGEBASE_PAGES,
 ): T[] | { refused: PageTreeRefusal } {
-  const refused = pageAddRefusal(pages, parent);
+  const refused = pageAddRefusal(pages, parent, max);
   if (refused) return { refused };
   if (pages.some((p) => p.id === page.id)) return { refused: 'unknown_page' };
   const all = [...pages, withParent(page, parent)];

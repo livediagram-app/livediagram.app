@@ -18,7 +18,7 @@ import {
 
 /** The list with `page` added as the last subpage of `parent` (the last top-level page when absent). */
 export function withPageAddedTo(tabs: Tab[], page: Tab, parent?: string): Tab[] {
-  const next = withPageAdded(tabs, page, parent);
+  const next = withPageAdded(tabs, page, parent, openPagesMax());
   return Array.isArray(next) ? next : tabs;
 }
 
@@ -35,7 +35,7 @@ export function withPageDuplicated(tabs: Tab[], sourceId: string, copy: Tab): Ta
   if (!parents.has(sourceId)) return tabs;
   const parent = parents.get(sourceId);
   const before = nextSiblingOf(tabs, sourceId);
-  const added = withPageAdded(tabs, copy, parent);
+  const added = withPageAdded(tabs, copy, parent, openPagesMax());
   if (!Array.isArray(added)) return tabs;
   return before === undefined
     ? added
