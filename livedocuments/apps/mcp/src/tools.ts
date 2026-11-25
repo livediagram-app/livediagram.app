@@ -33,7 +33,12 @@ import { createdTabRev } from '@liveworkspace/mcp-kit/app-view-step';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { deleteRefusal, savedDesigns, searchDocuments } from '@livedocuments/agent-verbs';
+import {
+  deleteRefusal,
+  savedDesigns,
+  searchDocuments,
+  withSavedDesigns,
+} from '@livedocuments/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -205,7 +210,13 @@ export function registerTools(server: McpServer, env: Env): void {
       // The page design asked for (docs/specs/011-theme/page-designs.md "Agents") is every new tab's, "auto" picked
       // for each tab's own words.
       if (args.design !== undefined) {
-        const choice = readTabDesign(args.design);
+        // A saved design's "saved:<id>" is a design here too, read from the caller's Library with its tuning.
+        const asked = await withSavedDesigns(clientFor(env, token), [
+          { op: 'tab_design', design: args.design as never },
+        ]);
+        if (!asked.ok) return errorResult(`"design": ${asked.message}`);
+        const named = asked.changes[0];
+        const choice = readTabDesign(named && 'design' in named ? named.design : args.design);
         if (choice !== null && typeof choice === 'object' && 'refused' in choice)
           return errorResult(`"design": ${choice.refused.message}`);
         for (const [i, t] of tabs.entries())

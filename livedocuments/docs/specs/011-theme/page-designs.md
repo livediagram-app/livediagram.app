@@ -196,7 +196,7 @@ speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, 
 
 - `change_pages` sets a page's override (`design` on `add` and `set`: a design, `"none"`, or `"tab"` to clear it) and
   the tab design (the `tab_design` change: a design, `null` to clear, or `"auto"`), and `create_document` takes a
-  `design` for its tabs (an id, or `"auto"`, picked for each tab's words); `"auto"` picks a fitting design for the tab's words ([Pages for
+  `design` for its tabs (an id, a saved design's `saved:<id>`, or `"auto"`, picked for each tab's words); `"auto"` picks a fitting design for the tab's words ([Pages for
   agents](../024-agents/pages-for-agents.md) "Page designs"). The `pages` view names each page's design.
 - The command line (`livedocuments page set`) takes the same, as `--design` and `--tab-design`.
 - **Saved designs.** `list_templates` lists the designs saved to the caller's My Work and teams (`savedDesigns`: id,
