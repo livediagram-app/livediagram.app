@@ -12,7 +12,7 @@ import {
   type Service,
 } from '@liveworkspace/subscription-ui/testing';
 import { proOnForTests, withPro } from '@liveworkspace/subscription-ui/testing/who';
-import { TeamPlan } from './TeamPlan';
+import { TeamPlan, TeamProBadge } from './TeamPlan';
 
 proOnForTests();
 afterEach(cleanup);
@@ -79,5 +79,18 @@ describe('TeamPlan', () => {
     setProForTests(false);
     show({ me: meResponse({ teams: [team(GARDEN, 'Garden', 'admin')] }) });
     expect(row()).toBeNull();
+  });
+
+  it('puts the Pro badge after a subscribed team’s name, and nothing after a Free one’s', async () => {
+    const { fetcher } = serviceFetch({
+      me: meResponse({ teams: [team(GARDEN, 'Garden', 'member', 'team')] }),
+    });
+    render(withPro(<TeamProBadge teamId={TEAM_ID} />, fetcher));
+    expect(await screen.findByLabelText('Pro for Teams')).toBeTruthy();
+    cleanup();
+    const free = serviceFetch({ me: meResponse({ teams: [team(GARDEN, 'Garden', 'admin')] }) });
+    const { container } = render(withPro(<TeamProBadge teamId={TEAM_ID} />, free.fetcher));
+    await waitFor(() => expect(free.calls.length).toBeGreaterThan(0));
+    expect(container.textContent).toBe('');
   });
 });

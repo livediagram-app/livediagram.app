@@ -24,6 +24,22 @@ export function useTeamTier(teamId: string): string | null {
   return team ? TIER_NAMES[team.tier] : null;
 }
 
+/** Whether the team is on Pro for Teams, for the Pro badge after its name (its page's header, the sidebar): false with
+ *  Pro off, until the service answers, or for a team the service doesn't list yet. */
+export function useTeamPro(teamId: string): boolean {
+  const load = useSubscription();
+  if (!proOn() || load.status !== 'ready') return false;
+  const team = load.me.teams.find((t) => t.teamId === teamId);
+  return !!team && team.tier !== 'free';
+}
+
+/** The Pro badge after a subscribed team's name; nothing otherwise. */
+export function TeamProBadge({ teamId, size = 'sm' }: { teamId: string; size?: 'sm' | 'md' }) {
+  return useTeamPro(teamId) ? (
+    <ProBadge form="solid" size={size} label="Pro for Teams" className="shrink-0" />
+  ) : null;
+}
+
 /** `card` is the People tab's side card (a title over the tier, its line and its action); `row` the panel's band. */
 export function TeamPlan({ teamId, look = 'row' }: { teamId: string; look?: 'row' | 'card' }) {
   const load = useSubscription();
