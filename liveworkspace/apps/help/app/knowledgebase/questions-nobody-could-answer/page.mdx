@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="knowledgebase/questions-nobody-could-answer" title="Questions Nobody Could Answer" description="The questions people and agents asked that no page covers, and how to draft a page for one." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
 
-Every question the Knowledgebase could not answer is kept, so you can see what is missing and write it. The list is in the **Insights** tab of the footer, under **Questions Nobody Could Answer**.
+Every question the Knowledgebase could not answer is kept, so you can see what is missing and write it. The list is in the **Insights** tab of the footer, in **Needs Attention**, where each one is an **Unanswered Question** row. The **Questions** filter shows only those.
 
 <Figure caption="Questions Nobody Could Answer: each question, how often it was asked and by whom, Draft a Page and a dismiss button.">
   <QuestionsScene />
@@ -23,7 +23,7 @@ A question is kept when:
 
 - [Ask](/help/knowledgebase/ask/) says the pages do not cover it, or part of it.
 - An agent's search finds nothing.
-- An agent reports it with the MCP tool `report_gap`, or the CLI's `gap`, instead of guessing.
+- An agent reports it with the MCP tool `report_knowledge_gap`, or the CLI's `gap`, instead of guessing.
 
 Questions asked in the same words (after small differences such as plurals are set aside) are one row. The row counts how many times it was asked, by people and by each named agent: "Asked 4 times by people and the Coding Agent". Nobody who asked is named or kept, only the count.
 
@@ -57,7 +57,7 @@ Press the dismiss button (×) at the right of a row to remove the question from 
 
 ## Good to Know
 
-- With nothing to show, the section reads **No Unanswered Questions Yet**.
+- With nothing to show, the **Questions** filter reads **No Unanswered Questions Yet**.
 - A question is drawn as plain text: it is other people's words.
 - A Knowledgebase kept Offline has no Insights, so nothing is kept for it.
 
@@ -66,6 +66,6 @@ Press the dismiss button (×) at the right of a row to remove the question from 
 | Action                                    | Editor | Participant | Viewer |
 | ----------------------------------------- | ------ | ----------- | ------ |
 | See the questions                         | Yes    | Yes         | Yes    |
-| Draft a page, dismiss a question          | Yes    | No          | No     |
+| Draft a page, dismiss a question          | Yes    | Yes         | No     |
 
 </ArticleLayout>
