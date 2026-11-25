@@ -136,8 +136,11 @@ export function ElementDataSections({
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
   const isChip = shapeTarget ? isChipShape(shapeTarget.shape) : false;
+  // A locked element's rows dialogs are not offered (onEditRows absent), so a kind whose only section opens one
+  // has no Tools of its own then.
+  const rowsOffered = !!props.onEditRows;
   const showTools =
-    hasWebRowsSection(target) ||
+    (hasWebRowsSection(target) && (rowsOffered || shapeTarget?.shape === 'card')) ||
     shapeTarget?.shape === 'quote' ||
     isChip ||
     shapeTarget?.shape === 'pointer-note' ||
@@ -146,7 +149,7 @@ export function ElementDataSections({
     isRating ||
     isChart ||
     isCodeBlock ||
-    isChecklist ||
+    (isChecklist && rowsOffered) ||
     isLegend ||
     isSankey ||
     shapeTarget?.shape === 'map';
@@ -241,7 +244,11 @@ export function ElementDataSections({
                       <PieDataSummary
                         palette={chartFallbackPalette}
                         slices={shapeTarget.pieSlices ?? DEFAULT_PIE_ROWS}
-                        onEdit={() => shapeTarget && props.onEditRows(shapeTarget.id, 'slices')}
+                        onEdit={
+                    props.onEditRows
+                      ? () => shapeTarget && props.onEditRows?.(shapeTarget.id, 'slices')
+                      : undefined
+                  }
                       />
                     )
                   }
@@ -317,27 +324,27 @@ export function ElementDataSections({
               onRemovePhoto={props.onRemoveImage}
             />
           ) : null}
-          {shapeTarget && hasWebRowsSection(shapeTarget) ? (
+          {shapeTarget && hasWebRowsSection(shapeTarget) && props.onEditRows ? (
             <WebRowsMenuSection
               target={shapeTarget}
-              onOpen={() => props.onEditRows(shapeTarget.id, 'web-rows')}
+              onOpen={() => props.onEditRows?.(shapeTarget.id, 'web-rows')}
             />
           ) : null}
           {/* Checklist (docs/specs/009-elements/checklist.md): the row opens its rows in the Checklist dialog. */}
-          {isChecklist && shapeTarget ? (
+          {isChecklist && shapeTarget && props.onEditRows ? (
             <MenuDialogSection
               title="Checklist"
               icon={<DataMenuGlyph />}
-              onOpen={() => props.onEditRows(shapeTarget.id, 'checklist')}
+              onOpen={() => props.onEditRows?.(shapeTarget.id, 'checklist')}
               flush
             />
           ) : null}
           {/* Legend (docs/specs/009-elements/pie-chart.md): the key's rows, a colour and a word each. */}
-          {isLegend && shapeTarget ? (
+          {isLegend && shapeTarget && props.onEditRows ? (
             <MenuDialogSection
               title="Legend"
               icon={<DataMenuGlyph />}
-              onOpen={() => props.onEditRows(shapeTarget.id, 'legend')}
+              onOpen={() => props.onEditRows?.(shapeTarget.id, 'legend')}
               flush
             />
           ) : null}

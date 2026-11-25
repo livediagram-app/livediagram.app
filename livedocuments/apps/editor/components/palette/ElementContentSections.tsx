@@ -211,11 +211,11 @@ export function ElementContentSections({
       ) : null}
       {/* Table (docs/specs/008-canvas/canvas-and-palette.md "The Table dialog"): the row opens the Table dialog, which holds
           its header row and column, its striping and its cells' text. */}
-      {target.type === 'table' ? (
+      {target.type === 'table' && props.onEditRows ? (
         <MenuDialogSection
           title="Table"
           icon={<TableGlyph />}
-          onOpen={() => props.onEditRows(target.id, 'table')}
+          onOpen={() => props.onEditRows?.(target.id, 'table')}
           flush
         />
       ) : null}
