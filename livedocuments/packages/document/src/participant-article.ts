@@ -5,7 +5,7 @@
 // whose tab or any of whose pages is locked. The server applies each of a Participant's `article` frames to the
 // STORED tab through this one pure function; the editor asks the same question of its own change before it lands.
 
-import { articlesOf, sameArticleValue, type ArticleBlock, type ArticleFlow } from './article-flow';
+import { articlesOf, sameArticleValue, type ArticleBlock } from './article-flow';
 import { applyArticleOps, diffArticleFlow, type ArticleOp } from './article-flow-ops';
 import { withArticleFlow } from './article-pages';
 import type { Tab } from './index';
@@ -28,13 +28,13 @@ function refuse(reason: ParticipantArticleRefusal): ParticipantArticleResult {
 const isWriting = (block: ArticleBlock | undefined): boolean =>
   block !== undefined && WRITING_BLOCKS.has(block.type);
 
-/** Whether one op is writing, against the article as the ops before it left it. */
-function opIsWriting(flow: ArticleFlow, op: ArticleOp): boolean {
+/** Whether one op is writing, against the article as the ops before it left it (`blocks`, by id). */
+function opIsWriting(blocks: ReadonlyMap<string, ArticleBlock>, op: ArticleOp): boolean {
   if (op.kind === 'style') return false;
   // A table cell's text is writing; the table's shape (a put of the table) is not.
-  if (op.kind === 'cell') return flow.blocks.some((b) => b.id === op.block && b.type === 'table');
+  if (op.kind === 'cell') return blocks.get(op.block)?.type === 'table';
   const id = op.kind === 'remove' ? op.id : op.block.id;
-  const there = flow.blocks.find((b) => b.id === id);
+  const there = blocks.get(id);
   // A remove of a block that is not there changes nothing.
   if (op.kind === 'remove') return there === undefined || isWriting(there);
   // A put is a writing block, over nothing or over another writing block (never over a zone or a break).
@@ -51,11 +51,15 @@ export function applyParticipantArticleOps(
   const stored = articlesOf(tab)[flow];
   if (!stored) return refuse('missing');
   if (pagesOf(tab).some((p) => p.flow === flow && p.locked === true)) return refuse('locked');
-  let next = stored;
+  // Each op is judged against the blocks as the ops before it left them, tracked by id (a cell op keeps its table a
+  // table), then all are applied at once: one pass, never the article rebuilt per op.
+  const blocks = new Map(stored.blocks.map((b) => [b.id, b] as const));
   for (const op of ops) {
-    if (!opIsWriting(next, op)) return refuse('not-writing');
-    next = applyArticleOps(next, [op]);
+    if (!opIsWriting(blocks, op)) return refuse('not-writing');
+    if (op.kind === 'remove') blocks.delete(op.id);
+    else if (op.kind === 'put') blocks.set(op.block.id, op.block);
   }
+  const next = applyArticleOps(stored, ops);
   const changed = !sameArticleValue(stored, next);
   return { result: 'applied', tab: changed ? withArticleFlow(tab, flow, next) : tab, changed };
 }

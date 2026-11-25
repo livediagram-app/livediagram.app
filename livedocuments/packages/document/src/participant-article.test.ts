@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuLeastMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { diffArticleFlow } from './article-flow-ops';
 import type { ArticleBlock, ArticleFlow } from './article-flow';
 import { articlesOf } from './article-flow';
 import type { Tab } from './index';
@@ -40,6 +42,21 @@ describe('applyParticipantArticleOps', () => {
     expect(articlesOf(r.tab).f1!.blocks.map((b) => b.id)).toEqual(['b1', 'b2', 'z1', 'pb']);
     const removed = applyParticipantArticleOps(r.tab, 'f1', [{ kind: 'remove', id: 'b2' }]);
     expect(removed).toMatchObject({ result: 'applied', changed: true });
+  });
+
+  it('judges a long paste into a long article (5,000 blocks after) in one pass, within a budget', () => {
+    const blocks = Array.from({ length: 4_000 }, (_, i) => para(`b-${i}`, `Paragraph ${i}`));
+    const pasted = Array.from({ length: 1_000 }, (_, i) => para(`n-${i}`, 'Pasted'));
+    const after = { blocks: [...blocks.slice(0, 2_000), ...pasted, ...blocks.slice(2_000)] };
+    const tab = tabWith({ blocks });
+    const ops = diffArticleFlow({ blocks }, after);
+    const r = applyParticipantArticleOps(tab, 'f1', ops);
+    expect(r.result === 'applied' && articlesOf(r.tab).f1!.blocks).toEqual(after.blocks);
+    // Applied op by op, each op rebuilt the article (the Durable Object spends this on every such frame); one pass
+    // takes about 7 ms here.
+    expect(cpuLeastMsOf(() => applyParticipantArticleOps(tab, 'f1', ops), 3)).toBeLessThan(
+      cpuBudgetMs(60),
+    );
   });
 
   it('answers unchanged when the writing already says it', () => {

@@ -188,7 +188,9 @@ style? }`. Saved with the tab (one row in the document's store, `MAX_TAB_BYTES` 
 - **`applyArticleOps`**: a `put` with no place replaces the block where it is (appended when
   missing); a placed `put` removes the block if present, then inserts after `after`, else before
   `before`, else at its old index, else at the end; a missing `remove` is a no-op; never empty
-  (`b-empty` paragraph).
+  (`b-empty` paragraph). Linear in blocks plus ops: the blocks are a list linked by id while the ops apply, so a
+  5,000-block article arriving whole or rewritten takes milliseconds, never a scan per op (budget test in
+  `article-flow-ops.test.ts`).
 - **Snapshot, restore**: the writing is tab data, so history, undo, offline store, export JSON
   and version restore carry it unchanged. No migration: every field is new and optional; a tab
   without `articles` has none.
