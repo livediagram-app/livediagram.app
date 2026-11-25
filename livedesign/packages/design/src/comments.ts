@@ -10,6 +10,7 @@ import type { ElementAction } from '@liveworkspace/element-model/element-action'
 import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import type { CommentReaction } from '@liveworkspace/model-core/comment-reactions';
 import { isComment, keepLocalTicks } from './element-deltas';
+import { withLiveCustomColours } from '@liveworkspace/element-model/custom-colours';
 
 // A single comment inside a thread. The author is the participant who
 // wrote it (per `apps/live/lib/identity.ts`). The participant model is
@@ -216,10 +217,7 @@ export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
     if (src === restored) return restored;
     // A tab's custom colours are recorded outside history (docs/specs/004-interface-design/colour-picker.md
     // "Custom colours"): a snapshot from before a pick would otherwise take the colour away from every picker.
-    const tab =
-      src.customColours === restored.customColours
-        ? restored
-        : withLiveTabField(restored, 'customColours', src.customColours);
+    const tab = withLiveCustomColours(restored, src);
     const srcById = new Map(src.elements.map((el) => [el.id, el] as const));
     const liveFields = new Map<string, LiveFieldBag>(
       src.elements.map((el) => {
@@ -262,11 +260,4 @@ export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
     });
     return changed ? { ...tab, elements } : tab;
   });
-}
-
-function withLiveTabField<K extends 'customColours'>(tab: Tab, field: K, value: Tab[K]): Tab {
-  const next = { ...tab };
-  if (value === undefined) delete next[field];
-  else next[field] = value;
-  return next;
 }

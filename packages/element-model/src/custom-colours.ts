@@ -34,3 +34,19 @@ export function withCustomColour<T extends Pick<Tab, 'customColours'>>(tab: T, h
   const next = [colour, ...now.filter((c) => c !== colour)].slice(0, CUSTOM_COLOURS_MAX);
   return { ...tab, customColours: next };
 }
+
+/**
+ * A restored tab (an undo's or a redo's snapshot) with the custom colours `live` holds now. They are recorded
+ * outside history ("Custom colours": picking one is not a step), so a snapshot from before a pick would otherwise
+ * take the colour away from every picker. Returns `restored` itself when nothing differs.
+ */
+export function withLiveCustomColours<T extends Pick<Tab, 'customColours'>>(
+  restored: T,
+  live: Pick<Tab, 'customColours'>,
+): T {
+  if (restored.customColours === live.customColours) return restored;
+  const next = { ...restored };
+  if (live.customColours === undefined) delete next.customColours;
+  else next.customColours = live.customColours;
+  return next;
+}
