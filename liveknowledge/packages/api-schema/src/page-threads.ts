@@ -32,8 +32,8 @@ export type PageThread = {
   comments: PageComment[];
 };
 
-/** `GET .../pages/<tab>/threads`: every thread on the page, oldest first. */
-export type PageThreadsResponse = { threads: PageThread[] };
+/** `GET .../pages/<tab>/threads`: the page's id (however the path named it), and every thread on it, oldest first. */
+export type PageThreadsResponse = { page: string; threads: PageThread[] };
 
 /** `POST .../pages/<tab>/threads`: one change. `start` makes a thread; the rest name one. */
 export type PageThreadChange =

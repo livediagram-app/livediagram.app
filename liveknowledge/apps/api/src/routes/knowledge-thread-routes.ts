@@ -109,7 +109,7 @@ export async function handlePageThreads(
 ): Promise<Response> {
   const method = ctx.request.method;
   if (method === 'GET')
-    return json({ threads: (await readPageThreads(ctx.env, tab)).map(publicThread) });
+    return json({ page: tab, threads: (await readPageThreads(ctx.env, tab)).map(publicThread) });
   if (method !== 'POST') return methodNotAllowed();
   if (!commentsOnPages(grant)) return forbidden();
   const owner = requireOwner(ctx);
