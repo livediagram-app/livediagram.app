@@ -4891,6 +4891,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "subtitle": {
         "type": "string"
       },
+      "table": {
+        "items": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "type": "array"
+      },
       "title": {
         "type": "string"
       }
@@ -6390,8 +6399,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "PageText": {
     "additionalProperties": false,
-    "description": "One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's.",
+    "description": "One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's. A compound element's part names where in the element it is kept (`stats[0].value`), for an edit by ref.",
     "properties": {
+      "part": {
+        "type": "string"
+      },
       "ref": {
         "type": "string"
       },
