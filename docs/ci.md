@@ -386,6 +386,14 @@ split.
   tests run with
   `node --test .github/scripts/*.test.mjs`.
 
+## One MCP address
+
+No page, help article, README, setup screen or listing names an app's old MCP host (`mcp.<app>.app`, or its
+staging twin): the one address is `https://mcp.liveworkspace.app/mcp`. The Checks job's **One MCP address** step
+(`.github/scripts/old-mcp-host-guard.mjs`) reads every tracked text file and fails on one outside the MCP Worker,
+tests, the migration note, specs and the developer docs. Every group runs it, so a change that touches only
+marketing or help files is covered. Its tests run with `node --test .github/scripts/*.test.mjs`.
+
 ## One path for markup
 
 Every raw HTML sink goes through `packages/trusted-types/src/html.ts` (livediagram/docs/specs/016-platform/trusted-types.md,

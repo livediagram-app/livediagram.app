@@ -181,7 +181,7 @@ One address, in every place a person could copy one (Work Tracker 1423):
   keeps working until its token ends, and that some old hosts no longer resolve; they remove the server and add the
   one address once, ticking every app they use. The note lives in the shared troubleshooting list and the help
   article "Connecting AI Tools", and nowhere else.
-- **A guard keeps it so**: `liveworkspace/apps/mcp/src/old-host-mentions.test.ts` fails when a tracked text file names
+- **A guard keeps it so**: `.github/scripts/old-mcp-host-guard.mjs` (the Checks job's **One MCP address** step, so every change runs it) fails when a tracked text file names
   `mcp.<app>.app` (or its staging host) outside this Worker, tests, the migration note, specs and the developer docs.
 
 ## The tool-pick eval

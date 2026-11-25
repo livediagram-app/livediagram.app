@@ -155,6 +155,11 @@ jobs:
       - name: One path for markup
         run: node .github/scripts/raw-html-guard.mjs
 
+      # No page, help article or README names an app's old MCP host (liveworkspace/docs/specs/021-mcp/mcp.md "What
+      # people are told"). Repo-wide and quick, so every group runs it.
+      - name: One MCP address
+        run: node .github/scripts/old-mcp-host-guard.mjs
+
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 
