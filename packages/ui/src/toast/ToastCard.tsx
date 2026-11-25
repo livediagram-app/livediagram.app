@@ -261,6 +261,8 @@ export function ToastCard({
       </button>
     </Tooltip>
   ) : null;
+  // Beside the message, never inside it: the message's own text stays exactly the sentence (a test or a screen
+  // reader's find reads it whole), and the hint is read after it, inside the card's live region.
   const said = hint ? <span className="sr-only"> {hint}</span> : null;
   const buttons = actions.map((action) => (
     <ActionButton key={action.label} action={action} highlight={highlight} stacked={stacked} />
@@ -304,9 +306,9 @@ export function ToastCard({
               }
             >
               {message}
-              {said}
             </div>
           ) : null}
+          {said}
           {body ? <div className="mt-1">{body}</div> : null}
           {buttons.length > 0 || toggle ? (
             <div
@@ -345,10 +347,8 @@ export function ToastCard({
         {icon ?? <Icon />}
       </span>
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-0.5">
-        <p className="min-w-0 flex-[1_1_10rem] py-1.5 text-sm leading-5">
-          {message}
-          {said}
-        </p>
+        <p className="min-w-0 flex-[1_1_10rem] py-1.5 text-sm leading-5">{message}</p>
+        {said}
         {buttons.length > 0 ? (
           <div className="ml-auto flex shrink-0 items-center gap-1">{buttons}</div>
         ) : null}
