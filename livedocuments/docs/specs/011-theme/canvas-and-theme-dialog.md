@@ -312,10 +312,12 @@ again.
 
 **Quick Picks** are whole styles: each a random look (colours, text, finish) with a design and one of that look's
 theme gradients, 24 rolled fresh each time the dialog opens (kept while its screens come and go), six at a time over
-four pages, named for colours and design with the typeface and finish under; Shuffle rolls again. A small **Keep Theme** switch under them (off as the dialog opens) keeps the tab's theme: each
+four pages, named for colours and design with the typeface and finish under; Shuffle rolls again. A small **Keep Theme** switch sits in their header row, straight left of Shuffle and centred with it (off as the dialog
+opens; owner, 2026-11-25, Work Tracker 1477), and keeps the tab's theme: each
 pick its type, finish and design in the tab's colours. A pick puts the
 look on the tab, then the design and background. With **Affect All Pages** off, a pick dresses the page alone
-(design and a background in the tab's colours, drawn so), never the tab's look; Colours, Text and Finish are the
+(design and a background in the tab's colours, drawn so), never the tab's look, and Keep Theme is hidden (the pick keeps
+the theme already) while Shuffle keeps its place; Colours, Text and Finish are the
 tab's, so their cards are disabled while it is off (their tooltip says to turn it on). The switch keeps its setting for the opening while screens come and go.
 
 **Page Design is the dialog's home** (owner, 2026-11-25). livedocuments' Tab Style opens on it: no Looks carousel
