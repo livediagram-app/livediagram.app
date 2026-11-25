@@ -129,6 +129,44 @@ describe('parseMermaid', () => {
     ]);
   });
 
+  it('reads an inline label written without spaces, as Mermaid does', () => {
+    const r = parseMermaid(`flowchart LR
+  A--yes-->B
+  B--plain---C
+  C-.maybe.->D
+  D==no==>E
+  E<--both-->F
+  F-- left-->G
+  G--right -->H
+  H--I
+  I--oJ`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.map((n) => n.id)).toEqual([
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'H',
+      'I',
+      'J',
+    ]);
+    expect(r.graph.edges).toEqual([
+      { from: 'A', to: 'B', label: 'yes' },
+      { from: 'B', to: 'C', label: 'plain', ends: 'none' },
+      { from: 'C', to: 'D', label: 'maybe', line: 'dashed' },
+      { from: 'D', to: 'E', label: 'no', line: 'thick' },
+      { from: 'E', to: 'F', label: 'both', ends: 'both' },
+      { from: 'F', to: 'G', label: 'left' },
+      { from: 'G', to: 'H', label: 'right' },
+      { from: 'H', to: 'I', ends: 'none' },
+      { from: 'I', to: 'J', head: 'circle' },
+    ]);
+  });
+
   it('reads a start marker on an inline-labelled edge as a head at its start', () => {
     const r = parseMermaid(`flowchart LR
   A <-- both --> B
