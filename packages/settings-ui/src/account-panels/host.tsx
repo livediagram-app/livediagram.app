@@ -27,6 +27,9 @@ export type CallSpacesHost = {
   // index can't answer.
   list: () => Promise<readonly Item[]>;
   token: () => Promise<string | null>;
+  // Tells the index the chosen Space is the person's own, so a Space made by Call stays when its call ends
+  // (item-calls.md "When a call ends"). A host without it keeps nothing.
+  keep?: (spaceId: string) => Promise<void>;
 };
 
 export type AccountPanelsHost = {
