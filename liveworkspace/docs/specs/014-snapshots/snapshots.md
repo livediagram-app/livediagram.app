@@ -223,8 +223,10 @@ On their own (no timeline), the same parts in a list:
   replaced. A snapshot of the <item> as it is now is taken first, so you can undo this.", with **Cancel** and
   **Revert**; the button then reads "Reverting…".
 - Empty: "No snapshots yet" and "Take one before a big change, so you can come back to it."
-- The list failed to load: "Couldn't load snapshots", "Check your connection, then try again." and **Try Again**,
-  never the empty state, which would say there are none.
+- The list failed to load: "Couldn't load snapshots" and why, in the words of
+  [Error words](../022-interface-design/error-words.md) (the server's own message where it gave one), never the empty
+  state, which would say there are none. **Try Again** shows only where trying again can help (not for no access or
+  gone); offline, it says so and loads the list again by itself once the browser is back online.
 - While a request runs its button says so and the others wait; a refusal shows its message in the dialog.
 
 With Pro on, where the item's owner's tier keeps snapshots for a time (Free), a quiet line says so:

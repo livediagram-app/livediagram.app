@@ -209,7 +209,9 @@ Rows are `li` in a `ul aria-label="Snapshots"`; the confirm replaces the row's a
 `data-keeps-escape`, so the Tools popover leaves that Escape to it.
 
 SN25. States: loading (`LoadingSweep`), empty (`CompactEmptyState`), the list failed (`CompactEmptyState` in a
-`role="alert"` with a Try Again button that fetches it again; `useSnapshots` keeps `listFailed` apart from `error`),
+`role="alert"` saying why, from `useSnapshots`' `listError` (`ErrorWords`, `@liveworkspace/ui/error-words`), with a Try
+Again button that fetches it again only when `canRetry` and not offline; offline, `whenBackOnline` fetches it again;
+`useSnapshots` keeps `listFailed` apart from `error`),
 error (a `role="alert"` line for a refused action), busy (the busy button's label: "Taking…", "Reverting…",
 "Deleting…"; every other action disabled). Below `sm` the row's `Before revert` badge sits on its own line under the
 name (`flex-col`), so a long automatic name stays readable on a phone. A summary with `kept` true wears a second badge
