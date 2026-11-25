@@ -27,7 +27,7 @@ export function SharePassesDialog() {
   const roles: { title: string; blurb: string; tile: string; text: string; on: boolean }[] = [
     {
       title: 'Editor',
-      blurb: 'Draws with you in real time.',
+      blurb: 'Works with you in real time.',
       tile: 'fill-brand-700',
       text: 'fill-brand-700 dark:fill-brand-300',
       on: true,
@@ -41,7 +41,7 @@ export function SharePassesDialog() {
     },
     {
       title: 'Viewer',
-      blurb: "Watches, pans and zooms. Can't comment or change a thing.",
+      blurb: "Watches along. Can't comment or change a thing.",
       tile: 'fill-violet-500 dark:fill-violet-700',
       text: 'fill-violet-700 dark:fill-violet-300',
       on: false,
