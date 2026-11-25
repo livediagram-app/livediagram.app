@@ -76,7 +76,7 @@ function Mark({ line }: { line: Exclude<AiSourceLine, { kind: 'loading' }> }) {
   );
 }
 
-const ACTION_WORDS = { 'built-in': 'Use Your Own Key', key: 'Change', failed: 'Fix Key' } as const;
+const ACTION_WORDS = { 'built-in': 'Setup Key', key: 'Change', failed: 'Fix Key' } as const;
 
 export function AiSource({ line, act, allowance, itemKeyName, id }: AiSourceProps) {
   // Set when the action opens Settings: the focus Settings hands back on closing is the page's, not the person's, so

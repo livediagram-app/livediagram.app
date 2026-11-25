@@ -27,7 +27,7 @@ const SOURCE_OPTIONS = [
   {
     value: 'key',
     label: 'Your Own Key',
-    description: 'Your Anthropic or OpenAI key, billed by the provider, with no daily limits.',
+    description: 'Your own key, billed by the provider, with no daily limits.',
   },
 ] as const;
 

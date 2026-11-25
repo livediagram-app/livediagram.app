@@ -272,7 +272,7 @@ describe('Ask AI, which AI answers', () => {
     const menu = screen.getByRole('dialog', { name: 'Answer With' });
     expect(within(menu).getByText('Included with livediagram, with daily limits')).toBeTruthy();
     expect(within(menu).getAllByRole('radio')).toHaveLength(1);
-    fireEvent.click(within(menu).getByRole('button', { name: 'Use Your Own Key' }));
+    fireEvent.click(within(menu).getByRole('button', { name: 'Setup Key' }));
     expect(mocks.openSettings).toHaveBeenCalledWith('ai');
     expect(screen.queryByRole('dialog', { name: 'Answer With' })).toBeNull();
   });

@@ -828,7 +828,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone came back from GitHub waiting for an organisation's owner to approve the install.",
   'Plan|Unlinked|Github': 'Someone disconnected the plan from GitHub in Automations.',
   'UI|Opened|AiSourceSettings':
-    'Someone pressed Use Your Own Key, Change or Fix Key on an AI feature’s source line, opening Settings › AI.',
+    'Someone pressed Setup Key, Change or Fix Key on an AI feature’s source line, opening Settings › AI.',
   'UI|Added|AiSourceKey':
     'Someone added an AI key of their own in Settings › AI after opening it from an AI feature on built-in AI.',
   'UI|Used|AskAi': 'Someone asked Ask AI a question about the open plan.',

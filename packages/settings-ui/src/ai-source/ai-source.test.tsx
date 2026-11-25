@@ -140,15 +140,15 @@ const render = (node: React.ReactNode) => act(() => root.render(node));
 const button = () => host.querySelector('button');
 
 describe('the line', () => {
-  it('says built-in AI with its allowance, and Use Your Own Key', () => {
+  it('says built-in AI with its allowance, and Setup Key', () => {
     const act_ = vi.fn();
     render(
       <AiSource line={{ kind: 'built-in', canChange: true }} act={act_} allowance="10 a day." />,
     );
     expect(host.textContent).toContain('Built-in AI');
     expect(host.textContent).toContain('10 a day.');
-    expect(button()?.textContent).toBe('Use Your Own Key');
-    expect(button()?.getAttribute('aria-label')).toBe('Use Your Own Key, in Settings › AI');
+    expect(button()?.textContent).toBe('Setup Key');
+    expect(button()?.getAttribute('aria-label')).toBe('Setup Key, in Settings › AI');
     expect(button()?.className).toContain('cursor-pointer');
     act(() => button()!.click());
     expect(act_).toHaveBeenCalledTimes(1);

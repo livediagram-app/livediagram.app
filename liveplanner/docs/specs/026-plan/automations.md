@@ -840,7 +840,7 @@ the same model as the AI actions, asked a different question: never a rule that 
   (**Stamp Done Cards**, **Welcome Form Responses**, **Nudge Overdue Cards**). Under the box, its count ("120 / 500")
   and the source line (`AiSource`, [ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)):
   **Built-in AI** with "Counts toward this plan's 100 AI steps a day", or the plan's team's key or the person's own
-  with "No daily limits", and **Use Your Own Key** or **Change**. On a key a draft counts toward none of the plan's
+  with "No daily limits", and **Setup Key** or **Change**. On a key a draft counts toward none of the plan's
   AI asks or drafts. Then **Cancel** and **Draft Rule** (also Ctrl or ⌘ Enter). Draft Rule is disabled while the box
   is empty.
 - While it drafts, the button reads **Drafting…** with a spinner and the box is read-only; Cancel stops waiting

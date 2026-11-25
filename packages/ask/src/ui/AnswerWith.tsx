@@ -143,7 +143,7 @@ export function AnswerWith({
                 {view.key
                   ? 'Applies to your next question'
                   : manage
-                    ? 'Your Anthropic or OpenAI key, with no daily limits'
+                    ? 'Your own key with no daily limits'
                     : 'Applies to your next question'}
               </span>
               {manage ? (
@@ -156,7 +156,7 @@ export function AnswerWith({
                   }}
                   className="touch-target relative shrink-0 cursor-pointer rounded text-[12px] font-semibold text-brand-700 outline-none hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500/60 dark:text-brand-300 dark:hover:text-brand-200"
                 >
-                  {failed ? 'Fix Key' : view.key ? 'Manage Keys' : 'Use Your Own Key'}
+                  {failed ? 'Fix Key' : view.key ? 'Manage Keys' : 'Setup Key'}
                 </button>
               ) : null}
             </div>

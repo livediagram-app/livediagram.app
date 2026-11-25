@@ -262,7 +262,7 @@ draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
 `built-in-knowledgebase-limit`, `built-in-failed` and anything else to a title, a line and a step (`ai-settings`,
 `ask-again`, `none`). On `provider: 'built-in'` a model's failure (`bad-key`, `overloaded`, `other`, ...) is "The
 Built-In AI Could Not Answer". The server's own `message` is never shown. Inside the question box, with no key, the AI pill says **Built-In AI**
-(`data-ask-ai="built-in"`), and its menu offers **Use Your Own Key**.
+(`data-ask-ai="built-in"`), and its menu offers **Setup Key**.
 
 ### Which AI answers
 
