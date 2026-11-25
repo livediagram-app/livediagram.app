@@ -4,6 +4,7 @@
 // app's door. A document kept only in this browser (no owner) has none.
 
 import { useMemo } from 'react';
+import { SAVED_DESIGN_KIND, savedDesignOf } from '@livedocuments/document';
 import { LibraryProvider } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import { libraryApiOver } from '@liveworkspace/workbench/lib/library/library-api';
 import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
@@ -13,8 +14,13 @@ import { useToast } from '@/hooks/ui/useToast';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 
 // Saving to the Library and placing from it, counted by whose library (libraries.md "Telemetry").
-const librarySaved = (scope: 'personal' | 'team') =>
+// A saved Page Design is counted as one too (docs/specs/011-theme/page-designs.md "Telemetry").
+const librarySaved = (scope: 'personal' | 'team', elements: readonly unknown[]) => {
   track('Library', 'Created', scope === 'team' ? 'Team' : 'Personal');
+  if (savedDesignOf(elements)) track('Tab', 'Changed', 'PageDesignSaved');
+};
+// Saved Page Designs are applied from the Page Design picker, never placed from the palette.
+const APART_KINDS = [SAVED_DESIGN_KIND];
 const libraryPlaced = (scope: 'personal' | 'team') =>
   track('Library', 'Added', scope === 'team' ? 'Team' : 'Personal');
 
@@ -56,6 +62,7 @@ export function EditorLibraryProvider({
   return (
     <LibraryProvider
       api={api}
+      apartKinds={APART_KINDS}
       pictures={pictures}
       onSaved={librarySaved}
       onPlaced={libraryPlaced}

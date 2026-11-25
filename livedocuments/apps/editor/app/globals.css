@@ -13,6 +13,7 @@
 @import '@liveworkspace/workbench/styles/motion-sticky.css';
 @import '@liveworkspace/workbench/styles/motion-media.css';
 @import './motion-page.css';
+@import './page-design.css';
 /* The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md). */
 @import '@liveworkspace/workbench/styles/auth-motion.css';
 @import '@liveworkspace/workbench/styles/motion-drawing.css';

@@ -14,12 +14,13 @@ import { PAGE_RAIL_STRIP_WIDTH, PAGE_RAIL_WIDTH, PageRailButton, PageRailDocked 
 
 /** The least window width the rail docks at. */
 export const PAGE_RAIL_MIN_WINDOW = 1280;
-/** The room the page keeps beside the docked rail: its 760 px column and 48 px either side
- *  (docs/specs/030-knowledgebase/page-surface.md "A reading column"). */
+/** The least room the page keeps beside the docked rail: a 760 px column and 48 px either side, the column pages had
+ *  before Work Tracker 1418. Narrower than the page's own 960 px column on purpose: between the two the page reflows
+ *  through the narrow view and a laptop keeps its docked rail (docs/specs/030-knowledgebase/page-surface.md). */
 export const PAGE_RAIL_PAGE_ROOM = 856;
 
 /** The window width the rail docks at beside a page tree `treeWidth` px wide: never under 1,280 px, and never so
- *  narrow that the page beside it would be scaled down to fit (1,400 px with the tree open, 1,280 with its rail). */
+ *  narrow that the page beside it has less than a 760 px column (1,432 px with the tree open, 1,280 with its rail). */
 export function pageRailDockWidth(treeWidth: number): number {
   return Math.max(
     PAGE_RAIL_MIN_WINDOW,

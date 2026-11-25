@@ -145,8 +145,11 @@ export function HomeHero({
           words,
           teams,
         );
+  // While the app's welcome loads, "Welcome." rather than "Welcome to ." with a gap where the name goes.
   const greeting = firstRun
-    ? `Welcome to ${firstRun.manifest?.name ?? ''}.`
+    ? firstRun.manifest?.name
+      ? `Welcome to ${firstRun.manifest.name}.`
+      : 'Welcome.'
     : hour === null
       ? ''
       : heroGreeting(hour);

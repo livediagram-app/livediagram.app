@@ -25,7 +25,7 @@ import { SetupSparkleIcon } from '@/components/setup/setup-icons';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { StartPanel } from './StartPanel';
 import { StartSaveSwitch } from './StartSaveSwitch';
-import { START_GROUP_ID, knowledgebaseStart } from './start-structure-items';
+import { START_GROUP_ID, knowledgebaseStart, startLine } from './start-structure-items';
 import { structureCard } from './structure-card';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
@@ -44,9 +44,8 @@ const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
 };
 const ImportGlyph = glyph(lucideFileDown);
 
-const COPY: { title: string; line: string; noMatch: string; help: HelpArticleKey } = {
+const COPY: { title: string; noMatch: string; help: HelpArticleKey } = {
   title: 'Start Your Knowledgebase',
-  line: 'Pick a shape for the whole knowledgebase: its pages, already in place. Or start blank, or describe it.',
   noMatch: 'knowledgebases',
   help: 'templates',
 };
@@ -85,7 +84,7 @@ export function StartFromTemplates({
     <StartPanel
       titleId="start-pages-title"
       title={COPY.title}
-      line={COPY.line}
+      line={startLine(!!onDescribe)}
       searchLabel="Find a knowledgebase"
       noMatchNoun={COPY.noMatch}
       helpArticle={COPY.help}

@@ -32,7 +32,9 @@ and picks that structure on its start, so it is created exactly as a pick here i
   away (its one page, **Start Here**, saved to the account for a signed-in person, Offline for a guest, as
   [Knowledgebases and pages](knowledgebases-and-pages.md) says) and open it on the **start screen**, the shared
   start panel every liveworkspace editor shows on a new item: titled **Start Your Knowledgebase**, with the line
-  "Pick a shape for the whole knowledgebase: its pages, already in place. Or start blank, or describe it."
+  "Pick a shape for the whole knowledgebase: its pages, already in place. Or start blank, or describe it." Where
+  Describe to Set Up is not offered (a guest, Offline, a Viewer) the line ends at "Or start blank.", and the Start
+  group's line drops the AI's part ("An empty knowledgebase to shape yourself."): it never offers what is not there.
 - **Its choices**, in the rail:
   - **Start**, first: **Blank Knowledgebase** (the first card), which closes onto Start Here, the caret in its
     Title; and **Describe to Set Up** (where it is offered: a signed-in Editor, not Offline), a card that closes the

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pagesOf, offersPageKindChoice } from '@liveknowledge/document';
+import { CONTINUOUS_PAGE_WIDTH, pagesOf, offersPageKindChoice } from '@liveknowledge/document';
 import { BLANK_PAGE_TEMPLATE_KINDS, blankPageTemplateOverrides } from './blank-page-templates';
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
@@ -35,7 +35,7 @@ describe('blanks of a page kind', () => {
         id: 'page-1',
         orientation: 'portrait',
         size: 'fit',
-        fit: { width: 856, height: 240 },
+        fit: { width: CONTINUOUS_PAGE_WIDTH, height: 240 },
         kind: 'article',
         flow: 'art-1',
       },

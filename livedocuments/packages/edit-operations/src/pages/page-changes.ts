@@ -36,7 +36,11 @@ import {
   pageSizesFor,
   pageTurned,
   pageUnits,
+  pageDesignSet,
   tabPageKind,
+  withTabPageDesign,
+  pageDesignLabel,
+  type PageDesign,
   withPageKindChosen,
   type Page,
   type PageBackground,
@@ -46,6 +50,7 @@ import {
   plural,
 } from '@livedocuments/document';
 import { buildPageLayout, layoutCatalogueFor } from '@livedocuments/templates';
+import { tabDesignFor } from './design-input';
 import { enterPages, type PagesIds } from './enter';
 import { layoutTextOf } from './layout-text';
 import { pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';
@@ -117,6 +122,12 @@ function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'>): s
     kind_not_offered: kindNotOffered(tab, kind),
   };
   return words[why];
+}
+
+/** A design in a result line: its name and id, and what is tuned. */
+export function describeDesign(d: PageDesign): string {
+  const tuned = Object.keys(d).filter((k) => k !== 'id');
+  return `${pageDesignLabel(d.id)} (${d.id})${tuned.length ? `, ${tuned.join(', ')} set` : ''}`;
 }
 
 /** Why a page of `kind` cannot join the tab (docs/specs/007-editor/pages-mode.md "One kind a tab"). */
@@ -235,6 +246,17 @@ export function applyPageChanges(
           current = take(pageBackgroundSet(current, page.id, backgroundPatch(c.background)), page);
           said.push(`background ${describePatch(c.background)}`);
         }
+        if (c.design !== undefined) {
+          const d = c.design;
+          current = take(pageDesignSet(current, page.id, d === 'tab' ? null : d), page);
+          said.push(
+            d === 'tab'
+              ? "the tab's design"
+              : d === 'none'
+                ? 'no design'
+                : `design ${describeDesign(d)}`,
+          );
+        }
         return said;
       };
       switch (change.op) {
@@ -313,6 +335,16 @@ export function applyPageChanges(
             page.flow
               ? `Duplicated the article on page ${placeOf(page.id)} (${plural(made.length, 'page')}, from page ${placeOf(made[0]!.id)}).`
               : `Duplicated page ${placeOf(page.id)} as page ${placeOf(made[0]!.id)}.`,
+          );
+          return;
+        }
+        case 'tab_design': {
+          const d = tabDesignFor(current, change.design);
+          current = withTabPageDesign(current, d);
+          lines.push(
+            d
+              ? `Set the tab's page design: ${describeDesign(d)}${change.design === 'auto' ? ' (picked for the tab\u2019s words)' : ''}.`
+              : "Cleared the tab's page design.",
           );
           return;
         }

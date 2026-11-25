@@ -173,7 +173,6 @@ livedocuments/apps/editor/lib/tab-style-opener.ts	liveknowledge/apps/editor/lib/
 livedocuments/apps/editor/lib/thumbnail-cache.ts	liveknowledge/apps/editor/lib/thumbnail-cache.ts
 livedocuments/apps/editor/lib/version-history-store.ts	liveknowledge/apps/editor/lib/version-history-store.ts
 livedocuments/apps/editor/lib/workbench-bindings.ts	liveknowledge/apps/editor/lib/workbench-bindings.ts
-livedocuments/packages/agent-verbs/src/pages/index.ts	liveknowledge/packages/agent-verbs/src/pages/index.ts
 livedocuments/packages/api-schema/src/article-caret.ts	liveknowledge/packages/api-schema/src/article-caret.ts
 livedocuments/packages/api-schema/src/cta-sources.ts	liveknowledge/packages/api-schema/src/cta-sources.ts
 livedocuments/packages/api-schema/src/home.ts	liveknowledge/packages/api-schema/src/home.ts
@@ -222,7 +221,6 @@ livedocuments/packages/document/src/map-layout.ts	liveknowledge/packages/documen
 livedocuments/packages/document/src/nearest-towards.ts	liveknowledge/packages/document/src/nearest-towards.ts
 livedocuments/packages/document/src/page-content.ts	liveknowledge/packages/document/src/page-content.ts
 livedocuments/packages/document/src/page-default-background.ts	liveknowledge/packages/document/src/page-default-background.ts
-livedocuments/packages/document/src/page-frame.ts	liveknowledge/packages/document/src/page-frame.ts
 livedocuments/packages/document/src/page-image.ts	liveknowledge/packages/document/src/page-image.ts
 livedocuments/packages/document/src/page-ink.ts	liveknowledge/packages/document/src/page-ink.ts
 livedocuments/packages/document/src/page-theme-fills.ts	liveknowledge/packages/document/src/page-theme-fills.ts

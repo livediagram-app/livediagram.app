@@ -274,6 +274,18 @@ describe('page ls and page set', () => {
         { page: '2', size: 'a3', orientation: 'landscape' },
         { op: 'set', page: 2, size: 'a3', orientation: 'landscape' },
       ],
+      // Page designs (docs/specs/011-theme/page-designs.md "Agents").
+      [
+        { page: '2', design: 'none' },
+        { op: 'set', page: 2, design: 'none' },
+      ],
+      [
+        { add: 'slide', design: 'aurora' },
+        { op: 'add', kind: 'slide', design: { id: 'aurora' } },
+      ],
+      [{ tabDesign: 'waves' }, { op: 'tab_design', design: { id: 'waves' } }],
+      [{ tabDesign: 'auto' }, { op: 'tab_design', design: 'auto' }],
+      [{ tabDesign: 'none' }, { op: 'tab_design', design: null }],
     ];
     for (const [flags, change] of cases) {
       const { ctx, sent } = setUp();
@@ -285,6 +297,13 @@ describe('page ls and page set', () => {
       ]);
       expect(pageSet.quiet!(out)).toEqual(['page-1']);
     }
+  });
+
+  it('makes the tab design a change of its own', async () => {
+    const { ctx } = setUp();
+    await expect(
+      pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, tabDesign: 'aurora', page: '1' })),
+    ).rejects.toMatchObject({ message: expect.stringContaining('--tab-design, --page') });
   });
 
   it('adds a page with no layout, and lists an unnamed page without a name', async () => {

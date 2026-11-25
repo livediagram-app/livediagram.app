@@ -8,9 +8,10 @@ const HelpIcon = lucideGlyph(lucideCircleHelp, 14);
 const QUIET_LINK =
   'inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 underline-offset-4 transition-colors duration-micro hover:text-brand-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-slate-300 dark:hover:text-brand-300';
 
-// Text that reads on in its sentence: the surrounding size, the brand colour, underlined on hover.
+// Text that reads on in its sentence: the surrounding size, the brand colour, with a faint underline that firms on
+// hover. On liveworkspace's own pages the brand is slate, close to the sentence's ink, so colour alone hid the link.
 const INLINE_LINK =
-  'font-medium text-brand-700 underline-offset-4 transition-colors duration-micro hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-300';
+  'font-medium text-brand-700 underline decoration-current/40 underline-offset-4 transition-colors duration-micro hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-300';
 
 // A deep link into an app's help centre, for the Community's public pages (the gallery, the post page, the landing
 // section). The app binds it to its article and its own `UI·Opened` event (each product's

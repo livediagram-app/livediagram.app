@@ -86,6 +86,7 @@ export function ScreenSourceDialog({
       />
       <div className="px-6 pt-4">
         <SegmentedToggle
+          fill
           label="Source"
           value={tab}
           onChange={setTab}

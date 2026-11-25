@@ -77,7 +77,7 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'logo:pen': 'Pens',
   'draw:marker-main': 'Markers',
   'tools:mind-node': 'Diagrams',
-  'tools:code-block': 'Code and Lists',
+  'tools:code-block': 'Code',
   'devices:browser': 'Desktop',
   'devices:phone': 'Mobile',
   'tools:image': 'Pictures',

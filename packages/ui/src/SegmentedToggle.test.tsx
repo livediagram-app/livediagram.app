@@ -138,6 +138,34 @@ describe('SegmentedToggle in a narrow, normal and wide place', () => {
     expect(screen.getByRole('group').hasAttribute('data-segments-wrapped')).toBe(false);
   });
 
+  it('gives every segment an equal share of the track when it fills (Work Tracker 1427)', () => {
+    render(
+      <SegmentedToggle<Kind>
+        label="Source"
+        value="sheet"
+        onChange={() => {}}
+        options={KINDS}
+        fill
+      />,
+    );
+    const group = screen.getByRole('group');
+    expect(group.hasAttribute('data-segments-fill')).toBe(true);
+    for (const button of screen.getAllByRole('button')) {
+      expect(button.className).toContain('w-full');
+      expect(button.parentElement!.className).toContain('flex-1');
+    }
+  });
+
+  it('keeps segments their own width by default', () => {
+    render(
+      <SegmentedToggle<Kind> label="Source" value="sheet" onChange={() => {}} options={KINDS} />,
+    );
+    expect(screen.getByRole('group').hasAttribute('data-segments-fill')).toBe(false);
+    for (const button of screen.getAllByRole('button')) {
+      expect(button.className).not.toContain('w-full');
+    }
+  });
+
   it('never calls one segment wrapped', () => {
     const track = document.createElement('div');
     expect(segmentsWrapped(track)).toBe(false);

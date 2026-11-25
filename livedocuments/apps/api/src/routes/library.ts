@@ -5,14 +5,24 @@
 
 import {
   ELEMENT_TYPES,
+  isSavedDesignElement,
   isValidElement,
   migrateIncomingElements,
   renderElementsToSvg,
+  SAVED_DESIGN_KIND,
+  savedDesignElement,
+  savedDesignOf,
+  savedDesignPreview,
   type Tab,
 } from '@livedocuments/document';
 import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import { accountsTeamReader, createTeamAccess } from '@liveworkspace/index-app';
-import { handleLibraryDoor, libraryActorOf, libraryKitOf } from '@liveworkspace/media';
+import {
+  handleLibraryDoor,
+  libraryActorOf,
+  libraryKitOf,
+  type LibraryDoorKit,
+} from '@liveworkspace/media';
 import { accountCredentials } from '../auth/accounts';
 import { mediaClient, mediaOwner } from '../media';
 import { json, missingAuth } from '../responses';
@@ -37,12 +47,28 @@ export function drawLibraryElements(
   });
 }
 
-export const libraryKit = libraryKitOf({
+const elementKit = libraryKitOf({
   kinds: ELEMENT_TYPES,
   migrate: migrateIncomingElements,
   isValid: isValidElement,
   render: (elements, imageHref) => drawLibraryElements(elements, '', imageHref),
 });
+
+// The elements livedocuments keeps, and a saved Page Design (docs/specs/011-theme/page-designs.md "Saved designs"):
+// one element of its own kind, kept whole, with a preview that carries the design. A saved design's element beside
+// others is left out, so such a save is refused as any element that fails the check.
+export const libraryKit: LibraryDoorKit = {
+  kinds: new Set([...ELEMENT_TYPES, SAVED_DESIGN_KIND]),
+  clean: (elements) => {
+    const design = savedDesignOf(elements);
+    if (design) return [savedDesignElement(design)];
+    return elementKit.clean(elements.filter((el) => !isSavedDesignElement(el)));
+  },
+  preview: (elements, pictures) => {
+    const design = savedDesignOf(elements);
+    return design ? savedDesignPreview(design) : elementKit.preview(elements, pictures);
+  },
+};
 
 export async function handleLibrary(ctx: RouteContext): Promise<Response> {
   // The door's verbs (handleLibraryDoor): GET the list, POST save and place, PUT rename, DELETE.

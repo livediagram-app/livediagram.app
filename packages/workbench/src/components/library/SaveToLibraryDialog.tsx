@@ -35,9 +35,16 @@ type Destination = {
   line: string;
 };
 
-function destinationsOf(teams: readonly LibraryTeam[]): Destination[] {
+function destinationsOf(teams: readonly LibraryTeam[], copy?: SaveToLibraryCopy): Destination[] {
+  const verb = copy?.verb ?? 'place it';
   return [
-    { key: 'personal', scope: 'personal', teamId: null, label: PERSONAL_LABEL, line: 'Only you' },
+    {
+      key: 'personal',
+      scope: 'personal',
+      teamId: null,
+      label: copy?.personalLabel ?? PERSONAL_LABEL,
+      line: 'Only you',
+    },
     ...teams.map((t) => ({
       key: t.id,
       scope: 'team' as const,
@@ -45,14 +52,27 @@ function destinationsOf(teams: readonly LibraryTeam[]): Destination[] {
       label: t.name,
       line:
         t.role === 'admin'
-          ? 'Everyone in the team can place it. You can tidy it.'
-          : 'Everyone in the team can place it. Admins tidy it.',
+          ? `Everyone in the team can ${verb}. You can tidy it.`
+          : `Everyone in the team can ${verb}. Admins tidy it.`,
     })),
   ];
 }
 
+// What a save that isn't a selection's says (a saved Page Design, say): its own title and line, and no folder.
+export type SaveToLibraryCopy = {
+  title: string;
+  subtitle: string;
+  placeholder: string;
+  // The Personal choice's name ('Personal' unless the app names it).
+  personalLabel?: string;
+  // What a team's line says its members can do with it ('place it' unless the app says).
+  verb?: string;
+};
+
 type SaveToLibraryProps = {
   open: boolean;
+  // A save that isn't a selection's names itself; without it the dialog speaks of elements, with a folder.
+  copy?: SaveToLibraryCopy;
   // How many elements are being saved, for the line under the title.
   count: number;
   suggestedTitle: string;
@@ -86,6 +106,7 @@ export function SaveToLibraryDialog(props: SaveToLibraryProps) {
 }
 
 function SaveToLibraryForm({
+  copy,
   count,
   suggestedTitle,
   teams,
@@ -101,7 +122,7 @@ function SaveToLibraryForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const destinations = destinationsOf(teams);
+  const destinations = destinationsOf(teams, copy);
   const picked = destinations.find((d) => d.key === destination) ?? destinations[0]!;
   const suggestions = folderNames(items, picked.scope, picked.teamId);
   const trimmed = title.trim();
@@ -134,11 +155,13 @@ function SaveToLibraryForm({
       <HeroDialogHeader
         art={saveToLibraryHeroArt}
         titleId={titleId}
-        title="Save to Library"
+        title={copy?.title ?? 'Save to Library'}
         subtitle={
-          count === 1
-            ? 'Keep a copy of this element to place in any document, in every app.'
-            : `Keep a copy of these ${count} elements to place in any document, in every app.`
+          copy
+            ? copy.subtitle
+            : count === 1
+              ? 'Keep a copy of this element to place in any document, in every app.'
+              : `Keep a copy of these ${count} elements to place in any document, in every app.`
         }
       />
 
@@ -150,7 +173,7 @@ function SaveToLibraryForm({
             autoFocus
             maxLength={LIBRARY_TITLE_MAX}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Name this item"
+            placeholder={copy?.placeholder ?? 'Name this item'}
           />
         </label>
         <fieldset className="flex min-w-0 flex-col gap-1.5">
@@ -200,26 +223,28 @@ function SaveToLibraryForm({
             })}
           </div>
         </fieldset>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Folder{' '}
-            <span className="font-normal text-slate-500 dark:text-slate-400">(optional)</span>
-          </span>
-          <TextInput
-            value={folder}
-            list={suggestions.length > 0 ? foldersId : undefined}
-            maxLength={LIBRARY_FOLDER_MAX}
-            onChange={(e) => setFolder(e.target.value)}
-            placeholder={suggestions[0] ?? 'Logos, Icons, Components…'}
-          />
-          {suggestions.length > 0 ? (
-            <datalist id={foldersId}>
-              {suggestions.map((name) => (
-                <option key={name} value={name} />
-              ))}
-            </datalist>
-          ) : null}
-        </label>
+        {copy ? null : (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              Folder{' '}
+              <span className="font-normal text-slate-500 dark:text-slate-400">(optional)</span>
+            </span>
+            <TextInput
+              value={folder}
+              list={suggestions.length > 0 ? foldersId : undefined}
+              maxLength={LIBRARY_FOLDER_MAX}
+              onChange={(e) => setFolder(e.target.value)}
+              placeholder={suggestions[0] ?? 'Logos, Icons, Components…'}
+            />
+            {suggestions.length > 0 ? (
+              <datalist id={foldersId}>
+                {suggestions.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
+            ) : null}
+          </label>
+        )}
         {error ? (
           <Callout tone="error" role="alert">
             {error}

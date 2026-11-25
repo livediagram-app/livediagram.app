@@ -53,7 +53,7 @@ export function RuleNameField({
       onKeyDown={(e) => {
         if (e.key === 'Enter') e.preventDefault();
       }}
-      className={`-mx-2 block w-[calc(100%+1rem)] resize-none overflow-hidden rounded-lg bg-transparent px-2 py-1 text-[18px] font-semibold leading-snug text-slate-900 outline-none transition hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-brand-200 motion-reduce:transition-none dark:text-slate-50 dark:hover:bg-slate-800 dark:focus:bg-slate-900 dark:focus:ring-brand-500/30 ${invalid ? 'ring-2 ring-red-300 dark:ring-red-500/50' : ''}`}
+      className={`-mx-2 block w-[calc(100%+1rem)] resize-none overflow-hidden rounded-lg bg-transparent px-2 py-1 text-[18px]! font-semibold leading-snug text-slate-900 outline-none transition hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-brand-200 motion-reduce:transition-none dark:text-slate-50 dark:hover:bg-slate-800 dark:focus:bg-slate-900 dark:focus:ring-brand-500/30 ${invalid ? 'ring-2 ring-red-300 dark:ring-red-500/50' : ''}`}
     />
   );
 }

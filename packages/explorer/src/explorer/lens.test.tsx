@@ -139,6 +139,10 @@ describe('the filter lens', () => {
     });
     const { onNavigate, onLensSelected } = renderRouted(index, { kind: 'all' });
     await waitFor(() => expect(titles()).toHaveLength(2));
+    // One row that scrolls sideways on a phone, without a scrollbar drawn under the chips.
+    expect(screen.getByRole('group', { name: 'Filters' }).className).toContain(
+      '[scrollbar-width:none]',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Edited, any' }));
     const listbox = await screen.findByRole('listbox', { name: 'Edited' });
     fireEvent.click(within(listbox).getByRole('option', { name: /Last 7 days/ }));

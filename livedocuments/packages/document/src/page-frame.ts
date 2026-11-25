@@ -115,6 +115,7 @@ export function pageExportFrame(
     ruling,
     imageHref,
     overFill,
+    design,
   }: {
     // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
     // as the canvas shows it (the Map).
@@ -133,6 +134,9 @@ export function pageExportFrame(
     // picture of the gradient with the motion painted in, so it takes the fill's place; laid over the pattern it
     // would hide it.
     overFill?: string;
+    // The page's design as a still frame (pageDesignExportSvg), over the pattern and under everything on the page
+    // (docs/specs/011-theme/page-designs.md "Exports and thumbnails").
+    design?: string;
   } = {},
 ): PageExportFrame {
   const r = page.rect;
@@ -174,6 +178,7 @@ export function pageExportFrame(
       rect(`url(#${id}-pattern)`),
     );
   }
+  if (design) parts.push(design);
   const p = page.rect;
   return {
     bounds: { x: p.x, y: p.y, w: p.width, h: p.height },

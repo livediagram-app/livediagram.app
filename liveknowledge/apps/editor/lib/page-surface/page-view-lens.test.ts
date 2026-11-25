@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  CONTINUOUS_PAGE_WIDTH,
   DRAFT_FLOW,
   draftOf,
   withArticlePageHeight,
@@ -42,13 +43,13 @@ const ZONE: ArticleZoneBlock = {
   id: 'z1',
   type: 'zone',
   zone: 'object',
-  width: 760,
+  width: 960,
   height: 380,
   at: { page: 'p1', x: 48, y: 200 },
 };
-// The page is 856 wide, centred on the canvas's axis: its left at -428, its column's at -380.
-const IMAGE = { id: 'img', type: 'image', x: -380, y: 200, width: 760, height: 380 } as Element;
-const NOTE = { id: 'n1', type: 'article-note', x: 436, y: 60, width: 24, height: 24 } as Element;
+// The page is 1,056 wide, its left edge at -428 (CONTINUOUS_PAGE_LEFT) and its column's at -380.
+const IMAGE = { id: 'img', type: 'image', x: -380, y: 200, width: 960, height: 380 } as Element;
+const NOTE = { id: 'n1', type: 'article-note', x: 636, y: 60, width: 24, height: 24 } as Element;
 
 const page = (text = 'Saved'): Tab => ({
   id: 't1',
@@ -61,7 +62,7 @@ const page = (text = 'Saved'): Tab => ({
       kind: 'article',
       flow: 'art-1',
       size: 'fit',
-      fit: { width: 856, height: 1200 },
+      fit: { width: CONTINUOUS_PAGE_WIDTH, height: 1200 },
     },
   ],
   articles: { 'art-1': { blocks: [para('a', text), ZONE, para('b', 'After')] } },
@@ -87,7 +88,7 @@ const writer = { by: 'Priya', now: () => 1000 };
 
 // A phone's room: 390 px less 20 px either side.
 const PHONE = 350;
-const S = PHONE / 760;
+const S = PHONE / 960;
 
 afterEach(() => resetPageViewStore());
 
@@ -95,10 +96,22 @@ describe('the narrow view lens', () => {
   it('is the page itself before the room is measured and while the room holds the column', () => {
     const tab = page();
     expect(pageViewLens(tab, null)).toBe(tab);
-    expect(pageViewLens(tab, 760)).toBe(tab);
+    expect(pageViewLens(tab, 960)).toBe(tab);
     expect(pageViewLens(tab, 1400)).toBe(tab);
-    expect(pageViewNarrows(tab, 760)).toBe(false);
+    expect(pageViewNarrows(tab, 960)).toBe(false);
+    // The column pages had before Work Tracker 1418 is a narrow room now.
+    expect(pageViewNarrows(tab, 760)).toBe(true);
     expect(isPageViewLens(tab)).toBe(false);
+  });
+
+  it('reads the column from the page as read, so a page held at its first width narrows at the new one', () => {
+    const held = {
+      ...page(),
+      pages: [{ ...page().pages![0]!, fit: { width: 856, height: 1200 } }],
+    };
+    expect(pageViewNarrows(held, 900)).toBe(true);
+    expect(fitOf(pageViewLens(held, 900))).toEqual({ width: 996, height: 1200 });
+    expect(pageViewLens(held, 960)).toBe(held);
   });
 
   it('draws the page narrower, as tall as stored until measured, then as measured', () => {
@@ -110,7 +123,7 @@ describe('the narrow view lens', () => {
     const measured = pageViewLens(tab, PHONE, { ...EMPTY_LAYOUT, height: 2600 });
     expect(fitOf(measured)).toEqual({ width: PHONE + 96, height: 2600 });
     // The stored tab is untouched.
-    expect(fitOf(tab)).toEqual({ width: 856, height: 1200 });
+    expect(fitOf(tab)).toEqual({ width: CONTINUOUS_PAGE_WIDTH, height: 1200 });
   });
 
   it('fits a wide zone and its picture to the column, kept inside it', () => {
@@ -119,12 +132,12 @@ describe('the narrow view lens', () => {
     expect(zone.width).toBeCloseTo(PHONE, 6);
     expect(zone.height).toBeCloseTo(380 * S, 6);
     expect(zone.at).toEqual({ page: 'p1', x: 48, y: 200 });
-    // The narrow page's left is -(350 + 96) / 2 = -223, its column's 48 further in.
+    // The narrow page's left edge is where the page's is (-428), its column's 48 further in.
     const img = elementOf(lens, 'img');
-    expect(img.x).toBeCloseTo(-223 + 48, 6);
+    expect(img.x).toBeCloseTo(-428 + 48, 6);
     expect(img.width).toBeCloseTo(PHONE, 6);
     expect(img.height).toBeCloseTo(380 * S, 6);
-    expect(img.x + img.width).toBeLessThanOrEqual(-223 + 48 + PHONE + 1e-6);
+    expect(img.x + img.width).toBeLessThanOrEqual(-428 + 48 + PHONE + 1e-6);
   });
 
   it('stands a zone where this window measured it, and a note at its measured corner', () => {
@@ -141,8 +154,8 @@ describe('the narrow view lens', () => {
 
   it('keeps a margin note as far from the right edge as it was until measured', () => {
     const lens = pageViewLens(page(), PHONE);
-    // The right edge moved from 428 to 223.
-    expect(elementOf(lens, 'n1').x).toBeCloseTo(436 - 205, 6);
+    // The right edge moved from 628 to 18.
+    expect(elementOf(lens, 'n1').x).toBeCloseTo(636 - 610, 6);
   });
 
   it('is one cached lens per stored tab, room and layout', () => {
@@ -208,7 +221,7 @@ describe('lowering through the narrow view', () => {
     };
     const out = lowerPageView(real, lens, moved);
     expect(elementOf(out, 'img').x).toBeCloseTo(-380 + 10 / S, 6);
-    expect(elementOf(out, 'img').width).toBeCloseTo(760, 6);
+    expect(elementOf(out, 'img').width).toBeCloseTo(960, 6);
     expect(elementOf(out, 'n1')).toBe(NOTE);
     // A zone resized on the narrow page is stored at the size it means at full width.
     const resized: Tab = {
@@ -222,7 +235,7 @@ describe('lowering through the narrow view', () => {
       },
     };
     const zone = zoneOf(lowerPageView(real, lens, resized));
-    expect(zone.width).toBe(380);
+    expect(zone.width).toBe(480);
     expect(zone.height).toBe(380);
     expect(zone.at).toEqual(ZONE.at);
   });
@@ -241,7 +254,7 @@ describe('lowering through the narrow view', () => {
     expect((draft.flow.blocks[0] as { runs: { text: string }[] }).runs[0]!.text).toBe('Draft line');
     // The saved writing, the page's size and the zone are as stored; no narrow height went to the draft record.
     expect(flowOf(tab)).toBe(flowOf(real));
-    expect(fitOf(tab)).toEqual({ width: 856, height: 1200 });
+    expect(fitOf(tab)).toEqual({ width: CONTINUOUS_PAGE_WIDTH, height: 1200 });
     expect(draft.record.height).toBeUndefined();
     expect(tab.articles![DRAFT_FLOW]).toBeDefined();
     expect(tab.elements).toBe(real.elements);

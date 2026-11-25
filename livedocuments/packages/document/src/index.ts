@@ -129,6 +129,7 @@ export * from '@liveworkspace/element-model/page-of';
 export * from '@liveworkspace/element-model/wordmark';
 export * from './page-content';
 export * from './page-frame';
+export * from './page-designs';
 export * from './page-ink';
 export * from '@liveworkspace/element-model/page-ink-contrast';
 export * from './label-backdrop';

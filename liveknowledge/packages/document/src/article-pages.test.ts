@@ -13,6 +13,7 @@ import { articlesOf } from './article-flow';
 import { absentWriterPageCount } from './article-pages';
 import { pagesOf, layOutPages, type Page } from './page';
 import type { Element } from './index';
+import { CONTINUOUS_PAGE_WIDTH } from './page-sizes';
 
 const I = (id: string): Page => ({ id, orientation: 'portrait' });
 const D = (id: string, flow: string): Page => ({
@@ -158,7 +159,7 @@ describe("the first page's own choice of kind", () => {
       const pages = [{ ...only[0]!, ...from }] as Page[];
       const art = withPageKindChosen({ elements: [], pages }, 'p1', 'article', 'f')!;
       expect(art.pages[0]).toMatchObject({ size: 'fit', orientation: 'portrait', kind: 'article' });
-      expect(art.pages[0]!.fit!.width).toBe(856);
+      expect(art.pages[0]!.fit!.width).toBe(CONTINUOUS_PAGE_WIDTH);
     }
   });
   it('turns the page into a 16:9 landscape slide, keeping its name and background', () => {

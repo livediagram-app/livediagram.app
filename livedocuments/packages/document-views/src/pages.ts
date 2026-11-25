@@ -16,6 +16,7 @@ import {
   pagesOf,
   layOutPages,
   PAGE_SIZES,
+  tabPageDesignOf,
   type Element,
   type PageKind,
 } from '@livedocuments/document';
@@ -109,6 +110,9 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   // Every element in reading order, so a page's elements print as the outline does.
   const reading = depthFirst(model.tree.roots);
   const lines: ViewLine[] = [];
+  // The design every page wears but one with its own (docs/specs/011-theme/page-designs.md "Agents").
+  const tabDesign = tabPageDesignOf(tab);
+  if (tabDesign) lines.push({ text: `tab design ${JSON.stringify(tabDesign)}`, noun: PAGE });
   for (const p of pages) {
     const { x, y, width, height } = p.rect;
     const on = new Set(p.refs);
@@ -119,6 +123,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       ...(p.background ? [`background ${p.background}`] : []),
       ...(p.locked ? ['locked'] : []),
       ...(p.flow ? [`article ${p.flow}`] : []),
+      ...(p.design ? [`design ${p.design}`] : []),
       p.refs.length
         ? `${p.refs.length} element${p.refs.length === 1 ? '' : 's'}`
         : p.flow
@@ -167,7 +172,15 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   });
   return {
     text: fitted.text,
-    json: { header, pagesMode: true, pages, articles, layouts, elision: fitted.elision },
+    json: {
+      header,
+      pagesMode: true,
+      pages,
+      articles,
+      layouts,
+      ...(tabDesign ? { tabDesign } : {}),
+      elision: fitted.elision,
+    },
     fit: fitOf(fitted),
   };
 }

@@ -56,7 +56,8 @@ const refused = (status: number, refusal: PagesRefusal): PagesResult => {
 };
 
 // The tab fields an editor's `tab-meta` patch carries for pages: absent ones are cleared.
-const PAGE_FIELDS = ['pages', 'pageOrientation'] as const;
+// The tab's page design too: change_pages' tab_design sets it (docs/specs/011-theme/page-designs.md "Agents").
+const PAGE_FIELDS = ['pages', 'pageOrientation', 'pageDesign'] as const;
 
 /** The ops an editor's own edit would send for the same change, minus the elements (the changeset
  *  carries those). */

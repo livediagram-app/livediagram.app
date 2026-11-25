@@ -14,6 +14,7 @@ describeTrustedTypesSinks({
   // an export preview) goes through sanitizedHtml.
   builderMarkup: [
     'apps/editor/app/pre-hydration-scripts.ts',
+    'apps/editor/components/canvas/PageDesignLayer.tsx',
     'apps/editor/components/canvas/layout-render-thumb.tsx',
     'apps/editor/components/dialogs/TabStylePreview.tsx',
     'apps/editor/lib/stale-html-guard.ts',

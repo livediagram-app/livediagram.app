@@ -17,6 +17,8 @@ export const TAB_STYLE_KEYS = [
   'finish',
   // The background new pages start on (a Pages editor's New Page Background); absent in an editor without pages.
   'newPageBackground',
+  // The page design every page wears (a Pages editor's Page Design, livedocuments); absent elsewhere.
+  'pageDesign',
   // Element Colours, Keep as They Are (a Pages editor's, livedesign); absent elsewhere.
   'keepElementColours',
 ] as const;

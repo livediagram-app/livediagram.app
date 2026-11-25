@@ -39,14 +39,14 @@ const pageTab = (blocks: ArticleBlock[]): Tab => ({
 });
 
 describe('the continuous size', () => {
-  it('is an article page in the fit size: 856 wide, as tall as its writing', () => {
+  it('is an article page in the fit size: 1,056 wide, as tall as its writing', () => {
     const page = knowledgebasePage();
     expect(isContinuousPage(page)).toBe(true);
     expect(pageDimensions(page)).toEqual({
       width: CONTINUOUS_PAGE_WIDTH,
       height: CONTINUOUS_PAGE_MIN_HEIGHT,
     });
-    expect(CONTINUOUS_PAGE_WIDTH).toBe(856);
+    expect(CONTINUOUS_PAGE_WIDTH).toBe(1056);
     expect(isContinuousPage({ kind: 'article' })).toBe(false);
     expect(isContinuousPage({ kind: 'infographic', size: 'fit' })).toBe(false);
   });
@@ -62,11 +62,14 @@ describe('the continuous size', () => {
     const drawn = asViewPage({ ...narrow });
     expect(pagesOf({ pages: [drawn] })[0]!.fit).toEqual({ width: 446, height: 3000 });
     expect(layOutPages(pagesOf({ pages: [drawn] }))[0]!.rect).toMatchObject({
-      x: -223,
+      // Its left edge where every continuous page's stands (CONTINUOUS_PAGE_LEFT), whatever its width.
+      x: -428,
       width: 446,
     });
     // Its copy, as a store or the sync would hold it, is a stored page again.
-    expect(pagesOf({ pages: [JSON.parse(JSON.stringify(drawn))] })[0]!.fit!.width).toBe(856);
+    expect(pagesOf({ pages: [JSON.parse(JSON.stringify(drawn))] })[0]!.fit!.width).toBe(
+      CONTINUOUS_PAGE_WIDTH,
+    );
   });
 
   it('holds a height to whole px within its limits', () => {
@@ -88,10 +91,10 @@ describe('the continuous size', () => {
     expect(made).toMatchObject({
       orientation: 'portrait',
       size: 'fit',
-      fit: { width: 856, height: CONTINUOUS_PAGE_MIN_HEIGHT },
+      fit: { width: CONTINUOUS_PAGE_WIDTH, height: CONTINUOUS_PAGE_MIN_HEIGHT },
     });
-    const tall = continuousPage({ ...made, fit: { width: 856, height: 5000 } });
-    expect(tall.fit).toEqual({ width: 856, height: 5000 });
+    const tall = continuousPage({ ...made, fit: { width: CONTINUOUS_PAGE_WIDTH, height: 5000 } });
+    expect(tall.fit).toEqual({ width: CONTINUOUS_PAGE_WIDTH, height: 5000 });
   });
 });
 
@@ -102,17 +105,28 @@ describe('a stored continuous page', () => {
     })[0]!;
 
   it('reads its height, taller than Fit to Content allows an infographic', () => {
-    expect(stored({ width: 856, height: 64000 }).fit).toEqual({ width: 856, height: 64000 });
+    expect(stored({ width: CONTINUOUS_PAGE_WIDTH, height: 64000 }).fit).toEqual({
+      width: CONTINUOUS_PAGE_WIDTH,
+      height: 64000,
+    });
   });
 
   it('is always the continuous width, and the least height when none is readable', () => {
-    expect(stored({ width: 300, height: 3000.4 }).fit).toEqual({ width: 856, height: 3001 });
-    expect(stored(undefined).fit).toEqual({ width: 856, height: CONTINUOUS_PAGE_MIN_HEIGHT });
-    expect(stored({ width: 856, height: 'tall' }).fit).toEqual({
-      width: 856,
+    expect(stored({ width: 300, height: 3000.4 }).fit).toEqual({
+      width: CONTINUOUS_PAGE_WIDTH,
+      height: 3001,
+    });
+    expect(stored(undefined).fit).toEqual({
+      width: CONTINUOUS_PAGE_WIDTH,
       height: CONTINUOUS_PAGE_MIN_HEIGHT,
     });
-    expect(stored({ width: 856, height: 1e12 }).fit!.height).toBe(CONTINUOUS_PAGE_MAX_HEIGHT);
+    expect(stored({ width: CONTINUOUS_PAGE_WIDTH, height: 'tall' }).fit).toEqual({
+      width: CONTINUOUS_PAGE_WIDTH,
+      height: CONTINUOUS_PAGE_MIN_HEIGHT,
+    });
+    expect(stored({ width: CONTINUOUS_PAGE_WIDTH, height: 1e12 }).fit!.height).toBe(
+      CONTINUOUS_PAGE_MAX_HEIGHT,
+    );
   });
 
   it('keeps Fit to Content on an infographic page as it was', () => {
@@ -141,7 +155,7 @@ describe('withArticlePageHeight', () => {
     const tab = pageTab([]);
     const grown = withArticlePageHeight(tab, KNOWLEDGEBASE_FLOW, 4321.5);
     expect(pagesOf(grown)).toHaveLength(1);
-    expect(pagesOf(grown)[0]!.fit).toEqual({ width: 856, height: 4322 });
+    expect(pagesOf(grown)[0]!.fit).toEqual({ width: CONTINUOUS_PAGE_WIDTH, height: 4322 });
     const shrunk = withArticlePageHeight(grown, KNOWLEDGEBASE_FLOW, 2000);
     expect(pagesOf(shrunk)[0]!.fit!.height).toBe(2000);
     // Never under the least height.

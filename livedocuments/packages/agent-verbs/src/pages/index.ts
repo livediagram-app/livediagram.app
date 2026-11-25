@@ -8,3 +8,4 @@ export {
   type PagesDone,
   type PagesRefused,
 } from './pages-calls';
+export { SAVED_DESIGNS_PATH, savedDesigns, withSavedDesigns } from './saved-designs';

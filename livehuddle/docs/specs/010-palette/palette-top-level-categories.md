@@ -83,7 +83,7 @@ each under its heading, in this order:
 |            | **Furniture**        | Bench, Picnic Table, Hammock, Garden Umbrella                          |
 |            | **Features**         | Fountain, Pond, Campfire                                               |
 
-- **Names** are Title Case and short, as the other flyouts' groups (Basics, Flowchart, Code and Lists).
+- **Names** are Title Case and short, as the other flyouts' groups (Basics, Flowchart, Code); never two names joined by "and".
 - **Play leads with the Bar**: its four pieces are the most furnished (a Rooftop Bar, a Cafe, a hotel lobby),
   then what people play, then what they sit by and listen to.
 - **Garden reads ground up**: what grows, then what is walked on and round, then what is sat at, then the water and

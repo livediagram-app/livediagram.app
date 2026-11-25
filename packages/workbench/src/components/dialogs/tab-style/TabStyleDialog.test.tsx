@@ -668,4 +668,37 @@ describe('a profile that names and cuts the dialog', () => {
     // A panel it names no line for keeps the shared one.
     expect(button('Colours: Theme everyday theme')).toBeTruthy();
   });
+
+  it('shows a product’s own panel only where its surface lists it, with its row’s line, picture and help', async () => {
+    const profile = profileWith({
+      base: {
+        ...base,
+        panels: ['theme', 'design'],
+        panelValues: { design: 'Aurora' },
+        panelIcons: { design: <span data-testid="design-tile" /> },
+        panelHelp: { design: <a href="#own-help">Own help</a> },
+        renderPanel: (panel) =>
+          panel === 'design' ? <div data-testid="own-design">Designs</div> : null,
+      },
+    });
+    const onTabChange = vi.fn();
+    open({ profile, onTabChange });
+    expect(screen.getByTestId('design-tile')).toBeTruthy();
+    fireEvent.click(button('Page Design: Aurora'));
+    expect(onTabChange).toHaveBeenCalledWith('design');
+    cleanup();
+    open({ profile, tab: 'design' });
+    expect(await screen.findByTestId('own-design')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Own help' })).toBeTruthy();
+    cleanup();
+    // A surface that leaves it out has no row.
+    open();
+    expect(screen.queryByRole('button', { name: /^Page Design:/ })).toBeNull();
+  });
+
+  it('gives a product’s own panel the shared line and picture when its surface names none', () => {
+    open({ profile: profileWith({ base: { ...base, panels: ['theme', 'design'] } }) });
+    const row = button('Page Design: None');
+    expect(row.querySelector('svg')).toBeTruthy();
+  });
 });

@@ -106,6 +106,14 @@ describe('someone who may not edit (a Participant, a Viewer)', () => {
 });
 
 describe('an Editor', () => {
+  // A phone holds every field at 16px or more (globals.css); the heading's own size is important so it stays a heading.
+  it('keeps the form heading larger than the questions on a phone', () => {
+    render(<Harness canEdit />);
+    expect(screen.getByRole('textbox', { name: 'Form heading' }).className).toContain(
+      'max-sm:text-[24px]!',
+    );
+  });
+
   it('selects a question to edit it, and Escape lets go', () => {
     render(<Harness canEdit />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit question: Summary' }));

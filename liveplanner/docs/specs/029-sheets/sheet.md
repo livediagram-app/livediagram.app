@@ -50,7 +50,7 @@ cells are worked out in every browser that shows it.
 - A sheet placed from the palette starts **awaiting setup** (`layout.setupPending`); a dropped CSV, a copy and a
   sheet an agent makes do not. While it awaits setup and has no cells, in Plan mode, someone who may edit sees, in
   place of the grid (the header, cog and Maximise stay), a calm **placeholder**, centred: a sheet glyph, the sheet's
-  title, "Not set up yet" and a **Set up sheet** button that opens the **Setup Sheet** dialog (whoever else has the
+  title, "Not set up yet" and a **Set Up Sheet** button that opens the **Setup Sheet** dialog (whoever else has the
   Sheet selected the canvas's selection badge names). Someone who may only view sees the empty grid.
 - **The dialog** is Setup Board's ([plan-board.md](../026-plan/plan-board.md) "Setup Board"): a modal over the
   editor in the app's colours, never inside the Sheet nor zoomed with the canvas, a fixed height, full screen on a

@@ -192,10 +192,11 @@ and the user can keep pressing it to regenerate.
 
 ### Fine-tune
 
-Below the looks, four rows, one per setting, each showing its current value: **Colours** (the theme's name),
-**Finish**, **Text** (the tab font and the default size) and **New Page Background** (what new pages start on: "Like
+Below the looks, five rows, one per setting, each showing its current value: **Colours** (the theme's name),
+**Finish**, **Text** (the tab font and the default size), **New Page Background** (what new pages start on: "Like
 the page before", "Paper", a theme gradient or preset by its name, "Solid colour", "Custom gradient" or "Animated",
-then its pattern: "Theme mist, dots"; `apps/editor/lib/new-page-background.ts`). Two columns, one on a phone.
+then its pattern: "Theme mist, dots"; `apps/editor/lib/new-page-background.ts`) and **Page Design** (the tab
+design's name, "Animated" after it while it moves, or "None"; "Page Design" below). Two columns, one on a phone.
 Pressing a row opens that setting's panel **in place**, sliding in from the right (back slides from the left; a fade
 with reduced motion), under the shared [back bar](../004-interface-design/back-bar.md) (the one Import and Export use: **Tab Style** then the panel's name), which stays pinned to the top as the panel scrolls.
 Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
@@ -293,6 +294,28 @@ on the tab as `newPageBackground` (a fill and a pattern, never a picture; `packa
 - **Share roles:** an Editor's alone, as every Tab Style setting: a Participant or Viewer never reaches the dialog,
   and the tab setters refuse a blocked session.
 
+### Page Design
+
+The **Page Design** panel ([Page Designs](page-designs.md)) picks and tunes the backdrop drawn behind every element of
+the tab's pages, on every surface (`apps/editor/components/dialogs/page-design/PageDesignPanel.tsx`). Top to bottom:
+
+- **A preview**: the page someone is on, wearing its design as it does (its background, the theme, the tuning, its
+  role in the deck and the scrims its texts get), drawn as exports draw it, so it shows the still frame.
+- **Applies to**: a switch of two, **Whole Tab** (the default) and **This Page** (the page someone is on, by its
+  name or place). On This Page every pick and tune sets the page's override; the switch shows **Use the Tab's
+  Design** while the page has one, which clears it. On a tab with no pages yet it is not shown.
+- **Design Sets**: the eight sets as cards (a small page in the set's theme, background and design, its name and a
+  line), one press applying the whole set as one undo step.
+- **Designs**: **None** first, then the catalogue in its eight families, each under its family's heading, as
+  tiles of a small page drawn in the tab's theme on its page background (three across, two on a phone). A family
+  chip row above the grid jumps to a family. The design worn is selected; a press applies it.
+- **Fine Tune**, while a design is worn: its controls ("Fine tuning" in Page Designs), each applying live as it
+  moves (a slider's drag is one undo step); **Shuffle** and **Try Another** beside Seed; **Animate** and **Speed**
+  for a design that moves; on the tab design, **Bold Title and Section Pages** and, for a design that flows,
+  **Flow Across Pages**; the **Contrast Guard** (Add a Scrim, Warn Only) with a line saying how many texts it
+  scrimmed or would; and **Reset**.
+- **Share roles:** as every Tab Style setting, an Editor's alone.
+
 ### Colours panel
 
 Every built-in theme in **one flat list**, nine to a carousel page (`ThemeBrowser`, shared with the palette accordion
@@ -380,10 +403,10 @@ the New Page Background and its setters, the article's Style door), and the prof
 names the **surface** as it opens the dialog: the kind of the page someone is on (`article`, `slide`, `infographic`
 or `flashcard`), and `canvas` on a tab with no pages yet.
 
-| Surface                          | Panels                                     | Home                                    |
-| -------------------------------- | ------------------------------------------ | --------------------------------------- |
-| `slide`, `infographic`, `canvas` | Colours, Finish, Text, New Page Background | Looks, Fine-tune                        |
-| `article`, `flashcard`           | Colours, New Page Background               | Looks, the Article Style row, Fine-tune |
+| Surface                          | Panels                                                  | Home                                    |
+| -------------------------------- | ------------------------------------------------------- | --------------------------------------- |
+| `slide`, `infographic`, `canvas` | Colours, Finish, Text, New Page Background, Page Design | Looks, Fine-tune                        |
+| `article`, `flashcard`           | Colours, New Page Background, Page Design               | Looks, the Article Style row, Fine-tune |
 
 - **Looks.** Every look in `apps/editor/lib/tab-looks.ts` on every surface.
 - **New Page Background.** In the Canvas panel's place on every surface ("New Page Background" above).
@@ -401,7 +424,7 @@ style"): its look, typeface, size and spacing. The tab's finish and font do not 
 and so does the page background. So on the `article` and `flashcard` surfaces the dialog shows what reaches the
 writing and no more:
 
-- **Panels:** Colours and New Page Background only; no Finish, no Text, and the panel's patterns are left out (an
+- **Panels:** Colours, New Page Background and Page Design only; no Finish, no Text, and the panel's patterns are left out (an
   article's ruling is its Style's; the surround takes its colour alone).
 - **The header** says what Tab Style changes here, short enough for the header's one line: the home "The colours and
   page background. Its text has its own Style." (an article's and a card's alike), Colours "The colours the article's accents

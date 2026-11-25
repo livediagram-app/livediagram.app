@@ -355,7 +355,9 @@ export function buildOrgChart(cx: number, cy: number): Element[] {
       width: 40,
       height: keyH - 8,
       label: '',
-      fillColor: '#ffffff',
+      // See-through, so the sample sits on the canvas in a dark theme too (a white fill made it the brightest
+      // thing under the chart).
+      fillColor: 'transparent',
       strokeColor: '#94a3b8',
       strokeStyle: 'dashed',
     },

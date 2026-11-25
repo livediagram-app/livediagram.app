@@ -2,6 +2,7 @@
 // "Export"): each page as an export draws it (its sheet, its background, the elements reaching onto it, cut at its
 // edges), so a preview shows what the pages print rather than the content's bounds on the canvas. One page at its own
 // size, or every page in a grid of rows, so each stays legible in an image whose longer side is bounded. Pure.
+import { pageDesignExportSvg } from './page-designs/export';
 import { pagesOf, layOutPages, type LaidOutPage } from './page';
 import { pageExportFrame } from './page-frame';
 import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
@@ -69,6 +70,7 @@ export function renderPageToSvg(
   const frame = pageExportFrame(page, {
     idPrefix: `pg-${page.index}`,
     imageHref: opts.resolveImageHref,
+    design: pageDesignExportSvg(tab, page, { idPrefix: `pg-${page.index}-` }),
   });
   const writing = writingSvg(page);
   return renderElementsToSvg(tab, {

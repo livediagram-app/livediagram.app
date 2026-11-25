@@ -2,7 +2,7 @@
 
 // A board's setup on the canvas (docs/specs/026-plan/plan-board.md "Setup Board"): while it is not set up yet, the
 // placeholder in place of its columns; and, for this person only, the Setup Board dialog when it is open (placed here,
-// Set up board, or Board Setup's Setup Board run again). The dialog's code loads only when it first opens.
+// Set Up Board, or Board Setup's Setup Board run again). The dialog's code loads only when it first opens.
 import dynamic from 'next/dynamic';
 import { useRef } from 'react';
 import { RUN_IDS_ATTR, focusPlanCard } from '@/hooks/plan/useCardRunReveal';
@@ -74,7 +74,7 @@ export function SetupBoardHost({
           ref={button}
           icon={<PlanBoardTileArt preset="kanban" size={20} />}
           title={setup.title.trim() || 'Board'}
-          action={canEdit ? 'Set up board' : null}
+          action={canEdit ? 'Set Up Board' : null}
           onAction={dialog.open}
           viewerLine="Someone who can edit it will set it up."
           palette={palette}

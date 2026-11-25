@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ArticleWrite } from '@liveknowledge/api-schema';
 import {
+  CONTINUOUS_PAGE_WIDTH,
   articlesOf,
   pagesOf,
   layOutPages,
@@ -89,7 +90,7 @@ describe('a new article', () => {
     const pages = pagesOf(out.tab);
     expect(pages).toHaveLength(1);
     expect(pages[0]).toMatchObject({ kind: 'article', size: 'fit' });
-    expect(pages[0]!.fit!.width).toBe(856);
+    expect(pages[0]!.fit!.width).toBe(CONTINUOUS_PAGE_WIDTH);
     expect(pages[0]!.fit!.height).toBeGreaterThan(240);
   });
 });

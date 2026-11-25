@@ -3,6 +3,7 @@
 // where they do not, its background, and its slide's notes and hidden flag from the Slide Deck. The pictures come
 // from an injected drawer, so everything here but the drawing runs in Node.
 
+import { pageWearsDesign } from '@livedocuments/document';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -78,9 +79,13 @@ export function placementFor(page: LaidOutPage, cx: number, cy: number): SlidePl
 }
 
 /** A plain or solid page is a background colour (none for plain); anything else is drawn as a picture. */
-export function backgroundKind(page: LaidOutPage): 'none' | 'solid' | 'picture' {
+export function backgroundKind(
+  page: LaidOutPage,
+  // The page wears a design (docs/specs/011-theme/page-designs.md "Exports and thumbnails"): a picture of it.
+  designed = false,
+): 'none' | 'solid' | 'picture' {
   const { fill, pattern } = page.background ?? {};
-  if (pattern) return 'picture';
+  if (pattern || designed) return 'picture';
   if (!fill) return 'none';
   return fill.kind === 'solid' && ooxmlColour(fill.color) !== null ? 'solid' : 'picture';
 }
@@ -181,7 +186,7 @@ async function slideOf(
     }
   }
   let background: PptxBackground | null = null;
-  const kind = backgroundKind(page);
+  const kind = backgroundKind(page, pageWearsDesign(tab, page));
   const fill = page.background?.fill;
   if (kind === 'solid' && fill?.kind === 'solid') {
     const c = ooxmlColour(fill.color);

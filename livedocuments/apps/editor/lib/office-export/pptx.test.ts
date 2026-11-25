@@ -286,7 +286,7 @@ describe('PowerPoint export', () => {
       { ...newSlidePage('dots'), background: { pattern: 'dots' as const } },
     ];
     const laid = layOutPages(pages);
-    expect(laid.map(backgroundKind)).toEqual(['none', 'solid', 'picture', 'picture']);
+    expect(laid.map((p) => backgroundKind(p))).toEqual(['none', 'solid', 'picture', 'picture']);
     const tab: Tab = { id: 't', name: 'T', elements: [], pages, templateChosen: true };
     const drawer = fakeDrawer();
     const built = await buildDeck({ tab, pages: laid, title: 'T' }, drawer, {});

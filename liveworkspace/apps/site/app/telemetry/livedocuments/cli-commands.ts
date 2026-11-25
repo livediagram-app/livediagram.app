@@ -41,6 +41,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'ElementInsert', command: 'element insert', what: 'putting an element on an arrow' },
   { type: 'PageLs', command: 'page ls', what: 'listing a tab’s pages and articles' },
   { type: 'PageSet', command: 'page set', what: 'changing a tab’s pages' },
+  { type: 'PageDesigns', command: 'page designs', what: 'listing saved Page Designs' },
   { type: 'ArticleGet', command: 'article get', what: 'reading an article as Markdown' },
   { type: 'ArticleSet', command: 'article set', what: 'writing an article from Markdown' },
   { type: 'ChangesetApply', command: 'edit', what: 'applying edit operations from a file' },

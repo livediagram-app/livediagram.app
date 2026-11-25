@@ -5912,6 +5912,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "background": {
         "$ref": "#/components/schemas/PageBackground"
       },
+      "design": {
+        "$ref": "#/components/schemas/PageDesignOverride"
+      },
       "fit": {
         "$ref": "#/components/schemas/PageSides"
       },
@@ -6013,6 +6016,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "background": {
             "$ref": "#/components/schemas/PageBackgroundInput"
           },
+          "design": {
+            "$ref": "#/components/schemas/PageDesignChoice"
+          },
           "kind": {
             "$ref": "#/components/schemas/PageKind"
           },
@@ -6047,6 +6053,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "properties": {
           "background": {
             "$ref": "#/components/schemas/PageBackgroundInput"
+          },
+          "design": {
+            "$ref": "#/components/schemas/PageDesignChoice"
           },
           "locked": {
             "type": "boolean"
@@ -6169,6 +6178,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "page"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "design": {
+            "$ref": "#/components/schemas/TabDesignChoice"
+          },
+          "op": {
+            "const": "tab_design",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "design"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -6221,6 +6247,163 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "angle"
         ],
         "type": "object"
+      }
+    ]
+  },
+  "PageDesign": {
+    "additionalProperties": false,
+    "properties": {
+      "angle": {
+        "type": "number"
+      },
+      "animate": {
+        "const": true,
+        "type": "boolean"
+      },
+      "blur": {
+        "type": "number"
+      },
+      "calm": {
+        "type": "number"
+      },
+      "colors": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 3,
+        "minItems": 3,
+        "type": "array"
+      },
+      "flow": {
+        "const": true,
+        "type": "boolean"
+      },
+      "focus": {
+        "items": {
+          "type": "number"
+        },
+        "maxItems": 2,
+        "minItems": 2,
+        "type": "array"
+      },
+      "grain": {
+        "type": "number"
+      },
+      "guard": {
+        "const": "warn",
+        "type": "string"
+      },
+      "id": {
+        "$ref": "#/components/schemas/PageDesignId"
+      },
+      "intensity": {
+        "type": "number"
+      },
+      "rhythm": {
+        "const": true,
+        "type": "boolean"
+      },
+      "scale": {
+        "type": "number"
+      },
+      "seed": {
+        "type": "number"
+      },
+      "speed": {
+        "type": "number"
+      },
+      "variant": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "type": "object"
+  },
+  "PageDesignChoice": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/PageDesign"
+      },
+      {
+        "const": "none",
+        "type": "string"
+      },
+      {
+        "const": "tab",
+        "type": "string"
+      }
+    ]
+  },
+  "PageDesignId": {
+    "enum": [
+      "soft-mesh",
+      "aurora",
+      "duotone-sweep",
+      "radial-glow",
+      "sunset-bands",
+      "grid",
+      "dots",
+      "isometric",
+      "hexagons",
+      "triangles",
+      "concentric-rings",
+      "diagonal-stripes",
+      "blobs",
+      "waves",
+      "topographic",
+      "ribbons",
+      "marbled",
+      "paper-grain",
+      "noise",
+      "linen",
+      "risograph",
+      "halftone",
+      "blueprint",
+      "glass-panels",
+      "spotlight",
+      "bokeh",
+      "soft-shadows",
+      "layered-cards",
+      "corner-accents",
+      "edge-bands",
+      "side-rail",
+      "torn-paper",
+      "offset-border",
+      "brutalist-blocks",
+      "memphis",
+      "swiss-grid",
+      "split-fields",
+      "type-watermark",
+      "circuit",
+      "starfield",
+      "constellations",
+      "data-grid",
+      "scanlines"
+    ],
+    "type": "string"
+  },
+  "PageDesignNone": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "const": "none",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "type": "object"
+  },
+  "PageDesignOverride": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/PageDesign"
+      },
+      {
+        "$ref": "#/components/schemas/PageDesignNone"
       }
     ]
   },
@@ -6426,6 +6609,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
+      },
+      "design": {
+        "type": "string"
       },
       "elements": {
         "type": "number"
@@ -6769,6 +6955,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "null"
               ]
             },
+            "design": {
+              "type": "string"
+            },
             "elements": {
               "type": "number"
             },
@@ -6845,6 +7034,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pagesMode": {
         "type": "boolean"
+      },
+      "tabDesign": {
+        "$ref": "#/components/schemas/PageDesign"
       }
     },
     "required": [
@@ -8561,6 +8753,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pageArrangement": {
         "$ref": "#/components/schemas/PageArrangement"
       },
+      "pageDesign": {
+        "$ref": "#/components/schemas/PageDesign"
+      },
       "pageOrientation": {
         "$ref": "#/components/schemas/PageOrientation"
       },
@@ -8626,6 +8821,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "itemId"
     ],
     "type": "object"
+  },
+  "TabDesignChoice": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/PageDesign"
+      },
+      {
+        "type": "null"
+      },
+      {
+        "const": "auto",
+        "type": "string"
+      }
+    ]
   },
   "TabId": {
     "type": "string"
@@ -8710,6 +8919,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pageArrangement": {
         "$ref": "#/components/schemas/PageArrangement"
+      },
+      "pageDesign": {
+        "$ref": "#/components/schemas/PageDesign"
       },
       "pageOrientation": {
         "$ref": "#/components/schemas/PageOrientation"

@@ -1,0 +1,86 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Page Designs',
+  description:
+    'Give every page a designed backdrop: gradients, patterns, light and more, drawn in your theme and tuned in Tab Style.',
+  path: '/help/canvas/themes/page-designs/',
+});
+
+<ArticleLayout
+  path="canvas/themes/page-designs"
+  title="Page Designs"
+  description="Decoration behind every page, in the tab's theme colours, picked and tuned in Tab Style."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: "Themes", slug: "themes" }}
+  subArticles={getSubArticles("themes").filter((a) => a.slug !== "page-designs")}
+>
+
+A page design is decoration drawn behind everything on a page: a soft gradient, a grid, waves, a spotlight, a frame round the edge. It sits under your words and pictures, never in front of them, and nobody can select or move it by accident. Pick one for the whole tab and every page wears it, so a deck looks designed from the first slide to the last.
+
+## Picking a Design
+
+1. Click **Style** on a page's title bar to open **Tab Style**.
+2. Under **Fine-tune**, click **Page Design**.
+3. Pick a design. It applies at once; **Undo** takes it back.
+
+There are over forty designs in eight families: **Gradients**, **Geometric**, **Organic**, **Texture**, **Light**, **Frames**, **Bold**, and **Tech**. The chips above the list jump to a family. **None** takes the design away.
+
+Designs draw in your theme's colours, so changing the theme (or picking a look) recolours them all at once. On a dark page they glow; on a light one they keep to the theme's own shades.
+
+## Design Sets
+
+A **design set** is a whole look in one click: a theme, a font, a finish, a background for every page and a design, with a layout laid on each empty slide or infographic page. There are eight, such as **Keynote Dark**, **Editorial** and **Blueprint**. A page that already has something on it keeps it. One **Undo** puts everything back.
+
+## This Page
+
+Switch **Applies to** from **Whole Tab** to **This Page** to give the page you are on a design of its own, or **No Design** to keep it plain (a cover or a quote slide, say). **Use the Tab's Design** puts it back. A locked page keeps its design until you unlock it.
+
+## Fine Tune
+
+With a design picked, **Fine Tune** shows the controls that mean something for it:
+
+- **Colours**: three colours of your own, or **Use the Theme's** to follow the theme again.
+- **Intensity**: how strongly it shows.
+- **Safe Area**: how calm the middle of the page stays, where your words usually are.
+- **Scale**, **Angle**, **Blur** and **Grain**, where the design has them.
+- **Position**: where its glow or spotlight sits.
+- **Shuffle** for a new variation, and **Try Another** for the next design in its family.
+- **Reset** puts the design back on its own settings.
+
+Every slider applies as you drag, and each drag is one step for **Undo**.
+
+On the tab's design you also get **Bold Title and Section Pages**, which keeps the design strong on the title page and on pages with only a heading or two and quieter on the rest, and, for designs that can, **Flow Across Pages**, which draws one long design across the pages in order so a wave runs on from one slide into the next.
+
+## Animated Designs
+
+Some designs can move: the gradients, waves, blobs, ribbons, spotlight, bokeh, the starfield and a few more (the tiles say **Moves**). Turn on **Animate** in Fine Tune and set the **Speed**. Animation is off until you turn it on, it moves gently and only while its page is on screen, and it stays still for anyone who has **Reduce Motion** on.
+
+Exports, thumbnails and previews always show the design still, so a PDF or a picture looks the same as the first moment of the animation.
+
+## Keeping Text Readable
+
+The **Contrast Guard** checks every text on a page against the design under it. With **Add a Scrim** (the default), a soft plate of the page's colour goes under any text the design would make hard to read, on screen and in every export. With **Warn Only**, nothing is drawn and the panel says how many texts on the page are hard to read, so you can move them or calm the design.
+
+## Saving a Design for Your Team
+
+Tuned a design you want to use again? At the foot of **Fine Tune**, choose **Save This Design**, give it a name, and pick where it goes: **My Work** (only you) or one of your teams (everyone in it). It is saved as tuned: its colours, sliders, variation, animation, and the switches.
+
+Saved designs appear at the top of the designs as **Saved**, each tile drawn in the document's theme and marked with whose it is. Click one to apply it to the whole tab or, with **This Page**, to the page you are on. A deck keeps its own copy, so renaming or deleting a saved design later changes nothing already applied.
+
+To rename or delete a saved design, use the **⋯** button on its tile. Anything in **My Work** is yours to tidy; in a team, its admins tidy what the team has saved. Saved designs live in your [Library](/help/palette/library/), but they are applied here, not placed from the palette.
+
+## Who Can Change It
+
+Editors pick, tune and save designs. Participants and Viewers see them, animated ones moving, but cannot change or save them.
+
+## Assistants and the Command Line
+
+An assistant connected to <AppName /> can set a design too: `change_pages` takes a `tab_design` change (a design, `"auto"` for one that suits your words, or `null`), and a page's own `design`. On the command line, `livedocuments page set` takes `--tab-design` and `--design`.
+
+Saved designs work there too: `list_templates` lists them (and `livedocuments page designs` on the command line), and their id, `saved:` followed by a code, goes anywhere a design does. Assistants can use saved designs but not save, rename or delete them.
+
+</ArticleLayout>

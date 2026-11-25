@@ -9,6 +9,16 @@ import { connectTestClient } from './mcp-test-client';
 // mistake the caller can fix is a tool error in words, naming the change it stopped at.
 const LIVE_DOC = { id: 'd1', name: 'Deck', tabs: [{ id: 't1', name: 'Slides', orderIndex: 0 }] };
 const TAB = { id: 't1', name: 'Slides', rev: 3, elements: [] };
+// A design saved to the caller's Library (docs/specs/011-theme/page-designs.md "Saved designs").
+const SAVED = [
+  {
+    id: 'saved:lib1',
+    title: 'Brand Aurora',
+    scope: 'team',
+    team: 'Brand',
+    design: { id: 'aurora', scale: 1.4, flow: true },
+  },
+];
 const ARTICLE = { flow: 'art-1', title: 'Brief', pages: [1], blocks: 2, words: 3, look: null };
 
 function api(answer: (body: unknown) => Response) {
@@ -21,6 +31,7 @@ function api(answer: (body: unknown) => Response) {
       sent.push(body);
       return answer(body);
     }
+    if (path === '/page-designs') return Response.json({ designs: SAVED });
     if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab: TAB });
     return Response.json({ document: LIVE_DOC });
   };
@@ -59,6 +70,45 @@ describe('the Pages tools', () => {
     expect(out.isError).toBeFalsy();
     expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
     expect(out.structuredContent).toMatchObject({ tabId: 't1', rev: 4, lines: ['Wrote it.'] });
+  });
+
+  it('send a saved design, named saved:<id>, as the design it holds; a page’s without flow', async () => {
+    const { handler, sent } = api(() => done());
+    const out = await call(handler, 'change_pages', {
+      changes: [
+        { op: 'tab_design', design: 'saved:lib1' },
+        { op: 'set', page: 1, design: 'saved:lib1' },
+      ],
+    });
+    expect(out.isError).toBeFalsy();
+    expect(sent).toEqual([
+      {
+        pages: [
+          { op: 'tab_design', design: { id: 'aurora', scale: 1.4, flow: true } },
+          { op: 'set', page: 1, design: { id: 'aurora', scale: 1.4 } },
+        ],
+      },
+    ]);
+  });
+
+  it('refuse a saved design the caller can’t see, listing the ones they can', async () => {
+    const { handler, sent } = api(() => done());
+    const out = await call(handler, 'change_pages', {
+      changes: [{ op: 'tab_design', design: 'saved:nope' }],
+    });
+    expect(out.isError).toBe(true);
+    expect(out.content[0]!.text).toContain('Change 1: No saved design "saved:nope"');
+    expect(out.content[0]!.text).toContain('saved:lib1 (Brand Aurora)');
+    expect(sent).toEqual([]);
+  });
+
+  it('list the saved designs with the templates', async () => {
+    const { handler } = api(() => done());
+    const client = await connectTestClient(handler);
+    const out = (await client.callTool({ name: 'list_templates', arguments: {} })) as Result;
+    expect(out.structuredContent?.savedDesigns).toEqual([
+      { id: 'saved:lib1', title: 'Brand Aurora', whose: 'Brand' },
+    ]);
   });
 
   it('name the change a refusal stopped at, counting from 1', async () => {

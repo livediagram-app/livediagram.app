@@ -29,7 +29,7 @@ tool, the zoom chords, Fit).
 
 **What (a) gave up, against (b):**
 
-- **A narrow window reflows through a view lens, not a second layout engine.** The page is 856 canvas px wide and
+- **A narrow window reflows through a view lens, not a second layout engine.** The page is 1,056 canvas px wide and
   what is placed in it is stored against that width. A window too narrow for the column draws the page through a
   per-browser lens ("The narrow view") that narrows the page, shows its zones' elements fitted to the column, and
   lowers every change back to the stored page; the engine itself sees one coherent, narrower page. Option (b)'s
@@ -44,7 +44,7 @@ tool, the zoom chords, Fit).
 `apps/editor/lib/page-surface/page-lock.ts`, `components/canvas/usePageSurface.ts`.
 
 - `computePageLock({ width, height, sides, page, margin, phone })` answers the one view a page is shown at. The
-  column is the page less its side margins (`856 - 2 * 48 = 760` px: an article's margins default to Narrow,
+  column is the page less its side margins (`1056 - 2 * 48 = 960` px: an article's margins default to Narrow,
   `resolveArticleStyle`), centred in the room the side chrome leaves, and never scaled: the zoom is always 1
   (owner 2026-11-21, "render normally without zoom like a news webpage"). A column wider than the room less its side
   room (only for a moment, before the narrow view has narrowed the page) starts at the side room, its overflow
@@ -59,7 +59,7 @@ tool, the zoom chords, Fit).
   canvas, on the scroll container and on the side chrome (`[data-contents-sidebar]`, `[data-page-rail="docked"]`),
   and from a `MutationObserver` on the canvas's own children (the side chrome arriving or leaving). It measures the
   scroll container's client box, which is what the world is laid in. **It never runs on a scroll or a keystroke.**
-- The stored page is 856 px wide (`CONTINUOUS_PAGE_WIDTH`), so the column is the spec's 760 px wherever the room
+- The stored page is 1,056 px wide (`CONTINUOUS_PAGE_WIDTH`), so the column is the spec's 960 px wherever the room
   holds it, and the room's own width where it does not (the narrow view).
 - **The world's box.** The canvas world is drawn `scale(z) translate(o)` about its own centre, and a transformed
   box is something a scroll container scrolls to. So the world is `WORLD_HEIGHT_CSS` tall (the container less
@@ -118,8 +118,10 @@ browser's.
   the footer bar.
 - **Beside the docked rail:** `[data-canvas-root]:has(> [data-page-rail='docked']) > [data-page-scroller]` ends
   280 px short of the right edge (`globals.css`), so the scrollbar is never under the rail and the rail never over
-  the writing. The rail docks only where the page keeps its full width beside it: `pageRailDockWidth(treeWidth)` is
-  `max(1280, tree + 280 + 856)`, which is 1,400 px with the page tree open and 1,280 px with its rail.
+  the writing. The rail docks only where the page keeps at least the 760 px column beside it:
+  `pageRailDockWidth(treeWidth)` is `max(1280, tree + PAGE_RAIL_WIDTH + PAGE_RAIL_PAGE_ROOM)` with
+  `PAGE_RAIL_PAGE_ROOM` 856 (the 760 px column and its side room, kept from before Work Tracker 1418, so a laptop
+  keeps its docked rail). Between that and the room for the 960 px column the page draws through the narrow view.
 - **Keys:** inside the writing the browser moves the caret and scrolls it into view. With the focus on the page
   itself (the canvas or the body) `pageScrollOf` (`page-keys.ts`) scrolls on Page Up, Page Down, Space, Home, End and
   the up and down arrows; never while an element is selected, whose keys are the engine's.

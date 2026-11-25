@@ -154,12 +154,14 @@ export function FormHeaderCard() {
       >
         {b.canEdit ? (
           <>
+            {/* The heading's size is important: a phone's 16px floor for fields (globals.css) would pull it down
+                to the questions' size. */}
             <DraftText
               value={form.heading}
               maxLength={FORM_HEADING_MAX}
               label="Form heading"
               placeholder="Form heading"
-              className="border-b border-transparent pb-1 text-[28px] font-semibold tracking-tight text-slate-900 focus:border-[var(--form-accent)] max-sm:text-[24px] dark:text-slate-50"
+              className="border-b border-transparent pb-1 text-[28px] font-semibold tracking-tight text-slate-900 focus:border-[var(--form-accent)] max-sm:text-[24px]! dark:text-slate-50"
               onSave={(text) => text.trim() && b.actions.renameForm(text)}
             />
             <DraftText
@@ -280,7 +282,7 @@ export function SectionHeader({
               maxLength={SECTION_TITLE_MAX}
               label={`Section ${index + 1} title`}
               placeholder={`Section ${index + 1}`}
-              className="border-b border-transparent pb-1 text-[20px] font-semibold text-slate-900 focus:border-[var(--form-accent)] dark:text-slate-50"
+              className="border-b border-transparent pb-1 text-[20px]! font-semibold text-slate-900 focus:border-[var(--form-accent)] dark:text-slate-50"
               onSave={(text) =>
                 b.actions.changeForm((f) => updateSection(f, section.id, { title: text.trim() }))
               }

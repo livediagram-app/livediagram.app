@@ -85,6 +85,7 @@ describe('shownTabStyleView', () => {
       finish: 'choosingAFinish',
       font: 'choosingFonts',
       canvas: 'changingTheBackground',
+      design: 'changingTheBackground',
     });
   });
 });
