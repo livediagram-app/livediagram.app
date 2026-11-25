@@ -2,7 +2,7 @@
 // block's size, weight, face and margins as app/article-pages.css sets it, and its words wrapped at an estimated
 // width. Split out of article-layout-estimate.ts, which re-exports BOLD_EM and wrapEstimated.
 
-import type { ArticleBlock, ArticleRun } from './article-flow';
+import type { ArticleBlock, ArticleRun } from '@liveworkspace/article/article-flow';
 
 // An average glyph's advance as a share of the font size (a bold one a little wider), as the headless renders
 // estimate a label (svg-render-primitives' LABEL_ESTIMATE_CHAR_EM).

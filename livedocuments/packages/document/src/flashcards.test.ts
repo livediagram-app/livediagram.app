@@ -12,8 +12,12 @@ import {
   withFlashcardAdded,
   withFlashcardSplit,
 } from './flashcards';
-import { articlesOf, newFlashcardFlow, type ArticleBlock, type ArticleFlow } from './article-flow';
-import { withArticlePageCount, withPageKindChosen } from './article-pages';
+import {
+  articlesOf,
+  type ArticleBlock,
+  type ArticleFlow,
+} from '@liveworkspace/article/article-flow';
+import { newFlashcardFlow, withArticlePageCount, withPageKindChosen } from './article-pages';
 import {
   isFlashcardPage,
   isFlashcardStack,

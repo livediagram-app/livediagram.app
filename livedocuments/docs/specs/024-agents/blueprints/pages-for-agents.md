@@ -15,8 +15,8 @@ function and a test here; nothing here adds design.
 | refusal           | `PagesRefusal` `{ code: PagesRefusalCode, message, change? }`                                                                                                                                 | `packages/api-schema/src/pages.ts`                                                        |
 | the engine        | `applyPageChanges(tab, changes, ctx)`, `applyArticleWrite(tab, write, ctx)`                                                                                                                   | `packages/edit-operations/src/pages/`                                                     |
 | pure page edits   | `pageAdded`, `pageRenamed`, `pageResized`, `pageTurned`, `pageBackgroundSet`, `pageLockSet`, `pageLaidOut`, `pageMovedTo`, `pageDuplicated`, `pageRemoved`; `pagesSharing`, `pageLockRefuses` | `packages/document/src/pages-edits.ts`                                                    |
-| Markdown in / out | `articleFromMarkdown(text, current?)`, `articleToMarkdown(flow)`, `articleWordCount`, `articleTitleOf`, `ARTICLE_MARKDOWN_MAX`                                                                | `packages/document/src/article-markdown-io.ts`                                            |
-| paste reading     | `parseMarkdownBlocks`, `parseInline`, `looksLikeMarkdown`, `plainTextBlocks` (moved)                                                                                                          | `packages/document/src/article-markdown.ts`                                               |
+| Markdown in / out | `articleFromMarkdown(text, current?)`, `articleToMarkdown(flow)`, `articleWordCount`, `articleTitleOf`, `ARTICLE_MARKDOWN_MAX`                                                                | `../packages/article/src/article-markdown-io.ts`                                          |
+| paste reading     | `parseMarkdownBlocks`, `parseInline`, `looksLikeMarkdown`, `plainTextBlocks` (moved)                                                                                                          | `../packages/article/src/article-markdown.ts`                                             |
 | layout build      | `buildPageLayout(layout, page)` (moved)                                                                                                                                                       | `packages/templates/src/page-layout-build.ts`                                             |
 | page paint        | `withBackgroundPatch`, `sameFill`, `PAGE_GRADIENT_ANGLE` (moved)                                                                                                                              | `packages/document/src/page-paint.ts`                                                     |
 | summaries         | `pageSummaries`, `articleSummaries`, `describeBackground`                                                                                                                                     | `packages/api-schema/src/pages-summary.ts`                                                |
@@ -38,7 +38,7 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
 
 ### Moves out of the editor (no behaviour change)
 
-1. The paste reading of Markdown now lives in `packages/document/src/article-markdown.ts` (+ test), exported from
+1. The paste reading of Markdown now lives in `../packages/article/src/article-markdown.ts` (+ test), in `@liveworkspace/article`; re-exported from
    the package index; the editor's `article-paste.ts` imports it from `@livedocuments/document`. It gains Markdown's
    backslash escapes (`\*` is a literal `*`), so what `articleToMarkdown` escapes reads back as written.
 2. `buildPageLayout` now lives in `packages/templates/src/page-layout-build.ts`; the editor's callers import it
@@ -102,7 +102,7 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 5. Any page of the flow locked → `page_locked`.
 6. Parse: `articleFromMarkdown(markdown, current)` → `{ blocks, keptZones, droppedZones }`, or `unknownZone`
    (`zone_unknown`), or `tooLong` (a paragraph past `MAX_ARTICLE_BLOCK_TEXT`: `article_too_large`, never cut).
-   Tables are read as lists (`tablesAsLists` in `packages/document/src/article-markdown-io.ts`) and counted in
+   Tables are read as lists (`tablesAsLists` in `../packages/article/src/article-markdown-io.ts`) and counted in
    `tables`; a count above zero adds the line "Wrote Markdown tables as lists (N): ...".
    Fresh ids never meet the article's own, so `append` concatenates after the current blocks (a new article's
    placeholder Title and paragraph give way) and keeps every zone and note. The leading `title` / `subtitle`
@@ -355,7 +355,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | Pure edits match the editor                     | `packages/document/src/pages-edits.test.ts`, the editor's own page-edit tests           |
 | One kind a tab (`kind_not_offered`)             | `pages-edits.test.ts`, `page-changes.test.ts`, `article-write.test.ts` "one kind a tab" |
 | Article resolution, new, append, style, limits  | `packages/edit-operations/src/pages/article-write.test.ts`                              |
-| Front matter, zones, page breaks, escapes, trip | `packages/document/src/article-markdown-io.test.ts`                                     |
+| Front matter, zones, page breaks, escapes, trip | `../packages/article/src/article-markdown-io.test.ts`                                   |
 | Grow for an absent writer                       | `packages/document/src/article-pages.test.ts`, `room-op-apply.test.ts` (the agent mark) |
 | Route gate, write, changeset, relay, refusals   | `apps/api/src/routes/tab-pages-route.test.ts`                                           |
 | Held paragraphs: which writes meet which holds  | `apps/api/src/changesets/held-paragraphs.test.ts`                                       |

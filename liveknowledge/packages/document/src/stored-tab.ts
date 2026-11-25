@@ -1,7 +1,7 @@
 // Everything a stored tab needs settled on the way in, in one call: the api worker's tab read and
 // thumbnail render, the offline store's tab load and a file import all run this, so a new step is
 // added once and reaches every entry point.
-import { settleStoredArticles } from './article-flow';
+import { settleStoredArticles } from '@liveworkspace/article/article-flow';
 import { withArticleContinuous } from './continuous-article';
 import { withContinuousPageWidth } from './continuous-page-width';
 import { withKnowledgebasePage } from './knowledgebase-page';

@@ -3,7 +3,7 @@
 // article summaries, so both say the same. Text is read by one left-to-right pass, each character looked at once,
 // never a regex over the writing (a pasted run of dots or spaces can't make it slow). English first: the formula is
 // English's, so another language gets the reading time and sentence figures without a level. Pure.
-import type { ArticleBlock, ArticleFlow } from './article-flow';
+import type { ArticleBlock, ArticleFlow } from '@liveworkspace/article/article-flow';
 
 // An adult's silent reading pace for non-fiction, words a minute (Brysbaert 2019, a meta-analysis of 190 studies).
 export const READING_WORDS_PER_MINUTE = 238;

@@ -4,7 +4,6 @@
 // a new card. Pure.
 import {
   articlesOf,
-  newFlashcardFlow,
   nextArticleBlockId,
   normaliseRuns,
   type ArticleRun,
@@ -12,9 +11,9 @@ import {
   type ArticleBlock,
   type ArticleFlow,
   type ArticleParagraphBlock,
-} from './article-flow';
-import { withArticleFlow } from './article-pages';
-import type { ArticleTableBlock } from './article-table';
+} from '@liveworkspace/article/article-flow';
+import { newFlashcardFlow, withArticleFlow } from './article-pages';
+import type { ArticleTableBlock } from '@liveworkspace/article/article-table';
 import { MAX_PAGES, newFlashcardPage, pagesOf, withPages, type Page } from './page';
 import type { Tab } from './index';
 

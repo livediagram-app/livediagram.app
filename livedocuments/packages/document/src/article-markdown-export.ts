@@ -1,7 +1,7 @@
 // An article tab's Markdown export (docs/specs/020-import-export/markdown-import.md "Markdown export"): every
 // article's writing in page order, in the form articleFromMarkdown reads back, and a count of what Markdown cannot hold.
-import { articlesOf, type ArticleBlock } from './article-flow';
-import { articleMarkdownFrom } from './article-markdown-io';
+import { articlesOf, type ArticleBlock } from '@liveworkspace/article/article-flow';
+import { articleMarkdownFrom } from '@liveworkspace/article/article-markdown-io';
 import { pageUnits } from './article-pages';
 import { pagesOf } from './page';
 import type { Tab } from './index';

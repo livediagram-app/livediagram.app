@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { withoutPageLooks } from './page-looks';
 import { migrateIncomingTab, migrateStoredTab } from './stored-tab';
-import { articlesOf } from './article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import { pagesOf } from './page';
 import type { Tab } from './index';
 import { CONTINUOUS_PAGE_WIDTH } from './page-sizes';

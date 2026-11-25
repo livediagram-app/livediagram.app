@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ARTICLE_ZONE_MAX } from './article-flow';
+import { ARTICLE_ZONE_MAX } from '@liveworkspace/article/article-flow';
 import {
   hasZoneBlock,
   withZoneSize,

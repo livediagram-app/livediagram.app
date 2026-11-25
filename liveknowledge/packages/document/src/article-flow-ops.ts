@@ -11,14 +11,14 @@ import {
   type ArticleBlock,
   type ArticleFlow,
   type ArticleStyle,
-} from './article-flow';
+} from '@liveworkspace/article/article-flow';
 import {
   MAX_ARTICLE_CELL_RUNS,
   MAX_ARTICLE_CELL_TEXT,
   tableCellOps,
   withTableCell,
   type ArticleTableCellOp,
-} from './article-table';
+} from '@liveworkspace/article/article-table';
 import { longestIncreasing } from '@liveworkspace/model-core/id-list-steps';
 
 export type ArticleOp =

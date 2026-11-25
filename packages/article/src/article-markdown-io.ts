@@ -1,4 +1,4 @@
-// An article's writing as the Markdown agents read and write (docs/specs/024-agents/
+// An article's writing as the Markdown agents read and write (livedocuments/docs/specs/024-agents/
 // pages-for-agents.md "write_article", "Reading: the pages view"): the editor's paste reading
 // (article-markdown) plus what only an agent's text carries, front matter for the title and
 // subtitle, `\pagebreak` lines and `[zone <id>]` lines standing for the article's zones. Both ways
@@ -26,8 +26,11 @@ import {
   withFootnoteRefs,
 } from './article-markdown';
 import { articleRunsText } from './article-footnotes';
-import { pageLinkMarkdown } from './article-page-links';
 import { articleTableText, type ArticleTableBlock } from './article-table';
+
+/** A page link as Markdown. Brackets and line breaks in a title would end the link early, so they read as spaces. */
+export const pageLinkMarkdown = (title: string): string =>
+  `[[${title.replace(/[[\]\n]/g, ' ').trim()}]]`;
 
 // The most Markdown one write takes: 5,000 blocks of ~80 characters, far inside a tab's row.
 export const ARTICLE_MARKDOWN_MAX = 400_000;
@@ -206,8 +209,9 @@ const escapeHref = (href: string) => encodeWhiteSpace(href.replace(/[\\()]/g, '\
 
 // `lead` and `tail` are the run's edge white space (runsMarkdown): outside its emphasis, but inside a link's brackets.
 function runMarkdown(run: ArticleRun, lead = '', tail = ''): string {
-  // A page link is written `[[Title]]`, the form articleFromMarkdown's caller resolves back to the page
-  // (article-page-links.ts): its own marks are not written, since the brackets hold a title, never Markdown.
+  // A page link (liveknowledge) is written `[[Title]]`, the form articleFromMarkdown's caller resolves back to the
+  // page (liveknowledge's article-page-links.ts): its own marks are not written, since the brackets hold a title,
+  // never Markdown.
   if (pageOfRun(run)) return pageLinkMarkdown(run.text);
   // Inline code keeps its other marks around it (a linked or bold `npm i`): they were dropped with the code's text
   // alone written. A line break inside a heading or code reads back as a space (a body paragraph's, a quote's or a
@@ -228,11 +232,11 @@ function runMarkdown(run: ArticleRun, lead = '', tail = ''): string {
 // round trip. A line break among a heading's edge white space is written as a space, as one inside its marks is:
 // written raw, it split the heading in two, the text after it read back as a paragraph of its own.
 // A footnote is written as its number, `[^3]`, its note put in `notes` (written after the last block, articleToMarkdown).
-function runsMarkdown(runs: readonly ArticleRun[], notes: string[]): string {
+function runsMarkdown(runs: readonly ArticleRun[], notes: NoteList): string {
   return runs
     .map((run) => {
       const fn = run.fn;
-      if (fn !== undefined) return Array.from(run.text, () => `[^${notes.push(fn)}]`).join('');
+      if (fn !== undefined) return Array.from(run.text, () => `[^${notes.add(fn)}]`).join('');
       // Code keeps its edge spaces inside its span (codeSpan pads it so they read back).
       if (pageOfRun(run) || run.code || (!run.b && !run.i && !run.s && !run.href))
         return runMarkdown(run);
@@ -251,7 +255,7 @@ const CELL_BREAK = '\ue010';
 
 // A cell's runs as a pipe table's cell: its bars escaped, a line break as `<br>`. Backslashes are already escaped
 // (escapeText), so a bar is the one character left to escape.
-const cellMarkdown = (runs: readonly ArticleRun[], notes: string[]) =>
+const cellMarkdown = (runs: readonly ArticleRun[], notes: NoteList) =>
   runsMarkdown(
     runs.map((r) => ({ ...r, text: r.text.replace(/\n/g, CELL_BREAK) })),
     notes,
@@ -262,7 +266,7 @@ const cellMarkdown = (runs: readonly ArticleRun[], notes: string[]) =>
 
 /** A table as a pipe table: its header row the header line, or an empty header line when it has
  *  none (which reads back as no header row). */
-function tableMarkdown(t: ArticleTableBlock, notes: string[]): string[] {
+function tableMarkdown(t: ArticleTableBlock, notes: NoteList): string[] {
   const row = (cells: string[]) => `| ${cells.join(' | ')} |`;
   const rows = t.rows.map((r) => r.cells.map((cell) => cellMarkdown(cell, notes)));
   const head = t.header ? rows.shift()! : t.cols.map(() => '');
@@ -280,7 +284,7 @@ const PARAGRAPH_PREFIX: Record<string, string> = { h1: '# ', h2: '## ', h3: '###
 // CommonMark's backslash hard break. Each line it starts is escaped as a block's first line is, so it never reads back
 // as a heading or a list, and opens with `lead`: a quote's `> `, or a list item's indent under its text.
 const LINE_BREAK = '\ue011';
-function brokenMarkdown(runs: readonly ArticleRun[], notes: string[], lead = ''): string {
+function brokenMarkdown(runs: readonly ArticleRun[], notes: NoteList, lead = ''): string {
   const held = runsMarkdown(
     runs.map((r) => (r.code ? r : { ...r, text: r.text.replace(/\n/g, LINE_BREAK) })),
     notes,
@@ -312,10 +316,34 @@ function textLength(line: string): number {
 
 /** An article's writing as Markdown, in the form articleFromMarkdown reads. */
 export function articleToMarkdown(flow: ArticleFlow): string {
+  return articleMarkdownFrom(flow, 0).markdown;
+}
+
+/** The footnotes' texts, numbered as their references are written (from one past `before`), the notes after the last
+ *  block. */
+class NoteList {
+  readonly texts: string[] = [];
+  readonly before: number;
+  constructor(before: number) {
+    this.before = before;
+  }
+  /** The note's number. */
+  add(text: string): number {
+    return this.before + this.texts.push(text);
+  }
+}
+
+/**
+ * An article's writing as Markdown whose footnotes are numbered on from `notesBefore` (an earlier article's in the
+ * same file: a repeated `[^1]` would read back as the first one's note), and how many notes it wrote.
+ */
+export function articleMarkdownFrom(
+  flow: ArticleFlow,
+  notesBefore: number,
+): { markdown: string; notes: number } {
   const blocks = [...flow.blocks];
   const front: string[] = [];
-  // The footnotes' texts, numbered as their references are written, the notes after the last block.
-  const notes: string[] = [];
+  const notes = new NoteList(notesBefore);
   for (const style of ['title', 'subtitle'] as const) {
     const at = blocks.findIndex((b) => b.type === 'paragraph' && b.style === style);
     if (at < 0) continue;
@@ -324,7 +352,7 @@ export function articleToMarkdown(flow: ArticleFlow): string {
     const text = (blocks[at] as { runs: ArticleRun[] }).runs
       .map((r) =>
         r.fn !== undefined
-          ? Array.from(r.text, () => `[^${notes.push(r.fn!)}]`).join('')
+          ? Array.from(r.text, () => `[^${notes.add(r.fn!)}]`).join('')
           : escapeFrontText(r.text),
       )
       .join('');
@@ -402,10 +430,13 @@ export function articleToMarkdown(flow: ArticleFlow): string {
     prevList = isList;
     opening = false;
   }
-  if (prevList && notes.length) lines.push('');
-  notes.forEach((note, i) => lines.push(`[^${i + 1}]: ${escapeText(note)}`));
+  if (prevList && notes.texts.length) lines.push('');
+  notes.texts.forEach((note, i) => lines.push(`[^${notesBefore + i + 1}]: ${escapeText(note)}`));
   while (lines.length && lines[lines.length - 1] === '') lines.pop();
-  return lines.join('\n') + (lines.length ? '\n' : '');
+  return {
+    markdown: lines.join('\n') + (lines.length ? '\n' : ''),
+    notes: notes.texts.length,
+  };
 }
 
 /** The words of an article's writing (its runs and code), as the answers count them. */

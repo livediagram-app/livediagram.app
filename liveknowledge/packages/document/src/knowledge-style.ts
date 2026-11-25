@@ -5,7 +5,7 @@
 // one), so changing it rewrites nothing.
 import { DEFAULT_SCHEME_ID } from '@liveworkspace/element-model/themes';
 import { FONTS } from '@liveworkspace/model-core/fonts';
-import { isArticleHex, type ArticleStyle } from './article-flow';
+import { isArticleHex, type ArticleStyle } from '@liveworkspace/article/article-flow';
 import { THEMES } from './themes-data';
 
 export const KNOWLEDGE_TEXT_SIZES = ['small', 'medium', 'large'] as const;

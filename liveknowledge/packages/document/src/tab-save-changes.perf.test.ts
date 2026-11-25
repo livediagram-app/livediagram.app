@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { MAX_ARTICLE_BLOCKS, type ArticleBlock } from './article-flow';
+import { MAX_ARTICLE_BLOCKS, type ArticleBlock } from '@liveworkspace/article/article-flow';
 import type { Tab } from './index';
 import { mergeSaveOverStored, tabSaveChanges } from './tab-save-changes';
 

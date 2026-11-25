@@ -5,7 +5,11 @@
 // whose tab or any of whose pages is locked. The server applies each of a Participant's `article` frames to the
 // STORED tab through this one pure function; the editor asks the same question of its own change before it lands.
 
-import { articlesOf, sameArticleValue, type ArticleBlock } from './article-flow';
+import {
+  articlesOf,
+  sameArticleValue,
+  type ArticleBlock,
+} from '@liveworkspace/article/article-flow';
 import { applyArticleOps, diffArticleFlow, type ArticleOp } from './article-flow-ops';
 import { withArticleFlow } from './article-pages';
 import type { Tab } from './index';

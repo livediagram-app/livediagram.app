@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
-import { parseArticleFlow, type ArticleBlock, type ArticleRun } from './article-flow';
-import { articleFromMarkdown, articleToMarkdown } from './article-markdown-io';
+import {
+  parseArticleFlow,
+  type ArticleBlock,
+  type ArticleRun,
+} from '@liveworkspace/article/article-flow';
+import { articleFromMarkdown, articleToMarkdown } from '@liveworkspace/article/article-markdown-io';
 import {
   pageByTitleIn,
   pageFilePaths,

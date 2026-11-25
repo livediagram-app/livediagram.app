@@ -9,7 +9,7 @@ import {
   withArticleRemoved,
   withUnitMoved,
 } from './article-pages';
-import { articlesOf } from './article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import { absentWriterPageCount } from './article-pages';
 import { pagesOf, layOutPages, type Page } from './page';
 import type { Element } from './index';
