@@ -230,6 +230,20 @@ describe("the people each app's own pieces carry", () => {
     });
   });
 
+  it("names nobody on a component's open edit session, keeping it open so it draws as before", () => {
+    const [open, closed] = redactElementsForCommunity([
+      { id: 'i1', type: 'instance', componentId: 'c1', componentEditBy: 'user_jane' },
+      { id: 'i2', type: 'instance', componentId: 'c1', componentEditBy: '' },
+    ]);
+    expect(open).toEqual({
+      id: 'i1',
+      type: 'instance',
+      componentId: 'c1',
+      componentEditBy: 'someone',
+    });
+    expect(closed).toEqual({ id: 'i2', type: 'instance', componentId: 'c1', componentEditBy: '' });
+  });
+
   it("keeps a Notice Board's notes and an Arcade's scores without who wrote or played them", () => {
     const board = {
       id: 'b',

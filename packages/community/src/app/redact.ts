@@ -14,6 +14,8 @@
 // - a Notice Board's or Calendar Wall's notes (`noticeNotes`, livehuddle) keep their words, read as pinned by
 //   "Someone" and lose their signer key; an Arcade Machine's High Scores (`arcadeScores`) keep their scores and
 //   read as "Player n", with no signer key;
+// - a component instance with its edit session open (`componentEditBy`, livedesign) names nobody: it reads
+//   `someone`, still set, so the design draws as before;
 // - a chart or table with live data from a plan (`chartSheetSource`, liveworkspace/docs/specs/004-index/live-data.md)
 //   keeps its last values and loses the link, so a stranger is told of no other item;
 // - a live embed (`liveItem`, liveworkspace/docs/specs/004-index/live-embeds.md) keeps its snapshot and loses the link,
@@ -56,6 +58,7 @@ type PeopleFields = {
   pickerResult?: unknown;
   noticeNotes?: { author?: unknown; by?: unknown }[];
   arcadeScores?: { name?: unknown; by?: unknown }[];
+  componentEditBy?: unknown;
   chartSheetSource?: unknown;
   liveItem?: unknown;
   // A Screen's tab (livehuddle, Work Tracker 1427): goes with its link.
@@ -74,6 +77,7 @@ function hasPeople(e: PeopleFields): boolean {
     Array.isArray(e.noticeNotes) ||
     Array.isArray(e.arcadeScores) ||
     e.addedBy !== undefined ||
+    Boolean(e.componentEditBy) ||
     (e.pickerResult !== undefined && e.pickerSource !== 'options') ||
     e.chartSheetSource !== undefined ||
     e.liveItem !== undefined ||
@@ -112,6 +116,7 @@ export function redactElementsForCommunity<E extends object>(elements: E[]): E[]
     }
     // A result from written options is the author's words; one from the room is a person's name.
     if (e.pickerResult !== undefined && e.pickerSource !== 'options') delete out.pickerResult;
+    if (e.componentEditBy) out.componentEditBy = 'someone';
     if (Array.isArray(e.noticeNotes)) {
       const ids = neutralIds(e.noticeNotes, 'n');
       out.noticeNotes = e.noticeNotes.map((note, i) => ({
