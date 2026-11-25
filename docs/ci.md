@@ -645,8 +645,8 @@ The Workers among them build and deploy, and the rest are left as they are; a he
 are never among them, even with **all**, and neither is a held Worker (`HELD_WORKERS` in `ci-plan.mjs`, none
 today; a held Worker is still linted, typechecked, tested and built like any other). A binding to a Worker that is
 not deployed fails the deploy of the Worker that names it, so a new Worker's service bindings in other Workers stay
-commented out until it has deployed once (the subscription service's `SUBSCRIPTION` binding in each api's and
-media's `wrangler.toml`, today). A Worker none of whose
+commented out until it has deployed once (production's `SUBSCRIPTION` binding in each api's and media's
+`wrangler.toml`, today; staging's is on). A Worker none of whose
 files or dependencies changed is never rebuilt or redeployed. A change to `.github/` or the Prettier
 config alone deploys nothing. The record is written only when every Worker in the deploy succeeded, so a
 failed one is retried by the next deploy. With no record yet, everything deploys.
@@ -728,7 +728,9 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
 
 **What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
 product's hosted build vars, and on staging the staging one MCP's address), built from full history for the help centre, whose sitemap dates each article by its last commit, and a product api's
-hosted vars (`apps/api/hosted-vars.json`, checked on the live deployment afterwards). Secrets are not
+hosted vars (`apps/api/hosted-vars.json`, checked on the live deployment afterwards). Where Pro is on (`PRO_ON` in
+`deploy-group.mjs`: staging, not production), every Worker deploys with `--var PRO_ENABLED:true` and every site builds
+with `NEXT_PUBLIC_PRO_ENABLED=true`, over each `wrangler.toml`'s `"false"`, which a fork's deploy keeps. Secrets are not
 written: each Worker's were set on it with `wrangler secret put` and survive a deploy. The only
 credential is the repository secret **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace account
 with Workers Scripts and D1 edit rights.

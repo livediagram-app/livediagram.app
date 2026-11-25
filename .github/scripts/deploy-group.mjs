@@ -74,6 +74,13 @@ export function deployGroups(deploys, tier) {
   }));
 }
 
+/**
+ * Where Pro is on (liveworkspace/docs/specs/019-subscription/subscription.md "The flag"): the one switch for our own
+ * deploys. Every wrangler.toml keeps `PRO_ENABLED = "false"`, so a fork's deploy stays off; ours add the Worker var
+ * and the pages' build var here. Staging only, until production's billing is set up.
+ */
+export const PRO_ON = { staging: true, production: false };
+
 /** wrangler's `--env`: staging's `[env.staging]` blocks; production is the top-level config. */
 const envFlag = (environment) => (environment === 'staging' ? ['--env', 'staging'] : []);
 
@@ -84,10 +91,11 @@ const envFlag = (environment) => (environment === 'staging' ? ['--env', 'staging
  */
 export function workerSteps(worker, { environment, ref, exists = existsSync }) {
   const env = envFlag(environment);
+  const pro = PRO_ON[environment] === true;
   const steps = [];
   if (worker.build) {
     const hosted = `${worker.product}/apps/api/scripts/hosted-vars.mjs`;
-    const extraEnv = { NEXT_PUBLIC_BUILD_ID: ref };
+    const extraEnv = { NEXT_PUBLIC_BUILD_ID: ref, ...(pro && { NEXT_PUBLIC_PRO_ENABLED: 'true' }) };
     const hasHosted = exists(hosted);
     // Staging's sites name staging's one MCP (liveworkspace/docs/specs/021-mcp/mcp.md), which runs every app's MCP
     // package. A product with no MCP package keeps the default.
@@ -133,7 +141,7 @@ export function workerSteps(worker, { environment, ref, exists = existsSync }) {
     name: 'Deploy',
     cwd: worker.dir,
     cmd: 'pnpm',
-    args: ['exec', 'wrangler', 'deploy', ...env],
+    args: ['exec', 'wrangler', 'deploy', ...env, ...(pro ? ['--var', 'PRO_ENABLED:true'] : [])],
     retry: true,
     ...(worker.hosted && {
       argsFrom: {

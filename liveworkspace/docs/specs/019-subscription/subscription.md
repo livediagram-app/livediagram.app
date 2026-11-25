@@ -23,7 +23,10 @@ calls the subscription Worker, which need not be deployed.
 - The Worker var is the one that counts. A browser build with the flag on against Workers with it off shows Free
   everywhere and limits nothing.
 - Each Worker reads its own flag, so the subscription Worker can be on while the apps are off: it answers, and no
-  app asks it. Staging runs that way until the apps' keys are set.
+  app asks it.
+- Our own deploys switch it per environment, every Worker and every page together (`PRO_ON` in
+  `.github/scripts/deploy-group.mjs`): on for staging, off for production until its billing is set up. Every
+  `wrangler.toml` and `.env.example` keeps it off, so a fork that deploys its own way stays off.
 
 With the flag off the limits that existed before Pro stay as they were (1,000 automation runs a day, 50 rules,
 10 MB images, 10 minute walkthroughs, five snapshots and so on). They are safety caps, not tiers. They are the

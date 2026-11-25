@@ -147,6 +147,7 @@ test("a site's steps: its build with the build id and hosted build vars, then de
     args: ['turbo', 'run', 'build', '--filter=@livediagram/editor'],
     env: {
       NEXT_PUBLIC_BUILD_ID: REF,
+      NEXT_PUBLIC_PRO_ENABLED: 'true',
       NEXT_PUBLIC_MCP_ORIGIN: 'https://mcp-staging.liveworkspace.app',
     },
     envFrom: {
@@ -159,7 +160,7 @@ test("a site's steps: its build with the build id and hosted build vars, then de
     name: 'Deploy',
     cwd: 'livediagram/apps/editor',
     cmd: 'pnpm',
-    args: ['exec', 'wrangler', 'deploy', '--env', 'staging'],
+    args: ['exec', 'wrangler', 'deploy', '--env', 'staging', '--var', 'PRO_ENABLED:true'],
     retry: true,
   });
 
@@ -172,7 +173,7 @@ test("a site's steps: its build with the build id and hosted build vars, then de
   // A product without hosted vars (the platform's site) builds with its build id alone.
   const platform = EVERY.find((w) => w.name === '@liveworkspace/site');
   const [build] = workerSteps(platform, { environment: 'staging', ref: REF, exists: () => false });
-  assert.deepEqual(build.env, { NEXT_PUBLIC_BUILD_ID: REF });
+  assert.deepEqual(build.env, { NEXT_PUBLIC_BUILD_ID: REF, NEXT_PUBLIC_PRO_ENABLED: 'true' });
   assert.equal(build.envFrom, undefined);
 
   // A product with hosted vars but no mcp worker (livehuddle) names no staging MCP origin.
@@ -182,7 +183,7 @@ test("a site's steps: its build with the build id and hosted build vars, then de
     ref: REF,
     exists: (path) => !path.endsWith('/apps/mcp/package.json'),
   });
-  assert.deepEqual(huddleBuild.env, { NEXT_PUBLIC_BUILD_ID: REF });
+  assert.deepEqual(huddleBuild.env, { NEXT_PUBLIC_BUILD_ID: REF, NEXT_PUBLIC_PRO_ENABLED: 'true' });
 });
 
 test("an api's steps: deploy with its hosted vars and build id, then verify them live", () => {
@@ -259,7 +260,7 @@ test('a step takes its captured env and args, and never logs their values', () =
   assert.deepEqual(runStep(deploy, { exec, baseEnv: {}, log }), { ok: true, retries: 0 });
   assert.equal(
     calls.at(-1).line,
-    `pnpm exec wrangler deploy --env staging --var TELEMETRY_URL:https://secret.example --var BUILD_ID:${REF}`,
+    `pnpm exec wrangler deploy --env staging --var PRO_ENABLED:true --var TELEMETRY_URL:https://secret.example --var BUILD_ID:${REF}`,
   );
   assert.ok(
     logged.every((line) => !line.includes('secret.example')),

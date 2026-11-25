@@ -278,12 +278,12 @@ Each product's api Worker and media (with the platform's `liveworkspace.app` key
 (`packages/subscription/src/client.ts`); the index reads none, as an item's messages are spent as Automation Runs by
 the app that sends them:
 
-| Name               | Where                                                                                                                                 |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `PRO_ENABLED`      | `"false"` in `[vars]` and `[env.staging.vars]`; `true` in `.dev.vars.example`                                                         |
-| `SUBSCRIPTION_KEY` | A secret, the same value as the service's `SUBSCRIPTION_KEY_<APP>`; `dev-<app>-subscription-key` locally                              |
-| `SUBSCRIPTION_URL` | Unset in production (the client's default); staging's in `[env.staging.vars]`; `http://localhost:8794/api/subscription` locally       |
-| `SUBSCRIPTION`     | The service binding to `liveworkspace-subscription` (`-staging`). Commented out in each `wrangler.toml` until that Worker is deployed |
+| Name               | Where                                                                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PRO_ENABLED`      | `"false"` in `[vars]` and `[env.staging.vars]`, turned on by our staging deploys (`PRO_ON`); `true` in `.dev.vars.example`                     |
+| `SUBSCRIPTION_KEY` | A secret, the same value as the service's `SUBSCRIPTION_KEY_<APP>`; `dev-<app>-subscription-key` locally                                       |
+| `SUBSCRIPTION_URL` | Unset in production (the client's default); staging's in `[env.staging.vars]`; `http://localhost:8794/api/subscription` locally                |
+| `SUBSCRIPTION`     | The service binding to `liveworkspace-subscription` (`-staging`). Staging's is on; production's is commented out until that Worker is deployed |
 
 ## Constants
 
@@ -444,10 +444,11 @@ docs/ci.md "A new database") and its notice names the id to pin. Then:
    `ACCOUNTS_CLIENT_SECRET` (a team cannot be subscribed or its billing changed without them, and seats follow
    members with them), and Stripe's `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (the sandbox's on staging).
    Set `SUBSCRIPTION_KEY` on each api, on media and on the index.
-2. Once it is deployed, uncomment the `SUBSCRIPTION` service binding in each api's, media's and the index's
-   `wrangler.toml`.
-3. Turn `PRO_ENABLED` on where Pro should be live: the subscription Worker (already on for staging), each api, media,
-   the index, and `NEXT_PUBLIC_PRO_ENABLED` for the pages.
+2. Once it is deployed, uncomment the `SUBSCRIPTION` service binding in each api's and media's `wrangler.toml`
+   (staging's are on).
+3. Turn Pro on for the environment: `PRO_ON` in `.github/scripts/deploy-group.mjs` (staging's is on). Its deploys then
+   give every Worker `PRO_ENABLED` and every page build `NEXT_PUBLIC_PRO_ENABLED`; each `wrangler.toml` keeps
+   `"false"`, so a fork stays off.
 
 Production's Stripe Prices and portal are empty until `stripe:setup` runs with the live key, and the mock cannot be
 turned on there: with Pro on in production before then, every owner is Free and Subscribe answers that billing is
