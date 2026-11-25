@@ -279,6 +279,25 @@ describe('onCommitImageCrop', () => {
     expect(latest).toHaveBeenCalledOnce();
   });
 
+  // picture-crop-and-mask.md "A new picture starts whole": the crop was a part of the old picture.
+  it('drops the crop when the picture changes or goes, keeping the box, mask and greyscale', () => {
+    // A locked image: its picture still changes, and it could not be cropped back.
+    const h = cropHook({ locked: true });
+    const cropped = { crop: result.crop, mask: 'circle' as const, greyscale: true as const };
+    const wearCrop = () => {
+      const now = h.get();
+      now[0] = { ...now[0]!, ...cropped };
+    };
+    wearCrop();
+    act(() => h.result.current.applyImageToElement('pic', { id: 'new', width: 40, height: 30 }));
+    expect(h.get()[0]).not.toHaveProperty('crop');
+    expect(h.get()[0]).toMatchObject({ imageId: 'new', mask: 'circle', greyscale: true, x: 10 });
+    wearCrop();
+    act(() => h.result.current.removeImageFromElement('pic'));
+    expect(h.get()[0]).not.toHaveProperty('crop');
+    expect(h.get()[0]).toMatchObject({ imageId: null, mask: 'circle' });
+  });
+
   it('never crops a locked image, nor what is not an image', () => {
     const h = cropHook({ locked: true });
     act(() => h.result.current.imageContext!.onCommitImageCrop!('pic', result));

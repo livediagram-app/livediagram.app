@@ -219,8 +219,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
         if (el.id === elementId && el.type === 'shape' && el.shape === 'quote')
           return { ...el, imageId: image.id };
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
-        const { credit: _old, ...rest } = el;
+        // The crop named a part of the old picture (picture-crop-and-mask.md "A new picture starts whole").
+        const { credit: _old, crop: _crop, ...rest } = el;
         void _old;
+        void _crop;
         return {
           ...rest,
           imageId: image.id,
@@ -249,10 +251,11 @@ export function useEditorImages(deps: EditorImagesDeps) {
           return rest;
         }
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
-        const { naturalWidth: _w, naturalHeight: _h, credit: _c, ...rest } = el;
+        const { naturalWidth: _w, naturalHeight: _h, credit: _c, crop: _crop, ...rest } = el;
         void _w;
         void _h;
         void _c;
+        void _crop;
         return { ...rest, imageId: null };
       }),
     );

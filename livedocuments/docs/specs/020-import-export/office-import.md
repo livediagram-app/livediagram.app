@@ -93,6 +93,9 @@ sits on the slide, scaled from the deck's size to the page's.
 - **Pictures** become **image** elements in the picture's box (a picture put into a placeholder, with no place of
   its own, in its layout's, then its master's); a cropped picture fills its box (cover).
 - **Groups** are opened: their members are placed through the group's own scaling.
+- **Rotation** comes across: a rotated text box or picture (its own turn, else its placeholder's) is an element
+  turned as far about its centre, and a rotated group turns its members about the group's centre with it, so a
+  sideways label or a tilted photo sits as it did on the slide (and a deck this app exported comes back turned).
 - **Speaker notes** become the slide's notes in the Slide Deck as **one note card** holding the notes page's text
   (its paragraphs as lines), the same cards the page's **Notes** button and the presenter view show
   ([Speaker note cards](../012-collaboration/speaker-note-cards.md)); the speaker can split it into cards afterwards.

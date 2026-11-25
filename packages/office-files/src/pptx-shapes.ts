@@ -6,7 +6,20 @@
 import type { TextAlignX, TextAlignY } from '@liveworkspace/model-core/basics';
 import { child, find, intAttr, kids, path, textOf, type XmlElement } from './xml';
 
-export type EmuBox = { x: number; y: number; cx: number; cy: number };
+/** A box in EMU; `rot` its clockwise turn about its centre in degrees (0..360), absent when unturned. */
+export type EmuBox = { x: number; y: number; cx: number; cy: number; rot?: number };
+
+// A DrawingML angle is 60,000ths of a degree.
+const ROT_UNIT = 60_000;
+
+/** An `a:xfrm`'s `rot` in degrees, 0..360 (0 when absent). */
+function rotDegrees(xfrm: XmlElement | undefined): number {
+  const rot = intAttr(xfrm, 'rot') ?? 0;
+  return normaliseTurn(rot / ROT_UNIT);
+}
+
+const normaliseTurn = (deg: number): number =>
+  Number.isFinite(deg) ? (Math.round((((deg % 360) + 360) % 360) * 100) / 100) % 360 : 0;
 
 export type PlaceholderType = 'title' | 'body' | 'other';
 
@@ -75,12 +88,14 @@ export function boxOf(shape: XmlElement | undefined): EmuBox | undefined {
   const off = child(xfrm, 'a:off');
   const ext = child(xfrm, 'a:ext');
   if (!off || !ext) return undefined;
-  const box = {
+  const box: EmuBox = {
     x: intAttr(off, 'x') ?? 0,
     y: intAttr(off, 'y') ?? 0,
     cx: intAttr(ext, 'cx') ?? 0,
     cy: intAttr(ext, 'cy') ?? 0,
   };
+  const rot = rotDegrees(xfrm);
+  if (rot) box.rot = rot;
   return box.cx > 0 && box.cy > 0 ? box : undefined;
 }
 
@@ -102,8 +117,28 @@ export function groupMap(group: XmlElement, outer: GroupMap): GroupMap {
   const oy = intAttr(off, 'y') ?? 0;
   const cx = intAttr(chOff, 'x') ?? 0;
   const cy = intAttr(chOff, 'y') ?? 0;
-  return (b) =>
-    outer({ x: ox + (b.x - cx) * sx, y: oy + (b.y - cy) * sy, cx: b.cx * sx, cy: b.cy * sy });
+  // A turned group turns each member's centre about its own centre, and the member with it.
+  const turn = rotDegrees(xfrm);
+  const gx = ox + (intAttr(ext, 'cx') ?? 0) / 2;
+  const gy = oy + (intAttr(ext, 'cy') ?? 0) / 2;
+  const rad = (turn * Math.PI) / 180;
+  return (b) => {
+    const placed: EmuBox = {
+      x: ox + (b.x - cx) * sx,
+      y: oy + (b.y - cy) * sy,
+      cx: b.cx * sx,
+      cy: b.cy * sy,
+    };
+    if (turn) {
+      const mx = placed.x + placed.cx / 2 - gx;
+      const my = placed.y + placed.cy / 2 - gy;
+      placed.x = gx + mx * Math.cos(rad) - my * Math.sin(rad) - placed.cx / 2;
+      placed.y = gy + mx * Math.sin(rad) + my * Math.cos(rad) - placed.cy / 2;
+    }
+    const rot = normaliseTurn((b.rot ?? 0) + turn);
+    if (rot) placed.rot = rot;
+    return outer(placed);
+  };
 }
 
 // --- Text ---------------------------------------------------------------------------------------------------------

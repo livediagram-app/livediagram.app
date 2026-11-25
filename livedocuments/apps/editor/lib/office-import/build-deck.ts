@@ -100,8 +100,13 @@ function elementOf(
     width: Math.max(1, Math.round(item.box.cx * scale)),
     height: Math.max(1, Math.round(item.box.cy * scale)),
   };
+  // Turned on the slide, turned on the page (docs/specs/020-import-export/office-import.md "Rotation").
+  const turn = item.box.rot ? { rotation: item.box.rot } : {};
   if (item.kind === 'picture') {
-    return pictureElement(item.picture, outcomes.get(zipKey(item.picture.path)), box);
+    return {
+      ...pictureElement(item.picture, outcomes.get(zipKey(item.picture.path)), box),
+      ...turn,
+    };
   }
   const size = slideTextSize(item.sizePt * EMU_PER_PT * scale);
   // A box PowerPoint sizes to its text (no wrap, or shape autofit) grows to it, so no word is cut off.
@@ -118,6 +123,7 @@ function elementOf(
     ...fitted,
     label: item.label,
     ...size,
+    ...turn,
     textAlignX: item.alignX,
     textAlignY: item.alignY,
     ...(item.bold ? { textBold: true } : {}),
