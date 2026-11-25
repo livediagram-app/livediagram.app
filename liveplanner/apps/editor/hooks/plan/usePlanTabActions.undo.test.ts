@@ -17,7 +17,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 let n = 0;
 const id = () => `id${++n}`;
 
-function setup() {
+function setup(withTabs = true) {
   const base = dashboardFromPreset('two-by-two', id);
   const slot = base.rows[0]!.slots[0]!.id;
   const held = setDashboardContent(base, slot, { type: 'tab', tabId: 'board' } as never);
@@ -32,7 +32,13 @@ function setup() {
     tabs = map(tabs);
   };
   const hook = renderHook(
-    ({ active }) => usePlanTabActions({ activeId: active, commitTabs: write, tickTabs: write }),
+    ({ active }) =>
+      usePlanTabActions({
+        activeId: active,
+        commitTabs: write,
+        tickTabs: write,
+        ...(withTabs ? { readTabs: () => tabs } : {}),
+      }),
     { initialProps: { active: 'd' } },
   );
   return {
@@ -80,6 +86,13 @@ describe('changeDashboard’s Undo', () => {
   it('has nothing to undo when the change changed nothing', () => {
     const s = setup();
     const undo = s.actions().changeDashboard((l) => l, 'DashboardContent');
+    expect(undo()).toBe(false);
+  });
+
+  it('still applies the change without the tabs to hand, with nothing to take back', () => {
+    const s = setup(false);
+    const undo = s.actions().changeDashboard(clearDashboard, 'DashboardContent', { prune: true });
+    expect(s.tab().elements).toEqual([]);
     expect(undo()).toBe(false);
   });
 });

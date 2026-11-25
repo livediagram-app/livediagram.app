@@ -373,11 +373,13 @@ export function useSlideDeck({
         message: `Deleted “${name}”.`,
         undoLabel: `Undo deleting ${name}`,
         act: () => {
-          commitDeck((prev) => {
-            const after = prev.slides.filter((s) => s.id !== slideId);
-            step = { before: prev.slides, after };
-            return { slides: after };
-          });
+          // Decided before the commit, from the deck as it is now (react-state-and-effects.md).
+          const before = deckRef.current.slides;
+          const after = before.filter((s) => s.id !== slideId);
+          step = { before, after };
+          commitDeck((prev) => ({
+            slides: prev.slides === before ? after : prev.slides.filter((s) => s.id !== slideId),
+          }));
           setOpenSlideId((cur) => (cur === slideId ? null : cur));
           track('UI', 'Removed', 'Slide');
         },

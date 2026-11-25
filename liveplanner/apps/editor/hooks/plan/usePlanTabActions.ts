@@ -119,6 +119,7 @@ export function usePlanTabActions({
   tickTabs,
   bringCardTypes,
   markTabLoaded,
+  readTabs,
 }: {
   activeId: string;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
@@ -128,6 +129,9 @@ export function usePlanTabActions({
   bringCardTypes?: (elements: Tab['elements']) => void;
   // A tab made here has nothing to fetch.
   markTabLoaded?: (tabId: string) => void;
+  // The tabs as they are now, so a change decides its step before it commits (Clear Dashboard and Start Over's
+  // Undo). Without it a change still applies, and hands back an Undo with nothing to take back.
+  readTabs?: () => readonly Tab[];
 }): PlanTabActions {
   // Read when used, so a caller handing new functions each render never remakes the actions (the Dashboard's context).
   const tabHooks = useLatest({ bringCardTypes, markTabLoaded });
@@ -252,21 +256,30 @@ export function usePlanTabActions({
   const changeDashboard = useCallback<PlanTabActions['changeDashboard']>(
     (change, kind, opts) => {
       const tabId = activeId;
-      let step: { before: Tab; after: Tab } | null = null;
-      commitTabs((ts) => {
-        const tab = ts.find((t) => t.id === tabId);
-        if (!tab) return ts;
+      // The tab changed, or null when the change changes nothing.
+      const planned = (tab: Tab): Tab | null => {
         const before = dashboardOf(tab);
         const after = change(before);
-        if (after === before) return ts;
+        if (after === before) return null;
         const held = opts?.prune ? dashboardElementIds(after) : null;
-        const next: Tab = {
+        return {
           ...tab,
           dashboard: after,
           ...(held ? { elements: tab.elements.filter((e) => held.has(e.id)) } : {}),
         };
-        step = { before: tab, after: next };
-        return ts.map((t) => (t.id === tabId ? next : t));
+      };
+      // Decided before the commit (react-state-and-effects.md "A handler decides before it commits"), from the tabs
+      // as they are now; a locked tab changes nothing (commitTabs refuses it).
+      const now = readTabs?.().find((t) => t.id === tabId);
+      const next = now && !now.locked ? planned(now) : null;
+      let step: { before: Tab; after: Tab } | null =
+        now && next ? { before: now, after: next } : null;
+      const decided = step;
+      commitTabs((ts) => {
+        const tab = ts.find((t) => t.id === tabId);
+        if (!tab) return ts;
+        const out = decided && tab === decided.before ? decided.after : planned(tab);
+        return out ? ts.map((t) => (t.id === tabId ? out : t)) : ts;
       });
       track('Plan', 'Changed', kind);
       return () => {
@@ -286,7 +299,7 @@ export function usePlanTabActions({
         return true;
       };
     },
-    [commitTabs, activeId],
+    [commitTabs, activeId, readTabs],
   );
   const setSlotContent = useCallback<PlanTabActions['setSlotContent']>(
     (slotId, content) => {

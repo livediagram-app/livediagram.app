@@ -25,20 +25,15 @@ export function resetTabUndoable<E extends Keyed, T extends TabOf<E>>(opts: {
 }): Promise<boolean> {
   const { tabId, commitTabs, offerUndo, onReset } = opts;
   const words = opts.words ?? RESET_TAB_WORDS.canvas;
-  // What the reset takes, read at the click; the step's own `before` is the list the commit saw.
+  // What the reset takes, read at the click, before the commit (never from inside its updater).
   let step: { before: readonly E[] } | null = null;
   return offerUndo({
     ...words,
     act: () => {
       const tab = opts.tabs.find((t) => t.id === tabId);
       if (!tab || tab.elements.length === 0) return false;
-      commitTabs((ts) =>
-        ts.map((t) => {
-          if (t.id !== tabId) return t;
-          step = { before: t.elements };
-          return { ...t, elements: [] as E[] };
-        }),
-      );
+      step = { before: tab.elements };
+      commitTabs((ts) => ts.map((t) => (t.id === tabId ? { ...t, elements: [] as E[] } : t)));
       onReset();
       return true;
     },

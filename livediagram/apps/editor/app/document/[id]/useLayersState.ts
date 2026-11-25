@@ -156,18 +156,17 @@ export function useLayersState(opts: {
     then: () => void,
   ) => {
     const tabId = activeId;
+    // Decided before the commit (react-state-and-effects.md "A handler decides before it commits"): the step from the
+    // tab as this render sees it. Should the room have moved it on by the time the updater runs, the change applies
+    // to that tab instead, and Undo still takes back what went (revertTabStep restores by id).
     let step: { before: Tab; after: Tab } | null = null;
     void offerUndo({
       ...words,
       act: () => {
-        commitTabs((ts) =>
-          ts.map((t) => {
-            if (t.id !== tabId) return t;
-            const after = change(t);
-            step = { before: t, after };
-            return after;
-          }),
-        );
+        const before = activeTab;
+        const after = change(before);
+        step = { before, after };
+        commitTabs((ts) => ts.map((t) => (t.id !== tabId ? t : t === before ? after : change(t))));
         then();
       },
       undo: () => {

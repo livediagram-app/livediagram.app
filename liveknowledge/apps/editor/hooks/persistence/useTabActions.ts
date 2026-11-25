@@ -347,7 +347,8 @@ export function useTabActions(deps: TabActionsDeps) {
     // has none. Either way it goes at once, and a toast offers Undo (undo-not-confirm.md).
     const toTrash = documentId !== null && !isOfflineIdSync(documentId);
     const wasActive = gone.has(activeId) ? activeId : null;
-    // The step either side, as the commit saw it, so Undo puts back only what it took.
+    // The step either side, decided before the commit (react-state-and-effects.md), so Undo puts back only what it
+    // took.
     let step: { before: Tab[]; after: Tab[] } | null = null;
     void offerUndo({
       message: deletedPageMessage(target.name, subpages, toTrash),
@@ -356,11 +357,9 @@ export function useTabActions(deps: TabActionsDeps) {
         track('Tab', 'Deleted');
         // Drop the pages AND strip any links on the remaining ones that point at them, so no dangling cross-page
         // references are left. One commit, so undo restores both.
-        commitTabs((ts) => {
-          const after = withPageAndSubpagesDeleted(ts, id);
-          step = { before: ts, after };
-          return after;
-        });
+        const after = withPageAndSubpagesDeleted(tabs, id);
+        step = { before: tabs, after };
+        commitTabs((ts) => (ts === tabs ? after : withPageAndSubpagesDeleted(ts, id)));
         if (wasActive) {
           const fallback = pageAfterDelete(tabs, id);
           if (fallback) setActiveId(fallback);
