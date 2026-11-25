@@ -671,18 +671,66 @@ describe('per-app consent', () => {
 });
 
 describe('an app’s old address (mcp.<app>.app)', () => {
-  it('serves that one app with every tool listed, plus the core verbs', async () => {
-    const names = await listNames({ host: 'mcp.livediagram.app' });
-    expect(names).toContain('update_diagram');
-    expect(names).toContain('find_items');
-    expect(names).not.toContain('change_cards');
-    expect(names).not.toContain('write_article');
+  const host = (app: AppId) => `mcp.${app}.app`;
+  const own = (app: AppId) => recorded(app) as { name: string; description?: string }[];
+
+  it.each(APPS.map((a) => a.app))(
+    '%s: lists the app’s own tools, names and texts as they were',
+    async (app) => {
+      const body = await (
+        await rpc('tools/list', {}, { host: host(app) })
+      ).json<{ result: { tools: { name: string; description?: string }[] } }>();
+      expect(body.result.tools.map((t) => t.name)).toEqual(own(app).map((t) => t.name));
+      expect(body.result.tools.map((t) => t.description)).toEqual(
+        own(app).map((t) => t.description),
+      );
+      expect(body.result.tools.map((t) => t.name)).not.toContain('find_items');
+    },
+  );
+
+  it.each(APPS.map((a) => a.app))('%s: calls a tool by its own name', async (app) => {
+    const name = own(app)[0]!.name;
+    const response = await rpc(
+      'tools/call',
+      { name, arguments: { a: 1 } },
+      { host: host(app), token: 'lwt_old' },
+    );
+    expect(response.status).toBe(200);
+    const body = await response.json<{ result?: unknown; error?: unknown }>();
+    expect(body.error).toBeUndefined();
+    expect(calls).toEqual([
+      { app, method: 'tools/call', name, args: { a: 1 }, auth: 'Bearer lwt_old' },
+    ]);
+  });
+
+  it('calls liveknowledge’s list_pages, the name an old connection holds', async () => {
+    const response = await rpc(
+      'tools/call',
+      { name: 'list_pages', arguments: {} },
+      { host: 'mcp.liveknowledge.app' },
+    );
+    expect(await response.json()).not.toHaveProperty('error');
+    expect(calls.map((c) => `${c.app}.${c.name}`)).toEqual(['liveknowledge.list_pages']);
+  });
+
+  it('gives the app’s own instructions, prompts and resources, unrenamed', async () => {
+    const init = await (
+      await rpc('initialize', {}, { host: 'mcp.livediagram.app' })
+    ).json<{ result: { instructions: string } }>();
+    expect(init.result.instructions).toBe('livediagram: call update_document to edit.');
+    const prompts = await (
+      await rpc('prompts/list', {}, { host: 'mcp.livediagram.app' })
+    ).json<{ result: { prompts: { name: string }[] } }>();
+    expect(prompts.result.prompts.map((p) => p.name)).toContain('show_my_document');
   });
 
   it('never widens what the token was granted', async () => {
     const token = await grant(['liveplanner'], 'lwt_planner');
-    expect(await listNames({ token, host: 'mcp.livediagram.app' })).not.toContain('update_diagram');
-    expect(await listNames({ token, host: 'mcp.liveplanner.app' })).toContain('change_cards');
+    const refused = await rpc('tools/list', {}, { token, host: 'mcp.livediagram.app' });
+    expect(refused.status).toBe(401);
+    expect(await refused.text()).toContain('https://mcp.liveworkspace.app/mcp');
+    expect(calls).toEqual([]);
+    expect(await listNames({ token, host: 'mcp.liveplanner.app' })).toContain('change_items');
   });
 
   it('answers a token the app refused with the pointer, not a sign-in', async () => {
@@ -690,5 +738,11 @@ describe('an app’s old address (mcp.<app>.app)', () => {
     const response = await rpc('tools/list', {}, { host: 'mcp.livediagram.app' });
     expect(response.status).toBe(401);
     expect(await response.text()).toContain('https://mcp.liveworkspace.app/mcp');
+  });
+
+  it('points a staging address’s refusal at staging’s one MCP', async () => {
+    refusing = 'livedesign';
+    const response = await rpc('tools/list', {}, { host: 'mcp-staging.livedesign.app' });
+    expect(await response.text()).toContain('https://mcp-staging.liveworkspace.app/mcp');
   });
 });

@@ -4,7 +4,7 @@
 `apps/mcp` is a package that liveworkspace's one MCP, `https://mcp.liveworkspace.app/mcp`, runs in process
 (liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in). Where this spec says "the MCP worker", "this server" or
 "its own host", read the package as that one MCP serves it: its sign-in, consent, KV, deploy and
-addresses are the one MCP's, and `mcp.livedesign.app` only answers connections made before the fold, narrowed to livedesign
+addresses are the one MCP's, and `mcp.livedesign.app` only answers connections made before the fold, passing them to this package as it is
 until their token ends. The tools below are unchanged. Builds directly on [Public API and API tokens](public-api-and-tokens.md)
 (API tokens), which it picks up where §7 left off: [Public API and API tokens](public-api-and-tokens.md) deferred "OAuth /
 third-party app authorization"; this spec adds exactly that, scoped to one
@@ -65,7 +65,7 @@ SDK, a WASM rasteriser), and `apps/api` stays a pure REST/WS surface.
 - **Routing + deploy.** Served by liveworkspace's one MCP at `https://mcp.liveworkspace.app/mcp` (staging
   `https://mcp-staging.liveworkspace.app/mcp`), which deploys in tier 1 beside the api ([Deployment](../016-platform/deployment.md),
   docs/ci.md "Deploys"). The old hosts `mcp.livedesign.app` and `mcp-staging.livedesign.app` are custom domains on that Worker:
-  a request there with a token is served narrowed to livedesign with every tool listed, until the token ends; their sign-in
+  a request to `/mcp` there with a token is passed to this package as it is (its own tool names and texts), until the token ends; their sign-in
   refuses with a pointer to the one address. The `router` worker is unchanged. Locally, liveworkspace/apps/mcp's dev on 3013
   serves every app, and `/livedesign/mcp` serves this package as it is, for evals.
 - **Endpoints** are the one MCP's: `POST /mcp` (Bearer-gated), its OAuth endpoints ([§3](#3-authentication-oauth-21)) and `/health`.
