@@ -162,7 +162,13 @@ export function BackgroundSection({
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill);
-  const category = chosen && categories.includes(chosen) ? chosen : opened;
+  const category =
+    chosen && categories.includes(chosen)
+      ? chosen
+      : categories.includes(opened)
+        ? opened
+        : // A fill of a kind not offered here (a moving one, which Page Design keeps under Design): the gradients.
+          'gradient';
   const yours = useDocumentColours();
   const themeColours = pageThemeColours(useThemeColours());
   // The custom gradient's editor shows for a gradient no preset names, or once Custom gradient is

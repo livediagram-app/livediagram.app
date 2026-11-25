@@ -31,6 +31,8 @@ export function TabStyleModal({
   help,
   tourApi,
   onClose,
+  onBack,
+  backLabel,
   children,
 }: TabStyleFrameParts & { frame: Extract<TabStyleFrame, { kind: 'modal' }> }) {
   // Mount-open modal: silence the canvas shortcut and paste listeners behind it (lib/modal-guard).
@@ -128,6 +130,7 @@ export function TabStyleModal({
               </>
             }
             onClose={onClose}
+            {...(onBack ? { onBack, backLabel } : {})}
             underHandle
           />
           {/* Fixed min-height so switching between views doesn't collapse the modal and make it jump around. */}

@@ -12,7 +12,6 @@ Derived from [Page Designs](../page-designs.md). Paths are relative to `livedocu
 | family        | `PageDesignFamily`, `PAGE_DESIGN_FAMILIES`         | `packages/document/src/page-designs/catalogue.ts` |
 | tab design    | `Tab.pageDesign`                                   | `packages/document/src/tab-type.ts`               |
 | page override | `Page.design` (`PageDesign` or `PAGE_DESIGN_NONE`) | `packages/document/src/page.ts`                   |
-| design set    | `PageDesignSet`, `PAGE_DESIGN_SETS`                | `packages/document/src/page-designs/sets.ts`      |
 | scrim         | `DesignScrim`                                      | `packages/document/src/page-designs/render.ts`    |
 | layer         | `DesignLayer` (one SVG, perhaps moving)            | `packages/document/src/page-designs/draw-kit.ts`  |
 
@@ -141,7 +140,7 @@ calm?; variant?; animate?: true; speed?; rhythm?: true; flow?: true; guard?: 'wa
 The Page Design panel ([Tab Style dialog](../canvas-and-theme-dialog.md) "Page Design"),
 `apps/editor/components/dialogs/page-design/`:
 
-- `PageDesignPanel.tsx`: the preview, Applies to, Design Sets, Designs and Fine Tune.
+- `PageDesignPanel.tsx`: Applies to, Designs and Fine Tune (no preview since 2026-11-25).
 - `DesignGrid.tsx` (family chips and tiles), `DesignSetCards.tsx`, `DesignFineTune.tsx` (controls),
   `DesignTile.tsx` (a tile as an `<img>` of the still frame: forty pictures rasterised once, not live SVG nodes),
   `design-tile-svg.ts` (a tile's or preview's markup and the guard's counts), `design-tune.ts` (Reset, Shuffle, Try

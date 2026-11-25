@@ -10,8 +10,10 @@ import {
   pageUnits,
   pagesOf,
   tabPageDesignOf,
+  type PageBackground,
 } from '@livedocuments/document';
 import { useAppearance } from '@livedocuments/ui';
+import { TAB_STYLE_KEYS } from '@liveworkspace/workbench/lib/tab-style-to-all';
 import { getTheme } from '@/lib/themes';
 
 import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -75,6 +77,8 @@ function OpenEditorModals() {
     canApplyStyleToAllTabs,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
+    setEveryPageBackground,
+    pagesMode,
     pageDesignEdits,
   } = useEditorContext();
   const pageId = useCurrentPageId();
@@ -110,6 +114,21 @@ function OpenEditorModals() {
             })(),
           }
         : {}),
+      ...(activeTab.pages?.length
+        ? {
+            // Page Design's Background layer (tab-style-pages.ts).
+            background: (() => {
+              const stored = pagesOf(activeTab);
+              const page = stored.find((p) => p.id === pageId) ?? stored[0]!;
+              return {
+                page,
+                onAll: setEveryPageBackground,
+                onPage: (patch: Partial<PageBackground>) =>
+                  pagesMode?.edit?.setBackground(page.id, patch),
+              };
+            })(),
+          }
+        : {}),
       ...(written
         ? {
             // The Style beside the page's cog, for the page someone is on, once the dialog has gone.
@@ -129,6 +148,8 @@ function OpenEditorModals() {
     pageDesignEdits,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
+    setEveryPageBackground,
+    pagesMode,
     setCanvasThemeTab,
   ]);
 
@@ -183,8 +204,12 @@ function OpenEditorModals() {
           onSetFinish={setTabFinish}
           canvasBackground={activeTab.backgroundColor}
           onApplyLook={applyTabLook}
+          // Copy to All Tabs, a row of Page Design's foot (owner, 2026-11-25).
           allTabs={
-            canApplyStyleToAllTabs
+            // Only while another tab wears a different style (owner, 2026-11-25).
+            canApplyStyleToAllTabs &&
+            tabs.length > 1 &&
+            tabs.some((t) => !sameTabStyle(t, activeTab))
               ? {
                   tabCount: tabs.length,
                   applying: applyingStyleToAllTabs,
@@ -196,5 +221,14 @@ function OpenEditorModals() {
         />
       ) : null}
     </>
+  );
+}
+
+// Whether two tabs wear the same style: the theme and every style setting Copy to All Tabs copies.
+function sameTabStyle(a: object, b: object): boolean {
+  const x = a as Record<string, unknown>;
+  const y = b as Record<string, unknown>;
+  return ['theme', ...TAB_STYLE_KEYS].every(
+    (k) => JSON.stringify(x[k] ?? null) === JSON.stringify(y[k] ?? null),
   );
 }

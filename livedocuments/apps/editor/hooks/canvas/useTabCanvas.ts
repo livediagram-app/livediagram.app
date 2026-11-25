@@ -13,6 +13,9 @@ import {
   pagesGivenNewPageBackground,
   pagesOf,
   withNewPageBackground,
+  withEveryPageOnTabDesign,
+  withTabPageDesign,
+  type PageDesign,
   type BackgroundPattern,
   type Finish,
   type Element,
@@ -257,6 +260,34 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     notify?.(everyPageMessage(reached, kept));
   };
 
+  // Page Design's Background on All Pages (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design", Layers):
+  // the background every page wears and every new page starts on, in one undo step, re-inked; a locked page keeps
+  // its own, and only then a notice says so. With `design`, the tab's design changes in the same step (Quick picks).
+  const setEveryPageBackground = (
+    patch: Partial<PageBackground>,
+    design?: PageDesign | null,
+  ) => {
+    if (editsBlocked) return;
+    const pages = pagesOf(activeTab);
+    const units = pageUnits(pages);
+    const kept = units.filter((u) => pageLockRefuses(pages, u.pageIds[0]!)).length;
+    track('Tab', 'Changed', design === undefined ? 'PageBackgroundEveryPage' : 'PageDesignQuickPick');
+    commitTabs((ts) =>
+      ts.map((t) => {
+        if (t.id !== activeId) return t;
+        const out = pagesGivenNewPageBackground(
+          withNewPageBackground(t, patch),
+          pageInkMemory(activeId),
+        );
+        if (out.memory) rememberPageInk(activeId, out.memory);
+        return design === undefined
+          ? out.tab
+          : withEveryPageOnTabDesign(withTabPageDesign(out.tab, design));
+      }),
+    );
+    if (kept > 0) notify?.(everyPageMessage(units.length - kept, kept));
+  };
+
   // Page Design (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design").
   const pageDesign = pageDesignEdits({
     editsBlocked,
@@ -272,6 +303,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     pageDesignEdits: pageDesign,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
+    setEveryPageBackground,
     autoAlignTab,
     autoLayoutTab,
     setTabFont,

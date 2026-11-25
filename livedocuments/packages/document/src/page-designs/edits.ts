@@ -32,6 +32,21 @@ export function withTabPageDesign<T extends DesignTab>(tab: T, design: PageDesig
   return { ...tab, pageDesign: next };
 }
 
+/** Every page wearing the tab's design again: each unlocked page's own design dropped (Page Design's Affect All Pages,
+ *  docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design"); a locked page keeps its own. */
+export function withEveryPageOnTabDesign<T extends DesignTab>(tab: T): T {
+  const pages = pagesOf(tab);
+  if (!pages.some((p) => p.design !== undefined && !pageLockRefuses(pages, p.id))) return tab;
+  return withPages(
+    tab,
+    pages.map((p) => {
+      if (p.design === undefined || pageLockRefuses(pages, p.id)) return p;
+      const { design: _drop, ...rest } = p;
+      return rest;
+    }),
+  );
+}
+
 /** A page's own design: a design, none (`'none'`, while the tab has one), or null to wear the tab's again. An article
  *  page's reaches every page of its article, as its background does. */
 export function pageDesignSet<T extends DesignTab>(

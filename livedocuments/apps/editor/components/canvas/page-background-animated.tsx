@@ -5,7 +5,7 @@
 // three), each tile playing in the tab theme's colours; then the theme colourings the chosen
 // motion comes in, and its speed. A hover previews on the slide, a press sets it, as the other
 // categories do; the speed previews as it is dragged and is set once, on letting go.
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   PAGE_MOTION_SPEED_MAX,
   PAGE_MOTION_SPEED_MIN,
@@ -27,10 +27,44 @@ import {
 import { track } from '@/lib/telemetry';
 import { CustomGradientEditor, RAINBOW } from './page-background-custom';
 import { PageMotionLayer } from './PageMotionLayer';
+import {
+  FRAME as DESIGN_FRAME,
+  SELECTED as DESIGN_SELECTED,
+  TILE as DESIGN_TILE,
+} from '@/components/dialogs/page-design/DesignGrid';
 
-// A tile's preview, 16:9 like the slide it stands for, in its own px.
-const TILE_W = 84;
-const TILE_H = 47;
+// A tile's motion, drawn at the tile's own size (the parts are in px), measured as the carousel lays it out.
+function MotionTile({
+  motion,
+  fill,
+}: {
+  motion: PageMotion;
+  fill: Extract<PageFill, { kind: 'gradient' }>;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => {
+      const { width, height } = e!.contentRect;
+      setSize((was) =>
+        was && Math.round(was.w) === Math.round(width) && Math.round(was.h) === Math.round(height)
+          ? was
+          : { w: width, h: height },
+      );
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <span ref={ref} className="absolute inset-0">
+      {size && size.w > 0 ? (
+        <PageMotionLayer motion={motion} fill={fill} width={size.w} height={size.h} />
+      ) : null}
+    </span>
+  );
+}
 
 /** The theme's accent and second colour, read back from its gradient presets (Theme bright runs
  *  from one to the other): all a colouring needs. */
@@ -126,20 +160,24 @@ export function AnimatedBackgroundChoices({
               }}
               onPointerEnter={() => onPreview(f)}
               onFocus={() => onPreview(f)}
-              className={`flex flex-col items-center gap-1 rounded-lg p-1 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
-                on ? 'bg-brand-50 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15' : ''
-              }`}
+              // Page Design's tile, as every other design in its carousel (DesignGrid).
+              className={DESIGN_TILE}
             >
               <span
-                aria-hidden
-                className="relative block overflow-hidden rounded ring-1 ring-inset ring-slate-900/10 dark:ring-white/15"
-                style={{ width: TILE_W, height: TILE_H, background: fillCss(f) }}
+                className={`${DESIGN_FRAME} ${on ? DESIGN_SELECTED : ''}`}
+                style={{ background: fillCss(f) }}
               >
-                {f.kind === 'gradient' ? (
-                  <PageMotionLayer motion={m.id} fill={f} width={TILE_W} height={TILE_H} />
-                ) : null}
+                {f.kind === 'gradient' ? <MotionTile motion={m.id} fill={f} /> : null}
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-1 right-1 rounded-full bg-black/45 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-white"
+                >
+                  <span className="text-optical-line">Moves</span>
+                </span>
               </span>
-              {m.label}
+              <span className="truncate px-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-200">
+                {m.label}
+              </span>
             </button>
           );
         }}

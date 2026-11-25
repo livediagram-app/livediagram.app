@@ -12,24 +12,26 @@ import { useDockNames } from '../../hooks/ui/useDockNames';
 // strip.
 export function ThemeStrip({
   onOpenTheme,
+  title = 'Theme & Canvas',
+  description = "Change this tab's theme and canvas background.",
 }: {
   // The Theme & canvas button. Absent, there is no strip.
   onOpenTheme?: (() => void) | undefined;
+  // Its hover card, a product's own wording where its dialog holds more (livedocuments' Style).
+  title?: string;
+  description?: string;
 }) {
   const named = useDockNames();
   if (!onOpenTheme) return null;
   return (
     <ClusterStrip>
-      <HoverCard
-        title="Theme & Canvas"
-        description="Change this tab's theme and canvas background."
-      >
+      <HoverCard title={title} description={description}>
         <button
           type="button"
           data-tour-id="canvas-theme"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={onOpenTheme}
-          aria-label="Theme and canvas"
+          aria-label={title}
           className={`flex h-11 items-center justify-center transition ${
             named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
           } ${CLUSTER_CONTROL_REST}`}

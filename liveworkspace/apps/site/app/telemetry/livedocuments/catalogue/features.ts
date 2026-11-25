@@ -133,11 +133,12 @@ export const PAGE_SETUP = chart(
       'NewPageBackground',
       'NewPageBackgroundCarried',
       'NewPageBackgroundToEveryPage',
+      'PageBackgroundEveryPage',
+      'PageDesignQuickPick',
       // Tab Style's Page Design (docs/specs/011-theme/page-designs.md "Telemetry").
       'PageDesign',
       'PageDesignPage',
       'PageDesignTuned',
-      'PageDesignSet',
       'PageDesignAnimated',
       'PageDesignSaved',
       'PageDesignSavedApplied',

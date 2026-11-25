@@ -22,8 +22,6 @@ readability.
   that wears no design while the tab has one.
 - **Family**: a group of designs in the catalogue (Gradients, Geometric and the rest).
 - **Tuning**: a design's settings beyond its id (colours, intensity, scale and the rest, "Fine tuning").
-- **Design set**: a curated bundle of theme, font, finish, page background, design and layouts, applied in one
-  click ("Design sets").
 - **Scrim**: a soft plate in the page's own colour laid under a text the contrast guard finds hard to read.
 
 ## The catalogue
@@ -163,24 +161,9 @@ Designs keep words readable in three ways.
 
 ## Design sets
 
-Eight curated bundles, each applied in one click from the top of the Page Design panel: the tab's theme, font and
-finish, the background every page takes (as a Look gives it, [Tab Style dialog](canvas-and-theme-dialog.md) "Looks"),
-the tab design with rhythm on, and its layouts: each empty slide or infographic page is laid out with the set's title
-layout (the first page) or its content layout (the rest), the slide ones below on a deck and their infographic
-counterparts on infographic pages. A page with anything on it keeps its content. One undo step.
-
-| Set           | Theme    | Font          | Finish       | Pages          | Design        | Slide layouts (title, content) |
-| ------------- | -------- | ------------- | ------------ | -------------- | ------------- | ------------------------------ |
-| Keynote Dark  | Midnight | Inter         | Professional | Theme ink      | Aurora        | Title, Bullets                 |
-| Editorial     | Cream    | Lora          | Professional | Paper          | Offset Border | Title, Two Columns             |
-| Startup Pitch | Ocean    | Poppins       | Flexible     | Theme dawn     | Soft Mesh     | Title, Three Stats             |
-| Field Notes   | Mocha    | Nunito        | Sketch       | Theme mist     | Topographic   | Title, Bullets                 |
-| Blueprint     | Steel    | Space Grotesk | Professional | Theme ink      | Blueprint     | Title, Three Points            |
-| Gallery       | Mono     | Inter         | Professional | Paper          | Swiss Grid    | Title, Two Columns             |
-| Neon Night    | Abyss    | Space Grotesk | Professional | Theme twilight | Circuit       | Title, Three Points            |
-| Playground    | Rainbow  | Nunito        | Flexible     | Paper          | Memphis       | Title, Bullets                 |
-
-A set is not stored, as a Look is not: the tab carries the ordinary settings.
+Retired on 2026-11-25 (owner: they repeated Tab Style's Looks, which set the theme, font, finish and background in one
+click). The Page Design panel has no Design Sets; a Look is the one bundle. Nothing was stored for a set, so no tab
+changes.
 
 ## Stored data
 
@@ -207,7 +190,7 @@ speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, 
 
 ## Share roles
 
-- **Editor**: picks and tunes the tab design and page overrides, and applies design sets.
+- **Editor**: picks and tunes the tab design and page overrides.
 - **Participant** and **Viewer**: see every design (animated ones animate), and change none: the Tab Style dialog is
   only offered on an editable tab, and the setters refuse a blocked session.
 
@@ -225,7 +208,7 @@ speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, 
 ## Telemetry
 
 `Tab · Changed · PageDesign` (a design picked for the tab), `PageDesignPage` (a page override), `PageDesignTuned` (a
-tuning change), `PageDesignSet` (a design set), `PageDesignAnimated` (Animate turned on). A saved design is `Tab · Changed · PageDesignSaved` when saved and
+tuning change), `PageDesignAnimated` (Animate turned on). A saved design is `Tab · Changed · PageDesignSaved` when saved and
 `PageDesignSavedApplied` when applied, with nothing else (never its name, its team or its tuning); the Library's own
 `Library · Created` counts the save as for any item.
 

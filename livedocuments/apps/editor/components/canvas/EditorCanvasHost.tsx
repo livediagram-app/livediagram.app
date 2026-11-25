@@ -218,11 +218,9 @@ export function EditorCanvasHost() {
   // outside an embed. The page's own Style button tracks its opening.
   const tabStyleOpens = !isReadOnly && !embedMode;
   useEffect(
-    () => registerTabStyleOpen(tabStyleOpens ? () => setCanvasThemeTab('looks') : null),
+    () => registerTabStyleOpen(tabStyleOpens ? (view) => setCanvasThemeTab(view ?? 'looks') : null),
     [tabStyleOpens, setCanvasThemeTab],
   );
-  // Once the tab has pages, Tab Style is on each page's title bar, not the bottom-right cluster.
-  const styleOnPages = (pagesMode?.pages.length ?? 0) > 0;
   const canvasElements = projectStockColours(
     shownElements,
     surface,
@@ -257,7 +255,7 @@ export function EditorCanvasHost() {
   const activeTheme = getTheme(activeTab.theme);
   // The Canvas props by concern (beside this file, in editor-canvas-host/).
   const insertProps = useInsertCanvasProps({ handleStartArrow });
-  const panelProps = usePanelCanvasProps({ styleOnPages, goToRowElement });
+  const panelProps = usePanelCanvasProps({ goToRowElement });
   const editProps = useEditCanvasProps({ setPointerTip });
   return (
     // The tab's theme for faces that dress in it unstored (the image placeholder).

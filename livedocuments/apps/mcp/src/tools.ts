@@ -11,6 +11,10 @@ import {
   normaliseElements,
   withTabPageDesign,
   type Tab,
+  FONTS,
+  STYLE_RECIPES,
+  pickStyleRecipe,
+  type StyleRecipe,
 } from '@livedocuments/document';
 import { readTabDesign, tabDesignFor } from '@livedocuments/edit-operations';
 import {
@@ -150,6 +154,32 @@ export function registerTools(server: McpServer, env: Env): void {
       if (!inputTabs || inputTabs.length === 0) {
         return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
       }
+      // A whole look (docs/specs/011-theme/style-guide.md "Agents"): a recipe, or "auto" for the document's words;
+      // what is named beside it wins.
+      let recipe: StyleRecipe | undefined;
+      if (args.style !== undefined) {
+        recipe =
+          args.style === 'auto'
+            ? (pickStyleRecipe(`${args.name} ${JSON.stringify(inputTabs)}`) ?? STYLE_RECIPES[0])
+            : STYLE_RECIPES.find((r) => r.id === args.style);
+        if (!recipe)
+          return errorResult(
+            `"style": unknown "${args.style}". Use "auto" or one of: ${STYLE_RECIPES.map((r) => r.id).join(', ')}.`,
+          );
+      }
+      if (args.font !== undefined && !FONTS.some((f) => f.id === args.font))
+        return errorResult(
+          `"font": unknown "${args.font}". One of: ${FONTS.map((f) => f.id).join(', ')}.`,
+        );
+      const docTheme = args.theme ?? recipe?.theme;
+      const docFinish = args.finish ?? recipe?.finish;
+      const docFont = args.font ?? recipe?.font;
+      const docDesign =
+        args.design !== undefined
+          ? args.design
+          : recipe && recipe.design !== 'none'
+            ? recipe.design
+            : undefined;
       const tabs: Tab[] = [];
       // Elements given beside a template, added to its first tab once the document exists.
       const withTemplate: { tab: Tab; operations: unknown[] }[] = [];
@@ -175,7 +205,7 @@ export function registerTools(server: McpServer, env: Env): void {
             { id: tabId, name: t.name },
             kind,
             () => crypto.randomUUID(),
-            t.theme ?? args.theme,
+            t.theme ?? docTheme,
           );
           if (t.elements?.length && built[0]) {
             const added = addOperationsFor(t.elements, built[0]);
@@ -204,20 +234,22 @@ export function registerTools(server: McpServer, env: Env): void {
               'be well-formed.',
           );
         }
-        tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? args.theme));
+        tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? docTheme));
       }
       // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
-      if (args.finish) for (const t of tabs) t.finish = args.finish;
+      if (docFinish) for (const t of tabs) t.finish = docFinish;
+      // The typeface asked for, or the style's, is every new tab's.
+      if (docFont) for (const t of tabs) t.font = docFont;
       // The page design asked for (docs/specs/011-theme/page-designs.md "Agents") is every new tab's, "auto" picked
       // for each tab's own words.
-      if (args.design !== undefined) {
+      if (docDesign !== undefined) {
         // A saved design's "saved:<id>" is a design here too, read from the caller's Library with its tuning.
         const asked = await withSavedDesigns(clientFor(env, token), [
-          { op: 'tab_design', design: args.design as never },
+          { op: 'tab_design', design: docDesign as never },
         ]);
         if (!asked.ok) return errorResult(`"design": ${asked.message}`);
         const named = asked.changes[0];
-        const choice = readTabDesign(named && 'design' in named ? named.design : args.design);
+        const choice = readTabDesign(named && 'design' in named ? named.design : docDesign);
         if (choice !== null && typeof choice === 'object' && 'refused' in choice)
           return errorResult(`"design": ${choice.refused.message}`);
         for (const [i, t] of tabs.entries())

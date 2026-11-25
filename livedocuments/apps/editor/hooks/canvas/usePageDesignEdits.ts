@@ -1,30 +1,27 @@
 // The Page Design panel's edits (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design"): the tab's design and
-// a page's own, each pick one undo step and each slider gesture one step a burst (tickTabs + checkpointBurst), and a
-// design set as one step. Telemetry names the action only, never a design's settings
+// a page's own, each pick one undo step and each slider gesture one step a burst (tickTabs + checkpointBurst). Telemetry names the action only, never a design's settings
 // (docs/specs/011-theme/page-designs.md "Telemetry").
 import {
-  PAGE_DESIGN_SET_BY_ID,
   pageDesignSet,
   tabPageDesignOf,
+  withEveryPageOnTabDesign,
   withTabPageDesign,
   type PageDesign,
   type Tab,
 } from '@livedocuments/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { markDesignTuning } from '@/lib/page-design-tuning';
-import { withPageDesignSetApplied } from '@/lib/page-design-set-apply';
 import { track } from '@/lib/telemetry';
 
 export type PageDesignEdits = {
-  // A pick (or null: none) for the whole tab.
-  setTabDesign: (design: PageDesign | null) => void;
+  // A pick (or null: none) for the whole tab. `everyPage`: every unlocked page's own design dropped in the same step
+  // (Affect All Pages), so every page wears it.
+  setTabDesign: (design: PageDesign | null, options?: { everyPage?: boolean }) => void;
   // A fine-tune of the tab's design: a slider's ticks are one undo step a gesture.
   tuneTabDesign: (design: PageDesign) => void;
   // A page's own: a design, 'none' or null (the tab's again).
   setPageDesign: (pageId: string, design: PageDesign | 'none' | null) => void;
   tunePageDesign: (pageId: string, design: PageDesign) => void;
-  applyDesignSet: (setId: string) => Promise<void>;
   // A design saved to the Library (docs/specs/011-theme/page-designs.md "Saved designs"), applied to the tab or a page.
   applySavedDesign: (design: PageDesign, pageId: string | null) => void;
   // Whether this session may change designs (an Editor's); a Participant's or Viewer's may not, nor save one.
@@ -72,10 +69,15 @@ export function pageDesignEdits({
     const edit = pageDesignSet(t, pageId, design);
     return 'tab' in edit ? edit.tab : t;
   };
-  const setTabDesign = (design: PageDesign | null) => {
+  const setTabDesign = (design: PageDesign | null, options?: { everyPage?: boolean }) => {
     if (editsBlocked) return;
     const was = tabPageDesignOf(activeTab);
-    commitTabs((ts) => onActive(ts, (t) => withTabPageDesign(t, design)));
+    commitTabs((ts) =>
+      onActive(ts, (t) => {
+        const set = withTabPageDesign(t, design);
+        return options?.everyPage ? withEveryPageOnTabDesign(set) : set;
+      }),
+    );
     // A new design is a pick; the same design changed is a tune.
     if (was?.id === design?.id && design) trackTuned();
     else track('Tab', 'Changed', 'PageDesign');
@@ -129,26 +131,6 @@ export function pageDesignEdits({
       markDesignTuning();
       tickTabs((ts) => onActive(ts, pageEdit(pageId, design)));
       trackTuned();
-    },
-    applyDesignSet: async (setId) => {
-      if (editsBlocked) return;
-      const set = PAGE_DESIGN_SET_BY_ID[setId];
-      if (!set) return;
-      const { buildPageLayoutOver } = await import('@livedocuments/templates/page-layout-build');
-      commitTabs((ts) =>
-        onActive(ts, (t) => {
-          const out = withPageDesignSetApplied(
-            t,
-            set,
-            (layout, page) => buildPageLayoutOver(layout, page, []),
-            pageInkMemory(activeId),
-          );
-          if (out.memory) rememberPageInk(activeId, out.memory);
-          return out.tab;
-        }),
-      );
-      track('Tab', 'Changed', 'PageDesignSet');
-      debugLog('[page-design] set', { tabId: activeId, id: set.design.id, scope: 'set' });
     },
   };
 }

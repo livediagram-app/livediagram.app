@@ -7,6 +7,11 @@ import { memo } from 'react';
 import { FirstPageChoice } from './FirstPageChoice';
 import { PageLabelCard } from '@liveworkspace/workbench/components/canvas/PageLabelCard';
 import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
+import { lucidePalette } from '@liveworkspace/icons/lucide';
+import { lucideGlyph } from '@livedocuments/ui';
+import { openTabStyleFrom, useTabStyleOpen } from '@/lib/tab-style-opener';
+
+const DesignIcon = lucideGlyph(lucidePalette, 18);
 import { layoutInviteShows } from '@/lib/layout-invite';
 import { track } from '@/lib/telemetry';
 import { PageMotionLayer } from './PageMotionLayer';
@@ -34,7 +39,6 @@ import {
   type LaidOutPage,
   type PageBackground,
   type PageKind,
-  type ThemeBackgroundPreset,
 } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
 import type { PageDeckControls, PageEdits } from '@/hooks/editor/usePagesMode';
@@ -54,14 +58,13 @@ export type PageSheetActions = {
   goToPage: (page: LaidOutPage) => void;
   toggle: (pageId: string) => void;
   ask: (pageId: string, row: string) => void;
-  cogRef: (pageId: string, el: HTMLButtonElement | null) => void;
+  // Where the page's panel hangs (the title bar's top-right corner, where the cog was).
+  cogRef: (pageId: string, el: HTMLElement | null) => void;
   layoutsOpenChange: (pageId: string, open: boolean) => void;
   requestLayouts: (pageId: string) => void;
   applyLayout: (pageId: string, layout: PageLayoutId) => void;
   previewLayout: (pageId: string, layout: PageLayoutId | null) => void;
   setBackground: (pageId: string, patch: Partial<PageBackground>) => void;
-  previewBackground: (pageId: string, patch: Partial<PageBackground> | null) => void;
-  applyBackgroundToAll: (pageId: string) => void;
   setLocked: (pageId: string, locked: boolean) => void;
   choosePageKind: (pageId: string, kind: PageKind) => void;
   setArticleStyle: (flow: string, change: ArticleStyleChange) => void;
@@ -97,7 +100,6 @@ export type PageSheetProps = {
   hasArticle: boolean;
   documentName: string;
   themeAccent: string;
-  themePresets: ThemeBackgroundPreset[];
   // May edit the pages (not bare): the title bar and its buttons show.
   editable: boolean;
   tabStyle: boolean;
@@ -106,7 +108,6 @@ export type PageSheetProps = {
   // Set only when its button shows, so a page without one never re-renders for them.
   deck: PageDeckControls | undefined;
   tidyEdit: Pick<PageEdits, 'tidyPage' | 'previewTidy'> | undefined;
-  applyReach: number;
   open: boolean;
   styleRequest: number;
   textRequest: number;
@@ -140,14 +141,12 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   hasArticle,
   documentName,
   themeAccent,
-  themePresets,
   editable,
   tabStyle,
   tidy,
   choosing,
   deck,
   tidyEdit,
-  applyReach,
   open,
   styleRequest,
   textRequest,
@@ -212,8 +211,12 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   // so note cards can be written anywhere (docs/specs/012-collaboration/speaker-note-cards.md
   // "Writing note cards"). Its place in the deck is in Contents' ⋯ menu (page-row-slides).
   const notesButton = editable && !!deck;
-  // Tab Style, first in the looks group; an article page's own Style leads with it instead.
-  const styleButton = editable && tabStyle && !articleButtons;
+  // Tab Style lives at the foot of Contents as Design on a desktop (pages-mode.md "Design at the foot"); a phone, with
+  // no sidebar, keeps it first in a page's Appearance. An article page's own Style leads with it instead.
+  const styleButton = editable && tabStyle && !articleButtons && mobile;
+  // An empty page's Change Design, under Use a Layout: Tab Style open on Page Design.
+  const tabStyleOpen = useTabStyleOpen();
+  const openTabStyle = tabStyleOpen ? (view: 'design') => openTabStyleFrom(null, view) : null;
   // The title bar's fixed buttons (the cog, the lock, Notes and an infographic or slide
   // page's): the label has what they leave.
   const buttons = {
@@ -311,10 +314,8 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           hasArticle={hasArticle}
           storedArticleStyle={storedArticleStyle}
           themeAccent={themeAccent}
-          themePresets={themePresets}
           deck={deck}
           tidyEdit={tidyEdit}
-          applyReach={applyReach}
           open={open}
           styleRequest={styleRequest}
           textRequest={textRequest}
@@ -343,6 +344,19 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
             track('UI', 'Opened', 'EmptyPageInvite');
             act.requestLayouts(id);
           }}
+          {...(openTabStyle
+            ? {
+                also: {
+                  label: 'Change Design',
+                  hint: 'Background and art behind your pages',
+                  icon: DesignIcon,
+                  onOpen: () => {
+                    track('UI', 'Opened', 'EmptyPageDesign');
+                    openTabStyle('design');
+                  },
+                },
+              }
+            : {})}
         />
       ) : null}
       {choosing && editable ? (

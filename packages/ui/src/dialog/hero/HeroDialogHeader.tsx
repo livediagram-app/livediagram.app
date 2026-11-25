@@ -84,6 +84,9 @@ export type HeroDialogHeaderProps = {
   underHandle?: boolean;
   /** Extra classes, e.g. `[--hero-centre-end:15rem]` for wider actions. */
   className?: string;
+  /** A screen inside the dialog: a back button, named by `backLabel`, in the title mark's place, to the one before. */
+  onBack?: () => void;
+  backLabel?: string;
 };
 
 export function HeroDialogHeader({
@@ -95,6 +98,8 @@ export function HeroDialogHeader({
   onClose,
   underHandle,
   className = '',
+  onBack,
+  backLabel = 'Back',
 }: HeroDialogHeaderProps) {
   // In a dialog that is a sheet on a phone, the band runs up under the grab handle unless the dialog says otherwise.
   const inSheet = useContext(DialogPhoneSheetContext);
@@ -118,7 +123,34 @@ export function HeroDialogHeader({
       style={HEADER_STYLE}
     >
       <HeroBand art={art} underHandle={under} />
-      <HeroTitleMark art={art} />
+      {onBack ? (
+        <button
+          type="button"
+          aria-label={backLabel}
+          title={backLabel}
+          onClick={onBack}
+          data-dialog-hero-back=""
+          className="group flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[var(--hero-wash)] text-[var(--hero-ink)] shadow-[inset_0_0_0_1px_var(--hero-line)] transition-shadow hover:shadow-[inset_0_0_0_1.5px_var(--hero-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+            focusable="false"
+            className="transition-transform duration-micro group-hover:-translate-x-0.5 motion-reduce:transition-none"
+          >
+            <path d="M12 4.5 6.5 10l5.5 5.5" />
+          </svg>
+        </button>
+      ) : (
+        <HeroTitleMark art={art} />
+      )}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <h2
           id={titleId}

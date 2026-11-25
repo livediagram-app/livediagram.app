@@ -14,9 +14,22 @@ import {
   TAB_VIEW_NAMES,
   VIEW_BUDGET_MAX,
 } from '@livedocuments/api-schema';
-import { FINISHES, type Finish, NAME_MAX_LENGTH, truncateName } from '@livedocuments/document';
+import {
+  FINISHES,
+  FONTS,
+  STYLE_RECIPES,
+  type Finish,
+  NAME_MAX_LENGTH,
+  truncateName,
+} from '@livedocuments/document';
 import { themeIds, ELEMENT_SCHEMA_HINT } from './element-docs';
-export { SCHEMA_RESOURCE_URI, elementSchemaDoc, SERVER_INSTRUCTIONS } from './element-docs';
+export {
+  SCHEMA_RESOURCE_URI,
+  STYLE_GUIDE_RESOURCE_URI,
+  elementSchemaDoc,
+  styleGuideDoc,
+  SERVER_INSTRUCTIONS,
+} from './element-docs';
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -176,6 +189,20 @@ const designField = z
       'for one that suits the words.',
   );
 
+// A whole look in one choice (docs/specs/011-theme/style-guide.md): a recipe's theme, design, typeface and finish,
+// "auto" picking the recipe for the words. Theme, finish, design and font given beside it win.
+const styleField = z
+  .string()
+  .optional()
+  .describe(
+    `A whole look for the document's tone: "auto" (picked for its words) or a recipe: ${STYLE_RECIPES.map((r) => r.id).join(', ')}. ` +
+      'Explicit theme/finish/design/font win. The livedocuments://guide/styles resource says when to use each recipe, theme, design, font and finish.',
+  );
+const fontField = z
+  .string()
+  .optional()
+  .describe(`The tab's typeface: ${FONTS.map((f) => f.id).join(', ')}.`);
+
 export const createDocumentTab = z.object({
   name: nameField(
     'Name of the tab. Optional with a template (its own first tab name is used); otherwise "Tab n".',
@@ -212,6 +239,8 @@ export const createDocumentShape = {
   theme: themeField,
   finish: finishField,
   design: designField,
+  style: styleField,
+  font: fontField,
   // Making a document is a use (docs/specs/015-api/mcp-server.md §4.3).
   markUsed: z
     .boolean()

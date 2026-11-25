@@ -6,6 +6,7 @@
 // its setter, eased (lib/tab-style-ease); there is no Apply or Cancel, and closing just dismisses.
 
 import { useState } from 'react';
+import { TabStyleSubViewContext, type TabStyleSubView } from './tab-style-subview';
 import { BackBar } from '@liveworkspace/ui';
 import { resolveFinish, type Finish } from '@liveworkspace/element-model/finish';
 import type { TextSize } from '@liveworkspace/model-core/basics';
@@ -14,7 +15,7 @@ import { ApplyToAllTabsRow } from '../ApplyToAllTabsRow';
 import { easedStyleChange as eased } from '../../../lib/tab-style-ease';
 import type { TabLookSettings } from '../../../lib/tab-looks';
 import { FinishPanel } from './FinishPanel';
-import { LooksHome } from './LooksHome';
+import { LooksHome, tabStylePanelRows } from './LooksHome';
 import { TabStyleModal } from './TabStyleModal';
 import { TextPanel } from './TextPanel';
 import { tabStyleFontLabel } from './tab-style-fonts';
@@ -82,22 +83,37 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
   // How the next view arrives: the first one only fades (the dialog has its own entrance), then a move into a panel
   // slides forward and a move home slides back.
   const [enter, setEnter] = useState<'fade' | 'forward' | 'back'>('fade');
+  // A panel's own level (tab-style-subview.ts): its breadcrumb in place of the panel's.
+  const [subView, setSubView] = useState<TabStyleSubView | null>(null);
+  // One per opening: the dialog mounts as it opens.
+  const [openId] = useState(() => `${Date.now()}-${Math.random()}`);
   const go = (next: TabStyleView) => {
     setEnter(next === 'looks' ? 'back' : 'forward');
+    setSubView(null);
     onTabChange(next);
   };
   const resolvedFinish = resolveFinish(finish, undefined);
   const title = profile.title ?? TAB_STYLE_TITLE;
   const parts: Omit<TabStyleFrameParts, 'children'> = {
     view,
-    title,
-    subtitle: surface.copy.viewLines[view],
+    // The header names the screen that is up: the dialog on its home, a panel inside it, a panel's level inside that.
+    title: subView?.current ?? (view === 'looks' ? title : surface.copy.panelTitles[view]),
+    subtitle: subView?.line ?? surface.copy.viewLines[view],
+    ...(subView
+      ? {
+          onBack: subView.onBack,
+          backLabel: `Back to ${view === 'looks' ? title : surface.copy.panelTitles[view]}`,
+        }
+      : view !== 'looks'
+        ? { onBack: () => go('looks'), backLabel: `Back to ${title}` }
+        : {}),
     help:
       (view !== 'looks' ? surface.panelHelp?.[view] : undefined) ??
       profile.renderHelp(TAB_STYLE_HELP[view]),
     // Show Me's tour of the home, run on this dialog.
     tourApi: {
       panels: surface.panels,
+      ownHome: !!surface.renderHome,
       showHome: () => (view === 'looks' ? undefined : go('looks')),
       showFinish: () => (view === 'finish' ? undefined : go('finish')),
       finish: () => resolvedFinish,
@@ -110,16 +126,38 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
     <div data-tab-style-view={view} className="contents">
       {/* The home and its panels swap through an easing height and a short slide: into a panel from the right, back
           home from the left (AnimatedHeightBox). */}
-      <AnimatedHeightBox viewKey={view} enter={enter}>
-        {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip. */}
-        {view !== 'looks' ? (
+      {/* The modal's way back is its header's back button (owner, 2026-11-25). A frame of the product's own has no
+          such button, so it keeps the breadcrumb: back to the home, the panel named in its chip; inside a panel's
+          own level, back to the panel instead. */}
+      {view !== 'looks' && profile.frame.kind !== 'modal' ? (
+        subView ? (
           <BackBar
+            flush
+            label={surface.copy.panelTitles[view]}
+            current={subView.current}
+            onClick={subView.onBack}
+          />
+        ) : (
+          <BackBar
+            flush
             label={title}
             current={surface.copy.panelTitles[view]}
             onClick={() => go('looks')}
           />
-        ) : null}
-        <TabStyleViewBody {...props} profile={profile} resolved={surface} view={view} go={go} />
+        )
+      ) : null}
+      {/* Keyed on the panel alone: a panel's own level is the panel's state, which a remount would drop. */}
+      <AnimatedHeightBox viewKey={view} enter={enter}>
+        <TabStyleSubViewContext.Provider value={setSubView}>
+          <TabStyleViewBody
+            {...props}
+            profile={profile}
+            resolved={surface}
+            view={view}
+            go={go}
+            openId={openId}
+          />
+        </TabStyleSubViewContext.Provider>
       </AnimatedHeightBox>
     </div>
   );
@@ -139,8 +177,10 @@ function TabStyleViewBody<Look extends TabStyleLook, Pattern extends string>({
   resolved: surface,
   view,
   go,
+  openId,
   ...props
 }: TabStyleDialogProps<Look, Pattern> & {
+  openId: string;
   profile: TabStyleProfile<Look, Pattern>;
   resolved: TabStyleSurface<Look, Pattern>;
   view: TabStyleView;
@@ -166,27 +206,56 @@ function TabStyleViewBody<Look extends TabStyleLook, Pattern extends string>({
       backgroundPattern,
       backgroundOpacity: props.backgroundOpacity,
     };
+    const looksHome = (
+      <LooksHome
+        profile={profile}
+        surface={surface}
+        settings={settings}
+        // Every pick eases the canvas into its new colours.
+        onPickLook={eased(props.onApplyLook)}
+        themeId={themeId}
+        finish={resolvedFinish}
+        font={font}
+        defaultTextSize={defaultTextSize}
+        pattern={backgroundPattern}
+        canvasSummary={props.canvasSummary}
+        onOpenPanel={go}
+        onOpenLink={(open) => {
+          props.onClose();
+          open();
+        }}
+      />
+    );
+    const rows = tabStylePanelRows({
+      profile,
+      surface,
+      themeId,
+      finish: resolvedFinish,
+      font,
+      defaultTextSize,
+      pattern: backgroundPattern,
+      canvasSummary: props.canvasSummary,
+    });
     return (
       <>
-        <LooksHome
-          profile={profile}
-          surface={surface}
-          settings={settings}
-          // Every pick eases the canvas into its new colours.
-          onPickLook={eased(props.onApplyLook)}
-          themeId={themeId}
-          finish={resolvedFinish}
-          font={font}
-          defaultTextSize={defaultTextSize}
-          pattern={backgroundPattern}
-          canvasSummary={props.canvasSummary}
-          onOpenPanel={go}
-          onOpenLink={(open) => {
-            props.onClose();
-            open();
-          }}
-        />
-        {props.allTabs ? (
+        {surface.renderHome
+          ? surface.renderHome({
+              rows: surface.panels.map((panel) => ({
+                panel,
+                label: surface.copy.panelTitles[panel],
+                ...rows[panel],
+              })),
+              onOpenPanel: go,
+              extra: surface.renderHomeExtra?.() ?? null,
+              fallback: looksHome,
+              applyLook: eased(props.onApplyLook),
+              openId,
+              font,
+              finish: resolvedFinish,
+              ...(props.allTabs ? { allTabs: props.allTabs } : {}),
+            })
+          : looksHome}
+        {props.allTabs && !surface.renderHome ? (
           <div className="mt-5 empty:hidden">
             <ApplyToAllTabsRow {...props.allTabs} tabLocks={profile.tabLocks} />
           </div>

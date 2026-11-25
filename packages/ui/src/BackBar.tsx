@@ -24,6 +24,7 @@ import { Glyph } from './icons/Glyph';
 
 const SHELL =
   'sticky top-0 z-10 flex w-full animate-slide-row-in items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100';
+const FLUSH = 'rounded-none border-x-0 border-t-0 shadow-none';
 const GAP = { default: 'mb-3', tight: 'mb-1.5', none: '' } as const;
 const WELL =
   'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-200';
@@ -35,6 +36,7 @@ export function BackBar({
   gap = 'default',
   disabled = false,
   keepFocus = false,
+  flush = false,
 }: {
   label: string;
   // The category the user has drilled into, shown as a chip on the right
@@ -54,8 +56,12 @@ export function BackBar({
   // Leaves focus where it is when pressed, for a bar inside a combobox's
   // list (the telemetry metric picker), whose input closes the list on blur.
   keepFocus?: boolean;
+  // Edge to edge across its scroll box, flush with its top, left and right (Tab Style's breadcrumb): square, a
+  // hairline under it alone. Its host must not clip sideways between the bar and the scroll box.
+  flush?: boolean;
 }) {
-  const shell = `${GAP[gap]} ${SHELL}`;
+  const shell = `${GAP[gap]} ${SHELL}${flush ? ` ${FLUSH}` : ''}`;
+  const pin = flush ? stickFlush : stickToScrollerEdge;
   // A long label (a card's title, a deep folder's name) cuts to fit with an ellipsis; the chip keeps its width.
   const chip = current ? (
     <span className="ml-auto shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
@@ -64,7 +70,7 @@ export function BackBar({
   ) : null;
   if (!onClick) {
     return (
-      <div ref={stickToScrollerEdge} className={shell}>
+      <div ref={pin} className={shell}>
         <span className={WELL}>
           <DotsGlyph />
         </span>
@@ -75,7 +81,7 @@ export function BackBar({
   }
   return (
     <button
-      ref={stickToScrollerEdge}
+      ref={pin}
       type="button"
       onClick={onClick}
       onMouseDown={keepFocus ? (e) => e.preventDefault() : undefined}
@@ -96,6 +102,33 @@ export function BackBar({
 // Sets the bar's sticky `top` to minus its scroll box's top padding, read once as it mounts (a walk up a few
 // ancestors; the padding is fixed per host). The scroll box is the first ancestor that does not let overflow through:
 // a `hidden` one (a capped AnimatedHeightBox before it overflows) keeps `top: 0`, as does having none.
+// The flush bar: pinned as stickToScrollerEdge pins it, and drawn out over the scroll box's padding on three sides.
+function stickFlush(el: HTMLElement | null) {
+  if (!el) return;
+  const box = scrollBoxOf(el);
+  if (!box) return;
+  const { paddingTop, paddingLeft, paddingRight } = getComputedStyle(box);
+  const [t, l, r] = [paddingTop, paddingLeft, paddingRight].map((v) => parseFloat(v) || 0) as [
+    number,
+    number,
+    number,
+  ];
+  el.style.top = `${-t}px`;
+  el.style.marginTop = `${-t}px`;
+  el.style.marginLeft = `${-l}px`;
+  el.style.marginRight = `${-r}px`;
+  el.style.width = `calc(100% + ${l + r}px)`;
+}
+
+function scrollBoxOf(el: HTMLElement): HTMLElement | null {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const { overflowY } = getComputedStyle(p);
+    if (overflowY === 'visible' || overflowY === 'clip') continue;
+    return overflowY === 'auto' || overflowY === 'scroll' ? p : null;
+  }
+  return null;
+}
+
 function stickToScrollerEdge(el: HTMLElement | null) {
   if (!el) return;
   for (let p = el.parentElement; p; p = p.parentElement) {

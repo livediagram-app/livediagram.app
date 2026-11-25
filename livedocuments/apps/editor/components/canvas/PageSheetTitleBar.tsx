@@ -10,20 +10,14 @@
 // reads none of it, so it skips those renders.
 
 import { memo, type CSSProperties } from 'react';
-import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
-import { PageCog, PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
-import {
-  sameArticleValue,
-  type ArticleStyle,
-  type LaidOutPage,
-  type ThemeBackgroundPreset,
-} from '@livedocuments/document';
+import { PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
+import { sameArticleValue, type ArticleStyle, type LaidOutPage } from '@livedocuments/document';
 import type { PageDeckControls, PageEdits } from '@/hooks/editor/usePagesMode';
 import { openTabStyleFrom } from '@/lib/tab-style-opener';
 import { appearanceRows, PageAppearanceButton } from './PageAppearanceButton';
 import { ArticleStyleSection } from './article/ArticleStyleSection';
 import { PageArticleButtons } from './PageArticleButtons';
-import { PageBackgroundButton } from './PageBackgroundButton';
+import { PageDesignButton } from './PageDesignButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageNotesButton } from './PageNotesButton';
 import { PageTabStyleButton } from './PageTabStyleButton';
@@ -55,10 +49,8 @@ export type PageSheetTitleBarProps = {
   hasArticle: boolean;
   storedArticleStyle: ArticleStyle | undefined;
   themeAccent: string;
-  themePresets: ThemeBackgroundPreset[];
   deck: PageDeckControls | undefined;
   tidyEdit: Pick<PageEdits, 'tidyPage' | 'previewTidy'> | undefined;
-  applyReach: number;
   open: boolean;
   styleRequest: number;
   textRequest: number;
@@ -85,17 +77,12 @@ function PageSheetTitleBarView({
   hasArticle,
   storedArticleStyle,
   themeAccent,
-  themePresets,
   deck,
   tidyEdit,
-  applyReach,
-  open,
   styleRequest,
   textRequest,
   layoutsRequest,
   backgroundRequest,
-  shownName,
-  many,
   act,
 }: PageSheetTitleBarProps) {
   const id = page.id;
@@ -172,22 +159,10 @@ function PageSheetTitleBarView({
                 onPreview={(layout) => act.previewLayout(id, layout ?? null)}
               />
             ) : null,
-            // An infographic, slide or article page's Background (PageBackgroundButton).
+            // Style is by the zoom now (ThemeStrip, owner 2026-11-25): Design stays headless here for the page's
+            // Appearance sheet on a phone to open it.
             pageButtons || articleButtons ? (
-              <PageBackgroundButton
-                key="background"
-                page={page}
-                labelled={labelled}
-                themePresets={themePresets}
-                headless={mobile}
-                openRequest={backgroundRequest}
-                onBackground={(patch) => act.setBackground(id, patch)}
-                onPreview={(patch) => act.previewBackground(id, patch ?? null)}
-                applyToAll={{
-                  reach: applyReach,
-                  onApply: () => act.applyBackgroundToAll(id),
-                }}
-              />
+              <PageDesignButton key="design" openRequest={backgroundRequest} />
             ) : null,
           ],
           [
@@ -200,25 +175,15 @@ function PageSheetTitleBarView({
               <PageTidyUpButton key="tidy" pageId={id} edit={tidyEdit} labelled={labelled} />
             ) : null,
           ],
-          [
-            // No lock on a phone: the cog sheet holds it (PagePanel's actions).
-            mobile ? null : (
-              <PageLockButton
-                key="lock"
-                locked={locked}
-                labelled={labelled}
-                onToggle={() => act.setLocked(id, !locked)}
-              />
-            ),
-            <PageCog
-              key="cog"
-              name={`${shownName ?? (many ? `Page ${page.index + 1}` : 'Page')} settings`}
-              open={open}
-              onToggle={() => act.toggle(id)}
-              cogRef={(el) => act.cogRef(id, el)}
-            />,
-          ],
         ]}
+      />
+      {/* No cog and no lock on the page (2026-11-25): both are in Contents' ⋯ menu toolbar. The page's panel (Page
+          Settings) still hangs from here, the bar's top-right corner, as it hung from the cog. */}
+      <span
+        aria-hidden
+        data-page-panel-anchor=""
+        ref={(el) => act.cogRef(id, el)}
+        className="absolute right-0 top-0 h-7 w-0"
       />
     </div>
   );
