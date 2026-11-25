@@ -41,7 +41,9 @@ export function siteUrlFrom(site: Site, host: string): string {
 
 /** The same, for the page this code is running on (the live address while there is no page, as when prerendered). */
 export function siteUrlHere(site: Site): string {
-  return siteUrlFrom(site, typeof window === 'undefined' ? '' : (window.location?.host ?? ''));
+  // Read off globalThis, so a Worker that imports this module (with no DOM types) still compiles.
+  const page = (globalThis as { window?: { location?: { host?: string } } }).window;
+  return siteUrlFrom(site, page?.location?.host ?? '');
 }
 
 /** The app an origin belongs to in `environment`, or null (liveworkspace.app itself, or anywhere else). Only an exact
