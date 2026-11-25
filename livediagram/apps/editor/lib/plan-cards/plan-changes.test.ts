@@ -56,6 +56,16 @@ describe('planChangeOffers', () => {
     ]);
   });
 
+  it('offers no Blocked By for a headless arrow: it says no order', () => {
+    const elements = drawn().filter((el) => el.id !== 'dep:c1:c2');
+    expect(
+      planChangeOffers([
+        ...elements,
+        arrow('none', 'card:todo:c2', 'card:todo:c1', { arrowEnds: 'none' }),
+      ]),
+    ).toEqual([]);
+  });
+
   it('offers a move for a card dragged into another lane, never one outside every lane', () => {
     const elements = drawn().map((el) =>
       el.id === 'card:todo:c2'

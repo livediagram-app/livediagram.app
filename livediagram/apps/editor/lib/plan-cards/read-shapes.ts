@@ -127,7 +127,8 @@ export function readPlanShapes(
   const byId = new Map(shapes.map((s) => [s.element, s]));
   for (const el of elements) {
     if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') continue;
-    if (el.arrowEnds === 'both') continue;
+    // Heads at both ends or none say no order.
+    if (el.arrowEnds === 'both' || el.arrowEnds === 'none') continue;
     let [blocker, waiter] = [el.from.elementId, el.to.elementId];
     if (el.arrowEnds === 'from') [blocker, waiter] = [waiter, blocker];
     if (blocker === waiter || !kept.has(blocker)) continue;

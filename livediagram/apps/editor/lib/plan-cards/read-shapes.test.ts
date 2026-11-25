@@ -43,7 +43,7 @@ describe('readPlanShapes', () => {
     expect(s!.lane).toBe('Small');
   });
 
-  it('reads an arrow as Blocked By, either way round, never both-ended, a self loop or a dropped shape', () => {
+  it('reads an arrow as Blocked By, either way round, never both-ended or headless, a self loop or a dropped shape', () => {
     const shapes = readPlanShapes(
       [
         box('a', 'A'),
@@ -54,6 +54,7 @@ describe('readPlanShapes', () => {
         arrow('1b', 'a', 'b'),
         arrow('2', 'c', 'b', { arrowEnds: 'from' }),
         arrow('3', 'c', 'd', { arrowEnds: 'both' }),
+        arrow('3n', 'b', 'a', { arrowEnds: 'none' }),
         arrow('4', 'd', 'd'),
         arrow('5', 'd', 'c'),
         arrow('free', 'a', 'c', { to: { kind: 'free', x: 0, y: 0 } }),
