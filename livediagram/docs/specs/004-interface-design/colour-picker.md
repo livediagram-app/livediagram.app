@@ -77,7 +77,8 @@ colour editor keeps the colour with the tab it was picked on (newest first, at m
 - Nothing else adds to them. A template's or a theme's colours written onto elements, a colour pasted in: none is anyone's pick, so none shows here. A colour picked again moves to the front.
 - They are kept, not derived: a colour stays a custom colour after the element that used it is gone. Picking
   more pushes the oldest off the end.
-- Recording one is not a step of its own: the pick it applies is the undoable edit.
+- Recording one is not a step of its own: the pick it applies is the undoable edit. Undo and redo never take one
+  away: stepping back past the pick restores the board as it was, and the custom colours as they are now.
 - A colour already offered (the Theme Palette's, a standard colour) is not shown again as a custom colour.
 - The custom colour in force always shows, as the first of Custom Colours, picked, even when no one picked it
   with **Add a custom colour** (a template's colour, one pasted in).

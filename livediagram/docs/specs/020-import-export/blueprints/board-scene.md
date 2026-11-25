@@ -31,7 +31,7 @@ Scope, by file:
 | `apps/editor/lib/board-scene-browser.ts`                                  | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
 | `apps/editor/components/dialogs/ImportImageReport.tsx`                    | The dialog's result view: scene report, board failures, images                                    |
 | `apps/editor/lib/quick-style-applicability.ts`                            | `quickStyleApplicability`, `quickStyleCaption`                                                    |
-| `apps/editor/lib/reset-colours.ts`                                        | "Reset to Theme" per element, named colours included                                              |
+| `../packages/element-model/src/reset-colours.ts`                          | "Reset to Theme" per element, named colours included                                              |
 | `apps/editor/components/canvas/BoardSceneNotice.tsx`                      | The paste notice                                                                                  |
 | `apps/editor/components/dialogs/BoardSceneReportList.tsx`                 | The report's rows, shared by the notice and the Import dialog                                     |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
@@ -477,7 +477,7 @@ progress is an inline info card with no close. Never steals focus; it enters as 
 | `penTextColour` / path `penColour` validation                                    | `packages/document/src/validate.test.ts`                                                                                                       |
 | projection of named text colours                                                 | `../packages/element-model/src/whiteboard.test.ts`, `apps/editor/lib/export-as-seen.test.ts` (SVG export)                                      |
 | `hexOklch`                                                                       | `packages/document/src/pen-colours.test.ts`                                                                                                    |
-| reset to theme drops named colours                                               | `apps/editor/lib/reset-colours.test.ts`                                                                                                        |
+| reset to theme drops named colours                                               | `../packages/element-model/src/reset-colours.test.ts`                                                                                          |
 | rotation, links, point helpers                                                   | `common.test.ts`                                                                                                                               |
 | text hug of landed boxes                                                         | `apps/editor/lib/board-scene-hug.test.ts`                                                                                                      |
 | quick style on a mixed whiteboard selection, dark mode                           | `apps/editor/e2e/quick-style-mixed.spec.ts`                                                                                                    |

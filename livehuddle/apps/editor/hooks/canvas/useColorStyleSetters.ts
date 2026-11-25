@@ -7,9 +7,14 @@
 // file makes it auditable. `resetColorsSelected` (the "Reset to Theme"
 // action) lives here too since it is the inverse of these writes.
 
-import { isRetiredElement, type Element, type ElementShadow, type Tab } from '@livehuddle/document';
+import {
+  isRetiredElement,
+  resetElementColours,
+  type Element,
+  type ElementShadow,
+  type Tab,
+} from '@livehuddle/document';
 import { getTheme } from '@/lib/themes';
-import { resetElementColours } from '@/lib/reset-colours';
 import {
   applyFillColorToEl,
   applyShadowToEl,
@@ -95,7 +100,11 @@ export function useColorStyleSetters(deps: {
     // brand look). For any other theme we need to explicitly set the
     // colours since `addBoxed` is what normally writes them on create.
     const theme = getTheme(activeTab.theme);
-    commit((els) => els.map((el) => (ids.has(el.id) ? resetElementColours(el, theme) : el)));
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) ? resetElementColours(el, theme, { keep: isRetiredElement }) : el,
+      ),
+    );
   };
 
   return {
