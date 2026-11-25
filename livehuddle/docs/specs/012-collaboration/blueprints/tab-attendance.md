@@ -139,7 +139,7 @@ leftAt: number | null; key?: string }`. Newest first by `joined_at`, then id; at
 
 ## Presentation and UX
 
-- `TabPortalMenu`: an **Attendance** row (clock-with-arrow glyph, `lucideHistory`) in its own group after "Add to
+- `TabMenu`: an **Attendance** row (clock-with-arrow glyph, `lucideHistory`) in its own group after "Add to
   Another Space"; in a connected tab's menu above Remove Tab. With `attendanceOnly` (a Participant, or a tab-scoped
   Editor whose tab structure is read only) the menu is that one row.
 - `TabPill` shows the ⋯ and the right-click menu when `!readOnly || onOpenAttendance`.
@@ -190,7 +190,7 @@ leftAt: number | null; key?: string }`. Newest first by `joined_at`, then id; at
   only for an account caller, `self`, retention filter.
 - Editor: `editor-capabilities.test.ts` (`seeAttendance` true for Editor and Participant, false for Viewer),
   `tab-attendance.test.ts` (day groups with a pinned clock, lengths, `liveVisit`), `TabAttendanceDialog.test.tsx`
-  (rows, empty, error, a rename and a recolour arriving while open reach only the open row), `TabPortalMenu`
+  (rows, empty, error, a rename and a recolour arriving while open reach only the open row), `TabMenu`
   attendance-only menu.
 
 ## Constants and configuration
