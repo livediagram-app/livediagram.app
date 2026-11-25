@@ -30,16 +30,16 @@ Fifty-five designs in eight families, each **procedural**: drawn as SVG from its
 theme, never a fixed picture, so it fits any page size, stays crisp at any zoom and in every export, and weighs
 nothing to store. The catalogue's order is the picker's: a variation sits straight after the design it varies.
 
-| Family    | Designs                                                                                                     |
-| --------- | ----------------------------------------------------------------------------------------------------------- |
-| Gradients | Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Sunset Bands                                                 |
-| Geometric | Grid, Dots, Isometric, Hexagons, Triangles, Concentric Rings, Diagonal Stripes, Moiré                       |
-| Organic   | Blobs, Blob Echo, Lava Lamp, Waves, Topographic, Flowing Ribbons, Marbled                                   |
+| Family    | Designs                                                                                                    |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| Gradients | Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Sunset Bands                                                |
+| Geometric | Grid, Dots, Isometric, Hexagons, Triangles, Concentric Rings, Diagonal Stripes, Moiré                      |
+| Organic   | Blobs, Blob Echo, Lava Lamp, Waves, Topographic, Flowing Ribbons, Marbled                                  |
 | Texture   | Paper Grain, Noise, Linen, Risograph, Riso Overprint, Riso Fade, Riso Lines, Halftone, Blueprint, Terrazzo |
-| Light     | Glass Panels, Spotlight, Bokeh, Soft Shadows, Layered Cards, Card Cascade, Polaroids                        |
-| Frames    | Corner Accents, Edge Bands, Side Rail, Torn Paper, Offset Border                                            |
-| Bold      | Brutalist Blocks, Memphis, Swiss Grid, Split Fields, Type Watermark, Bauhaus, Brush Strokes, Sunburst       |
-| Tech      | Circuit, Starfield, Constellations, Data Grid, Scanlines                                                    |
+| Light     | Glass Panels, Spotlight, Bokeh, Soft Shadows, Layered Cards, Card Cascade, Polaroids                       |
+| Frames    | Corner Accents, Edge Bands, Side Rail, Torn Paper, Offset Border                                           |
+| Bold      | Brutalist Blocks, Memphis, Swiss Grid, Split Fields, Type Watermark, Bauhaus, Brush Strokes, Sunburst      |
+| Tech      | Circuit, Starfield, Constellations, Data Grid, Scanlines                                                   |
 
 ### The twelve added on 2026-11-25
 
@@ -49,16 +49,16 @@ clearly different in the picker rather than a recolour, and five are new.
 | Design         | Family    | Varies        | The idea                                                                                                                                 |
 | -------------- | --------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Riso Overprint | Texture   | Risograph     | Three flat inks (no dots) printed over each other in bold arcs and bars, a third colour where two overlap, each plate badly registered.  |
-| Riso Fade      | Texture   | Risograph     | Two inks in a coarse dot screen at different screen angles, each fading from one edge across to the other so they cross mid page.       |
-| Riso Lines     | Texture   | Risograph     | Big cut-paper shapes filled with a line screen instead of dots, two inks hatched at crossing angles, an out-of-register outline on top. |
-| Blob Echo      | Organic   | Blobs         | A few solid blobs on the corners, each ringed by outlines that echo its shape outward, like ripples or a sticker's offset cut.            |
-| Lava Lamp      | Organic   | Blobs         | Tall gooey blobs rising from the bottom and hanging from the top, stretched and pinched as a lava lamp's are; they drift when animated.   |
-| Card Cascade   | Light     | Layered Cards | A diagonal run of small cards stepping out of a corner, each smaller and paler than the one before it, as a deck of cards dealt out.      |
-| Polaroids      | Light     | Layered Cards | Instant photos pinned around the page's edges: a white frame, a picture of soft colour inside, a strip of tape, each at its own tilt.   |
-| Moiré          | Geometric | new           | Two sets of fine rings from two centres laid over each other, so their interference draws a shimmering pattern of its own.              |
+| Riso Fade      | Texture   | Risograph     | Two inks in a coarse dot screen at different screen angles, each fading from one edge across to the other so they cross mid page.        |
+| Riso Lines     | Texture   | Risograph     | Big cut-paper shapes filled with a line screen instead of dots, two inks hatched at crossing angles, an out-of-register outline on top.  |
+| Blob Echo      | Organic   | Blobs         | A few solid blobs on the corners, each ringed by outlines that echo its shape outward, like ripples or a sticker's offset cut.           |
+| Lava Lamp      | Organic   | Blobs         | Tall gooey blobs rising from the bottom and hanging from the top, stretched and pinched as a lava lamp's are; they drift when animated.  |
+| Card Cascade   | Light     | Layered Cards | A diagonal run of small cards stepping out of a corner, each smaller and paler than the one before it, as a deck of cards dealt out.     |
+| Polaroids      | Light     | Layered Cards | Instant photos pinned around the page's edges: a white frame, a picture of soft colour inside, a strip of tape, each at its own tilt.    |
+| Moiré          | Geometric | new           | Two sets of fine rings from two centres laid over each other, so their interference draws a shimmering pattern of its own.               |
 | Terrazzo       | Texture   | new           | Chips of stone in the theme's colours scattered over the page, thicker toward the edges, as a terrazzo floor.                            |
-| Bauhaus        | Bold      | new           | A band of square tiles along one edge, each a quarter circle, a half circle or a square in one of the colours, as a Bauhaus poster.     |
-| Brush Strokes  | Bold      | new           | A few wide painterly swipes across the corners, tapered at each end, with the dry brush's streaks running along them.                   |
+| Bauhaus        | Bold      | new           | A band of square tiles along one edge, each a quarter circle, a half circle or a square in one of the colours, as a Bauhaus poster.      |
+| Brush Strokes  | Bold      | new           | A few wide painterly swipes across the corners, tapered at each end, with the dry brush's streaks running along them.                    |
 | Sunburst       | Bold      | new           | Rays fanning out from a point at the page's edge, alternate wedges coloured and fading out, as a retro sunburst; it turns when animated. |
 
 Each takes the same controls as its family's designs (Colours, Intensity, Safe area and Grain, with Scale, Seed and
