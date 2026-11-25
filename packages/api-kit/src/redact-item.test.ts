@@ -154,7 +154,7 @@ describe('redactItemForCommunity', () => {
       ],
     };
     const out = redactItemForCommunity({ ...posted, presentation: JSON.stringify(deck) });
-    expect(JSON.parse(out.presentation!)).toEqual({
+    expect(JSON.parse(out.presentation)).toEqual({
       decks: [
         {
           slides: [
