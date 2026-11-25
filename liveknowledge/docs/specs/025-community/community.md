@@ -141,7 +141,7 @@ A post opens its document through a dedicated **community link**: a view-role sh
 covering every tab, not listed among the owner's share links. Visitors never join the document's room (no presence, no
 cursors, no live stream), are not asked their name, are not added to "Shared with you", and the author is not
 emailed. It is a **content-only pass**: it reads the document, its tabs and images, and copies it; no other door answers
-it, including any added later. What it shows is redacted for strangers: comment threads and their authors, who actions are assigned to and by, and presenter notes (every slide's note cards) stay out; each page keeps when it
+it, including any added later. What it shows is redacted for strangers: comment threads and their authors, who actions are assigned to and by, a Participant's adder key on what they added, and presenter notes (every slide's note cards) stay out; each page keeps when it
 was verified and Always in Context but not its people (its owner, who verified it, and its approval: who asked, who
 decided and the note, `knowledgeForCommunity`); the document carries no owner
 name, colour, folder or origin, and every card image and per-tab image is drawn from the redacted document. While the post

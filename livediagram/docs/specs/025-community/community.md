@@ -281,8 +281,9 @@ ordinary view link in exactly these ways:
   their own library); a share password set on its document; or the Community switched off.
 - What it shows is redacted for strangers: the document carries no owner name, colour, folder or origin, and every card
   image, thumbnail and per-tab image is drawn from the redacted document (no comment threads or their authors, no action
-  assignees, no roll-call or Q&A names), cached apart from the owner's own snapshot. The document overview counts no
-  comment threads.
+  assignees, no roll-call or Q&A names, no picker result drawn from the people in the room, no Participant's adder
+  key), cached apart from the owner's own snapshot. The deck keeps its slides without their presenter notes, which are
+  what the presenter means to say, not what the document shows. The document overview counts no comment threads.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
   Copy**.
 - It is read-only for **everyone, the author included**: the post page's preview and Open Canvas never open the document

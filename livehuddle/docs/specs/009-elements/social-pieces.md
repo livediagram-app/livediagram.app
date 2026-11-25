@@ -90,6 +90,9 @@ A cork board in a wooden frame, hung on a wall, that holds pinned notes.
 by, at, color? }`, where `by` is the pinner's adder key (an Editor without one writes their participant key) and
   `at` the epoch ms it was pinned, a whole number a date can show (0 to 8.64e15), since the face prints its day. A
   note keeps only those fields: one a pin or an update carries beyond them is never stored.
+- **Through a Community post's link** ([Community](../025-community/community.md) "Viewing a post's document"), and in
+  a copy taken through it, every note keeps its id, title, words, colour, day and date but reads as pinned by
+  **Someone**, and carries no signer key: a stranger learns nobody's name or key.
 - **The author is the sender's**: the room writes a pin's `author` from the name on the sender's presence (the name
   their cursor and character carry), cut to 60 characters, or **Someone** with none, whatever the pin claimed, so
   nobody pins under a colleague's name. Notes pinned before this keep the name they were pinned with.
@@ -419,6 +422,9 @@ ship steadily instead of blinking, and nothing flashes or shakes.
 - **Stored on the element** (`ShapeElement.arcadeScores`, best first, at most ten): each `{ id, name, score, ms, by,
 at }`, where `ms` is how long the run played (paused time not counted), `by` the poster's adder key (an Editor
   without one writes their participant key) and `at` the epoch ms it was posted.
+- **Through a Community post's link** ([Community](../025-community/community.md) "Viewing a post's document"), and in
+  a copy taken through it, the table keeps its scores, times and order but its players read as **Player 1**,
+  **Player 2** and so on, with no signer keys: a stranger learns nobody's name or key.
 - **Scores travel as deltas** ([Collab race hardening](../012-collaboration/collab-race-hardening.md)), never inside a
   whole-element update: a posted score is one `arcade-score` delta carrying it; a clear is one `arcade-clear`. A
   whole-element update keeps every receiver's own table, so an Editor moving the machine never carries an old table
