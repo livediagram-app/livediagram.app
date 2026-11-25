@@ -3,7 +3,12 @@
 // workspace to whoever presents it. So "who gets to see it" is a security
 // rule, and it gets a suite of its own rather than living inside one route's.
 import { describe, expect, it } from 'vitest';
-import { redactItemForCommunity, redactItemForReader, redactItemForScope } from './redact-item';
+import {
+  presentationForCommunity,
+  redactItemForCommunity,
+  redactItemForReader,
+  redactItemForScope,
+} from './redact-item';
 
 // A guest-owned document: the owner id is the UUID that identifies that
 // browser, which is exactly the value that must not travel.
@@ -135,5 +140,41 @@ describe('redactItemForCommunity', () => {
       { id: 't1', name: 'Pricing' },
       { id: 't2', name: 'Roadmap' },
     ]);
+  });
+
+  it("keeps a deck's slides without the presenter's notes", () => {
+    const deck = {
+      decks: [
+        {
+          slides: [
+            { id: 's1', tabId: 't1', elementIds: ['e1'], notes: 'mention the layoffs' },
+            { id: 's2', tabId: 't1', elementIds: [], noteCards: [{ id: 'c', text: 'layoffs' }] },
+          ],
+        },
+      ],
+    };
+    const out = redactItemForCommunity({ ...posted, presentation: JSON.stringify(deck) });
+    expect(JSON.parse(out.presentation!)).toEqual({
+      decks: [
+        {
+          slides: [
+            { id: 's1', tabId: 't1', elementIds: ['e1'] },
+            { id: 's2', tabId: 't1', elementIds: [] },
+          ],
+        },
+      ],
+    });
+    // An item with no deck field gains none.
+    expect(redactItemForCommunity(posted)).not.toHaveProperty('presentation');
+  });
+
+  it('serves a deck it cannot read as none, never as stored', () => {
+    expect(presentationForCommunity(null)).toBeNull();
+    expect(presentationForCommunity('{not json')).toBeNull();
+    expect(presentationForCommunity('[1]')).toBeNull();
+    expect(presentationForCommunity('{"notes":"x"}')).toBeNull();
+    expect(presentationForCommunity('{"decks":[null,{"x":1},{"slides":[null]}]}')).toBe(
+      '{"decks":[null,{"x":1},{"slides":[null]}]}',
+    );
   });
 });
