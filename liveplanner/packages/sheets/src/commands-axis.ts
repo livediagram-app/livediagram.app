@@ -8,6 +8,7 @@ import { cellKey, type FilterCondition, type Sheet } from './sheet';
 import { sortedOrder, type SortKey } from './sort';
 import { shiftForCopy } from './formula/stored';
 import { scalarOf } from './formula/values';
+import { formatReplacing } from './format';
 import type { CellChange, LayoutChange, SheetWrite } from './store';
 import type { Workbook } from './engine/workbook';
 import { currentRegion, type Grid } from './selection';
@@ -210,7 +211,10 @@ export function sortRange(
         r: sheet.layout.rows[toRow]!,
         c: sheet.layout.cols[c]!,
         i,
-        f: src?.format ?? null,
+        f: formatReplacing(
+          sheet.cells.get(cellKey(sheet.layout.rows[toRow]!, sheet.layout.cols[c]!))?.format,
+          src?.format,
+        ),
       });
     }
   }

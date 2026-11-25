@@ -50,6 +50,7 @@ export * from './presets';
 export * from './preset-status-names';
 export * from './brought-types';
 export * from './locale-currency';
+export * from './amount-text';
 export * from './type-statuses';
 export * from './card-search';
 export * from './card-display';

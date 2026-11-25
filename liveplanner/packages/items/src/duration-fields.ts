@@ -76,13 +76,14 @@ export function parseDuration(v: string | number | undefined | null): number | u
 }
 
 // A duration as it reads: "2h 30m", "45m", "3h", "0m"; hours past a day stay hours, grouped as the reader's locale
-// groups digits ("1,250h").
-export function durationText(minutes: number): string {
+// groups digits ("1,250h"). `grouped` false writes them ungrouped ("1250h"): the text a box, a file or an agent reads
+// back, which parseDuration takes whatever the locale (a grouped "1,250h" is no duration, a German "1.250h" 1.25h).
+export function durationText(minutes: number, grouped = true): string {
   const m = Math.max(0, Math.round(minutes));
   const h = Math.floor(m / 60);
   const rest = m % 60;
   if (h === 0) return `${rest}m`;
-  const hours = `${h.toLocaleString()}h`;
+  const hours = `${grouped ? h.toLocaleString() : String(h)}h`;
   return rest === 0 ? hours : `${hours} ${rest}m`;
 }
 

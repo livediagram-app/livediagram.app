@@ -37,6 +37,7 @@ import { PULL_REQUEST_HINT, pullRequestValueOf } from './pull-request-fields';
 import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
 import { REPEAT_FIELD } from './repeat';
+import { amountOf } from './amount-text';
 import { RISK_HINT, riskOf } from './risk-fields';
 
 export type NameRefusalCode =
@@ -469,14 +470,14 @@ export function resolveFields(
         );
       out[key] = value.trim();
     } else if (field.kind === 'currency' && typeof value === 'string') {
-      // "£12,500" or "1200.50": the amount, its symbols and grouping aside.
-      const amount = Number(value.replace(/[^\d.-]/g, ''));
-      if (!/\d/.test(value) || !Number.isFinite(amount))
+      // "£12,500", "1200.50" or "1.234,50 €": the amount, its symbols and grouping aside.
+      const amount = amountOf(value);
+      if (amount === undefined)
         return refuse(
           'value_invalid',
           `"${value}" is not an amount for ${field.label}: give a number.`,
         );
-      out[key] = Math.round(amount * 100) / 100;
+      out[key] = amount;
     } else if (field.kind === 'currency' && typeof value === 'number') {
       out[key] = Math.round(value * 100) / 100;
     } else if (field.kind === 'email' && typeof value === 'string') {

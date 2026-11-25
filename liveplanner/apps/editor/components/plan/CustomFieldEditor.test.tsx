@@ -12,6 +12,7 @@ afterEach(cleanup);
 
 const VALUE: CustomFieldDef = { id: 'f-value', label: 'Value', kind: 'currency', currency: 'USD' };
 const CONTACT: CustomFieldDef = { id: 'f-contact', label: 'Contact', kind: 'email' };
+const COUNT: CustomFieldDef = { id: 'f-n', label: 'Count', kind: 'number' };
 
 describe('CustomFieldEditor', () => {
   it('saves a currency amount to the penny, beside its code, and clears an empty one', () => {
@@ -25,6 +26,21 @@ describe('CustomFieldEditor', () => {
     expect(onSave).toHaveBeenLastCalledWith(12.35);
     fireEvent.blur(input, { target: { value: '' } });
     expect(onSave).toHaveBeenLastCalledWith(undefined);
+  });
+
+  // A number box with text it can't read (some browsers let "£12" in) reads as '': that is no clearing.
+  it.each([
+    ['currency', VALUE],
+    ['number', COUNT],
+  ])('puts a %s back, never clears it, when the box holds no number', (_kind, field) => {
+    const onSave = vi.fn();
+    render(<CustomFieldEditor id="v" field={field} value={12} disabled={false} onSave={onSave} />);
+    const input = screen.getByRole<HTMLInputElement>('spinbutton');
+    Object.defineProperty(input, 'validity', { value: { badInput: true }, configurable: true });
+    input.value = '';
+    fireEvent.blur(input);
+    expect(onSave).not.toHaveBeenCalled();
+    expect(input.value).toBe('12');
   });
 
   // Its label is not a <label for> (a press on the words must not tick it), so the box carries the name itself.

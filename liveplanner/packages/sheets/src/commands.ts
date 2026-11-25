@@ -2,7 +2,7 @@
 // "Fill"), as pure builders from the selection to a write. The editor sends what these return; nothing here sends.
 import type { CellPos, GridRange } from './address';
 import { fillSeries } from './fill';
-import type { FormatPatch } from './format';
+import { formatReplacing, type FormatPatch } from './format';
 import { layoutIndex, posRangeOf } from './layout';
 import { SHEET_WRITE_BYTES_MAX, SHEET_WRITE_CELLS_MAX } from './limits';
 import { cellKey, splitCellKey, type Border, type Cell, type IdRange, type Sheet } from './sheet';
@@ -338,7 +338,7 @@ export function fillRange(
       let i: CellChange['i'] = series ? (series[k] ?? null) : (src?.input ?? null);
       if (src?.input && 'f' in src.input)
         i = { f: shiftForCopy(src.input.f, pos.r - from.r, pos.c - from.c, ctx) };
-      cells.push({ ...ids, i, f: src?.format ?? null });
+      cells.push({ ...ids, i, f: formatReplacing(cellAt(pos.r, pos.c)?.format, src?.format) });
     }
   }
   return { kind: 'cells', cells };

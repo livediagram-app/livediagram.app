@@ -145,6 +145,19 @@ export function mergeFormat(
   return Object.keys(out).length === 0 ? undefined : out;
 }
 
+// The patch that makes a cell holding `dest` hold `src` instead (sheet.md "Paste"): src's keys, and null for each key
+// of dest that src lacks, so nothing of the old format stays under the new. Null (clear all) when src has none. Only
+// dest's own keys are named, so a paste over plain cells writes no more than before.
+export function formatReplacing(
+  dest: CellFormat | undefined,
+  src: CellFormat | undefined,
+): FormatPatch | null {
+  if (!src || Object.keys(src).length === 0) return null;
+  const patch: FormatPatch = { ...(src as FormatPatch) };
+  if (dest) for (const k of Object.keys(dest)) if (!(k in src)) patch[k as FormatKey] = null;
+  return patch;
+}
+
 export function formatEquals(a: CellFormat | undefined, b: CellFormat | undefined): boolean {
   return JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
 }

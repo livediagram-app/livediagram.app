@@ -1150,7 +1150,9 @@ to import. Import CSV reads files up to 5 MB." Each row after it becomes a new c
 - **Start**, **Due** and a custom date field: YYYY-MM-DD, or a day-first D/M/YYYY (also with `-` or `.`, and a
   two-digit year in this century); a date that is not a real day is left empty.
 - **Labels**: split at commas and semicolons, as many as a card holds. **Description**: plain text, cut to its limit.
-- Custom fields of the row's type by label: a number as a number, a checkbox from Yes/True/1/X, a choice only as one
+- Custom fields of the row's type by label: a number as a number; a Currency as its amount, its symbols aside
+  (`amountOf`: "£12,500" is 12500, and a decimal comma reads as one, "1.234,50 €" and "12,5" as 1234.5 and 12.5; a
+  comma before three digits alone groups, "1,200" is 1200); a checkbox from Yes/True/1/X, a choice only as one
   of its options; a Date and Time from ISO 8601 (with its offset, or without one read in the importer's own zone,
   "2026-10-31 17:00" too); a Date Range from two ends joined by `/` (or " to "), each read as its field's ends are; a
   Phone as a phone number (a leading `'` from an older download dropped); a Person field by name (a field that holds several takes a comma list of names); a Card field is
