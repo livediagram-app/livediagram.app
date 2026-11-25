@@ -288,7 +288,9 @@ export function mindGrowFor<E extends ModelElement>(deps: MindGrowDeps<E>) {
    * moved node, faces on a re-anchored connector, nothing else. The editor runs
    * this inside its commit against the elements as they stand then, so a label
    * committed a moment earlier (the one typed before Tab) is never overwritten by
-   * the copy the plan was computed from.
+   * the copy the plan was computed from. A locked node keeps its place and a locked
+   * connector its faces, whatever re-lays the map (docs/specs/009-elements/mind-node.md
+   * "Tidy Map"): the lock holds wherever the change comes from.
    */
   function applyMindMoves(
     elements: Element[],
@@ -300,6 +302,7 @@ export function mindGrowFor<E extends ModelElement>(deps: MindGrowDeps<E>) {
     const faces = new Map(reanchored.map((a) => [a.id, a]));
     return elements.map((el) => {
       const m = at.get(el.id);
+      if (el.locked === true) return el;
       if (m && isMindNode(el)) return { ...el, x: m.x, y: m.y };
       const a = faces.get(el.id);
       if (a && el.type === 'arrow' && el.from.kind === 'pinned' && el.to.kind === 'pinned') {

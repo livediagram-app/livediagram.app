@@ -199,8 +199,10 @@ export type EditorContextMenuProps = {
   // Code block (docs/specs/009-elements/code-block.md): open the code edit modal for the given element
   // (same too-big-for-the-menu rationale as the line chart's grid).
   onEditCodeBlock: (elementId: string) => void;
-  // Opens an element's rows in their dialog: a checklist's, a legend's, a chart's slices.
-  onEditRows: (elementId: string, kind: RowsEditorKind) => void;
+  // Opens an element's rows in their dialog: a checklist's, a legend's, a chart's slices. Absent on a locked element,
+  // whose rows are not edited (docs/specs/008-canvas/canvas-and-palette.md "A category that opens a dialog"), so the
+  // menu offers no row that opens one.
+  onEditRows?: (elementId: string, kind: RowsEditorKind) => void;
   // Long-line wrapping on a code block (docs/specs/009-elements/code-block.md), on by default.
   // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array, committed in one step.
   onSetLegendItems: (items: LegendItem[]) => void;
@@ -240,8 +242,8 @@ export type EditorContextMenuProps = {
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,
   // not a rewrite of every row (docs/specs/012-collaboration/collab-race-hardening.md).
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // Opens the Fields dialog (docs/specs/009-elements/entity.md "The Fields dialog").
-  onEditEntityFields: (elementId: string) => void;
+  // Opens the Fields dialog (docs/specs/009-elements/entity.md "The Fields dialog"). Absent on a locked entity.
+  onEditEntityFields?: (elementId: string) => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.

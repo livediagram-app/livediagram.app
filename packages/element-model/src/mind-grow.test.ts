@@ -7,7 +7,7 @@ import type { ArrowElement, Element, ShapeElement } from './element';
 
 type MindGrowthPlan = SharedGrowthPlan<ShapeElement, ArrowElement>;
 const { isMindTreeTidy, layoutMindTree } = MIND_LAYOUT;
-const { planMindGrowth, relayoutMindMap, withMindSubtrees } = MIND_GROW;
+const { planMindGrowth, relayoutMindMap, withMindSubtrees, applyMindMoves } = MIND_GROW;
 
 // docs/specs/009-elements/mind-node.md: growth, the level's look, connectors, Tidy Map, branch drags.
 
@@ -192,6 +192,29 @@ describe('relayoutMindMap', () => {
     expect(isMindTreeTidy(out, 'r', 'downward')).toBe(true);
     // Read top to bottom before, left to right after.
     expect(box(out, 'a').x).toBeLessThan(box(out, 'b').x);
+  });
+});
+
+describe('applyMindMoves', () => {
+  // mind-node.md "Tidy Map": a locked node keeps its place whatever re-lays the map.
+  it('leaves a locked node and a locked connector where they are', () => {
+    const arrow = { ...createPinnedArrow('r', 's', 'a', 'n'), id: 'ra', locked: true };
+    const els: Element[] = [
+      node('r', undefined, { x: 0, y: 0 }),
+      { ...node('a', 'r', { x: 900, y: -400 }), locked: true },
+      node('b', 'r', { x: 350, y: 700 }),
+      arrow,
+    ];
+    const plan = relayoutMindMap(els, 'b')!;
+    expect(plan.moves.map((m) => m.id)).toContain('a');
+    const out = applyMindMoves(els, plan.moves, [
+      ...plan.reanchored,
+      { ...arrow, from: { ...arrow.from, anchor: 'e' } } as ArrowElement,
+    ]);
+    expect(box(out, 'a')).toMatchObject({ x: 900, y: -400 });
+    expect(out.find((e) => e.id === 'ra')).toBe(arrow);
+    // The unlocked node still moves.
+    expect(box(out, 'b')).not.toMatchObject({ x: 350, y: 700 });
   });
 });
 
