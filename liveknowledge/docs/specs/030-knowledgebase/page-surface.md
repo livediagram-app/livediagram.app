@@ -366,8 +366,12 @@ though the whole page reloads, even though only the middle content really change
   From, a search result) is a switch in place, never a load: the page tree stays exactly as it is, scrolled where it
   was, its rows not drawn again; the top row and the footer stay.
 - **The page area animates.** The page in view lifts a little and fades out (110 ms) as the next one rises 8 px and
-  fades in (220 ms, a beat after), in the page area alone. No blank frame shows between them: a page still loading
-  appears while it fades in, never as an empty page after the old one has gone.
+  fades in (220 ms, a beat after), in the page area alone. No blank frame shows between them, and no loader over the
+  window: a page not opened yet this session is fetched first while the page before stays on screen, and the switch
+  runs once its content is here (rework after the browser check: on a synced knowledgebase a first visit showed
+  "Loading tab…" over the whole window, tree and rails with it, for a few frames). A fetch still not back after 1.5
+  s switches anyway, onto the page's own loader: in the page area alone, under the tree and the rails, its spinner
+  only after 300 ms. A failed load shows the error card with Retry, as before.
 - **The right rail updates in place.** Page Health, On This Page and the rest of the rail keep their layout and
   change once, to the new page's figures, when its content has loaded; never to an empty page's figures first (the
   score dipping and coming back, On This Page emptying and refilling). A page whose load never lands lets the rail

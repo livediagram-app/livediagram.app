@@ -238,6 +238,18 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
   After `leavePageThen` it runs the editor's `setActiveId` and the selection resets inside `startPageSwitch`, which is
   `startTypedTransition('page-switch', ...)`: a React transition carrying the type, so React starts a View
   Transition for the commit; under `prefersReducedMotion()` it runs the change plainly and no View Transition starts.
+- **A page not opened yet** (not in `loadedTabIds`, once hydrated) is fetched before the switch with the loader's
+  own one-tab sweep, `loadAllTabs([id])` (the split view's), raced against `PAGE_FETCH_WAIT_MS` (1,500); the switch
+  then runs as above. A later press while one fetches wins (a module counter), so a slow fetch never switches back.
+  The page before stays on screen meanwhile, its row still current. Measured on a synced knowledgebase (a signed-in
+  stack, a first visit to each page): before, `TabLoadOverlay` over the whole surface for 3 frames (5 to 6 under
+  reduced motion) and the column empty for 2 to 3; after, neither, the title in the first frame the switch draws.
+- **The loader** (`components/page-surface/PageLoadVeil.tsx`), shown by `Canvas.tsx` for `tabLoadState ===
+'loading'` in place of the workbench's `TabLoadOverlay`: `absolute inset-0 z-[1]` over the scroll container and
+  under the chrome (`z-[var(--z-panel)]` and up), so the tree, the top row and the rail stay live; it takes every
+  press from the first frame and shows its spinner and "Loading page…" after `PAGE_LOAD_VEIL_DELAY_MS` (300). The
+  keyboard, paste and every commit are shut by `editsBlocked` as before. `tabLoadState === 'error'` keeps
+  `TabLoadOverlay`'s error card and Retry.
 - **What is captured.** `Canvas.tsx` wraps the page's scroll container (`data-page-scroller`) in `<ViewTransition
 default="none" update={PAGE_SWITCH_VIEW_TRANSITION_UPDATE}>` (`page-switch` for its type, `none` for any other),
   inside the `<main>`'s slide `ViewTransition`, whose map gives `page-switch` nothing. `html` takes no part
@@ -259,7 +271,8 @@ activeId)`) while the open one has not, and the live value once it has, or once 
 - **The address** is `useTabEntryEffects`' `replaceState` of `#t=<page>`, as before: no history entry per page.
 
 Tests: `select-page.test.ts` (the switch runs as a `page-switch` transition, plainly under reduced motion, not at all
-for the open page), `loaded-page-store.test.ts` (holds while loading, follows once loaded, lets go after the cap,
+for the open page; an unopened page is fetched first, the latest press wins, the wait is capped), `PageLoadVeil.test.tsx`
+(nothing shown before the delay, the spinner after), `loaded-page-store.test.ts` (holds while loading, follows once loaded, lets go after the cap,
 passes through before any page loaded, stops following on disconnect), `view-transitions.test.ts` (the class lives in
 `canvas-motion.css`).
 

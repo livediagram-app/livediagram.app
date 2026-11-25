@@ -68,6 +68,8 @@ function mount(level: 'edit' | 'participate' | 'view' = 'view', withSource = fal
     tabs: TABS,
     activeId: 'a',
     activeTab: TABS[0],
+    // Every page is here already, so opening one switches at once (select-page.ts fetches an unopened page first).
+    loadAllTabs: undefined,
     can: resolveEditorCapabilities(level),
     selfParticipant: { id: 'u1', name: 'Priya' },
     sessionShareCode: 'code',
@@ -248,6 +250,8 @@ describe('opening a page at a block', () => {
         activeTab: TABS[1],
         setActiveId,
         scrollIntoView,
+        // Every page is here already, so opening one switches at once (select-page.ts fetches an unopened page first).
+        loadAllTabs: undefined,
       };
       return new Proxy(fields, {
         get: (target, key: string) => (key in target ? target[key] : vi.fn()),

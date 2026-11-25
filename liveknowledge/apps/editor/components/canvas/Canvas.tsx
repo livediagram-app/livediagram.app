@@ -57,6 +57,7 @@ import { useCanvasDrawTools } from './useCanvasDrawTools';
 import { useCanvasSelectionInput } from './useCanvasSelectionInput';
 
 import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
+import { PageLoadVeil } from '@/components/page-surface/PageLoadVeil';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
@@ -563,7 +564,10 @@ function CanvasView(props: CanvasProps) {
             {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
-            {tabLoadState && tabLoadState !== 'ready' ? (
+            {/* A page on its way holds the page area alone, under the chrome, its loader after a moment
+                (PageLoadVeil); a failed load covers the surface with the error card and its Retry. */}
+            {tabLoadState === 'loading' ? <PageLoadVeil /> : null}
+            {tabLoadState === 'error' ? (
               <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
             ) : null}
             {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape

@@ -22,7 +22,15 @@ const TABS = [tab('a', 'Handbook'), tab('b', 'Release Process', 'a'), tab('c', '
 
 function mount(activeId: string, tabs: Tab[] = TABS) {
   const setActiveId = vi.fn();
-  const fields: Record<string, unknown> = { tabs, activeId, setActiveId };
+  // Every page loaded already, so a click switches at once (select-page.ts fetches an unopened one first).
+  const loadedTabIds = new Set(tabs.map((t) => t.id));
+  const fields: Record<string, unknown> = {
+    tabs,
+    activeId,
+    setActiveId,
+    hydrated: true,
+    loadedTabIds,
+  };
   const value = new Proxy(fields, {
     get: (target, key: string) => (key in target ? target[key] : vi.fn()),
   }) as unknown as EditorContextValue;

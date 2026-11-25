@@ -46,6 +46,8 @@ function mount(level: 'edit' | 'participate' | 'view' = 'view') {
     sessionShareCode: null,
     sessionRole: level,
     setActiveId,
+    // Every page is here already, so opening one switches at once (select-page.ts fetches an unopened page first).
+    loadAllTabs: undefined,
   };
   const valueOf = (over: Record<string, unknown> = {}) =>
     new Proxy(

@@ -22,7 +22,7 @@ vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
 
 import type { EditorContextValue } from '@/app/document/[id]/EditorContext';
 import { PAGE_SWITCH_TRANSITION } from '@/components/page-surface/page-switch-transition';
-import { selectPage } from './select-page';
+import { PAGE_FETCH_WAIT_MS, selectPage } from './select-page';
 
 const editor = (activeId = 'a') => {
   const e = {
@@ -36,7 +36,18 @@ const editor = (activeId = 'a') => {
   return e as typeof e & EditorContextValue;
 };
 
+const unopened = (loadAllTabs: (ids: string[]) => Promise<unknown>) => {
+  const e = editor();
+  Object.assign(e, {
+    hydrated: true,
+    loadedTabIds: new Set(['a']),
+    loadAllTabs: vi.fn(loadAllTabs),
+  });
+  return e;
+};
+
 afterEach(() => {
+  vi.useRealTimers();
   react.types = [];
   react.transitions = 0;
   motion.reduced = false;
@@ -68,5 +79,53 @@ describe('selectPage', () => {
     selectPage(e, 'a');
     expect(react.transitions).toBe(0);
     expect(e.setActiveId).not.toHaveBeenCalled();
+  });
+
+  it('fetches a page not opened yet first, keeping the page before on screen until it is here', async () => {
+    let land!: () => void;
+    const e = unopened(() => new Promise<void>((r) => (land = r)));
+    selectPage(e, 'b');
+    expect(e.loadAllTabs).toHaveBeenCalledWith(['b']);
+    expect(e.setActiveId).not.toHaveBeenCalled();
+    land();
+    await vi.waitFor(() => expect(e.setActiveId).toHaveBeenCalledWith('b'));
+    expect(react.types).toEqual([PAGE_SWITCH_TRANSITION]);
+  });
+
+  it('switches anyway when the fetch fails', async () => {
+    const e = unopened(() => Promise.reject(new Error('offline')));
+    selectPage(e, 'b');
+    await vi.waitFor(() => expect(e.setActiveId).toHaveBeenCalledWith('b'));
+  });
+
+  it('lets the latest press win while an earlier page is still fetching', async () => {
+    let landB!: () => void;
+    const e = unopened((ids) =>
+      ids[0] === 'b' ? new Promise<void>((r) => (landB = r)) : Promise.resolve(),
+    );
+    selectPage(e, 'b');
+    selectPage(e, 'c');
+    await vi.waitFor(() => expect(e.setActiveId).toHaveBeenCalledWith('c'));
+    landB();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(e.setActiveId).not.toHaveBeenCalledWith('b');
+  });
+
+  it('caps the wait, switching onto the page loader when the fetch never lands', async () => {
+    vi.useFakeTimers();
+    const e = unopened(() => new Promise<void>(() => {}));
+    selectPage(e, 'b');
+    await vi.advanceTimersByTimeAsync(PAGE_FETCH_WAIT_MS - 1);
+    expect(e.setActiveId).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(e.setActiveId).toHaveBeenCalledWith('b');
+  });
+
+  it('switches at once to a page already loaded', () => {
+    const e = unopened(() => Promise.resolve());
+    e.loadedTabIds.add('b');
+    selectPage(e, 'b');
+    expect(e.loadAllTabs).not.toHaveBeenCalled();
+    expect(e.setActiveId).toHaveBeenCalledWith('b');
   });
 });
