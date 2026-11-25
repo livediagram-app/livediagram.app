@@ -239,7 +239,7 @@ moving focus into it; no motion beyond the dialog's own.
 | Item too large to snapshot         | 413 `snapshot_too_large`, nothing written (take or revert)                                    |
 | Snapshot chunks missing or short   | 422 `snapshot_unreadable`, nothing changes                                                    |
 | File the door cannot read          | 422 `snapshot_unreadable`; the safety snapshot stands                                         |
-| Reverting to the oldest of five    | read first (SN12), then pruned by the safety snapshot                                         |
+| Reverting to the oldest of five    | kept: the safety take holds the target beside `keptIds` and keeps one fewer of the rest       |
 | Deleting one a rule names          | 409 `snapshot_kept`, nothing changes; the row offers no Delete                                |
 | A rule's snapshot is gone          | `revertToSnapshot` answers `snapshot_missing`; the rule's run fails, nothing changes          |
 | A kept snapshot is let go          | counted among the five again; removed by a later take only if older than the newest five      |
