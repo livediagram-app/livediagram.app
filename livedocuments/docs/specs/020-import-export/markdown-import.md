@@ -100,7 +100,8 @@ this import reads: **Copy** puts it on the clipboard and **Download .md** saves 
 the panel's box never change the article.
 
 - A tab holding several articles writes them in page order, a `\pagebreak` line between, the later ones' title and
-  subtitle written as `#` and `##` headings (front matter belongs only at the top).
+  subtitle written as `#` and `##` headings (front matter belongs only at the top). Footnotes are numbered on through
+  the file (a second article's first note is `[^n+1]`), since a repeated `[^1]` reads back as the first article's note.
 - **What it leaves out is named, never dropped silently.** Under the text the panel says how many pictures and how
   many other items (charts, shapes, drawings) sit beside the writing and are not in the file, and how many empty drawing
   spots in the text (zones, not counting one that holds a counted item) were left out, since `[zone id]` names a drawing only the article it came from has. It says
