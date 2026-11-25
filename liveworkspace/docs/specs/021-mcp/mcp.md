@@ -111,7 +111,10 @@ A router in front of each app's tools, in one Worker. Each app's MCP is a packag
 (`<app>/apps/mcp`: its tools, prompts, resources and views, with their tests), and this Worker runs each one in
 process, as the person, with the person's own `Authorization: Bearer lwt_…` (an account token works on every app).
 An app's tools reach its api over this Worker's service binding to that api. An app's answer comes back as it is,
-the old tool names in its guidance and refusals rewritten, never in what a person wrote. A refused token (401 from any app) makes the whole request answer 401 with the sign-in
+the old tool names in its guidance and refusals rewritten, never in what a person wrote. A tool call the app's MCP
+answers with a JSON-RPC error comes back as a tool error (`isError`) in the app's own words, so the assistant can
+correct the call; only a tool name this server doesn't have is a protocol error, and only a failure to reach the app
+answers "try again". A refused token (401 from any app) makes the whole request answer 401 with the sign-in
 challenge.
 
 The core verbs map to each app's existing tools: `find_items` to `find_documents`, `find_projects` or
