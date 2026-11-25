@@ -18,6 +18,7 @@ import {
   type Pt,
   type Size,
 } from './auto-layout-shared';
+import { ringClearRadius } from './ring-clearance';
 
 // The mindmap hub: the node the most arrows touch (undirected degree),
 // ties broken by input order so the pick is deterministic.
@@ -80,9 +81,34 @@ export function positionMindmapComponent(
   };
   walkDepth(hub, 0);
 
+  // Wedge assignment: the hub's children split the full circle by leaf
+  // count; every descendant recursively splits its parent's wedge and sits
+  // at the wedge's bisector on its depth's ring.
+  const angle = new Map<ElementId, number>();
+  const placeWedge = (id: ElementId, start: number, span: number) => {
+    const kids = children.get(id)!;
+    let a = start;
+    for (const k of kids) {
+      const share = (span * leaves.get(k)!) / leaves.get(id)!;
+      angle.set(k, a + share / 2);
+      placeWedge(k, a, share);
+      a += share;
+    }
+  };
+  // The first branch sits at 12 o'clock (its wedge centred there), as layout-cleanup.md "Mindmap
+  // order" has it: a wedge starting there put it half its share clockwise, so a map drawn with one
+  // branch up and one down came out turned a quarter, one at 3 and one at 9.
+  const first = children.get(hub)![0];
+  const firstShare =
+    first === undefined ? 0 : (2 * Math.PI * leaves.get(first)!) / leaves.get(hub)!;
+  placeWedge(hub, -Math.PI / 2 - firstShare / 2, 2 * Math.PI);
+
   // Ring radii: each ring clears the previous by the largest node on it plus
-  // a gap, and additionally grows until its circumference fits every node on
-  // that ring (footprint + sibling gap), the anti-collision guarantee.
+  // a gap, grows until its circumference fits every node on that ring
+  // (footprint + sibling gap), and then until no two of its nodes overlap
+  // where their wedges put them. Wedges follow leaf counts, not an even
+  // spread: a bushy branch leaves its light neighbours' children closer
+  // together than the circumference sum allows for.
   const byDepth = new Map<number, ElementId[]>();
   for (const id of ids) pushTo(byDepth, depth.get(id)!, id);
   const footprint = (id: ElementId) => Math.max(size.get(id)!.w, size.get(id)!.h);
@@ -95,37 +121,26 @@ export function positionMindmapComponent(
     const ringMax = Math.max(...ring.map(footprint));
     const clearPrev = prev + prevMax / 2 + ringMax / 2 + LAYER_GAP;
     const needed = ring.reduce((s, id) => s + footprint(id) + SIBLING_GAP, 0);
-    const r = Math.max(clearPrev, needed / (2 * Math.PI));
+    const r = Math.max(
+      clearPrev,
+      needed / (2 * Math.PI),
+      ringClearRadius(
+        ring.map((id) => ({ angle: angle.get(id)!, ...size.get(id)! })),
+        SIBLING_GAP,
+      ),
+    );
     radius.set(d, r);
     prev = r;
     prevMax = ringMax;
   }
 
-  // Wedge assignment: the hub's children split the full circle by leaf
-  // count; every descendant recursively splits its parent's wedge and sits
-  // at the wedge's bisector on its depth's ring. Positions are node centres
-  // for now; normalised to top-left local coords at the end.
+  // Positions are node centres for now; normalised to top-left local coords at the end.
   const centerPos = new Map<ElementId, Pt>();
   centerPos.set(hub, { x: 0, y: 0 });
-  const placeWedge = (id: ElementId, start: number, span: number) => {
-    const kids = children.get(id)!;
-    let a = start;
-    for (const k of kids) {
-      const share = (span * leaves.get(k)!) / leaves.get(id)!;
-      const mid = a + share / 2;
-      const r = radius.get(depth.get(k)!)!;
-      centerPos.set(k, { x: r * Math.cos(mid), y: r * Math.sin(mid) });
-      placeWedge(k, a, share);
-      a += share;
-    }
-  };
-  // The first branch sits at 12 o'clock (its wedge centred there), as layout-cleanup.md "Mindmap
-  // order" has it: a wedge starting there put it half its share clockwise, so a map drawn with one
-  // branch up and one down came out turned a quarter, one at 3 and one at 9.
-  const first = children.get(hub)![0];
-  const firstShare =
-    first === undefined ? 0 : (2 * Math.PI * leaves.get(first)!) / leaves.get(hub)!;
-  placeWedge(hub, -Math.PI / 2 - firstShare / 2, 2 * Math.PI);
+  for (const [id, a] of angle) {
+    const r = radius.get(depth.get(id)!)!;
+    centerPos.set(id, { x: r * Math.cos(a), y: r * Math.sin(a) });
+  }
 
   // Normalise to local top-left coords with the block starting at 0,0.
   let minX = Infinity;

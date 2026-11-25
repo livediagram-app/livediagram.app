@@ -145,6 +145,28 @@ describe('layoutMindTree: other flows', () => {
       }
   });
 
+  it('bubble keeps a bushy branch clear of itself', () => {
+    // The root's three branches share the circle equally, so one with six ideas packs them into a
+    // third of the ring; the ring sized for an even spread of all eight put them on top of each other.
+    const els: Element[] = [node('r', undefined, { x: 0, y: 0 }), node('a', 'r'), node('b', 'r')];
+    els.push(node('c', 'r'), node('a1', 'a'), node('b1', 'b'));
+    for (let i = 0; i < 6; i++) els.push(node(`c${i}`, 'c', { y: i * 70 }));
+    const out = apply(els, layoutMindTree(els, 'r', 'bubble')) as ShapeElement[];
+    const overlaps: string[] = [];
+    for (const p of out)
+      for (const q of out) {
+        if (p.id >= q.id) continue;
+        const clear =
+          p.x + p.width <= q.x ||
+          q.x + q.width <= p.x ||
+          p.y + p.height <= q.y ||
+          q.y + q.height <= p.y;
+        if (!clear) overlaps.push(`${p.id}/${q.id}`);
+      }
+    expect(overlaps).toEqual([]);
+    expect(isMindTreeTidy(out, 'r', 'bubble')).toBe(true);
+  });
+
   it.each(MIND_FLOWS.map((f) => [f]))('%s is a fixed point', (flow: MindFlow) => {
     const once = apply(map(), layoutMindTree(map(), 'r', flow));
     expect(isMindTreeTidy(once, 'r', flow)).toBe(true);
