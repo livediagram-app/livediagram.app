@@ -103,6 +103,48 @@ export async function appendConnectedTab(
   return { tabId, made: true };
 }
 
+// What the index's removal door (`DELETE /api/internal/items/:id/connected-tabs/:connectionId`, Connect as tabs) did:
+// the tab holding the connection removed, none held it, the item's last tab kept, or the item not started.
+export type DisconnectedTabOutcome = 'removed' | 'absent' | 'last' | 'not_found';
+
+// The tab in this item holding `connectionId`, for its removal: one read over the item's connected tabs.
+export async function connectedTabIdOf(
+  db: ConnectionDb,
+  itemId: string,
+  connectionId: string,
+  config: Pick<ConnectedTabAppend, 'linkTable' | 'itemColumn'>,
+): Promise<string | null> {
+  const { linkTable, itemColumn } = config;
+  if (!/^\w+$/.test(linkTable) || !/^\w+$/.test(itemColumn))
+    throw new Error('connected-tabs: bad table name');
+  const row = await db
+    .prepare(
+      `SELECT t.id FROM tabs t JOIN ${linkTable} l ON l.tab_id = t.id AND l.${itemColumn} = ?1
+        WHERE t.connection IS NOT NULL AND json_valid(t.connection) AND json_extract(t.connection, '$.id') = ?2
+        LIMIT 1`,
+    )
+    .bind(itemId, connectionId)
+    .first<{ id: string }>();
+  return row?.id ?? null;
+}
+
+// The removal: the tab found, then the app's own delete (`deleteTabRow`, keeping an item's last tab), whose outbox
+// key tells the index it left (the index finds nothing left to remove).
+export async function removeConnectedTabOf(
+  db: ConnectionDb,
+  itemId: string,
+  connectionId: string,
+  config: Pick<ConnectedTabAppend, 'linkTable' | 'itemColumn'> & {
+    deleteTab: (tabId: string) => Promise<unknown>;
+  },
+): Promise<Exclude<DisconnectedTabOutcome, 'not_found'>> {
+  const tabId = await connectedTabIdOf(db, itemId, connectionId, config);
+  if (!tabId) return 'absent';
+  const deleted = await config.deleteTab(tabId);
+  if (deleted === 'last') return 'last';
+  return deleted ? 'removed' : 'absent';
+}
+
 // The connection a stored column holds, for a removal or a read (null when empty or malformed).
 export const storedTabConnection = (text: string | null | undefined): TabConnection | null =>
   parseTabConnectionText(text);

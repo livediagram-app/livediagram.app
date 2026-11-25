@@ -10,7 +10,11 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { ItemGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
-import { addConnectedDocumentTab, connectedTabArrival } from '../document-room/connected-tab';
+import {
+  addConnectedDocumentTab,
+  connectedTabArrival,
+  removeConnectedDocumentTab,
+} from '../document-room/connected-tab';
 import { exportDocumentCopy, importDocumentCopy } from '../document-room/document-content';
 import { exportDocumentFile, readDocumentFile } from '../document-room/document-file';
 import { redactDocumentForCommunity, redactDocumentForScope } from '../redact-document';
@@ -358,6 +362,30 @@ describe('the reverse write', () => {
       await addConnectedDocumentTab(db.env, 'none', { name: 'x', connection: CONNECTION }),
     ).toBe('not_found');
     expect(await connectedTabArrival(db.env, 'none')).toBeNull();
+  });
+});
+
+describe("the index's removal of a linked tab (Connect as tabs)", () => {
+  it('removes the tab holding the connection, keys its leaving, and sends the tab bar without it', async () => {
+    const db = await canvas();
+    const made = await addConnectedDocumentTab(db.env, 'D', {
+      name: 'Roadmap',
+      connection: CONNECTION,
+    });
+    const tabId = (made as { tabId: string }).tabId;
+    expect(await removeConnectedDocumentTab(db.env, 'D', AGAIN.id)).toBe('absent');
+    expect(await removeConnectedDocumentTab(db.env, 'D', CONNECTION.id)).toBe('removed');
+    expect(column(db, tabId)).toBeUndefined();
+    expect(removals(db)).toEqual([connectionLeftKeyOf({ connectionId: CONNECTION.id, tabId })]);
+    const op = (await connectedTabArrival(db.env, 'D')) as { tabs: { id: string }[] };
+    expect(op.tabs.map((t) => t.id)).not.toContain(tabId);
+    expect(await removeConnectedDocumentTab(db.env, 'D', CONNECTION.id)).toBe('absent');
+  });
+
+  it('is not_found for a canvas not started', async () => {
+    expect(await removeConnectedDocumentTab(sqliteD1().env, 'none', CONNECTION.id)).toBe(
+      'not_found',
+    );
   });
 });
 

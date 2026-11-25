@@ -29,6 +29,8 @@ import { addKnowledgeSend } from './knowledge-send-store';
 import { recallKnowledgeSend, rememberKnowledgeSend } from './knowledge-send-memory';
 import { pageTree, selectionWords } from './knowledge-pages';
 import { KnowledgePreview } from './KnowledgePreview';
+import { LinkTabsOption } from '../link-tabs/LinkTabsOption';
+import { useLinkTabs } from '../link-tabs/useLinkTabs';
 import type {
   KnowledgeCapture,
   KnowledgeSummariser,
@@ -53,7 +55,12 @@ const BackGlyph = lucideGlyph(lucideArrowLeft, 15);
 
 type Client = Pick<
   typeof indexClient,
-  'listItems' | 'automationTarget' | 'knowledgeOutline' | 'sendToKnowledge'
+  | 'listItems'
+  | 'automationTarget'
+  | 'knowledgeOutline'
+  | 'sendToKnowledge'
+  | 'linkedTabs'
+  | 'linkTabs'
 >;
 type Picture =
   { state: 'drawing' } | { state: 'none' } | { state: 'ready'; picture: KnowledgeSendPicture };
@@ -98,6 +105,8 @@ export function SendToKnowledgeDialog({
   const [after, setAfter] = useState('');
   const [newTitle, setNewTitle] = useState(sourceTitle.trim() || 'Untitled');
   const [parent, setParent] = useState('');
+  // Connect as tabs (connected-tabs.md "Linked from a Send to"): the source and the knowledgebase, once written.
+  const link = useLinkTabs({ sourceId: source.itemId, targetId: kb?.id ?? null, client });
   const [heading, setHeading] = useState(capture.heading.slice(0, HEADING_MAX));
   const [focus, setFocus] = useState('');
   const [picture, setPicture] = useState<Picture>({ state: 'drawing' });
@@ -247,7 +256,7 @@ export function SendToKnowledgeDialog({
     setInserting(true);
     setError(null);
     try {
-      const { send, link } = await client.sendToKnowledge({
+      const { send, link: href } = await client.sendToKnowledge({
         knowledgebase: kb.id,
         place,
         heading: heading.trim(),
@@ -263,10 +272,11 @@ export function SendToKnowledgeDialog({
       addKnowledgeSend(send);
       rememberKnowledgeSend(source.itemId, { kbId: kb.id, kbTitle: kb.title, at: Date.now() });
       workbench.track('UI', 'Created', 'SendToKnowledge');
+      void link.finish(kb.id, { source: sourceTitle, target: kb.title });
       toast.success(`Added to ${send.page.title || 'the page'}`, {
         action: {
           label: 'Open Page',
-          onSelect: () => window.open(link, '_blank', 'noopener,noreferrer'),
+          onSelect: () => window.open(href, '_blank', 'noopener,noreferrer'),
         },
       });
       onClose();
@@ -359,6 +369,14 @@ export function SendToKnowledgeDialog({
                   />
                 </div>
               </div>
+              {kb ? (
+                <LinkTabsOption
+                  link={link}
+                  sourceApp={source.app}
+                  targetApp="liveknowledge"
+                  names={{ source: sourceTitle, target: kb.title }}
+                />
+              ) : null}
             </>
           ) : step.at === 'credits' ? (
             <CreditsUsed refused={step.refused} onWithout={withoutSummary} />

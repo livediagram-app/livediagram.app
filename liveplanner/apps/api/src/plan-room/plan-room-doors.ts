@@ -33,8 +33,8 @@ import { handBackRevoked } from './assistant-revoked';
 import { withoutLegacyThread } from '@liveplanner/project';
 import { PLAN_OUTBOX } from './plan-outbox';
 import { exportProjectFile } from './project-file';
-import { addConnectedPlanTab, connectedTabArrival } from './connected-tab';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import { addConnectedPlanTab, connectedTabArrival, removeConnectedPlanTab } from './connected-tab';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportPlanComments, exportPlanTables } from './plan-export';
 import { answerPlanRequest, isPlanCreate, type RouteIdentity } from './plan-route';
@@ -239,6 +239,24 @@ export async function addConnectedTab(
   const env = room.requireEnv();
   const outcome = await addConnectedPlanTab(env, planId, write);
   if (typeof outcome === 'object' && outcome.made) {
+    const op = await connectedTabArrival(env, planId);
+    if (op) room.broadcastOrderedSystemOp(op);
+  }
+  return outcome;
+}
+
+// Connect as tabs: a linked tab whose pair was removed in the other file, removed here, and everyone with the item
+// open sees it go.
+export async function removeConnectedTab(
+  room: PlanRoom,
+  planId: string,
+  connectionId: string,
+): Promise<DisconnectedTabOutcome> {
+  if (room.holdsNothing()) return 'not_found';
+  room.bindPlan(planId);
+  const env = room.requireEnv();
+  const outcome = await removeConnectedPlanTab(env, planId, connectionId);
+  if (outcome === 'removed') {
     const op = await connectedTabArrival(env, planId);
     if (op) room.broadcastOrderedSystemOp(op);
   }

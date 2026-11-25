@@ -25,8 +25,10 @@ import { addDiagramSend } from './diagram-send-store';
 import { DiagramSketch } from './DiagramSketch';
 import { DiagramWhere, type DiagramWhereChoice } from './DiagramWhere';
 import type { DiagramDrafter, DiagramSendRequest } from './send-to-diagram-entry';
+import { LinkTabsOption } from '../link-tabs/LinkTabsOption';
+import { useLinkTabs } from '../link-tabs/useLinkTabs';
 
-type Client = Pick<typeof indexClient, 'sendToDiagram' | 'listItems'>;
+type Client = Pick<typeof indexClient, 'sendToDiagram' | 'listItems' | 'linkedTabs' | 'linkTabs'>;
 
 type Phase = 'idle' | 'drafting' | 'drawing';
 
@@ -104,6 +106,18 @@ export function SendToDiagramDialog({
   );
   const live = useRef(true);
   const previewRef = useRef<HTMLElement>(null);
+  // Connect as tabs (connected-tabs.md "Linked from a Send to"): the source and the diagram, once it is written.
+  const destination =
+    where.mode === 'update'
+      ? { id: where.send.diagram.id, title: where.send.diagram.title }
+      : where.mode === 'tab' && where.item
+        ? { id: where.item.id, title: where.item.title }
+        : null;
+  const link = useLinkTabs({
+    sourceId: source.itemId,
+    targetId: destination?.id ?? null,
+    client,
+  });
 
   useEffect(() => {
     // Set on every mount: React's Strict Mode runs this effect, its cleanup, then the effect again.
@@ -157,7 +171,11 @@ export function SendToDiagramDialog({
           : where.mode === 'tab' && where.item
             ? { itemId: where.item.id }
             : null;
-      const { link, send } = await client.sendToDiagram({
+      const {
+        link: href,
+        item,
+        send,
+      } = await client.sendToDiagram({
         name: where.mode === 'update' ? where.send.diagram.title || name.trim() : name.trim(),
         graph,
         source: {
@@ -170,10 +188,14 @@ export function SendToDiagramDialog({
       });
       workbench.track('UI', 'Created', 'SendToDiagram');
       if (send) addDiagramSend(send);
-      if (tab && !tab.closed) tab.location.href = link;
-      else window.open(link, '_blank', 'noopener');
+      void link.finish(send?.diagram.id ?? item.id, {
+        source: sourceTitle,
+        target: send?.diagram.title || item.title,
+      });
+      if (tab && !tab.closed) tab.location.href = href;
+      else window.open(href, '_blank', 'noopener');
       toast.success(`${ACTION[where.mode].toast}: ${send?.diagram.title || name.trim()}`, {
-        action: { label: 'Open Diagram', onSelect: () => window.open(link, '_blank', 'noopener') },
+        action: { label: 'Open Diagram', onSelect: () => window.open(href, '_blank', 'noopener') },
       });
       onClose();
     } catch (err) {
@@ -316,6 +338,17 @@ export function SendToDiagramDialog({
               />
             </div>
           )}
+          {where.mode !== 'tab' || where.item ? (
+            <LinkTabsOption
+              link={link}
+              sourceApp={source.app}
+              targetApp="livediagram"
+              names={{
+                source: sourceTitle,
+                target: destination?.title ?? (name.trim() || 'the new diagram'),
+              }}
+            />
+          ) : null}
           {shown ? (
             <section
               ref={previewRef}

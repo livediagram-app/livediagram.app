@@ -6,7 +6,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { IndexError, type PlanSend, type PlanSendPlace } from '@liveworkspace/index-client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const toast = vi.hoisted(() => ({ success: vi.fn() }));
+const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), warning: vi.fn() }));
 vi.mock('../../hooks/ui/useToast', () => ({ useToast: () => toast }));
 vi.mock('../../lib/index-client', () => ({ indexClient: {} }));
 
@@ -47,6 +47,8 @@ function client(over: Record<string, unknown> = {}) {
     }),
     sendToPlan: vi.fn().mockResolvedValue({ sends: [made()] }),
     newPlanForSend: vi.fn().mockResolvedValue({ item: plan('N', 'Plans from Retro') }),
+    linkedTabs: vi.fn().mockResolvedValue({ source: 'can', target: 'can' }),
+    linkTabs: vi.fn().mockResolvedValue({ source: 'made', target: 'made' }),
     ...over,
   };
 }
@@ -283,6 +285,13 @@ describe('SendToPlanDialog', () => {
     );
     fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
     expect(await screen.findByText(/no board yet/)).toBeTruthy();
+    cleanup();
+    // A locked plan keeps its name on the row, Untitled plan when it has none, with the reason under it.
+    open(client({ listItems: vi.fn().mockResolvedValue({ items: [plan('U', '', 'view')] }) }));
+    const untitled = await screen.findByRole('button', { name: /Untitled plan/ });
+    expect(untitled.getAttribute('aria-disabled')).toBe('true');
+    expect(document.getElementById('locked-U')?.textContent).toBe("You can't add cards");
+    expect(untitled.getAttribute('aria-describedby')).toBe('locked-U');
   });
 
   it('searches the plans, says when none match or none load, and moves along them by keys', async () => {
@@ -466,5 +475,99 @@ describe('SendToPlanDialog, the edges', () => {
     const name = screen.getByLabelText<HTMLInputElement>("New plan's name");
     fireEvent.keyDown(name, { key: 'a' });
     expect(screen.getByLabelText("New plan's name")).toBeTruthy();
+  });
+});
+
+// Connect as tabs (connected-tabs.md "Linked from a Send to").
+describe('connect as tabs', () => {
+  const pickSprint = async () => {
+    fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
+    return screen.findByRole('switch', { name: 'Connect as tabs' });
+  };
+
+  it('is on by default and links the source and the plan once the cards are made', async () => {
+    const c = client();
+    const onClose = vi.fn();
+    open(c, undefined, onClose);
+    const row = await pickSprint();
+    await waitFor(() => expect(c.linkedTabs).toHaveBeenCalledWith('D', 'P', expect.anything()));
+    expect(row.getAttribute('aria-checked')).toBe('true');
+    expect(row.textContent).toContain('Retro and Sprint each get a tab that opens the other.');
+    fireEvent.click(screen.getByRole('button', { name: 'Send to Plan' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    await waitFor(() => expect(c.linkTabs).toHaveBeenCalledWith('D', 'P'));
+    expect(toast.info).not.toHaveBeenCalled();
+    expect(toast.warning).not.toHaveBeenCalled();
+  });
+
+  it('shows two files already connected, and adds nothing', async () => {
+    const c = client({
+      linkedTabs: vi.fn().mockResolvedValue({ source: 'connected', target: 'connected' }),
+    });
+    const onClose = vi.fn();
+    open(c, undefined, onClose);
+    fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
+    expect(await screen.findByText('Connected as tabs')).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: 'Connect as tabs' })).toBeNull();
+    await waitFor(() =>
+      expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Send to Plan' }).disabled).toBe(
+        false,
+      ),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Send to Plan' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(c.linkTabs).not.toHaveBeenCalled();
+  });
+
+  it('links nothing when switched off, or when the send fails', async () => {
+    const c = client();
+    const onClose = vi.fn();
+    open(c, undefined, onClose);
+    const row = await pickSprint();
+    fireEvent.click(row);
+    expect(row.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(screen.getByRole('button', { name: 'Send to Plan' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(c.linkTabs).not.toHaveBeenCalled();
+    cleanup();
+    setSendSource(null);
+    localStorage.clear();
+    const failing = client({ sendToPlan: vi.fn().mockRejectedValue(new Error('down')) });
+    open(failing);
+    await pickSprint();
+    fireEvent.click(screen.getByRole('button', { name: 'Send to Plan' }));
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(failing.linkTabs).not.toHaveBeenCalled();
+  });
+
+  it('says when only one file got its tab, and when linking failed after a send', async () => {
+    const c = client({
+      linkedTabs: vi.fn().mockResolvedValue({ source: 'cannot', target: 'can' }),
+      linkTabs: vi.fn().mockResolvedValue({ source: 'cannot', target: 'made' }),
+    });
+    const onClose = vi.fn();
+    open(c, undefined, onClose);
+    const row = await pickSprint();
+    await waitFor(() =>
+      expect(row.textContent).toContain('Only Sprint gets a tab: you can’t change Retro’s tabs.'),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Send to Plan' }));
+    await waitFor(() =>
+      expect(toast.info).toHaveBeenCalledWith(
+        'Connected one way: only Sprint got a tab, as you can’t change Retro’s tabs.',
+      ),
+    );
+    cleanup();
+    setSendSource(null);
+    localStorage.clear();
+    const failing = client({ linkTabs: vi.fn().mockRejectedValue(new Error('down')) });
+    open(failing, undefined, vi.fn());
+    await pickSprint();
+    fireEvent.click(screen.getByRole('button', { name: 'Send to Plan' }));
+    await waitFor(() =>
+      expect(toast.warning).toHaveBeenCalledWith(
+        'Sent. The two files could not be connected as tabs just now.',
+      ),
+    );
   });
 });

@@ -4,10 +4,15 @@
 // the tab bar, holding the connection in its column; this is how livedesign stores the tab, and the design-meta op
 // that shows it to everyone with the design open.
 
-import { appendConnectedTab, type ConnectedTabOutcome } from '@liveworkspace/index-app';
+import {
+  appendConnectedTab,
+  removeConnectedTabOf,
+  type ConnectedTabOutcome,
+  type DisconnectedTabOutcome,
+} from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { RoomOp } from '@livedesign/api-schema';
-import { tabWriteStatements } from '../db/tabs';
+import { deleteTabRow, tabWriteStatements } from '../db/tabs';
 import type { DesignEnv } from '../types';
 import { readDesignMeta, readDesignOutline } from './design-content';
 
@@ -27,6 +32,22 @@ export async function addConnectedDesignTab(
       tabWriteStatements(env, designId, { id: tabId, name, elements: [] }, orderIndex, {
         advance: true,
       }),
+  });
+}
+
+// Connect as tabs (liveworkspace/docs/specs/004-index/connected-tabs.md "Linked from a Send to"): the linked tab whose
+// pair was removed in the other file goes here too, deleted as any tab is (an item's last tab kept), or `not_found`
+// for an item not started.
+export async function removeConnectedDesignTab(
+  env: DesignEnv,
+  designId: string,
+  connectionId: string,
+): Promise<DisconnectedTabOutcome> {
+  if (!(await readDesignMeta(env, designId))) return 'not_found';
+  return removeConnectedTabOf(env.DESIGN_DB, designId, connectionId, {
+    linkTable: 'design_tabs',
+    itemColumn: 'design_id',
+    deleteTab: (tabId) => deleteTabRow(env, designId, tabId, { keepLast: true }),
   });
 }
 

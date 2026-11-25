@@ -122,6 +122,8 @@ export function handleInternalItems(
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the design's tab bar.
       connectedTab: (id, write) => designRoom(env, id).addConnectedTab(write),
+      // Connect as tabs: the linked tab whose pair was removed in the other file.
+      disconnectedTab: (id, connectionId) => designRoom(env, id).removeConnectedTab(connectionId),
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
       // A revoked API token: the sockets its room tickets opened (public-api-and-tokens.md "Revoking a token").
       tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),

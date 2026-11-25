@@ -102,18 +102,22 @@ function Page({
     if (answered && now.canEdit && answered !== now.name) now.onRename(answered);
   }, [client, connection, grant, hostApp, navigate, offline]);
 
+  // A linked tab the reader cannot open says so at once (the picture's ask found it), with no Open to press first.
+  const shown: ConnectedTabView =
+    view.state === 'ready' && preview.state === 'locked' ? { state: 'locked' } : view;
   return (
     <div
-      data-connected-tab-page={view.state}
+      data-connected-tab-page={shown.state}
       className={`relative bg-slate-50 dark:bg-slate-950 ${className}`}
     >
       <ConnectedTabCard
-        view={view}
+        view={shown}
         name={name}
         app={connection.app}
         canEdit={canEdit}
         away={connection.app !== hostApp}
         preview={preview}
+        targetId={connection.itemId}
         onOpen={() => void open()}
         onRetry={() => void open()}
         onRemove={onRemove}

@@ -21,6 +21,7 @@ import type {
   ShareMessage,
   SharedTabCopy,
   ConnectedTabOutcome,
+  DisconnectedTabOutcome,
   PutAwayRefusal,
   StandingGrant,
 } from '@liveworkspace/index-app';
@@ -57,6 +58,8 @@ export type DesignRoomClient = {
   hasTab(tabId: string): Promise<boolean>;
   // The index's reverse write of a connected tab (design-room/connected-tab.ts).
   addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  // Connect as tabs: a linked tab whose pair was removed in the other file (connected-tab.ts).
+  removeConnectedTab(connectionId: string): Promise<DisconnectedTabOutcome>;
   // Of `ids`, the photo blobs this tab holds, with what they are: the source side of an adoption into another
   // design (routes/photo-blob-routes.ts). The caller has checked the reader's grant on this design.
   heldBlobs(tabId: string, ids: string[]): Promise<PhotoBlobMeta[]>;
@@ -121,6 +124,7 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     exportComments: () => room.exportComments(designId),
     hasTab: (tabId) => room.hasTab(designId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(designId, write),
+    removeConnectedTab: (connectionId) => room.removeConnectedTab(designId, connectionId),
     heldBlobs: (tabId, ids) => room.heldBlobs(designId, tabId, ids),
     servesImage: (imageId, onlyTabId) => room.servesImage(designId, imageId, onlyTabId),
     grantOwnImages: (ids, personId) => room.grantOwnImages(designId, ids, personId),
@@ -156,6 +160,7 @@ export type DesignRoomRpc = {
   exportComments(designId: string): Promise<ExportCommentsResult>;
   hasTab(designId: string, tabId: string): Promise<boolean>;
   addConnectedTab(designId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  removeConnectedTab(designId: string, connectionId: string): Promise<DisconnectedTabOutcome>;
   heldBlobs(designId: string, tabId: string, ids: string[]): Promise<PhotoBlobMeta[]>;
   servesImage(designId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   grantOwnImages(designId: string, ids: string[], personId: string): Promise<number>;

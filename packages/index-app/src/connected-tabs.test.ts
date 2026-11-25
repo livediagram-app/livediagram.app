@@ -9,7 +9,9 @@ import {
   TAB_CONNECTION_SCHEMA,
   appendConnectedTab,
   confirmTabConnection,
+  connectedTabIdOf,
   connectionLeftStatement,
+  removeConnectedTabOf,
   connectionToKeep,
   sameConnection,
   storedTabConnection,
@@ -334,5 +336,74 @@ describe('the internal door', () => {
 
   it('is a 404 for an app without the door', async () => {
     expect((await send({ name: 'D', connection: CONNECTION })).status).toBe(404);
+  });
+});
+
+describe('removing a linked tab (Connect as tabs)', () => {
+  it('finds the tab in this item holding the connection, and has the app delete it', async () => {
+    const { db, append } = item();
+    expect(await append()).toEqual({ tabId: 't1', made: true });
+    const config = { linkTable: 'item_tabs', itemColumn: 'item_id' };
+    expect(await connectedTabIdOf(db, 'A', CONNECTION.id, config)).toBe('t1');
+    // Another item's, or another connection: nothing.
+    expect(await connectedTabIdOf(db, 'B', CONNECTION.id, config)).toBeNull();
+    expect(await connectedTabIdOf(db, 'A', other(1).id, config)).toBeNull();
+    const deleteTab = vi.fn(async () => ({ id: 't1' }));
+    expect(await removeConnectedTabOf(db, 'A', CONNECTION.id, { ...config, deleteTab })).toBe(
+      'removed',
+    );
+    expect(deleteTab).toHaveBeenCalledWith('t1');
+    expect(
+      await removeConnectedTabOf(db, 'A', CONNECTION.id, {
+        ...config,
+        deleteTab: async () => 'last',
+      }),
+    ).toBe('last');
+    expect(
+      await removeConnectedTabOf(db, 'A', CONNECTION.id, {
+        ...config,
+        deleteTab: async () => null,
+      }),
+    ).toBe('absent');
+    expect(await removeConnectedTabOf(db, 'A', other(2).id, { ...config, deleteTab })).toBe(
+      'absent',
+    );
+    await expect(
+      connectedTabIdOf(db, 'A', CONNECTION.id, { linkTable: 'x; --', itemColumn: 'item_id' }),
+    ).rejects.toThrow('bad table name');
+  });
+});
+
+describe("the index's removal door", () => {
+  const send = (connectionId: string, disconnectedTab?: InternalItemHandlers['disconnectedTab']) =>
+    handleInternalItems(
+      new Request(`https://app.test/api/internal/items/A/connected-tabs/${connectionId}`, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer k' },
+      }),
+      {
+        key: 'k',
+        handlers: { purge: async () => {}, ...(disconnectedTab ? { disconnectedTab } : {}) },
+      },
+    );
+
+  it('answers 204, 404, 409 and 503, and refuses a malformed id', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const run = vi.fn(async () => 'removed' as const);
+    expect((await send(CONNECTION.id, run)).status).toBe(204);
+    expect(run).toHaveBeenCalledWith('A', CONNECTION.id);
+    expect((await send('nope', run)).status).toBe(400);
+    expect((await send(CONNECTION.id, async () => 'absent')).status).toBe(404);
+    expect((await send(CONNECTION.id, async () => 'not_found')).status).toBe(404);
+    expect((await send(CONNECTION.id, async () => 'last')).status).toBe(409);
+    const down = await send(CONNECTION.id, async () => {
+      throw new Error('down');
+    });
+    expect(down.status).toBe(503);
+  });
+
+  it('is a 404 for an app without the door', async () => {
+    expect((await send(CONNECTION.id)).status).toBe(404);
   });
 });

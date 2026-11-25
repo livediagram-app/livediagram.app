@@ -17,6 +17,17 @@ describe('connectedTabViewOf', () => {
       state: 'link_removed',
     });
     expect(connectedTabViewOf(new IndexError(404, 'not_found'))).toEqual({ state: 'copy' });
+    expect(connectedTabViewOf(new IndexError(403, 'connection_locked'))).toEqual({
+      state: 'locked',
+    });
+  });
+
+  it('words a locked linked tab with the file it names, never marking it broken', () => {
+    expect(connectedTabCopy('locked', 'Roadmap', 'liveplanner', false)).toEqual({
+      title: 'You don’t have access to Roadmap.',
+      line: 'It is a liveplanner file not shared with you. Ask its owner for access to open it.',
+    });
+    expect(isBrokenState('locked')).toBe(false);
   });
 
   it('reads anything else as a failure to try again', () => {

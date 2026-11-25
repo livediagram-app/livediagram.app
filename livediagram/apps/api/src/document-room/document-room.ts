@@ -47,7 +47,7 @@ import {
 } from './document-content';
 import { PresenceRelay } from '@liveworkspace/api-kit/room-presence-relay';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDocumentComments } from './document-comments';
 import { importMigratedDocument } from './document-migration';
@@ -469,6 +469,10 @@ export class DocumentRoom extends DurableObject<Env> {
 
   addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
     return rpc.addConnectedTab(this, documentId, write);
+  }
+
+  removeConnectedTab(documentId: string, connectionId: string): Promise<DisconnectedTabOutcome> {
+    return rpc.removeConnectedTab(this, documentId, connectionId);
   }
 
   // View As Diagram's redraw (plan-diagram-tab.ts).

@@ -264,6 +264,21 @@ describe('createIndexClient connected tabs', () => {
   });
 });
 
+describe('createIndexClient linked tabs', () => {
+  it('reads how two files stand and links them, as the person', async () => {
+    const { seen, doFetch } = fakeFetch(() => Response.json({ source: 'can', target: 'can' }));
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await client.linkedTabs('d/1', 'p 1');
+    await client.linkTabs('d/1', 'p1');
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'GET /api/index/items/d%2F1/linked-tabs?with=p+1',
+      'POST /api/index/items/d%2F1/linked-tabs',
+    ]);
+    expect(seen[1]!.body).toEqual({ targetId: 'p1' });
+    expect(seen.every((s) => s.headers.get('Authorization') === 'Bearer tok')).toBe(true);
+  });
+});
+
 describe('createIndexClient reads', () => {
   it('pages folders and passes a signal through, so a superseded read is cancelled', async () => {
     const signals: (AbortSignal | null | undefined)[] = [];

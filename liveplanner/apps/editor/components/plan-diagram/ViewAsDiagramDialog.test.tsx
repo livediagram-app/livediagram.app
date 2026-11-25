@@ -14,7 +14,7 @@ import {
 import { IndexError, PLAN_VIEW_CARDS_MAX } from '@liveworkspace/index-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const toast = vi.hoisted(() => ({ success: vi.fn() }));
+const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), warning: vi.fn() }));
 const track = vi.hoisted(() => vi.fn());
 const connectFile = vi.hoisted(() => vi.fn());
 vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
@@ -65,6 +65,8 @@ function client(over: Record<string, unknown> = {}) {
     viewPlanAsDiagram: vi.fn().mockResolvedValue(answer),
     makeConnection: vi.fn(),
     takeBackConnection: vi.fn(),
+    linkedTabs: vi.fn(),
+    linkTabs: vi.fn().mockResolvedValue({ source: 'connected', target: 'made' }),
     ...over,
   };
 }
@@ -233,5 +235,38 @@ describe('ViewAsDiagramDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Make Diagram' }));
     expect(await screen.findByText(words)).toBeTruthy();
     expect(track).toHaveBeenCalledWith('UI', 'Refused', 'ViewAsDiagram');
+  });
+});
+
+// Connect as tabs (connected-tabs.md "Linked from a Send to"): the diagram's tab back to the plan.
+describe('connect as tabs', () => {
+  it("gives the diagram a tab back to the plan after the plan's own, unless switched off", async () => {
+    const connect = { grant: vi.fn().mockResolvedValue('grant'), add: vi.fn() };
+    const order: string[] = [];
+    connectFile.mockImplementation(async () => void order.push('plan'));
+    const c = client();
+    c.linkTabs.mockImplementation(async () => {
+      order.push('diagram');
+      return { source: 'connected', target: 'made' };
+    });
+    const onClose = vi.fn();
+    open(c, { connect, boards: [board('Sprint')], onClose });
+    const row = screen.getByRole('switch', { name: 'Connect as tabs' });
+    expect(row.getAttribute('aria-checked')).toBe('true');
+    // A diagram still to be made needs no read.
+    expect(c.linkedTabs).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Make Diagram' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    await waitFor(() => expect(c.linkTabs).toHaveBeenCalledWith('P', 'D'));
+    expect(order).toEqual(['plan', 'diagram']);
+    expect(toast.info).not.toHaveBeenCalled();
+    cleanup();
+    const off = client();
+    const closed = vi.fn();
+    open(off, { connect, boards: [board('Sprint')], onClose: closed });
+    fireEvent.click(screen.getByRole('switch', { name: 'Connect as tabs' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Make Diagram' }));
+    await waitFor(() => expect(closed).toHaveBeenCalled());
+    expect(off.linkTabs).not.toHaveBeenCalled();
   });
 });

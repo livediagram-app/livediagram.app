@@ -46,7 +46,7 @@ import type {
   SharedTabCopy,
 } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
@@ -83,6 +83,8 @@ export type PlanRoomClient = {
   hasTab(tabId: string): Promise<boolean>;
   // The index's reverse write of a connected tab (plan-room/connected-tab.ts).
   addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  // Connect as tabs: a linked tab whose pair was removed in the other file (connected-tab.ts).
+  removeConnectedTab(connectionId: string): Promise<DisconnectedTabOutcome>;
   // One card, by id (a mention email reads the comment from the card itself).
   item(itemId: string): Promise<Item | null>;
   // Image fields (plan-room/image-grants.ts): a picture uploaded for this plan recorded as one it may serve, and
@@ -185,6 +187,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     planData: (ask, watcher) => room.planData(planId, ask, watcher),
     hasTab: (tabId) => room.hasTab(planId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(planId, write),
+    removeConnectedTab: (connectionId) => room.removeConnectedTab(planId, connectionId),
     item: (itemId) => room.item(planId, itemId),
     grantImage: (imageId) => room.grantImage(planId, imageId),
     servesImage: (imageId, tabScope) => room.servesImage(planId, imageId, tabScope),
@@ -246,6 +249,7 @@ export type PlanRoomRpc = {
   planData(planId: string, ask: PlanDataAsk, watcher: string | null): Promise<PlanDataResult>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
   addConnectedTab(planId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  removeConnectedTab(planId: string, connectionId: string): Promise<DisconnectedTabOutcome>;
   item(planId: string, itemId: string): Promise<Item | null>;
   grantImage(planId: string, imageId: string): Promise<void>;
   servesImage(planId: string, imageId: string, tabScope: string | null): Promise<boolean>;

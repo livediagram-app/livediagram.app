@@ -30,8 +30,12 @@ import { notifyDocumentJoin } from '../email/notifications';
 import { anonymiseDocument } from './document-anonymise';
 import { DOCUMENT_OUTBOX } from './document-outbox';
 import { exportDocumentFile } from './document-file';
-import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import {
+  addConnectedDocumentTab,
+  connectedTabArrival,
+  removeConnectedDocumentTab,
+} from './connected-tab';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDocumentComments } from './document-comments';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
@@ -229,6 +233,24 @@ export async function addConnectedTab(
   const env = room.requireEnv();
   const outcome = await addConnectedDocumentTab(env, documentId, write);
   if (typeof outcome === 'object' && outcome.made) {
+    const op = await connectedTabArrival(env, documentId);
+    if (op) sequenceMutation(room, 'system', op);
+  }
+  return outcome;
+}
+
+// Connect as tabs: a linked tab whose pair was removed in the other file, removed here, and everyone with the item
+// open sees it go.
+export async function removeConnectedTab(
+  room: DocumentRoom,
+  documentId: string,
+  connectionId: string,
+): Promise<DisconnectedTabOutcome> {
+  room.bindDocument(documentId);
+  if (!room.storedSchema()) return 'not_found';
+  const env = room.requireEnv();
+  const outcome = await removeConnectedDocumentTab(env, documentId, connectionId);
+  if (outcome === 'removed') {
     const op = await connectedTabArrival(env, documentId);
     if (op) sequenceMutation(room, 'system', op);
   }

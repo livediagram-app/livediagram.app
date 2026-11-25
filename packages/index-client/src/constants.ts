@@ -448,6 +448,8 @@ export const INDEX_ERRORS = [
   'connection_limit',
   'connection_target_gone',
   'connection_link_removed',
+  // Connect as tabs (connected-tabs.md "Linked from a Send to"): a linked tab whose file the reader cannot open.
+  'connection_locked',
   'wrong_app',
   // Project kits (kits.md): a guest starting one.
   'sign_in_required',

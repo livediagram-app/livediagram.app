@@ -4,6 +4,7 @@
 
 import {
   CONNECTIONS_PER_ITEM,
+  CONNECTION_LOCKED,
   connectionDefaultLevel,
   connectionLevels,
   isConnectionId,
@@ -344,6 +345,8 @@ type OpenRow = {
   pass_level: Level | null;
   pass_expires_at: number | null;
   grant_link_public: number | null;
+  // Connect as tabs (linked-tabs.ts): no pass; opens only to the reader's own access.
+  linked: number;
 };
 
 // The connection a grant may reach: the grant's item and app are the connection's host, its tab (when scoped) the
@@ -358,7 +361,8 @@ async function reachable(
   const row = await env.INDEX_DB.prepare(
     `SELECT c.host_item_id, c.host_tab_id, h.app AS host_app, c.confirmed_at, c.target_item_id,
        t.app AS target_app, t.title AS target_title, t.updated_at AS target_updated_at, t.owner_id, t.team_id, t.trashed_at, t.archived_at, c.share_code,
-       sl.level AS pass_level, sl.expires_at AS pass_expires_at, gl.public AS grant_link_public
+       sl.level AS pass_level, sl.expires_at AS pass_expires_at, gl.public AS grant_link_public,
+       c.linked
      FROM connections c
      JOIN items h ON h.id = c.host_item_id
      LEFT JOIN items t ON t.id = c.target_item_id
@@ -427,7 +431,7 @@ export async function handleConnection(ctx: RouteContext, id: string): Promise<R
   return notFound();
 }
 
-function openAnswer(env: Env, person: Person | null, row: OpenRow): Response {
+async function openAnswer(env: Env, person: Person | null, row: OpenRow): Promise<Response> {
   if (
     row.target_item_id === null ||
     row.target_app === null ||
@@ -452,6 +456,7 @@ function openAnswer(env: Env, person: Person | null, row: OpenRow): Response {
     };
     return json(open);
   }
+  if (row.linked === 1) return linkedOpen(env, person, row.target_item_id, base);
   const lapsed = row.pass_expires_at !== null && row.pass_expires_at <= Date.now();
   if (!row.share_code || !row.pass_level || lapsed) {
     return json({ error: 'connection_link_removed' }, { status: 410 });
@@ -465,4 +470,41 @@ function openAnswer(env: Env, person: Person | null, row: OpenRow): Response {
     preview: previewSharePath(row.share_code, 'image.svg'),
   };
   return json(open);
+}
+
+// A linked tab (Connect as tabs) shares nothing: a reader reaches its file with their own access (a link they opened
+// goes by that link's own address), or is told it is locked, which names nothing they could not already see.
+async function linkedOpen(
+  env: Env,
+  person: Person | null,
+  targetId: string,
+  base: Pick<ConnectionOpen, 'app' | 'itemId' | 'name'>,
+): Promise<Response> {
+  if (person) {
+    const loaded = await loadItem(env, targetId, { person, share: null }, 'view');
+    if (!(loaded instanceof Response)) {
+      const { access, row } = loaded;
+      if (access.via !== 'link') {
+        const open: ConnectionOpen = {
+          ...base,
+          href: connectionHref(env, base.app, 'item', targetId),
+          via: 'item',
+          level: null,
+          preview: previewItemPath(targetId, row.updated_at ?? undefined),
+        };
+        return json(open);
+      }
+      if (access.code) {
+        const open: ConnectionOpen = {
+          ...base,
+          href: connectionHref(env, base.app, 'link', access.code),
+          via: 'link',
+          level: access.level,
+          preview: previewSharePath(access.code, 'image.svg'),
+        };
+        return json(open);
+      }
+    } else await loaded.body?.cancel();
+  }
+  return json({ error: CONNECTION_LOCKED }, { status: 403 });
 }

@@ -197,6 +197,10 @@ const HELD_AT_100 = [
   // The Sync gate a tool opens on an item kept Offline, every editor's one copy (each app's offline-mode.md, the
   // platform's automations.md "Who may do what").
   'src/components/dialogs/SyncGateDialog.tsx',
+  // Connect as tabs in every Send to picker: its row and its words
+  // (liveworkspace/docs/specs/004-index/connected-tabs.md "Linked from a Send to", Work Tracker 1429).
+  'src/components/link-tabs/LinkTabsOption.tsx',
+  'src/components/link-tabs/link-tabs-words.ts',
   // Send to Plan: the picker, its entries, the chips' store and the words read as a card
   // (liveworkspace/docs/specs/004-index/send-to-plan.md, Work Tracker 1365).
   'src/components/send-to-plan/article-send-dom.ts',

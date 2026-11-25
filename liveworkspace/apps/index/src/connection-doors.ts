@@ -10,6 +10,7 @@ import { dropStatements, tellPassesRevoked, type DropRow } from './connection-ro
 import type { Env } from './env';
 import { noContent, notFound } from './http';
 import { eventStatements } from './events';
+import { tellPairRemoved } from './linked-tabs';
 
 // PUT (confirm) and DELETE (remove) /app/items/:id/connections/:connectionId?tab=<tabId>, with `app`'s key.
 export async function handleAppConnection(
@@ -27,13 +28,14 @@ export async function handleAppConnection(
   const db = env.INDEX_DB;
   const row = await db
     .prepare(
-      `SELECT c.id, c.share_code, c.target_item_id, t.app AS target_app, h.app AS host_app FROM connections c
+      `SELECT c.id, c.share_code, c.target_item_id, t.app AS target_app, h.app AS host_app, c.pair_id, c.linked
+       FROM connections c
        JOIN items h ON h.id = c.host_item_id
        LEFT JOIN items t ON t.id = c.target_item_id
        WHERE c.id = ? AND c.host_item_id = ? AND c.host_tab_id = ?`,
     )
     .bind(connectionId, hostId, tab)
-    .first<DropRow & { host_app: App }>();
+    .first<DropRow & { host_app: App; pair_id: string | null; linked: number }>();
   if (!row || row.host_app !== app) return noContent();
 
   if (method === 'PUT') {
@@ -43,20 +45,48 @@ export async function handleAppConnection(
       .run();
     return noContent();
   }
-  // The tab left its host: the pass goes, and with it everyone it let in. Its pair keeps its own pass.
+  // The tab left its host: the pass goes, and with it everyone it let in. Its pair keeps its own pass, unless either is
+  // linked (Connect as tabs, linked-tabs.ts): then the pair goes too, and its app is asked to take its tab away.
+  const pair = row.pair_id ? await linkedPairOf(db, row.pair_id, row.linked === 1) : null;
+  const dropped: DropRow[] = pair ? [row, pair] : [row];
   await db.batch([
-    ...dropStatements(db, [row]),
-    ...(row.share_code && row.target_item_id
-      ? eventStatements(db, {
-          itemId: row.target_item_id,
-          type: 'unshared',
-          actorId: null,
-          at: Date.now(),
-        })
-      : []),
+    ...dropStatements(db, dropped),
+    ...dropped.flatMap((d) =>
+      d.share_code && d.target_item_id
+        ? eventStatements(db, {
+            itemId: d.target_item_id,
+            type: 'unshared',
+            actorId: null,
+            at: Date.now(),
+          })
+        : [],
+    ),
   ]);
-  waitUntil(tellPassesRevoked(env, [row]));
+  waitUntil(tellPassesRevoked(env, dropped));
+  if (pair) waitUntil(tellPairRemoved(env, pair));
   return noContent();
+}
+
+type PairRow = DropRow & { host_item_id: string; host_app: App };
+
+// The pair a removal takes with it: only when the removed row or the pair is linked.
+async function linkedPairOf(
+  db: D1Database,
+  pairId: string,
+  removedLinked: boolean,
+): Promise<PairRow | null> {
+  const pair = await db
+    .prepare(
+      `SELECT c.id, c.share_code, c.target_item_id, t.app AS target_app, c.host_item_id, h.app AS host_app, c.linked
+       FROM connections c
+       JOIN items h ON h.id = c.host_item_id
+       LEFT JOIN items t ON t.id = c.target_item_id
+       WHERE c.id = ?`,
+    )
+    .bind(pairId)
+    .first<PairRow & { linked: number }>();
+  if (!pair || (!removedLinked && pair.linked !== 1)) return null;
+  return pair;
 }
 
 // Every 15 minutes: connections still unconfirmed CONNECTION_CONFIRM_GRACE_MS after they were made (IDX27), oldest

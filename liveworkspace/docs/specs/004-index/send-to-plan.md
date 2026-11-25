@@ -57,7 +57,10 @@ Plan art.
    anyone of the plan's people, or nobody; **Due**, a date the words name, or one picked, or none. A send of several
    places offers **One Card Each** (the default) or **One Card with a Checklist** (the first place's words the title,
    every place a checklist row).
-4. **Send to Plan** makes the card(s) and closes; a toast says "Sent to <plan>" with **Open Card**.
+4. **Connect as tabs** (a switch under the card, on unless the files are already connected): once the cards are made,
+   the source and the plan each get a connected tab that opens the other ([Connect as tabs](connected-tabs.md#linked-from-a-send-to)). Sending again
+   between the same two files adds no tab.
+5. **Send to Plan** makes the card(s) and closes; a toast says "Sent to <plan>" with **Open Card**.
 
 The plan, board and column are **remembered per source item** in this browser (local storage, one entry per item, the
 newest 50 kept): the next send from the same item opens on them. Every row and control is reachable by Tab, the lists by
@@ -143,7 +146,8 @@ Send to Plan or Send to Diagram did nothing). The same entries show in the same 
 liveplanner's MCP and CLI make cards with a source: `change_items`' `add` takes `sentFrom` (`{app, itemId, tabId?,
 elementId?, text}`). liveplanner keeps it on the card, and asks the index to record the send for the person whose
 token it is; the index records it only when that person can read the source, so an agent never makes a chip appear on
-an item its person could not open. Agents read a card's Sent From with the card.
+an item its person could not open. `sentFrom.connectTabs: true` also links the source and the plan as tabs for that
+person ([Connect as tabs](connected-tabs.md#linked-from-a-send-to)), each tab only where they may change that file's tabs. Agents read a card's Sent From with the card.
 
 ## Limits
 

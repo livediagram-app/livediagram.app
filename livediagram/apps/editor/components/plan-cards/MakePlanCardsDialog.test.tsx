@@ -12,7 +12,7 @@ import {
 } from '@liveworkspace/index-client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const toast = vi.hoisted(() => ({ success: vi.fn() }));
+const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), warning: vi.fn() }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: {} }));
@@ -55,6 +55,8 @@ function client(over: Record<string, unknown> = {}) {
       .fn()
       .mockResolvedValue({ sends: [sent('a')], made: 2, updated: 0, trashed: 1, skipped: 0 }),
     newPlanForSend: vi.fn().mockResolvedValue({ item: plan('N', 'Plan from Roadmap') }),
+    linkedTabs: vi.fn().mockResolvedValue({ source: 'can', target: 'can' }),
+    linkTabs: vi.fn().mockResolvedValue({ source: 'made', target: 'made' }),
     ...over,
   };
 }
@@ -266,5 +268,33 @@ describe('MakePlanCardsDialog', () => {
   it('shows the plan list failing', async () => {
     open(client({ listItems: vi.fn().mockRejectedValue(new Error('down')) }));
     await waitFor(() => expect(screen.queryByRole('button', { name: /Launch/ })).toBeNull());
+  });
+});
+
+// Connect as tabs (connected-tabs.md "Linked from a Send to").
+describe('connect as tabs', () => {
+  it('links the diagram and the plan once the cards are made, and not when switched off', async () => {
+    const c = client();
+    const onClose = vi.fn();
+    open(c, { onClose });
+    fireEvent.click(await screen.findByRole('button', { name: /Launch/ }));
+    const row = await screen.findByRole('switch', { name: 'Connect as tabs' });
+    await waitFor(() => expect(c.linkedTabs).toHaveBeenCalledWith('D', 'P', expect.anything()));
+    expect(row.textContent).toContain('Roadmap and Launch each get a tab that opens the other.');
+    await waitFor(() => expect(makeButton().hasAttribute('disabled')).toBe(false));
+    fireEvent.click(makeButton());
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    await waitFor(() => expect(c.linkTabs).toHaveBeenCalledWith('D', 'P'));
+    cleanup();
+    localStorage.clear();
+    const off = client();
+    const closed = vi.fn();
+    open(off, { onClose: closed });
+    fireEvent.click(await screen.findByRole('button', { name: /Launch/ }));
+    fireEvent.click(await screen.findByRole('switch', { name: 'Connect as tabs' }));
+    await waitFor(() => expect(makeButton().hasAttribute('disabled')).toBe(false));
+    fireEvent.click(makeButton());
+    await waitFor(() => expect(closed).toHaveBeenCalled());
+    expect(off.linkTabs).not.toHaveBeenCalled();
   });
 });

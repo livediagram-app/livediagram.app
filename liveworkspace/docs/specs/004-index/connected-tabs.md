@@ -125,6 +125,45 @@ connection stands.
 
 A pair is two connections: removing either tab leaves the other.
 
+## Linked from a Send to
+
+Every Send to picker offers to join the two files themselves, not only the thing sent (Work Tracker 1429; owner,
+2026-11-24). A sent item links back to its exact place (its Sent From), but the source file and the destination file
+know nothing of each other; **Connect as tabs** gives each a connected tab that opens the other, so a person moves
+between them as wholes. The pickers that offer it: Send to Plan, Send to Diagram and Send to Knowledge Base (every app
+that offers them, from the shared picker), Make Plan Cards (livediagram) and View As Diagram (liveplanner).
+
+- **The option.** A switch row, "Connect as tabs", under the picker's destination, its line naming what it does. Once a
+  destination is picked the picker asks the index how the two files stand (`GET /items/:source/linked-tabs`) and shows:
+  - **Already connected** (each file has a tab for the other): a tick and "Connected as tabs", no switch, and the send
+    adds no tab.
+  - **Missing a tab** on a side the person may change: the switch, **on by default**, adding only what is missing.
+  - **One way** (the person may change only one file's tabs): the switch, on, and its line says "Only <file> gets a
+    tab: you can't change <other>'s tabs."
+  - **Neither** file's tabs are the person's to change: the row, off and disabled, says why.
+  - A destination still to be made (New Plan, New Diagram): on; the new file is the person's own.
+- **After the send.** Only once the send has made its cards, diagram or section does the editor ask the index to link
+  the files (`POST /items/:source/linked-tabs`). The new tabs arrive in every open editor of each file as a reverse
+  tab does. A link that fails never undoes the send: a toast says the files were not connected; one made one way says
+  which file got its tab.
+- **Linked, not shared.** A linked connection makes no pass and widens nothing: each reader opens the other file with
+  their own access (its owner, a member of its team, or a link they opened before). Someone who can read one file but
+  not the other sees the tab, the other file's app and name, and in place of its preview a locked card, "You don't have
+  access to <name>", with Request Access ([request access](request-access.md)); Open never appears for them, and no
+  picture, address or code reaches them.
+- **Who may.** A signed-in person, in person (and liveplanner's agents for their person, [below](#agents-and-the-cli)),
+  who can read both files. Each file gets its tab only when the person may change its tabs: Editor on the whole file
+  (its owner, a member of its team, or an Editor link they opened; never a tab-scoped link). The index checks both
+  sides on every link, whatever the picker showed.
+- **Never twice.** A file that already holds a connected tab to the other (made here, by Connect File, or by a Send to
+  before) gets nothing more: sending again between the same two files reuses the connection.
+- **Removing it.** Removing a linked tab from either file removes its pair from the other file too: the index takes
+  both connections away and asks the other file's app to remove its tab (an internal door, with that app's key).
+  Neither file is touched beyond that tab, and nothing that was sent (cards, sections, diagrams, their chips and Sent
+  From) goes. A pair made with Connect File keeps its own rule: removing either tab leaves the other.
+- **Limits.** Each linked tab counts towards its file's `CONNECTIONS_PER_ITEM`; a full file gets no tab and the toast
+  says so.
+
 ## Opening
 
 Clicking a connected tab asks the index for it with the host's grant. The index answers only when the grant is for
@@ -154,6 +193,7 @@ A connected tab that opens nothing says why, in place of the target, with what c
 | Its pass was deleted (from the target's Share) or lapsed | "This connection's link was removed." Connect Again, Remove |
 | The tab came with a copy, an export or an import         | "Connect this copy to <name>." Connect Again, Remove        |
 | The host is offline (an offline item, or no network)     | "Connected files open when you are online."                 |
+| A linked tab whose file the reader cannot open           | "You don't have access to <name>." Request Access           |
 
 Connect Again makes a new connection to the same target in the same tab, under the same rules as connecting.
 
@@ -265,7 +305,8 @@ app's logo and the host's title, on the pass under its link): the connected tab 
 
 Each editor counts, under its own app, through the shared workbench code: `Tab·Added·Connected` (a file connected one
 way), `Tab·Added·ConnectedBoth` (both ways asked), `Tab·Added·ConnectedAgain` (Connect Again) and
-`Tab·Opened·Connected` (a person opened a connected tab). Never a name, an id or an app: the question is whether
+`Tab·Opened·Connected` (a person opened a connected tab). Connect as tabs counts `Tab·Added·ConnectedBoth` when both files got a tab and
+`Tab·Added·Connected` when one did. Never a name, an id or an app: the question is whether
 people connect files and follow them. An app that offers the tab bar's Connect a File or a tab's own name counts them
 itself: `Tab·Opened·ConnectButton` (the button pressed), `Tab·Changed·ConnectedName` (a connected tab given a name of
 its own) and `Tab·Changed·ConnectedNameReset` (renamed back to following its file). The automatic follow counts nothing.
@@ -298,6 +339,10 @@ its own) and `Tab·Changed·ConnectedNameReset` (renamed back to following its f
 - **Passes are links.** They count towards the target's `SHARE_LINKS_PER_ITEM`, are rate limited, closed by its
   share password, never expire unless changed in Share, and are listed in its Share dialog, so its owner sees and can
   end every way in.
+- **A linked tab shares nothing.** A connection made by Connect as tabs has no pass: its open door answers a reader
+  only with the access they already hold (`403 connection_locked` otherwise, naming nothing new), so it never lets
+  anyone into the other file. Its cross-app writes are the reverse tab's (adding) and its removal (taking that tab
+  away again), each through the app's internal door with the app's own key.
 - **Opens are limited.** The open door is rate limited per caller, and a connection id is random, so ids cannot be
   walked.
 
@@ -310,7 +355,10 @@ its own) and `Tab·Changed·ConnectedNameReset` (renamed back to following its f
 ## Agents and the CLI
 
 Agents and the CLI read connected tabs (their app and name, never a code) and cannot make them: making a connection
-mints a share link, which an agent does through Share, on purpose. The index refuses an app acting for a person (an
+mints a share link, which an agent does through Share, on purpose. The one exception mints nothing: liveplanner's
+`change_items` add with `sentFrom` may ask `connectTabs: true`, and the index links the source and the plan as tabs for
+the token's person, under [Linked from a Send to](#linked-from-a-send-to)'s rules (their own read on both, their own
+Editor access for each tab). The index refuses an app acting for a person (an
 API token's, the Drive mirror, the data export) at both the make and the open door. Only two writes put a new `connection` on a tab: the
 editor's add after the index made the connection, and the index's reverse write. A copy, the Drive file and an
 editor's create (an Offline Mode sync) carry the one a tab already had. An agent's or the API's tab write (a

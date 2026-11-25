@@ -232,7 +232,15 @@ describe('Sent From', () => {
         text: '',
       }),
     ).toEqual({ app: 'livediagram', itemId: 'd1', tabId: 't1', elementId: 'e1', text: '' });
+    // Connect as tabs: kept only when asked; false reads as not asked.
+    expect(
+      readAgentSentFrom({ app: 'livediagram', itemId: 'd1', text: 'x', connectTabs: true }),
+    ).toEqual({ app: 'livediagram', itemId: 'd1', text: 'x', connectTabs: true });
+    expect(
+      readAgentSentFrom({ app: 'livediagram', itemId: 'd1', text: 'x', connectTabs: false }),
+    ).toEqual({ app: 'livediagram', itemId: 'd1', text: 'x' });
     for (const b of [
+      { app: 'livediagram', itemId: 'd1', text: '', connectTabs: 'yes' },
       null,
       { app: 'x', itemId: 'd1', text: '' },
       { app: 'livediagram', itemId: '', text: '' },

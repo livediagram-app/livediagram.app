@@ -324,7 +324,9 @@ as its own MCP gave them, the tab and element when it has them, and the words). 
 [Sent From](items.md#sent-from), with the source's title and link filled in by the index, and asks the index to record
 the send so the source shows the card's chip. The index records it only when the token's person can read the source;
 otherwise the card keeps its Sent From and the source shows nothing. `list_items` shows a card's Sent From as one line,
-"Sent from <title> (<app>)".
+"Sent from <title> (<app>)". `sentFrom.connectTabs: true` also connects the source and the plan as tabs, each
+opening the other ([Connect as tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#linked-from-a-send-to)): only where the token's person may read both and change that file's
+tabs, and never twice between the same two files.
 
 ## Adding many cards
 

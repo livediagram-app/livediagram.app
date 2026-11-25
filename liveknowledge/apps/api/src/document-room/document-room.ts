@@ -18,14 +18,7 @@ import { tellSourceChanged } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveknowledge/api-schema';
 import { RoomParticipantWrites } from '../room-participant';
-import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
-import {
-  ledgerKey,
-  ledgerPrefix,
-  recordInLedger,
-  tabLedgerFrom,
-  type TabLedger,
-} from '@liveknowledge/document';
+import { documentLedger, type DocumentLedger } from './document-room-ledger';
 import { RoomSelectionStore } from '../room-selections';
 import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
 import { armRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
@@ -52,7 +45,7 @@ import {
 import type { CommunityListing, CopySource } from '../document-client';
 import type { Copier } from '@liveworkspace/index-app';
 import { importDocumentFile, type DocumentFileImport } from './document-file';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { type RouteIdentity } from './document-route';
 import {
@@ -77,6 +70,7 @@ import {
   exportFile,
   exportComments,
   addConnectedTab,
+  removeConnectedTab,
   servesImage,
   exportCopy,
   revokeCodes,
@@ -183,11 +177,6 @@ import { oweSourceSync, oweSources, takeKnowledgeSourceChange } from './document
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 export { MAINTENANCE_EVERY_MS } from './document-room-content';
 
-// The collaboration ledger: this product's pure module (collab-ledger.ts) on the shared store
-// (liveworkspace/docs/specs/002-architecture/architecture.md "A room's collaboration ledger").
-type LedgerEntry = NonNullable<Parameters<typeof recordInLedger>[0]>;
-const LEDGER_RULES = { ledgerKey, ledgerPrefix, recordInLedger, tabLedgerFrom };
-
 export class DocumentRoom extends DurableObject<Env> {
   // What the sibling modules (document-room-*.ts) act on is public to them; nothing outside this folder reaches in.
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
@@ -232,7 +221,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // it saw to know whether the room restarted (seq reset) versus advanced.
   epoch: string = crypto.randomUUID();
   // The collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3); see room-ledger-store.
-  ledger: RoomLedgerStore<LedgerEntry, TabLedger>;
+  ledger: DocumentLedger;
   // Each session's selection, for the api's held check (room-selections.ts).
   selections: RoomSelectionStore;
   // Agent presence entries (docs/specs/024-agents/agent-presence.md "Presence").
@@ -389,7 +378,7 @@ export class DocumentRoom extends DurableObject<Env> {
       defer: (work) => this.state.waitUntil(work),
     });
     this.drainEnv = this.roomEnv ? { ...this.roomEnv, DOCUMENT_DB: quiet } : undefined;
-    this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
+    this.ledger = documentLedger(state.storage);
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);
     this.internal = roomInternal(this);
@@ -488,6 +477,10 @@ export class DocumentRoom extends DurableObject<Env> {
 
   addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
     return addConnectedTab(this, documentId, write);
+  }
+
+  removeConnectedTab(documentId: string, connectionId: string): Promise<DisconnectedTabOutcome> {
+    return removeConnectedTab(this, documentId, connectionId);
   }
 
   async hasTab(documentId: string, tabId: string): Promise<boolean> {

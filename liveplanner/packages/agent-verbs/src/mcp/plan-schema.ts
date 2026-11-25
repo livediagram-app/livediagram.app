@@ -191,6 +191,13 @@ const itemChange = z.discriminatedUnion('op', [
           .optional()
           .describe("The exact sticky, shape, block or thread, as its own app's read lists it"),
         text: z.string().max(2000).describe('The words the card was made from'),
+        connectTabs: z
+          .boolean()
+          .optional()
+          .describe(
+            'Also connect the source file and this plan as tabs, each opening the other (Connect as tabs), ' +
+              'where your person may change that file’s tabs. Never adds a second tab between the same two files.',
+          ),
       })
       .optional()
       .describe(

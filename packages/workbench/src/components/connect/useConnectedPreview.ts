@@ -4,17 +4,23 @@
 // the index where the tab leads, as Open would but going nowhere, and fetches the picture its answer names (`preview`,
 // on this page's own origin: the item's for its own people, the pass's live image for everyone else). Asked once per
 // connection per page: answers are held page-wide, least recently used out past CONNECTED_PREVIEW_CACHE_MAX, each
-// blob URL revoked as it goes, and a page mounting while one is in flight shares it. Offline it asks nothing. Any
-// refusal or failure is `none`: the card shows the logo alone, and Open still says why.
+// blob URL revoked as it goes, and a page mounting while one is in flight shares it. Offline it asks nothing. A linked
+// tab whose file the reader cannot open is `locked` (the card asks for access at once, with no Open to press); any
+// other refusal or failure is `none`: the card shows the logo alone, and Open still says why.
 import { useEffect, useRef, useState } from 'react';
-import type { IndexClient, TabConnection } from '@liveworkspace/index-client';
+import {
+  CONNECTION_LOCKED,
+  IndexError,
+  type IndexClient,
+  type TabConnection,
+} from '@liveworkspace/index-client';
 import { indexClient } from '../../lib/index-client';
 import { workbench } from '../../bindings';
 
 export const CONNECTED_PREVIEW_CACHE_MAX = 24;
 
 export type ConnectedPreview =
-  { state: 'loading' } | { state: 'ready'; src: string } | { state: 'none' };
+  { state: 'loading' } | { state: 'ready'; src: string } | { state: 'none' } | { state: 'locked' };
 
 type Settled = Exclude<ConnectedPreview, { state: 'loading' }>;
 
@@ -23,6 +29,7 @@ const inflight = new Map<string, Promise<Settled>>();
 
 const NONE: Settled = { state: 'none' };
 const LOADING: ConnectedPreview = { state: 'loading' };
+const LOCKED: Settled = { state: 'locked' };
 
 // The reader's half: an item's picture is drawn in the appearance the page is in.
 const appearanceNow = (): 'light' | 'dark' =>
@@ -48,7 +55,11 @@ async function ask(
 ): Promise<Settled> {
   const held = await grant();
   if (!held) return NONE;
-  const open = await client.openConnection(connectionId, held);
+  const open = await client.openConnection(connectionId, held).catch((err: unknown) => {
+    if (err instanceof IndexError && err.code === CONNECTION_LOCKED) return null;
+    throw err;
+  });
+  if (!open) return LOCKED;
   if (!open.preview) return NONE;
   const url = new URL(open.preview, window.location.origin);
   if (open.via === 'item') url.searchParams.set('appearance', appearance);

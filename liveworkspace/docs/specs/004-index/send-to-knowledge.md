@@ -88,7 +88,9 @@ on a page in liveknowledge. They stay as they are here.", and liveknowledge's ar
    **New Page** asks its **Title** (the source's name by default) and its **Parent**: the top level, or any page.
 4. **Heading**: the section's heading, the selection's first frame or label by default, editable, may be empty.
 5. **Focus** (optional): "What should it focus on?", one line.
-6. **Write With AI** (with "Uses 1 AI credit" beside it when Pro is on) asks for the summary; **Add Without Summary**
+6. **Connect as tabs** (a switch, on unless the files are already connected): once the section is written, the source
+   and the knowledgebase each get a connected tab that opens the other ([Connect as tabs](connected-tabs.md#linked-from-a-send-to)).
+7. **Write With AI** (with "Uses 1 AI credit" beside it when Pro is on) asks for the summary; **Add Without Summary**
    skips the AI: the section is the items' labels as a list, the picture and the link.
 
 **The preview** replaces the form's lower half: the heading, the summary rendered as it will read, the picture and the

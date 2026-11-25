@@ -53,7 +53,7 @@ import { PlanStanding, takeGrantStanding, takeStanding } from './plan-standing';
 import { PlanAutomations } from './automations/automation-queue';
 import { automationDeps } from './automations/plan-room-automations';
 import { importProjectFile, type ProjectFileImport } from './project-file';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-client';
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -79,6 +79,7 @@ import {
   exportFile,
   exportComments,
   addConnectedTab,
+  removeConnectedTab,
   servesImage,
   grantedImages,
   exportCopy,
@@ -423,6 +424,10 @@ export class PlanRoom extends DurableObject<Env> {
 
   addConnectedTab(planId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
     return addConnectedTab(this, planId, write);
+  }
+
+  removeConnectedTab(planId: string, connectionId: string): Promise<DisconnectedTabOutcome> {
+    return removeConnectedTab(this, planId, connectionId);
   }
 
   async hasTab(planId: string, tabId: string): Promise<boolean> {

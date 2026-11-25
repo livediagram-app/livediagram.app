@@ -54,6 +54,7 @@ import type {
 } from './types';
 import type { CreateWebhookInput, UpdateWebhookInput, Webhook, WebhookDelivery } from './webhooks';
 import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from './connections';
+import type { LinkedTabsInput, LinkedTabsMade, LinkedTabsRead } from './linked-tabs';
 import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
@@ -359,6 +360,18 @@ export function createIndexClient({
       call<ConnectionOpen>(`/connections/${enc(id)}`, { grant, signal: options.signal }),
     takeBackConnection: (id: string, grant: string) =>
       call<void>(`/connections/${enc(id)}`, { method: 'DELETE', grant }),
+    // Connect as tabs (connected-tabs.md "Linked from a Send to"): how `sourceId` and `targetId` stand, and each given a
+    // connected tab that opens the other, as the person may.
+    linkedTabs: (sourceId: string, targetId: string, options: RequestOptions = {}) =>
+      call<LinkedTabsRead>(`/items/${enc(sourceId)}/linked-tabs`, {
+        query: { with: targetId },
+        signal: options.signal,
+      }),
+    linkTabs: (sourceId: string, targetId: string) =>
+      call<LinkedTabsMade>(`/items/${enc(sourceId)}/linked-tabs`, {
+        method: 'POST',
+        body: { targetId } satisfies LinkedTabsInput,
+      }),
 
     // Project kits (kits.md), signed in only: start one (or, with `folderId` and `made`, finish one that was partly
     // made), and remove what a run made.

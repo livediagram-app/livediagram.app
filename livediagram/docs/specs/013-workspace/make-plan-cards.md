@@ -54,7 +54,9 @@ presses Make Cards:
 4. **Removed from the diagram**: when this tab's shapes made cards in this plan before and some of those shapes are
    gone, each such card gets a row, **unticked**, "Move to Trash". Only a ticked row is trashed; nothing is ever
    deleted silently, and a trashed card can be restored from the plan's Trash.
-5. The foot sums it up ("Make 12 cards, update 3, 8 Blocked By links, 1 left out (a loop)") beside **Make Cards**,
+5. **Connect as tabs** (on unless the two files are already connected): once the cards are made, the diagram and the
+   plan each get a connected tab that opens the other ([Connect as tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#linked-from-a-send-to)).
+6. The foot sums it up ("Make 12 cards, update 3, 8 Blocked By links, 1 left out (a loop)") beside **Make Cards**,
    which reads **Update Cards** when every row updates.
 
 Making shows "Making cards", then closes with a toast "12 cards in Launch plan" and **Open Plan**. A refusal says why

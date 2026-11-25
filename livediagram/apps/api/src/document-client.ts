@@ -29,7 +29,7 @@ import type { DocumentFileImport } from './document-room/document-file';
 import type { RouteIdentity } from './document-room/document-route';
 import type { ShareAnswer, ShareMessage, SharedTabCopy } from './document-room/tab-shares';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
@@ -118,6 +118,8 @@ export type DocumentRoomClient = {
   notifyMention(input: MentionNotice): Promise<boolean>;
   // The index's reverse write of a connected tab (document-room/connected-tab.ts).
   addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  // Connect as tabs: a linked tab whose pair was removed in the other file (connected-tab.ts).
+  removeConnectedTab(connectionId: string): Promise<DisconnectedTabOutcome>;
   // View As Diagram's redraw of a plan's tab (document-room/plan-diagram-tab.ts).
   drawPlanTab(write: PlanTabWrite): Promise<PlanTabOutcome>;
   // Send to Diagram's new or redrawn tab (document-room/graph-tab.ts).
@@ -151,6 +153,7 @@ export function documentRoom(
     exportComments: () => room.exportComments(documentId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(documentId, write),
+    removeConnectedTab: (connectionId) => room.removeConnectedTab(documentId, connectionId),
     drawPlanTab: (write) => room.drawPlanTab(documentId, write),
     drawGraphTab: (write) => room.drawGraphTab(documentId, write),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
@@ -194,6 +197,7 @@ export type DocumentRoomRpc = {
   exportComments(documentId: string): Promise<ExportCommentsResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
   addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  removeConnectedTab(documentId: string, connectionId: string): Promise<DisconnectedTabOutcome>;
   drawPlanTab(documentId: string, write: PlanTabWrite): Promise<PlanTabOutcome>;
   drawGraphTab(documentId: string, write: GraphTabWrite): Promise<GraphTabOutcome>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;

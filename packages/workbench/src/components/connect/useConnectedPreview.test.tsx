@@ -5,7 +5,7 @@
 // `none` for any refusal or failure, and the oldest answers let go (their blob URLs revoked) past the cap.
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ConnectionOpen } from '@liveworkspace/index-client';
+import { IndexError, type ConnectionOpen } from '@liveworkspace/index-client';
 import { configureWorkbench, WORKBENCH_DEFAULTS } from '../../bindings';
 import { testBindings } from '../../lib/testing/bindings';
 import {
@@ -151,6 +151,21 @@ describe('useConnectedPreview', () => {
       );
       await waitFor(() => expect(result.current).toEqual({ state: 'none' }));
     }
+  });
+
+  it('is locked for a linked tab whose file the reader cannot open, asking no picture', async () => {
+    const fetching = vi.fn();
+    vi.stubGlobal('fetch', fetching);
+    const { result } = renderHook(() =>
+      useConnectedPreview({
+        connection: connection('cn_locked'),
+        grant,
+        offline: false,
+        client: clientOf(new IndexError(403, 'connection_locked')),
+      }),
+    );
+    await waitFor(() => expect(result.current).toEqual({ state: 'locked' }));
+    expect(fetching).not.toHaveBeenCalled();
   });
 
   it('asks again after a failure rather than keeping it', async () => {

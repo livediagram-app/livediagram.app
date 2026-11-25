@@ -124,6 +124,9 @@ export type AgentSentFrom = {
   tabId?: string;
   elementId?: string;
   text: string;
+  // Connect as tabs (connected-tabs.md "Linked from a Send to"): the source and the plan each get a connected tab that
+  // opens the other, as the token's person may.
+  connectTabs?: boolean;
 };
 
 export const planSendDoorPath = (itemId: string): string =>
@@ -256,12 +259,14 @@ export function readAgentSentFrom(v: unknown): AgentSentFrom | null {
     return null;
   if (v.tabId !== undefined && !id(v.tabId)) return null;
   if (v.elementId !== undefined && !id(v.elementId)) return null;
+  if (v.connectTabs !== undefined && typeof v.connectTabs !== 'boolean') return null;
   return {
     app: v.app,
     itemId: v.itemId,
     ...(v.tabId ? { tabId: v.tabId } : {}),
     ...(v.elementId ? { elementId: v.elementId } : {}),
     text: v.text,
+    ...(v.connectTabs ? { connectTabs: true } : {}),
   };
 }
 

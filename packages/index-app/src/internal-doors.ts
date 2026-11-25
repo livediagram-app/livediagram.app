@@ -1,6 +1,6 @@
 // The index's internal doors into an app's items, one function each (./internal routes to them): a person merged
 // or closed, an item exported or imported, a person's or an item's migration, and a connected tab's reverse write.
-import { readConnectedTabWrite } from '@liveworkspace/index-client';
+import { isConnectionId, readConnectedTabWrite } from '@liveworkspace/index-client';
 import type { ConnectedTabOutcome } from './connected-tabs';
 import type {
   MigrationApp,
@@ -331,4 +331,26 @@ export async function connectedTab(
   }
   console.info('[internal] connected tab', { made: outcome.made });
   return json({ tabId: outcome.tabId }, outcome.made ? 201 : 200);
+}
+
+// `DELETE /api/internal/items/:id/connected-tabs/:connectionId` (Connect as tabs): the tab holding the connection
+// removed, its pair having been removed in the other file. 204 removed; 404 none held it (or the item not started);
+// 409 the item's last tab, kept; 503 a failure.
+export async function disconnectedTab(
+  id: string,
+  connectionId: string,
+  run: NonNullable<InternalItemHandlers['disconnectedTab']>,
+): Promise<Response> {
+  if (!isConnectionId(connectionId)) return badRequest('invalid connection');
+  let outcome: Awaited<ReturnType<typeof run>>;
+  try {
+    outcome = await run(id, connectionId);
+  } catch (err) {
+    console.error('[internal] connected tab removal failed', { error: String(err) });
+    return json({ error: 'unavailable' }, 503);
+  }
+  console.info('[internal] connected tab removed', { outcome });
+  if (outcome === 'removed') return new Response(null, { status: 204 });
+  if (outcome === 'last') return json({ error: 'last_tab' }, 409);
+  return notFound();
 }

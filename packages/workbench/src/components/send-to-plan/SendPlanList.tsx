@@ -138,16 +138,18 @@ export function SendPlanList({
                 className={`${ROW} ${locked ? ROW_LOCKED : on ? ROW_ON : ROW_IDLE}`}
               >
                 <PlanIcon size={16} className="shrink-0 opacity-70" />
-                <span className="min-w-0 flex-1 truncate">{p.title || 'Untitled plan'}</span>
                 {locked ? (
-                  <span
-                    id={`locked-${p.id}`}
-                    className="flex shrink-0 items-center gap-1 text-[11px]"
-                  >
-                    <LockGlyph aria-hidden />
-                    You can&apos;t add cards
+                  // The name keeps the row's width, cut only when it cannot fit; the reason sits under it.
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate">{p.title || 'Untitled plan'}</span>
+                    <span id={`locked-${p.id}`} className="flex items-center gap-1 text-[11px]">
+                      <LockGlyph aria-hidden />
+                      You can&apos;t add cards
+                    </span>
                   </span>
-                ) : null}
+                ) : (
+                  <span className="min-w-0 flex-1 truncate">{p.title || 'Untitled plan'}</span>
+                )}
               </button>
             </li>
           );
