@@ -63,12 +63,12 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
     const caps = await capabilities({
       ACCOUNTS_URL: 'https://accounts.example',
       API_RESOURCE: 'https://livediagram.example/api',
-      OAUTH_ISSUER: 'https://mcp.livediagram.app/',
+      OAUTH_ISSUER: 'https://mcp.liveworkspace.app/',
       CLI_MIN_VERSION: ' 1.2.3 ',
     });
     expect(caps).toMatchObject({
       authEnabled: true,
-      oauthIssuer: 'https://mcp.livediagram.app',
+      oauthIssuer: 'https://mcp.liveworkspace.app',
       cli: { minVersion: '1.2.3' },
     });
   });

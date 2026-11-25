@@ -99,9 +99,9 @@ storing tokens itself, the account-level design below supersedes it.
 - **No copy.** livediagram keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
   liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
   it when it is revoked ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
-- **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
-  token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
-  revoked by presenting it to `DELETE /api/tokens/current`.
+- **Minting for an AI tool.** The one MCP's consent page mints the token with liveworkspace
+  (`POST /api/account/internal/tokens`); this api has no OAuth exchange route any more (`liveworkspace/docs/specs/021-mcp/mcp.md`
+  "The app MCPs fold in"). A token the MCP then refuses is revoked by presenting it to `DELETE /api/tokens/current`.
 - **Management** is liveworkspace's. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
   `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's Settings › API Tokens category draws the shared token panel in place for a signed-in account
   (`@liveworkspace/settings-ui/account-panels`, the same one liveworkspace.app's Settings has, loaded when the category

@@ -368,14 +368,13 @@ chosen to be cheap (no database read where one can be avoided, or one the edge c
 |               | Community pages    | `HEAD <app>/community/` (livediagram only)         | the browser reaches it       |
 |               | MCP server         | `GET mcp.<app>/health` (CORS `*`), apps with one   | 200, JSON                    |
 
-liveworkspace's own checks are on this origin, so the page reads their answers. Each app's API and MCP server
-answer any origin (CORS `*`), so those are read too. An app's pages send no CORS headers, so the browser can only
+liveworkspace's own checks are on this origin, so the page reads their answers. Each app's API and its old MCP host (a custom
+domain on liveworkspace's one MCP, which answers `/health` there) answer any origin (CORS `*`), so those are read too. An app's pages send no CORS headers, so the browser can only
 learn that the site answered (an opaque `no-cors` request), not what it said: the page calls that **Reached**
 and says so in the legend, rather than claiming more. The Media Worker answers only the apps' Workers, so its
 check is that the Worker itself answers (its JSON 404, which the site's own 404 page never is). Realtime and the
 router have no check of their own, and the page says which check stands for them. On staging the apps are their
-`staging.` addresses and the MCP servers aren't checked; on a dev server, each app's router port and its MCP
-Worker's port.
+`staging.` addresses and the MCP servers aren't checked; on a dev server, each app's router port and the one MCP's port (3013).
 
 The hourly checks can read every answer, so the pages a browser can only call **Reached** get a true state there
 (up on a 2xx or 3xx).

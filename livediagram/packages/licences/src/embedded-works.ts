@@ -121,7 +121,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: new RegExp(`${TFJS_WASM.source}|${ORT_WASM.source}|${WEBP_WASM.source}`) },
     texts: text('emscripten-3.1.28-LICENSE.txt'),
   },
-  // The mcp worker's SVG renderer: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2.
+  // The MCP package's SVG renderer: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2.
   {
     id: 'resvg',
     name: 'resvg',

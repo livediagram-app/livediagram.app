@@ -146,7 +146,7 @@ test("a site's steps: its build with the build id and hosted build vars, then de
     args: ['turbo', 'run', 'build', '--filter=@livediagram/editor'],
     env: {
       NEXT_PUBLIC_BUILD_ID: REF,
-      NEXT_PUBLIC_MCP_ORIGIN: 'https://mcp-staging.livediagram.app',
+      NEXT_PUBLIC_MCP_ORIGIN: 'https://mcp-staging.liveworkspace.app',
     },
     envFrom: {
       cwd: 'livediagram/apps/api',
@@ -179,7 +179,7 @@ test("a site's steps: its build with the build id and hosted build vars, then de
   const [huddleBuild] = workerSteps(huddle, {
     environment: 'staging',
     ref: REF,
-    exists: (path) => !path.endsWith('/apps/mcp/wrangler.toml'),
+    exists: (path) => !path.endsWith('/apps/mcp/package.json'),
   });
   assert.deepEqual(huddleBuild.env, { NEXT_PUBLIC_BUILD_ID: REF });
 });

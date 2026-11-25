@@ -392,7 +392,7 @@ Worst cases, per run:
   before, under 15 ms after. Shapes really inside a ring each still pay one distance per ring box.
 - Changesets: one lint per changeset in the api worker, inside the request it already handles; no extra subrequest.
   The view lints the tab it read; MCP `create_document` adds one view request per created tab.
-- Bundle: the api and MCP workers already bundle `@livediagram/document`; `diagram-lint` adds only its own sources.
+- Bundle: the api and the MCP package already bundle `@livediagram/document`; `diagram-lint` adds only its own sources.
 - Output: about 100 tokens for a typical tab; at most `LINT_MAX_LINES_PER_CODE` lines per code, then one elision line.
 
 ## Presentation and UX

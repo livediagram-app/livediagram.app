@@ -128,9 +128,4 @@ describe('SILENT_SIGN_IN_BOOT_SCRIPT', () => {
     }
     expect(SILENT_SIGN_IN_SKIP_PATHS).toContain('/form');
   });
-
-  // A person signed in to liveworkspace who arrives from an AI tool is signed in on the way, not shown Sign in.
-  it('signs the AI-tool consent and device pages in without a click', () => {
-    expect(SILENT_SIGN_IN_SKIP_PATHS).not.toContain('/oauth');
-  });
 });

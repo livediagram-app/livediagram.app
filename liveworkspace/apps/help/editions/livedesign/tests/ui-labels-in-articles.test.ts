@@ -34,6 +34,8 @@ const COMMUNITY_UI_PACKAGE = `${ROOT}/../packages/community-ui/src`;
 // the app's address as the app's own.
 const COMMUNITY_SITE = `${ROOT}/../liveworkspace/apps/site/components/community`;
 const TELEMETRY_SITE = `${ROOT}/../liveworkspace/apps/site/app/telemetry`;
+// The consent and device pages an AI tool or the CLI signs in through are liveworkspace.app's (the one MCP).
+const ACCOUNT_SITE = `${ROOT}/../liveworkspace/apps/site/components/account`;
 // The shared editor chrome (@liveworkspace/workbench): the comment thread's reactions, the Collaborators modal's
 // footer and the rest every editor renders as its own.
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
@@ -123,6 +125,7 @@ function editorSource(): string {
   walk(COMMUNITY_SITE);
   // The public telemetry dashboard is liveworkspace.app's page, which the Telemetry Dashboard article walks through.
   walk(TELEMETRY_SITE);
+  walk(ACCOUNT_SITE);
   walk(WORKBENCH_PACKAGE);
   walk(SNAPSHOTS_PACKAGE);
   for (const dir of AUTOMATIONS_PACKAGES) walk(dir);

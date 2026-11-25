@@ -42,8 +42,6 @@ export * from './api/versions';
 export * from './api/knowledge';
 export * from './api/knowledge-ask';
 export * from './api/share';
-export * from '@liveworkspace/workbench/lib/api/tokens';
-export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';
 export * from './api/room';
 export * from './api/images';

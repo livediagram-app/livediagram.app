@@ -2,7 +2,7 @@
 // centre (cx, cy) and returns a fresh array of Element. Sizing
 // constants live inline so each template is self-describing. See
 // docs/specs/008-canvas/canvas-and-palette.md for the picker UX; the editor applies its theme recolour on
-// top (apps/live/lib/template-builders.ts), and the MCP worker
+// top (apps/live/lib/template-builders.ts), and the MCP
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
 import { buildWireframeFlow, isWireframeFlowKind } from './template-builders-wireframe-flows';
@@ -48,7 +48,7 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
 
 // A template's tabs: every Pages template
 // makes one, named null so it keeps the name the caller gives a new tab. The shape stays a list so the callers that
-// make a template's tabs (the editor, the api, the MCP worker) need not change. Its elements are buildTemplate's.
+// make a template's tabs (the editor, the api, the MCP) need not change. Its elements are buildTemplate's.
 export type TemplateTabDef = {
   name: string | null;
   build: (cx: number, cy: number) => Element[];

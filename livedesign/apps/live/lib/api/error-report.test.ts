@@ -31,7 +31,7 @@ describe('apiErrorType', () => {
       'save design meta',
       'resolve team invite link',
       'notify assigned action',
-      'oauth exchange',
+      'list tokens',
       'set share password',
     ];
     for (const action of actions) {

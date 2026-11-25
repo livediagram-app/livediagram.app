@@ -1,8 +1,9 @@
 # MCP server
 
-Served at `mcp.livedocuments.app`. Builds on [Public API and API tokens](public-api-and-tokens.md): it adds OAuth
-third-party app authorization, scoped to one client (an MCP server), reusing the `lwt_` token as the credential it
-ultimately mints. No new authorization model; an OAuth front door onto the existing token.
+**A package, not a Worker.** `apps/mcp` keeps this app's tools, prompts, resources and views, and liveworkspace's one MCP
+(`https://mcp.liveworkspace.app/mcp`) runs it in process ([The app MCPs fold in](../../../../liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in)). Its old host,
+`mcp.livedocuments.app`, is a custom domain on that Worker that serves old connections until their token ends.
+Builds on [Public API and API tokens](public-api-and-tokens.md): callers present the `lwt_` token the one MCP minted.
 
 ## 1. Goal
 
@@ -34,11 +35,10 @@ the MCP is **signed-in only** and **absent end-to-end** on a deployment without 
 
 ## 2. Architecture
 
-A **new standalone Cloudflare Worker**, `apps/mcp` (worker name
-`livedocuments-mcp`), mirroring how Manager Toolkit ships its MCP as its own
-worker. Not folded into `apps/api`: it has a distinct dependency surface (the MCP
-SDK, OAuth/KV, a WASM rasteriser) and a distinct public origin, and `apps/api`
-stays a pure REST/WS surface.
+A **package**, `apps/mcp` (`@livedocuments/mcp`, no `wrangler.toml`), that liveworkspace's one MCP Worker imports and runs in
+process, handing it this app's api (`LIVEDOCUMENTS_API` service binding), editor origin (`LIVEDOCUMENTS_BASE_URL`) and
+telemetry key (`LIVEDOCUMENTS_TELEMETRY_KEY`). Not folded into `apps/api`: it has a distinct dependency surface (the MCP
+SDK, a WASM rasteriser), and `apps/api` stays a pure REST/WS surface.
 
 - **Framework / transport.** [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol)
   with **Streamable HTTP** transport (`WebStandardStreamableHTTPServerTransport`,
@@ -56,14 +56,11 @@ stays a pure REST/WS surface.
   `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise-inline-image-render)).
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
   validation, geometry, or theme-colour resolution.
-- **Routing + deploy.** Served at **`mcp.livedocuments.app`** (its own hostname,
-  `mcp-staging.livedocuments.app` in staging, each a custom domain declared in
-  `apps/mcp/wrangler.toml`, [Deployment](../016-platform/deployment.md#custom-domain)). The monorepo's deploy ships it in the tier after the api
-  (its service binding needs the api to exist, [Deployment](../016-platform/deployment.md) "Deploy"). The `router` worker is unchanged: `mcp.` is a
-  separate host, not a path under the main hostname, so it carries no router
-  business logic. `GET /health` returns `{ status: 'ok' }`.
-- **Endpoints on the worker:** `POST /mcp` (the MCP transport, Bearer-gated),
-  the OAuth endpoints ([§3](#3-authentication-oauth-21)), and `/health`.
+- **Routing + deploy.** No worker of its own: it deploys with liveworkspace's one MCP Worker. `mcp.livedocuments.app`
+  (`mcp-staging.livedocuments.app` in staging) is a custom domain on that Worker, serving old connections narrowed to this
+  app until their token ends. `GET /health` returns `{ status: 'ok' }`.
+- **Endpoints:** `POST /mcp` (the MCP transport, Bearer-gated) and `/health`; the sign-in answers and discovery metadata
+  that point at the one MCP are that Worker's ([§3](#3-authentication-the-one-mcps-oauth)).
 
 **Who is calling.** Every call the server makes to the api says it came through the MCP and which client made it
 (Work Tracker 1381): `X-Livedocuments-Client: mcp`, and `X-Livedocuments-Agent` with the client's own name from its `initialize`
@@ -74,105 +71,26 @@ token.
 
 ### The one liveworkspace MCP
 
-liveworkspace's one MCP server (liveworkspace/docs/specs/021-mcp/mcp.md) also serves this server's tools, renamed by what they make, by calling this Worker over a service binding with the person's own token. Nothing here changes for it: this server's tools, names and answers stay as they are, and it stays the connection this app's pages recommend while the one MCP is tried. A change to this server's tools refreshes the one MCP's recorded copy (`corepack pnpm --filter @liveworkspace/mcp-service eval:snapshot`), which its naming test and tool-pick eval read.
+liveworkspace's one MCP server (liveworkspace/docs/specs/021-mcp/mcp.md) also serves this server's tools, renamed by what they make, by calling this Worker over a service binding with the person's own token. Nothing here changes for it: this server's tools, names and answers stay as they are, and its own public address is retired (§3). A change to this server's tools refreshes the one MCP's recorded copy (`corepack pnpm --filter @liveworkspace/mcp-service eval:snapshot`), which its naming test and tool-pick eval read.
 
-## 3. Authentication: OAuth 2.1
+## 3. Authentication: the one MCP's OAuth
 
-The MCP authenticates with **OAuth 2.1 + PKCE (S256) + dynamic client
-registration**, so a user gets a one-click "Connect" in their AI tool rather
-than pasting a raw token. The flow **mints an `lwt_` token** under the hood and
-hands it to the client; from then on every request is just
-`Authorization: Bearer lwt_…`. This deliberately reuses the entire token model
-from [Public API and API tokens](public-api-and-tokens.md) (storage, hashing, 6-month expiry,
-per-account cap, revoke, account-deletion cascade, rate limiting) instead of
-inventing a parallel credential. An MCP-minted token is an ordinary liveworkspace
-account token: it is listed in Settings › API Tokens (any app's, or liveworkspace.app's) and can be revoked there like any
-other, and it works with every liveworkspace app's MCP server.
+This server runs no OAuth server and has no consent or device page. People and CLIs sign in at liveworkspace's one MCP
+(`https://mcp.liveworkspace.app/mcp`, [liveworkspace/docs/specs/021-mcp/mcp.md](../../../../liveworkspace/docs/specs/021-mcp/mcp.md)
+"The app MCPs fold in"), which mints an ordinary `lwt_` account token under the hood ([Public API and API
+tokens](public-api-and-tokens.md): storage, hashing, 6-month expiry, per-account cap, revoke). That token is listed in
+Settings › API Tokens (any app's, or liveworkspace.app's) and is revoked there like any other.
 
-This implements the OAuth flow Manager Toolkit uses:
-
-1. **Discovery**: the MCP worker serves RFC 8414 metadata at
-   `/.well-known/oauth-authorization-server` (and the protected-resource
-   metadata): `authorization_endpoint`, `token_endpoint`, `registration_endpoint`,
-   `code_challenge_methods_supported: ["S256"]`, `token_endpoint_auth_methods_supported: ["none"]`.
-2. **Dynamic client registration**: `POST /oauth/register` issues a `client_id`
-   (validates redirect URIs: `https:` anywhere, or `http:` on a loopback host for
-   local clients; the scheme is checked on its own, so a loopback host never
-   admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
-   §3.1.2; the rule is `oauthRedirectUrl` in
-   `@livedocuments/api-schema`), stored in KV with a TTL.
-   Rate-limited per IP, an IPv6 caller by its /64 (`clientRateKey`, as the api keys its limiters). Authorize re-checks the scheme of the requested
-   redirect URI, and the consent page only ever navigates to an http(s) URL.
-   The token endpoint requires `client_id` and `redirect_uri` and refuses a code presented with another value of either (RFC 6749 §4.1.3). A name that reads as a liveworkspace app is refused (`400 invalid_client_metadata`), and so is one that reads as Claude, ChatGPT or Cursor unless every redirect URI is a loopback one or on that tool's own domains; at registration and again at authorize (`reservedNameRefusal`, `../packages/mcp-kit/src/oauth-names.ts`).
-3. **Authorize**: `GET /oauth/authorize` creates a short-lived session in KV and
-   redirects to a **consent page in `apps/editor`** (e.g. `/oauth/authorize` or an
-   Explorer "Connect an app" screen), passing the session id. The user is
-   already signed in there (a livedocuments session through the liveworkspace accounts
-   Worker; a signed-out visitor gets a Sign in link that returns here). A person signed in to liveworkspace but
-   not yet here is signed in on the way by the page's silent bounce, and a browser whose signed-in hint is set waits
-   for its session's answer before offering Sign in ([Auth + guest access](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
-   **What the consent screen may believe.** `/oauth/authorize` also passes the
-   client name and the redirect host as query params for display, and the screen
-   must **not** render those. It is the only thing standing between a user and a
-   full-access token, and its one anti-phishing line ("Access will be sent to
-   `<host>`. Only continue if you recognise this.") is forgeable by exactly the
-   party it exists to expose: registration is open by design, so an attacker can
-   register a client, start a real authorize to obtain a session id, then hand
-   the victim a hand-written `/oauth/consent?session=…&client=Notion&to=notion.so`
-   whose code lands on their own `redirect_uri`. The screen reads
-   **`GET /oauth/session/<id>`** instead → `{ clientName, redirectHost }`, taken
-   from the stored session where `redirectUri` was checked against the client's
-   registered list before it was written. The session id is the read capability
-   (10-minute TTL, held by the browser in the flow); the response carries no
-   token, code or PKCE material and does not consume the session, so answering
-   grants a holder nothing it could not get by completing the flow. Client
-   **name** is never a trust signal either way (it is whatever was registered, kept without bidi
-   controls or invisible characters at its ends and cut to 120 whole characters, "MCP client" when that leaves
-   nothing, so it can neither turn the screen's words around nor look blank);
-   the host is the fact to check, which is why it must come from the server. Every client that is not built in (so every registered one) wears an **Unverified App** badge beside its name, with "{name} is not made by liveworkspace, and we can't check who made it.", and the screen puts the redirect host first, "Access will be sent to {host}"; the lookup's `verified` decides it. A loopback host (`localhost`, `127.0.0.1` or `[::1]`, on any port) is a desktop or command-line tool taking its sign-in back on the person's own computer, so it reads "Access will be sent back to the app on this computer ({host}). Only continue if you started this connection yourself."; every other host keeps "Only continue if you recognise this site and started this connection yourself." The host is parsed and matched exactly (`isLoopbackHost`, `../packages/api-kit/src/request-auth.ts`), never by prefix, so `localhost.evil.com` is still a site. A
-   session that is unknown or expired is a blocking screen, never a screen with
-   an approve button and a blank destination. See
-   `../packages/workbench/src/lib/mcp-consent-session.ts` and `../packages/workbench/src/components/oauth/OauthConsentPage.tsx` (with its test). The screen is never frameable
-   (`X-Frame-Options: DENY`, [Embeds](../013-workspace/embeds.md)), so the
-   Connect click can't be clickjacked from an attacker's page.
-4. **Consent + mint**: on approve, `apps/editor` calls `POST /api/oauth/exchange`
-   on the api worker with the person's account access token. It asks liveworkspace
-   to mint an `lwt_` account token named for the connecting client (e.g. "Claude
-   (MCP)"), read-only if the person ticked that (`POST /api/account/internal/tokens`,
-   [Public API and API tokens](public-api-and-tokens.md) §3). It binds the PKCE
-   challenge so only the holder of the verifier can redeem it. A minted token is
-   never left orphaned: the page re-checks the session (`GET /oauth/session/<id>`)
-   before minting, and when the MCP's `/oauth/complete` refuses the token (the
-   session expired or was used, a 429) it revokes it at once by presenting it to
-   `DELETE /api/tokens/current`, so retries never pile up six-month tokens against
-   the per-account cap. The failure line names the cause: an expired request ("This
-   request has expired. Start the connection again from your app."), the token cap
-   (409 `token_limit_reached`: "Your account has reached its limit of 20 API tokens.
-   Revoke one below, then connect."), or anything else ("Something went wrong. Please
-   try again."). The number is `MAX_API_TOKENS_PER_ACCOUNT`
-   (`../packages/api-schema/src/api-tokens.ts`), the one the accounts Worker counts
-   against. At the cap the page lists the account's live tokens under that line,
-   least recently used first, each with Revoke (Revoke now, Keep), over the account
-   API's bearer door (`GET` and `DELETE /api/workspace/account/tokens`); a revoke
-   clears the line, says there is room now and puts the keyboard on Connect, so the
-   person connects straight away without leaving the page. The device page does the
-   same (`../packages/workbench/src/lib/oauth-handover.ts`,
-   `../packages/workbench/src/components/oauth/TokenLimitList.tsx`).
-   **A reconnect replaces the client's earlier token.** The page sends the minted
-   token's id with it to `/oauth/complete`, which keeps the ids of the last five
-   tokens handed to that registered client (`grant:<clientId>` in `OAUTH_KV`, for
-   `CLIENT_TTL`) and answers the earlier ones as `replaces`. Only after that handover
-   has succeeded does the page revoke each of them that is still among the account's
-   live tokens and has the new token's name, so a failed handover revokes nothing old,
-   and a manual token or another client's is never touched. A client is matched by its
-   id, and a registered client's id is its own (one per install, per MCP): the built-in
-   CLI's id is shared by every install, so it replaces nothing. A client that registers
-   afresh each time is a new client, and its old token stays until it expires or is
-   revoked.
-5. **Callback + token exchange**: the MCP redirects back to the client with a
-   code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
-   `access_token` (= the `lwt_` secret). `expires_in` reflects the token's
-   remaining 6-month lifetime.
+- **No new connections.** At `mcp.livedocuments.app` the registration, authorize and token-exchange endpoints answer in words
+  that the connection has moved to the one MCP, and its discovery metadata says the same. The api has no
+  `/api/oauth/exchange` route either, and the editor has no `/oauth/consent` or `/oauth/device` page.
+- **Existing connections carry on until their token ends**, served narrowed to this app. Local development serves the
+  package as it is at `http://127.0.0.1:3013/livedocuments/mcp` (`liveworkspace/apps/mcp` `dev`).
+- **The CLI signs in at the one MCP too** ([CLI](cli.md#authentication)): the api's `/api/capabilities` reports it as
+  `oauthIssuer` (`OAUTH_ISSUER` in `apps/api/wrangler.toml`), and `livedocuments-cli` is one of its built-in clients.
+  A token minted for the CLI is named "livedocuments CLI".
+- **State storage.** The one MCP Worker's `OAUTH_KV` holds short-TTL scratch state (the agent-name cache below). `apps/api`
+  needs no KV: liveworkspace mints the token.
 
 **A token the api stops accepting.** `POST /mcp` lets any Bearer through to the transport (only the api can tell
 whether liveworkspace still knows it), so a revoked, expired or unknown token used to come back as HTTP 200 with every
@@ -182,34 +100,6 @@ same dead token. Now, when any call the request made to the api answered 401, th
 (RFC 6750 §3.1), the same challenge a request with no Bearer gets, so an MCP client starts the connect flow again
 (`../packages/mcp-kit/src/token-refusal.ts`). A request that never reaches the api (`initialize`, `tools/list`) is
 answered as before. It costs nothing extra: the api's own answers are watched, no call is added.
-
-**What Claude's connector directory checks** (registration lifetime, Anthropic's egress range, refresh and
-unknown grants, refusals in words, no token in a URL) is audited in [§4.16a](#416a-claude-connector-directory).
-
-**State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
-client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
-needs no KV: liveworkspace mints the token ([Public API and API tokens](public-api-and-tokens.md)).
-
-**Why OAuth and not just token-paste.** A static-token-paste connector works in
-Claude Code / custom connectors, but the polished "Connect" button in claude.ai
-web connectors expects OAuth, and the user chose the OAuth path. Because it still
-resolves to an `lwt_` token, the heavy lifting (verification, gating, revoke,
-caps) is already built. OAuth is the front door, not a new lock.
-
-**Sign-in gating.** OAuth depends on the consent page authenticating
-the user through sign-in and on `/api/oauth/exchange` requiring an account identity, the
-same gate as `/api/tokens` ([Public API and API tokens §3.7](public-api-and-tokens.md)). On a
-deployment without sign-in the exchange endpoint rejects every caller and the consent
-page has no signed-in user, so the MCP can mint nothing. Operators who don't want
-the MCP simply don't deploy `apps/mcp`; nothing else references it.
-
-**The CLI signs in here too** ([CLI](cli.md#authentication)). This server is the
-one authorisation server for both front doors, so it also offers what a
-command-line client needs: a loopback redirect matched on scheme, host and path
-with any port (RFC 8252 §7.3), a pre-registered public client `livedocuments-cli`
-whose name the consent screen can trust, and the device authorisation grant
-(RFC 8628) with a `/oauth/device` page in `apps/editor` for machines without a
-browser. A token minted for the CLI is named "livedocuments CLI".
 
 ## 4. Tools
 
@@ -794,7 +684,7 @@ and schema resource.
 
 ### 4.11 Read-only tokens (the one scope)
 
-A trust story for cautious users: the MCP consent screen offers a **"read-only
+A trust story for cautious users: the one MCP's consent screen offers a **"read-only
 access"** checkbox. When ticked, the minted `lwt_` token carries `read_only = 1`
 ([Public API and API tokens](public-api-and-tokens.md) §3.4), and the api worker rejects every write it
 presents (`POST`/`PUT`/`DELETE` → `403 read_only_token`) at a **single
@@ -827,13 +717,13 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 
 ### 4.13 Worker configuration
 
-The MCP worker reads three bindings and two out-of-band values. Bindings
-(`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
+The package is handed its configuration by liveworkspace's one MCP Worker: the api (`LIVEDOCUMENTS_API` service binding),
+the scratch KV (`OAUTH_KV`), and the rest, set on that Worker:
 
-| Name               | Where                          | Absent means                                                                                                                                                                                        |
-| ------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://www.livedocuments.app`, so another deployment's OAuth callers (staging) land on the hosted consent screen unless it is set. Also the host of every tool's `url` and share link |
-| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                                         |
+| Name                          | Where                                                                                  | Absent means                                                                                                                                                            |
+| ----------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LIVEDOCUMENTS_BASE_URL`      | `[vars]` of the one MCP Worker (not secret), read by the package as `CONSENT_BASE_URL` | Defaults to `https://www.livedocuments.app`, so another deployment (staging) links to the hosted editor unless it is set. The host of every tool's `url` and share link |
+| `LIVEDOCUMENTS_TELEMETRY_KEY` | secret on the one MCP Worker, **the same value as the api's `TELEMETRY_KEY`**          | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                             |
 
 `TELEMETRY_KEY` is livedocuments' Worker key for liveworkspace's central telemetry service
 (liveworkspace/docs/specs/008-telemetry/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
@@ -912,75 +802,17 @@ actually acts on.
 Pointing at a tool is fine too ("check list_templates first"): the flag is
 discouraging tool use, not encouraging it.
 
-### 4.16 Registry listing
+### 4.16 Registry listing and Claude connector directory
 
-The hosted server is listed in the official **MCP Registry**
-(`registry.modelcontextprotocol.io`), which other directories (PulseMCP among
-them) ingest from, so one listing reaches several catalogues. Directories that
-look at a server themselves (Smithery, Glama, a client's add-a-server screen)
-read its server card, because `/mcp` answers only a signed-in caller.
+This server is no longer listed on its own: the MCP Registry entry (`server.json`) is removed, and so is
+the descriptor test. What people connect, and what is listed in the MCP Registry and Claude's connector directory, is
+liveworkspace's one MCP ([liveworkspace/docs/specs/021-mcp/mcp.md](../../../../liveworkspace/docs/specs/021-mcp/mcp.md)
+and [The app MCPs fold in](../../../../liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in)). The listing identity stays in `apps/mcp/src/listing.ts` (built with
+`@liveworkspace/mcp-kit/listing`): the `initialize` response's `serverInfo` and the server card
+(`GET /.well-known/mcp/server-card.json`, every tool, resource and prompt with its schema, read from the same server
+`/mcp` builds) are made from it.
 
-- **Descriptor.** `livedocuments/server.json`, under the registry's `2025-12-11` schema.
-  Name `io.github.livediagram-app/livedocuments`: every product lists under
-  `io.github.livediagram-app`, the GitHub organisation that owns the monorepo
-  (`livediagram-app/livediagram.app`, public), so a GitHub sign-in as one of its
-  members, or the repo's own GitHub OIDC token, proves the namespace: no DNS
-  record and no stored secret. `title` `livedocuments`, a `description` of at most 100
-  characters, `websiteUrl` `https://www.livedocuments.app`, `repository` the monorepo with
-  `subfolder` `livedocuments/apps/mcp`, the 512px PNG mark the marketing site serves
-  (`https://www.livedocuments.app/livedocuments-icon-512.png`), and one `remotes` entry,
-  `streamable-http` at `https://mcp.livedocuments.app/mcp` (the Worker's custom domain),
-  with no `headers`: OAuth (§3) is discovered from the server's metadata, not
-  configured by the client.
-- **One identity.** The listing is written once, in `apps/mcp/src/listing.ts`
-  (built with `@liveworkspace/mcp-kit/listing`). The `initialize` response's
-  `serverInfo` carries it (name `livedocuments`, title, version, website and icon) beside
-  the server instructions, the server card is made from it, and a test checks
-  `server.json` against the registry's schema (vendored in mcp-kit) and against
-  that identity, so the descriptor, the handshake and the card cannot drift.
-- **Server card.** `GET /.well-known/mcp/server-card.json`, with no sign-in and
-  cacheable for an hour: `serverInfo`, the description, icon, website and
-  documentation (the help article Connect an AI Assistant), the transport
-  (`streamable-http` at this origin's `/mcp`), OAuth 2.1 as the required
-  authentication with the protected-resource metadata's address, the
-  instructions, and every tool, resource and prompt with its schema, read from
-  the same server `/mcp` builds, so it is never stale.
-- **Publishing** is manual, never on a push. By hand from `livedocuments/`:
-  `mcp-publisher login github`, then `mcp-publisher publish`. Or the root
-  workflow `mcp-registry.yml`, started by hand (`workflow_dispatch`) with the
-  product to publish, which logs in with `github-oidc` and publishes
-  `livedocuments/server.json`. The registry rejects a version it already holds, so
-  republishing means bumping `version` in `listing.ts` and `server.json` (the
-  test keeps them equal).
-- Only the hosted origin is listed: the descriptor names it alone.
-
-### 4.16a Claude connector directory
-
-The hosted server is meant for **Claude's connector directory**, so a person finds livedocuments under Connectors in
-claude.ai or Claude Desktop and presses Connect instead of pasting `https://mcp.livedocuments.app/mcp`. Submitting
-happens at `claude.ai/directory/manage` and is the owner's (a paid Claude account, seven policy acknowledgments, and
-a test account if review is escalated to Verified). This section is the audit against the directory's public pages
-(read 2026-11-16): [submission](https://claude.com/docs/connectors/building/submission),
-[review criteria](https://claude.com/docs/connectors/building/review-criteria) and
-[authentication](https://claude.com/docs/connectors/building/authentication). OAuth, the tool rules and the listing
-helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each finding is fixed once there.
-
-**Authentication (§3).**
-
-| Directory asks                                                 | Here                                                                                                                                                                                                                                                                                                             |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `401` with `WWW-Authenticate: Bearer resource_metadata="…"`    | Met: `/mcp` without a Bearer, or with one the api refuses (`error="invalid_token"`), answers `401` with the challenge (`token-refusal.ts`).                                                                                                                                                                      |
-| Protected resource `resource` equals the MCP URL exactly       | Met: `resource` is `<origin>/mcp`, one authorization server (itself), `bearer_methods_supported: ["header"]`, at the root and at the path-inserted `/.well-known/oauth-protected-resource/mcp`.                                                                                                                  |
-| PKCE S256 on every authorize                                   | Met: `code_challenge_methods_supported: ["S256"]`; `plain`, a short challenge or a short verifier is refused.                                                                                                                                                                                                    |
-| DCR or CIMD                                                    | DCR (RFC 7591), `token_endpoint_auth_methods_supported: ["none"]`. CIMD is not advertised, so Claude uses DCR.                                                                                                                                                                                                   |
-| claude.ai's callback `https://claude.ai/api/mcp/auth_callback` | Met: an https redirect registers; a client named Claude may register only redirects on `claude.ai`, `claude.com`, `anthropic.com` or loopback (`oauth-names.ts`).                                                                                                                                                |
-| Claude Code's loopback redirect on any port                    | Met: a registered `http` loopback URI matches on scheme, host and path with any port (RFC 8252 §7.3).                                                                                                                                                                                                            |
-| A registration stays usable                                    | A registered client lives 200 days, longer than the six-month token it mints, and every authorize renews it, so Claude can always sign in again with the `client_id` it kept.                                                                                                                                    |
-| Refresh tokens rotate; a dead one gets `invalid_grant`         | Not applicable: no refresh token is issued (each access token lives six months, §3.5). A `refresh_token` grant answers `400 invalid_grant` "This server issues no refresh tokens. Sign in again.", so a client signs in again. Refresh support is added only if review asks.                                     |
-| `/token` takes `application/x-www-form-urlencoded`             | Met; a body that parses as nothing (JSON) is `400 invalid_request` saying to send it form-encoded, never `415`. An unknown grant is `400 unsupported_grant_type`.                                                                                                                                                |
-| Discovery, registration and token answer within 10 s           | Met: each is at most three KV operations and never calls another service (a test runs the whole claude.ai flow with the network refused).                                                                                                                                                                        |
-| Nothing blocks `160.79.104.0/21`                               | Met: no address is blocked. The one per-address limit Claude meets, 20 registrations an hour, would stop every claude.ai user at once from Anthropic's shared egress, so that range has its own budget of 2,000 an hour (`anthropic-egress.ts`). Tool calls are limited per token by the api, never per address. |
-| No token in a query string                                     | Met: only the `Authorization` header is read, and a `/mcp` request naming `access_token`, `token`, `api_key` or `apikey` in its query is refused `400 invalid_request` in words.                                                                                                                                 |
+What the directory checks of each tool stays true here, because the one MCP serves these tools:
 
 **Tools (§4).**
 
@@ -997,39 +829,12 @@ helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each find
   A failure it cannot fix is worded too: an api `5xx` reads "The service behind this tool did not finish the call
   (HTTP 503). Try again in a moment.", anything else "This tool failed unexpectedly (…). Try again in a moment.", never a
   bare "api 500: Internal Server Error" (`failureWords`). Outside the tools, an unknown path names `/mcp`, a crash is
-  `500 server_error` with a sentence, and every OAuth refusal carries an `error_description`. The device grant's polling
-  answers keep their RFC 8628 codes alone, since only the CLI uses it and words them itself.
+  `500 server_error` with a sentence, and the retired sign-in answers name the one MCP.
 - **Bounded answers.** Searches are capped by their `limit`, pictures have their own byte budget (§5), and any text
   answer over 150,000 characters, Claude's own cap on a tool result, becomes a refusal saying how to ask for less
   (`TOOL_RESULT_MAX_CHARS`).
 - **MCP Apps.** The interactive view (§5a) opens links only to `https://www.livedocuments.app`, the product's own editor, and
   its CSP lists only livedocuments's own socket host.
-
-**Listing copy** (for the submission form):
-
-- **Server name:** livedocuments
-- **One-liner:** Write articles, slide decks and infographics on livedocuments from a chat.
-- **Description:** livedocuments is a free editor for articles, slide decks and infographics, live for everyone on a document. Connect it and Claude can find your documents, read pages and articles, write an article from Markdown, add and lay out slides and infographic pages from ready-made layouts, change their text and elements, answer comment threads, share a link and tidy your library. Every change appears live for anyone with the document open.
-- **Categories:** Productivity; Writing; Design
-- **Server URL:** `https://mcp.livedocuments.app/mcp`
-- **Documentation:** `https://www.livedocuments.app/help/account-and-data/connect-ai-mcp/`
-- **Privacy policy:** `https://www.liveworkspace.app/privacy` (it covers connected AI tools for every app)
-- **Support:** the liveworkspace contact form, `https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj`
-- **Icon:** `https://www.livedocuments.app/livedocuments-icon-512.png`
-- **Slug:** `livedocuments` (permanent once published)
-- **Allowed link URIs:** `https://www.livedocuments.app`
-- **Use cases:**
-  - Write a report or a brief as an article.
-  - Turn notes into a slide deck from ready-made layouts.
-  - Make a poster or an infographic page.
-  - Read a document and revise it as asked.
-- **Before connecting:** a free liveworkspace account (sign-in is required; guests can't connect).
-- **Reads and writes:** both. Reads: find, read, and list templates, icons, images, threads and the Trash. Writes:
-  create, add tabs, write articles, change pages (some destructive), update (destructive), share, rename, delete to the Trash (destructive), archive (destructive), restore, comment threads, upload or delete gallery images. A read-only connection (a switch on the approval page) is refused every write by the api.
-- **Data handling:** the api is livedocuments's own, first-party; no personal health data and no sponsored content. The server
-  runs no AI model and keeps no conversation data: it stores only OAuth state (sessions, codes, client registrations),
-  and the token lives in the liveworkspace accounts Worker. What Claude makes is marked Made by AI or Generated by AI.
-- **Authentication:** OAuth, always required, DCR.
 
 ### 4.17 Structured output and described parameters
 
@@ -1346,7 +1151,7 @@ failed: production counted no successful `view_tab` in the five days after the v
 ## 6. Rollout
 
 1. **`apps/mcp` skeleton**: worker, Hono, MCP SDK, service binding to api,
-   `/health`, deploy wiring + `mcp.livedocuments.app` host. `.env.example`.
+   `/health`, first built as its own Worker; now a package the one MCP runs.
 2. **Shared SVG renderer**: extract `packages/document/src/svg-render.ts` from
    `export-tab.ts`, repoint the in-app export to it (no behaviour change), add
    `@resvg/resvg-wasm` rasterisation in the worker.
@@ -1354,9 +1159,8 @@ failed: production counted no successful `view_tab` in the five days after the v
    These are read-only and prove the schema + render path end to end.
 4. **Write tools**: `create_document`, `update_document` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
-5. **OAuth**: `/api/oauth/exchange` on the api worker (reusing the token-mint
-   path, signed-in only like `/api/tokens`); `apps/editor` consent page; the MCP
-   OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
+5. **OAuth**: first built here (`/api/oauth/exchange`, an editor consent page, the worker's OAuth endpoints); now the
+   one MCP's ([§3](#3-authentication-the-one-mcps-oauth)). The worker can be exercised
    with a hand-pasted `lwt_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in
    `AGENTS.md`):
@@ -1380,8 +1184,8 @@ failed: production counted no successful `view_tab` in the five days after the v
   and the other tools read/edit team documents through the ordinary access
   gates; see [§4.1](#41-find_documents), [Public API and API tokens §3.4](public-api-and-tokens.md).
   Managing teams themselves stays out, and the api refuses it to tokens.)
-- **Token-paste connector** as a supported path: OAuth is the chosen front door
-  ([§3](#3-authentication-oauth-21)); a raw Bearer still works for local dev but
+- **Token-paste connector** as a supported path: OAuth, at the one MCP, is the chosen front door
+  ([§3](#3-authentication-the-one-mcps-oauth)); a raw Bearer still works for local dev but
   isn't a documented user flow.
 - **Finer-grained scoped MCP tokens**: a **read-only** token now exists
   ([§4.11](#411-read-only-tokens-the-one-scope), [Public API and API tokens](public-api-and-tokens.md) §3.4); per-resource /

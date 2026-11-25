@@ -278,7 +278,7 @@ Bug Report, Release` when it has any), `type apply <project> -f <file|->` (a JSO
   cards page within a CPU-time budget (`cpuBudgetMs`). Only the listed cards' fields are worked out.
 - Measured locally end to end: `list_items` and `change_items` (one change) about 170 ms a call including
   process start; a 3-tab kanban with 6 cards lists in 5.5 KB.
-- Bundles against origin/main (measured 2026-10-08): the MCP worker +54.7 KB raw, +12.9 KB gzip (646 KB gzip in
+- Bundles against origin/main (measured 2026-10-08): the MCP package +54.7 KB raw, +12.9 KB gzip (646 KB gzip in
   all); the api worker +5.9 KB raw, +0.9 KB gzip.
 - `change_card_types`: 2 reads + 1 PUT (catalogue ≤ `ITEM_TYPES_BYTES`, 32 KB) + 1 write per trashed card.
 

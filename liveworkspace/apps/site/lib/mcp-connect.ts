@@ -2,6 +2,7 @@
 // site's page talks to, what the connection request is, and the hand-over: mint an account token for the client,
 // give it and the ticked apps to the MCP, retire the client's earlier token, and send the browser on.
 import { accountApi } from './account-api';
+import type { DeviceSessionClient } from './mcp-device-session';
 
 /** The apps the one MCP reaches, as their site ids and MCP names (livehuddle has no MCP). */
 export const MCP_APPS = [
@@ -22,7 +23,20 @@ export function mcpOrigin(location: { hostname: string; protocol: string }): str
   return 'https://mcp.liveworkspace.app';
 }
 
-export type ConsentSession = { clientName: string; redirectHost: string; verified: boolean };
+export type ConsentSession = {
+  clientName: string;
+  redirectHost: string;
+  verified: boolean;
+  // An app's own CLI (a built-in client, `<app>-cli`): it calls one app's api, so it is offered no app list.
+  cli: boolean;
+};
+
+/** Whether a client is one of the apps' CLIs, as the one MCP's built-in clients name them. */
+export function isCliClient(clientId: unknown, verified: boolean): boolean {
+  return (
+    verified && typeof clientId === 'string' && MCP_APPS.some((a) => clientId === `${a.app}-cli`)
+  );
+}
 
 /** The connection request the MCP holds, or null when it has expired (or never was). */
 export async function fetchConsentSession(
@@ -32,12 +46,14 @@ export async function fetchConsentSession(
   try {
     const response = await fetch(`${origin}/oauth/session/${encodeURIComponent(session)}`);
     if (!response.ok) return null;
-    const body = (await response.json()) as Partial<ConsentSession>;
+    const body = (await response.json()) as Partial<ConsentSession> & { clientId?: unknown };
+    const verified = body.verified === true;
     return {
       clientName:
         typeof body.clientName === 'string' && body.clientName ? body.clientName : 'An app',
       redirectHost: typeof body.redirectHost === 'string' ? body.redirectHost : '',
-      verified: body.verified === true,
+      verified,
+      cli: isCliClient(body.clientId, verified),
     };
   } catch {
     return null;
@@ -125,4 +141,28 @@ export function handOverError(reason: 'expired' | 'token_limit' | 'failed'): str
     default:
       return 'Couldn’t connect. Start again from your AI tool.';
   }
+}
+
+/**
+ * A terminal's device sign-in, after Connect (mcp.md "The app MCPs fold in"): the code still waiting, an account token
+ * minted for the CLI, handed to the MCP for the terminal to collect. A token the MCP did not take is revoked, so a
+ * failed Connect never leaves one behind.
+ */
+export async function connectDevice(
+  device: Pick<DeviceSessionClient, 'fetchSession' | 'complete'>,
+  userCode: string,
+  clientName: string,
+  readOnly: boolean,
+): Promise<{ ok: true } | { ok: false; reason: 'expired' | 'token_limit' | 'failed' }> {
+  if (!(await device.fetchSession(userCode))) return { ok: false, reason: 'expired' };
+  const minted = await accountApi<{ id: string; secret: string; expiresAt: number }>(
+    '/tokens',
+    'POST',
+    { name: clientName, readOnly },
+  );
+  if (!minted.ok) return { ok: false, reason: minted.status === 409 ? 'token_limit' : 'failed' };
+  const { id, secret, expiresAt } = minted.data;
+  if (await device.complete(userCode, secret, expiresAt)) return { ok: true };
+  await accountApi(`/tokens/${encodeURIComponent(id)}`, 'DELETE');
+  return { ok: false, reason: 'failed' };
 }

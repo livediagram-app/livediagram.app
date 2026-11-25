@@ -13,7 +13,7 @@ Five mechanisms, layered. Every cell below comes from one of them.
 | Grant resolution      | `apps/api/src/routes/document-grant.ts` `resolveDocumentGrant`, wrapped by `routes/context.ts` `gateRead` / `gateEdit` / `gateGrant` | Personal owner, then joined team member (both `FULL_EDIT`), then a share link for this document plus the share password. Returns `{ role: 'edit' \| 'view', tabScope, shareCode }`. A tab-scoped grant passes only when the door names its tab. |
 | Owner-only guards     | `routes/context.ts` `ownsDocument`, `requireOwnedDocument`, `mayDeleteDocument`                                                      | Ownership is separate from the edit grant already: share family and tab linking need the owner; delete, trash and moves need the owner or a joined member.                                                                                      |
 | Read-only token choke | `apps/api/src/index.ts` `routeApiRequest`, `if (tokenAuth?.readOnly && isWrite) return forbidden('read_only_token')`                 | A read-only token may only `GET` / `HEAD`, on every route.                                                                                                                                                                                      |
-| Session-only routes   | `routes/tokens.ts`, `livediagram/apps/api/src/routes/oauth.ts`, `routes/account.ts`, `routes/teams.ts` (non-GET)                     | Need `ctx.accountUserId` (a signed-in session) , so neither a guest nor any API token can reach them.                                                                                                                                           |
+| Session-only routes   | `routes/tokens.ts`, oauth.ts, `routes/account.ts`, `routes/teams.ts` (non-GET)                                                       | Need `ctx.accountUserId` (a signed-in session) , so neither a guest nor any API token can reach them.                                                                                                                                           |
 | Room op gate          | `apps/api/src/document-room/document-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-op-kinds.ts`           | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                             |
 
 The editor mirrors this with two flags: `sessionRole` (`apps/editor/app/document/[id]/editor-page-helpers.ts`
@@ -248,7 +248,7 @@ dialog or Make a copy button, no image upload or paste (`useEditorImages.ts`, `u
 8. **No owner override on team documents.** `X-Verified-Owner` is set only for a personal-document `?o=` upgrade,
    so a stuck baton on a team document can be cleared only by the grace timer.
 9. **Read-only tokens cannot join the room or comment**, and Settings cannot mint them at all: only the MCP consent
-   screen offers the toggle (`livediagram/apps/editor/app/oauth/consent/page.tsx`); `tokens.ts` ignores any `readOnly` field.
+   screen offers the toggle (page.tsx); `tokens.ts` ignores any `readOnly` field.
 10. **A link's role is immutable.** There is no route to change it; scope can change (`PUT /share/:code`), role
     cannot.
 11. **Setting a password does not end live sessions.** The password route broadcasts nothing (unlike revoke and

@@ -197,7 +197,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the Pages editor app, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects, no D1, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveknowledge.app)
+  mcp/          # MCP tools as a package, run by liveworkspace's one MCP (no Worker of its own)
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the liveknowledge command line for agents and scripts (Node, one esbuild bundle)
 packages/

@@ -26,8 +26,8 @@ Every site also publishes these details at `/.well-known/security.txt`.
 
 In short, for every site:
 
-- **In scope:** the hosted services at the sites above and the subdomains we run (such as `mcp.livediagram.app`),
-  the published CLIs and MCP servers, and the source code in this repository.
+- **In scope:** the hosted services at the sites above and the subdomains we run (such as `mcp.liveworkspace.app`),
+  the published CLIs and the one MCP server, and the source code in this repository.
 - **Out of scope:** third-party services we rely on (Cloudflare, GitHub, Google), which are reported to those
   vendors; reports from automated scanners, missing headers or best-practice settings with no demonstrated impact;
   anything that relies on a share link you were given (a share link is a key by design); and social engineering.

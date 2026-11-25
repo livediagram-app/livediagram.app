@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.livediagram-app/liveworkspace",
+  "title": "liveworkspace",
+  "description": "Your liveworkspace diagrams, docs, plans, designs and knowledgebases, through one connection.",
+  "version": "0.1.0",
+  "websiteUrl": "https://www.liveworkspace.app",
+  "repository": {
+    "url": "https://github.com/livediagram-app/livediagram.app",
+    "source": "github",
+    "subfolder": "liveworkspace/apps/mcp"
+  },
+  "icons": [
+    {
+      "src": "https://www.liveworkspace.app/liveworkspace-icon-512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.liveworkspace.app/mcp"
+    }
+  ]
+}

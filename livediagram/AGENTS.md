@@ -197,7 +197,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the diagram editor app (Next.js, clean routes)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects; images in liveworkspace's media service, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
+  mcp/          # MCP package for AI tools (tools only; run in process by the one MCP, mcp.liveworkspace.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the livediagram command line for agents and scripts (Node, one esbuild bundle)
 packages/

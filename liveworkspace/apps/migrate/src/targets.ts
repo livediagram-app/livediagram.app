@@ -33,12 +33,15 @@ export const mediaBucketOf = (env: Env): string =>
 /** The old site's image bucket, on the old account (MIGRATE_SOURCE_ACCOUNT_ID). Read only. */
 export const OLD_IMAGES_BUCKET = 'livediagram-images';
 
-/** The livediagram MCP's OAUTH_KV namespace (livediagram/apps/mcp/wrangler.toml). */
+/** The retired livediagram MCP Worker's OAUTH_KV namespace, where the 2026-10-27 migration put its clients. That
+ *  Worker folded into the one MCP (liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold in"), so no
+ *  wrangler.toml names it now; the ids stay for the record. */
 export const OAUTH_KV: Record<Env, string> = {
   production: '1a32ea4a20b74c55938025fae41bb9a8',
   staging: '954c6ba27a194650bcc1ded564821527',
 };
-export const MCP_CONFIG = join('livediagram', 'apps', 'mcp', 'wrangler.toml');
+/** A config on the target account for the KV write (wrangler needs one; the namespace is given by id). */
+export const MCP_CONFIG = join('liveworkspace', 'apps', 'mcp', 'wrangler.toml');
 
 /** The liveworkspace account every target is on (AGENTS.md). */
 export const TARGET_ACCOUNT_ID = '851be7d244b76a6557bcbe6c4ded80f5';

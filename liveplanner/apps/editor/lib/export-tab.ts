@@ -26,7 +26,7 @@ import {
 } from '@liveplanner/project';
 import { exportScale, MAX_EXPORT_CANVAS_SIDE } from '@liveworkspace/model-core/export-canvas';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the project package so the
-// MCP worker reuses the same element drawing. The canvas / backdrop
+// MCP package reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
   canvasSurface,

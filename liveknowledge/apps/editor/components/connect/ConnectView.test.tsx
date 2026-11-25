@@ -76,14 +76,14 @@ describe('the steps', () => {
   });
 
   it.each([
-    ['Claude', 'Open Claude connectors', 'https://mcp.liveknowledge.app/mcp'],
+    ['Claude', 'Open Claude connectors', 'https://mcp.liveworkspace.app/mcp'],
     [
       'Claude Code',
       null,
-      'claude mcp add --transport http --scope user liveknowledge https://mcp.liveknowledge.app/mcp',
+      'claude mcp add --transport http --scope user liveknowledge https://mcp.liveworkspace.app/mcp',
     ],
-    ['ChatGPT', 'Open ChatGPT settings', 'https://mcp.liveknowledge.app/mcp'],
-    ['Cursor', 'Add to Cursor', '"url": "https://mcp.liveknowledge.app/mcp"'],
+    ['ChatGPT', 'Open ChatGPT settings', 'https://mcp.liveworkspace.app/mcp'],
+    ['Cursor', 'Add to Cursor', '"url": "https://mcp.liveworkspace.app/mcp"'],
     ['VS Code', 'Add to VS Code', '"type": "http"'],
     ['Other App', null, 'Authorization: Bearer lwt_…'],
   ])('show %s’s own steps, with what to copy', async (name, action, code) => {
@@ -122,7 +122,7 @@ describe('the steps', () => {
         step('Add liveknowledge to Claude').getByRole('button', { name: 'Copy the text' }),
       );
     });
-    expect(writeText).toHaveBeenCalledWith('https://mcp.liveknowledge.app/mcp');
+    expect(writeText).toHaveBeenCalledWith('https://mcp.liveworkspace.app/mcp');
     expect(screen.getAllByText('Copied').length).toBeGreaterThan(0);
     expect(track).toHaveBeenCalledWith('UI', 'Copied', 'McpSetup');
   });

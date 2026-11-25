@@ -7,7 +7,7 @@
 //   node bench/run.mjs --round r1 [--tasks all|<area>|<ids>] [--models haiku,sonnet,opus] [--repeat 2]
 //                      [--concurrency 4] [--api-dir ../../api]
 //
-// Needs the local MCP + api running (MCP_URL, default http://127.0.0.1:9288/mcp) and the `claude` CLI signed in.
+// Needs the one MCP (liveworkspace/apps/mcp's dev, which serves this app's package as it is) and the api running (MCP_URL, default http://127.0.0.1:3013/liveknowledge/mcp) and the `claude` CLI signed in.
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runBench } from '@liveworkspace/mcp-kit/eval/run';
@@ -18,7 +18,7 @@ import { parseTranscript } from './transcript.mjs';
 runBench({
   here: dirname(fileURLToPath(import.meta.url)),
   product: 'liveknowledge',
-  mcpUrl: 'http://127.0.0.1:9288/mcp',
+  mcpUrl: 'http://127.0.0.1:3013/liveknowledge/mcp',
   galleryApp: 'liveknowledge.app',
   idsOf: (run) => run.documentIds,
   snapshot,

@@ -2842,8 +2842,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Revealed': 'Someone pressed Reveal on a board hiding writing, turning every card face up.',
   'Trash|Restored':
     'Someone brought a deleted project back from its deleted page, putting it back where it was.',
-  'Token|Created':
-    'A new API token was created, either by hand or for an AI tool connected over MCP.',
+  'Token|Created': 'A new API token was created by hand.',
   'Token|Linked': 'A token’s owner allowed a developer tool to open their projects.',
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added': 'Someone added something in the editor, such as a slide.',

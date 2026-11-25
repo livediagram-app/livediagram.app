@@ -14,7 +14,7 @@ what staging changes and why.
 | `apps/editor`             | `liveplanner-editor`                   | Static assets plus a small path-rewrite worker.                                                                                                                    |
 | `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `liveplanner` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). |
 | `apps/api`                | `liveplanner-api`                      | Worker with one Durable Object class (`PlanRoom`); no D1 and no R2.                                                                                                |
-| `apps/mcp`                | `liveplanner-mcp`                      | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                      |
+| `apps/mcp`                | none                                   | Package (the MCP tools), run in process by liveworkspace's one MCP Worker, no Worker of its own ([MCP server](../015-api/mcp-server.md)).                          |
 | `apps/router`             | `liveplanner-router`                   | Worker with service bindings to marketing, editor, api and help.                                                                                                   |
 
 `apps/cli` is the npm CLI ([CLI](../015-api/cli.md)) and deploys nowhere. Its npm publishing and the MCP Registry
@@ -25,9 +25,7 @@ the CLI on every run that reaches it (`npm pack --dry-run`, [docs/ci.md](../../.
 The marketing worker serves its `out/` folder. The editor worker serves `apps/editor/out/` through
 `apps/editor/src/worker.ts`, which rewrites every `/project/<id>` request to the one statically built
 `/project/placeholder/` page ([New project route](../007-editor/new-project-route.md)) and serves the share page. The
-api worker holds the REST and WebSocket layer ([API](../015-api/api.md)). The mcp worker serves the AI tools on its
-own host, `mcp.liveplanner.app`, and binds to the api worker directly, not through the router
-([MCP server](../015-api/mcp-server.md)). The router holds **no application logic**: its `MARKETING`, `EDITOR`,
+api worker holds the REST and WebSocket layer ([API](../015-api/api.md)). There is no MCP Worker of this app: the tools are a package that liveworkspace's one MCP Worker runs in process, reaching the api through its `LIVEPLANNER_API` service binding ([MCP server](../015-api/mcp-server.md)). `mcp.liveplanner.app` and `mcp-staging.liveplanner.app` are custom domains on that Worker, serving connections made before until their token ends. The router holds **no application logic**: its `MARKETING`, `EDITOR`,
 `API` and `HELP` service bindings forward each request to its worker, and it forwards the platform's paths to
 liveworkspace ([Router app](router-app.md)).
 
@@ -66,7 +64,7 @@ change reaches it ([docs/ci.md](../../../../docs/ci.md) "Only what changed"). Fo
 No job needs another's output: only the seven apps have a `build` script, and no workspace depends on an app, so
 checks and tests build nothing.
 
-`staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp,
+`staging:check` runs `wrangler deploy --dry-run --env staging` for the two workers that carry bindings (api,
 router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]`
 block, or a `service =` that lost its `-staging` suffix and points the staging router at **production**, is neither
 a type error nor a test failure. Without this step the first sign of either is a deploy.
@@ -106,8 +104,8 @@ everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and
 
 1. **Services and apis**: `liveplanner-api`. There is no migration step: the api has no D1, and each plan's
    object brings its own SQLite schema up to date on first use (`plan-schema.ts`).
-2. **Sites and MCP**: `liveplanner-marketing`, `liveplanner-editor` and `liveplanner-mcp`, so
-   a new editor never calls an api that lacks its routes and the mcp worker's binding to the api exists.
+2. **Sites**: `liveplanner-marketing` and `liveplanner-editor`, so
+   a new editor never calls an api that lacks its routes.
 3. **Routers**: `liveplanner-router`, whose service bindings target the workers above.
 
 `deploy-group.mjs` deploys each Worker, run by `deploy-group.yml` for each group of Workers (the api with the other
@@ -163,13 +161,11 @@ its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = t
 | Worker                       | Hostnames                                |
 | ---------------------------- | ---------------------------------------- |
 | `liveplanner-router`         | `liveplanner.app`, `www.liveplanner.app` |
-| `liveplanner-mcp`            | `mcp.liveplanner.app`                    |
 | `liveplanner-router-staging` | `staging.liveplanner.app`                |
-| `liveplanner-mcp-staging`    | `mcp-staging.liveplanner.app`            |
 
 `wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a
 dashboard step. `www.liveplanner.app` is attached because it is the canonical origin links are built from
-(`APP_BASE_URL`). The other workers have no hostname: they are reached only over the router's (and the mcp worker's)
+(`APP_BASE_URL`). The other workers have no hostname: they are reached only over the router's
 service bindings. From the router ([Router app](router-app.md)):
 
 - `/api/*` goes to the api worker (REST and WebSocket), except the platform's `/api/index/*`, Drive and previews
@@ -181,11 +177,10 @@ service bindings. From the router ([Router app](router-app.md)):
 
 No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
 
-A deployment of your own must also set two origins, or its links lead to liveplanner.app: the mcp worker's
-`CONSENT_BASE_URL` (`[vars]` in `apps/mcp/wrangler.toml`: the editor origin that serves the OAuth consent page and
-hosts every tool's links, [MCP server §4.13](../015-api/mcp-server.md#413-worker-configuration)) and the api's
+A deployment of your own must also set two origins, or its links lead to liveplanner.app: the one MCP's
+`LIVEPLANNER_BASE_URL` (a var on `liveworkspace-mcp`: the editor origin that hosts every tool's links, [MCP server §4.13](../015-api/mcp-server.md#413-worker-configuration)) and the api's
 `APP_BASE_URL` (the origin every email link points at, [Transactional email](../014-identity/transactional-email.md)).
-Local dev sets both to `http://localhost:3200` in the two dev scripts (`wrangler dev --var`), so a local run never
+Local dev sets both to `http://localhost:3200` in the api's dev script and the one MCP's (`wrangler dev --var`), so a local run never
 links to production.
 
 ## Rollback

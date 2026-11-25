@@ -26,7 +26,7 @@ describe('the apps', () => {
     for (const app of connectApps(URL)) {
       const words = JSON.stringify(app.steps);
       expect(words.includes(URL) || words.includes(encodeURIComponent(URL)), app.id).toBe(true);
-      expect(words).not.toContain('mcp.liveknowledge.app');
+      expect(words).not.toContain('mcp.liveworkspace.app');
     }
   });
 

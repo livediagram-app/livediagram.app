@@ -39,7 +39,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'folders',
   'teams',
   'tokens',
-  'oauth',
   'account',
   'trash',
   'preferences',

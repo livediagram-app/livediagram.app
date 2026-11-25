@@ -199,7 +199,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the planner app: the project editor, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveplanner.app)
+  mcp/          # Cloudflare Worker MCP server for AI tools (a package of MCP tools that liveworkspace's one MCP Worker runs; no Worker of its own)
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the liveplanner command line for agents and scripts (Node, one esbuild bundle)
 packages/

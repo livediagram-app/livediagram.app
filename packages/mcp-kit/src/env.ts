@@ -1,4 +1,4 @@
-// Every product's MCP Worker bindings (its apps/mcp/wrangler.toml), in their own module so tools / api / render
+// Every product's MCP package bindings (handed to it by the one MCP, liveworkspace/apps/mcp/src/app-workers.ts), in their own module so tools / api / render
 // can import the type without cycling through the Hono entrypoint.
 export type Env = {
   // Service binding to the product's api Worker (<product>-api): tools forward to /api/* through it,

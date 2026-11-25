@@ -43,3 +43,12 @@ export async function allowedApps(kv: KVNamespace, token: string): Promise<AppSp
   kept.set(key, { at: Date.now(), apps: result });
   return result;
 }
+
+/**
+ * `allowed` narrowed to one app: an app's old MCP address serves only that app (mcp.md "The app MCPs fold in"). It
+ * only ever narrows; no app leaves `allowed` as it is.
+ */
+export function narrowedApps(allowed: readonly AppSpec[], app: string | null): AppSpec[] {
+  if (app === null) return [...allowed];
+  return allowed.filter((spec) => spec.app === app);
+}

@@ -128,3 +128,15 @@ describe('the tool list', () => {
     );
   });
 });
+
+describe('an app MCP package (no authorization server of its own)', () => {
+  const pkg = createMcpApp<OauthEnv>({
+    buildServer: () => new McpServer(serverIdentity(LISTING)),
+    listing: LISTING,
+  });
+
+  it('mounts no sign-in endpoints: the one MCP signs people in', async () => {
+    for (const path of ['/.well-known/oauth-authorization-server', '/oauth/authorize'])
+      expect((await pkg.request(path, {}, { OAUTH_KV: {} as KVNamespace })).status).toBe(404);
+  });
+});

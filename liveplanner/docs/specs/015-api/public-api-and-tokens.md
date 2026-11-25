@@ -53,9 +53,8 @@ storing tokens itself, the account-level design below supersedes it.
 - **No copy.** liveplanner keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
   liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
   it when it is revoked ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
-- **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
-  token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
-  revoked by presenting it to `DELETE /api/tokens/current`.
+- **Minting for an AI tool.** The one MCP's consent page mints the token (liveworkspace/docs/specs/021-mcp/mcp.md); this
+  app has no exchange route. A token the MCP then refuses is revoked by presenting it to `DELETE /api/tokens/current`.
 - **Management** is liveworkspace's; this app has no routes for listing, minting or revoking tokens. The Settings dialog's Settings › API Tokens category draws the shared token panel in place for a signed-in account
   (`@liveworkspace/settings-ui/account-panels`, the same one liveworkspace.app's Settings has, loaded when the category
   is first opened): make a token (a name, Read Only), its secret shown once with Copy, and revoke one. Under it the editor's own API Tokens row lists the account's paired workbenches with Unpair and
@@ -148,7 +147,7 @@ single dispatch choke point with `403 read_only_token`
 credential rather than content: `GET /api/projects/:id/share`, whose links and password would let it
 open an edit link. One `POST` passes it, because it writes nothing and admits only a watcher:
 `POST /api/projects/:id/room-ticket?cap=view`, the view-only room ticket the MCP server's interactive view
-follows a plan with ([MCP server §5a](mcp-server.md)). Read-only tokens are minted through the MCP
+follows a plan with ([MCP server §5a](mcp-server.md)). Read-only tokens are minted through the one MCP's
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
 let an AI tool VIEW their projects without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred

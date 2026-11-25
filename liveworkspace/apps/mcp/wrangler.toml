@@ -1,82 +1,119 @@
-# liveworkspace's one MCP (docs/specs/021-mcp/mcp.md): a thin router in front of each app's MCP Worker, with one
-# OAuth consent and one token. Unlisted while it is tried: nothing public names its host yet.
+# liveworkspace's one MCP (docs/specs/021-mcp/mcp.md): the only MCP Worker. It runs every app's MCP package in
+# process ("The app MCPs fold in"), with one OAuth consent and one token.
 name = "liveworkspace-mcp"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # nodejs_compat for the MCP SDK's transport internals and mcp-kit's AsyncLocalStorage.
 compatibility_flags = ["nodejs_compat"]
-routes = [{ pattern = "mcp.liveworkspace.app", custom_domain = true }]
-# Reached only at its custom domain, behind the zone's WAF and rate-limit rules.
+# Its own host, and each app's old MCP address, which carries connections made before the fold. A custom domain belongs
+# to one Worker: each app's MCP Worker is deleted before the first deploy that claims its address (docs/ci.md "Deploys").
+routes = [
+  { pattern = "mcp.liveworkspace.app", custom_domain = true },
+  { pattern = "mcp.livediagram.app", custom_domain = true },
+  { pattern = "mcp.livedocuments.app", custom_domain = true },
+  { pattern = "mcp.liveplanner.app", custom_domain = true },
+  { pattern = "mcp.livedesign.app", custom_domain = true },
+  { pattern = "mcp.liveknowledge.app", custom_domain = true },
+]
+# Reached only at its custom domains, behind the zones' WAF and rate-limit rules.
 workers_dev = false
 preview_urls = false
 
 [dev]
 port = 3013
 
+# The fonts the apps' picture tools draw with, loaded as bytes.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf", "**/*.otf"]
+
 [vars]
 # The consent page: liveworkspace.app's /oauth/consent.
 CONSENT_BASE_URL = "https://www.liveworkspace.app"
+# Each app's editor, where its tools' links point.
+LIVEDIAGRAM_BASE_URL = "https://www.livediagram.app"
+LIVEDOCUMENTS_BASE_URL = "https://www.livedocuments.app"
+LIVEPLANNER_BASE_URL = "https://www.liveplanner.app"
+LIVEDESIGN_BASE_URL = "https://www.livedesign.app"
+LIVEKNOWLEDGE_BASE_URL = "https://www.liveknowledge.app"
 
-# Each app's MCP Worker, called as the person with their own Bearer token (an account token works on every app).
-# The deploy tiers put this Worker after the MCP Workers it binds (TIER_OF in .github/scripts/ci-plan.mjs).
-[[services]]
-binding = "LIVEDIAGRAM"
-service = "livediagram-mcp"
+# Each app's telemetry key is a secret (`wrangler secret put LIVEDIAGRAM_TELEMETRY_KEY`, and so on), the same value as
+# that app's api TELEMETRY_KEY, so each app's Mcp·Used is counted as that app's. Unset, that app sends no MCP telemetry.
 
+# Each app's api, which its MCP package's tools call as the person with their own Bearer token. The deploy tiers put
+# this Worker after the apis it binds (TIER_OF in .github/scripts/ci-plan.mjs).
 [[services]]
-binding = "LIVEDOCUMENTS"
-service = "livedocuments-mcp"
-
-[[services]]
-binding = "LIVEPLANNER"
-service = "liveplanner-mcp"
-
-[[services]]
-binding = "LIVEDESIGN"
-service = "livedesign-mcp"
+binding = "LIVEDIAGRAM_API"
+service = "livediagram-api"
 
 [[services]]
-binding = "LIVEKNOWLEDGE"
-service = "liveknowledge-mcp"
+binding = "LIVEDOCUMENTS_API"
+service = "livedocuments-api"
 
-# OAuth 2.1 state (client registrations, authorize sessions, codes) and each grant's ticked apps. No id: the first
-# deploy provisions the namespace (wrangler's automatic provisioning) and keeps it bound from then on.
+[[services]]
+binding = "LIVEPLANNER_API"
+service = "liveplanner-api"
+
+[[services]]
+binding = "LIVEDESIGN_API"
+service = "livedesign-api"
+
+[[services]]
+binding = "LIVEKNOWLEDGE_API"
+service = "liveknowledge-api"
+
+# OAuth 2.1 state (client registrations, authorize sessions, codes), each grant's ticked apps, and the apps' short-lived
+# scratch (a token's client name, by the token's hash). No id: the first deploy provisions the namespace (wrangler's
+# automatic provisioning) and keeps it bound from then on.
 [[kv_namespaces]]
 binding = "OAUTH_KV"
 
 # ---------------------------------------------------------------------------
-# Staging: `liveworkspace-mcp-staging` on mcp-staging.liveworkspace.app, bound to the staging MCP Workers.
-# Routes, vars, service bindings and KV are not inherited, so they are restated.
+# Staging: `liveworkspace-mcp-staging` on mcp-staging.liveworkspace.app and the apps' old staging MCP addresses, bound
+# to the staging apis. Routes, vars, rules, service bindings and KV are not inherited, so they are restated.
 # ---------------------------------------------------------------------------
 [env.staging]
 name = "liveworkspace-mcp-staging"
-routes = [{ pattern = "mcp-staging.liveworkspace.app", custom_domain = true }]
+routes = [
+  { pattern = "mcp-staging.liveworkspace.app", custom_domain = true },
+  { pattern = "mcp-staging.livediagram.app", custom_domain = true },
+  { pattern = "mcp-staging.livedocuments.app", custom_domain = true },
+  { pattern = "mcp-staging.liveplanner.app", custom_domain = true },
+  { pattern = "mcp-staging.livedesign.app", custom_domain = true },
+  { pattern = "mcp-staging.liveknowledge.app", custom_domain = true },
+]
 workers_dev = false
 preview_urls = false
 
 [env.staging.vars]
 CONSENT_BASE_URL = "https://staging.liveworkspace.app"
+TELEMETRY_URL = "https://staging.liveworkspace.app/api/telemetry"
+LIVEDIAGRAM_BASE_URL = "https://staging.livediagram.app"
+LIVEDOCUMENTS_BASE_URL = "https://staging.livedocuments.app"
+LIVEPLANNER_BASE_URL = "https://staging.liveplanner.app"
+LIVEDESIGN_BASE_URL = "https://staging.livedesign.app"
+LIVEKNOWLEDGE_BASE_URL = "https://staging.liveknowledge.app"
 
 [[env.staging.services]]
-binding = "LIVEDIAGRAM"
-service = "livediagram-mcp-staging"
+binding = "LIVEDIAGRAM_API"
+service = "livediagram-api-staging"
 
 [[env.staging.services]]
-binding = "LIVEDOCUMENTS"
-service = "livedocuments-mcp-staging"
+binding = "LIVEDOCUMENTS_API"
+service = "livedocuments-api-staging"
 
 [[env.staging.services]]
-binding = "LIVEPLANNER"
-service = "liveplanner-mcp-staging"
+binding = "LIVEPLANNER_API"
+service = "liveplanner-api-staging"
 
 [[env.staging.services]]
-binding = "LIVEDESIGN"
-service = "livedesign-mcp-staging"
+binding = "LIVEDESIGN_API"
+service = "livedesign-api-staging"
 
 [[env.staging.services]]
-binding = "LIVEKNOWLEDGE"
-service = "liveknowledge-mcp-staging"
+binding = "LIVEKNOWLEDGE_API"
+service = "liveknowledge-api-staging"
 
 [[env.staging.kv_namespaces]]
 binding = "OAUTH_KV"

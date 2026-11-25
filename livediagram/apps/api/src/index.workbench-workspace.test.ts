@@ -41,7 +41,6 @@ vi.mock('./routes/teams', () => stub('handleTeams'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
 vi.mock('./routes/drive', () => stub('handleDrive'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));
-vi.mock('./routes/oauth', () => stub('handleOauthExchange'));
 
 import worker from './index';
 import type { RouteContext, WorkbenchContext } from './routes/context';
@@ -127,7 +126,6 @@ describe('a workspace session at the front door', () => {
     ['PUT', 'participants/user_1'],
     ['GET', 'participants/user_2'],
     ['POST', 'ai/read-notes'],
-    ['POST', 'oauth'],
     ['GET', 'drive'],
     ['POST', 'teams'],
     ['GET', 'teams/invites'],

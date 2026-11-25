@@ -2275,18 +2275,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 401, 404],
   },
 
-  // ---- OAuth (MCP) ----
-  {
-    method: 'POST',
-    path: '/oauth/exchange',
-    segment: 'oauth',
-    tag: 'API tokens',
-    summary: 'Exchange an MCP OAuth authorization for an API token.',
-    auth: 'clerk',
-    requestSchema: { type: 'object', properties: { clientName: { type: 'string' } } },
-    statuses: [201, 400, 403, 404, 409],
-  },
-
   // ---- Link unfurl ----
   {
     method: 'GET',

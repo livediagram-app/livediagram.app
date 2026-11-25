@@ -10,6 +10,7 @@ import {
 } from '@liveworkspace/telemetry';
 import { AllApps } from './AllApps';
 // The Detail tabs' code loads on its own; read here first, each is already in hand when its tab opens.
+import './_all/AgentSignIns';
 import './_all/EventsByApp';
 import './_all/ForumChecks';
 import './_all/ProjectKits';
@@ -17,7 +18,7 @@ import './_all/VisitorsAndAccounts';
 
 // All Apps (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard", All Apps; "Apps Compared"): the
 // Dashboard tab's cards, then a Detail tab each for the events chart with a line per app and the Total, the visitors
-// and accounts for every app or one, Project Kits, Forum Checks and the busiest events; the window from the page,
+// and accounts for every app or one, Project Kits, Connections, Forum Checks and the busiest events; the window from the page,
 // and the empty states.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -121,6 +122,7 @@ describe('the tabs', () => {
       EVENTS,
       VISITORS,
       'Project Kits',
+      'Connections',
       'Forum Checks',
       'Busiest Events',
     ]);
@@ -285,5 +287,32 @@ describe('Project Kits', () => {
   it('says so when no kit has been used', async () => {
     await show(quiet, 'today', 'Project Kits');
     expect(section().textContent).toContain('No project kits yet');
+  });
+});
+
+describe('Connections', () => {
+  const tokens = buildTelemetrySummary(NOW, 'all', TELEMETRY_SENDERS, [
+    row(0, 'liveworkspace.app', 'Token', 'Created', 'MCP', 3),
+    row(0, 'liveworkspace.app', 'Token', 'Created', 'Cli', 2),
+    // Sent in an app's own name before the one MCP: it adds in.
+    row(0, 'livediagram.app', 'Token', 'Created', 'MCP', 1),
+    // Made by hand: API Token Activity's, not this tab's.
+    row(0, 'livediagram.app', 'Token', 'Created', 'Manual', 9),
+    row(2, 'liveworkspace.app', 'Token', 'Created', 'Cli', 5),
+  ]);
+  const section = () => host!.querySelector('section[aria-labelledby="agent-sign-ins"]')!;
+
+  it('shows AI tools connected and CLI sign-ins in the window, every app together', async () => {
+    await show(tokens, 'today', 'Connections');
+    const tiles = [...section().querySelectorAll('dl > div')].map((d) => d.textContent);
+    expect(tiles[0]).toContain('AI Tools Connected4');
+    // The CLI sign-ins two days back are outside today.
+    expect(tiles[1]).toContain('CLI Sign-ins2');
+    expect(table('AI tools connected and CLI sign-ins per day')).toBeTruthy();
+  });
+
+  it('says so when nothing has signed in', async () => {
+    await show(quiet, 'today', 'Connections');
+    expect(section().textContent).toContain('No sign-ins yet');
   });
 });

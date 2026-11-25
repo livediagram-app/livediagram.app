@@ -1,5 +1,5 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
-// transforms) now lives in @livedesign/design so the MCP worker (docs/specs/015-api/mcp-server.md)
+// transforms) now lives in @livedesign/design so the MCP (docs/specs/015-api/mcp-server.md)
 // themes tabs identically to the editor. This file re-exports it and adds
 // the LIVE-ONLY layer: resolution in the viewer's appearance and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`

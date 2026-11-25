@@ -30,6 +30,7 @@
     "@liveplanner/ui": "workspace:*",
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/agent-markdown": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:^",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/brand": "workspace:*",

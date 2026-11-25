@@ -20,7 +20,7 @@ import {
 // for how the worker is probed; what each case below proves is stated on it.
 
 // Probe as a signed-in caller, so the signed-in-only surfaces (teams, tokens,
-// OAuth exchange) route instead of answering 401 for every path under them.
+// account routes) route instead of answering 401 for every path under them.
 vi.mock('../auth/accounts', () => ({
   getPersonIdentity: async () => ({
     kind: 'account',

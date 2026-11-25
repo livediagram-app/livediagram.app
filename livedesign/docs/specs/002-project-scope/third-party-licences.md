@@ -15,7 +15,7 @@ reach a deployed artefact, and nothing else.
 - **Bundle truth.** What ships is read from the bundler, not inferred from `package.json`. The
   static apps (live, marketing, telemetry) are analysed with Next's `experimental-analyze` (the help centre is liveworkspace's one, listed on liveworkspace.app/licences)
   (Turbopack), and only the modules it places in client output count: a static export has no server
-  at runtime, so server chunks never leave the build. The workers (api, mcp, router) are bundled
+  at runtime, so server chunks never leave the build. The workers (api, router) and the MCP package liveworkspace's one MCP runs are bundled
   with `wrangler deploy --dry-run --metafile`, and every module in the metafile counts.
 - **Why not the lockfile closure.** The production closure of a Next app lists its build machinery
   (sharp and its LGPL libvips, Playwright, the MDX toolchain) as if it shipped.

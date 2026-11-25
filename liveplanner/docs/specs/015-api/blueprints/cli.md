@@ -1,6 +1,6 @@
 # CLI: blueprint
 
-Derived from [CLI](../cli.md), with the OAuth server of [MCP server](../mcp-server.md) §3 and its tool contracts
+Derived from [CLI](../cli.md), with the sign-in of [MCP server](../mcp-server.md) §3 and its tool contracts
 (§4), the token surface of [Public API and API tokens](../public-api-and-tokens.md) §3.4 to §3.7, the room and
 routes of [API](../api.md), the token roles of [Share roles](../../013-workspace/share-roles.md#later), the
 words of [Domain language](../../003-system-architecture/domain-language.md#agents) and the `Cli` category of
@@ -12,6 +12,13 @@ agent presence are other blueprints' and are consumed through the interfaces the
 [Agent presence](../../024-agents/blueprints/agent-presence.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as
 `CLIn`.
+
+**The sign-in server moved.** liveplanner's own OAuth server, its consent and device pages and `POST /api/oauth/exchange`
+are retired. The CLI signs in at liveworkspace's one MCP, which `GET /api/capabilities` names as `oauthIssuer`
+(`../../../../../liveworkspace/docs/specs/021-mcp/mcp.md`, "The app MCPs fold in"): its built-in clients include
+`liveplanner-cli`, browser sign-in uses its consent page, and device sign-in liveworkspace.app's `/oauth/device`. The
+sections below that describe the OAuth server, the consent page and the device page record the contract the CLI signs
+in against; the code for them is the one MCP's and liveworkspace.app's, not this product's.
 
 Scope, by file:
 
@@ -77,11 +84,8 @@ Scope, by file:
 | `apps/api/src/index.ts`                                                                                                                                  | The token write choke point admits `DELETE /api/tokens/current` and the room-ticket mint                                                                                                                                                                                                                                                                                                                                                 |
 | `apps/api/src/openapi/{manifest,project}.ts`                                                                                                             | The capabilities fields; `tokens/current`; the catalogue routes                                                                                                                                                                                                                                                                                                                                                                          |
 | `apps/mcp/src/api.ts`, `render.ts`, `image-result.ts`                                                                                                    | Wiring of the extracted packages; the schema resource reads `elementSchemaDoc` from `@liveplanner/project`                                                                                                                                                                                                                                                                                                                               |
-| `apps/mcp/src/oauth.ts`; `../packages/mcp-kit/src/oauth.ts`, `oauth-clients.ts`, `oauth-device.ts` (+ tests)                                             | Port-agnostic loopback, the built-in CLI client, the device grant; the session lookup returns `clientId`. The server is every product's; this MCP configures it with its CLI client and consent base                                                                                                                                                                                                                                     |
+| `../packages/mcp-kit/src/oauth.ts`, `oauth-clients.ts`, `oauth-device.ts` (+ tests)                                                                      | Port-agnostic loopback, the built-in CLI client, the device grant, served by the one MCP; this product's `packages/api-schema/src/oauth-clients.ts` names its CLI client                                                                                                                                                                                                                                                                 |
 | `apps/mcp/src/tools.ts`, `tab-tools.ts`, `tool-annotations.ts`, `verb-parity.test.ts`                                                                    | Each tool registered from its verb in `mcp-tools.ts`; the parity test                                                                                                                                                                                                                                                                                                                                                                    |
-| `apps/editor/app/oauth/oauth-shell.tsx`, `apps/editor/app/oauth/consent/page.tsx`                                                                        | `OauthShell` and `OAUTH_PAGES`, this editor's facts for the shared pages; the consent page is `createOauthConsentPage` over them (`../packages/workbench/src/components/oauth/OauthConsentPage.tsx`, `oauth-chrome.tsx`); `Token·Created·Cli` for the CLI client                                                                                                                                                                         |
-| `../packages/workbench/src/lib/mcp-consent-session.ts`                                                                                                   | `McpConsentSession` with `clientId` and `verified`                                                                                                                                                                                                                                                                                                                                                                                       |
-| `apps/editor/app/oauth/device/page.tsx`, `../packages/workbench/src/components/oauth/OauthDevicePage.tsx` (+ test)                                       | The `/oauth/device` page; its trust boundary is `../packages/workbench/src/lib/mcp-device-session.ts` (+ test)                                                                                                                                                                                                                                                                                                                           |
 | `apps/editor/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                                                                 | Import the shared modules from `@liveplanner/project` and `@liveworkspace/icons`                                                                                                                                                                                                                                                                                                                                                         |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`                         | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                                                                                                                                                                                                                                                                                                                |
 | `../.github/workflows/ci.yml`                                                                                                                            | Pack dry run on every run that reaches the CLI; publishing is manual, outside CI (CLI3)                                                                                                                                                                                                                                                                                                                                                  |
@@ -602,7 +606,9 @@ max-age=300` (CLI72).
   Each kind is within `SCHEMA_KIND_MAX_TOKENS`. The MCP's schema resource keeps its own prose (CLI73).
 - The catalogue owns only these commands' help; their content is the api's.
 
-### OAuth server (apps/mcp)
+### OAuth server (the one MCP)
+
+The contract below is served by liveworkspace's one MCP, not by `apps/mcp` here, a package with no OAuth routes. The base URL and the editor's `/oauth/device` and `/oauth/consent` pages in it are those of liveworkspace.app.
 
 - **Clients.** `lookupClient(env, clientId)` returns `BUILT_IN_CLIENTS[clientId]` first, then the KV registration.
   `BUILT_IN_CLIENTS = { [CLI_CLIENT_ID]: { clientName: CLI_CLIENT_NAME, redirectUris: CLI_REDIRECT_URIS } }` with
@@ -737,9 +743,8 @@ type PullFile = ProjectEnvelope & { liveplannerSync: PullSync };
   `telemetry on` writes it and then sends `UI·Toggled·TelemetryOn`; neither sends `Cli·Used`.
 - The first command after install that would send prints the notice (Presentation) once, recorded in
   `state.json`.
-- A CLI sign-in counts as `Token·Created·Cli`: the consent page sends it when the session's `clientId` is
-  `CLI_CLIENT_ID` (else `MCP`, as today), and the device page always; charted as `CLI Sign-Ins` in API Token
-  Activity.
+- A CLI sign-in is counted by liveworkspace's sign-in pages, not by this app (no `Token·Created` is sent from the
+  editor); charted as `CLI Sign-Ins` in API Token Activity.
 
 ### Update check
 
@@ -831,8 +836,7 @@ LIVEPLANNER_DEBUG=1 and report it at https://www.liveplanner.app/help/contact/`,
 - **E32** Connect on the device page after the code expired or was used, or when `/oauth/device/complete` refuses
   the token: the page checks `GET /oauth/device/session/<code>` before minting and shows the expired line without
   minting; a token minted but refused is revoked at once (`DELETE /api/tokens/<id>`), so a failed Connect never
-  leaves a live token counting towards the cap (`../packages/workbench/src/lib/oauth-handover.ts`, log `[oauth] handover refused;
-minted token revoked`, or `[oauth] handover revoke failed` when the revoke itself fails).
+  leaves a live token counting towards the cap (`connectDevice` in `../liveworkspace/apps/site/lib/mcp-connect.ts`).
 
 ## Security and trust
 
@@ -882,7 +886,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
 - **Callback page** (served by the loopback, `text/html`, no script, dark and light by `prefers-color-scheme`):
   title "liveplanner CLI", heading "You're signed in", body "Return to your terminal. You can close this tab." On
   `access_denied`: "Sign-in cancelled", "Nothing was connected. You can close this tab."
-- **`/oauth/device` page**, in `OauthShell` (CLI65):
+- **`/oauth/device` page** (liveworkspace.app's now; the copy is the contract, CLI65):
   - signed out: "Sign in to connect the liveplanner CLI", with Sign in (back to this URL) and Cancel.
   - entry: heading "Connect a terminal", label "Code shown in your terminal", an 8-letter field formatted
     `XXXX-XXXX`, always typed, never filled from the address; button "Continue"; line "Only enter a code shown by a terminal you are
@@ -1042,11 +1046,9 @@ below run them over this CLI's own modules.
 | Bundle: one ESM file, wasm, font, Node 22, size                                                                        | `apps/cli/scripts/build.test.ts` (planned); CI `npm pack --dry-run`                                                                                                             |
 | Update check: once a day, stderr, skipped in CI, non-TTY, opt-out, offline, never waited for, semver with pre-releases | `../packages/cli-kit/src/update-check.test.ts`, `../packages/cli-kit/src/bin.test.ts`                                                                                           |
 | Telemetry: after success only, profile's api, opt-outs, flip first, notice once, no arguments                          | `apps/cli/src/telemetry.test.ts`                                                                                                                                                |
-| Every emitted event has a chart and a sentence; `Token·Created·Cli`                                                    | `liveworkspace/apps/site/app/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`; `../packages/workbench/src/lib/mcp-consent-session.test.ts`                     |
-| Port-agnostic loopback; built-in client; `clientId` on the session                                                     | `../packages/mcp-kit/src/oauth.test.ts`; this product's client in `apps/mcp/src/oauth.test.ts`                                                                                  |
+| Every emitted event has a chart and a sentence                                                                         | `liveworkspace/apps/site/app/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                                                                                  |
+| Port-agnostic loopback; built-in client; `clientId` on the session                                                     | `../packages/mcp-kit/src/oauth.test.ts`; the CLIs as built-in clients in `../liveworkspace/apps/mcp/src/oauth.test.ts`                                                          |
 | Device grant endpoints and polling answers                                                                             | `../packages/mcp-kit/src/oauth-device.test.ts`, `../packages/mcp-kit/src/oauth.test.ts` (the built-in client)                                                                   |
-| The device page trusts only the server's client name                                                                   | `../packages/workbench/src/lib/mcp-device-session.test.ts`; `apps/editor/e2e/signed-in/oauth-device.spec.ts` (dark scheme)                                                      |
-| The device page never fills the code from its address, and warns                                                       | `../packages/workbench/src/components/oauth/OauthDevicePage.test.tsx`                                                                                                           |
 | `tokens/current` read and revoke; session refused; any role revokes                                                    | `apps/api/src/routes/tokens.test.ts`                                                                                                                                            |
 | api-client and render-png extractions keep the MCP's behaviour                                                         | `packages/api-client/src/client.test.ts`; existing `apps/mcp` suites stay green                                                                                                 |
 
@@ -1091,8 +1093,8 @@ below run them over this CLI's own modules.
 
 Environment the CLI reads: `LIVEPLANNER_TOKEN`, `LIVEPLANNER_HOST`, `LIVEPLANNER_PROFILE`, `LIVEPLANNER_TELEMETRY`,
 `DO_NOT_TRACK`, `LIVEPLANNER_NO_UPDATE_CHECK`, `LIVEPLANNER_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.
-Api worker vars: `OAUTH_ISSUER` (hosted `https://mcp.liveplanner.app`) and `CLI_MIN_VERSION` (unset until a
-release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISSUER` is the staging MCP origin), so
+Api worker vars: `OAUTH_ISSUER` (hosted `https://mcp.liveworkspace.app`) and `CLI_MIN_VERSION` (unset until a
+release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISSUER` is `https://mcp-staging.liveworkspace.app`), so
 `pnpm staging:check` holds; both documented in `apps/api/.env.example` and `wrangler.toml`. No new secret or binding.
 
 ## Assets and external resources

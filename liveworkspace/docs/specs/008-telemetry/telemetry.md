@@ -64,7 +64,7 @@ Browser batches are rate-limited per network (120 a minute; the IPv4 address or 
 `@liveworkspace/api-kit` `clientRateKey` as every api is), and the address is never
 stored.
 
-**From a Worker** (the apps' api and mcp Workers report server-side events, such as a sign-up, an
+**From a Worker** (the apps' api Workers and the one MCP report server-side events, such as a sign-up, an
 email sent or a 500), the request carries `X-Telemetry-Key` with that app's own secret. A key only
 ever speaks for its own app. The accounts Worker holds each app's key too: it counts the onboarding
 emails it sends once per account under the app each one speaks for
@@ -91,11 +91,12 @@ under its key, so the service never needs to trust an unsigned, origin-less batc
 
 Each app configures where to send:
 
-| Where               | Setting                                                                               |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| Browser builds      | `NEXT_PUBLIC_TELEMETRY_URL` (default `https://www.liveworkspace.app/api/telemetry`)   |
-| api and mcp Workers | `TELEMETRY_URL` var (same default) and the `TELEMETRY_KEY` secret                     |
-| Both                | The app's own `TELEMETRY_ENABLED` / `NEXT_PUBLIC_TELEMETRY_ENABLED` gates still apply |
+| Where          | Setting                                                                               |
+| -------------- | ------------------------------------------------------------------------------------- |
+| Browser builds | `NEXT_PUBLIC_TELEMETRY_URL` (default `https://www.liveworkspace.app/api/telemetry`)   |
+| api Workers    | `TELEMETRY_URL` var (same default) and the `TELEMETRY_KEY` secret                     |
+| the one MCP    | `<APP>_TELEMETRY_KEY` secrets, the same value as that app's api `TELEMETRY_KEY`       |
+| Both           | The app's own `TELEMETRY_ENABLED` / `NEXT_PUBLIC_TELEMETRY_ENABLED` gates still apply |
 
 A person's opt-out (the app's user preference) is still honoured in the browser, before anything is
 sent.
@@ -146,8 +147,8 @@ the app's to report, so each change is counted once.
   app of the item it shares, and a revoked pass under that app's noun (liveplanner's `Project`, the
   others' `Document`).
 - **Its own events.** Besides the Explorer's, liveworkspace.app sends a few of its own, never in an app's name:
-  the project kits' and an AI tool connected through the one MCP's consent page (`Token·Created·MCP`, as each app's
-  consent page sends in its own name; both in `PLATFORM_OWN_TELEMETRY_EVENTS` in `packages/telemetry/src/platform-events.ts`), and the All
+  the project kits' and a token minted on its OAuth pages: an AI tool connected through the one MCP's consent page
+  (`Token·Created·MCP`) or an app's CLI signed in there or on `/oauth/device` (`Token·Created·Cli`); both in `PLATFORM_OWN_TELEMETRY_EVENTS` in `packages/telemetry/src/platform-events.ts`), and the All
   Apps help's at www.liveworkspace.app/help (`isPlatformHelpTelemetryEvent` there: `Help·View`, `Help·Helpful` and
   `Help·Unhelpful` by article id, `Help·Searched` by outcome, `Help·Changed·Scope.<scope>` for the app switch,
   [017-help](../017-help/help-centre.md) "Telemetry"), which the ingest takes only for `liveworkspace.app` and only
@@ -188,7 +189,11 @@ its tabs, catalogues and explanations. Picking an app on the page updates the li
   visitors and sign-ups, its 30-day line in its accent, and **Open Dashboard**, which picks the app. Its Detail tabs
   are **Events by App** and **Visitors & Accounts** (Apps Compared, its own section below), **Project Kits**
   (liveworkspace.app's own kit events, [../004-index/kits.md](../004-index/kits.md) "Telemetry": Started, Retried,
-  Completed and Removed a day, every kit together, with each window's totals), **Forum Checks** (the Community
+  Completed and Removed a day, every kit together, with each window's totals), **Connections** (liveworkspace.app's
+  own token events, [021-mcp](../021-mcp/mcp.md) "The app MCPs fold in": AI Tools Connected, `Token·Created·MCP` from
+  the one MCP's consent page, and CLI Sign-ins, `Token·Created·Cli` from there or `/oauth/device`, each window's totals
+  and both a day; the rows the apps sent in their own names before the fold add in, so the lines carry on, while each
+  app's dashboard drops them), **Forum Checks** (the Community
   Forum's server check: today's checks and Neurons against the daily caps, and both a day for the last 30 days, read
   from the Community service's `GET /forum/checks`, which keeps the tally itself, [007-community](../007-community/community.md)
   "The Forum"; the read is made when the tab is opened, not with the page), and **Busiest Events**, the 25 sent most.

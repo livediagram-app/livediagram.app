@@ -38,10 +38,11 @@ PRO_ENABLED = "false"
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
 INDEX_ORIGIN = "https://www.liveworkspace.app"
 
-# The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
+# The CLI signs in at liveworkspace's one MCP, whose OAuth server serves every app
+# (liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in, docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
 # from an older CLI.
-OAUTH_ISSUER = "https://mcp.livedesign.app"
+OAUTH_ISSUER = "https://mcp.liveworkspace.app"
 
 # The sender for livedesign's email (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/specs/003-accounts/email.md).
 # Its domain must be onboarded to Cloudflare Email Service on this account.
@@ -302,8 +303,8 @@ EMAIL_FROM = "livedesign <hello@livedesign.app>"
 # Staging's own index (see the top-level [vars]).
 INDEX_ORIGIN = "https://staging.liveworkspace.app"
 
-# The staging MCP worker's OAuth server, for the CLI against staging.
-OAUTH_ISSUER = "https://mcp-staging.livedesign.app"
+# The staging one MCP's OAuth server, for the CLI against staging.
+OAUTH_ISSUER = "https://mcp-staging.liveworkspace.app"
 
 # Email Service, restated because bindings don't inherit (see the top-level [[send_email]]).
 [[env.staging.send_email]]

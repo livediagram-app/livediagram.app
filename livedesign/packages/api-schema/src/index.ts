@@ -221,7 +221,7 @@ export { DESIGN_FORMAT, DESIGN_FORMAT_HEADER, parseDesignFormat } from './design
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
 export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
-// Bearer-token and loopback-host reading, shared by the api and mcp workers
+// Bearer-token and loopback-host reading, shared by the api and the one MCP
 // so the two can't disagree on what a request presented (see @liveworkspace/api-kit/request-auth).
 export {
   bearerTokenOf,

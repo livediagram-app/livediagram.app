@@ -13,7 +13,7 @@ remote Durable Objects before it reaches the ones holding people's designs.
 |               | Production                                      | Staging                                    |
 | ------------- | ----------------------------------------------- | ------------------------------------------ |
 | Hostname      | `livedesign.app`                                | `staging.livedesign.app`                   |
-| MCP host      | `mcp.livedesign.app`                            | `mcp-staging.livedesign.app`               |
+| MCP host      | `mcp.liveworkspace.app` (the one MCP)           | `mcp-staging.liveworkspace.app`            |
 | Trigger       | Manual (`workflow_dispatch`)                    | Automatic, on every green CI run on `main` |
 | Workflow      | `deploy-production.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names  | `livedesign-<app>`                              | `livedesign-<app>-staging`                 |
@@ -55,7 +55,7 @@ drifting apart unnoticed.
 
 ### Service bindings point at staging
 
-The router binds six workers and mcp binds one. In `[env.staging]` every `service =`
+The router binds six workers. In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
 never to production's. A missed suffix here is the single worst failure mode available
 (staging frontend, production designs), so `apps/router/wrangler.toml` keeps its staging
@@ -121,9 +121,9 @@ Two deliberate non-changes:
 its own build**: each deploy builds its sites for its environment. Staging's build differs
 from production's in exactly one value:
 
-| Variable                 | Production                                       | Staging                                                                                                                           |
-| ------------------------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livedesign.app`) | `https://mcp-staging.livedesign.app`, the staging mcp worker's custom domain (set in the root `.github/scripts/deploy-group.mjs`) |
+| Variable                 | Production                                          | Staging                                                                                                                           |
+| ------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.liveworkspace.app`) | `https://mcp-staging.liveworkspace.app`, the staging one MCP's custom domain (set in the root `.github/scripts/deploy-group.mjs`) |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
@@ -154,7 +154,7 @@ both environments it returns `{"emailEnabled":true}` on staging as on production
 
 Worker secrets are per environment: staging's are set with `wrangler secret put --env staging` and are never
 production's (its own accounts client and resource, its own `MEDIA_KEY` for staging liveworkspace's media service, its
-own `TELEMETRY_KEY` on the api and mcp). A deploy writes no secret, so they survive every deploy
+own `TELEMETRY_KEY` on the api, the same value as `LIVEDESIGN_TELEMETRY_KEY` on staging's liveworkspace-mcp). A deploy writes no secret, so they survive every deploy
 ([Secrets policy](../002-project-scope/secrets-policy.md)).
 
 Email needs no secret in either environment: the `EMAIL` binding is the credential.
@@ -178,34 +178,25 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 **Data stores** staging needs, each created once with wrangler:
 
-| Resource | Name                             | Created with                                                            | Where the id lives                        |
-| -------- | -------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------- |
-| R2       | `livedesign-photo-blobs-staging` | `wrangler r2 bucket create livedesign-photo-blobs-staging`              | bound by name, no id                      |
-| KV       | `livedesign-mcp-oauth-staging`   | `wrangler kv namespace create livedesign-mcp-oauth-staging` (see below) | `apps/mcp/wrangler.toml`, `[env.staging]` |
+| Resource | Name                             | Created with                                               | Where the id lives   |
+| -------- | -------------------------------- | ---------------------------------------------------------- | -------------------- |
+| R2       | `livedesign-photo-blobs-staging` | `wrangler r2 bucket create livedesign-photo-blobs-staging` | bound by name, no id |
 
-`wrangler r2 bucket list` and `wrangler kv namespace list` show whether each exists. The
-KV namespace's id is in `apps/mcp/wrangler.toml`. The api's Durable Objects need no
-setup: they exist once the staging api worker deploys.
-
-Note the KV **title** is `livedesign-mcp-oauth-staging`, matching production's
-`livedesign-mcp-oauth`: the product's name leads, because every liveworkspace app's
-namespaces share one account (liveplanner's are `liveplanner-mcp-oauth[-staging]`).
-It is not `OAUTH_KV`: that is the binding name inside `wrangler.toml`, a different
-thing, and `wrangler kv namespace create OAUTH_KV --env staging` would produce
-`livedesign-mcp-staging-OAUTH_KV` instead.
+`wrangler r2 bucket list` shows whether it exists. The api's Durable Objects need no
+setup: they exist once the staging api worker deploys. livedesign has no MCP KV namespace: its MCP is a package, and
+the one MCP's `OAUTH_KV` serves every app ([the app MCPs fold in](../../../../liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in)).
 
 The **workers** are not on this list: a worker is its uploaded script, so every
 `livedesign-*-staging` worker comes into existence on the first staging deploy. The tiers
-bootstrap them in order: the api first, then the sites and mcp (bound to the api), then the
+bootstrap them in order: the api first, then the sites, then the
 router (bound to the four) ([Deployment](deployment.md) "First deploy").
 
-**Nothing to do for hostnames**: both are declared in the workers' `[env.staging]` blocks
+**Nothing to do for hostnames**: it is declared in the router's `[env.staging]` block
 and attached by the deploy itself, as production's are ([Deployment](deployment.md#custom-domain)):
 
 - `staging.livedesign.app` → `livedesign-router-staging`
-- `mcp-staging.livedesign.app` → `livedesign-mcp-staging`
 
-Only those two workers get hostnames. The other six are reached exclusively over the
+Only that worker gets a hostname. The other six are reached exclusively over the
 router's service bindings and never touch DNS, exactly as in production.
 
 **Sign-in needs one registration**: staging's OAuth client on the accounts Worker, with

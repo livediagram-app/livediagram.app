@@ -1,6 +1,6 @@
 import { defineProject } from '@liveworkspace/vitest-config';
 
-// The sheets engine is pure and shared by the editor, the api and the MCP worker
+// The sheets engine is pure and shared by the editor, the api and the MCP package
 // (docs/specs/029-sheets/blueprints/sheets-engine.md), so every rule is covered.
 export default defineProject({
   test: {

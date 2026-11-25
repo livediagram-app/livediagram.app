@@ -189,7 +189,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // A template can also declare what KIND of board it makes (docs/specs/021-event-storming/event-storming.md).
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
-  // /new, and the MCP worker all go through here.
+  // /new, and the MCP package all go through here.
   // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
   // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
   // whiteboarding is no kind), and the Workshop ones in Workshop.

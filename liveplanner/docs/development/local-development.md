@@ -29,14 +29,14 @@ pnpm dev
 
 Turbo spins up all eight dev servers in parallel:
 
-| App                       | Dev URL                                                                                                                     |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `apps/router`             | `http://localhost:3200`: **everything on one port**, stitched like production                                               |
-| `apps/marketing`          | `http://localhost:3201`                                                                                                     |
-| `apps/editor`             | `http://localhost:3202` (clean routes: /new, /explorer, ...)                                                                |
-| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=liveplanner corepack pnpm --filter @liveworkspace/help dev`) |
-| `apps/api`                | `http://localhost:8887/api`                                                                                                 |
-| `apps/mcp`                | `http://localhost:8888` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only)                          |
+| App                       | Dev URL                                                                                                                                                         |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router`             | `http://localhost:3200`: **everything on one port**, stitched like production                                                                                   |
+| `apps/marketing`          | `http://localhost:3201`                                                                                                                                         |
+| `apps/editor`             | `http://localhost:3202` (clean routes: /new, /explorer, ...)                                                                                                    |
+| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=liveplanner corepack pnpm --filter @liveworkspace/help dev`)                                     |
+| `apps/api`                | `http://localhost:8887/api`                                                                                                                                     |
+| `apps/mcp`                | no port of its own: `liveworkspace/apps/mcp` (`dev`, port 3013) runs it, `http://127.0.0.1:3013/liveplanner/mcp` ([MCP server](../specs/015-api/mcp-server.md)) |
 
 The `router` dev server (`wrangler dev --env local`, port 3200) gives you the production URL shape locally: `/` is marketing, `/new` and `/project/*` are the editor, plus `/telemetry`, `/help` and `/api`, so there is no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
@@ -51,7 +51,7 @@ A remote api works too, and there are now two of them: `https://staging.liveplan
 reaches [staging](../specs/016-platform/staging-environment.md), which has its own data and is
 the one to reach for; the production api reads and writes real people's projects.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the plan”**, which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `liveworkspace/apps/help` reads the same variable. Telemetry is liveworkspace's (liveworkspace/docs/specs/008-telemetry/telemetry.md): to see local events, run its service (`wrangler dev` in liveworkspace/apps/telemetry, port 8790) and point the frontends at it with `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry`, and the api and mcp workers with `TELEMETRY_URL` and `TELEMETRY_KEY` in their `.dev.vars`.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the plan”**, which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `liveworkspace/apps/help` reads the same variable. Telemetry is liveworkspace's (liveworkspace/docs/specs/008-telemetry/telemetry.md): to see local events, run its service (`wrangler dev` in liveworkspace/apps/telemetry, port 8790) and point the frontends at it with `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry`, and the api worker and the one MCP with `TELEMETRY_URL` and `TELEMETRY_KEY` in their `.dev.vars`.
 
 The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3200/new`. Plans persist to the local Durable Object storage the api worker creates on first start. (On `http://localhost:3202/new` instead, set `NEXT_PUBLIC_API_BASE` first; see the note above.)
 

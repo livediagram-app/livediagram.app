@@ -469,16 +469,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I connect my own AI assistant, like Claude?',
         a: (
           <>
-            Yes. liveplanner runs an MCP server at mcp.liveplanner.app. Connect a compatible AI tool
-            and, after a one-time authorisation, it can find and read your plans, put boards, sheets
-            and forms on their tabs, and add, edit and move cards, naming columns and fields the way
-            the board shows them. Its changes appear live for anyone on the tab.{' '}
-            <a href="/ai">Build with AI</a> walks you through connecting Claude, ChatGPT, Cursor and
-            more.
+            Yes. Connect a compatible AI tool to liveworkspace&apos;s MCP server at
+            mcp.liveworkspace.app, one connection for every liveworkspace app. After a one-time
+            authorisation, it can find and read your plans, put boards, sheets and forms on their
+            tabs, and add, edit and move cards, naming columns and fields the way the board shows
+            them. Its changes appear live for anyone on the tab. <a href="/ai">Build with AI</a>{' '}
+            walks you through connecting Claude, ChatGPT, Cursor and more.
           </>
         ),
         aText:
-          'Yes. liveplanner runs an MCP server at mcp.liveplanner.app. Connect a compatible AI tool and, after a one-time authorisation, it can find and read your plans, put boards, sheets and forms on their tabs, and add, edit and move cards, naming columns and fields the way the board shows them. Its changes appear live for anyone on the tab. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+          "Yes. Connect a compatible AI tool to liveworkspace's MCP server at mcp.liveworkspace.app, one connection for every liveworkspace app. After a one-time authorisation, it can find and read your plans, put boards, sheets and forms on their tabs, and add, edit and move cards, naming columns and fields the way the board shows them. Its changes appear live for anyone on the tab. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.",
       },
       {
         q: 'Can AI set up a plan for me?',

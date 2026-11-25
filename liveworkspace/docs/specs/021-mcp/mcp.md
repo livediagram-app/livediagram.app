@@ -4,10 +4,10 @@ One MCP server for every app with an MCP of its own (livediagram, liveplanner, l
 liveknowledge), behind one OAuth consent and one token (Work Tracker 1370). livehuddle has no MCP, so it has no
 tools here.
 
-**Unlisted while it is tried.** The server runs in production at `https://mcp.liveworkspace.app/mcp`, but nothing
-public names it yet: no help article, marketing page, connect page or directory listing. Each app's own MCP stays as
-it is and is still the one its pages recommend. Listing it, and pointing the connect pages at it, waits for the
-owner's call after the tool-pick eval and a few days of use.
+**The one MCP.** The server runs at `https://mcp.liveworkspace.app/mcp` and is the only MCP any page, help
+article or listing names. It is the only MCP Worker: each app's tools are a package the app owns and this Worker
+runs, and the apps' old addresses (`mcp.<app>.app`) are routes on it that carry existing connections
+([The app MCPs fold in](#the-app-mcps-fold-in)).
 
 ## Why
 
@@ -88,10 +88,12 @@ Before submitting: public docs, a privacy policy and support links, which wait u
 
 ## How it works
 
-A thin router. It keeps no copy of any app's tool logic: each call goes, as the person, to that app's own MCP Worker
-over a service binding, with the person's own `Authorization: Bearer lwt_…` (an account token works on every app).
-An app's answer comes back as it is, its old tool names rewritten. A refused token (401 from any app) makes the
-whole request answer 401 with the sign-in challenge, as each app's MCP does.
+A router in front of each app's tools, in one Worker. Each app's MCP is a package in that app's folder
+(`<app>/apps/mcp`: its tools, prompts, resources and views, with their tests), and this Worker runs each one in
+process, as the person, with the person's own `Authorization: Bearer lwt_…` (an account token works on every app).
+An app's tools reach its api over this Worker's service binding to that api. An app's answer comes back as it is,
+its old tool names rewritten. A refused token (401 from any app) makes the whole request answer 401 with the sign-in
+challenge.
 
 The core verbs map to each app's existing tools: `find_items` to `find_documents`, `find_projects` or
 `find_designs` (or `list_trash` with `where: "trash"`), across every allowed app at once, five at most, each app's
@@ -100,7 +102,7 @@ to its create tool, a deck, article or infographic starting from livedocuments' 
 blank infographic template; the rest to the matching share, rename, delete and restore tools. An app that fails
 during `find_items` is named in the answer with its error; the others still answer.
 
-Each app's tool list is read from its MCP once per isolate and kept 10 minutes.
+Each app's tool list is read from its package once per isolate and kept 10 minutes.
 
 ### Nothing an app's MCP offers is lost
 
@@ -132,6 +134,34 @@ token named after the client (the Settings panel's API Tokens list it, and revok
 the server keeps which apps it may reach, by the token's hash, as long as the client's registration. A token with no
 such record (one pasted from Settings) reaches every app. A reconnect replaces the client's earlier token, as each
 app's MCP does.
+
+## The app MCPs fold in
+
+Each app keeps its MCP's code, in its own folder, and owns its tools; what goes is the app's MCP Worker. This
+Worker runs every app's MCP, so there is one deploy, one KV namespace and one place to test the whole connection.
+
+- **What each app's package is handed.** Its api (`LIVEDIAGRAM_API`, `LIVEDOCUMENTS_API`, ... service bindings on
+  this Worker), its editor's origin for links (`<APP>_BASE_URL`), the short-lived scratch KV (this Worker's
+  `OAUTH_KV`, which keeps a token's client name by the token's hash, the same for every app) and its telemetry key
+  (`<APP>_TELEMETRY_KEY`, the same secret as that app's api `TELEMETRY_KEY`), so `Mcp·Used` stays counted per app.
+  A deployment that sets no telemetry key sends no MCP telemetry for that app.
+- **Its old address.** `mcp.<app>.app` is a custom domain on this Worker. A request there with a token is served
+  narrowed to that one app with every tool listed (as `?apps=<app>&tools=all`, which only ever narrows what the token
+  may reach), so a connection made before the fold sees that app's tools under this server's names, plus the core
+  verbs, until its token ends. Its sign-in endpoints refuse in words that point at
+  `https://mcp.liveworkspace.app/mcp`: registration, authorize and the token exchange; its discovery metadata says the
+  same. A token that ended answers 401 with that pointer. `/health` answers there, for the status page.
+- **The apps' own consent and device pages are removed.** Their CLIs sign in here (below).
+- **Its tests stay with it.** Each app's MCP package keeps its unit tests and eval; this Worker's tests cover the
+  routing, the old addresses and the wiring of each package.
+
+**The CLIs sign in here.** Each app's API reports this server as its `oauthIssuer`, so every CLI version signs in
+through it with no new release: its built-in clients are the five CLIs (`<app>-cli`), each verified. Browser
+sign-in uses the same consent page without the app list (a CLI calls the app's API, not this server); device
+sign-in uses liveworkspace.app's `/oauth/device`.
+
+**Moving the old addresses.** A custom domain belongs to one Worker, so each app's MCP Worker is deleted before this
+Worker's deploy claims its address (docs/ci.md "Deploys"); between the two, the old address does not answer.
 
 ## The tool-pick eval
 

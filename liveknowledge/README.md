@@ -29,7 +29,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document; each document's content in its own Durable Object, no D1).
 - **Telemetry** is liveworkspace's: events go to its central service and `/telemetry` redirects to its public dashboard, filtered to liveknowledge (off in OSS forks by default).
 - **Help** at `/help` is liveknowledge's scope of liveworkspace's one help centre (`liveworkspace/apps/help`), which the router forwards to.
-- **MCP** at `mcp.liveknowledge.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host, not a router path.
+- **MCP** is a package holding the document tools that liveworkspace's one MCP Worker (`mcp.liveworkspace.app`) runs and serves to AI clients (Claude and other MCP hosts) over OAuth. liveknowledge has no MCP Worker of its own; `mcp.liveknowledge.app` is a custom domain on the one MCP for connections made before.
 - **Router** stitches marketing, the editor, the API and liveworkspace's help centre under one hostname.
 - **CLI** (`apps/cli`) is `liveknowledge`, the command line agents and scripts read and change documents with, published on npm as `@liveknowledge/cli`. It also opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 

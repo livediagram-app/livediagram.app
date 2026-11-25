@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { connect, fetchConsentSession, handOverError, mcpOrigin } from './mcp-connect';
+import {
+  connect,
+  connectDevice,
+  fetchConsentSession,
+  handOverError,
+  isCliClient,
+  mcpOrigin,
+} from './mcp-connect';
 
 // The one MCP's consent hand-over (liveworkspace/docs/specs/021-mcp/mcp.md "Sign-in and per-app consent"): every
 // call the page makes, against a stubbed MCP and accounts API.
@@ -61,6 +68,7 @@ describe('fetchConsentSession', () => {
       clientName: 'Claude',
       redirectHost: 'claude.ai',
       verified: false,
+      cli: false,
     });
     expect(await fetchConsentSession('https://mcp.test', 'gone')).toBeNull();
   });
@@ -164,5 +172,72 @@ describe('handOverError', () => {
     expect(handOverError('expired')).toContain('Start again');
     expect(handOverError('token_limit')).toContain('API Tokens');
     expect(handOverError('failed')).toContain('Couldn’t connect');
+  });
+});
+
+describe('a CLI signing in', () => {
+  it('is an app’s own built-in CLI, verified, and nothing else', () => {
+    expect(isCliClient('livediagram-cli', true)).toBe(true);
+    expect(isCliClient('liveplanner-cli', true)).toBe(true);
+    // A registered client can pick any id-like name; only the built-in ones are verified.
+    expect(isCliClient('livediagram-cli', false)).toBe(false);
+    expect(isCliClient('livehuddle-cli', true)).toBe(false);
+    expect(isCliClient('claude', true)).toBe(false);
+    expect(isCliClient(undefined, true)).toBe(false);
+  });
+
+  it('marks the consent request as a CLI’s', async () => {
+    routes['GET https://mcp.test/oauth/session/cli'] = () =>
+      Response.json({
+        clientName: 'livediagram CLI',
+        redirectHost: '127.0.0.1',
+        clientId: 'livediagram-cli',
+        verified: true,
+      });
+    expect(await fetchConsentSession('https://mcp.test', 'cli')).toMatchObject({ cli: true });
+    expect(await fetchConsentSession('https://mcp.test', 's1')).toMatchObject({ cli: false });
+  });
+});
+
+describe('connectDevice', () => {
+  const device = (live: boolean, takes: boolean) => ({
+    fetchSession: vi.fn(async () =>
+      live ? { clientName: 'livediagram CLI', startedAt: null, startedIn: null } : null,
+    ),
+    complete: vi.fn(async () => takes),
+  });
+
+  it('mints a token named for the CLI and hands it to the waiting terminal', async () => {
+    const d = device(true, true);
+    expect(await connectDevice(d, 'ABCD-EFGH', 'livediagram CLI', true)).toEqual({ ok: true });
+    expect(seen.find((s) => s.method === 'POST')?.body).toEqual({
+      name: 'livediagram CLI',
+      readOnly: true,
+    });
+    expect(d.complete).toHaveBeenCalledWith('ABCD-EFGH', 'lwt_new', 99);
+  });
+
+  it('mints nothing for a code that has gone', async () => {
+    expect(await connectDevice(device(false, true), 'X', 'c', false)).toEqual({
+      ok: false,
+      reason: 'expired',
+    });
+    expect(seen).toEqual([]);
+  });
+
+  it('revokes a token the MCP did not take', async () => {
+    expect(await connectDevice(device(true, false), 'X', 'c', false)).toEqual({
+      ok: false,
+      reason: 'failed',
+    });
+    expect(seen.at(-1)).toMatchObject({ url: '/api/account/tokens/t-new', method: 'DELETE' });
+  });
+
+  it('says the account is at its token cap', async () => {
+    routes['POST /api/account/tokens'] = () => Response.json({ error: 'cap' }, { status: 409 });
+    expect(await connectDevice(device(true, true), 'X', 'c', false)).toEqual({
+      ok: false,
+      reason: 'token_limit',
+    });
   });
 });

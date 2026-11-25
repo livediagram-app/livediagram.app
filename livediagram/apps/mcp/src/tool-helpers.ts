@@ -23,8 +23,8 @@ export {
   type ToolResult,
 } from '@liveworkspace/mcp-kit/tool-result';
 
-// The editor app this MCP server belongs to: its own host on staging and on a deployment
-// (CONSENT_BASE_URL, as the consent and device pages use), livediagram.app otherwise.
+// The editor app this MCP package belongs to: its own host on staging and on a deployment
+// (CONSENT_BASE_URL, which the one MCP fills from LIVEDIAGRAM_BASE_URL), livediagram.app otherwise.
 export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
   env.CONSENT_BASE_URL ?? 'https://www.livediagram.app';
 

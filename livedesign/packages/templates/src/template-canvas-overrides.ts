@@ -16,7 +16,7 @@ const PAGES_SURROUND: BackgroundPattern = 'blank';
 
 // Tab-level overrides a specific template ships with, applied on top of whatever theme is selected: its surround,
 // its layers (docs/specs/006-design/layers.md "Layered templates", matching the `layerId`s its builder pre-stamps),
-// the mode it opens in, and its pages and writing, so every application path (the picker, /new, the MCP worker)
+// the mode it opens in, and its pages and writing, so every application path (the picker, /new, the MCP)
 // lands them in one commit.
 export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   const overrides: Partial<Tab> = { opensIn: templateEditorMode(kind) };

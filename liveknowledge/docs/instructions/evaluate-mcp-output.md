@@ -23,10 +23,10 @@ The kit lives in `apps/mcp/eval/`:
 2. Give the worktree's api its local state: copy main's `apps/api/.wrangler/state` and `apps/api/.dev.vars`. The api
    has no database of its own: liveworkspace's accounts, index and media (for a task's gallery) run locally beside it (`pnpm dev` in each of
    `liveworkspace/apps/accounts`, `liveworkspace/apps/index`, `liveworkspace/apps/media`), at the origins `.dev.vars` names.
-3. Start the MCP and the api in ONE wrangler session, so the MCP's service binding reaches this branch's api, from
-   `apps/mcp`:
-   `nohup corepack pnpm exec wrangler dev -c wrangler.toml -c ../api/wrangler.toml --port 8798 --inspector-port 9398 --persist-to ../api/.wrangler/state > <scratchpad>/mcp.log 2>&1 &`
-4. Wait for `Ready on http://localhost:8798` in the log before any run.
+3. Start the one MCP (`liveworkspace/apps/mcp`, which runs this app's `apps/mcp` package in process) and this branch's api in ONE wrangler session, so its `LIVEKNOWLEDGE_API` binding reaches this branch's api, from
+   `liveworkspace/apps/mcp` (port 3013, the default URL of the eval scripts, serving `/liveknowledge/mcp`):
+   `nohup corepack pnpm exec wrangler dev -c wrangler.toml -c ../../../liveknowledge/apps/api/wrangler.toml --port 3013 --var SERVE_APP_PACKAGES:true --persist-to ../../../liveknowledge/apps/api/.wrangler/state > <scratchpad>/mcp.log 2>&1 &`
+4. Wait for `Ready on http://localhost:3013` in the log before any run.
 5. Check `claude --version` answers and the CLI is signed in: the benchmark runs on the signed-in account's usage.
 
 ## Run a round

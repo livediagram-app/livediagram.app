@@ -2,8 +2,6 @@
 # Written by .github/scripts/duplicate-guard.mjs --update; it may only shrink (docs/ci.md).
 livedesign/apps/cli/src/output/cli-error.ts	livediagram/apps/cli/src/output/cli-error.ts	livedocuments/apps/cli/src/output/cli-error.ts	liveknowledge/apps/cli/src/output/cli-error.ts	liveplanner/apps/cli/src/output/cli-error.ts
 livedesign/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveknowledge/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
-livedesign/apps/live/app/oauth/consent/page.tsx	livediagram/apps/editor/app/oauth/consent/page.tsx	livedocuments/apps/editor/app/oauth/consent/page.tsx	liveknowledge/apps/editor/app/oauth/consent/page.tsx	liveplanner/apps/editor/app/oauth/consent/page.tsx
-livedesign/apps/live/app/oauth/device/page.tsx	livediagram/apps/editor/app/oauth/device/page.tsx	livedocuments/apps/editor/app/oauth/device/page.tsx	liveknowledge/apps/editor/app/oauth/device/page.tsx	liveplanner/apps/editor/app/oauth/device/page.tsx
 livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor/components/canvas/boxed-shared.ts	liveknowledge/apps/editor/components/canvas/boxed-shared.ts
 livedesign/apps/live/components/canvas/canvas-pattern-context.ts	liveplanner/apps/editor/components/canvas/canvas-pattern-context.ts
 livedesign/apps/live/components/palette/strip-rail-items.tsx	livediagram/apps/editor/components/palette/strip-rail-items.tsx
@@ -22,7 +20,7 @@ livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench
 livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveknowledge/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
 livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/document/src/retired-patterns.ts	liveknowledge/packages/document/src/retired-patterns.ts	liveplanner/packages/project/src/retired-patterns.ts
 livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts	livehuddle/packages/help-registry/src/telemetry.ts
-livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	livehuddle/packages/licences/src/product.ts	liveknowledge/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
+livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	liveknowledge/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
 livedesign/packages/template-previews/src/index.ts	livedocuments/packages/template-previews/src/index.ts	liveknowledge/packages/template-previews/src/index.ts
 livedesign/packages/ui/src/Brand.tsx	livediagram/packages/ui/src/Brand.tsx	livedocuments/packages/ui/src/Brand.tsx
 livedesign/packages/ui/src/SiteSwitcher.tsx	livediagram/packages/ui/src/SiteSwitcher.tsx	livedocuments/packages/ui/src/SiteSwitcher.tsx	livehuddle/packages/ui/src/SiteSwitcher.tsx	liveknowledge/packages/ui/src/SiteSwitcher.tsx	liveplanner/packages/ui/src/SiteSwitcher.tsx

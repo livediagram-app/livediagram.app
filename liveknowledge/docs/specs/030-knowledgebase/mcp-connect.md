@@ -1,7 +1,7 @@
 # Connect
 
 Status: **built, seen in a browser on 2026-11-21** (light and dark, 1440 and 390 wide; the status flip through a
-scripted MCP client that registered, signed in on the consent page and read over the local MCP worker, not through a
+scripted MCP client that registered, signed in on the consent page (then this app's, since moved to the one MCP: liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold in") and read over the local MCP worker, not through a
 real AI app). The [Connect UI blueprint](blueprints/mcp-connect-ui.md)
 has the detail.
 
@@ -65,7 +65,7 @@ it, the steps, numbered, in one column; beside them on a wide screen (one column
    (`@liveworkspace/marketing-site` `aiClients`, one list for both): menu names in bold, a button that opens the
    app's settings where there is one (Claude's connectors, ChatGPT's settings, Cursor's and VS Code's one-click
    install), and the address, command or JSON to copy, each with **Copy** and "Copied" for two seconds. The address
-   is this deployment's MCP server, `https://mcp.liveknowledge.app/mcp` when hosted. A closing line where the app's
+   is liveworkspace's one MCP, `https://mcp.liveworkspace.app/mcp` when hosted. A closing line where the app's
    menus move or its plan matters.
 3. **Approve and Choose Access.** Your app opens a liveknowledge page titled Connect and the app's name. Check the
    site it says the access is sent to, switch on **Read-only access** if the app should only read, and choose

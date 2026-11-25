@@ -17,6 +17,7 @@ import {
   lucideListOrdered,
   lucideMessagesSquare,
   lucidePackage,
+  lucidePlug,
   lucideShieldCheck,
   lucideSlidersHorizontal,
   lucideSquareDashed,
@@ -560,3 +561,4 @@ export const ChartGlyph = lucideGlyph(lucideChartColumn, 14);
 export const RankGlyph = lucideGlyph(lucideListOrdered, 14);
 export const ShieldGlyph = lucideGlyph(lucideShieldCheck, 14);
 export const KitGlyph = lucideGlyph(lucidePackage, 14);
+export const ConnectGlyph = lucideGlyph(lucidePlug, 14);

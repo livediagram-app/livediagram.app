@@ -7,7 +7,7 @@
 //   node mcp-call.mjs <tool> '<json args>'    call a tool and print its result
 //
 // Environment: LIVEDOCUMENTS_TOKEN (an lwt_ API token; else read from token.env beside this file), MCP_URL (default
-// http://127.0.0.1:8988/mcp), EVAL_LOG (a jsonl of every call; default runs/calls.jsonl) and EVAL_IMG_DIR (where
+// http://127.0.0.1:3013/livedocuments/mcp), EVAL_LOG (a jsonl of every call; default runs/calls.jsonl) and EVAL_IMG_DIR (where
 // image results are saved; default runs/shots). Never commit a token: token.env and runs/ are gitignored.
 
 import { dirname } from 'node:path';
@@ -17,5 +17,5 @@ import { mcpCallMain } from '@liveworkspace/mcp-kit/eval/mcp-call';
 mcpCallMain({
   here: dirname(fileURLToPath(import.meta.url)),
   tokenEnv: 'LIVEDOCUMENTS_TOKEN',
-  mcpUrl: 'http://127.0.0.1:8988/mcp',
+  mcpUrl: 'http://127.0.0.1:3013/livedocuments/mcp',
 });

@@ -1,7 +1,11 @@
 # MCP server
 
-**Status: live.** Merged and deployed at `mcp.livedesign.app`; connect flow
-verified end-to-end from Claude. Builds directly on [Public API and API tokens](public-api-and-tokens.md)
+**Status: live, folded into liveworkspace's one MCP.** livedesign has no MCP Worker or address of its own:
+`apps/mcp` is a package that liveworkspace's one MCP, `https://mcp.liveworkspace.app/mcp`, runs in process
+(liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in). Where this spec says "the MCP worker", "this server" or
+"its own host", read the package as that one MCP serves it: its sign-in, consent, KV, deploy and
+addresses are the one MCP's, and `mcp.livedesign.app` only answers connections made before the fold, narrowed to livedesign
+until their token ends. The tools below are unchanged. Builds directly on [Public API and API tokens](public-api-and-tokens.md)
 (API tokens), which it picks up where §7 left off: [Public API and API tokens](public-api-and-tokens.md) deferred "OAuth /
 third-party app authorization"; this spec adds exactly that, scoped to one
 client (an MCP server), reusing the `lwt_` token as the credential it ultimately
@@ -38,18 +42,16 @@ the MCP is **signed-in only** and **absent end-to-end** on a deployment without 
 
 ## 2. Architecture
 
-A **new standalone Cloudflare Worker**, `apps/mcp` (worker name
-`livedesign-mcp`), mirroring how Manager Toolkit ships its MCP as its own
-worker. Not folded into `apps/api`: it has a distinct dependency surface (the MCP
-SDK, OAuth/KV, a WASM rasteriser) and a distinct public origin, and `apps/api`
-stays a pure REST/WS surface.
+A **package**, `apps/mcp` (`@livedesign/mcp`), that liveworkspace's one MCP Worker imports and runs in process; it has
+no `wrangler.toml` and no deploy of its own. Not folded into `apps/api`: it has a distinct dependency surface (the MCP
+SDK, a WASM rasteriser), and `apps/api` stays a pure REST/WS surface.
 
 - **Framework / transport.** [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol)
   with **Streamable HTTP** transport (`WebStandardStreamableHTTPServerTransport`,
   `enableJsonResponse: true`), fronted by **Hono** for routing/CORS, the exact
   stack proven in the Manager Toolkit MCP. Tools are defined with `zod` input
   schemas.
-- **Talks to `apps/api` over a Cloudflare service binding** (`API`), not public
+- **Talks to `apps/api` over a Cloudflare service binding** (the one MCP's `LIVEDESIGN_API`), not public
   DNS. Every tool resolves to one or more `/api/*` calls carrying
   `Authorization: Bearer lwt_…`: the caller's token, passed straight through.
   The api worker already accepts `lwt_` tokens on every route
@@ -60,14 +62,13 @@ stays a pure REST/WS surface.
   `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise-inline-image-render)).
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
   validation, geometry, or theme-colour resolution.
-- **Routing + deploy.** Served at **`mcp.livedesign.app`** (its own hostname,
-  `mcp-staging.livedesign.app` in staging, each a custom domain declared in
-  `apps/mcp/wrangler.toml`, [Deployment](../016-platform/deployment.md#custom-domain)). The monorepo's deploy ships it in the tier after the api
-  (its service binding needs the api to exist, [Deployment](../016-platform/deployment.md) "Deploy"). The `router` worker is unchanged; `mcp.` is a
-  separate host, not a path under the main hostname, so it carries no router
-  business logic. `GET /health` returns `{ status: 'ok' }`.
-- **Endpoints on the worker:** `POST /mcp` (the MCP transport, Bearer-gated),
-  the OAuth endpoints ([§3](#3-authentication-oauth-21)), and `/health`.
+- **Routing + deploy.** Served by liveworkspace's one MCP at `https://mcp.liveworkspace.app/mcp` (staging
+  `https://mcp-staging.liveworkspace.app/mcp`), which deploys in tier 1 beside the api ([Deployment](../016-platform/deployment.md),
+  docs/ci.md "Deploys"). The old hosts `mcp.livedesign.app` and `mcp-staging.livedesign.app` are custom domains on that Worker:
+  a request there with a token is served narrowed to livedesign with every tool listed, until the token ends; their sign-in
+  refuses with a pointer to the one address. The `router` worker is unchanged. Locally, liveworkspace/apps/mcp's dev on 3013
+  serves every app, and `/livedesign/mcp` serves this package as it is, for evals.
+- **Endpoints** are the one MCP's: `POST /mcp` (Bearer-gated), its OAuth endpoints ([§3](#3-authentication-oauth-21)) and `/health`.
 
 **Who is calling.** Every call the server makes to the api says it came through the MCP and which client made it
 (Work Tracker 1381): `X-Livedesign-Client: mcp`, and `X-Livedesign-Agent` with the client's own name from its `initialize`
@@ -78,9 +79,17 @@ token.
 
 ### The one liveworkspace MCP
 
-liveworkspace's one MCP server (liveworkspace/docs/specs/021-mcp/mcp.md) also serves this server's tools, renamed by what they make, by calling this Worker over a service binding with the person's own token. Nothing here changes for it: this server's tools, names and answers stay as they are, and it stays the connection this app's pages recommend while the one MCP is tried. A change to this server's tools refreshes the one MCP's recorded copy (`corepack pnpm --filter @liveworkspace/mcp-service eval:snapshot`), which its naming test and tool-pick eval read.
+liveworkspace's one MCP server (liveworkspace/docs/specs/021-mcp/mcp.md, [the app MCPs fold in](../../../../liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in)) runs this package's tools, renamed by what they make, with
+the person's own token. The package keeps its tools, tests and eval; a change to its tools refreshes the one MCP's recorded
+copy (`corepack pnpm --filter @liveworkspace/mcp eval:snapshot`), which its naming test and tool-pick eval read.
 
 ## 3. Authentication: OAuth 2.1
+
+> **Run by the one MCP.** The flow below is liveworkspace's one MCP's, not livedesign's: one authorization server for every
+> app, one consent page at liveworkspace.app's `/oauth/consent` (signed in, with a tick per app), and no consent or device page in
+> `apps/live`. Nobody signs in at `mcp.livedesign.app`; it refuses with a pointer to `https://mcp.liveworkspace.app/mcp`. Where a step
+> below names `apps/live`'s consent page or `/oauth/device`, read liveworkspace.app's. See
+> [the app MCPs fold in](../../../../liveworkspace/docs/specs/021-mcp/mcp.md#the-app-mcps-fold-in).
 
 The MCP authenticates with **OAuth 2.1 + PKCE (S256) + dynamic client
 registration**, so a user gets a one-click "Connect" in their AI tool rather
@@ -109,8 +118,7 @@ This implements the OAuth flow Manager Toolkit uses:
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint requires `client_id` and `redirect_uri` and refuses a code presented with another value of either (RFC 6749 §4.1.3). A name that reads as a liveworkspace app is refused (`400 invalid_client_metadata`), and so is one that reads as Claude, ChatGPT or Cursor unless every redirect URI is a loopback one or on that tool's own domains; at registration and again at authorize (`reservedNameRefusal`, `../packages/mcp-kit/src/oauth-names.ts`).
 3. **Authorize**: `GET /oauth/authorize` creates a short-lived session in KV and
-   redirects to a **consent page in `apps/live`** (e.g. `/oauth/authorize` or an
-   Explorer "Connect an app" screen), passing the session id. The user is
+   redirects to the **consent page** (liveworkspace.app's `/oauth/consent`), passing the session id. The user is
    already signed in there (a livedesign session through the liveworkspace accounts
    Worker; a signed-out visitor gets a Sign in link that returns here). A person signed in to liveworkspace but
    not yet here is signed in on the way by the page's silent bounce, and a browser whose signed-in hint is set waits
@@ -136,10 +144,10 @@ This implements the OAuth flow Manager Toolkit uses:
    the host is the fact to check, which is why it must come from the server. Every client that is not built in (so every registered one) wears an **Unverified App** badge beside its name, with "{name} is not made by liveworkspace, and we can't check who made it.", and the screen puts the redirect host first, "Access will be sent to {host}"; the lookup's `verified` decides it. A loopback host (`localhost`, `127.0.0.1` or `[::1]`, on any port) is a desktop or command-line tool taking its sign-in back on the person's own computer, so it reads "Access will be sent back to the app on this computer ({host}). Only continue if you started this connection yourself."; every other host keeps "Only continue if you recognise this site and started this connection yourself." The host is parsed and matched exactly (`isLoopbackHost`, `../packages/api-kit/src/request-auth.ts`), never by prefix, so `localhost.evil.com` is still a site. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See
-   `../packages/workbench/src/lib/mcp-consent-session.ts` and `../packages/workbench/src/components/oauth/OauthConsentPage.tsx` (with its test). The screen is never frameable
+   `mcp-consent-session` and `OauthConsentPage` (removed from the shared workbench; the one MCP's consent page is liveworkspace.app's). The screen is never frameable
    (`X-Frame-Options: DENY`, [Embeds](../013-workspace/embeds.md)), so the
    Connect click can't be clickjacked from an attacker's page.
-4. **Consent + mint**: on approve, `apps/live` calls `POST /api/oauth/exchange`
+4. **Consent + mint**: on approve, the consent page calls `POST /api/oauth/exchange`
    on the api worker with the person's account access token. It asks liveworkspace
    to mint an `lwt_` account token named for the connecting client (e.g. "Claude
    (MCP)"), read-only if the person ticked that (`POST /api/account/internal/tokens`,
@@ -160,8 +168,8 @@ This implements the OAuth flow Manager Toolkit uses:
    API's bearer door (`GET` and `DELETE /api/workspace/account/tokens`); a revoke
    clears the line, says there is room now and puts the keyboard on Connect, so the
    person connects straight away without leaving the page. The device page does the
-   same (`../packages/workbench/src/lib/oauth-handover.ts`,
-   `../packages/workbench/src/components/oauth/TokenLimitList.tsx`).
+   same (`mcp-connect`,
+   `TokenLimitList`).
    **A reconnect replaces the client's earlier token.** The page sends the minted
    token's id with it to `/oauth/complete`, which keeps the ids of the last five
    tokens handed to that registered client (`grant:<clientId>` in `OAUTH_KV`, for
@@ -190,7 +198,7 @@ answered as before. It costs nothing extra: the api's own answers are watched, n
 **What Claude's connector directory checks** (registration lifetime, Anthropic's egress range, refresh and
 unknown grants, refusals in words, no token in a URL) is audited in [§4.16a](#416a-claude-connector-directory).
 
-**State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
+**State storage.** The one MCP's **KV namespace binding (`OAUTH_KV`)** holds
 client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
 needs no KV: minting is liveworkspace's accounts service's (`POST /api/oauth/exchange` asks it).
 
@@ -204,16 +212,16 @@ caps) is already built; OAuth is the front door, not a new lock.
 the user through sign-in and on `/api/oauth/exchange` requiring an account identity, the
 same gate as every token's ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
 deployment without sign-in: the exchange endpoint rejects every caller and the consent
-page has no signed-in user, so the MCP can mint nothing. Operators who don't want
-the MCP simply don't deploy `apps/mcp`; nothing else references it.
+page has no signed-in user, so the MCP can mint nothing. A deployment that does not want
+the MCP simply does not deploy liveworkspace's one MCP.
 
 **The CLI signs in here too** ([CLI](cli.md#authentication)). This server is the
 one authorisation server for both front doors, so it also offers what a
 command-line client needs: a loopback redirect matched on scheme, host and path
 with any port (RFC 8252 §7.3), a pre-registered public client `livedesign-cli`
 whose name the consent screen can trust, and the device authorisation grant
-(RFC 8628) with a `/oauth/device` page in `apps/live` for machines without a
-browser. A token minted for the CLI is named "livedesign CLI".
+(RFC 8628) with a `/oauth/device` page (liveworkspace.app's) for machines without a
+browser. The api reports the one MCP as its `oauthIssuer` (`OAUTH_ISSUER` in `apps/api/wrangler.toml`). A token minted for the CLI is named "livedesign CLI".
 
 ## 4. Tools
 
@@ -840,21 +848,20 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 `Mcp·Used` is sent by `registerTool` only after a tool call succeeds
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Mcp).
 
-### 4.13 Worker configuration
+### 4.13 Configuration
 
-The MCP worker reads three bindings and two out-of-band values. Bindings
-(`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
+The package is handed its configuration by the one MCP, which holds it (liveworkspace/apps/mcp's `wrangler.toml`):
 
-| Name               | Where                          | Absent means                                                                                                                                                      |
-| ------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://www.livedesign.app`, so OAuth callers land on the hosted consent screen unless it is set. Also the host of every tool's `url` and share link |
-| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                       |
+| Name                       | Where                                                              | Absent means                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `LIVEDESIGN_API`           | service binding on liveworkspace-mcp                               | The tools cannot reach the api                                                                                   |
+| `LIVEDESIGN_BASE_URL`      | `[vars]` on liveworkspace-mcp (not secret)                         | Defaults to `https://www.livedesign.app`. The host of every tool's `url` and share link                          |
+| `LIVEDESIGN_TELEMETRY_KEY` | secret on liveworkspace-mcp, **same as the api's `TELEMETRY_KEY`** | No telemetry is sent for livedesign ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) |
 
-`TELEMETRY_KEY` is livedesign's Worker key for liveworkspace's central telemetry service
+`LIVEDESIGN_TELEMETRY_KEY` is livedesign's Worker key for liveworkspace's central telemetry service
 (liveworkspace/docs/specs/008-telemetry/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
-lets them speak for livedesign.app. It **must match** the api worker's and the service's
-`TELEMETRY_KEY_LIVEDESIGN`; a mismatch is silent (the posts are simply not stored), so set the same value on
-both workers with `wrangler secret put TELEMETRY_KEY`. `TELEMETRY_URL` names the service (unset is production's).
+lets them speak for livedesign.app. It **must match** the api worker's `TELEMETRY_KEY` and the service's
+`TELEMETRY_KEY_LIVEDESIGN`; a mismatch is silent (the posts are simply not stored). `TELEMETRY_URL` names the service (unset is production's).
 See [Secrets policy](../002-project-scope/secrets-policy.md) for the secrets table.
 
 ### 4.14 Tool annotations (behaviour hints)
@@ -929,13 +936,17 @@ discouraging tool use, not encouraging it.
 
 ### 4.16 Registry listing
 
+> The listing is now liveworkspace's one MCP's (its `server.json` in the liveworkspace folder, published by the root `mcp-registry.yml`), at
+> `https://mcp.liveworkspace.app/mcp`; livedesign no longer has a `server.json` or a server card of its own. The text below
+> records how the livedesign listing was built and is kept for its rules.
+
 The hosted server is listed in the official **MCP Registry**
 (`registry.modelcontextprotocol.io`), which other directories (PulseMCP among
 them) ingest from, so one listing reaches several catalogues. Directories that
 look at a server themselves (Smithery, Glama, a client's add-a-server screen)
 read its server card, because `/mcp` answers only a signed-in caller.
 
-- **Descriptor.** `livedesign/server.json`, under the registry's `2025-12-11` schema.
+- **Descriptor.** livedesign's former server.json, under the registry's `2025-12-11` schema.
   Name `io.github.livediagram-app/livedesign`: every product lists under
   `io.github.livediagram-app`, the GitHub organisation that owns the monorepo
   (`livediagram-app/livediagram.app`, public), so a GitHub sign-in as one of its
@@ -944,7 +955,7 @@ read its server card, because `/mcp` answers only a signed-in caller.
   characters, `websiteUrl` `https://www.livedesign.app`, `repository` the monorepo with
   `subfolder` `livedesign/apps/mcp`, the 512px PNG mark the marketing site serves
   (`https://www.livedesign.app/livedesign-icon-512.png`), and one `remotes` entry,
-  `streamable-http` at `https://mcp.livedesign.app/mcp` (the Worker's custom domain),
+  `streamable-http` at `https://mcp.liveworkspace.app/mcp` (the one MCP),
   with no `headers`: OAuth (§3) is discovered from the server's metadata, not
   configured by the client.
 - **One identity.** The listing is written once, in `apps/mcp/src/listing.ts`
@@ -964,7 +975,7 @@ read its server card, because `/mcp` answers only a signed-in caller.
   `mcp-publisher login github`, then `mcp-publisher publish`. Or the root
   workflow `mcp-registry.yml`, started by hand (`workflow_dispatch`) with the
   product to publish, which logs in with `github-oidc` and publishes
-  `livedesign/server.json`. The registry rejects a version it already holds, so
+  that server.json. The registry rejects a version it already holds, so
   republishing means bumping `version` in `listing.ts` and `server.json` (the
   test keeps them equal).
 - Only the hosted origin is listed: the descriptor names it alone.
@@ -972,7 +983,7 @@ read its server card, because `/mcp` answers only a signed-in caller.
 ### 4.16a Claude connector directory
 
 The hosted server is meant for **Claude's connector directory**, so a person finds livedesign under Connectors in
-claude.ai or Claude Desktop and presses Connect instead of pasting `https://mcp.livedesign.app/mcp`. Submitting
+claude.ai or Claude Desktop and presses Connect instead of pasting `https://mcp.liveworkspace.app/mcp`. Submitting
 happens at `claude.ai/directory/manage` and is the owner's (a paid Claude account, seven policy acknowledgments, and
 a test account if review is escalated to Verified). This section is the audit against the directory's public pages
 (read 2026-11-16): [submission](https://claude.com/docs/connectors/building/submission),
@@ -1026,7 +1037,7 @@ helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each find
 - **One-liner:** Make logos, wireframes and photo edits on livedesign from a chat.
 - **Description:** livedesign is a free design tool for logos, wireframes, mock-ups and photo edits, live for everyone on a design. Connect it and Claude can find your designs, read a page as text or a picture, make a design or a page from a template or a description, change its elements and components, answer comment threads, share a link and tidy your library. Every change appears live for anyone with the design open.
 - **Categories:** Design; Productivity
-- **Server URL:** `https://mcp.livedesign.app/mcp`
+- **Server URL:** `https://mcp.liveworkspace.app/mcp`
 - **Documentation:** `https://www.livedesign.app/help/account-and-data/connect-ai-mcp/`
 - **Privacy policy:** `https://www.liveworkspace.app/privacy` (it covers connected AI tools for every app)
 - **Support:** the liveworkspace contact form, `https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj`
@@ -1351,8 +1362,8 @@ failed: production counted no successful `view_tab` in the five days after the v
 
 ## 6. Rollout
 
-1. **`apps/mcp` skeleton**: worker, Hono, MCP SDK, service binding to api,
-   `/health`, deploy wiring + `mcp.livedesign.app` host. `.env.example`.
+1. **`apps/mcp` skeleton**: Hono, MCP SDK, the api reached over the one MCP's service binding,
+   `/health`.
 2. **Shared SVG renderer**: extract `packages/design/src/svg-render.ts` from
    `export-tab.ts`, repoint the in-app export to it (no behaviour change), add
    `@resvg/resvg-wasm` rasterisation in the worker.
@@ -1361,7 +1372,7 @@ failed: production counted no successful `view_tab` in the five days after the v
 4. **Write tools**: `create_design`, `update_design` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
 5. **OAuth**: `/api/oauth/exchange` on the api worker (asking liveworkspace to mint
-   the token, signed-in only); `apps/live` consent page; the MCP
+   the token, signed-in only); liveworkspace.app's consent page; the one MCP's
    OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
    with a hand-pasted `lwt_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in
@@ -1369,7 +1380,7 @@ failed: production counted no successful `view_tab` in the five days after the v
    - A help article (e.g. `account-and-data/connect-ai-mcp`): what the MCP is,
      connecting it to Claude/an AI tool, the signed-in-only limitation, that it
      mints a revocable API token, **registered in `liveworkspace/apps/help/lib/articles.ts`**.
-   - `docs/development/architecture.md`: the new `apps/mcp` worker in the layout + deploy
+   - `docs/development/architecture.md`: the `apps/mcp` package in the layout + deploy
      order: MCP needs sign-in (like tokens/teams) and is
      optional to deploy; `README.md` repo-layout tree gets the new app.
    - Cross-link from the API-token help/docs ([Public API and API tokens](public-api-and-tokens.md)).

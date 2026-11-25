@@ -22,7 +22,6 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'get-started',
   'join',
   'new',
-  'oauth',
   // /offline, the old This Browser page: a redirect to /explorer/offline (docs/specs/013-workspace/explorer-structure.md).
   'offline',
   // A public roadmap's page, /roadmap/<plan id>/<code> (docs/specs/026-plan/public-roadmap.md).

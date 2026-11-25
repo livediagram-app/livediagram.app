@@ -43,6 +43,8 @@ const INTEGRATIONS: Record<string, string[]> = {
   'Do I need an account to use livedesign?': ['liveworkspace'],
   // The one status page on liveworkspace.app checks every app's services, livedesign's among them.
   'Is livedesign up right now?': ['liveworkspace'],
+  // An AI tool connects through liveworkspace's one MCP, every app's tools through one connection.
+  'Can I connect my own AI assistant, like Claude?': ['liveworkspace'],
   // A design connects and embeds the other apps' files, sends cards to a plan, and keeps a chart in step with one.
   'Does it work with my other liveworkspace apps?': [
     'liveworkspace',

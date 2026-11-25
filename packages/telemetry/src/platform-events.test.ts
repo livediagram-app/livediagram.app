@@ -33,9 +33,13 @@ describe("liveworkspace.app's own events", () => {
     expect(isPlatformOwnTelemetryEvent({ category: 'Token', action: 'Created', type: 'MCP' })).toBe(
       true,
     );
+    // An app's CLI signing in on liveworkspace.app's OAuth pages (mcp.md "The app MCPs fold in").
     expect(isPlatformOwnTelemetryEvent({ category: 'Token', action: 'Created', type: 'Cli' })).toBe(
-      false,
+      true,
     );
+    expect(
+      isPlatformOwnTelemetryEvent({ category: 'Token', action: 'Created', type: 'Manual' }),
+    ).toBe(false);
     for (const type of KIT_TELEMETRY_TYPES) expect(type).toMatch(TELEMETRY_TYPE_PATTERN);
   });
 });

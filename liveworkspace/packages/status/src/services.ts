@@ -88,14 +88,16 @@ export function environmentOf(host: string): StatusEnvironment {
 
 type AppSiteId = Exclude<SiteId, 'liveworkspace.app'>;
 
-// Each app's MCP Worker's local port (its wrangler.toml `[dev] port`). The MCP server is optional per app: an app with
+// The local port of the one MCP (apps/mcp's dev, 3013), which serves every app's tools; an app's own MCP Worker is gone,
+// and its old host (`mcp.<app>`) is a custom domain on the one MCP that still answers /health. The MCP server is optional per app: an app with
 // no entry ships none, and its group has no MCP row (livehuddle, livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md).
+const ONE_MCP_DEV_PORT = 3013;
 const MCP_DEV_PORTS: Partial<Record<AppSiteId, number>> = {
-  'livediagram.app': 8788,
-  'liveplanner.app': 8888,
-  'livedocuments.app': 8988,
-  'livedesign.app': 8990,
-  'liveknowledge.app': 9288,
+  'livediagram.app': ONE_MCP_DEV_PORT,
+  'liveplanner.app': ONE_MCP_DEV_PORT,
+  'livedocuments.app': ONE_MCP_DEV_PORT,
+  'livedesign.app': ONE_MCP_DEV_PORT,
+  'liveknowledge.app': ONE_MCP_DEV_PORT,
 };
 
 /** An app's address in `env`: its router's port on a dev server, its `staging.` host, else its live site. */

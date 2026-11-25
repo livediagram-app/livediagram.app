@@ -295,7 +295,7 @@ export * from './tab-builders';
 // Shared by the editor's text export + import and reusable by the api / MCP.
 
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
-// shared by the in-app export and the MCP worker's inline image render.
+// shared by the in-app export and the MCP package's inline image render.
 export * from './svg-render';
 export { borderOf } from '@liveworkspace/element-model/svg-render-border';
 export {
@@ -333,7 +333,7 @@ export {
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/editor/lib/themes.ts.
+// MCP package (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/editor/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
 export * from '@liveworkspace/element-model/theme-halves';
@@ -424,7 +424,7 @@ export * from './session';
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
 // apps/editor because the EXPORTS need it too — the SVG / PNG renderers have
 // to paint a label in the face the canvas painted it in, and they run in the
-// mcp worker as well as the browser.
+// MCP package as well as the browser.
 export * from '@liveworkspace/model-core/fonts';
 // The faces liveplanner's own pickers offer (docs/specs/004-interface-design/fonts.md "Not offered in liveplanner").
 export * from './planner-fonts';

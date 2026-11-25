@@ -17,7 +17,7 @@ import { buildServer } from './server';
 describe('liveknowledge tools in the connector directory', () => {
   it('every listed tool has a title, its hint, a short name and a description', async () => {
     const env = { API: { fetch: async () => new Response('{}') } } as unknown as Env;
-    const card = await serverCard(LISTING, buildServer(env), 'https://mcp.liveknowledge.app');
+    const card = await serverCard(LISTING, buildServer(env), 'https://mcp.liveworkspace.app');
     const tools = card.tools as Tool[];
     expect(tools.length).toBeGreaterThan(10);
     expect(directoryProblems(tools)).toEqual([]);

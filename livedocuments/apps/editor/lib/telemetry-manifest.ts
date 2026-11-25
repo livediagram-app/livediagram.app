@@ -147,7 +147,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Template·Changed',
   'Template·Used',
   'Theme·Changed',
-  'Token·Created',
   'Trash·Cleared',
   'Trash·Deleted',
   // Trash (docs/specs/013-workspace/trash.md): a trashed document's card, and the document restored from it.

@@ -97,7 +97,7 @@ describe('element ink on light paper', () => {
   });
 
   it('is what a caller with no canvas in hand gets', () => {
-    // Exports, the MCP worker and every older call site pass nothing.
+    // Exports, the MCP package and every older call site pass nothing.
     expect(createArrow).toBeTypeOf('function');
     expect(defaultArrowStrokeColor()).toBe('rgb(51 65 85)');
   });

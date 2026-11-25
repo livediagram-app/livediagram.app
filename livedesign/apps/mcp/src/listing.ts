@@ -1,6 +1,5 @@
 // How livedesign's MCP server is listed (docs/specs/015-api/mcp-server.md §4.16): the one identity its
-// `initialize` serverInfo, its server card and livedesign/server.json are made from. A version bump here goes into
-// server.json too (server-json.test.ts keeps them equal), and the registry needs one to republish.
+// `initialize` serverInfo and its server card are made from.
 import { mcpListing } from '@liveworkspace/mcp-kit/listing';
 
 export const LISTING = mcpListing({

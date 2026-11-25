@@ -1,7 +1,6 @@
-// Origin of the MCP worker (docs/specs/015-api/mcp-server.md). The OAuth consent page posts the minted
-// token to this TRUSTED origin (never one from the request query, so a forged
-// authorize can't exfiltrate the token). Staging and local dev override it at build time; the resolver is shared with the
-// marketing site's Build with AI page (@liveknowledge/api-schema, mcp-origin.ts).
+// Origin of the MCP the Connect view shows people: liveworkspace's one MCP (liveworkspace/docs/specs/021-mcp/mcp.md).
+// Staging and local dev override it at build time; the resolver is shared with the marketing site's Build with AI
+// page (@liveknowledge/api-schema, mcp-origin.ts).
 
 import { resolveMcpOrigin } from '@liveknowledge/api-schema';
 

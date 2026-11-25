@@ -26,9 +26,9 @@ export const PLATFORM_OWN_TELEMETRY_EVENTS = {
   'Kit·Retried': KIT_TELEMETRY_TYPES,
   'Kit·Completed': KIT_TELEMETRY_TYPES,
   'Kit·Removed': KIT_TELEMETRY_TYPES,
-  // An AI tool connected through the one MCP's consent page (liveworkspace/docs/specs/021-mcp/mcp.md), which mints a
-  // token: each app's consent page sends the same event in its own name.
-  'Token·Created': ['MCP'],
+  // A token minted on liveworkspace.app's OAuth pages (liveworkspace/docs/specs/021-mcp/mcp.md): an AI tool connected
+  // through the one MCP's consent page (`MCP`), or an app's CLI signed in there or on the device page (`Cli`).
+  'Token·Created': ['MCP', 'Cli'],
 } as const satisfies Record<string, readonly (string | null)[]>;
 
 const TYPES = PLATFORM_OWN_TELEMETRY_EVENTS as Record<string, readonly (string | null)[]>;

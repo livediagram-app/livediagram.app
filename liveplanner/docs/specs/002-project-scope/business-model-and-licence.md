@@ -10,7 +10,7 @@ Third-party components keep their own licences. The MIT, Apache and other permis
 
 ## Distribution model
 
-- **One hosted service.** liveplanner.app (with `mcp.liveplanner.app` for AI tools) is the only way people use liveplanner. It is free for everyone to use; Pro, where it is on, raises limits for those who subscribe.
+- **One hosted service.** liveplanner.app (with liveworkspace's one MCP, `mcp.liveworkspace.app`, for AI tools) is the only way people use liveplanner. It is free for everyone to use; Pro, where it is on, raises limits for those who subscribe.
 - **Published tools.** The CLI on npm and the MCP server listing are free to use against the hosted service; their published metadata carries no repository or homepage link to source code.
 
 ## What we promise people

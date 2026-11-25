@@ -1,7 +1,7 @@
-// The OAuth clients liveplanner ships itself (docs/specs/015-api/blueprints/cli.md "OAuth server", "The CLI's OAuth
-// client", CLI35, CLI36): its CLI client's id and name. The callbacks, the device grant and its user codes are every
-// product's, from @liveworkspace/api-kit/oauth. Shared by the MCP worker's authorization server, the editor's
-// /oauth/device page and the CLI.
+// The OAuth client liveplanner ships itself (docs/specs/015-api/blueprints/cli.md "The CLI's OAuth client", CLI35,
+// CLI36): its CLI client's id and name, which the one MCP (liveworkspace/docs/specs/021-mcp/mcp.md) lists as a
+// built-in client. The callbacks, the device grant and its user codes are every product's, from
+// @liveworkspace/api-kit/oauth. Used by the CLI.
 
 export const CLI_CLIENT_ID = 'liveplanner-cli';
 export const CLI_CLIENT_NAME = 'liveplanner CLI';

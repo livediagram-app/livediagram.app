@@ -28,13 +28,15 @@ export function describeLicenceTables(
   );
   const appsDir = join(root, 'apps');
   const appDirs = readdirSync(appsDir).filter((d) => statSync(join(appsDir, d)).isDirectory());
-  const { apps, overrides, embedded, distributed = [] } = product;
+  const { apps, overrides, embedded, distributed = [], bundledElsewhere = [] } = product;
 
   describe('the apps', () => {
     it('registers every app in apps/, deployed or distributed, so a new one cannot ship unlisted', () => {
       // A floor that proves apps/ was read at all (livehuddle, the smallest product, ships four).
       expect(appDirs.length).toBeGreaterThanOrEqual(4);
-      expect([...apps.map((a) => a.id), ...distributed].toSorted()).toEqual(appDirs.toSorted());
+      expect([...apps.map((a) => a.id), ...distributed, ...bundledElsewhere].toSorted()).toEqual(
+        appDirs.toSorted(),
+      );
     });
 
     it('bundles each app with the tool it builds with', () => {

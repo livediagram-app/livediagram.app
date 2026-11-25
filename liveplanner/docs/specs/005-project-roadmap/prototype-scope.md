@@ -9,7 +9,7 @@ so nobody has to reverse-engineer it from the code.
 liveplanner deploys from the monorepo's root `.github/` workflows to Cloudflare Workers in the liveworkspace account:
 staging follows `main`, and production is a manual gate ([Deployment](../016-platform/deployment.md)). The stack runs
 locally on its own
-ports (router 3200, marketing 3201, editor 3202, help 3204, api 8887, mcp 8888), so it sits beside a
+ports (router 3200, marketing 3201, editor 3202, help 3204, api 8887), so it sits beside a
 livediagram checkout ([Local development](../../development/local-development.md)).
 
 Eight apps, all built for Cloudflare Workers (with Static Assets for the five Next.js apps):
@@ -19,7 +19,7 @@ Eight apps, all built for Cloudflare Workers (with Static Assets for the five Ne
 - **telemetry**: the public anonymous-events dashboard at `/telemetry` ([Telemetry](../017-telemetry/telemetry.md)).
 - **help**: the help centre at `/help`, statically exported with MDX articles.
 - **api**: the Worker holding the REST endpoints and a SQLite-backed Durable Object per project that holds its content and runs its realtime room; it has no D1.
-- **mcp**: the Worker at its own host, `mcp.liveplanner.app`, that gives AI tools the project, board, card, sheet and
+- **mcp**: the Worker liveworkspace's one MCP calls, that gives AI tools the project, board, card, sheet and
   form tools ([MCP server](../015-api/mcp-server.md)).
 - **router**: the Worker that stitches marketing, live, telemetry, help and api under one hostname.
 - **cli**: `liveplanner`, the command line agents and scripts read and change projects with ([CLI](../015-api/cli.md)).

@@ -8,16 +8,16 @@ plan schema step runs in real remote Durable Objects before it runs in the ones 
 
 ## The two environments
 
-|              | Production                                            | Staging                                               |
-| ------------ | ----------------------------------------------------- | ----------------------------------------------------- |
-| Hostname     | `liveplanner.app`                                     | `staging.liveplanner.app`                             |
-| MCP host     | `mcp.liveplanner.app`                                 | `mcp-staging.liveplanner.app`                         |
-| Trigger      | Manual (`workflow_dispatch`)                          | Automatic, after CI passes for a push to `main`       |
-| Workflow     | `deploy-production.yml` (**Deploy Production**)       | `deploy-staging.yml` (**Deploy Staging**)             |
-| Ships        | What staging runs (its deploy record)                 | `main`'s tip                                          |
-| Worker names | `liveplanner-<app>`                                   | `liveplanner-<app>-staging`                           |
-| Indexable    | Yes                                                   | **No**: `X-Robots-Tag: noindex, nofollow`             |
-| Platform     | liveworkspace.app (index, accounts, media, telemetry) | staging.liveworkspace.app, the platform's own staging |
+|              | Production                                                     | Staging                                               |
+| ------------ | -------------------------------------------------------------- | ----------------------------------------------------- |
+| Hostname     | `liveplanner.app`                                              | `staging.liveplanner.app`                             |
+| MCP host     | `mcp.liveplanner.app` (on the one MCP Worker, old connections) | `mcp-staging.liveplanner.app` (same)                  |
+| Trigger      | Manual (`workflow_dispatch`)                                   | Automatic, after CI passes for a push to `main`       |
+| Workflow     | `deploy-production.yml` (**Deploy Production**)                | `deploy-staging.yml` (**Deploy Staging**)             |
+| Ships        | What staging runs (its deploy record)                          | `main`'s tip                                          |
+| Worker names | `liveplanner-<app>`                                            | `liveplanner-<app>-staging`                           |
+| Indexable    | Yes                                                            | **No**: `X-Robots-Tag: noindex, nofollow`             |
+| Platform     | liveworkspace.app (index, accounts, media, telemetry)          | staging.liveworkspace.app, the platform's own staging |
 
 Both run in the **same Cloudflare account** (the liveworkspace account every `wrangler.toml` pins), under the one
 `CLOUDFLARE_API_TOKEN`. The isolation is drawn at the **resource**, not the account: two accounts would double every
@@ -51,7 +51,7 @@ resolved binding table.
 
 - **Durable Objects** come free: a different script is a different namespace, so the staging `PLAN_ROOM` (and every
   plan's content in it) is separate.
-- **KV**: the mcp worker's `OAUTH_KV` has its own staging namespace (`mcp-oauth-kv-staging`).
+- **KV**: the one MCP's scratch KV has its own staging namespace (liveworkspace's staging environment).
 - **The platform**: the staging api talks to staging liveworkspace (`INDEX_ORIGIN`, `MEDIA_URL`, the accounts
   Worker and telemetry), so its plans are indexed, previewed and signed into there.
 - **Rate limiters** keep production's namespace ids on purpose. They are scoped per script by Cloudflare, so the
@@ -86,9 +86,9 @@ point every app on the host passes through.
 sites differ from production's in their build id, their hosted build vars (the staging entries of the hosted
 profile, [Deployment](deployment.md#hosted-profile)) and one more value:
 
-| Variable                 | Production                                        | Staging                                                                       |
-| ------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | unset (blank falls back to `mcp.liveplanner.app`) | `https://mcp-staging.liveplanner.app`, the staging mcp worker's custom domain |
+| Variable                 | Production                                          | Staging                                                    |
+| ------------------------ | --------------------------------------------------- | ---------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | unset (blank falls back to `mcp.liveworkspace.app`) | `https://mcp-staging.liveworkspace.app`, staging's one MCP |
 
 `NEXT_PUBLIC_API_BASE` stays unset in both, so staging resolves `/api` same-origin through its own router, and
 `NEXT_PUBLIC_TELEMETRY_ENABLED` is `true` in both, so the staging build runs the same code as production's.
@@ -133,7 +133,7 @@ Both are declared in the workers' `[env.staging]` blocks and attached by the dep
 ([Deployment](deployment.md#custom-domain)):
 
 - `staging.liveplanner.app` → `liveplanner-router-staging`
-- `mcp-staging.liveplanner.app` → `liveplanner-mcp-staging`
+- `mcp-staging.liveplanner.app` → liveworkspace's staging MCP Worker (the one MCP, serving this app's old connections)
 
 The other staging workers are reached only over the router's service bindings and never touch DNS.
 

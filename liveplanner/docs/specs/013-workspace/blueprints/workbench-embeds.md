@@ -112,7 +112,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/editor/components/dialogs/settings/SettingsTokenPairings.tsx`                                                                                                                | A token card's paired workbenches with **Unpair**                                                                                                                                                    |
 | `apps/editor/components/dialogs/settings/SettingsTokensRow.tsx`                                                                                                                    | The API Tokens row loads every pairing and lists them (tokens themselves are made in the shared panel above it)                                                                                      |
 | `apps/editor/hooks/persistence/useWorkbenchPairings.ts`                                                                                                                            | List, group by token, unpair                                                                                                                                                                         |
-| `apps/editor/e2e/signed-in/workbench-contrast.spec.ts`                                                                                                                             | The pairing page (pending), the device page (entry, consent) and a paired-workbench row, light and dark, to WCAG 2.2 AA                                                                              |
+| `apps/editor/e2e/signed-in/workbench-contrast.spec.ts`                                                                                                                             | The paired-workbench row, light and dark, to WCAG 2.2 AA                                                                                                                                             |
 | `apps/editor/src/worker.ts` (+ test)                                                                                                                                               | Unchanged code; the test pins `/embed/workbench` frameable and `/workbench/pair` `DENY`                                                                                                              |
 | `packages/agent-verbs/src/verbs/workbench.ts`, `catalogue.ts`, `index.ts`                                                                                                          | `workbench.open`, `workbench.pair` (local); resource `workbench`; `workbenchOriginOf`, `workbenchNameOf`: the refusals both verbs share                                                              |
 | `apps/cli/src/commands/workbench-pair.ts`                                                                                                                                          | `pairWorkbench(io, api, input, json, log)`: request, print, open, wait                                                                                                                               |
@@ -1150,7 +1150,7 @@ offers no Appearance control (WB15). The Reconnect line is `WorkbenchReconnectLi
 
 ### The pairing page (`/workbench/pair?code=`)
 
-Built on `OauthShell`, like the device page; states and copy:
+Built on `AuthStage` (the Night Band frame); states and copy:
 
 | State                       | Heading                             | Body and actions                                                                                                                                                                                                                                                                                                                                                                                                         |
 | --------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -1204,17 +1204,15 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
 - **Open in liveplanner**: accessible name "Open in liveplanner (opens in a new tab)"; at least 24 by 24 px; the
   editor's focus ring.
 - The pairing page: focus moves to the heading on each state change; **Allow** and **Don't allow** are native
-  buttons; the origin and the token name are text, readable by a screen reader in full; it is drawn by `OauthShell`,
-  whose primary fill (`OAUTH_PRIMARY`: white on `brand-700` in light, about 5.9:1, and the solid brand control in
-  dark) the device and consent pages share.
+  buttons; the origin and the token name are text, readable by a screen reader in full; it is drawn on `AuthStage`, whose primary fill is white on `brand-700` in light (about 5.9:1) and the solid brand control in
+  dark.
 - Settings rows: **Unpair** named "Unpair <name> at <origin>"; the confirm popover is the existing accessible one.
 - The workspace frame: the Explorer's own semantics and focus order; Back is a native button, at least 24 by 24 px,
   first in the tab bar's focus order; a move inside the frame moves focus to the new view's heading (the Explorer's
   pane heading, or the editor's canvas as on a load), and announces nothing more.
 - Reveal outlines honour reduced motion as changeset outlines do.
 - The contrast audit, `apps/editor/e2e/signed-in/workbench-contrast.spec.ts` (every surface needs a signed-in person,
-  which only the signed-in export renders, so not the guest-mode `contrast-audit.spec.ts`), holds the pairing page
-  (pending), the device page (code entry and consent) and the paired-workbench row, each in both schemes.
+  which only the signed-in export renders, so not the guest-mode `contrast-audit.spec.ts`), holds the paired-workbench row in both schemes.
 
 ## Web Experience
 
@@ -1222,7 +1220,7 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
   (`import('../../project/[id]/editor-page')` started on mount) while redeem and binding run, so `mounted` does not
   wait on it. The editor replaces the status screen whole: no shift inside either (CLS).
 - INP: the selection message is built after the settle, off the input event; message handling is O(refs).
-- `/workbench/pair` is a small static page; its one request runs after auth settles; layout is the device page's.
+- `/workbench/pair` is a small static page; its one request runs after auth settles; layout is `AuthStage`'s.
 - The workspace frame's LCP is its status text, from the static HTML; the Explorer and the editor chunks start
   loading on mount while redeem and binding run. A move inside the frame is a client render with no page load;
   the frame's own status line stands while a chunk loads, and nothing above the pane shifts between views (CLS);
@@ -1373,7 +1371,7 @@ Configuration: `APP_BASE_URL` (existing var) builds the URLs; `WORKBENCH_TICKET_
 ## Assets and external resources
 
 No new asset. The external-link glyph and the key glyph already ship in the editor's icon set; the pairing page
-reuses `OauthShell`, which stands on `AuthStage` (the Night Band frame).
+stands on `AuthStage` (the Night Band frame).
 
 ## Defaults ledger
 

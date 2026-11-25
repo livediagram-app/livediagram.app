@@ -1,6 +1,7 @@
 // The Build with AI page's clients and starter prompts (docs/specs/019-marketing/build-with-ai.md "The clients").
-// One address, MCP_URL, feeds every snippet, so the page can never show two. It is this deployment's MCP worker: a
-// build set with NEXT_PUBLIC_MCP_ORIGIN (staging, local dev) shows its own, never the hosted one. The client list is
+// One address, MCP_URL, feeds every snippet, so the page can never show two. It is liveworkspace's one MCP, one
+// connection for every liveworkspace app (liveworkspace/docs/specs/021-mcp/mcp.md): a build set with
+// NEXT_PUBLIC_MCP_ORIGIN (staging, local dev) shows its own, never the hosted one. The client list is
 // @liveworkspace/marketing-site's, bound to this product; the starter prompts are livedesign's own.
 
 import { mcpEndpoint, resolveMcpOrigin } from '@livedesign/api-schema';

@@ -15,7 +15,7 @@ The export door (`GET /api/internal/items/:id/export?format=svg[&tab=<id>]`, [pr
 is answered by the plan's Durable Object, where the content is (`plan-room.ts` `exportImage`):
 
 - The **first tab**, or the tab asked for, drawn with `renderElementsToSvg` (`@liveplanner/project`, the same DOM-free
-  renderer the MCP worker uses). A Form tab draws its form as respondents see it on its tab's look (`formArt` from
+  renderer the MCP package uses). A Form tab draws its form as respondents see it on its tab's look (`formArt` from
   `@liveplanner/plan-art`, since a form is not an element). A Board draws its project's cards, a Sheet its window of
   cells, a Dashboard its page laid out with its metrics and charts counted from the cards. Icon elements render their
   real glyph via `@liveworkspace/icons/resolve` ([Technology icons](../010-palette/technology-icons.md) "Rendering").

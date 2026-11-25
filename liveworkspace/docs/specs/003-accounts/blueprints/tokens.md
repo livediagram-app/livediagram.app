@@ -91,7 +91,7 @@ Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `create
 - Revoking a token ends the workbench pairings hanging off it.
 - A reconnect's revoke of the client's earlier token is an ordinary `DELETE /api/account/tokens/:id` over the bearer
   door, by its owner, after the new token is live; the new token keeps the name, so `tellAssistantRevoked` sends
-  nothing for it (each app's `docs/specs/015-api/mcp-server.md` "Consent + mint").
+  nothing for it ([the one MCP](../../021-mcp/mcp.md#sign-in-and-per-app-consent)).
 
 ## Testing
 

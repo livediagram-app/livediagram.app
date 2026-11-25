@@ -1,4 +1,4 @@
-// The one MCP end to end through its Worker entry (liveworkspace/docs/specs/021-mcp/mcp.md): each app's MCP Worker
+// The one MCP end to end through its Worker entry (liveworkspace/docs/specs/021-mcp/mcp.md): each app's MCP package
 // is a stub answering JSON-RPC from its recorded tool list, so these pin the routing, the renames in answers, the
 // core verbs' mapping, per-app consent and a refused token.
 import { readFileSync } from 'node:fs';
@@ -7,7 +7,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { APPS, type AppId, type Binding } from './apps';
 import { forgetCatalogues } from './app-client';
 import type { Env } from './env';
-import worker from './index';
+import { oneMcp } from './one-mcp';
+
+// The Worker with each app's package swapped for the stubs below, which the test env carries under the binding names.
+const worker = oneMcp<Env>((e) => e);
 
 type Call = {
   app: AppId;
@@ -152,9 +155,11 @@ const ctx = {
 async function rpc(
   method: string,
   params: Record<string, unknown> = {},
-  opts: { all?: boolean; token?: string } = {},
+  opts: { all?: boolean; token?: string; host?: string } = {},
 ) {
-  const url = `https://mcp.liveworkspace.test/mcp${opts.all ? '?tools=all' : ''}`;
+  const query = new URLSearchParams();
+  if (opts.all) query.set('tools', 'all');
+  const url = `https://${opts.host ?? 'mcp.liveworkspace.test'}/mcp${query.size ? `?${query.toString()}` : ''}`;
   const response = await worker.fetch(
     new Request(url, {
       method: 'POST',
@@ -187,7 +192,9 @@ async function tool(
   return body.result;
 }
 
-async function listNames(opts: { all?: boolean; token?: string } = {}): Promise<string[]> {
+async function listNames(
+  opts: { all?: boolean; token?: string; host?: string } = {},
+): Promise<string[]> {
   const body = await (
     await rpc('tools/list', {}, opts)
   ).json<{ result: { tools: { name: string }[] } }>();
@@ -660,5 +667,28 @@ describe('per-app consent', () => {
       }),
     ).toHaveLength(all);
     expect(await listNames({ all: true, token: await grant([], 'lwt_none') })).toHaveLength(all);
+  });
+});
+
+describe('an app’s old address (mcp.<app>.app)', () => {
+  it('serves that one app with every tool listed, plus the core verbs', async () => {
+    const names = await listNames({ host: 'mcp.livediagram.app' });
+    expect(names).toContain('update_diagram');
+    expect(names).toContain('find_items');
+    expect(names).not.toContain('change_cards');
+    expect(names).not.toContain('write_article');
+  });
+
+  it('never widens what the token was granted', async () => {
+    const token = await grant(['liveplanner'], 'lwt_planner');
+    expect(await listNames({ token, host: 'mcp.livediagram.app' })).not.toContain('update_diagram');
+    expect(await listNames({ token, host: 'mcp.liveplanner.app' })).toContain('change_cards');
+  });
+
+  it('answers a token the app refused with the pointer, not a sign-in', async () => {
+    refusing = 'livediagram';
+    const response = await rpc('tools/list', {}, { host: 'mcp.livediagram.app' });
+    expect(response.status).toBe(401);
+    expect(await response.text()).toContain('https://mcp.liveworkspace.app/mcp');
   });
 });

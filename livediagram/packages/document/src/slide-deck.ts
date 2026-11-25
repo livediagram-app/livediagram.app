@@ -13,7 +13,7 @@
 // the delete case correct for free (see resolveSlide).
 //
 // Everything here is pure — `(Deck, Tab[]) -> ...` with no React — so the
-// editor, the api and the MCP worker can all reach for the same answers.
+// editor, the api and the MCP package can all reach for the same answers.
 
 import { contentBounds } from './svg-render';
 import type { Element, ElementId, Tab, TabId } from './index';

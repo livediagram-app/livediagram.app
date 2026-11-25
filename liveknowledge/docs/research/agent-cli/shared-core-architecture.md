@@ -1,5 +1,7 @@
 # One core, many front-ends: REST, MCP and CLI
 
+> Note: this research predates the one MCP. liveknowledge's own MCP host and its consent and device pages are retired; the OAuth server it describes is liveworkspace's one MCP's now (liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs retire").
+
 Research for the agent-first `liveknowledge` CLI. Angle: how one capability core serves the REST API, the MCP server and a CLI without drift, and how the CLI is authenticated, distributed, updated and measured. Measured against the code on `main` at `efaee7d29`.
 
 Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API tokens](../../specs/015-api/public-api-and-tokens.md), [API app](../../specs/015-api/api.md), [Telemetry](../../specs/017-telemetry/telemetry.md).

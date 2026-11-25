@@ -10,33 +10,41 @@ Derived from [mcp.md](../mcp.md). The spec decides; this file adds engineering p
 | `apps/mcp/src/apps.ts`                 | The five apps: kind, binding, item word and noun, id argument, the tools the core verbs map to, hand-made names                         |
 | `apps/mcp/src/catalogue.ts`            | Renaming (`renameTool`), the rewrite of old names in texts (`nameRewriter`, `rewriteJson`), `namingProblems`                            |
 | `apps/mcp/src/core.ts`                 | The ten core verbs: their schemas (`CORE_TOOLS`) and `runCore`                                                                          |
-| `apps/mcp/src/app-client.ts`           | JSON-RPC to an app's MCP over its binding; the per-isolate tool lists; `TokenRefused`                                                   |
+| `apps/mcp/src/app-client.ts`           | JSON-RPC to an app's MCP package in process; the per-isolate tool lists; `TokenRefused`                                                 |
+| `apps/mcp/src/app-workers.ts`          | Each app's MCP package bound to its env (api binding, base URL, telemetry key) as an in-process `Fetcher`                               |
+| `apps/mcp/src/old-hosts.ts`            | `mcp.<app>.app` on this Worker: the narrowing to that app and the sign-in refusals that point here                                      |
 | `apps/mcp/src/server.ts`               | The per-request `McpServer`: low-level `tools/list` and `tools/call` handlers, the instructions                                         |
 | `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request                                                            |
-| `apps/mcp/src/oauth.ts`, `listing.ts`  | The authorization server's configuration (consent on liveworkspace.app, no built-in clients); serverInfo                                |
+| `apps/mcp/src/oauth.ts`, `listing.ts`  | The authorization server's configuration (consent on liveworkspace.app, the five CLIs as built-in clients); serverInfo                  |
+| `<app>/apps/mcp/src/index.ts`          | Each app's MCP package: `createMcpApp` with no authorization server of its own, imported by `apps/mcp/src/app-workers.ts`               |
 | `apps/mcp/eval/`                       | The tool-pick eval: `requests.ts`, `score.ts`, `run.ts`, `snapshot.mjs`, the recorded `tools/`                                          |
 | `apps/site/app/oauth/consent/page.tsx` | The consent page (`components/account/McpConsent.tsx`, `lib/mcp-connect.ts`)                                                            |
 | `packages/mcp-kit/src/oauth.ts`        | `OauthServer.onGrant`: told of each grant with the consent page's body                                                                  |
 
 ## Bindings
 
-| Binding         | Production                                                   | Staging                     |
-| --------------- | ------------------------------------------------------------ | --------------------------- |
-| `LIVEDIAGRAM`   | `livediagram-mcp`                                            | `livediagram-mcp-staging`   |
-| `LIVEDOCUMENTS` | `livedocuments-mcp`                                          | `livedocuments-mcp-staging` |
-| `LIVEPLANNER`   | `liveplanner-mcp`                                            | `liveplanner-mcp-staging`   |
-| `LIVEDESIGN`    | `livedesign-mcp`                                             | `livedesign-mcp-staging`    |
-| `LIVEKNOWLEDGE` | `liveknowledge-mcp`                                          | `liveknowledge-mcp-staging` |
-| `OAUTH_KV`      | provisioned by the first deploy (no `id` in `wrangler.toml`) | the same, its own           |
+| Binding               | Production                                                         | Staging                     |
+| --------------------- | ------------------------------------------------------------------ | --------------------------- |
+| `LIVEDIAGRAM_API`     | `livediagram-api`                                                  | `livediagram-api-staging`   |
+| `LIVEDOCUMENTS_API`   | `livedocuments-api`                                                | `livedocuments-api-staging` |
+| `LIVEPLANNER_API`     | `liveplanner-api`                                                  | `liveplanner-api-staging`   |
+| `LIVEDESIGN_API`      | `livedesign-api`                                                   | `livedesign-api-staging`    |
+| `LIVEKNOWLEDGE_API`   | `liveknowledge-api`                                                | `liveknowledge-api-staging` |
+| `OAUTH_KV`            | provisioned by the first deploy (no `id` in `wrangler.toml`)       | the same, its own           |
+| `<APP>_TELEMETRY_KEY` | a secret per app, the same value as that app's api `TELEMETRY_KEY` | the staging values          |
 
-`CONSENT_BASE_URL`: `https://www.liveworkspace.app`, staging `https://staging.liveworkspace.app`, local
-`http://localhost:3000`. Hosts: `mcp.liveworkspace.app`, `mcp-staging.liveworkspace.app` (custom domains, no
-`workers.dev`). Local: `wrangler dev` on 3013 (inspector 9139). Deploys in tier 2 (`TIER_OF` in
-`.github/scripts/ci-plan.mjs`), after the MCP Workers it binds.
+Vars: `CONSENT_BASE_URL` (`https://www.liveworkspace.app`, staging `https://staging.liveworkspace.app`, local
+`http://localhost:3000`); `<APP>_BASE_URL`, each app's editor origin (`https://www.<app>.app`, staging
+`https://staging.<app>.app`, local its product block's first port); staging also `TELEMETRY_URL`. The font files
+the picture tools draw with load as `Data` modules (`[[rules]]`). Hosts: `mcp.liveworkspace.app` and the five
+`mcp.<app>.app`, staging `mcp-staging.liveworkspace.app` and `mcp-staging.<app>.app` (custom domains, no
+`workers.dev`). Local: `wrangler dev` on 3013 (inspector 9139), which serves every app's tools in one process.
+Deploys in tier 1 (`TIER_OF` in `.github/scripts/ci-plan.mjs`), after the apis it binds.
 
 ## Calling an app
 
-`POST https://<app>.internal/mcp` on the binding, `Authorization: Bearer <the person's token>`,
+`POST https://<app>.internal/mcp` to the app's package (`app-workers.ts`: its Hono app's `fetch` with the app's env and
+this request's `ExecutionContext`), `Authorization: Bearer <the person's token>`,
 `Accept: application/json, text/event-stream`, a bare JSON-RPC `tools/list` or `tools/call` (each app's MCP is
 stateless, so no `initialize` first). A 401 throws `TokenRefused`, which marks the request refused; the entry then
 answers `401 invalid_token` with `bearerChallenge(origin, true)`. Any other failure is a tool error in words, or, in
@@ -96,3 +104,5 @@ whose name its URI's scheme or `ui://` host is. `appGuide` sends `initialize` an
 | `apps/mcp/src/router.test.ts`       | Listing both ways, routing as the person, rewritten answers, every core verb's mapping, an app down, 401s, per-app consent |
 | `apps/mcp/src/eval.test.ts`         | Every request's expected tool exists; the eval's mapping and judging                                                       |
 | `apps/site/lib/mcp-connect.test.ts` | The consent hand-over: mint, complete with the ticked apps, retire, refusals                                               |
+| `apps/mcp/src/old-hosts.test.ts`    | An old address narrows to its app with every tool, refuses sign-in with the pointer, answers `/health`                     |
+| `apps/mcp/src/app-workers.test.ts`  | Each app's env: its api binding, base URL and telemetry key, and no key when unset                                         |

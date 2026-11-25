@@ -132,10 +132,10 @@ In order of precedence:
    it would land in shell history and transcripts.
 2. **The stored credential** of the active profile, from `auth login`.
 
-- `auth login` runs OAuth 2.1 with PKCE through the MCP worker's authorisation server
-  ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lwt_` token. `--device` uses the
+- `auth login` runs OAuth 2.1 with PKCE through liveworkspace's one MCP's authorisation server
+  ([MCP server](mcp-server.md) §3; liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold in") with a loopback redirect, and stores the minted `lwt_` token. `--device` uses the
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
-  do not run the MCP worker. The token is named "liveknowledge CLI"; its work shows as its owner's. A new login on a
+  do not run the one MCP. The token is named "liveknowledge CLI"; its work shows as its owner's. A new login on a
   profile that holds a token revokes the old one once the new one works.
 - The token goes in the operating system's own store, through the system's own tool and never native code: the
   macOS Keychain (`security`), the Secret Service on Linux (`secret-tool`), and on Windows a token sealed for the user
@@ -209,7 +209,7 @@ slows or fails a command, and when it last asked is kept in the CLI's config fol
 - Sent to the active profile's api only. Off with `LIVEKNOWLEDGE_TELEMETRY=0`, `DO_NOT_TRACK=1` or `telemetry off`
   (which sends its own `UI·Toggled·TelemetryOff` first). The first run says on stderr what is counted.
 - No device id, arguments, document ids or host names.
-- A sign-in through the CLI counts as `Token·Created·Cli`, beside the MCP's `Token·Created·MCP`.
+- A sign-in through the CLI counts as `Token·Created·Cli`, sent by the one MCP's pages, not by this app.
 
 ## Limits
 

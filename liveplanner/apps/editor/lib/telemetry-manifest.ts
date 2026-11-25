@@ -206,7 +206,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Team·Removed',
   'Template·Used',
   'Theme·Changed',
-  'Token·Created',
   'Trash·Cleared',
   'Trash·Deleted',
   // Trash (docs/specs/013-workspace/trash.md): a trashed plan's card, and the plan restored from it.

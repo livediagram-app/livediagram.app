@@ -7,7 +7,7 @@ import type { TextRef } from '@liveworkspace/licences/texts';
 const text = (file: string): TextRef[] => [{ label: 'LICENSE', file }];
 
 export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
-  // The mcp worker's SVG renderer: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2.
+  // The MCP package's SVG renderer: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2.
   {
     id: 'resvg',
     name: 'resvg',
