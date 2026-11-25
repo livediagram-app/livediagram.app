@@ -185,7 +185,6 @@ livedocuments/packages/document/scripts/build-world-map.mjs	liveknowledge/packag
 livedocuments/packages/document/src/animation-membership.ts	liveknowledge/packages/document/src/animation-membership.ts
 livedocuments/packages/document/src/arrow-rebind.ts	liveknowledge/packages/document/src/arrow-rebind.ts
 livedocuments/packages/document/src/article-bands.ts	liveknowledge/packages/document/src/article-bands.ts
-livedocuments/packages/document/src/article-flow-ops.ts	liveknowledge/packages/document/src/article-flow-ops.ts
 livedocuments/packages/document/src/article-footnotes.ts	liveknowledge/packages/document/src/article-footnotes.ts
 livedocuments/packages/document/src/article-intake.ts	liveknowledge/packages/document/src/article-intake.ts
 livedocuments/packages/document/src/article-layout-set.ts	liveknowledge/packages/document/src/article-layout-set.ts
@@ -226,7 +225,6 @@ livedocuments/packages/document/src/page-ink.ts	liveknowledge/packages/document/
 livedocuments/packages/document/src/page-theme-fills.ts	liveknowledge/packages/document/src/page-theme-fills.ts
 livedocuments/packages/document/src/pages-background-copy.ts	liveknowledge/packages/document/src/pages-background-copy.ts
 livedocuments/packages/document/src/paginate.ts	liveknowledge/packages/document/src/paginate.ts
-livedocuments/packages/document/src/participant-article.ts	liveknowledge/packages/document/src/participant-article.ts
 livedocuments/packages/document/src/participant-content.ts	liveknowledge/packages/document/src/participant-content.ts
 livedocuments/packages/document/src/quote.ts	liveknowledge/packages/document/src/quote.ts
 livedocuments/packages/document/src/shadow.ts	liveknowledge/packages/document/src/shadow.ts
