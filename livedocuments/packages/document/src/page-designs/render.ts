@@ -108,7 +108,11 @@ export function paintPageDesign(input: DesignPaintInput): PaintedDesign {
     });
     // A design that does not animate has no moving layer, whatever it drew.
     if (!PAGE_DESIGN_BY_ID[input.design.id].animates)
-      layers = layers.map(({ svg, defs }) => ({ svg, ...(defs ? { defs } : {}) }));
+      layers = layers.map(({ svg, defs, plates }) => ({
+        svg,
+        ...(defs ? { defs } : {}),
+        ...(plates ? { plates } : {}),
+      }));
     cache.set(key, layers);
     if (cache.size > DESIGN_CACHE_MAX) cache.delete(cache.keys().next().value!);
   }

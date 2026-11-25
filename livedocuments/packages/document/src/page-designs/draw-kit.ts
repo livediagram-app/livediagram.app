@@ -29,8 +29,25 @@ export type LayerMotion = {
   origin?: [number, number];
 };
 
+/** A solid part a design paints at near full strength (a photo's frame, a tile), as a box in page px round it: the
+ *  contrast guard weighs its colours at its own opacity wherever a text overlaps it, rather than at the design's
+ *  average busyness (spec "Readability"). */
+export type DesignPlate = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  colours: readonly string[];
+  opacity: number;
+};
+
 /** One drawing layer: SVG markup in page px (0 to the page's width and height; a panning layer reaches further). */
-export type DesignLayer = { svg: string; motion?: LayerMotion; defs?: string };
+export type DesignLayer = {
+  svg: string;
+  motion?: LayerMotion;
+  defs?: string;
+  plates?: readonly DesignPlate[];
+};
 
 export type DrawCtx = {
   w: number;

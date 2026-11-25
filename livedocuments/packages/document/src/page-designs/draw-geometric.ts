@@ -248,6 +248,40 @@ const diagonalStripes: Drawer = (c) => {
   ];
 };
 
+// Moiré: two sets of fine rings, one from the focus and one from a point a little off it, laid over each other so
+// their interference draws broad shimmering bands of its own; each set is one path.
+const moire: Drawer = (c) => {
+  const [fx, fy] = c.t.focus;
+  const ax = fx * c.w;
+  const ay = fy * c.h;
+  const step = Math.max(5, unit(c) * 2);
+  const shift = step * between(c.rnd, 5, 9);
+  const turn = between(c.rnd, 0, Math.PI * 2);
+  const bx = ax + Math.cos(turn) * shift;
+  const by = ay + Math.sin(turn) * shift;
+  // The rings reach the far corner, so every part of the page shows the pattern before the calm mask quiets it.
+  const reach = Math.max(
+    Math.hypot(ax, ay),
+    Math.hypot(c.w - ax, ay),
+    Math.hypot(ax, c.h - ay),
+    Math.hypot(c.w - ax, c.h - ay),
+  );
+  const rings = (x: number, y: number) => {
+    let d = '';
+    for (let r = step; r <= reach + step; r += step)
+      d += `M${n(x - r)} ${n(y)}a${n(r)} ${n(r)} 0 1 0 ${n(r * 2)} 0a${n(r)} ${n(r)} 0 1 0 ${n(-r * 2)} 0`;
+    return d;
+  };
+  const width = n(step * 0.42);
+  return [
+    {
+      svg:
+        `<path d="${rings(ax, ay)}" fill="none" stroke="${c.p.ink}" stroke-opacity="${c.p.dark ? 0.3 : 0.24}" stroke-width="${width}"/>` +
+        `<path d="${rings(bx, by)}" fill="none" stroke="${c.p.a}" stroke-opacity="0.55" stroke-width="${width}"/>`,
+    },
+  ];
+};
+
 export const GEOMETRIC_DRAWERS = {
   grid,
   dots,
@@ -256,4 +290,5 @@ export const GEOMETRIC_DRAWERS = {
   triangles,
   'concentric-rings': concentricRings,
   'diagonal-stripes': diagonalStripes,
+  moire,
 } as const;

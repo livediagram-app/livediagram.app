@@ -26,20 +26,44 @@ readability.
 
 ## The catalogue
 
-Forty-three designs in eight families, each **procedural**: drawn as SVG from its tuning, the page's size and the
+Fifty-five designs in eight families, each **procedural**: drawn as SVG from its tuning, the page's size and the
 theme, never a fixed picture, so it fits any page size, stays crisp at any zoom and in every export, and weighs
-nothing to store. The catalogue's order is the picker's.
+nothing to store. The catalogue's order is the picker's: a variation sits straight after the design it varies.
 
-| Family    | Designs                                                                        |
-| --------- | ------------------------------------------------------------------------------ |
-| Gradients | Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Sunset Bands                    |
-| Geometric | Grid, Dots, Isometric, Hexagons, Triangles, Concentric Rings, Diagonal Stripes |
-| Organic   | Blobs, Waves, Topographic, Flowing Ribbons, Marbled                            |
-| Texture   | Paper Grain, Noise, Linen, Risograph, Halftone, Blueprint                      |
-| Light     | Glass Panels, Spotlight, Bokeh, Soft Shadows, Layered Cards                    |
-| Frames    | Corner Accents, Edge Bands, Side Rail, Torn Paper, Offset Border               |
-| Bold      | Brutalist Blocks, Memphis, Swiss Grid, Split Fields, Type Watermark            |
-| Tech      | Circuit, Starfield, Constellations, Data Grid, Scanlines                       |
+| Family    | Designs                                                                                                    |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| Gradients | Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Sunset Bands                                                |
+| Geometric | Grid, Dots, Isometric, Hexagons, Triangles, Concentric Rings, Diagonal Stripes, Moiré                      |
+| Organic   | Blobs, Blob Echo, Lava Lamp, Waves, Topographic, Flowing Ribbons, Marbled                                  |
+| Texture   | Paper Grain, Noise, Linen, Risograph, Riso Overprint, Riso Fade, Riso Lines, Halftone, Blueprint, Terrazzo |
+| Light     | Glass Panels, Spotlight, Bokeh, Soft Shadows, Layered Cards, Card Cascade, Polaroids                       |
+| Frames    | Corner Accents, Edge Bands, Side Rail, Torn Paper, Offset Border                                           |
+| Bold      | Brutalist Blocks, Memphis, Swiss Grid, Split Fields, Type Watermark, Bauhaus, Brush Strokes, Sunburst      |
+| Tech      | Circuit, Starfield, Constellations, Data Grid, Scanlines                                                   |
+
+### The twelve added on 2026-11-25
+
+The owner's favourites are Risograph, Blobs and Layered Cards (owner, 2026-11-25): seven designs vary them, each
+clearly different in the picker rather than a recolour, and five are new.
+
+| Design         | Family    | Varies        | The idea                                                                                                                                 |
+| -------------- | --------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Riso Overprint | Texture   | Risograph     | Three flat inks (no dots) printed over each other in bold arcs and bars, a third colour where two overlap, each plate badly registered.  |
+| Riso Fade      | Texture   | Risograph     | Two inks in a coarse dot screen at different screen angles, each fading from one edge across to the other so they cross mid page.        |
+| Riso Lines     | Texture   | Risograph     | Big cut-paper shapes filled with a line screen instead of dots, two inks hatched at crossing angles, an out-of-register outline on top.  |
+| Blob Echo      | Organic   | Blobs         | A few solid blobs on the corners, each ringed by outlines that echo its shape outward, like ripples or a sticker's offset cut.           |
+| Lava Lamp      | Organic   | Blobs         | Tall gooey blobs rising from the bottom and hanging from the top, stretched and pinched as a lava lamp's are; they drift when animated.  |
+| Card Cascade   | Light     | Layered Cards | A diagonal run of small cards stepping out of a corner, each smaller and paler than the one before it, as a deck of cards dealt out.     |
+| Polaroids      | Light     | Layered Cards | Small instant photos tucked into the four corners, hanging off the edges so only a margin's worth shows: a frame, a soft picture, tape.  |
+| Moiré          | Geometric | new           | Two sets of fine rings from two centres laid over each other, so their interference draws a shimmering pattern of its own.               |
+| Terrazzo       | Texture   | new           | Chips of stone in the theme's colours scattered over the page, thicker toward the edges, as a terrazzo floor.                            |
+| Bauhaus        | Bold      | new           | A band of square tiles hanging off one edge (the bottom, the left or round a corner), each a quarter circle, half circle or square.      |
+| Brush Strokes  | Bold      | new           | A few wide painterly swipes across the corners, tapered at each end, with the dry brush's streaks running along them.                    |
+| Sunburst       | Bold      | new           | Rays fanning out from a point at the page's edge, alternate wedges coloured and fading out, as a retro sunburst; it turns when animated. |
+
+Each takes the same controls as its family's designs (Colours, Intensity, Safe area and Grain, with Scale, Seed and
+the rest as it lists), works with Keep Theme and Shuffle in Quick Picks, can be saved as a saved design, and is in the
+agents' design list and the API's `PageDesignId`.
 
 - **Decoration only.** A design adds nothing selectable, searchable or exported as content: it is drawn inside the
   page's sheet, under the element layer, takes no pointer events and is hidden from screen readers. Type Watermark
@@ -120,8 +144,8 @@ exported, the paper is white and counts as light. The **Type Watermark** draws i
 
 ## Animation
 
-Thirteen designs can move: Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Waves, Blobs, Flowing Ribbons, Spotlight,
-Bokeh, Starfield, Constellations, Circuit (pulses) and Scanlines.
+Fifteen designs can move: Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Waves, Blobs, Lava Lamp, Flowing Ribbons,
+Spotlight, Bokeh, Starfield, Constellations, Circuit (pulses), Scanlines and Sunburst.
 
 - **Animate** is a switch in their fine tuning, **off by default**, with **Speed** from 25% to 300% (100% is the
   design's own pace).
@@ -139,11 +163,15 @@ Designs keep words readable in three ways.
 
 - **Safe area.** Each design keeps the middle of the page calmer (its Safe area, a soft fall-off from the edges to
   the centre), where layouts put their words.
+- **Margins.** A design whose parts are solid (Polaroids, Bauhaus) keeps them to the page's margins, hanging off its
+  edges, so a layout's words never sit on them.
 - **Content zones.** A page's words are its content zones: every text on the page, wherever a layout or a person put
   it. The contrast guard checks each one.
 - **Contrast guard.** For every text that sits on the page with no fill of its own, the guard estimates the backdrop
   under it (the page's fill with the design's colours at the strength they show there) and checks the text's colour
-  against it: 4.5 to 1 for body text, 3 to 1 for large text (WCAG 2.2 AA). A text that fails gets a **scrim**, a soft
+  against it: 4.5 to 1 for body text, 3 to 1 for large text (WCAG 2.2 AA). A design's **solid parts** (a photo's
+  frame, a tile: its plates) count at their own strength under any text whose box meets them, not at the design's
+  average, so a text on a frame or a tile fails as it reads. A text that fails gets a **scrim**, a soft
   plate of the page's own colour under it, drawn with the design (on screen and in every export). The guard is a
   setting of the design: **Add a scrim** (the default) or **Warn only**, which draws no scrim and says in the panel how
   many texts are hard to read.
@@ -203,6 +231,9 @@ speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, 
 - A page's design is one SVG string per layer, set as markup, never thousands of React elements.
 - The contrast guard runs on the elements as they settle, never on every frame of a drag.
 - Only animated designs on screen animate; layers move by transform and opacity alone.
+- A texture's film grain is an SVG turbulence filter on a still layer only, drawn once into the cached markup, never
+  on a moving layer and never per frame; the other designs draw no filters at all. Each design, the twelve added on
+  2026-11-25 among them, stays inside the catalogue's CPU and node budgets.
 - While a Fine Tune control is moving, only the pages on screen redraw; the rest keep their last drawing and catch up
   a moment after the control stops. A flowing design draws a strip per page, so a fifty-page deck would otherwise
   redraw fifty strips on every tick.

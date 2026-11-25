@@ -94,7 +94,7 @@ calm?; variant?; animate?: true; speed?; rhythm?: true; flow?: true; guard?: 'wa
   identity, so the first frame is the still frame. The duration is the motion's seconds divided by the speed.
 - **Guard** (`guard.ts`, `designGuard(painted, rect, elements)`): for each `text` element whose centre is on the page
   with a label and no opaque fill, the backdrop estimate is `base` mixed with each of `a`, `b`, `c` and `ink` at
-  `busy x intensity x calmShareAt(calm, centre)`; its contrast is the worst against the text's colour (its
+  `busy x intensity x calmShareAt(calm, centre)`; each plate (`DesignLayer.plates`: a box, its colours and opacity, drawn by Polaroids and Bauhaus) whose box meets the text's box adds its colours mixed at `opacity x intensity x calmShareAt(the overlap's centre)`; its contrast is the worst against the text's colour (its
   `textColor`, else the page ink). Below `TEXT_CONTRAST` (or `LARGE_TEXT_CONTRAST` for large text) it fails. `scrim`
   guard: a rounded plate (`SCRIM_PAD`, radius 12, `base` at `SCRIM_OPACITY`) per failing text; `warn`: none. Answers
   `{ scrims, failing }`.
@@ -144,6 +144,10 @@ The Page Design panel ([Tab Style dialog](../canvas-and-theme-dialog.md) "Page D
   (`panels`, `renderPanel`, `panelHelp`) and the shared dialog draws the row (`panelValues`, `panelIcons`).
 - Edits: `apps/editor/hooks/canvas/usePageDesignEdits.ts` (`pageDesignEdits`, mounted by `useTabCanvas`): picks and
   switches through `commitTabs`, sliders through `checkpointBurst` and `tickTabs`.
+- Quick Picks (`PageDesignLayers.tsx` `QuickPicks`): the `PagedCarousel`'s `heading` holds the title and, pushed right,
+  Keep Theme (a `label` with the small `Switch`, `data-page-design-keep-theme`) then Shuffle, one `items-center` row
+  (`data-page-design-quick-controls`); below `sm` that heading takes the full line, so the page controls wrap under it
+  and Shuffle keeps its place whether Keep Theme shows. With `pageOnly` Keep Theme is not rendered. No row under the picks.
 - Tiles are 3 across (2 on a phone), 16:10, a 2 px brand ring when selected; the family chips scroll the grid to their
   heading. Sliders are the shared `RANGE_SLIDER`; colour swatches open the one colour picker.
 
@@ -170,7 +174,11 @@ counts `Tab·Changed·PageDesignSaved` (through the provider's `onSaved`, alongs
 
 ## Testing
 
-- `packages/document/src/page-designs/catalogue.test.ts`: 40+ designs, eight families, unique ids, every design
+- `packages/document/src/page-designs/added-designs.test.ts`: the twelve designs added on 2026-11-25 (in their
+  families, after the design each varies), each drawn in every style at three sizes in light and dark, distinct from
+  the design it varies, a still frame with no filter outside a still texture layer, and each within a per-design CPU
+  budget at 1920 x 1080.
+- `packages/document/src/page-designs/catalogue.test.ts`: 55 designs, eight families, unique ids, every design
   drawable in light and dark, controls and variants consistent, the CPU and node budgets.
 - `packages/document/src/page-designs/tuning.test.ts`: parse keeps valid fields and drops the rest; compaction.
 - `packages/document/src/page-designs/behaviour.test.ts`: resolution, roles and rhythm, strips, the guard, the cache,
@@ -178,7 +186,7 @@ counts `Tab·Changed·PageDesignSaved` (through the provider's `onSaved`, alongs
 - Agents: `packages/edit-operations/src/pages/page-designs.test.ts`; the CLI flags in
   `packages/agent-verbs/src/verbs/pages.test.ts`; `create_document` in `apps/mcp/src/create-document-placement.test.ts`.
 - Editor: `PageDesignLayer.test.tsx` (layers, pause, decoration only), `PageDesignPanel.test.tsx` (pick, scope,
-  tune, reset, sets), `design-tune.test.ts`, and `usePageDesignEdits.test.ts` (one step a pick, a burst a drag, the
+  tune, reset, sets, Keep Theme in Shuffle's row and hidden while Affect All Pages is off), `design-tune.test.ts`, and `usePageDesignEdits.test.ts` (one step a pick, a burst a drag, the
   lock, a set, a saved design, and the Participant and Viewer roles).
 - Saved designs: `saved.test.ts` (element, preview round trip, ids); `apps/api/src/routes/page-designs.test.ts`
   (list for a person, a team and a token; kept out of the element list; a mixed save refused); `PageDesignPanel.test.tsx`
