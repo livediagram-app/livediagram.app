@@ -37,7 +37,7 @@ export function DialogHeader({
   subtitle?: ReactNode;
   children?: ReactNode;
 }) {
-  // Drawn inside Tools: the back bar names the tool, so the title is for screen readers and the line leads.
+  // Drawn inside Tools: Tools' band names the tool and is its one heading, so only the actions show here.
   if (useDialogInline())
     return <InlineDialogHeader title={title} subtitle={subtitle} actions={children} />;
   return (
