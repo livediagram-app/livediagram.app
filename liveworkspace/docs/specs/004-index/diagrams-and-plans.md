@@ -11,6 +11,11 @@ that stays live.
   a board, or the cards its filter shows, drawn as a livediagram diagram in a connected tab: cards as boxes, Blocked By
   as arrows, columns as lanes, the critical path highlighted, redrawn as the plan changes.
 
+Both pickers offer [Connect as tabs](connected-tabs.md#linked-from-a-send-to): the diagram and the plan each get a connected tab that opens the
+other once the cards or the diagram are made. View As Diagram's own connected tab in the plan (for an Editor of the
+whole plan, with its pass, as before) is the plan's side: the diagram gains a linked tab back, paired with it, so
+removing either removes both.
+
 The platform holds what both need: the **shape-to-card link**, the index's routes that check each person's access, and
 the doors each app opens to the index alone. The plan is always the source of truth for cards: a diagram suggests
 changes, never overwrites one.

@@ -62,6 +62,8 @@ A centred dialog (a bottom sheet on a phone), with the shared illustrated header
   diagram"), editable. An update keeps the tab's name, so it has none.
 - **Preview** drafts the graph ("Reading the words") and shows the sketch with its counts. Changing the words' kind
   drops the sketch, so the button reads Preview again; **Draw Again** asks for another draft of the same kind.
+- **Connect as tabs** (a switch, on unless the files are already connected): once the diagram is written, the source
+  and the diagram each get a connected tab that opens the other ([Connect as tabs](connected-tabs.md#linked-from-a-send-to)).
 - **Make Diagram** (**Add Tab**, **Update Tab**) writes the previewed graph ("Drawing"). A failure says why in the
   dialog, in fixed words, and the person may try again. Escape or Cancel closes; nothing is written until the index
   answers.

@@ -36,6 +36,11 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | `packages/explorer/src/dialogs/share/ActivePass.tsx`        | "Connected from <host>" on a pass              | 4    |
 | `packages/workbench/src/components/connect/` (part 5 files) | mounting: the page, the list, the store, doors | 5    |
 | `<app>/apps/<editor>/components/connect/`                   | each editor's thin doors: host, start entry    | 5    |
+| `packages/index-client/src/linked-tabs.ts`                  | Connect as tabs: the shapes and the reader     | 1429 |
+| `liveworkspace/apps/index/src/linked-tabs.ts`               | the read, the link, the pair's removal         | 1429 |
+| `liveworkspace/apps/index/migrations/0035_linked_tabs.sql`  | `connections.linked`                           | 1429 |
+| `packages/index-app/src/connected-tabs.ts` (`removeConnectedTabOf`) | the app's door that takes a linked tab away | 1429 |
+| `packages/workbench/src/components/link-tabs/`              | the pickers' option and the link after a send  | 1429 |
 
 ## Domain and naming
 
@@ -144,7 +149,8 @@ reader's own origin (each app's router forwards `/api/previews`, `@liveworkspace
 `appConnectionPath`. Deletes the row and its pass only when `host_item_id = :id`, `host_tab_id = tab` and the key's
 app is the host's, with the pass's Shared with me rows and an `unshared` event on the target; the target's app is told
 `revoke` as for any deleted link. Anything else, and a second call, answers `204` and changes nothing. The pair's row
-keeps its own pass; its `pair_id` is cleared (`ON DELETE SET NULL`).
+keeps its own pass; its `pair_id` is cleared (`ON DELETE SET NULL`). A linked pair (either row `linked`) goes together: see
+Linked from a Send to below.
 
 ### The sweep (every 15 minutes, `sweepUnconfirmedConnections`)
 
@@ -323,6 +329,68 @@ offline, `ConnectFilePanel.test.tsx`, `ConnectRailEntry.test.tsx`, `useConnected
 replace, the toast, Connect Again and its failure) and each editor's (the outline op keeps and carries a connection,
 the tab menu's connected mode for an Editor, nothing for a Viewer).
 
+### Linked from a Send to (Work Tracker 1429)
+
+Spec "Linked from a Send to". A **linked** connection is a `connections` row with `linked = 1` and no pass
+(`share_code` null from the start). The index makes it, both tabs through the apps' internal doors, so the same call
+serves every picker and liveplanner's agents.
+
+- **Wire** (`packages/index-client` `linked-tabs.ts`): `LinkedTabSide` `'connected' | 'can' | 'cannot'`;
+  `LinkedTabsRead { source, target }`; `LinkedTabOutcome` `'made' | 'connected' | 'cannot' | 'full' | 'unreached'`;
+  `LinkedTabsMade { source, target }`; `readLinkedTabsInput({ targetId })`; `itemConnectedTabPath(item, connection)`
+  (the app's removal door); `AgentSentFrom.connectTabs?`. `IndexClient.linkedTabs(source, target)`,
+  `IndexClient.linkTabs(source, target)`.
+- **`GET /items/:id/linked-tabs?with=<other>`** and **`POST /items/:id/linked-tabs` `{ targetId }`**
+  (`liveworkspace/apps/index/src/linked-tabs.ts`): a person in person (`401`; an app acting for one `403 forbidden`; a
+  guest `403 sign_in_required`); `targetId` the item itself `400 connection_self`; the POST over `KIT_RUN_LIMITER`
+  (`linked-tabs:<person>`) `429 rate_limited`. Both files `loadItem(view)` as the person with no share code (their
+  own access: owner, team, a link they opened), live: else that refusal (`404`, as the item's own read). Each side is
+  `connected` when a row with that host and the other as target holds a tab (`host_tab_id` set) or is a linked row in
+  flight; else `can` when `loadItem(edit)` gives the whole item (`tabId` null), else `cannot`. One indexed read of the
+  rows between the pair (`connections_host`).
+- **Making**: for each `can` side, one `INSERT … SELECT` of a linked row (no tab yet), only while its host holds fewer
+  than `CONNECTIONS_PER_ITEM` and no row to that target holds a tab or is linked (so two links at once make one tab).
+  Both written: paired. One written, and the other side already `connected` by a row with no pair: paired with that
+  row (View As Diagram's tab, a Connect File one way). Then each written row's tab, at the same time, through its
+  host app's `POST /api/internal/items/:id/connected-tabs` (`ConnectedTabWrite { name: the other's title,
+connection }`, `CONNECTION_REVERSE_TIMEOUT_MS`): a tab id sets `host_tab_id` and `confirmed_at`; anything else
+  deletes the row (`unreached`). A row the cap refused is `full`; one the guard refused is `connected`. Answers
+  `LinkedTabsMade`, `201` when a tab was made, else `200`. No event and no notice: nothing was shared.
+- **Agents**: `POST /app/items/:plan/plan-sends` reads `sentFrom.connectTabs`; for each source the person can read,
+  `linkFiles` as that person (one per distinct source, after the sends are recorded). Its outcome is logged, never a
+  reason to refuse the card.
+- **Opening a linked row** (`GET /connections/:id`): as any, then the reader's own access to the target
+  (`loadItem(view)`, no share code): the owner or team's `via: 'item'`; a link they opened `via: 'link'` with its own
+  code; else `403 connection_locked`, which the editor shows as `locked` (`connectedTabViewOf`), the card's
+  `RequestAccess` for `connection.itemId`. `useConnectedPreview` answers `{ state: 'locked' }` for it, so the page shows
+  the locked card at once rather than Open.
+- **Removing a pair** (`handleAppConnection` DELETE): a removed row whose pair is linked, or which is itself linked,
+  takes its pair too, in the same batch, and asks the pair's host app to remove its tab:
+  `DELETE <app>/api/internal/items/:host/connected-tabs/:connection` (the app's key; best effort in `waitUntil`, a
+  failure logged: the pair's row is already gone, so the tab left behind opens as a copy's would, offering Remove).
+- **The app's removal door** (`packages/index-app` `internal.ts`, `handlers.disconnectedTab`): a connection id, else
+  `400`. `removeConnectedTabOf(db, item, connection, { linkTable, itemColumn })` finds the tab in this item holding it;
+  each app deletes it with its own `deleteTabRow` (`keepLast`, so an item's last tab stays) and, when one went, sends
+  its tab outline as the reverse write does. `204` removed, `404` nothing held it (or the item not started), `409`
+  the last tab, `503` a failure. The delete's own outbox key then tells the index, which finds nothing left: `204`.
+- **The pickers** (`packages/workbench` `components/link-tabs/`): `useLinkTabs({ sourceId, targetId, enabled })`
+  reads `linkedTabs` once per picked destination (aborted on a change; none for a new file), holds the switch (on by
+  default) and answers `finish(destinationId)`, which the picker calls after its send succeeded: `linkTabs`, then
+  `linkedTabsToast` (nothing when both tabs were made or already there; one-way, full and failure words) and
+  `Tab·Added·ConnectedBoth` or `Tab·Added·Connected`. `LinkTabsOption` draws the row: the house `SwitchRow` with the two
+  apps' logos, its line from `linkTabsLine(state, names)`; a tick and no switch when connected; disabled with its
+  reason when neither side may change. The Send to Plan, Send to Diagram and Send to Knowledge Base dialogs mount it
+  (from `SendToPlanHost`), and livediagram's Make Plan Cards and liveplanner's View As Diagram dialogs.
+
+Its tests: `packages/index-client` `linked-tabs.test.ts` (the reader), `liveworkspace/apps/index`
+`linked-tabs.test.ts` (each refusal, each side's state, made both ways, one way, connected, full, unreached, paired
+with an existing row, two at once, the open door's own access and `connection_locked`, removing either side removing
+both and calling the other app, a Connect File pair kept, the agents' create), `packages/index-app`
+`connected-tabs.test.ts` and `internal.test.ts` (the removal door), each app's `routes/connected-tabs.test.ts` (the
+removal door takes the tab and sends the outline), and `packages/workbench` `link-tabs/*.test.tsx` and the three
+dialogs (the option's states, the call after a send and never after a failed one, the toasts) and
+`ConnectedTabCard.test.tsx` (`locked`, Request Access for every role).
+
 ### The Connect button and a tab's own name (Work Tracker 1374)
 
 - **`packages/brand` `WorkspaceMark`**: the liveworkspace logo's prism alone (livediagram's prism in
@@ -364,13 +432,14 @@ scoped save and patch).
 
 | Table         | Key  | Columns                                                                                                                                                                                | Indexes                                                                                                                                                                                                                 |
 | ------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `connections` | `id` | `host_item_id`, `host_tab_id` (null while a reverse waits for its app), `target_item_id` (null once purged), `share_code` (null once deleted), `pair_id`, `created_at`, `confirmed_at` | `connections_host (host_item_id, host_tab_id)`, `connections_target (target_item_id)`, `connections_code (share_code)`, `connections_pair (pair_id)`, `connections_unconfirmed (created_at) WHERE confirmed_at IS NULL` |
+| `connections` | `id` | `host_item_id`, `host_tab_id` (null while a reverse waits for its app), `target_item_id` (null once purged), `share_code` (null once deleted, or never made for a linked row), `pair_id`, `created_at`, `confirmed_at`, `linked` (1 for Connect as tabs, Work Tracker 1429) | `connections_host (host_item_id, host_tab_id)`, `connections_target (target_item_id)`, `connections_code (share_code)`, `connections_pair (pair_id)`, `connections_unconfirmed (created_at) WHERE confirmed_at IS NULL` |
 
 `host_item_id` cascades from `items`; `target_item_id`, `share_code` (from `share_links`) and `pair_id` (from
 `connections`) are set to null when theirs goes. Who made a connection is on the `shared` event (kept 30 days), not the
 row, so closing an account leaves nothing naming them here. `connections` is a child of `items` and of
 `share_links`: a migration that rebuilds either ([items.md](items.md#rebuilding-items)) copies it aside and back too.
-Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --local`); CI applies it remotely.
+Migration `0035_linked_tabs.sql` adds `linked INTEGER NOT NULL DEFAULT 0` (a plain `ALTER`: every row made before is
+a Connect File one). Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --local`); CI applies it remotely.
 
 ## Errors and edge cases
 
@@ -388,6 +457,8 @@ Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --lo
 | A confirmed connection taken back        | `204`, nothing                               |
 | The target in the Trash or purged        | open `410 connection_target_gone`            |
 | The pass deleted or lapsed               | open `410 connection_link_removed`           |
+| A linked row, the reader without access  | open `403 connection_locked`                 |
+| Linking a file to itself                 | `400 connection_self`                        |
 
 ## Security and trust
 

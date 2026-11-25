@@ -27,6 +27,9 @@ the right, the title View As Diagram and "Draw this board as a live diagram in l
   person sees what the highlight will mean. A board over `PLAN_VIEW_CARDS_MAX` says "The first 500 of 612 cards will be
   drawn". A board with no cards says so and offers nothing to make.
 - **Name**: the diagram's name, "<board title> diagram" to start, editable.
+- **Connect as tabs** (on): the diagram also gets a connected tab back to the plan ([Connect as tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#linked-from-a-send-to)),
+  paired with the plan's own, so removing either removes both. For someone who may not change the plan's tabs, only
+  the diagram gets its tab. Off, the diagram gets none, as before.
 - **Make Diagram** ("Drawing") makes it and closes:
   - For an Editor of the whole plan, a **connected tab** to the diagram goes in at the end of the tab bar and becomes
     the open tab, showing its preview and Open, as any [connected tab](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md);
