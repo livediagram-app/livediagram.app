@@ -111,17 +111,89 @@ export function ConsentCard({
   );
 }
 
-/** The consent card an MCP client (Claude) opens, for the product and its work (`noun`). */
-export function McpConsent({ product, noun }: { product: string; noun: string }) {
+/** The one approval page an MCP client (Claude) opens on liveworkspace.app: the client isn't made by liveworkspace,
+ *  so a warning names where the access goes; then every app, ticked, the Read-only access switch, Cancel and Connect
+ *  (liveworkspace/apps/site/components/account/McpConsent.tsx). `product` is drawn first, as the help's own app. */
+export function McpConsent({ product }: { product: string; noun?: string }) {
+  const all: [string, string][] = [
+    ['livediagram', 'Diagrams'],
+    ['livedocuments', 'Slide decks, articles, infographics'],
+    ['liveplanner', 'Plans, boards, sheets, forms'],
+    ['livedesign', 'Designs'],
+  ];
+  const apps = [...all.filter(([a]) => a === product), ...all.filter(([a]) => a !== product)];
   return (
-    <ConsentCard
-      title="Connect Claude"
-      intro={[
-        `Claude wants to access your ${product} ${plural(noun)}`,
-        'on your behalf. Approving creates an API token.',
-      ]}
-      sentTo="claude.ai"
-    />
+    <Scene w={420} h={372} bg="plain">
+      <Panel x={40} y={12} w={340} h={348}>
+        <Label x={60} y={40} size={14} weight={700} tone="strong">
+          Connect Claude
+        </Label>
+        <Label x={60} y={62} size={10} tone="body">
+          Claude wants access to your liveworkspace apps.
+        </Label>
+        <Label x={60} y={76} size={10} tone="body">
+          Revoke it any time in Settings.
+        </Label>
+        {/* The warning every registered client gets: who made it and where the access goes. */}
+        <rect
+          x={58}
+          y={88}
+          width={304}
+          height={44}
+          rx={6}
+          className="fill-amber-50 stroke-amber-200"
+          strokeWidth={0.75}
+        />
+        <Label x={70} y={104} size={10} weight={600} tone="strong">
+          Claude isn’t made by liveworkspace.
+        </Label>
+        <Label x={70} y={120} size={10} tone="body">
+          Access goes to claude.ai. Only continue if you started this.
+        </Label>
+        <Label x={60} y={152} size={10} weight={600} tone="body">
+          Apps it can use
+        </Label>
+        <rect
+          x={58}
+          y={160}
+          width={304}
+          height={apps.length * 26}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={0.75}
+        />
+        {apps.map(([app, makes], i) => {
+          const y = 160 + i * 26;
+          return (
+            <g key={app}>
+              <rect x={68} y={y + 7} width={12} height={12} rx={2.5} className="fill-brand-500" />
+              <path
+                d={`M${71} ${y + 13} l2.5 2.5 l4.5 -5`}
+                className="fill-none stroke-white help-art-as-drawn"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <Label x={88} y={y + 14} size={10} weight={600} tone="strong">
+                {app}
+              </Label>
+              <Label x={356} y={y + 14} anchor="end" size={9} tone="muted">
+                {makes}
+              </Label>
+            </g>
+          );
+        })}
+        <Label x={60} y={278} size={11} weight={600} tone="strong">
+          Read-only access
+        </Label>
+        <Label x={60} y={294} size={10} tone="muted">
+          View your items, but not change them.
+        </Label>
+        <Switch x={316} y={274} on={false} size="md" />
+        <Button x={58} y={316} w={72} h={28} label="Cancel" />
+        <Button x={138} y={316} w={82} h={28} label="Connect" variant="primary" />
+      </Panel>
+    </Scene>
   );
 }
 
@@ -132,18 +204,21 @@ export function NotificationSettings({ noun }: { noun: string }) {
     ['Someone Comments on My Work', true],
     ['Someone Mentions Me in a Comment', true],
     [`Someone Joins My ${capital(noun)}`, true],
-    ['Tips and Check-Ins', false],
+    ['Someone Assigns Me an Action', true],
+    ['Someone Responds to a Team Invite', true],
+    ['Tips and Check-Ins', true],
+    ['Milestones', true],
   ];
   return (
-    <Scene w={420} h={230} bg="plain">
+    <Scene w={420} h={314} bg="plain">
       <Dialog
         x={30}
         y={10}
         w={360}
-        h={210}
+        h={294}
         title="Notifications"
         sceneW={420}
-        sceneH={230}
+        sceneH={314}
         scrim={false}
       >
         <Label x={50} y={64} size={10} weight={700} tone="muted">

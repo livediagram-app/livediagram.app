@@ -37,18 +37,20 @@ A **design set** is a whole look in one click: a theme, a font, a finish, a back
 
 ## This Page
 
-Switch **Applies to** from **Whole Tab** to **This Page** to give the page you are on a design of its own, or **No Design** to keep it plain (a cover or a quote slide, say). **Use the Tab's Design** puts it back. A locked page keeps its design until you unlock it.
+Switch **Applies to** from **Whole Tab** to **This Page** to give the page you are on a design of its own, or **No Design** to keep it plain (a cover or a quote slide, say). **Use the Tab's Design** puts it back. Design sets are for the whole tab, so they are hidden on **This Page**. A locked page refuses a design of its own until you unlock it, but the tab's design still reaches it, as a theme does.
 
 ## Fine Tune
 
 With a design picked, **Fine Tune** shows the controls that mean something for it:
 
+- **Style**: for designs drawn more than one way, which way.
 - **Colours**: three colours of your own, or **Use the Theme's** to follow the theme again.
 - **Intensity**: how strongly it shows.
 - **Safe Area**: how calm the middle of the page stays, where your words usually are.
-- **Scale**, **Angle**, **Blur** and **Grain**, where the design has them.
-- **Position**: where its glow or spotlight sits.
-- **Shuffle** for a new variation, and **Try Another** for the next design in its family.
+- **Grain**: a fine film of noise over it.
+- **Scale**, **Angle** and **Blur**, where the design has them.
+- **Position**: where the design has one, where its glow or spotlight sits.
+- **Shuffle** for a new variation (where the design has one), and **Try Another** for the next design in its family.
 - **Reset** puts the design back on its own settings.
 
 Every slider applies as you drag, and each drag is one step for **Undo**.
@@ -79,8 +81,8 @@ Editors pick, tune and save designs. Participants and Viewers see them, animated
 
 ## Assistants and the Command Line
 
-An assistant connected to <AppName /> can set a design too: `change_doc_pages` (`change_design_pages` in livedesign) takes a `tab_design` change (a design, `"auto"` for one that suits your words, or `null`), and a page's own `design`. On the command line, `livedocuments page set` takes `--tab-design` and `--design`.
+An assistant connected to <AppName /> can set a design too: `change_doc_pages` takes a `tab_design` change (a design, `"auto"` for one that suits your words, or `null`), and a page's own `design`; `create_doc` takes a `design` for each new tab. On the command line, `livedocuments page set` takes `--tab-design` and `--design`.
 
-Saved designs work there too: `list_doc_templates` (`list_design_templates` in livedesign) lists them (and `livedocuments page designs` on the command line), and their id, `saved:` followed by a code, goes anywhere a design does. Assistants can use saved designs but not save, rename or delete them.
+Saved designs work there too: `list_doc_templates` lists them (and `livedocuments page designs` on the command line), and their id, `saved:` followed by a code, goes anywhere a design does. Assistants can use saved designs but not save, rename or delete them.
 
 </ArticleLayout>

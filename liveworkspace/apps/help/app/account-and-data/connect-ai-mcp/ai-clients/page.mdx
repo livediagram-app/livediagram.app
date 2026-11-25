@@ -34,9 +34,9 @@ The first time your tool connects, it opens a liveworkspace page in your browser
 </Step>
 <Step n={2}>
   Check the page. It is titled **Connect** followed by your tool's name, and it says which site the
-  access will be sent to. Only continue if you recognise that site. For a tool on your own computer
-  (such as Claude Code or Cursor) it says the access goes back to the app on this computer,
-  with an address such as `localhost:55884`: continue if you started the connection yourself.
+  access goes to. Only continue if you recognise that site. For a tool on your own computer
+  (such as Claude Code or Cursor) the access goes to an address such as `localhost:55884`:
+  continue if you started the connection yourself.
 </Step>
 <Step n={3}>
   The page lists each liveworkspace app, ticked. Clear any app you don't want this tool to reach.
@@ -51,7 +51,7 @@ Approving creates an [API token](/help/account-and-data/api-tokens/) named after
 
 ## Claude
 
-Once <AppName /> is listed in Claude's connector directory, open **Settings**, then **Connectors**, browse the directory, find **<AppName />** and choose **Connect**: no address to paste. Until then, add it as a custom connector:
+Once <AppName /> is listed in Claude's connector directory, open **Settings**, then **Connectors**, browse the directory, find **liveworkspace** and choose **Connect**: no address to paste. Until then, add it as a custom connector:
 
 In Claude on the web, open **Settings**, then **Connectors**, and add a custom connector. Name it "liveworkspace", paste the address above as its URL, and add it. Then choose to connect it, and approve the connection on the liveworkspace page that opens.
 
@@ -147,7 +147,7 @@ Each app also has its own starter prompts on its Build with AI page. Every one n
 
 ## Moving From an Old App Address
 
-Before the one address, each app had its own (for example `mcp.livediagram.app`). Those addresses take no new connections: a connection you made to one keeps working only until its token ends, and some no longer resolve at all. To switch:
+Before the one address, each app had its own (for example `mcp.livediagram.app`). Those addresses take no new connections: a connection you made to one keeps working only until its token ends, and signing in there again points you to the one address. To switch:
 
 <Step n={1}>
   In your tool, remove the server you added for the app.

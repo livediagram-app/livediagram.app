@@ -43,6 +43,11 @@ export function TabWord({
   return <>{capital ? capitalise(word) : word}</>;
 }
 
+/** The Explorer's switch to every app's items: "All" in an app, "All Apps" on liveworkspace.app (the All Apps help). */
+export function AllLabel({ scope }: { scope: HelpScope }) {
+  return <>{scope === 'all' ? 'All Apps' : 'All'}</>;
+}
+
 /** The scope's app's name, lower case like its logo; "every app" under All Apps. */
 export function AppName({ scope }: { scope: HelpScope }) {
   return <>{scopeName(scope)}</>;

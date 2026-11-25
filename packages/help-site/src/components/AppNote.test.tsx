@@ -10,7 +10,7 @@ import {
   SameIn,
 } from './AppNote';
 import { cardAppsLabel } from './CategoryCard';
-import { AppName, appliesToLine, Noun, TabWord } from './ScopeWords';
+import { AllLabel, AppName, appliesToLine, Noun, TabWord } from './ScopeWords';
 import { rowOrder } from './AppMarks';
 
 // liveworkspace/docs/specs/017-help/help-centre.md "Articles and the apps they apply to".
@@ -74,6 +74,9 @@ describe('scope words', () => {
     expect(renderToStaticMarkup(<TabWord scope="livedocuments" />)).toBe('tab');
     expect(renderToStaticMarkup(<TabWord scope="all" capital />)).toBe('Tab');
     expect(renderToStaticMarkup(<AppName scope="livehuddle" />)).toBe('livehuddle');
+    // The Explorer's every-app switch: "All" in an app's Explorer, "All Apps" on liveworkspace.app's.
+    expect(renderToStaticMarkup(<AllLabel scope="livedocuments" />)).toBe('All');
+    expect(renderToStaticMarkup(<AllLabel scope="all" />)).toBe('All Apps');
   });
 
   it('puts the current app first and says every app for all six', () => {
