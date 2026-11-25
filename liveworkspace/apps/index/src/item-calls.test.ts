@@ -162,6 +162,42 @@ describe("the room's count", () => {
     expect((await people(doc.id, { people: 1, names: [] })).status).toBe(404);
     expect((await people(space.id, { people: -1, names: [] })).status).toBe(400);
   });
+
+  it("an empty room before anyone has joined ends nothing: the call stays the item's through the grace", async () => {
+    const { ada, ben, doc } = await world();
+    const space = await spaceFor(ada.auth);
+    const first = await body<ItemCallStart>(await start(ada.auth, doc.id));
+    // The room's first word, 1.5 s after it is marked, while the starter's tab is still on its way.
+    expect((await people(space.id, { people: 0, names: [] })).status).toBe(204);
+    expect((await calls(ada.auth, doc.id)).live).toMatchObject({ id: first.call.id, people: 0 });
+    await visit(ada.auth, doc.id, ben.auth);
+    const again = await body<ItemCallStart>(await start(ben.auth, doc.id));
+    expect(again).toMatchObject({ started: false, call: { id: first.call.id } });
+    // Once someone has been in it, the last one out ends it.
+    await people(space.id, { people: 1, names: ['Ada'] });
+    await people(space.id, { people: 0, names: [] });
+    const read = await calls(ada.auth, doc.id);
+    expect(read.live).toBeNull();
+    expect(read.meetings[0]!.endedAt).not.toBeNull();
+  });
+
+  it('a later call nobody joined never hides an earlier one that came back to life', async () => {
+    const { ada, doc } = await world();
+    const older = await spaceFor(ada.auth, 'First');
+    const first = await body<ItemCallStart>(await start(ada.auth, doc.id));
+    await people(older.id, { people: 1, names: ['Ada'] });
+    await people(older.id, { people: 0, names: [] });
+    await spaceFor(ada.auth, 'Second');
+    const second = await body<ItemCallStart>(await start(ada.auth, doc.id));
+    expect(second.started).toBe(true);
+    // The second call's grace runs out with nobody in it; then someone opens the first Space again.
+    h.db.sql
+      .prepare('UPDATE item_calls SET started_at = started_at - 600000 WHERE id = ?')
+      .run(second.call.id);
+    await people(older.id, { people: 1, names: ['Ada'] });
+    const again = await body<ItemCallStart>(await start(ada.auth, doc.id));
+    expect(again).toMatchObject({ started: false, call: { id: first.call.id } });
+  });
 });
 
 describe("a Space's call", () => {
