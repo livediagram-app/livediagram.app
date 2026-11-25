@@ -11,6 +11,7 @@ import {
   base64Bytes,
   captureKnowledgeSelection,
   cropContainer,
+  drawnArea,
   gatherSelection,
   KNOWLEDGE_PICTURE_MARGIN,
   KNOWLEDGE_PICTURE_TITLE_ROOM,
@@ -189,6 +190,102 @@ describe('the cropped frame’s title band', () => {
     // The key's top is a whole title band below the frame's top, wherever the title sits across it.
     expect(8 - r.y).toBeGreaterThanOrEqual(KNOWLEDGE_PICTURE_TITLE_ROOM);
     expect(r.x + r.width).toBe(700 + KNOWLEDGE_PICTURE_MARGIN);
+  });
+});
+
+// Round 3: the title still sat on a label's words (the Key's "Input or output"): a frame's title room clears where each
+// item's words draw, each frame is cropped to its own items, and a title never rises onto a neighbour's words.
+describe('the title room clears words, not only boxes', () => {
+  const text = (
+    id: string,
+    x: number,
+    y: number,
+    label: string,
+    over: Record<string, unknown> = {},
+  ) =>
+    box(id, x, y, {
+      type: 'text',
+      shape: undefined,
+      width: 60,
+      height: 28,
+      label,
+      textSize: 'sm',
+      textAlignX: 'left',
+      ...over,
+    });
+
+  it('a label whose words wrap in a short box draws above and below it, centred', () => {
+    const area = drawnArea(text('t', 0, 100, 'Input or output, and what each one reads') as never);
+    expect(area.y).toBeLessThan(100);
+    expect(area.y + area.height).toBeGreaterThan(128);
+    expect(area.y + area.height / 2).toBeCloseTo(114, 5);
+  });
+
+  it('a label that fits its box draws its box, and one with no words draws its box', () => {
+    expect(drawnArea(text('t', 0, 0, 'In', { width: 200, textScale: 1 }) as never)).toEqual({
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 28,
+    });
+    expect(drawnArea(box('b', 0, 0, { label: '' }) as never)).toEqual({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+    });
+  });
+
+  it('a frame’s title band stands a whole room above the highest words in it', () => {
+    const tab = {
+      id: 't',
+      elements: [
+        frame('f', 0, 0, 1200, 800),
+        text('key', 600, 40, 'Input or output, and what each one reads'),
+        box('low', 100, 500),
+      ],
+    };
+    const f = selectionTab(tab as never, new Set(['f'])).elements.find((e) => e.id === 'f');
+    const words = drawnArea(
+      text('key', 600, 40, 'Input or output, and what each one reads') as never,
+    );
+    expect((f as unknown as { y: number }).y).toBe(words.y - KNOWLEDGE_PICTURE_TITLE_ROOM);
+  });
+
+  it('each frame is cropped to its own items, and keeps its own top when a neighbour’s words sit in its band', () => {
+    const tab = {
+      id: 't',
+      elements: [
+        frame('main', 0, 0, 600, 600),
+        box('a', 40, 20),
+        box('b', 300, 400),
+        frame('key', 700, 0, 250, 300, 'Key'),
+        text('io', 760, 60, 'Input or output'),
+      ],
+    };
+    const out = selectionTab(tab as never, new Set(['main', 'key'])).elements;
+    const main = out.find((e) => e.id === 'main') as unknown as {
+      x: number;
+      y: number;
+      width: number;
+    };
+    const key = out.find((e) => e.id === 'key') as unknown as {
+      x: number;
+      y: number;
+      width: number;
+    };
+    // The Key is snug round its own label, not stretched to the main frame's items far to its left.
+    expect(key.x).toBe(760 - KNOWLEDGE_PICTURE_MARGIN);
+    // The main frame's band would rise to 20 - 64, but no neighbour's words are across it: it rises.
+    expect(main.y).toBe(20 - KNOWLEDGE_PICTURE_TITLE_ROOM);
+    // A neighbour in the band: the frame keeps its own top.
+    expect(
+      cropContainer(
+        { x: 0, y: 0, width: 600, height: 600 },
+        { x: 40, y: 20, width: 400, height: 400 },
+        [{ x: 100, y: -30, width: 80, height: 20 }],
+      ).y,
+    ).toBe(0);
   });
 });
 

@@ -56,7 +56,11 @@ replaces what the fork still shows around the writing.
   has one ("The page icon") to the left of the Title, the Title (40 px,
   bold, tight tracking), then the meta row ([Verification](verification.md); a **Suggested Edits** pill after its
   verified badge while agents' edits wait, [Insights](insights.md) "On the page"; the page's labels last,
-  "Page labels"). **The meta row's labelled buttons have no tooltip** (owner 2026-11-23: "remove the tooltips from
+  "Page labels"). The meta row's room is one shared measure (`PAGE_META_ROW` in `@liveknowledge/document`: 8 px
+  above, 28 px tall, 20 px below), drawn whenever the page opens with a Title and has words, for every role alike (a
+  Viewer's row shows the reading time alone in the same room); the layout estimate counts it, so a picture or a
+  height worked out on the server sits where the editor draws it. The cover and the icon take no room in the page's
+  own coordinates: the cover is a band over the page, the icon floats beside the Title. **The meta row's labelled buttons have no tooltip** (owner 2026-11-23: "remove the tooltips from
   add cover, icon, label, verify etc they get in the way and aren't needed"): Add Cover, Add Icon, Add Label, Verify,
   Request Approval, the Suggested Edits pill and the who-made-it pills say what they do in their own words, so no
   hover card or tooltip rides them. This is a deliberate exception to the rule that every control has one; the

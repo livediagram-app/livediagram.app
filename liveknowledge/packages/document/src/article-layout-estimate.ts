@@ -22,6 +22,7 @@ import { articleTocEntries, tocDepthOf } from './article-toc';
 import { isLightColor } from './colors';
 import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { legibleOn, pageFillTone } from './page-content';
+import { drawsPageMetaRow, PAGE_META_ROW } from './page-meta-row';
 import type { LaidOutPage } from './page';
 import { isContinuousPage } from './page-sizes';
 import {
@@ -137,6 +138,8 @@ function layoutOnce(
   // adds only what it asks past that (the larger of the two stands between them, as in the browser).
   let below = 0;
   const gap = (above: number) => Math.max(0, above - below) * line;
+  // A knowledgebase page's meta row under its Title (page-meta-row.ts), as the editor's writing leaves room for it.
+  const metaRow = drawsPageMetaRow(doc.blocks);
   let overflows = false;
   const zoneTops = new Map<string, number>();
   const page = () => own[at]!;
@@ -371,6 +374,11 @@ function layoutOnce(
         : set.below;
     y += codePad * 2 + below * line;
     first = false;
+    if (bi === 0 && metaRow) {
+      y += gap(PAGE_META_ROW.above / line) + PAGE_META_ROW.height;
+      below = PAGE_META_ROW.below / line;
+      y += below * line;
+    }
   }
   // Each page's header and footer (and page number), as the page draws them (the document's name unknown here).
   const date = bandDate();

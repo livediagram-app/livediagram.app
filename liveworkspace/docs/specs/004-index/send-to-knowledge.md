@@ -76,8 +76,10 @@ on a page in liveknowledge. They stay as they are here.", and liveknowledge's ar
 
 1. **What's sent**: a strip with the picture of the selection, large enough to read, and its count ("6 items, 4
    arrows"). The picture is cropped to the selected items with a small margin: the frames and lanes that gathered
-   them are drawn but do not widen it, each with its title's room above the highest item, so a title the crop moves
-   in stays clear of every item.
+   them are drawn but do not widen it, each cropped to its own items, measured where they draw (a label's words
+   included, where they run past or wrap out of its box), with its title's room above the highest of them, so a title
+   the crop moves in stays clear of every item's words. A title rises past its frame's own top only when no other
+   item's words sit in that room.
 2. **Knowledgebase**: the person's knowledgebases they can edit, most recent first, with a search. The one last sent to
    from this item opens picked (remembered per item in this browser, the newest 50 kept, as Send to Plan's).
 3. **Page**, as two cards: **Existing Page** (chosen) lists the knowledgebase's pages as a tree read through
@@ -113,7 +115,9 @@ page's history, Updated, the page's watchers told, never verified by it):
   as asked, its Owner the person.
 - In order: the heading (a level 2 heading, when given), the summary, the picture (an object zone, aligned left, its
   image stored in the person's Library through the media service, written where the writing puts it on the page, so
-  a Viewer reads it in place before anyone lays the page out), and the Sent From line: "Sent from <source title>
+  a Viewer reads it in place before anyone lays the page out: below everything the page draws above it, the row under
+  the Title (reading time and the page's buttons) included, at the place the editor lays it out, so opening the page
+  to edit moves nothing), and the Sent From line: "Sent from <source title>
   in livediagram", linking to the place (`#t=<tab>&el=<first element>`).
 - A verified page or one due a review is written as any Editor's write is: the person decides, and their write takes
   no tick away (an agent's write is bounded by AI Editing, below).

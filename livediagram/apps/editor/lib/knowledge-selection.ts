@@ -11,7 +11,19 @@ import {
   type KnowledgeSendPicture,
   type KnowledgeSendSelection,
 } from '@liveworkspace/index-client';
-import { elementKindLabel, isBoxed, type Element, type Tab } from '@livediagram/document';
+import {
+  drawnBounds,
+  elementKindLabel,
+  FRAME_PAD,
+  FRAME_TOP,
+  isBoxed,
+  type BoxedElement,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
+import { LABEL_LINE_HEIGHT } from '@liveworkspace/element-model/svg-render-primitives';
+import { textWordsWidth, type FitText } from '@liveworkspace/element-model/text-fit';
+import { labelFontPx, readTextSize } from '@liveworkspace/model-core/label-font';
 
 // Each picture scale tried in turn until the PNG fits the platform's size (2x first, for a crisp page).
 export const KNOWLEDGE_PICTURE_SCALES = [2, 1.5, 1, 0.75, 0.5] as const;
@@ -121,19 +133,53 @@ export function captureKnowledgeSelection(
   };
 }
 
-// The room a picked frame or lane keeps around the items in it, and above them for its title.
-export const KNOWLEDGE_PICTURE_MARGIN = 24;
-export const KNOWLEDGE_PICTURE_TITLE_ROOM = 40;
+// The room a picked frame or lane keeps around the items in it, and above them for its title: a frame's own padding
+// and header band, as auto-layout gives them (FRAME_PAD, FRAME_TOP), deep enough that the title never sits on an
+// item's words, which a label can draw at its box's very top.
+export const KNOWLEDGE_PICTURE_MARGIN = FRAME_PAD;
+export const KNOWLEDGE_PICTURE_TITLE_ROOM = FRAME_TOP;
 
 /**
- * A frame or lane cropped to the items in the picture: drawn snug around them with a small margin, never past its own
- * left, right or bottom, so a sparse lane is not a tall, mostly empty picture. Its top is always its title's room
- * above the highest item, raised past its own top when an item reaches into its title band: a crop moves a
- * right-aligned title in over the items, and the band above them keeps it clear of every one.
+ * Where an element draws: its box as turned, grown by the lines its words wrap to across it, centred on the box as the
+ * canvas centres them (a short box's wrapped label spills above and below it). A frame's title has to clear the words,
+ * not only the box they belong to.
  */
-export function cropContainer<E extends Box>(container: E, items: Box): E {
+export function drawnArea(el: BoxedElement): Box {
+  const box = drawnBounds(el);
+  const label = (el as { label?: unknown }).label;
+  if (typeof label !== 'string' || !label.trim()) return box;
+  const fit = el as unknown as FitText;
+  const words = textWordsWidth({ ...fit, padding: undefined });
+  const lineH = labelFontPx(readTextSize(fit.textSize)) * (fit.textScale ?? 1) * LABEL_LINE_HEIGHT;
+  const lines = Math.ceil(words / Math.max(1, box.width));
+  const tall = Math.max(box.height, lines * lineH);
+  return { ...box, y: box.y + (box.height - tall) / 2, height: tall };
+}
+
+const unionOf = (boxes: readonly Box[]): Box => {
+  const x = Math.min(...boxes.map((b) => b.x));
+  const y = Math.min(...boxes.map((b) => b.y));
+  const right = Math.max(...boxes.map((b) => b.x + b.width));
+  const bottom = Math.max(...boxes.map((b) => b.y + b.height));
+  return { x, y, width: right - x, height: bottom - y };
+};
+
+const overlaps = (a: Box, b: Box): boolean =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+/**
+ * A frame or lane cropped to its own items (`items`, where they draw): snug around them with a small margin, never past
+ * its own left, right or bottom, so a sparse lane is not a tall, mostly empty picture. Its top is its title's room above
+ * the highest of them, raised past its own top when they reach into its title band (a crop moves a right-aligned title
+ * in over them), unless something else in the picture (`others`, where they draw) sits in that band: then the title
+ * keeps its own top, where the diagram already drew it clear of its neighbours.
+ */
+export function cropContainer<E extends Box>(
+  container: E,
+  items: Box,
+  others: readonly Box[] = [],
+): E {
   const left = Math.max(container.x, items.x - KNOWLEDGE_PICTURE_MARGIN);
-  const top = items.y - KNOWLEDGE_PICTURE_TITLE_ROOM;
   const right = Math.min(
     container.x + container.width,
     items.x + items.width + KNOWLEDGE_PICTURE_MARGIN,
@@ -142,30 +188,42 @@ export function cropContainer<E extends Box>(container: E, items: Box): E {
     container.y + container.height,
     items.y + items.height + KNOWLEDGE_PICTURE_MARGIN,
   );
+  const wanted = items.y - KNOWLEDGE_PICTURE_TITLE_ROOM;
+  const band: Box = { x: left, y: wanted, width: right - left, height: items.y - wanted };
+  const top = others.some((o) => overlaps(o, band)) ? Math.max(wanted, container.y) : wanted;
   return { ...container, x: left, y: top, width: right - left, height: bottom - top };
 }
 
 /**
  * The selection's tab: the tab with only the gathered elements, for the picture, each frame or lane in it cropped to
- * the boxed items it holds (cropContainer). One with nothing else in it stays whole.
+ * the items it holds (cropContainer), measured where they draw, words included. One with nothing in it stays whole.
  */
 export function selectionTab(tab: Tab, selected: ReadonlySet<string>): Tab {
   const keep = new Set(gatherSelection(tab.elements, selected).map((g) => g.el.id));
   const elements = tab.elements.filter((el) => keep.has(el.id));
-  const items = elements.filter((el) => isBoxed(el) && !isContainer(el)) as Box[];
-  if (items.length === 0) return { ...tab, elements };
-  const x = Math.min(...items.map((b) => b.x));
-  const y = Math.min(...items.map((b) => b.y));
-  const right = Math.max(...items.map((b) => b.x + b.width));
-  const bottom = Math.max(...items.map((b) => b.y + b.height));
-  const bounds: Box = { x, y, width: right - x, height: bottom - y };
+  const boxed = elements.filter(isBoxed);
+  const items = boxed.filter((el) => !isContainer(el));
   return {
     ...tab,
-    elements: elements.map((el) =>
-      isContainer(el) && isBoxed(el) ? (cropContainer(el, bounds) as Element) : el,
-    ),
+    elements: elements.map((el) => {
+      if (!isContainer(el) || !isBoxed(el)) return el;
+      const own = items.filter((i) => inside(i, el));
+      if (own.length === 0) return el;
+      const others = boxed
+        .filter((o) => o !== el && !own.includes(o) && !(isContainer(o) && inside(el, o)))
+        .map((o) => (isContainer(o) ? titleBandOf(o) : drawnArea(o)));
+      return cropContainer(el, unionOf(own.map(drawnArea)), others) as Element;
+    }),
   };
 }
+
+// Where a frame or lane draws its title: the band along its top.
+const titleBandOf = (el: Box): Box => ({
+  x: el.x,
+  y: el.y,
+  width: el.width,
+  height: KNOWLEDGE_PICTURE_TITLE_ROOM,
+});
 
 /** A PNG's bytes from a data URL's base64, without decoding it. */
 export const base64Bytes = (b64: string): number =>

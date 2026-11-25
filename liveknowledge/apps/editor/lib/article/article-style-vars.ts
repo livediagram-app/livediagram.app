@@ -8,6 +8,7 @@ import {
   ARTICLE_PARAGRAPH_SPACE,
   ARTICLE_TEXT_SIZE_PX,
   legibleOn,
+  PAGE_META_ROW,
   resolveArticleStyle,
   resolveFontStack,
   type ArticleStyle,
@@ -49,6 +50,10 @@ export function articleStyleVars(
     '--article-muted': ink.dark ? '#94a3b8' : '#64748b',
     '--article-rule': ink.dark ? 'rgb(255 255 255 / 0.22)' : 'rgb(15 23 42 / 0.16)',
     '--article-code-bg': ink.dark ? 'rgb(255 255 255 / 0.08)' : 'rgb(15 23 42 / 0.05)',
+    // The meta row's room under a knowledgebase page's Title, as the layout estimate leaves it (page-meta-row.ts).
+    '--page-meta-above': `${PAGE_META_ROW.above}px`,
+    '--page-meta-height': `${PAGE_META_ROW.height}px`,
+    '--page-meta-below': `${PAGE_META_ROW.below}px`,
   };
   return { vars: vars, rules: r.rules };
 }

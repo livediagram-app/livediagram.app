@@ -3,6 +3,7 @@ import type { ArticleBlock } from './article-flow';
 import { estimateArticle } from './article-layout-estimate';
 import { newKnowledgebasePageContent, KNOWLEDGEBASE_FLOW } from './knowledgebase-page';
 import { layOutPages, pagesOf } from './page';
+import { drawsPageMetaRow, PAGE_META_ROW } from './page-meta-row';
 import type { Tab } from './index';
 
 // Work Tracker 1425: the estimate spaces blocks as app/article-pages.css does, its margins collapsing (the larger of a
@@ -87,5 +88,67 @@ describe('the estimate spaces blocks as the stylesheet does', () => {
     // An h2 is 22 px on a 1.25 line (27.5 px), a line above it (0.75 of it folded into the paragraph's space) and
     // 0.3 line under it, which the zone's 0.4 line above folds in.
     expect(headed - plain).toBeCloseTo(LINE - PARA + 27.5 + 0.4 * LINE - (LINE + PARA));
+  });
+});
+
+// Round 3: a live knowledgebase page draws its meta row ("1 min read · Add Cover · Add Icon") under the Title, a
+// direct child of the writing; the estimate leaves the same room, or every zone under it sat 48 px too high.
+describe('the meta row under the Title', () => {
+  // The Title: 40 px on a 1.15 line (46 px), half a line under it.
+  const TITLE = 46;
+  const services = (meta: boolean) => [
+    p(meta ? 'Services' : '', 'title'),
+    p('How the services fit together.'),
+    p('Services', 'h2'),
+    li('API'),
+    li('Worker'),
+    p('2 arrows connect them.'),
+    zone('z'),
+  ];
+
+  it('is drawn under a Title on a page with words, and not on an empty one or without a Title', () => {
+    expect(drawsPageMetaRow(services(true))).toBe(true);
+    expect(drawsPageMetaRow([p('', 'title'), p('')])).toBe(false);
+    expect(drawsPageMetaRow([p('Words')])).toBe(false);
+    expect(drawsPageMetaRow([p('', 'title'), { id: 'c', type: 'code', text: 'npm test' }])).toBe(
+      true,
+    );
+    expect(
+      drawsPageMetaRow([
+        p('', 'title'),
+        {
+          id: 't',
+          type: 'table',
+          rows: [{ id: 'r', cells: [[{ text: 'Cell' }]] }],
+        } as unknown as ArticleBlock,
+      ]),
+    ).toBe(true);
+    expect(drawsPageMetaRow([p('', 'title'), { id: 'd', type: 'divider' }])).toBe(false);
+  });
+
+  it('moves everything under it down by its height and its margins past the Title’s and the next block’s', () => {
+    const withRow = topOf(services(true));
+    // The page as the editor draws it: the Title, the meta row 0.5 line under it (its 8 px margin folded in), 28 px
+    // tall, then 20 px, which the first paragraph's own space (none) leaves whole.
+    const titleBottom = TITLE;
+    const firstTop =
+      titleBottom +
+      Math.max(0.5 * LINE, PAGE_META_ROW.above) +
+      PAGE_META_ROW.height +
+      PAGE_META_ROW.below;
+    // The rest as the plain page lays it: a paragraph, an h2 (a line above it), two items, the arrows line, the zone.
+    const rest =
+      LINE +
+      PARA +
+      (LINE - PARA) +
+      27.5 +
+      0.3 * LINE +
+      LINE +
+      0.25 * LINE +
+      LINE +
+      PARA +
+      LINE +
+      PARA;
+    expect(withRow).toBeCloseTo(firstTop + rest + topOf([zone('z')]));
   });
 });
