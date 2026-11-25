@@ -10,6 +10,7 @@ import type { ElementAction } from './element-action';
 import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import type { CommentReaction } from '@liveworkspace/model-core/comment-reactions';
 import { isComment, keepLocalTicks } from './element-deltas';
+import { withLiveCustomColours } from '@liveworkspace/element-model/custom-colours';
 
 // A single comment inside a thread. The author is the participant who
 // wrote it (per `apps/editor/lib/identity.ts`). The participant model is
@@ -208,11 +209,14 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 // broadcasts the restored tab).
 export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
   if (from === onto) return onto;
-  return onto.map((tab) => {
-    const src = from.find((t) => t.id === tab.id);
-    if (!src) return tab;
+  return onto.map((restored) => {
+    const src = from.find((t) => t.id === restored.id);
+    if (!src) return restored;
     // The same tab object: nothing live can differ, so no element is walked (an undo leaves most tabs untouched).
-    if (src === tab) return tab;
+    if (src === restored) return restored;
+    // A tab's custom colours are recorded outside history (docs/specs/004-interface-design/colour-picker.md
+    // "Custom colours"): a snapshot from before a pick would otherwise take the colour away from every picker.
+    const tab = withLiveCustomColours(restored, src);
     const srcById = new Map(src.elements.map((el) => [el.id, el] as const));
     const liveFields = new Map<string, LiveFieldBag>(
       src.elements.map((el) => {

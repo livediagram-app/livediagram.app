@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CUSTOM_COLOURS_MAX, customColoursOf, withCustomColour } from './custom-colours';
+import {
+  CUSTOM_COLOURS_MAX,
+  customColoursOf,
+  withCustomColour,
+  withLiveCustomColours,
+} from './custom-colours';
 
 // docs/specs/004-interface-design/colour-picker.md "Custom colours"
 describe('a tab’s custom colours', () => {
@@ -34,5 +39,31 @@ describe('a tab’s custom colours', () => {
     const tab = { customColours: ['#111111'] };
     expect(withCustomColour(tab, '#111111')).toBe(tab);
     expect(withCustomColour(tab, 'transparent')).toBe(tab);
+  });
+});
+
+// Recorded outside history: undo and redo never take one away.
+describe('withLiveCustomColours', () => {
+  it('carries the live custom colours onto a restored tab', () => {
+    const restored: { id: string; elements: string[]; customColours?: string[] } = {
+      id: 't',
+      elements: [],
+    };
+    expect(withLiveCustomColours(restored, { customColours: ['#123456'] })).toEqual({
+      id: 't',
+      elements: [],
+      customColours: ['#123456'],
+    });
+  });
+
+  it('brings none back that was never picked', () => {
+    const out = withLiveCustomColours({ id: 't', customColours: ['#abcdef'] }, {});
+    expect('customColours' in out).toBe(false);
+  });
+
+  it('hands the restored tab back when nothing differs', () => {
+    const colours = ['#123456'];
+    const restored = { id: 't', customColours: colours };
+    expect(withLiveCustomColours(restored, { customColours: colours })).toBe(restored);
   });
 });
