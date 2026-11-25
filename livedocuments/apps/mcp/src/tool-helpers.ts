@@ -52,7 +52,11 @@ export async function loadTab(
     `/documents/${encodeURIComponent(documentId)}`,
   );
   // A tab by its id, or by its name when one tab alone has it (@liveworkspace/mcp-kit/tab-named).
-  const id = tabId === undefined ? liveDoc.tabs[0]?.id : (tabIdNamed(liveDoc.tabs, tabId) ?? tabId);
+  // With none named, the first tab the caller may reach: a tab-scoped grant's other tabs are listed, out of scope.
+  const id =
+    tabId === undefined
+      ? liveDoc.tabs.find((t) => !t.outOfScope)?.id
+      : (tabIdNamed(liveDoc.tabs, tabId) ?? tabId);
   if (!id) return null;
   if (!liveDoc.tabs.some((t) => t.id === id))
     throw new ToolInputError(

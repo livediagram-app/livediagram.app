@@ -137,6 +137,21 @@ describe('readDocument', () => {
     expect(withImage.content.map((c) => c.type)).toEqual(['text', 'image']);
   });
 
+  it('reads the first tab a tab-scoped grant reaches when none is named', async () => {
+    quiet();
+    const scoped = {
+      ...LIVE_DOC,
+      tabs: [
+        { id: 't0', name: '', outOfScope: true },
+        { id: 't1', name: 'Plan' },
+      ],
+    };
+    const { env, requests } = api({ doc: scoped });
+    await readDocument(env, 'tok', { documentId: 'd1' });
+    const view = requests.find((r) => r.searchParams.has('view'))!;
+    expect(view.pathname).toBe('/api/documents/d1/tabs/t1');
+  });
+
   it('refuses an unknown tab, naming the tabs there are, and a document without tabs', async () => {
     quiet();
     const { env } = api();

@@ -95,7 +95,8 @@ export async function readDocument(
   );
   const summary =
     args.tabId === undefined
-      ? document.tabs[0]
+      ? // The first tab the caller may reach: a tab-scoped grant's other tabs are listed, out of scope.
+        document.tabs.find((t) => !t.outOfScope)
       : document.tabs.find((t) => t.id === tabIdNamed(document.tabs, args.tabId!));
   // An id, or a name one tab alone has; an unknown one is named back in the refusal below.
   const tabId = summary?.id ?? args.tabId;
