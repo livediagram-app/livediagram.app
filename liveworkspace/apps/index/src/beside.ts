@@ -27,7 +27,7 @@ export async function makeBeside(ctx: RouteContext, hostId: string): Promise<Res
   const input = readBesideInput(await readObject(request));
   if (!input) return badRequest();
 
-  const host = await hostForConnect(ctx, person, hostId, input.tabId);
+  const host = await hostForConnect(ctx, person, hostId);
   if (host instanceof Response) return host;
   const offer = BESIDE_OFFERS[input.offer];
   // Beside the host in the person's own My Work; at its top when the host is someone else's or a team's.

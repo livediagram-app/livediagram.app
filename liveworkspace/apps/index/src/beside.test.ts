@@ -188,6 +188,14 @@ describe('who may make one', () => {
     expect(
       (await beside(cara.auth, doc.id, { offer: 'plan', tabId: 't' }, participant)).status,
     ).toBe(403);
+    // An Editor link limited to one tab makes nothing beside it, even into that tab (Work Tracker 1457).
+    const dan = await person('user_d');
+    const scoped = (await link(ada.auth, doc.id, { level: 'edit', tabId: 'only' })).code;
+    const tabEditor = await grantFor(dan.auth, doc.id, scoped);
+    answerDoors(dan.auth);
+    expect(
+      (await beside(dan.auth, doc.id, { offer: 'plan', tabId: 'only' }, tabEditor)).status,
+    ).toBe(403);
     const other = await makeItem(ada.auth, { app: 'livedocuments' });
     expect((await beside(ada.auth, other.id, { offer: 'plan', tabId: 't' }, grant)).status).toBe(
       403,
