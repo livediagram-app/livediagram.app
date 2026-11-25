@@ -276,10 +276,13 @@ re-anchors applied, other trees pushed down by `makeRoom`, and `mindFlow` writte
 a flow is picked. Logs `[mind-layout] relayout`; tracks `Element·Changed·MindFlow` or
 `Element·Changed·MindTidy`. Tidy Map's notice reads `changed` off what `applyMindMoves` actually
 changed (an element no longer the same object), so a plan whose only moves are locked nodes says
-"Map already tidy".
+"Map already tidy". It also counts the plan's moved nodes that sit in `held` (a locked layer's
+elements, from `layers()`, the active tab's layers) and appends ", N node(s) held by a locked layer".
 
 `applyMindMoves` (every caller: growth, abandon, fit, outline save, Tidy Map, flow and spacing)
-skips a move onto a node with `locked: true` and a re-anchor of a connector with `locked: true`
+skips a move onto a node with `locked: true` and a re-anchor of a connector with `locked: true`,
+and the same for any id in its optional `held` set (`lockedLayerElementIds(elements, tab.layers)`, passed
+by every editor caller: growth, abandon, fit, outline save, Tidy Map, flow and spacing)
 (mind-node.md "Tidy Map"; canvas-and-palette.md "Locking").
 
 **Spacing pick** (`setMindSpacingSelected(spacing)`): inside one commit, per selected root once,
@@ -482,6 +485,7 @@ export function applyMindMoves(
   elements: Element[],
   moves: readonly MindMove[],
   reanchored?: readonly ArrowElement[],
+  held?: ReadonlySet<ElementId>,
 ): Element[];
 
 // apps/editor/lib/mind-handoff.ts
@@ -582,7 +586,7 @@ listener only reads keys while a growth it opened is pending, and lets modified 
 - Menu: "Mind Map" flyout with `MindMapMenuSections`: Outline, Branching and Spacing (see "The Mind Map
   menu").
 - After growth the new node is selected, in label editing, and scrolled clear of the side panels.
-- Templates: `mindmap` (bubble, a round root, five branches of two or three leaves), `mindmap-tree` (tree,
+- Templates: `mindmap` (balanced at wide spacing, a round root, five branches of two or three leaves), `mindmap-tree` (tree,
   a bold root, five branches each in its own hue with a glyph, two or three hue-edged leaves each), `mindmap-bubble` (bubble, round
   nodes, one ring), built by `buildMindTemplate` with parent pointers, the root's `mindFlow`,
   `layoutMindTree` and `MIND_CONNECTOR_LOOK` connectors.

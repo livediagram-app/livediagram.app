@@ -1334,7 +1334,10 @@ canvas's ink.
 
 - **Docked as a sidebar** (the default): a filmstrip pinned flush against the canvas's left edge,
   the way a slide editor shows its slides. It starts below the Toolbar strip and runs down to the
-  canvas's foot, 236 px wide (at the panels' UI scale), opaque, with no gap at its edge, so no page
+  canvas's foot, 236 px wide (at the panels' UI scale) up to a 1,439 px window and wider on wider windows (272, 296
+  and 320 px from 1,440, 1,520 and 1,600 px), resizable by dragging its right edge (double-click resets; the width is
+  kept per browser; the shared rule is liveworkspace/docs/specs/011-workbench/sidebar-width.md), its pictures and
+  names filling its width and a name still cut off shown whole in a tooltip, opaque, with no gap at its edge, so no page
   shows round or through it; only its inner top corner is rounded, and a border and a soft shadow
   part it from the canvas. It has no header of its own: the list starts at its top, and its foot
   holds **Design** (an Editor's: opens Tab Style, "Design at the foot" below) with **Contents Options** to its right (a square button the height of Design, a
@@ -1741,6 +1744,9 @@ whether the tab stands as a stack, not its kind. **Stack Pages** in Contents Opt
   zoomed out past a page. Pan and zoom as freely as ever while a hand is on it (a drag, a finger, a
   pinch, a wheel or trackpad); the moment it lets go, the view glides (`VIEW_GLIDE_MS`, at once
   under reduced motion) onto one page:
+  - **A glide under way wins**: while a page is being framed with a glide (a page asked for, Contents
+    framing the page beside it as it docks), a rest that comes due gives way to it rather than stopping it
+    short; the view rests again once the glide lands.
   - **Which page**: the one holding the middle of what shows (beside the Contents sidebar), else
     the nearest. From a page seen whole, a pan of a fifth of the view's width toward a neighbour,
     or a quicker flick of at least 24 px, turns to that neighbour, as swiping a slide deck does, so

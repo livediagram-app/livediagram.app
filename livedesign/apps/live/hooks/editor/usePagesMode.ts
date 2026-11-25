@@ -141,11 +141,17 @@ export function usePagesMode(deps: {
       sides,
     );
   };
+  // A glide under way, until it lands or gives way: a rest snap timed from before it began gives way to it.
+  const gliding = useRef(false);
   const glideTo = (to: ViewPose) => {
     glide.current?.();
+    gliding.current = true;
     glide.current = glideViewport(deps.getViewport(), to, {
       zoom: deps.setViewportZoom,
       offset: deps.setViewportOffset,
+      landed: () => {
+        gliding.current = false;
+      },
     });
   };
   const frame = (page?: LaidOutPage, glides = false) => {
@@ -154,6 +160,7 @@ export function usePagesMode(deps: {
     const { zoom, offset } = frameFor(m, page);
     glide.current?.();
     glide.current = null;
+    gliding.current = false;
     if (glides) {
       glideTo({ zoom, offset });
     } else {
@@ -201,10 +208,16 @@ export function usePagesMode(deps: {
       const m = measure(true);
       return m ? frameFor(m, page) : deps.getViewport();
     },
-    glideTo,
+    // A frame's glide under way (a page asked for, Contents framing the page beside it as it docks) is already
+    // heading to a page: the rest snap gives way, or it would stop that glide short and leave the page under the
+    // sidebar (pages-mode.md "Getting around the pages"). It runs again once the glide lands and the view rests.
+    glideTo: (to) => {
+      if (!gliding.current) glideTo(to);
+    },
     cancelGlide: () => {
       glide.current?.();
       glide.current = null;
+      gliding.current = false;
     },
     suspended: deps.snapSuspended ?? (() => false),
     // The caret is in text on the canvas: a label, cell or line being written on, which a phone's keyboard pans into

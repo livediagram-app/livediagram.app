@@ -305,6 +305,19 @@ each build's own export: 381.2 KiB in 22 scripts. None of the tab's code is in t
 Turbopack cutting the largest subscription chunk (69.6 KB raw on main, byte-identical modules after) in two, as after
 the Webhooks rework above, and its framing is the 1 KiB.
 
+**The lens's chips, Offline's view and the Details layout leave the first load (2026-11-25).** Main failed its own
+`/explorer` budget: 391,177 bytes against 391,168 (382.0 KiB), so any addition to the Explorer was over. Three things
+only some screens draw were static imports of every first load: the lens's chip row and the filtered list's empty
+card (`packages/explorer/src/explorer/Lens.tsx`), Offline's own view (now `ThisBrowserPane.tsx`, with its folder
+cards and the lens matching for this browser's items) and the Details layout (`DetailsView.tsx`). Each now loads from
+its own chunk (`lazy-lens.tsx`, `lazy-panes.ts`), fetched by the Explorer's idle preload with the other sections. The
+field (`SearchField.tsx`), the lens's parsing and the list's filtering stay in the first load, so a lens in the address
+filters the list as it loads; the chip row's place is kept at its height until its code lands, a list that opens in
+Details fetches that layout while its items load, and the live region (`LensAnnouncer.tsx`) stays in the page.
+Measured with each build's own export: 391,192 to 384,884 bytes (382.0 to 375.9 KiB), the same 22 scripts; `/` is
+unchanged. `panes-lazy-load.test.ts` keeps all three out of a static import anywhere in the package, and
+`app/first-load-lazy.test.ts` keeps the chips' import dynamic. The budget stays at 382 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from

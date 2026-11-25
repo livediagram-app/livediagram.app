@@ -1,9 +1,11 @@
 import {
   applyMindMoves,
   isMindNode,
+  lockedLayerElementIds,
   mindRootOf,
   relayoutMindMap,
   type Element,
+  type Layer,
   type MindFlow,
   type MindSpacing,
 } from '@livediagram/document';
@@ -15,6 +17,8 @@ type MindMapSetterDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // The active tab's elements now, to tell a tidy that moves nodes from one that moves none.
   elements: () => Element[];
+  // The active tab's layers: nodes on a locked layer keep their place, like a locked node.
+  layers?: () => Layer[] | undefined;
   // An in-page notification (the editor's toast).
   notify: (tone: 'success' | 'info', message: string) => void;
 };
@@ -27,8 +31,10 @@ export function useMindMapSetters({
   currentSelectionIds,
   commit,
   elements,
+  layers,
   notify,
 }: MindMapSetterDeps) {
+  const heldIn = (els: Element[]) => lockedLayerElementIds(els, layers?.());
   // The roots of every map with a selected node. Resolved inside the updater,
   // against the elements as they stand: the walk up to a root has to read the
   // same array it writes back.
@@ -50,7 +56,7 @@ export function useMindMapSetters({
       for (const rootId of selectedRoots(all, ids)) {
         const plan = relayoutMindMap(next, rootId, flow);
         if (!plan) continue;
-        next = applyMindMoves(next, plan.moves, plan.reanchored);
+        next = applyMindMoves(next, plan.moves, plan.reanchored, heldIn(next));
         if (flow) next = next.map((el) => (el.id === rootId ? { ...el, mindFlow: flow } : el));
         debugLog(
           `[mind-layout] relayout root=${rootId} flow=${flow ?? 'current'} moves=${plan.moves.length}`,
@@ -78,7 +84,7 @@ export function useMindMapSetters({
       for (const rootId of selectedRoots(all, ids)) {
         next = next.map((el) => (el.id === rootId ? { ...el, mindSpacing: spacing } : el));
         const plan = relayoutMindMap(next, rootId);
-        if (plan) next = applyMindMoves(next, plan.moves, plan.reanchored);
+        if (plan) next = applyMindMoves(next, plan.moves, plan.reanchored, heldIn(next));
         debugLog(`[mind-layout] spacing root=${rootId} spacing=${spacing}`);
       }
       return next;
@@ -87,19 +93,34 @@ export function useMindMapSetters({
   };
 
   // Tidy Map on the maps of `ids`, saying what it did: "Map tidied", or "Map already tidy" when
-  // no node moves and no connector re-anchors, a locked one that keeps its place included.
+  // no node moves and no connector re-anchors, a locked one that keeps its place included. Nodes a
+  // locked layer holds are counted: "Map tidied, 2 nodes held by a locked layer".
   const tidy = (ids: Set<string>) => {
     if (ids.size === 0) return;
     const all = elements();
+    const held = heldIn(all);
+    const onLayer = new Set<string>();
     const changes = selectedRoots(all, ids).some((rootId) => {
       const plan = relayoutMindMap(all, rootId);
       if (!plan) return false;
-      const next = applyMindMoves(all, plan.moves, plan.reanchored);
+      for (const m of plan.moves) if (held.has(m.id)) onLayer.add(m.id);
+      const next = applyMindMoves(all, plan.moves, plan.reanchored, held);
       return next.some((el, i) => el !== all[i]);
     });
+    // A node of its own lock on a locked layer is reported by its layer only once, and a node a
+    // plan leaves alone is not counted.
+    const heldCount = [...onLayer].filter(
+      (id) => all.find((e) => e.id === id)?.locked !== true,
+    ).length;
     if (changes) relayoutSelected(undefined, ids);
-    debugLog(`[mind-layout] tidy changed=${changes}`);
-    notify(changes ? 'success' : 'info', changes ? 'Map tidied' : 'Map already tidy');
+    debugLog(`[mind-layout] tidy changed=${changes} held=${heldCount}`);
+    const said = changes ? 'Map tidied' : 'Map already tidy';
+    notify(
+      changes ? 'success' : 'info',
+      heldCount > 0
+        ? `${said}, ${heldCount} ${heldCount === 1 ? 'node' : 'nodes'} held by a locked layer`
+        : said,
+    );
     track('Element', 'Changed', 'MindTidy');
   };
 

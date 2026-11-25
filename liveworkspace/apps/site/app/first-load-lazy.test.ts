@@ -89,3 +89,20 @@ describe('Pro in the Explorer’s first load', () => {
     expect(src).not.toMatch(/\bTIER_LIMITS\b|\bTIERS\b/);
   });
 });
+
+describe('the Explorer’s lens on the first load', () => {
+  const explorer = (file: string) =>
+    readFileSync(join(root, '../../../packages/explorer/src/explorer', file), 'utf8');
+
+  it('the chips load from their own chunk; the lists draw them through lazy-lens', () => {
+    // /explorer failed its own budget by 9 bytes on main (2026-11-25): the chips, Offline's view and the Details layout
+    // left the first load (packages/explorer/src/explorer/panes-lazy-load.test.ts scans every module).
+    expect(explorer('lazy-lens.tsx')).toContain("import('./Lens')");
+    expect(staticImports(explorer('lazy-lens.tsx'))).not.toContain('./Lens');
+    for (const file of ['ItemsPane.tsx', 'ThisBrowserPane.tsx']) {
+      const imports = staticImports(explorer(file));
+      expect(imports, file).toContain('./lazy-lens');
+      expect(imports, file).not.toContain('./Lens');
+    }
+  });
+});

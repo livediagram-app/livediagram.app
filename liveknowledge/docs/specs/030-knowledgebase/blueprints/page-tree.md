@@ -163,7 +163,9 @@ All of it is in `apps/editor/components/page-tree/`.
 - **Where it stands.** In the canvas chrome's docked-sidebar slot (`useCanvasChromePanels` calls
   `usePageTreeChrome` where the fork called `useContentsChrome`): an `aside` down the canvas's left that sets
   `data-contents-sidebar`, so the page framing and Zoom to Fit centre the page beside it, joined to the menu box as
-  its top row. `CanvasChrome` clears it at its own width (`PAGE_TREE_WIDTH` 264, `pageTreeClearancePx`) for the left
+  its top row. `CanvasChrome` clears it at its live width (`usePageTreeWidth()` in `page-tree-width.ts`: `PAGE_TREE_WIDTH` 264 as
+  the base of the shared `useSidebarWidth`, stepping up on wide windows and dragged by the `SidebarResizeHandle` at its
+  right edge, liveworkspace/docs/specs/011-workbench/blueprints/sidebar-width.md; `pageTreeClearancePx`) for the left
   corner stacks, the bottom-right cluster and the strip. Hidden in zen mode, behind the welcome flow and in an
   embed.
 - **Collapsed** (`readTreeCollapsed`, per browser): a rail `PAGE_TREE_RAIL_WIDTH` (48) wide under the menu box,
@@ -506,22 +508,22 @@ seen in a browser since.
 
 ## Constants and configuration
 
-| Constant                               | Value  | Where                     | Why                                                                   |
-| -------------------------------------- | ------ | ------------------------- | --------------------------------------------------------------------- |
-| `MAX_KNOWLEDGEBASE_PAGES`              | 500    | `page-tree.ts`            | The spec's limit                                                      |
-| `MAX_PAGE_DEPTH`                       | 8      | `page-tree.ts`            | The spec's limit: a top-level page is level 1                         |
-| `PARENT_ID_MAX`                        | 128    | `page-tree.ts`            | A tab id is a UUID (36); anything far longer is not one               |
-| `PAGE_TREE_WIDTH`                      | 264    | `page-tree-view.ts`       | The spec's width; the shared Contents sidebar's 236 is the platform's |
-| `PAGE_TREE_RAIL_WIDTH`                 | 48     | `page-tree-view.ts`       | One 32 px button with its inset                                       |
-| `PAGE_TREE_INDENT`                     | 20     | `page-tree-view.ts`       | The spec's indent: the chevron's own width                            |
-| `PAGE_TREE_ROW`, `PAGE_TREE_TOUCH_ROW` | 32, 44 | `page-tree-view.ts`       | A dense list with a mouse; a finger's 44 px                           |
-| `TOUCH_FOCUS_MS`                       | 1000   | `PageTree.tsx`            | A tap's focus arrives with its synthetic mouse events, well inside it |
-| `PAGE_NAME_SETTLE_MS`                  | 50     | `usePageNameFromTitle.ts` | Well inside the autosave's pause, so the name saves with the Title    |
-| `BREADCRUMB_MIN`                       | 240    | `page-title-bar-room.ts`  | Two ancestors at a readable width before the buttons name themselves  |
-| `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose closed pages are kept                            |
-| `TYPE_AHEAD_RESET_MS`                  | 500    | `page-tree-view.ts`       | WAI-ARIA's type-ahead pause; a slower typist starts a new search      |
-| `LONG_PRESS_MS`                        | 500    | `useRowLongPress.ts`      | iOS and Android's own long press; shorter fights a scroll or drag     |
-| `LONG_PRESS_SLOP_PX`                   | 8      | `useRowLongPress.ts`      | A finger's tremble; past it the press is a scroll or a drag           |
-| `PAGE_TRASH_DAYS`                      | 30     | `page-trash.ts`           | The spec's retention, the platform Trash's 30 days                    |
-| `MAX_TRASHED_PAGES`                    | 500    | `page-trash.ts`           | The knowledgebase's own page limit: the Trash never outgrows the tree |
-| `TRASH_REFRESH_MS`                     | 1500   | `page-trash-store.ts`     | After the autosave's 600 ms and its DELETEs, before a person looks    |
+| Constant                               | Value  | Where                     | Why                                                                    |
+| -------------------------------------- | ------ | ------------------------- | ---------------------------------------------------------------------- |
+| `MAX_KNOWLEDGEBASE_PAGES`              | 500    | `page-tree.ts`            | The spec's limit                                                       |
+| `MAX_PAGE_DEPTH`                       | 8      | `page-tree.ts`            | The spec's limit: a top-level page is level 1                          |
+| `PARENT_ID_MAX`                        | 128    | `page-tree.ts`            | A tab id is a UUID (36); anything far longer is not one                |
+| `PAGE_TREE_WIDTH`                      | 264    | `page-tree-view.ts`       | The base width; `usePageTreeWidth` steps it up and the handle drags it |
+| `PAGE_TREE_RAIL_WIDTH`                 | 48     | `page-tree-view.ts`       | One 32 px button with its inset                                        |
+| `PAGE_TREE_INDENT`                     | 20     | `page-tree-view.ts`       | The spec's indent: the chevron's own width                             |
+| `PAGE_TREE_ROW`, `PAGE_TREE_TOUCH_ROW` | 32, 44 | `page-tree-view.ts`       | A dense list with a mouse; a finger's 44 px                            |
+| `TOUCH_FOCUS_MS`                       | 1000   | `PageTree.tsx`            | A tap's focus arrives with its synthetic mouse events, well inside it  |
+| `PAGE_NAME_SETTLE_MS`                  | 50     | `usePageNameFromTitle.ts` | Well inside the autosave's pause, so the name saves with the Title     |
+| `BREADCRUMB_MIN`                       | 240    | `page-title-bar-room.ts`  | Two ancestors at a readable width before the buttons name themselves   |
+| `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose closed pages are kept                             |
+| `TYPE_AHEAD_RESET_MS`                  | 500    | `page-tree-view.ts`       | WAI-ARIA's type-ahead pause; a slower typist starts a new search       |
+| `LONG_PRESS_MS`                        | 500    | `useRowLongPress.ts`      | iOS and Android's own long press; shorter fights a scroll or drag      |
+| `LONG_PRESS_SLOP_PX`                   | 8      | `useRowLongPress.ts`      | A finger's tremble; past it the press is a scroll or a drag            |
+| `PAGE_TRASH_DAYS`                      | 30     | `page-trash.ts`           | The spec's retention, the platform Trash's 30 days                     |
+| `MAX_TRASHED_PAGES`                    | 500    | `page-trash.ts`           | The knowledgebase's own page limit: the Trash never outgrows the tree  |
+| `TRASH_REFRESH_MS`                     | 1500   | `page-trash-store.ts`     | After the autosave's 600 ms and its DELETEs, before a person looks     |

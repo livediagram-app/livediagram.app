@@ -105,6 +105,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     currentSelectionIds,
     commit,
     elements: () => activeTab.elements,
+    layers: () => activeTab.layers,
     notify,
   });
 
