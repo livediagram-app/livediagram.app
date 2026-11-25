@@ -1214,6 +1214,33 @@ html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
     transform: translateX(100%);
   }
 }
+/* Switching pages (docs/specs/030-knowledgebase/page-surface.md "Switching pages"; components/page-surface/
+   page-switch-transition.ts): a picture of the page's scroll container before and after. The page in view lifts a
+   little and fades as the next one rises 8 px into its place, starting a beat later, so the two never stand on top
+   of each other and no blank frame shows between them (the next page's picture is live: anything it draws a frame
+   late appears while it is still faint). The page tree, the top row and the rail are not in the pictures. */
+::view-transition-group(.page-switch) {
+  animation: none;
+}
+::view-transition-old(.page-switch) {
+  animation: lvd-page-out 110ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+::view-transition-new(.page-switch) {
+  animation: lvd-page-in 220ms cubic-bezier(0.16, 1, 0.3, 1) 70ms both;
+}
+@keyframes lvd-page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@keyframes lvd-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 @keyframes lvd-slide-fade-out {
   from {
     opacity: 1;

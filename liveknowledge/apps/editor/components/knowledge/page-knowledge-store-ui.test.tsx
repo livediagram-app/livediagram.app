@@ -62,6 +62,8 @@ function mount(
     tabs,
     activeId: pageId,
     activeTab: tabs[0],
+    // Every page here has loaded (the rail holds a page that has not, loaded-page-store.ts).
+    loadedTabIds: new Set(tabs.map((t) => t.id)),
     can: resolveEditorCapabilities(level),
     isStructureReadOnly: level !== 'edit',
     // A plain editor session: not an embed, a workbench or a Community visit.

@@ -19,9 +19,10 @@ describe('View Transitions', () => {
     expect(globals).toMatch(/html\s*\{\s*view-transition-name:\s*none;\s*\}/);
   });
 
-  it('keep the slide moves with the canvas', () => {
+  it('keep the slide moves and the page switch with the canvas', () => {
     expect([...classesIn(globals)]).toEqual([]);
     expect([...classesIn(canvasMotion)].sort()).toEqual([
+      'page-switch',
       'slide-back',
       'slide-fade',
       'slide-forward',

@@ -8,7 +8,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
 import { railStampOf as stampOf } from '@/lib/knowledge/page-makers';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
-import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
+import {
+  EditorChromeContext,
+  useEditorChrome,
+  useEditorChromeStore,
+} from '@/app/document/[id]/EditorContext';
+import { useLoadedPageStore } from './loaded-page-store';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import {
   currentHeading,
@@ -106,12 +111,21 @@ function useCurrentHeading(headings: readonly PageHeading[]): string | undefined
   return headings.some((h) => h.id === current) ? current : headings[0]?.id;
 }
 
-/** The rail's two sections, for the current page. */
 /**
- * The rail's sections. Docked, the week's reads and who made and updated the page sit in a foot held at the rail's
- * bottom while the rest scrolls; in the Page Info card they follow on.
+ * The rail's sections, for the current page. Docked, the week's reads and who made and updated the page sit in a foot
+ * held at the rail's bottom while the rest scrolls; in the Page Info card they follow on. They read the editor's store
+ * held on the last loaded page (loaded-page-store.ts), so a page switch changes them once, in place.
  */
 export function PageRailBody({ docked = false }: { docked?: boolean }) {
+  const held = useLoadedPageStore();
+  return (
+    <EditorChromeContext.Provider value={held}>
+      <PageRailSections docked={docked} />
+    </EditorChromeContext.Provider>
+  );
+}
+
+function PageRailSections({ docked }: { docked: boolean }) {
   const chrome = useEditorChromeStore();
   const writing = useEditorChrome((s) => writingOf(s.activeTab), sameWriting);
   const page = usePageKnowledge();
