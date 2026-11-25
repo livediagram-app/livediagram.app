@@ -106,13 +106,16 @@ export const HELP_REDIRECTS: readonly HelpRedirect[] = [
 ];
 
 /** The redirect `path` (no slashes at either end) takes on `scope`'s address, or undefined. Exact paths win over
- *  prefixes. */
+ *  prefixes. All Apps holds every app's pages (`pages`: its article and category paths), so there an app-limited
+ *  redirect holds only for a path that is none of them, as the help Worker answers (apps/help src/help-scope.ts). */
 export function redirectFor(
   redirects: readonly HelpRedirect[],
   path: string,
   scope: AppId | 'all',
+  pages: ReadonlySet<string> = new Set(),
 ): HelpRedirect | undefined {
-  const holds = (r: HelpRedirect) => !r.apps || scope === 'all' || r.apps.includes(scope);
+  const holds = (r: HelpRedirect) =>
+    !r.apps || (scope === 'all' ? !pages.has(path) : r.apps.includes(scope));
   return (
     redirects.find((r) => holds(r) && r.from === path) ??
     redirects.find(

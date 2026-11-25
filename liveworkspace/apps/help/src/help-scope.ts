@@ -54,14 +54,17 @@ export function helpPath(pathname: string): string {
 /** `/tabs/using-tabs/` → `tabs/using-tabs`, the manifest's key. */
 export const routeKey = (path: string) => path.replace(/^\/+|\/+$/g, '');
 
-/** The redirect for `route` in `scope`, exact paths before prefixes, an app-limited one only on its apps. */
+/** The redirect for `route` in `scope`, exact paths before prefixes, an app-limited one only on its apps. All Apps
+ *  holds every app's articles, so there an app-limited one holds only for a path that is none of them: one app
+ *  retiring a path never hides the page the others still have. */
 export function redirectOf(
   manifest: HelpManifest,
   route: string,
   scope: Scope,
 ): HelpManifest['redirects'][number] | undefined {
+  const page = Object.hasOwn(manifest.articles, route) || Object.hasOwn(manifest.categories, route);
   const holds = (r: HelpManifest['redirects'][number]) =>
-    !r.apps || scope === 'all' || r.apps.includes(scope);
+    !r.apps || (scope === 'all' ? !page : r.apps.includes(scope));
   const exact = manifest.redirects.find((r) => r.from === route && holds(r));
   if (exact) return exact;
   return manifest.redirects.find(

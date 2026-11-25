@@ -7,6 +7,7 @@ const manifest: HelpManifest = {
   articles: {
     'tabs/using-tabs': ['livediagram', 'liveplanner'],
     'plan/boards': ['liveplanner'],
+    'canvas/links': ['livediagram', 'livedesign'],
   },
   categories: { tabs: ['livediagram', 'liveplanner'], plan: ['liveplanner'] },
   redirects: [
@@ -78,6 +79,12 @@ describe('the help Worker', () => {
       location: '/canvas/',
     });
     expect(answer(manifest, 'livediagram', '/canvas/links/', '').kind).toBe('asset');
+    // All Apps holds the page livediagram still has; a path it has no page for still moves.
+    expect(answer(manifest, 'all', '/help/canvas/links/', '')).toEqual({
+      kind: 'asset',
+      path: '/all/canvas/links/',
+    });
+    expect(answer(manifest, 'all', '/help/tabs/add-to-project/', '').kind).toBe('redirect');
     expect(answer(manifest, 'all', '/help/self-hosting/docker/', '')).toEqual({
       kind: 'redirect',
       location: '/help/',

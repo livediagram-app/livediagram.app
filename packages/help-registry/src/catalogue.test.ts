@@ -8,6 +8,7 @@ import {
   categoriesFor,
   guideCounts,
   HELP_REDIRECTS,
+  redirectFor,
   searchIndexFor,
 } from './catalogue';
 import { sharedArticles } from './catalogue/shared';
@@ -59,6 +60,15 @@ describe('the one catalogue', () => {
     const counts = guideCounts();
     expect(counts.all).toBe(allArticles.length);
     for (const app of APP_ORDER) expect(counts[app]).toBe(catalogueFor(app).articles.length);
+  });
+
+  it('never moves a page All Apps serves', () => {
+    const pages = new Set([
+      ...allArticles.map(articlePath),
+      ...categoriesFor('all').map((c) => c.slug),
+    ]);
+    for (const path of pages)
+      expect(redirectFor(HELP_REDIRECTS, path, 'all', pages), path).toBeUndefined();
   });
 
   it('redirects only to paths that exist', () => {
