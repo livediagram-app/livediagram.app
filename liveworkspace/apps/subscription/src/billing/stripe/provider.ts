@@ -37,6 +37,8 @@ export function checkoutFields(
     // Stripe is the merchant of record: it works out and files the tax, which every price includes.
     managed_payments: { enabled: true },
     customer: customer ?? undefined,
+    // A first checkout fills in the email of whoever starts it; an owner's customer already has its own.
+    customer_email: customer ? undefined : (start.email ?? undefined),
     client_reference_id: start.owner,
     success_url: start.returnTo,
     cancel_url: cancelUrl(start.returnTo),
