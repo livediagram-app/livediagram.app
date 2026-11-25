@@ -106,6 +106,14 @@ describe('registering a client', () => {
     expect(made).toEqual([]);
   });
 
+  it('registers a platform service with no app when app is null, said outright', async () => {
+    const response = await register({ ...valid, name: 'liveworkspace-subscription', app: null });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ client_id: 'client-1', app: null });
+    expect(made).toHaveLength(1);
+    expect(await clientApp(env.AUTH_DB, 'client-1')).toBeNull();
+  });
+
   it('refuses a body of null as a bad request, not a crash', async () => {
     expect((await register(null)).status).toBe(400);
     expect(made).toEqual([]);

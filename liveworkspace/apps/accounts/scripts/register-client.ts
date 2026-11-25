@@ -9,6 +9,9 @@
 //     --redirect https://livediagram.app/api/auth/callback \
 //     --resource https://livediagram.app/api
 //
+// A platform service (the subscription Worker) passes --no-app in place of --app: it is no app, so every per-app
+// route refuses it (accounts.md "Which app a client is"). Its --redirect is never used; any https URL of its own.
+//
 // One --redirect per origin the app serves (www and bare). The Worker adds each origin's /auth/guest, where the
 // guest hand-off returns, so it is never left out.
 import { parseArgs } from 'node:util';
@@ -21,13 +24,21 @@ const { values } = parseArgs({
     resource: { type: 'string' },
     // The app it is, as @liveworkspace/sites spells it: what of a person's it may reach.
     app: { type: 'string' },
+    'no-app': { type: 'boolean', default: false },
   },
 });
 
 const adminToken = process.env.ADMIN_TOKEN;
-if (!adminToken || !values.name || !values.redirect?.length || !values.resource || !values.app) {
+const noApp = values['no-app'];
+if (
+  !adminToken ||
+  !values.name ||
+  !values.redirect?.length ||
+  !values.resource ||
+  noApp === Boolean(values.app)
+) {
   console.error(
-    'Needs ADMIN_TOKEN in the environment, plus --name, --app, --redirect (1+) and --resource.',
+    'Needs ADMIN_TOKEN in the environment, plus --name, one of --app or --no-app, --redirect (1+) and --resource.',
   );
   process.exit(1);
 }
@@ -39,7 +50,7 @@ const response = await fetch(new URL('/api/auth/internal/clients', values.accoun
     name: values.name,
     redirectUris: values.redirect,
     resource: values.resource,
-    app: values.app,
+    app: noApp ? null : values.app,
   }),
 });
 const body = await response.text();

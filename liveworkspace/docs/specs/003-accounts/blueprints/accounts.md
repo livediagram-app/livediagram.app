@@ -465,6 +465,8 @@ Migrations, in order:
   comments in its `CREATE`)
 - `0026_legacy_guest_rekeyed.sql`: `legacy_guest.rekeyedAt`, when a guest from before signing had its id re-keyed
   (sessions-and-guests.md "Re-keying the guests from before signing")
+- `0027_subscription_client_no_app.sql`: staging's subscription client made no app (accounts.md "Which app a client
+  is"); deletes nothing elsewhere
 
 Better Auth's runtime schema check is off (`advanced.database.validateSchema: false`, `src/auth-options.ts`): it would
 read D1's schema before a Worker's first answer. `src/schema-check.test.ts` runs the same check against

@@ -1652,7 +1652,13 @@ Each app's OAuth client is registered as that app (`--app livediagram.app` to
 belongs to one app is reached only by that app's client: its settings scope (beside `all`), and its own
 sign-up sightings and milestones. Every other internal route (tokens, the teams feed, profiles, emails)
 serves any of our clients. A client with no app is refused the per-app routes with
-`403 client_has_no_app`. The app is looked up with the client's credentials and remembered with them per
+`403 client_has_no_app`.
+
+A platform service is no app: the subscription Worker reads teams and profiles, never one app's data, so its client
+is registered with `--no-app` (`app: null` to the route; a missing app is still refused) and has no
+`oauth_client_app` row. Staging's was first registered as liveplanner.app, before `--no-app` existed;
+`migrations/0027_subscription_client_no_app.sql` removes that row. `map-clients.ts` never gives it an app: its name,
+`liveworkspace-subscription`, is no app's. The app is looked up with the client's credentials and remembered with them per
 isolate for five minutes, so it costs one primary-key read per five minutes per client.
 
 `scripts/map-clients.ts` sets the app for a client registered without one. Run with `--local` (or

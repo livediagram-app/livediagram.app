@@ -1,7 +1,9 @@
 // Registering an app (a confidential OAuth client) with this Worker. Behind ADMIN_TOKEN
 // rather than open dynamic registration: the only clients are our own apps, and each is
-// registered once per environment with scripts/register-client.ts. Each client is one app
-// (oauth_client_app, migrations/0005_client_apps.sql), which decides what of a person's it may reach.
+// registered once per environment with scripts/register-client.ts. Each app's client is that app
+// (oauth_client_app, migrations/0005_client_apps.sql), which decides what of a person's it may reach. A platform
+// service (the subscription Worker) is registered with `app: null`: no app, so every per-app route refuses it and it
+// reaches only what any of our clients may (accounts.md "Which app a client is").
 import { makeSignature } from 'better-auth/crypto';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
@@ -74,16 +76,18 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
   );
   const resource = typeof body.resource === 'string' ? body.resource : '';
   const app = body.app;
+  // null, said outright, is a platform service with no app; a missing app is still a mistake.
+  const service = app === null;
   if (
     !name ||
     redirectUris.length === 0 ||
     !RESOURCES[env.ENVIRONMENT].includes(resource) ||
-    !isSettingsApp(app)
+    !(service || isSettingsApp(app))
   ) {
     return Response.json(
       {
         error: 'invalid_request',
-        message: `Needs name, redirectUris, an app (livediagram.app, liveplanner.app, livedocuments.app, livedesign.app, livehuddle.app or liveknowledge.app) and a resource from: ${RESOURCES[env.ENVIRONMENT].join(', ')}`,
+        message: `Needs name, redirectUris, an app (livediagram.app, liveplanner.app, livedocuments.app, livedesign.app, livehuddle.app or liveknowledge.app, or null for a platform service) and a resource from: ${RESOURCES[env.ENVIRONMENT].join(', ')}`,
       },
       { status: 400 },
     );
@@ -134,15 +138,15 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
         { status: 400 },
       );
     }
-    const recorded = await env.AUTH_DB.prepare(
-      'INSERT INTO oauth_client_app (clientId, app) VALUES (?, ?)',
-    )
-      .bind(client.client_id, app)
-      .run()
-      .then(
-        () => true,
-        () => false,
-      );
+    const recorded =
+      service ||
+      (await env.AUTH_DB.prepare('INSERT INTO oauth_client_app (clientId, app) VALUES (?, ?)')
+        .bind(client.client_id, app)
+        .run()
+        .then(
+          () => true,
+          () => false,
+        ));
     if (!recorded) {
       // The table's CHECK doesn't take this app: a database behind on its migrations (a local one built before
       // 0024_liveknowledge.sql). Take the client back, so nothing is left half-registered, and say what to do.
