@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest';
 import {
   createArrow,
   createShape,
+  createTable,
   DEFAULT_ANIMATION_SPEED,
   type Element,
   type Tab,
@@ -71,6 +72,28 @@ describe('useElementStyle selection-wide setters on a multi-selection', () => {
     for (const el of result()) {
       expect((el as { strokeColor?: string }).strokeColor).toBe('#123456');
     }
+  });
+});
+
+describe('useElementStyle toggles on a mixed multi-selection', () => {
+  it('locks the aspect ratio of every boxed member, though nothing is single-selected', () => {
+    const arrow = createArrow(0, 0, 50, 0);
+    const a = createShape('square', 0, 0);
+    const b = { ...createShape('square', 200, 0), aspectLocked: true };
+    const { style, result } = harness([arrow, a, b], new Set([arrow.id, a.id, b.id]));
+
+    style.toggleAspectLockSelected();
+    const [, ra, rb] = result() as { aspectLocked?: boolean }[];
+    expect([ra!.aspectLocked, rb!.aspectLocked]).toEqual([true, true]);
+  });
+
+  it("sets every table to the first table's flipped header row, never flipping each", () => {
+    const t1 = { ...createTable(0, 0), headerRow: true };
+    const t2 = { ...createTable(400, 0), headerRow: false };
+    const { style, result } = harness([t1, t2], new Set([t1.id, t2.id]));
+
+    style.setTableHeaderRowSelected();
+    expect(result().map((el) => (el as { headerRow?: boolean }).headerRow)).toEqual([false, false]);
   });
 });
 

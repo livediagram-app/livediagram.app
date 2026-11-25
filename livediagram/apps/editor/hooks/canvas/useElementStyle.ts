@@ -150,13 +150,14 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', shouldLock ? 'Locked' : 'Unlocked');
   };
 
+  // Single or multi-selection (the multi menu's Layer section offers it too): the next state reads off the first
+  // boxed member in z-order, so a partly locked selection all jumps the same way.
   const toggleAspectLockSelected = () => {
-    const { selectedId } = readSelection();
-    if (!selectedId) return;
-    const source = selectionPrimary();
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    const source = activeTab.elements.find((el) => ids.has(el.id) && isBoxed(el));
     if (!source || !isBoxed(source)) return;
     const shouldLock = !(source.aspectLocked === true);
-    const ids = currentSelectionIds();
     commit((els) =>
       els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, aspectLocked: shouldLock } : el)),
     );
@@ -215,13 +216,18 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   ) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
+    // The next state reads off the first selected table (z-order), and every table takes it: flipping each on its
+    // own left a mixed multi-selection mixed for good, one table switched off for each one switched on.
+    const source = activeTab.elements.find((el) => ids.has(el.id) && el.type === 'table');
+    if (!source || source.type !== 'table') return;
+    const next = !source[field];
     track('Element', 'Toggled', telemetryType);
     commit((els) =>
       els.map((el) =>
         ids.has(el.id) && el.type === 'table'
           ? {
               ...el,
-              [field]: !el[field],
+              [field]: next,
               // Banding is part of a table's LOOK, so hand-toggling it breaks
               // the preset binding the same way hand-picking a colour does.
               // The two header flags are structure, not look, and leave it.
