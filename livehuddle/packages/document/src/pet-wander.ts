@@ -2,9 +2,19 @@
 // screen with nothing sent. Time is cut into legs of PET_LEG_MS, and the dog walks one leg in PET_WALK_EVERY, resting
 // lying down through the others; each walk's spot comes from the bed's id and the walk's number through a small seeded
 // generator, so any two clocks that agree to a second agree on the dog. Every fourth walk it goes back to its bed. A spot where the dog would stand behind or under a piece, or in another room's walls, is
-// passed over for the generator's next one, the same on every screen. Pure: no React, no DOM, no clock of its own (the caller passes `now`).
+// passed over for the generator's next one, the same on every screen. A turned room, or one drawn wall by wall, keeps
+// the dog inside its walls as drawn (docs/specs/009-elements/office.md "A Room turns", room-floor-polygon.ts). Pure: no React, no DOM, no clock of its own (the caller passes `now`).
 
 import { roomInterior } from '@livehuddle/avatar/office-geometry';
+import { pointInPolygon, polygonArea } from '@livehuddle/avatar/room-outline';
+import {
+  drawInPolygon,
+  floorHasRoom,
+  polygonBounds,
+  roomFloorPolygon,
+  turnedRoomBox,
+  type RoomFloorSource,
+} from './room-floor-polygon';
 
 /** One leg: the dog trots to its spot over the first PET_TROT_MS, then sits there. */
 export const PET_LEG_MS = 9_000;
@@ -36,6 +46,11 @@ export const PET_FLOOR_KINDS: ReadonlySet<string> = new Set([
   'avatar-pad',
   'pet-bed',
 ]);
+/**
+ * How many draws one try takes in a turned or drawn room's floor polygon before it counts as a miss: a draw lands in
+ * the polygon's bounds, and a 45 degree room fills about half of them.
+ */
+export const PET_POLYGON_DRAWS = 6;
 /** How many spots a leg tries before the dog gives up and naps in its bed (a room packed with pieces). */
 export const PET_TRIES = 12;
 /**
@@ -48,10 +63,15 @@ type Box = { x: number; y: number; width: number; height: number };
 type Point = { x: number; y: number };
 
 /**
- * Where the dog may go: a box (its room's floor, inset) or a circle round its bed, and the boxes in it its body must
- * keep clear of (the pieces standing there, and any other room's walls). No `blocks` is an empty floor.
+ * Where the dog may go: a box (its room's floor, inset), a polygon (a turned or drawn room's floor, its bounds, and
+ * how far in from its walls the dog keeps) or a circle round its bed, and the boxes in it its body must keep clear of
+ * (the pieces standing there, and any other room's walls). No `blocks` is an empty floor.
  */
-export type PetArea = ({ kind: 'box'; box: Box } | { kind: 'circle'; at: Point; r: number }) & {
+export type PetArea = (
+  | { kind: 'box'; box: Box }
+  | { kind: 'polygon'; polygon: readonly Point[]; bounds: Box; inset: number }
+  | { kind: 'circle'; at: Point; r: number }
+) & {
   blocks?: readonly Box[];
 };
 
@@ -99,7 +119,12 @@ const holds = (r: Box, p: Point) =>
   p.x > r.x && p.x < r.x + r.width && p.y > r.y && p.y < r.y + r.height;
 
 /** The pieces and other rooms the dog keeps clear of, cut to the ones its body could reach in `area`. */
-function blocksIn(area: Box, pieces: readonly Box[], rooms: readonly Box[], at: Point): Box[] {
+function blocksIn(
+  area: Box,
+  pieces: readonly Box[],
+  rooms: readonly RoomFloorSource[],
+  at: Point,
+): Box[] {
   const reach = {
     x: area.x - PET_BODY.left,
     y: area.y - PET_BODY.up,
@@ -109,7 +134,14 @@ function blocksIn(area: Box, pieces: readonly Box[], rooms: readonly Box[], at: 
   const out: Box[] = [];
   for (const b of pieces) if (overlaps(b, reach)) out.push(pick(b));
   // Another room, whole: its walls, and its floor, which is not this dog's. The rooms round the bed are its own.
-  for (const r of rooms) if (!holds(r, at) && overlaps(r, reach)) out.push(pick(r));
+  // A turned room is kept out of by the box round its turned walls (office.md "A Room turns").
+  for (const r of rooms) {
+    const turned = turnedRoomBox(r);
+    if (turned) {
+      const round = polygonBounds(turned);
+      if (!pointInPolygon(at, turned) && overlaps(round, reach)) out.push(round);
+    } else if (!holds(r, at) && overlaps(r, reach)) out.push(pick(r));
+  }
   return out;
 }
 
@@ -118,15 +150,39 @@ function blocksIn(area: Box, pieces: readonly Box[], rooms: readonly Box[], at: 
  * PET_RADIUS round the bed when it stands in no room (or its room is too small to inset). `pieces` are the boxes of the
  * pieces on the board that the dog may not stand behind or under (the caller leaves out floors, rugs and the bed).
  */
-export function petArea(bed: Box, rooms: readonly Box[], pieces: readonly Box[] = []): PetArea {
+export function petArea(
+  bed: Box,
+  rooms: readonly RoomFloorSource[],
+  pieces: readonly Box[] = [],
+): PetArea {
   const at = middle(bed);
-  let best: Box | null = null;
+  let best: RoomFloorSource | null = null;
+  let bestFloor: Point[] | null = null;
+  let bestSize = Infinity;
   for (const r of rooms) {
-    const f = roomInterior(r);
-    if (at.x <= f.x || at.x >= f.x + f.width || at.y <= f.y || at.y >= f.y + f.height) continue;
-    if (!best || r.width * r.height < best.width * best.height) best = r;
+    // A turned or drawn room's floor as drawn (room-floor-polygon.ts), else its upright interior.
+    const floor = roomFloorPolygon(r);
+    if (floor) {
+      if (!pointInPolygon(at, floor)) continue;
+    } else {
+      const f = roomInterior(r);
+      if (at.x <= f.x || at.x >= f.x + f.width || at.y <= f.y || at.y >= f.y + f.height) continue;
+    }
+    const size = floor ? polygonArea(floor) : r.width * r.height;
+    if (size < bestSize) {
+      best = r;
+      bestFloor = floor;
+      bestSize = size;
+    }
   }
-  if (best) {
+  if (bestFloor) {
+    if (floorHasRoom(bestFloor, PET_INSET)) {
+      const bounds = polygonBounds(bestFloor);
+      const area = { kind: 'polygon' as const, polygon: bestFloor, bounds, inset: PET_INSET };
+      const blocks = blocksIn(bounds, pieces, rooms, at);
+      return blocks.length > 0 ? { ...area, blocks } : area;
+    }
+  } else if (best) {
     const f = roomInterior(best);
     const box = {
       x: f.x + PET_INSET,
@@ -166,8 +222,10 @@ export function msToNextWalk(now: number): number {
   return PET_WALK_MS - (((now % PET_WALK_MS) + PET_WALK_MS) % PET_WALK_MS);
 }
 
-/** One spot in the area from the generator's next two numbers. */
-function spotIn(area: PetArea, next: () => number): Point {
+/** One spot in the area from the generator's next numbers, or null when a polygon's draws all miss it. */
+function spotIn(area: PetArea, next: () => number): Point | null {
+  if (area.kind === 'polygon')
+    return drawInPolygon(area.polygon, area.bounds, area.inset, next, PET_POLYGON_DRAWS);
   if (area.kind === 'box') {
     const { box } = area;
     return { x: box.x + next() * box.width, y: box.y + next() * box.height };
@@ -195,7 +253,7 @@ export function petLeg(id: string, n: number, area: PetArea): Point | null {
   const next = seeded(hashId(id) ^ Math.imul(n | 0, 0x9e3779b1));
   for (let i = 0; i < PET_TRIES; i += 1) {
     const spot = spotIn(area, next);
-    if (petClear(spot, area.blocks)) return spot;
+    if (spot && petClear(spot, area.blocks)) return spot;
   }
   return null;
 }

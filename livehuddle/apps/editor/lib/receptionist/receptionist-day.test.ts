@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livehuddle/document';
+import {
+  insidePolygonBy,
+  roomFloorPolygon,
+  turnRoomPoint,
+  type Element,
+} from '@livehuddle/document';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { buildNavGrid } from '@livehuddle/avatar/pathing';
 import { fenceReachFor, fenceSegments, shutDoorLines } from '@livehuddle/avatar/collision';
 import { officeFootprints, roomInterior } from '@livehuddle/avatar/office-geometry';
@@ -146,6 +152,64 @@ describe('receptionistPad and receptionistWorld', () => {
     expect(world.area.kind).toBe('circle');
     // Neither room he stands in counts as a room to walk you to.
     expect(world.rooms).toEqual([]);
+  });
+
+  // docs/specs/009-elements/office.md "A Room turns" (Work Tracker 1473): his area follows a turned room.
+  describe('in a room turned 45 degrees', () => {
+    // Centred on the pad's middle (40, 40).
+    const turned = { ...shape('room', 'room', -410, -210, 900, 500), rotation: 45 };
+    const floor = roomFloorPolygon(turned)!;
+    // A plant on the turned floor, and one in the upright box's corner, outside the walls as drawn.
+    const inside = shape('plant-in', 'plant', 100, 40);
+    const corner = shape('plant-corner', 'plant', 380, -200);
+    const other = { ...shape('other', 'room', 1200, 0, 400, 300), rotation: 90 };
+    const elements = [turned, other, pad, inside, corner];
+    const world = receptionistWorld(elements, null)!;
+
+    it('keeps to the turned floor, inset from its walls', () => {
+      expect(world.area.kind).toBe('polygon');
+      if (world.area.kind === 'polygon') expect(world.area.polygon).toEqual(floor);
+      // The corner plant stands inside the upright box but outside the turned walls: not a stop.
+      expect(world.stops.map((s) => s.at.x)).toEqual([130]);
+      let floorStops = 0;
+      for (let n = 0; n < 200; n += 1) {
+        const stop = receptionistStop(world, n);
+        if (stop.activity !== 'flourish') continue;
+        floorStops += 1;
+        expect(insidePolygonBy(stop.at, floor, 40)).toBe(true);
+      }
+      expect(floorStops).toBeGreaterThan(0);
+    });
+
+    it('walks you to a spot inside a turned room front wall, turned with it', () => {
+      const f = roomInterior(other);
+      const upright = { x: f.x + f.width / 2, y: f.y + f.height - 36 };
+      const spot = turnRoomPoint(other, upright);
+      expect(world.rooms).toHaveLength(1);
+      expect(world.rooms[0]!.x).toBeCloseTo(spot.x);
+      expect(world.rooms[0]!.y).toBeCloseTo(spot.y);
+      // Turned a quarter, the front wall's spot is on the room's left side now.
+      expect(world.rooms[0]!.x).toBeLessThan(1200 + 200);
+    });
+
+    it('wanders a circle when the turned room has no spot far enough off its walls', () => {
+      const tight = { ...shape('tight', 'room', -60, -5, 200, 90), rotation: 30 };
+      expect(receptionistWorld([tight, pad], null)!.area.kind).toBe('circle');
+    });
+
+    it('works out his world on a turned room once, in a frame budget', () => {
+      const best = Math.min(
+        ...[0, 1, 2].map(() =>
+          cpuMsOf(() => {
+            for (let i = 0; i < 200; i += 1) {
+              const w = receptionistWorld(elements, null)!;
+              for (let n = 0; n < 8; n += 1) receptionistStop(w, n);
+            }
+          }),
+        ),
+      );
+      expect(best).toBeLessThan(cpuBudgetMs(100));
+    });
   });
 
   it('picks the nearest of several rooms', () => {

@@ -2,10 +2,9 @@
 // stage"): every Office room's floor as a call, every stage's top and who may speak from it, and which of each a point
 // is in. Pure geometry over a tab's visible elements, read by the editor's call (apps/editor/lib/calls) and by the
 // api's room when it checks who may hear whom (apps/api/src/calls/call-hearing.ts), so both answer the same.
-import { rotatePoint } from '@liveworkspace/model-core/geometry-primitives';
 import { roomInterior } from '@livehuddle/avatar/office-geometry';
 import { pointInPolygon, polygonArea } from '@livehuddle/avatar/room-outline';
-import { isRoomOutline } from './room-outline-field';
+import { roomFloorPolygon } from './room-floor-polygon';
 import { podInterior } from '@livehuddle/avatar/pod';
 import { isSeatFacing } from '@livehuddle/avatar/facing';
 import { boothInterior } from '@livehuddle/avatar/booth';
@@ -79,12 +78,6 @@ export type CallElementSource = {
   readonly rotation?: unknown;
 };
 
-// A room's turn when it is turned: a finite number of degrees that is not a whole turn, else null.
-function turnOf(el: CallElementSource): number | null {
-  const r = el.rotation;
-  return typeof r === 'number' && Number.isFinite(r) && r % 360 !== 0 ? r : null;
-}
-
 // A zone for a room's floor polygon (canvas px): its bounds and area, or null for no area.
 function polygonZone(id: string, polygon: CallPoint[]): CallZone | null {
   const area = polygonArea(polygon);
@@ -132,30 +125,13 @@ export function roomZones(elements: readonly CallElementSource[]): CallZone[] {
     const booth = room || pod ? null : boxOf(el, 'phone-booth');
     const box = room ?? pod ?? booth;
     if (!box) continue;
-    const turn = room ? turnOf(el) : null;
-    // A room drawn with the Room Builder (room-builder.md): its floor is its outline. A turned room's floor
-    // (office.md "A Room turns") is its outline or its interior's corners, turned about its centre.
-    if (room && (isRoomOutline(el.roomOutline) || turn !== null)) {
-      let polygon: CallPoint[];
-      if (isRoomOutline(el.roomOutline)) {
-        polygon = el.roomOutline.map((p) => ({
-          x: room.x + p.x * room.width,
-          y: room.y + p.y * room.height,
-        }));
-      } else {
-        const f = roomInterior(room);
-        if (f.width <= 0 || f.height <= 0) continue;
-        polygon = [
-          { x: f.x, y: f.y },
-          { x: f.x + f.width, y: f.y },
-          { x: f.x + f.width, y: f.y + f.height },
-          { x: f.x, y: f.y + f.height },
-        ];
-      }
-      if (turn !== null) {
-        const centre = { x: room.x + room.width / 2, y: room.y + room.height / 2 };
-        polygon = polygon.map((p) => rotatePoint(p, centre, turn));
-      }
+    // A room drawn with the Room Builder (room-builder.md), or a turned room (office.md "A Room turns"): its floor
+    // is its outline or its interior's corners, turned about its centre (room-floor-polygon.ts, the one polygon every piece
+    // in the room reads).
+    const polygon = room
+      ? roomFloorPolygon({ ...room, rotation: el.rotation, roomOutline: el.roomOutline })
+      : null;
+    if (polygon) {
       const zone = polygonZone(el.id, polygon);
       if (zone) zones.push(zone);
       continue;
