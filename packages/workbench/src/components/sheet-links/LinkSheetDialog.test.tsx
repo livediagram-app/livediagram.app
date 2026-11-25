@@ -5,6 +5,7 @@
 // an Editor's From a Plan, Update, Freeze, Change and Unlink, anyone's Open Plan, a Viewer's status alone.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { comeBackToPage, leaveReturnClock } from '@liveworkspace/explorer/return-to-tab-testing';
 import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import {
   IndexError,
@@ -805,5 +806,37 @@ describe('From a Plan: boards, metrics and series (live-data.md)', () => {
     cleanup();
     fail(new Error('late'));
     await new Promise((r) => setTimeout(r, 0));
+  });
+});
+
+describe('LinkSheetDialog, back on the page (Work Tracker 1460)', () => {
+  afterEach(() => {
+    cleanup();
+    leaveReturnClock();
+  });
+
+  it('reads the plans again, showing a rename, and keeps them when that read fails', async () => {
+    listItems
+      .mockResolvedValueOnce({ items: [{ id: 'plan_1', title: 'Budget' }] })
+      .mockResolvedValueOnce({ items: [{ id: 'plan_1', title: 'Budget 2027' }] })
+      .mockRejectedValueOnce(new Error('offline'));
+    render(
+      <LinkSheetDialog
+        chart={bar()}
+        itemId="doc_1"
+        grantOf={grantOf}
+        noun="document"
+        onLink={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    await screen.findByRole('button', { name: 'Budget' });
+    act(() => comeBackToPage());
+    expect(await screen.findByRole('button', { name: 'Budget 2027' })).toBeTruthy();
+    const calls = listItems.mock.calls.length;
+    act(() => comeBackToPage());
+    await waitFor(() => expect(listItems.mock.calls.length).toBe(calls + 1));
+    await act(async () => {});
+    expect(screen.getByRole('button', { name: 'Budget 2027' })).toBeTruthy();
   });
 });

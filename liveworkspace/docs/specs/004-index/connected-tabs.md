@@ -247,6 +247,15 @@ and says why; a failure says why on the row, in words ("This file has too many l
 as it was. Loading shows quiet placeholder rows; nothing recent says so with a way to the Explorer; a failed load says
 so with Try Again.
 
+**Always the newest names** (Work Tracker 1460). The list is never one read at page load: each opening (the start
+screen's Connect File, the tab bar's Connect a File, liveknowledge's sidebar Connect File) reads Recent from the index
+afresh, and so does the page coming back into view while the list shows (a file renamed in another tab, then back
+here). The rows on screen stay while that read is on its way and when it fails; only an opening shows the placeholder
+rows. Every other list that picks a file does the same: Embed File's Recent and Find a File
+([live-embeds.md](live-embeds.md)), a link's files in Element Resources, Send to Diagram, Send to Plan, Send to
+Knowledgebase and Link a Sheet. So a rename made anywhere shows the next time the list opens or is looked at again,
+with no reload.
+
 ## A tab's own name
 
 An app may let an Editor name a connected tab as any tab (livediagram, liveplanner, livedocuments and livedesign do, Work Tracker 1374): its menu's **Rename**,

@@ -796,6 +796,9 @@ The panel's Home lists Offline's opened items among its Recent by the page's rul
 first, among the index's), each a card with Offline's picture (`LocalPreview`), the **Offline** pill on its
 picture's top-left corner (so the line below has the card's width for when it was opened), when it was opened and Offline's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
 open item is left out there, as the index's is.
+The pane's lists (Home, a place, Trash) are read again, quietly, when the page comes back into view while the panel
+shows, as the Current card is: a rename made in another tab shows on its row with no reopening, the rows on screen
+staying while the read is on its way and when it fails (Work Tracker 1461).
 
 **The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **56rem** (896 px) wide, kept 1rem
 inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the

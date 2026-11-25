@@ -122,7 +122,8 @@ picture) and no `connect`. Find a File (`useFileSearch`, Work Tracker 1427): two
 `LIVE_PICKER_SEARCH_SETTLE_MS`, ask `listItems({ view: 'search', q, apps: LIVE_EMBED_APPS, limit:
 LIVE_PICKER_SEARCH_MAX })`, aborting the read before; the host, archived files and any other app's are left out; the
 answers stand in for Recent under **Found** ("No file matches" when none), and a failed search leaves Recent with a
-line saying so.
+line saying so. Both read again on each return to the page (`useReturnCount`), keeping their rows meanwhile (Work
+Tracker 1460).
 
 Which tab (Work Tracker 1427): `useLiveEmbedFrame({ tabId })` asks the ticket with it
 (`requestLiveEmbedTicket(item, origin, tabId)`, the body's `tabId`; the accounts door keeps it on the ticket for the

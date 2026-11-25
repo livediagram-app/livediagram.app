@@ -178,6 +178,9 @@ export type ExplorerContextValue = {
   onFolderShown?: (shown: FolderShown) => void;
   // The host's take on an item just archived (HostArchived): Offline's archive asks it too.
   hostArchived?: HostArchived;
+  // Bumped by the host to read its lists again quietly, the rows on screen kept (the editors' panel: a return to the
+  // page while it shows, Work Tracker 1461). 0 where the host never asks.
+  returns: number;
 };
 
 /** The folder a view shows, once its list is in: its name (null while the folders load), and how many of the host's
@@ -280,6 +283,8 @@ export type ExplorerProviderProps = {
   // After an item took a new title (the host follows it for the item it has open); stable.
   onItemRenamed?: (item: Item, title: string) => void;
   onFolderShown?: (shown: FolderShown) => void;
+  // Bumped to read the lists again quietly (see ExplorerContextValue.returns).
+  returns?: number;
   children: ReactNode;
 };
 
@@ -320,6 +325,7 @@ export function ExplorerProvider({
   hostArchived,
   onItemRenamed,
   onFolderShown,
+  returns = 0,
   children,
 }: ExplorerProviderProps) {
   const toast = useToast();
@@ -485,6 +491,7 @@ export function ExplorerProvider({
       expansion,
       onFolderShown,
       hostArchived,
+      returns,
     }),
     [
       app,
@@ -530,6 +537,7 @@ export function ExplorerProvider({
       expansion,
       onFolderShown,
       hostArchived,
+      returns,
     ],
   );
   return (

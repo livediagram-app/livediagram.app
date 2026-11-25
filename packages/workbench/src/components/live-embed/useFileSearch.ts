@@ -3,10 +3,13 @@
 // Find a File (liveworkspace/docs/specs/004-index/live-embeds.md "Making one", Work Tracker 1427): two or more
 // characters search every file the person can open by name, across the apps a live embed shows, once typing pauses
 // for LIVE_PICKER_SEARCH_SETTLE_MS; at most LIVE_PICKER_SEARCH_MAX, archived files and the host left out. A newer
-// query, or closing, aborts the read in flight. Under two characters: idle, and the chooser filters Recent.
+// query, or closing, aborts the read in flight. Under two characters: idle, and the chooser filters Recent. Coming back
+// to the page reads the same query again, quietly: the answers held stay until it lands, and when it fails
+// (Work Tracker 1460).
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { IndexClient, Item } from '@liveworkspace/index-client';
 import { LIVE_EMBED_APPS, isLiveEmbedApp } from '@liveworkspace/element-model/live-item';
+import { useReturnCount } from '@liveworkspace/explorer/return-to-tab';
 
 export const LIVE_PICKER_SEARCH_MAX = 20;
 export const LIVE_PICKER_SEARCH_SETTLE_MS = 250;
@@ -30,6 +33,7 @@ export function useFileSearch(
   useLayoutEffect(() => {
     clientRef.current = client;
   });
+  const returns = useReturnCount();
   useEffect(() => {
     if (!searching) return;
     const abort = new AbortController();
@@ -49,7 +53,12 @@ export function useFileSearch(
             setAnswer({ q, search: { state: 'ready', items } });
           },
           () => {
-            if (!abort.signal.aborted) setAnswer({ q, search: { state: 'failed' } });
+            if (abort.signal.aborted) return;
+            setAnswer((had) =>
+              had?.q === q && had.search.state === 'ready'
+                ? had
+                : { q, search: { state: 'failed' } },
+            );
           },
         );
     }, LIVE_PICKER_SEARCH_SETTLE_MS);
@@ -57,7 +66,7 @@ export function useFileSearch(
       clearTimeout(timer);
       abort.abort();
     };
-  }, [q, searching, hostId]);
+  }, [q, searching, hostId, returns]);
   if (!searching) return { state: 'idle' };
   return answer?.q === q ? answer.search : { state: 'loading' };
 }
