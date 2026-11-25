@@ -113,7 +113,8 @@ A request body is JSON, an object, and at most 4,096 bytes.
 ### Browser routes
 
 `Authorization: Bearer <account access token>`, checked offline against `${ACCOUNTS_URL}/api/auth`'s keys for any
-audience in `INDEX_AUDIENCES`, through the `ACCOUNTS` binding. CORS answers the site's and every app's origins in
+audience in `INDEX_AUDIENCES` (every registered app's API, as the index's; `src/audiences.test.ts` holds both
+environments' lists to `REGISTERED_APP_SITES` and the index's), through the `ACCOUNTS` binding. CORS answers the site's and every app's origins in
 this environment (`@liveworkspace/sites` `appOrigins`), and any localhost origin in development; no credentials.
 
 | Route                 | Who             | Answer                                                                                                                                                                 |
