@@ -5,10 +5,10 @@ import { MCP_EXPOSED_HEADERS, createMcpApp } from '@liveworkspace/mcp-kit/app';
 import { bearerChallenge } from '@liveworkspace/mcp-kit/token-refusal';
 import { bearerTokenOf } from '@liveworkspace/api-kit/request-auth';
 import type { Env } from './env';
-import { allowedApps, narrowedApps } from './grants';
+import { GrantUnreadable, allowedApps } from './grants';
 import { LISTING } from './listing';
 import { OAUTH } from './oauth';
-import { movedChallenge, oldHostApp, oldHostSignIn } from './old-hosts';
+import { movedChallenge, oldHostApp, oldHostMcp, oldHostSignIn } from './old-hosts';
 import { buildServer, type RequestEnv, type RequestState } from './server';
 
 const app = createMcpApp<RequestEnv>({ buildServer, oauth: OAUTH, listing: LISTING });
@@ -46,12 +46,24 @@ export function oneMcp<E extends { OAUTH_KV: KVNamespace }>(
       const token = bearerTokenOf(request.headers.get('Authorization'));
       // Nobody signs in at an old address: no token there is the pointer, not a sign-in challenge.
       if (oldApp && !token && !preflight) return withCors(movedChallenge(url));
-      let granted: Awaited<ReturnType<typeof allowedApps>> = [];
       try {
-        if (token) granted = await allowedApps(env.OAUTH_KV, token);
+        // An old address is that app's own MCP, as it was before the fold.
+        if (oldApp && token) {
+          const passed = await oldHostMcp(request, url, oldApp, token, routed);
+          return passed.status === 401 ? withCors(passed) : passed;
+        }
+        const state: RequestState = {
+          token,
+          allowed: token ? await allowedApps(env.OAUTH_KV, token) : [],
+          all: url.searchParams.get('tools') === 'all',
+          refused: false,
+        };
+        const response = await app.fetch(request, { ...routed, REQUEST: state }, ctx);
+        if (!state.refused) return response;
       } catch (err) {
+        if (!(err instanceof GrantUnreadable)) throw err;
         // The person's ticks can't be read: answering with every app would ignore them, so the client tries again.
-        console.error('[mcp] grant unreadable', { err });
+        console.error('[mcp] grant unreadable', { err: err.cause });
         return withCors(
           Response.json(
             {
@@ -63,16 +75,6 @@ export function oneMcp<E extends { OAUTH_KV: KVNamespace }>(
           ),
         );
       }
-      const state: RequestState = {
-        token,
-        // An old address is that one app with every tool.
-        allowed: token ? narrowedApps(granted, oldApp) : [],
-        all: oldApp !== null || url.searchParams.get('tools') === 'all',
-        refused: false,
-      };
-      const response = await app.fetch(request, { ...routed, REQUEST: state }, ctx);
-      if (!state.refused) return response;
-      if (oldApp) return withCors(movedChallenge(url));
       console.warn('[mcp] token refused by an app: asking the client to sign in again');
       return withCors(
         Response.json(

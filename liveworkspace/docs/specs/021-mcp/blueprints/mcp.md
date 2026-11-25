@@ -12,7 +12,7 @@ Derived from [mcp.md](../mcp.md). The spec decides; this file adds engineering p
 | `apps/mcp/src/core.ts`                 | The ten core verbs: their schemas (`CORE_TOOLS`) and `runCore`                                                                          |
 | `apps/mcp/src/app-client.ts`           | JSON-RPC to an app's MCP package in process; the per-isolate tool lists; `TokenRefused`                                                 |
 | `apps/mcp/src/app-workers.ts`          | Each app's MCP package bound to its env (api binding, base URL, telemetry key) as an in-process `Fetcher`                               |
-| `apps/mcp/src/old-hosts.ts`            | `mcp.<app>.app` on this Worker: the narrowing to that app and the sign-in refusals that point here                                      |
+| `apps/mcp/src/old-hosts.ts`            | `mcp.<app>.app` on this Worker: `/mcp` passed through to that app's own package, the sign-in refusals that point here                   |
 | `apps/mcp/src/server.ts`               | The per-request `McpServer`: low-level `tools/list` and `tools/call` handlers, the instructions                                         |
 | `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request (a failed read throws; the entry answers 503)              |
 | `apps/mcp/src/oauth.ts`, `listing.ts`  | The authorization server's configuration (consent on liveworkspace.app, the five CLIs as built-in clients); serverInfo                  |
@@ -111,11 +111,11 @@ answers 401 as a listing does. `appGuide` sends `initialize` and keeps the instr
 
 ## Testing
 
-| Test                                | Pins                                                                                                                       |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `apps/mcp/src/catalogue.test.ts`    | No clash, no bare "document", every name has a subject, openings, no old name left, the rename table                       |
-| `apps/mcp/src/router.test.ts`       | Listing both ways, routing as the person, rewritten answers, every core verb's mapping, an app down, 401s, per-app consent |
-| `apps/mcp/src/eval.test.ts`         | Every request's expected tool exists; the eval's mapping and judging                                                       |
-| `apps/site/lib/mcp-connect.test.ts` | The consent hand-over: mint, complete with the ticked apps, retire, refusals; Cancel’s `access_denied`                     |
-| `apps/mcp/src/old-hosts.test.ts`    | An old address narrows to its app with every tool, refuses sign-in with the pointer, answers `/health`                     |
-| `apps/mcp/src/app-workers.test.ts`  | Each app's env: its api binding, base URL and telemetry key, and no key when unset                                         |
+| Test                                | Pins                                                                                                                                                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/mcp/src/catalogue.test.ts`    | No clash, no bare "document", every name has a subject, openings, no old name left, the rename table                                                                                                         |
+| `apps/mcp/src/router.test.ts`       | Listing both ways, routing as the person, rewritten answers, every core verb's mapping, an app down, 401s, per-app consent; each app's old address passes its own tool names, texts and instructions through |
+| `apps/mcp/src/eval.test.ts`         | Every request's expected tool exists; the eval's mapping and judging                                                                                                                                         |
+| `apps/site/lib/mcp-connect.test.ts` | The consent hand-over: mint, complete with the ticked apps, retire, refusals; Cancel’s `access_denied`                                                                                                       |
+| `apps/mcp/src/old-hosts.test.ts`    | Which hosts are old addresses; each refuses sign-in with the pointer, with CORS                                                                                                                              |
+| `apps/mcp/src/app-workers.test.ts`  | Each app's env: its api binding, base URL and telemetry key, and no key when unset                                                                                                                           |

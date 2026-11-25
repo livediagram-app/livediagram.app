@@ -63,7 +63,7 @@ a distinct dependency surface (the MCP SDK, a WASM rasteriser), and `apps/api` s
   `API`), the editor's origin for links (`LIVEDIAGRAM_BASE_URL`), the scratch KV and the telemetry key
   (`LIVEDIAGRAM_TELEMETRY_KEY`, the same secret as the api's `TELEMETRY_KEY`). It deploys with the one MCP
   ([Deployment](../016-platform/deployment.md) "Deploy"). `GET /health` at `mcp.livediagram.app` answers for the status page.
-- **Endpoints.** `POST /mcp` at the one MCP, narrowed to this app at `/livediagram/mcp` (local) or `mcp.livediagram.app`
+- **Endpoints.** `POST /mcp` at the one MCP; this package as it is at `/livediagram/mcp` (local) and `mcp.livediagram.app`
   (old connections). The OAuth endpoints answer in words that the connection has moved ([§3](#3-authentication-retired)).
 
 **Who is calling.** Every call the server makes to the api says it came through the MCP and which client made it
@@ -84,8 +84,8 @@ words that the connection has moved to `https://mcp.liveworkspace.app/mcp`, and 
 The consent and device pages are gone from the editor, and so is the api's `POST /api/oauth/exchange`: the one MCP's own
 consent page mints the token. See `liveworkspace/docs/specs/021-mcp/mcp.md` "The app MCPs fold in" for the full rule.
 
-- **Existing connections carry on until their token ends.** A request to `mcp.livediagram.app` with a token is served by
-  the one MCP narrowed to this app (`?apps=livediagram`) with every tool listed (`?tools=all`). When the token expires or
+- **Existing connections carry on until their token ends.** A request to `mcp.livediagram.app` with a token is passed
+  to this package as it is, so the client keeps calling the tool names it was given. When the token expires or
   is revoked the old address answers `401` with the same pointer, and signing in there is refused.
 - **The credential is unchanged.** What the tools forward is an `lwt_` account token (6-month expiry, per-account cap,
   revoke, [Public API and API tokens](public-api-and-tokens.md)), listed and revoked in Settings › API Tokens or on

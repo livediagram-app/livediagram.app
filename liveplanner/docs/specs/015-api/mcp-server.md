@@ -3,8 +3,8 @@
 **Status: a package, run by liveworkspace's one MCP.** This app has no MCP Worker of its own. `apps/mcp` is a package
 (`exports "."` is `src/index.ts`) that liveworkspace's one MCP Worker imports and runs in process; people connect that
 one MCP at `https://mcp.liveworkspace.app/mcp` (`../../../../liveworkspace/docs/specs/021-mcp/mcp.md`, "The app MCPs
-fold in"). `mcp.liveplanner.app` is a custom domain on the one Worker and serves connections made before, narrowed to
-this app, until their token ends. Builds directly on [Public API and API tokens](public-api-and-tokens.md) (API
+fold in"). `mcp.liveplanner.app` is a custom domain on the one Worker and serves connections made before, passed to
+this package as it is, until their token ends. Builds directly on [Public API and API tokens](public-api-and-tokens.md) (API
 tokens): the credential is the `lwt_` token, an ordinary liveworkspace account token.
 
 ## 1. Goal
@@ -80,8 +80,8 @@ liveworkspace.app's) and revoked there.
 consent and device pages in `apps/editor`, and the api's `POST /api/oauth/exchange` are removed. Registration,
 authorize and token requests, and discovery metadata, at `mcp.liveplanner.app` answer in words that the connection has
 moved to `https://mcp.liveworkspace.app/mcp`; signing in again at the old address is refused, so a person connects the
-one MCP instead. A token made before keeps working until it ends: a request to `mcp.liveplanner.app` with one is served
-by the one MCP narrowed to this app with every tool listed, under the one MCP's names.
+one MCP instead. A token made before keeps working until it ends: a request to `mcp.liveplanner.app` with one is passed
+to this package as it is, so the client keeps calling the tool names it was given.
 
 **The CLI signs in at the one MCP** ([CLI](cli.md#authentication)). The api's `/api/capabilities` reports it as the
 `oauthIssuer` (`OAUTH_ISSUER` in `apps/api/wrangler.toml`), and its built-in clients include `liveplanner-cli`

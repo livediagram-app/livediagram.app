@@ -1,9 +1,11 @@
 // The apps' old MCP addresses, now routes on this Worker (liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold
-// in"). A connection made to `mcp.<app>.app` before the fold is served narrowed to that app with every tool listed,
-// until its token ends; nobody signs in there any more, so every sign-in endpoint answers, in words, where the
-// connection lives now.
+// in"). A connection made to `mcp.<app>.app` before the fold is that app's own MCP, passed through as it was (its
+// tool names, descriptions and instructions), until its token ends; nobody signs in there any more, so every sign-in
+// endpoint answers, in words, where the connection lives now.
 import { bearerChallenge } from '@liveworkspace/mcp-kit/token-refusal';
 import { APPS, type AppId } from './apps';
+import type { Env } from './env';
+import { allowedApps, narrowedApps } from './grants';
 
 // Production's one MCP, named in every refusal.
 export const ONE_MCP_URL = 'https://mcp.liveworkspace.app/mcp';
@@ -95,4 +97,25 @@ export function oldHostSignIn(request: Request, url: URL): Response | null {
   if (path.startsWith('/oauth/'))
     return Response.json({ error: 'gone', error_description: description }, { status: 410 });
   return null;
+}
+
+/**
+ * `/mcp` on an old address: the app's own MCP package, the request passed through as it is, so a client holding the
+ * tool list it was given before the fold calls the same names and reads the same texts. A token the person narrowed
+ * away from this app, or one the app refuses, gets the pointer.
+ */
+export async function oldHostMcp(
+  request: Request,
+  url: URL,
+  app: AppId,
+  token: string,
+  env: Env,
+): Promise<Response> {
+  const spec = narrowedApps(await allowedApps(env.OAUTH_KV, token), app)[0];
+  if (!spec) return movedChallenge(url);
+  const inner = new URL(url);
+  inner.protocol = 'https:';
+  inner.host = `${spec.app}.internal`;
+  const response = await env[spec.binding].fetch(new Request(inner, request));
+  return response.status === 401 ? movedChallenge(url) : response;
 }

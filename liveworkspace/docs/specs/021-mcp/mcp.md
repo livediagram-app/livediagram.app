@@ -158,12 +158,13 @@ Worker runs every app's MCP, so there is one deploy, one KV namespace and one pl
   `OAUTH_KV`, which keeps a token's client name by the token's hash, the same for every app) and its telemetry key
   (`<APP>_TELEMETRY_KEY`, the same secret as that app's api `TELEMETRY_KEY`), so `Mcp·Used` stays counted per app.
   A deployment that sets no telemetry key sends no MCP telemetry for that app.
-- **Its old address.** `mcp.<app>.app` is a custom domain on this Worker. A request there with a token is served
-  narrowed to that one app with every tool listed (as `?apps=<app>&tools=all`, which only ever narrows what the token
-  may reach), so a connection made before the fold sees that app's tools under this server's names, plus the core
-  verbs, until its token ends. Its sign-in endpoints refuse in words that point at
-  `https://mcp.liveworkspace.app/mcp`: registration, authorize and the token exchange; its discovery metadata says the
-  same. A token that ended answers 401 with that pointer. `/health` answers there, for the status page.
+- **Its old address.** `mcp.<app>.app` is a custom domain on this Worker. A request to `/mcp` there with a token is
+  passed through to that app's own MCP package as it is, so a connection made before the fold keeps the tool names,
+  descriptions, instructions, prompts and resources it was given, until its token ends (a client holds the tool list
+  it read and calls those names). A token whose per-app consent leaves that app out gets the pointer at
+  `https://mcp.liveworkspace.app/mcp` instead. Its sign-in endpoints refuse in words that point there: registration,
+  authorize and the token exchange; its discovery metadata says the same. A token that ended answers 401 with that
+  pointer. `/health` answers there, for the status page.
 - **The apps' own consent and device pages are removed.** Their CLIs sign in here (below).
 - **Its tests stay with it.** Each app's MCP package keeps its unit tests and eval; this Worker's tests cover the
   routing, the old addresses and the wiring of each package.
