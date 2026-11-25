@@ -97,7 +97,8 @@ between tools, never in a modal of its own on top of the editor.
   ("History", "Who changed what, and when."). The art stays Tools' pegboard for every tool, as Tab Style keeps its
   own art on every panel. There is no breadcrumb row under the band. The tool's own header loses its title (the band
   names it) and its close (the popover's closes it), and its one line too (the band carries the row's line), keeping
-  only its actions in a slim row under the band. Everything else is the tool as it was: its form, its list, its
+  only its actions in a slim row under the band. The band's title is the tool's one heading: the tool's own title
+  stays only as the hidden label its region is named by, so a screen reader hears the name once. Everything else is the tool as it was: its form, its list, its
   footer. Back on the list the band reads **Tools** again, its mark and line restored.
 - **Back.** The band's back button returns to the list, as does the tool's own Cancel or Done. A tool that holds unsaved work
   (Automations' rule builder) asks first, as its own close did. Escape steps back one level (a confirm or a menu open
