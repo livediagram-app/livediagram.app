@@ -927,7 +927,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "ArticleStyle": {
     "additionalProperties": false,
-    "description": "An article's look (docs/specs/007-editor/article-pages.md \"Article style\"). Every field is optional, absent being its default (`resolveArticleStyle`).",
+    "description": "An article's look (livedocuments/docs/specs/007-editor/article-pages.md \"Article style\"). Every field is optional, absent being its default (`resolveArticleStyle`).",
     "properties": {
       "accent": {
         "type": "string"
