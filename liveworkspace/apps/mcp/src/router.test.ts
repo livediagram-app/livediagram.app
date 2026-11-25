@@ -546,6 +546,30 @@ describe('core verbs', () => {
     expect(result.structuredContent!.ref).toBe('doc:L1');
   });
 
+  it('create_item passes a doc’s style and font on, and no other kind’s', async () => {
+    await tool('create_item', {
+      kind: 'article',
+      name: 'Board report',
+      style: 'formal-report',
+      font: 'lora',
+    });
+    await tool('create_item', {
+      kind: 'plan',
+      name: 'Redesign',
+      style: 'formal-report',
+      font: 'lora',
+    });
+    expect(calls.filter((c) => c.method === 'tools/call').map((c) => c.args)).toEqual([
+      {
+        name: 'Board report',
+        tabs: [{ template: 'blank-article' }],
+        style: 'formal-report',
+        font: 'lora',
+      },
+      { name: 'Redesign', tabs: [{ template: 'kanban' }] },
+    ]);
+  });
+
   it('create_item starts a plan from the kanban template and a diagram with a blank tab', async () => {
     await tool('create_item', { kind: 'plan', name: 'Redesign' });
     await tool('create_item', { kind: 'diagram', name: 'Signup' });

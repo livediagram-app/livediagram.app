@@ -5,6 +5,8 @@ import {
   fillLayoutSlots,
   layoutSlots,
   readLayoutText,
+  partPath,
+  partsOf,
   slotsInWords,
   type SlotElement,
 } from './layout-slots';
@@ -35,6 +37,8 @@ const dot = (id: string, y: number): El => ({
   size: 0,
 });
 const sizeOf = (el: SlotElement) => (el as El).size;
+// The lines about what a change gave, without the one naming sample words in slots it never named.
+const given = (lines: string[]) => lines.filter((l) => !l.startsWith("Still the layout's sample"));
 const relabel = (el: El, label: string, slot: string): El =>
   ({ ...el, label, slotSeen: slot }) as El;
 
@@ -170,10 +174,10 @@ describe('fillLayoutSlots', () => {
   it('removes the bullets not given, each with its dot, and keeps their slots out', () => {
     const out = fillLayoutSlots(BULLETS, { bullets: ['only', 'two'] }, sizeOf, relabel);
     expect(out.elements.map((e) => e.id)).toEqual(['t', 'd1', 'b1', 'd2', 'b2']);
-    expect(out.lines).toEqual(["Removed the layout's 3 unused bullets."]);
+    expect(given(out.lines)).toEqual(["Removed the layout's 3 unused bullets."]);
     expect(out.slots.map((s) => s.slot)).toEqual(['title', 'bullets[0]', 'bullets[1]']);
     expect(
-      fillLayoutSlots(BULLETS, { bullets: ['1', '2', '3', '4'] }, sizeOf, relabel).lines,
+      given(fillLayoutSlots(BULLETS, { bullets: ['1', '2', '3', '4'] }, sizeOf, relabel).lines),
     ).toEqual(["Removed the layout's 1 unused bullet."]);
   });
 
@@ -183,17 +187,17 @@ describe('fillLayoutSlots', () => {
       text('a', 'Sample a', 30, 50, { textBold: true }),
       text('b', 'Sample b', 30, 90),
     ];
-    expect(fillLayoutSlots(els, { body: ['x', 'y', 'z', 'w'] }, sizeOf, relabel).lines).toEqual([
-      '4 body items given, and the layout holds 2: the last 2 were not placed.',
-    ]);
-    expect(fillLayoutSlots(els, { body: ['x'] }, sizeOf, relabel).lines).toEqual([
+    expect(
+      given(fillLayoutSlots(els, { body: ['x', 'y', 'z', 'w'] }, sizeOf, relabel).lines),
+    ).toEqual(['4 body items given, and the layout holds 2: the last 2 were not placed.']);
+    expect(given(fillLayoutSlots(els, { body: ['x'] }, sizeOf, relabel).lines)).toEqual([
       "1 body text keeps the layout's sample: change it by ref (the page's texts list each).",
     ]);
-    expect(fillLayoutSlots(els, { body: [] }, sizeOf, relabel).lines).toEqual([
+    expect(given(fillLayoutSlots(els, { body: [] }, sizeOf, relabel).lines)).toEqual([
       "2 body texts keep the layout's sample: change them by ref (the page's texts list each).",
     ]);
     expect(
-      fillLayoutSlots(els, { bullets: ['p'], subtitle: 'Sub' }, sizeOf, relabel).lines,
+      given(fillLayoutSlots(els, { bullets: ['p'], subtitle: 'Sub' }, sizeOf, relabel).lines),
     ).toEqual([
       'This layout has no subtitle, so "Sub" was not placed.',
       'This layout has no bullets, so 1 item given was not placed.',
@@ -212,7 +216,7 @@ describe('fillLayoutSlots', () => {
     ];
     const out = fillLayoutSlots(els, { title: 'Results', body: ['2026'] }, sizeOf, relabel);
     expect(out.elements.map((e) => e.label)).toEqual(['01', 'Results', '2026']);
-    expect(out.lines).toEqual([]);
+    expect(given(out.lines)).toEqual([]);
     const two = [
       text('a', '86k', 140, 0),
       text('h', 'Traction', 70, 100),
@@ -220,7 +224,7 @@ describe('fillLayoutSlots', () => {
     ];
     const figures = fillLayoutSlots(two, { figures: ['120k'] }, sizeOf, relabel);
     expect(figures.elements.map((e) => e.label)).toEqual(['120k', 'Traction', '4.8']);
-    expect(figures.lines).toEqual([
+    expect(given(figures.lines)).toEqual([
       "1 figure keeps the layout's sample: change it by ref (the page's texts list each).",
     ]);
     // The figure was given no words: it still holds the layout's sample.
@@ -229,6 +233,170 @@ describe('fillLayoutSlots', () => {
       { id: 'h', slot: 'title' },
       { id: 'b', slot: 'body[0]' },
     ]);
+  });
+});
+
+describe('compound elements, tables and sample left unnamed', () => {
+  const stats = (id: string, y: number, rows: [string, string][]): El =>
+    ({
+      id,
+      type: 'shape',
+      shape: 'stat-row',
+      x: 0,
+      y,
+      width: 900,
+      height: 100,
+      size: 0,
+      stats: rows.map(([value, caption]) => ({ value, caption })),
+    }) as El;
+  const KEY_STATS: El[] = [
+    text('h', 'The year in numbers', 60, 0, { textBold: true }),
+    text('s', 'Twelve months, six numbers.', 30, 80),
+    stats('r1', 200, [
+      ['12k', 'Customers'],
+      ['94%', 'Would recommend'],
+    ]),
+    {
+      id: 'p',
+      type: 'shape',
+      shape: 'process',
+      x: 0,
+      y: 400,
+      width: 900,
+      height: 100,
+      size: 0,
+      processSteps: ['Plan', 'Build'],
+    } as El,
+    text('n', 'Say what the numbers mean.', 30, 600),
+  ];
+
+  it('reads a stat row and a process as slots, each part in its place', () => {
+    expect(layoutSlots(KEY_STATS, sizeOf)).toEqual([
+      { id: 'h', slot: 'title' },
+      { id: 's', slot: 'subtitle' },
+      { id: 'r1#0', slot: 'figures[0]' },
+      { id: 'r1#1', slot: 'body[0]' },
+      { id: 'r1#2', slot: 'figures[1]' },
+      { id: 'r1#3', slot: 'body[1]' },
+      { id: 'p#0', slot: 'body[2]' },
+      { id: 'p#1', slot: 'body[3]' },
+      { id: 'n', slot: 'body[4]' },
+    ]);
+    expect(partsOf(KEY_STATS[2]!).map((p) => partPath(p.at))).toEqual([
+      'stats[0].value',
+      'stats[0].caption',
+      'stats[1].value',
+      'stats[1].caption',
+    ]);
+  });
+
+  it('writes a stat row and a process from figures and body, keeping a part not given', () => {
+    const out = fillLayoutSlots(
+      KEY_STATS,
+      {
+        title: 'Market',
+        subtitle: 'Fresh',
+        figures: ['£4bn', '38%'],
+        body: ['retail', 'at home', 'Quiz'],
+      },
+      sizeOf,
+      relabel,
+    );
+    const row = out.elements.find((e) => e.id === 'r1') as El & { stats: unknown };
+    expect(row.stats).toEqual([
+      { value: '£4bn', caption: 'retail' },
+      { value: '38%', caption: 'at home' },
+    ]);
+    const steps = out.elements.find((e) => e.id === 'p') as El & { processSteps: string[] };
+    expect(steps.processSteps).toEqual(['Quiz', 'Build']);
+    expect(out.slots.find((s) => s.id === 'p#1')).toEqual({
+      id: 'p#1',
+      slot: 'body[3]',
+      sample: true,
+    });
+    // The sample left the others never wrote is already said by the body line.
+    expect(out.lines).toEqual([
+      "2 body texts keep the layout's sample: change them by ref (the page's texts list each).",
+    ]);
+  });
+
+  it('names sample words in a slot the change never named', () => {
+    const out = fillLayoutSlots(KEY_STATS, { title: 'Market' }, sizeOf, relabel);
+    expect(out.lines).toHaveLength(1);
+    expect(out.lines[0]).toContain('subtitle "Twelve months, six numbers."');
+    expect(out.lines[0]).toContain('figures[0] "12k"');
+    expect(out.lines[0]).toContain('body[2] "Plan"');
+    expect(fillLayoutSlots(KEY_STATS, {}, sizeOf, relabel).lines[0]).toContain('title "The year');
+  });
+
+  it('writes the first table from rows, keeping its styles where they still fit', () => {
+    const table = {
+      id: 'tb',
+      type: 'table',
+      x: 0,
+      y: 0,
+      width: 600,
+      height: 300,
+      size: 0,
+      cells: [
+        ['', 'Free', 'Pro'],
+        ['Price', '£0', '£8'],
+      ],
+      cellStyles: [
+        [null, null, null],
+        [{ alignX: 'left' }, null, null],
+      ],
+      colWidths: [200, null, null],
+      rowHeights: [40, 40],
+      highlightColumn: 2,
+    } as unknown as El;
+    const els = [text('h', 'Choose a plan', 60, 0), table];
+    expect(layoutSlots(els, sizeOf)[0]).toEqual({ id: 'tb', slot: 'table' });
+    const out = fillLayoutSlots(
+      els,
+      {
+        table: [
+          ['', 'Solo'],
+          ['Price', '£12'],
+          ['Beans', '250g'],
+        ],
+      },
+      sizeOf,
+      relabel,
+    );
+    const written = out.elements[1] as unknown as Record<string, unknown>;
+    expect(written.cells).toEqual([
+      ['', 'Solo'],
+      ['Price', '£12'],
+      ['Beans', '250g'],
+    ]);
+    expect(written.cellStyles).toEqual([
+      [null, null],
+      [{ alignX: 'left' }, null],
+      [{ alignX: 'left' }, null],
+    ]);
+    expect(written.colWidths).toEqual([200, null]);
+    expect(written).not.toHaveProperty('rowHeights');
+    expect(written).not.toHaveProperty('highlightColumn');
+    expect(out.slots[0]).toEqual({ id: 'tb', slot: 'table' });
+    // Ragged rows are padded to the longest.
+    const ragged = fillLayoutSlots(els, { table: [['a'], ['b', 'c']] }, sizeOf, relabel);
+    expect((ragged.elements[1] as unknown as { cells: string[][] }).cells).toEqual([
+      ['a', ''],
+      ['b', 'c'],
+    ]);
+    expect(
+      given(fillLayoutSlots([text('h', 'H', 60, 0)], { table: [['x']] }, sizeOf, relabel).lines),
+    ).toEqual(['This layout has no table, so the 1 row given was not placed.']);
+  });
+
+  it('reads and refuses a table slot', () => {
+    expect(readLayoutText({ table: [['a', 'b']] })).toEqual({ table: [['a', 'b']] });
+    expect(readLayoutText({ table: [] })).toHaveProperty('refused');
+    expect(readLayoutText({ table: ['a'] })).toHaveProperty('refused');
+    expect(readLayoutText({ table: [Array.from({ length: 13 }, () => 'x')] })).toHaveProperty(
+      'refused',
+    );
   });
 });
 
@@ -245,12 +413,13 @@ describe('readLayoutText', () => {
 
   it('refuses what is not slots, in words', () => {
     expect(readLayoutText('Title')).toEqual({
-      refused: '"text" is an object of slots: title, subtitle, bullets, body, figures.',
+      refused: '"text" is an object of slots: title, subtitle, bullets, body, figures, table.',
     });
     expect(readLayoutText(null)).toHaveProperty('refused');
     expect(readLayoutText(['a'])).toHaveProperty('refused');
     expect(readLayoutText({ heading: 'x' })).toEqual({
-      refused: '"text" takes no "heading" (it takes title, subtitle, bullets, body, figures).',
+      refused:
+        '"text" takes no "heading" (it takes title, subtitle, bullets, body, figures, table).',
     });
     expect(readLayoutText({ title: 3 })).toEqual({
       refused: `"text.title" is text of at most ${LAYOUT_TEXT_MAX} characters.`,

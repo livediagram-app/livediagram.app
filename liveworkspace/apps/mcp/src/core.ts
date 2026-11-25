@@ -115,6 +115,18 @@ export const CORE_TOOLS: readonly ListedTool[] = [
           description: 'Start from this template kind instead (not for a knowledgebase page tree).',
         },
         theme: { type: 'string', description: 'A preset theme id (not for a knowledgebase).' },
+        style: {
+          type: 'string',
+          description:
+            'A deck, article or infographic only: its whole look (theme, page design, typeface, finish) in one choice, ' +
+            '"auto" to suit its name, or a recipe such as formal-report, product-pitch, keynote, technical, workshop ' +
+            '(the resource livedocuments://guide/styles says when to use each). A theme given wins over the recipe’s.',
+        },
+        font: {
+          type: 'string',
+          description:
+            'A deck, article or infographic only: its typeface, such as inter, lora, poppins.',
+        },
       },
       required: ['kind', 'name'],
       additionalProperties: false,
@@ -357,6 +369,14 @@ async function createItem(ctx: CoreContext, args: Record<string, unknown>): Prom
   const template =
     typeof args.template === 'string' && args.template ? args.template : made.template;
   const theme = typeof args.theme === 'string' && args.theme ? args.theme : undefined;
+  // A doc's look, as livedocuments' create tool takes it; no other app has one.
+  const look =
+    spec.kind === 'doc'
+      ? {
+          ...(typeof args.style === 'string' && args.style ? { style: args.style } : {}),
+          ...(typeof args.font === 'string' && args.font ? { font: args.font } : {}),
+        }
+      : {};
   const appArgs: Record<string, unknown> =
     spec.kind === 'knowledgebase'
       ? { name: args.name, ...(template ? { template } : {}) }
@@ -365,6 +385,7 @@ async function createItem(ctx: CoreContext, args: Record<string, unknown>): Prom
           // An app makes nothing without a tab: a blank one when no template is named.
           tabs: [template ? { template } : { elements: [] }],
           ...(theme ? { theme } : {}),
+          ...look,
         };
   const result = await ctx.call(spec, spec.core.create, appArgs);
   if (result.isError) return result;

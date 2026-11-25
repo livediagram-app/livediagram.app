@@ -4,7 +4,10 @@ import {
   fitTextWidth,
   fitTextWidths,
   growTextToLabel,
+  shrinkTextToBox,
   TEXT_GROW_MAX,
+  TEXT_SHRINK_FLOOR,
+  textLinesAt,
   textWordsWidth,
   type FitText,
 } from './text-fit';
@@ -127,5 +130,42 @@ describe('growTextToLabel', () => {
     expect(growTextToLabel({ type: 'shape' }, after)).toBe(after);
     const shape = text({ type: 'shape' });
     expect(growTextToLabel(fitted, shape)).toBe(shape);
+  });
+});
+
+describe('shrinkTextToBox', () => {
+  // A column heading's box: one line of bold md type, 300 px wide.
+  const heading = (label: string) => ({
+    ...text({ width: 300, textSize: 'md', label }),
+    height: 30,
+  });
+
+  it('keeps words that already fit as they are', () => {
+    const el = heading('Stale beans');
+    expect(shrinkTextToBox(el)).toBe(el);
+  });
+
+  it('shrinks longer words until they fit the box, on fewer lines', () => {
+    const el = heading('Supermarket coffee is stale');
+    expect(textLinesAt(el, 1)).toBeGreaterThan(1);
+    const out = shrinkTextToBox(el);
+    expect(out.textScale).toBeLessThan(1);
+    expect(out.textScale).toBeGreaterThanOrEqual(TEXT_SHRINK_FLOOR);
+    expect(textLinesAt(out, out.textScale!)).toBe(1);
+  });
+
+  it('never shrinks past the floor, and leaves what the estimate cannot size', () => {
+    const out = shrinkTextToBox(
+      heading('A heading far too long for its box to ever hold on one line'),
+    );
+    expect(out.textScale).toBe(TEXT_SHRINK_FLOOR);
+    const filled = { ...heading('Supermarket coffee is stale'), fillColor: '#fff' };
+    expect(shrinkTextToBox(filled)).toBe(filled);
+  });
+
+  it('stays linear in long words (a worst case well inside budget)', () => {
+    const long = heading('word '.repeat(2000));
+    const ms = cpuMsOf(() => shrinkTextToBox(long));
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 });

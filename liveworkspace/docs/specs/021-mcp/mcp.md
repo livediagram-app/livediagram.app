@@ -121,7 +121,8 @@ The core verbs map to each app's existing tools: `find_items` to `find_documents
 `find_designs` (or `list_trash` with `where: "trash"`), across every allowed app at once, five at most, each app's
 matches marked with their refs; `read_item` to the app's read tool (`list_pages` for a knowledgebase); `create_item`
 to its create tool, a deck, article or infographic starting from livedocuments' blank slide deck, blank article or
-blank infographic template; the rest to the matching share, rename, delete and restore tools. An app that fails
+blank infographic template, and a doc's `style` (a recipe from livedocuments' style guide, or `auto`) and `font` passed
+on as its look; the rest to the matching share, rename, delete and restore tools. An app that fails
 during `find_items` is named in the answer with its error; the others still answer.
 
 Each app's tool list is read from its package once per isolate and kept 10 minutes.

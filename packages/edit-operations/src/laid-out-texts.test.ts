@@ -87,4 +87,32 @@ describe('a laid-out page’s texts', () => {
     );
     expect(textsLeftOutLine(pages, undefined, 'v')).toBe(null);
   });
+
+  it("lists a compound element's parts by their element's ref and where each is kept, and a table by its header", () => {
+    const laid = new Map([
+      [
+        'p1',
+        [
+          { id: 'row#0', slot: 'figures[0]' },
+          { id: 'row#1', slot: 'body[0]', sample: true as const },
+          { id: 'tb', slot: 'table' },
+        ],
+      ],
+    ]);
+    const elements = [
+      { id: 'row', type: 'shape', stats: [{ value: '£4bn', caption: 'Customers' }] },
+      { id: 'tb', type: 'table', cells: [['', 'Solo', 'Duo']] },
+    ];
+    expect(withLaidOutTexts(pages, laid, elements, refOf)[0]!.texts).toEqual([
+      { ref: 'ref-row', part: 'stats[0].value', slot: 'figures[0]', text: '£4bn' },
+      {
+        ref: 'ref-row',
+        part: 'stats[0].caption',
+        slot: 'body[0]',
+        text: 'Customers',
+        sample: true,
+      },
+      { ref: 'ref-tb', slot: 'table', text: ' | Solo | Duo' },
+    ]);
+  });
 });
