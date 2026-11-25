@@ -15,7 +15,7 @@ export function TrashView({ noun }: { noun: string }) {
     [`Untitled ${noun}`, 'Moved here 1 Oct because it was empty · 24 days left'],
   ];
   return (
-    <Scene w={420} h={230} bg="plain">
+    <Scene w={420} h={156} bg="plain">
       <Panel x={14} y={14} w={392} h={128}>
         <Label x={30} y={36} size={11} weight={700} tone="strong">
           {`Your ${plural(noun)}`}
@@ -43,17 +43,6 @@ export function TrashView({ noun }: { noun: string }) {
             </g>
           );
         })}
-      </Panel>
-      <Panel x={14} y={154} w={392} h={62}>
-        <Label x={30} y={176} size={11} weight={700} tone="strong">
-          Offline
-        </Label>
-        <Label x={392} y={176} anchor="end" size={10} tone="muted">
-          Open one to restore or delete it.
-        </Label>
-        <Label x={30} y={198} size={10} tone="muted">
-          Offline sketch · Deleted 3 Oct · 26 days left
-        </Label>
       </Panel>
     </Scene>
   );
@@ -120,11 +109,12 @@ export function McpConsent({ product }: { product: string; noun?: string }) {
     ['livedocuments', 'Slide decks, articles, infographics'],
     ['liveplanner', 'Plans, boards, sheets, forms'],
     ['livedesign', 'Designs'],
+    ['liveknowledge', 'Knowledgebases'],
   ];
   const apps = [...all.filter(([a]) => a === product), ...all.filter(([a]) => a !== product)];
   return (
-    <Scene w={420} h={372} bg="plain">
-      <Panel x={40} y={12} w={340} h={348}>
+    <Scene w={420} h={398} bg="plain">
+      <Panel x={40} y={12} w={340} h={374}>
         <Label x={60} y={40} size={14} weight={700} tone="strong">
           Connect Claude
         </Label>
@@ -183,15 +173,15 @@ export function McpConsent({ product }: { product: string; noun?: string }) {
             </g>
           );
         })}
-        <Label x={60} y={278} size={11} weight={600} tone="strong">
+        <Label x={60} y={304} size={11} weight={600} tone="strong">
           Read-only access
         </Label>
-        <Label x={60} y={294} size={10} tone="muted">
+        <Label x={60} y={320} size={10} tone="muted">
           View your items, but not change them.
         </Label>
-        <Switch x={316} y={274} on={false} size="md" />
-        <Button x={58} y={316} w={72} h={28} label="Cancel" />
-        <Button x={138} y={316} w={82} h={28} label="Connect" variant="primary" />
+        <Switch x={316} y={300} on={false} size="md" />
+        <Button x={58} y={342} w={72} h={28} label="Cancel" />
+        <Button x={138} y={342} w={82} h={28} label="Connect" variant="primary" />
       </Panel>
     </Scene>
   );

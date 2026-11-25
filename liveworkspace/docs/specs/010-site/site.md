@@ -562,14 +562,16 @@ built once here. It is shown here and, through each switched-on app's router, at
   ([one-explorer.md](../004-index/one-explorer.md#archived)). `?move=<id>` there opens Change Folder on that
   document, the editors' way back from their archived card, and `?open=<id>` (a Search panel's result) its archived
   dialog; each is dropped from the address once read. This browser's archived items aren't listed here: this origin
-  can't read an app's Offline store, as Offline here is a link into the app.
+  can't read an app's Offline store.
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
 - **Teams.** Made, run and answered here ([one-explorer.md](../004-index/one-explorer.md#teams-are-run-in-the-explorer)): the
   page hands the Explorer `createTeamsHost({ fetch: accountFetch })` over this origin's `/api/account/teams…`, and
   after a team is made, joined, left or deleted it asks for a fresh workspace token, whose `teams` claim names
   them (`lib/explorer/new-team.ts` `renewIdentity`).
-- **Offline.** Here, a row in the sidebar opens the app's own offline view (`offlinePath`), since what a
-  browser keeps belongs to that app's origin. On the app's address the Explorer lists it itself (below).
+- **Offline.** Not shown here (owner, 2026-11-25): what a browser keeps belongs to the app's origin, which this one
+  can't read, so it can't know whether Offline holds anything, and Offline shows only as a Space that does.
+  `/explorer/offline` leaves for the app's own offline view (`offlinePath`). On the app's address the Explorer lists
+  it itself, as a Space (below).
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link, the old
   `/account/settings` and `/account/tokens`, a Search result) opens the Settings panel here, in place, once the
   page knows who is here (`settingsOpening` in `lib/explorer/host.ts`): `notifications`, `profile` (or `account`),

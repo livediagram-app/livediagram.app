@@ -11,7 +11,13 @@ import {
   type SubscriptionSummary,
   type TeamSubscription,
 } from '@liveworkspace/subscription';
-import { formatDay, formatShortDay, monthlyCost, standing } from '@liveworkspace/subscription-ui';
+import {
+  formatDay,
+  formatShortDay,
+  monthlyCost,
+  seatsCatchingUp,
+  standing,
+} from '@liveworkspace/subscription-ui';
 
 /** The tier card's line under a paid tier's name: "£8 a month. Renews 20 December 2026." */
 export function paidLine(summary: SubscriptionSummary): string {
@@ -41,7 +47,7 @@ export function cancellingBody(summary: SubscriptionSummary): string {
 
 /** A team's line: "You’re an admin · 12 seats · £72 a month · Renews 20 December 2026". A team on Free counts its
  *  members; a subscribed team counts the seats it pays for, which is what the service knows of it and never fewer
- *  than the smallest team. */
+ *  than the smallest team; when its members have changed since, it says the seats update within the hour. */
 export function teamLine(team: TeamSubscription): string {
   const role = team.role === 'admin' ? 'You’re an admin' : 'You’re a member';
   if (team.tier === 'free') {
@@ -52,7 +58,7 @@ export function teamLine(team: TeamSubscription): string {
   // What a team pays is its admins' business; a member sees the tier.
   const paid =
     team.role === 'admin' ? [monthlyCost(team), standing(team)] : [TIER_NAMES[team.tier]];
-  return [role, seats, ...paid].filter(Boolean).join(' · ');
+  return [role, seats, ...paid, seatsCatchingUp(team)].filter(Boolean).join(' · ');
 }
 
 /** A Free team's word to its admins that members asked for Pro for Teams: "Bea Lee asked for Pro for Teams" or

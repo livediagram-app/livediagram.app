@@ -320,8 +320,8 @@ export function ExplorerShell() {
       ),
     [host, viewerId],
   );
-  // Offline: the app's own list on its address, else a link to the app's offline view (useExplorerThisBrowser).
-  const { thisBrowser, itemMenu, sidebarLinks } = useExplorerThisBrowser(host, app, signedIn);
+  // Offline: the app's own list on its address; nothing on liveworkspace.app, which can't read it.
+  const { thisBrowser, itemMenu } = useExplorerThisBrowser(host, signedIn);
 
   // An editor's door from an open item: the place that holds it, then the item marked there (useItemArrival).
   const viewer = useMemo(
@@ -422,7 +422,6 @@ export function ExplorerShell() {
             arrivedItem={itemArrival.arrivedItem}
             welcome={welcome}
             templateHref={templateHref}
-            sidebarLinks={sidebarLinks}
             thisBrowser={thisBrowser}
             allLabel="All Apps"
             // In no app there is no app to narrow to: every app's work, and no switch naming one.

@@ -130,7 +130,7 @@ export function Pitch({ google }: { google: boolean }) {
   return (
     <PitchFrame
       eyebrow="Your liveworkspace account"
-      heading="One account for every editor app."
+      heading="One account for every app."
       rows={ROWS}
       google={google}
     />

@@ -140,23 +140,26 @@ function PageBar({
   );
 }
 
-/** Two pages in a row, a logo and a phone wireframe: each with its label above its top-left corner
+/** Two pages in a row, two phone screens (a tab's pages are all one kind): each with its label above its top-left corner
  *  and its buttons and cog above its top-right, the + and the any-kind button after the last, and the page navigator in
  *  the bottom-right cluster beside Undo / Redo. */
 export function PagesScene() {
   return (
     <Scene w={480} h={250}>
-      {/* Page 1: a logo artboard, a mark over its wordmark */}
-      <PageLabel x={20} y={38} size={9} rest="1024 x 1024 · Logo" />
-      <PageBar right={220} cy={38} padlockOnly />
-      <Sheet x={20} y={52} w={192} h={192}>
-        <circle cx={116} cy={124} r={34} className="fill-brand-500" />
-        <path d="M98 136 l18 -30 l18 30 z" className="fill-white" />
-        <TextBar x={78} y={176} w={76} h={10} tone="accent" />
-        <TextBar x={92} y={194} w={48} tone="faint" />
+      {/* Page 1: a phone sign-in screen, framed as its device */}
+      <PageLabel x={20} y={38} size={9} rest="iPhone · Wireframe" />
+      <PageBar right={180} cy={38} padlockOnly />
+      <rect x={68} y={52} width={96} height={192} rx={16} className="fill-slate-800" />
+      <Sheet x={73} y={57} w={86} h={182}>
+        <rect x={107} y={61} width={18} height={5} rx={2.5} className="fill-slate-800" />
+        <circle cx={116} cy={100} r={16} className="fill-brand-500" />
+        <TextBar x={81} y={130} w={56} h={8} tone="accent" />
+        <rect x={81} y={150} width={70} height={14} rx={4} className="fill-slate-100" />
+        <rect x={81} y={170} width={70} height={14} rx={4} className="fill-slate-100" />
+        <rect x={81} y={206} width={70} height={16} rx={8} className="fill-brand-500" />
       </Sheet>
       {/* Page 2: a phone screen, framed as its device */}
-      <PageLabel x={244} y={38} size={9} rest="iPhone · Wireframe" />
+      <PageLabel x={244} y={38} size={9} rest="iPhone" />
       <PageBar right={404} cy={38} />
       <rect x={292} y={52} width={96} height={192} rx={16} className="fill-slate-800" />
       <Sheet x={297} y={57} w={86} h={182}>

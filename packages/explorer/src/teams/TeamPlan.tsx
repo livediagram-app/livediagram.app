@@ -10,6 +10,7 @@ import {
   billingErrorMessage,
   ProBadge,
   proOn,
+  seatsCatchingUp,
   UsageList,
   useBilling,
   useSubscription,
@@ -111,6 +112,11 @@ export function TeamPlan({ teamId, look = 'row' }: { teamId: string; look?: 'row
             {free ? null : ` · ${team.seats} ${team.seats === 1 ? 'seat' : 'seats'}`}
           </span>
         </div>
+        {seatsCatchingUp(team) ? (
+          <p className="m-0 text-[13px] leading-normal text-slate-600 dark:text-slate-300">
+            {seatsCatchingUp(team)}.
+          </p>
+        ) : null}
         {free ? (
           <p className="m-0 text-[13px] leading-normal text-slate-600 dark:text-slate-300">
             Pro for Teams raises the team’s limits.

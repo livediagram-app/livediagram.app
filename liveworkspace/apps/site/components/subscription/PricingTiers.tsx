@@ -19,12 +19,12 @@ import {
   usePrices,
   useRefreshSubscription,
   useSubscription,
-  useUpgrade,
   type AccountKnown,
 } from '@liveworkspace/subscription-ui';
 import { Button, buttonClassName, ButtonContent, Chip, Spinner } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { signInHref, signUpHref } from '@/lib/accounts';
+import { TeamTierAction } from './TeamTierAction';
 
 const PRICING_PATH = '/pricing';
 
@@ -45,15 +45,14 @@ const PITCH: Record<Tier, string> = {
 
 /**
  * The three tier cards (subscription.md "The pricing page"). Each price is the service's, in the visitor's currency,
- * written for their locale. Signed in, Get Pro starts the checkout and Get Pro for Teams opens the upgrade dialog on
- * A Team (a team has to be chosen); signed out, both go to sign in and come back here. The page as built is the
+ * written for their locale. Signed in, Get Pro starts the checkout and Pro for Teams chooses the team and
+ * starts its checkout in its own card (TeamTierAction); signed out, both go to sign in and come back here. The page as built is the
  * signed-out one, so its links work before any script runs.
  */
 export function PricingTiers({ account }: { account: AccountKnown }) {
   const prices = usePrices();
   const load = useSubscription();
   const billing = useBilling();
-  const upgrade = useUpgrade();
   const [busy, setBusy] = useState<OwnerScope | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -170,7 +169,7 @@ export function PricingTiers({ account }: { account: AccountKnown }) {
           <p className="text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
             {PITCH.team}
           </p>
-          <span className="mt-auto pt-1">
+          <div className="mt-auto pt-1">
             {signedOut ? (
               <a
                 href={signIn}
@@ -183,18 +182,9 @@ export function PricingTiers({ account }: { account: AccountKnown }) {
                 <ButtonContent>Get Pro for Teams</ButtonContent>
               </a>
             ) : (
-              <Button
-                variant="secondary"
-                size="md"
-                className="min-h-11 w-full"
-                disabled={!me}
-                aria-haspopup="dialog"
-                onClick={() => upgrade.openUpgrade({ subscribeFor: 'team' })}
-              >
-                Get Pro for Teams
-              </Button>
+              <TeamTierAction me={me} busy={busy} leave={leave} />
             )}
-          </span>
+          </div>
         </section>
       </div>
       {error ? (

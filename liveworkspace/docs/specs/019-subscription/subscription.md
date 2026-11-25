@@ -418,7 +418,9 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   seats, limits and how much is used: what the team pays, when it renews or lapses and the names of its items are
   its admins' to see. The rail's Subscription row names your tier at its right (Free or Pro) once the service has
   answered. A team on Free is counted in members, as accounts has them at most 30 seconds ago, so someone who just
-  joined is counted on the next read; a subscribed team in the seats it pays for. In Your Usage every
+  joined is counted on the next read; a subscribed team in the seats it pays for. When a subscribed team's joined
+  members no longer match its seats, its line (and the Plan card on its page) adds "5 members now, seats update within
+  the hour": seats follow at the hourly sweep, which leaves time to undo a wrong invite (owner, 2026-11-25). In Your Usage every
   row's bar and figures keep their own columns, so the bars line up.
 - **A team's page in the Explorer** (owner, 2026-11-22): its card carries the team's plan as a row under its header,
   so the way to upgrade is where the team is run. The row reads the team's tier: "Free Plan", or "Pro for Teams" with its badge
@@ -439,7 +441,13 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   It opens with an illustrated hero (the shared marketing PageHero, its art beside the words: three tiers rising,
   each a step up from the last, every app's tile on the first): "Pricing", "Free for Everyone. Pro When You Need
   More.", the lede, and See Limits, which scrolls to the comparison. The tier cards sit in the same hero band, under the words and art, with no rule
-  between them: one hero. Both Pro cards, for Individuals and for Teams, carry the solid Pro badge beside their name. Every Limit,
+  between them: one hero. Both Pro cards, for Individuals and for Teams, carry the solid Pro badge beside their name.
+  Signed in, Pro for Teams acts in its own card, never by opening the upgrade dialog (its table is already on the page,
+  owner 2026-11-25): the team (a picker when the person is in more than one, starting on the first they run that is
+  still on Free), what it would pay ("Garden Club: 6 members, so 6 seats, £36 a month") and the one button the upgrade
+  dialog would show for it: Get Pro for Teams straight to the checkout, Manage Billing, or Ask an Admin. Create a
+  Team is there too (the card's button with no team yet, a link under it otherwise): the Explorer's own New Team
+  dialog, and the team made is picked, ready to subscribe, without leaving the page (owner 2026-11-25). Every Limit,
   Side by Side is a section of its own below them, in a band of its own with its own heading and lede, so the
   comparison reads apart from the hero and the cards. Its lede is "What each tier includes. The limits are the same in
   every app." (own keys are not its subject, owner 2026-11-23), and signed in, the line beside it says "Comparing your
