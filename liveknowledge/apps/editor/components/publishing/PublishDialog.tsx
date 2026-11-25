@@ -18,6 +18,7 @@ import {
   TextInput,
   Tooltip,
 } from '@liveknowledge/ui';
+import { useCopiedFlash } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -73,7 +74,7 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
   const [busy, setBusy] = useState<PublishAction | null>('read');
   const [failure, setFailure] = useState<{ action: PublishAction; text: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, flash } = useCopiedFlash(2000);
   const [touched, setTouched] = useState(false);
   // A publish the owner's tier refused, with its numbers: truer than the state's until the next read.
   const [refused, setRefused] = useState<RefusedLimit | null>(null);
@@ -202,8 +203,7 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
     if (!site) return;
     void navigator.clipboard?.writeText(site.url).then(
       () => {
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 2000);
+        flash();
       },
       () => {},
     );
