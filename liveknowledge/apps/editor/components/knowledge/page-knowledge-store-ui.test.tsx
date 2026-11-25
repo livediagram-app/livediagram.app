@@ -125,7 +125,10 @@ describe('a page’s knowledge in the editor', () => {
     const { documentId, pageId } = mount('view');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
     openDetails();
-    expect(screen.getByText('7')).toBeTruthy();
+    // Outside Score Breakdown, whose rows may hold a 7 of their own.
+    expect(
+      screen.getAllByText('7').filter((el) => !el.closest('[aria-label="Score Breakdown"]')),
+    ).toHaveLength(1);
     expect(api.apiPageHealth).toHaveBeenCalledTimes(1);
     expect(api.apiPageHealth.mock.calls[0]!.slice(1)).toEqual([
       documentId,
@@ -241,7 +244,11 @@ describe('a page’s knowledge in the editor', () => {
     // The amber pill, apart from Page Health's own "Review Due" label and headline.
     const pill = () =>
       screen.queryAllByText('Review Due').filter((el) => !el.closest('[data-page-health]'));
-    expect(screen.getByText(/^Review due /)).toBeTruthy();
+    expect(
+      screen
+        .getAllByText(/^Review due /)
+        .filter((el) => !el.closest('[aria-label="Score Breakdown"]')),
+    ).toHaveLength(1);
     expect(pill()).toHaveLength(0);
     // The room's op (or this editor's own change): one store, every reader follows.
     act(() => void knowledgeSettingsStore.take(documentId, { reviewEvery: 30 }));

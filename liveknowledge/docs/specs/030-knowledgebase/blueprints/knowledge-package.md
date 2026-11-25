@@ -253,7 +253,9 @@ The Health Score ([Verification](../verification.md#health-score)), one pure fun
   `openThreads`, `suggestions`, `pendingApproval`, `reads`, `createdAt`, `updatedAt`. `backlinks` and `reads`
   undefined (Offline, or the editor before Page Health is read) count as full; the issue counts as none.
 - **`pageHealth(facts, now)`** answers `{ score, label, reason, factors }`, each factor `{ factor, points, max,
-raise?, gain?, fix? }` (`fix`: `verify`, `owner`, `heading`), in the spec's order. Each factor is rounded to a
+raise?, gain?, fix? }` (`fix`: `verify`, `owner`, `heading`), in the spec's order. A factor short of its maximum also carries `reason`,
+  the words the breakdown shows beside what raises it. Verification reads `verifiedAt` against `updatedAt`:
+  later edit, 10 of 20 ("Edited since verified"). Each factor is rounded to a
   whole number before the sum, so the factors always add up to the score. Constant work: no input grows it.
   `reviewDays` undefined (a Review Period of Never) leaves Verification out, counts Freshness from `updatedAt`
   alone (`editedLately`) and scales each factor to `NEVER_MAX` (15, 15, 15, 15, 10, 20, 10), its gain with it.

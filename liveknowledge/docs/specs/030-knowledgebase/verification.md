@@ -144,24 +144,38 @@ or an agent, can lean on it. One pure function (`pageHealth`, @liveknowledge/kno
 facts and the clock, in the editor and in the api alike, so a person and an agent always see the same number.
 Nothing is stored: it is worked out when read, as the states are.
 
-**The formula.** Eight factors, each a whole number of points, summed (never below 0 or above 100):
+**The formula.** Eight factors, each a whole number of points, summed (never below 0 or above 100). The writing
+and the care around it carry 70 points and verification 20 (owner card Work Tracker 1463: "a practically empty
+article can reach 100 just by being verified"), so a verified page with nothing in it tops out at 65, Fair:
 
-| Factor       | Points | Full when                                                           | Less when                                                                                                                                                                                                                                                                                                    |
-| ------------ | ------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Verification | 30     | Verified, the review not yet due                                    | Review Due 10; Never Verified 0                                                                                                                                                                                                                                                                              |
-| Freshness    | 20     | 10: the share of the Review Period left; 10: touched lately         | Review left: 10 times the share left (all 10 under Never; none when due or never verified). Touched: the later of the last edit and the last Verify; 10 within 90 days, then down evenly to 0 at 455 days. A page with no edit kept and never verified counts from nothing: the full 10 (nothing is guessed) |
-| Owner        | 10     | Someone owns it                                                     | No owner 0                                                                                                                                                                                                                                                                                                   |
-| Length       | 10     | 50 words or more                                                    | Empty 0; under 20 words 3; under 50 words 6                                                                                                                                                                                                                                                                  |
-| Structure    | 10     | Under 300 words, or any heading                                     | 300 to 2,500 words with no heading 5; over 2,500 words with no heading 0                                                                                                                                                                                                                                     |
-| Links        | 5      | No broken page link, and another page links here                    | 4 with no backlink; each broken link (to a page no longer in the knowledgebase) takes 2 of the 4                                                                                                                                                                                                             |
-| Open Issues  | 10     | Nothing open on the page                                            | Each open conflict ([Pages That Disagree](insights.md#pages-that-disagree)) 5; Pending Approval 2; each unresolved comment thread 1 (3 at most); each agent's suggested edit waiting 1 (2 at most)                                                                                                           |
-| Use          | 5      | Read this week, by a person or an agent; or made in the last 7 days | Not read this week 0 (a page in its first week is never marked down for it)                                                                                                                                                                                                                                  |
+| Factor       | Points | Full when                                                           | Less when                                                                                                                                                                                                                                                                                                |
+| ------------ | ------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verification | 20     | Verified, the review not yet due, and not edited since              | Edited since verified 10 (until verified again); Review Due 5; Never Verified 0                                                                                                                                                                                                                          |
+| Freshness    | 15     | 8: the share of the Review Period left; 7: touched lately           | Review left: 8 times the share left (all 8 under Never; none when due or never verified). Touched: the later of the last edit and the last Verify; 7 within 90 days, then down evenly to 0 at 455 days. A page with no edit kept and never verified counts from nothing: the full 7 (nothing is guessed) |
+| Owner        | 10     | Someone owns it                                                     | No owner 0                                                                                                                                                                                                                                                                                               |
+| Length       | 25     | 50 words or more                                                    | Empty 0; under 20 words 8; under 50 words 16                                                                                                                                                                                                                                                             |
+| Structure    | 10     | Under 300 words with something written, or any heading              | Empty 0 (nothing to structure); 300 to 2,500 words with no heading 5; over 2,500 words with no heading 0                                                                                                                                                                                                 |
+| Links        | 5      | No broken page link, and another page links here                    | 4 with no backlink; each broken link (to a page no longer in the knowledgebase) takes 2 of the 4                                                                                                                                                                                                         |
+| Open Issues  | 10     | Nothing open on the page                                            | Each open conflict ([Pages That Disagree](insights.md#pages-that-disagree)) 5; Pending Approval 2; each unresolved comment thread 1 (3 at most); each agent's suggested edit waiting 1 (2 at most)                                                                                                       |
+| Use          | 5      | Read this week, by a person or an agent; or made in the last 7 days | Not read this week 0 (a page in its first week is never marked down for it)                                                                                                                                                                                                                              |
+
+- **Edited since verified:** a page whose last saved edit (`updatedAt`, `page_authors`) is later than its last Verify
+  (`verifiedAt`) keeps half its Verification points (10 of 20) until it is verified again, which restores all 20.
+  Both dates are already kept, so nothing new is stored and the score stays worked out when read. It is a plain
+  date comparison, so it is true to any edit; "Changed since verified" in the meta row (more than a fifth of the
+  writing) is a separate, coarser mark and does not move the score. A Review Due page stays at 5 whatever was
+  edited. The reason reads "Edited since verified" and the fix is Verify again (+10).
+- **Moving existing scores:** pages move once, the first time they are read after this change: verified pages
+  untouched since verifying lose up to 25 points if they are thin, none if they are full-length, owned and linked;
+  pages edited since verifying lose 10 more. Nothing is stored, so there is nothing to migrate and no announcement
+  beyond this note; agents and Ask read the score as they read it, so a thin verified page now reads as Fair, not
+  Healthy.
 
 - **Under a Review Period of Never** (owner 2026-11-21: "if I set no review period, / never, then don't show the
   verification stuff, and don't include it in the health scorings"): the score leaves verification out. There is
   no Verification factor, Freshness counts only the last edit (10 within 90 days, down evenly to 0 at 455; no edit
   kept, the full share), and the seven factors left are re-weighted to 100: **Freshness 15, Owner 15, Length 15,
-  Structure 15, Links 10, Open Issues 20, Use 10**. Each factor is worked out as above, scaled to its new weight and
+  Structure 15, Links 10, Open Issues 20, Use 10** (Structure is 0 for an empty page here too). Each factor is worked out as above, scaled to its new weight and
   rounded (its gain too), so the factors still add up to the score. A page is never marked down, given a reason
   or offered a fix for not being verified: the breakdown has no Verification row and no Verify button, Freshness
   says "Bring it up to date" and "Not edited in 14 months". Knowledge Health's average and low pages, the agents'
@@ -173,11 +187,11 @@ Nothing is stored: it is worked out when read, as the states are.
   2,500, more), so typing a word changes the score only when it crosses a band, and a typing commit inside one works
   nothing out again. Words are counted as reading time counts them (230 a minute; [Reading time](#page-health)).
 - **The main reason** is the factor that lost the most points (the first in the table's order on a tie), in a few
-  words: "Never verified", "Review due 40 days ago", "2 broken links", "No owner", "Under 50 words", "No headings
+  words: "Never verified", "Edited since verified", "Review due 40 days ago", "2 broken links", "No owner", "Under 50 words", "No headings
   in a long page", "1 open conflict", "Pending approval", "3 open comments", "Not read this week", "Not touched in
   14 months". A page with every point says "Every check passes".
-- **Each factor says what would raise it** with the points it gains: "Verify this page: +30", "Verify again: +20",
-  "Set an owner: +10", "Add a heading: +5", "Write at least 50 words: +4", "Fix 2 broken links: +4", "Resolve the
+- **Each factor says what would raise it** with the points it gains: "Verify this page: +20", "Verify again: +10",
+  "Set an owner: +10", "Add a heading: +5", "Write at least 50 words: +9", "Fix 2 broken links: +4", "Resolve the
   conflict: +5". A factor at full says nothing.
 - **Not counted:** unanswered questions a page is cited for. A question nobody could answer is logged with no page
   (it found none), so no page can be held to it.
@@ -191,7 +205,7 @@ Nothing is stored: it is worked out when read, as the states are.
   the disclosure: pressing anywhere on it opens and closes the breakdown, a chevron at its end turning (owner
   2026-11-22: no Score Breakdown row, and no "Health Score" word after the score's word). Likewise pressing the
   Verified panel anywhere but its own controls opens and closes Page Details, its chevron the keyboard's way in. Open, it lists the eight factors in the table's order, each with its points of its maximum
-  ("8 / 10") and, where it is short, what would raise it. Where a fix is a press away it is a small button on the
+  ("8 / 10") and, where it is short, why ("Edited since verified", "Under 50 words") and what would raise it. Where a fix is a press away it is a small button on the
   row: **Verify** (Verification, and Freshness when the review is due), **Set an Owner** (opens the Owner picker
   beside it), **Add a Heading** (opens the page for editing if it is not, then puts an empty level-two heading after the block
   the caret is in, under the title when the writing was not yet clicked into, the caret in it). Open issues each

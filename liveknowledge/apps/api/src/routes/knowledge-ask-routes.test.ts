@@ -591,15 +591,15 @@ describe('Insights', () => {
           {
             tab: 'holidays',
             title: 'Holidays',
-            score: 42,
+            score: 44,
             label: 'needs-work',
             reason: 'Never verified',
           },
           {
             tab: 'rollbacks',
             title: 'Rollbacks',
-            score: 43,
-            label: 'needs-work',
+            score: 45,
+            label: 'fair',
             reason: 'Never verified',
           },
         ],
