@@ -227,7 +227,12 @@ describe('a CLI signing in', () => {
 describe('connectDevice', () => {
   const device = (live: boolean, takes: boolean) => ({
     fetchSession: vi.fn(async () =>
-      live ? { clientName: 'livediagram CLI', startedAt: null, startedIn: null } : null,
+      live
+        ? {
+            kind: 'found' as const,
+            session: { clientName: 'livediagram CLI', startedAt: null, startedIn: null },
+          }
+        : { kind: 'unknown' as const },
     ),
     complete: vi.fn(async () => takes),
   });
@@ -247,6 +252,15 @@ describe('connectDevice', () => {
       ok: false,
       reason: 'expired',
     });
+    expect(seen).toEqual([]);
+  });
+
+  it('mints nothing when the code cannot be checked, without calling it gone', async () => {
+    const d = {
+      ...device(true, true),
+      fetchSession: vi.fn(async () => ({ kind: 'unavailable' as const })),
+    };
+    expect(await connectDevice(d, 'X', 'c', false)).toEqual({ ok: false, reason: 'failed' });
     expect(seen).toEqual([]);
   });
 

@@ -37,6 +37,8 @@ beforeEach(() => {
         startedAt: Date.now(),
         startedIn: null,
       });
+    if (input.includes('/oauth/device/session/BBBB-BBBB'))
+      return new Response('{}', { status: 429 });
     if (input.includes('/oauth/device/session/')) return new Response('{}', { status: 404 });
     if (input === '/api/account/tokens' && method === 'POST')
       return Response.json({ id: 't1', secret: 'lwt_cli', expiresAt: 9 }, { status: 201 });
@@ -97,6 +99,15 @@ describe('McpDevice', () => {
     act(() => root.render(<McpDevice />));
     await typeCode('ZZZZ-ZZZZ');
     expect(heading()).toBe('We couldn’t find that code');
+    await act(async () => button('Try again').click());
+    expect(heading()).toBe('Connect a terminal');
+  });
+
+  it('says a busy or unreachable check is no verdict on the code', async () => {
+    act(() => root.render(<McpDevice />));
+    await typeCode('BBBB-BBBB');
+    expect(heading()).toBe('We couldn’t check that code');
+    expect(container.textContent).toContain('your code still works');
     await act(async () => button('Try again').click());
     expect(heading()).toBe('Connect a terminal');
   });

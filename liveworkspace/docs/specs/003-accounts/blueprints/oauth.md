@@ -160,7 +160,9 @@ For a CLI without a browser (RFC 8628), built-in clients only, state in the one 
    It stays in the answer only because published CLIs print it.
 2. `GET /oauth/device/session/:userCode` (30 per 10 minutes, shared with complete and deny): which client asks, when
    and roughly where it started (`{ clientName, startedAt, startedIn }`), or `404 invalid_code`. The page shows
-   both beside "Only connect if you started this in your own terminal just now".
+   both beside "Only connect if you started this in your own terminal just now". Only a 404 is "We couldn't find
+   that code"; a `429`, any other failure or no network says the check didn't go through and to try again in a
+   moment, since the code may still be good.
 3. The signed-in page posts `POST /oauth/device/complete` with the token it minted, or `/oauth/device/deny`; the user
    code key goes.
 4. `POST /oauth/token` with `urn:ietf:params:oauth:grant-type:device_code`: `authorization_pending`, `slow_down` (the
