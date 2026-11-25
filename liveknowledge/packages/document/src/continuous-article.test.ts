@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { withArticleContinuous } from './continuous-article';
-import { articlesOf } from './article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import { pagesOf } from './page';
 import { CONTINUOUS_PAGE_MIN_HEIGHT, CONTINUOUS_PAGE_WIDTH, isContinuousPage } from './page-sizes';
 import { migrateIncomingTab, migrateStoredTab } from './stored-tab';

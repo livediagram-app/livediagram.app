@@ -7,7 +7,7 @@ import {
   type ArticleBlock,
   type ArticleFlow,
   type ArticleZoneBlock,
-} from './article-flow';
+} from '@liveworkspace/article/article-flow';
 import { buildElementIndex } from '@liveworkspace/element-model/geometry';
 import { elementAnchorPoint } from './page-content';
 import { pagesOf, layOutPages, type LaidOutPage, type PageRect } from './page';

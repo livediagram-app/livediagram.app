@@ -4,8 +4,12 @@
 // (withPageTitle). Shared by the editor and the api, so every way in keeps the two the same. Pure: a tab in, its
 // title or a new tab out.
 import { truncateName } from '@liveworkspace/model-core/names';
-import { articleRunsText } from './article-footnotes';
-import { articlesOf, type ArticleBlock, type ArticleParagraphBlock } from './article-flow';
+import { articleRunsText } from '@liveworkspace/article/article-footnotes';
+import {
+  articlesOf,
+  type ArticleBlock,
+  type ArticleParagraphBlock,
+} from '@liveworkspace/article/article-flow';
 import { withArticleFlow } from './article-pages';
 import { pagesOf } from './page';
 import { savedArticlesOf } from './page-draft';

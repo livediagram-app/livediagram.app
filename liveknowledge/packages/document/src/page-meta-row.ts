@@ -2,7 +2,7 @@
 // room the editor's writing gives it (app/article-pages.css .article-page-slot-meta, which reads these through the
 // --page-meta-* variables article-style-vars.ts sets), so a layout without a browser (article-layout-estimate.ts)
 // leaves the same room. Pure.
-import type { ArticleBlock } from './article-flow';
+import type { ArticleBlock } from '@liveworkspace/article/article-flow';
 
 /** The meta row's room in the writing, canvas px: its margins (collapsing with the blocks' own) and its height. */
 export const PAGE_META_ROW = { above: 8, height: 28, below: 20 } as const;

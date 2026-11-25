@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ArticleBlock, ArticleFlow } from './article-flow';
-import type { ArticleTableBlock } from './article-table';
+import type { ArticleBlock, ArticleFlow } from '@liveworkspace/article/article-flow';
+import type { ArticleTableBlock } from '@liveworkspace/article/article-table';
 import type { Page } from './page';
 import type { Tab } from './index';
 import {

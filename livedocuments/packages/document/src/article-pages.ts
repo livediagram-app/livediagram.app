@@ -6,12 +6,12 @@ import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   articlesOf,
   newArticleFlow,
-  newFlashcardFlow,
+  nextArticleBlockId,
   normaliseRuns,
   withFreshArticleBlockIds,
   type ArticleBlock,
   type ArticleFlow,
-} from './article-flow';
+} from '@liveworkspace/article/article-flow';
 import { duplicateElements } from './duplicate';
 import {
   pagesOf,
@@ -344,4 +344,18 @@ export function absentWriterPageCount(state: {
   if (state.floor === null) return state.needed > state.have ? state.needed : null;
   const count = Math.max(state.needed, state.floor);
   return count === state.have ? null : count;
+}
+
+/** A new card's writing (docs/specs/007-editor/flashcards.md "A card"): an empty Title and an
+ *  empty paragraph, Narrow margins so a card holds a title and a couple of paragraphs. */
+export function newFlashcardFlow(): ArticleFlow {
+  const title = nextArticleBlockId();
+  const body = nextArticleBlockId(new Set([title]));
+  return {
+    blocks: [
+      { id: title, type: 'paragraph', style: 'title', runs: [] },
+      { id: body, type: 'paragraph', runs: [] },
+    ],
+    style: { margins: 'narrow' },
+  };
 }

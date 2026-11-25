@@ -3,7 +3,7 @@
 // exists at runtime.
 import type { TagColour } from '@liveworkspace/element-model/tag-colours';
 import type { Page, PageArrangement, PageBackground, PageOrientation } from './page';
-import type { ArticleFlow } from './article-flow';
+import type { ArticleFlow } from '@liveworkspace/article/article-flow';
 import type { Layer } from './layers';
 import type { Finish } from '@liveworkspace/element-model/finish';
 import type { TabId, TextSize } from '@liveworkspace/model-core/basics';

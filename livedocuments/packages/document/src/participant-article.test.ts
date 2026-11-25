@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuLeastMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { diffArticleFlow } from './article-flow-ops';
-import type { ArticleBlock, ArticleFlow } from './article-flow';
-import { articlesOf } from './article-flow';
+import type { ArticleBlock, ArticleFlow } from '@liveworkspace/article/article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import type { Tab } from './index';
 import { applyParticipantArticleOps, participantArticlesChange } from './participant-article';
 import { participantTabChange } from './participant-content';

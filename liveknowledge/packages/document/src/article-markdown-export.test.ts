@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import type { ArticleBlock, ArticleFlow } from './article-flow';
-import { articleFromMarkdown } from './article-markdown-io';
+import type { ArticleBlock, ArticleFlow } from '@liveworkspace/article/article-flow';
+import { articleFromMarkdown } from '@liveworkspace/article/article-markdown-io';
 import { articleLeftOutNote, articleTabMarkdown } from './article-markdown-export';
 import type { Tab } from './index';
 
@@ -95,6 +95,20 @@ describe('articleTabMarkdown', () => {
     const blocks = shape(readBack(out.markdown));
     expect(blocks.some((b) => b.type === 'pageBreak')).toBe(true);
     expect(blocks.at(-2)).toMatchObject({ type: 'paragraph', style: 'h1' });
+  });
+
+  it('numbers footnotes on through the file, so each article keeps its own notes', () => {
+    const noted = (text: string, note: string): ArticleFlow => ({
+      blocks: [{ id: 'n', type: 'paragraph', runs: [{ text }, { text: '*', fn: note }] }],
+    });
+    const { markdown } = articleTabMarkdown(
+      tabOf({ f: noted('First', 'Note one'), g: noted('Second', 'Note two') }),
+    );
+    expect(markdown).toContain('Second[^2]');
+    const notes = readBack(markdown).flatMap((b) =>
+      'runs' in b ? b.runs.flatMap((r) => (r.fn !== undefined ? [r.fn] : [])) : [],
+    );
+    expect(notes).toEqual(['Note one', 'Note two']);
   });
 
   it('writes a tab with no article as nothing', () => {

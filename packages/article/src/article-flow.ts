@@ -1,4 +1,4 @@
-// The writing of an article page (docs/specs/007-editor/article-pages.md): an article's blocks in
+// The writing of an article page (livedocuments/docs/specs/007-editor/article-pages.md): an article's blocks in
 // order and its style, stored once per article on the tab (`Tab.articles[flow]`), shared by every
 // page of the article (`Page.flow`). Pure data and its reading: whatever is stored is
 // read defensively, so a malformed block, run or field is dropped rather than trusted.
@@ -8,7 +8,7 @@ import { parseArticleTable, type ArticleTableBlock } from './article-table';
 import type { ArticleTocBlock } from './article-toc';
 import { sameJsonValue } from '@liveworkspace/model-core/same-json-value';
 
-// Block and article limits (docs/specs/007-editor/article-pages.md "Blocks"). An article this
+// Block and article limits (livedocuments/docs/specs/007-editor/article-pages.md "Blocks"). An article this
 // large is ~250 pages of text, far inside a tab's row (MAX_TAB_BYTES, 1.99 MB) only when the
 // text is too: the tab's own cap still has the last word on a save.
 export const MAX_ARTICLE_BLOCKS = 5000;
@@ -59,15 +59,26 @@ export type ArticleRun = {
   // Hex colours from the article's swatches.
   color?: string;
   hl?: string;
-  // A margin note on this text (docs/specs/007-editor/article-pages.md "Comments and actions"):
+  // A margin note on this text (livedocuments/docs/specs/007-editor/article-pages.md "Comments and actions"):
   // the id of the marker element in the page's margin that carries its comment thread or action,
   // and which of the two it is (`nk`: 'action'; a comment when absent).
   note?: string;
   nk?: 'action';
-  // A footnote (docs/specs/007-editor/article-pages.md "Footnotes"): the note's text, each character of `text` one
+  // A footnote (livedocuments/docs/specs/007-editor/article-pages.md "Footnotes"): the note's text, each character of `text` one
   // reference to it (ARTICLE_FOOTNOTE_REF).
   fn?: string;
 };
+
+/** A run that links to another page of the same knowledgebase, in liveknowledge only
+ *  (liveknowledge/docs/specs/030-knowledgebase/links-and-embeds.md "Page links"): `page` is that page's tab id
+ *  (ARTICLE_PAGE_LINK_KEY, liveknowledge's article-page-links.ts). A run links to a page or to an address, never
+ *  both: the page wins. Kept apart from `ArticleRun`'s own fields, so code that lists a
+ *  run's marks by its keys is not handed one that is no mark; read it with `pageOfRun`. */
+export type ArticlePageLinkRun = ArticleRun & { page: string };
+
+/** The page a run links to, or undefined for a run that is no page link. */
+export const pageOfRun = (run: ArticleRun): string | undefined =>
+  (run as Partial<ArticlePageLinkRun>).page;
 
 /** A run's formatting. */
 export type ArticleRunFormat = Pick<
@@ -113,7 +124,7 @@ export type ArticleZoneBlock = {
   height: number;
   // Where the zone was last laid out: the page it fell on and its top-left from that page's
   // top-left corner (canvas px). Elements whose centre is inside it there are its elements
-  // (docs/specs/007-editor/article-pages.md "Zones"). Absent until first laid out.
+  // (livedocuments/docs/specs/007-editor/article-pages.md "Zones"). Absent until first laid out.
   at?: ArticleZoneAt;
 };
 
@@ -147,7 +158,7 @@ export type ArticleParagraphSpacing = 'none' | 'normal' | 'wide';
 export type ArticleRules = 'none' | 'title' | 'headings';
 export type ArticleMargins = 'narrow' | 'normal' | 'wide';
 
-/** An article's look (docs/specs/007-editor/article-pages.md "Article style"). Every field is
+/** An article's look (livedocuments/docs/specs/007-editor/article-pages.md "Article style"). Every field is
  *  optional, absent being its default (`resolveArticleStyle`). */
 export type ArticleStyle = {
   look?: ArticleLookId;
@@ -163,7 +174,7 @@ export type ArticleStyle = {
   margins?: ArticleMargins;
   // Absent is off.
   pageNumbers?: boolean;
-  // The line at the top and at the bottom of every page (docs/specs/007-editor/article-pages.md
+  // The line at the top and at the bottom of every page (livedocuments/docs/specs/007-editor/article-pages.md
   // "Headers and footers"); absent is none.
   header?: ArticleBand;
   footer?: ArticleBand;
@@ -207,7 +218,7 @@ export function parseRunFormat(v: unknown): ArticleRunFormat {
   return out;
 }
 
-// Suggestions are retired (owner, 2026-11-17; docs/specs/007-editor/suggestions.md). Writing stored while they
+// Suggestions are retired (owner, 2026-11-17; livedocuments/docs/specs/007-editor/suggestions.md). Writing stored while they
 // existed may still carry one (`sg`) on a run or a text block: it reads as rejected, the text as it stood before it,
 // which is what exports, Viewers and agents already read. An insertion's words go, a deletion's stay, a format change
 // puts back its `was`, and a paragraph break put in joins its block onto the one before (parseArticleFlow).
@@ -215,6 +226,10 @@ const legacySuggestionKind = (v: unknown): 'ins' | 'del' | 'fmt' | null => {
   const k = (v as { k?: unknown } | null)?.k;
   return k === 'ins' || k === 'del' || k === 'fmt' ? k : null;
 };
+
+/** A tab id a page link may hold: an article id (what a tab's id is), at most MAX_PAGE_LINK_ID characters. */
+export const MAX_PAGE_LINK_ID = 64;
+export const isPageLinkId = (v: unknown): v is string => isId(v) && v.length <= MAX_PAGE_LINK_ID;
 
 function parseRun(v: unknown): ArticleRun | undefined {
   const r = v as Record<string, unknown> | null;
@@ -224,7 +239,8 @@ function parseRun(v: unknown): ArticleRun | undefined {
   for (const flag of RUN_FLAGS) if (r[flag] === true) run[flag] = true;
   // Superscript and subscript are one or the other.
   if (run.sup && run.sub) delete run.sub;
-  if (isSafeArticleHref(r.href)) run.href = r.href.trim();
+  if (isPageLinkId(r.page)) (run as ArticlePageLinkRun).page = r.page;
+  else if (isSafeArticleHref(r.href)) run.href = r.href.trim();
   if (isArticleHex(r.color)) run.color = r.color;
   if (isArticleHex(r.hl)) run.hl = r.hl;
   if (isId(r.note)) {
@@ -236,6 +252,8 @@ function parseRun(v: unknown): ArticleRun | undefined {
   if (legacy === 'ins') return undefined;
   if (legacy === 'fmt') {
     const kept: ArticleRun = { text: run.text };
+    const page = pageOfRun(run);
+    if (page) (kept as ArticlePageLinkRun).page = page;
     if (run.note) kept.note = run.note;
     if (run.nk) kept.nk = run.nk;
     if (run.fn !== undefined) kept.fn = run.fn;
@@ -247,6 +265,7 @@ function parseRun(v: unknown): ArticleRun | undefined {
 const sameFormat = (a: ArticleRun, b: ArticleRun): boolean =>
   RUN_FLAGS.every((f) => a[f] === b[f]) &&
   a.href === b.href &&
+  pageOfRun(a) === pageOfRun(b) &&
   a.color === b.color &&
   a.hl === b.hl &&
   a.note === b.note &&
@@ -503,14 +522,17 @@ export function articlesOf(tab: object | undefined): Readonly<Record<string, Art
 }
 
 // Each stored article's writing as read, by its stored object: a typing commit changes one article of the tab, so the
-// rest are read once, not again at every commit (100 cards of a flashcard stack), and keep the same object for readers
+// rest are read once, not again at every commit and keep the same object for readers
 // that memo on it. Keyed with the flow id too, which names an empty article's block.
 const parsedFlows = new WeakMap<object, { flow: string; parsed: ArticleFlow }>();
 
 function parsedFlowOf(flow: string, raw: unknown): ArticleFlow {
   if (!raw || typeof raw !== 'object') return parseArticleFlow(raw, `${flow}-b0`);
   const cached = parsedFlows.get(raw);
-  if (cached && cached.flow === flow) return cached.parsed;
+  // Read under another flow id (a page's draft is drawn under its saved flow's id, page-draft.ts): the same answer
+  // unless the read fell back to the empty block, whose id names the flow.
+  if (cached && (cached.flow === flow || cached.parsed.blocks[0]?.id !== `${cached.flow}-b0`))
+    return cached.parsed;
   const parsed = parseArticleFlow(raw, `${flow}-b0`);
   parsedFlows.set(raw, { flow, parsed });
   return parsed;
@@ -547,20 +569,6 @@ export function newArticleFlow(): ArticleFlow {
       { id: title, type: 'paragraph', style: 'title', runs: [] },
       { id: body, type: 'paragraph', runs: [] },
     ],
-  };
-}
-
-/** A new card's writing (docs/specs/007-editor/flashcards.md "A card"): an empty Title and an
- *  empty paragraph, Narrow margins so a card holds a title and a couple of paragraphs. */
-export function newFlashcardFlow(): ArticleFlow {
-  const title = nextArticleBlockId();
-  const body = nextArticleBlockId(new Set([title]));
-  return {
-    blocks: [
-      { id: title, type: 'paragraph', style: 'title', runs: [] },
-      { id: body, type: 'paragraph', runs: [] },
-    ],
-    style: { margins: 'narrow' },
   };
 }
 
@@ -608,7 +616,7 @@ const alpha = (n: number): string => {
 const BULLETS = ['•', '◦', '▪'];
 
 /**
- * Each list item's marker (docs/specs/007-editor/article-pages.md "Blocks"): a numbered item counts
+ * Each list item's marker (livedocuments/docs/specs/007-editor/article-pages.md "Blocks"): a numbered item counts
  * 1, 2, 3 at level 0, a, b, c at level 1, i, ii, iii at level 2, repeating, through a run of list
  * items; a bullet or to-do at a level restarts that level's count; any other block ends the run.
  * Bullets are •, ◦, ▪ by level. A to-do's marker is its box (empty here).

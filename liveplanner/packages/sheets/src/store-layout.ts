@@ -134,8 +134,8 @@ export function pinIdRange<T extends IdRange>(
     : { ...range, c1: pinned[0], c2: pinned[1] };
 }
 
-// The named ranges, validation rules (and a range dropdown's source) and format rules after a sort, each pinned to
-// its slots; a format rule's custom formula keeps each relative part's offset from its range's corner.
+// The named ranges, validation rules (and a range dropdown's source), format rules and the filter after a sort, each
+// pinned to its slots; a format rule's custom formula keeps each relative part's offset from its range's corner.
 function pinLayoutRanges(before: SheetLayout, after: SheetLayout, axis: Axis): SheetLayout {
   if (after.rows === before.rows && after.cols === before.cols) return after;
   const next = { ...after };
@@ -153,6 +153,9 @@ function pinLayoutRanges(before: SheetLayout, after: SheetLayout, axis: Axis): S
       if (rule === x || !x.fx) return rule;
       return { ...rule, fx: reanchorFormula(x.fx, before, after, x, rule) };
     });
+  // The filter as well: moved with its corner rows, Sort Sheet left it over whichever rows those landed on, so rows
+  // fell out of it (shown again) or came under it.
+  if (before.filter) next.filter = pinIdRange(before.filter, before, after, axis);
   return next;
 }
 

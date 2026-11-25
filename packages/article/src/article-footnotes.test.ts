@@ -12,7 +12,7 @@ import { articleFromMarkdown, articleToMarkdown, articleWordCount } from './arti
 import { looksLikeMarkdown, parseInline, parseMarkdownBlocks } from './article-markdown';
 import { articleTocEntries } from './article-toc';
 
-// docs/specs/007-editor/article-pages.md "Footnotes" (Work Tracker #219).
+// livedocuments/docs/specs/007-editor/article-pages.md "Footnotes" (Work Tracker #219).
 
 const ref = (fn: string) => ({ text: ARTICLE_FOOTNOTE_REF, fn });
 const shape = (blocks: readonly ArticleBlock[]) =>

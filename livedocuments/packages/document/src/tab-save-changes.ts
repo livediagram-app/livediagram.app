@@ -15,7 +15,7 @@ import {
   tabPageSteps,
   type PageCap,
 } from '@liveworkspace/model-core/tab-page-steps';
-import { articlesOf, isArticleId, type ArticleFlow } from './article-flow';
+import { articlesOf, isArticleId, type ArticleFlow } from '@liveworkspace/article/article-flow';
 import { applyArticleOps, diffArticleFlow, type ArticleOp } from './article-flow-ops';
 import { pagesOf, type Page } from './page';
 import { MAX_PAGES } from './page-sizes';

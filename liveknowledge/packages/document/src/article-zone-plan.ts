@@ -6,7 +6,7 @@ import {
   ARTICLE_ZONE_MIN,
   type ArticleZoneAlign,
   type ArticleZoneKind,
-} from './article-flow';
+} from '@liveworkspace/article/article-flow';
 import { zoneAnchorOf } from './article-zones';
 import { isBoxed, type Element } from './index';
 import { type PageRect } from './page';

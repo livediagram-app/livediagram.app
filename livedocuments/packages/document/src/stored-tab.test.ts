@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { settleStoredArticles, settleStoredArticlesData } from './article-flow';
+import {
+  settleStoredArticles,
+  settleStoredArticlesData,
+} from '@liveworkspace/article/article-flow';
 import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import type { Tab } from './index';
 

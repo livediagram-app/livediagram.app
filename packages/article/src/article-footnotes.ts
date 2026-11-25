@@ -1,4 +1,4 @@
-// An article's footnotes (docs/specs/007-editor/article-pages.md "Footnotes"): a reference is a run carrying its
+// An article's footnotes (livedocuments/docs/specs/007-editor/article-pages.md "Footnotes"): a reference is a run carrying its
 // note's text (`fn`), one reference a character of the run's text, so the note moves, syncs and undoes with the text
 // it sits in. Numbered through the article in the writing's order, never stored. Pure.
 import type { ArticleRun } from './article-flow';

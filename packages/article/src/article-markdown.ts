@@ -1,4 +1,4 @@
-// Pasted text read as writing (docs/specs/007-editor/article-pages.md "Writing", Paste): Markdown
+// Pasted text read as writing (livedocuments/docs/specs/007-editor/article-pages.md "Writing", Paste): Markdown
 // (headings, lists by indent, to-dos, quotes, code fences, dividers; bold, italic, strikethrough,
 // inline code and links) becomes the blocks it means; other plain text becomes one paragraph per
 // line. Pure: text in, blocks out (ids fresh).
@@ -30,7 +30,7 @@ export function looksLikeMarkdown(text: string): boolean {
   return lines.some((line, i) => isTableRow(line) && isTableRule(lines[i + 1] ?? ''));
 }
 
-// A pipe table's lines (docs/specs/024-agents/pages-for-agents.md "write_article"): a row is a line
+// A pipe table's lines (livedocuments/docs/specs/024-agents/pages-for-agents.md "write_article"): a row is a line
 // starting and ending in `|`; the rule row under the header holds `---` cells, colons allowed.
 const TABLE_ROW = /^\s*\|.*\|\s*$/;
 const RULE_CELL = /^:?-{3,}:?$/;

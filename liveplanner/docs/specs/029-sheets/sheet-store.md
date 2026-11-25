@@ -156,6 +156,9 @@ Sheets follow the project's access ([Auth and guest access](../014-identity/auth
   undo: the deleted lines' sizes, hidden state and card-table links and drafts, the merges, filter range and named
   ranges it shrank or dropped, a card table's deleted columns. What changed since is kept (a row linked or drafted,
   a merge or a name made), and a merge, filter or name someone changed after the deletion is theirs, not put back.
+- Undoing a row or column move moves those lines back, each after the line it followed, so named ranges, rules,
+  the filter and formula ranges over them stay as they were. It is never undone as a reorder: a reorder keeps ranges
+  on their places, as a sort does ([Sort](sheet.md#sort)), while a move carries them with its lines.
 - Like canvas undo, an undo writes the old value back even over a later change someone else made to that cell.
 
 ## Offline projects

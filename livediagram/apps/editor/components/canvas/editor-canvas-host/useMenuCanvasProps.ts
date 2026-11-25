@@ -58,9 +58,14 @@ export function useMenuCanvasProps({
     onOpenElementSettings: isReadOnly
       ? undefined
       : (elementId) => {
+          // A peer holds it: no menu, as for a right-click (onElementContextMenu below).
+          if (lockedByOther(elementId)) return;
           const node = document.querySelector(elementSelector(elementId));
           if (!(node instanceof HTMLElement)) return;
           const { x, y } = elementMenuAnchor(node.getBoundingClientRect());
+          // The `…` stops its press, so the element may not be selected: select it, as a right-click does,
+          // or every row of the menu (each acts on the selection) changed nothing, or another element.
+          selectElement(elementId);
           setContextMenu({ mode: 'element', elementId, x, y });
         },
     currentDocumentId: documentId,

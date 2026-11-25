@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ArticleBlock } from './article-flow';
 import { articleTocEntries, tocDepthOf } from './article-toc';
 
-// docs/specs/007-editor/article-pages.md "Table of contents".
+// livedocuments/docs/specs/007-editor/article-pages.md "Table of contents".
 const p = (id: string, text: string, style?: string): ArticleBlock =>
   ({ id, type: 'paragraph', ...(style ? { style } : {}), runs: [{ text }] }) as ArticleBlock;
 

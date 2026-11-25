@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { articlesOf } from './article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import { pagesOf } from './page';
 
 // docs/specs/007-editor/blueprints/flashcards.md "Performance and limits" (Work Tracker 728): a typing commit on a

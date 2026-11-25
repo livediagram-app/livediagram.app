@@ -1,7 +1,7 @@
 // A knowledgebase page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md): one tab holding exactly one article
 // on one page. The page a new knowledgebase opens with, the page every New Page makes, and how a tab stored without
 // one (an empty tab from before, or from outside) is read as one.
-import { articlesOf, newArticleFlow, type ArticleFlow } from './article-flow';
+import { articlesOf, newArticleFlow, type ArticleFlow } from '@liveworkspace/article/article-flow';
 import { pagesOf, type Page } from './page';
 import {
   CONTINUOUS_PAGE_MIN_HEIGHT,

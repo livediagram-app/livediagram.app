@@ -13,7 +13,7 @@ import {
   sentencesOf,
   syllablesOf,
 } from './article-readability';
-import type { ArticleBlock } from './article-flow';
+import type { ArticleBlock } from '@liveworkspace/article/article-flow';
 
 // docs/specs/007-editor/article-pages.md "Word Count": reading time, sentences, and how easily the writing reads.
 const words = (s: string) => sentencesOf(s).map((x) => x.words);

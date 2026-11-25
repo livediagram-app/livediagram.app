@@ -1,7 +1,7 @@
 // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Pages stored at the first width" (Work Tracker 1418).
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
-import type { ArticleBlock, ArticleZoneBlock } from './article-flow';
+import type { ArticleBlock, ArticleZoneBlock } from '@liveworkspace/article/article-flow';
 import { estimateArticle } from './article-layout-estimate';
 import { newArticleNote } from './article-notes';
 import { withContinuousPageWidth } from './continuous-page-width';
