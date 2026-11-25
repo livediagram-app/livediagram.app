@@ -177,7 +177,7 @@ knowing about when adding another.
 1. User clears the active tab's content (or opens a tab that was
    created empty).
 2. An Editor sees Start Making Pages in the middle of the canvas ([Template start](start-diagramming.md));
-   a Participant or Viewer sees the empty page ([The empty-canvas hint](#the-empty-canvas-hint)).
+   a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
 ### Document Not Found
 
@@ -190,7 +190,7 @@ knowing about when adding another.
 - If the pathname's id segment is the build-time placeholder and no `?s=` code is set, the editor route goes to
   `/new` (via `window.location.assign`) and shows the opening screen until the navigation completes.
 - The visitor identity confirmation modal (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
-  `identityOnlyScreenOpen`). Its name field takes at most `MAX_PARTICIPANT_NAME_LEN` (120) characters, the participant route's own cap, so a typed
+  `identityOnlyScreenOpen`), opening from the name tray's **Change Name** only: a visitor's name is defaulted, not asked, and the tray (`NameTray`, while `identityTrayOpen`) says which name they show under, with Change Name and Keep It ([From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "A visitor's name"). Its name field takes at most `MAX_PARTICIPANT_NAME_LEN` (120) characters, the participant route's own cap, so a typed
   name is always one the route saves.
 - Everything else: autosave, room, tab management, document metadata, the Share dialog.
 
@@ -236,9 +236,8 @@ page), logging `[new] restored, back out <target>` (`../packages/workbench/src/h
 
 ### The empty-canvas hint
 
-There is no empty-canvas card or backdrop. An Editor gets the
-tab's start ([Template start](start-diagramming.md)), and an empty page offers nothing on itself ([Pages
-mode](pages-mode.md) "An empty page offers nothing on itself"); a Viewer or Participant sees the empty page.
+An Editor gets the tab's start ([Template start](start-diagramming.md)), and an empty page offers nothing on itself ([Pages
+mode](pages-mode.md) "An empty page offers nothing on itself"). A Viewer or Participant, where an Editor would see the start, gets the **empty-canvas card** over the empty page (`emptyCardShownOf`; [From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "The empty-canvas card"): "<Tab> is empty" and "Nothing here yet. The owner can build it out, and your view updates live.", with a picture of a page and a × that closes it for good on that tab.
 
 ## Start Blank
 

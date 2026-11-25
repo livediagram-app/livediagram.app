@@ -157,13 +157,11 @@ A person's participant (display name and presence colour) is their **liveworkspa
 Two welcome-modal rules follow from that:
 
 - **Owner on their own document**: the identity-only welcome screen never opens. The user's identity is already settled by their account; prompting them to pick a display name on a document they own would be noise.
-- **Visitor on someone else's document (signed in)**: the welcome screen still opens (it carries the "you're joining X's document" context), but the "Your name" input is `readOnly` and the shuffle button hides. Visitors who _are_ signed in can't masquerade under a different display name on a host's document.
+- **Visitor on someone else's document (signed in)**: their account names them, locked, so there is nothing to choose: they join straight away with no name tray and no card (the card, opened some other way, keeps its "Your name" input `readOnly` and hides the shuffle). Visitors who _are_ signed in can't masquerade under a different display name on a host's document.
 
-Guests see the legacy behaviour in both cases: first-load identity prompt, fully editable name, shuffle button present.
+A guest's name is **defaulted, not asked** (liveworkspace/docs/specs/011-workbench/first-edit.md "A visitor's name"): they join straight away under the name they have (a first visit's random placeholder), and a palette tray says "You're **Name** here" with **Change Name** (the identity card: fully editable name, shuffle present) and **Keep It**. Either confirms the name; nothing blocks the canvas while the tray shows.
 
-The join prompt is **independent of share role**: both **edit-role and view-role** visitors get it. A viewer's display name is broadcast to everyone else (cursor label, the tab presence stack, comments), so they need a chance to set it before joining rather than appearing under a random default. The identity card only writes the visitor's **own** profile (`PUT /api/participants/:id`, authorised on `owner === id`, not on document-edit rights), so confirming a name never hits a `403` even for a read-only viewer. The card's edit-only affordances (template grid, theme grid) don't render in identity mode, so there's nothing a viewer could trigger that they lack permission for. Its words follow the role: a Viewer, who only looks, is asked to pick the name people see "while you look around
-this canvas" and told only that others see it on their cursor; a Participant or Editor collaborates, and is told the
-name shows on their cursor and comments.
+The name tray and card are **independent of share role**: an Editor, a Participant and a Viewer get them alike. A viewer's display name is broadcast to everyone else (cursor label, the tab presence stack, comments), so the tray says which name they show under and offers the change on the spot. The identity card only writes the visitor's **own** profile (`PUT /api/participants/:id`, authorised on `owner === id`, not on edit rights), so confirming a name never hits a `403` even for a read-only viewer. Its words follow the role: a Viewer, who only looks, is asked to pick the name people see "while you look around" and told only that others see it on their cursor; a Participant or Editor collaborates, and is told the name shows on their cursor and comments.
 
 ## Guest → account merge
 

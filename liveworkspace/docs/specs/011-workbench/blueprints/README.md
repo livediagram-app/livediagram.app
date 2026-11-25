@@ -14,5 +14,7 @@ Follow the references below only as needed; never upfront.
   card's buttons, EditorCornerActions on a phone, and tests
 - ./editor-preferences.md - when implementing the editors' one preferences store: its files, the binding each
   editor passes, the merge, the load, the save queue, constants and tests
+- ./first-edit.md - when implementing the first-edit path: the name card's flag, the name tray, the shared
+  empty-canvas card, where each editor wires them, and tests
 - ./DEFAULTS.md - when you need a default the workbench specs leave open
 - ./COMPLETENESS.md - when checking which completeness categories the workbench blueprint covers
