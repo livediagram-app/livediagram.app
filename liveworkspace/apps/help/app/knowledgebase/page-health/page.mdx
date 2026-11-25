@@ -13,7 +13,7 @@ export const metadata = helpMetadata({
 
 Beside every page are two things about it: **On This Page**, a list of its headings, and **Page Health**, a card that says who answers for the page, how fresh it is and whether anyone reads it.
 
-<Figure caption="Beside a page: On This Page lists its headings, and Page Health shows its owner, its dates, its reads this week and Verify Again.">
+<Figure caption="Beside a page: On This Page lists its headings; Page Health shows its Health Score, then whether it is verified with Verify Again (its owner and dates fold under Page Details); and Read This Week counts its reads at the foot.">
   <PageHealthRail />
 </Figure>
 
@@ -28,45 +28,45 @@ The page's headings, in order. Press one to go to it. The list follows the headi
 
 ## What Page Health Shows
 
+The card opens with the page's **Health Score**, with its **Score Breakdown** under it, then a status panel: **Verified**, **Review Due** or **Not Verified**, with a line on how fresh the page is. **Verify** (or **Verify Again** on a page already verified) is the button in that panel, and verifies the page there and then. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+
+The rest is folded under **Page Details**, closed until you press the status panel or its chevron:
+
 | Row                           | Shows                                                                                              |
 | ----------------------------- | -------------------------------------------------------------------------------------------------- |
-| **Owner**                     | The person answerable for the page, or **No Owner**                                                |
+| **Owner**                     | The person answerable for the page, or **Nobody**                                                  |
 | **Last Verified**             | The date and who verified it, or **Never**                                                         |
-| **Review Due**                | The date the review comes due; **Once Verified** for a page never verified                         |
-| **Review Period**             | The Knowledgebase's period, such as **Every 90 Days**, with **Change** under it for an Editor       |
-| **Reads by People This Week** | How many times people opened the page in the last seven days                                       |
-| **Reads by Agents This Week** | How many times agents read it or were served a passage of it in a search                           |
+| **Review Due**                | The date the review comes due; **Not Verified** for a page never verified                          |
+| **Review Period**             | The Knowledgebase's period, such as **Every 90 Days**, a link to change it for an Editor           |
 
-Under the rows, **Verify** (or **Verify Again** on a page already verified) verifies the page there and then. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+At the foot of the rail, **Read This Week** counts how many times people (**by People**) and agents (**by Agents**) read the page in the last seven days. Agents count when they read it or are served a passage of it in a search.
 
 When the Review Period is **Never**, verification is off: the card has no state, no **Last Verified**, no **Review Due** and no **Verify**. **Owner** and **Review Period** stay, so the period can be set again from here.
 
 ## Page Insights
 
-Under Page Health, **Page Insights** shows how the page is used:
+The page's use shows in two places:
 
-- Its reads over the last 30 days, a bar a day, people and agents in two tones, with the total and a count of each.
-- **Cited by Ask**: how many times Ask answered from the page. A link that opens only this page has no Ask, so it is not shown there.
-- **Read by Agents**: how many times agents read it in the 30 days.
-- **Answered From This Page**: the questions Ask answered from it most often, up to three.
+- Under the counts in **Read This Week**: its reads over the last 30 days, a bar a day, people and agents in two tones. Press the **by Agents** count to list which agents read the page and how often.
+- **Answered From This Page**, under **On This Page**: the questions Ask answered from the page most often, up to three. A link that opens only this page has no Ask, so it is not shown there.
 
-A page made in the last week shows **New This Week** and its reads so far, instead of 30 days of bars from before it existed. Everyone who can open the page sees Page Insights. A Knowledgebase kept Offline does not show it.
+A page made in the last week says it is new, with its reads so far, instead of 30 days of bars from before it existed. Everyone who can open the page sees them. A Knowledgebase kept Offline does not show them.
 
 ## Change the Owner
 
 <Step n={1}>
-  Open the **Owner** list on the card.
+  Open **Page Details**, then the **Owner** list.
 </Step>
 
 <Step n={2}>
-  Choose a person, or **No Owner**. The people listed are those who can open the Knowledgebase.
+  Choose a person, or **Nobody**. The people listed are those who can open the Knowledgebase.
 </Step>
 
 The change is saved at once. If it cannot be, the owner goes back to who it was and a toast says why, for example "The owner must be someone who can open this knowledgebase."
 
 ## The Review Period Is Not Set Here
 
-The Review Period belongs to the whole Knowledgebase, so the card shows it, and an Editor changes it there: **Change**, beside it, opens the five choices, for every page at once. See [Review Due and the Review Period](/help/knowledgebase/review-due-and-the-review-period/).
+The Review Period belongs to the whole Knowledgebase, so the card shows it, and an Editor changes it there: pressing the period itself, such as **Every 90 Days**, opens the five choices, for every page at once. See [Review Due and the Review Period](/help/knowledgebase/review-due-and-the-review-period/).
 
 ## About the Reads
 
@@ -79,11 +79,11 @@ The Review Period belongs to the whole Knowledgebase, so the card shows it, and 
 | Action                          | Editor | Participant | Viewer |
 | ------------------------------- | ------ | ----------- | ------ |
 | See On This Page and Page Health | Yes   | Yes         | Yes    |
-| Change the owner                | Yes    | No          | No     |
-| Verify from the card            | Yes    | No          | No     |
+| Change the owner                | Yes    | Yes         | No     |
+| Verify from the card            | Yes    | Yes         | No     |
 | Open the Review Period setting  | Yes    | No          | No     |
 
-For someone who cannot change them, the rows read as text and the card has no button.
+For someone who cannot change them, the rows read as text and the card has no **Verify** button.
 
 ## Good to Know
 

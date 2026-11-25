@@ -455,7 +455,8 @@ export const articles: Article[] = [
   {
     slug: 'walkthroughs',
     title: 'Walkthroughs',
-    description: 'Record a narrated tour and let others play it back over the work.',
+    description:
+      'A recorded tour: a video of your tab with your voice and, if you like, your camera, played in the app or shared by a link.',
     keywords:
       'walkthrough record recording narrate narration voice video screen share tab camera webcam loom talktrack async tour explain play playback public link rename',
     category: 'Collaboration',

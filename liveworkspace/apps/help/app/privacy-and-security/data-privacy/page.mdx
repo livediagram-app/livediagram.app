@@ -45,6 +45,15 @@ storage directly.
   a JPEG before it is stored.
 </AppNote>
 
+<AppNote app="liveknowledge">
+
+- **Durable storage** is one Cloudflare Durable Object per knowledgebase, reached only through the API: its pages and comments are stored there. Where it is filed, its folders, share links and its History events (the last 30 days) are kept by liveworkspace's index, the shared library behind every liveworkspace app.
+- **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, the knowledgebase's room. It also keeps a working record of collaborative input (such as comments), so that saves made at the same moment can be merged.
+- **Images** you add are kept by liveworkspace's media service and served back through the same API, which checks who may see them. Location and camera details are stripped from a JPEG before it is stored. Each knowledgebase's preview picture, for its thumbnail and live image, is drawn on request by the same media service.
+- **Image search** sends what you type in the image picker's **Search** tab straight from your browser to Openverse, the open image search engine; no <AppName /> server sees it.
+
+</AppNote>
+
 <AppNote app="livehuddle">
   - **Durable storage** is one Cloudflare Durable Object per space, reached only through the API:
   the space's tabs and the images it places are stored there. Where it is filed, its folders, share

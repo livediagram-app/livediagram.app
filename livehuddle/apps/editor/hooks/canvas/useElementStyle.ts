@@ -70,6 +70,8 @@ type EditorElementStyleDeps = {
   // single drag). Keyed by field name.
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   checkpointBurst: (key: string) => void;
+  // Says something to the person (the info toast): a corridor's Doors a Type change removed.
+  notify?: (message: string) => void;
 };
 
 export function useElementStyle(deps: EditorElementStyleDeps) {
@@ -83,12 +85,14 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     commit,
     tickTabs,
     checkpointBurst,
+    notify,
   } = deps;
 
   const dataShape = useDataShapeSetters({
     currentSelectionIds,
     commit,
     elements: () => activeTab.elements,
+    notify,
   });
 
   const shapeStyle = useShapeStyleSetters({

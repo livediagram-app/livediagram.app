@@ -1149,6 +1149,18 @@ Each profile keeps its own sign-in, and a profile for another host never contact
 
 Every error names what was wrong and suggests one command that fixes it. Set `LIVEDOCUMENTS_DEBUG=1` to see what the CLI is doing, on stderr.
 
+**Profiles**
+
+The CLI talks to `https://www.livedocuments.app` unless you point it elsewhere, such as a local development server. For one command, add `--host https://documents.example.com`; for a shell, set `LIVEDOCUMENTS_HOST`. To keep several, name them as profiles in `~/.config/livedocuments/config.toml` and choose one with `--profile` or `LIVEDOCUMENTS_PROFILE`:
+
+```toml
+default_profile = "work"
+[profiles.work]
+host = "https://documents.example.com"
+```
+
+Each profile keeps its own sign-in, and a profile for another host never contacts livedocuments.app. `LIVEDOCUMENTS_TOKEN` goes to whichever host is active, so set `LIVEDOCUMENTS_HOST` beside it. A host without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
+
 </AppNote>
 
 <AppNote app="livedesign">

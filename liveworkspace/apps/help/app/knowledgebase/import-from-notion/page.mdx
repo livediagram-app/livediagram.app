@@ -31,7 +31,7 @@ Moving from Notion? Export your pages from Notion as Markdown, and liveknowledge
 </Step>
 
 <Step n={2}>
-  Choose **A Whole Knowledgebase**, then **Notion**.
+  Under **A Whole Knowledgebase**, choose **Notion**.
 </Step>
 
 <Step n={3}>
@@ -66,12 +66,12 @@ Moving from Notion? Export your pages from Notion as Markdown, and liveknowledge
 - A link to a page you did not export stays an ordinary link.
 - Imported pages are Never Verified, owned by nobody.
 - The limits are the same for every source: 200 MB an archive, 500 pages in a Knowledgebase, 8 levels, 10 MB a picture. See [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/#limits).
-- The CLI imports a Notion export too: `liveknowledge import notion-export.zip --source notion --to Handbook`.
+- The CLI imports a Notion export too: `liveknowledge import notion-export.zip --source notion --to Handbook`. It leaves each picture as its caption; the app stores them.
 
 ## Who Can Do What
 
 | Action                          | Editor | Participant | Viewer |
 | ------------------------------- | ------ | ----------- | ------ |
-| Import from Notion              | Yes    | No          | No     |
+| Import from Notion              | Yes    | Yes         | No     |
 
 </ArticleLayout>
