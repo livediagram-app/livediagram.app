@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // A tool opened inside the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md "Opening a tool
-// inside Tools"; blueprint FM6 to FM9): the back bar as breadcrumb, Back and Escape a level at a time, focus in and back
-// to the row, the live region, the width a tool's dialog asks for, an ask from elsewhere, and a tool that leaves for
+// inside Tools"; blueprint FM6 to FM9): the band naming the tool with its back button, Back and Escape a level at a
+// time, focus in and back to the row, the live region, the width a tool's dialog asks for, an ask from elsewhere, and a tool that leaves for
 // the whole window.
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
@@ -101,6 +101,9 @@ function Leave({ onLeave, then }: { onLeave: () => void; then: () => void }) {
 const tools = () => screen.getByRole('button', { name: /^Tools/ });
 const popover = () => screen.queryByRole('dialog', { name: /^Tools/ });
 const live = () => document.querySelector('[data-tools-live]')!.textContent;
+const headerBack = () => document.querySelector<HTMLElement>('[data-dialog-hero-back]');
+const bandTitle = () => document.querySelector('[data-dialog-hero] h2')!.textContent;
+const bandLine = () => document.querySelector('[data-dialog-hero-subtitle]')!.textContent;
 
 async function openNotes() {
   fireEvent.click(tools());
@@ -109,31 +112,54 @@ async function openNotes() {
 }
 
 describe('a tool inside Tools', () => {
-  it('draws its dialog in place under the back bar, without its own title band or close', async () => {
+  it('draws its dialog in place under the band, without its own title band or close', async () => {
     render(<DialogTool />);
     await openNotes();
     expect(popover()!.getAttribute('aria-label')).toBe('Tools, Notes');
     const region = screen.getByRole('region', { name: 'Notes' });
     expect(popover()!.contains(region)).toBe(true);
     expect(document.querySelector('[data-dialog-backdrop]')).toBeNull();
-    const back = document.querySelector('[data-tools-back]')!;
-    expect(back.textContent).toContain('Tools');
-    expect(back.textContent).toContain('Notes');
-    // Its one line goes too: the tool explains itself below.
+    // No breadcrumb row: the band names the tool, its line the row's, its title mark the way back.
+    expect(within(popover()!).queryByText('Tools')).toBeNull();
+    expect(bandTitle()).toBe('Notes');
+    expect(bandLine()).toBe('Notes on the item.');
+    expect(document.querySelector('[data-dialog-hero-mark]')).toBeNull();
+    expect(headerBack()!.getAttribute('aria-label')).toBe('Back to Tools');
+    // The dialog's own line goes: the band carries the row's.
     expect(screen.queryByText('What was said.')).toBeNull();
     expect(live()).toBe('Notes');
   });
 
-  it('goes back to the list by the back bar, its focus on the row, and says so', async () => {
+  it('heads the list with Tools, its mark and its line, and no back button', () => {
+    render(<DialogTool />);
+    fireEvent.click(tools());
+    expect(bandTitle()).toBe('Tools');
+    expect(bandLine()).toBe('Powerful tools to enhance your experience.');
+    expect(document.querySelector('[data-dialog-hero-mark="tools"]')).not.toBeNull();
+    expect(headerBack()).toBeNull();
+  });
+
+  it('puts focus on the band’s back button as a tool opens', async () => {
+    render(<DialogTool />);
+    fireEvent.click(tools());
+    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="walk"]')!);
+    await screen.findByRole('button', { name: 'Done Walking' });
+    await waitFor(() => expect(document.activeElement).toBe(headerBack()));
+    expect(bandTitle()).toBe('Walk');
+  });
+
+  it('goes back to the list by the band’s back button, its focus on the row, the band restored', async () => {
     render(<DialogTool />);
     await openNotes();
-    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-back] button')!);
+    fireEvent.click(screen.getByRole('button', { name: 'Back to Tools' }));
     await waitFor(() => expect(screen.queryByText('Note body')).toBeNull());
     expect(popover()!.getAttribute('aria-label')).toBe('Tools');
     await waitFor(() =>
       expect(document.activeElement?.getAttribute('data-tools-item')).toBe('notes'),
     );
     expect(live()).toBe('Tools');
+    expect(bandTitle()).toBe('Tools');
+    expect(headerBack()).toBeNull();
   });
 
   it('goes back when the tool closes itself', async () => {
@@ -192,9 +218,8 @@ describe('a tool inside Tools', () => {
   it('closes Tools from any level with its close', async () => {
     render(<DialogTool />);
     await openNotes();
-    // No close beside the back bar: the band's corner close is the one close.
-    const bar = document.querySelector<HTMLElement>('[data-tools-back]')!;
-    expect(within(bar).queryByRole('button', { name: /close/i })).toBeNull();
+    // The band's corner close is the one close.
+    expect(within(popover()!).getAllByRole('button', { name: /close/i })).toHaveLength(1);
     fireEvent.click(within(popover()!).getByRole('button', { name: /close/i }));
     await waitFor(() => expect(popover()).toBeNull());
     expect(screen.queryByText('Note body')).toBeNull();

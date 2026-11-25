@@ -6,7 +6,7 @@
 // header (the tools hung on a pegboard), then one row per tool: its glyph on a plate in the hero's tokens, its name,
 // one line on what it does, its count, a chevron. Drawn only while it holds a tool; its rows are worked out from state
 // each tool already holds, so opening it fetches nothing. A row opens its tool inside the popover (ToolsView, "Opening a
-// tool inside Tools"; blueprint FM6), the back bar leading back to the list; Search and Version History close it.
+// tool inside Tools"; blueprint FM6), the band naming it, its back button leading back to the list; Search and Version History close it.
 
 import {
   useCallback,
@@ -29,8 +29,7 @@ import {
   useDialogSlot,
 } from '@liveworkspace/ui';
 import { lucideCloudUpload, lucideLogIn } from '@liveworkspace/icons/lucide';
-import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
-import { toolsHeroArt } from '@liveworkspace/ui/dialog-hero-art/tools';
+import { HERO_TOKEN_STYLE } from '@liveworkspace/ui/dialog-hero';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
 import { PopoverOrSheet } from '../primitives/PopoverOrSheet';
 import {
@@ -40,7 +39,7 @@ import {
   useToolsDoorItems,
   useToolsViewRequest,
 } from './tools-door';
-import { TOOLS_HEIGHT_PX, ToolsView } from './ToolsView';
+import { TOOLS_HEIGHT_PX, ToolsHeader, ToolsView } from './ToolsView';
 import { AnimatedHeightBox } from '../primitives/AnimatedHeightBox';
 
 /** The popover's sections, in the order they show; a section with no tool in it is left out. */
@@ -443,17 +442,13 @@ export function ChromeToolsMenu({
               <p aria-live="polite" data-tools-live="" className="sr-only">
                 {said}
               </p>
-              {/* The band heads every view of Tools, the list and each tool (above its breadcrumb), so moving between
-              them never changes the popover's top. */}
-              <HeroDialogHeader
-                art={toolsHeroArt}
+              {/* The band heads every view of Tools, the list and each tool, so moving between them never changes the
+              popover's top: on a tool it names it, its title mark the way back (FM6). */}
+              <ToolsHeader
                 titleId={titleId}
-                title="Tools"
-                subtitle="Powerful tools to enhance your experience."
-                // The title and its line stop short of the art in the bottom right (96px, 12px in) and the close above it.
-                className="sm:pr-[7.5rem]"
-                // A phone's drawer: the band runs up under its grab handle.
-                underHandle={sheet}
+                tool={view && active ? active : null}
+                onBack={back}
+                sheet={sheet}
               />
               {/* Going into a tool slides it in from the right, as a phone opens a menu; back slides the list in from the
               left. The height eases between them (never under the list's floor), and scrolls past the room there is. */}
@@ -472,7 +467,6 @@ export function ChromeToolsMenu({
                     key={`${view.id}:${view.slot ?? 'view'}`}
                     id={view.id}
                     label={active.label}
-                    onBack={back}
                     sheet={sheet}
                     tall={claimed?.size === '3xl'}
                     floorPx={listPx}
@@ -553,8 +547,8 @@ export function ChromeToolsMenu({
                 )}
               </AnimatedHeightBox>
               {/* The close in the top right corner, as a popover's is, not centred down the band's row: on the list and
-              on a tool alike, the band staying above the breadcrumb. Last in the DOM, so opening focuses the first
-              tool (or the back bar), not the close. */}
+              on a tool alike. Last in the DOM, so opening focuses the first tool (or the band's back button), not the
+              close. */}
               <div className="absolute right-3 top-3">
                 <DialogCloseButton compact onClick={shut} />
               </div>

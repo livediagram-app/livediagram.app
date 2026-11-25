@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 
 // A dialog's header drawn inside Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md "Opening a tool inside
-// Tools"): the back bar above it names the tool and closes it, so the title is for screen readers alone (still the
-// dialog's label). Its one line is left out too (owner, 2026-11-17: the tool explains itself below, better); only its
-// actions show, in a slim row. Only the heading when it has none.
+// Tools"): Tools' band above it names the tool, carries its row's line and backs out of it, so the title is for screen
+// readers alone (still the dialog's label). Its one line is left out too (owner, 2026-11-17: the tool explains itself
+// below, better); only its actions show, in a slim row. Only the heading when it has none.
 export function InlineDialogHeader({
   titleId,
   title,

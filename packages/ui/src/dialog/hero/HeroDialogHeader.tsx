@@ -105,7 +105,7 @@ export function HeroDialogHeader({
   // In a dialog that is a sheet on a phone, the band runs up under the grab handle unless the dialog says otherwise.
   const inSheet = useContext(DialogPhoneSheetContext);
   const under = underHandle ?? inSheet;
-  // Drawn inside Tools: no band (the back bar heads the tool), the title for screen readers, the line and the actions.
+  // Drawn inside Tools: no band (Tools' own band heads the tool, naming it), the title for screen readers and the actions.
   const inline = useDialogInline();
   // Where a centre piece shows, the title and its line stop short of it, so the two never meet.
   const cap = heroCentreCap(art);
