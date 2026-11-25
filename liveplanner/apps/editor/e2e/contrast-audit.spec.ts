@@ -76,6 +76,8 @@ test.describe('Contrast audit, dark mode', () => {
     const code = await shareLink(page, owner, origin, id);
     const visitor = await freshDarkPage(browser);
     await visitor.goto(`/project/${id}?s=${code}`);
+    // The name is defaulted, not asked (first-edit.md): the card opens from the name tray's Change Name.
+    await visitor.getByRole('button', { name: 'Change Name' }).click();
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     expectAA(await auditContrast(visitor), 'Join dialog');
     await visitor.context().close();

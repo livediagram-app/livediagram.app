@@ -5,7 +5,8 @@ import dynamic from 'next/dynamic';
 import { createPortal } from 'react-dom';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
-import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
+import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { emptyCardShownOf, templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import {
   closeKnowledgebaseStart,
   takeStructurePick,
@@ -89,6 +90,9 @@ export function EditorStartPanels() {
   // Whether the page has writing (someone else wrote, an import landed): read once per page object.
   const written = useEditorChrome((s) => s.hydrated && !pageIsUntouched(s.activeTab));
   const mayShow = useEditorChrome(templateStartShownOf);
+  // A Participant's or Viewer's untouched knowledgebase: the empty-canvas card (new-document-route.md).
+  const emptyCard = useEditorChrome(emptyCardShownOf);
+  const tabName = useEditorChrome((s) => s.activeTab.name);
   const offered = useKnowledgebaseStartOffered(tabId);
   const setup = useSetupOffered();
   const editor = useEditorChrome((s) => s.can.editPages && !s.isStructureReadOnly);
@@ -131,8 +135,13 @@ export function EditorStartPanels() {
   }, [shown, queued]);
 
   if (!shown) {
-    // A template's example content, once it has landed: Clear Example Content or Keep It.
-    return <ExampleContentTray />;
+    return (
+      <>
+        {emptyCard ? <EmptyCanvasBanner key={tabId} tabId={tabId} tabName={tabName} /> : null}
+        {/* A template's example content, once it has landed: Clear Example Content or Keep It. */}
+        <ExampleContentTray />
+      </>
+    );
   }
   // The start is never drawn under a pick asked for by link.
   if (queued) return null;

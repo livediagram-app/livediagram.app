@@ -79,6 +79,7 @@ export function EditorCanvasHost() {
     formatSourceId,
     hydrated,
     identityOnlyScreenOpen,
+    identityTrayOpen,
     imageContext,
     isOwner,
     canShareDesign,
@@ -336,9 +337,11 @@ export function EditorCanvasHost() {
               userPreferences={userPreferences}
               chartPalette={themeChartPalette(activeTheme)}
               imageContext={imageContext}
-              // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
-              // participant row, so there's no 403, and they should set a name before others see them in presence.
+              // A visitor's name is defaulted (liveworkspace/docs/specs/011-workbench/first-edit.md): the tray offers the change
+              // to everyone, view-role visitors included, and its Change Name opens the card. Both write only their own
+              // participant row, so there's no 403.
               showIdentityPrompt={identityOnlyScreenOpen}
+              showIdentityTray={identityTrayOpen}
               hydrated={hydrated}
               // Visitor on someone else's design + signed in → lock the
               // identity input to their account name. Owner branch never

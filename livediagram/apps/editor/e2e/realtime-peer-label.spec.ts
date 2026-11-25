@@ -95,7 +95,8 @@ for (const gap of WINDOWS) {
     const a = await openAs(browser, baseURL!, `/document/${id}`, owner);
     await a.locator(CANVAS).waitFor();
     const b = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);
-    await b.getByRole('button', { name: /^join$/i }).click();
+    // A visitor joins at once under a defaulted name (first-edit.md); Keep It confirms it from the name tray.
+    await b.getByRole('button', { name: 'Keep It' }).click();
     await b.locator(CANVAS).waitFor();
     await expect.poll(() => a.locator('[role="img"][aria-label$="(Online)"]').count()).toBe(2);
 

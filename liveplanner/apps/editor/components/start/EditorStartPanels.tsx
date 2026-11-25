@@ -1,5 +1,6 @@
 'use client';
 
+import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { readDashboard } from '@liveplanner/project';
@@ -72,17 +73,19 @@ export function EditorStartPanels() {
   // board, a shape, a view) hides it.
   const dashboardHasRows = (readDashboard(activeTab.dashboard)?.rows.length ?? 0) > 0;
   // A connected tab is empty but shows its own page, never a start (connected-tabs.md "How it looks").
-  const showPlanBoardPicker =
+  const tabEmpty =
     hydrated &&
     !ctx.activeTabConnected &&
     !zenMode &&
     !embedMode &&
-    !isReadOnly &&
     (activeTab.kind === 'dashboard'
       ? !dashboardHasRows
       : activeTab.kind === 'form'
         ? !activeTab.form
         : activeTab.elements.length === 0);
+  const showPlanBoardPicker = tabEmpty && !isReadOnly;
+  // A Participant's or Viewer's empty tab: the empty-canvas card every editor shares (plan-mode.md "Starting a board").
+  const showEmptyCard = tabEmpty && isReadOnly;
   // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md), for everyone who opens it; one with no rows left shows
   // Start Planning again, a new choice replacing it.
   // A warm open paints it before hydration too, its tiles drawn from what the last seen copy kept (offline-mode.md
@@ -131,6 +134,14 @@ export function EditorStartPanels() {
           onSyncToCloud={ctx.syncToCloud}
           syncReady={ctx.selfParticipant.id !== 'self'}
           tabScope={ctx.sessionTabScope}
+        />
+      ) : null}
+      {showEmptyCard ? (
+        <EmptyCanvasBanner
+          key={activeTab.id}
+          tabId={activeTab.id}
+          tabName={activeTab.name}
+          participant={ctx.can.level === 'participate'}
         />
       ) : null}
       {showPlanBoardPicker ? (

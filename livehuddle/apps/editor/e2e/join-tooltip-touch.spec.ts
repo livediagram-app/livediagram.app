@@ -42,6 +42,8 @@ test('tapping Join on a phone leaves no tooltip showing', async ({ page, browser
   });
   const guest = await ctx.newPage();
   await guest.goto(`/document/shared?s=${code}`);
+  // The name is defaulted (first-edit.md): the name card, and its Join, open from the name tray's Change Name.
+  await guest.getByRole('button', { name: 'Change Name' }).tap();
   const join = guest.getByRole('button', { name: /^join$/i });
   const at = (await join.boundingBox())!;
   await join.tap();

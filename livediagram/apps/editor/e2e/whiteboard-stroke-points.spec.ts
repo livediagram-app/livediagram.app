@@ -223,7 +223,8 @@ test('a peer’s pen stroke reaches the owner live, packed', async ({ page, brow
   const ownerPage = await openAs(browser, baseURL!, `/document/${id}`, owner);
   await ownerPage.locator(CANVAS).waitFor();
   const peerPage = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);
-  await peerPage.getByRole('button', { name: /^join$/i }).click();
+  // A visitor joins at once under a defaulted name (first-edit.md); Keep It confirms it from the name tray.
+  await peerPage.getByRole('button', { name: 'Keep It' }).click();
   await peerPage.locator(CANVAS).waitFor();
   await dismissQuickTour(ownerPage);
   await dismissQuickTour(peerPage);

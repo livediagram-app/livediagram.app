@@ -7,7 +7,8 @@ import { StartAgainTray } from '@liveworkspace/workbench/components/start/StartA
 import { startClosedKey } from '@/components/start/start-closed-key';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
-import { useTemplateStartShown } from '@/components/start/useTemplateStartShown';
+import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { useEmptyCardShown, useTemplateStartShown } from '@/components/start/useTemplateStartShown';
 
 // The template start (docs/specs/007-editor/start-diagramming.md) carries every template's preview: loaded the first
 // time an empty tab offers it, never on the editor's first load.
@@ -30,6 +31,8 @@ export function EditorStartPanels() {
     tabHasContent: activeTab.elements.length > 0,
   });
   const templateStart = useTemplateStartShown();
+  // A Participant's or Viewer's empty tab: the empty-canvas card (new-design-route.md "The empty-canvas hint").
+  const emptyCard = useEmptyCardShown();
   return templateStart ? (
     <>
       <StartFromTemplates
@@ -52,7 +55,17 @@ export function EditorStartPanels() {
       />
     </>
   ) : (
-    // A template's example content, once it has landed: Clear Example Content or Keep It.
-    <ExampleContentTray />
+    <>
+      {emptyCard ? (
+        <EmptyCanvasBanner
+          key={activeTab.id}
+          tabId={activeTab.id}
+          tabName={activeTab.name}
+          participant={ctx.can.level === 'participate'}
+        />
+      ) : null}
+      {/* A template's example content, once it has landed: Clear Example Content or Keep It. */}
+      <ExampleContentTray />
+    </>
   );
 }

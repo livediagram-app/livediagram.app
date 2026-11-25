@@ -11,8 +11,15 @@ import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // `showIdentityPrompt`, false on the common path (the owner opening their own document); for a visitor the empty
 // canvas underneath has already rendered, so the prompt fades in a frame later rather than blocking the route on its JS.
 import dynamic from 'next/dynamic';
+import { askNameCard, closeNameCard } from '@liveworkspace/workbench/lib/name-card';
 const IdentityPrompt = dynamic(
   () => import('@/components/palette/IdentityPrompt').then((m) => m.IdentityPrompt),
+  { ssr: false },
+);
+// The name tray a guest visitor sees instead of the card (liveworkspace/docs/specs/011-workbench/first-edit.md), loaded
+// only when it shows.
+const NameTray = dynamic(
+  () => import('@liveworkspace/workbench/components/chrome/NameTray').then((m) => m.NameTray),
   { ssr: false },
 );
 
@@ -181,6 +188,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     selfParticipant,
     snapGuideStore,
     showIdentityPrompt,
+    showIdentityTray = false,
     tabThemeId,
     identityLockedName,
     welcomeOpen,
@@ -395,9 +403,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
           participant={selfParticipant}
           documentName={documentName}
           lockedName={identityLockedName}
-          onJoin={onConfirmIdentity}
-          onCancel={onCancelIdentity}
+          onJoin={(name) => {
+            closeNameCard();
+            onConfirmIdentity(name);
+          }}
+          onCancel={() => {
+            closeNameCard();
+            onCancelIdentity();
+          }}
         />
+      ) : null}
+      {/* A signed-in visitor's name is their account's: nothing to choose, so no tray. */}
+      {showIdentityTray && !identityLockedName ? (
+        <NameTray name={selfParticipant.name} onChange={askNameCard} onKeep={onCancelIdentity} />
       ) : null}
 
       <CanvasGuideOverlay

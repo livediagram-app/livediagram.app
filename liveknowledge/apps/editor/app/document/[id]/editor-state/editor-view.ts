@@ -235,6 +235,7 @@ export function editorView({
     handleCanvasDoubleClick: elementsSlice.handleCanvasDoubleClick,
     hydrated: sessionSlice.hydrated,
     identityOnlyScreenOpen: commentsSlice.identityOnlyScreenOpen,
+    identityTrayOpen: commentsSlice.identityTrayOpen,
     imageContext: elementsSlice.imageContext,
     imagePickerOpenFor: elementsSlice.imagePickerOpenFor,
     importIntoActiveTab: tabsSlice.importIntoActiveTab,
