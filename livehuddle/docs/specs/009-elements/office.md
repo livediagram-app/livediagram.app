@@ -110,6 +110,12 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
     dropped or slid onto a turned room's wall snaps onto the turned wall;
   - **its call is its turned floor**: someone is in the room when their feet are on the floor as drawn
     ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)).
+  - **what wanders or plays in it keeps to its turned floor** (Work Tracker 1473): the office dog of a Pet Bed in it
+    ([Workday pieces](workday-pieces.md#pet-bed-and-its-dog)) and the Receptionist whose pad stands in it
+    ([Receptionist](../008-canvas/receptionist.md)) pick their spots inside its walls as drawn, and a Jukebox in it
+    ([Social pieces](social-pieces.md)) is heard by whoever stands on its floor as drawn. The same holds for a Room
+    Builder room's outline. All read one floor polygon (`roomFloorPolygon` in `@livehuddle/document`), worked out once
+    per board change; an upright box room keeps its box.
   - A turned room shares walls by its walls, not its box: it is left out of the wall-to-wall snap (moving it, or a
     room beside it, snaps edges only) and a duplicate of it stands a gap away rather than on its wall. On Grass a
     turned room has no roof in the 3D view ([3D view](../008-canvas/3d-view.md)).

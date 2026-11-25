@@ -54,7 +54,9 @@ each leg's stop comes from the pad's id and the leg's number through the same se
 that agree to a second agree on the Receptionist.
 
 - **His area** is the innermost Room whose floor holds his pad's middle, or a circle 480 px round the pad when the
-  pad stands in no room.
+  pad stands in no room. A turned room's floor, or a Room Builder room's, is its floor as drawn
+  ([Office](../009-elements/office.md) "A Room turns"): he picks his spots inside its walls, and walks you to a spot
+  inside its front wall as turned.
 - **His stops** are the pieces in his area that he has something to do at, and a few spots on the open floor:
 
   | Stop                                                        | What he does there                                     |

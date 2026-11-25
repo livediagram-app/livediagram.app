@@ -26,6 +26,10 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
 - **One pure clock.** `receptionistPose(world, now, detour)` is the whole of where he is. `now` is cut into legs of
   `RECEPTIONIST_LEG_MS`; leg `n`'s stop is `receptionistStop(world, n)`, seeded by `hashId(padId) ^ n`, so every screen agrees
   with nothing sent. Each leg he walks from leg `n - 1`'s stop at `RECEPTIONIST_SPEED`, then does the stop's thing.
+- **A turned room's floor.** `receptionistWorld` finds his room by `roomFloorHolds` and, for a turned or Room Builder
+  room, gives a `polygon` area (`roomFloorPolygon`, the room's call floor) inset by `RECEPTIONIST_INSET` through
+  `insidePolygonBy`; floor spots are drawn in its bounds and kept only inside. Another room's walk-in spot
+  (`rooms`) is turned with its room. All worked out once per world, never per frame.
 - **Detours are local.** A greeting (`greetDetour`, held `RECEPTIONIST_GREET_MS`), a talk (`talkDetour`, held until
   released) or a lead to a room (`leadDetour`) walks from wherever he is. When it ends, his day resumes from where
   the detour left him, within that leg.
