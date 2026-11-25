@@ -529,8 +529,9 @@ and the editor's "This Browser" to "Offline" on 2026-11-19. "Browser Storage" re
 - **On Home.** Home's Spaces lists Offline after the teams, by the same rule (below).
 - **liveworkspace.app** can't read an app's origin storage, so it can't know whether Offline holds anything
   and never shows it as a Space (an always-shown Space would break the rule above, and one that guesses would lie).
-  It keeps its hand-off instead: a quiet row after the Library, "Offline", that leaves for the app's own
-  `/explorer/offline`, where the Space and its folders are; `/explorer/offline` there goes to the same place. The
+  Nor does it show a link to it (owner, 2026-11-25: Offline is in Spaces when it holds something, and not shown at
+  all when it doesn't): the sidebar has no Offline row there. `/explorer/offline` there still leaves for the app's
+  own `/explorer/offline`, where the Space and its folders are, so old links keep working. The
   editors' panel and the Explorer on each app's address read the store and follow the rule. The panel's pane
   lists every live item, whichever folder holds it (its rows are compact; the folders are the page's).
 
