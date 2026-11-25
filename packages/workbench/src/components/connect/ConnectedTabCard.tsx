@@ -123,11 +123,7 @@ export function ConnectedTabCard({
             Open Again
           </a>
         ) : null}
-        {state === 'locked' && targetId ? (
-          <div className="mt-5 flex w-full flex-col items-center">
-            <RequestAccess itemId={targetId} noun="file" />
-          </div>
-        ) : null}
+        {state === 'locked' && targetId ? <RequestAccess itemId={targetId} noun="file" /> : null}
         {state === 'failed' ? (
           <Button variant="secondary" size="sm" className="mt-5" onClick={onRetry}>
             <RetryGlyph />

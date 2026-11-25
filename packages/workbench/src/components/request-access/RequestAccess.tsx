@@ -59,7 +59,10 @@ export function RequestAccess({
 
   return (
     <div className="mt-6 flex w-full flex-col items-center" data-request-access="">
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      {/* The row goes while the note is open with nothing beside it, so no empty band sits above the note. */}
+      <div
+        className={`flex flex-wrap items-center justify-center gap-2 ${shown && !leading ? 'hidden' : ''}`}
+      >
         {leading}
         {requested ? (
           <span
@@ -93,7 +96,7 @@ export function RequestAccess({
       {shown ? (
         <form
           data-request-access-state={sending ? 'sending' : 'writing'}
-          className="mt-5 w-full animate-pop-in rounded-xl border border-slate-200 bg-slate-50 p-3 text-left motion-reduce:animate-none dark:border-slate-700 dark:bg-slate-800/60"
+          className={`${leading ? 'mt-5' : ''} w-full animate-pop-in rounded-xl border border-slate-200 bg-slate-50 p-3 text-left motion-reduce:animate-none dark:border-slate-700 dark:bg-slate-800/60`}
           onSubmit={(e) => {
             e.preventDefault();
             submit();
