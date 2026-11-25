@@ -142,7 +142,7 @@ export function AiChatArt() {
               className="flex flex-col gap-2 rounded-xl border border-slate-200 border-t-[var(--lw-ink)] border-t-2 bg-slate-50 p-2 dark:border-slate-700 dark:border-t-[var(--lw-ink-dark)] dark:bg-slate-950"
             >
               {art}
-              <span className="truncate text-xs font-medium text-slate-700 dark:text-slate-200">
+              <span className="text-xs leading-snug font-medium text-slate-700 dark:text-slate-200">
                 {title}
               </span>
             </li>
