@@ -3,7 +3,9 @@
 // ceiling: four times the rows should cost about four times as much; a scan per id would cost sixteen.
 import { describe, expect, it } from 'vitest';
 import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
-import { makeSheets } from './testing/book';
+import { book, makeSheets } from './testing/book';
+import { clipFromRange } from './clipboard';
+import { pasteCut } from './commands-paste';
 import { applySheetWrite, inverseSheetWrite, type SheetWrite } from './store';
 
 const ctx = { now: 1, by: { id: '', name: '', color: '#000000' } };
@@ -27,6 +29,21 @@ describe('row operations as a sheet grows', () => {
   it('cost about linearly more, never quadratically', { timeout: 30_000 }, () => {
     // Both sizes warmed and timed in turns (cpuGrowthRatio), the fastest sample of each kept.
     const ratio = cpuGrowthRatio(costOf(2_500), costOf(10_000), { ceiling: RATIO_CEILING });
+    expect(ratio).toBeLessThan(RATIO_CEILING);
+  });
+});
+
+// A cut and paste stays linear in the cells moved: its write was once built by copying the list per cell (a
+// 10,000-cell cut took about 390 ms).
+describe('a cut as it grows', () => {
+  it('costs about linearly more, never quadratically', { timeout: 30_000 }, () => {
+    const cutOf = (rows: number) => {
+      const b = book({}, { rows, cols: 12 });
+      const id = b.sheets[0]!.id;
+      const clip = clipFromRange(b.wb, id, { r1: 0, c1: 0, r2: rows - 1, c2: 4 })!;
+      return () => cpuMsOf(() => pasteCut(b.wb, id, { r: 0, c: 6 }, clip));
+    };
+    const ratio = cpuGrowthRatio(cutOf(500), cutOf(2_000), { ceiling: RATIO_CEILING });
     expect(ratio).toBeLessThan(RATIO_CEILING);
   });
 });

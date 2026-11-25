@@ -465,6 +465,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   What landed is selected after any paste, never cells past the grid's last row or column.
 - **Paste Values Only** pastes values, no formulas and no formats; **Paste Formatting Only** (the cell menu)
   pastes only formats.
+- A cell's format that lands (a paste of the sheet's own cells, a cut, Paste Formatting Only, Paint Format, a fill,
+  Sort Range) replaces the format the cell had: a bold cell that takes a red one reads red, not bold and red.
 
 ### Fill
 

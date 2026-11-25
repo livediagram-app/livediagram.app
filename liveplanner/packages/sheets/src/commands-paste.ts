@@ -8,7 +8,7 @@ import { SHEET_COLS_MAX, SHEET_ROWS_MAX } from './limits';
 import { cellKey, type CellFormat, type Sheet, type StoredRef } from './sheet';
 import { mapFormulaRefs, shiftForCopy } from './formula/stored';
 import { readTypedInput } from './typed-input';
-import type { FormatPatch } from './format';
+import { formatReplacing, type FormatPatch } from './format';
 import type { PastedCell, SheetClip } from './clipboard';
 import type { CellChange, LayoutChange, SheetWrite } from './store';
 import type { Workbook } from './engine/workbook';
@@ -113,7 +113,8 @@ export function pasteClip(
             ? { f: shiftForCopy(input.f, dr, dc, from, toCtx) }
             : (input ?? null);
       }
-      if (mode !== 'values') ch.f = src?.format ?? null;
+      if (mode !== 'values')
+        ch.f = formatReplacing(sheet.cells.get(cellKey(rowId, colId))?.format, src?.format);
       cells.push(ch);
     }
   return {
@@ -166,7 +167,12 @@ export function pasteCut(
     return out;
   };
   const bySheet = new Map<string, CellChange[]>();
-  const push = (id: string, ch: CellChange) => bySheet.set(id, [...(bySheet.get(id) ?? []), ch]);
+  // Appended in place: copying the list per cell made a 10,000-cell cut quadratic (about 390 ms).
+  const push = (id: string, ch: CellChange) => {
+    const list = bySheet.get(id);
+    if (list) list.push(ch);
+    else bySheet.set(id, [ch]);
+  };
   // Clear the old place (unless the new place covers it), then put the moved cells down.
   const landing = new Set([...moved.values()].map((x) => cellKey(x.r, x.c)));
   for (const key of moved.keys())
@@ -181,7 +187,9 @@ export function pasteCut(
       input && 'f' in input
         ? { f: mapFormulaRefs(input.f, (ref) => follow(ref, clip.from.sheetId)) }
         : (input ?? null);
-    push(sheetId, { r: to.r, c: to.c, i, f: cell?.format ?? null });
+    // Over the landing cell's own format (a moved-from cell landed on keeps its own until it is replaced).
+    const under = dest.cells.get(cellKey(to.r, to.c))?.format;
+    push(sheetId, { r: to.r, c: to.c, i, f: formatReplacing(under, cell?.format) });
   }
   // Formulas elsewhere on the tab that read the moved cells.
   for (const sheet of wb.sheetList()) {
