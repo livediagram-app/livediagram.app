@@ -227,6 +227,29 @@ describe('watching', () => {
     await readRange(bo.auth, plan.id, ask, { 'X-Index-Grant': grant });
     expect((doorCalls()[1]!.body as { watcher?: string }).watcher).toBeUndefined();
   });
+
+  it("refuses a tab-scoped link's watch on another tab before any watch is recorded", async () => {
+    const { ada, plan, doc } = await setup();
+    const code = await shareLink(ada.auth, plan.id, { level: 'view', tabId: 'tab-2' });
+    const bo = await person('user_bo');
+    await call(`/share/${code}`, { auth: bo.auth, headers: { 'X-Share-Code': code } });
+    const docCode = await shareLink(ada.auth, doc.id, { level: 'view' });
+    await call(`/share/${docCode}`, { auth: bo.auth, headers: { 'X-Share-Code': docCode } });
+    const grant = await grantFor(bo.auth, doc.id, docCode);
+    h.appCalls = [];
+    const watch = { watch: { itemId: doc.id } };
+    const other = { sheetId: 's1', a1: 'A1', ...watch };
+    expect((await readRange(bo.auth, plan.id, other, { 'X-Index-Grant': grant })).status).toBe(404);
+    expect(doorCalls().filter((c) => c.url.endsWith('/sheet-range'))).toHaveLength(0);
+    // Its own tab's sheet reads and watches as before.
+    sheetApp((c) =>
+      c.url.endsWith('/sheet-range') ? Response.json({ ...READ, tabId: 'tab-2' }) : undefined,
+    );
+    const own = { sheetId: 's2', a1: 'A1', ...watch };
+    expect((await readRange(bo.auth, plan.id, own, { 'X-Index-Grant': grant })).status).toBe(200);
+    const reads = doorCalls().filter((c) => c.url.endsWith('/sheet-range'));
+    expect((reads[0]!.body as { watcher?: string }).watcher).toBe(doc.id);
+  });
 });
 
 describe('listing sheets', () => {
