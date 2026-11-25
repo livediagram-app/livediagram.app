@@ -145,6 +145,19 @@ describe('typeaheadIndex', () => {
     expect(typeaheadIndex(labels, 4, 'ch')).toBe(2);
   });
 
+  it('keeps focus on the item a search being built still matches', () => {
+    const shared = ['Share', 'Share link', 'Settings'];
+    // "s" from Share moves on to Share link; "sh" and "sha" still match it, so focus stays there.
+    expect(typeaheadIndex(shared, 0, 's')).toBe(1);
+    expect(typeaheadIndex(shared, 1, 'sh')).toBe(1);
+    expect(typeaheadIndex(shared, 1, 'sha')).toBe(1);
+    // Once the search no longer matches the current item, it moves to the next that does.
+    expect(typeaheadIndex(shared, 1, 'se')).toBe(2);
+    // With nothing focused, the first match.
+    expect(typeaheadIndex(shared, -1, 'se')).toBe(2);
+    expect(typeaheadIndex(['Share', 'Shape'], -1, 'sh')).toBe(0);
+  });
+
   it('cycles items sharing a first letter when that letter repeats', () => {
     expect(typeaheadIndex(labels, 3, 'dd')).toBe(4);
     expect(typeaheadIndex(labels, 4, 'ddd')).toBe(3);
