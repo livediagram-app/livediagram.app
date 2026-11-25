@@ -575,7 +575,18 @@ export async function handleSharedWalkthrough(
     };
     return json(shared, { headers: { 'Cache-Control': 'private, no-store' } });
   }
-  const range = parseRange(request.headers.get('Range'));
+  // RFC 9110: a range ending past the file is clamped to its last byte; one starting past it is 416. The row's size is
+  // the stored object's (checked when it was finished), so the clamp needs no extra read.
+  const size = row.media_bytes;
+  const asked = parseRange(request.headers.get('Range'));
+  if (asked && asked.offset >= size)
+    return new Response(null, {
+      status: 416,
+      headers: { 'Content-Range': `bytes */${size}`, 'Cache-Control': 'private, no-store' },
+    });
+  const range = asked
+    ? { offset: asked.offset, length: Math.min(asked.length ?? size, size - asked.offset) }
+    : null;
   const object = await bucket.get(mediaKey(row.id), range ? { range } : {});
   if (!object) return notFound();
   const headers = new Headers({
@@ -584,11 +595,9 @@ export async function handleSharedWalkthrough(
     'X-Content-Type-Options': 'nosniff',
     'Cache-Control': 'private, no-store',
   });
-  if (range && 'range' in object && object.range) {
-    const r = object.range as { offset?: number; length?: number };
-    const offset = r.offset ?? 0;
-    const length = r.length ?? object.size - offset;
-    headers.set('Content-Range', `bytes ${offset}-${offset + length - 1}/${object.size}`);
+  if (range) {
+    const { offset, length } = range;
+    headers.set('Content-Range', `bytes ${offset}-${offset + length - 1}/${size}`);
     headers.set('Content-Length', String(length));
     return new Response(object.body, { status: 206, headers });
   }

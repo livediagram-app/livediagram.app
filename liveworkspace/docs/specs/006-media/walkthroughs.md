@@ -318,8 +318,9 @@ createdAt, ready }` (`shareCode` null while its link is off).
 
 **The public door** (no app key; the liveworkspace site calls it): `GET /api/media/walkthroughs/shared/<code>` answers
 `{ title, author, app, durationMs, mediaType, createdAt }` for a ready screen recording whose link is on, else 404;
-`GET /api/media/walkthroughs/shared/<code>/media` its bytes, with `Range` support so a video seeks, `Cache-Control:
-private, no-store` (a link turned off stops at once).
+`GET /api/media/walkthroughs/shared/<code>/media` its bytes, with `Range` support so a video seeks (an end past the
+file is clamped to its last byte, a start past it is `416`), `Cache-Control: private, no-store` (a link turned off
+stops at once).
 The owner travels beside it, never in it, so an app decides what its browser is told (only "yours" or not).
 
 ### Refusals
