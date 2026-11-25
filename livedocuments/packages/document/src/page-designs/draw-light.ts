@@ -1,6 +1,6 @@
 // The Light family (docs/specs/011-theme/page-designs.md "The catalogue"): frosted glass, a spotlight,
-// out-of-focus lights and soft shadows. Shadows are stacked translucent shapes and soft lights radial gradients, never
-// blur filters, so nothing here needs a filter to draw. Pure.
+// out-of-focus lights, soft shadows and things lifted off the page (cards and instant photos). Shadows are stacked
+// translucent shapes and soft lights radial gradients, never blur filters, so nothing here needs a filter to draw. Pure.
 import {
   between,
   glowDef,
@@ -209,10 +209,94 @@ const layeredCards: Drawer = (c) => {
   return [{ svg: cards.join('') }];
 };
 
+// Card Cascade: a diagonal run of small cards dealt out of the focus's corner toward the middle, each smaller and
+// paler than the one before it, the largest (in the corner) on top.
+const cardCascade: Drawer = (c) => {
+  const u = unit(c) * 1.2;
+  const [fx, fy] = c.t.focus;
+  const sx = fx * c.w;
+  const sy = fy * c.h;
+  const toward = Math.atan2(c.h / 2 - sy, c.w / 2 - sx);
+  const step = u * 10;
+  const colours = trio(c);
+  const cards: string[] = [];
+  for (let i = 4; i >= 0; i -= 1) {
+    const k = 0.86 ** i;
+    const w = u * 34 * k;
+    const h = u * 22 * k;
+    const cx = sx + Math.cos(toward) * step * i;
+    const cy = sy + Math.sin(toward) * step * i;
+    const x = cx - w / 2;
+    const y = cy - h / 2;
+    const turn = -8 + i * 3 + between(c.rnd, -2, 2);
+    cards.push(
+      `<g transform="rotate(${n(turn)} ${n(cx)} ${n(cy)})">` +
+        softShadow(x, y, w, h, u * 1.8 * k, u * 0.5, u * 1.3, c.p.dark ? 0.28 : 0.1) +
+        `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${n(u * 1.8 * k)}" fill="${colours[i % 3]}" fill-opacity="${n(0.85 - i * 0.12)}"/>` +
+        `<rect x="${n(x + w * 0.1)}" y="${n(y + h * 0.16)}" width="${n(w * 0.42)}" height="${n(u * 1.2 * k)}" rx="${n(u * 0.6 * k)}" fill="#ffffff" fill-opacity="0.5"/>` +
+        `<rect x="${n(x + w * 0.1)}" y="${n(y + h * 0.16 + u * 2.4 * k)}" width="${n(w * 0.28)}" height="${n(u * 0.9 * k)}" rx="${n(u * 0.45 * k)}" fill="#ffffff" fill-opacity="0.32"/></g>`,
+    );
+  }
+  return [{ svg: cards.join('') }];
+};
+
+// Polaroids: instant photos round the corners (or along the bottom edge), each a white frame with a soft picture in
+// the palette inside (a sky, a sun and a hill), a strip of tape across its top and a tilt of its own.
+const polaroids: Drawer = (c) => {
+  const u = unit(c) * 1.4;
+  const colours = trio(c);
+  const edge = c.t.variant === 'edge';
+  const spots: [number, number][] = edge
+    ? [0.1, 0.32, 0.58, 0.82].map((x) => [x, 0.93])
+    : [
+        [0.08, 0.1],
+        [0.92, 0.12],
+        [0.9, 0.86],
+        [0.1, 0.9],
+      ];
+  const frame = c.p.dark ? '#f1f5f9' : '#ffffff';
+  const photos = spots.map(([fx, fy], i) => {
+    const w = u * 20;
+    const h = u * 24;
+    const cx = fx * c.w + between(c.rnd, -u * 2, u * 2);
+    const cy = fy * c.h + between(c.rnd, -u * 2, u * 2);
+    const x = cx - w / 2;
+    const y = cy - h / 2;
+    const pad = u * 1.4;
+    const pw = w - pad * 2;
+    const ph = pw;
+    const sky = `${c.uid}-po${i}`;
+    const a = colours[i % 3]!;
+    const b = colours[(i + 1) % 3]!;
+    const hill = `M${n(x + pad)} ${n(y + pad + ph * 0.72)}Q${n(x + pad + pw * 0.35)} ${n(y + pad + ph * between(c.rnd, 0.45, 0.6))} ${n(x + pad + pw * 0.65)} ${n(y + pad + ph * 0.68)}T${n(x + pad + pw)} ${n(y + pad + ph * 0.62)}V${n(y + pad + ph)}H${n(x + pad)}Z`;
+    const turn = between(c.rnd, -12, 12);
+    return (
+      `<g transform="rotate(${n(turn)} ${n(cx)} ${n(cy)})">` +
+      softShadow(x, y, w, h, u * 0.4, u * 0.4, u * 1.2, c.p.dark ? 0.3 : 0.1) +
+      `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${n(u * 0.4)}" fill="${frame}"/>` +
+      `<defs>${linearDef(
+        sky,
+        [
+          [0, a, 0.75],
+          [1, b, 0.45],
+        ],
+        170,
+      )}</defs>` +
+      `<rect x="${n(x + pad)}" y="${n(y + pad)}" width="${n(pw)}" height="${n(ph)}" fill="url(#${sky})"/>` +
+      `<circle cx="${n(x + pad + pw * between(c.rnd, 0.6, 0.8))}" cy="${n(y + pad + ph * 0.32)}" r="${n(pw * 0.1)}" fill="#ffffff" fill-opacity="0.75"/>` +
+      `<path d="${hill}" fill="${colours[(i + 2) % 3]}" fill-opacity="0.8"/>` +
+      `<rect x="${n(cx - u * 4)}" y="${n(y - u * 1.2)}" width="${n(u * 8)}" height="${n(u * 2.4)}" fill="${frame}" fill-opacity="0.55" stroke="${c.p.ink}" stroke-opacity="0.08" transform="rotate(${n(between(c.rnd, -8, 8))} ${n(cx)} ${n(y)})"/></g>`
+    );
+  });
+  return [{ svg: photos.join('') }];
+};
+
 export const LIGHT_DRAWERS = {
   'glass-panels': glassPanels,
   spotlight,
   bokeh,
   'soft-shadows': softShadows,
   'layered-cards': layeredCards,
+  'card-cascade': cardCascade,
+  polaroids,
 } as const;

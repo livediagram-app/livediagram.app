@@ -27,8 +27,8 @@ const SIZES: [number, number][] = [
 const nodes = (svg: string) => (svg.match(/<[a-zA-Z]/g) ?? []).length;
 
 describe('page design catalogue (docs/specs/011-theme/page-designs.md "The catalogue")', () => {
-  it('holds 40 or more designs over eight families, ids unique and in catalogue order', () => {
-    expect(PAGE_DESIGNS.length).toBeGreaterThanOrEqual(40);
+  it('holds 55 designs over eight families, ids unique and in catalogue order', () => {
+    expect(PAGE_DESIGNS.length).toBe(55);
     expect(new Set(PAGE_DESIGN_IDS).size).toBe(PAGE_DESIGN_IDS.length);
     expect(PAGE_DESIGNS.map((d) => d.id)).toEqual([...PAGE_DESIGN_IDS]);
     expect(PAGE_DESIGN_FAMILIES).toHaveLength(8);

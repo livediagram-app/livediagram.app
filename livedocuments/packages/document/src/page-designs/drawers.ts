@@ -8,6 +8,8 @@ import { GRADIENT_DRAWERS } from './draw-gradients';
 import type { Drawer } from './draw-kit';
 import { LIGHT_DRAWERS } from './draw-light';
 import { ORGANIC_DRAWERS } from './draw-organic';
+import { POSTER_DRAWERS } from './draw-poster';
+import { RISO_DRAWERS } from './draw-riso';
 import { TECH_DRAWERS } from './draw-tech';
 import { TEXTURE_DRAWERS } from './draw-texture';
 
@@ -16,8 +18,10 @@ export const DESIGN_DRAWERS: Record<PageDesignId, Drawer> = {
   ...GEOMETRIC_DRAWERS,
   ...ORGANIC_DRAWERS,
   ...TEXTURE_DRAWERS,
+  ...RISO_DRAWERS,
   ...LIGHT_DRAWERS,
   ...FRAME_DRAWERS,
   ...BOLD_DRAWERS,
+  ...POSTER_DRAWERS,
   ...TECH_DRAWERS,
 };

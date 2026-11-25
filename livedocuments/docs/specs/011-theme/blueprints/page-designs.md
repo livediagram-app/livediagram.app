@@ -185,7 +185,7 @@ counts `Tab·Changed·PageDesignSaved` (through the provider's `onSaved`, alongs
 - Agents: `packages/edit-operations/src/pages/page-designs.test.ts`; the CLI flags in
   `packages/agent-verbs/src/verbs/pages.test.ts`; `create_document` in `apps/mcp/src/create-document-placement.test.ts`.
 - Editor: `PageDesignLayer.test.tsx` (layers, pause, decoration only), `PageDesignPanel.test.tsx` (pick, scope,
-  tune, reset, sets), `design-tune.test.ts`, and `usePageDesignEdits.test.ts` (one step a pick, a burst a drag, the
+  tune, reset, sets, Keep Theme in Shuffle's row and hidden while Affect All Pages is off), `design-tune.test.ts`, and `usePageDesignEdits.test.ts` (one step a pick, a burst a drag, the
   lock, a set, a saved design, and the Participant and Viewer roles).
 - Saved designs: `saved.test.ts` (element, preview round trip, ids); `apps/api/src/routes/page-designs.test.ts`
   (list for a person, a team and a token; kept out of the element list; a mixed save refused); `PageDesignPanel.test.tsx`
