@@ -63,16 +63,19 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
   if (scope instanceof Response) return scope;
   if (await searchLimited(ctx)) return rateLimited();
   const now = Date.now();
+  // A link confined to one page (tab-scoped-share-links.md) finds only what that page holds: searched in that page
+  // alone, so the results other pages would take do not crowd its own out of the best twenty.
+  const onlyTabs =
+    grant.tabScope === null
+      ? scope && [...scope.tabs]
+      : !scope || scope.tabs.has(grant.tabScope)
+        ? [grant.tabScope]
+        : [];
   const statement =
-    scope && scope.tabs.size === 0
+    onlyTabs && onlyTabs.length === 0
       ? undefined
-      : searchPassages(query, {
-          now,
-          reviewEvery,
-          ...(scope ? { onlyTabs: [...scope.tabs] } : {}),
-        });
+      : searchPassages(query, { now, reviewEvery, ...(onlyTabs ? { onlyTabs } : {}) });
   const found = statement ? (await rowsOf<SearchRow>(ctx.env, statement)).map(foundPassage) : [];
-  // A link confined to one page (tab-scoped-share-links.md) finds only what that page holds.
   const results = grant.tabScope === null ? found : found.filter((r) => r.tab === grant.tabScope);
   // The sources the reader can open themselves (search-and-ask.md "Sources"), after the pages; none for a guest, a
   // link reader or a label scope.
@@ -113,9 +116,10 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
       recordRead(tab, reader, now),
     );
     const key = questionKey(query);
-    // A scoped search that finds nothing proves nothing of the rest of the knowledgebase: no question is recorded.
+    // A scoped search (by label, or a link confined to one page) that finds nothing proves nothing of the rest of the
+    // knowledgebase: no question is recorded.
     const asked =
-      results.length === 0 && sources.length === 0 && key && !scope
+      results.length === 0 && sources.length === 0 && key && !scope && grant.tabScope === null
         ? [{ key, question: query.trim() }]
         : [];
     const fresh = await newQuestions(ctx, asked);

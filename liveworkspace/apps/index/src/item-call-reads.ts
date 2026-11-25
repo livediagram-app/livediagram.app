@@ -83,13 +83,14 @@ export const callOf = (env: Env, row: CallRow, now: number): ItemCall => ({
   live: isLive(row, now),
 });
 
-/** The item's live call, if any: the newest not ended. */
+/** The item's live call, if any: the newest live (isLive, in SQL, so a newer call nobody joined never hides it). */
 export async function liveCallOf(env: Env, itemId: string, now: number): Promise<CallRow | null> {
   const row = await env.INDEX_DB.prepare(
-    `SELECT ${CALL_COLUMNS} FROM item_calls WHERE item_id = ? AND ended_at IS NULL
+    `SELECT ${CALL_COLUMNS} FROM item_calls
+     WHERE item_id = ? AND ended_at IS NULL AND (people > 0 OR started_at >= ?)
      ORDER BY started_at DESC LIMIT 1`,
   )
-    .bind(itemId)
+    .bind(itemId, now - ITEM_CALL_START_GRACE_MS)
     .first<CallRow>();
   return row && isLive(row, now) ? row : null;
 }

@@ -68,10 +68,12 @@ export async function handleCallPeople(
     held = [];
   }
   const names = callNames([...(Array.isArray(held) ? held : []), ...push.names]);
+  // An empty Space ends only a call someone has been in: the room's first push comes as it is marked, before the
+  // starter's tab arrives, and must not cut the start's grace short (a second press would make a second call).
   await env.INDEX_DB.prepare(
     `UPDATE item_calls SET people = ?1, names = ?2, updated_at = ?3,
        live_at = CASE WHEN ?1 > 0 THEN COALESCE(live_at, ?3) ELSE live_at END,
-       ended_at = CASE WHEN ?1 > 0 THEN NULL ELSE COALESCE(ended_at, ?3) END
+       ended_at = CASE WHEN ?1 > 0 THEN NULL WHEN live_at IS NULL THEN ended_at ELSE COALESCE(ended_at, ?3) END
      WHERE id = ?4`,
   )
     .bind(push.people, JSON.stringify(names), now, call.id)

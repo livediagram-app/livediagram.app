@@ -709,7 +709,8 @@ payload)`: what the alarm owes.
 - **Reads** (`countRead`): an agent's every read; a person's once a page a day, held by a `usage_counters` row
   keyed `read:<hash of the person and the page>` for the day, written only on the first open and pruned with the
   other counters. No reader's id is stored.
-- **Search**: `searchPassages`, then `foundPassage`; a link confined to one page is shown that page's rows. The
+- **Search**: `searchPassages`, then `foundPassage`; a link confined to one page searches that page alone (`onlyTabs`,
+  so other pages never crowd its rows out of the twenty) and records no unanswered question. The
   limiter is the Worker's binding `SEARCH_RATE_LIMITER`.
 - **Ask** (`routes/knowledge-ask-route.ts`): the steps this blueprint gave, streamed as server-sent events. The
   counters are bumped before the model is called. The only way out is the model door ("Providers").
