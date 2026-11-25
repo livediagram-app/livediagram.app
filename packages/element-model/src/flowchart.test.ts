@@ -233,6 +233,26 @@ describe('layout', () => {
     expect(box(laid, 'b')).toMatchObject({ x: 777, y: 777 });
   });
 
+  // With the first step locked and nothing connected, the loose steps lined up beside the first of themselves, so
+  // every layout of the chart moved them one column further right.
+  it('lines loose steps up beside a locked first step, the same on every layout', () => {
+    for (const lock of ['flag', 'layer'] as const) {
+      const first = step(CHART, 'terminator', 0, 0);
+      let els: Element[] = [
+        lock === 'flag' ? { ...first, locked: true } : first,
+        step('b', 'process', 0, 200),
+        step('c', 'process', 0, 400),
+      ];
+      const opts = lock === 'layer' ? { lockedIds: new Set([CHART]) } : {};
+      els = relayoutFlowchart(els, CHART, opts);
+      const b = box(els, 'b');
+      expect(b.x).toBeGreaterThan(first.x + first.width);
+      expect(box(els, CHART)).toMatchObject({ x: 0, y: 0 });
+      const again = layoutFlowchart(els, CHART, opts);
+      expect(again.steps.size, lock).toBe(0);
+    }
+  });
+
   it('holds only what changes', () => {
     const els = [step(CHART), step('b'), link(CHART, 'b')];
     const once = relayoutFlowchart(els, CHART);

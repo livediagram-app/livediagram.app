@@ -24,7 +24,8 @@ flows, so nobody has to position a band by hand.
    much. Names autocomplete from the nodes the diagram already has. The diagram behind and the preview in
    the dialog redraw as you type.
 4. **Or type them.** The dialog's **Text** tab holds the same flows as lines, `Salary [3200] Budget`
-   (the SankeyMATIC form, so a diagram from there pastes straight in), and also reads
+   (the SankeyMATIC form, so a diagram from there pastes straight in; the amount is the first bracket
+   holding a number, so a name may hold brackets of its own, `Tax [UK] [3200] Budget`), and also reads
    `Salary -> Budget: 3200` and spreadsheet rows (`Salary, Budget, 3200` or tab-separated, a header row
    skipped). Pasting a column of rows from a spreadsheet just works. **Import CSV** reads a file the
    same way.

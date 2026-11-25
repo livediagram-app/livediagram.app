@@ -301,7 +301,9 @@ describe('flows as text', () => {
   });
 
   it('reads the first bracket or arrow that makes a whole flow, and nothing less', () => {
-    expect(parseSankeyText('[3] B\nA [] B\nA [3]\nA [x] [3] B').flows).toEqual([]);
+    expect(parseSankeyText('[3] B\nA [] B\nA [3]\nA [x] B').flows).toEqual([]);
+    // A bracket holding no number is part of a name; the amount is the first that holds one.
+    expect(parseSankeyText('A [x] [3] B').flows).toEqual([flow('A [x]', 'B', 3)]);
     // The amount runs to the first "]"; what is not a number around it is dropped, as everywhere.
     expect(parseSankeyText('A [x [2] B').flows).toEqual([flow('A', 'B', 2)]);
     expect(parseSankeyText('A -> B -> C: 3').flows).toEqual([flow('A', 'B -> C', 3)]);
