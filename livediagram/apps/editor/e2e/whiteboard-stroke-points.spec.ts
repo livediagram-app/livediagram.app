@@ -228,6 +228,11 @@ test('a peer’s pen stroke reaches the owner live, packed', async ({ page, brow
   await peerPage.locator(CANVAS).waitFor();
   await dismissQuickTour(ownerPage);
   await dismissQuickTour(peerPage);
+  // An Editor's empty tab opens on its start (first-edit.md): the peer closes Start Drawing for the blank board. The
+  // name card's Join used to land its click on the start behind it once the card went, closing it by accident.
+  const start = peerPage.getByRole('region', { name: 'Start Drawing' });
+  await start.getByRole('button', { name: 'Close' }).click();
+  await start.waitFor({ state: 'detached' });
   await expect
     .poll(() => ownerPage.locator('[role="img"][aria-label$="(Online)"]').count())
     .toBeGreaterThanOrEqual(2);
