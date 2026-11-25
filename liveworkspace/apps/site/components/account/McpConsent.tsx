@@ -12,6 +12,7 @@ import { listedApps } from '@/lib/apps';
 import { useLocationSearch } from '@/lib/location-search';
 import {
   MCP_APPS,
+  cancelConnect,
   connect,
   fetchConsentSession,
   handOverError,
@@ -116,6 +117,15 @@ function ConsentCard() {
 
   const client = request.clientName;
 
+  // Cancel tells the AI tool, which is otherwise left waiting: the browser goes back to it with access_denied.
+  const cancel = async () => {
+    setBusy(true);
+    const redirectTo = await cancelConnect(origin, session);
+    if (redirectTo) return window.location.assign(redirectTo);
+    setBusy(false);
+    setCancelled(true);
+  };
+
   if (signedIn.state === 'out')
     return (
       <AccountCard narrow>
@@ -129,7 +139,7 @@ function ConsentCard() {
           Sign in
         </a>
         <div className="mt-2 flex">
-          <Button variant="none" onClick={() => setCancelled(true)} className={SECONDARY_BUTTON}>
+          <Button variant="none" onClick={() => void cancel()} className={SECONDARY_BUTTON}>
             Cancel
           </Button>
         </div>
@@ -272,7 +282,7 @@ function ConsentCard() {
       <div className="mt-5 flex gap-2">
         <Button
           variant="none"
-          onClick={() => setCancelled(true)}
+          onClick={() => void cancel()}
           disabled={busy}
           className={SECONDARY_BUTTON}
         >

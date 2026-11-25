@@ -41,6 +41,12 @@ the picture tools draw with load as `Data` modules (`[[rules]]`). Hosts: `mcp.li
 `workers.dev`). Local: `wrangler dev` on 3013 (inspector 9139), which serves every app's tools in one process.
 Deploys in tier 1 (`TIER_OF` in `.github/scripts/ci-plan.mjs`), after the apis it binds.
 
+## CORS
+
+mcp-kit's app allows any origin and exposes `Mcp-Session-Id` and `WWW-Authenticate`. The answers `one-mcp.ts` makes
+itself (a refused token's 401, an old address's challenge and sign-in refusals) carry the same headers
+(`withCors`), and a preflight (`OPTIONS`) on an old address goes to mcp-kit's CORS rather than its refusals.
+
 ## Calling an app
 
 `POST https://<app>.internal/mcp` to the app's package (`app-workers.ts`: its Hono app's `fetch` with the app's env and
@@ -103,6 +109,6 @@ whose name its URI's scheme or `ui://` host is. `appGuide` sends `initialize` an
 | `apps/mcp/src/catalogue.test.ts`    | No clash, no bare "document", every name has a subject, openings, no old name left, the rename table                       |
 | `apps/mcp/src/router.test.ts`       | Listing both ways, routing as the person, rewritten answers, every core verb's mapping, an app down, 401s, per-app consent |
 | `apps/mcp/src/eval.test.ts`         | Every request's expected tool exists; the eval's mapping and judging                                                       |
-| `apps/site/lib/mcp-connect.test.ts` | The consent hand-over: mint, complete with the ticked apps, retire, refusals                                               |
+| `apps/site/lib/mcp-connect.test.ts` | The consent hand-over: mint, complete with the ticked apps, retire, refusals; Cancel’s `access_denied`                     |
 | `apps/mcp/src/old-hosts.test.ts`    | An old address narrows to its app with every tool, refuses sign-in with the pointer, answers `/health`                     |
 | `apps/mcp/src/app-workers.test.ts`  | Each app's env: its api binding, base URL and telemetry key, and no key when unset                                         |

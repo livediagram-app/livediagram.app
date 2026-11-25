@@ -82,7 +82,13 @@ The server is built to be listed in Claude's connector directory, so it meets it
   other tools the person didn't ask for, nor to outside instructions. What items hold is data.
 - **Sign-in as the directory expects**: OAuth 2.1 with S256 PKCE, dynamic client registration, a 401 with
   `resource_metadata` for a missing or refused token, and `https://claude.ai/api/mcp/auth_callback` and loopback
-  redirects accepted (mcp-kit's authorization server).
+  redirects accepted (mcp-kit's authorization server). Every answer that carries a token says
+  `Cache-Control: no-store` (RFC 6749 §5.1), and Cancel on the consent page sends the person back to the client
+  with `error=access_denied` (RFC 6749 §4.1.2.1), so the AI tool stops waiting rather than hanging on a page that
+  says to close it.
+- **Readable from a browser**: every answer, the old addresses' and the refused token's 401 included, allows any
+  origin and exposes `WWW-Authenticate` and `Mcp-Session-Id`, so a client running in a page (the MCP Inspector, a
+  web app) can read the challenge and start signing in. The Bearer token is the authorization, never the origin.
 
 Before submitting: public docs, a privacy policy and support links, which wait until the trial ends.
 
@@ -133,7 +139,9 @@ each ticked; clearing one keeps that app's tools away from this connection. Appr
 token named after the client (the Settings panel's API Tokens list it, and revoke it), hands it to the server, and
 the server keeps which apps it may reach, by the token's hash, as long as the client's registration. A token with no
 such record (one pasted from Settings) reaches every app. A reconnect replaces the client's earlier token, as each
-app's MCP does.
+app's MCP does. Cancel mints nothing: the server forgets the request and the browser goes back to the client's
+redirect address with `error=access_denied` (and its `state`), so the AI tool says the connection was declined; when
+the request has already expired, the page says the connection was cancelled.
 
 ## The app MCPs fold in
 

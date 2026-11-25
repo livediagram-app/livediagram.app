@@ -122,6 +122,13 @@ export function registerOauthRoutes<E extends OauthEnv>(
   app: Hono<{ Bindings: E }>,
   server: OauthServer<E>,
 ): void {
+  // RFC 6749 §5.1: an answer that carries a token is never cached, by the client or anything between. Every
+  // /oauth/token answer, the device grant's included, says so.
+  app.use('/oauth/token', async (c, next) => {
+    await next();
+    c.res.headers.set('Cache-Control', 'no-store');
+    c.res.headers.set('Pragma', 'no-cache');
+  });
   registerDeviceRoutes(app, server);
   // --- Discovery (RFC 8414 + protected-resource metadata) ---
   app.get('/.well-known/oauth-authorization-server', (c) => {
@@ -366,6 +373,30 @@ export function registerOauthRoutes<E extends OauthEnv>(
     if (session.state) url.searchParams.set('state', session.state);
     const replaces = await recordGrant(c.env, server, session.clientId, body.tokenId);
     return c.json({ redirectTo: url.toString(), clientName: session.clientName, replaces });
+  });
+
+  // --- Deny: the consent page's Cancel. The session goes and the browser is sent back to the client with
+  // access_denied (RFC 6749 §4.1.2.1), so the client stops waiting rather than hanging until it times out. The
+  // redirect URI was checked against the client's registration before the session was written, so this never sends
+  // anyone anywhere the client didn't register; nothing is minted.
+  app.post('/oauth/deny', async (c) => {
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as { session?: unknown };
+    const id = typeof body.session === 'string' ? body.session : '';
+    const session = id ? await c.env.OAUTH_KV.get<AuthSession>(`session:${id}`, 'json') : null;
+    if (!session)
+      return c.json(
+        oauthError(
+          'invalid_session',
+          'This sign-in request has expired. Start the connection again.',
+        ),
+        400,
+      );
+    await c.env.OAUTH_KV.delete(`session:${id}`);
+    const url = new URL(session.redirectUri);
+    url.searchParams.set('error', 'access_denied');
+    url.searchParams.set('error_description', 'The person cancelled the connection.');
+    if (session.state) url.searchParams.set('state', session.state);
+    return c.json({ redirectTo: url.toString() });
   });
 
   // --- Token: redeem code + PKCE verifier for the lwt_ access token ---

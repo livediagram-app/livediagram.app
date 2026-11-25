@@ -89,7 +89,11 @@ const poll = async (deviceCode: string, clientId = 'example-cli') => {
     form({ grant_type: DEVICE_CODE_GRANT, device_code: deviceCode, client_id: clientId }),
     env,
   );
-  return { status: res.status, body: await res.json<Record<string, unknown>>() };
+  return {
+    status: res.status,
+    body: await res.json<Record<string, unknown>>(),
+    cache: res.headers.get('Cache-Control'),
+  };
 };
 
 describe('starting', () => {
@@ -226,11 +230,14 @@ describe('polling', () => {
     );
     expect(await done.json()).toEqual({ ok: true });
     expect((await app.request(`/oauth/device/session/${s.user_code}`, {}, env)).status).toBe(404);
-    expect((await poll(s.device_code)).body).toEqual({
+    const granted = await poll(s.device_code);
+    expect(granted.body).toEqual({
       access_token: 'lwt_x',
       token_type: 'Bearer',
       expires_in: 3600,
     });
+    // RFC 6749 §5.1: the answer carrying the token is never cached.
+    expect(granted.cache).toBe('no-store');
     expect((await poll(s.device_code)).body).toEqual({ error: 'expired_token' });
   });
 
