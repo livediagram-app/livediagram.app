@@ -87,18 +87,70 @@ export function onWords(range: Range, x: number, y: number): boolean {
   return false;
 }
 
+type ScreenBox = { top: number; left: number; width: number; height: number };
+
 /** The screen the page shows: the visual viewport (above an on-screen keyboard), in the page's fixed coordinates. */
-export function screenBox(): { top: number; left: number; width: number; height: number } {
+export function screenBox(): ScreenBox {
   const vv = window.visualViewport;
   return vv
     ? { top: vv.offsetTop, left: vv.offsetLeft, width: vv.width, height: vv.height }
     : { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
 }
 
+// The writing's scrolling box: the page's chrome (a header, a tab bar) sits outside it.
+function scrollerOf(el: Element): Element | null {
+  for (let at = el.parentElement; at; at = at.parentElement)
+    if (/(auto|scroll)/.test(getComputedStyle(at).overflowY)) return at;
+  return null;
+}
+
+/** How many times the dock steps up past a floating control at its foot (a corner's Edit, Save, Cancel). */
+export const DOCK_CLEAR_STEPS = 4;
+/** The gap between the points the dock looks at, up the band the menu would fill. */
+export const DOCK_PROBE_STEP_PX = 40;
+
+/**
+ * The room the docked menu has: the screen, inside the writing's scrolling box (clear of a header and a tab bar), its
+ * foot raised above any control floating over the writing where the menu would sit (an Edit button in a corner).
+ */
+export function dockScreen(writingDom: Element, screen: ScreenBox = screenBox()): ScreenBox {
+  const scroller = scrollerOf(writingDom);
+  let top = screen.top;
+  let bottom = screen.top + screen.height;
+  if (scroller) {
+    const r = scroller.getBoundingClientRect();
+    top = Math.max(top, r.top);
+    bottom = Math.min(bottom, r.bottom);
+  }
+  const left = screen.left + Math.max(DOCK_MARGIN_PX, (screen.width - MENU_WIDTH_PX) / 2);
+  const xs = [
+    left + DOCK_MARGIN_PX,
+    left + MENU_WIDTH_PX / 2,
+    left + MENU_WIDTH_PX - DOCK_MARGIN_PX,
+  ];
+  for (let step = 0; step < DOCK_CLEAR_STEPS; step++) {
+    // Points across the band the menu would fill, from its foot up.
+    const foot = bottom - DOCK_MARGIN_PX;
+    const points: [number, number][] = [];
+    for (let dy = 1; dy < DOCK_ROOM_PX - DOCK_MARGIN_PX; dy += DOCK_PROBE_STEP_PX)
+      for (const x of xs) points.push([x, foot - dy]);
+    const over = points
+      .map(([x, y]) => document.elementFromPoint?.(x, y) ?? null)
+      .filter(
+        (el): el is Element =>
+          !!el && !!scroller && !scroller.contains(el) && !el.closest('[role="menu"]'),
+      )
+      .map((el) => el.getBoundingClientRect().top);
+    if (over.length === 0) break;
+    bottom = Math.min(...over);
+  }
+  return { top, left: screen.left, width: screen.width, height: Math.max(0, bottom - top) };
+}
+
 /** Where the docked menu sits: centred at the screen's foot, or at its top while the words are low on the screen. */
 export function dockSpot(
   words: { top: number; bottom: number },
-  screen: { top: number; left: number; width: number; height: number },
+  screen: ScreenBox,
 ): { at: MenuPoint; placement: SelectionMenuAsk['placement'] } {
   const foot = screen.top + screen.height - DOCK_MARGIN_PX;
   const x = screen.left + Math.max(DOCK_MARGIN_PX, (screen.width - MENU_WIDTH_PX) / 2);
@@ -109,9 +161,14 @@ export function dockSpot(
   return { at: { x, y: foot }, placement: 'above-start' };
 }
 
+// A field focus may be typing in.
+const TYPING = 'input, textarea, select, [contenteditable=""], [contenteditable="true"]';
+
 // The keyboard's menu key (or Shift+F10): a contextmenu with no pointer behind it.
 function fromKeyboard(e: MouseEvent): boolean {
   if ((e as Partial<PointerEvent>).pointerType === '') return true;
+  // Chromium's menu key: no button at all, placed at the words.
+  if (e.button === -1) return true;
   return e.button === 0 && !e.ctrlKey && e.clientX === 0 && e.clientY === 0;
 }
 
@@ -194,11 +251,25 @@ export function bindSelectionMenu(view: SelectionView, editable: () => boolean):
     );
   };
 
+  // The menu key while reading lands on whatever holds focus (the page, a button), not the writing: the menu still
+  // opens for this writing's words, unless focus is in a field of its own, whose menu is the browser's. Heard first
+  // (capture), so the page's own menu (the canvas's) doesn't open over it.
+  const onKeyMenu = (e: MouseEvent) => {
+    const target = e.target;
+    if (e.defaultPrevented || !(target instanceof Element) || view.dom.contains(target)) return;
+    if (!fromKeyboard(e) || target.closest(TYPING)) return;
+    onContextMenu(e);
+    if (e.defaultPrevented) e.stopPropagation();
+  };
+
   const dock = () => {
     settle = null;
     const live = livePick(view);
     if (!live || !canSendHere()) return;
-    show({ ...dockSpot(live.range.getBoundingClientRect(), screenBox()), docked: true }, live);
+    show(
+      { ...dockSpot(live.range.getBoundingClientRect(), dockScreen(view.dom)), docked: true },
+      live,
+    );
   };
 
   const onSelection = () => {
@@ -223,11 +294,13 @@ export function bindSelectionMenu(view: SelectionView, editable: () => boolean):
   document.addEventListener('pointerdown', onPointerDown, true);
   document.addEventListener('selectionchange', onSelection);
   view.dom.addEventListener('contextmenu', onContextMenu);
+  document.addEventListener('contextmenu', onKeyMenu, true);
   const stopMenu = onSelectionMenuChange(onMenu);
   return () => {
     document.removeEventListener('pointerdown', onPointerDown, true);
     document.removeEventListener('selectionchange', onSelection);
     view.dom.removeEventListener('contextmenu', onContextMenu);
+    document.removeEventListener('contextmenu', onKeyMenu, true);
     stopMenu();
     cancelSettle();
     close();

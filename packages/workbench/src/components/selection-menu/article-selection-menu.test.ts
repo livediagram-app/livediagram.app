@@ -14,9 +14,12 @@ vi.mock('./selection-clipboard', () => ({
 
 import {
   bindSelectionMenu,
+  DOCK_CLEAR_STEPS,
   DOCK_MARGIN_PX,
+  DOCK_PROBE_STEP_PX,
   DOCK_ROOM_PX,
   DOCK_SETTLE_MS,
+  dockScreen,
   dockSpot,
   livePick,
   onWords,
@@ -200,6 +203,65 @@ describe('where the docked menu sits', () => {
   });
 });
 
+describe('the room the docked menu has', () => {
+  const screen = { top: 0, left: 0, width: 390, height: 844 };
+  const rect = (top: number, bottom: number) => () => ({ top, bottom }) as DOMRect;
+  // A writing inside a scrolling box that ends above a tab bar, under a header.
+  function scrolled() {
+    const scroller = document.createElement('div');
+    scroller.style.overflowY = 'auto';
+    scroller.getBoundingClientRect = rect(56, 796);
+    const dom = document.createElement('div');
+    scroller.append(dom);
+    document.body.append(scroller);
+    return { scroller, dom };
+  }
+
+  it('is the screen where the writing scrolls with the page', () => {
+    const dom = document.createElement('div');
+    document.body.append(dom);
+    expect(dockScreen(dom, screen)).toEqual(screen);
+  });
+
+  it('stays inside the writing’s scrolling box, clear of a header and a tab bar', () => {
+    const { dom } = scrolled();
+    expect(dockScreen(dom, screen)).toEqual({ top: 56, left: 0, width: 390, height: 740 });
+  });
+
+  it('rises above a control floating over the writing at its foot, and past the menu itself', () => {
+    const { scroller, dom } = scrolled();
+    const words = document.createElement('p');
+    scroller.append(words);
+    const corner = document.createElement('button');
+    corner.getBoundingClientRect = rect(728, 772);
+    const menu = document.createElement('div');
+    menu.setAttribute('role', 'menu');
+    menu.getBoundingClientRect = rect(600, 784);
+    document.body.append(corner, menu);
+    const at = vi.fn((_x: number, y: number) => (y > 728 ? corner : words) as Element | null);
+    vi.stubGlobal('document', Object.assign(document, { elementFromPoint: at }));
+    expect(dockScreen(dom, screen)).toEqual({ top: 56, left: 0, width: 390, height: 728 - 56 });
+    // An open menu where the dock looks is its own, never a reason to rise.
+    at.mockImplementation((_x, y) => (y > 700 ? menu : words));
+    expect(dockScreen(dom, screen).height).toBe(740);
+    // A tower of controls stops after a few steps rather than climbing on and on.
+    at.mockReset();
+    at.mockImplementation((_x, y) => {
+      const el = document.createElement('i');
+      document.body.append(el);
+      el.getBoundingClientRect = rect(y - 10, y);
+      return el;
+    });
+    expect(dockScreen(dom, screen).height).toBeGreaterThanOrEqual(0);
+    const probes = 3 * Math.ceil((DOCK_ROOM_PX - DOCK_MARGIN_PX - 1) / DOCK_PROBE_STEP_PX);
+    expect(at).toHaveBeenCalledTimes(DOCK_CLEAR_STEPS * probes);
+    // Nothing found at a point counts as clear.
+    at.mockImplementation(() => null);
+    expect(dockScreen(dom, screen).height).toBe(740);
+    Reflect.deleteProperty(document, 'elementFromPoint');
+  });
+});
+
 describe('a right-click', () => {
   it('opens the menu at the pointer on the words picked, reading: Copy and the sends', () => {
     const { dom, view } = writing();
@@ -243,10 +305,63 @@ describe('a right-click', () => {
     expect(currentSelectionMenu()!.at).toEqual({ x: LINE.left, y: LINE.bottom });
     expect(rightClick(dom, { x: 0, y: 0 }, { button: 0 })).toBe(true);
     expect(currentSelectionMenu()!.at).toEqual({ x: LINE.left, y: LINE.bottom });
+    // Chromium's menu key: no button, placed at the words.
+    closeSelectionMenu();
+    expect(rightClick(dom, { x: 300, y: 300 }, { button: -1, pointerType: 'mouse' })).toBe(true);
+    expect(currentSelectionMenu()!.at).toEqual({ x: LINE.left, y: LINE.bottom });
     // A Ctrl-click at the corner is a pointer's, and off the words.
     closeSelectionMenu();
     expect(rightClick(dom, { x: 0, y: 0 }, { button: 0, ctrlKey: true })).toBe(false);
     unbind();
+  });
+
+  it('opens from the menu key while reading, with focus outside the writing, but not in a field', () => {
+    const { dom, view } = writing();
+    const button = document.createElement('button');
+    const field = document.createElement('input');
+    const notes = document.createElement('div');
+    notes.setAttribute('contenteditable', 'true');
+    document.body.append(button, field, notes);
+    const unbind = bindSelectionMenu(view, () => false);
+    // Nothing picked: the browser's menu.
+    expect(rightClick(button, { x: 0, y: 0 }, { button: -1 })).toBe(false);
+    pick(dom, 4);
+    // A pointer's right-click elsewhere stays the browser's.
+    expect(rightClick(button, { x: 10, y: 110 })).toBe(false);
+    expect(rightClick(field, { x: 0, y: 0 }, { button: -1 })).toBe(false);
+    expect(rightClick(notes, { x: 0, y: 0 }, { button: -1 })).toBe(false);
+    expect(currentSelectionMenu()).toBeNull();
+    // The page's own menu (the canvas's) is not heard once this one opens.
+    const pageMenu = vi.fn();
+    button.addEventListener('contextmenu', pageMenu);
+    expect(rightClick(button, { x: 0, y: 0 }, { button: -1 })).toBe(true);
+    expect(currentSelectionMenu()).toMatchObject({ at: { x: LINE.left, y: LINE.bottom } });
+    expect(pageMenu).not.toHaveBeenCalled();
+    rightClick(button, { x: 10, y: 110 });
+    expect(pageMenu).toHaveBeenCalledTimes(1);
+    // Once from the writing itself, not again from the page.
+    closeSelectionMenu();
+    const opened = vi.fn();
+    const stop = (() => {
+      document.addEventListener('contextmenu', opened);
+      return () => document.removeEventListener('contextmenu', opened);
+    })();
+    expect(rightClick(dom, { x: 0, y: 0 }, { button: -1 })).toBe(true);
+    expect(opened).toHaveBeenCalledTimes(1);
+    stop();
+    // A text node's event, or one already taken, is left alone.
+    closeSelectionMenu();
+    const taken = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: -1 });
+    taken.preventDefault();
+    button.dispatchEvent(taken);
+    const text = document.createTextNode('x');
+    document.body.append(text);
+    text.dispatchEvent(
+      new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: -1 }),
+    );
+    expect(currentSelectionMenu()).toBeNull();
+    unbind();
+    expect(rightClick(button, { x: 0, y: 0 }, { button: -1 })).toBe(false);
   });
 
   it('leaves a touch’s long press to the dock', () => {
