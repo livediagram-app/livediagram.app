@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { centreOffsetPx } from '@liveworkspace/icons/centring';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BackBar, BackChevron } from './BackBar';
@@ -104,5 +105,19 @@ describe('BackChevron', () => {
     // -inset-1.5 is 6 px each side: 32 + 12 = 44.
     const hit = button.querySelector('[data-back-chevron-hit]')!;
     expect(hit.className).toBe('absolute -inset-1.5');
+  });
+
+  // The optical audit reads the chevron's ink against its well: drawn 0.25 units left of centre, it read
+  // 0.69 px off on a fractional pixel position, past the 0.5 px tolerance (optical-alignment.md).
+  it('draws its chevron on the centre of its box', () => {
+    render(<BackChevron label="Back to Pages" onClick={() => {}} />);
+    const svg = screen.getByRole('button', { name: 'Back to Pages' }).querySelector('svg')!;
+    const units = Number(svg.getAttribute('viewBox')!.split(' ')[2]);
+    const size = Number(svg.getAttribute('width'));
+    const sw = (Number(svg.getAttribute('stroke-width')) * units) / size;
+    expect(centreOffsetPx(svg.outerHTML, { units, sizePx: size, strokeUnits: sw })).toEqual({
+      dx: 0,
+      dy: 0,
+    });
   });
 });

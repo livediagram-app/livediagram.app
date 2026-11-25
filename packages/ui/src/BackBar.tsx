@@ -148,7 +148,8 @@ function ChevronGlyph() {
       units={12}
       className="transition-transform duration-micro group-enabled:group-hover:-translate-x-0.5"
     >
-      <path d="M7.5 2.5 4 6l3.5 3.5" />
+      {/* Spans x 4.25 to 7.75, so its ink, stroke included, centres on the box (optical-alignment.md). */}
+      <path d="M7.75 2.5 4.25 6l3.5 3.5" />
     </Glyph>
   );
 }
