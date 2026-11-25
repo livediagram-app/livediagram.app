@@ -11,6 +11,7 @@ import { blockerIdsOf, blocksFieldsOf } from './blocked-by';
 import { isArchived, isTrashed } from './board-model';
 import { typeIn } from './type-catalogue';
 import { FIELD_VALUES_MAX } from './limits';
+import { holdsSeveral } from './several-values';
 
 export const PLAN_MAKE_BLOCKS_FIELD_ID = 'f-blocked-by';
 const LABELS_MAX = 12;
@@ -143,11 +144,14 @@ export function planMake(input: PlanMakeInput): PlanMakeOutput {
       if (!field) skipped += wanted.length;
       else {
         const holds = new Set(blockerIdsOf({ id: c.id, fields }, type));
+        // A Blocked By field stored holding one card (from before Holds Several) keeps one: a second would read as
+        // nothing, so it is left out and counted.
+        const most = holdsSeveral(field) ? FIELD_VALUES_MAX : 1;
         const mine = waitsOn.get(c.id) ?? new Set<string>();
         waitsOn.set(c.id, mine);
         for (const blocker of wanted) {
           if (holds.has(blocker)) continue;
-          if (holds.size >= FIELD_VALUES_MAX || reaches(blocker, c.id)) {
+          if (holds.size >= most || reaches(blocker, c.id)) {
             skipped += 1;
             continue;
           }
