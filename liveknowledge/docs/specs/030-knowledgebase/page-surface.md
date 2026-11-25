@@ -374,8 +374,10 @@ though the whole page reloads, even though only the middle content really change
   only after 300 ms. A failed load shows the error card with Retry, as before.
 - **The right rail updates in place.** Page Health, On This Page and the rest of the rail keep their layout and
   change once, to the new page's figures, when its content has loaded; never to an empty page's figures first (the
-  score dipping and coming back, On This Page emptying and refilling). A page whose load never lands lets the rail
-  go after a second.
+  score dipping and coming back, On This Page emptying and refilling). Page Health's score also waits for the page's
+  own read (its reads, backlinks and open issues): until that is here it stays on the page before's, never a figure
+  worked out without them (rework after the browser check: 42, then 43 for two frames, then 42). A page whose load
+  never lands lets the rail go after a second.
 - **The address.** The open page is the address's fragment (`#t=<page>`), rewritten in place on every switch, so a
   reload and a copied link open the same page; a page switch is not a history entry, and Back and Forward move
   between the views and out of the knowledgebase as before.

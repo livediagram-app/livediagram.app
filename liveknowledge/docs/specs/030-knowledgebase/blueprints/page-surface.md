@@ -266,6 +266,14 @@ default="none" update={PAGE_SWITCH_VIEW_TRANSITION_UPDATE}>` (`page-switch` for 
 activeId)`) while the open one has not, and the live value once it has, or once `RAIL_HOLD_MAX_MS` (1,000) has
   passed, or when no page had loaded yet. Its handlers read the same held value. Measured before: Page Health read 43,
   then 40 for two frames (Length 0 of 10, the page's writing not yet there), then 43; after, 43 throughout.
+- **The score** waits for the page's own read too: `usePageHealthScore` passes its worked-out score through
+  `useHeldUntilRead` (`components/knowledge/held-until-read.ts`), which answers the score last shown while
+  `page.health` (`PageHealthResponse`, the reads, backlinks and open issues) has not arrived for this page and the
+  document is not Offline, for at most `RAIL_HOLD_MAX_MS`. Measured before: 42, 43 for two frames (backlinks and
+  reads unknown count as full), 42; after, 42 throughout.
+- **The rail's foot** (`data-page-rail-foot`, Created / Updated and Read This Week) is pinned under the sections' own
+  scroller in a tall window. Under 720 px tall (`[@media(max-height:719px)]`) the docked rail is the one scroller
+  and the sections and the foot flow in it, so the foot never covers Page Health (at 560 px it cut Verify).
 - **The tree** is untouched by the switch: its rows are memoised (`PageTreeRow`), only the old and new current rows
   re-mark, and its scroll area keeps its `scrollTop`.
 - **The address** is `useTabEntryEffects`' `replaceState` of `#t=<page>`, as before: no history entry per page.
@@ -273,7 +281,9 @@ activeId)`) while the open one has not, and the live value once it has, or once 
 Tests: `select-page.test.ts` (the switch runs as a `page-switch` transition, plainly under reduced motion, not at all
 for the open page; an unopened page is fetched first, the latest press wins, the wait is capped), `PageLoadVeil.test.tsx`
 (nothing shown before the delay, the spinner after), `loaded-page-store.test.ts` (holds while loading, follows once loaded, lets go after the cap,
-passes through before any page loaded, stops following on disconnect), `view-transitions.test.ts` (the class lives in
+passes through before any page loaded, stops following on disconnect), `held-until-read.test.tsx` (holds the score
+until the read, follows a page already read and an Offline one, lets go after the cap), `PageRail.test.tsx` (the
+short-window one scroller), `view-transitions.test.ts` (the class lives in
 `canvas-motion.css`).
 
 ## The formatting bar (built)

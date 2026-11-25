@@ -186,6 +186,42 @@ describe('a page’s knowledge in the editor', () => {
   const rail = () => document.querySelector<HTMLElement>('[data-page-health]')!;
   const railButton = (name: string) => within(rail()).getByRole('button', { name });
 
+  it('a page switch keeps the score before until the new page’s own read lands, then changes once', async () => {
+    const signals = { openConflicts: 1, openThreads: 0, suggestions: 0, backlinks: 0 };
+    api.apiPageHealth.mockResolvedValue({ ...health(), signals });
+    const { store, valueOf, tabs } = mount('view');
+    const scoreOf = () =>
+      /Health Score (\d+)/.exec(
+        document.querySelector('[aria-label^="Health Score"]')!.getAttribute('aria-label')!,
+      )![1];
+    await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    const before = scoreOf();
+    let land!: (v: unknown) => void;
+    api.apiPageHealth.mockReturnValue(new Promise((r) => (land = r)));
+    // The other page has loaded; its read (reads, backlinks, open issues) has not.
+    act(() => store.set(valueOf({ activeId: 'other', activeTab: tabs[1] })));
+    await waitFor(() => expect(api.apiPageHealth).toHaveBeenCalledTimes(2));
+    // Worked out without its read, the open conflict would go uncounted and the score rise for a moment.
+    expect(scoreOf()).toBe(before);
+    await act(async () => land({ ...health({ tab: 'other' }), signals }));
+    expect(scoreOf()).toBe(before);
+  });
+
+  it('docked, the rail is one scroller in a short window, so its foot never covers Page Health', async () => {
+    const { store } = mount('view');
+    await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    cleanup();
+    render(
+      <EditorChromeContext.Provider value={store}>
+        <PageRailBody docked />
+      </EditorChromeContext.Provider>,
+    );
+    const sections = document.querySelector('[data-page-rail-sections]')!;
+    expect(sections.className).toMatch(/\boverflow-y-auto\b/);
+    expect(sections.className).toMatch(/\[@media\(max-height:719px\)\]:overflow-visible/);
+    expect(sections.nextElementSibling!.hasAttribute('data-page-rail-foot')).toBe(true);
+  });
+
   it('an Editor verifies in one press, shown at once', async () => {
     let answer!: (value: unknown) => void;
     api.apiVerifyPage.mockReturnValue(new Promise((resolve) => (answer = resolve)));
