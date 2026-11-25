@@ -168,6 +168,14 @@ All of it is in `apps/editor/components/page-tree/`.
   right edge, liveworkspace/docs/specs/011-workbench/blueprints/sidebar-width.md; `pageTreeClearancePx`) for the left
   corner stacks, the bottom-right cluster and the strip. Hidden in zen mode, behind the welcome flow and in an
   embed.
+- **One scroller.** The sidebar's list area (`data-page-tree-scroll`: `min-h-0 flex-1 overflow-y-auto
+overscroll-contain`) holds `PageTree` and the Trash row and is the only box that scrolls; `PageTree`'s own
+  `role="tree"` div is `flex flex-col gap-px` and never `overflow-*`. It once was `overflow-y-auto
+overscroll-contain` too, inside the area: never taller than its rows, it could not scroll, yet Chromium chained
+  every wheel and trackpad scroll to it first and its `overscroll-contain` stopped it there, so nothing scrolled
+  (Work Tracker 1459; a static page reproduced it, the outer box at `scrollTop` 0 after ten wheel steps, 400 without
+  the inner one). The phone sheet's area is the same box without `overscroll-contain`: the sheet's body already
+  holds a swipe at its end, and a box that cannot scroll must never carry it. `PageTree.test.tsx` holds both.
 - **Collapsed** (`readTreeCollapsed`, per browser): a rail `PAGE_TREE_RAIL_WIDTH` (48) wide under the menu box,
   which keeps its own card, with Show Pages and, for an Editor, New Page.
 - **Rows.** `visiblePageRows(tabs, closed, activeId)` once per change of the list, of what is closed or of the

@@ -8,7 +8,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
 import { railStampOf as stampOf } from '@/lib/knowledge/page-makers';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
-import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
+import {
+  EditorChromeContext,
+  useEditorChrome,
+  useEditorChromeStore,
+} from '@/app/document/[id]/EditorContext';
+import { useLoadedPageStore } from './loaded-page-store';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import {
   currentHeading,
@@ -106,12 +111,21 @@ function useCurrentHeading(headings: readonly PageHeading[]): string | undefined
   return headings.some((h) => h.id === current) ? current : headings[0]?.id;
 }
 
-/** The rail's two sections, for the current page. */
 /**
- * The rail's sections. Docked, the week's reads and who made and updated the page sit in a foot held at the rail's
- * bottom while the rest scrolls; in the Page Info card they follow on.
+ * The rail's sections, for the current page. Docked, the week's reads and who made and updated the page sit in a foot
+ * held at the rail's bottom while the rest scrolls; in the Page Info card they follow on. They read the editor's store
+ * held on the last loaded page (loaded-page-store.ts), so a page switch changes them once, in place.
  */
 export function PageRailBody({ docked = false }: { docked?: boolean }) {
+  const held = useLoadedPageStore();
+  return (
+    <EditorChromeContext.Provider value={held}>
+      <PageRailSections docked={docked} />
+    </EditorChromeContext.Provider>
+  );
+}
+
+function PageRailSections({ docked }: { docked: boolean }) {
   const chrome = useEditorChromeStore();
   const writing = useEditorChrome((s) => writingOf(s.activeTab), sameWriting);
   const page = usePageKnowledge();
@@ -222,7 +236,14 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
   if (!docked) return sections;
   return (
     <>
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 pt-6">{sections}</div>
+      {/* Its own scroller over a pinned foot; in a short window the rail is the one scroller and the foot follows on, so
+          it never covers Page Health (verification.md: at 560 px it cut Verify in half). */}
+      <div
+        data-page-rail-sections=""
+        className={`min-h-0 flex-1 overflow-y-auto px-6 pb-8 pt-6 ${SHORT_WINDOW_FLOW}`}
+      >
+        {sections}
+      </div>
       <div
         data-page-rail-foot=""
         className="shrink-0 border-t border-slate-200/70 bg-slate-50/70 px-6 pb-4 pt-4 dark:border-slate-800/70 dark:bg-slate-900/40"
@@ -232,6 +253,12 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
     </>
   );
 }
+
+// Under 720 px tall the docked rail scrolls as one, its sections and foot flowing in it, rather than a scroller over a
+// pinned foot that left Page Health a sliver (verification.md "Read This Week").
+const SHORT_WINDOW_SCROLL = '[@media(max-height:719px)]:overflow-y-auto';
+const SHORT_WINDOW_FLOW =
+  '[@media(max-height:719px)]:flex-none [@media(max-height:719px)]:overflow-visible';
 
 // The rail's collapse and show buttons: the page tree's bordered square (owner 2026-11-21).
 const RAIL_TOGGLE =
@@ -287,7 +314,7 @@ export function PageRailDocked() {
       {...(leaving ? { 'data-page-rail-leaving': '' } : { [PAGE_RAIL_ATTR]: 'docked' })}
       {...stop}
       style={{ top: TOP_ROW_HEIGHT_VAR, width: PAGE_RAIL_WIDTH }}
-      className={`pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] flex cursor-default flex-col border-l border-slate-200/70 text-slate-900 motion-safe:transition-[translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-full dark:border-slate-800/70 dark:text-slate-100 ${
+      className={`pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] flex cursor-default flex-col ${SHORT_WINDOW_SCROLL} border-l border-slate-200/70 text-slate-900 motion-safe:transition-[translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-full dark:border-slate-800/70 dark:text-slate-100 ${
         leaving ? 'pointer-events-none translate-x-full' : ''
       }`}
     >

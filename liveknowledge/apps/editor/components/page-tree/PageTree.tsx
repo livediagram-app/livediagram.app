@@ -476,7 +476,10 @@ export function PageTree({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onDragEnd={endDrag}
-        className={`flex min-h-0 flex-col gap-px overflow-y-auto overscroll-contain ${className}`}
+        // Never a scroller of its own: its host scrolls it with the Trash under it (PageTreeSidebar, PageTreeSheet).
+        // A second, nested `overflow-y-auto overscroll-contain` box that could not scroll took the wheel and kept it
+        // (Work Tracker 1459).
+        className={`flex flex-col gap-px ${className}`}
       >
         {rows.map((row) =>
           row.connectionId && connected ? (

@@ -45,6 +45,20 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
 justify-center`: 20 px and 16 px lines, 36 px in the 48 px row), its buttons centred in the row after it, then
     Share and the account button in the row's slot. The line once stood beside the name, each centred on its own
     line height, so its baseline sat a pixel off the name's (WI-1337, `KnowledgeViewHeader.test.tsx`).
+- **The way back** (`components/ask/ViewBackChevron.tsx`, in `KnowledgeViewHeader` between the logo's divider and the
+  name): `BackChevron` from `@liveworkspace/ui` in a `HoverCard` ("Back to <view>", "Returns to where you were, as you
+  left it."), its 32 px well pressed anywhere in the 44 px around it (`absolute -inset-1.5`). `knowledge-view.ts` keeps `trail`, the steps this tab took by a history entry, newest
+  last, each `{ view, path }`: `showKnowledgeView` pushes the view it leaves (never for `replace`), and `popstate`
+  (`onHistoryMove`) pops the top when the address is now that step (a Back) or pushes the view last `seen` when it
+  is another (a Forward). `previousKnowledgeView()` is the top's view while its path is this knowledgebase's, else
+  `pages`, read through `useSyncExternalStore` over `subscribeKnowledgeView`. `backFromKnowledgeView()` is
+  `history.back()` when that top is this knowledgebase's (the entry is the view as it was left, its `#t=` page with
+  it, and the editor under the frame was never unmounted, so its page and scroll are as they were; Ask's
+  conversation is `askConversationFor`'s, kept per knowledgebase), else it clears the trail and
+  `showKnowledgeView('pages')`. Page switches replace the entry (`useTabEntryEffects`), so the top is always where
+  the browser's Back lands. Tests: `knowledge-view.test.ts` (the trail through pushes, Back, Forward, a replace, a
+  linked view, another knowledgebase), `KnowledgeViewHeader.test.tsx` (the chevron's name and press, the header's
+  height on a desktop and a phone).
 - **Loading:** each view is `next/dynamic` with `ssr: false`, fetched when first shown, and so is the AI Settings
   dialog, fetched when first opened: the editor's first load carries the tabs, the host and the two small stores. A view's render crash stays
   in the `KnowledgeView` error area.

@@ -63,7 +63,7 @@ export { HINT_CARD_SURFACE } from './hint/hint-constants';
 export { Dialog, type DialogProps } from './dialog/Dialog';
 export { DialogHeader } from './dialog/DialogHeader';
 // The one way back out of a drill-in, and the one breadcrumb (BackBar.tsx).
-export { BackBar } from './BackBar';
+export { BackBar, BackChevron } from './BackBar';
 export { DialogFooter } from './dialog/DialogFooter';
 export { ConfirmDialog, type ConfirmDialogProps } from './dialog/ConfirmDialog';
 export { ConfirmPopover, splitConfirmMessage } from './ConfirmPopover';

@@ -197,6 +197,9 @@ the sticky peel, cursors and note ink.
   `slide-back` and `slide-fade`, on `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)`, with
   `::view-transition-group(.<class>)` held still (`animation: none`). They reuse the `lvd-slide-*` keyframes and
   `--lvd-slide-ms`; the only other slide rule is the `[data-slide-move='pending']` hold.
+- **The page switch** (`page-switch`, docs/specs/030-knowledgebase/page-surface.md "Switching pages") keeps its
+  class in `canvas-motion.css` too: the page's scroll container, its group held still, the old picture
+  `lvd-page-out` 110 ms and the new `lvd-page-in` 220 ms after 70 ms (blueprint page-surface.md "Switching pages").
 - **Chrome surfaces** (the start's mode switch) keep theirs in `globals.css`: `start-mode` cross-fades old and new
   over `--transition-duration-short` (200ms) on the ease-out curve.
 - **Reduced motion** adds no CSS: the handlers start no View Transition (`prefersReducedMotion()`), so the

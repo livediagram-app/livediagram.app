@@ -201,8 +201,13 @@ browser's.
   button. `[data-canvas-root]:has(> [data-knowledge-top-row]) > [data-page-scroller]` starts the scroll container
   under the row, the docked rail and the tree's rail start at the row's foot, and the top corner stacks and the
   top-centre stack start at 68 px.
-- **On Ask and Insights** `KnowledgeViewHeader` is the same row: the view's name (`h1`), its one line from
-  `lg` up, its buttons, a divider, the slot. The frame ends at the footer's top (measured, `[data-editor-tabbar]`),
+- **On Ask and Insights** `KnowledgeViewHeader` is the same row: the logo, a divider, `ViewBackChevron` (search-and-ask
+  blueprint ask-ui.md "The way back"), the view's name (`h1`), its one line from `lg` up, its buttons, a divider
+  (hidden on a phone, whose slot is empty), the slot. Off a phone (`useIsMobileViewport`) its height is
+  `round(toolbarTopClearancePx(useUiScale('toolbar')))` (75 px at the toolbar's 1.15 base), the menu box's row the
+  page tree joins, with `padding-top: 2px` and `sm:pl-5`, and its logo sits in a span at `uiScaleStyle(toolbarScale)`:
+  the mark measured at (19.9, 26.8) on Pages and (20, 26.5) on Ask, 23 px square in both (Work Tracker 1467). On a
+  phone it keeps `--knowledge-top-row` (56 px), as the page's row. The frame ends at the footer's top (measured, `[data-editor-tabbar]`),
   and the footer is the one column child it leaves live.
 - **A phone while writing:** the page toolbar's own bar is fixed along the top (`usePageToolbarPlacement`) and sets
   `data-article-toolbar-top` on the root; `globals.css` hides the page row's children under that attribute, so the
@@ -218,6 +223,68 @@ browser's.
 Tests: `KnowledgeViewTabs.test.tsx` (the links, `aria-current`, the press, the history entry, every role, each
 case they are not offered in, the footer's order, a phone's More), `KnowledgeTopRow.test.tsx` (the row's order,
 the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx` (the frame, the live footer).
+
+## Switching pages (built)
+
+| Piece                                       | File                                                 |
+| ------------------------------------------- | ---------------------------------------------------- |
+| the switch, its transition type and classes | `components/page-surface/page-switch-transition.ts`  |
+| the one way a page opens                    | `components/page-tree/select-page.ts` (`selectPage`) |
+| the animation                               | `app/canvas-motion.css` (`.page-switch`)             |
+| the rail held on the last loaded page       | `components/knowledge/loaded-page-store.ts`          |
+
+- **The switch** is `selectPage`, which every way of opening a page calls (the tree's rows and keys, the
+  breadcrumb, page links, Linked From, search, an import's first page, Describe to Set Up's first page, `goToBlock`).
+  After `leavePageThen` it runs the editor's `setActiveId` and the selection resets inside `startPageSwitch`, which is
+  `startTypedTransition('page-switch', ...)`: a React transition carrying the type, so React starts a View
+  Transition for the commit; under `prefersReducedMotion()` it runs the change plainly and no View Transition starts.
+- **A page not opened yet** (not in `loadedTabIds`, once hydrated) is fetched before the switch with the loader's
+  own one-tab sweep, `loadAllTabs([id])` (the split view's), raced against `PAGE_FETCH_WAIT_MS` (1,500); the switch
+  then runs as above. A later press while one fetches wins (a module counter), so a slow fetch never switches back.
+  The page before stays on screen meanwhile, its row still current. Measured on a synced knowledgebase (a signed-in
+  stack, a first visit to each page): before, `TabLoadOverlay` over the whole surface for 3 frames (5 to 6 under
+  reduced motion) and the column empty for 2 to 3; after, neither, the title in the first frame the switch draws.
+- **The loader** (`components/page-surface/PageLoadVeil.tsx`), shown by `Canvas.tsx` for `tabLoadState ===
+'loading'` in place of the workbench's `TabLoadOverlay`: `absolute inset-0 z-[1]` over the scroll container and
+  under the chrome (`z-[var(--z-panel)]` and up), so the tree, the top row and the rail stay live; it takes every
+  press from the first frame and shows its spinner and "Loading page…" after `PAGE_LOAD_VEIL_DELAY_MS` (300). The
+  keyboard, paste and every commit are shut by `editsBlocked` as before. `tabLoadState === 'error'` keeps
+  `TabLoadOverlay`'s error card and Retry.
+- **What is captured.** `Canvas.tsx` wraps the page's scroll container (`data-page-scroller`) in `<ViewTransition
+default="none" update={PAGE_SWITCH_VIEW_TRANSITION_UPDATE}>` (`page-switch` for its type, `none` for any other),
+  inside the `<main>`'s slide `ViewTransition`, whose map gives `page-switch` nothing. `html` takes no part
+  (`view-transition-name: none`), so the page tree, the top row, the rail and the footer are never pictures: they
+  draw live under the transition's layer. The scroll container has no ground of its own, so its pictures are
+  transparent outside what the page paints, and the tree beside it shows through.
+- **The animation** (`canvas-motion.css`): `::view-transition-group(.page-switch)` is still; `-old` runs
+  `lvd-page-out` (to opacity 0, `translateY(-4px)`) 110 ms on `cubic-bezier(0.4, 0, 1, 1)`; `-new` runs `lvd-page-in`
+  (from opacity 0, `translateY(8px)`) 220 ms on `cubic-bezier(0.16, 1, 0.3, 1)` after 70 ms, so the two overlap for
+  40 ms with the old nearly gone. The new picture is live: the frames before a loading page draws (30 to 120 ms,
+  measured on a 14-page knowledgebase kept Offline) pass while it is faint.
+- **The rail** reads `useLoadedPageStore()`, given to `PageRailBody`'s sections as their `EditorChromeContext`: a store
+  over the editor's that answers the last value whose open page had loaded (`openPageLoaded`: `loadedTabIds.has(
+activeId)`) while the open one has not, and the live value once it has, or once `RAIL_HOLD_MAX_MS` (1,000) has
+  passed, or when no page had loaded yet. Its handlers read the same held value. Measured before: Page Health read 43,
+  then 40 for two frames (Length 0 of 10, the page's writing not yet there), then 43; after, 43 throughout.
+- **The score** waits for the page's own read too: `usePageHealthScore` passes its worked-out score through
+  `useHeldUntilRead` (`components/knowledge/held-until-read.ts`), which answers the score last shown while
+  `page.health` (`PageHealthResponse`, the reads, backlinks and open issues) has not arrived for this page and the
+  document is not Offline, for at most `RAIL_HOLD_MAX_MS`. Measured before: 42, 43 for two frames (backlinks and
+  reads unknown count as full), 42; after, 42 throughout.
+- **The rail's foot** (`data-page-rail-foot`, Created / Updated and Read This Week) is pinned under the sections' own
+  scroller in a tall window. Under 720 px tall (`[@media(max-height:719px)]`) the docked rail is the one scroller
+  and the sections and the foot flow in it, so the foot never covers Page Health (at 560 px it cut Verify).
+- **The tree** is untouched by the switch: its rows are memoised (`PageTreeRow`), only the old and new current rows
+  re-mark, and its scroll area keeps its `scrollTop`.
+- **The address** is `useTabEntryEffects`' `replaceState` of `#t=<page>`, as before: no history entry per page.
+
+Tests: `select-page.test.ts` (the switch runs as a `page-switch` transition, plainly under reduced motion, not at all
+for the open page; an unopened page is fetched first, the latest press wins, the wait is capped), `PageLoadVeil.test.tsx`
+(nothing shown before the delay, the spinner after), `loaded-page-store.test.ts` (holds while loading, follows once loaded, lets go after the cap,
+passes through before any page loaded, stops following on disconnect), `held-until-read.test.tsx` (holds the score
+until the read, follows a page already read and an Offline one, lets go after the cap), `PageRail.test.tsx` (the
+short-window one scroller), `view-transitions.test.ts` (the class lives in
+`canvas-motion.css`).
 
 ## The formatting bar (built)
 

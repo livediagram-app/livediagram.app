@@ -14,6 +14,7 @@ import { pageHealthFacts, pageShapeOf, sameShape } from '@/lib/knowledge/page-he
 import { track } from '@/lib/telemetry';
 import { askAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
 import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
+import { useHeldUntilRead } from './held-until-read';
 
 const reducedMotion = () =>
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
@@ -51,10 +52,12 @@ export function usePageHealthScore(page: PageKnowledgeView): {
   );
   const mayWrite = useEditorChrome((s) => s.pageEditing.mayEdit);
   const { trust, reviewEvery, health: read, now, rights, verify, pageId } = page;
-  const health = useMemo(
+  const worked = useMemo(
     () => pageHealth(pageHealthFacts(trust, reviewEvery, shape, read), now),
     [trust, reviewEvery, shape, read, now],
   );
+  // Changes once on a page switch: held on the score before until this page's own read is here (held-until-read.ts).
+  const health = useHeldUntilRead(worked, offline || read !== undefined, pageId);
   const addHeading = useCallback(() => {
     track('UI', 'Used', 'HealthAddHeading');
     const editing = chrome.get().pageEditing;
