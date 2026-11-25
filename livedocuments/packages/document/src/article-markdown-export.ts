@@ -1,7 +1,7 @@
 // An article tab's Markdown export (docs/specs/020-import-export/markdown-import.md "Markdown export"): every
 // article's writing in page order, in the form articleFromMarkdown reads back, and a count of what Markdown cannot hold.
 import { articlesOf, type ArticleBlock } from './article-flow';
-import { articleToMarkdown } from './article-markdown-io';
+import { articleMarkdownFrom } from './article-markdown-io';
 import { pageUnits } from './article-pages';
 import { pagesOf } from './page';
 import type { Tab } from './index';
@@ -28,13 +28,17 @@ export function articleTabMarkdown(tab: Tab): ArticleTabMarkdown {
   const written = articlesOf(tab);
   const flows = pageUnits(pagesOf(tab)).flatMap((u) => (u.flow && written[u.flow] ? [u.flow] : []));
   let zones = 0;
+  // Footnotes are numbered on through the file: each article's own `[^1]` would read back as the first article's note.
+  let notes = 0;
   const texts = flows.map((flow, i) => {
     const own = written[flow]!;
     const blocks = own.blocks
       .filter((b) => b.type !== 'zone')
       .map((b) => (i > 0 ? asHeading(b) : b));
     zones += own.blocks.length - blocks.length;
-    return articleToMarkdown({ blocks });
+    const out = articleMarkdownFrom({ blocks }, notes);
+    notes += out.notes;
+    return out.markdown;
   });
   let pictures = 0;
   for (const el of tab.elements) if (el.type === 'image') pictures++;

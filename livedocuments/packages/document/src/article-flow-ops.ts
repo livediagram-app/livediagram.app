@@ -80,17 +80,17 @@ export function diffArticleFlow(before: ArticleFlow | undefined, after: ArticleF
 
 /** `ops` applied to `flow` (absent: an article arriving for the first time, built from its puts).
  *  An op naming a block that is not there is applied as best it can (a remove of a missing block
- *  does nothing). Never returns an empty article. */
+ *  does nothing). Never returns an empty article. Linear: the blocks are a list linked by id while
+ *  the ops apply, so an article arriving whole, or rewritten whole, never rescans itself per op. */
 export function applyArticleOps(
   flow: ArticleFlow | undefined,
   ops: readonly ArticleOp[],
 ): ArticleFlow {
-  const blocks = [...(flow?.blocks ?? [])];
+  const list = new BlockList(flow?.blocks ?? []);
   let style = flow?.style;
   for (const op of ops) {
     if (op.kind === 'remove') {
-      const i = blocks.findIndex((b) => b.id === op.id);
-      if (i >= 0) blocks.splice(i, 1);
+      list.remove(op.id);
       continue;
     }
     if (op.kind === 'style') {
@@ -99,36 +99,116 @@ export function applyArticleOps(
     }
     if (op.kind === 'cell') {
       // A cell whose table, row or column has gone changes nothing: a change of shape won.
-      const i = blocks.findIndex((b) => b.id === op.block);
-      const table = blocks[i];
-      if (table?.type === 'table') blocks[i] = withTableCell(table, op.row, op.col, op.runs);
+      const table = list.get(op.block);
+      if (table?.type === 'table') list.replace(withTableCell(table, op.row, op.col, op.runs));
       continue;
     }
-    const at = blocks.findIndex((b) => b.id === op.block.id);
+    const id = op.block.id;
     if (op.after === undefined && op.before === undefined) {
-      if (at >= 0) blocks[at] = op.block;
-      else blocks.push(op.block);
+      if (list.has(id)) list.replace(op.block);
+      else list.insertBefore(op.block, null);
       continue;
     }
-    if (at >= 0) blocks.splice(at, 1);
-    const afterAt =
-      op.after === null || op.after === undefined ? -1 : blocks.findIndex((b) => b.id === op.after);
-    if (op.after === null || afterAt >= 0) {
-      blocks.splice(afterAt + 1, 0, op.block);
-      continue;
-    }
-    const beforeAt =
-      op.before === null || op.before === undefined
-        ? blocks.length
-        : blocks.findIndex((b) => b.id === op.before);
-    if (beforeAt >= 0) {
-      blocks.splice(beforeAt, 0, op.block);
-      continue;
-    }
-    blocks.splice(at >= 0 ? at : blocks.length, 0, op.block);
+    // Where it was: before the block that followed it (the end when none did, or when it was not there).
+    const was = list.has(id) ? list.remove(id) : null;
+    if (op.after === null) list.insertAfter(op.block, null);
+    else if (op.after !== undefined && list.has(op.after)) list.insertAfter(op.block, op.after);
+    else if (op.before === null || op.before === undefined) list.insertBefore(op.block, null);
+    else if (list.has(op.before)) list.insertBefore(op.block, op.before);
+    else list.insertBefore(op.block, was);
   }
+  const blocks = list.toArray();
   if (blocks.length === 0) blocks.push({ id: 'b-empty', type: 'paragraph', runs: [] });
   return style ? { blocks, style } : { blocks };
+}
+
+/** An article's blocks as a list linked by id, for applyArticleOps: every lookup, removal and
+ *  insertion O(1). Its blocks' ids are unique (parseArticleFlow keeps the first of a repeat, and no
+ *  op adds a second): a repeat given here is kept as a block of its own no op can name. */
+class BlockList {
+  private readonly byId = new Map<string, ArticleBlock>();
+  private readonly prev = new Map<string, string | null>();
+  private readonly next = new Map<string, string | null>();
+  private head: string | null = null;
+  private tail: string | null = null;
+  // Repeated ids, kept where they stood (after the block of that id, or first): they never take an op.
+  private readonly repeats: { after: string | null; block: ArticleBlock }[] = [];
+
+  constructor(blocks: readonly ArticleBlock[]) {
+    for (const b of blocks) {
+      if (this.byId.has(b.id)) this.repeats.push({ after: this.tail, block: b });
+      else this.insertBefore(b, null);
+    }
+  }
+
+  has(id: string): boolean {
+    return this.byId.has(id);
+  }
+
+  get(id: string): ArticleBlock | undefined {
+    return this.byId.get(id);
+  }
+
+  /** A block put in the place of the block with its id. */
+  replace(block: ArticleBlock): void {
+    this.byId.set(block.id, block);
+  }
+
+  /** The block with `id` taken out; answers the id of the block that followed it (null: it was last). */
+  remove(id: string): string | null {
+    if (!this.byId.has(id)) return null;
+    const before = this.prev.get(id)!;
+    const after = this.next.get(id)!;
+    if (before === null) this.head = after;
+    else this.next.set(before, after);
+    if (after === null) this.tail = before;
+    else this.prev.set(after, before);
+    this.byId.delete(id);
+    this.prev.delete(id);
+    this.next.delete(id);
+    return after;
+  }
+
+  /** `block` (its id not in the list) put before the block `at` (null: at the end). */
+  insertBefore(block: ArticleBlock, at: string | null): void {
+    const before = at === null ? this.tail : this.prev.get(at)!;
+    this.link(block, before, at);
+  }
+
+  /** `block` (its id not in the list) put after the block `at` (null: first). */
+  insertAfter(block: ArticleBlock, at: string | null): void {
+    const after = at === null ? this.head : this.next.get(at)!;
+    this.link(block, at, after);
+  }
+
+  private link(block: ArticleBlock, before: string | null, after: string | null): void {
+    const id = block.id;
+    this.byId.set(id, block);
+    this.prev.set(id, before);
+    this.next.set(id, after);
+    if (before === null) this.head = id;
+    else this.next.set(before, id);
+    if (after === null) this.tail = id;
+    else this.prev.set(after, id);
+  }
+
+  toArray(): ArticleBlock[] {
+    const out: ArticleBlock[] = [];
+    const repeatsAfter = new Map<string | null, ArticleBlock[]>();
+    for (const r of this.repeats) {
+      const at = r.after !== null && this.byId.has(r.after) ? r.after : null;
+      const kept = repeatsAfter.get(at);
+      if (kept) kept.push(r.block);
+      else repeatsAfter.set(at, [r.block]);
+    }
+    out.push(...(repeatsAfter.get(null) ?? []));
+    for (let id = this.head; id !== null; id = this.next.get(id)!) {
+      out.push(this.byId.get(id)!);
+      const kept = repeatsAfter.get(id);
+      if (kept) out.push(...kept);
+    }
+    return out;
+  }
 }
 
 const placeOf = (v: unknown): string | null | undefined | false =>

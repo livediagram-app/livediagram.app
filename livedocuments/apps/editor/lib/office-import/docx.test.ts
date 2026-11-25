@@ -444,6 +444,26 @@ describe('readDocx, the edges', () => {
     }
   });
 
+  it('keeps the blank lines inside a code listing, never one at its end', async () => {
+    const styles = `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:style w:type="paragraph" w:styleId="Src"><w:name w:val="Source Code"/></w:style></w:styles>`;
+    const code = (text: string) => p(text ? r(text) : '', styled('Src'));
+    const { blocks } = await read({
+      styles,
+      body: [
+        code('function a() {}'),
+        code(''),
+        code(''),
+        code('function b() {}'),
+        code(''),
+        p(r('After')),
+      ].join(''),
+    });
+    expect(blocks.map((b) => [kindOf(b), textOf(b)])).toEqual([
+      ['code', 'function a() {}\n\n\nfunction b() {}'],
+      ['body', 'After'],
+    ]);
+  });
+
   it('reads a document whose prefixes are not Word’s own', async () => {
     const { blocks } = await read({ prefix: 'ns0', body: p(r('Hello'), styled('Heading1')) });
     expect(blocks.map(textOf)).toEqual(['Hello']);
