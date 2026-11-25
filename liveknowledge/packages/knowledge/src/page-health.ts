@@ -287,7 +287,8 @@ function issues(f: PageHealthFacts): Part {
     points,
     reason: first.reason,
     raise: first.raise,
-    gain: Math.min(10 - points, first.cost),
+    // What dealing with this one issue gives back: the points with the others still open.
+    gain: Math.max(0, 10 - (total - first.cost)) - points,
     ...(first.fix ? { fix: first.fix } : {}),
   };
 }
