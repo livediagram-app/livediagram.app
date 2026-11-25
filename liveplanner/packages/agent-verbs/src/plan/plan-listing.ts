@@ -199,7 +199,7 @@ function listedTime(
     (out ??= {})[f.label] = {
       entries: value.entries.map((e) => ({
         by: name(e.by),
-        time: durationText(e.minutes),
+        time: durationText(e.minutes, false),
         at: new Date(e.at).toISOString(),
       })),
       running: value.running.map((r) => ({
@@ -488,7 +488,8 @@ function listedValue(
   if (field?.kind === 'daterange') return rangeIso(value as ItemFieldValue) ?? value;
   if (field?.kind === 'duration') {
     const m = durationMinutes(field, value as ItemFieldValue);
-    return m === undefined ? null : durationText(m);
+    // Ungrouped, so an agent writing it back with change_items keeps the value (item-types.md "Duration").
+    return m === undefined ? null : durationText(m, false);
   }
   return value;
 }

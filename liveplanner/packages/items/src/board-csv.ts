@@ -38,7 +38,7 @@ import { textMaxOfKind } from './field-limits';
 import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogue';
 import { missingRequiredFields } from './required-fields';
 import { parsePercent } from './percent-fields';
-import { durationText, isTimeSpent, parseDuration } from './duration-fields';
+import { durationMinutes, durationText, isTimeSpent, parseDuration } from './duration-fields';
 import { instantIso, parseDateTime } from './date-time-fields';
 import { isTimedRange, parseDateRange, rangeIso } from './date-range-fields';
 import { isPhoneNumber } from './phone-fields';
@@ -170,7 +170,7 @@ export function boardCsvRows(
             const v = calculated(f, item);
             // A Duration result as a Duration field writes it ("2h 30m").
             return calculatedResultOf(f) === 'duration' && typeof v === 'number'
-              ? durationText(v)
+              ? durationText(v, false)
               : cellOf(v);
           }
           // Every linked card's title, and every person's name, of a field that holds several, joined by ", "
@@ -185,9 +185,14 @@ export function boardCsvRows(
             return fieldPeople(f, item.fields[f.id])
               .map((p) => p.name)
               .join(', ');
+          // A Duration as it reads ("2h 30m"), a Time Spent field its total, its hours ungrouped so Import CSV reads
+          // it back (item-types.md "Duration").
+          if (f.kind === 'duration') {
+            const m = durationMinutes(f, item.fields[f.id]);
+            return m === undefined ? '' : durationText(m, false);
+          }
           // A Checklist reads as its progress ("2/5") and a Votes field as its total, as the card shows them.
-          // A Duration as it reads ("2h 30m"), a Time Spent field its total (item-types.md "Duration").
-          if (f.kind === 'checklist' || f.kind === 'votes' || f.kind === 'duration')
+          if (f.kind === 'checklist' || f.kind === 'votes')
             return customFieldText(f, item.fields[f.id]) ?? '';
           // ISO 8601: a moment as its UTC instant, a range as its interval "start/end" (item-types.md "Date and
           // Time", "Date Range").

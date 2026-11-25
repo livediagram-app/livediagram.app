@@ -22,7 +22,8 @@ export function DurationInput({
   onSave: (minutes: number | undefined) => void;
   placeholder?: string;
 }) {
-  const shown = minutes === undefined ? '' : durationText(minutes);
+  // Ungrouped, so leaving the box untouched reads back the same minutes in every locale.
+  const shown = minutes === undefined ? '' : durationText(minutes, false);
   const [problem, setProblem] = useState<string | null>(null);
   const commit = (input: HTMLInputElement) => {
     const raw = input.value.trim();
@@ -38,7 +39,7 @@ export function DurationInput({
       return;
     }
     setProblem(null);
-    input.value = durationText(next);
+    input.value = durationText(next, false);
     if (next !== minutes) onSave(next);
   };
   return (

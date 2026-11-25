@@ -340,6 +340,35 @@ describe('CSV', () => {
     expect(rows[1]![rows[0]!.indexOf('Time Spent')]).toBe('2h');
   });
 
+  it('writes a thousand hours or more ungrouped, so Import CSV reads the same minutes back', () => {
+    const minutes = 1250 * 60 + 30;
+    const rows = boardCsvRows(
+      setup,
+      new Map([
+        ['a', item({ title: 'A', status: 'todo', 'f-est': minutes }, { type: 'work', id: 'a' })],
+      ]),
+      [work],
+    );
+    const cell = rows[1]![rows[0]!.indexOf('Planned')]!;
+    expect(cell).toBe('1250h 30m');
+    const { creates } = boardCsvImport(
+      [
+        ['Title', 'Planned'],
+        ['A', cell],
+      ],
+      {
+        setup,
+        types: [work],
+        people: [],
+        room: 100,
+      },
+    );
+    expect(creates[0]!.fields['f-est']).toBe(minutes);
+    // The box's text reads back too, and a grouped one never would.
+    expect(parseDuration(durationText(minutes, false))).toBe(minutes);
+    expect(parseDuration('1,250h 30m')).toBeUndefined();
+  });
+
   it('reads a duration as typed, skips what is none, and never imports tracked time', () => {
     const { creates } = boardCsvImport(
       [

@@ -408,7 +408,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     puts the box back and says "Write a duration like 2h 30m, 90m or 1.5h". Its placeholder is "2h 30m".
   - **Reading it** (`durationText`): hours and minutes, the zeros left out: "2h 30m", "45m", "3h", "0m". Hours past a
     day stay hours ("26h 15m"; a working day's length differs by team, so there are no days), grouped as the
-    reader's locale groups digits ("1,250h").
+    reader's locale groups digits ("1,250h"). Where the text is read back (the panel's box, Export CSV, `list_items`)
+    the hours are written ungrouped ("1250h"), so leaving the box or importing the file keeps the value: a grouped
+    "1,250h" reads as no duration, and a German "1.250h" would read as 1.25 hours.
   - **On the card**: a chip of the clock glyph and its value, named "{Field}: 2h 30m".
   - **Sorts as a number**: Sort Cards orders by it, shortest first. Like a Currency field it lays no swimlanes and
     Card Search has no filter for it (every card would be its own row).
