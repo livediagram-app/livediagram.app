@@ -7,7 +7,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { IndexError, type KnowledgeSend } from '@liveworkspace/index-client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const toast = vi.hoisted(() => ({ success: vi.fn() }));
+const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), warning: vi.fn() }));
 vi.mock('../../hooks/ui/useToast', () => ({ useToast: () => toast }));
 vi.mock('../../lib/index-client', () => ({ indexClient: {} }));
 
@@ -48,6 +48,8 @@ function client(over: Record<string, unknown> = {}) {
       ],
     }),
     sendToKnowledge: vi.fn().mockResolvedValue({ send: sent(), link: sent().link }),
+    linkedTabs: vi.fn().mockResolvedValue({ source: 'can', target: 'can' }),
+    linkTabs: vi.fn().mockResolvedValue({ source: 'made', target: 'made' }),
     ...over,
   };
 }
@@ -242,5 +244,34 @@ describe('SendToKnowledgeDialog', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Insert' }));
     await waitFor(() => expect(c.sendToKnowledge).toHaveBeenCalled());
     expect(c.sendToKnowledge.mock.calls[0]![0]).not.toHaveProperty('picture');
+  });
+});
+
+// Connect as tabs (connected-tabs.md "Linked from a Send to").
+describe('connect as tabs', () => {
+  it('links the source and the knowledgebase once the section is inserted', async () => {
+    const c = client();
+    const onClose = vi.fn();
+    open(c, undefined, onClose);
+    await pickKbAndPage();
+    const row = await screen.findByRole('switch', { name: 'Connect as tabs' });
+    await waitFor(() => expect(c.linkedTabs).toHaveBeenCalledWith('D', 'K', expect.anything()));
+    expect(row.getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(await screen.findByRole('button', { name: 'Add Without Summary' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Insert' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    await waitFor(() => expect(c.linkTabs).toHaveBeenCalledWith('D', 'K'));
+  });
+
+  it('cannot be switched on when neither file is the person’s to change', async () => {
+    const c = client({
+      linkedTabs: vi.fn().mockResolvedValue({ source: 'cannot', target: 'cannot' }),
+    });
+    open(c);
+    await pickKbAndPage();
+    const row = await screen.findByRole('switch', { name: 'Connect as tabs' });
+    await waitFor(() => expect(row.hasAttribute('disabled')).toBe(true));
+    expect(row.getAttribute('aria-checked')).toBe('false');
+    expect(row.textContent).toContain('You can’t change the tabs of either file.');
   });
 });

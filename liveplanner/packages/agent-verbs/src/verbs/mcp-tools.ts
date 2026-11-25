@@ -256,7 +256,8 @@ export const mcpChangeItems = mcpTool('change_items', {
     'Flag a card for attention with fields {"flagged": true} (on add or set); unflag it with {"flagged": false} ' +
     'or clear ["flagged"]. ' +
     'An add with sentFrom {app, itemId, tabId, elementId, text} makes a card from a sticky, words or a thread in ' +
-    'another app (Send to Plan): the card links back to that exact place and the source shows a live chip. ' +
+    'another app (Send to Plan): the card links back to that exact place and the source shows a live chip; ' +
+    'sentFrom.connectTabs: true also connects the two files as tabs, each opening the other. ' +
     'An image field or attachments takes {"add": [ids]} or {"remove": [ids]} of pictures upload_image uploaded ' +
     'for this plan. ' +
     'Name things as the board shows them: a ' +

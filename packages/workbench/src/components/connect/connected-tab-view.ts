@@ -1,6 +1,6 @@
 // What a connected tab's page shows (liveworkspace/docs/specs/004-index/connected-tabs.md "Opening", "How it looks"):
 // one state per way an open can end, and each state's words.
-import { IndexError, type App } from '@liveworkspace/index-client';
+import { CONNECTION_LOCKED, IndexError, type App } from '@liveworkspace/index-client';
 import { appName } from './connect-words';
 
 export type ConnectedTabView =
@@ -15,6 +15,8 @@ export type ConnectedTabView =
   | { state: 'link_removed' }
   // The tab came with a copy, an export or an import: the index knows its id for another host or tab.
   | { state: 'copy' }
+  // A linked tab (Connect as tabs) to a file the reader cannot open: it shares nothing, so they ask for access.
+  | { state: 'locked' }
   // The host is offline (an offline item, or no network).
   | { state: 'offline' }
   // Anything else: the network, the rate limit.
@@ -27,6 +29,7 @@ export function connectedTabViewOf(error: unknown): ConnectedTabView {
   if (error instanceof IndexError) {
     if (error.code === 'connection_target_gone') return { state: 'gone' };
     if (error.code === 'connection_link_removed') return { state: 'link_removed' };
+    if (error.code === CONNECTION_LOCKED) return { state: 'locked' };
     if (error.status === 404 && error.code === 'not_found') return { state: 'copy' };
   }
   return { state: 'failed' };
@@ -69,6 +72,11 @@ export function connectedTabCopy(
       return {
         title: `Connect this copy to ${name}.`,
         line: `This tab came with a copy, so it does not open ${name} yet.${ask}`,
+      };
+    case 'locked':
+      return {
+        title: `You don’t have access to ${name}.`,
+        line: `It is a ${appName(app)} file not shared with you. Ask its owner for access to open it.`,
       };
     case 'offline':
       return {

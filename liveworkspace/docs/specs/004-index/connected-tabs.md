@@ -193,7 +193,7 @@ A connected tab that opens nothing says why, in place of the target, with what c
 | Its pass was deleted (from the target's Share) or lapsed | "This connection's link was removed." Connect Again, Remove |
 | The tab came with a copy, an export or an import         | "Connect this copy to <name>." Connect Again, Remove        |
 | The host is offline (an offline item, or no network)     | "Connected files open when you are online."                 |
-| A linked tab whose file the reader cannot open          | "You don't have access to <name>." Request Access           |
+| A linked tab whose file the reader cannot open           | "You don't have access to <name>." Request Access           |
 
 Connect Again makes a new connection to the same target in the same tab, under the same rules as connecting.
 

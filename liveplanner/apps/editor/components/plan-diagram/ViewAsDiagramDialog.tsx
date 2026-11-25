@@ -28,6 +28,8 @@ import { connectFile } from '@liveworkspace/workbench/components/connect/connect
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useToast } from '@liveworkspace/workbench/hooks/ui/useToast';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { LinkTabsOption } from '@liveworkspace/workbench/components/link-tabs/LinkTabsOption';
+import { useLinkTabs } from '@liveworkspace/workbench/components/link-tabs/useLinkTabs';
 import { track } from '@/lib/telemetry';
 
 const DAY_MS = 86_400_000;
@@ -38,7 +40,7 @@ const LABEL = 'text-[13px] font-medium text-slate-700 dark:text-slate-200';
 
 type Client = Pick<
   typeof indexClient,
-  'viewPlanAsDiagram' | 'makeConnection' | 'takeBackConnection'
+  'viewPlanAsDiagram' | 'makeConnection' | 'takeBackConnection' | 'linkedTabs' | 'linkTabs'
 >;
 
 export type ViewAsDiagramConnect = {
@@ -86,6 +88,9 @@ export function ViewAsDiagramDialog({
   const [name, setName] = useState(() => `${setup.title || 'Board'} diagram`.slice(0, NAME_MAX));
   const [drawing, setDrawing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Connect as tabs (connected-tabs.md "Linked from a Send to"): the diagram gets a tab back to this plan, paired with
+  // the plan's own connected tab to it, so either side's Remove takes both.
+  const linkTabs = useLinkTabs({ sourceId: planId, targetId: null, client });
 
   useEffect(() => {
     track('UI', 'Opened', 'ViewAsDiagram');
@@ -158,6 +163,11 @@ export function ViewAsDiagramDialog({
         connected = false;
       }
     }
+    // After the plan's tab, so the diagram's pairs with it rather than adding a second one.
+    void linkTabs.finish(answer.diagram.id, {
+      source: planTitle,
+      target: answer.diagram.title || name.trim(),
+    });
     if (!connected) open();
     toast.success('Diagram made', { action: { label: 'Open Diagram', onSelect: open } });
     onClose();
@@ -284,6 +294,12 @@ export function ViewAsDiagramDialog({
               onChange={(e) => setName(e.target.value)}
             />
           </div>
+          <LinkTabsOption
+            link={linkTabs}
+            sourceApp="liveplanner"
+            targetApp="livediagram"
+            names={{ source: planTitle, target: name.trim() || 'the new diagram' }}
+          />
           {error ? (
             <Callout tone="error" size="md" role="alert">
               {error}

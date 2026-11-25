@@ -35,6 +35,8 @@ import type { SendNoun, SendRequest } from './send-to-plan-entry';
 import { matchPerson, readSendWords } from './send-words';
 import { SendPlanList, type PlanList } from './SendPlanList';
 import { chipWords, openSentCard } from './SentChip';
+import { LinkTabsOption } from '../link-tabs/LinkTabsOption';
+import { useLinkTabs } from '../link-tabs/useLinkTabs';
 
 const PLAN_LIST_LIMIT = 30;
 const SEARCH_SETTLE_MS = 250;
@@ -42,7 +44,7 @@ const LABEL = 'text-xs font-semibold tracking-wide text-slate-500 uppercase dark
 
 type Client = Pick<
   typeof indexClient,
-  'listItems' | 'automationTarget' | 'sendToPlan' | 'newPlanForSend'
+  'listItems' | 'automationTarget' | 'sendToPlan' | 'newPlanForSend' | 'linkedTabs' | 'linkTabs'
 >;
 type Target =
   | { state: 'idle' }
@@ -109,6 +111,8 @@ export function SendToPlanDialog({
   const [existing, setExisting] = useState<PlanSend | null>(() =>
     alreadySent(places, currentSends(), planSendRef),
   );
+  // Connect as tabs (connected-tabs.md "Linked from a Send to"): the source and the plan, once the cards are made.
+  const link = useLinkTabs({ sourceId, targetId: plan?.id ?? null, client });
 
   useEffect(() => {
     workbench.track('UI', 'Opened', 'SendToPlan');
@@ -217,6 +221,7 @@ export function SendToPlanDialog({
         at: Date.now(),
       });
       workbench.track('UI', 'Created', 'SendToPlan');
+      void link.finish(plan.id, { source: sourceTitle, target: plan.title });
       const first = sends[0];
       const count = new Set(sends.map((s) => s.card.id)).size;
       toast.success(
@@ -329,6 +334,15 @@ export function SendToPlanDialog({
               </p>
             ) : null}
           </section>
+          {plan && target.state !== 'refused' ? (
+            <LinkTabsOption
+              link={link}
+              sourceApp={places[0]!.app}
+              targetApp="liveplanner"
+              names={{ source: sourceTitle, target: plan.title }}
+              className="sm:col-span-2"
+            />
+          ) : null}
         </div>
         <DialogFooter>
           <p className="mr-auto hidden text-xs text-slate-500 sm:block dark:text-slate-400">

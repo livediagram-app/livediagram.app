@@ -30,6 +30,8 @@ import {
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import { useToast } from '@liveworkspace/workbench/hooks/ui/useToast';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { LinkTabsOption } from '@liveworkspace/workbench/components/link-tabs/LinkTabsOption';
+import { useLinkTabs } from '@liveworkspace/workbench/components/link-tabs/useLinkTabs';
 import { track } from '@/lib/telemetry';
 import {
   defaultLaneMode,
@@ -50,7 +52,7 @@ const ROWS_SHOWN = 200;
 
 type Client = Pick<
   typeof indexClient,
-  'listItems' | 'automationTarget' | 'makePlanCards' | 'newPlanForSend'
+  'listItems' | 'automationTarget' | 'makePlanCards' | 'newPlanForSend' | 'linkedTabs' | 'linkTabs'
 >;
 type Boards = NonNullable<AutomationTargetDescription['boards']>;
 const NO_BOARDS: Boards = [];
@@ -118,6 +120,8 @@ export function MakePlanCardsDialog({
   const [creating, setCreating] = useState(false);
   const [making, setMaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Connect as tabs (connected-tabs.md "Linked from a Send to"): this diagram and the plan, once the cards are made.
+  const linkTabs = useLinkTabs({ sourceId: source.itemId, targetId: plan?.id ?? null, client });
 
   useEffect(() => {
     track('UI', 'Opened', 'MakePlanCards');
@@ -253,6 +257,7 @@ export function MakePlanCardsDialog({
         at: Date.now(),
       });
       track('UI', 'Created', 'MakePlanCards');
+      void linkTabs.finish(plan.id, { source: sourceTitle, target: plan.title });
       const cards = answer.made + answer.updated;
       const link = answer.sends[0]?.link;
       toast.success(
@@ -354,6 +359,14 @@ export function MakePlanCardsDialog({
                   },
                   { value: 'none', label: 'Nothing', description: 'Lanes are left out.' },
                 ]}
+              />
+            ) : null}
+            {plan && target.state !== 'refused' ? (
+              <LinkTabsOption
+                link={linkTabs}
+                sourceApp="livediagram"
+                targetApp="liveplanner"
+                names={{ source: sourceTitle, target: plan.title }}
               />
             ) : null}
           </section>

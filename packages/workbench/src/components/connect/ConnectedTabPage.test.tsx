@@ -17,12 +17,14 @@ import {
 } from './connected-tab-store';
 
 // The card's picture asks the index on its own (useConnectedPreview, its own tests): kept out of these counts.
-vi.mock('./useConnectedPreview', () => ({ useConnectedPreview: () => ({ state: 'none' }) }));
+const preview = vi.hoisted((): { now: { state: string } } => ({ now: { state: 'none' } }));
+vi.mock('./useConnectedPreview', () => ({ useConnectedPreview: () => preview.now }));
 
 afterEach(() => {
   cleanup();
   resetConnectedTabStoreForTests();
   configureWorkbench(WORKBENCH_DEFAULTS);
+  preview.now = { state: 'none' };
   vi.restoreAllMocks();
 });
 
@@ -220,5 +222,23 @@ describe('ConnectedTabPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open in liveplanner' }));
     await waitFor(() => expect(state()).toBe('opened'));
     expect(open).toHaveBeenCalledWith(OPEN.href, '_blank', 'noopener');
+  });
+
+  it('shows a linked tab the reader cannot open as locked at once, asking for access with no Open', async () => {
+    preview.now = { state: 'locked' };
+    const { client, state } = setup({ canEdit: false });
+    expect(state()).toBe('locked');
+    expect(screen.getByText('You don’t have access to Launch plan.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Open/ })).toBeNull();
+    expect(await screen.findByRole('button', { name: /Request Access/ })).toBeTruthy();
+    expect(client.openConnection).not.toHaveBeenCalled();
+  });
+
+  it('shows locked when Open itself is refused for no access', async () => {
+    const { client, state } = setup();
+    client.openConnection.mockRejectedValue(new IndexError(403, 'connection_locked'));
+    fireEvent.click(await screen.findByRole('button', { name: /Open/ }));
+    await waitFor(() => expect(state()).toBe('locked'));
+    expect(connectedTabBroken('cn_abcdefghijklmnopqrstuvwx')).toBe(false);
   });
 });

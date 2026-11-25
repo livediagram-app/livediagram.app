@@ -8,7 +8,7 @@ import { IndexError, type DiagramSend } from '@liveworkspace/index-client';
 import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const toast = vi.hoisted(() => ({ success: vi.fn() }));
+const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), warning: vi.fn() }));
 vi.mock('../../hooks/ui/useToast', () => ({ useToast: () => toast }));
 vi.mock('../../lib/index-client', () => ({ indexClient: {} }));
 
@@ -52,6 +52,7 @@ function setup(
     strict?: boolean;
     earlier?: DiagramSend | null;
     items?: unknown[];
+    linkedTabs?: ReturnType<typeof vi.fn>;
   } = {},
 ) {
   const drafter = over.drafter ?? vi.fn().mockResolvedValue(GRAPH);
@@ -59,6 +60,8 @@ function setup(
     over.send ??
     vi.fn().mockResolvedValue({ item: { id: 'D' }, link: 'https://ld/document/D', send: SEND });
   const listItems = vi.fn().mockResolvedValue({ items: over.items ?? [] });
+  const linkedTabs = over.linkedTabs ?? vi.fn().mockResolvedValue({ source: 'can', target: 'can' });
+  const linkTabs = vi.fn().mockResolvedValue({ source: 'made', target: 'made' });
   const onClose = vi.fn();
   const tab = { closed: false, close: vi.fn(), opener: {}, location: { href: '' } };
   const open = vi.spyOn(window, 'open').mockReturnValue(tab as never);
@@ -70,11 +73,11 @@ function setup(
       drafter={drafter as never}
       earlier={over.earlier ?? null}
       onClose={onClose}
-      client={{ sendToDiagram, listItems } as never}
+      client={{ sendToDiagram, listItems, linkedTabs, linkTabs } as never}
     />
   );
   render(over.strict ? <StrictMode>{dialog}</StrictMode> : dialog);
-  return { drafter, sendToDiagram, listItems, onClose, tab, open };
+  return { drafter, sendToDiagram, listItems, linkedTabs, linkTabs, onClose, tab, open };
 }
 
 const button = (name: string) => screen.getByRole<HTMLButtonElement>('button', { name });
@@ -373,5 +376,39 @@ describe('SendToDiagramDialog', () => {
     expect(diagramName('Onboarding', 'Handbook')).toBe('Onboarding diagram');
     expect(diagramName('', 'Handbook')).toBe('Handbook diagram');
     expect(diagramName('', '')).toBe('Untitled diagram');
+  });
+});
+
+// Connect as tabs (connected-tabs.md "Linked from a Send to").
+describe('connect as tabs', () => {
+  it('links the source with the new diagram once it is made, naming the diagram it will be', async () => {
+    const { linkedTabs, linkTabs, onClose } = setup();
+    const row = screen.getByRole('switch', { name: 'Connect as tabs' });
+    expect(row.getAttribute('aria-checked')).toBe('true');
+    expect(row.textContent).toContain('Handbook and Onboarding diagram each get a tab');
+    // A diagram still to be made needs no read.
+    expect(linkedTabs).not.toHaveBeenCalled();
+    await previewThenMake();
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    await waitFor(() => expect(linkTabs).toHaveBeenCalledWith('kb', 'D'));
+  });
+
+  it('reads how an earlier diagram stands, and adds nothing to files already connected', async () => {
+    const { linkedTabs, linkTabs, onClose } = setup({
+      earlier: SEND,
+      linkedTabs: vi.fn().mockResolvedValue({ source: 'connected', target: 'connected' }),
+    });
+    await waitFor(() => expect(linkedTabs).toHaveBeenCalledWith('kb', 'D', expect.anything()));
+    expect(await screen.findByText('Connected as tabs')).toBeTruthy();
+    await previewThenMake('Update Tab');
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(linkTabs).not.toHaveBeenCalled();
+  });
+
+  it('is not offered for a tab sent into the source itself', async () => {
+    const { linkedTabs } = setup({ earlier: { ...SEND, diagram: { id: 'kb', title: 'Self' } } });
+    await screen.findByRole('radio', { name: /Update/ });
+    expect(screen.queryByRole('switch', { name: 'Connect as tabs' })).toBeNull();
+    expect(linkedTabs).not.toHaveBeenCalled();
   });
 });

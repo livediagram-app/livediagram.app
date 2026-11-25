@@ -17,30 +17,30 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 
 ## Scope, by file
 
-| File                                                        | Role                                           | Part |
-| ----------------------------------------------------------- | ---------------------------------------------- | ---- |
-| `packages/index-client/src/connections.ts`                  | the shapes and readers every side shares       | 1    |
-| `liveworkspace/apps/index/src/connections.ts`               | the routes: make, open, take back              | 2    |
-| `liveworkspace/apps/index/src/beside.ts`                    | a file made beside the host, then connected    | 1281 |
-| `packages/index-client/src/beside.ts`                       | the offers' catalogue and the request's reader | 1281 |
-| `liveworkspace/apps/index/src/connection-doors.ts`          | the app's confirm and removal doors, the sweep | 2    |
-| `liveworkspace/apps/index/src/connection-rows.ts`           | dropping connections, purges' statements, href | 2    |
-| `liveworkspace/apps/index/src/own-grants.ts`                | checking a grant the index signed              | 2    |
-| `liveworkspace/apps/index/migrations/0010_connections.sql`  | the `connections` table                        | 2    |
-| `packages/index-app/src/connected-tabs.ts`                  | the column, the reverse write, confirm, remove | 3    |
-| `packages/index-app/src/internal.ts` (`connectedTab`)       | the internal door for the reverse tab          | 3    |
-| `<app>/apps/api/src/<room>/<item>-schema.ts`                | `tabs.connection`, a schema step in each app   | 3    |
-| `<app>/apps/api/src/<room>/connected-tab.ts`                | each app's reverse tab and its room op         | 3    |
-| `packages/workbench/src/components/chrome/ConnectedTab.tsx` | the tab: the target app's logo and name        | 4    |
-| `packages/workbench/src/components/connect/`                | the tab's page, the Connect list, their calls  | 4    |
-| `packages/explorer/src/dialogs/share/ActivePass.tsx`        | "Connected from <host>" on a pass              | 4    |
-| `packages/workbench/src/components/connect/` (part 5 files) | mounting: the page, the list, the store, doors | 5    |
-| `<app>/apps/<editor>/components/connect/`                   | each editor's thin doors: host, start entry    | 5    |
-| `packages/index-client/src/linked-tabs.ts`                  | Connect as tabs: the shapes and the reader     | 1429 |
-| `liveworkspace/apps/index/src/linked-tabs.ts`               | the read, the link, the pair's removal         | 1429 |
-| `liveworkspace/apps/index/migrations/0035_linked_tabs.sql`  | `connections.linked`                           | 1429 |
-| `packages/index-app/src/connected-tabs.ts` (`removeConnectedTabOf`) | the app's door that takes a linked tab away | 1429 |
-| `packages/workbench/src/components/link-tabs/`              | the pickers' option and the link after a send  | 1429 |
+| File                                                                | Role                                           | Part |
+| ------------------------------------------------------------------- | ---------------------------------------------- | ---- |
+| `packages/index-client/src/connections.ts`                          | the shapes and readers every side shares       | 1    |
+| `liveworkspace/apps/index/src/connections.ts`                       | the routes: make, open, take back              | 2    |
+| `liveworkspace/apps/index/src/beside.ts`                            | a file made beside the host, then connected    | 1281 |
+| `packages/index-client/src/beside.ts`                               | the offers' catalogue and the request's reader | 1281 |
+| `liveworkspace/apps/index/src/connection-doors.ts`                  | the app's confirm and removal doors, the sweep | 2    |
+| `liveworkspace/apps/index/src/connection-rows.ts`                   | dropping connections, purges' statements, href | 2    |
+| `liveworkspace/apps/index/src/own-grants.ts`                        | checking a grant the index signed              | 2    |
+| `liveworkspace/apps/index/migrations/0010_connections.sql`          | the `connections` table                        | 2    |
+| `packages/index-app/src/connected-tabs.ts`                          | the column, the reverse write, confirm, remove | 3    |
+| `packages/index-app/src/internal.ts` (`connectedTab`)               | the internal door for the reverse tab          | 3    |
+| `<app>/apps/api/src/<room>/<item>-schema.ts`                        | `tabs.connection`, a schema step in each app   | 3    |
+| `<app>/apps/api/src/<room>/connected-tab.ts`                        | each app's reverse tab and its room op         | 3    |
+| `packages/workbench/src/components/chrome/ConnectedTab.tsx`         | the tab: the target app's logo and name        | 4    |
+| `packages/workbench/src/components/connect/`                        | the tab's page, the Connect list, their calls  | 4    |
+| `packages/explorer/src/dialogs/share/ActivePass.tsx`                | "Connected from <host>" on a pass              | 4    |
+| `packages/workbench/src/components/connect/` (part 5 files)         | mounting: the page, the list, the store, doors | 5    |
+| `<app>/apps/<editor>/components/connect/`                           | each editor's thin doors: host, start entry    | 5    |
+| `packages/index-client/src/linked-tabs.ts`                          | Connect as tabs: the shapes and the reader     | 1429 |
+| `liveworkspace/apps/index/src/linked-tabs.ts`                       | the read, the link, the pair's removal         | 1429 |
+| `liveworkspace/apps/index/migrations/0035_linked_tabs.sql`          | `connections.linked`                           | 1429 |
+| `packages/index-app/src/connected-tabs.ts` (`removeConnectedTabOf`) | the app's door that takes a linked tab away    | 1429 |
+| `packages/workbench/src/components/link-tabs/`                      | the pickers' option and the link after a send  | 1429 |
 
 ## Domain and naming
 
@@ -430,8 +430,8 @@ scoped save and patch).
 
 ## Data and persistence
 
-| Table         | Key  | Columns                                                                                                                                                                                | Indexes                                                                                                                                                                                                                 |
-| ------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table         | Key  | Columns                                                                                                                                                                                                                                                                     | Indexes                                                                                                                                                                                                                 |
+| ------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `connections` | `id` | `host_item_id`, `host_tab_id` (null while a reverse waits for its app), `target_item_id` (null once purged), `share_code` (null once deleted, or never made for a linked row), `pair_id`, `created_at`, `confirmed_at`, `linked` (1 for Connect as tabs, Work Tracker 1429) | `connections_host (host_item_id, host_tab_id)`, `connections_target (target_item_id)`, `connections_code (share_code)`, `connections_pair (pair_id)`, `connections_unconfirmed (created_at) WHERE confirmed_at IS NULL` |
 
 `host_item_id` cascades from `items`; `target_item_id`, `share_code` (from `share_links`) and `pair_id` (from

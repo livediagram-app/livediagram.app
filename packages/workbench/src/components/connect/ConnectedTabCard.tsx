@@ -2,7 +2,8 @@
 
 // A connected tab's page (liveworkspace/docs/specs/004-index/connected-tabs.md "How it looks"): one calm card in place of
 // a canvas, the target app's logo over its words and what can be done. Remove and Connect Again only for someone who
-// may edit the host (`canEdit`, the session's `can('edit')`); Open, Open Again and Try Again are everyone's.
+// may edit the host (`canEdit`, the session's `can('edit')`); Open, Open Again and Try Again are everyone's. A linked tab
+// to a file the reader cannot open (`locked`) shows no picture and no Open, only Request Access for `targetId`.
 import type { App } from '@liveworkspace/index-client';
 import { BrandMark } from '@liveworkspace/brand';
 import { Button, buttonClassName, lucideGlyph } from '@liveworkspace/ui';
@@ -15,6 +16,7 @@ import {
 import { connectedTabCopy, isBrokenState, type ConnectedTabView } from './connected-tab-view';
 import { appName } from './connect-words';
 import type { ConnectedPreview } from './useConnectedPreview';
+import { RequestAccess } from '../request-access/RequestAccess';
 
 const ArrowGlyph = lucideGlyph(lucideArrowUpRight, 14);
 const LinkGlyph = lucideGlyph(lucideLink, 14);
@@ -34,6 +36,7 @@ export function ConnectedTabCard({
   onConnectAgain,
   onRetry,
   preview = NO_PREVIEW,
+  targetId,
 }: {
   view: ConnectedTabView;
   // The tab's name: the target's title as last seen.
@@ -49,11 +52,14 @@ export function ConnectedTabCard({
   onRetry: () => void;
   // The target's picture (useConnectedPreview): over a smaller logo while asked for or drawn, the logo alone for none.
   preview?: ConnectedPreview;
+  // The target's item id, for Request Access on a locked tab.
+  targetId?: string;
 }) {
   const { state } = view;
   const copy = connectedTabCopy(state, name, app, canEdit);
   const broken = isBrokenState(state);
   const mendable = state === 'link_removed' || state === 'copy';
+  const pictured = preview.state !== 'none' && preview.state !== 'locked' && state !== 'locked';
   return (
     <div className="flex h-full w-full items-center justify-center p-6">
       <section
@@ -62,7 +68,7 @@ export function ConnectedTabCard({
         data-connected-card={state}
         className="flex w-full max-w-sm animate-dialog-in flex-col items-center rounded-3xl border border-slate-200 bg-white px-8 py-9 text-center shadow-xl motion-reduce:animate-none dark:border-slate-700 dark:bg-slate-900"
       >
-        {preview.state === 'none' ? (
+        {!pictured ? (
           <Logo app={app} broken={broken} spinning={state === 'opening'} size="large" />
         ) : (
           // The picture, the logo sitting on its lower edge. A file that is gone or unreachable keeps its picture
@@ -90,7 +96,7 @@ export function ConnectedTabCard({
         )}
         <h2
           id="connected-tab-title"
-          className={`${preview.state === 'none' ? 'mt-5' : 'mt-3'} text-[17px] font-semibold tracking-tight text-slate-900 [overflow-wrap:anywhere] dark:text-slate-100`}
+          className={`${pictured ? 'mt-3' : 'mt-5'} text-[17px] font-semibold tracking-tight text-slate-900 [overflow-wrap:anywhere] dark:text-slate-100`}
         >
           {copy.title}
         </h2>
@@ -116,6 +122,11 @@ export function ConnectedTabCard({
             <ArrowGlyph />
             Open Again
           </a>
+        ) : null}
+        {state === 'locked' && targetId ? (
+          <div className="mt-5 flex w-full flex-col items-center">
+            <RequestAccess itemId={targetId} noun="file" />
+          </div>
         ) : null}
         {state === 'failed' ? (
           <Button variant="secondary" size="sm" className="mt-5" onClick={onRetry}>

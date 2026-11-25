@@ -52,6 +52,14 @@ Connecting makes a share link on the file you connect, at the role you chose, so
 
 Turn on **Connect both files** before you press a file, and that file gains a tab back to this <Noun /> too. It needs you to be able to share this <Noun /> as well (its owner, or a member of its team). If the other file cannot be reached just then, its tab back is not made and a message says so; your <Noun /> keeps its connected tab.
 
+### From a Send to
+
+Every **Send to** picker (Send to Plan, Send to Diagram, Send to Knowledge Base, Make Plan Cards and View As Diagram) has **Connect as tabs**, on by default. Leave it on, and once the send is done both files get a tab that opens the other. Files already connected show **Connected as tabs** instead, and never get a second tab.
+
+These tabs share nothing: each opens only for people who can already open the other file. Anyone else sees **You don't have access** and the file's name, with **Request Access**. Each side needs you to be able to change that file's tabs; if you can change only one, only that one gets its tab, and the picker says so before you send.
+
+**Remove Tab** on either side removes both tabs. The files, and what you sent, stay as they are.
+
 ## Opening a connected file
 
 Press the connected tab to see its page: a preview of the file, its name, and a button under the preview. Press **Open in** and the app's name (for a file in another app), or **Open** (for another <Noun />), to go to the file. A file in another app opens in a new browser tab (the tab carries a small arrow for that), and another <Noun /> opens in place. The tab's page stays behind with **Open Again**, in case your browser held the new tab back.
@@ -89,7 +97,7 @@ A small amber dot on the tab means it opens nothing just now. Its page says why:
 - **Editors** connect files, reorder, folder and remove connected tabs, and use Connect Again.
 - **Participants** and **Viewers** see connected tabs and open them; the file opens at the role the tab was connected with.
 
-Connected tabs are made from the editor only. Agents and the CLI can see a connected tab's app and name, never where it leads, and cannot make one.
+Connected tabs are made from the editor. Agents and the CLI can see a connected tab's app and name, never where it leads, and cannot make one, with one exception: an agent's Send to Plan can ask to connect the two files as tabs, as the picker does.
 
 <AppNote app="livehuddle">
   A meeting rarely needs only its space: the agenda in livedocuments, the plan in liveplanner, the
