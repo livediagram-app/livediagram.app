@@ -80,8 +80,8 @@ A doorway with a door in it, placed on any wall.
 - **It cuts the wall.** A character walks through a door on a wall: the wall's collision is broken across the
   door's width (the door's ends keep the wall's reach, as a Room's doorway does). A door that is not on a wall
   blocks nothing.
-- **It rides its room.** Moving a room carries the doors standing on its walls with it, and resizing one carries
-  them too: each door keeps its place along its wall as a fraction of the wall's length (a door in the middle of a
+- **It rides its room.** Moving a room (a drag, or an arrow-key nudge) carries the doors standing on its walls with
+  it, and resizing one (a drag of its handles, a typed size, Reset Aspect Ratio) carries them too: each door keeps its place along its wall as a fraction of the wall's length (a door in the middle of a
   wall stays in the middle), clamped clear of the wall's ends when the wall shrinks, turning with the wall. Which
   doors ride is derived at the time, not stored: a door rides the room whose wall it stands on, so doors from before
   this rule follow too. The resize and the doors it carries are one change, one undo (`doorsFollowRooms`).
