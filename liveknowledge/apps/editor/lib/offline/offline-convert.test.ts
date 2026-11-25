@@ -265,6 +265,32 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     });
   });
 
+  it('keeps a chosen AI Editing on the offline record, under the default Review Period', async () => {
+    vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [{ id: 't1' }],
+      knowledgeSettings: { reviewEvery: 90, aiEditing: 'any', aiEditUnverifies: true },
+    } as never);
+    await takeCloudOffline('d1', 'owner');
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({
+      knowledgeSettings: { reviewEvery: 90, aiEditing: 'any', aiEditUnverifies: true },
+    });
+  });
+
+  it('writes down no settings for a knowledgebase on the defaults', async () => {
+    vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [{ id: 't1' }],
+      knowledgeSettings: { reviewEvery: 90 },
+    } as never);
+    await takeCloudOffline('d1', 'owner');
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).not.toHaveProperty(
+      'knowledgeSettings',
+    );
+  });
+
   it('takes a document offline without reading the index (Favourites were removed)', async () => {
     await takeCloudOffline('d1', 'owner');
     expect(indexClient.getItem).not.toHaveBeenCalled();
