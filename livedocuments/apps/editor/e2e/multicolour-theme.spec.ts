@@ -62,10 +62,9 @@ test.describe('Multi-colour themes', () => {
     ]);
     expect(await rainbowHues(page)).toBe(0);
 
-    // Once the tab has a page, the dialog opens from the page title bar's Style
-    // (docs/specs/011-theme/canvas-and-theme-dialog.md "Opening it"): the cluster's Theme & canvas is gone.
+    // The dialog opens from Style by the zoom (docs/specs/011-theme/canvas-and-theme-dialog.md "Opening it").
     await page.getByRole('button', { name: 'Style', exact: true }).first().click();
-    // The dialog opens on its home (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"): Colours
+    // The dialog opens on its home, Page Design (canvas-and-theme-dialog.md "Page Design"): its Colours card
     // opens the theme browser.
     await page.getByRole('button', { name: /^Colours: / }).click();
     // Every theme sits in one paged list ("Colours panel"): page on until Rainbow shows.

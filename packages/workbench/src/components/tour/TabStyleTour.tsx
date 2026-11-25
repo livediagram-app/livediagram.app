@@ -35,9 +35,10 @@ export function createTabStyleTour({
     // The steps for the surface's panels, rebuilt only when they change (a new array each render would restart the
     // engine's step effects).
     const panelsKey = api.panels.join(',');
+    const ownHome = !!api.ownHome;
     const steps = useMemo(
-      () => tabStyleTourSteps(panelsKey ? (panelsKey.split(',') as TabStylePanel[]) : []),
-      [panelsKey],
+      () => tabStyleTourSteps(panelsKey ? (panelsKey.split(',') as TabStylePanel[]) : [], ownHome),
+      [panelsKey, ownHome],
     );
     return useTourEngine<TabStyleTourApi>({
       steps,

@@ -108,7 +108,7 @@ describe('the Reset All Settings row', () => {
     fireEvent.click(within(note).getByRole('button', { name: 'Try Again' }));
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toMatch(
-        /Your settings weren’t reset\. Please try again\./,
+        /Your settings weren’t reset\. Try again\./,
       ),
     );
     // A request that throws reads as offline.

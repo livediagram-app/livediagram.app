@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '../index';
 import { layOutPages, pagesOf, type Page } from '../page';
-import { pageDesignIdOf, pageDesignSet, withTabPageDesign } from './edits';
+import { pageDesignIdOf, pageDesignSet, withMovingPagesStilled, withTabPageDesign } from './edits';
 import { calmShareAt, designGuard, SCRIM_PAD } from './guard';
 import { designPalette } from './palette';
 import { pickPageDesign } from './pick';
@@ -15,12 +15,6 @@ import {
   DESIGN_CACHE_MAX,
 } from './render';
 import { RHYTHM_QUIET_CALM, RHYTHM_QUIET_INTENSITY, resolvePageDesigns } from './resolve';
-import {
-  designSetBackground,
-  designSetLayout,
-  PAGE_DESIGN_SET_BY_ID,
-  PAGE_DESIGN_SETS,
-} from './sets';
 import { resolveTuning } from './tuning';
 
 const slide = (id: string, extra: Partial<Page> = {}): Page => ({
@@ -265,21 +259,53 @@ describe('design edits (blueprint "Data and persistence")', () => {
   });
 });
 
-describe('design sets and picking (spec "Design sets")', () => {
-  it('holds six or more sets, each a design, a background and layouts', () => {
-    expect(PAGE_DESIGN_SETS.length).toBeGreaterThanOrEqual(6);
-    const set = PAGE_DESIGN_SET_BY_ID['keynote-dark']!;
-    expect(designSetBackground(set, { elementStroke: '#2563eb' })?.fill?.kind).toBe('gradient');
-    expect(designSetBackground(PAGE_DESIGN_SET_BY_ID.editorial!, {})).toBeUndefined();
-    expect(designSetLayout(set, 'slide', 0)).toBe('slide-title');
-    expect(designSetLayout(set, 'slide', 1)).toBe('slide-bullets');
-    expect(designSetLayout(set, 'slide', 3)).toBe('slide-bullets');
-    expect(designSetLayout(set, 'infographic', 2)).toBe('facts-grid');
-  });
-
+describe('picking a design (spec "Agents")', () => {
   it('picks a design for words, falling back to Soft Mesh', () => {
     expect(pickPageDesign('Our quarterly startup pitch')).toBe('soft-mesh');
     expect(pickPageDesign('A retro arcade night')).toBe('scanlines');
     expect(pickPageDesign('')).toBe('soft-mesh');
+  });
+});
+
+// One design to a page (canvas-and-theme-dialog.md "Page Design", owner 2026-11-25): a moving background is the page's
+// design, so none draws over it, and a design picked over one stills it, its colours kept.
+describe('one design to a page', () => {
+  const moving = {
+    fill: { kind: 'gradient', from: '#111111', to: '#222222', motion: 'drift' },
+  } as Page['background'];
+
+  it('draws no design on a page whose background moves', () => {
+    const pages = layOutPages([slide('a', { background: moving }), slide('b')]);
+    const out = resolvePageDesigns({ id: 'aurora' }, pages);
+    expect(out.has('a')).toBe(false);
+    expect(out.has('b')).toBe(true);
+  });
+
+  it('stills moving backgrounds, every unlocked page or only those named, and leaves a still tab as it was', () => {
+    const tab = tabOf([
+      slide('a', { background: moving }),
+      slide('b', { background: moving }),
+      slide('c', { background: moving, locked: true }),
+      slide('d'),
+    ]);
+    const motionOf = (t: Tab) =>
+      pagesOf(t).map(
+        (p) => (p.background?.fill as { motion?: string } | undefined)?.motion ?? null,
+      );
+    expect(motionOf(withMovingPagesStilled(tab))).toEqual([null, null, 'drift', null]);
+    expect(motionOf(withMovingPagesStilled(tab, new Set(['b'])))).toEqual([
+      'drift',
+      null,
+      'drift',
+      null,
+    ]);
+    const still = withMovingPagesStilled(tab);
+    expect(pagesOf(still)[0]!.background?.fill).toMatchObject({
+      kind: 'gradient',
+      from: '#111111',
+      to: '#222222',
+    });
+    expect(pagesOf(still)[0]!.background?.fill).not.toHaveProperty('motion');
+    expect(withMovingPagesStilled(still)).toBe(still);
   });
 });

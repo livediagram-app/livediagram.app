@@ -4,7 +4,15 @@
 // exactly as picking that theme does.
 import { keepUnchangedElements } from '@liveworkspace/workbench/lib/keep-unchanged-elements';
 import { withTabStyleOf } from '@liveworkspace/workbench/lib/tab-style-to-all';
-import { viewElementInTheme, type Appearance, type Tab } from '@livedocuments/document';
+import {
+  newPageBackgroundOf,
+  pagesGivenNewPageBackground,
+  pagesOf,
+  viewElementInTheme,
+  withEveryPageOnTabDesign,
+  type Appearance,
+  type Tab,
+} from '@livedocuments/document';
 import { withPageBackgroundsFollowingTheme } from './page-theme-follow';
 import { getResolvedAppearance } from '@livedocuments/ui';
 import {
@@ -90,5 +98,10 @@ export function withThemeApplied(source: Tab, id: string, appearance?: Appearanc
 /** `target` restyled from `source` for Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): `source`'s
  *  theme applied as picking it does, then its canvas, text defaults and finish exactly (withTabStyleOf). */
 export function withStyleOfTab(target: Tab, source: Tab): Tab {
-  return withTabStyleOf(withThemeApplied(target, source.theme ?? 'brand'), source);
+  const styled = withTabStyleOf(withThemeApplied(target, source.theme ?? 'brand'), source);
+  // Copy to All Tabs dresses the pages too (owner, 2026-11-25): each unlocked page takes the source's background
+  // and drops a design of its own for the tab's, as All Pages does within a tab.
+  if (!pagesOf(styled).length) return styled;
+  const backed = newPageBackgroundOf(source) ? pagesGivenNewPageBackground(styled).tab : styled;
+  return withEveryPageOnTabDesign(backed);
 }

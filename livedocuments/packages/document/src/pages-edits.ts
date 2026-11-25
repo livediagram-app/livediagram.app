@@ -338,6 +338,26 @@ export function pageAddedLike<T extends PagesTab>(
   return { tab: withPages(out.tab, next) };
 }
 
+/**
+ * A new page like `sourceId` straight above or below its unit (docs/specs/007-editor/pages-mode.md "Contents",
+ * Insert Page Above and Below): made as pageAddedLike makes it, then placed. Beside an article page it lands beside
+ * the whole article.
+ */
+export function pageInsertedLike<T extends PagesTab>(
+  tab: T,
+  sourceId: string,
+  id: string,
+  flow: string,
+  where: 'above' | 'below',
+): PageEdit<T> {
+  const out = pageAddedLike(tab, sourceId, id, flow, sourceId);
+  if (!('tab' in out) || where === 'below') return out;
+  const units = pageUnits(pagesOf(out.tab));
+  const at = units.findIndex((u) => u.pageIds.includes(sourceId));
+  if (at < 0) return out;
+  return { tab: (withUnitMoved(out.tab, id, at) as T | null) ?? out.tab };
+}
+
 /** A copy after the page, content and all; an article page copies its whole article (`flow` the
  *  copy's article id). */
 export function pageDuplicated<T extends PagesTab>(

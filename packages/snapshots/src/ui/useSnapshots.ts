@@ -7,6 +7,12 @@
 // dialog, so only the list's fetch, which can land after a close and a reopen, checks it is still live.
 
 import { workbench } from '@liveworkspace/workbench/bindings';
+import {
+  errorMessage,
+  errorWords,
+  whenBackOnline,
+  type ErrorWords,
+} from '@liveworkspace/ui/error-words';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { reloadAfterRevert, SnapshotsApiError, type SnapshotsApi } from '../client';
 import type { SnapshotRetentionInfo, SnapshotSummary } from '../wire';
@@ -22,6 +28,11 @@ export type SnapshotsState = {
   error: string | null;
   /** The list's own fetch failed: the dialog says so with Try Again rather than an empty list. */
   listFailed: boolean;
+  /**
+   * Why the list failed, in words (error-words.md): Try Again only where it can help, and an offline list loads again
+   * by itself once the browser is back online.
+   */
+  listError: ErrorWords | null;
   retry: () => void;
   busy: SnapshotBusy;
   reverted: boolean;
@@ -31,7 +42,7 @@ export type SnapshotsState = {
 };
 
 const messageOf = (err: unknown) =>
-  err instanceof SnapshotsApiError ? err.message : 'Something went wrong. Try again.';
+  err instanceof SnapshotsApiError ? err.message : errorMessage(err);
 
 export function useSnapshots(
   api: SnapshotsApi,
@@ -41,7 +52,8 @@ export function useSnapshots(
   const [kept, setKept] = useState(5);
   const [retention, setRetention] = useState<SnapshotRetentionInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [listFailed, setListFailed] = useState(false);
+  const [listError, setListError] = useState<ErrorWords | null>(null);
+  const listFailed = listError !== null;
   const [busy, setBusy] = useState<SnapshotBusy>(null);
   const [reverted, setReverted] = useState(false);
   const live = useRef(true);
@@ -53,11 +65,13 @@ export function useSnapshots(
       setSnapshots(list.snapshots);
       setKept(list.kept);
       setRetention(list.retention ?? null);
-      setListFailed(false);
-    } catch {
+      setListError(null);
+    } catch (err) {
       if (!live.current) return;
       setSnapshots((prev) => prev ?? []);
-      setListFailed(true);
+      const words = errorWords(err, { retriesItself: true });
+      // The server's own words for its refusal, where it gave some.
+      setListError(err instanceof SnapshotsApiError ? { ...words, message: err.message } : words);
     }
   }, [api]);
 
@@ -122,10 +136,14 @@ export function useSnapshots(
   );
 
   const retry = useCallback(() => {
-    setListFailed(false);
+    setListError(null);
     setSnapshots(null);
     void refresh();
   }, [refresh]);
+
+  // Offline: the list loads again by itself once the browser is back online.
+  const offline = listError?.kind === 'offline';
+  useEffect(() => (offline ? whenBackOnline(retry) : undefined), [offline, retry]);
 
   return {
     snapshots,
@@ -133,6 +151,7 @@ export function useSnapshots(
     retention,
     error,
     listFailed,
+    listError,
     retry,
     busy,
     reverted,

@@ -208,8 +208,9 @@ On the timeline:
   People, the faces of those involved alone (up to five, then +N; names on hover). Two by two in Tools, four across
   in a wide dialog.
 - An item with snapshots but no events yet shows the snapshots, not the empty state.
-- A failed list leaves the timeline as it is (no snapshots on it); a refused action shows its message under Take
-  Snapshot.
+- A failed list leaves the timeline as it is (no snapshots on it) and says so over it: "Couldn't load snapshots." and
+  why ([Error words](../022-interface-design/error-words.md)), with **Try Again** only where trying again can help;
+  offline, the list loads again by itself once back online. A refused action shows its message under Take Snapshot.
 
 On their own (no timeline), the same parts in a list:
 
@@ -223,8 +224,10 @@ On their own (no timeline), the same parts in a list:
   replaced. A snapshot of the <item> as it is now is taken first, so you can undo this.", with **Cancel** and
   **Revert**; the button then reads "Reverting…".
 - Empty: "No snapshots yet" and "Take one before a big change, so you can come back to it."
-- The list failed to load: "Couldn't load snapshots", "Check your connection, then try again." and **Try Again**,
-  never the empty state, which would say there are none.
+- The list failed to load: "Couldn't load snapshots" and why, in the words of
+  [Error words](../022-interface-design/error-words.md) (the server's own message where it gave one), never the empty
+  state, which would say there are none. **Try Again** shows only where trying again can help (not for no access or
+  gone); offline, it says so and loads the list again by itself once the browser is back online.
 - While a request runs its button says so and the others wait; a refusal shows its message in the dialog.
 
 With Pro on, where the item's owner's tier keeps snapshots for a time (Free), a quiet line says so:

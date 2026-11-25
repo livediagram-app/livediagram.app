@@ -909,7 +909,7 @@ LIVEDOCUMENTS_DEBUG=1 and report it at https://github.com/livedocuments-app/live
     token cap (409 `token_limit_reached`) "Your account has reached its limit of 20 API tokens. Revoke one below,
     then connect.", with the account's live tokens listed under it, least recently used first, each with Revoke
     (`TokenLimitList`, as on the consent page); a revoke says "There's room for one more token now." and puts the
-    keyboard on Connect; anything else "Something went wrong. Please try again."
+    keyboard on Connect; anything else in its class's words (the platform's `error-words.md`: offline, signed out, the server's), "Something went wrong. Try again." when nothing explains it
 - **CLI notices** (stderr), final copy:
   - telemetry: `livedocuments counts which commands succeed (the command's name only: never arguments, documents or
 hosts) and sends the count to <host>. Turn it off: livedocuments telemetry off, or LIVEDOCUMENTS_TELEMETRY=0.`

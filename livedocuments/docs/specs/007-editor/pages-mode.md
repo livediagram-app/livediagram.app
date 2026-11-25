@@ -741,11 +741,14 @@ given in one go rather than page by page.
 (`PageTitleBar`, `packages/workbench/src/components/canvas/PageTitleBar.tsx`, shared by every editor
 with pages) rather than loose on the canvas: a white card, a hairline border and a soft shadow, its
 buttons 28 px tall, quiet until hovered and tinted while their popover is open or their tool is on.
-They come in groups, a short hairline between, read left to right: **how the page looks** (**Style**,
-the tab's look, opening Tab Style ([Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md)
-"Behaviour"), for an Editor; on an article page its own Style, leading with a Tab Style row; then an
-article's Text, Layout, Background), then **tools** (Notes, Tidy), then **the page
-itself** (its lock, then its cog), last at the corner. A group with nothing to show is left out with
+They come in groups, a short hairline between, read left to right: **how the page looks** (on an article page
+its own Style, leading with a Tab Style row; then an article's Text, Layout, **Design**; the tab's own **Style**
+moved to the foot of Contents as **Design** on 2026-11-25, "Contents"), then **tools** (Notes, Tidy), last at the
+corner. **Design** (a palette glyph, `PageDesignButton`) replaced the Background popover on 2026-11-25: it opens
+Tab Style on Page Design, where a page's background and the art over it are one concept; on a phone the
+Appearance sheet's **Design** row does the same, and Page Settings has no Background. The page's **lock** and
+**cog** left the bar on 2026-11-25: Lock and Page Settings are in Contents' ⋯ menu
+toolbar, and Page Settings' panel still hangs from the bar's top-right corner, where the cog was. A group with nothing to show is left out with
 its hairline. The label beside it shows the page's name in the label's strong ink and the rest
 (its size, its kind) muted, so the name reads first. **The label wears the same card** (`PageLabelCard`,
 `packages/workbench/src/components/canvas/PageLabelCard.tsx`, shared by every editor with pages): its text on
@@ -1289,7 +1292,10 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   size whatever the zoom, rises in as the page appears (a fade alone under reduced motion), and
   lifts a little on hover. A press opens that page's title-bar **Layout** popover, anchored to the
   button as a press on it would (a bottom sheet on a phone), so there is one gallery and one place
-  it lives; it is tracked as `UI / Opened / EmptyPageInvite`. It is an invite, never in the way:
+  it lives; it is tracked as `UI / Opened / EmptyPageInvite`. Under it, the same card again for
+  someone who may style the tab: **Change Design** (a palette glyph, "Background and art behind your
+  pages"), which opens Tab Style on Page Design as a centred modal (a bottom sheet on a phone),
+  tracked as `UI / Opened / EmptyPageDesign` (owner, 2026-11-25). The two are an invite, never in the way:
   it steps aside the moment anything is on the page, while a palette tool is armed (tap to drop or
   drag to draw: the page is where it lands), while a layout is previewed on the page, on the first
   page while it still offers its kind, on a locked page, in zen, and when the page is too small on
@@ -1334,17 +1340,17 @@ canvas's ink.
   names filling its width and a name still cut off shown whole in a tooltip, opaque, with no gap at its edge, so no page
   shows round or through it; only its inner top corner is rounded, and a border and a soft shadow
   part it from the canvas. It has no header of its own: the list starts at its top, and its foot
-  holds Add Page with **Contents Options** to its right (a square button the height of Add Page, a
+  holds **Design** (an Editor's: opens Tab Style, "Design at the foot" below) with **Contents Options** to its right (a square button the height of Design, a
   cog glyph; tooltip "Contents Options"; tinted while its menu is open). It opens a small menu above it
   (`ContentsOptions`, `../packages/workbench/src/components/canvas/ContentsOptions.tsx`): **Stack Pages**, a switch
   for the tab ("Stacked or side by side"; an Editor's, on a tab not locked and not an article's), then, under a
   separator, **Collapse Contents** (tuck Contents into its button, bottom right; was the foot's own Minimise button
-  before 2026-11-04). A Viewer or Participant, who has no Add Page, finds the cog alone at the foot's right, holding
+  before 2026-11-04). A Viewer or Participant, who has no Design, finds the cog alone at the foot's right, holding
   Collapse Contents alone. It is
   always on the left: it cannot be moved to the other side. It stays open while the person works;
   the cluster has no Contents button while it shows, and the corner panels on the left start past
   it. The bottom-right cluster stops 16px short of the sidebar and, in a window too narrow for it in one row, wraps upward from the right rather than
-  run under Add Page (`contentsClusterLeft`).
+  run under Design (`contentsClusterLeft`).
 - **Joined to the menu box**: the sidebar rises to the canvas's top and the menu box
   (the menu button and the tab's name, top left) becomes its top row, so the two read as one panel
   rather than a card floating over a sidebar. The box's own border, fill and shadow fade away
@@ -1418,17 +1424,23 @@ Both show the same list:
     window's width, so a desktop window about 450 px wide with a mouse, where Contents is the bottom
     sheet, reveals both on hover as a wide one does.
   - **The ⋯ menu** (also a right-click on the row, or a long press on it by a finger) is one menu for
-    the whole list, a header naming the page, then in groups: **Page Settings** (the cog: glides to
-    the page and opens its settings, where it is renamed and resized); the page's place in the
+    the whole list, with no header (the row it hangs from names the page; a screen reader hears the page's name in
+    the menu's own name). It opens on a **toolbar** of icon buttons, each with its hover card (2026-11-25):
+    **Duplicate** on the left (while the copy fits under the page limit), then on the right **Lock** or **Unlock**
+    (tinted while locked), **Page Settings** (the cog: glides to the page and opens its settings, where it is
+    renamed and resized) and **Delete** (not on a locked page). Under it, in groups: the page's place in the
     show ("Slides" below): **Add to Slides** on any page the deck has no slide of, else **Present From
-    Here** (while its slide is shown) and **Hide in Slides** or **Show in Slides**; **Duplicate** (while the copy fits under
-    the page limit), **Move Up** and **Move Down** (while the page's unit has a neighbour that way:
-    an article moves whole), **Lock** or **Unlock**; then, under its own separator, **Delete**, last
-    (not on a locked page), in the menu's own tones ([Destructive actions](../004-interface-design/destructive-actions.md)). Each does exactly what the page's title bar or cog does; none but Page
+    Here** (while its slide is shown) and **Hide in Slides** or **Show in Slides**; **Insert Page Above** and **Insert
+    Page Below** (while a page fits under the page limit: a new empty page like this one, its kind and shape, as Add
+    Page makes one, placed straight above or below the page's unit, so beside a whole article; it glides into view and
+    is marked as here; one undo step); **Move Up** and **Move Down** (while the page's unit has a neighbour that way:
+    an article moves whole). Each does exactly what the page's title bar or cog does; none but Page
     Settings glides to the page. A Participant and a Viewer see no grip,
     no Delete and no ⋯, and a right-click or long press opens nothing.
     A row's tools keep its arrows their own, but a Cmd or Ctrl chord (undo, redo, search) still
-    reaches the editor from them. Deleting a page from its row (its bin or its menu) moves focus to
+    reaches the editor from them. **Delete** or **Backspace** on a row (pressed, so it holds focus) deletes its
+    page as its bin does (an Editor's, not on a locked page); the keys stop at the list, so the canvas's selection
+    is never deleted with it. Deleting a page from its row (its bin, its menu or the keys) moves focus to
     the row before it (the next, when the first goes), never to the page's body.
   - A row's name carries the padlock on a locked page.
   - A page whose slide is hidden in the deck is set aside in its picture, so a skipped slide shows
@@ -1457,12 +1469,18 @@ Both show the same list:
   named by the page and `aria-current="page"` on the one here; its toolbar (or ⋯ menu) and grip sit above that
   button as controls of their own. Rows that were listbox options held those buttons, controls nested in a
   control. Up, Down, Home and End move between the rows' buttons.
-- **Adding**: an Editor's footer is the canvas's + after the last page ("Adding a
-  page"): a wide **Add Page** button, with the add icon, that adds another page like the last (its
-  tooltip names what it adds, **Add Slide**: its kind and
+- **Adding**: an Editor's list ends, under the last page's row and scrolling with the rows, on the canvas's + after
+  the last page ("Adding a page"), drawn as **the next page**: an empty page in the last page's shape, placed and
+  sized as a row's picture, with a dashed edge, the add icon and what it adds (**Add Slide**, **Add Card**; in the
+  popover's compact rows the name beside it), tinted on hover (`ContentsAddSlot`). It adds another page like the
+  last (its kind and
   shape), always of the tab's kind ("One kind a tab"). A new page lands right after the page here ("Where a new page goes") (carrying the background, theme's Dusk for a new infographic), glides into view and the list scrolls to its new row, marked as here. At the page
   limit the button is disabled with the limit in
-  its tooltip. A Participant and a Viewer see the list without the footer.
+  its tooltip. A page's ⋯ menu adds one exactly where it is wanted (Insert Page Above, Insert Page Below).
+- **Design at the foot** (2026-11-25): an Editor's foot holds a wide **Design** button (a painter's palette, named
+  "Design") where Add Page was, opening Tab Style as a centred modal (a bottom sheet on a phone), not hanging from the button
+  ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md) "Opening it"). In the popover and the phone's sheet it
+  is the foot alone. A Participant and a Viewer see the list without Add Page or Design.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed. The sidebar stays on screen while the person works, so

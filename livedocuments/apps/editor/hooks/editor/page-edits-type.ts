@@ -28,6 +28,9 @@ export type PageEdits = BackgroundCopyEdits & {
   // Absent at the page limit.
   // Right after `after` (Contents' page here) when given, else right after `pageId`.
   addPageLike?: (pageId: string, after?: string) => void;
+  // A new page like `pageId` straight above or below its unit (Contents' Insert Page Above and Below). Absent at the
+  // page limit.
+  insertPageLike?: (pageId: string, where: 'above' | 'below') => void;
   // The first page's kind chosen while it is the only page and empty (its own choice cards).
   choosePageKind: (pageId: string, kind: PageKind) => void;
   duplicatePage?: (pageId: string) => void;

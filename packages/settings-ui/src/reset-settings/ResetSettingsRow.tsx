@@ -40,7 +40,7 @@ const GENERAL = accountErrorMessage('');
 function failedMessage(error: string): string {
   const why = accountErrorMessage(error);
   return why === GENERAL
-    ? 'Your settings weren’t reset. Please try again.'
+    ? 'Your settings weren’t reset. Try again.'
     : `Your settings weren’t reset. ${why}`;
 }
 

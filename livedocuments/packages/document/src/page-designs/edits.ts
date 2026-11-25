@@ -32,6 +32,21 @@ export function withTabPageDesign<T extends DesignTab>(tab: T, design: PageDesig
   return { ...tab, pageDesign: next };
 }
 
+/** Every page wearing the tab's design again: each unlocked page's own design dropped (Page Design's Affect All Pages,
+ *  docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design"); a locked page keeps its own. */
+export function withEveryPageOnTabDesign<T extends DesignTab>(tab: T): T {
+  const pages = pagesOf(tab);
+  if (!pages.some((p) => p.design !== undefined && !pageLockRefuses(pages, p.id))) return tab;
+  return withPages(
+    tab,
+    pages.map((p) => {
+      if (p.design === undefined || pageLockRefuses(pages, p.id)) return p;
+      const { design: _drop, ...rest } = p;
+      return rest;
+    }),
+  );
+}
+
 /** A page's own design: a design, none (`'none'`, while the tab has one), or null to wear the tab's again. An article
  *  page's reaches every page of its article, as its background does. */
 export function pageDesignSet<T extends DesignTab>(
@@ -69,4 +84,21 @@ export function pageDesignIdOf(
 ): string | null {
   if (isNoDesign(page.design)) return null;
   return (page.design ?? tabDesign)?.id ?? null;
+}
+
+/** `tab` with the moving backgrounds of its unlocked pages stilled, their colours kept (`only`: those pages alone):
+ *  a design picked over a moving background takes its place, one design to a page (owner, 2026-11-25). */
+export function withMovingPagesStilled<T extends DesignTab>(tab: T, only?: ReadonlySet<string>): T {
+  const pages = pagesOf(tab);
+  let changed = false;
+  const next = pages.map((p) => {
+    const fill = p.background?.fill;
+    if (fill?.kind !== 'gradient' || !fill.motion) return p;
+    if (only && !only.has(p.id)) return p;
+    if (pageLockRefuses(pages, p.id)) return p;
+    changed = true;
+    const { motion: _motion, ...still } = fill;
+    return { ...p, background: { ...p.background, fill: still } };
+  });
+  return changed ? withPages(tab, next) : tab;
 }

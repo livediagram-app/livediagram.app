@@ -94,6 +94,7 @@ import {
   trackWelcomeOpened,
 } from '@/lib/explorer/telemetry';
 import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
+import { prefetchItem } from '@/lib/explorer/item-prefetch';
 import { loadPlatformWelcome, loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerBottomBar, EXPLORER_FLOOR } from './ExplorerBottomBar';
 import { SiteSubscription } from '@/components/subscription/SiteSubscription';
@@ -407,6 +408,7 @@ export function ExplorerShell() {
             renderThumbnail={renderPreview}
             drive={drive}
             prefetchThumbnail={prefetchPreview}
+            prefetchItem={prefetchItem}
             Link={ExplorerLink}
             teams={teams}
             viewerId={identity.sub}

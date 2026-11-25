@@ -75,8 +75,10 @@ The cards are written in one place, an Editor's: the page's title-bar **Notes** 
   on touch): a caret shows where it lands, the move commits on release, as Contents' rows reorder
   (`useRowReorderDrag`, pointer events, so touch works). **Move Up** and **Move Down** buttons sit beside the grip,
   and Alt+↑ / Alt+↓ move the focused card; the first card has no Move Up, the last no Move Down.
-- **Remove**: the bin button on the card. A card with words on it goes at once and a bar under the list offers
-  **Undo** for 6 seconds ("Card removed"); a blank card goes without one. Delete or Backspace on a focused (closed)
+- **Remove**: the bin button on the card. A card with words on it goes at once and the editor's Undo toast says
+  "Card removed." with **Undo** (the shared undo-not-confirm toast, never a bar inside the popover; 2026-11-25).
+  Pressing it keeps the Notes popover open, the card back in its place (a popover never closes on a toast's press); a
+  blank card goes without one. Delete or Backspace on a focused (closed)
   card removes it the same way.
 - **Keyboard**: Tab reaches each card and its buttons in order; ↑ / ↓ on a focused card move focus to the card above
   or below.

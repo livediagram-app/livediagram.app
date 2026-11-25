@@ -4,11 +4,8 @@ import { track } from '@/lib/telemetry';
 // The Canvas props for the floating panels and docks (EditorCanvasHost): the minimap, the laser,
 // spotlight and format panels, Theme & canvas, and the Collaborate panel's comment and action rows.
 export function usePanelCanvasProps({
-  styleOnPages,
   goToRowElement,
 }: {
-  // The tab has pages, so Tab Style is on each page's title bar rather than the bottom-right cluster.
-  styleOnPages: boolean;
   // A Collaborate panel row goes to its card, brought into view.
   goToRowElement: (id: string) => void;
 }) {
@@ -60,10 +57,10 @@ export function usePanelCanvasProps({
     onMoveLaserPanel: (x: number, y: number) => setLaserPanelPosition({ x, y }),
     onResetLaserPanel: () => setLaserPanelPosition(null),
     // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
-    // CanvasThemeDialog on its home, the Looks and the Fine-tune rows. Only while the tab has no pages:
-    // then each page's title bar holds Style.
+    // CanvasThemeDialog on its home (Page Design while the tab has pages). Named Style, by the zoom as in the
+    // other apps (owner, 2026-11-25); the pages' title bars no longer hold it.
     onOpenCanvasTheme:
-      isReadOnly || embedMode || styleOnPages
+      isReadOnly || embedMode
         ? undefined
         : () => {
             setCanvasThemeTab('looks');

@@ -278,7 +278,7 @@ export function PendingRequest({
       </p>
       {failed ? (
         <p role="alert" className="mt-4 text-sm text-rose-700 dark:text-rose-300">
-          Something went wrong. Please try again.
+          Something went wrong. Try again.
         </p>
       ) : null}
       <div className="mt-8 flex w-full flex-col gap-2 sm:w-auto sm:flex-row-reverse sm:justify-center">

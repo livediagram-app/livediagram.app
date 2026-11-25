@@ -132,7 +132,9 @@ describe('snapshotsApi', () => {
     });
     const generic = await api.list().catch((e: unknown) => e);
     expect(generic).toBeInstanceOf(SnapshotsApiError);
-    expect((generic as SnapshotsApiError).message).toBe('Something went wrong. Try again.');
+    expect((generic as SnapshotsApiError).message).toBe(
+      'Something went wrong on our side. Try again in a moment.',
+    );
     await expect(api.list()).rejects.toMatchObject({ code: null });
     expect(calls.map((c) => `${c.method} ${c.url}`).slice(0, 4)).toEqual([
       'GET https://x/api/projects/p1/snapshots',

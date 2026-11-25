@@ -224,6 +224,8 @@ export function AnchoredPopover({
     // and a tap's click would land on the control under it (the anchor, opening it again).
     if (e.target instanceof Element && e.target.closest('[data-anchored-popover-scrim]')) return;
     if (keepOpenWithin && e.target instanceof Element && e.target.closest(keepOpenWithin)) return;
+    // A toast's press (its Undo of what was just done in here) leaves the popover open, so the undone work shows.
+    if (e.target instanceof Element && e.target.closest('[data-toast-id]')) return;
     if (!(e.target instanceof Node && anchor.contains(e.target))) onClose();
   });
 

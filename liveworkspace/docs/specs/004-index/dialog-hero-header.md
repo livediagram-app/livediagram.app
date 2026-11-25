@@ -75,6 +75,12 @@ billing page has its page heading; the subscription scopes around them draw noth
 - **The band's edges.** Its top corners follow the panel's (a card's, a sheet's, none edge to edge); a hairline in
   the band's faint colour marks its foot against the dialog's body.
 
+## A screen inside the dialog
+
+A dialog with screens inside it (Tab Style's panels and their own levels) names the screen that is up in the title and
+line, and gives `onBack`: the title mark becomes a **back button** of the same size and well, a left chevron that
+nudges left on hover, named "Back to <the screen before>", which goes there (owner, 2026-11-25).
+
 ## The title's face
 
 The title is set in the app's heading face, the one Home's hero and the start header use (`startHeadingFace`): the
