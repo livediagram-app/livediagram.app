@@ -182,6 +182,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     EUR, chosen when the field is made and changeable later; GBP when none is given). Its value is a number with up to
     two decimals; it reads, on the card and in the panel, as the person's locale formats that currency ("£12,500",
     "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers. A Deal brought into a project from the editor starts with the currency of the browser's region (`localeCurrency`, the common codes only); GBP otherwise, and a field or value already stored never changes.
+  - In the card panel a Number's and a Currency's box saves on leaving it; emptying it clears the field, and text the
+    box can't read as a number ("£12", "12 kg", which some browsers let into a number box) puts the value back rather
+    than clearing it.
   - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
     site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
   - **Long Text** is rich text, edited as the Description is ([Working on a board](plan-board.md#working-on-a-board)):

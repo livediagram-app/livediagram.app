@@ -27,6 +27,21 @@ describe('CustomFieldEditor', () => {
     expect(onSave).toHaveBeenLastCalledWith(undefined);
   });
 
+  // A number box with text it can't read (some browsers let "£12" in) reads as '': that is no clearing.
+  it.each([
+    ['currency', VALUE],
+    ['number', { id: 'f-n', label: 'Count', kind: 'number' } as CustomFieldDef],
+  ])('puts a %s back, never clears it, when the box holds no number', (_kind, field) => {
+    const onSave = vi.fn();
+    render(<CustomFieldEditor id="v" field={field} value={12} disabled={false} onSave={onSave} />);
+    const input = screen.getByRole<HTMLInputElement>('spinbutton');
+    Object.defineProperty(input, 'validity', { value: { badInput: true }, configurable: true });
+    input.value = '';
+    fireEvent.blur(input);
+    expect(onSave).not.toHaveBeenCalled();
+    expect(input.value).toBe('12');
+  });
+
   // Its label is not a <label for> (a press on the words must not tick it), so the box carries the name itself.
   it('names a Checkbox field by its label', () => {
     const onSave = vi.fn();

@@ -35,6 +35,14 @@ const LINK = /^https:\/\/\S+$/i;
 // Whether a typed Link is one the field keeps: an `https://` address with no spaces.
 export const isLinkText = (text: string): boolean => LINK.test(text);
 
+// A number box holding text it can't read as a number ("£12", "12 kg": some browsers let letters in) reads as empty;
+// that puts the stored value back rather than clearing it. True when it did.
+function keptOnBadInput(input: HTMLInputElement, value: ItemFieldValue | undefined): boolean {
+  if (!input.validity.badInput) return false;
+  input.value = typeof value === 'number' ? String(value) : '';
+  return true;
+}
+
 export function CustomFieldEditor({
   id,
   field,
@@ -100,6 +108,7 @@ export function CustomFieldEditor({
           defaultValue={typeof value === 'number' ? value : ''}
           key={typeof value === 'number' ? value : 'none'}
           onBlur={(e) => {
+            if (keptOnBadInput(e.target, value)) return;
             const raw = e.target.value.trim();
             const n = Number(raw);
             if (raw === '') void onSave(undefined);
@@ -123,6 +132,7 @@ export function CustomFieldEditor({
             defaultValue={typeof value === 'number' ? value : ''}
             key={typeof value === 'number' ? value : 'none'}
             onBlur={(e) => {
+              if (keptOnBadInput(e.target, value)) return;
               const raw = e.target.value.trim();
               const n = Math.round(Number(raw) * 100) / 100;
               if (raw === '') void onSave(undefined);
