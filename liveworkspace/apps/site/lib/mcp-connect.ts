@@ -2,6 +2,7 @@
 // site's page talks to, what the connection request is, and the hand-over: mint an account token for the client,
 // give it and the ticked apps to the MCP, retire the client's earlier token, and send the browser on.
 import { ONE_MCP_ORIGIN } from '@liveworkspace/api-schema/mcp-origin';
+import { appSchemeRedirectUrl } from '@liveworkspace/api-kit/oauth';
 import { accountApi } from './account-api';
 import type { DeviceSessionClient } from './mcp-device-session';
 
@@ -30,7 +31,17 @@ export type ConsentSession = {
   verified: boolean;
   // An app's own CLI (a built-in client, `<app>-cli`): it calls one app's api, so it is offered no app list.
   cli: boolean;
+  // The app scheme the sign-in goes back to (`cursor`) when it goes to an app on this computer, not a website: the
+  // page warns that any app here can claim it (mcp.md "Redirect addresses"). Null for a web address.
+  localScheme: string | null;
 };
+
+/** A scheme name as the MCP sends it, or null: never trusted to be more than a short run of scheme characters. */
+function schemeName(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length > 64) return null;
+  // The whole value must be the scheme the URL reads: `cursor:evil` reads as `cursor` and is refused.
+  return appSchemeRedirectUrl(`${value}:x`)?.protocol === `${value}:` ? value : null;
+}
 
 /** Whether a client is one of the apps' CLIs, as the one MCP's built-in clients name them. */
 export function isCliClient(clientId: unknown, verified: boolean): boolean {
@@ -55,6 +66,7 @@ export async function fetchConsentSession(
       redirectHost: typeof body.redirectHost === 'string' ? body.redirectHost : '',
       verified,
       cli: isCliClient(body.clientId, verified),
+      localScheme: schemeName((body as { localScheme?: unknown }).localScheme),
     };
   } catch {
     return null;
@@ -127,14 +139,21 @@ export async function cancelConnect(origin: string, session: string): Promise<st
   }
 }
 
-function safeRedirect(url: unknown): boolean {
+// Where the browser may be sent: a web address, or an app's own scheme the client registered (`cursor://…`), never
+// one a browser would run itself (`javascript:`, `data:`).
+export function safeRedirect(url: unknown): boolean {
   if (typeof url !== 'string') return false;
   try {
     const { protocol } = new URL(url);
-    return protocol === 'https:' || protocol === 'http:';
+    return protocol === 'https:' || protocol === 'http:' || appSchemeRedirectUrl(url) !== null;
   } catch {
     return false;
   }
+}
+
+/** Whether the browser is being handed to an app on this computer rather than a website: the page then stays. */
+export function opensApp(url: string): boolean {
+  return appSchemeRedirectUrl(url) !== null;
 }
 
 // A reconnect replaces the client's earlier tokens: only ids the MCP named that are still live and carry this
