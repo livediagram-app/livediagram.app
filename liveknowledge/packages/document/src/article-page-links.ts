@@ -9,7 +9,7 @@ import {
   type ArticleFlow,
   type ArticlePageLinkRun,
   type ArticleRun,
-} from './article-flow';
+} from '@liveworkspace/article/article-flow';
 import { pageParents, pageTreeRows, type TreePage } from './page-tree';
 
 /** The run field that holds a page link's target. `@liveknowledge/knowledge` reads the same key (PAGE_LINK_KEY). */
@@ -22,9 +22,8 @@ export const MAX_PAGE_LINK_TITLE = 200;
 /** A page as the links need it: its id, its title and its place in the tree. */
 export type LinkablePage = TreePage & { name: string };
 
-/** A page link as Markdown. Brackets and line breaks in a title would end the link early, so they read as spaces. */
-export const pageLinkMarkdown = (title: string): string =>
-  `[[${title.replace(/[[\]\n]/g, ' ').trim()}]]`;
+/** A page link as Markdown (written by @liveworkspace/article's article-markdown-io). */
+export { pageLinkMarkdown } from '@liveworkspace/article/article-markdown-io';
 
 // Every run of the writing through `change`, which answers the run or runs that take its place. Blocks and rows the
 // change leaves alone keep their identity, so a reader that memoises on them does not redo its work.

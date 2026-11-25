@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ARTICLE_ZONE_MIN, type ArticleFlow, type ArticleZoneBlock } from './article-flow';
+import {
+  ARTICLE_ZONE_MIN,
+  type ArticleFlow,
+  type ArticleZoneBlock,
+} from '@liveworkspace/article/article-flow';
 import {
   looseOnArticles,
   objectsDraggedOut,

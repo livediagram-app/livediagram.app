@@ -5,7 +5,7 @@
 // same colour.
 import { DEFAULT_SCHEME_ID } from '@liveworkspace/element-model/themes';
 import { hexToRgb } from './colors';
-import { isArticleHex } from './article-flow';
+import { isArticleHex } from '@liveworkspace/article/article-flow';
 import { themeAccent } from './page-default-background';
 import { getBuiltInTheme, type ThemeDefinition } from './themes';
 

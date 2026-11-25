@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { articlesOf } from './article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import { withPageKindChosen } from './article-pages';
 import {
   pageAdded,

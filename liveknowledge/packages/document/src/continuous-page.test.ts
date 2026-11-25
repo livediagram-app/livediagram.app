@@ -1,7 +1,7 @@
 // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page".
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
-import type { ArticleBlock } from './article-flow';
+import type { ArticleBlock } from '@liveworkspace/article/article-flow';
 import { estimateArticle } from './article-layout-estimate';
 import { withPageKindChosen } from './article-pages';
 import { withArticleHeightEstimated } from './continuous-page-estimate';

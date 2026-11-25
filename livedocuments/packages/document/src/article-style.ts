@@ -2,7 +2,7 @@
 // (docs/specs/007-editor/article-pages.md "Article style", "Type"): every field's default, and
 // the looks an article can start from. Pure; the editor turns the result into CSS variables and
 // the exports read the same numbers.
-import { articlesOf, sameArticleValue } from './article-flow';
+import { articlesOf, sameArticleValue } from '@liveworkspace/article/article-flow';
 import { withArticleFlow } from './article-pages';
 import { pagesOf, withPages } from './page';
 import type { Tab } from './index';
@@ -14,7 +14,7 @@ import type {
   ArticleRules,
   ArticleStyle,
   ArticleTextSize,
-} from './article-flow';
+} from '@liveworkspace/article/article-flow';
 
 export const ARTICLE_TEXT_SIZE_PX: Readonly<Record<ArticleTextSize, number>> = {
   small: 14,

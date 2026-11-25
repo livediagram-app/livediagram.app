@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import type { ArticleBlock, ArticleFlow } from './article-flow';
-import { articleFromMarkdown } from './article-markdown-io';
+import type { ArticleBlock, ArticleFlow } from '@liveworkspace/article/article-flow';
+import { articleFromMarkdown } from '@liveworkspace/article/article-markdown-io';
 import { articleLeftOutNote, articleTabMarkdown } from './article-markdown-export';
 import type { Tab } from './index';
 

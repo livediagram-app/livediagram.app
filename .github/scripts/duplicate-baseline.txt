@@ -184,14 +184,9 @@ livedocuments/packages/diagram-lint/src/fixes.ts	liveknowledge/packages/diagram-
 livedocuments/packages/document/scripts/build-world-map.mjs	liveknowledge/packages/document/scripts/build-world-map.mjs
 livedocuments/packages/document/src/animation-membership.ts	liveknowledge/packages/document/src/animation-membership.ts
 livedocuments/packages/document/src/arrow-rebind.ts	liveknowledge/packages/document/src/arrow-rebind.ts
-livedocuments/packages/document/src/article-bands.ts	liveknowledge/packages/document/src/article-bands.ts
-livedocuments/packages/document/src/article-footnotes.ts	liveknowledge/packages/document/src/article-footnotes.ts
 livedocuments/packages/document/src/article-intake.ts	liveknowledge/packages/document/src/article-intake.ts
-livedocuments/packages/document/src/article-markdown.ts	liveknowledge/packages/document/src/article-markdown.ts
 livedocuments/packages/document/src/article-notes.ts	liveknowledge/packages/document/src/article-notes.ts
 livedocuments/packages/document/src/article-readability.ts	liveknowledge/packages/document/src/article-readability.ts
-livedocuments/packages/document/src/article-table.ts	liveknowledge/packages/document/src/article-table.ts
-livedocuments/packages/document/src/article-toc.ts	liveknowledge/packages/document/src/article-toc.ts
 livedocuments/packages/document/src/article-zones.ts	liveknowledge/packages/document/src/article-zones.ts
 livedocuments/packages/document/src/auto-layout-sweep.ts	liveknowledge/packages/document/src/auto-layout-sweep.ts
 livedocuments/packages/document/src/auto-layout-tree.ts	liveknowledge/packages/document/src/auto-layout-tree.ts

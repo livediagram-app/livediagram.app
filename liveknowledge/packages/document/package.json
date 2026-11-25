@@ -12,6 +12,7 @@
     "./automations": "./src/automations/index.ts"
   },
   "dependencies": {
+    "@liveworkspace/article": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/automations": "workspace:^",
     "@liveworkspace/element-model": "workspace:*",

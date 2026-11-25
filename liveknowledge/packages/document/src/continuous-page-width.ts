@@ -6,7 +6,7 @@
 // editor's first full-width layout then settles all of it as measured. Pure: the page is stored at the new width
 // with the next save of the tab.
 import { isRecord } from '@liveworkspace/model-core/is-record';
-import { articlesOf, type ArticleZoneBlock } from './article-flow';
+import { articlesOf, type ArticleZoneBlock } from '@liveworkspace/article/article-flow';
 import { estimateArticle } from './article-layout-estimate';
 import { articleMarginPx } from './article-style';
 import { withElementsMoved, withZonesSettled } from './article-zones';

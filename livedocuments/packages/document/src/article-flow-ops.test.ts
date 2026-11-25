@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuLeastMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import type { ArticleBlock, ArticleFlow } from './article-flow';
+import type { ArticleBlock, ArticleFlow } from '@liveworkspace/article/article-flow';
 import { applyArticleOps, diffArticleFlow, type ArticleOp } from './article-flow-ops';
 
 // docs/specs/007-editor/article-pages.md "Collaboration": ops applied in place, as the array walk read them.

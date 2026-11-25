@@ -1,4 +1,4 @@
-// An article's header and footer (docs/specs/007-editor/article-pages.md "Headers and footers"): a
+// An article's header and footer (livedocuments/docs/specs/007-editor/article-pages.md "Headers and footers"): a
 // line at the top and the bottom of every page, a left, a centre and a right part, with fields for the
 // page number, the page count, the document's name and the date. Part of the article's style; what
 // each page shows is worked out here, never stored. Pure.

@@ -5,8 +5,8 @@
 // weight, face, line height and margins, from the article's resolved style), its words wrapped at an estimated width
 // and flowed down the article's pages, a page break starting the next. An estimate: a line may break a word earlier
 // or later than the browser would, so a long article can end a few lines off. Pure.
-import { articleListMarkers, articlesOf } from './article-flow';
-import { articleBandsFor, bandDate } from './article-bands';
+import { articleListMarkers, articlesOf } from '@liveworkspace/article/article-flow';
+import { articleBandsFor, bandDate } from '@liveworkspace/article/article-bands';
 import type { ArticleDrawOp } from '@liveworkspace/element-model/article-draw-ops';
 import {
   ARTICLE_HEADER_BAND_PX,
@@ -17,8 +17,8 @@ import {
   articleTopMarginPx,
   resolveArticleStyle,
 } from './article-style';
-import type { ArticleTableBlock } from './article-table';
-import { articleTocEntries, tocDepthOf } from './article-toc';
+import type { ArticleTableBlock } from '@liveworkspace/article/article-table';
+import { articleTocEntries, tocDepthOf } from '@liveworkspace/article/article-toc';
 import { isLightColor } from './colors';
 import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { legibleOn, pageFillTone } from './page-content';

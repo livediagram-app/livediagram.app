@@ -1,7 +1,11 @@
 // A new zone's plan (article-intake.ts, docs/specs/007-editor/article-pages.md "Zones"): which kind of zone the
 // elements coming in make (a drawing or an object), how big it is, and where they sit in it. Pure.
 
-import { ARTICLE_ZONE_MAX, ARTICLE_ZONE_MIN, type ArticleZoneKind } from './article-flow';
+import {
+  ARTICLE_ZONE_MAX,
+  ARTICLE_ZONE_MIN,
+  type ArticleZoneKind,
+} from '@liveworkspace/article/article-flow';
 import { zoneAnchorOf } from './article-zones';
 import { isBoxed, type Element } from './index';
 import { type PageRect } from './page';

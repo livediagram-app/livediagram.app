@@ -12,7 +12,7 @@ import {
 import { layOutPages, type Page } from './page';
 import { looseOnArticles } from './article-intake';
 import type { Element } from './index';
-import type { ArticleBlock } from './article-flow';
+import type { ArticleBlock } from '@liveworkspace/article/article-flow';
 
 const pages: Page[] = [
   { id: 'a1', orientation: 'portrait', kind: 'article', flow: 'f' },

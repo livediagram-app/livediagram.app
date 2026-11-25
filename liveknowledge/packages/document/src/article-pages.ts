@@ -10,7 +10,7 @@ import {
   withFreshArticleBlockIds,
   type ArticleBlock,
   type ArticleFlow,
-} from './article-flow';
+} from '@liveworkspace/article/article-flow';
 import { duplicateElements } from './duplicate';
 import {
   pagesOf,

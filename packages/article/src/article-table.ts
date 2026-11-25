@@ -1,4 +1,4 @@
-// A table in an article's writing (docs/specs/007-editor/article-pages.md "Tables"): rows and columns
+// A table in an article's writing (livedocuments/docs/specs/007-editor/article-pages.md "Tables"): rows and columns
 // of cells, each cell a stretch of runs, laid out and synced as part of the text. Pure data and its
 // reading, bounded so one table always fits one sync frame; and the cell-by-cell changes between two
 // versions of a table, so two people writing in different cells never overwrite each other.

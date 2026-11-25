@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArticleBlock } from './article-flow';
+import type { ArticleBlock } from '@liveworkspace/article/article-flow';
 import { estimateArticle } from './article-layout-estimate';
 import { newKnowledgebasePageContent, KNOWLEDGEBASE_FLOW } from './knowledgebase-page';
 import { layOutPages, pagesOf } from './page';

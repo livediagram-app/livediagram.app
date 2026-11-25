@@ -7,7 +7,7 @@ import {
   plainTextBlocks,
 } from './article-markdown';
 
-// docs/specs/007-editor/article-pages.md "Writing": a paste of Markdown becomes the blocks it means.
+// livedocuments/docs/specs/007-editor/article-pages.md "Writing": a paste of Markdown becomes the blocks it means.
 const shape = (text: string) =>
   parseMarkdownBlocks(text).map(({ id: _id, ...b }) => {
     void _id;

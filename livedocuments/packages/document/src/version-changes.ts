@@ -3,7 +3,7 @@
 // (removed since), those both have that differ (changed since) and those the tab gained (added since); the pages
 // either side lacks; and whether the articles' writing differs. The live fields (the conversation, not the content)
 // never count. One pass over each side's elements: two 2,000-element tabs compare in about 3 ms (measured).
-import { articlesOf } from './article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import { LIVE_ELEMENT_FIELDS } from './comments';
 import { pagesOf } from './page';
 import type { Element } from './element-union';

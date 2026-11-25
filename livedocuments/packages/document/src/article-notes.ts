@@ -5,7 +5,7 @@
 // action does on an element (threads, mentions, assignees, Activity, email) it does here, because
 // the marker is an element. Pure: the writing is measured by the editor, settled here.
 import { articleMarginPx } from './article-style';
-import { articlesOf, normaliseRuns } from './article-flow';
+import { articlesOf, normaliseRuns } from '@liveworkspace/article/article-flow';
 import { withArticleFlow } from './article-pages';
 import { pagesOf, layOutPages, type LaidOutPage } from './page';
 import type { ArticleNoteElement, Tab } from './index';

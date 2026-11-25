@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { articlesOf } from './article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import { pagesOf } from './page';
 
 // Work Tracker 728: a typing commit on a tab of 100 articles changes one article's writing and no page, and the editor reads the tab's pages and writing on every

@@ -2,7 +2,12 @@
 // people in edit mode write together, stored beside the saved writing as a second article flow (`articles.draft`)
 // with its record (`Tab.draft`). The saved writing is every other flow; whatever reads a page for a reader, the
 // index or an agent reads `savedArticlesOf`. Pure: a tab in, a tab or an answer out. Shared by the editor and the api.
-import { articlesOf, sameArticleValue, type ArticleBlock, type ArticleFlow } from './article-flow';
+import {
+  articlesOf,
+  sameArticleValue,
+  type ArticleBlock,
+  type ArticleFlow,
+} from '@liveworkspace/article/article-flow';
 import { articleNoteIds, withNoteMarkersRemoved } from './article-notes';
 import { withArticleFlow } from './article-pages';
 import { withArticlePageHeight } from './knowledgebase-page';

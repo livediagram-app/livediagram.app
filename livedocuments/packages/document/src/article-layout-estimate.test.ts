@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArticleBlock } from './article-flow';
+import type { ArticleBlock } from '@liveworkspace/article/article-flow';
 import {
   ARTICLE_ESTIMATE_PAGES_MAX,
   estimateArticle,

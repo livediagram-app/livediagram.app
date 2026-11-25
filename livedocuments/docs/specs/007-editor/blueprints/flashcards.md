@@ -11,7 +11,7 @@ small modules beside it. Each rule below names its home.
 | flashcard (page kind) | `PageKind` `'flashcard'`; `isFlashcardPage`, `newFlashcardPage`, `packages/document/src/page.ts`                |
 | card size             | `PageSizeId` `'card'` (540 x 900, `landscapeOnly`), `FLASHCARD_PAGE_SIZE_IDS`, `pageSizesFor('flashcard')`      |
 | stack                 | `isFlashcardStack(pages)` (the tab's kind is `flashcard`)                                                       |
-| a card's writing      | `newFlashcardFlow`, `packages/document/src/article-flow.ts`                                                     |
+| a card's writing      | `newFlashcardFlow`, `packages/document/src/article-pages.ts`                                                    |
 | speaking time         | `flashcardWordCount`, `flashcardSpeakingSeconds`, `speakingTimeLabel`, `packages/document/src/flashcards.ts`    |
 | text only             | `isFlashcardBlock`, `flashcardBlocks` (writing); `guardFlashcards` (`packages/document/src/flashcard-guard.ts`) |
 | split                 | `canSplitFlashcardAt`, `withFlashcardSplit`, `FlashcardSplitRefusal`                                            |

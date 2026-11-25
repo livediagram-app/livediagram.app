@@ -6,7 +6,7 @@
 import { mixHex } from '@liveworkspace/model-core/color-wash';
 import { DEFAULT_SCHEME_ID } from '@liveworkspace/element-model/themes';
 import { contrastRatio, shade, tint } from './colors';
-import { articlesOf } from './article-flow';
+import { articlesOf } from '@liveworkspace/article/article-flow';
 import { knowledgeThemeAccent } from './knowledge-accent';
 import { knowledgeArticleStyle, type KnowledgeStyle } from './knowledge-style';
 import { pagesOf } from './page';

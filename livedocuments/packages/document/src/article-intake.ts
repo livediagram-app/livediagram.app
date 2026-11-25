@@ -12,7 +12,7 @@ import {
   type ArticleZoneAlign,
   type ArticleZoneBlock,
   type ArticleZoneWrap,
-} from './article-flow';
+} from '@liveworkspace/article/article-flow';
 import { withArticleFlow, withArticlePageCount } from './article-pages';
 import { withElementsMoved, zoneAnchorOf, zoneCanvasRect, zoneMemberIds } from './article-zones';
 import { isBoxed, type Element, type Tab } from './index';

@@ -1,4 +1,4 @@
-// An article's table of contents (docs/specs/007-editor/article-pages.md "Table of contents"): the
+// An article's table of contents (livedocuments/docs/specs/007-editor/article-pages.md "Table of contents"): the
 // headings it lists, drawn from the writing, never stored. Pure.
 import type { ArticleRun } from './article-flow';
 import { articleRunsText } from './article-footnotes';

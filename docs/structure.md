@@ -14,6 +14,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ app-doors                the platform's calls on each app's internal doors (export, import, link), for the Drive mirror and the data export
 │  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, a write body's byte cap, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, a Durable Object alarm's one-second floor, the server renders' image embedder (`embedImages`), the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
+│  ├─ article                  an article's writing, for livedocuments and liveknowledge: blocks and runs, footnotes, tables, headers and footers, the table of contents, and Markdown read (paste) and written (agents, the Markdown export)
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
 │  ├─ automations              the rules engine every app's items run (liveworkspace/docs/specs/018-automations): the rule and run shapes, the check, values, the schedule's sums; and, under `/room`, the Durable Object's half: the tables, the store, the queue's wake, the Audit Trail, Waits, Incoming Webhook secrets, sends, typed-in addresses, AI asks
 │  ├─ automations-ui           the Automations screen and builder every app mounts (liveworkspace/docs/specs/018-automations): Rules, Templates, Audit Trail and Connections, the pickers, Insert a Value, Describe a Rule and Test Rule, drawn from an app's kit (its kinds, panels, pictures and words)
@@ -313,6 +314,15 @@ Each step is its own PR, and both products build and pass their tests after ever
      Each product keeps a one-line binding at the old path, and its index binds `ElementGrid` to its own `Element`.
      Where livedocuments' and livedesign's copies differed only by entries for shape kinds they do not have (`actor`,
      `final-state`, the Action and Comment panels) they took the entries; nothing drawn or stored changed.
+   - `document`, article slice: `@liveworkspace/article` (`packages/article`) holds livedocuments' and liveknowledge's
+     article writing, which neither copy could change alone: the blocks and runs (`article-flow`), footnotes, tables,
+     headers and footers, the table of contents, and Markdown read and written (`article-markdown`,
+     `article-markdown-io`), 7 modules and their tests. The copies differed only where one side was ahead: liveknowledge's
+     page links (a run's `page`, written `[[Title]]`) and its cache of a flow read under a draft's id, livedocuments'
+     footnotes numbered on through a multi-article file; the shared copy has all three, and liveknowledge's Markdown export
+     now numbers its footnotes on too. livedocuments' `newFlashcardFlow` stayed behind, in its `article-pages.ts`. Each
+     product's index re-exports the modules, so no caller changed; the tests that reach a product's ops, style or
+     Participant rules stayed in the product (`article-flow-block-ops`, `article-table-ops`, `article-bands-room`).
    - Still in each product's model package: everything typed on its element union (`Element`, `ShapeElement`,
      `ArrowElement`, `BoxedElement`, `Tab`), which differs per product. That is most of the identical code
      (about 130 more files that read the same in all four, from arrow paths to the SVG renderer), because they
