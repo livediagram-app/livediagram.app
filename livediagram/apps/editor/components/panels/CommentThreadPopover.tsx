@@ -1,7 +1,7 @@
 'use client';
 import { ThreadSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/ThreadSendToPlan';
 
-import { useEffect, useId, useRef, useState, useCallback } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { CloseIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import type { CommentMention, CommentThread } from '@livediagram/document';
@@ -47,6 +47,24 @@ type CommentThreadPopoverProps = {
 const WIDTH = 288;
 const GAP = 12;
 
+/**
+ * Where the popover sits for an element at `rect` (docs/specs/008-canvas/canvas-and-palette.md "Opening the
+ * thread"): right of it, flipped left without room, its top on the element's and moved up as far as keeps its
+ * `height` (0 until drawn) on screen, so a low element's reply box is never below the fold.
+ */
+export function commentPopoverBox(
+  rect: Pick<DOMRect, 'left' | 'right' | 'top'>,
+  height: number,
+  viewport: { width: number; height: number },
+): { left: number; top: number } {
+  let left = rect.right + GAP;
+  // Flip to the left of the element if there's no room on the right.
+  if (left + WIDTH > viewport.width - EDGE_MARGIN) left = rect.left - GAP - WIDTH;
+  left = Math.max(EDGE_MARGIN, Math.min(left, viewport.width - WIDTH - EDGE_MARGIN));
+  const top = Math.max(EDGE_MARGIN, Math.min(rect.top, viewport.height - height - EDGE_MARGIN));
+  return { left, top };
+}
+
 // Portal-rendered comments panel anchored to the right edge of the element.
 // Lets the user read existing comments, post a reply, delete individual
 // comments, and resolve / unresolve the whole thread. Closes on outside
@@ -90,19 +108,21 @@ export function CommentThreadPopover({
   const reposition = useCallback(() => {
     const node = document.querySelector(elementSelector(elementId));
     if (!node) return;
-    const rect = node.getBoundingClientRect();
-    let left = rect.right + GAP;
-    let top = rect.top;
-    // Flip to the left of the element if there's no room on the right.
-    if (left + WIDTH > window.innerWidth - EDGE_MARGIN) {
-      left = rect.left - GAP - WIDTH;
-    }
-    // Clamp to viewport edges.
-    left = Math.max(EDGE_MARGIN, Math.min(left, window.innerWidth - WIDTH - EDGE_MARGIN));
-    top = Math.max(EDGE_MARGIN, top);
-    setPos({ left, top });
+    const next = commentPopoverBox(node.getBoundingClientRect(), ref.current?.offsetHeight ?? 0, {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+    setPos((prev) => (prev?.left === next.left && prev.top === next.top ? prev : next));
   }, [elementId]);
   useReposition(reposition);
+
+  // Measured again once drawn, and as the thread grows or the composer comes and goes: the first
+  // placement has no height to keep on screen.
+  const commentCount = thread?.comments.length ?? 0;
+  const threadResolved = thread?.resolved ?? false;
+  useLayoutEffect(() => {
+    if (placed) reposition();
+  }, [placed, commentCount, threadResolved, reposition]);
 
   // Don't close on a click that lands on a comment badge: those are
   // the popover's own toggle, and parent state handles flip-flop.

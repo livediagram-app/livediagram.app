@@ -219,6 +219,12 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         noteWheel('zoom');
+        // A pan still waiting for its frame lands first: flushed after the zoom, it would write back an offset
+        // worked out before the zoom, dropping the zoom's focal shift and jumping the board.
+        if (panRaf !== null) {
+          cancelAnimationFrame(panRaf);
+          flushPan();
+        }
         const { zoom: viewportZoom, offset: viewportOffset } = depsRef.current.viewport.get();
         // deltaY > 0 = pinch-close / scroll-down = zoom out; < 0 = zoom in.
         const factor = Math.exp(-e.deltaY / 200);

@@ -99,6 +99,19 @@ describe('useCanvasPinchZoom view', () => {
     });
     expect(viewport.get().offset).toEqual({ x: -20, y: -20 });
   });
+
+  it('lands a pan still waiting for its frame before a Ctrl-wheel zoom, keeping the zoom about the cursor', () => {
+    setup();
+    wheel({ deltaX: 20, deltaY: 0 });
+    wheel({ deltaY: -40, ctrlKey: true, clientX: 100, clientY: 0 });
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
+    const { zoom, offset } = viewport.get();
+    // The pan (-20) first, then the zoom about x = 100 (the wrapper's centre is 0 here).
+    expect(zoom).toBeGreaterThan(1);
+    expect(offset.x).toBeCloseTo(100 * (1 / zoom - 1) - 20);
+  });
 });
 
 // An element that scrolls sideways itself (the Gantt timeline) keeps a sideways or Shift wheel.
