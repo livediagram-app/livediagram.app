@@ -34,7 +34,7 @@ export function PageLoadVeil() {
           <Glyph
             size={32}
             units={32}
-            className="animate-spin text-brand-500 dark:text-brand-400"
+            className="animate-spin text-brand-700 dark:text-brand-400"
             strokeLinejoin="miter"
           >
             <circle cx="16" cy="16" r="12" strokeOpacity="0.18" />
