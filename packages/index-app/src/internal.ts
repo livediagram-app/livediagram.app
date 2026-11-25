@@ -103,6 +103,7 @@ import {
   badRequest,
   bodyOf,
   connectedTab,
+  disconnectedTab,
   exportItem,
   importItem,
   json,
@@ -395,6 +396,15 @@ export async function handleInternalItems(
     handlers.connectedTab
   ) {
     return connectedTab(request, id, handlers.connectedTab);
+  }
+  // A linked tab whose pair was removed in the other file (Connect as tabs).
+  if (
+    rest.length === 3 &&
+    rest[1] === 'connected-tabs' &&
+    request.method === 'DELETE' &&
+    handlers.disconnectedTab
+  ) {
+    return disconnectedTab(id, rest[2]!, handlers.disconnectedTab);
   }
 
   if (rest.length === 2 && rest[1] === 'automation-step' && request.method === 'POST') {

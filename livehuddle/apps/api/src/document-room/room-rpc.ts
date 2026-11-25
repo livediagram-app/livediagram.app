@@ -3,6 +3,7 @@ import {
   openRoomSockets,
   recordItemEditor,
   type ConnectedTabOutcome,
+  type DisconnectedTabOutcome,
   type ExportQuery,
   type ExportResult,
   putAwayGate,
@@ -24,7 +25,11 @@ import {
   type DocumentCopy,
 } from './document-content';
 import { DOCUMENT_OUTBOX } from './document-outbox';
-import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
+import {
+  addConnectedDocumentTab,
+  connectedTabArrival,
+  removeConnectedDocumentTab,
+} from './connected-tab';
 import { hasDocumentSchema } from './document-schema';
 import { documentShares, type ShareAnswer, type ShareMessage } from './tab-shares';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
@@ -154,6 +159,24 @@ export async function addConnectedTab(
   const env = room.requireEnv();
   const outcome = await addConnectedDocumentTab(env, documentId, write);
   if (typeof outcome === 'object' && outcome.made) {
+    const op = await connectedTabArrival(env, documentId);
+    if (op) room.sequenceMutation('system', op);
+  }
+  return outcome;
+}
+
+// Connect as tabs: a linked tab whose pair was removed in the other file, removed here, and everyone with the item
+// open sees it go.
+export async function removeConnectedTab(
+  room: DocumentRoom,
+  documentId: string,
+  connectionId: string,
+): Promise<DisconnectedTabOutcome> {
+  room.bindDocument(documentId);
+  if (!room.hasSchema()) return 'not_found';
+  const env = room.requireEnv();
+  const outcome = await removeConnectedDocumentTab(env, documentId, connectionId);
+  if (outcome === 'removed') {
     const op = await connectedTabArrival(env, documentId);
     if (op) room.sequenceMutation('system', op);
   }

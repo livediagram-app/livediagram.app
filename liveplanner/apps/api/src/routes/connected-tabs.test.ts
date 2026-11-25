@@ -10,7 +10,11 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { PlanGrant as ItemGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
-import { addConnectedPlanTab, connectedTabArrival } from '../plan-room/connected-tab';
+import {
+  addConnectedPlanTab,
+  connectedTabArrival,
+  removeConnectedPlanTab,
+} from '../plan-room/connected-tab';
 import { exportPlanCopy, importPlanCopy } from '../plan-room/plan-content';
 import { exportProjectFile, readProjectFile } from '../plan-room/project-file';
 import { redactProjectForScope } from '../redact-project';
@@ -398,6 +402,28 @@ describe('the reverse write', () => {
       'not_found',
     );
     expect(await connectedTabArrival(db.env, 'none')).toBeNull();
+  });
+});
+
+describe("the index's removal of a linked tab (Connect as tabs)", () => {
+  it('removes the tab holding the connection, keys its leaving, and sends the tab bar without it', async () => {
+    const db = await plan();
+    const made = await addConnectedPlanTab(db.env, 'D', {
+      name: 'Roadmap',
+      connection: CONNECTION,
+    });
+    const tabId = (made as { tabId: string }).tabId;
+    expect(await removeConnectedPlanTab(db.env, 'D', AGAIN.id)).toBe('absent');
+    expect(await removeConnectedPlanTab(db.env, 'D', CONNECTION.id)).toBe('removed');
+    expect(column(db, tabId)).toBeUndefined();
+    expect(removals(db)).toEqual([connectionLeftKeyOf({ connectionId: CONNECTION.id, tabId })]);
+    const op = (await connectedTabArrival(db.env, 'D')) as { tabs: { id: string }[] };
+    expect(op.tabs.map((t) => t.id)).not.toContain(tabId);
+    expect(await removeConnectedPlanTab(db.env, 'D', CONNECTION.id)).toBe('absent');
+  });
+
+  it('is not_found for a plan not started', async () => {
+    expect(await removeConnectedPlanTab(sqliteD1().env, 'none', CONNECTION.id)).toBe('not_found');
   });
 });
 

@@ -28,7 +28,7 @@ import type {
   StandingGrant,
 } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
@@ -61,6 +61,8 @@ export type DocumentRoomClient = {
   hasTab(tabId: string): Promise<boolean>;
   // The index's reverse write of a connected tab (document-room/connected-tab.ts).
   addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  // Connect as tabs: a linked tab whose pair was removed in the other file (connected-tab.ts).
+  removeConnectedTab(connectionId: string): Promise<DisconnectedTabOutcome>;
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
   // endpoint's share check.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
@@ -127,6 +129,7 @@ export function documentRoom(
     exportComments: () => room.exportComments(documentId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(documentId, write),
+    removeConnectedTab: (connectionId) => room.removeConnectedTab(documentId, connectionId),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(documentId, copy),
@@ -162,6 +165,7 @@ export type DocumentRoomRpc = {
   exportComments(documentId: string): Promise<ExportCommentsResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
   addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  removeConnectedTab(documentId: string, connectionId: string): Promise<DisconnectedTabOutcome>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   exportCopy(
     documentId: string,

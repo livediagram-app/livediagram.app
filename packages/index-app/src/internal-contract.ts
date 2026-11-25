@@ -20,7 +20,7 @@ import type {
   ItemStanding,
   Level,
 } from '@liveworkspace/index-client';
-import type { ConnectedTabOutcome } from './connected-tabs';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from './connected-tabs';
 import type {
   MigrationApp,
   MigrationDoorAnswer,
@@ -169,6 +169,9 @@ export type InternalItemHandlers = {
   // The index's reverse write of a connected tab (connected-tabs.ts appendConnectedTab): one tab, loose, at the end of
   // the item's tab bar, the same connection id again answering the tab it made. An app without it answers 404.
   connectedTab?: (itemId: string, write: ConnectedTabWrite) => Promise<ConnectedTabOutcome>;
+  // The index's removal of a linked tab whose pair was removed in the other file (connected-tabs.ts
+  // removeConnectedTabOf, Connect as tabs): the tab holding the connection, if any. An app without it answers 404.
+  disconnectedTab?: (itemId: string, connectionId: string) => Promise<DisconnectedTabOutcome>;
   // A rule's step in another app acting on this item as its author (automation-step-door.ts), called once the
   // author's grant is checked. An app that is no target answers 404, as does one without `verifyGrant`.
   automationStep?: AutomationStepHandler;

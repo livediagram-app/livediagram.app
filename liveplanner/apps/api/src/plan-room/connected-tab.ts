@@ -4,10 +4,15 @@
 // the tab bar, holding the connection in its column; this is how liveplanner stores the tab, and the project-meta
 // op that shows it to everyone with the plan open.
 
-import { appendConnectedTab, type ConnectedTabOutcome } from '@liveworkspace/index-app';
+import {
+  appendConnectedTab,
+  removeConnectedTabOf,
+  type ConnectedTabOutcome,
+  type DisconnectedTabOutcome,
+} from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { RoomOp } from '@liveplanner/api-schema';
-import { tabWriteStatements } from '../db/tabs';
+import { deleteTabRow, tabWriteStatements } from '../db/tabs';
 import type { PlanEnv } from '../types';
 import { readPlanMeta, readPlanOutline } from './plan-content';
 
@@ -27,6 +32,22 @@ export async function addConnectedPlanTab(
       tabWriteStatements(env, planId, { id: tabId, name, elements: [] }, orderIndex, {
         advance: true,
       }),
+  });
+}
+
+// Connect as tabs (liveworkspace/docs/specs/004-index/connected-tabs.md "Linked from a Send to"): the linked tab whose
+// pair was removed in the other file goes here too, deleted as any tab is (an item's last tab kept), or `not_found`
+// for an item not started.
+export async function removeConnectedPlanTab(
+  env: PlanEnv,
+  planId: string,
+  connectionId: string,
+): Promise<DisconnectedTabOutcome> {
+  if (!(await readPlanMeta(env, planId))) return 'not_found';
+  return removeConnectedTabOf(env.PLAN_DB, planId, connectionId, {
+    linkTable: 'plan_tabs',
+    itemColumn: 'plan_id',
+    deleteTab: (tabId) => deleteTabRow(env, planId, tabId, { keepLast: true }),
   });
 }
 

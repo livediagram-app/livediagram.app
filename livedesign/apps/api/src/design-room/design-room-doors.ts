@@ -27,8 +27,12 @@ import { notifyDesignJoin } from '../email/notifications';
 import { anonymiseDesign } from './design-anonymise';
 import { DESIGN_OUTBOX } from './design-outbox';
 import { exportDesignFile } from './design-file';
-import { addConnectedDesignTab, connectedTabArrival } from './connected-tab';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import {
+  addConnectedDesignTab,
+  connectedTabArrival,
+  removeConnectedDesignTab,
+} from './connected-tab';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDesignComments } from './design-comments';
 import { answerDesignRequest, isDesignCreate, type RouteIdentity } from './design-route';
@@ -223,6 +227,25 @@ export async function addConnectedTab(
   const env = room.requireEnv();
   const outcome = await addConnectedDesignTab(env, designId, write);
   if (typeof outcome === 'object' && outcome.made) {
+    const op = await connectedTabArrival(env, designId);
+    if (op) sequenceMutation(room, 'system', op);
+  }
+  return outcome;
+}
+
+// Connect as tabs: a linked tab whose pair was removed in the other file, removed here, and everyone with the item
+// open sees it go.
+export async function removeConnectedTab(
+  room: DesignRoom,
+  designId: string,
+  connectionId: string,
+): Promise<DisconnectedTabOutcome> {
+  room.bindDesign(designId);
+  const sql = room.state.storage.sql;
+  if (!hasDesignSchema((q) => sql.exec(q))) return 'not_found';
+  const env = room.requireEnv();
+  const outcome = await removeConnectedDesignTab(env, designId, connectionId);
+  if (outcome === 'removed') {
     const op = await connectedTabArrival(env, designId);
     if (op) sequenceMutation(room, 'system', op);
   }

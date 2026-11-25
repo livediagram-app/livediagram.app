@@ -55,7 +55,7 @@ import {
 import type { CommunityListing, CopySource } from '../document-client';
 import type { Copier } from '@liveworkspace/index-app';
 import { importDocumentFile, type DocumentFileImport } from './document-file';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { importMigratedDocument } from './document-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -81,6 +81,7 @@ import {
   exportFile,
   exportComments,
   addConnectedTab,
+  removeConnectedTab,
   servesImage,
   exportCopy,
   revokeCodes,
@@ -432,6 +433,10 @@ export class DocumentRoom extends DurableObject<Env> {
 
   addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
     return addConnectedTab(this, documentId, write);
+  }
+
+  removeConnectedTab(documentId: string, connectionId: string): Promise<DisconnectedTabOutcome> {
+    return removeConnectedTab(this, documentId, connectionId);
   }
 
   async hasTab(documentId: string, tabId: string): Promise<boolean> {

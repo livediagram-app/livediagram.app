@@ -55,7 +55,7 @@ import {
 import { PresenceRelay, RELAYED_SAMPLE_KINDS } from '@liveworkspace/api-kit/room-presence-relay';
 import { createAvatarTrack, type AvatarRelaySession } from '../room-avatar-track';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
-import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome, DisconnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDocumentComments } from './document-comments';
 import { importMigratedDocument } from './document-migration';
@@ -480,6 +480,10 @@ export class DocumentRoom extends DurableObject<Env> {
 
   addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
     return rpc.addConnectedTab(this, documentId, write);
+  }
+
+  removeConnectedTab(documentId: string, connectionId: string): Promise<DisconnectedTabOutcome> {
+    return rpc.removeConnectedTab(this, documentId, connectionId);
   }
 
   async hasTab(documentId: string, tabId: string): Promise<boolean> {

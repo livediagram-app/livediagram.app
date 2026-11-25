@@ -143,6 +143,8 @@ export function handleInternalItems(
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the plan's tab bar.
       connectedTab: (id, write) => planRoom(env, id).addConnectedTab(write),
+      // Connect as tabs: the linked tab whose pair was removed in the other file.
+      disconnectedTab: (id, connectionId) => planRoom(env, id).removeConnectedTab(connectionId),
       // A rule's step from another app on this plan, and what its pickers may name here: the author's grant is
       // checked first (`verifyGrant` below), then the room makes the card in the step's chain.
       automationStep: (id, call) => planRoom(env, id).automationStep(call),

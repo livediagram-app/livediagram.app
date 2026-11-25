@@ -10,7 +10,11 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { DesignGrant as ItemGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDesigns } from './designs';
-import { addConnectedDesignTab, connectedTabArrival } from '../design-room/connected-tab';
+import {
+  addConnectedDesignTab,
+  connectedTabArrival,
+  removeConnectedDesignTab,
+} from '../design-room/connected-tab';
 import { exportDesignCopy, importDesignCopy } from '../design-room/design-content';
 import { exportDesignFile, readDesignFile } from '../design-room/design-file';
 import { redactDesignForCommunity, redactDesignForScope } from '../redact-design';
@@ -358,6 +362,28 @@ describe('the reverse write', () => {
       'not_found',
     );
     expect(await connectedTabArrival(db.env, 'none')).toBeNull();
+  });
+});
+
+describe("the index's removal of a linked tab (Connect as tabs)", () => {
+  it('removes the tab holding the connection, keys its leaving, and sends the tab bar without it', async () => {
+    const db = await design();
+    const made = await addConnectedDesignTab(db.env, 'D', {
+      name: 'Roadmap',
+      connection: CONNECTION,
+    });
+    const tabId = (made as { tabId: string }).tabId;
+    expect(await removeConnectedDesignTab(db.env, 'D', AGAIN.id)).toBe('absent');
+    expect(await removeConnectedDesignTab(db.env, 'D', CONNECTION.id)).toBe('removed');
+    expect(column(db, tabId)).toBeUndefined();
+    expect(removals(db)).toEqual([connectionLeftKeyOf({ connectionId: CONNECTION.id, tabId })]);
+    const op = (await connectedTabArrival(db.env, 'D')) as { tabs: { id: string }[] };
+    expect(op.tabs.map((t) => t.id)).not.toContain(tabId);
+    expect(await removeConnectedDesignTab(db.env, 'D', CONNECTION.id)).toBe('absent');
+  });
+
+  it('is not_found for a design not started', async () => {
+    expect(await removeConnectedDesignTab(sqliteD1().env, 'none', CONNECTION.id)).toBe('not_found');
   });
 });
 
