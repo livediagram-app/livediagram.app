@@ -155,7 +155,7 @@ describe('a key the provider refused on the last call', () => {
 describe('the line', () => {
   it('opens Settings › AI from built-in AI, and counts a key added there once Settings says so', async () => {
     render(<KnowledgeAiSource state={ready()} who={WHO} documentId="d1" manageAi={false} />);
-    act(() => screen.getByRole('button', { name: 'Use Your Own Key, in Settings › AI' }).click());
+    act(() => screen.getByRole('button', { name: 'Setup Key, in Settings › AI' }).click());
     expect(opened.settings).toHaveBeenCalledWith('ai');
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AiSourceSettings');
     store.get.mockReturnValue(ready({ uses: 'personal', usesModel: 'claude-fable-5-2' }));

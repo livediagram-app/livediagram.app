@@ -51,7 +51,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   ([Providers](#providers)), in **AI Settings**; once saved, everything that uses a model runs on it instead. A
   stored key that cannot be opened is refused ("Replace it in AI Settings"), never quietly swapped for built-in AI.
   Which AI answers is said inside Ask's question box, by its **AI pill** ([The question box](#the-question-box)):
-  **Built-In AI** with no key, with **Use Your Own Key** in its menu.
+  **Built-In AI** with no key, with **Setup Key** in its menu.
 - **Choosing which AI answers** (owner, 2026-11-21: "on Ask, I want to be able to choose whether to ask my configured
   AI, or the built in AI"). Once a key applies ([Which key answers](#which-key-answers)), the AI pill's menu,
   **Answer With**, offers two: **Built-In AI** and the key that applies, named by whose it is ("This Knowledgebase’s
@@ -380,7 +380,7 @@ share link's visitor, a page's link and a Community post's reader get pages alon
     Attention** after the provider refused the key on the last question (or a stored key that will not open). It
     opens **Answer With**: Built-In AI ("Included, 30 questions a person a day") and, where one
     applies, the key ("Anthropic · Claude Fable 5.2 · No daily limits"), the one in use ticked. Its foot offers
-    **Use Your Own Key** with no key, **Manage Keys** with one and **Fix Key** after a failure, to whoever may change
+    **Setup Key** with no key, **Manage Keys** with one and **Fix Key** after a failure, to whoever may change
     the key that applies: the knowledgebase's key opens AI Settings for an Editor; built-in AI, a person's own key or
     a first key open Settings › AI over the view. A team's key, or the knowledgebase's for a Participant or a Viewer,
     has no such action.

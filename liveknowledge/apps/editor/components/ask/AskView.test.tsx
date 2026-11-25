@@ -192,7 +192,7 @@ describe('when this session cannot ask', () => {
     const menu = await screen.findByRole('dialog', { name: 'Answer With' });
     expect(within(menu).getByText(BUILT_IN_DETAIL)).toBeTruthy();
     expect(within(menu).getAllByRole('radio')).toHaveLength(1);
-    fireEvent.click(within(menu).getByRole('button', { name: 'Use Your Own Key' }));
+    fireEvent.click(within(menu).getByRole('button', { name: 'Setup Key' }));
     expect(openSettings).toHaveBeenCalledWith('ai');
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AiSourceSettings');
   });

@@ -651,7 +651,7 @@ export const SETTINGS_OPENED = opened(
 // opened from it, and a key of the person's own added after, from built-in AI. Never which key.
 export const AI_SOURCE_SETTINGS_OPENED = opened(
   'Settings Opened From an AI Feature',
-  'Use Your Own Key, Change or Fix Key pressed on an AI feature’s source line, opening Settings › AI over it.',
+  'Setup Key, Change or Fix Key pressed on an AI feature’s source line, opening Settings › AI over it.',
   (t) => t === 'AiSourceSettings',
 );
 

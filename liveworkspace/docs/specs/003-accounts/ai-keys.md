@@ -45,7 +45,7 @@ host's door, as API Tokens are, for a signed-in account only (a guest, a workben
 none).
 
 - **Your Key** opens with **Which AI**, a two-way switch: **Built-In AI** ("Included with every app, with daily
-  limits. No key needed.") and **Your Own Key** ("Your Anthropic or OpenAI key, billed by the provider, with no daily
+  limits. No key needed.") and **Your Own Key** ("Your own key, billed by the provider, with no daily
   limits."). With no key saved it starts on Built-In AI.
 - **Your Own Key** shows the **Provider** (the same switch: Anthropic (Claude) or OpenAI, the name as text, no
   company logo), a masked text field for the key (its placeholder the provider's prefix, `sk-ant-…`), in no form and never a
@@ -238,7 +238,7 @@ Describe to Set Up and Describe the Structure.
 - **Key Needs Attention**: a warning mark and the failure's fixed words ("Claude did not accept the API key"), with
   **Fix Key**. It shows after a call answered `ai_key_failed`, until the next answer or a change of key. The words are
   drawn once, on the line: the dialog's own refusal callout stays out of sight then, still read out as an alert.
-- **Its action**, a quiet text button with a pointer cursor and a tooltip: **Use Your Own Key** on built-in AI,
+- **Its action**, a quiet text button with a pointer cursor and a tooltip: **Setup Key** on built-in AI,
   **Change** on a key. It opens the Settings panel on the AI category over the open dialog, which stays open
   underneath with what was typed. Escape closes Settings first.
 - **Who gets the action.** Anyone who can use the feature sees the line. The action is only for someone who can

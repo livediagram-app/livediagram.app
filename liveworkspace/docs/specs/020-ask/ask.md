@@ -99,7 +99,7 @@ the row under it, since the tool is narrow.
 - **It opens Answer With**, a small menu over the field: **Built-In AI** ("Included with livediagram, with daily
   limits") and, where a key applies, the key ("Anthropic · Claude Fable 5.2 · No daily limits"). The one in use is
   ticked; picking the other switches, and applies to the next question, mid-chat too.
-- **Its foot offers the way to a key**: **Use Your Own Key** with none saved, **Manage Keys** with one, **Fix Key**
+- **Its foot offers the way to a key**: **Setup Key** with none saved, **Manage Keys** with one, **Fix Key**
   after a failure. Each opens the Settings panel on its AI category over Tools. A member of a team with a key sees no
   such action for the team's key.
 - **The choice is the person's**, kept in this browser for the app (`liveworkspace:ask-ai:v1`); the key until they

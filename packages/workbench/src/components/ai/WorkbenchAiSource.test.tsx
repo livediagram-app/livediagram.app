@@ -84,7 +84,7 @@ describe('WorkbenchAiSource', () => {
     expect(screen.getByText('Built-in AI')).toBeTruthy();
     expect(screen.getByText('10 a day.')).toBeTruthy();
 
-    act(() => screen.getByRole('button', { name: 'Use Your Own Key, in Settings › AI' }).click());
+    act(() => screen.getByRole('button', { name: 'Setup Key, in Settings › AI' }).click());
     expect(hoisted.open).toHaveBeenCalledWith('ai');
     expect(hoisted.track).toHaveBeenCalledWith('UI', 'Opened', 'AiSourceSettings');
 

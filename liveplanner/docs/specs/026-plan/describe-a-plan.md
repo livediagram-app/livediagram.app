@@ -169,7 +169,7 @@ The platform's rule ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/s
 - The draft runs on the person's own key when they have one (Settings › AI), else on built-in AI. No plan exists
   yet, so no team key applies. An API token or a workbench session drafts on built-in AI.
 - The source line under the box (`AiSource`) says which: **Built-in AI** with "Plans and forms share 10 drafts a
-  day", or **Your Key** with the provider and model and "No daily limits". **Use Your Own Key** (on built-in AI) or
+  day", or **Your Key** with the provider and model and "No daily limits". **Setup Key** (on built-in AI) or
   **Change** (on a key) opens Settings on its AI category over the dialog, which stays open with what was typed; on
   closing Settings the line, and the next Draft Plan, follow what was chosen, with no reload.
 - On a key, a draft counts toward none of the 10 a day. A key the provider refuses (revoked, out of credit, a model it

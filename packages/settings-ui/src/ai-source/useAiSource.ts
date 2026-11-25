@@ -24,7 +24,7 @@ export type UseAiSourceOptions = {
 export type AiSourceState = {
   // Null: nothing to say (a guest, or the state could not be read).
   line: AiSourceLine | null;
-  // The line's action: Use Your Own Key, Change or Fix Key. Null where this person cannot change what applies.
+  // The line's action: Setup Key, Change or Fix Key. Null where this person cannot change what applies.
   act: (() => void) | null;
 };
 
