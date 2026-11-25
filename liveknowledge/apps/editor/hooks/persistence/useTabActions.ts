@@ -33,7 +33,6 @@ import {
   withPageMoved,
   withPageOutdented,
   withPageStepped,
-  type Element,
   type PageMove,
   type Tab,
 } from '@liveknowledge/document';
@@ -41,8 +40,7 @@ import { withPageTitle } from '@liveknowledge/document';
 import { wantTitleFocus } from '@/lib/page-title-focus';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import {
-  deletePageMessage,
-  deletePageTitle,
+  deletedPageMessage,
   pageAfterDelete,
   pageTreeRefusalText,
   withPageAddedTo,
@@ -53,8 +51,9 @@ import { apiLinkTab } from '@/lib/api-client';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
+import { revertStep, useUndoableAction } from '@liveworkspace/ui/undo';
+import { RESET_TAB_WORDS, resetTabUndoable } from '@liveworkspace/workbench/lib/tab-reset-undo';
 import { remintTabElements, useTabImport } from './useTabImport';
-import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
@@ -74,7 +73,6 @@ type TabActionsDeps = {
   // Factory for a blank tab (kept in the page because the initial-state
   // initialiser also uses it).
   createTab: (name: string) => Tab;
-  commit: (mapElements: (els: Element[]) => Element[]) => void;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   // A change that is no undo step of its own (the page's name following its Title as it is typed).
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
@@ -103,7 +101,6 @@ type TabActionsDeps = {
   onSlidesImported?: Parameters<typeof useTabImport>[0]['onSlidesImported'];
   // Re-pulls the owner's document list after a cross-document tab link.
   refreshDocumentList: (ownerId: string) => void;
-  confirm: ReturnType<typeof useConfirm>;
   toast: ReturnType<typeof useToast>;
 };
 
@@ -115,7 +112,6 @@ export function useTabActions(deps: TabActionsDeps) {
     ownerId,
     documentId,
     createTab,
-    commit,
     commitTabs,
     tickTabs,
     markTabLoaded,
@@ -128,7 +124,6 @@ export function useTabActions(deps: TabActionsDeps) {
     requestFit,
     noteImport,
     refreshDocumentList,
-    confirm,
     toast,
   } = deps;
 
@@ -322,10 +317,12 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Duplicated');
   };
 
-  // Deletes a page and its subpages after one confirmation that names the count. One commit, so undo brings them
-  // all back. The row menu's Delete is already disabled on the last page and on a locked one; the guards here are
-  // belt-and-suspenders.
-  const deleteTab = async (id: string) => {
+  // Restorable actions act at once with an Undo toast (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
+  const offerUndo = useUndoableAction();
+  // Deletes a page and its subpages at once; the toast names the count and offers Undo. One commit, so Cmd/Ctrl-Z
+  // brings them all back too. The row menu's Delete is already disabled on the last page and on a locked one; the
+  // guards here are belt-and-suspenders.
+  const deleteTab = (id: string) => {
     if (!deps.canEditStructure) return;
     const target = tabs.find((t) => t.id === id);
     const gone = new Set(pageSubtreeIds(tabs, id));
@@ -347,24 +344,40 @@ export function useTabActions(deps: TabActionsDeps) {
     }
     const subpages = subpageCount(tabs, id);
     // A saved knowledgebase keeps a Trash of pages (knowledgebases-and-pages.md "The page Trash"); an Offline one
-    // has none, so its delete is Undo's to take back.
+    // has none. Either way it goes at once, and a toast offers Undo (undo-not-confirm.md).
     const toTrash = documentId !== null && !isOfflineIdSync(documentId);
-    const ok = await confirm({
-      title: deletePageTitle(target.name, subpages, toTrash),
-      message: deletePageMessage(subpages, toTrash),
-      confirmLabel: toTrash ? 'Move to Trash' : 'Delete',
+    const wasActive = gone.has(activeId) ? activeId : null;
+    // The step either side, as the commit saw it, so Undo puts back only what it took.
+    let step: { before: Tab[]; after: Tab[] } | null = null;
+    void offerUndo({
+      message: deletedPageMessage(target.name, subpages, toTrash),
+      undoLabel: `Undo deleting ${target.name.trim() || 'the page'}`,
+      act: () => {
+        track('Tab', 'Deleted');
+        // Drop the pages AND strip any links on the remaining ones that point at them, so no dangling cross-page
+        // references are left. One commit, so undo restores both.
+        commitTabs((ts) => {
+          const after = withPageAndSubpagesDeleted(ts, id);
+          step = { before: ts, after };
+          return after;
+        });
+        if (wasActive) {
+          const fallback = pageAfterDelete(tabs, id);
+          if (fallback) setActiveId(fallback);
+        }
+        setSelectedId(null);
+        setEditingId(null);
+      },
+      // The pages back in their places in the tree, and the links on other pages, unless someone changed them since.
+      undo: () => {
+        const taken = step;
+        if (!taken) return false;
+        step = null;
+        commitTabs((ts) => revertStep(taken.before, taken.after, ts));
+        if (wasActive) setActiveId(wasActive);
+        return true;
+      },
     });
-    if (!ok) return;
-    track('Tab', 'Deleted');
-    // Drop the pages AND strip any links on the remaining ones that point at them, so no dangling cross-page
-    // references are left. One commit, so undo restores both.
-    commitTabs((ts) => withPageAndSubpagesDeleted(ts, id));
-    if (gone.has(activeId)) {
-      const fallback = pageAfterDelete(tabs, id);
-      if (fallback) setActiveId(fallback);
-    }
-    setSelectedId(null);
-    setEditingId(null);
   };
 
   // A tree edit the tree itself checks (page-tree.ts): it answers null when it is refused or changes nothing, and
@@ -389,22 +402,21 @@ export function useTabActions(deps: TabActionsDeps) {
   const indentPage = (id: string) => editTree((ts) => withPageIndented(ts, id));
   const outdentPage = (id: string) => editTree((ts) => withPageOutdented(ts, id));
 
-  const clearTabContent = async () => {
-    // Wiping a whole tab is a big, easy-to-misfire action, so gate it on
-    // the branded confirm dialog (same as deleting a tab) rather than
-    // clearing the instant the menu item is clicked. It IS undoable
-    // (one commit), which the message notes.
-    const ok = await confirm({
-      title: 'Reset This Canvas?',
-      message: 'Everything on this page is removed. Undo (Cmd/Ctrl-Z) brings it back.',
-      confirmLabel: 'Reset canvas',
+  // Reset canvas empties the tab at once, and a toast offers Undo, which puts every element back
+  // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
+  const clearTabContent = () =>
+    resetTabUndoable({
+      tabId: activeId,
+      tabs,
+      commitTabs,
+      offerUndo,
+      words: RESET_TAB_WORDS.page,
+      onReset: () => {
+        setSelectedId(null);
+        setEditingId(null);
+        track('Tab', 'Cleared');
+      },
     });
-    if (!ok) return;
-    commit(() => []);
-    setSelectedId(null);
-    setEditingId(null);
-    track('Tab', 'Cleared');
-  };
 
   return {
     addTab,

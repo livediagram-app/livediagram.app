@@ -74,6 +74,7 @@ export function useEditorLayers({
     activeTab,
     editsBlocked: structureBlocked,
     commitActiveTab,
+    commitTabs,
     tickTabs,
     markCheckpoint,
     toastInfo: toast.info,

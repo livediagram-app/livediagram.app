@@ -4,7 +4,7 @@
 // right, level with the menu box, as a board's or a Sheet's cog sits in its header; an Editor's alone. Its sections:
 // Dashboard Setup (its name, Add Row, Clear Dashboard), Background (plain or tinted, as two swatches) and Layouts
 // (start over from one, drawn small), built from the same parts as a Sheet's Sheet Settings; each change one undo
-// step; starting over and clearing ask first.
+// step; starting over and clearing act at once, with Undo in a toast (undo-not-confirm.md).
 import { useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -29,7 +29,7 @@ import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
-import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
+import { useUndoableAction } from '@liveworkspace/ui/undo';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
@@ -151,29 +151,35 @@ function DashboardSettingsPanel({
     open: open === id,
     onToggle: () => setOpen((s) => (s === id ? null : id)),
   });
-  const [confirm, setConfirm] = useState<{
-    at: HTMLElement;
-    message: string;
-    label: string;
-    run: () => void;
-  } | null>(null);
+  // Starting over and clearing act at once; the toast's Undo puts the layout and its slots back
+  // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).
+  const offerUndo = useUndoableAction();
+  const undoably = (message: string, undoLabel: string, run: () => () => boolean) => {
+    let undo: (() => boolean) | null = null;
+    void offerUndo({
+      message,
+      undoLabel,
+      act: () => {
+        undo = run();
+        onClose();
+      },
+      undo: () => undo?.() ?? false,
+    });
+  };
   const holds = layout.rows.some((r) => r.slots.some((s) => s.content));
   const full = layout.rows.length >= DASHBOARD_ROWS_MAX;
-  const startOver = (id: string, at: HTMLElement) => {
+  const startOver = (id: string) => {
     const preset = DASHBOARD_PRESETS.find((p) => p.id === id);
-    const run = () => {
+    const run = () =>
       actions.changeDashboard((l) => relayoutDashboard(l, id, newId), 'DashboardSlot', {
         prune: true,
       });
+    if (!holds) {
+      run();
       onClose();
-    };
-    if (!holds) return run();
-    setConfirm({
-      at,
-      message: `Start over as ${preset?.name ?? 'this layout'}? Current slots are removed.`,
-      label: 'Start Over',
-      run,
-    });
+      return;
+    }
+    undoably(`Started over as ${preset?.name ?? 'a new layout'}.`, 'Undo starting over', run);
   };
   return (
     <>
@@ -206,16 +212,10 @@ function DashboardSettingsPanel({
               icon={<ClearGlyph />}
               label="Clear Dashboard"
               disabled={!holds}
-              onClick={(e) =>
-                setConfirm({
-                  at: e.currentTarget,
-                  message: 'Empty every slot on this dashboard? Its rows and their sizes stay.',
-                  label: 'Clear',
-                  run: () => {
-                    actions.changeDashboard(clearDashboard, 'DashboardContent', { prune: true });
-                    onClose();
-                  },
-                })
+              onClick={() =>
+                undoably('Cleared the dashboard.', 'Undo clearing the dashboard', () =>
+                  actions.changeDashboard(clearDashboard, 'DashboardContent', { prune: true }),
+                )
               }
             />
           </div>
@@ -278,7 +278,7 @@ function DashboardSettingsPanel({
               <button
                 key={p.id}
                 type="button"
-                onClick={(e) => startOver(p.id, e.currentTarget)}
+                onClick={() => startOver(p.id)}
                 aria-label={`${p.name}: ${p.line}`}
                 className="flex cursor-pointer flex-col gap-1 rounded-xl border border-slate-200 p-1.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
               >
@@ -294,18 +294,6 @@ function DashboardSettingsPanel({
           </div>
         </SettingsBody>
       </BoardSettingsSection>
-      {confirm ? (
-        <ConfirmPopover
-          anchor={confirm.at}
-          message={confirm.message}
-          confirmLabel={confirm.label}
-          onConfirm={() => {
-            confirm.run();
-            setConfirm(null);
-          }}
-          onCancel={() => setConfirm(null)}
-        />
-      ) : null}
     </>
   );
 }

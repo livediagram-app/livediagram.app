@@ -25,6 +25,8 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { useUndoableAction } from '@liveworkspace/ui/undo';
+import { revertTabStep } from '@liveworkspace/workbench/lib/revert-tab-step';
 
 // Layers domain slice (docs/specs/006-document/layers.md): the per-tab ACTIVE layer (session-scoped
 // UI state — deliberately never persisted or synced) plus every layer
@@ -38,6 +40,8 @@ export function useLayersState(opts: {
   activeTab: Tab;
   editsBlocked: boolean;
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
+  // Every tab, for a step that must land on the tab it was made on even after the person moves on (an Undo).
+  commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   // Non-history tab mutator + checkpoint, for the opacity slider: one
   // undoable step per drag gesture instead of one per tick (the same
   // policy the colour setters follow).
@@ -52,6 +56,7 @@ export function useLayersState(opts: {
     activeTab,
     editsBlocked,
     commitActiveTab,
+    commitTabs,
     tickTabs,
     markCheckpoint,
     toastInfo,
@@ -140,19 +145,73 @@ export function useLayersState(opts: {
     track('Layer', 'Renamed', 'Manual');
   };
 
-  // Delete the layer AND its elements (the panel owns the confirm
-  // dialog). When the active layer goes, activate its lower neighbour
-  // (or the new bottom), Photoshop-style.
+  // Deleting or clearing a layer that holds elements acts at once and offers Undo in a toast
+  // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md). Undo takes back only this step, on the tab
+  // it was made on, through the commit (so the room carries it): the layer at its place in the stack and its
+  // elements, unless someone changed them since.
+  const offerUndo = useUndoableAction();
+  const undoableTabStep = (
+    words: { message: string; undoLabel: string },
+    change: (t: Tab) => Tab,
+    then: () => void,
+  ) => {
+    const tabId = activeId;
+    let step: { before: Tab; after: Tab } | null = null;
+    void offerUndo({
+      ...words,
+      act: () => {
+        commitTabs((ts) =>
+          ts.map((t) => {
+            if (t.id !== tabId) return t;
+            const after = change(t);
+            step = { before: t, after };
+            return after;
+          }),
+        );
+        then();
+      },
+      undo: () => {
+        const taken = step;
+        if (!taken) return false;
+        step = null;
+        commitTabs((ts) =>
+          ts.map((t) => (t.id === tabId ? revertTabStep(taken.before, taken.after, t) : t)),
+        );
+        return true;
+      },
+    });
+  };
+  const elementsWord = (n: number) => `${n} ${n === 1 ? 'element' : 'elements'}`;
+
+  // Delete the layer AND its elements. When the active layer goes, activate its lower neighbour (or the new
+  // bottom), Photoshop-style. An empty layer just goes (Cmd/Ctrl-Z brings it back); one with elements says so with
+  // Undo.
   const removeLayer = (layerId: string) => {
     if (editsBlocked || layers.length <= 1) return;
     const at = layers.findIndex((l) => l.id === layerId);
     if (at < 0) return;
+    const layer = layers[at]!;
     const neighbour = layers[at - 1] ?? layers[at + 1];
-    commitActiveTab((t) => deleteLayer(t, layerId));
-    if (activeLayerId === layerId && neighbour) {
-      setActiveLayerByTab((m) => ({ ...m, [activeId]: neighbour.id }));
+    const count = layerCounts.get(layerId) ?? 0;
+    const then = () => {
+      if (activeLayerId === layerId && neighbour) {
+        setActiveLayerByTab((m) => ({ ...m, [activeId]: neighbour.id }));
+      }
+      track('Layer', 'Deleted');
+    };
+    if (count === 0) {
+      commitActiveTab((t) => deleteLayer(t, layerId));
+      then();
+      return;
     }
-    track('Layer', 'Deleted');
+    undoableTabStep(
+      {
+        message: `Deleted “${layer.name}” and its ${elementsWord(count)}.`,
+        undoLabel: `Undo deleting ${layer.name}`,
+      },
+      (t) => deleteLayer(t, layerId),
+      then,
+    );
   };
 
   const toggleLayerVisibility = (layerId: string) => {
@@ -205,12 +264,20 @@ export function useLayersState(opts: {
     tickTabs((ts) => ts.map((t) => (t.id === activeId ? setLayerOpacity(t, layerId, opacity) : t)));
   };
 
-  // Empty a layer without removing it (the row menu's Clear, behind its
-  // confirm popover).
+  // Empty a layer without removing it (the row menu's Clear), with Undo.
   const clearLayer = (layerId: string) => {
     if (editsBlocked) return;
-    commitActiveTab((t) => clearLayerElements(t, layerId));
-    track('Layer', 'Cleared');
+    const layer = layers.find((l) => l.id === layerId);
+    const count = layerCounts.get(layerId) ?? 0;
+    if (!layer || count === 0) return;
+    undoableTabStep(
+      {
+        message: `Cleared ${elementsWord(count)} from “${layer.name}”.`,
+        undoLabel: `Undo clearing ${layer.name}`,
+      },
+      (t) => clearLayerElements(t, layerId),
+      () => track('Layer', 'Cleared'),
+    );
   };
 
   // Make `layerId` the only visible layer (the row menu's Hide Others).

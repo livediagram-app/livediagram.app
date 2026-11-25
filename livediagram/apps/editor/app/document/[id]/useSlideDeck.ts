@@ -15,6 +15,7 @@
 // so the slide simply resolves past the missing id and undo puts it back.
 
 import { slideHeadlines } from '@/lib/slide-headline';
+import { revertStep, useUndoableAction } from '@liveworkspace/ui/undo';
 import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 
 const idsOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
@@ -27,6 +28,7 @@ import {
   parseSlides,
   parseStoredPresentation,
   presentableSlides,
+  slideName,
   storePresentation,
   type Deck,
   type Slide,
@@ -355,14 +357,43 @@ export function useSlideDeck({
     [commitDeck, deckRef, isReadOnly],
   );
 
+  // Deleting a slide acts at once and offers Undo in a toast (liveworkspace/docs/specs/022-interface-design/
+  // undo-not-confirm.md): the deck is not in the canvas's undo history, so the toast is its way back. Undo puts the
+  // slide back at its place in the deck, unless someone has changed the deck's slides since.
+  const offerUndo = useUndoableAction();
   const deleteSlide = useCallback(
     (slideId: string) => {
       if (isReadOnly) return;
-      commitDeck((prev) => ({ slides: prev.slides.filter((s) => s.id !== slideId) }));
-      setOpenSlideId((cur) => (cur === slideId ? null : cur));
-      track('UI', 'Removed', 'Slide');
+      const at = deckRef.current.slides.findIndex((s) => s.id === slideId);
+      const slide = deckRef.current.slides[at];
+      if (!slide) return;
+      const name = slideName(slide, at);
+      let step: { before: Deck['slides']; after: Deck['slides'] } | null = null;
+      void offerUndo({
+        message: `Deleted “${name}”.`,
+        undoLabel: `Undo deleting ${name}`,
+        act: () => {
+          commitDeck((prev) => {
+            const after = prev.slides.filter((s) => s.id !== slideId);
+            step = { before: prev.slides, after };
+            return { slides: after };
+          });
+          setOpenSlideId((cur) => (cur === slideId ? null : cur));
+          track('UI', 'Removed', 'Slide');
+        },
+        undo: () => {
+          const taken = step;
+          if (!taken) return false;
+          step = null;
+          commitDeck((prev) => {
+            const slides = revertStep(taken.before, taken.after, prev.slides);
+            return slides === prev.slides ? prev : { slides };
+          });
+          return true;
+        },
+      });
     },
-    [commitDeck, isReadOnly],
+    [commitDeck, deckRef, isReadOnly, offerUndo],
   );
 
   const duplicateSlide = useCallback(

@@ -93,7 +93,7 @@ describe('LayersPanel', () => {
     expect(screen.getByTestId('layer-row-menu').textContent).toContain('Merge With Layer Above');
   });
 
-  it('asks before the footer deletes a populated active layer', () => {
+  it('deletes a populated active layer at once from the footer, its toast offering Undo', () => {
     const p = renderPanel(
       [
         { id: 'a', name: 'A' },
@@ -103,8 +103,7 @@ describe('LayersPanel', () => {
       new Map([['b', 2]]),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Delete Layer' }));
-    expect(p.onRemoveLayer).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(p.onRemoveLayer).toHaveBeenCalledWith('b');
   });
 

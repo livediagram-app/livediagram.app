@@ -35,7 +35,6 @@ import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
 import { PlayIcon } from '@liveworkspace/workbench/components/primitives/PlayIcon';
-import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import {
@@ -100,13 +99,6 @@ export function SlideDeckPanel({
   // keystroke. Per-keystroke would be a flood, and per-open would count the
   // times somebody looked without typing.
   const notesTracked = useRef<string | null>(null);
-  // Deleting a slide asks first, anchored to the row's own menu button. A deck
-  // is authored work — the elements survive, but the arrangement does not, and
-  // it is the arrangement you spent the time on.
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; anchor: HTMLElement } | null>(
-    null,
-  );
-  const deleting = deck.slides.find((s) => s.id === confirmDelete?.id) ?? null;
   const notesSlide = deck.slides.find((s) => s.id === notesForId) ?? null;
 
   // Row drag: a caret shows where the row lands, the move commits on release (useRowReorderDrag).
@@ -197,11 +189,7 @@ export function SlideDeckPanel({
                         onRemoveSelection={() => removeFromSlide(slide.id, currentSelectionIds)}
                         onToggleHidden={() => toggleSlideHidden(slide.id)}
                         onDuplicate={() => duplicateSlide(slide.id)}
-                        onDelete={(anchor) =>
-                          anchor
-                            ? setConfirmDelete({ id: slide.id, anchor })
-                            : deleteSlide(slide.id)
-                        }
+                        onDelete={() => deleteSlide(slide.id)}
                       />
                     )
                   }
@@ -303,22 +291,6 @@ export function SlideDeckPanel({
           </ToolFooterButton>
         </ToolFooter>
       </div>
-      {confirmDelete && deleting ? (
-        <ConfirmPopover
-          anchor={confirmDelete.anchor}
-          message={`Delete “${slideName(deleting, deck.slides.indexOf(deleting))}”? ${
-            deleting.elementIds.length === 1
-              ? 'The element stays on the canvas.'
-              : 'The elements stay on the canvas.'
-          }`}
-          confirmLabel="Delete slide"
-          onConfirm={() => {
-            deleteSlide(confirmDelete.id);
-            setConfirmDelete(null);
-          }}
-          onCancel={() => setConfirmDelete(null)}
-        />
-      ) : null}
     </>
   );
   if (inTools)
