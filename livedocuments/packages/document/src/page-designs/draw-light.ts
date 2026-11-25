@@ -241,6 +241,11 @@ const cardCascade: Drawer = (c) => {
   return [{ svg: cards.join('') }];
 };
 
+// How far a Polaroid reaches into the page from its corner, in units (a hundredth of the short side): about 7% of
+// the short side down, under an article's header band (72 px from the top on an A4 page of 794 px), and 9% across.
+const POLAROID_REACH_X = 9;
+const POLAROID_REACH_Y = 7;
+
 // Polaroids: small instant photos tucked into the page's four corners, each hanging well off its edges so only a
 // margin's worth shows (owner's verifier, 2026-11-25: a full photo covered the layouts' titles and author lines): a
 // frame (white, a little see-through on a dark page) with a soft picture in the palette (a sky, a sun and a hill), a
@@ -253,7 +258,7 @@ const polaroids: Drawer = (c) => {
   const w = u * 17;
   const h = u * 20;
   const plates: DesignPlate[] = [];
-  // Each corner's centre, as the share of the frame that hangs off the page across and down.
+  // Each corner, and which way is into the page across and down.
   const corners: [number, number, number, number][] = [
     [0, 0, 1, 1],
     [1, 0, -1, 1],
@@ -261,9 +266,15 @@ const polaroids: Drawer = (c) => {
     [0, 1, 1, -1],
   ];
   const photos = corners.map(([fx, fy, sx, sy], i) => {
-    // About 55% of the frame shows across and half of it down: a corner of a photo, kept to the margin.
-    const cx = fx * c.w + sx * (w * 0.05 + between(c.rnd, 0, u));
-    const cy = fy * c.h + sy * between(c.rnd, 0, u);
+    // The turned frame's box (its tape and shadow too), so it can be placed by how far it reaches in.
+    const turn = between(c.rnd, -14, 14);
+    const r = (Math.abs(turn) * Math.PI) / 180;
+    const hx = (w * Math.cos(r) + h * Math.sin(r)) / 2 + u * 1.5;
+    const hy = (w * Math.sin(r) + h * Math.cos(r)) / 2 + u * 1.5;
+    // A corner of a photo, reaching POLAROID_REACH_X across and POLAROID_REACH_Y down into the page: clear of a
+    // slide's margins and of an article's header and footer bands (verifier, 2026-11-25).
+    const cx = fx * c.w + sx * (u * POLAROID_REACH_X - hx);
+    const cy = fy * c.h + sy * (u * POLAROID_REACH_Y - hy);
     const x = cx - w / 2;
     const y = cy - h / 2;
     const pad = u * 1.1;
@@ -274,14 +285,11 @@ const polaroids: Drawer = (c) => {
     const b = colours[(i + 1) % 3]!;
     const land = colours[(i + 2) % 3]!;
     const hill = `M${n(x + pad)} ${n(y + pad + ph * 0.72)}Q${n(x + pad + pw * 0.35)} ${n(y + pad + ph * between(c.rnd, 0.45, 0.6))} ${n(x + pad + pw * 0.65)} ${n(y + pad + ph * 0.68)}T${n(x + pad + pw)} ${n(y + pad + ph * 0.62)}V${n(y + pad + ph)}H${n(x + pad)}Z`;
-    const turn = between(c.rnd, -14, 14);
-    // The turned frame's box, a little wider than the frame.
-    const reach = Math.hypot(w, h) / 2;
     plates.push({
-      x: cx - reach,
-      y: cy - reach,
-      w: reach * 2,
-      h: reach * 2,
+      x: cx - hx,
+      y: cy - hy,
+      w: hx * 2,
+      h: hy * 2,
       colours: [frame, a, b, land],
       opacity: frameOpacity,
     });
