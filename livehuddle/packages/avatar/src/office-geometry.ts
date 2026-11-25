@@ -3,7 +3,7 @@
 // footprints of the scenery that blocks. The pieces themselves (their drawings, tones and parts) stay in each
 // product's model package beside its element union, which re-exports this module. Pure: no React, no DOM.
 
-import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import { rotatePoint, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { facingView, mirrorFraction, type GridFraction, type SeatFacing } from './facing';
 import { outlineWalls } from './room-outline';
 
@@ -403,9 +403,28 @@ export type WallSegment = { a: { x: number; y: number }; b: { x: number; y: numb
 
 /**
  * A room's walls as lines a character cannot cross, in canvas coordinates, broken at the doorway: along the
- * back wall's foot, down each side wall and along the front wall.
+ * back wall's foot, down each side wall and along the front wall. A turned room's (docs/specs/009-elements/office.md
+ * "A Room turns") are turned by its `rotation`, clockwise about its centre, as the canvas draws it.
  */
 export function roomWalls(
+  el: Rect & {
+    roomDoor?: RoomDoor;
+    roomOutline?: readonly { x: number; y: number }[];
+    rotation?: number;
+  },
+): WallSegment[] {
+  const upright = uprightRoomWalls(el);
+  const turn = el.rotation ?? 0;
+  if (!Number.isFinite(turn) || turn % 360 === 0) return upright;
+  const centre = { x: el.x + el.width / 2, y: el.y + el.height / 2 };
+  return upright.map((w) => ({
+    a: rotatePoint(w.a, centre, turn),
+    b: rotatePoint(w.b, centre, turn),
+  }));
+}
+
+// A room's walls as if it stood upright.
+function uprightRoomWalls(
   el: Rect & { roomDoor?: RoomDoor; roomOutline?: readonly { x: number; y: number }[] },
 ): WallSegment[] {
   // A room drawn wall by wall (room-builder.md): its outline's walls, with no doorway of its own.

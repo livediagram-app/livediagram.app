@@ -94,3 +94,13 @@ describe('snapRoomWallsResize', () => {
     expect(snapRoomWallsResize(free, 'se', [a], none, 6)).toEqual({ bounds: free, guides: [] });
   });
 });
+
+// office.md "A Room turns": a turned room's walls are not on its box, so it is never a wall-to-wall target.
+describe('a turned room', () => {
+  it('is no target for the shared-wall snap', () => {
+    const left = { ...room('left', 0, 0), rotation: 90 };
+    const moving = { x: 395, y: 0, width: 400, height: 300 };
+    expect(snapRoomWalls(moving, [left], none, 8).snappedX).toBe(false);
+    expect(snapRoomWalls(moving, [room('left', 0, 0)], none, 8).snappedX).toBe(true);
+  });
+});

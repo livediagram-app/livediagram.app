@@ -25,10 +25,11 @@ import {
 } from '../views';
 import { CardView } from './CardView';
 import { useExplorer } from './context';
-import { DetailsView } from './DetailsView';
 import { EmptyPane, SkeletonRows } from './EmptyPane';
 import { OtherAppsHere } from './OtherAppsHere';
-import { FilteredEmpty, LensAnnouncer, LensBar } from './Lens';
+import { FilteredEmpty, LensBar } from './lazy-lens';
+import { LensAnnouncer } from './LensAnnouncer';
+import { DetailsView } from './lazy-panes';
 import { useLensContext } from './SearchField';
 import { TrashNote, TrashPane } from './TrashPane';
 import { ThisBrowserArchivedGroup, useThisBrowserArchived } from './ArchivedThisBrowser';
@@ -55,6 +56,10 @@ export function ItemsPane({ view }: { view: ItemsView }) {
   const ctx = useExplorer();
   const { client, app, filter, overlay, epoch, folders, words, onCreate, viewerId } = ctx;
   const [mode, setMode] = useViewMode();
+  // Details draws from its own chunk: a list that opens in it fetches the code while its items load.
+  useEffect(() => {
+    if (mode === 'details') void DetailsView.preload();
+  }, [mode]);
   const sharedMeta = useRef(new Map<string, SharedMeta>());
   // The lens the address carries (the field writes it at most every 250 ms): parsed once per change.
   const lensKind = lensViewOf(view.kind);

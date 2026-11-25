@@ -25,7 +25,8 @@ import type { ItemRow } from './rows';
 export type CallRow = {
   id: string;
   item_id: string;
-  space_id: string;
+  // Null once the Space is purged: the meeting outlives it (item-calls.md "When a call ends").
+  space_id: string | null;
   host_id: string;
   share_code: string | null;
   people: number;
@@ -50,14 +51,17 @@ const ITEM_CALL_INVITES_READ_MAX = 50;
 export const itemLink = (env: Pick<Env, 'ENVIRONMENT'>, item: Pick<ItemRow, 'app' | 'id'>) =>
   `${appSiteOrigin(env, item.app)}${APP_ITEMS[item.app].itemPath}${enc(item.id)}`;
 
-/** The way into a call: its Space's Participant link, or the Space itself once the link is gone. */
+/** The way into a call: its Space's Participant link, or the Space itself once the link is gone; none once the Space
+ *  is. */
 export const spaceLink = (
   env: Pick<Env, 'ENVIRONMENT'>,
   row: Pick<CallRow, 'share_code' | 'space_id'>,
 ) =>
-  row.share_code
-    ? `${appSiteOrigin(env, ITEM_CALL_APP)}${APP_ITEMS[ITEM_CALL_APP].sharePath}${enc(row.share_code)}`
-    : itemLink(env, { app: ITEM_CALL_APP, id: row.space_id });
+  row.space_id === null
+    ? ''
+    : row.share_code
+      ? `${appSiteOrigin(env, ITEM_CALL_APP)}${APP_ITEMS[ITEM_CALL_APP].sharePath}${enc(row.share_code)}`
+      : itemLink(env, { app: ITEM_CALL_APP, id: row.space_id });
 
 /** Live: not ended, and someone in it or nobody yet within the start's grace. */
 export const isLive = (row: Pick<CallRow, 'ended_at' | 'people' | 'started_at'>, now: number) =>
@@ -80,19 +84,20 @@ export const callOf = (env: Env, row: CallRow, now: number): ItemCall => ({
   names: namesOf(row.names),
   startedAt: row.started_at,
   endedAt: row.ended_at,
-  live: isLive(row, now),
+  // A call whose Space is gone can't be joined.
+  live: row.space_id !== null && isLive(row, now),
 });
 
 /** The item's live call, if any: the newest live (isLive, in SQL, so a newer call nobody joined never hides it). */
 export async function liveCallOf(env: Env, itemId: string, now: number): Promise<CallRow | null> {
   const row = await env.INDEX_DB.prepare(
     `SELECT ${CALL_COLUMNS} FROM item_calls
-     WHERE item_id = ? AND ended_at IS NULL AND (people > 0 OR started_at >= ?)
+     WHERE item_id = ? AND space_id IS NOT NULL AND ended_at IS NULL AND (people > 0 OR started_at >= ?)
      ORDER BY started_at DESC LIMIT 1`,
   )
     .bind(itemId, now - ITEM_CALL_START_GRACE_MS)
     .first<CallRow>();
-  return row && isLive(row, now) ? row : null;
+  return row && row.space_id !== null && isLive(row, now) ? row : null;
 }
 
 /** A Space's call: its newest row (a Calls Space holds one call after another). */

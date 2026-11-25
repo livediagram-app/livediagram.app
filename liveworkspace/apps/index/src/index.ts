@@ -41,6 +41,7 @@ import { sweepEvents } from './events';
 import { sweepUpdates } from './updates';
 import { sweepTeamAudit } from './team-audit';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
+import { sweepMadeSpaces } from './item-call-sweep';
 import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
 import { handleKits } from './kits';
 import { handleTeamAudit } from './team-audit-read';
@@ -346,8 +347,8 @@ const worker = {
     return response;
   },
 
-  // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests
-  // became accounts. Once a day: move empty, unchanged items to the Trash, purge items 30 days in it, retry apps that missed a purge, and
+  // Every 15 minutes: carry on closed accounts' purges, tell the apps what was purged and which guests
+  // became accounts, and move Spaces made by Call whose call ended to the Trash. Once a day: move empty, unchanged items to the Trash, purge items 30 days in it, retry apps that missed a purge, and
   // delete events past their 30 days (events.ts) and team audit rows past their year (team-audit.ts).
   async scheduled(event: ScheduledController, env: Env): Promise<void> {
     if (!indexEnabled(env)) return;
@@ -372,6 +373,10 @@ const worker = {
       // A wake a request lost (its isolate gone before waitUntil ran) is made up here.
       await step('webhooks', async () => {
         await kickWebhooks(env);
+      });
+      // Spaces made by Call whose call ended, to the Trash (item-call-sweep.ts, item-calls.md "When a call ends").
+      await step('call spaces', async () => {
+        console.info('[index] call spaces trashed', await sweepMadeSpaces(env));
       });
       return;
     }

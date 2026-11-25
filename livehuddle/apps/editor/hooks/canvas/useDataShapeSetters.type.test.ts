@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, snapDoorToWall, type Element, type ShapeElement } from '@livehuddle/document';
+import {
+  createShape,
+  onRoomWall,
+  snapDoorToWall,
+  type Element,
+  type ShapeElement,
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useDataShapeSetters } from './useDataShapeSetters';
 
@@ -78,5 +84,58 @@ describe('the type setter', () => {
     expect(track).not.toHaveBeenCalled();
     useDataShapeSetters(deps).setPieceTypeSelected('door', 'sliding');
     expect(commits).toBe(1);
+  });
+});
+
+// office.md "A Corridor's Doors move to its new walls" (Work Tracker 1453): the corridor's Type and the Doors it moves
+// or removes are one commit, so one Undo puts them all back; a removed Door is told.
+describe('the type setter on a corridor', () => {
+  function corridorBoard() {
+    const corridor = { ...createShape('corridor', 0, 0), id: 'c' } as ShapeElement;
+    const door = snapDoorToWall({ ...createShape('door', 0, 0), id: 'd', x: 192, y: 103 }, [
+      corridor,
+    ]);
+    const wide = snapDoorToWall(
+      { ...createShape('door', 0, 0), id: 'wide', width: 400, x: 40, y: -7 },
+      [corridor],
+    );
+    let els: Element[] = [corridor, door, wide];
+    let commits = 0;
+    const notify = vi.fn();
+    return {
+      deps: {
+        currentSelectionIds: () => new Set(['c']),
+        commit: (map: (e: Element[]) => Element[]) => {
+          commits++;
+          els = map(els);
+        },
+        elements: () => els,
+        notify,
+      },
+      els: () => els,
+      commits: () => commits,
+      notify,
+    };
+  }
+
+  it('moves its Doors onto the new walls and removes the one none holds, in one commit, and says so', () => {
+    const h = corridorBoard();
+    useDataShapeSetters(h.deps).setPieceTypeSelected('corridor', 'corner');
+    expect(h.commits()).toBe(1);
+    const [corridor, door] = h.els() as ShapeElement[];
+    expect(corridor).toMatchObject({ variant: 'corner' });
+    expect(h.els().map((e) => e.id)).toEqual(['c', 'd']);
+    expect(onRoomWall(door!, corridor!)).toBe(true);
+    expect(h.notify).toHaveBeenCalledExactlyOnceWith(
+      "1 Door didn't fit the new corridor's walls and was removed.",
+    );
+  });
+
+  it('says nothing when every Door fits', () => {
+    const h = corridorBoard();
+    h.deps.elements().splice(2, 1);
+    useDataShapeSetters(h.deps).setPieceTypeSelected('corridor', 'tee');
+    expect(h.commits()).toBe(1);
+    expect(h.notify).not.toHaveBeenCalled();
   });
 });
