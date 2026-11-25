@@ -329,7 +329,7 @@ describe('Snapshots alone, in History', () => {
     mount({ api, noun: 'plan', viewerId: null });
     await open();
     expect(await screen.findByText("Couldn't load snapshots")).toBeTruthy();
-    expect(screen.getByRole('alert').textContent).toContain('Check your connection');
+    expect(screen.getByRole('alert').textContent).toContain('Something went wrong. Try again.');
     expect(screen.queryByText('No snapshots yet')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     expect(await screen.findByText('No snapshots yet')).toBeTruthy();
@@ -337,6 +337,39 @@ describe('Snapshots alone, in History', () => {
     expect(api.list).toHaveBeenCalledTimes(2);
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('offers no Try Again when it could only fail the same way', async () => {
+    const api = fakeApi([]);
+    api.list.mockRejectedValueOnce(
+      new SnapshotsApiError(403, 'forbidden', 'Only Editors can see snapshots.'),
+    );
+    mount({ api, noun: 'plan', viewerId: null });
+    await open();
+    expect(await screen.findByText('Only Editors can see snapshots.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Try Again' })).toBeNull();
+  });
+
+  it('says it is offline, and loads the list again by itself once back online', async () => {
+    const onLine = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    try {
+      const api = fakeApi([]);
+      api.list.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+      mount({ api, noun: 'plan', viewerId: null });
+      await open();
+      expect(
+        await screen.findByText('You’re offline. It tries again when you reconnect.'),
+      ).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Try Again' })).toBeNull();
+      onLine.mockReturnValue(true);
+      act(() => {
+        window.dispatchEvent(new Event('online'));
+      });
+      expect(await screen.findByText('No snapshots yet')).toBeTruthy();
+      expect(api.list).toHaveBeenCalledTimes(2);
+    } finally {
+      onLine.mockRestore();
+    }
   });
 
   it('ignores answers that land after it closed', async () => {

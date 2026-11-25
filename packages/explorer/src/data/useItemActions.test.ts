@@ -143,7 +143,10 @@ describe('item actions: what the toasts say', () => {
     );
     index.fail.set('updateItem', new IndexError(500, 'unknown'));
     await actions.move(item, { folderId: null, teamId: null });
-    expect(toast.error).toHaveBeenLastCalledWith('Couldn’t move “\u2068Item 1\u2069”. Try again.');
+    // The server's trouble, said after what failed (error-words.md).
+    expect(toast.error).toHaveBeenLastCalledWith(
+      'Couldn’t move “\u2068Item 1\u2069”. Something went wrong on our side. Try again in a moment.',
+    );
   });
 
   it('isolates a name holding a bidi override, so the words after it still read forwards', async () => {
@@ -173,7 +176,7 @@ describe('item actions: what the toasts say', () => {
     index.fail.set('restoreItem', new IndexError(500, 'unknown'));
     await actions.restore(item);
     expect(toast.error).toHaveBeenLastCalledWith(
-      'Couldn’t restore “\u2068Item 1\u2069”. It is still in the Trash.',
+      'Couldn’t restore “\u2068Item 1\u2069”. It is still in the Trash. Something went wrong on our side. Try again in a moment.',
     );
     await actions.purge(item);
     expect(toast.show).toHaveBeenLastCalledWith('“\u2068Item 1\u2069” deleted for good.');

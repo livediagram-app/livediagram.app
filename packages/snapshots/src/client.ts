@@ -2,6 +2,7 @@
 // fence's browser half, which every app binds into its api core so every request about an item names the last
 // generation it saw, the reload a revert asks for, and the calls the dialog makes.
 
+import { errorMessage } from '@liveworkspace/ui/error-words';
 import {
   SNAPSHOT_FENCED_HEADER,
   SNAPSHOT_GENERATION_HEADER,
@@ -103,15 +104,20 @@ export class SnapshotsApiError extends Error {
 
 async function refusalOf(res: Response): Promise<SnapshotsApiError> {
   let code: string | null = null;
-  let message = 'Something went wrong. Try again.';
+  let message: string | null = null;
   try {
     const body = (await res.json()) as { error?: unknown; message?: unknown };
     if (typeof body.error === 'string') code = body.error;
     if (typeof body.message === 'string') message = body.message;
   } catch {
-    // Not JSON: the generic message.
+    // Not JSON: the words for its status.
   }
-  return new SnapshotsApiError(res.status, code, message);
+  // No message of the server's: what its status and code mean (liveworkspace/docs/specs/022-interface-design/error-words.md).
+  return new SnapshotsApiError(
+    res.status,
+    code,
+    message ?? errorMessage({ status: res.status, code }),
+  );
 }
 
 export type SnapshotsApi = {

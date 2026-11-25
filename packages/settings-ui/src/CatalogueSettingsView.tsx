@@ -31,7 +31,7 @@ import {
 import { SettingsView, type SettingsFocus } from './SettingsView';
 import type { PhoneHost } from './push/phone-host';
 import { type AccountHost, panelModel } from './catalogue-panel-model';
-import { Callout, type CalloutAction } from '@liveworkspace/ui/callout';
+import { ErrorNote } from './account-panels/error-note';
 export {
   type AccountHost,
   ACCOUNT_GROUP,
@@ -169,7 +169,7 @@ export default function CatalogueSettingsView({
           load.state === 'error' ? (
             <>
               {props.footer}
-              <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
+              <ReadFailed error={load.error} message={errorMessage(load.error)} onRetry={retry} />
             </>
           ) : (
             props.footer
@@ -192,7 +192,7 @@ export default function CatalogueSettingsView({
         placeholder={
           load.state === 'error' ? (
             <div className="px-4 py-4">
-              <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
+              <ReadFailed error={load.error} message={errorMessage(load.error)} onRetry={retry} />
             </div>
           ) : (
             <SettingsSkeleton />
@@ -300,7 +300,11 @@ function ReadyView({
               <p aria-live="polite" className="sr-only">
                 {saved > 0 && !error ? 'Saved' : ''}
               </p>
-              {error ? <ErrorNote>{errorMessage(error)}</ErrorNote> : null}
+              {error ? (
+                <ErrorNote className="mt-2" size="sm">
+                  {errorMessage(error)}
+                </ErrorNote>
+              ) : null}
             </>
           }
         />
@@ -331,27 +335,24 @@ function useAppMarks(
   );
 }
 // A read of the account's settings that failed: what went wrong, and the way to ask again.
-function ReadFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <ErrorNote action={{ label: 'Try Again', onSelect: onRetry }} className="mt-2">
-      {message}
-    </ErrorNote>
-  );
-}
-
-function ErrorNote({
-  children,
-  action,
-  className = 'mt-2',
+function ReadFailed({
+  error,
+  message,
+  onRetry,
 }: {
-  children: ReactNode;
-  action?: CalloutAction;
-  className?: string;
+  error: string;
+  message: string;
+  onRetry: () => void;
 }) {
   return (
-    <Callout tone="error" role="alert" action={action} className={className}>
-      {children}
-    </Callout>
+    <ErrorNote
+      error={error}
+      action={{ label: 'Try Again', onSelect: onRetry }}
+      className="mt-2"
+      size="sm"
+    >
+      {message}
+    </ErrorNote>
   );
 }
 

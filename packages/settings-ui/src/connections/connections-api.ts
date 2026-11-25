@@ -19,6 +19,7 @@ import {
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { formatRelativeTime } from '@liveworkspace/ui';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
+import { ownErrorWords } from '@liveworkspace/ui/error-words';
 export type WebhookResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 /** A client call as a result: an index refusal by its code, anything else (no network) `offline`. */
@@ -163,7 +164,7 @@ export const isAddressError = (error: string): boolean => ADDRESS_ERRORS.has(err
 
 export function webhookError(error: string, kind: WebhookKind = 'json'): string {
   if (error === 'webhook_url_invalid') return URL_INVALID[kind];
-  return MESSAGES[error] ?? 'Something went wrong. Please try again.';
+  return ownErrorWords(MESSAGES, error);
 }
 
 // ---------- State -----------------------------------------------------------------------------------------------

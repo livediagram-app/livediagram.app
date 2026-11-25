@@ -7,6 +7,7 @@ import type { SettingsBlob } from '@liveworkspace/settings';
 import type { AppCatalogue } from '@liveworkspace/settings/catalogue';
 import { APP_SITES } from '@liveworkspace/sites';
 import { syncOpenExplorerCookie } from '@liveworkspace/sites/open-explorer';
+import { ownErrorWords } from '@liveworkspace/ui/error-words';
 import type { AppScopes } from './catalogue-model';
 
 import type { SettingsApiResult, SettingsRequest } from './request';
@@ -150,6 +151,6 @@ const MESSAGES: Record<string, string> = {
 };
 
 /** What the panel says when a read or write of the account's settings is refused. */
-export function settingsApiErrorMessage(error: string): string {
-  return MESSAGES[error] ?? 'Something went wrong. Please try again.';
+export function settingsApiErrorMessage(error: string, status?: number): string {
+  return ownErrorWords(MESSAGES, error, status);
 }
