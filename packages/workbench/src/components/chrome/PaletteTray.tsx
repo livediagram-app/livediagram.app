@@ -213,6 +213,7 @@ export function PaletteTray({
   children,
   end,
   standing = false,
+  first = false,
   quietOnPhone = false,
   minWidth,
 }: {
@@ -226,6 +227,9 @@ export function PaletteTray({
   // A standing message (an empty tab's Show Templates) rather than a mode's: it steps aside while a mode message
   // is on screen, as the two share the tray's slot (`[data-mode-message]` in globals.css).
   standing?: boolean;
+  // A standing message the others step aside for while it shows (the name tray, `[data-standing-first]` in
+  // globals.css): they share the slot, and this one is about the person rather than the tab.
+  first?: boolean;
   // The message is for screen readers alone on a phone, where the tray's width holds only its actions: without a
   // place in the row it leaves no empty gap between the glyph and the first action.
   quietOnPhone?: boolean;
@@ -255,7 +259,13 @@ export function PaletteTray({
       }}
     >
       <span aria-hidden className="grow" style={{ flexBasis: Math.max(0, 2 * shift) }} />
-      <PaletteTrayCard lead={lead} end={end} standing={standing} quietOnPhone={quietOnPhone}>
+      <PaletteTrayCard
+        lead={lead}
+        end={end}
+        standing={standing}
+        first={first}
+        quietOnPhone={quietOnPhone}
+      >
         {children}
       </PaletteTrayCard>
       <span aria-hidden className="grow" style={{ flexBasis: Math.max(0, -2 * shift) }} />
@@ -265,17 +275,19 @@ export function PaletteTray({
 }
 
 // The tray's card: the strip's own surface, its lead glyph, the message and the actions at its end.
-function PaletteTrayCard({
+export function PaletteTrayCard({
   lead,
   children,
   end,
   standing,
+  first = false,
   quietOnPhone = false,
 }: {
   lead: ReactNode;
   children: ReactNode;
   end?: ReactNode;
   standing: boolean;
+  first?: boolean;
   quietOnPhone?: boolean;
 }) {
   return (
@@ -284,6 +296,7 @@ function PaletteTrayCard({
       data-floating-panel=""
       data-palette-tray=""
       {...(standing ? { 'data-yields-to-mode': '' } : { 'data-mode-message': '' })}
+      {...(first ? { 'data-standing-first': '' } : {})}
       role="status"
       className="pointer-events-auto flex min-w-0 max-w-full shrink-0 animate-fade-in items-center gap-2 rounded-xl border border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-slate-950/40"
       onPointerDown={(e) => e.stopPropagation()}

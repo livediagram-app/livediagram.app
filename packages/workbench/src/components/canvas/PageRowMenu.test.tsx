@@ -39,6 +39,20 @@ describe('pageRowModel', () => {
     expect(model.remove).toBe(remove);
   });
 
+  it('groups Insert Page Above and Below between the extras and the moves', () => {
+    const insertAbove = vi.fn();
+    const insertBelow = vi.fn();
+    const model = pageRowModel({
+      insertAbove,
+      insertBelow,
+      moveUp: vi.fn(),
+      locked: false,
+      toggleLock: vi.fn(),
+    });
+    expect(labels(model)).toEqual([['Insert Page Above', 'Insert Page Below'], ['Move Up']]);
+    expect(model.groups[0]!.map((a) => a.run)).toEqual([insertAbove, insertBelow]);
+  });
+
   it('leaves out what the page cannot take, and offers Unlock on a locked page', () => {
     const model = pageRowModel({ locked: true, toggleLock: vi.fn() });
     expect(labels(model)).toEqual([]);

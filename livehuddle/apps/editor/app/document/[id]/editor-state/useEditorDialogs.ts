@@ -1,5 +1,7 @@
 'use client';
 
+import { nameChoiceViews, useNameCardAsked } from '@liveworkspace/workbench/lib/name-card';
+
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { usePanelLayout } from '../usePanelLayout';
 import { useEditorDialogs as useDialogState } from '../useEditorDialogs';
@@ -55,7 +57,11 @@ export function useEditorDialogs({
   // their default guest identity silently.
   const joinScreenOpen =
     !embedMode && hydrated && loadedExistingDocument && !nameConfirmed && identityPromptOpen;
-  const identityOnlyScreenOpen = joinScreenOpen;
+  // A visitor's name is defaulted, not asked (liveworkspace/docs/specs/011-workbench/first-edit.md "A visitor's
+  // name"): the offer is the name tray, and the card only opens from its Change Name.
+  const nameViews = nameChoiceViews(joinScreenOpen, useNameCardAsked());
+  const identityOnlyScreenOpen = nameViews.card;
+  const identityTrayOpen = nameViews.tray;
   // Combined gate for chrome-hide. Only the join-existing flow lives
   // on this route now; the historical new-document welcome lives on
   // /live/new.
@@ -71,6 +77,7 @@ export function useEditorDialogs({
       closeContextMenu,
       contextMenu,
       identityOnlyScreenOpen,
+      identityTrayOpen,
       setContextMenu,
     },
   };

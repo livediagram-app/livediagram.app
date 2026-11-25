@@ -5,8 +5,15 @@ import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/Edito
 import { StartAgainTray } from '@liveworkspace/workbench/components/start/StartAgainTray';
 import { startClosedKey } from '@/components/start/start-closed-key';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
-import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
+import { emptyCardShownOf, templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
+
+// The empty-canvas card a Participant or Viewer sees on an empty tab (liveworkspace/docs/specs/011-workbench/
+// first-edit.md): loaded only when one is shown, never on an Editor's first load.
+const EmptyCanvasBanner = dynamic(
+  () => import('@/components/canvas/EmptyCanvasBanner').then((m) => m.EmptyCanvasBanner),
+  { ssr: false },
+);
 
 // The template start (docs/specs/007-editor/start-diagramming.md) carries every template's preview: loaded the first
 // time an empty tab offers it, never on the editor's first load.
@@ -30,6 +37,8 @@ export function EditorStartPanels() {
   // picked after creation").
   const moveOnTemplatePick = useTemplatePickMove({ documentId, tabId, tabHasContent });
   const templateStart = useEditorChrome(templateStartShownOf);
+  // A Participant's or Viewer's empty tab: the empty-canvas card (new-document-route.md "The empty-canvas hint").
+  const emptyCard = useEditorChrome(emptyCardShownOf);
   return templateStart ? (
     <>
       <StartFromTemplates
@@ -44,7 +53,10 @@ export function EditorStartPanels() {
       <StartAgainTray key={`tray:${tabId}`} closedKey={startClosedKey(tabId)} tabName={tabName} />
     </>
   ) : (
-    // A template's example content, once it has landed: Clear Example Content or Keep It.
-    <ExampleContentTray />
+    <>
+      {emptyCard ? <EmptyCanvasBanner key={tabId} tabId={tabId} tabName={tabName} /> : null}
+      {/* A template's example content, once it has landed: Clear Example Content or Keep It. */}
+      <ExampleContentTray />
+    </>
   );
 }

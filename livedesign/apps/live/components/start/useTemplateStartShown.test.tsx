@@ -7,7 +7,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { closeStartForBlank } from './close-start-for-blank';
-import { useTemplateStartOpen, useTemplateStartShown } from './useTemplateStartShown';
+import {
+  useEmptyCardShown,
+  useTemplateStartOpen,
+  useTemplateStartShown,
+} from './useTemplateStartShown';
 
 type Ctx = {
   hydrated: boolean;
@@ -83,5 +87,25 @@ describe('useTemplateStartOpen', () => {
     dismissEmptyCard('t:pages');
     rerender();
     expect(result.current).toBe(false);
+  });
+});
+
+// A Participant's or Viewer's empty tab shows the empty-canvas card where an Editor's would show the start
+// (liveworkspace/docs/specs/011-workbench/first-edit.md "The empty-canvas card").
+describe('useEmptyCardShown', () => {
+  it('is on for a Participant or Viewer on an empty tab, never for an Editor (who sees the start)', () => {
+    ctx.value.isReadOnly = true;
+    expect(renderHook(() => useEmptyCardShown()).result.current).toBe(true);
+    ctx.value.isReadOnly = false;
+    expect(renderHook(() => useEmptyCardShown()).result.current).toBe(false);
+  });
+
+  it('is off once the tab has content, or in zen', () => {
+    ctx.value.isReadOnly = true;
+    ctx.value.zenMode = true;
+    expect(renderHook(() => useEmptyCardShown()).result.current).toBe(false);
+    ctx.value.zenMode = false;
+    ctx.value.activeTab = { id: 't', elements: [{ id: 'e' }], pages: undefined };
+    expect(renderHook(() => useEmptyCardShown()).result.current).toBe(false);
   });
 });

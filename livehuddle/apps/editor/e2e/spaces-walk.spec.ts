@@ -25,7 +25,7 @@ async function personIn(browser: Browser, baseURL: string, owner: string | null)
   if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
     ({ o }) => {
-      // The owner has a name; the second person gives theirs in the Join dialog.
+      // The owner has a name; the second person keeps the defaulted one from the name tray.
       if (o) localStorage.setItem('livehuddle:v2:name-confirmed', '1');
     },
     { o: owner },
@@ -81,7 +81,12 @@ test('two people walk a Space and each sees the other move', async ({ page, brow
 
   const guestPage = await personIn(browser, baseURL!, null);
   await guestPage.goto(`/document/shared?s=${code}`);
-  await guestPage.getByRole('button', { name: /^join$/i }).click();
+  // The second person joins at once under their defaulted name (first-edit.md) and keeps it from the name tray.
+  await guestPage
+    .getByRole('status')
+    .filter({ hasText: /You.re .+ here/ })
+    .getByRole('button', { name: 'Keep It' })
+    .click();
   await guestPage.locator(CANVAS).waitFor();
   // The Space opens walking for the second person too, and each sees the other's character.
   await expect(self(guestPage)).toHaveCount(1, { timeout: 15_000 });

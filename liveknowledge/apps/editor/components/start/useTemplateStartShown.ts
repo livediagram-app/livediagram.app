@@ -19,6 +19,12 @@ const isUntouchedPage = (tab: EditorContextValue['activeTab']): boolean => {
   return pages.length === 1 && pages[0]!.kind === 'article' && pageIsUntouched(tab);
 };
 
+/** Whether a Participant's or Viewer's untouched knowledgebase shows the empty-canvas card (new-document-route.md "The
+ *  empty-canvas hint"): the page is as untouched as an Editor's start asks for, and the person cannot edit it. */
+export function emptyCardShownOf(editor: Parameters<typeof templateStartShownOf>[0]): boolean {
+  return editor.isReadOnly && templateStartShownOf({ ...editor, isReadOnly: false });
+}
+
 /** The same answer off any copy of the editor's view-model (the chrome store's, read as a slice): whether the tab may
  *  show the start, before whether it is offered. */
 export function templateStartShownOf(

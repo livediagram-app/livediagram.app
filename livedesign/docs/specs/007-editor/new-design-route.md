@@ -126,13 +126,13 @@ adding another.
   are ([Template start](start-diagramming.md)).
 - **Owner opens a design:** an Explorer row opens `/design/<id>`; the create never loads.
 - **Visitor follows a share link:** `/design/shared?s=<code>` hydrates the editor's share branch; the visitor's
-  name prompt (`IdentityPrompt`, while `identityPromptOpen`) is the editor's, since it is about the visitor's
+  name card (`IdentityPrompt`) is the editor's, opening from the name tray's **Change Name** only: a visitor's name is defaulted, not asked, and the tray (`NameTray`, while `identityTrayOpen`) says which name they show under, with Change Name and Keep It ([From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "A visitor's name"). It is the editor's since it is about the visitor's
   session, not about creating a design. It says others will see the name on the visitor's cursor and comments; a
   Viewer, who never comments, is told only its cursor. Its name field takes at most `MAX_PARTICIPANT_NAME_LEN` (120)
   characters, the participant route's own cap, so a typed name is always one the route saves.
 - **Empty tab:** an Editor sees the template start in the middle of the canvas
-  ([Template start](start-diagramming.md)); a Participant or Viewer sees the empty canvas, since the start is
-  never offered to a read-only session (`templateStartMode`).
+  ([Template start](start-diagramming.md)); a Participant or Viewer sees the empty-canvas card instead, since the start is
+  never offered to a read-only session (`templateStartMode`; `useEmptyCardShown`, [From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "The empty-canvas card"): a Viewer reads that the owner can build it out, a Participant that they can add a sticky, text or an image from the Palette.
 
 ## `/new` state
 

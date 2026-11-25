@@ -110,7 +110,11 @@ test('the report sorts by changes, folds one-product areas and totals', () => {
 
 test('the script runs on this repository and exits 0', () => {
   const out = execFileSync('node', [new URL('./drift-report.mjs', import.meta.url).pathname], {
-    env: { ...process.env, GITHUB_STEP_SUMMARY: '' },
+    // Without the GIT_* a pre-push hook exports (GIT_DIR above all), which would point git back at the repository.
+    env: {
+      ...Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_'))),
+      GITHUB_STEP_SUMMARY: '',
+    },
   }).toString();
   assert.match(out, /## Drift report/);
   assert.match(out, /\*\*Total\*\*/);
@@ -119,7 +123,11 @@ test('the script runs on this repository and exits 0', () => {
 test('outside a repository it says it could not compare, and still exits 0', () => {
   const out = execFileSync('node', [new URL('./drift-report.mjs', import.meta.url).pathname], {
     cwd: '/',
-    env: { ...process.env, GITHUB_STEP_SUMMARY: '' },
+    // Without the GIT_* a pre-push hook exports (GIT_DIR above all), which would point git back at the repository.
+    env: {
+      ...Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_'))),
+      GITHUB_STEP_SUMMARY: '',
+    },
     stdio: ['ignore', 'pipe', 'ignore'],
   }).toString();
   assert.match(out, /\[drift-report\] could not compare/);

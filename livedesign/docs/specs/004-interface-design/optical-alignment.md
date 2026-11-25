@@ -89,7 +89,7 @@ Existing ad-hoc shapes move onto these primitives. A new shape that frames a gly
 
 ## Guards
 
-- **An ink audit** (end-to-end, dark mode, at 4x device pixels) opens `/new`, the editor with a shape selected, Settings, Share and the Join dialog
+- **An ink audit** (end-to-end, dark mode, at 4x device pixels) opens `/new`, the editor with a shape selected, Settings, Share and the name card (its tray's Change Name)
   (`optical-audit.spec.ts`), and the help centre and the marketing site (`optical-audit-sites.spec.ts`), and fails
   on any shape or stack row outside the tolerance. It measures the rendered pixels, so it holds for
   whatever face the browser picks. It judges each shape as if it sat on a whole pixel: the part of

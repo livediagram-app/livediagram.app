@@ -135,6 +135,7 @@ export {
   type TeamsHostOptions,
 } from './data/teams';
 export type { ViewModeTelemetry } from './explorer/extras';
+export type { PrefetchItem } from './explorer/intent-prefetch';
 export { placeHash } from './place';
 export type {
   GalleryHost,
