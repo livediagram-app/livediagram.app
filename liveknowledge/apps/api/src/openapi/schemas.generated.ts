@@ -10392,8 +10392,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "PageThreadsResponse": {
     "additionalProperties": false,
-    "description": "`GET .../pages/<tab>/threads`: every thread on the page, oldest first.",
+    "description": "`GET .../pages/<tab>/threads`: the page's id (however the path named it), and every thread on it, oldest first.",
     "properties": {
+      "page": {
+        "type": "string"
+      },
       "threads": {
         "items": {
           "$ref": "#/components/schemas/PageThread"
@@ -10402,6 +10405,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "page",
       "threads"
     ],
     "type": "object"

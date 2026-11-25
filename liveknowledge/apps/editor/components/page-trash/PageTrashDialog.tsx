@@ -20,6 +20,8 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
+import { openPagesBound, openPagesMax } from '@/lib/knowledge-tier';
+import { fullSentence } from '@/lib/knowledge-import/import-trim';
 import { pageTrashStore, usePageTrashState } from '@/lib/knowledge/page-trash-store';
 import { track } from '@/lib/telemetry';
 import { DeleteIcon, PagesIcon } from '@/components/page-tree/page-tree-icons';
@@ -47,8 +49,12 @@ export function trashedLine(
 
 /** What a restore's refusal says. */
 export function restoreFailure(error: unknown, name?: string): string {
-  if (error instanceof ApiError && error.code === 'page_limit')
-    return 'A knowledgebase holds 500 pages at most: delete a page before restoring this one.';
+  if (error instanceof ApiError && error.code === 'page_limit') {
+    // At the owner's Knowledgebase Pages, the notice's own words; else the one knowledgebase's bound.
+    const bound = openPagesBound();
+    if (bound?.account) return `${fullSentence(bound)} Delete a page before restoring this one.`;
+    return `A knowledgebase holds ${openPagesMax().toLocaleString('en-US')} pages at most: delete a page before restoring this one.`;
+  }
   return `Could not restore ${toastName(name) ?? 'the page'}. Try again.`;
 }
 

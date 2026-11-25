@@ -37,6 +37,12 @@ const list = async (kit: Kit, who: Who = 'viewer') =>
   (await (await kit.call(who, 'GET', PATH)).json<{ threads: Thread[] }>()).threads;
 
 describe('pages/:tab/threads', () => {
+  it('names the page by its id however the path named it, with no threads yet', async () => {
+    const kit = await knowledgeKit();
+    const res = await kit.call('viewer', 'GET', '/api/documents/kb/pages/Deploys/threads');
+    expect(await res.json()).toEqual({ page: 'deploys', threads: [] });
+  });
+
   it('starts a thread, replies, resolves and reopens, and tells the room each time', async () => {
     const kit = await knowledgeKit();
     const started = await change(kit, 'editor', { op: 'start', text: '  Is this still true? ' });

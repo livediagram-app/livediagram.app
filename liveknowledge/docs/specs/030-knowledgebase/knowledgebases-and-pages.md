@@ -165,7 +165,8 @@ and the two never mix: a page is never listed in the Explorer, and a knowledgeba
 - **Restore** puts the page and its subpages back where they stood: under their old parent, at their old place
   among its subpages. When that parent is no longer in the knowledgebase (deleted for good, or itself in the Trash),
   the page comes back at the top level, and a toast says so ("Restored Release Process at the top level: its parent
-  page is gone"). A restore past the 500-page limit is refused and says why. Everyone with the knowledgebase open
+  page is gone"). A restore past the page limit is refused and says why, in the tree's words: the knowledgebase's own
+  500 pages, or the notice's words at the owner's Knowledgebase Pages (tiers.md). Everyone with the knowledgebase open
   sees the pages come back.
 - **Delete Forever** removes the page and its subpages for good, after a confirmation ("Delete Release Process
   forever?", "This cannot be undone.", its button Delete Forever, destructive). **Empty Trash** does the same to

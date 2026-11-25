@@ -89,6 +89,37 @@ describe('useDriveMarks', () => {
     expect(client.config).toHaveBeenCalledTimes(1);
   });
 
+  it('asks the config again on focus after a failed read, rather than taking it as not connected', async () => {
+    const client = fake();
+    client.config.mockResolvedValueOnce({ ok: false } as never);
+    let now = 1_000_000;
+    const { result } = renderHook(() => useDriveMarks(host(client), () => now));
+    await waitFor(() => expect(client.config).toHaveBeenCalledTimes(1));
+    expect(client.marks).not.toHaveBeenCalled();
+    now += DRIVE_MARKS_MIN_GAP_MS;
+    await act(async () => void window.dispatchEvent(new Event('focus')));
+    await waitFor(() => expect(result.current.byId.size).toBe(3));
+    expect(client.config).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears the marks once a read finds Drive disconnected elsewhere', async () => {
+    const client = fake();
+    let now = 1_000_000;
+    const { result } = renderHook(() => useDriveMarks(host(client), () => now));
+    await waitFor(() => expect(result.current.byId.size).toBe(3));
+    client.connection.mockResolvedValue({
+      ok: true as const,
+      data: { ...CONNECTION, connected: false },
+    });
+    now += DRIVE_MARKS_MIN_GAP_MS;
+    await act(async () => void window.dispatchEvent(new Event('focus')));
+    await waitFor(() => expect(result.current.byId.size).toBe(0));
+    // Not connected now: a later focus reads nothing.
+    now += DRIVE_MARKS_MIN_GAP_MS;
+    await act(async () => void window.dispatchEvent(new Event('focus')));
+    expect(client.marks).toHaveBeenCalledTimes(2);
+  });
+
   it('says when the connection needs reconnecting', async () => {
     const client = fake({}, { ...CONNECTION, status: 'needs_reconnect' });
     const { result } = renderHook(() => useDriveMarks(host(client)));

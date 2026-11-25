@@ -640,6 +640,10 @@ describe('Insights', () => {
     for (const who of ['viewer', 'link', 'stranger'] as const)
       expect((await kit.call(who, 'DELETE', path)).status).toBe(403);
     // A Participant dismisses as an Editor does (insights.md "Share roles").
+    // A malformed escape in the key is a 400, never a 500.
+    const bad = await kit.call('participant', 'DELETE', '/api/documents/kb/questions/50%');
+    expect(bad.status).toBe(400);
+    expect(await bad.json()).toMatchObject({ error: 'bad_key' });
     expect((await kit.call('participant', 'DELETE', path)).status).toBe(204);
     expect(kit.db.sql.prepare('SELECT * FROM questions').all()).toEqual([]);
     expect(kit.db.sql.prepare('SELECT * FROM question_agents').all()).toEqual([]);
