@@ -238,10 +238,10 @@ export function ElementDataSections({
                         palette={chartFallbackPalette}
                         slices={shapeTarget.pieSlices ?? DEFAULT_PIE_ROWS}
                         onEdit={
-                    props.onEditRows
-                      ? () => shapeTarget && props.onEditRows?.(shapeTarget.id, 'slices')
-                      : undefined
-                  }
+                          props.onEditRows
+                            ? () => shapeTarget && props.onEditRows?.(shapeTarget.id, 'slices')
+                            : undefined
+                        }
                       />
                     )
                   }
