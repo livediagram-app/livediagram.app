@@ -108,7 +108,8 @@ capped at 200 characters; the canonical and the static export ignore it.
   canonical address.
 - `@liveworkspace/help-registry` `catalogue/redirects.ts` (`HELP_REDIRECTS`) maps every old path whose article
   moved, merged or retired (the products' `_redirects` files and their moved-page stubs, liveworkspace.app's old
-  /help pages) to its new path, a fragment or an absolute address; `apps` limits one to those apps' addresses. The
+  /help pages) to its new path, a fragment or an absolute address; `apps` limits one to those apps' addresses (on
+  All Apps it holds only for a path that is none of its articles or categories, so it never hides a live page). The
   help Worker answers them `308` from the manifest, before anything else.
 
 ## Telemetry

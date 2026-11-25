@@ -186,6 +186,39 @@ describe('mindmap style', () => {
     }
   });
 
+  it('keeps an uneven map collision-free on every ring', () => {
+    // A map as people grow one: one branch bushy (a sub-branch with five ideas under it), the rest light.
+    // Wedges follow leaf counts, so the light branches' children sit closer together than an even
+    // spread around the ring; the ring sized for an even spread put 220-wide boxes on top of each other.
+    const els: Element[] = [shape('hub', 0, 0, 220, 70)];
+    const link = (from: string, to: string, x: number, y: number) =>
+      els.push(shape(to, x, y, 220, 70), arrow(from, to));
+    for (let b = 0; b < 5; b++) {
+      link('hub', `b${b}`, Math.cos(b) * 300, Math.sin(b) * 300);
+      for (let c = 0; c < (b === 0 ? 4 : 3); c++) {
+        link(`b${b}`, `b${b}c${c}`, Math.cos(b + c / 5) * 600, Math.sin(b + c / 5) * 600);
+      }
+    }
+    for (let g = 0; g < 5; g++) link('b0c0', `b0c0g${g}`, 900, g * 80);
+    const out = autoLayoutElements(els, { style: 'mindmap' });
+    const boxes = out.filter((e): e is BoxedElement => e.type === 'shape');
+    const overlaps: string[] = [];
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i]!;
+        const b = boxes[j]!;
+        if (
+          a.x < b.x + b.width &&
+          b.x < a.x + a.width &&
+          a.y < b.y + b.height &&
+          b.y < a.y + a.height
+        )
+          overlaps.push(`${a.id}/${b.id}`);
+      }
+    }
+    expect(overlaps).toEqual([]);
+  });
+
   it('is deterministic', () => {
     const a = autoLayoutElements(map(), { style: 'mindmap' });
     const b = autoLayoutElements(map(), { style: 'mindmap' });

@@ -329,7 +329,8 @@ that link one article contextually (`help-articles.ts`) are the contextual help 
   address.
 - Every old help path keeps working: where merging moved an article, its old path answers `308` to the new one on
   the same address. The redirect map is generated from the merge and tested, every path of the five old registries
-  answering 200 or a 308 that lands on a 200.
+  answering 200 or a 308 that lands on a 200. A path one app retired while others still have it moves only on that
+  app's address: All Apps, which holds every app's articles, serves its page, and moves it only where it has none.
 
 ## Page metadata
 

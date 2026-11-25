@@ -282,6 +282,8 @@ a component's nodes are positioned:
   second tidy keeps the map still (measured from 9 o'clock, every tidy turned it a little).
   The first branch's wedge is centred on 12 o'clock, so a map drawn with one branch up and one down stays
   that way, and a branch a hair left of 12 (a grid snap off straight up) counts as at 12, first not last.
+- **Mindmap rings** grow until no two boxes on one overlap where their wedges put them, not only until the
+  ring's circumference would fit them spread evenly: a bushy branch narrows its neighbours' wedges.
 - **A box of no height** (a rule drawn as a box) is routed like any other: its band is the last one starting at or
   above its top.
 - Tree and Mindmap consume the same directed edge set as the layered layout; on a
