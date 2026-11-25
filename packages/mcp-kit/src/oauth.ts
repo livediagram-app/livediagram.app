@@ -221,20 +221,10 @@ export function registerOauthRoutes<E extends OauthEnv>(
     const q = c.req.query();
     const clientId = q.client_id;
     const redirectUri = q.redirect_uri;
-    const codeChallenge = q.code_challenge;
-    if (!clientId || !redirectUri || !codeChallenge) {
-      return c.text('missing client_id, redirect_uri, or code_challenge', 400);
-    }
-    if (q.code_challenge_method && q.code_challenge_method !== 'S256') {
-      return c.text('only S256 PKCE is supported', 400);
-    }
-    // A real S256 challenge is base64url(SHA-256) = 43 chars; reject anything
-    // shorter so a client can't downgrade to a trivially-guessable challenge.
-    if (codeChallenge.length < 43) {
-      return c.text('invalid code_challenge', 400);
-    }
-    if (q.response_type && q.response_type !== 'code') {
-      return c.text('only response_type=code is supported', 400);
+    const codeChallenge = q.code_challenge ?? '';
+    // Without a client and a redirect URI there is nowhere safe to send a refusal: it is answered here.
+    if (!clientId || !redirectUri) {
+      return c.text('missing client_id or redirect_uri', 400);
     }
     const reg = await lookupClient(c.env, server.builtInClients, clientId);
     // Re-check the scheme: a client registered before the scheme check was
@@ -251,6 +241,31 @@ export function registerOauthRoutes<E extends OauthEnv>(
       return c.text(
         'Unknown client or unregistered redirect_uri. Register the client again (POST /oauth/register) and retry.',
         400,
+      );
+    }
+    // The client and its redirect URI are known good from here, so a request it got wrong goes back to it as an
+    // error redirect with its state (RFC 6749 §4.1.2.1), and the AI tool stops waiting.
+    const refuse = (error: string, description: string) => {
+      const url = new URL(redirectUri);
+      url.searchParams.set('error', error);
+      url.searchParams.set('error_description', description);
+      if (q.state) url.searchParams.set('state', q.state);
+      return c.redirect(url.toString());
+    };
+    if (q.response_type && q.response_type !== 'code') {
+      return refuse('unsupported_response_type', 'Only response_type=code is supported.');
+    }
+    if (q.code_challenge_method && q.code_challenge_method !== 'S256') {
+      return refuse('invalid_request', 'Only S256 PKCE is supported (code_challenge_method=S256).');
+    }
+    // A real S256 challenge is base64url(SHA-256) = 43 chars; reject anything
+    // shorter so a client can't downgrade to a trivially-guessable challenge.
+    if (codeChallenge.length < 43) {
+      return refuse(
+        'invalid_request',
+        codeChallenge
+          ? 'Invalid code_challenge: an S256 challenge is 43 characters.'
+          : 'Missing code_challenge: PKCE with S256 is required.',
       );
     }
     // Renew a registered client on every sign-in (CLIENT_TTL), so one in use never expires under its holder.

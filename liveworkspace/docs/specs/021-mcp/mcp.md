@@ -62,8 +62,9 @@ server is shaped to pick better than five servers, and the eval says whether it 
    No two tools share a name, and no name says a bare "document". A naming test fails on a clash, on "document", or
    on a name with no subject word (the kinds, and card, sheet, board, form, article, item, app_tool). Every
    description opens with the noun people use and the app ("For a diagram (livediagram)."), and every old tool name
-   inside a description or an answer is rewritten to its new name, so an answer's "call read_document next" says
-   `read_diagram`. The apps' deprecated aliases (livediagram's `*_diagram(s)` names) are not listed.
+   inside a description, the app's instructions, a prompt, a view, a refusal or an answer's own guidance (its `next`
+   and `note`) is rewritten to its new name, so an answer's "call read_document next" says `read_diagram`. What a
+   person wrote (a page, a card, a comment, a cell) comes back exactly as written, even when it names a tool. The apps' deprecated aliases (livediagram's `*_diagram(s)` names) are not listed.
 
 ## Fit for Claude's connector directory
 
@@ -85,7 +86,10 @@ The server is built to be listed in Claude's connector directory, so it meets it
   redirects accepted (mcp-kit's authorization server). Every answer that carries a token says
   `Cache-Control: no-store` (RFC 6749 §5.1), and Cancel on the consent page sends the person back to the client
   with `error=access_denied` (RFC 6749 §4.1.2.1), so the AI tool stops waiting rather than hanging on a page that
-  says to close it.
+  says to close it. Once the client and its redirect URI are known good, an authorize request it got wrong (a
+  `response_type` other than `code`, no S256 `code_challenge`) goes back to the client the same way, with
+  `error=unsupported_response_type` or `invalid_request`, words and its `state`; only an unknown client or redirect
+  URI is answered on the page itself.
 - **Streamable HTTP, stateless**: every request is answered on its own, with no session id. `POST /mcp` carries
   the JSON-RPC; `GET /mcp` with a token answers `405 Method Not Allowed` (the spec's way to say the server opens no
   stream of its own: it never sends a message nobody asked for), so a client never holds an empty stream open or
@@ -104,7 +108,7 @@ A router in front of each app's tools, in one Worker. Each app's MCP is a packag
 (`<app>/apps/mcp`: its tools, prompts, resources and views, with their tests), and this Worker runs each one in
 process, as the person, with the person's own `Authorization: Bearer lwt_…` (an account token works on every app).
 An app's tools reach its api over this Worker's service binding to that api. An app's answer comes back as it is,
-its old tool names rewritten. A refused token (401 from any app) makes the whole request answer 401 with the sign-in
+the old tool names in its guidance and refusals rewritten, never in what a person wrote. A refused token (401 from any app) makes the whole request answer 401 with the sign-in
 challenge.
 
 The core verbs map to each app's existing tools: `find_items` to `find_documents`, `find_projects` or

@@ -96,6 +96,9 @@ const poll = async (deviceCode: string, clientId = 'example-cli') => {
   };
 };
 
+// A refusal other than the poll's own codes: its code, and words (docs/specs/003-accounts/blueprints/oauth.md).
+const worded = (error: string) => ({ error, error_description: expect.stringMatching(/\w/) });
+
 describe('starting', () => {
   it('hands out a device code, a short user code and the page to enter it on', async () => {
     const s = await start();
@@ -110,14 +113,14 @@ describe('starting', () => {
 
   it('refuses a client it did not ship, and more than 20 starts an hour from one address', async () => {
     const other = await app.request('/oauth/device_authorization', form({ client_id: 'abc' }), env);
-    expect(await other.json()).toEqual({ error: 'invalid_client' });
+    expect(await other.json()).toEqual(worded('invalid_client'));
     // A name every object answers to is no client either.
     const inherited = await app.request(
       '/oauth/device_authorization',
       form({ client_id: 'constructor' }),
       env,
     );
-    expect(await inherited.json()).toEqual({ error: 'invalid_client' });
+    expect(await inherited.json()).toEqual(worded('invalid_client'));
     for (let i = 0; i < 20; i++) await start();
     const limited = await app.request(
       '/oauth/device_authorization',
@@ -125,6 +128,7 @@ describe('starting', () => {
       env,
     );
     expect(limited.status).toBe(429);
+    expect(await limited.json()).toEqual(worded('rate_limited'));
     const elsewhere = await app.request(
       '/oauth/device_authorization',
       form({ client_id: 'example-cli' }, '5.6.7.8'),
@@ -269,7 +273,7 @@ describe('polling', () => {
     expect((await poll(s.device_code)).body).toEqual({ error: 'access_denied' });
     expect((await poll(s.device_code)).body).toEqual({ error: 'expired_token' });
     const late = await start();
-    expect((await poll(late.device_code, 'abc')).body).toEqual({ error: 'invalid_client' });
+    expect((await poll(late.device_code, 'abc')).body).toEqual(worded('invalid_client'));
     now += DEVICE_CODE_TTL_S * 1000;
     expect((await poll(late.device_code)).body).toEqual({ error: 'expired_token' });
     expect((await poll('')).body).toEqual({ error: 'expired_token' });
@@ -287,9 +291,13 @@ describe('polling', () => {
 
   it('refuses a completion or denial without a token or a live code', async () => {
     const s = await start();
-    expect(
-      (await app.request('/oauth/device/complete', json({ userCode: s.user_code }), env)).status,
-    ).toBe(400);
+    const tokenless = await app.request(
+      '/oauth/device/complete',
+      json({ userCode: s.user_code }),
+      env,
+    );
+    expect(tokenless.status).toBe(400);
+    expect(await tokenless.json()).toEqual(worded('invalid_request'));
     expect(
       await (
         await app.request(
@@ -298,7 +306,7 @@ describe('polling', () => {
           env,
         )
       ).json(),
-    ).toEqual({ error: 'invalid_code' });
+    ).toEqual(worded('invalid_code'));
     expect((await app.request('/oauth/device/deny', json({ userCode: 7 }), env)).status).toBe(400);
     now += DEVICE_CODE_TTL_S * 1000;
     expect(
@@ -317,14 +325,14 @@ describe('malformed requests', () => {
       body: 'x',
       headers: { 'Content-Type': 'multipart/form-data; boundary=z' },
     };
-    expect(await (await app.request('/oauth/device_authorization', empty, env)).json()).toEqual({
-      error: 'invalid_client',
-    });
+    expect(await (await app.request('/oauth/device_authorization', empty, env)).json()).toEqual(
+      worded('invalid_client'),
+    );
     expect(
       await (
         await app.request('/oauth/token', form({ grant_type: DEVICE_CODE_GRANT }), env)
       ).json(),
-    ).toEqual({ error: 'invalid_client' });
+    ).toEqual(worded('invalid_client'));
     delete env.CONSENT_BASE_URL;
     expect((await start()).verification_uri).toBe('https://example.app/oauth/device');
   });

@@ -133,6 +133,16 @@ async function pendingByUserCode(
 
 const randomBytes = (n: number) => crypto.getRandomValues(new Uint8Array(n));
 
+// Every refusal but the poll's own codes (RFC 8628 §3.5) carries words, as the authorization server's others do.
+function refusal(error: string, description: string) {
+  return { error, error_description: description };
+}
+const NOT_A_CLI = 'The device grant is for the apps’ own CLIs: this client_id is not one of them.';
+const TOO_MANY_STARTS = 'Too many sign-ins started from here. Wait an hour and try again.';
+const TOO_MANY_TRIES = 'Too many codes tried from here. Wait a few minutes and try again.';
+const NO_SUCH_CODE =
+  'That code is not waiting for approval: it may have expired or been used. Start again in the terminal.';
+
 export function registerDeviceRoutes<E extends OauthEnv>(
   app: Hono<{ Bindings: E }>,
   server: OauthServer<E>,
@@ -141,9 +151,9 @@ export function registerDeviceRoutes<E extends OauthEnv>(
     const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
     const clientId = formText(form, 'client_id');
     const client = builtInClient(server.builtInClients, clientId);
-    if (!client) return c.json({ error: 'invalid_client' }, 400);
+    if (!client) return c.json(refusal('invalid_client', NOT_A_CLI), 400);
     if (await overLimit(c.env, 'device-start', ipOf(c), START_LIMIT))
-      return c.json({ error: 'rate_limited' }, 429);
+      return c.json(refusal('rate_limited', TOO_MANY_STARTS), 429);
     const deviceCode = randomBase64Url(32);
     const userCode = newUserCode(randomBytes);
     const startedIn = startedInOf(c.req.raw);
@@ -180,9 +190,9 @@ export function registerDeviceRoutes<E extends OauthEnv>(
   // code is the read capability.
   app.get('/oauth/device/session/:userCode', async (c) => {
     if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
-      return c.json({ error: 'rate_limited' }, 429);
+      return c.json(refusal('rate_limited', TOO_MANY_TRIES), 429);
     const found = await pendingByUserCode(c.env, c.req.param('userCode'));
-    if (!found) return c.json({ error: 'invalid_code' }, 404);
+    if (!found) return c.json(refusal('invalid_code', NO_SUCH_CODE), 404);
     const { clientName, startedAt, startedIn } = found.record;
     return c.json({ clientName, startedAt: startedAt ?? null, startedIn: startedIn ?? null });
   });
@@ -191,16 +201,16 @@ export function registerDeviceRoutes<E extends OauthEnv>(
   app.post('/oauth/device/complete', async (c) => {
     // A user code is guessable only slowly: the same budget as a lookup, shared with it and with Deny.
     if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
-      return c.json({ error: 'rate_limited' }, 429);
+      return c.json(refusal('rate_limited', TOO_MANY_TRIES), 429);
     const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       userCode?: unknown;
       token?: unknown;
       expiresAt?: unknown;
     };
     if (typeof body.token !== 'string' || !body.token)
-      return c.json({ error: 'invalid_request' }, 400);
+      return c.json(refusal('invalid_request', 'token is required.'), 400);
     const found = await pendingByUserCode(c.env, body.userCode);
-    if (!found) return c.json({ error: 'invalid_code' }, 400);
+    if (!found) return c.json(refusal('invalid_code', NO_SUCH_CODE), 400);
     await save(c.env, found.deviceCode, {
       ...found.record,
       status: 'approved',
@@ -214,10 +224,10 @@ export function registerDeviceRoutes<E extends OauthEnv>(
 
   app.post('/oauth/device/deny', async (c) => {
     if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
-      return c.json({ error: 'rate_limited' }, 429);
+      return c.json(refusal('rate_limited', TOO_MANY_TRIES), 429);
     const body = objectOrEmpty(await c.req.json().catch(() => null)) as { userCode?: unknown };
     const found = await pendingByUserCode(c.env, body.userCode);
-    if (!found) return c.json({ error: 'invalid_code' }, 400);
+    if (!found) return c.json(refusal('invalid_code', NO_SUCH_CODE), 400);
     await save(c.env, found.deviceCode, { ...found.record, status: 'denied' });
     await c.env.OAUTH_KV.delete(userCodeKey(found.record.userCode));
     log('denied', { clientId: found.record.clientId });
@@ -234,7 +244,7 @@ export async function handleDeviceToken<E extends OauthEnv>(
   const deviceCode = formText(form, 'device_code');
   const clientId = formText(form, 'client_id');
   if (!builtInClient(server.builtInClients, clientId))
-    return c.json({ error: 'invalid_client' }, 400);
+    return c.json(refusal('invalid_client', NOT_A_CLI), 400);
   const record = deviceCode
     ? await c.env.OAUTH_KV.get<DeviceRecord>(deviceKey(deviceCode), 'json')
     : null;
