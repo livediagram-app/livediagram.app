@@ -77,15 +77,23 @@ export function shapeBox(
   own: Frame,
   widthIn: number,
   heightIn: number,
+  flips: { x: boolean; y: boolean } = { x: false, y: false },
 ): { x: number; y: number; width: number; height: number; rotation: number } {
   const centre = applyFrame(own, widthIn / 2, heightIn / 2);
   const width = Math.abs(widthIn) * scaleX(own);
   const height = Math.abs(heightIn) * scaleY(own);
+  // The rotation is read from the frame WITHOUT the shape's own flips, which ride as its flipH / flipV
+  // (visio-import.md "rotation = -(angle + frame angle)"): read with them, a FlipY shape's frame was mirrored, its x
+  // axis turned round, and it came in turned 180 degrees as well as flipped (a mirror image, an upside-down label).
+  const sx = flips.x ? -1 : 1;
+  const sy = flips.y ? -1 : 1;
+  const a = own.a * sx;
+  const b = own.b * sx;
   // The local x axis's direction on the page (y down), so a positive angle is clockwise. The page frame itself
-  // mirrors y, so a shape drawn the right way round has a negative determinant; a positive one is mirrored (an
-  // odd number of flips), whose x axis runs backwards and is turned round (the flip itself is the shape's flipH).
-  const sign = own.a * own.d - own.b * own.c > 0 ? -1 : 1;
-  const degrees = (Math.atan2(own.b * sign, own.a * sign) * 180) / Math.PI;
+  // mirrors y, so a shape drawn the right way round has a negative determinant; a positive one is mirrored by a
+  // group's flip, whose x axis runs backwards and is turned round.
+  const sign = a * own.d * sy - b * own.c * sy > 0 ? -1 : 1;
+  const degrees = (Math.atan2(b * sign, a * sign) * 180) / Math.PI;
   const rotation = Math.round((((degrees % 360) + 360) % 360) * 1000) / 1000;
   return {
     x: centre.x - width / 2,

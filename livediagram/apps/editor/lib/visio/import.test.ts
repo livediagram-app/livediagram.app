@@ -369,6 +369,22 @@ describe('properties', () => {
     expect(d!.strokeColor).toBeUndefined();
   });
 
+  it('flips a FlipY shape without also turning it, so its label stays upright', async () => {
+    const page =
+      shape(1, BOX, { inner: rectGeometry(1, 0.5), cells: { FlipY: 1 }, text: 'Down' }) +
+      shape(2, BOX, { inner: rectGeometry(1, 0.5), cells: { FlipX: 1 }, text: 'Across' }) +
+      shape(3, BOX, { master: '1', cells: { FlipY: 1 }, text: 'Flipped' }) +
+      shape(4, BOX, { master: '1', text: 'Plain' });
+    const { elements } = await onlyPage(
+      vsdx({ pages: [{ name: 'P', shapes: page }], masters: masters('Triangle') }),
+    );
+    const [down, across, flipped, plain] = shapes(elements);
+    expect(down!.rotation ?? 0).toBe(0);
+    expect(across!.rotation ?? 0).toBe(0);
+    // A flipped triangle points the other way from an unflipped one.
+    expect(((flipped!.rotation ?? 0) - (plain!.rotation ?? 0) + 360) % 360).toBe(180);
+  });
+
   it('sets text from the first character run and paragraph, fields and line breaks included', async () => {
     const inner =
       rectGeometry(1, 0.5) +

@@ -191,11 +191,12 @@ export async function visioPageGraph(input: VisioPageInput): Promise<DrawioGraph
     pairs: StylePairs,
     value: string,
   ) => {
-    const box = shapeBox(own, sheet.num('Width') ?? 0, sheet.num('Height') ?? 0);
+    const flips = { x: sheet.cell('FlipX') === '1', y: sheet.cell('FlipY') === '1' };
+    const box = shapeBox(own, sheet.num('Width') ?? 0, sheet.num('Height') ?? 0, flips);
     const turned: StylePairs = { ...pairs };
     if (box.rotation !== 0) turned.rotation = String(box.rotation);
-    if (sheet.cell('FlipX') === '1') turned.flipH = '1';
-    if (sheet.cell('FlipY') === '1') turned.flipV = '1';
+    if (flips.x) turned.flipH = '1';
+    if (flips.y) turned.flipV = '1';
     const geometry: DrawioGeometry = {
       x: box.x,
       y: box.y,
