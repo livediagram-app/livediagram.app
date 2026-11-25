@@ -289,4 +289,59 @@ describe('the sidebar summary', () => {
     });
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
+
+  it('frames the page again once its width settles somewhere new, never on each frame of a drag', () => {
+    vi.useFakeTimers({
+      toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout', 'clearTimeout'],
+    });
+    const focusPage = vi.fn();
+    render(<Sidebar focusPage={focusPage} />);
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    focusPage.mockClear();
+    const aside = screen.getByRole('complementary', { name: 'Contents' });
+    const handle = screen.getByRole('separator', { name: 'Resize Contents' });
+    // A drag: the edge moves each frame, the film and the framing wait for it to end.
+    fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 500 });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 564 });
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(aside.style.width).toBe('300px');
+    expect(aside.style.getPropertyValue('--contents-film-w')).toBe('172px');
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(focusPage).not.toHaveBeenCalled();
+    fireEvent.pointerUp(handle, { pointerId: 1 });
+    expect(aside.style.getPropertyValue('--contents-film-w')).toBe('236px');
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(focusPage).toHaveBeenCalledWith('p1');
+    // A key and a reset settle it too.
+    focusPage.mockClear();
+    fireEvent.keyDown(handle, { key: 'Enter' });
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(focusPage).toHaveBeenCalledTimes(1);
+  });
+
+  it("names a cut-off page in a tooltip on hover, its name raised over the row's button", () => {
+    vi.useFakeTimers();
+    render(<Sidebar />);
+    const name = screen.getAllByText('Page 2')[0]!;
+    // jsdom paints nothing: the stacking that lets the pointer reach the name is its classes.
+    expect(name.className).toMatch(/(^| )relative( |$)/);
+    expect(name.className).toMatch(/(^| )z-10( |$)/);
+    Object.defineProperty(name, 'clientWidth', { configurable: true, value: 40 });
+    Object.defineProperty(name, 'scrollWidth', { configurable: true, value: 120 });
+    fireEvent.pointerEnter(name, { pointerType: 'mouse' });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByRole('tooltip').textContent).toBe('Page 2');
+  });
 });

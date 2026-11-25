@@ -34,6 +34,7 @@ function Sidebar({ scale = 1 }: { scale?: number }) {
   return (
     <div>
       <output data-testid="width">{sized.width}</output>
+      <output data-testid="settled">{`${sized.settledWidth} ${sized.dragging ? 'dragging' : 'still'}`}</output>
       <SidebarResizeHandle
         label="Resize Contents"
         width={sized.width}
@@ -41,12 +42,14 @@ function Sidebar({ scale = 1 }: { scale?: number }) {
         onResize={sized.set}
         onCommit={sized.commit}
         onReset={sized.reset}
+        onCancel={sized.cancel}
       />
     </div>
   );
 }
 
 const width = () => Number(screen.getByTestId('width').textContent);
+const settled = () => screen.getByTestId('settled').textContent;
 const handle = () => screen.getByRole('separator', { name: 'Resize Contents' });
 const frame = () =>
   act(() => {
@@ -150,20 +153,34 @@ describe('SidebarResizeHandle', () => {
   });
 
   it('puts the width back on Escape or a cancelled pointer', () => {
+    localStorage.setItem(KEY, '260');
     render(<Sidebar />);
     fireEvent.pointerDown(handle(), { button: 0, pointerId: 1, clientX: 500 });
     fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 600 });
     frame();
-    expect(width()).toBe(336);
-    fireEvent.keyDown(handle(), { key: 'Escape' });
-    expect(width()).toBe(236);
-    expect(localStorage.getItem(KEY)).toBeNull();
+    expect(width()).toBe(360);
+    // The width kept stays where the drag began until it ends.
+    expect(settled()).toBe('260 dragging');
+    // A pressed handle takes no focus, so Escape is heard wherever the focus is; another key there is not the drag's.
+    fireEvent.keyDown(document.body, { key: 'Shift' });
+    expect(width()).toBe(360);
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(width()).toBe(260);
+    expect(settled()).toBe('260 still');
+    expect(localStorage.getItem(KEY)).toBe('260');
+    // The drag is over: a later Escape is nobody's here.
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(width()).toBe(260);
     fireEvent.pointerDown(handle(), { button: 0, pointerId: 1, clientX: 500 });
     fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 600 });
     frame();
     fireEvent.pointerCancel(handle(), { pointerId: 1 });
     frame();
-    expect(width()).toBe(236);
+    expect(width()).toBe(260);
+    // Cancelled before any frame moved it: nothing to put back.
+    fireEvent.pointerDown(handle(), { button: 0, pointerId: 1, clientX: 500 });
+    fireEvent.pointerCancel(handle(), { pointerId: 1 });
+    expect(settled()).toBe('260 still');
   });
 
   it('keeps where it is when the pointer capture is lost mid-drag', () => {
@@ -199,6 +216,9 @@ describe('SidebarResizeHandle', () => {
     fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
     expect(width()).toBe(268);
     expect(localStorage.getItem(KEY)).toBe('268');
+    fireEvent.keyDown(handle(), { key: 'End' });
+    expect(width()).toBe(SIDEBAR_MAX_WIDTH);
+    // Already there: nothing changes.
     fireEvent.keyDown(handle(), { key: 'End' });
     expect(width()).toBe(SIDEBAR_MAX_WIDTH);
     fireEvent.keyDown(handle(), { key: 'Home' });

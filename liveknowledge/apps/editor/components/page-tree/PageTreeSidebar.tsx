@@ -156,6 +156,7 @@ export function PageTreeSidebar({
           onResize={sized.set}
           onCommit={sized.commit}
           onReset={sized.reset}
+          onCancel={sized.cancel}
         />
       ) : null}
     </aside>

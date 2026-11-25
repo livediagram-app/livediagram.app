@@ -4,7 +4,14 @@
 // "Resizing"): drag to set the width live, double-click or Enter for the default, arrow keys in 8 px steps (32 with
 // Shift), Home and End to the bounds, Escape mid-drag back to where it began. A focusable vertical separator; none on a
 // touch-only device, which has no pointer to aim at the edge.
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react';
 import { Tooltip } from '@liveworkspace/ui';
 import { useCoarsePointer } from '../../hooks/ui/useCoarsePointer';
 import {
@@ -31,6 +38,7 @@ export function SidebarResizeHandle({
   onResize,
   onCommit,
   onReset,
+  onCancel,
 }: {
   // The separator's name: "Resize Contents", "Resize Pages".
   label: string;
@@ -44,6 +52,8 @@ export function SidebarResizeHandle({
   onCommit: (width: number) => void;
   // Back to the default.
   onReset: () => void;
+  // A drag given up: back to the width last kept.
+  onCancel: () => void;
 }) {
   const coarse = useCoarsePointer();
   const drag = useRef<Drag | null>(null);
@@ -59,8 +69,6 @@ export function SidebarResizeHandle({
     [],
   );
 
-  if (coarse) return null;
-
   const end = (keep: boolean) => {
     const d = drag.current;
     if (!d) return;
@@ -69,8 +77,25 @@ export function SidebarResizeHandle({
     dragCursor(false);
     setDragging(false);
     if (keep) onCommit(d.next);
-    else onResize(d.start);
+    else onCancel();
   };
+
+  // Escape gives a drag up. Heard on the document: a press on the handle takes no focus (no ring for a mouse), so the
+  // handle itself never sees the key.
+  const giveUp = useEffectEvent(() => end(false));
+  useEffect(() => {
+    if (!dragging) return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      giveUp();
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [dragging]);
+
+  if (coarse) return null;
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 || e.pointerType === 'touch') return;
@@ -95,12 +120,6 @@ export function SidebarResizeHandle({
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Escape' && drag.current) {
-      e.preventDefault();
-      e.stopPropagation();
-      end(false);
-      return;
-    }
     const step = e.shiftKey ? SIDEBAR_WIDTH_KEY_STEP_LARGE : SIDEBAR_WIDTH_KEY_STEP;
     const next =
       e.key === 'ArrowLeft'

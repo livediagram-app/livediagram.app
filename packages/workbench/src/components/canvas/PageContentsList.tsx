@@ -458,10 +458,13 @@ function NameLine({
 }) {
   return (
     <span className="flex h-6 min-w-0 items-center gap-1.5">
-      {/* A name cut off shows whole in a tooltip, on hover and on the row's keyboard focus; a whole one stays quiet. */}
+      {/* A name cut off shows whole in a tooltip, on hover and on the row's keyboard focus; a whole one stays quiet.
+          Raised over the row's stretched button, as its tools are, so the pointer reaches it; a press on it still
+          bubbles to the row, which opens the page. */}
       <Tooltip label={row.name} focused={focused}>
         <span
-          className={`truncate font-medium transition-colors ${
+          data-contents-name=""
+          className={`relative z-10 truncate font-medium transition-colors ${
             row.setAside
               ? 'text-slate-500 dark:text-slate-400'
               : 'text-slate-800 dark:text-slate-100'

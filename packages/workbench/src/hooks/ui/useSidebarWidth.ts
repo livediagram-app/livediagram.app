@@ -14,35 +14,49 @@ import {
   writeSidebarWidth,
 } from '../../lib/sidebar-width';
 
-type Store = Listeners & { value: number | null; read: boolean };
+// `value` is what draws now (a drag's live width); `kept` the width last kept (a drag's end, a key, a reset). They
+// differ only while a drag is under way.
+type Store = Listeners & { value: number | null; kept: number | null; read: boolean };
 
 const stores = new Map<string, Store>();
 
 function storeFor(key: string): Store {
   let store = stores.get(key);
   if (!store) {
-    store = { ...createListeners(), value: null, read: false };
+    store = { ...createListeners(), value: null, kept: null, read: false };
     stores.set(key, store);
   }
   return store;
 }
 
-function chosen(key: string): number | null {
+function loaded(key: string): Store {
   const store = storeFor(key);
   if (!store.read) {
-    store.value = readSidebarWidth(key);
+    store.value = store.kept = readSidebarWidth(key);
     store.read = true;
   }
-  return store.value;
+  return store;
 }
 
+const chosen = (key: string) => loaded(key).value;
+const kept = (key: string) => loaded(key).kept;
+
 function put(key: string, value: number | null, keep: boolean): void {
-  const store = storeFor(key);
+  const store = loaded(key);
   const next = value === null ? null : clampSidebarWidth(value);
-  store.read = true;
   if (keep) writeSidebarWidth(key, next);
-  if (store.value === next) return;
+  const keptNext = keep ? next : store.kept;
+  if (store.value === next && store.kept === keptNext) return;
   store.value = next;
+  store.kept = keptNext;
+  store.notify();
+}
+
+/** A drag given up (Escape, a cancelled pointer): back to the width last kept. */
+function cancel(key: string): void {
+  const store = loaded(key);
+  if (store.value === store.kept) return;
+  store.value = store.kept;
   store.notify();
 }
 
@@ -74,24 +88,43 @@ export type SidebarWidth = {
   defaultWidth: number;
   /** The width the person chose, or null for the default. */
   custom: number | null;
+  /** The width last kept: `width` but for a drag under way, which it leaves where the drag began. What the page
+   *  framing and the film's pictures follow, so a drag reflows neither on every frame. */
+  settledWidth: number;
+  /** A drag is under way: the width drawn is not yet kept. */
+  dragging: boolean;
   /** Sets the width live (a drag's move), not yet kept. */
   set: (width: number) => void;
   /** Sets and keeps the width (a drag's end, a key). */
   commit: (width: number) => void;
   /** Back to the default, forgetting the chosen width. */
   reset: () => void;
+  /** Gives up a drag: back to the width last kept. */
+  cancel: () => void;
 };
 
 /** The width of the sidebar kept under `key`, whose own width below the first step is `base`. */
 export function useSidebarWidth(key: string, base: number): SidebarWidth {
   const store = storeFor(key);
   const custom = useSyncExternalStore(store.subscribe, () => chosen(key), noWidth);
+  const keptWidth = useSyncExternalStore(store.subscribe, () => kept(key), noWidth);
   const defaultWidth = sidebarDefaultWidth(base, useWindowStep());
   const set = useCallback((w: number) => put(key, w, false), [key]);
   const commit = useCallback((w: number) => put(key, w, true), [key]);
   const reset = useCallback(() => put(key, null, true), [key]);
+  const cancelDrag = useCallback(() => cancel(key), [key]);
   return useMemo(
-    () => ({ width: custom ?? defaultWidth, defaultWidth, custom, set, commit, reset }),
-    [custom, defaultWidth, set, commit, reset],
+    () => ({
+      width: custom ?? defaultWidth,
+      settledWidth: keptWidth ?? defaultWidth,
+      dragging: custom !== keptWidth,
+      defaultWidth,
+      custom,
+      set,
+      commit,
+      reset,
+      cancel: cancelDrag,
+    }),
+    [custom, keptWidth, defaultWidth, set, commit, reset, cancelDrag],
   );
 }

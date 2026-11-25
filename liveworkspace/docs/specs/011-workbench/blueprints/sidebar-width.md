@@ -33,15 +33,22 @@ Defaults are cited as `SWn` ([DEFAULTS.md](DEFAULTS.md)). Paths are relative to 
   the chrome (`CanvasChrome`, `usePageTreeChrome`), so all of them render the same width in the same frame.
 - The handle (`SidebarResizeHandle`): `pointerdown` (primary button, not touch) captures the pointer and records the
   start x and width; `pointermove` sets `start + dx / scale`, clamped, once per animation frame; `pointerup` commits;
-  `pointercancel` or Escape sets the start width back. Double-click resets. Keys: ArrowLeft and ArrowRight by
+  `pointercancel` or Escape (heard on the document in the capture phase while dragging, since the pressed handle takes
+  no focus) calls `cancel`, which puts the drawn width back to the kept one. Double-click resets. Keys: ArrowLeft and ArrowRight by
   `SIDEBAR_WIDTH_KEY_STEP` (8) or `SIDEBAR_WIDTH_KEY_STEP_LARGE` (32) with Shift, Home and End to the bounds, Enter
   resets; each key commits.
 - During a drag `document.documentElement` wears `cursor: col-resize` and `user-select: none`, removed at the end and on
   unmount.
-- Contents' film rows size from a CSS variable the sidebar sets, `--contents-film-w` = width - 64 (the number column and
-  the row's padding), so a drag changes one style on the aside and no row renders: each picture is
+- The store keeps two values: `value` (drawn now) and `kept` (last kept). `set` moves `value` only; `commit`, `reset`
+  and `cancel` settle both. The hook returns `width` (drawn), `settledWidth` (kept, or the default) and `dragging`.
+- Contents' film rows size from a CSS variable the sidebar sets, `--contents-film-w` = `settledWidth` - 64 (the number
+  column and the row's padding), so a drag moves only the aside's edge and the film rescales once, on release: each picture is
   `calc(var(--contents-film-w) * k)` wide with its aspect ratio, `k = min(1, FILM_MAX_H / FILM_MAX_W x aspect)`.
-  Outside the sidebar the variable is unset and the film keeps its 172 px.
+  Outside the sidebar the variable is unset and the film keeps its 172 px. The name span is `relative z-10`, above the
+  row's stretched button, so its tooltip hears the pointer.
+- `ContentsSidebar` frames the page in view again (one animation frame later) whenever `settledWidth` changes after
+  mount. liveknowledge's page surface (`usePageSurface`) already relocks on a `ResizeObserver` of the side chrome, so
+  the tree's width, live or settled, reframes the page there with no extra wiring.
 
 ## Interfaces and contracts
 

@@ -122,6 +122,16 @@ export function ContentsSidebar<R extends ContentsRowBase>({
     };
   }, []);
 
+  // Its width settling somewhere new (a window step crossed, the first paint after hydration, a drag let go, a key, a
+  // reset) frames the page in view again beside it, so the sidebar never ends up over the page.
+  const framedAt = useRef(sized.settledWidth);
+  useEffect(() => {
+    if (framedAt.current === sized.settledWidth) return;
+    framedAt.current = sized.settledWidth;
+    const frame = requestAnimationFrame(reframe);
+    return () => cancelAnimationFrame(frame);
+  }, [sized.settledWidth]);
+
   // Contents Options (ContentsOptions): Collapse Contents, and the tab's Stack Pages where the editor offers it.
   const minimise = (
     <ContentsOptions
@@ -153,7 +163,8 @@ export function ContentsSidebar<R extends ContentsRowBase>({
         top: joined ? 0 : px(top),
         width: sized.width,
         // The film's pictures and names fill the width; a drag changes this and no row renders.
-        ['--contents-film-w' as string]: `${sized.width - CONTENTS_FILM_INSET}px`,
+        // Its pictures and names fill the width once it settles: a drag moves the edge, not every picture, each frame.
+        ['--contents-film-w' as string]: `${sized.settledWidth - CONTENTS_FILM_INSET}px`,
       }}
       // Opaque, flush against its side and down to the canvas's foot, so no page shows round or
       // through it.
@@ -179,6 +190,7 @@ export function ContentsSidebar<R extends ContentsRowBase>({
         onResize={sized.set}
         onCommit={sized.commit}
         onReset={sized.reset}
+        onCancel={sized.cancel}
       />
     </aside>
   );

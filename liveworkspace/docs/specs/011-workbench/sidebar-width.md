@@ -24,12 +24,16 @@ A fixed width cut long page names off on every window, even where a 1920 px scre
 
 - The sidebar's right edge is a **resize handle** on a desktop with a mouse or a trackpad. Dragging it sets the width
   live, between **200 px** and **480 px**; the canvas chrome beside it (the menu box joined to its head, the left corner
-  stacks, the bottom-right cluster's left bound, a photo page's flyout, the page framing) follows as it moves.
+  stacks, the bottom-right cluster's left bound, a photo page's flyout) follows as it moves. Contents' pictures and
+  the page framed beside it wait for the drag to end, then the page in view is framed again beside the new width, so
+  a drag never reflows every picture each frame and the sidebar never ends up over the page. The same reframing
+  follows any settled change: a window step crossed, the first paint, a key, a reset.
 - **Double-click** the handle to go back to the default for the window (the steps above), forgetting the chosen width.
 - **Keyboard**: the handle is a focusable vertical `separator` named "Resize Contents" or "Resize Pages", with its
   value, minimum and maximum. Left and Right Arrow narrow or widen it by 8 px (32 px with Shift), Home and End go to
   the minimum and the maximum, and Enter resets it to the default.
-- **Escape** during a drag puts the width back to where the drag began.
+- **Escape** during a drag puts the width back to where the drag began, wherever the focus is (pressing the handle
+  does not move the focus).
 - It shows a resize cursor, and on hover (after a short pause, so a pointer passing over the edge does not flash it)
   or keyboard focus a 2 px brand line down the edge, in light and in dark. While dragging, the line stays and the
   whole page wears the resize cursor, with text selection off.
@@ -53,6 +57,7 @@ A fixed width cut long page names off on every window, even where a 1920 px scre
 ## Cut-off names
 
 - A name still too long for the sidebar ends in an ellipsis and shows its full title in a tooltip: after the usual
-  hover pause over the name, and at once when its row takes keyboard focus. A name shown whole gets no tooltip.
+  hover pause over the name, and at once when its row takes keyboard focus. In Contents the name stands above the
+  row's stretched button, so the pointer reaches it; a press on it still opens the page. A name shown whole gets no tooltip.
 - Contents' film pictures and names fill the sidebar's width: a wider sidebar draws larger pictures and longer names,
   the way a slide editor's filmstrip does.
