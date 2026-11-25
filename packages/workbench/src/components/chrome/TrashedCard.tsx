@@ -36,10 +36,15 @@ export function daysLeftLabel(trashedAt: number, now: number): string {
   return days === 1 ? '1 day left' : `${days} days left`;
 }
 
-// The deleted card's lead for someone who may restore it, with the days left.
-export function trashedCardLead(row: TrashedFile, now: number): string {
+// The deleted card's lead for someone who may restore it, with the days left. `emptyDays` names how long an empty
+// item waited, where the app moves empty items on a clock (livediagram's and livehuddle's empty-document cleanup).
+export function trashedCardLead(row: TrashedFile, now: number, emptyDays?: number): string {
   const where =
-    row.reason === 'empty' ? 'It was empty, so it moved to the Trash' : 'It is in the Trash';
+    row.reason !== 'empty'
+      ? 'It is in the Trash'
+      : emptyDays === undefined
+        ? 'It was empty, so it moved to the Trash'
+        : `It was empty for ${emptyDays} days, so it moved to the Trash`;
   return `${where} (${daysLeftLabel(row.trashedAt, now).toLowerCase()}).`;
 }
 
@@ -48,9 +53,11 @@ export type TrashedCardProps = {
   noun: string;
   restorable: TrashedFile | null;
   onRestore: () => Promise<void>;
+  // How many days an empty item waits before it moves to the Trash, where the app says so on the card.
+  emptyDays?: number;
 };
 
-export function TrashedCard({ noun, restorable, onRestore }: TrashedCardProps) {
+export function TrashedCard({ noun, restorable, onRestore, emptyDays }: TrashedCardProps) {
   const [restoring, setRestoring] = useState(false);
   const [failed, setFailed] = useState(false);
   // One clock per mount keeps render pure.
@@ -74,7 +81,7 @@ export function TrashedCard({ noun, restorable, onRestore }: TrashedCardProps) {
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {restorable
-            ? `${trashedCardLead(restorable, now)} Restore it to put it back where it was.`
+            ? `${trashedCardLead(restorable, now, emptyDays)} Restore it to put it back where it was.`
             : 'It is no longer available. If it is restored, this link works again.'}
         </p>
         {failed ? (

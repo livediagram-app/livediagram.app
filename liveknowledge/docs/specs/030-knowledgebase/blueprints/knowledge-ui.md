@@ -510,8 +510,10 @@ held another change's uncommitted edits while this was made (only the Status lin
 - **First-load size was not measured.** The editor now imports `@liveknowledge/knowledge` (trust, passages, the
   search words) on its main path; the package is side-effect free, so only what is imported should be kept, but no
   build was run to confirm it.
-- **Cmd or Ctrl K no longer opens the editor's command search** (it keeps Cmd or Ctrl `.`); the shortcuts list
-  (`shortcut-sections.ts`) says Search Pages for Cmd K and Search & Commands for Cmd `.`.
+- **Cmd or Ctrl K and Cmd or Ctrl `.` open the one Search & Commands panel**, this knowledgebase's results first
+  ([Search and Ask](../search-and-ask.md) "Search"); the shortcuts list (`shortcut-sections.ts`) lists both on the
+  shared In Every App row, `Search & Commands  (or ⌘ .)`, as every editor does
+  ([Action parity](../../../../../liveworkspace/docs/specs/022-interface-design/action-parity.md)).
 - **The command search loads no page.** The fork's `openSearchWithPrefetch` fetched every page with `GET
 tabs/<tab>` when the command search opened, which counted a read of every page for that person that day. Its three
   doors (the bottom bar, the canvas menu, Cmd or Ctrl `.`) now only open the panel, which reads the pages this editor

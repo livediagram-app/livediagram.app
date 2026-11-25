@@ -851,7 +851,7 @@ and the dialog stays as the one complete, browsable index of them.
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
   a full keyboard and off on a tablet. Below it, the shortcut
   catalogue renders as collapsible groups, the same content the old dialog
-  listed. The
+  listed. Its first group is **In Every App** (Search & Commands, Undo, Redo), the one section every liveworkspace editor lists word for word from `@liveworkspace/workbench/lib/shortcut-sections` ([Action parity](../../../../liveworkspace/docs/specs/022-interface-design/action-parity.md)); this app's own keys follow it. The
   Notifications group holds `notificationsEnabled`, whose description
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is

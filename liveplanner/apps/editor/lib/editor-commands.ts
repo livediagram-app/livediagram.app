@@ -9,6 +9,11 @@
 // drift between entry points.
 
 import type { CommandSearchItem } from './search';
+import { itemCommandNames } from '@liveworkspace/workbench/lib/item-command-names';
+
+// Share, Rename and Delete in this app's noun, named as every editor names them
+// (liveworkspace/docs/specs/022-interface-design/action-parity.md "The rule").
+const ITEM_COMMANDS = itemCommandNames('liveplanner');
 
 // A runnable command: the searchable shape (id / name / keywords) plus the
 // thunk the editor runs when it's picked.
@@ -132,7 +137,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (!ctx.zenMode && !ctx.workbench) {
     out.push({
       id: 'rename-project',
-      name: 'Rename Plan',
+      name: ITEM_COMMANDS.rename,
       keywords: 'rename project project title name relabel plan',
       run: h.renameProject,
     });
@@ -140,7 +145,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (!ctx.workbench) {
     out.push({
       id: 'delete-project',
-      name: 'Delete Plan',
+      name: ITEM_COMMANDS.delete,
       keywords: 'delete project project remove trash destroy plan',
       run: h.deleteProject,
     });
@@ -154,7 +159,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
-      name: 'Share Plan',
+      name: ITEM_COMMANDS.share,
       keywords: 'share project project link invite collaborate publish embed export plan',
       run: h.openShare,
     });
