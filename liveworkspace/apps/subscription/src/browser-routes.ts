@@ -233,6 +233,7 @@ async function checkout(request: Request, env: Env, url: URL, caller: Caller): P
     unitAmount,
     returnTo,
     by: caller.userId,
+    email: caller.email,
   };
   const started = await provided(() => provider.startCheckout(start, now));
   return typeof started === 'string' ? refusal(started) : json(started);

@@ -349,6 +349,8 @@ page showed.
 
 - One Stripe customer per owner: a person, or a team (whose admins share it). It is made by the first checkout and
   kept, so a team that subscribes again has its invoices in one place.
+- A first checkout fills in the email of the person starting it, from their sign-in, so they don't type it; an owner
+  with a customer already pays as that customer, with the email it holds.
 - An owner has at most one checkout open: starting another expires the last, so paying twice in two tabs can't make
   two subscriptions.
 - A team's checkout is for its joined members now, never fewer than 3.

@@ -21,6 +21,8 @@ export type CheckoutStart = {
   returnTo: string;
   /** The account starting the checkout. */
   by: string;
+  /** That account's email, which the checkout fills in, or null when its sign-in carries none. */
+  email: string | null;
 };
 
 export type PortalOpen = { owner: OwnerScope; ownerName: string; returnTo: string; by: string };

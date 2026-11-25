@@ -83,6 +83,7 @@ describe('checkout', () => {
       'subscription_data[metadata][by]': 'user_ada',
       'subscription_data[metadata][unit_amount]': '8',
       expires_at: String(Math.floor(NOW / 1000) + 3600),
+      customer_email: 'ada@example.com',
     });
     expect(form.customer).toBeUndefined();
     expect(made!.headers.get('Stripe-Version')).toBe('2026-04-22.dahlia');
@@ -122,7 +123,9 @@ describe('checkout', () => {
       )
       .run();
     await checkout('p:user_ada');
-    expect(stripe.callsTo('POST', '/checkout/sessions')[0]!.form.get('customer')).toBe('cus_7');
+    const form = stripe.callsTo('POST', '/checkout/sessions')[0]!.form;
+    expect(form.get('customer')).toBe('cus_7');
+    expect(form.get('customer_email')).toBeNull();
   });
 
   it('says billing is unavailable when Stripe fails, and when Stripe is missing what it needs', async () => {
