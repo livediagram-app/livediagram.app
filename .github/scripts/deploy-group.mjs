@@ -4,7 +4,7 @@
 // in one, the sites in one per product, the routers in one. deploy-group.yml runs one job per group,
 // which checks out and installs once and then runs this script, deploying the group's Workers one
 // after another. Each Worker's steps are the ones it had as a job of its own: its build when it
-// serves one (a static site's `out/`), its D1 migrations when it has a database, `wrangler deploy`,
+// serves one (a static site's `out/`), its D1 database found or created and its migrations when it has one, `wrangler deploy`,
 // and for a product api its hosted vars, checked on the live deployment afterwards.
 //
 // A Worker whose step fails stops there, so a failing migration never deploys the code after it, and
@@ -26,7 +26,10 @@ import { spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+/** The script that finds or creates a Worker's D1 database, beside this one. */
+export const ENSURE_D1 = fileURLToPath(new URL('./ensure-d1.mjs', import.meta.url));
 
 /** Each tier's job name, before its group's. */
 export const TIER_LABELS = ['Services and apis', 'Sites', 'Routers'];
@@ -113,6 +116,13 @@ export function workerSteps(worker, { environment, ref, exists = existsSync }) {
     });
   }
   if (worker.d1) {
+    // A new Worker's placeholder database id is found or created first (ensure-d1.mjs); a pinned id costs nothing.
+    steps.push({
+      name: 'Ensure D1 database',
+      cwd: worker.dir,
+      cmd: 'node',
+      args: [ENSURE_D1, worker.d1, ...env],
+    });
     steps.push({
       name: 'Apply D1 migrations',
       cwd: worker.dir,

@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
+  ENSURE_D1,
   MINUTES,
   RETRY_WAITS,
   TIMED_OUT,
@@ -206,6 +207,7 @@ test('a service with D1 applies its migrations before its code', () => {
   assert.deepEqual(
     steps.map((s) => [s.name, s.cwd, s.args.join(' ')]),
     [
+      ['Ensure D1 database', 'liveworkspace/apps/telemetry', `${ENSURE_D1} DB`],
       [
         'Apply D1 migrations',
         'liveworkspace/apps/telemetry',

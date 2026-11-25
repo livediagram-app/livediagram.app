@@ -22,6 +22,8 @@ calls the subscription Worker, which need not be deployed.
   makes no subscription request.
 - The Worker var is the one that counts. A browser build with the flag on against Workers with it off shows Free
   everywhere and limits nothing.
+- Each Worker reads its own flag, so the subscription Worker can be on while the apps are off: it answers, and no
+  app asks it. Staging runs that way until the apps' keys are set.
 
 With the flag off the limits that existed before Pro stay as they were (1,000 automation runs a day, 50 rules,
 10 MB images, 10 minute walkthroughs, five snapshots and so on). They are safety caps, not tiers. They are the
@@ -301,8 +303,8 @@ on its usual sweep.
 
 ## Billing
 
-Billing sits behind one provider interface, chosen by `BILLING_PROVIDER`: **stripe** in production, **mock** in
-development and staging (which can also be pointed at Stripe's test mode).
+Billing sits behind one provider interface, chosen by `BILLING_PROVIDER`: **stripe** in production and on staging
+(staging against a Stripe sandbox, which takes test cards), **mock** in development.
 
 **The mock provider never exists in production**, whatever the Worker is configured with: it would give Pro away.
 A provider that is named but not fully configured (Stripe without its key, its webhook secret or its two Prices)
@@ -379,7 +381,7 @@ Price's own per-currency amounts are charged as they are rather than converted (
 Managed Payments), that a subscription's quantity can be changed with proration, and that the billing portal works
 for these subscriptions.
 
-**Setting up a Stripe account** (test mode first, then live): `corepack pnpm --filter
+**Setting up a Stripe account** (staging's sandbox first, then the live account for production): `corepack pnpm --filter
 @liveworkspace/subscription-service stripe:setup` makes what is missing and checks the rest, and prints the ids the
 Worker's vars take. It makes the two Products and Prices (found again by their lookup keys), the portal's
 configuration and, given `--webhook-url`, the webhook endpoint for the events above. With `--check` it only checks,

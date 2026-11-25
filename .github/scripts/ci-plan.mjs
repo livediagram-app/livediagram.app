@@ -267,12 +267,9 @@ const TIER_OF = new Map([
 const HELD_PRODUCTS = new Set(
   GROUPS.filter((g) => g.held).flatMap((g) => g.dirs.map((d) => d.replace(/\/$/, ''))),
 );
-// A Worker that must not deploy yet, though the rest of its group does. The subscription service
-// (liveworkspace/docs/specs/019-subscription/subscription.md) waits for its D1 databases, which the owner creates
-// before its first deploy: its wrangler.toml holds placeholder ids until then, and a deploy would fail on them. To
-// release it: put the real ids in its wrangler.toml, remove it here, and uncomment the SUBSCRIPTION service binding
-// in each api's and media's wrangler.toml (docs/ci.md "Deploys").
-const HELD_WORKERS = new Set(['liveworkspace/apps/subscription']);
+// A Worker that must not deploy yet, though the rest of its group does (none today). A new Worker's D1 database is no
+// reason to hold it: its first deploy finds or creates the database (ensure-d1.mjs, docs/ci.md "A new database").
+const HELD_WORKERS = new Set();
 function deployOf(p) {
   const toml = `${p.path}/wrangler.toml`;
   if (!existsSync(toml)) return null;
