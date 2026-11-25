@@ -129,6 +129,29 @@ describe('parseMermaid', () => {
     ]);
   });
 
+  it('reads a hyphenated id as one node, never cut at its dash', () => {
+    const r = parseMermaid(`flowchart LR
+  api-gateway-->auth-service
+  auth-service-.->user-db[(Users)]
+  user-db --- x-ray
+  x-ray -- ok --> api-gateway`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.unread).toBeUndefined();
+    expect(r.graph.nodes.map((n) => n.id)).toEqual([
+      'api-gateway',
+      'auth-service',
+      'user-db',
+      'x-ray',
+    ]);
+    expect(r.graph.edges).toEqual([
+      { from: 'api-gateway', to: 'auth-service' },
+      { from: 'auth-service', to: 'user-db', line: 'dashed' },
+      { from: 'user-db', to: 'x-ray', ends: 'none' },
+      { from: 'x-ray', to: 'api-gateway', label: 'ok' },
+    ]);
+  });
+
   it('reads an inline label written without spaces, as Mermaid does', () => {
     const r = parseMermaid(`flowchart LR
   A--yes-->B

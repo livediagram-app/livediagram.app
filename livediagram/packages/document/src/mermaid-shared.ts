@@ -147,9 +147,10 @@ export function decodeEntities(s: string): string {
 // Read the id token at the front (letters, digits, _, made of the chars
 // Mermaid allows in a bare id). Letters and digits in any script, as Mermaid's
 // own ids take them (`Ä --> Ö`, `开始 --> 结束`): ASCII only cut `node_é` to `node_`
-// and dropped its edge. Returns null if none.
+// and dropped its edge. A `-` joins words of an id (`api-gateway`), as Mermaid's NODE_STRING takes one not followed
+// by `-`, `>` or `.`, so the dashes of an edge (`a-->b`, `a-.->b`, `a---b`) still end it. Returns null if none.
 export function readId(s: string): { id: string; rest: string } | null {
-  const m = /^\s*([\p{L}\p{M}\p{N}_]+)/u.exec(s);
+  const m = /^\s*([\p{L}\p{M}\p{N}_](?:[\p{L}\p{M}\p{N}_]|-(?=[^>\-.\s]))*)/u.exec(s);
   return m ? { id: m[1]!, rest: s.slice(m[0].length) } : null;
 }
 
