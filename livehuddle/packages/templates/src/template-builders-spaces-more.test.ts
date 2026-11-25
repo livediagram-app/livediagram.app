@@ -408,7 +408,7 @@ describe('the new Spaces furnish what they promise', () => {
     const screens = all.filter((e) => e.shape === 'screen');
     expect(screens).toHaveLength(1);
     const [wall] = screens;
-    expect(wall).toMatchObject({ width: 640, height: 400 });
+    expect(wall).toMatchObject({ width: 800, height: 500 });
     expect(wall).not.toHaveProperty('liveItem');
     const chairs = all.filter((e) => e.shape === 'chair');
     expect(chairs).toHaveLength(12);
@@ -418,6 +418,13 @@ describe('the new Spaces furnish what they promise', () => {
       expect(chair.chairFacing).toBe('s');
       expect(seatsACharacter(chair.shape)).toBe(true);
     }
+    // Close to the wall: the front row within 80 px of the screen and the back row's foot within 870 px of its top, so
+    // sitting at the back frames both at about 75% on a laptop (avatar-mode.md "The camera"); the pad just behind it.
+    const front = Math.min(...chairs.map((c) => c.y));
+    expect(front - (wall!.y + wall!.height)).toBeLessThanOrEqual(80);
+    expect(Math.max(...chairs.map((c) => c.y + c.height)) - wall!.y).toBeLessThanOrEqual(870);
+    const [pad] = all.filter((e) => e.shape === 'avatar-pad');
+    expect(pad!.y - Math.max(...chairs.map((c) => c.y + c.height))).toBeLessThan(120);
     expect(count('document-room', 'timer')).toBe(1);
     expect(count('document-room', 'notice-board')).toBe(1);
   });

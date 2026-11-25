@@ -253,7 +253,9 @@ a caller's layout help (Work Tracker 1384): a label never breaks inside itself, 
 their place the track wraps whole segments onto another row. Wrapped, the segments share each row's width, so the
 rows read as one grid, and every segment keeps the same height. On a touch screen each segment is a 44 px target
 (`touch-target-y` on one row; 44 px tall once wrapped, where rows sit too close for a pad). At a width where its
-segments fit on one row, it looks as it always has.
+segments fit on one row, it looks as it always has. A switch that spans its place, as a dialog's (livehuddle's Show on the Screen File | Video,
+Work Tracker 1427), passes `fill`: every segment takes an equal share of the track, so it never draws as two small
+tabs at one end of a long empty track.
 
 ### The shared element model
 

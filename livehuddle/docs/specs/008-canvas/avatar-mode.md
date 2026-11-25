@@ -602,6 +602,14 @@ the pointer).
 - **Zoom holds.** Zooming in or out (the zoom menu, the keyboard, a wheel or a pinch) keeps that zoom until you change
   it again, and in this mode the wheel and pinch zoom about the character rather than the pointer, so a centred
   character stays centred.
+- **Sitting facing a Screen frames it** (Work Tracker 1427). Sitting down in a room with a
+  [Screen](../009-elements/screen-and-room-sign.md) ahead of the seat (in the half of the room the sitter faces) glides
+  the view to show the Screen and you together, clear of the palette strip above and the Call dock below, so a seat at
+  the back of a Document Room still sees the file. It never zooms in, and never out below 60%; when even 60% cannot hold
+  both, the Screen wins (its top at the top of the view). Standing up puts back the zoom you had, centred on you, unless
+  you zoomed while seated (that zoom holds). No Screen in your room ahead of you: the view stays as it is. Your room is
+  the Screen's room as the Screen itself works it out (who is inside, from presence). `seatedScreenFrame` and
+  `screenAhead` (lib/office/seated-screen-frame.ts), run by `useSeatedScreenFrame`.
 - **Fit centres you at 100%.** Fit (clicking the zoom percentage, the zoom menu's Fit to screen, the command palette's
   Fit) goes back to 100% with the character in the middle, instead of framing the whole tab.
 - **In the [3D view](3d-view.md)** the camera tilts back about the middle of the screen, so a centred character stays centred and a step moves the tilted floor under it.

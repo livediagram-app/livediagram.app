@@ -68,6 +68,7 @@ import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLa
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { bindAvatar } from '@/lib/avatar-bindings';
 import { useWalkIn } from './useWalkIn';
+import { useSeatedScreenFrame } from './useSeatedScreenFrame';
 import { useWayfinding } from './wayfinding/useWayfinding';
 
 // This editor's facts for Avatar mode (lib/avatar-bindings.ts), before any of it renders: every avatar view and
@@ -247,6 +248,18 @@ export function useCanvasAvatar({
     (seatedOn: string | null | undefined) => !!seatedOn && !standingSeats.has(seatedOn),
     [standingSeats],
   );
+  // Sitting facing a Screen frames it with you (docs/specs/008-canvas/avatar-mode.md "The camera", Work Tracker 1427).
+  useSeatedScreenFrame({
+    active: canvasTool === 'avatar',
+    seatedOn: sitsDown(avatar.seatedOn) ? avatar.seatedOn : null,
+    poseStore: avatar.poseStore,
+    elements: walkElements,
+    mainRef,
+    viewportZoom,
+    readViewportOffset,
+    setViewportOffset,
+    setViewportZoom: props.setViewportZoom,
+  });
   // The editor's Fit, entry centring and zoom anchor read the character's live feet through this.
   const noAvatarAtRef = useRef<(() => AvatarPoint | null) | null>(null);
   useAssignRef(props.avatarAtRef ?? noAvatarAtRef, avatar.readPos);
