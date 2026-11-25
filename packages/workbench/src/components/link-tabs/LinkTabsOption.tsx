@@ -84,9 +84,11 @@ export function LinkTabsOption({
       aria-busy={link.state.kind === 'loading' || undefined}
       data-link-tabs={blocked ? 'blocked' : link.on ? 'on' : 'off'}
       layout={ROW}
-      className={`min-h-14 border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800/70 disabled:hover:bg-white dark:disabled:hover:bg-slate-900 ${className}`}
+      className={`border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800/70 disabled:hover:bg-white dark:disabled:hover:bg-slate-900 ${className}`}
     >
-      <span className="flex min-w-0 items-center gap-3">
+      {/* At least 56px with the row's padding. The height lives in here, not on the row: a min-height on the row
+          itself lets a phone sheet's overflowing grid squeeze it to that height, its words spilling out. */}
+      <span className="flex min-h-9 min-w-0 items-center gap-3">
         {pair}
         {words}
       </span>
