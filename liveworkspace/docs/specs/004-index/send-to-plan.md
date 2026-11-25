@@ -149,15 +149,19 @@ of the browser's (Work Tracker 1462). It holds **Cut**, **Copy** and **Paste**, 
 Diagram**:
 
 - **Opened by a right-click on the words picked** (or the keyboard's menu key, Shift+F10, with words picked), at the
-  pointer, or under the words from the keyboard, its first row focused. A right-click anywhere else, with nothing
+  pointer, or under the words from the keyboard, its first row focused (while editing too, so Arrow keys and Enter
+  work the menu rather than the words). The menu key opens it while reading as well, wherever focus is on the page,
+  except in a field of its own (a search box, a comment), whose menu stays the browser's. A right-click anywhere else, with nothing
   picked, or with Shift held keeps the browser's own menu (a misspelt word's suggestions, a link's or an image's
   entries).
 - **Opened by a long press on a touch screen.** A long press picks a word as it always has, and the browser's own
   callout still shows beside it: neither iOS Safari nor Android Chrome lets a page replace or hide that callout
   without turning off picking words altogether (Safari fires no `contextmenu` for a touch, ignores
   `-webkit-touch-callout` on text, and Chrome's `contextmenu` cancels its long-press menu but not the selection's
-  bar). So the menu docks to the edge of the screen away from the words: at the foot, above the keyboard when one is
-  up, or at the top when the words are low on the screen. The callout always sits against the words, so it never
+  bar). So the menu docks to the edge of the writing's part of the screen away from the words: at the foot, above the
+  keyboard when one is up, or at the top when the words are low on the screen. It stays inside the box the writing
+  scrolls in, so it clears the app's header and tab bar, and rises above a control floating over the writing's foot
+  (the corner's Edit, Save and Cancel). The callout always sits against the words, so it never
   covers the menu, and the menu never covers the words. It opens once the words have held still for 350 ms, follows
   them as the handles move, and goes when they do.
 - **Cut, Copy and Paste do what the keys do.** Copy and Cut run the browser's own copy and cut on the words picked, so

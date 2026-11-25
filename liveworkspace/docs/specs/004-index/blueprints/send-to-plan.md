@@ -141,16 +141,20 @@ The selection menu (send-to-plan.md "The selection menu", Work Tracker 1462), `s
 selection-menu-store.ts    the one open request (anchor, point, placement, docked, the rows' verbs), a module relay
 article-selection-menu.ts  bindSelectionMenu(view, editable), bound by articleSentSpec's view: `contextmenu` on the
                            writing (a mouse or pen on the words picked, or the keyboard's menu key; never a touch's,
-                           Shift, or a session that can't send), and `selectionchange` (a touch's words dock it after
-                           DOCK_SETTLE_MS, 350 ms; the words going close it unless a press on its rows began within
-                           PRESS_HOLD_MS); dockSpot() centres it at the visual viewport's foot, or its top while the
-                           words sit in the bottom DOCK_ROOM_PX
+                           Shift, or a session that can't send), the menu key's `contextmenu` on the document (focus
+                           outside the writing while reading; never from a field), and `selectionchange` (a touch's
+                           words dock it after DOCK_SETTLE_MS, 350 ms; the words going close it unless a press on its
+                           rows began within PRESS_HOLD_MS); dockScreen() is the visual viewport inside the writing's
+                           scrolling box, its foot raised past controls floating over it (elementFromPoint, at most
+                           DOCK_CLEAR_STEPS); dockSpot() centres the menu at that foot, or its top while the words sit
+                           in the bottom DOCK_ROOM_PX
 selection-clipboard.ts     runClipboardCommand (execCommand copy/cut), writeClipboardText (the fallback; a cut deletes
                            only once the words are on it), pasteClipboard (clipboard.read, else readText, into
                            view.pasteHTML / pasteText with a ClipboardEvent carrying a DataTransfer)
 SelectionMenu.tsx          SelectionMenuHost, mounted by SendToPlanHost while the session may send; the shared
                            PortalMenu at the request's point, plain rows with keyLabel shortcuts (none docked), Paste
-                           greyed without a clipboard read, Escape on the document closes it, focus moves only off-dock
+                           greyed without a clipboard read, Escape on the document closes it, the first row takes focus
+                           off-dock (even from the writing being edited), none docked
 ```
 
 Touch (send-to-plan.md "On a touch screen"): SendWordsButton, SendWordsToDiagramButton and each app's article page
