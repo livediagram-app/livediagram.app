@@ -137,6 +137,22 @@ describe('planMake', () => {
     expect(out.skipped).toBe(1);
   });
 
+  it('links only one blocker on a Blocked By field stored holding one, counting the rest left out', () => {
+    // A field saved before Holds Several reads only its first card: a second written beside it would show nowhere.
+    const single = PLAN_TYPES.map((t) =>
+      t.id === 'task'
+        ? { ...t, custom: t.custom!.map((f) => (f.blocks ? { ...f, multiple: false } : f)) }
+        : t,
+    );
+    const out = make(
+      [shape('e1'), shape('e2'), shape('e3', { blockedBy: ['e1', 'e2'] })],
+      [],
+      single,
+    );
+    expect(out.cards[2]!.fields['f-blocked-by']).toEqual(['new-e1']);
+    expect(out.skipped).toBe(1);
+  });
+
   it('falls back to the first column when the picked one is gone', () => {
     expect(make([shape('e1')], [], PLAN_TYPES, 'Gone').cards[0]!.status).toBe('todo');
   });

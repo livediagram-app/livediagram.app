@@ -17,6 +17,7 @@ import {
   boardSetupsOfTab,
   FIELD_VALUES_MAX,
   finishedStatuses,
+  holdsSeveral,
   ITEMS_MAX,
   itemPlacer,
   isArchived,
@@ -50,7 +51,7 @@ import { appendItemHistory } from '../db/item-history';
 import { getItemStoreHead, insertItems, listItems, updateItemsAtRev } from '../db/items';
 import { planTabs } from '../routes/plan-route';
 import type { PlanEnv } from '../types';
-import { authorPerson } from './automations/cross-app-door';
+import { authorPerson, NO_NEW_CARDS } from './automations/cross-app-door';
 import { cardUrl } from './automations/automation-plan';
 import { automationDeps } from './automations/plan-room-automations';
 import { readPlanOutline, setPlanItemTypes } from './plan-content';
@@ -165,6 +166,8 @@ async function makeHere(
     getItemStoreHead(env, planId),
   ]);
   if (!board) return { ok: false, code: 'target_gone', reason: 'The board is gone' };
+  if (board.setup.allCards || board.setup.archive)
+    return { ok: false, code: 'invalid', reason: NO_NEW_CARDS };
   const catalogue = board.head.itemTypes;
   const types = typesOf(catalogue);
   const type = board.setup.addTypes?.[0] ?? types[0]?.id;
@@ -314,14 +317,22 @@ function planEdit(
   edit: PlanEdit,
   byId: Map<string, Item>,
   types: ReturnType<typeof typesOf>,
-  columns: readonly { status: string; name: string }[],
+  boards: readonly PlanBoardSetup[],
 ): { next: Item; before: Item } | PlanEditResult {
   const card = byId.get(edit.card);
   if (!card || isTrashed(card) || isArchived(card)) return refuse('That card is gone');
   if (edit.kind === 'move') {
-    const column = columns.find(
-      (c) => c.name.trim().toLowerCase() === edit.column.trim().toLowerCase(),
-    );
+    // Only a column of a board the card is on (view-as-diagram.md "Changes from the diagram"): a column of the same
+    // name on another board would move it off the board it was drawn from, and an All Cards or Archive board's one
+    // column names no status at all.
+    const status = itemStatus(card);
+    const wanted = edit.column.trim().toLowerCase();
+    let column: PlanBoardSetup['columns'][number] | undefined;
+    for (const b of boards) {
+      if (b.allCards || b.archive || !b.columns.some((c) => c.status === status)) continue;
+      column = b.columns.find((c) => c.name.trim().toLowerCase() === wanted);
+      if (column) break;
+    }
     if (!column) return refuse(`The board has no column called ${edit.column}`);
     if (itemStatus(card) === column.status) return { status: 'applied' };
     return { before: card, next: { ...card, fields: { ...card.fields, status: column.status } } };
@@ -333,7 +344,10 @@ function planEdit(
   if (!field) return refuse(`${type.label} cards have no Blocked By field`);
   const holds = blockerIdsOf(card, type);
   if (holds.includes(blocker.id)) return { status: 'applied' };
-  if (holds.length >= FIELD_VALUES_MAX) return refuse('That card waits on as many cards as it may');
+  // A Blocked By field stored holding one card (from before Holds Several) keeps that one (item-types.md "Blocked
+  // By"): a second written beside it would read as nothing.
+  if (holds.length >= (holdsSeveral(field) ? FIELD_VALUES_MAX : 1))
+    return refuse('That card waits on as many cards as it may');
   const next = { ...card, fields: { ...card.fields, [field.id]: [...holds, blocker.id] } };
   const loop = blockingCycleOf(byId.values(), types, [{ before: card, next }]);
   if (loop) return refuse(blockingLoopMessage(loop.chain, types));
@@ -353,14 +367,14 @@ async function editHere(room: PlanRoom, planId: string, call: EditCall) {
     listItems(env, planId),
   ]);
   const types = typesOf(head.itemTypes);
-  const columns = tabs.flatMap((t) => boardSetupsOfTab(t.elements).flatMap((b) => b.setup.columns));
+  const boards = tabs.flatMap((t) => boardSetupsOfTab(t.elements).map((b) => b.setup));
   const byId = new Map(items.map((i) => [i.id, i]));
   const by = await authorPerson(env, call.person);
   const now = Date.now();
   const results: PlanEditResult[] = [];
   const writes = new Map<string, { before: Item; next: Item }>();
   for (const edit of call.edits) {
-    const out = planEdit(edit, byId, types, columns);
+    const out = planEdit(edit, byId, types, boards);
     if ('status' in out) {
       results.push(out);
       continue;

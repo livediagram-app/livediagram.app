@@ -190,4 +190,31 @@ describe('create_document design', () => {
     expect(out.content[0]!.text).toContain('Closest: aurora');
     expect(bad.posted).toHaveLength(0);
   });
+
+  it('takes a saved design by its "saved:<id>", with its tuning, and names the saved ones for one it can’t see', async () => {
+    const designs = [
+      {
+        id: 'saved:abc',
+        title: 'Brand Aurora',
+        scope: 'personal',
+        team: null,
+        design: { id: 'aurora', scale: 1.4, rhythm: true },
+      },
+    ];
+    const { run, posted } = harness(undefined, { '/page-designs': { designs } });
+    await run([elements], { design: 'saved:abc' });
+    expect((posted[0]!.tabs as { pageDesign?: unknown }[])[0]!.pageDesign).toEqual({
+      id: 'aurora',
+      scale: 1.4,
+      rhythm: true,
+    });
+    const missing = harness(undefined, { '/page-designs': { designs } });
+    const out = (await missing.run([elements], { design: 'saved:zzz' })) as unknown as {
+      isError?: boolean;
+      content: { text: string }[];
+    };
+    expect(out.isError).toBe(true);
+    expect(out.content[0]!.text).toContain('saved:abc (Brand Aurora)');
+    expect(missing.posted).toHaveLength(0);
+  });
 });

@@ -1467,9 +1467,10 @@ stops after 3 hops or on a rule it already ran. Their values are the card's (`{{
 `{{card.assignee}}`), as every card step's. They run after the card's own writes, beside the messages, and never
 inside For Related Cards or an If / Else.
 
-**As a target**, a plan takes **Create a Card in a Plan**: a card on the chosen board, in the chosen column (by
-name), its title and description the rule's, assigned to a person of the plan (one who is not is left off and said
-on the step's line), due N days after it fires, by the author, marked Automation with the rule's name. **Link the
+**As a target**, a plan takes **Create a Card in a Plan**: a card on the chosen board (one that files cards by column:
+an All Cards or Archive board is never offered, and a step naming one fails), in the chosen column (by name), its
+title and description the rule's, assigned to a person of the plan (one who is not is left off and said on the step's
+line), due N days after it fires, by the author, marked Automation with the rule's name. **Link the
 card back** puts the item that fired at the description's foot; **Skip if an open card already links to this item**
 answers Done ("An open card already links to it") without making one. It never targets the plan itself: Create Card
 does that.

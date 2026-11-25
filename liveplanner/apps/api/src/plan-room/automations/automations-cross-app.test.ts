@@ -9,6 +9,7 @@ import { endRepeatWorld } from '../test-repeat-world';
 import { automationWorld, USER, type AutomationWorld } from './test-automation-world';
 import { cardDescription, openLinkingCard } from './cross-app-door';
 import { withAccounts } from './automation-cross';
+import { archiveTab } from '../test-board-tabs';
 
 // Steps in other apps on a plan (docs/specs/026-plan/automations.md "Steps in other apps"), end to end through the
 // real worker and room: a rule here sends its step to the index as its author, and a step from another app makes a
@@ -187,6 +188,18 @@ describe('a step from another app on this plan', () => {
       boards: [{ id: 'b1', name: 'Kanban', columns: expect.arrayContaining(['Done']) }],
       people: expect.any(Array),
     });
+  });
+
+  it('neither offers nor takes an Archive or All Cards board, whose column holds no new card', async () => {
+    expect((await w.send('PUT', '/api/projects/A/tabs/t2', archiveTab)).status).toBeLessThan(300);
+    const made = await room().automationStep('A', call({ board: 'b-arch', column: 'Archived' }));
+    expect(made).toMatchObject({ ok: false, code: 'invalid' });
+    expect(made).toMatchObject({ reason: "Cards can't be added to that board" });
+    expect(await room().automationStep('A', call({ board: 'b-all' }))).toMatchObject({
+      code: 'invalid',
+    });
+    expect((await w.items('A')).some((i) => i.fields['title'] === 'Review Onboarding')).toBe(false);
+    expect((await room().automationTarget('A')).boards?.map((b) => b.id)).toEqual(['b1']);
   });
 
   it('words the description and finds an open card that links back', () => {

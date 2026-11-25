@@ -36,4 +36,41 @@ describe('export -> import round trip', () => {
       if (el.layerId) expect(layerIds).toContain(el.layerId);
     }
   });
+
+  it('keeps the tab’s style and page setup: finish, page design, new-page background, orientation, colours', () => {
+    const styled = {
+      ...board(),
+      finish: 'sketch',
+      pageDesign: { id: 'aurora', scale: 1.4 },
+      newPageBackground: { fill: '#112233' },
+      backgroundAnimationSpeed: 2,
+      pageOrientation: 'landscape',
+      pageArrangement: 'row',
+      customColours: ['#abcdef'],
+      tagColours: [{ tag: 'urgent', color: '#ff0000' }],
+    } as unknown as Tab;
+    const parsed = parseImportedTab(tabToJsonText(styled));
+    if (!parsed.ok) throw new Error('parse failed');
+    const merged = mergeImportedTab(plainTab(), parsed.tab);
+    for (const key of [
+      'finish',
+      'pageDesign',
+      'newPageBackground',
+      'backgroundAnimationSpeed',
+      'pageOrientation',
+      'pageArrangement',
+      'customColours',
+      'tagColours',
+    ] as const)
+      expect(merged[key], key).toEqual(styled[key]);
+  });
+
+  it('drops a page design the catalogue does not hold, keeping the receiving tab’s', () => {
+    const parsed = parseImportedTab(
+      tabToJsonText({ ...board(), pageDesign: { id: 'no-such-design' } } as unknown as Tab),
+    );
+    if (!parsed.ok) throw new Error('parse failed');
+    const mine = { ...plainTab(), pageDesign: { id: 'aurora' } } as Tab;
+    expect(mergeImportedTab(mine, parsed.tab).pageDesign).toEqual({ id: 'aurora' });
+  });
 });

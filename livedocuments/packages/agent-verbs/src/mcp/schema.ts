@@ -172,7 +172,8 @@ const designField = z
   .optional()
   .describe(
     'A page design every page wears, drawn behind everything in the theme’s colours: a design id such as "aurora" ' +
-      '(change_pages’ tab_design lists them and tunes it), or "auto" for one that suits the words.',
+      '(change_pages’ tab_design lists them and tunes it), a saved design’s "saved:<id>" (list_templates), or "auto" ' +
+      'for one that suits the words.',
   );
 
 export const createDocumentTab = z.object({

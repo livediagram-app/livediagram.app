@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlanDiagramDoorCall, PlanViewRedraw, SentFrom } from '@liveworkspace/index-client';
-import { defaultCatalogue, readSentFrom, type Item } from '@liveplanner/items';
+import { defaultCatalogue, presetSetup, readSentFrom, type Item } from '@liveplanner/items';
 import { endRepeatWorld } from './test-repeat-world';
+import { archiveTab } from './test-board-tabs';
 import { automationWorld, USER, type AutomationWorld } from './automations/test-automation-world';
 
 // Diagrams and Plans at this plan (liveworkspace's diagrams-and-plans.md "The doors"), through the real room: Make
@@ -130,6 +131,16 @@ describe('Make Plan Cards at the plan', () => {
     expect(answer.skipped).toBe(1);
   });
 
+  it('makes no card on an Archive or All Cards board', async () => {
+    expect((await w.send('PUT', '/api/projects/A/tabs/t2', archiveTab)).status).toBeLessThan(300);
+    for (const board of ['b-arch', 'b-all'])
+      expect(await run(make({ board, column: 'Archived' }))).toMatchObject({
+        ok: false,
+        code: 'invalid',
+      });
+    expect(await w.items('A')).toEqual([]);
+  });
+
   it('answers a board gone', async () => {
     expect(await run(make({ board: 'gone' }))).toMatchObject({ ok: false, code: 'target_gone' });
   });
@@ -197,5 +208,97 @@ describe("a drawn diagram's edits at the plan", () => {
     ]);
     const items = await w.items('A');
     expect(items.find((i) => i.id === e2)!.fields['status']).toBe('done');
+  });
+
+  it('moves a card only to a column of a board it is on, never one another board names', async () => {
+    // A second tab whose board (first in the plan) has a column the drawn board lacks, and an All Cards board.
+    const other = {
+      id: 't0',
+      name: 'Releases',
+      kind: 'board',
+      elements: [
+        {
+          id: 'b0',
+          type: 'shape',
+          shape: 'plan-board',
+          x: 0,
+          y: 0,
+          width: 800,
+          height: 500,
+          planBoard: {
+            ...presetSetup('kanban'),
+            title: 'Releases',
+            columns: [{ status: 'shipped', name: 'Shipped' }],
+          },
+        },
+        {
+          id: 'b9',
+          type: 'shape',
+          shape: 'plan-board',
+          x: 0,
+          y: 600,
+          width: 800,
+          height: 500,
+          planBoard: presetSetup('all-cards'),
+        },
+      ],
+    };
+    expect((await w.send('PUT', '/api/projects/A/tabs/t0', other)).status).toBeLessThan(300);
+    const made = (await run(make())) as MakeAnswer;
+    const e1 = made.cards[0]!.id;
+    const out = await run({
+      op: 'edit',
+      person: USER,
+      edits: [
+        { kind: 'move', card: e1, column: 'Shipped' },
+        { kind: 'move', card: e1, column: 'All Cards' },
+      ],
+    });
+    expect(out['results']).toEqual([
+      { status: 'refused', reason: 'The board has no column called Shipped' },
+      { status: 'refused', reason: 'The board has no column called All Cards' },
+    ]);
+    expect((await w.items('A')).find((i) => i.id === e1)!.fields['status']).not.toBe('shipped');
+  });
+
+  it('adds no second blocker to a Blocked By field stored holding one', async () => {
+    // The Task's Blocked By as a field saved before Holds Several holds it: one card.
+    const catalogue = defaultCatalogue();
+    const single = {
+      ...catalogue,
+      types: catalogue.types.map((t) =>
+        t.id === 'task'
+          ? {
+              ...t,
+              fields: [...t.fields, 'f-old-blocked'],
+              custom: [
+                ...(t.custom ?? []),
+                {
+                  id: 'f-old-blocked',
+                  label: 'Blocked By',
+                  kind: 'card' as const,
+                  linkType: 'task',
+                  blocks: true,
+                },
+              ],
+            }
+          : t,
+      ),
+    };
+    const put = await w.send('PUT', '/api/projects/A/item-types', { itemTypes: single });
+    expect(put.status).toBeLessThan(300);
+    const made = (await run(
+      make({ cards: [shape('e1'), shape('e2', { blockedBy: ['e1'] }), shape('e3')] }),
+    )) as MakeAnswer;
+    const [e1, e2, e3] = made.cards.map((c) => c.id);
+    const out = await run({
+      op: 'edit',
+      person: USER,
+      edits: [{ kind: 'block', card: e2!, blocker: e3! }],
+    });
+    expect(out['results']).toEqual([
+      { status: 'refused', reason: 'That card waits on as many cards as it may' },
+    ]);
+    expect(byTitle(await w.items('A'), 'Shape e2').fields['f-old-blocked']).toEqual([e1]);
   });
 });

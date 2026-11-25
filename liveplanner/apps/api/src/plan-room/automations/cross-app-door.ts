@@ -19,6 +19,7 @@ import {
   type Item,
   type ItemFields,
   type ItemPerson,
+  type PlanBoardOutline,
 } from '@liveplanner/items';
 import type {
   AutomationStepAnswer,
@@ -40,6 +41,13 @@ import { automationDeps } from './plan-room-automations';
 const DAY_MS = 86_400_000;
 
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+// A board a new card can be put on: one that files cards by column. An All Cards board's one column and an Archive
+// board's name no status a card could sit in, so a card made there would land on no board (automations.md "Steps in
+// other apps"; liveworkspace send-to-plan.md "The picker").
+export const takesNewCards = (board: Pick<PlanBoardOutline, 'kind' | 'columns'>): boolean =>
+  board.kind === 'board' && board.columns.length > 0;
+export const NO_NEW_CARDS = "Cards can't be added to that board";
 
 /** The description a card gets: the rule's, then the way back to where the rule lives. */
 export function cardDescription(step: PlanCardStep, from: { title: string; url: string }): string {
@@ -94,6 +102,7 @@ async function createCardHere(
   ]);
   const board = planOutline(tabs, head.itemTypes).boards.find((b) => b.elementId === step.board);
   if (!board) return { ok: false, code: 'target_gone', reason: 'The board is gone' };
+  if (!takesNewCards(board)) return { ok: false, code: 'invalid', reason: NO_NEW_CARDS };
   const column = board.columns.find((c) => sameName(c.name, step.column)) ?? board.columns[0];
   const types = typesOf(head.itemTypes);
   const type = board.types?.[0] ?? types[0]?.id;
@@ -179,11 +188,13 @@ export async function planAutomationTarget(
   return {
     // Send to Plan's Assignee picker: the plan's people by name (send-to-plan.md "The picker").
     people: plan.outline.people.slice(0, 200).map((p) => ({ name: p.name })),
-    boards: planOutline(tabs, head.itemTypes).boards.map((b) => ({
-      id: b.elementId,
-      name: b.title.trim() || 'Board',
-      columns: b.columns.map((c) => c.name),
-    })),
+    boards: planOutline(tabs, head.itemTypes)
+      .boards.filter(takesNewCards)
+      .map((b) => ({
+        id: b.elementId,
+        name: b.title.trim() || 'Board',
+        columns: b.columns.map((c) => c.name),
+      })),
   };
 }
 

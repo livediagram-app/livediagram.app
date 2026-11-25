@@ -34,7 +34,7 @@ describe('shareUrl', () => {
 describe('loadTab', () => {
   // An api double that answers the document and tab reads, recording the paths
   // it was asked for so each case can see which tab was fetched.
-  function apiEnv(tabs: Array<{ id: string }>) {
+  function apiEnv(tabs: Array<{ id: string; outOfScope?: true }>) {
     const paths: string[] = [];
     const env = {
       API: {
@@ -56,6 +56,13 @@ describe('loadTab', () => {
     const loaded = await loadTab(env, 'tok', 'd1');
     expect(loaded?.tab.id).toBe('t1');
     expect(paths).toEqual(['/api/documents/d1', '/api/documents/d1/tabs/t1']);
+  });
+
+  it('defaults to the first tab a tab-scoped grant reaches, not one out of its scope', async () => {
+    const { env, paths } = apiEnv([{ id: 't1', outOfScope: true }, { id: 't2' }]);
+    const loaded = await loadTab(env, 'tok', 'd1');
+    expect(loaded?.tab.id).toBe('t2');
+    expect(paths.at(-1)).toBe('/api/documents/d1/tabs/t2');
   });
 
   it('loads the named tab', async () => {
