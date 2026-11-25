@@ -241,6 +241,18 @@ describe('the owner’s public knowledgebases', () => {
     expect(mark()).toBeNull();
   });
 
+  it('gives the place back when the address is taken, so it counts against no other', async () => {
+    await world({});
+    await kit.db.env.DOCUMENT_ROOM.get(
+      kit.db.env.DOCUMENT_ROOM.idFromName('~kb-site:taken'),
+    ).siteAddress({ kind: 'claim', documentId: 'other-kb' });
+    const res = await publish({ address: 'taken' });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ error: 'address_taken' });
+    expect(counted()).toEqual([]);
+    expect(mark()).toBeUndefined();
+  });
+
   it('gives the place back when the publish fails after it was claimed', async () => {
     await world({});
     failWrite = true;

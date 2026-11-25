@@ -208,13 +208,17 @@ async function handlePublish(route: KnowledgeRoute): Promise<Response> {
   const tier = await workerTierOf(ctx.env, document);
   const place = await placeFor(route, tier, site);
   if (place instanceof Response) return place;
+  let published: Response;
   try {
-    return await publishSite(route, body, site, tier, place);
+    published = await publishSite(route, body, site, tier, place);
   } catch (error) {
     // Nothing was published: the place claimed for it goes back.
     if (place.counted === true) await releaseSite(tier!, document.id);
     throw error;
   }
+  // Refused (an address another knowledgebase holds): nothing was published either, so the place goes back too.
+  if (!published.ok && place.counted === true) await releaseSite(tier!, document.id);
+  return published;
 }
 
 async function publishSite(

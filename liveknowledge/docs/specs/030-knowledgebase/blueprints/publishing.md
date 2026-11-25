@@ -142,7 +142,7 @@ media/<id>" alt="" ...></div>` placed by its focus (`object-position: 50% <focus
   before anything is written. Refused at the limit: `409 publish_limit_reached` with `limit:
 'publicKnowledgebases'`, `used`, `max` (and `guest` for a guest's), nothing written. The service refusing the
   request itself (`refusedByService`) throws: a server error, never a limit. Unmetered (out of reach) publishes with
-  the mark NULL. A write that fails after the claim releases it. A PUT on a site that serves never claims.
+  the mark NULL. A write that fails after the claim releases it, and so does a refusal after it (`address_taken`). A PUT on a site that serves never claims.
 - **P37 Counting again.** The dialog's first read (a GET with no `root`), and the room's daily upkeep, claim again
   for a site that exists (the add is idempotent at the service): a site from before takes its place, one refused
   takes it when the owner has room, and the answer's `used` is the owner's count. A GET carries `usage: { used?,
