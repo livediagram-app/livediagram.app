@@ -20,6 +20,12 @@ const mocks = vi.hoisted(() => ({
   }[],
 }));
 vi.mock('@liveworkspace/workbench/bindings', () => ({ workbench: { track: mocks.track } }));
+// The row is the workbench's (AnswerSendActions.test.tsx): here, that a finished answer hands it its words.
+vi.mock('@liveworkspace/workbench/components/send-to-plan/AnswerSendActions', () => ({
+  AnswerSendActions: (props: { markdown: string; question: string }) => (
+    <div data-answer-send={props.markdown} data-question={props.question} />
+  ),
+}));
 vi.mock('@liveworkspace/workbench/components/ai/ai-source-scope', () => ({
   accountDoor: () => async () => ({ ok: false }),
   useEditorAiScope: () => ({ teamId: 'team_1', signedIn: true }),
@@ -192,6 +198,20 @@ describe('Ask AI, the conversation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Copy Answer' }));
     await settle();
     expect(mocks.track).not.toHaveBeenCalled();
+  });
+
+  it('offers Send to Plan and Send to Knowledge Base under a finished answer, its markers out', async () => {
+    const { container } = render(<AskTool host={hostOf()} ctx={ctx} />);
+    type('What next?');
+    fireEvent.submit(screen.getByRole('textbox').closest('form')!);
+    await settle();
+    await act(async () => mocks.calls[0]!.onDelta('- Book it [1]'));
+    expect(container.querySelector('[data-answer-send]')).toBeNull();
+    await act(async () => mocks.calls[0]!.end(done('- Book it [1]\n- Send it', [1])));
+    await settle();
+    const row = container.querySelector('[data-answer-send]')!;
+    expect(row.getAttribute('data-answer-send')).toBe('- Book it \n- Send it');
+    expect(row.getAttribute('data-question')).toBe('What next?');
   });
 
   it('opens Sources beside Tools with the pressed citation lit, and a card goes to its place', async () => {

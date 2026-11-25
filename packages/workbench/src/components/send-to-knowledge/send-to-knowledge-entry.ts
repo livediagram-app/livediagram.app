@@ -59,6 +59,29 @@ export function sendToKnowledge(capture: KnowledgeCapture | null): void {
   for (const l of [...listeners]) l(capture);
 }
 
+/** Words sent as written (an Ask AI answer, liveworkspace/docs/specs/020-ask/ask.md "Sending an answer on"): the
+ *  section's Markdown and the heading it starts from. No summariser: nothing is written by AI. */
+export type KnowledgeWords = { heading: string; markdown: string };
+
+const wordsListeners = new Set<(words: KnowledgeWords) => void>();
+
+/** Whether an entry should offer sending words: the host is up and this session may send. */
+export const canSendWordsToKnowledgeHere = (): boolean => wordsListeners.size > 0;
+
+/** Opens the picker for these words. Nothing happens while no host offers it, or with no words. */
+export function sendWordsToKnowledge(words: KnowledgeWords): void {
+  if (!words.markdown.trim()) return;
+  for (const l of [...wordsListeners]) l(words);
+}
+
+/** The host's subscription for words; answers the unsubscribe. */
+export function onSendWordsToKnowledge(listener: (words: KnowledgeWords) => void): () => void {
+  wordsListeners.add(listener);
+  return () => {
+    wordsListeners.delete(listener);
+  };
+}
+
 /** The host's subscription; answers the unsubscribe. */
 export function onSendToKnowledge(listener: (capture: KnowledgeCapture) => void): () => void {
   listeners.add(listener);

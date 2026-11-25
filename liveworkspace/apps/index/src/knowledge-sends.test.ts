@@ -91,6 +91,24 @@ describe('a send to a knowledgebase', () => {
     });
   });
 
+  it("writes an Ask AI answer's words with no tab or element, linked back to the item", async () => {
+    const { ada, diagram, kb } = await world();
+    const res = await send(
+      ada.auth,
+      ask(kb.id, diagram.id, {
+        picture: undefined,
+        source: { app: 'livediagram', itemId: diagram.id, tabId: null, elementIds: [] },
+      }),
+    );
+    expect(res.status).toBe(201);
+    const answer = await body<{ send: KnowledgeSend }>(res);
+    expect(answer.send).toMatchObject({ tabId: '', elementIds: [] });
+    const [door] = doorCalls();
+    expect((door!.body as { sentFrom: { link: string } }).sentFrom.link).toBe(
+      `${appSiteOrigin(h.db.env, 'livediagram')}/document/${diagram.id}`,
+    );
+  });
+
   it('sends from an untitled item to the end of a page whose title the door leaves out', async () => {
     const { ada, kb } = await world();
     const bare = await makeItem(ada.auth, { app: 'livediagram', title: 'Bare' });

@@ -164,6 +164,50 @@ describe('SendToPlanDialog', () => {
     expect((c.sendToPlan.mock.calls[0]![1] as { cards: unknown[] }).cards).toHaveLength(2);
   });
 
+  it("makes an answer's items one card each, every title editable, with no Connect as tabs", async () => {
+    const c = client({ sendToPlan: vi.fn().mockResolvedValue({ sends: [made()] }) });
+    const items = ['Book the venue', 'Send the invites\n- by email'].map((text) =>
+      sendPlace({ app: 'livediagram', itemId: 'D', kind: 'text', tabId: null, text }),
+    );
+    render(
+      <SendToPlanDialog
+        request={{ places: items, noun: 'answer' }}
+        sourceId="D"
+        sourceTitle="Retro"
+        onClose={vi.fn()}
+        client={c as never}
+        today={TODAY}
+      />,
+    );
+    expect(screen.getByText(/from this answer/)).toBeTruthy();
+    // Its rows sit at the top, so a phone's tall sheet leaves no gap between the plans and the card.
+    expect(document.querySelector('[data-send-body]')!.className).toContain('content-start');
+    fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
+    const second = await screen.findByLabelText<HTMLInputElement>('Card 2 title');
+    expect(screen.getByLabelText<HTMLInputElement>('Card 1 title').value).toBe('Book the venue');
+    expect(second.value).toBe('Send the invites');
+    fireEvent.change(second, { target: { value: 'Send the invites by email' } });
+    // Blank, a title falls back to its words' own.
+    fireEvent.change(screen.getByLabelText('Card 1 title'), { target: { value: '  ' } });
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Send to Plan' }).hasAttribute('disabled')).toBe(
+        false,
+      ),
+    );
+    expect(screen.queryByRole('switch', { name: 'Connect as tabs' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Send to Plan' }));
+    await waitFor(() => expect(c.sendToPlan).toHaveBeenCalled());
+    const { cards } = c.sendToPlan.mock.calls[0]![1] as {
+      cards: { title: string; places: PlanSendPlace[] }[];
+    };
+    expect(cards.map((card) => card.title)).toEqual([
+      'Book the venue',
+      'Send the invites by email',
+    ]);
+    expect(cards[1]!.places[0]).toMatchObject({ kind: 'text', tabId: null, elementId: null });
+    expect(c.linkTabs).not.toHaveBeenCalled();
+  });
+
   it('offers the card a place was already sent to, and sends again only when asked', async () => {
     setSendSource('D', null, { planSends: vi.fn().mockResolvedValue({ sends: [] }) });
     act(() => addSends([made()]));

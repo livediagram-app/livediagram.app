@@ -21,6 +21,15 @@ Its tab, with the element selected (**Show in Design**).
 - "What does the copy say?"
 - "Which pages mention a price or a date?"
 
+## Sending an answer on
+
+Every finished answer ends with **Send to Plan** and **Send to Knowledge Base** under its footer, above the question
+box ([Ask AI](../../../../liveworkspace/docs/specs/020-ask/ask.md) "Sending an answer on"; Work Tracker 1433). Send to
+Plan makes a card of each listed item of the answer, every title editable first (an answer with no list makes one
+card); Send to Knowledge Base adds the answer as written, the question its heading, with no AI pass and no AI credit.
+Both link back to this design. An **Editor**, a **Participant** and a **Viewer** see them once signed in, in the
+cloud; an embed, Offline and a Community copy show neither.
+
 ## Share roles
 
 An **Editor**, a **Participant** and a **Viewer** may each ask once signed in: asking reads the design and changes
