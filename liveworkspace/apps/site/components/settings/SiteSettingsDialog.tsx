@@ -61,6 +61,8 @@ const ACCOUNT_PANELS = accountPanels({
       (await callIndex.listItems({ app: 'livehuddle', view: 'all', limit: CALL_SPACES_LISTED }))
         .items,
     token: workspaceToken,
+    // The chosen Space stays when its call ends (item-calls.md "When a call ends").
+    keep: (spaceId) => callIndex.keepCallSpace(spaceId),
   },
 });
 
