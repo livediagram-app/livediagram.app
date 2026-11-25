@@ -42,10 +42,15 @@ Changing a tab's look is a matter of picking a new theme and watching the canvas
 
 <AppNote app="livedocuments">
   Click the **Style** button on a page's title bar (top right of every page; on an article page,
-  **Style** then **Tab Style**). It is there on every screen size, phones included.
+  **Style** then **Tab Style**). On a phone, open **Appearance** on the page's title bar and press
+  its **Style** row.
 </AppNote>
 
 It opens the **Tab Style** dialog on its home, which has two parts: **Looks** at the top, and **Fine-tune** below. You can also run **Open Theme** from the [command palette](/help/search-panel/the-search-panel/command-palette/) to open the dialog straight on its **Colours** panel, or **Open Canvas Options** to land on its **Canvas** panel.
+
+<AppNote app="livedesign,livedocuments">
+  Here **Open Canvas Options** lands on the **New Page Background** panel.
+</AppNote>
 
 The button only appears for people who can edit the tab, so it is missing for a Participant or a Viewer on a shared link, and in an embed.
 
@@ -117,12 +122,21 @@ The first card in the carousel is **Mashup**, marked with a pair of dice. Press 
 
 Below the looks, **Fine-tune** lists four rows, each showing its current setting: **Colours** (the theme), **Finish**, **Text** (the tab's font and text size) and **Canvas** (the backdrop). Press a row to open that panel in place; the bar across its top (**Tab Style**, with the panel's name beside it) takes you back to the home. The **Canvas** panel holds the [backdrop](/help/canvas/the-canvas/changing-the-background/), the **Text** panel the [tab's font and text size](/help/canvas/text-and-fonts/choosing-fonts/), and the **Finish** panel the tab's [finish](/help/canvas/finish/). The rest of this article covers the **Colours** panel, where you pick a theme on its own.
 
-<AppNote app="livedocuments">
+<AppNote app="livedesign,livedocuments">
   Here the **Canvas** row is **New Page Background** (the background new pages start on, and the
-  canvas around them), and a fifth row, **Page Design**, sets the
-  [design behind every page](/help/canvas/themes/page-designs/). On an article or a card, whose
-  text has its own **Style**, the home shows only **Colours**, **New Page Background** and **Page
-  Design**.
+  canvas around them).
+</AppNote>
+
+<AppNote app="livedocuments">
+  A fifth row, **Page Design**, sets the [design behind every page](/help/canvas/themes/page-designs/).
+  On an article or a card, whose text has its own **Style**, the home shows only **Colours**, **New
+  Page Background** and **Page Design**.
+</AppNote>
+
+<AppNote app="livedesign">
+  Above **Fine-tune**, **Element colours** chooses what a theme or look pick does to the elements
+  already on the tab: **Follow the Theme** (the default) or **Keep as They Are**, which recolours
+  nothing.
 </AppNote>
 
 **Giving every tab the same style.** Tabs drift apart in style over time. To bring them back into line, press **Apply to All Tabs** at the foot of the dialog's home, under Fine-tune. It gives every other tab this tab's colours, finish, text and canvas in one go: its theme (each tab's elements take the new colours and keep the ones you hand-set, as picking a theme does), its backdrop, its font and text size, and its finish. Names and content stay as they were.
@@ -136,9 +150,13 @@ Below the looks, **Fine-tune** lists four rows, each showing its current setting
   A [locked tab](/help/tabs/locking-tabs/) keeps its own style too, and so do its lock and name.
 </AppNote>
 
-<AppNote app="livedocuments">
-  It copies the tab's **New Page Background** and **Page Design** as well.
+<AppNote app="livedesign,livedocuments">
+  It copies the tab's **New Page Background** as well.
 </AppNote>
+
+<AppNote app="livedocuments">It copies the tab's **Page Design** too.</AppNote>
+
+<AppNote app="livedesign">It copies the tab's **Element colours** choice too.</AppNote>
 
 ## Picking a Theme
 
@@ -160,12 +178,22 @@ Every theme works in light and dark mode: each person sees the tab in their own 
 
 Applying a theme recolours the tab's backdrop and the elements on it, but keeps colours you have hand-set, so deliberate customisations survive the switch. That goes for the backdrop too: a backdrop colour you chose yourself stays put. Sticky notes keep their own note colours.
 
-<AppNote app="livediagram,livedesign,livedocuments">
+<AppNote app="livediagram,livedocuments">
   Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because
-  connectors left on an old hue read as broken. A shape carrying a [style
-  preset](/help/palette/shapes/style-presets/) moves to the new theme's version of that preset, and
-  **Reset to Default** in a shape's presets brings a hand-coloured shape back to the theme's
-  colours.
+  connectors left on an old hue read as broken.
+</AppNote>
+
+<AppNote app="livedesign">
+  Arrows follow the same rule as everything else: an arrow still on the old theme's stroke takes the
+  new one, and a colour you gave an arrow stays. With **Keep as They Are** under **Element
+  colours**, no element changes colour; the theme still sets the backdrop, the pages' theme fills
+  and the colours new elements take.
+</AppNote>
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  A shape carrying a [style preset](/help/palette/shapes/style-presets/) moves to the new theme's
+  version of that preset, and **Reset to Default** in a shape's presets brings a hand-coloured shape
+  back to the theme's colours.
 </AppNote>
 
 <Tip>

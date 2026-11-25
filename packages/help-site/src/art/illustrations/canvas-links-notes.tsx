@@ -1,23 +1,12 @@
 // Illustrations for the Canvas articles on Following someone, Notes, Links and Link Cards, and
 // Event Storming Boards (liveworkspace/docs/specs/017-help/help-centre.md). Each draws the real surface with its
 // real labels: the Following pill at the top of the canvas (chrome/TopCenterChrome.tsx), the note
-// popover (notes/NotePopover.tsx), the Link element dialog (dialogs/LinkPickerDialog.tsx), and an
+// popover (notes/NotePopover.tsx), the Resources dialog's Link screen (workbench dialogs/ResourcesDialog.tsx), and an
 // event storming board making room for a note dragged into a gap with Alt held.
 
 import type { ReactNode } from 'react';
-import {
-  Scene,
-  Label,
-  Shape,
-  Avatar,
-  Cursor,
-  TextBar,
-  Dialog,
-  Tabs,
-  Button,
-  BarTab,
-} from '../primitives';
-import { capital } from '../noun';
+import { Scene, Label, Shape, Avatar, Cursor, TextBar, Dialog, BarTab } from '../primitives';
+import type { ArtApp } from '../art-app';
 import { Glyph } from './element-indicators';
 
 // --- Following someone -------------------------------------------------------------------------
@@ -190,36 +179,174 @@ export function NotePopoverScene() {
 
 // --- Links -------------------------------------------------------------------------------------
 
-/** The Link element dialog: External URL, Tab or the product's work (`noun`), the web address, and Save link. */
-export function LinkElementDialogScene({ noun }: { noun: string }) {
+// A link's places on the Resources dialog's Link screen (workbench palette/element-resources.tsx
+// appLinkModes): a web address, a tab, then a file of each product, this app's own first.
+const LINK_APPS: readonly (readonly [ArtApp, string])[] = [
+  ['livediagram', 'Canvas'],
+  ['liveplanner', 'Plan'],
+  ['livedocuments', 'Document'],
+  ['livedesign', 'Design'],
+  ['livehuddle', 'Space'],
+  ['liveknowledge', 'Knowledgebase'],
+];
+
+/** One place on the Link screen: its icon plate, its name over its line, and Current on the one it goes to now. */
+function LinkPlace({
+  x,
+  y,
+  w,
+  title,
+  detail,
+  current = false,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  title: ReactNode;
+  detail: string;
+  current?: boolean;
+}) {
   return (
-    <Scene w={420} h={226}>
-      <Shape x={20} y={30} w={84} h={46} kind="rect" label="Spec" />
-      <Dialog x={96} y={52} w={306} h={162} title="Link element" sceneW={420} sceneH={226}>
-        <Tabs
-          x={112}
-          y={98}
-          items={['External URL', 'Tab', capital(noun)]}
-          active={0}
-          tabW={90}
-          h={24}
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={32}
+        rx={8}
+        className={current ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-200'}
+        strokeWidth={0.9}
+      />
+      <rect
+        x={x + 6}
+        y={y + 6}
+        width={20}
+        height={20}
+        rx={6}
+        className={current ? 'fill-brand-600' : 'fill-slate-100'}
+      />
+      <Label x={x + 32} y={y + 11} size={9.5} weight={700} tone="strong">
+        {title}
+      </Label>
+      <Label x={x + 32} y={y + 23} size={8.5} tone="muted">
+        {detail}
+      </Label>
+      {current && (
+        <>
+          <rect
+            x={x + w - 44}
+            y={y - 6}
+            width={38}
+            height={12}
+            rx={6}
+            className="fill-brand-100 stroke-brand-300"
+            strokeWidth={0.8}
+          />
+          <Label x={x + w - 25} y={y} anchor="middle" size={7.5} weight={700} tone="accent">
+            Current
+          </Label>
+        </>
+      )}
+    </g>
+  );
+}
+
+/** The Resources dialog on its Link screen, for an element that already links to a web page: the back bar
+ *  (Resources, Link), what it links to now, the places two across (External URL, Tab, then a file of each
+ *  product, `product`'s own first, each by its wordmark and what it calls its files) and Remove Link last. */
+export function LinkElementDialogScene({ product }: { product: ArtApp }) {
+  const apps = [
+    ...LINK_APPS.filter(([app]) => app === product),
+    ...LINK_APPS.filter(([app]) => app !== product),
+  ];
+  const places: { title: ReactNode; detail: string; current?: boolean }[] = [
+    { title: 'External URL', detail: 'A page on the web', current: true },
+    { title: 'Tab', detail: 'A tab or an element' },
+    ...apps.map(([app, noun]) => ({
+      title: (
+        <>
+          <tspan className="fill-slate-400" fontWeight={400}>
+            live
+          </tspan>
+          {app.replace(/^live/, '')}
+        </>
+      ),
+      detail: noun,
+    })),
+  ];
+  const dx = 104;
+  const dw = 324;
+  const ix = dx + 12;
+  const colW = (dw - 24 - 8) / 2;
+  return (
+    <Scene w={440} h={324}>
+      <Shape x={16} y={30} w={76} h={44} kind="rect" label="Spec" />
+      <Dialog x={dx} y={12} w={dw} h={300} title="Resources" sceneW={440} sceneH={324}>
+        {/* The back bar: back to Resources, on Link */}
+        <rect
+          x={ix}
+          y={58}
+          width={dw - 24}
+          height={26}
+          rx={7}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.1}
         />
-        <Label x={112} y={138} size={10.5} weight={600} tone="body">
-          Web address
+        <rect x={ix + 7} y={63} width={16} height={16} rx={4} className="fill-slate-100" />
+        <path
+          d={`M${ix + 17} 67 L${ix + 13} 71 L${ix + 17} 75`}
+          fill="none"
+          className="stroke-slate-500"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Label x={ix + 30} y={71} size={10} weight={600} tone="body">
+          Resources
         </Label>
         <rect
-          x={112}
-          y={148}
-          width={274}
-          height={24}
-          rx={6}
-          className="fill-white stroke-brand-400"
-          strokeWidth={1.4}
+          x={ix + dw - 24 - 7 - 34}
+          y={64}
+          width={34}
+          height={14}
+          rx={4}
+          className="fill-slate-100"
         />
-        <Label x={120} y={160.5} size={10.5} tone="strong">
+        <Label x={ix + dw - 24 - 7 - 17} y={71} anchor="middle" size={9} weight={600} tone="body">
+          Link
+        </Label>
+        {/* What it links to now */}
+        <rect x={ix} y={92} width={dw - 24} height={34} rx={8} className="fill-brand-50" />
+        <rect x={ix + 8} y={99} width={20} height={20} rx={6} className="fill-brand-600" />
+        <Label x={ix + 36} y={102} size={8} weight={700} tone="accent">
+          NOW
+        </Label>
+        <Label x={ix + 36} y={115} size={10} weight={600} tone="strong">
           example.com/spec
         </Label>
-        <Button x={112} y={182} w={74} h={22} label="Save link" variant="primary" />
+        {/* The places, two across */}
+        {places.map((p, i) => (
+          <LinkPlace
+            key={i}
+            x={ix + (i % 2) * (colW + 8)}
+            y={134 + Math.floor(i / 2) * 38}
+            w={colW}
+            title={p.title}
+            detail={p.detail}
+            current={p.current}
+          />
+        ))}
+        {/* Remove Link, last */}
+        <path
+          d={`M${ix + 6} 290 l8 -8 M${ix + 4} 284 l2 2 M${ix + 14} 294 l-2 -2`}
+          fill="none"
+          className="stroke-slate-400"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+        />
+        <Label x={ix + 22} y={289} size={10} weight={600} tone="body">
+          Remove Link
+        </Label>
       </Dialog>
     </Scene>
   );

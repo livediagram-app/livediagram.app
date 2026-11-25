@@ -298,6 +298,14 @@ export const articles: Article[] = [
     categorySlug: 'canvas/the-canvas',
     parentSlug: 'the-canvas',
     apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    byApp: {
+      livedocuments: {
+        description: 'Set the background new pages start on, and the canvas around them.',
+      },
+      livedesign: {
+        description: 'Set the background new pages start on, and the canvas around them.',
+      },
+    },
   },
   {
     slug: 'pan-and-zoom',

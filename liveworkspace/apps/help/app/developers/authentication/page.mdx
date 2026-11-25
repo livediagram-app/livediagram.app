@@ -122,9 +122,15 @@ curl https://www.livehuddle.app/api/documents \
 
 </AppNote>
 
-<AppNote app="livediagram,livedesign">
+<AppNote app="livediagram">
 
 Every request authenticated this way acts as your account, with the same access to your <Noun plural />, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read (except a <Noun />'s share-link list, which would hand it edit links), and every write is refused except revoking itself and opening or pairing a (view-only) workbench.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+Every request authenticated this way acts as your account, with the same access to your <Noun plural />, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read, and every write is refused except revoking itself and opening or pairing a (view-only) workbench.
 
 </AppNote>
 

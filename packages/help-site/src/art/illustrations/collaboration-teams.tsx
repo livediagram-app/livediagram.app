@@ -154,10 +154,62 @@ export function TeamMembers() {
   );
 }
 
-/** A team's shared library: the Team designs breadcrumb (the product's `noun`) with the view toggle and
- *  Create, above the folders and work of the level you are in. */
+// The app whose files are the product's `noun`, as a team Library's kind chip names it.
+const APP_OF_NOUN: Record<string, string> = {
+  canvas: 'livediagram',
+  design: 'livedesign',
+  document: 'livedocuments',
+  plan: 'liveplanner',
+  space: 'livehuddle',
+  knowledgebase: 'liveknowledge',
+};
+
+/** A kind chip on a team's Library toolbar (explorer KindChips): the app's mark, its name and how many. */
+const chipW = (label: string, mark = true) => label.length * 5.2 + (mark ? 38 : 28);
+
+function KindChip({
+  x,
+  label,
+  n,
+  on,
+  mark = true,
+}: {
+  x: number;
+  label: string;
+  n: number;
+  on?: boolean;
+  mark?: boolean;
+}) {
+  const w = chipW(label, mark);
+  return (
+    <g>
+      <rect
+        x={x}
+        y={25}
+        width={w}
+        height={20}
+        rx={10}
+        className={on ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-200'}
+        strokeWidth={0.9}
+      />
+      {mark && <rect x={x + 6} y={30} width={10} height={10} rx={3} className="fill-brand-400" />}
+      <Label x={x + (mark ? 20 : 9)} y={35.5} size={9.5} weight={600} tone={on ? 'accent' : 'body'}>
+        {label}
+      </Label>
+      <Label x={x + w - 9} y={35.5} anchor="end" size={9} weight={600} tone="muted">
+        {String(n)}
+      </Label>
+    </g>
+  );
+}
+
+/** A team's Library tab (explorer ItemsPane, PaneHeader): the kind chips (All, then each app the library holds,
+ *  the product's `noun` first), Filter, the Cards / Details toggle and New, above the folders and work of the level
+ *  you are in, here in Details. */
 export function TeamSharedTree({ noun }: { noun: string }) {
   const { folders, work } = appSamples();
+  const own = APP_OF_NOUN[noun] ?? 'livediagram';
+  const other = own === 'livedesign' ? 'liveplanner' : 'livedesign';
   const rows: { label: string; folder: boolean; meta: string }[] = [
     { label: folders[0], folder: true, meta: `4 ${plural(noun)}` },
     { label: folders[1], folder: true, meta: `2 ${plural(noun)}` },
@@ -166,47 +218,63 @@ export function TeamSharedTree({ noun }: { noun: string }) {
   ];
   return (
     <Scene w={420} h={230} bg="plain">
-      <Panel x={50} y={16} w={320} h={198}>
-        <rect x={51} y={17} width={318} height={32} rx={9} className="fill-slate-50" />
-        <line x1={51} y1={49} x2={369} y2={49} className="stroke-slate-200" strokeWidth={0.75} />
-        <Label x={66} y={34} size={9.5} weight={700} tone="muted">
-          {`TEAM ${plural(noun).toUpperCase()}`}
-        </Label>
-        {/* View toggle: list and grid. */}
+      <Panel x={10} y={16} w={400} h={198}>
+        <rect x={11} y={17} width={398} height={36} rx={9} className="fill-slate-50" />
+        <line x1={11} y1={53} x2={409} y2={53} className="stroke-slate-200" strokeWidth={0.75} />
+        <KindChip x={20} label="All" n={8} on mark={false} />
+        <KindChip x={20 + chipW('All', false) + 5} label={own} n={6} />
+        <KindChip x={20 + chipW('All', false) + chipW(own) + 10} label={other} n={2} />
+        {/* Filter */}
         <rect
-          x={256}
-          y={24}
-          width={40}
-          height={18}
+          x={276}
+          y={25}
+          width={20}
+          height={20}
           rx={5}
           className="fill-white stroke-slate-200"
           strokeWidth={0.75}
         />
-        <rect x={258} y={26} width={18} height={14} rx={3} className="fill-brand-100" />
         <path
-          d="M262 30 h10 M262 33 h10 M262 36 h10"
-          className="stroke-brand-600"
-          strokeWidth={1}
+          d="M280 31 h12 M282.5 35 h7 M284.5 39 h3"
+          className="stroke-slate-500"
+          strokeWidth={1.2}
+          strokeLinecap="round"
+        />
+        {/* View toggle: Cards and Details, Details on. */}
+        <rect
+          x={302}
+          y={25}
+          width={42}
+          height={20}
+          rx={5}
+          className="fill-white stroke-slate-200"
+          strokeWidth={0.75}
         />
         <path
-          d="M281 29 h4 v4 h-4 Z M287 29 h4 v4 h-4 Z M281 35 h4 v4 h-4 Z M287 35 h4 v4 h-4 Z"
+          d="M306 29 h5 v5 h-5 Z M313 29 h5 v5 h-5 Z M306 36 h5 v5 h-5 Z M313 36 h5 v5 h-5 Z"
           className="fill-none stroke-slate-400"
           strokeWidth={0.9}
         />
-        <Button x={302} y={23} w={56} h={20} label="Create" variant="primary" />
+        <rect x={323} y={27} width={19} height={16} rx={3} className="fill-brand-100" />
+        <path
+          d="M327 31 h11 M327 35 h11 M327 39 h11"
+          className="stroke-brand-600"
+          strokeWidth={1}
+        />
+        <Button x={350} y={25} w={50} h={20} label="+ New" variant="primary" />
         {rows.map((r, i) => {
-          const ry = 72 + i * 36;
+          const ry = 76 + i * 36;
           return (
             <g key={r.label}>
               {r.folder ? (
                 <path
-                  d={`M68 ${ry - 6} h7 l2 3 h8 v10 h-17 Z`}
+                  d={`M28 ${ry - 6} h7 l2 3 h8 v10 h-17 Z`}
                   className="fill-brand-200 stroke-brand-400"
                   strokeWidth={1.5}
                 />
               ) : (
                 <rect
-                  x={70}
+                  x={30}
                   y={ry - 7}
                   width={13}
                   height={16}
@@ -215,17 +283,17 @@ export function TeamSharedTree({ noun }: { noun: string }) {
                   strokeWidth={0.75}
                 />
               )}
-              <Label x={94} y={ry + 1} size={11} weight={500} tone="strong">
+              <Label x={54} y={ry + 1} size={11} weight={500} tone="strong">
                 {r.label}
               </Label>
-              <Label x={352} y={ry + 1} anchor="end" size={9.5} tone="muted">
+              <Label x={396} y={ry + 1} anchor="end" size={9.5} tone="muted">
                 {r.meta}
               </Label>
               {i < rows.length - 1 && (
                 <line
-                  x1={64}
+                  x1={24}
                   y1={ry + 18}
-                  x2={356}
+                  x2={396}
                   y2={ry + 18}
                   className="stroke-slate-100"
                   strokeWidth={0.75}

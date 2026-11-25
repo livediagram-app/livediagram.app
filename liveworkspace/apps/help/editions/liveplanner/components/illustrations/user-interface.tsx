@@ -26,7 +26,7 @@ export function ZoomControls() {
   const py = 62;
   return (
     <Scene w={420} h={240}>
-      <TopCards x={10} y={10} tab="Budget" />
+      <TopCards x={10} y={10} />
       <ChromeCard x={10} y={44} w={226} h={110} r={6} lift={false}>
         <SheetFragment
           x={10.5}
@@ -130,10 +130,10 @@ export function TitleBarParts() {
       <Label x={10} y={118} size={9} weight={600} tone="muted">
         ON A SHEET, DASHBOARD OR FORM
       </Label>
-      <TopCards x={6} y={128} tab="Budget" />
+      <TopCards x={6} y={128} />
       <AccountCard right={434} y={128} shared signedIn={{ initial: 'S', colour: 'emerald' }} />
       <Callout x={50} top={156} y={184} label="Logo Card" />
-      <Callout x={140} top={156} y={184} label="Menu and Tab Name" />
+      <Callout x={111} top={156} y={184} label="Menu" />
       <Callout x={396} top={156} y={184} label="Share and Account" />
     </Scene>
   );

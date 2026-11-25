@@ -1,5 +1,6 @@
 // The 3D View (docs/specs/008-canvas/3d-view.md, liveworkspace/docs/specs/017-help/help-centre.md): a room seen through the tilted
-// camera while you walk, and the bottom-right cluster's Turn Left, Turn Right and 3D buttons
+// camera while you walk, and the bottom-right cluster's Turn Left, Turn Right (with the Rotate in 3D View setting on)
+// and 3D buttons
 // (apps/editor/components/canvas/space-3d/Space3DButton.tsx).
 //
 // What it shows is lifted from the spec: the floor tilted back, the room's walls standing with its name on a sign over
@@ -34,7 +35,7 @@ function TurnGlyph({ dir }: { dir: -1 | 1 }) {
 
 /** A room in the 3D View: its floor tilted back, its back and side walls standing, the doorway in the back wall with
  *  the room's name over it, the near wall faded, a Notice Board glowing under the pointer, and your character. Below
- *  it, Turn Left, Turn Right and the lit 3D button. */
+ *  it, Turn Left and Turn Right (there with Rotate in 3D View on) and the lit 3D button. */
 export function Space3DScene() {
   // The floor: a trapezoid, its far edge (top) narrower than its near edge (bottom).
   const far = { y: 78, l: 118, r: 302 };
@@ -139,7 +140,8 @@ export function Space3DScene() {
         opacity={0.35}
       />
 
-      {/* The bottom-right cluster while 3D is on: Turn Left, Turn Right, then the lit 3D switch. */}
+      {/* The bottom-right cluster while 3D is on: Turn Left and Turn Right (only with Rotate in 3D View on in
+          Settings), then the lit 3D switch. */}
       <Button x={260} y={210} w={30} h={28} />
       <g transform="translate(275 225)">
         <TurnGlyph dir={-1} />
@@ -149,9 +151,6 @@ export function Space3DScene() {
         <TurnGlyph dir={1} />
       </g>
       <Button x={332} y={210} w={54} h={28} label="3D" variant="primary" />
-      <Label x={256} y={224} size={10} weight={600} tone="muted" anchor="end">
-        [ and ] turn
-      </Label>
     </Scene>
   );
 }

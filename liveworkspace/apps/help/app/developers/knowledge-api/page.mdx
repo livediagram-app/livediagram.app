@@ -27,11 +27,11 @@ Every route is under `/api/documents/{id}`, where `{id}` is the Knowledgebase's 
 
 | Route                                   | Does                                                         | MCP tool       |
 | --------------------------------------- | ------------------------------------------------------------ | -------------- |
-| `GET pages`                             | The page tree, each page with its trust                      | `list_pages`   |
-| `POST pages`                            | A new page from Markdown                                     | `create_page`  |
-| `GET pages/{tabId}`                     | One page as Markdown, its trust, backlinks and subpages      | `read_page`    |
-| `PUT pages/{tabId}`                     | Replace a page's writing, or append to it                    | `write_page`   |
-| `POST pages/{tabId}/move`               | Move a page and its subpages                                 | `move_page`    |
+| `GET pages`                             | The page tree, each page with its trust                      | `list_knowledge_pages`   |
+| `POST pages`                            | A new page from Markdown                                     | `create_knowledge_page`  |
+| `GET pages/{tabId}`                     | One page as Markdown, its trust, backlinks and subpages      | `read_knowledge_page`    |
+| `PUT pages/{tabId}`                     | Replace a page's writing, or append to it                    | `write_knowledge_page`   |
+| `POST pages/{tabId}/move`               | Move a page and its subpages                                 | `move_knowledge_page`    |
 | `GET pages/{tabId}/backlinks`           | Linked From                                                  |                |
 
 **Trust**
@@ -60,7 +60,7 @@ Every route is under `/api/documents/{id}`, where `{id}` is the Knowledgebase's 
 | `POST pages/{tabId}/suggestions`        | Suggest an edit                                              | `suggest_knowledge_edit` |
 | `GET suggestions`                       | The suggestions waiting                                      |                |
 | `POST suggestions/{id}/accept`, `…/dismiss` | Accept or dismiss one                                    |                |
-| `POST questions`                        | Report a question nobody could answer                        | `report_gap`   |
+| `POST questions`                        | Report a question nobody could answer                        | `report_knowledge_gap`   |
 | `PUT agents/{tokenId}/scopes`           | Allow a connection to write, or stop it (an Editor in person) |               |
 
 <Figure caption="Every page and passage answer carries its trust, here as search_knowledge_pages shows it.">
