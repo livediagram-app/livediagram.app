@@ -165,7 +165,7 @@ describe('health', () => {
     label,
     reason,
     factors: [
-      { factor: 'verification' as const, points: 0, max: 30, raise: 'Verify this page: +30' },
+      { factor: 'verification' as const, points: 0, max: 20, raise: 'Verify this page: +20' },
     ],
   });
 
