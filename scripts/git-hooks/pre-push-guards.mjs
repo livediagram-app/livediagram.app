@@ -56,11 +56,21 @@ export const COVERAGE_ON_CI = /\/apps\/api$/;
  * @param {string} dir  the workspace, relative to the root
  * @returns {string[]}
  */
+// git run at `root` itself: a pre-push hook's GIT_DIR, GIT_INDEX_FILE and the like would otherwise win over `cwd`.
+const AT_ROOT = Object.fromEntries(
+  Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+);
+
 export function scanTests(root, dir) {
   /** @param {string[]} args */
   const lines = (args) => {
     try {
-      return execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+      return execFileSync('git', args, {
+        cwd: root,
+        env: AT_ROOT,
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+      })
         .split('\n')
         .filter(Boolean);
     } catch {
@@ -85,6 +95,7 @@ export function scanTests(root, dir) {
 export function workspaceDirs(root) {
   const manifests = execFileSync('git', ['ls-files', '--', 'package.json', '*/package.json'], {
     cwd: root,
+    env: AT_ROOT,
     encoding: 'utf8',
   })
     .split('\n')

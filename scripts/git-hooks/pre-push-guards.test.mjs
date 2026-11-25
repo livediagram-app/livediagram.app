@@ -27,8 +27,13 @@ function repo(/** @type {Record<string, string>} */ files) {
     mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
     writeFileSync(path.join(dir, file), text);
   }
+  // Run from a pre-push hook, git sets GIT_DIR, GIT_INDEX_FILE and the like for the repository being pushed: left in,
+  // they point these commands at that repository (making it bare and committing to its branch), not at `dir`.
+  const env = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+  );
   const git = (/** @type {string[]} */ ...args) =>
-    execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args], { cwd: dir });
+    execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args], { cwd: dir, env });
   git('init', '--quiet');
   git('add', '.');
   git('commit', '--quiet', '--no-verify', '-m', 'files');

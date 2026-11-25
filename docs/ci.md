@@ -490,6 +490,10 @@ so a deterministic failure shows up on the machine in minutes rather than on CI 
 the editors' coverage floors and E2E are CI's: running them on every push took up to half an hour, loaded a
 machine several agents share, and timed out tests the change never touched.
 
+The hook clears git's `GIT_DIR` and its kin before it runs anything: the tests it runs make throwaway repositories,
+and with those set their git commands reached the repository being pushed instead (on 2026-11-25 one made it bare and
+committed to the branch).
+
 **What still got through** (pull request runs of CI and E2E, 18 to 23 November 2026: 926 runs, 144 with a
 failed job), and what the hook does about each since 2026-11-23:
 
