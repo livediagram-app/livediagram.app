@@ -339,6 +339,11 @@ export function usePagesMode(deps: {
       return m ? frameFor(m, page) : deps.getViewport();
     },
     glideTo: (to, pageId) => {
+      // A frame's glide under way (a page asked for, Contents framing the page beside it as it docks) is already
+      // heading to a page: a rest snap timed from before it began gives way, or it would stop that glide short and
+      // leave the page under the sidebar (pages-mode.md "Getting around the pages"). The snap runs again once the
+      // glide lands and the view rests.
+      if (motion.current.gliding) return;
       // Let go toward another card of a stack: a flip to it, not a glide.
       const card = cardStage ? pages.find((p) => p.id === pageId) : undefined;
       if (card && card.id !== cardId) frame(card);

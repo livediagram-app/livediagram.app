@@ -5,8 +5,15 @@
 
 // The docked sidebar, for what measures it (the page framing, Zoom to Fit).
 export const CONTENTS_SIDEBAR_SELECTOR = '[data-contents-sidebar]';
-// Its width in px, at the panels' UI scale. It sits flush against the canvas's edge, no gap.
+// Its base width in px, at the panels' UI scale, up to a 1,439 px window; wider windows step it up and the person can
+// drag it (liveworkspace/docs/specs/011-workbench/sidebar-width.md, useContentsSidebarWidth). It sits flush against the
+// canvas's edge, no gap.
 export const CONTENTS_SIDEBAR_WIDTH = 236;
+// Where this browser keeps the width the person dragged it to, on each editor's own origin.
+export const CONTENTS_SIDEBAR_WIDTH_KEY = 'liveworkspace:contents-sidebar-width';
+// The film's pictures and names fill the sidebar less the row's number column and padding (PageContentsList's
+// FilmRow reads it as `--contents-film-w`): 172 px at the base width.
+export const CONTENTS_FILM_INSET = 64;
 // The resting inset the corner panels and the bottom-right cluster keep from what is beside them.
 const CONTENTS_SIDEBAR_GAP = 16;
 
@@ -15,17 +22,24 @@ const CONTENTS_SIDEBAR_GAP = 16;
 export const CONTENTS_SIDEBAR_MIN_PAGES = 1;
 
 // How far the left corner stacks and the bottom-right cluster start from the canvas's left while
-// the sidebar is docked: past it, with their usual inset.
-export function contentsSidebarClearancePx(panelScale: number): number {
-  return CONTENTS_SIDEBAR_WIDTH * panelScale + CONTENTS_SIDEBAR_GAP;
+// the sidebar is docked: past it, with their usual inset. `width` is the sidebar's live width (useContentsSidebarWidth).
+export function contentsSidebarClearancePx(
+  panelScale: number,
+  width: number = CONTENTS_SIDEBAR_WIDTH,
+): number {
+  return width * panelScale + CONTENTS_SIDEBAR_GAP;
 }
 
 /** The bottom-right cluster's left bound beside a docked sidebar (docs/specs/007-editor/pages-mode.md "Docked"), in
  *  screen px from the canvas's left, its 16px margin added by the caller: the sidebar is always on the left, so the
  *  cluster stops short of it and wraps upward from the right rather than run under Add Page. Null leaves the cluster
  *  unbounded. */
-export function contentsClusterLeft(docked: boolean, panelScale: number): number | null {
-  return docked ? contentsSidebarClearancePx(panelScale) : null;
+export function contentsClusterLeft(
+  docked: boolean,
+  panelScale: number,
+  width: number = CONTENTS_SIDEBAR_WIDTH,
+): number | null {
+  return docked ? contentsSidebarClearancePx(panelScale, width) : null;
 }
 
 export type SideInsets = { left: number; right: number };

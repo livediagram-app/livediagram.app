@@ -22,7 +22,9 @@ import { PAGE_RENAME_FIELD } from './page-tree-row-styles';
 import { AddIcon, CollapseIcon, ExpandIcon } from './page-tree-icons';
 import { SearchField } from '@/components/knowledge/SearchField';
 import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
-import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
+import { PAGE_TREE_RAIL_WIDTH } from './page-tree-view';
+import { usePageTreeWidth } from './page-tree-width';
+import { SidebarResizeHandle } from '@liveworkspace/workbench/components/canvas/SidebarResizeHandle';
 import { useSlideOut } from '@/lib/ui/use-slide-out';
 import { PageTrashRailButton, PageTrashRow } from '@/components/page-trash/PageTrashRow';
 
@@ -81,6 +83,9 @@ export function PageTreeSidebar({
   // A tablet's sidebar is a touch screen's tree: 44 px rows, + and ... always there (Work Tracker 1417).
   const coarse = useCoarsePointer();
   const px = (v: number) => toSurfacePx(v, scale);
+  // Its width steps up on wide windows and follows the person's drag of its edge (sidebar-width.md); the peek and the
+  // tree sliding away are drawn at the same width.
+  const sized = usePageTreeWidth();
   const [renaming, setRenaming] = useState<HeadRename | null>(null);
   // Open, the tree slides out to the left before the rail takes its place.
   const open = useSlideOut(!collapsed);
@@ -142,6 +147,18 @@ export function PageTreeSidebar({
       }`}
     >
       {children}
+      {/* Docked open, its right edge resizes it; never the rail, the peek or a tree sliding away. */}
+      {key === 'open' && !over ? (
+        <SidebarResizeHandle
+          label="Resize Pages"
+          width={sized.width}
+          scale={scale}
+          onResize={sized.set}
+          onCommit={sized.commit}
+          onReset={sized.reset}
+          onCancel={sized.cancel}
+        />
+      ) : null}
     </aside>
   );
   // The rail stands under the top row, which the logo and the menu button lead while nothing is joined to it.
@@ -284,10 +301,10 @@ export function PageTreeSidebar({
   return (
     <>
       {!collapsed
-        ? shell(PAGE_TREE_WIDTH, joined, body('open', joined), undefined, 'open')
+        ? shell(sized.width, joined, body('open', joined), undefined, 'open')
         : open.drawn
           ? shell(
-              PAGE_TREE_WIDTH,
+              sized.width,
               false,
               body('open', false),
               { kind: 'leaving', leaving: open.leaving },
@@ -297,7 +314,7 @@ export function PageTreeSidebar({
       {collapsed ? rail : null}
       {peeking.drawn
         ? shell(
-            PAGE_TREE_WIDTH,
+            sized.width,
             false,
             body('peek', false),
             { kind: 'peek', leaving: peeking.leaving },

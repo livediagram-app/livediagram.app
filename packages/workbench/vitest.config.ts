@@ -59,6 +59,12 @@ const HELD_AT_100 = [
   'src/components/ai/ai-source-scope.ts',
   'src/components/canvas/PageContentsList.tsx',
   'src/components/canvas/PageContentsSidebar.tsx',
+  // The left sidebars' width: the steps, the store and the handle (liveworkspace/docs/specs/011-workbench/
+  // sidebar-width.md, Work Tracker 1439).
+  'src/lib/sidebar-width.ts',
+  'src/hooks/ui/useSidebarWidth.ts',
+  'src/hooks/ui/useContentsSidebarWidth.ts',
+  'src/components/canvas/SidebarResizeHandle.tsx',
   'src/components/canvas/ContentsSummary.tsx',
   'src/components/canvas/PageRowMenu.tsx',
   'src/lib/editor-arrival.ts',

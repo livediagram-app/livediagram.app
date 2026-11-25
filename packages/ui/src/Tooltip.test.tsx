@@ -178,6 +178,65 @@ describe('Tooltip', () => {
     expect(hint()).not.toBeNull();
   });
 
+  // liveworkspace/docs/specs/011-workbench/sidebar-width.md "Cut-off names": a row whose title the tooltip wraps holds
+  // the focus itself, outside the wrapper.
+  describe('focused: the row the title belongs to holds the focus', () => {
+    const Row = ({ focused, cut }: { focused: boolean; cut: boolean }) => (
+      <div role="treeitem" aria-selected={false} tabIndex={0}>
+        <Tooltip label="Quarterly planning notes" focused={focused}>
+          <span
+            ref={(el) => {
+              if (!el) return;
+              Object.defineProperty(el, 'clientWidth', { configurable: true, value: 80 });
+              Object.defineProperty(el, 'scrollWidth', {
+                configurable: true,
+                value: cut ? 160 : 80,
+              });
+            }}
+            className="truncate"
+          >
+            Quarterly planning notes
+          </span>
+        </Tooltip>
+      </div>
+    );
+    const keyboard = (on: boolean) => {
+      const matches = Element.prototype.matches;
+      vi.spyOn(Element.prototype, 'matches').mockImplementation(function (
+        this: Element,
+        selector: string,
+      ) {
+        return selector === ':focus-visible' ? on : matches.call(this, selector);
+      });
+    };
+
+    it('opens at once on keyboard focus of a cut-off title, and closes when the focus moves on', () => {
+      keyboard(true);
+      const { rerender } = render(<Row focused={false} cut />);
+      screen.getByRole('treeitem').focus();
+      rerender(<Row focused cut />);
+      expect(hint()).toHaveProperty('textContent', 'Quarterly planning notes');
+      rerender(<Row focused={false} cut />);
+      advance(HINT_CLOSE_GRACE_MS);
+      expect(hint()).toBeNull();
+    });
+
+    it('stays shut on a title shown whole', () => {
+      keyboard(true);
+      const { rerender } = render(<Row focused={false} cut={false} />);
+      rerender(<Row focused cut={false} />);
+      expect(hint()).toBeNull();
+    });
+
+    it('stays shut on a press focus, which shows no ring', () => {
+      keyboard(false);
+      const { rerender } = render(<Row focused={false} cut />);
+      screen.getByRole('treeitem').focus();
+      rerender(<Row focused cut />);
+      expect(hint()).toBeNull();
+    });
+  });
+
   it('opens the next tooltip at once while warm', () => {
     render(
       <>

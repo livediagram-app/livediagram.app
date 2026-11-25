@@ -208,8 +208,8 @@ function PageTreeRowView({
           className={PAGE_RENAME_FIELD}
         />
       ) : active ? (
-        // The full title, for a row too narrow to show it.
-        <Tooltip label={name}>
+        // The full title, for a row too narrow to show it: on hover, and at once on the row's keyboard focus.
+        <Tooltip label={name} focused={mark.includes('f')}>
           <span data-page-title className="min-w-0 flex-1 truncate">
             {name}
           </span>
