@@ -320,7 +320,7 @@ export function MakeSizesDialog({
           className={`text-xs ${full ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`}
         >
           {full
-            ? `${ROOM_FULL} These ${n === 1 ? 'is' : 'are'} all that fit.`
+            ? `${ROOM_FULL} ${n === 1 ? 'This is all that fits' : 'These are all that fit'}.`
             : `Room for ${room - n} more photo ${room - n === 1 ? 'page' : 'pages'} in this tab.`}
         </p>
         {failed ? <p className="text-xs text-rose-600 dark:text-rose-400">{failed}</p> : null}
