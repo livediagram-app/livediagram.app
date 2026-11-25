@@ -126,7 +126,8 @@ existing row is `chosen = 0`. `item-calls-spaces-migration.test.ts` runs it over
   (`INSERT OR IGNORE`, so asking twice writes nothing new), `by_name` the inviter's token name.
 - `PUT /app/items/:space/call-people` (livehuddle's key only, the Space livehuddle's): `UPDATE … RETURNING item_id,
 people_before`; names merged in order, first come, at most `ITEM_CALL_NAMES_MAX`; `people > 0` sets `live_at` and
-  clears `ended_at`; `0` sets `ended_at`. When the count moved, the item's app is told through `source-changed`.
+  clears `ended_at`; `0` sets `ended_at` once the call has been live (`live_at`), and on a call nobody has joined
+  yet (the room's first push, as it is marked) ends nothing, so the start's grace holds. When the count moved, the item's app is told through `source-changed`.
   The Space's newest row takes it. A `chosen` row that has been live (`live_at`) and ended more than
   `ITEM_CALL_START_GRACE_MS` ago takes nothing (204, no write): a Calls Space's later use is not that item's call.
 - Send to Plan's `sendToPlan` (plan-sends.ts): when the source is a call's Space (its newest row), each card's description gains the

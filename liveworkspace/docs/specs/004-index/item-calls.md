@@ -107,6 +107,9 @@ While a call about the item has someone in it, **Call** becomes a pill in its pl
   freshness.
 - A call whose last person leaves has ended: the pill goes back to **Call**, and the item's Meetings list it. Someone
   who opens the Space again later brings it back to live.
+- A call nobody has joined yet has not ended: the room's first word, an empty Space while the starter's tab is still on
+  its way, ends nothing, so for `ITEM_CALL_START_GRACE_MS` after its start it is still the item's call and a second
+  press joins it rather than making another.
 
 ## Invites
 
