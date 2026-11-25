@@ -8,7 +8,7 @@ import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { FooterMore } from '@/components/chrome/FooterMore';
 import { KnowledgeViewTabs } from '@/components/chrome/KnowledgeViewTabs';
 // Lazy: the canvas menu (and the icon module it drags in) only loads on the first right-click.
-const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalMenu), {
+const TabMenu = dynamic(() => import('./TabMenu').then((m) => m.TabMenu), {
   ssr: false,
 });
 
@@ -25,7 +25,8 @@ export type CanvasMenuActions = {
 // Where the canvas right-click menu should open. `openUp` grows it upward from y rather than down from the cursor.
 export type CanvasMenuTarget = { x: number; y: number; openUp?: boolean };
 
-// The current page's verbs, as the canvas menu lists them (TabPortalMenu).
+// The current page's verbs, as the canvas menu lists them (TabMenu). A page has no lock to toggle
+// (docs/specs/030-knowledgebase/page-surface.md "What a page no longer has"); `locked` still greys Import and Delete.
 export type CanvasPageMenu = {
   canDelete: boolean;
   canClearContent: boolean;
@@ -38,7 +39,6 @@ export type CanvasPageMenu = {
   onImport: () => void;
   onExport: () => void;
   onCopyTo: (targetDocumentId: string) => Promise<void> | void;
-  onToggleLock: () => void;
   onDelete: () => void;
 };
 
@@ -143,7 +143,7 @@ export function BottomBar({
       {canvasMenu && pageMenu && onCloseCanvasMenu && canvasActions ? (
         // A fault inside the menu closes the menu, not the editor.
         <MenuErrorBoundary onError={onCloseCanvasMenu}>
-          <PortalMenu
+          <TabMenu
             point={canvasMenu}
             onClose={onCloseCanvasMenu}
             canvas={canvasActions}

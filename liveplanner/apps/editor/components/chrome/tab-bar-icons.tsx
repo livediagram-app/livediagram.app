@@ -6,7 +6,6 @@ import {
   lucideBrushCleaning,
   lucideEyeOff,
   lucideFileInput,
-  lucideFolder,
   lucideScale,
 } from '@liveworkspace/icons/lucide';
 
@@ -21,7 +20,6 @@ export function TabLockIcon() {
 // Deliberately not the padlock, which marks a tab its editors have locked.
 export const TabNotSharedIcon = lucideGlyph(lucideEyeOff, 12);
 
-export const FolderMenuIcon = lucideGlyph(lucideFolder, MENU_ICON_PX);
 // Add the tab to another project.
 export const MoveIcon = lucideGlyph(lucideFileInput, MENU_ICON_PX);
 // Clear the tab's contents.

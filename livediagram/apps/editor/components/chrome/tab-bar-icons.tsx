@@ -2,13 +2,7 @@
 // (docs/specs/004-interface-design/iconography.md). Menu glyphs render at the menu size step.
 
 import { LockIcon, lucideGlyph, SearchIcon } from '@livediagram/ui';
-import {
-  lucideBrushCleaning,
-  lucideEyeOff,
-  lucideFileInput,
-  lucideFolder,
-  lucideScale,
-} from '@liveworkspace/icons/lucide';
+import { lucideBrushCleaning, lucideEyeOff, lucideScale } from '@liveworkspace/icons/lucide';
 
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
@@ -21,9 +15,6 @@ export function TabLockIcon() {
 // Deliberately not the padlock, which marks a tab its editors have locked.
 export const TabNotSharedIcon = lucideGlyph(lucideEyeOff, 12);
 
-export const FolderMenuIcon = lucideGlyph(lucideFolder, MENU_ICON_PX);
-// Add the tab to another document.
-export const MoveIcon = lucideGlyph(lucideFileInput, MENU_ICON_PX);
 // Clear the tab's contents.
 export const ClearIcon = lucideGlyph(lucideBrushCleaning, MENU_ICON_PX);
 

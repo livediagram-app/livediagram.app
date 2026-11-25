@@ -1,7 +1,7 @@
 // Tabs-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the tab bar and its tabs,
 // tab folders opening in place, the tab menu (toolbar over full-width rows split into groups),
 // the Organise in Tab Folder / Import / Export dialogs, cross-tab links, a locked
-// tab, and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
+// tab, and a before/after cleanup. Labels are the editor's own (the workbench's TabMenu,
 // TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
 // Composed only from the shared primitives so the house style holds.
 //
