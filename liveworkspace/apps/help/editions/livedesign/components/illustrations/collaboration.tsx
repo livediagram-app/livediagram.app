@@ -21,8 +21,16 @@ export function LiveCursors() {
       <DesignPage x={44} y={38} w={110} h={150} size="iPhone · Wireframe" bare>
         <PhoneScreen x={58} y={50} w={82} h={128} variant="home" frame={false} cta="Shop Now" />
       </DesignPage>
-      <DesignPage x={196} y={38} w={150} h={150} size="Logo · Square" bare>
-        <LogoMark cx={271} cy={104} r={26} />
+      <DesignPage x={236} y={38} w={110} h={150} size="iPhone · Wireframe" bare>
+        <PhoneScreen
+          x={250}
+          y={50}
+          w={82}
+          h={128}
+          variant="product"
+          frame={false}
+          cta="Add to Bag"
+        />
       </DesignPage>
       <Cursor x={132} y={96} name="Aria" colour="rose" />
       <Cursor x={312} y={70} name="Jae" colour="violet" />
@@ -30,7 +38,7 @@ export function LiveCursors() {
       <BottomBar
         y={212}
         w={420}
-        tabs={['Brand', 'App Screens']}
+        tabs={['App Screens', 'Brand']}
         presence={[
           { initial: 'A', colour: 'rose' },
           { initial: 'J', colour: 'violet' },
