@@ -21,6 +21,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   create_document: 'document create',
   share_document: 'document share',
   rename_document: 'document rename',
+  style_document: 'api PUT /documents/<id>',
   delete_document: 'document rm',
   list_trash: 'api GET /trash',
   restore_document: 'document restore',
