@@ -32,7 +32,9 @@ const ARROWS = ['->', '→', '=>'] as const;
 // The readers scan by index rather than with patterns: lazy groups beside optional spaces backtrack polynomially
 // on hostile input (CodeQL js/polynomial-redos), and these read whatever someone pastes.
 
-// "From [amount] To": the first "[" after a non-empty From whose "]" closes a non-empty amount, followed by a To.
+// "From [amount] To": the first "[" after a non-empty From whose "]" closes an amount that reads as a number,
+// followed by a To. A bracket that holds no number is part of a name (`Tax [UK] [3200] Budget`): taken for the
+// amount, it lost the flow of any node so named on the way back from sankeyFlowsToText.
 function readBracket(line: string): [string, string, string] | null {
   for (let open = line.indexOf('[', 1); open !== -1; open = line.indexOf('[', open + 1)) {
     const close = line.indexOf(']', open + 1);
@@ -40,7 +42,8 @@ function readBracket(line: string): [string, string, string] | null {
     const amount = line.slice(open + 1, close).trim();
     const to = line.slice(close + 1).trim();
     const from = line.slice(0, open).trim();
-    if (from && amount && to) return [from, to, amount];
+    if (from && amount && to && Number.isFinite(readSankeyNumber(amount)))
+      return [from, to, amount];
   }
   return null;
 }
