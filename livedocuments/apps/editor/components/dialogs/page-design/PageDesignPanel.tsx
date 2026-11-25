@@ -59,7 +59,18 @@ export function PageDesignPanel({ home }: { home?: TabStyleHome<TabLook> } = {})
       : null,
   );
   // A tab with no pages has no page to design: the shared home.
-  if (!door || !look) return <>{home?.fallback ?? null}</>;
+  // A tab with no pages: the shared home, still with Copy to All Tabs.
+  if (!door || !look)
+    return (
+      <>
+        {home?.fallback ?? null}
+        {home?.allTabs ? (
+          <div className="px-4 pb-4">
+            <AllTabsRow allTabs={home.allTabs} />
+          </div>
+        ) : null}
+      </>
+    );
   const page = door.page;
   const onPage = scope === 'page' && !!page;
   const worn = wornDesign(onPage ? 'page' : 'tab', door.tabDesign, page?.design);
@@ -74,24 +85,16 @@ export function PageDesignPanel({ home }: { home?: TabStyleHome<TabLook> } = {})
   const tune = (d: PageDesign) =>
     onPage && page ? door.edits.tunePageDesign(page.id, d) : door.edits.tuneTabDesign(d);
   // A pick on All Pages reaches every page: a page's own design gives way to it.
-  // One design to a page (owner, 2026-11-25): a design picked over a moving background stills it, its gradient kept.
+  // A pick on All Pages reaches every page; a design stills a moving background in the same step (one design to a
+  // page, usePageDesignEdits).
   const pick = (id: PageDesignId | 'none') => {
     const d = id === 'none' ? null : worn?.id === id ? worn : picked(id, worn ?? door.tabDesign);
-    const moving = page && d ? movingFill(page) : undefined;
-    const still = moving ? { fill: { ...moving, motion: undefined } } : undefined;
-    if (onPage) {
-      if (still) bgDoor?.onPage(still);
-      set(d);
-    } else if (still && bgDoor) bgDoor.onAll(still, d);
+    if (onPage) set(d);
     else door.edits.setTabDesign(d, { everyPage: true });
   };
-  // A moving background is the page's one design: the design over it goes.
-  const pickMoving = (fill: PageFill) => {
-    if (onPage && page) {
-      bgDoor?.onPage({ fill });
-      if (worn) door.edits.setPageDesign(page.id, 'none');
-    } else bgDoor?.onAll({ fill }, null);
-  };
+  // A moving background: the page's one design, so any design over it stops showing (resolvePageDesigns).
+  const pickMoving = (fill: PageFill) =>
+    onPage ? bgDoor?.onPage({ fill }) : bgDoor?.onAll({ fill });
   const setBackground = (patch: Partial<PageBackground>) =>
     onPage ? bgDoor?.onPage(patch) : bgDoor?.onAll(patch);
   // Fine Tune: a full-width row pinned to the foot of the home and the Design picker, its controls beside the dialog
@@ -216,14 +219,11 @@ export function PageDesignPanel({ home }: { home?: TabStyleHome<TabLook> } = {})
           openId={home?.openId}
           pageOnly={onPage}
           onPick={(q) => {
-            // On All Pages the look first (colours, text, finish: the tab's), then the design and background in its
-            // colours. Off, the page alone: its design and background, the tab's look left as it is.
-            if (!onPage) home?.applyLook(q.look);
+            // One step either way. On All Pages the look (colours, text, finish: the tab's), the design and the
+            // background together; off, the page alone: its design and background, the tab's look left as it is.
             const d = picked(q.design, worn ?? door.tabDesign);
-            if (onPage && page) {
-              bgDoor.onPage({ fill: q.fill });
-              door.edits.setPageDesign(page.id, d);
-            } else bgDoor.onAll({ fill: q.fill }, d);
+            if (onPage) bgDoor.onPage({ fill: q.fill }, d);
+            else bgDoor.onAll({ fill: q.fill }, d, home ? q.look : undefined);
           }}
         />
       ) : null}

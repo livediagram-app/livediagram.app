@@ -3,7 +3,6 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   PAGE_DESIGNS,
-  PAGE_DESIGN_SETS,
   layOutPages,
   type Page,
   type PageDesign,
@@ -14,6 +13,8 @@ import type { LibraryItemSummary, LibraryListResponse } from '@liveworkspace/med
 import { LibraryProvider } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import type { LibraryApi } from '@liveworkspace/workbench/lib/library/library-api';
 import { TabStylePagesContext, type TabStylePages } from '../tab-style-pages';
+import type { TabStyleHome } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
+import type { TabLook } from '@/lib/tab-looks';
 import { PageDesignPanel } from './PageDesignPanel';
 
 afterEach(cleanup);
@@ -29,7 +30,11 @@ const slide = (id: string, design?: PageDesignOverride): Page => ({
 function open(
   tabDesign?: PageDesign,
   pageDesign?: PageDesignOverride,
-  { api = null, blocked = false }: { api?: LibraryApi | null; blocked?: boolean } = {},
+  {
+    api = null,
+    blocked = false,
+    withHome = false,
+  }: { api?: LibraryApi | null; blocked?: boolean; withHome?: boolean } = {},
 ) {
   const edits = {
     applySavedDesign: vi.fn(),
@@ -38,9 +43,24 @@ function open(
     tuneTabDesign: vi.fn(),
     setPageDesign: vi.fn(),
     tunePageDesign: vi.fn(),
-    applyDesignSet: vi.fn(async () => {}),
   };
   const row = layOutPages([slide('a', pageDesign), slide('b')]);
+  const background = { onAll: vi.fn(), onPage: vi.fn() };
+  const home: TabStyleHome<TabLook> = {
+    rows: (['theme', 'font', 'finish'] as const).map((panel) => ({
+      panel,
+      label: { theme: 'Colours', font: 'Text', finish: 'Finish' }[panel],
+      value: 'Now',
+      icon: null,
+    })),
+    onOpenPanel: vi.fn(),
+    extra: null,
+    fallback: null,
+    applyLook: vi.fn(),
+    openId: `open-${Math.random()}`,
+    font: null,
+    finish: 'flexible',
+  };
   const pages: TabStylePages = {
     kind: 'slide',
     newPageBackground: undefined,
@@ -58,76 +78,158 @@ function open(
       paperDark: false,
       edits,
     },
+    background: { page: row[0]!, onAll: background.onAll, onPage: background.onPage },
   };
   render(
     <LibraryProvider api={api} apartKinds={['page-design']}>
       <TabStylePagesContext.Provider value={pages}>
-        <PageDesignPanel />
+        <PageDesignPanel {...(withHome ? { home } : {})} />
       </TabStylePagesContext.Provider>
     </LibraryProvider>,
   );
-  return edits;
+  return Object.assign(edits, { background, home });
 }
 
-describe('the Page Design panel', () => {
-  it('offers None and every design, grouped by family, and a pick applies it to the tab', async () => {
+const q = (selector: string) => document.querySelector<HTMLElement>(selector)!;
+const openLayer = (layer: 'design' | 'background') =>
+  fireEvent.click(q(`[data-page-layer="${layer}"]`));
+const allPagesSwitch = () => screen.getByRole('switch', { name: 'Affect All Pages' });
+const openFineTune = async () => {
+  fireEvent.click(q('[data-page-design-fine-tune-button]'));
+  return within(await waitFor(() => q('[data-page-design-fine-tune]')));
+};
+
+describe('the Page Design home (canvas-and-theme-dialog.md "Page Design")', () => {
+  it('shows Design and Background, the tab’s rows, Quick Picks and Affect All Pages, on by default', () => {
+    open(undefined, undefined, { withHome: true });
+    expect(q('[data-page-layer="design"]')).toBeTruthy();
+    expect(q('[data-page-layer="background"]')).toBeTruthy();
+    for (const key of ['theme', 'font', 'finish'])
+      expect(q(`[data-page-layer="${key}"]`)).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Quick Picks' })).toBeTruthy();
+    expect(allPagesSwitch().getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('opens a tab row’s panel, and disables the tab’s rows while Affect All Pages is off', () => {
+    const { home } = open(undefined, undefined, { withHome: true });
+    fireEvent.click(q('[data-page-layer="font"]'));
+    expect(home.onOpenPanel).toHaveBeenCalledWith('font');
+    fireEvent.click(allPagesSwitch());
+    expect(q('[data-page-layer="theme"]').hasAttribute('disabled')).toBe(true);
+  });
+
+  it('a Quick Pick on All Pages puts the look on the tab and the design and background on every page', () => {
+    const { home, background } = open(undefined, undefined, { withHome: true });
+    fireEvent.click(q('[data-page-design-quick]'));
+    // One step: the look, design and background go together.
+    expect(home.applyLook).not.toHaveBeenCalled();
+    expect(background.onAll).toHaveBeenCalledWith(
+      expect.objectContaining({ fill: expect.anything() }),
+      expect.objectContaining({ id: expect.any(String) }),
+      expect.objectContaining({ theme: expect.any(String), finish: expect.any(String) }),
+    );
+  });
+
+  it('a Quick Pick on one page dresses that page alone and leaves the tab’s look', () => {
+    const edits = open(undefined, undefined, { withHome: true });
+    fireEvent.click(allPagesSwitch());
+    fireEvent.click(q('[data-page-design-quick]'));
+    expect(edits.home.applyLook).not.toHaveBeenCalled();
+    expect(edits.background.onAll).not.toHaveBeenCalled();
+    // The page's background and its own design in one step.
+    expect(edits.background.onPage).toHaveBeenCalledWith(
+      expect.objectContaining({ fill: expect.anything() }),
+      expect.objectContaining({ id: expect.any(String) }),
+    );
+    expect(edits.setPageDesign).not.toHaveBeenCalled();
+  });
+
+  it('keeps Affect All Pages for the opening as screens come and go', () => {
+    const first = open(undefined, undefined, { withHome: true });
+    fireEvent.click(allPagesSwitch());
+    cleanup();
+    render(
+      <TabStylePagesContext.Provider
+        value={{
+          kind: 'slide',
+          newPageBackground: undefined,
+          themeId: 'brand',
+          units: 2,
+          onSet: () => {},
+          onApplyToEveryPage: () => {},
+          design: {
+            tabDesign: undefined,
+            page: layOutPages([slide('a')])[0],
+            pages: layOutPages([slide('a')]),
+            elements: [],
+            theme: {},
+            tabFont: undefined,
+            paperDark: false,
+            edits: first,
+          },
+        }}
+      >
+        <PageDesignPanel home={first.home} />
+      </TabStylePagesContext.Provider>,
+    );
+    expect(allPagesSwitch().getAttribute('aria-checked')).toBe('false');
+  });
+});
+
+describe('the Design picker', () => {
+  it('offers every design under its family’s chip, and a pick on All Pages reaches every page', () => {
     const edits = open();
-    const grid = screen.getByRole('region', { name: 'Designs' });
-    for (const d of PAGE_DESIGNS)
-      expect(within(grid).getByRole('button', { name: d.label })).toBeTruthy();
+    openLayer('design');
     expect(PAGE_DESIGNS.length).toBeGreaterThanOrEqual(40);
-    expect(within(grid).getByRole('button', { name: 'None' }).getAttribute('aria-pressed')).toBe(
-      'true',
+    fireEvent.click(q('[data-page-design-family="gradients"]'));
+    fireEvent.click(q('[data-page-design-tile="aurora"]'));
+    expect(edits.setTabDesign).toHaveBeenCalledWith({ id: 'aurora' }, { everyPage: true });
+    // Gradients and Moving come last among the chips.
+    const chips = [...document.querySelectorAll('[data-page-design-family]')].map((c) =>
+      c.getAttribute('data-page-design-family'),
     );
-    fireEvent.click(within(grid).getByRole('button', { name: 'Aurora' }));
-    expect(edits.setTabDesign).toHaveBeenCalledWith({ id: 'aurora' });
-    // No design worn: no Fine Tune.
-    expect(screen.queryByRole('region', { name: 'Fine Tune' })).toBeNull();
+    expect(chips.slice(-2)).toEqual(['gradients', 'moving']);
   });
 
-  it('applies a design set in one press', () => {
-    const edits = open();
-    const sets = screen.getByRole('region', { name: 'Design Sets' });
-    fireEvent.click(
-      within(sets).getByRole('button', { name: new RegExp(PAGE_DESIGN_SETS[1]!.label) }),
-    );
-    expect(edits.applyDesignSet).toHaveBeenCalledWith(PAGE_DESIGN_SETS[1]!.id);
-  });
-
-  it('tunes the worn design live: a slider ticks, a switch is one step, Reset keeps the design', async () => {
-    const edits = open({ id: 'aurora', intensity: 0.5 });
-    const tune = await screen.findByRole('region', { name: 'Fine Tune' });
-    fireEvent.change(within(tune).getByRole('slider', { name: 'Intensity' }), {
-      target: { value: '0.6' },
+  it('a moving background is the page’s one design, set in one step', () => {
+    const edits = open({ id: 'grid' });
+    openLayer('design');
+    fireEvent.click(q('[data-page-design-family="moving"]'));
+    fireEvent.click(document.querySelectorAll<HTMLElement>('[role="radio"]')[0]!);
+    expect(edits.background.onAll).toHaveBeenCalledWith({
+      fill: expect.objectContaining({ motion: expect.any(String) }),
     });
+    expect(edits.setTabDesign).not.toHaveBeenCalled();
+  });
+
+  it('on one page sets the page’s own, and Use All Pages’ Design clears it', async () => {
+    const edits = open({ id: 'aurora' }, { id: 'waves' });
+    openLayer('design');
+    fireEvent.click(allPagesSwitch());
+    fireEvent.click(q('[data-page-design-family="organic"]'));
+    expect(q('[data-page-design-tile="waves"]').getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(q('[data-page-design-family="geometric"]'));
+    fireEvent.click(q('[data-page-design-tile="grid"]'));
+    expect(edits.setPageDesign).toHaveBeenCalledWith('a', expect.objectContaining({ id: 'grid' }));
+    expect(edits.setTabDesign).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByRole('button', { name: 'Use All Pages’ Design' }));
+    expect(edits.setPageDesign).toHaveBeenLastCalledWith('a', null);
+  });
+
+  it('tunes the worn design live from Fine Tune: a slider ticks, a switch is one step, Reset keeps it', async () => {
+    const edits = open({ id: 'aurora', intensity: 0.5 });
+    openLayer('design');
+    const tune = await openFineTune();
+    fireEvent.change(tune.getByRole('slider', { name: 'Intensity' }), { target: { value: '0.6' } });
     expect(edits.tuneTabDesign).toHaveBeenCalledWith({ id: 'aurora', intensity: 0.6 });
-    fireEvent.click(within(tune).getByRole('switch', { name: 'Animate' }));
+    fireEvent.click(tune.getByRole('switch', { name: 'Animate' }));
     expect(edits.setTabDesign).toHaveBeenCalledWith({
       id: 'aurora',
       intensity: 0.5,
       animate: true,
     });
-    fireEvent.click(within(tune).getByRole('button', { name: 'Reset' }));
+    fireEvent.click(tune.getByRole('button', { name: 'Reset' }));
     expect(edits.setTabDesign).toHaveBeenLastCalledWith({ id: 'aurora' });
-    expect(within(tune).getByRole('switch', { name: 'Bold Title and Section Pages' })).toBeTruthy();
-    expect(within(tune).getByRole('switch', { name: 'Flow Across Pages' })).toBeTruthy();
-  });
-
-  it('on This Page sets the page’s own, hides the sets, and Use the Tab’s Design clears it', async () => {
-    const edits = open({ id: 'aurora' }, { id: 'waves' });
-    fireEvent.click(screen.getByRole('button', { name: 'This Page' }));
-    expect(screen.queryByRole('region', { name: 'Design Sets' })).toBeNull();
-    const grid = screen.getByRole('region', { name: 'Designs' });
-    expect(within(grid).getByRole('button', { name: 'Waves' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-    fireEvent.click(within(grid).getByRole('button', { name: 'No Design' }));
-    expect(edits.setPageDesign).toHaveBeenCalledWith('a', 'none');
-    fireEvent.click(await screen.findByRole('button', { name: 'Use the Tab’s Design' }));
-    expect(edits.setPageDesign).toHaveBeenLastCalledWith('a', null);
-    // The page's design has no tab switches.
-    const tune = screen.getByRole('region', { name: 'Fine Tune' });
-    expect(within(tune).queryByRole('switch', { name: 'Flow Across Pages' })).toBeNull();
   });
 });
 
@@ -175,10 +277,11 @@ describe('saved designs', () => {
 
   it('shows them as their own group, and a click applies one to the tab or the page', async () => {
     const edits = open({ id: 'aurora' }, undefined, { api: fakeApi() });
+    openLayer('design');
     const saved = await screen.findByRole('region', { name: 'Saved' });
     fireEvent.click(within(saved).getByRole('button', { name: 'Brand Aurora, saved to My Work' }));
     expect(edits.applySavedDesign).toHaveBeenCalledWith({ id: 'aurora', scale: 1.4 }, null);
-    fireEvent.click(screen.getByRole('button', { name: 'This Page' }));
+    fireEvent.click(allPagesSwitch());
     fireEvent.click(
       within(await screen.findByRole('region', { name: 'Saved' })).getByRole('button', {
         name: 'Team Waves, saved to Brand',
@@ -189,6 +292,7 @@ describe('saved designs', () => {
 
   it('shows the saved tile the tab or the page wears as selected, as the catalogue’s tiles do', async () => {
     open({ id: 'aurora', scale: 1.4 }, { id: 'waves' }, { api: fakeApi() });
+    openLayer('design');
     const saved = await screen.findByRole('region', { name: 'Saved' });
     const aurora = within(saved).getByRole('button', { name: 'Brand Aurora, saved to My Work' });
     const waves = within(saved).getByRole('button', { name: 'Team Waves, saved to Brand' });
@@ -196,7 +300,7 @@ describe('saved designs', () => {
     expect(aurora.querySelector('.ring-brand-500')).toBeTruthy();
     expect(waves.getAttribute('aria-pressed')).toBe('false');
     expect(waves.querySelector('.ring-brand-500')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'This Page' }));
+    fireEvent.click(allPagesSwitch());
     const onPage = await screen.findByRole('region', { name: 'Saved' });
     const pressed = (name: string) =>
       within(onPage).getByRole('button', { name }).getAttribute('aria-pressed');
@@ -207,6 +311,7 @@ describe('saved designs', () => {
   it('lets only whoever may tidy rename or delete: My Work’s owner, not a team’s member', async () => {
     const api = fakeApi();
     open({ id: 'aurora' }, undefined, { api });
+    openLayer('design');
     const saved = await screen.findByRole('region', { name: 'Saved' });
     expect(within(saved).getByRole('button', { name: 'More for Brand Aurora' })).toBeTruthy();
     expect(within(saved).queryByRole('button', { name: 'More for Team Waves' })).toBeNull();
@@ -219,8 +324,9 @@ describe('saved designs', () => {
   it('saves the design as tuned from Fine Tune, to My Work or a team', async () => {
     const api = fakeApi();
     open({ id: 'aurora', scale: 1.4 }, undefined, { api });
-    const tune = await screen.findByRole('region', { name: 'Fine Tune' });
-    fireEvent.click(within(tune).getByRole('button', { name: /Save This Design/ }));
+    openLayer('design');
+    const tune = await openFineTune();
+    fireEvent.click(tune.getByRole('button', { name: /Save This Design/ }));
     await screen.findByRole('heading', { name: 'Save This Design' });
     fireEvent.click(await screen.findByRole('radio', { name: /Brand/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
@@ -238,14 +344,16 @@ describe('saved designs', () => {
 
   it.each(['Participant', 'Viewer'])('offers a %s no Save This Design', async () => {
     open({ id: 'aurora' }, undefined, { api: fakeApi(), blocked: true });
-    const tune = await screen.findByRole('region', { name: 'Fine Tune' });
-    expect(within(tune).queryByRole('button', { name: /Save This Design/ })).toBeNull();
+    openLayer('design');
+    const tune = await openFineTune();
+    expect(tune.queryByRole('button', { name: /Save This Design/ })).toBeNull();
   });
 
   it('shows no Saved group and no Save without the Library', async () => {
     open({ id: 'aurora' });
-    const tune = await screen.findByRole('region', { name: 'Fine Tune' });
-    expect(within(tune).queryByRole('button', { name: /Save This Design/ })).toBeNull();
+    openLayer('design');
+    const tune = await openFineTune();
+    expect(tune.queryByRole('button', { name: /Save This Design/ })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Saved' })).toBeNull();
   });
 });

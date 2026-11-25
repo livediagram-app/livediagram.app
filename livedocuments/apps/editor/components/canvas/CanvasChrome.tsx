@@ -352,7 +352,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
         aria-hidden
         data-toast-start=""
         className="pointer-events-none absolute bottom-0 right-0 h-px"
-        style={{ left: contentsDocked && !isMobile ? CONTENTS_SIDEBAR_WIDTH * panelScale : 0 }}
+        style={{ left: contentsDocked && !isMobile ? contentsWidth * panelScale : 0 }}
       />
       {contentsPopoverEl}
       {paletteShown ? (

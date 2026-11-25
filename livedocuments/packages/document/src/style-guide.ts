@@ -17,14 +17,13 @@ const n = (tone: StyleTone | readonly StyleTone[], use: string): StyleNote => ({
 
 /** Each theme: when its colours suit the content. */
 export const THEME_GUIDE: Readonly<Record<string, StyleNote>> = {
-  office: n('formal', 'Corporate reports, board packs, finance and policy: safe blues and greys.'),
+  brand: n(
+    ['formal', 'neutral'],
+    'Any document that should look like the product itself: the clean default blue.',
+  ),
   mono: n('formal', 'Minimal, serious or print-first documents: black, white and grey.'),
   steel: n('formal', 'Engineering, operations and industrial reports: cool steel greys.'),
   indigo: n(['formal', 'neutral'], 'Strategy decks, consulting and legal: deep, confident blue.'),
-  harbour: n(
-    ['formal', 'neutral'],
-    'Finance, insurance and public sector: calm navy and sea tones.',
-  ),
   ocean: n('neutral', 'General business, health and travel: fresh blues and teals.'),
   sky: n(['neutral', 'friendly'], 'Product updates, onboarding and SaaS: light, airy blue.'),
   teal: n('neutral', 'Healthcare, science and wellbeing: clean teal.'),
@@ -33,7 +32,6 @@ export const THEME_GUIDE: Readonly<Record<string, StyleNote>> = {
   pine: n(['neutral', 'formal'], 'Nature, heritage and long-form reports: deep green.'),
   olive: n('neutral', 'Food, agriculture and craft: muted olive.'),
   evergreen: n('neutral', 'Annual reviews and evergreen guides: rich green.'),
-  earth: n('neutral', 'Architecture, interiors and sustainability: warm earth tones.'),
   sand: n(['neutral', 'friendly'], 'Hospitality, lifestyle and travel: warm sand.'),
   cream: n(['neutral', 'friendly'], 'Editorial, essays and menus: soft paper cream.'),
   mocha: n('neutral', 'Coffee, food and cosy editorial: warm browns.'),
@@ -44,12 +42,9 @@ export const THEME_GUIDE: Readonly<Record<string, StyleNote>> = {
   plum: n(['bold', 'neutral'], 'Fashion, arts and premium brands: rich plum.'),
   midnight: n('bold', 'Keynotes and tech talks on dark slides: deep night blue.'),
   abyss: n('bold', 'Dramatic dark decks, gaming and film: near-black depths.'),
-  nightfall: n('bold', 'Evening events and cinematic decks: dusk purples on dark.'),
-  gemstone: n('bold', 'Awards, premium launches and showcases: jewel tones.'),
   rainbow: n('playful', 'Kids, inclusion and celebration: every colour.'),
   pastel: n('playful', 'Classrooms, baby and soft playful pieces: pastels.'),
   tropical: n('playful', 'Summer, travel and parties: bright tropical colours.'),
-  sorbet: n('playful', 'Food, sweets and light-hearted pieces: fruity sorbet.'),
   sparkle: n('playful', 'Celebrations, announcements and New Year: festive sparkle.'),
   spring: n('friendly', 'Spring campaigns, gardening and fresh starts: blossoms and greens.'),
   pumpkin: n('playful', 'Autumn and Halloween: pumpkin orange.'),
@@ -185,7 +180,7 @@ export const STYLE_RECIPES: readonly StyleRecipe[] = [
       'governance',
       'formal',
     ],
-    theme: 'office',
+    theme: 'mono',
     design: 'corner-accents',
     font: 'inter',
     finish: 'professional',

@@ -46,6 +46,11 @@ function MotionTile({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Without a ResizeObserver (an old browser, a test), the tile's size as it first lays out.
+    if (typeof ResizeObserver === 'undefined') {
+      setSize({ w: el.clientWidth || 84, h: el.clientHeight || 52 });
+      return;
+    }
     const ro = new ResizeObserver(([e]) => {
       const { width, height } = e!.contentRect;
       setSize((was) =>

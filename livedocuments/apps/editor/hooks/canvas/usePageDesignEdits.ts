@@ -5,6 +5,7 @@ import {
   pageDesignSet,
   tabPageDesignOf,
   withEveryPageOnTabDesign,
+  withMovingPagesStilled,
   withTabPageDesign,
   type PageDesign,
   type Tab,
@@ -67,7 +68,11 @@ export function pageDesignEdits({
     ts.map((t) => (t.id === activeId ? fn(t) : t));
   const pageEdit = (pageId: string, design: PageDesign | 'none' | null) => (t: Tab) => {
     const edit = pageDesignSet(t, pageId, design);
-    return 'tab' in edit ? edit.tab : t;
+    if (!('tab' in edit)) return t;
+    // A design over a moving background stills it in the same step: one design to a page.
+    return design && design !== 'none'
+      ? withMovingPagesStilled(edit.tab, new Set([pageId]))
+      : edit.tab;
   };
   const setTabDesign = (design: PageDesign | null, options?: { everyPage?: boolean }) => {
     if (editsBlocked) return;
@@ -75,7 +80,12 @@ export function pageDesignEdits({
     commitTabs((ts) =>
       onActive(ts, (t) => {
         const set = withTabPageDesign(t, design);
-        return options?.everyPage ? withEveryPageOnTabDesign(set) : set;
+        // Every page wears it: their own designs give way, and a moving background stills (one design to a page).
+        return options?.everyPage
+          ? design
+            ? withMovingPagesStilled(withEveryPageOnTabDesign(set))
+            : withEveryPageOnTabDesign(set)
+          : set;
       }),
     );
     // A new design is a pick; the same design changed is a tune.

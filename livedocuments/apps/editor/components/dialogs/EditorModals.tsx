@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
@@ -11,6 +11,8 @@ import {
   pagesOf,
   tabPageDesignOf,
   type PageBackground,
+  type PageDesign,
+  type Tab,
 } from '@livedocuments/document';
 import { useAppearance } from '@livedocuments/ui';
 import { TAB_STYLE_KEYS } from '@liveworkspace/workbench/lib/tab-style-to-all';
@@ -78,10 +80,19 @@ function OpenEditorModals() {
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
     setEveryPageBackground,
+    setPageStyle,
     pagesMode,
     pageDesignEdits,
   } = useEditorContext();
   const pageId = useCurrentPageId();
+  // Copy to All Tabs while another tab wears a different style, kept for the dialog's opening once offered, so its
+  // Copied shows after the copy makes every tab alike.
+  const tabsDiffer = tabs.some((t) => !sameTabStyle(t, activeTab));
+  const opening = canvasThemeTab === null ? null : activeTab.id;
+  const [copyOpening, setCopyOpening] = useState<string | null>(null);
+  if (tabsDiffer && opening && copyOpening !== opening) setCopyOpening(opening);
+  if (!opening && copyOpening !== null) setCopyOpening(null);
+  const copyOffered = tabsDiffer || (opening !== null && copyOpening === opening);
   const { appearance } = useAppearance();
   // The page someone is on is the Tab Style surface; a tab with no pages yet is the canvas.
   const pageKind = useCurrentPageKind();
@@ -123,8 +134,11 @@ function OpenEditorModals() {
               return {
                 page,
                 onAll: setEveryPageBackground,
-                onPage: (patch: Partial<PageBackground>) =>
-                  pagesMode?.edit?.setBackground(page.id, patch),
+                // With a design, the background and the page's own design in one step (a Quick Pick).
+                onPage: (patch: Partial<PageBackground>, design?: PageDesign) =>
+                  design
+                    ? setPageStyle(page.id, patch, design)
+                    : pagesMode?.edit?.setBackground(page.id, patch),
               };
             })(),
           }
@@ -207,9 +221,7 @@ function OpenEditorModals() {
           // Copy to All Tabs, a row of Page Design's foot (owner, 2026-11-25).
           allTabs={
             // Only while another tab wears a different style (owner, 2026-11-25).
-            canApplyStyleToAllTabs &&
-            tabs.length > 1 &&
-            tabs.some((t) => !sameTabStyle(t, activeTab))
+            canApplyStyleToAllTabs && tabs.length > 1 && copyOffered
               ? {
                   tabCount: tabs.length,
                   applying: applyingStyleToAllTabs,
@@ -224,11 +236,20 @@ function OpenEditorModals() {
   );
 }
 
-// Whether two tabs wear the same style: the theme and every style setting Copy to All Tabs copies.
-function sameTabStyle(a: object, b: object): boolean {
-  const x = a as Record<string, unknown>;
-  const y = b as Record<string, unknown>;
-  return ['theme', ...TAB_STYLE_KEYS].every(
-    (k) => JSON.stringify(x[k] ?? null) === JSON.stringify(y[k] ?? null),
+// Whether two tabs wear the same style: the theme, every style setting Copy to All Tabs copies, and what their pages
+// wear (the backgrounds and own designs it re-inks).
+function sameTabStyle(a: Tab, b: Tab): boolean {
+  const x = a as unknown as Record<string, unknown>;
+  const y = b as unknown as Record<string, unknown>;
+  const worn = (t: Tab) =>
+    JSON.stringify(
+      [
+        ...new Set(pagesOf(t).map((p) => JSON.stringify([p.background ?? null, p.design ?? null]))),
+      ].sort(),
+    );
+  return (
+    ['theme', ...TAB_STYLE_KEYS].every(
+      (k) => JSON.stringify(x[k] ?? null) === JSON.stringify(y[k] ?? null),
+    ) && worn(a) === worn(b)
   );
 }

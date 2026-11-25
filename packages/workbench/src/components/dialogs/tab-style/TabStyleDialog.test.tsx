@@ -586,12 +586,14 @@ describe('a frame of the product’s own', () => {
 describe('a profile that names and cuts the dialog', () => {
   const base = profileWith().base;
 
-  it('is named by the profile, in its header, its accessible name and the back bar', () => {
-    open({ tab: 'theme', profile: profileWith({ title: 'Knowledgebase Style' }) });
+  it('is named by the profile, in its header and accessible name, and a panel’s way back', () => {
+    open({ profile: profileWith({ title: 'Knowledgebase Style' }) });
     const dialog = screen.getByRole('dialog', { name: 'Knowledgebase Style' });
     expect(dialog.querySelector('h2')?.textContent).toBe('Knowledgebase Style');
-    expect(button(/Knowledgebase Style/)).toBeTruthy();
     expect(screen.queryByText('Tab Style')).toBeNull();
+    cleanup();
+    open({ tab: 'theme', profile: profileWith({ title: 'Knowledgebase Style' }) });
+    expect(button('Back to Knowledgebase Style')).toBeTruthy();
   });
 
   it('hands a frame of the product’s own the name, Tab Style when the profile gives none', () => {

@@ -31,7 +31,7 @@ export function ThemeStrip({
           data-tour-id="canvas-theme"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={onOpenTheme}
-          aria-label={title}
+          aria-label={title === 'Theme & Canvas' ? 'Theme and canvas' : title}
           className={`flex h-11 items-center justify-center transition ${
             named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
           } ${CLUSTER_CONTROL_REST}`}

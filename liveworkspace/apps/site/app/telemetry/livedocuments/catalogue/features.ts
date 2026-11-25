@@ -214,12 +214,14 @@ export const PAGE_BUILDING = chart(
   'Tab',
   'Changed',
   'Pages Built',
-  'A layout put onto a page, a page duplicated, moved or split (a flashcard too long for its card included), or a board put onto a page.',
+  'A layout put onto a page, a page inserted above or below another, a page duplicated, moved or split (a flashcard too long for its card included), or a board put onto a page.',
   {
     types: [
       'PageLayout',
       'PageLayoutSurprise',
       'PageDuplicated',
+      'PageInsertedAbove',
+      'PageInsertedBelow',
       'PageMoved',
       'PagesLaidOut',
       'PageFitToContent',

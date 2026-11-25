@@ -20,7 +20,7 @@ import {
 const labels = (model: PageRowModel) => model.groups.map((g) => g.map((a) => a.label));
 
 describe('pageRowModel', () => {
-  it('groups every verb a page can take, Delete apart', () => {
+  it('puts Duplicate, Lock, Page Settings and Delete on its toolbar, and groups the rest', () => {
     const remove = vi.fn();
     const model = pageRowModel({
       settings: vi.fn(),
@@ -32,17 +32,17 @@ describe('pageRowModel', () => {
       toggleLock: vi.fn(),
       remove,
     });
-    expect(labels(model)).toEqual([
-      ['Page Settings'],
-      ['Hide in Slides'],
-      ['Duplicate', 'Move Up', 'Move Down', 'Lock'],
-    ]);
+    expect(labels(model)).toEqual([['Hide in Slides'], ['Move Up', 'Move Down']]);
+    expect(model.tools.duplicate).toBeDefined();
+    expect(model.tools.settings).toBeDefined();
+    expect(model.tools.locked).toBe(false);
     expect(model.remove).toBe(remove);
   });
 
   it('leaves out what the page cannot take, and offers Unlock on a locked page', () => {
     const model = pageRowModel({ locked: true, toggleLock: vi.fn() });
-    expect(labels(model)).toEqual([['Unlock']]);
+    expect(labels(model)).toEqual([]);
+    expect(model.tools).toEqual({ locked: true, toggleLock: expect.any(Function) });
     expect(model.remove).toBeUndefined();
   });
 });
@@ -106,7 +106,7 @@ describe('PageRowMenu', () => {
     render(<List models={{ a: a.model, b: b.model }} />);
     fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page b' }));
     expect(screen.getAllByRole('menu')).toHaveLength(1);
-    expect(screen.getByText('Page b')).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Page b actions' })).toBeTruthy();
     expect(
       screen.getByRole('button', { name: 'More Actions for Page b' }).getAttribute('aria-expanded'),
     ).toBe('true');
@@ -123,12 +123,14 @@ describe('PageRowMenu', () => {
     expect(region.contains(screen.getByRole('menu'))).toBe(true);
   });
 
-  it('ends in Delete, after its own separator', () => {
+  it('ends its toolbar in Delete', () => {
     const a = model();
     render(<List models={{ a: a.model }} />);
     fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page a' }));
-    const items = screen.getAllByRole('menuitem').map((el) => el.textContent);
-    expect(items.at(-1)).toBe('Delete');
+    const tools = [...screen.getByRole('menu').querySelectorAll('[aria-label]')]
+      .map((el) => el.getAttribute('aria-label'))
+      .filter((l) => ['Duplicate', 'Lock', 'Unlock', 'Page Settings', 'Delete'].includes(l!));
+    expect(tools.at(-1)).toBe('Delete');
     fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' }));
     expect(a.verbs.remove).toHaveBeenCalledOnce();
   });

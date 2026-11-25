@@ -170,7 +170,7 @@ export function DesignGrid({
                   aria-hidden="true"
                   className={`relative flex aspect-[16/10] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[4px] ring-1 transition-colors ${
                     on ? 'ring-brand-500/70' : 'ring-slate-900/10 dark:ring-white/15'
-                  } ${first ? '' : 'bg-white text-slate-400 dark:bg-slate-900 dark:text-slate-500'}`}
+                  } ${first ? '' : 'bg-white text-slate-400 dark:bg-slate-900 dark:text-slate-400'}`}
                 >
                   {first ? (
                     <DesignTileImage input={{ ...inputs[first]!, idPrefix: `pdc-${first}-` }} />

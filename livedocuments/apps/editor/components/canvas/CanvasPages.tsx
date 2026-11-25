@@ -32,10 +32,7 @@ import { FlashcardStackSheets, PageStackNav } from './FlashcardStack';
 import { FLASHCARD_STACK_MAX } from '@/lib/flashcard-stack';
 import { useStylePanelRequest } from '@/lib/article/article-editor-store';
 import { useBandDocumentName } from '@/lib/article/article-band-layout';
-import {
-  previewedBackground,
-  usePageBackgroundPreview,
-} from '@/lib/page-background-preview';
+import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-background-preview';
 import { CanvasPageSheet, type PageSheetActions } from './CanvasPageSheet';
 import { usePageDesignViews } from './usePageDesignViews';
 

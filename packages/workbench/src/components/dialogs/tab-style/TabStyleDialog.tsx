@@ -5,7 +5,7 @@
 // profile says what it shows on the surface the editor names. Every control applies live to the active tab through
 // its setter, eased (lib/tab-style-ease); there is no Apply or Cancel, and closing just dismisses.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TabStyleSubViewContext, type TabStyleSubView } from './tab-style-subview';
 import { BackBar } from '@liveworkspace/ui';
 import { resolveFinish, type Finish } from '@liveworkspace/element-model/finish';
@@ -87,6 +87,13 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
   const [subView, setSubView] = useState<TabStyleSubView | null>(null);
   // One per opening: the dialog mounts as it opens.
   const [openId] = useState(() => `${Date.now()}-${Math.random()}`);
+  // Whether the product's own home is on screen (it shows the shared home where it has nothing, a tab with no
+  // pages), so Show Me tours the home that is there.
+  const viewBox = useRef<HTMLDivElement>(null);
+  const [ownHomeShown, setOwnHomeShown] = useState(false);
+  useEffect(() => {
+    setOwnHomeShown(!!viewBox.current?.querySelector('[data-tour-id="tab-style-cards"]'));
+  });
   const go = (next: TabStyleView) => {
     setEnter(next === 'looks' ? 'back' : 'forward');
     setSubView(null);
@@ -98,6 +105,7 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
     view,
     // The header names the screen that is up: the dialog on its home, a panel inside it, a panel's level inside that.
     title: subView?.current ?? (view === 'looks' ? title : surface.copy.panelTitles[view]),
+    dialogTitle: title,
     subtitle: subView?.line ?? surface.copy.viewLines[view],
     ...(subView
       ? {
@@ -108,12 +116,12 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
         ? { onBack: () => go('looks'), backLabel: `Back to ${title}` }
         : {}),
     help:
-      (view !== 'looks' ? surface.panelHelp?.[view] : undefined) ??
+      (view !== 'looks' ? surface.panelHelp?.[view] : surface.homeHelp) ??
       profile.renderHelp(TAB_STYLE_HELP[view]),
     // Show Me's tour of the home, run on this dialog.
     tourApi: {
       panels: surface.panels,
-      ownHome: !!surface.renderHome,
+      ownHome: !!surface.renderHome && ownHomeShown,
       showHome: () => (view === 'looks' ? undefined : go('looks')),
       showFinish: () => (view === 'finish' ? undefined : go('finish')),
       finish: () => resolvedFinish,
@@ -123,7 +131,7 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
   };
   const children = (
     // data-tab-style-view: which view is up, for a replay to hold one open (livediagram's components/tour/replay-dom.ts).
-    <div data-tab-style-view={view} className="contents">
+    <div ref={viewBox} data-tab-style-view={view} className="contents">
       {/* The home and its panels swap through an easing height and a short slide: into a panel from the right, back
           home from the left (AnimatedHeightBox). */}
       {/* The modal's way back is its header's back button (owner, 2026-11-25). A frame of the product's own has no

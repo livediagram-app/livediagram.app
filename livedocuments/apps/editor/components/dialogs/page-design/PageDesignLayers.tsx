@@ -267,7 +267,7 @@ function TabsReach({ copied }: { copied: boolean }) {
       <path
         d={`M${x} 14 v-6 a2 2 0 0 1 2 -2 h12 a2 2 0 0 1 2 2 v6z`}
         fill="url(#pdt-wash)"
-        className="transition-opacity duration-300 motion-reduce:transition-none"
+        className="transition-opacity duration-200 motion-reduce:transition-none"
         opacity={on ? 1 : 0}
       />
     </g>

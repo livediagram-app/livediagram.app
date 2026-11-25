@@ -57,7 +57,6 @@
     "./components/canvas/LaneGutterStrip": "./src/components/canvas/LaneGutterStrip.tsx",
     "./components/canvas/lane-title-frame": "./src/components/canvas/lane-title-frame.ts",
     "./components/canvas/upright-title": "./src/components/canvas/upright-title.ts",
-    "./components/canvas/ContentsAddSlot": "./src/components/canvas/ContentsAddSlot.tsx",
     "./components/canvas/PageContentsList": "./src/components/canvas/PageContentsList.tsx",
     "./components/canvas/PageContentsPanel": "./src/components/canvas/PageContentsPanel.tsx",
     "./components/canvas/PageContentsSidebar": "./src/components/canvas/PageContentsSidebar.tsx",

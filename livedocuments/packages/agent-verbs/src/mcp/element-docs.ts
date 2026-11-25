@@ -337,8 +337,9 @@ restore_version makes one the tab's content again; restoring the undoVersionId i
 /** The style guide as Markdown, labelled from the catalogues. */
 export function styleGuideDoc(): string {
   return styleGuideMarkdown({
-    theme: (id) => THEMES.find((t) => t.id === id)?.label ?? id,
+    // Every guide entry is one of the catalogue's (style-guide.test.ts), so each lookup finds it.
+    theme: (id) => THEMES.find((t) => t.id === id)!.label,
     design: (id) => PAGE_DESIGN_BY_ID[id].label,
-    font: (id) => FONTS.find((f) => f.id === id)?.label ?? id,
+    font: (id) => FONTS.find((f) => f.id === id)!.label,
   });
 }

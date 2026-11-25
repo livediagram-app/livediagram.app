@@ -5,13 +5,26 @@ import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NOTE_CARDS_MAX, NOTE_CARD_TEXT_MAX, type NoteCard } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
-import { NOTE_CARD_UNDO_MS, NoteCardList, noteCardsSummary } from './NoteCardList';
+import { NoteCardList, noteCardsSummary } from './NoteCardList';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+
+// The shared Undo toast: the removal runs at once and its Undo is kept here, as the toast would hold it.
+type Offered = { message: string; act: () => unknown; undo: () => unknown };
+const offered: Offered[] = [];
+vi.mock('@liveworkspace/ui/undo', () => ({
+  useUndoableAction: () => async (action: Offered) => {
+    offered.push(action);
+    await action.act();
+    return true;
+  },
+}));
+const undoLast = () => act(() => void offered.at(-1)!.undo());
 
 // docs/specs/012-collaboration/speaker-note-cards.md "Writing note cards".
 
 afterEach(() => {
+  offered.length = 0;
   cleanup();
   vi.useRealTimers();
   vi.mocked(track).mockClear();
@@ -76,7 +89,7 @@ describe('NoteCardList', () => {
     expect(ids()).toBe('c1:One|c2:Two|c3:Three|c4:');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(ids()).toBe('c1:One|c2:Two|c3:Three');
-    expect(screen.queryByText('Card removed')).toBeNull();
+    expect(offered).toHaveLength(0);
   });
 
   it('opens one card at a time: opening another closes the first, a blank first going', () => {
@@ -137,30 +150,25 @@ describe('NoteCardList', () => {
     vi.mocked(window.requestAnimationFrame).mockRestore();
   });
 
-  it('removes a card with words behind an Undo that puts it back, and lets the Undo go', () => {
-    vi.useFakeTimers();
+  it('removes a card with words behind the Undo toast, whose Undo puts it back', () => {
     render(<Harness initial={three} />);
     fireEvent.click(card(2, 3).querySelector('[aria-label="Remove Card"]')!);
     expect(ids()).toBe('c1:One|c3:Three');
     expect(track).toHaveBeenCalledWith('UI', 'Removed', 'NoteCard');
-    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(offered.at(-1)?.message).toBe('Card removed.');
+    undoLast();
     expect(ids()).toBe('c1:One|c2:Two|c3:Three');
-    expect(screen.queryByText('Card removed')).toBeNull();
-    // Delete on a focused card, and the Undo leaves on its own.
+    // Delete on a focused card offers it too.
     fireEvent.keyDown(card(3, 3), { key: 'Delete' });
     expect(ids()).toBe('c1:One|c2:Two');
-    expect(screen.getByText('Card removed')).toBeTruthy();
-    act(() => {
-      vi.advanceTimersByTime(NOTE_CARD_UNDO_MS);
-    });
-    expect(screen.queryByText('Card removed')).toBeNull();
+    expect(offered).toHaveLength(2);
   });
 
   it('keeps the Undo when the last card goes, on the empty state', () => {
     render(<Harness initial={[{ id: 'c1', text: 'Only' }]} />);
     fireEvent.keyDown(card(1, 1), { key: 'Backspace' });
     expect(screen.getByText('No notes yet')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    undoLast();
     expect(ids()).toBe('c1:Only');
   });
 
@@ -168,7 +176,7 @@ describe('NoteCardList', () => {
     render(<Harness initial={[...three, { id: 'c4', text: ' ' }]} />);
     fireEvent.keyDown(card(4, 4), { key: 'Delete' });
     expect(ids()).toBe('c1:One|c2:Two|c3:Three');
-    expect(screen.queryByText('Card removed')).toBeNull();
+    expect(offered).toHaveLength(0);
   });
 
   it('stops at the most cards a slide holds', () => {

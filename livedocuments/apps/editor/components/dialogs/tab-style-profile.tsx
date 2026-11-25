@@ -93,6 +93,7 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
     // these panels (Colours, Text, Finish), in place of the looks and Fine-tune. Page Design is no panel of its own.
     panels: ['theme', 'font', 'finish'],
     renderHome: (home) => <PageDesignPanel home={home} />,
+    homeHelp: <HelpArticleLink size="md" article="choosingAPageDesign" />,
     hiddenControls: [],
     renderCanvasPanel: (canvas) => <NewPageBackgroundPanel canvas={canvas} />,
     renderPreview: (kind, p) => (

@@ -98,11 +98,6 @@ calm?; variant?; animate?: true; speed?; rhythm?: true; flow?: true; guard?: 'wa
   `textColor`, else the page ink). Below `TEXT_CONTRAST` (or `LARGE_TEXT_CONTRAST` for large text) it fails. `scrim`
   guard: a rounded plate (`SCRIM_PAD`, radius 12, `base` at `SCRIM_OPACITY`) per failing text; `warn`: none. Answers
   `{ scrims, failing }`.
-- **Sets** (`sets.ts`): each set's theme, font, finish, background (`designSetBackground`: the paper or one of the
-  theme's gradients), design (with `rhythm`) and layouts (`designSetLayout(set, kind, index)`). The editor applies one
-  with `apps/editor/lib/page-design-set-apply.ts` (`withPageDesignSetApplied`): its own theme switch
-  (`withThemeApplied`, so elements follow it), font, finish, the background as New Page Background given to every
-  page, the design, and the layouts on each empty, unlocked slide or infographic page, as one undo step.
 - **Pick** (`pick.ts`, `pickPageDesign(words)`): each design's `keywords` matched (whole words, lower case) against
   the words; most matches wins, ties to catalogue order; none to `soft-mesh`.
 

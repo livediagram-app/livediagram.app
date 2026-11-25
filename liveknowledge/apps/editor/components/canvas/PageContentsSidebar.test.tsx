@@ -167,15 +167,11 @@ describe('PageContentsSidebar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete Page 2' }));
     expect(h.edit.removePage).toHaveBeenCalledWith('p2');
     fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 2' }));
-    expect(screen.getAllByRole('menuitem').map((el) => el.textContent)).toEqual([
-      'Page Settings',
-      'Add to Slides',
-      'Duplicate',
-      'Move Up',
-      'Move Down',
-      'Lock',
-      'Delete',
-    ]);
+    // The toolbar's icons (named by aria-label), then the menu's rows.
+    expect(
+      screen.getAllByRole('menuitem').map((el) => el.getAttribute('aria-label') || el.textContent),
+    ).toEqual(['Duplicate', 'Page Settings', 'Delete', 'Add to Slides', 'Move Up', 'Move Down']);
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Lock' })).toBeTruthy();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Move Down' }));
     expect(h.edit.movePage).toHaveBeenCalledWith('p2', 1);
     expect(h.focusPage).not.toHaveBeenCalledWith('p2');

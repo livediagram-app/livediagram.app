@@ -85,3 +85,20 @@ export function pageDesignIdOf(
   if (isNoDesign(page.design)) return null;
   return (page.design ?? tabDesign)?.id ?? null;
 }
+
+/** `tab` with the moving backgrounds of its unlocked pages stilled, their colours kept (`only`: those pages alone):
+ *  a design picked over a moving background takes its place, one design to a page (owner, 2026-11-25). */
+export function withMovingPagesStilled<T extends DesignTab>(tab: T, only?: ReadonlySet<string>): T {
+  const pages = pagesOf(tab);
+  let changed = false;
+  const next = pages.map((p) => {
+    const fill = p.background?.fill;
+    if (fill?.kind !== 'gradient' || !fill.motion) return p;
+    if (only && !only.has(p.id)) return p;
+    if (pageLockRefuses(pages, p.id)) return p;
+    changed = true;
+    const { motion: _motion, ...still } = fill;
+    return { ...p, background: { ...p.background, fill: still } };
+  });
+  return changed ? withPages(tab, next) : tab;
+}

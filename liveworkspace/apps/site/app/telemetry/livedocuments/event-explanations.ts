@@ -750,6 +750,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageUnlocked': 'Someone unlocked a page.',
   'Tab|Changed|PageRenamed': 'Someone renamed a page.',
   'Tab|Changed|PageDuplicated': 'Someone duplicated a page with its content.',
+  'Tab|Changed|PageInsertedAbove':
+    'Someone inserted a new page straight above a page, from its menu.',
+  'Tab|Changed|PageInsertedBelow':
+    'Someone inserted a new page straight below a page, from its menu.',
   'Tab|Changed|PageMoved': 'Someone moved a page left or right in its row.',
   'Tab|Changed|PagesLaidOut':
     'Someone split a Fit to Content page into one page per group of its content.',

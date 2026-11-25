@@ -124,6 +124,8 @@ export type TabStyleFrameParts = {
   help: ReactNode;
   // The header's name: the dialog's (the profile's, else "Tab Style") on its home, else the screen's.
   title: string;
+  // The dialog's own name (the profile's, else "Tab Style") on every screen: its accessible name.
+  dialogTitle?: string;
   // Back to the screen before, on any screen but the home (the header's back button), named by `backLabel`.
   onBack?: () => void;
   backLabel?: string;
@@ -195,6 +197,8 @@ export type TabStyleSurface<Look extends TabStyleLook, Pattern extends string> =
   // The home the product draws itself, in place of the looks and Fine-tune (livedocuments' Page Design home), handed
   // the panels' rows, how to open one, the surface's extra and the shared home to show where it has nothing.
   renderHome?: (home: TabStyleHome<Look>) => ReactNode;
+  // The home's help link, where the product's home is its own (livedocuments' Choosing a Page Design).
+  homeHelp?: ReactNode;
   // A Fine-tune row's line of the product's own, per panel; the shared line when unset.
   panelValues?: Partial<Record<TabStylePanel, string>>;
   // A Fine-tune row's picture of the product's own, per panel (a Page Design's tile); the shared one when unset.

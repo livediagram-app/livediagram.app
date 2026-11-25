@@ -247,6 +247,7 @@ export function useEditorTabs({
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
     setEveryPageBackground,
+    setPageStyle,
     pageDesignEdits,
   } = useTabCanvas({
     notify: (message) => toast.info(message),
@@ -319,6 +320,7 @@ export function useEditorTabs({
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
     setEveryPageBackground,
+    setPageStyle,
     pageDesignEdits,
     applyStyleToAllTabs,
     applyingStyleToAllTabs,

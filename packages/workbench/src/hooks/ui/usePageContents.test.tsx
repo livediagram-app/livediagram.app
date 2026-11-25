@@ -330,23 +330,17 @@ describe('usePageContents', () => {
         .flat()
         .find((a) => a.key === k)!
         .run();
-    expect(first.groups.flat().map((a) => a.key)).toEqual([
-      'settings',
-      'own',
-      'duplicate',
-      'move-down',
-      'lock',
-    ]);
-    run(first, 'settings');
+    expect(first.groups.flat().map((a) => a.key)).toEqual(['own', 'move-down']);
+    first.tools.settings!();
     expect(spies.focusPage).toHaveBeenCalledWith('p1');
     expect(onWent).toHaveBeenCalled();
     frames.shift()!(0);
     expect(spies.openSettings).toHaveBeenCalledWith('p1');
-    run(first, 'duplicate');
+    first.tools.duplicate!();
     expect(edit.duplicatePage).toHaveBeenCalledWith('p1');
     run(first, 'move-down');
     expect(edit.movePage).toHaveBeenCalledWith('p1', 1);
-    run(first, 'lock');
+    first.tools.toggleLock();
     expect(edit.setLocked).toHaveBeenCalledWith('p1', true);
     // Delete, then the focus goes to the row after the first.
     first.remove!();
@@ -355,7 +349,7 @@ describe('usePageContents', () => {
     expect(document.activeElement).toBe(els.get('p2'));
     // A locked page unlocks and cannot be deleted; the last moves up only.
     const locked = result.current.actionsFor(rows[1]!)!;
-    run(locked, 'lock');
+    locked.tools.toggleLock();
     expect(edit.setLocked).toHaveBeenCalledWith('p2', false);
     expect(locked.remove).toBeUndefined();
     const last = result.current.actionsFor(rows[2]!)!;
@@ -365,8 +359,8 @@ describe('usePageContents', () => {
     // Settings with no sheet to close still glides there.
     const bare = setup({ edit: editsOf({ canDuplicate: () => false, duplicatePage: undefined }) });
     const plain = bare.result.current.actionsFor(bare.result.current.rows[0]!)!;
-    expect(plain.groups.flat().map((a) => a.key)).not.toContain('duplicate');
-    run(plain, 'settings');
+    expect(plain.tools.duplicate).toBeUndefined();
+    plain.tools.settings!();
     expect(bare.spies.focusPage).toHaveBeenCalledWith('p1');
     const noDelete = setup({ edit: editsOf({ removePage: undefined }) });
     expect(

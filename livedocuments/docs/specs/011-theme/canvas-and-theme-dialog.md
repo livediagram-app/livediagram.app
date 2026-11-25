@@ -205,7 +205,8 @@ open the dialog on that panel.
 
 **Copy to All Tabs** (owner, 2026-11-25): a row of Page Design's pinned foot under Affect All Pages, drawn as it is
 (a picture of tabs taking the style, the name, a line) with a **Copy** button where the switch sits, only while
-another tab wears a different style (theme or any copied setting): none with one tab, or with every tab alike. It copies the tab's design, background, colours, text and finish to every other tab,
+another tab wears a different style (theme, any copied setting, or what its pages wear): none with one tab, or with
+every tab alike. Once offered it stays for the rest of that opening, so its Copied shows after the copy. It copies the tab's design, background, colours, text and finish to every other tab,
 and each unlocked page there takes the background and the tab's design; a locked tab keeps its own.
 
 Tabs drift apart in style over time, so the home ends with one grouped settings row, iOS style: **Apply to All Tabs**
@@ -349,7 +350,8 @@ PageDesignPanel.tsx`, `PageDesignLayers.tsx`). Top to bottom:
     keeps its own, and only then a notice says so. On This Page it is the page's alone.
 - **Quick Picks** under the layers: eighteen pairs rolled at random each time the screen opens, each a theme gradient and
   a design no other pick wears, named for both ("Dawn Soft Mesh"), six at a time (two rows of three) in a carousel with **Shuffle** to
-  roll again (owner, 2026-11-25). A press sets both, in one undo step on All Pages; the pair worn is ticked.
+  roll again (owner, 2026-11-25). A press is one undo step: on All Pages the look, the design and the background
+  together; on This Page the page's background and its own design. The pair worn is ticked.
 - **One screen at a time.** A layer's picker replaces the screen whole. The header names the screen that is up, with
   its own line under it: **Tab Style** on the home, the panel's name inside one (**Page Design**), the layer's inside
   that (**Design**, **Background**). Off the home, the header's mark is a **back button** to the screen before (a
@@ -357,7 +359,9 @@ PageDesignPanel.tsx`, `PageDesignLayers.tsx`). Top to bottom:
   Design picker is one carousel, six at a time (two rows of three), under a chip row: **All** (None, then every
   family's, the default) and each family; a chip swaps what the carousel holds, so the screen keeps one height. It
   opens on the page holding the design worn (owner, 2026-11-25). On a slide or a flashcard a **Moving** chip, after All, holds the
-  animated backgrounds, drawn as the other designs' tiles with a Moves badge; a page wears one design (owner, 2026-11-25): a moving background removes the design over it, and a design picked over a moving background stills it, its colours kept (a carousel of motions, then their colourings and speed), which left Background's kinds: a
+  animated backgrounds, drawn as the other designs' tiles with a Moves badge; a page wears one design (owner, 2026-11-25): no design draws over a moving background, and a design picked over one
+  stills it in the same undo step, its colours kept (on All Pages, every page that moves, each its own). A moving
+  background reaches slides and flashcards alone, and leaves what new pages start on as it was (a carousel of motions, then their colourings and speed), which left Background's kinds: a
   moving background is Design's, set on the page's background. The Design row names it ("Aurora (moving)", or after
   the design's name).
 - **Fine Tune**, while a design is worn: a full-width row like the layers' rows (a sliders picture, **Fine Tune**

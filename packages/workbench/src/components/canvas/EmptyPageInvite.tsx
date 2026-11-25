@@ -48,9 +48,7 @@ export function EmptyPageInvite({
           card={{ label, hint, icon: LayoutsIcon, onOpen }}
           data={{ 'data-empty-page-invite': pageId }}
         />
-        {also ? (
-          <InviteCard card={also} data={{ 'data-empty-page-invite-also': pageId }} />
-        ) : null}
+        {also ? <InviteCard card={also} data={{ 'data-empty-page-invite-also': pageId }} /> : null}
       </div>
     </div>
   );
