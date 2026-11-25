@@ -166,17 +166,17 @@ Element add / change telemetry as every element; `Canvas · Used · WaterCooler 
 
 ## Testing
 
-| Rule                                        | Test                                                         |
-| ------------------------------------------- | ------------------------------------------------------------ |
-| Kinds, sizes, room defaults, doorway values | `packages/document/src/office.test.ts`                       |
-| Walls, doorway span, room drawing           | same                                                         |
-| Footprints, table seats and facings         | same                                                         |
-| Walls and footprints block; doorway passes  | `apps/editor/lib/avatar-fence.test.ts`                       |
-| A turned room's walls block where drawn; a Door in one passes | `packages/avatar/src/collision.turned-room.test.ts` |
+| Rule                                                             | Test                                                                  |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Kinds, sizes, room defaults, doorway values                      | `packages/document/src/office.test.ts`                                |
+| Walls, doorway span, room drawing                                | same                                                                  |
+| Footprints, table seats and facings                              | same                                                                  |
+| Walls and footprints block; doorway passes                       | `apps/editor/lib/avatar-fence.test.ts`                                |
+| A turned room's walls block where drawn; a Door in one passes    | `packages/avatar/src/collision.turned-room.test.ts`                   |
 | A turned room's Doors turn with it; its call is its turned floor | `packages/document/src/room-builder.test.ts`, `call-geometry.test.ts` |
-| Floor and scenery never rung                | `apps/editor/lib/avatar-walk.test.ts`                        |
-| Drink held, refreshed, put down; on arrival | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`            |
-| Views draw; plant stays green; table pill   | `apps/editor/components/canvas/collab/office-views.test.tsx` |
+| Floor and scenery never rung                                     | `apps/editor/lib/avatar-walk.test.ts`                                 |
+| Drink held, refreshed, put down; on arrival                      | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`                     |
+| Views draw; plant stays green; table pill                        | `apps/editor/components/canvas/collab/office-views.test.tsx`          |
 
 ## Constants and configuration
 

@@ -94,18 +94,18 @@ Work Tracker 849 (spec "Selection popover", "It never covers what you just dupli
 
 ## Testing
 
-| Rule                                                                                | Test                                                       |
-| ----------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| A large piece's copy lands beside it, clear of it                                   | `lib/duplicate-placement.test.ts`                          |
-| Right, below, left, above, then a step further out; the right anyway with none free | `lib/duplicate-placement.test.ts`                          |
-| Containers never block; a Room's floor is preferred                                 | `lib/duplicate-placement.test.ts`                          |
-| A Room shares the original's wall                                                   | `lib/duplicate-placement.test.ts`                          |
-| A Door or a Window slides along its wall, clear of other wall pieces; a free one    | `lib/duplicate-placement.test.ts`                          |
-| A multi-selection moves as one group; a Door left without its Room snaps            | `hooks/canvas/useElementDuplication.test.tsx`              |
-| The copy is selected                                                                | `hooks/canvas/useElementDuplication.test.tsx`              |
+| Rule                                                                                   | Test                                                        |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| A large piece's copy lands beside it, clear of it                                      | `lib/duplicate-placement.test.ts`                           |
+| Right, below, left, above, then a step further out; the right anyway with none free    | `lib/duplicate-placement.test.ts`                           |
+| Containers never block; a Room's floor is preferred                                    | `lib/duplicate-placement.test.ts`                           |
+| A Room shares the original's wall                                                      | `lib/duplicate-placement.test.ts`                           |
+| A Door or a Window slides along its wall, clear of other wall pieces; a free one       | `lib/duplicate-placement.test.ts`                           |
+| A multi-selection moves as one group; a Door left without its Room snaps               | `hooks/canvas/useElementDuplication.test.tsx`               |
+| The copy is selected                                                                   | `hooks/canvas/useElementDuplication.test.tsx`               |
 | A Room or a Corridor brings its Doors and Windows; one on a shared wall is not stacked | `lib/duplicate-placement.test.ts` "duplicateWithWallPieces" |
-| The Room and its Doors are one commit, so one Undo                                  | `hooks/canvas/useElementDuplication.test.tsx`              |
-| Budget on 5,000 pieces                                                              | `lib/duplicate-placement.test.ts` "duplicateOffset budget" |
+| The Room and its Doors are one commit, so one Undo                                     | `hooks/canvas/useElementDuplication.test.tsx`               |
+| Budget on 5,000 pieces                                                                 | `lib/duplicate-placement.test.ts` "duplicateOffset budget"  |
 
 ## Constants and configuration
 

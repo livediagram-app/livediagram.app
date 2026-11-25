@@ -13,10 +13,12 @@
 
 import { ROOM_BACK_FACE, ROOM_WALL } from '@livehuddle/avatar/office-geometry';
 import {
+  duplicateElements,
   elementBounds,
   isBoxed,
-  isOutlinedRoom,
+  sharesWallsByBox,
   isWallPiece,
+  withAttachedDoors,
   rectsIntersect,
   snapDoorToWall,
   wallUnder,
@@ -37,9 +39,9 @@ export const DUPLICATE_GAP = PASTE_OFFSET;
 
 type Delta = { dx: number; dy: number };
 
-// A rectangular Room (a Room Builder room's walls are not on its box, so it never shares one by its box).
-const isBoxRoom = (el: Element): el is ShapeElement =>
-  el.type === 'shape' && el.shape === 'room' && !isOutlinedRoom(el);
+// A rectangular, upright Room (a Room Builder room's walls are not on its box, nor a turned room's, so neither shares
+// one by its box).
+const isBoxRoom = sharesWallsByBox;
 
 const area = (r: Rect) => r.width * r.height;
 
@@ -123,7 +125,7 @@ export function duplicateOffset(
 }
 
 // Two wall pieces overlap when their centres stand closer than half their widths together.
-function clashes(piece: ShapeElement, elements: readonly Element[], skipId: ElementId): boolean {
+function clashes(piece: ShapeElement, elements: readonly Element[], skipId?: ElementId): boolean {
   const cx = piece.x + piece.width / 2;
   const cy = piece.y + piece.height / 2;
   return elements.some(
@@ -191,4 +193,43 @@ export function groupDuplicateOffset(
   );
   if (!box) return { dx: DUPLICATE_GAP, dy: DUPLICATE_GAP };
   return duplicateOffset(box, elements, ids);
+}
+
+/** Whether a piece has walls Doors and Windows stand on: a Room (a box or a Room Builder room) or a Corridor. */
+export const isWalled = (el: Element): el is ShapeElement =>
+  el.type === 'shape' && (el.shape === 'room' || el.shape === 'corridor');
+
+/**
+ * A Room's or a Corridor's copies (docs/specs/008-canvas/canvas-and-palette.md "Duplicate", Work Tracker 1452): its
+ * copy placed by `placeDuplicate`, and every Door and Window standing on its walls copied by the same move, so each
+ * stands on the copy's same wall at the same place, under a fresh id. A copied wall piece that would land on one
+ * already on the tab (the copy shares the original's wall, where the original's own Door stands) is left out. The
+ * room's copy comes first.
+ */
+export function duplicateWithWallPieces(
+  source: ShapeElement,
+  elements: readonly Element[],
+): Element[] {
+  const ids = withAttachedDoors(elements, new Set([source.id]));
+  // Its own Doors stick out past its box (a Door straddles its wall), so they never block the copy's spot: the copy's
+  // Doors take theirs.
+  const box = { x: source.x, y: source.y, width: source.width, height: source.height };
+  const { dx, dy } = duplicateOffset(
+    box,
+    elements.filter((el) => el.id === source.id || !ids.has(el.id)),
+    new Set([source.id]),
+    isBoxRoom(source),
+  );
+  const { newElements, idMap } = duplicateElements(elements as Element[], ids, dx, dy);
+  const roomId = idMap.get(source.id);
+  const room = newElements.find((c) => c.id === roomId);
+  if (!room) return [];
+  const kept: Element[] = [room];
+  for (const c of newElements) {
+    if (c === room) continue;
+    // Never stacked on a Door or a Window already there, or on a copy kept before it.
+    if (isWallPiece(c) && clashes(c, [...elements, ...kept])) continue;
+    kept.push(c);
+  }
+  return kept;
 }
