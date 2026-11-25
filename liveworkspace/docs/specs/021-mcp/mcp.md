@@ -94,7 +94,9 @@ The server is built to be listed in Claude's connector directory, so it meets it
   origin and exposes `WWW-Authenticate` and `Mcp-Session-Id`, so a client running in a page (the MCP Inspector, a
   web app) can read the challenge and start signing in. The Bearer token is the authorization, never the origin.
 
-Before submitting: public docs, a privacy policy and support links, which wait until the trial ends.
+For the connector directory: its docs are the help centre's "Connect an AI Tool (MCP)" article (the listing's
+`documentationUrl`), its privacy policy liveworkspace.app/privacy ("Connected AI tools"), its support the help
+centre's contact page, and its icon `liveworkspace-icon-512.png`.
 
 ## How it works
 

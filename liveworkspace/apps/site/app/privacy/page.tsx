@@ -181,11 +181,13 @@ const SECTIONS: LegalSection[] = [
           account shows its own name until you choose a display name.
         </li>
         <li>
-          <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through an
-          app&rsquo;s MCP server (every app has one but livehuddle), we store the tool&rsquo;s
-          registration (its name and redirect address, for 30 days), short-lived authorisation codes
-          that expire within minutes, and for an hour a count of registrations from your network
-          address, to stop abuse.
+          <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through our
+          MCP server (mcp.liveworkspace.app), we store the tool&rsquo;s registration (its name and
+          redirect address, for 200 days after it last signs in), the ids of the last few tokens it
+          was given (never the tokens), which apps you let it reach and the name the tool gives
+          itself (each kept against a one-way hash of its token, never the token, for as long as the
+          token lasts), short-lived sign-in codes that expire within minutes, and for an hour a
+          count of registrations from your network address, to stop abuse.
         </li>
         <li>
           <strong>Form responses.</strong> Each response to a form you publish is stored in your
@@ -299,9 +301,9 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Connected AI tools</strong>, such as Claude, read and change your documents
-            through an app&rsquo;s MCP server or our API, as does the command line, with the account
-            or API token you approved. A tool sees only what that account or token can open. What
-            the tool does with what it reads is governed by its own terms and privacy policy.
+            through our MCP server or our API, as does the command line, with the account or API
+            token you approved. A tool sees only what that account or token can open. What the tool
+            does with what it reads is governed by its own terms and privacy policy.
           </li>
         </ul>
         <p>
