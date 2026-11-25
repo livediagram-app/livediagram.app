@@ -5,6 +5,7 @@ import type { ConnectedMenuVerb } from './ConnectedRowMenu';
 import type { PageTreeConnected } from './connected-rows';
 import type { PageMenuVerb } from './PageTreeRowMenu';
 import type { PageTreeActions, PageTreeKnowledge } from './PageTree';
+import type { RowFocus } from '@liveworkspace/workbench/lib/row-focus';
 
 export type PageVerbDeps = {
   actions: PageTreeActions;
@@ -13,6 +14,8 @@ export type PageVerbDeps = {
   connected?: PageTreeConnected | undefined;
   // Rename opens the row's field, which is the tree's own state.
   rename: (id: string) => void;
+  // Where focus goes once a deleted page's rows have gone, and after their Undo (the tree's rows, row-focus.ts).
+  deleteFocus?: (id: string) => RowFocus;
 };
 
 export function runPageVerb(verb: PageMenuVerb, id: string, deps: PageVerbDeps): void {
@@ -49,7 +52,7 @@ export function runPageVerb(verb: PageMenuVerb, id: string, deps: PageVerbDeps):
     case 'outdent':
       return act.onOutdent(id);
     case 'delete':
-      return act.onDelete(id);
+      return act.onDelete(id, deps.deleteFocus?.(id));
   }
 }
 

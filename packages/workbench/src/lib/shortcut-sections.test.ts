@@ -35,13 +35,14 @@ const LISTS = readdirSync(ROOT)
   });
 
 describe('In Every App', () => {
-  it('lists Search & Commands, Undo and Redo, in that order', () => {
+  it('lists Search & Commands, Undo, Redo and reaching a toast, in that order', () => {
     expect(IN_EVERY_APP_SECTION).toEqual({
       heading: 'In Every App',
       rows: [
         { keys: ['⌘', 'K'], label: 'Search & Commands  (or ⌘ .)' },
         { keys: ['⌘', 'Z'], label: 'Undo' },
         { keys: ['⌘', '⇧', 'Z'], label: 'Redo  (or Ctrl Y)' },
+        { keys: ['F6'], label: 'Reach a Toast’s Undo, While One Shows' },
       ],
     });
   });

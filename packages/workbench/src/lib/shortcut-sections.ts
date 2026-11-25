@@ -26,12 +26,14 @@ function frozen(section: ShortcutSection): ShortcutSection {
   });
 }
 
-/** In Every App: Search & Commands, Undo and Redo, the same keys and words in every editor. */
+/** In Every App: Search & Commands, Undo and Redo, and reaching a toast's Undo, the same keys and words in every editor. */
 export const IN_EVERY_APP_SECTION: ShortcutSection = frozen({
   heading: 'In Every App',
   rows: [
     { keys: ['⌘', 'K'], label: 'Search & Commands  (or ⌘ .)' },
     { keys: ['⌘', 'Z'], label: 'Undo' },
     { keys: ['⌘', '⇧', 'Z'], label: 'Redo  (or Ctrl Y)' },
+    // The toast stack takes F6 first while a toast offers an action (@liveworkspace/ui/toast TOAST_REACH_KEY).
+    { keys: ['F6'], label: 'Reach a Toast’s Undo, While One Shows' },
   ],
 });

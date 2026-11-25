@@ -101,6 +101,8 @@ States of a page, per editor: **reading** and **editing**; per page in the knowl
 | `pageEditLens(tab)`, `pageReadLens(tab)`                   | a real tab                             | the lens; one object per real tab (cached), so a commit that changes nothing returns the real tab                                                        |
 | `liftTabs(ts, id)`, `lowerTabs(real, lifted, mapped, ctx)` | tabs                                   | the lens list; the real list, the same array when nothing changed                                                                                        |
 
+Copies strip the draft (`exportDocumentCopy` through `withoutDraftData`); the Drive file and a snapshot do not (`exportDocumentFile` keeps the stored body), so a revert gives a draft back. Pinned in `document-room/document-snapshots.test.ts`.
+
 Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered, never logged):
 
 - `{ kind: 'page-editing', tabId: string | null }`: the sender is editing that page, or none. The room keeps it on the

@@ -37,6 +37,7 @@
     "./dialog-hero": "./src/dialog/hero/index.ts",
     "./dialog-hero-art/*": "./src/dialog/hero/art/*.tsx",
     "./toast": "./src/toast/index.ts",
+    "./undo": "./src/undo/index.ts",
     "./callout": "./src/callout/index.ts",
     "./ai-writer-mark": "./src/ai-writer/AiWriterMark.tsx",
     "./agent-for-person": "./src/ai-writer/agent-for-person.ts"

@@ -6,6 +6,7 @@ import {
   setDashboardContent,
   type DashboardLayout,
 } from '@liveplanner/project';
+import { ToastProvider } from '@liveworkspace/ui/toast';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
 import { DashboardSettings } from './DashboardSettings';
@@ -22,21 +23,29 @@ function show(layout: DashboardLayout, canEdit = true) {
   let current = layout;
   const changeDashboard = vi.fn(
     (change: (l: DashboardLayout) => DashboardLayout, _kind: string, _opts?: unknown) => {
+      const before = current;
       current = change(current);
+      // Its Undo, as usePlanTabActions hands it back.
+      return () => {
+        current = before;
+        return true;
+      };
     },
   );
   const onRename = vi.fn();
   const canvas = document.createElement('div');
   document.body.appendChild(canvas);
   render(
-    <DashboardSettings
-      canvas={canvas}
-      canEdit={canEdit}
-      name="Overview"
-      layout={layout}
-      actions={{ changeDashboard } as unknown as PlanTabActions}
-      onRename={onRename}
-    />,
+    <ToastProvider>
+      <DashboardSettings
+        canvas={canvas}
+        canEdit={canEdit}
+        name="Overview"
+        layout={layout}
+        actions={{ changeDashboard } as unknown as PlanTabActions}
+        onRename={onRename}
+      />
+    </ToastProvider>,
   );
   return { changeDashboard, onRename, now: () => current };
 }
@@ -51,6 +60,13 @@ describe('Dashboard Settings', () => {
     show(dashboardFromPreset('two-by-two', id));
     openCog();
     expect(track).toHaveBeenCalledWith('Plan', 'Opened', 'DashboardSettings');
+  });
+
+  // The top-right corner card (Share, Sign In) covered the cog at 1440px: it stands left of the card's span.
+  it('stands clear of the top-right corner card', () => {
+    show(dashboardFromPreset('two-by-two', id));
+    const card = document.querySelector<HTMLElement>('[data-dashboard-settings]')!;
+    expect(card.className).toContain('right-[calc(var(--corner-card-span,0px)');
   });
 
   // A board maximised from a slot puts its own cog in this corner: the dashboard's steps aside until it is restored.
@@ -116,7 +132,8 @@ describe('Dashboard Settings', () => {
     expect(s.changeDashboard.mock.calls[1]![2]).toEqual({ prune: true });
   });
 
-  it('asks before starting over or clearing a dashboard that holds something', () => {
+  // liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md: no question; the toast's Undo puts it back.
+  it('starts over or clears a dashboard that holds something at once, and Undo puts it back', async () => {
     const base = dashboardFromPreset('two-by-two', id);
     const held = setDashboardContent(base, base.rows[0]!.slots[0]!.id, {
       type: 'note',
@@ -124,24 +141,32 @@ describe('Dashboard Settings', () => {
       text: '',
     });
     const s = show(held);
-    openCog();
-    openSection('Layouts');
-    fireEvent.click(screen.getByRole('button', { name: /^Focus/ }));
-    expect(screen.getByText(/Start over as Focus\?/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    openSection('Dashboard Setup');
-    fireEvent.click(screen.getByRole('button', { name: 'Clear Dashboard' }));
-    expect(s.changeDashboard).not.toHaveBeenCalled();
-    act(() => {
-      // The confirmation's own button.
-      fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
-    });
-    expect(s.changeDashboard.mock.calls[0]![1]).toBe('DashboardContent');
-    expect(
+    const holds = () =>
       s
         .now()
         .rows.flatMap((r) => r.slots)
-        .some((x) => x.content),
-    ).toBe(false);
+        .some((x) => x.content);
+    openCog();
+    openSection('Layouts');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^Focus/ }));
+    });
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(s.changeDashboard.mock.calls[0]![2]).toEqual({ prune: true });
+    expect(screen.getByText('Started over as Focus.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Undo starting over' }));
+    await act(async () => {});
+    expect(s.now()).toBe(held);
+
+    // The cog opens again on Dashboard Setup.
+    openCog();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Clear Dashboard' }));
+    });
+    expect(s.changeDashboard.mock.calls[1]![1]).toBe('DashboardContent');
+    expect(holds()).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'Undo clearing the dashboard' }));
+    await act(async () => {});
+    expect(holds()).toBe(true);
   });
 });

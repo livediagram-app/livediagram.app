@@ -100,6 +100,28 @@ describe('toastPlacement', () => {
     ).toEqual({ bottom: 900 - 836, right: 1440 - 895 + TOAST_FLOOR_GAP_PX });
   });
 
+  // liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md: an Undo toast never covers Tools' Present.
+  it('stands left of a popover risen above a footer button, however tall, still on the cluster line', () => {
+    const tools = { ...rect(860, 260, 540, 520), beside: true };
+    expect(
+      toastPlacement({
+        viewportWidth: 1440,
+        viewportHeight: 900,
+        floors: [tabBar],
+        sides: [cluster, tools],
+      }),
+    ).toEqual({ bottom: 900 - 836, right: 1440 - 860 + TOAST_FLOOR_GAP_PX });
+    // On a phone it is one more floor, risen.
+    expect(
+      toastPlacement({
+        viewportWidth: 390,
+        viewportHeight: 800,
+        floors: [],
+        sides: [{ ...rect(0, 200, 390, 560), beside: true }],
+      }),
+    ).toEqual({ bottom: 800 - 200 + TOAST_FLOOR_GAP_PX, right: null });
+  });
+
   it("ignores a template start's foot row from 640px (a centred dialog), and stands on it on a phone (a sheet)", () => {
     expect(
       toastPlacement({

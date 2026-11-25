@@ -117,7 +117,6 @@ export function useEditorTabs({
     ownerId: selfParticipant.id,
     documentId,
     createTab,
-    commit,
     commitTabs,
     tickTabs,
     markTabLoaded,
@@ -131,7 +130,6 @@ export function useEditorTabs({
     noteImport: historySlice.importUndoView.noteImport,
     onSlidesImported: slideDeck.adoptImportedSlides,
     refreshDocumentList: () => refreshDocumentList(),
-    confirm,
     toast,
   });
   // The page's name follows its Title as it is typed (usePageNameFromTitle).

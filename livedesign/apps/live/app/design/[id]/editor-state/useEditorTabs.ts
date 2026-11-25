@@ -104,7 +104,6 @@ export function useEditorTabs({
     ownerId: selfParticipant.id,
     designId,
     createTab,
-    commit,
     commitTabs,
     markTabLoaded,
     isTabLoaded: (id: string) => loadedTabIdsRef.current.has(id),
@@ -116,7 +115,6 @@ export function useEditorTabs({
     requestFit,
     noteImport: historySlice.importUndoView.noteImport,
     refreshDesignList: () => refreshDesignList(),
-    confirm,
     toast,
   });
   // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the Connect list's add and the move to the new

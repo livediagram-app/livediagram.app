@@ -6,8 +6,7 @@ import {
 } from '@/lib/knowledge-tier';
 import type { Element, Tab } from '@liveknowledge/document';
 import {
-  deletePageMessage,
-  deletePageTitle,
+  deletedPageMessage,
   pageAfterDelete,
   pageTreeRefusalText,
   withPageAddedTo,
@@ -97,23 +96,15 @@ describe('pageAfterDelete', () => {
 });
 
 describe('what a person reads', () => {
-  it('names the count in the delete confirmation', () => {
-    expect(deletePageTitle('Release Process', 3)).toBe('Delete Release Process and 3 Subpages?');
-    expect(deletePageTitle('Release Process', 1)).toBe('Delete Release Process and 1 Subpage?');
-    expect(deletePageTitle('Release Process', 0)).toBe('Delete Release Process?');
-    expect(deletePageTitle(' ', 0)).toBe('Delete This Page?');
-    expect(deletePageTitle('Release Process', 3, true)).toBe(
-      'Move Release Process and 3 Subpages to the Trash?',
+  it('names the page and its subpages in the delete toast, and where they went', () => {
+    expect(deletedPageMessage('Release Process', 3, true)).toBe(
+      'Moved “Release Process” and 3 subpages to the Trash.',
     );
-    expect(deletePageTitle('Release Process', 0, true)).toBe('Move Release Process to the Trash?');
-  });
-  it("says where a delete goes: the Trash, or (an Offline knowledgebase's) Undo alone", () => {
-    expect(deletePageMessage(0, true)).toContain('restore it from the Trash for 30 days');
-    expect(deletePageMessage(2, true)).toContain('restore them from the Trash for 30 days');
-    expect(deletePageMessage(0, false)).toBe(
-      'The page is removed for everyone. Undo (Cmd/Ctrl-Z) brings it back.',
+    expect(deletedPageMessage('Release Process', 1, true)).toBe(
+      'Moved “Release Process” and 1 subpage to the Trash.',
     );
-    expect(deletePageMessage(2, false)).toContain('The page and its subpages are removed');
+    expect(deletedPageMessage('Release Process', 0, false)).toBe('Deleted “Release Process”.');
+    expect(deletedPageMessage(' ', 0, false)).toBe('Deleted the page.');
   });
   it('says why the tree refuses', () => {
     expect(pageTreeRefusalText('page_limit')).toBe('A knowledgebase holds 500 pages at most.');

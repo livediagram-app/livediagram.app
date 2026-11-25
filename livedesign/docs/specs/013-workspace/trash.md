@@ -18,7 +18,7 @@ library): it only moves the design to the Trash, so a question would guard nothi
 
 - **“Roadmap” deleted** shows once the delete has landed, naming the design
   ([Toasts](../004-interface-design/toasts.md#naming-what-it-acted-on); "Design deleted" when it has no name), with
-  **Undo** (`apps/live/lib/design-delete-undo.ts`, `offerDeleteUndo`). Undo restores it from the Trash exactly as
+  **Undo** (`apps/live/lib/design-delete-undo.ts`, `trashOpenDesign`, binding the shared `../packages/workbench/src/lib/open-item-delete-undo.ts`). Undo restores it from the Trash exactly as
   Restore does (`Trash·Restored`, typed by the Trash it was in), closes the toast and says **“Roadmap” restored**; a
   restore that fails says "Could not restore “Roadmap”. It is in the Trash, in the Explorer." The toast stays up for the
   answer time (10 seconds, paused while hovered or focused) and then goes, leaving the Trash; the "Show
