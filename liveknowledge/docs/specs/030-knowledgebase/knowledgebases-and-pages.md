@@ -71,6 +71,10 @@ Web](publishing.md)): its "public site", never its "Public".
   per browser, per knowledgebase. The current page's ancestors are always open, so a page opened by its link shows
   where it is. The current page wears the brand tint. A button at the sidebar's head collapses it to a narrow rail
   and back, kept per browser.
+- **The list scrolls as any list does.** The wheel, a trackpad's two-finger scroll and a finger's swipe over the
+  pages scroll them, with the Trash row under them, in the sidebar and in the phone's Pages sheet; at either end the
+  scroll stops there rather than moving the page behind (owner 2026-11-25, Work Tracker 1459: a two-finger scroll
+  over the sidebar did nothing). Opening a page leaves the list scrolled where it was.
 - The bottom bar keeps what else stood in it (Tools, Settings, the appearance), where it stood.
 - The tree is a real tree for the keyboard (WAI-ARIA tree view), one Tab stop for the whole tree: Up and Down move
   through the rows, Home and End to the first and the last, Right opens a page or enters it, Left closes it or goes

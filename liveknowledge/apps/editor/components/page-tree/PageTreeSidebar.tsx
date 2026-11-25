@@ -239,8 +239,13 @@ export function PageTreeSidebar({
       {/* The Pages heading, with Filter by Label and its bar (page-surface.md "The label filter"). */}
       <LabelFilterHeading only={tree.only} inset="px-[18px]" top="pt-3" />
       {/* The pages, then the Trash as the list's last item, scrolling together (knowledgebases-and-pages.md "The page
-          Trash"); the row draws nothing while the Trash is empty. */}
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-2">
+          Trash"); the row draws nothing while the Trash is empty. This is the sidebar's one scroller: the list inside
+          is never one of its own, whose overscroll-contain on a box that cannot scroll swallowed every wheel and
+          two-finger scroll over the rows (Work Tracker 1459). */}
+      <div
+        data-page-tree-scroll=""
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-2"
+      >
         <PageTree {...tree} touch={tree.touch || coarse} />
         {trash ? <PageTrashRow /> : null}
       </div>
