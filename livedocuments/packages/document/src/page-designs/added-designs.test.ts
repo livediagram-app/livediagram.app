@@ -179,6 +179,30 @@ describe('the contrast guard sees a design’s solid parts (plates)', () => {
     }
   });
 
+  it('keeps Polaroids clear of an article’s running header and footer, every seed, light and dark', () => {
+    // An A4 article page: the header's band sits 72 to 104 px from the top (ARTICLE_TOP_MIN_PX and
+    // ARTICLE_HEADER_BAND_PX), the footer's the same from the bottom, from the narrowest margin (48 px) across.
+    const [w, h] = [794, 1123];
+    const bands = [
+      { x: 48, y: 72, w: w - 96, h: 32 },
+      { x: 48, y: h - 104, w: w - 96, h: 32 },
+    ];
+    for (const palette of [light, dark])
+      for (let seed = 1; seed <= 40; seed += 1) {
+        const painted = paintPageDesign({
+          design: { id: 'polaroids', seed },
+          palette,
+          width: w,
+          height: h,
+        });
+        for (const p of painted.layers.flatMap((l) => l.plates ?? []))
+          for (const b of bands) {
+            const meets = p.x < b.x + b.w && p.x + p.w > b.x && p.y < b.y + b.h && p.y + p.h > b.y;
+            expect(meets, `seed ${seed}`).toBe(false);
+          }
+      }
+  });
+
   it('fails and scrims a text laid over a plate that still meets it', () => {
     const out = designGuard(polaroids, rect, [textAt('corner', 0, 0, 200, 60)]);
     expect(out.failing).toEqual(['corner']);
