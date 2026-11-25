@@ -506,6 +506,8 @@ export {
   isLiveEmbedFrameRequest,
   liveEmbedFrameAncestors,
   siteHrefFrom,
+  siteUrlFrom,
+  siteUrlHere,
   stagingOrigin,
   type AppEnvironment,
   type AppSiteId,

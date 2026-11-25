@@ -13,6 +13,7 @@ import {
   LOCAL_PORTS,
   workspaceOriginFor,
   siteOfApp,
+  siteUrlHere,
   type AppName,
 } from '@liveworkspace/sites';
 
@@ -96,5 +97,5 @@ export function workspaceHref(path: string): string {
  *  host whether or not it has `www.`), else the registry's. */
 export function appOrigin(app: AppName): string {
   if (pageApp() === app) return window.location.origin;
-  return siteOfApp(app).url;
+  return siteUrlHere(siteOfApp(app));
 }

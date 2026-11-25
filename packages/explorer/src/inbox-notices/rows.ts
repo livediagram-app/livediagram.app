@@ -11,7 +11,7 @@ import {
   type InboxThread,
 } from '@liveworkspace/index-client';
 import { mentionHandle } from '@liveworkspace/model-core/comment-mentions';
-import { APP_ITEMS, PLATFORM_SITE, siteOfApp } from '@liveworkspace/sites';
+import { APP_ITEMS, PLATFORM_SITE, siteOfApp, siteUrlHere } from '@liveworkspace/sites';
 import { appHasInbox } from '../inbox-apps';
 import {
   actionKey,
@@ -82,7 +82,7 @@ export function nameMentions(text: string, names: readonly (string | null | unde
 
 /** The Inbox at a row, on the row's app's own address (this app's on this address), so its Explorer lists it. */
 export function inboxRowHref(rowApp: App, key: string, here: App): string {
-  const origin = rowApp === here ? '' : siteOfApp(rowApp).url;
+  const origin = rowApp === here ? '' : siteUrlHere(siteOfApp(rowApp));
   return `${origin}/explorer/inbox?at=${encodeURIComponent(key)}`;
 }
 
@@ -95,7 +95,7 @@ export function requestRowHref(rowApp: App, key: string, here: App): string {
 
 /** An item in its own app (this app's on this address). */
 export function itemHref(rowApp: App, itemId: string, here: App): string {
-  const origin = rowApp === here ? '' : siteOfApp(rowApp).url;
+  const origin = rowApp === here ? '' : siteUrlHere(siteOfApp(rowApp));
   return `${origin}${APP_ITEMS[rowApp].itemPath}${encodeURIComponent(itemId)}`;
 }
 

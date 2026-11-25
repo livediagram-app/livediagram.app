@@ -2,7 +2,7 @@
 // chip's words, the address that opens it at the cited place with the Cited by Ask bar, and its "as of" line.
 import type { AskSource, AskSourceItem } from '@liveknowledge/api-schema';
 import { knowledgePlaceHash } from '@liveworkspace/index-client';
-import { APP_ITEMS, siteOfApp } from '@liveworkspace/sites';
+import { APP_ITEMS, siteOfApp, siteUrlHere } from '@liveworkspace/sites';
 import { SOURCE_STALE_DAYS } from '@liveknowledge/knowledge';
 import { shortDate } from '@/lib/knowledge/page-trust';
 
@@ -21,7 +21,7 @@ export function sourceHref(
   item: Pick<AskSourceItem, 'app' | 'itemId' | 'place'>,
   question: string,
   knowledgebaseId: string,
-  origin: string = siteOfApp(item.app).url,
+  origin: string = siteUrlHere(siteOfApp(item.app)),
 ): string {
   return `${origin}${APP_ITEMS[item.app].itemPath}${encodeURIComponent(item.itemId)}${knowledgePlaceHash(
     item.place,
