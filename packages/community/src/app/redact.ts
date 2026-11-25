@@ -9,6 +9,11 @@
 // - the collaboration cards keep their tallies but not their people: answers (`responses`) and Q&A
 //   voters get neutral per-card ids, a Q&A note loses its author, a roll call's names become "Participant n";
 // - the tab's dot vote keeps its counts per element with neutral voter ids, and loses who started it;
+// - a Participant's adder key (`addedBy`, a per-document key of who added a sticky or a text) goes;
+// - a picker's result drawn from the people in the room (source `participants`, the default) goes: it is a name;
+// - a Notice Board's or Calendar Wall's notes (`noticeNotes`, livehuddle) keep their words, read as pinned by
+//   "Someone" and lose their signer key; an Arcade Machine's High Scores (`arcadeScores`) keep their scores and
+//   read as "Player n", with no signer key;
 // - a chart or table with live data from a plan (`chartSheetSource`, liveworkspace/docs/specs/004-index/live-data.md)
 //   keeps its last values and loses the link, so a stranger is told of no other item;
 // - a live embed (`liveItem`, liveworkspace/docs/specs/004-index/live-embeds.md) keeps its snapshot and loses the link,
@@ -46,6 +51,11 @@ type PeopleFields = {
   responses?: { participantId: string }[];
   qaNotes?: { author?: unknown; voters?: string[] }[];
   rollCall?: { name: string }[];
+  addedBy?: unknown;
+  pickerSource?: unknown;
+  pickerResult?: unknown;
+  noticeNotes?: { author?: unknown; by?: unknown }[];
+  arcadeScores?: { name?: unknown; by?: unknown }[];
   chartSheetSource?: unknown;
   liveItem?: unknown;
   // A Screen's tab (livehuddle, Work Tracker 1427): goes with its link.
@@ -61,8 +71,13 @@ function hasPeople(e: PeopleFields): boolean {
     Array.isArray(e.responses) ||
     Array.isArray(e.qaNotes) ||
     Array.isArray(e.rollCall) ||
+    Array.isArray(e.noticeNotes) ||
+    Array.isArray(e.arcadeScores) ||
+    e.addedBy !== undefined ||
+    (e.pickerResult !== undefined && e.pickerSource !== 'options') ||
     e.chartSheetSource !== undefined ||
-    e.liveItem !== undefined,
+    e.liveItem !== undefined ||
+    e.liveTab !== undefined,
   );
 }
 
@@ -76,6 +91,7 @@ export function redactElementsForCommunity<E extends object>(elements: E[]): E[]
       chartSheetSource: _source,
       liveItem: _live,
       liveTab: _tab,
+      addedBy: _adder,
       ...rest
     } = e;
     const out = { ...rest } as E & PeopleFields;
@@ -93,6 +109,24 @@ export function redactElementsForCommunity<E extends object>(elements: E[]): E[]
     }
     if (Array.isArray(e.rollCall)) {
       out.rollCall = e.rollCall.map((entry, i) => ({ ...entry, name: `Participant ${i + 1}` }));
+    }
+    // A result from written options is the author's words; one from the room is a person's name.
+    if (e.pickerResult !== undefined && e.pickerSource !== 'options') delete out.pickerResult;
+    if (Array.isArray(e.noticeNotes)) {
+      const ids = neutralIds(e.noticeNotes, 'n');
+      out.noticeNotes = e.noticeNotes.map((note, i) => ({
+        ...note,
+        author: 'Someone',
+        by: ids[i]!,
+      }));
+    }
+    if (Array.isArray(e.arcadeScores)) {
+      const ids = neutralIds(e.arcadeScores, 's');
+      out.arcadeScores = e.arcadeScores.map((score, i) => ({
+        ...score,
+        name: `Player ${i + 1}`,
+        by: ids[i]!,
+      }));
     }
     return out;
   });

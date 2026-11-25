@@ -210,3 +210,56 @@ describe('the collaboration cards and the dot vote', () => {
     expect(tab.vote).not.toHaveProperty('startedBy');
   });
 });
+
+describe("the people each app's own pieces carry", () => {
+  it("drops a Participant's adder key and a picker's name from the room, keeping written results", () => {
+    const [sticky, roomPick, defaultPick, optionPick] = redactElementsForCommunity([
+      { id: 's', type: 'sticky', label: 'Idea', addedBy: 'adder-key-of-jane' },
+      { id: 'p1', type: 'shape', pickerSource: 'participants', pickerResult: 'Jane Doe' },
+      { id: 'p2', type: 'shape', pickerResult: 'Sam Roe' },
+      { id: 'p3', type: 'shape', pickerSource: 'options', pickerResult: 'Pizza' },
+    ]);
+    expect(sticky).toEqual({ id: 's', type: 'sticky', label: 'Idea' });
+    expect(roomPick).toEqual({ id: 'p1', type: 'shape', pickerSource: 'participants' });
+    expect(defaultPick).toEqual({ id: 'p2', type: 'shape' });
+    expect(optionPick).toEqual({
+      id: 'p3',
+      type: 'shape',
+      pickerSource: 'options',
+      pickerResult: 'Pizza',
+    });
+  });
+
+  it("keeps a Notice Board's notes and an Arcade's scores without who wrote or played them", () => {
+    const board = {
+      id: 'b',
+      type: 'shape',
+      noticeNotes: [
+        { id: 'n1', text: 'Lunch at 12', author: 'Jane Doe', by: 'user_jane', at: 5 },
+        { id: 'n2', title: 'Offsite', text: 'Friday', author: 'Sam', by: 'adder-sam', at: 6 },
+      ],
+    };
+    const arcade = {
+      id: 'a',
+      type: 'shape',
+      arcadeScores: [
+        { id: 'r1', name: 'Jane Doe', score: 900, ms: 60_000, by: 'user_jane', at: 1 },
+        { id: 'r2', name: 'Sam', score: 400, ms: 30_000, by: 'adder-sam', at: 2 },
+      ],
+    };
+    const [b, a] = redactElementsForCommunity<Record<string, unknown>>([board, arcade]);
+    expect(b!.noticeNotes).toEqual([
+      { id: 'n1', text: 'Lunch at 12', author: 'Someone', by: 'n1', at: 5 },
+      { id: 'n2', title: 'Offsite', text: 'Friday', author: 'Someone', by: 'n2', at: 6 },
+    ]);
+    expect(a!.arcadeScores).toEqual([
+      { id: 'r1', name: 'Player 1', score: 900, ms: 60_000, by: 's1', at: 1 },
+      { id: 'r2', name: 'Player 2', score: 400, ms: 30_000, by: 's2', at: 2 },
+    ]);
+    // The copy's stored data takes the same rule.
+    const copied = redactTabDataForCommunity(JSON.stringify({ elements: [board, arcade] })).data;
+    for (const secret of ['Jane', 'Sam', 'user_jane', 'adder-sam']) {
+      expect(copied).not.toContain(secret);
+    }
+  });
+});
