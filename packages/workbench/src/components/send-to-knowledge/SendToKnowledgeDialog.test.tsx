@@ -275,3 +275,51 @@ describe('connect as tabs', () => {
     expect(row.textContent).toContain('You can’t change the tabs of either file.');
   });
 });
+
+// An Ask AI answer's words (send-to-knowledge.md "Words, not a selection"): as written, no AI, no picture.
+describe('SendToKnowledgeDialog with words', () => {
+  it('adds the answer as written under the question, never into its own knowledgebase', async () => {
+    const c = client({
+      listItems: vi.fn().mockResolvedValue({ items: [kb('K', 'Team Wiki'), kb('S', 'This One')] }),
+    });
+    const onClose = vi.fn();
+    render(
+      <SendToKnowledgeDialog
+        words={{ heading: 'What are the steps?', markdown: '1. Cart\n2. Payment' }}
+        source={{ app: 'liveknowledge', itemId: 'S' }}
+        sourceTitle="Handbook"
+        onClose={onClose}
+        client={c as never}
+      />,
+    );
+    expect(screen.getByText(/Adds this answer, as written/)).toBeTruthy();
+    expect(screen.getByText('The answer, as written')).toBeTruthy();
+    expect(await screen.findByRole('button', { name: /Team Wiki/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /This One/ })).toBeNull();
+    expect(screen.queryByLabelText(/Focus/)).toBeNull();
+    expect(screen.queryByRole('button', { name: /Write With AI/ })).toBeNull();
+    expect(screen.getByLabelText<HTMLInputElement>('Heading').value).toBe('What are the steps?');
+    await pickKbAndPage();
+    expect(screen.queryByRole('switch', { name: 'Connect as tabs' })).toBeNull();
+    const preview = screen.getByRole('button', { name: 'Preview' });
+    await waitFor(() => expect(preview.hasAttribute('disabled')).toBe(false));
+    fireEvent.click(preview);
+    await screen.findByRole('button', { name: 'Insert' });
+    expect(screen.queryByText('The answer, as written')).toBeNull();
+    // Back keeps everything; Preview again.
+    fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+    expect(await screen.findByText('The answer, as written')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Insert' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(c.sendToKnowledge).toHaveBeenCalledWith({
+      knowledgebase: 'K',
+      place: { page: 'p2' },
+      heading: 'What are the steps?',
+      markdown: '1. Cart\n2. Payment',
+      source: { app: 'liveknowledge', itemId: 'S', tabId: null, elementIds: [] },
+    });
+    expect(c.linkedTabs).not.toHaveBeenCalled();
+    expect(c.linkTabs).not.toHaveBeenCalled();
+  });
+});

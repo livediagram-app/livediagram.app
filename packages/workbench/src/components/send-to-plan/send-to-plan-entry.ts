@@ -13,9 +13,18 @@ import {
 } from '@liveworkspace/index-client';
 import { sendSourceId } from './send-store';
 
-/** What is being sent, for the picker's words: a sticky, a shape, some words, a thread, an action, a tab's stickies. */
+/** What is being sent, for the picker's words: a sticky, a shape, some words, a thread, an action, a tab's stickies,
+ *  an Ask AI answer. */
 export type SendNoun =
-  'sticky' | 'shape' | 'element' | 'elements' | 'words' | 'thread' | 'action' | 'stickies';
+  | 'sticky'
+  | 'shape'
+  | 'element'
+  | 'elements'
+  | 'words'
+  | 'thread'
+  | 'action'
+  | 'stickies'
+  | 'answer';
 
 export type SendRequest = {
   places: PlanSendPlace[];
