@@ -41,7 +41,7 @@ agents:       liveknowledge api → POST /api/index/app/items/:kb/knowledge-send
 | `KnowledgeSendSelection`  | `items`, `links`, `cut?` (true when the editor left items out)                                           |
 | `KnowledgeSendPlace`      | `{page, after?}` or `{newPage: {title, parent}}`                                                         |
 | `KnowledgeSendPicture`    | `png` (base64, ≤ `KNOWLEDGE_SEND_PICTURE_BYTES_MAX` bytes decoded), `width`, `height`                    |
-| `KnowledgeSendSource`     | `app`, `itemId`, `tabId`, `elementIds` (1 to 80)                                                         |
+| `KnowledgeSendSource`     | `app`, `itemId`, `tabId`, `elementIds` (0 to 80; 0 for an answer's words)                                |
 | `KnowledgeSendAsk`        | `knowledgebase`, `place`, `heading`, `markdown`, `picture?`, `source`                                    |
 | `KnowledgeSend`           | `id`, `tabId`, `elementIds`, `knowledgebase: {id, title}`, `page: {id, title}`, `link` (the page), `at`  |
 | `KnowledgeReceived`       | `id`, `page`, `place` (the link back), `source: {app, id, title}`                                        |
@@ -108,17 +108,17 @@ refuses answers 429 `ai_credits_used` and the summary is dropped; the service re
 
 ## The editors (packages/workbench src/components/send-to-knowledge)
 
-| File                          | What                                                                                    |
-| ----------------------------- | --------------------------------------------------------------------------------------- |
-| `send-to-knowledge-entry.ts`  | The relay: `setKnowledgeSummariser`, `canSendKnowledgeHere`, `sendToKnowledge(request)` |
-| `knowledge-send-store.ts`     | The open item's sends, by element: read on open and after a send                        |
-| `knowledge-received-store.ts` | A knowledgebase's received sends, by place link, for the page's chips                   |
-| `article-received.ts`         | The ProseMirror plugin drawing the Sent From chip                                       |
-| `sent-knowledge-indicator.ts` | The canvas indicator's glyph and hook                                                   |
-| `KnowledgeWhere.tsx`          | Knowledgebase list, Existing Page (tree, search, Where) or New Page (title, parent)     |
-| `KnowledgePreview.tsx`        | The preview: heading, summary rendered (or a text area under Edit), picture, Sent From  |
-| `SendToKnowledgeDialog.tsx`   | The picker; loaded on its first open (`SendToPlanHost`'s lazy import)                   |
-| `SendToKnowledgeButton.tsx`   | The toolbar button (liveknowledge's logo), `data-send-to-knowledge`                     |
+| File                          | What                                                                                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `send-to-knowledge-entry.ts`  | The relay: `setKnowledgeSummariser`, `canSendKnowledgeHere`, `sendToKnowledge(request)`; words: `canSendWordsToKnowledgeHere`, `sendWordsToKnowledge` |
+| `knowledge-send-store.ts`     | The open item's sends, by element: read on open and after a send                                                                                      |
+| `knowledge-received-store.ts` | A knowledgebase's received sends, by place link, for the page's chips                                                                                 |
+| `article-received.ts`         | The ProseMirror plugin drawing the Sent From chip                                                                                                     |
+| `sent-knowledge-indicator.ts` | The canvas indicator's glyph and hook                                                                                                                 |
+| `KnowledgeWhere.tsx`          | Knowledgebase list, Existing Page (tree, search, Where) or New Page (title, parent)                                                                   |
+| `KnowledgePreview.tsx`        | The preview: heading, summary rendered (or a text area under Edit), picture, Sent From                                                                |
+| `SendToKnowledgeDialog.tsx`   | The picker (a selection's `capture`, or an answer's `words`); loaded on its first open                                                                |
+| `SendToKnowledgeButton.tsx`   | The toolbar button (liveknowledge's logo), `data-send-to-knowledge`                                                                                   |
 
 ## Tests
 
@@ -132,4 +132,5 @@ refuses answers 429 `ai_credits_used` and the summary is dropped; the service re
 - livediagram: `captureKnowledgeSelection` (frames, arrows' ends outside, caps, reading order), the summary route's
   account and read gates.
 - workbench: the picker (lists only editable knowledgebases, existing and new page, preview Insert/Edit/Cancel, the
-  credits notice's Add Without Summary), the stores, the chip plugin.
+  credits notice's Add Without Summary, an answer's words: no AI, no picture, no elements, not into its own
+  knowledgebase), the stores, the chip plugin.

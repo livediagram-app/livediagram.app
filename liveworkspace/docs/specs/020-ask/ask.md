@@ -26,7 +26,8 @@ route's line, its room's count method, and what its editor hands the tool.
   by a screen reader once it has ended. A finished answer is formatted (paragraphs, lists, bold and code) with its
   citation chips; nothing the model writes is ever HTML or a link.
 - **Under a finished answer**: its **Sources** pill (the first three numbers stacked, then "3 Sources"), which AI
-  answered ("Built-In AI", or the model's name), and **Copy Answer** (the answer without its markers).
+  answered ("Built-In AI", or the model's name), and **Copy Answer** (the answer without its markers). Under that
+  row, **Send to Plan** and **Send to Knowledge Base** (below, "Sending an answer on").
 - **A question that failed** shows the failure's fixed words in a warning callout with **Ask Again**. **Stop** ends
   a streaming answer and keeps what had arrived.
 - **The field** is at the foot: Enter sends, Shift and Enter make a new line, 1,000 characters at most with a count
@@ -52,6 +53,38 @@ drawer from the bottom on a phone).
   with none lit.
 - Pressing a card goes to its place: the tab opens and the element is selected (a card opens, in liveplanner). The
   popover and the chat stay open.
+
+## Sending an answer on
+
+Owner, 2026-11-25 (Work Tracker 1433): an answer is often the start of work or of a page, so it can be sent on in a
+press rather than copied by hand. Every finished answer, in all six apps (liveknowledge's own Ask included, "What an
+answer shows" in its [search-and-ask.md](../../../../liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md)),
+ends with a row of two buttons under its footer, above the question box: **Send to Plan** (liveplanner's logo) and
+**Send to Knowledge Base** (liveknowledge's logo), each with a hover card saying what it does. The row is the shared
+`AnswerSendActions` (`@liveworkspace/workbench`), so every app draws the same two buttons.
+
+- **Send to Plan** opens the platform's [Send to Plan](../004-index/send-to-plan.md) picker with the answer's list
+  items as its places: each top-level item of every list in the answer (`- `, `* `, `+ `, `• `, or `1. `, `1) `) is
+  one card, its nested items and continued lines its words, its first line the card's title. Every title is editable
+  before sending, and **One Card with a Checklist** makes one card of them instead. An answer with no list makes one
+  card of the whole answer. The items are read left to right by a tokenizer (`answerItems`), never a regular
+  expression with repeats; the citation markers and the bold and code marks are taken out first. At most 20 cards
+  (`PLAN_SEND_CARDS_MAX`), with "The first 20 of N" when there were more.
+- **Send to Knowledge Base** opens the platform's [Send to Knowledge Base](../004-index/send-to-knowledge.md) picker
+  with the answer **as written** (its markers taken out) as the section, the question as its heading: no AI pass and
+  no AI credit, so it has no Focus and no Write With AI. **Preview** shows the section, with Edit, before Insert writes
+  it.
+- **The link back** is the item: an answer lives only while the page is open ("The conversation is the page's"), so
+  there is no lasting place inside it to open. The card's Sent From row and the page's Sent From line open the item
+  the answer was asked in, and their chips name it.
+- **Who sees them**: whoever may send, as those specs say: a signed-in account in person, the item in the cloud, not
+  an embed, Offline or a Community copy. Asking already needs an account, so an **Editor**, a **Participant** and a
+  **Viewer** of the item all see both (sending reads the source and needs Edit only on the plan or knowledgebase,
+  which the pickers check). In liveknowledge, Send to Knowledge Base lists other knowledgebases only: **Save as Page**
+  already writes into this one.
+- **No Connect as tabs**: neither picker offers it for an answer. An answer is not a file, and sending one says
+  nothing about the item and the plan or knowledgebase belonging together; the person connects them from either
+  file's tab menu when they do.
 
 ## What is sent
 

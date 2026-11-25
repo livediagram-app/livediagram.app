@@ -125,7 +125,9 @@ send-memory.ts         the plan, board and column remembered per item (local sto
 send-store.ts          one store a page: the open item's sends (read once, again on a `source-changed` naming cards),
                        the request the picker is open on, the item the host binds
 SendToPlanHost.tsx     mounted once by each editor: binds the item, loads the dialog on demand
-SendToPlanDialog.tsx   the picker
+SendToPlanDialog.tsx   the picker; One Card Each holds a title a card (`titles`, handed to `sendCards`)
+answer-items.ts        answerItems(markdown): an Ask AI answer's top-level list items, a tokenizer, linear
+AnswerSendActions.tsx  an Ask AI answer's Send to Plan and Send to Knowledge Base row (ask.md "Sending an answer on")
 SentChip.tsx           the chip, and SentChipFor (a place's chip from the store)
 SentChipsLayer.tsx     the canvases' chips over their elements, in canvas space, counter-scaled
 send-to-plan-entry.ts  the entry's words and icon every menu uses, and sendToPlanOpen(request)
