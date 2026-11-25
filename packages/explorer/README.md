@@ -79,6 +79,7 @@ box of its own.
 | `onCreate`                 | `(placement, app?) => void`            | New: make this app's kind (or the chosen `app`'s, from `newApps`) at `{ folderId, teamId }`, then open it.                                                                                                                                  |
 | `newApps?`                 | `App[]`                                | Under All, New offers each of these apps' kind as a menu (liveworkspace.app passes every app).                                                                                                                                              |
 | `renderThumbnail?`         | `(item, 'row' \| 'card') => ReactNode` | A preview. Without it, rows show the kind's icon.                                                                                                                                                                                           |
+| `prefetchItem?`            | `(href) => Promise \| null`            | Fetches ahead what opening an item's address needs, on intent (How it loads). Without it nothing is prefetched.                                                                                                                             |
 | `Link?`                    | `ComponentType<LinkProps>`             | The host's link. Defaults to `<a>`.                                                                                                                                                                                                         |
 | `onOpenItem?`              | `(href, item) => void`                 | Open an item from a menu. Defaults to a page load.                                                                                                                                                                                          |
 | `basePath?`                | `string`                               | Where the Explorer lives. Defaults to `/explorer`.                                                                                                                                                                                          |
@@ -418,6 +419,14 @@ Changes are optimistic: rename, hide from Recent, move, Trash, restore and dismi
   or one holding it, goes to My Work or the team's library.
 - A copy or an emptied Trash cannot be guessed, so those reload the lists instead.
 - Rows are memoised and keep their identity unless their own item changed, so one change re-renders one row.
+
+Opening an item is fetched ahead (`prefetchItem`, `src/explorer/intent-prefetch.ts`): a pointer resting on an item
+link for 80 ms (`INTENT_DELAY_MS`), or focus reaching one, hands the host the link's address. One link waits at a
+time, one prefetch runs at a time, and each address is asked for once per page (`PREFETCH_SEEN_MAX`, 500). Nothing
+is asked with Save-Data on, on a 3g or slower connection, on a device with no hovering pointer, or for a touch. The
+host answers null for an address it fetches nothing for (liveworkspace/docs/specs/004-index/one-explorer.md "Cost
+and performance"). The Explorer itself holds only the listeners (`src/explorer/use-intent-prefetch.ts`); the
+prefetcher's code loads with the first intent.
 
 Long lists stay small in the DOM:
 

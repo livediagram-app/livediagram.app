@@ -37,6 +37,33 @@ describe('item actions: optimistic, with rollback', () => {
     expect(toast.error).toHaveBeenCalledWith('You can’t change “⁨Item 1⁩” here.');
   });
 
+  it('shows a collaborator’s change that landed between the action and its refusal, never the old copy', async () => {
+    const { item, index, overlay, toast, actions } = setup();
+    index.fail.set('updateItem', new IndexError(500, 'unknown'));
+    const renamed = actions.rename(item, 'Mine');
+    const moved = actions.move(item, { folderId: 'f1', teamId: null });
+    // A list reads the index while both wait: someone else renamed and moved it meanwhile.
+    const theirs = { ...item, title: 'Theirs', folderId: 'f9' };
+    overlay.observe([theirs], overlay.stamp());
+    expect(overlay.apply(theirs)).toMatchObject({ title: 'Mine', folderId: 'f1' });
+    await expect(renamed).resolves.toBe(false);
+    await expect(moved).resolves.toBe(false);
+    // Taken back to what the index now holds, the collaborator's, with a toast for each.
+    expect(overlay.apply(theirs)).toMatchObject({ title: 'Theirs', folderId: 'f9' });
+    expect(toast.error).toHaveBeenCalledTimes(2);
+  });
+
+  it('takes a refused Trash back, with no Undo, and says why', async () => {
+    const { item, index, overlay, toast, actions } = setup();
+    index.fail.set('deleteItem', new IndexError(500, 'unknown'));
+    const done = actions.trash(item);
+    expect(overlay.apply(item).trashedAt).not.toBeNull();
+    await expect(done).resolves.toBe(false);
+    expect(overlay.apply(item).trashedAt).toBeNull();
+    expect(toast.show).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith('Couldn’t delete “⁨Item 1⁩”. Try again.');
+  });
+
   it('does not call the index for an unchanged or empty name', async () => {
     const { item, index, actions } = setup();
     await actions.rename(item, 'Item 1');
