@@ -2,24 +2,12 @@
 // (docs/specs/004-interface-design/iconography.md). Menu glyphs render at the menu size step.
 
 import { Glyph, lucideGlyph, SearchIcon } from '@livehuddle/ui';
-import {
-  lucideBrushCleaning,
-  lucideEyeOff,
-  lucideFileInput,
-  lucideFolder,
-  lucideScale,
-} from '@liveworkspace/icons/lucide';
+import { lucideEyeOff, lucideScale } from '@liveworkspace/icons/lucide';
 
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // A tab that isn't shared with this visitor (docs/specs/013-workspace/tab-scoped-share-links.md).
 export const TabNotSharedIcon = lucideGlyph(lucideEyeOff, 12);
-
-export const FolderMenuIcon = lucideGlyph(lucideFolder, MENU_ICON_PX);
-// Add the tab to another document.
-export const MoveIcon = lucideGlyph(lucideFileInput, MENU_ICON_PX);
-// Clear the tab's contents.
-export const ClearIcon = lucideGlyph(lucideBrushCleaning, MENU_ICON_PX);
 
 // Magnifier - the global-search button on the right edge of the bar, at the bar's 14px.
 export function SearchGlyph() {

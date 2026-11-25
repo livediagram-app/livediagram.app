@@ -240,7 +240,7 @@ All of it is in `apps/editor/components/page-tree/`.
   [page surface blueprint](page-surface.md) "The formatting bar"); it opens the same `PageTree` in the shared
   `BottomSheet`, which closes when a page is chosen or added.
 - **The bottom bar** (`components/chrome/BottomBar.tsx`, in place of `TabBar.tsx`) keeps Tools, Settings and the
-  appearance, and still draws the canvas right-click menu (`TabPortalMenu`), which keeps the current page's Import,
+  appearance, and still draws the canvas right-click menu (`TabMenu`), which keeps the current page's Import,
   Export, Lock, Clear and Add to Document. Its Rename asks the tree to rename the page in its row. The tab folder
   rows are not offered.
 - **Presence:** `TabPresenceStack` in the row of the page each person is on.

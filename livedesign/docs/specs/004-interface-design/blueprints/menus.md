@@ -27,7 +27,7 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/useRowMenu.ts`             | Built on `useMenuButton`                                                                                                    |
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                                     |
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                                          |
-| `apps/live/components/chrome/TabPortalMenu.tsx`                             | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
+| `apps/live/components/chrome/TabMenu.tsx`                                   | Tab and Canvas control menu: binds the workbench's one `TabMenu` (closed by `useMenuDismiss`)                               |
 | `apps/live/components/canvas/LockedElementMenu.tsx`                         | Command menu, no trigger                                                                                                    |
 | `apps/live/components/chrome/ZoomMenu.tsx`                                  | Hover-open command menu with a button of its own                                                                            |
 | `../packages/workbench/src/components/chrome/AuthControls.tsx`              | Account command menu                                                                                                        |
@@ -146,7 +146,7 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `PortalMenu` (primitives)                                        | `surface` prop: `'command'` (default) or `'control'` | `anchor` is the trigger           |
 | `MenuFlyoutSection`                                              | The parent tree's kind                               | Its row is the trigger            |
 | `ContextMenu`                                                    | Control, `label` prop                                | None: the focused element at open |
-| `TabPortalMenu` `PortalMenu`                                     | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
+| `TabMenu` (workbench)                                            | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
 | `ShareCopyMenu`                                                  | Control with a header control, else command          | Its button                        |
 | Custom colour menu (`ColourPicker`)                              | Command, "<colour> menu"                             | The swatch                        |
 | `LockedElementMenu`                                              | Command, labelled by "In use"                        | None                              |

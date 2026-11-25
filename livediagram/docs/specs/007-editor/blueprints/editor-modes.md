@@ -223,7 +223,7 @@ export function editorModeShortcut(
     tint, the name with `ModeKeyHint` when `shown === keyLeadsTo`, the
     description and `MODE_TOOLS` chips; no button (choosing is the row's alone).
 - Placement: only on a start panel's rail (`StartFromTemplates`), never in `ToolbarExplorerButton`,
-  the `TabPortalMenu`, the `TabBar` or the `Explorer`.
+  the `TabMenu`, the `TabBar` or the `Explorer`.
 - `TabModeIcon({ tab, style? })`: the tab's mode's `EDITOR_MODE_ICONS` entry, 12 px, `aria-hidden`;
   `TabPill` passes `style={{ color: legibleTabAccent(tab, isDark) }}`.
 - `templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined`.

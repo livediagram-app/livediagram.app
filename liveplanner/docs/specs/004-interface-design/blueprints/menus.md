@@ -26,7 +26,7 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/MenuFlyoutPanel.tsx`       | The flyout's surface: `menu` or `dialog`                                                                                    |
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                                     |
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                                          |
-| `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
+| `apps/editor/components/chrome/TabMenu.tsx`                                 | Tab and Canvas control menu: binds the workbench's one `TabMenu` (closed by `useMenuDismiss`)                               |
 | `../packages/workbench/src/components/canvas/ElementEllipsisMenu.tsx`       | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                                |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                                            |
 | `../packages/workbench/src/components/chrome/AuthControls.tsx`              | Account command menu                                                                                                        |
@@ -141,7 +141,7 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `PortalMenu` (primitives)                     | `surface` prop: `'command'` (default) or `'control'` | `anchor` is the trigger           |
 | `MenuFlyoutSection`                           | The parent tree's kind                               | Its row is the trigger            |
 | `ContextMenu`                                 | Control, `label` prop                                | None: the focused element at open |
-| `TabPortalMenu` `PortalMenu`                  | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
+| `TabMenu` (workbench)                         | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
 | Custom colour menu (`ColourPicker`)           | Command, "<colour> menu"                             | The swatch                        |
 | `ElementEllipsisMenu`                         | `kind` prop                                          | Its ⋯                             |
 | `ZoomMenu`                                    | Command, `initialFocus` `none` on hover              | The percentage button             |

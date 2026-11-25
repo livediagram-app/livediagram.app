@@ -1,45 +1,18 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ComponentProps } from 'react';
-import { PortalMenu } from './TabPortalMenu';
+import { TabMenu } from './TabMenu';
 
-vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@liveworkspace/workbench/lib/clamp-to-viewport')>()),
-  clampToViewport: () => ({ x: 0, y: 0 }),
-}));
+vi.mock('../../lib/clamp-to-viewport', () => ({ clampToViewport: () => ({ x: 0, y: 0 }) }));
 
 // The tab menu closes on a press anywhere outside it, the canvas included, though the canvas stops its own
-// pointer events (docs/specs/008-canvas/canvas-and-palette.md, Tab menu "Closing"; Work Tracker #41).
+// pointer events (docs/specs/008-canvas/canvas-and-palette.md, Tab menu "Closing" in each editor; Work Tracker #41).
 
-type Props = ComponentProps<typeof PortalMenu>;
-
-function props(over: Partial<Props> = {}): Props {
-  const noop = () => {};
-  return {
-    onClose: noop,
-    onRename: noop,
-    onDuplicate: noop,
-    onClearContent: noop,
-    onImport: noop,
-    onExport: noop,
-    onToggleLock: noop,
-    locked: false,
-    folders: [],
-    currentFolder: null,
-    onMoveToFolder: noop,
-    onRemoveFromFolder: noop,
-    onSetFolderColour: noop,
-    onDelete: noop,
-    canDelete: true,
-    canClearContent: true,
-    ...over,
-  };
-}
+const noop = () => {};
 
 afterEach(() => {
   cleanup();
-  document.body.innerHTML = '';
+  document.body.replaceChildren();
 });
 
 function open() {
@@ -50,7 +23,21 @@ function open() {
   const canvas = document.createElement('div');
   canvas.addEventListener('pointerdown', (e) => e.stopPropagation());
   document.body.appendChild(canvas);
-  render(<PortalMenu {...props({ anchor, onClose })} />);
+  render(
+    <TabMenu
+      anchor={anchor}
+      onClose={onClose}
+      words={{ item: 'tab', holder: 'canvas' }}
+      onRename={noop}
+      onDuplicate={noop}
+      onClearContent={noop}
+      onImport={noop}
+      onExport={noop}
+      onDelete={noop}
+      canDelete
+      canClearContent
+    />,
+  );
   return { onClose, anchor, canvas };
 }
 

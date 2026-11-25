@@ -117,6 +117,8 @@
     "./components/chrome/useMenuCardRoom": "./src/components/chrome/useMenuCardRoom.ts",
     "./components/chrome/TabFolderGroup": "./src/components/chrome/TabFolderGroup.tsx",
     "./components/chrome/TabFolderDialog": "./src/components/chrome/TabFolderDialog.tsx",
+    "./components/chrome/TabMenu": "./src/components/chrome/TabMenu.tsx",
+    "./components/chrome/tab-menu-rows": "./src/components/chrome/tab-menu-rows.tsx",
     "./components/chrome/TabFolderList": "./src/components/chrome/TabFolderList.tsx",
     "./components/chrome/FolderColourButton": "./src/components/chrome/FolderColourButton.tsx",
     "./components/chrome/ConnectedTab": "./src/components/chrome/ConnectedTab.tsx",

@@ -12,15 +12,8 @@
 // (in which case it goes into a sibling icon module).
 
 import type { TextAlignX, TextAlignY } from '@liveplanner/project';
-import {
-  lucideCircleCheck,
-  lucideFileDown,
-  lucideFileUp,
-  lucideThermometer,
-} from '@liveworkspace/icons/lucide';
+import { lucideCircleCheck, lucideThermometer } from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@liveplanner/ui';
-
-import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
@@ -32,10 +25,6 @@ export {
   StrikethroughIcon,
   UnderlineIcon,
 } from '@liveworkspace/workbench/components/palette/text-style-icons';
-
-// Import into / export out of a tab (the tab menu's Content rows).
-export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
-export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
 // The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens

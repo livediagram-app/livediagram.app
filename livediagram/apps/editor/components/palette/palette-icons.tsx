@@ -15,8 +15,6 @@ import { MODE_GLYPHS, type TextAlignX, type TextAlignY } from '@livediagram/docu
 import {
   lucideChartNoAxesColumnIncreasing,
   lucideCircleCheck,
-  lucideFileDown,
-  lucideFileUp,
   lucideLightbulb,
   lucidePenTool,
   lucideScanEye,
@@ -24,8 +22,6 @@ import {
   lucideThermometer,
 } from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
-
-import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
@@ -37,10 +33,6 @@ export {
   StrikethroughIcon,
   UnderlineIcon,
 } from '@liveworkspace/workbench/components/palette/text-style-icons';
-
-// Import into / export out of a tab (the tab menu's Content rows).
-export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
-export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
 export function PanIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="pan" size={size} />;

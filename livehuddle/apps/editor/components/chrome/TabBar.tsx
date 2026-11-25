@@ -24,7 +24,7 @@ import { ChromeControls } from '@/components/chrome/ChromeControls';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
 // eager block left in the editor chunk after the dialogs went dynamic.
-const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalMenu), {
+const TabMenu = dynamic(() => import('./TabMenu').then((m) => m.TabMenu), {
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
@@ -215,7 +215,7 @@ export function TabBar({
   // per surface — the ellipsis closes via setMenuFor, the canvas menu via
   // onCloseCanvasMenu — so each caller passes its own.
   const tabMenuProps = (tab: Tab, close: () => void) => ({
-    // A connected tab gets its own short menu (TabPortalMenu): Remove Tab, its folder, Connect Again when it is broken.
+    // A connected tab gets its own short menu (TabMenu): Remove Tab, its folder, Connect Again when it is broken.
     connected:
       connectionOf(tab) && onConnectAgain
         ? {
@@ -381,7 +381,7 @@ export function TabBar({
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
         // A fault inside the menu closes the menu, not the editor.
         <MenuErrorBoundary onError={onCloseCanvasMenu}>
-          <PortalMenu
+          <TabMenu
             point={canvasMenu}
             onClose={onCloseCanvasMenu}
             canvas={canvasActions}
