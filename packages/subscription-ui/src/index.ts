@@ -57,6 +57,7 @@ export {
 } from './comparison/ComparisonGrid';
 export { InfoPopover } from './comparison/InfoPopover';
 export { billingErrorMessage } from './upgrade/billing-errors';
+export { initialTeam, upgradeAction, type UpgradeAction } from './upgrade/upgrade-model';
 export {
   formatDay,
   formatShortDay,

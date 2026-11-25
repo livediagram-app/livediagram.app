@@ -212,20 +212,62 @@ describe('the pricing page, signed in', () => {
     });
   });
 
-  it('Get Pro for Teams opens the upgrade dialog on A Team, where the team is chosen', async () => {
-    const { card } = pricing(
-      { me: meResponse({ teams: [team('t:team_garden', 'Garden Club', 'admin')] }) },
+  it('Pro for Teams starts its checkout from the card, with the team and its cost, and no dialog', async () => {
+    const { calls, navigate, card } = pricing(
+      {
+        me: meResponse({
+          teams: [team('t:team_garden', 'Garden Club', 'admin', 'free', { members: 1 })],
+        }),
+      },
       'in',
     );
     const button = within(card('team')).getByRole('button', { name: 'Get Pro for Teams' });
     await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false));
+    expect(card('team').querySelector('[data-team-cost]')?.textContent).toBe(
+      `Garden Club: 1 member, so ${TEAM_SEATS_MIN} seats, ${gbp(PRICES.GBP.team * TEAM_SEATS_MIN)} a month`,
+    );
     fireEvent.click(button);
-    // The dialog's code is in (beforeAll), so the press itself draws it: nothing to wait for.
-    const dialog = screen.getByRole('dialog', { name: 'One Upgrade, Every App' });
-    expect(
-      dialog.querySelector('[role="group"][aria-label="Subscribe For"] [aria-pressed="true"]')
-        ?.textContent,
-    ).toBe('A Team');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(navigate).toHaveBeenCalled());
+    expect(calls.find((call) => call.path === '/checkout')!.body).toMatchObject({
+      owner: 't:team_garden',
+    });
+  });
+
+  it('Pro for Teams picks among several teams, manages a subscribed one, and asks an admin as a member', async () => {
+    const { calls, navigate, card } = pricing(
+      {
+        me: meResponse({
+          teams: [
+            team('t:team_garden', 'Garden Club', 'member'),
+            team('t:team_choir', 'Choir', 'admin', 'team'),
+          ],
+        }),
+      },
+      'in',
+    );
+    const picker = await waitFor(() => within(card('team')).getByLabelText('Team'));
+    // No team of theirs is Free and theirs to run: it starts on the one they run.
+    expect((picker as HTMLSelectElement).value).toBe('team_choir');
+    expect(card('team').querySelector('[data-team-cost]')).toBeNull();
+    fireEvent.change(picker, { target: { value: 'team_garden' } });
+    fireEvent.click(within(card('team')).getByRole('button', { name: 'Ask an Admin' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    fireEvent.change(picker, { target: { value: 'team_choir' } });
+    fireEvent.click(within(card('team')).getByRole('button', { name: 'Manage Billing' }));
+    await waitFor(() => expect(navigate).toHaveBeenCalled());
+    expect(calls.find((call) => call.path === '/portal')!.body).toMatchObject({
+      owner: 't:team_choir',
+    });
+  });
+
+  it('Pro for Teams with no team yet links to the Explorer to create one', async () => {
+    const { card } = pricing({ me: meResponse() }, 'in');
+    const link = await waitFor(() =>
+      within(card('team')).getByRole('link', { name: 'Create a Team' }),
+    );
+    expect(link.getAttribute('href')).toBe('/explorer');
+    expect(within(card('team')).queryByRole('button')).toBeNull();
   });
 
   it('a subscriber: Pro is their tier, and its button manages billing', async () => {
