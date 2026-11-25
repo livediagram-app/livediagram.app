@@ -133,6 +133,19 @@ export function createMcpApp<E extends OauthEnv>(options: {
         },
       );
     }
+    // Stateless: the server never sends a message nobody asked for, so it opens no stream for a GET. The spec's
+    // answer for that is 405 (Streamable HTTP, "Listening for messages from the server"); the SDK would otherwise
+    // hold an SSE stream open that nothing ever writes to.
+    if (c.req.method === 'GET')
+      return c.json(
+        {
+          error: 'method_not_allowed',
+          error_description:
+            'This server sends no messages of its own, so it opens no stream. POST JSON-RPC to /mcp.',
+        },
+        405,
+        { Allow: 'POST, DELETE' },
+      );
     // A handshake's client name is remembered beside the request (agent-name.ts), never in its way: the answer does
     // not wait for it. The body's copy is taken before anything reads it.
     const remembering = rememberClientName(c.env, c.req.raw);

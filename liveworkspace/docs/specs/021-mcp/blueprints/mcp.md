@@ -41,6 +41,12 @@ the picture tools draw with load as `Data` modules (`[[rules]]`). Hosts: `mcp.li
 `workers.dev`). Local: `wrangler dev` on 3013 (inspector 9139), which serves every app's tools in one process.
 Deploys in tier 1 (`TIER_OF` in `.github/scripts/ci-plan.mjs`), after the apis it binds.
 
+## Transport
+
+mcp-kit's `createMcpApp`: `POST /mcp` through the SDK's `WebStandardStreamableHTTPServerTransport` with no session id
+and JSON answers; `GET /mcp` with a token is `405` with `Allow: POST, DELETE` before the transport is built (without
+a token, the 401 challenge first).
+
 ## CORS
 
 mcp-kit's app allows any origin and exposes `Mcp-Session-Id` and `WWW-Authenticate`. The answers `one-mcp.ts` makes

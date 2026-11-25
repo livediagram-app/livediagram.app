@@ -86,6 +86,10 @@ The server is built to be listed in Claude's connector directory, so it meets it
   `Cache-Control: no-store` (RFC 6749 §5.1), and Cancel on the consent page sends the person back to the client
   with `error=access_denied` (RFC 6749 §4.1.2.1), so the AI tool stops waiting rather than hanging on a page that
   says to close it.
+- **Streamable HTTP, stateless**: every request is answered on its own, with no session id. `POST /mcp` carries
+  the JSON-RPC; `GET /mcp` with a token answers `405 Method Not Allowed` (the spec's way to say the server opens no
+  stream of its own: it never sends a message nobody asked for), so a client never holds an empty stream open or
+  keeps reconnecting one.
 - **Readable from a browser**: every answer, the old addresses' and the refused token's 401 included, allows any
   origin and exposes `WWW-Authenticate` and `Mcp-Session-Id`, so a client running in a page (the MCP Inspector, a
   web app) can read the challenge and start signing in. The Bearer token is the authorization, never the origin.
