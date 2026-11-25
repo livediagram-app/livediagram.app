@@ -4,6 +4,7 @@
 // document with every tab, each tab's per-document folder, and the slide deck.
 // Images stay references to liveknowledge's image store; no bytes are embedded.
 
+import { withPageRefsRemapped } from './article-page-links';
 import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
 import { DEFAULT_REVIEW_EVERY, isReviewEvery, type KnowledgeSettings } from './knowledge-settings';
@@ -148,11 +149,14 @@ export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
   knowledgeStyle?: KnowledgeStyle;
 } {
   const idMap = new Map(envelope.document.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
-  const tabs = envelope.document.tabs.map((t) => ({
-    ...t,
-    id: idMap.get(t.id)!,
-    elements: remapTabLinks(t.elements, idMap),
-  }));
+  // The page tree and the page links follow the copy's ids too (withPageRefsRemapped): left on the file's, every page
+  // came in at the top level and every page link read "Deleted Page".
+  const tabs = envelope.document.tabs.map((t) =>
+    withPageRefsRemapped(
+      { ...t, id: idMap.get(t.id)!, elements: remapTabLinks(t.elements, idMap) },
+      idMap,
+    ),
+  );
   let presentation = envelope.document.presentation;
   if (presentation) {
     try {

@@ -112,7 +112,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 ## What reads the saved page only
 
 Search and its index, Ask and its sources, every agent read (MCP, CLI, the API), page links' hover cards, backlinks,
-reading time, On This Page, exports, the Explorer preview, emails and Page Health's checks: always the saved page.
+reading time, On This Page, exports, a copy of the knowledgebase (Make a Copy, a Community post's copy: the copy
+starts with no draft), the Explorer preview, emails and Page Health's checks: always the saved page.
 A draft is visible only to the people in edit mode on it (everyone on the page who may edit, "Everyone joins").
 
 ## Agents

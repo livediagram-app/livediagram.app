@@ -2,7 +2,7 @@
 // changesets.
 
 import { handleTabLink } from './tab-link-route';
-import { redactTabForCommunity } from '@liveworkspace/community/app';
+import { redactPageForCommunity } from '../community-redact';
 import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { conflict, forbidden, json, missingAuth, noContent, notFound } from '../responses';
@@ -169,7 +169,7 @@ export async function handleDocumentSubresources(
           ? tab
           : grant.community
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
-              { ...redactTabForCommunity(tab), connection: undefined }
+              { ...redactPageForCommunity(tab), connection: undefined }
             : { ...tab, elements: redactCommentAuthorIds(tab.elements, caller) };
       // A view may read the caller's own selection, so it needs a caller.
       if (view) {

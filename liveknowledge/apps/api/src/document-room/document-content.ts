@@ -12,13 +12,15 @@ import {
   settleStoredArticlesData,
   storedKnowledgeSettings,
   storedKnowledgeStyle,
+  withPageRefsRemapped,
+  withoutDraftData,
   type DeckSlidePatch,
   type Element,
   type KnowledgeSettings,
   type KnowledgeStyle,
 } from '@liveknowledge/document';
 import { MAX_DECK_LEN } from '../limits';
-import { redactTabDataForCommunity } from '@liveworkspace/community/app';
+import { redactPageDataForCommunity } from '../community-redact';
 import { redactTabDataAuthors } from '../comments';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { servableImageIds } from '../db/image-grants';
@@ -459,15 +461,18 @@ export async function exportDocumentCopy(
     images: [],
     tabs: rows.map((row) => {
       // No copy carries a legacy article suggestion (docs/specs/007-editor/suggestions.md "Writing stored with a
-      // suggestion"): the copy takes the stored JSON as it is, so it is settled here.
-      const remapped = settleStoredArticlesData(remapTabDataLinks(row.data, tabIdMap));
+      // suggestion"): the copy takes the stored JSON as it is, so it is settled here. Nor a page's draft: a copy takes
+      // the saved page, as every reader but the people editing it does (editing.md "What reads the saved page only").
+      const remapped = settleStoredArticlesData(
+        remapTabDataLinks(withoutDraftData(row.data), tabIdMap),
+      );
       return {
         id: tabIdMap.get(row.id)!,
         name: row.name,
         orderIndex: row.order_index,
         folder: row.folder,
         data: redactForCommunity
-          ? redactTabDataForCommunity(remapped).data
+          ? redactPageDataForCommunity(remapped)
           : redactAuthorsFor !== null
             ? redactTabDataAuthors(remapped, redactAuthorsFor)
             : remapped,
@@ -514,26 +519,23 @@ export function copyImageIds(copy: DocumentCopy): string[] {
   return [...new Set(copy.tabs.flatMap((tab) => imageRefIdsFromData(tab.data)))];
 }
 
-// Re-point the tab / element links inside one tab's stored `data` JSON at the copy's tab ids. The data is only
-// parsed when it mentions a tab id, so the common link-free tab is copied byte for byte.
+// Re-point the tab / element links inside one tab's stored `data` JSON at the copy's tab ids, with the page it sits
+// under and the page links in its writing (withPageRefsRemapped). The data is only parsed when it may name a tab id,
+// so the common link-free tab is copied byte for byte.
 export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): string {
-  // A tab or element link, a Tab Window's tab, or the page it sits under: nothing to re-point without one.
+  // A tab or element link, a Tab Window's tab, the page it sits under or a page link: nothing to re-point without one.
   const links = data.includes('"tabId"') || data.includes('"windowTabId"');
-  if (!links && !data.includes('"parent"')) return data;
+  if (!links && !data.includes('"parent"') && !data.includes('"page"')) return data;
   try {
-    const parsed = JSON.parse(data) as { elements?: Element[]; parent?: unknown };
-    // The page tree goes with the copy (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"): a parent
-    // is re-pointed at its copy, and one the copy does not carry (a tab-scoped copy) is dropped, so the page
-    // surfaces at the top level.
-    const { parent: _was, ...rest } = parsed;
-    void _was;
-    const parent = typeof parsed.parent === 'string' ? tabIdMap.get(parsed.parent) : undefined;
-    const placed = parent === undefined ? rest : { ...rest, parent };
-    if (!Array.isArray(parsed.elements)) {
-      return 'parent' in parsed ? JSON.stringify(placed) : data;
-    }
-    if (!links && !('parent' in parsed)) return data;
-    return JSON.stringify({ ...placed, elements: remapTabLinks(parsed.elements, tabIdMap) });
+    const parsed = JSON.parse(data) as { elements?: Element[] } | null;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return data;
+    // The page tree goes with the copy (docs/specs/030-knowledgebase/blueprints/page-tree.md "Copies"): a parent is
+    // re-pointed at its copy, and one the copy does not carry (a tab-scoped copy) is dropped, so the page surfaces at
+    // the top level. A page link follows its page into the copy the same way.
+    let out = withPageRefsRemapped(parsed, tabIdMap);
+    if (links && Array.isArray(out.elements))
+      out = { ...out, elements: remapTabLinks(out.elements, tabIdMap) };
+    return out === parsed ? data : JSON.stringify(out);
   } catch {
     return data;
   }
