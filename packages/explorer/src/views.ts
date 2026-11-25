@@ -44,7 +44,7 @@ export type ExplorerView =
  *  null for a view that lists no items of its own (typing there opens Search results). */
 /** A team's view's tabs at its root, in the order they are drawn; the Library is the default and rides no `tab` in the
  *  address (one-explorer.md "A team's page"). */
-export const TEAM_TABS = ['library', 'people', 'audit'] as const;
+export const TEAM_TABS = ['library', 'people', 'usage', 'audit'] as const;
 export type TeamTab = (typeof TEAM_TABS)[number];
 export const DEFAULT_TEAM_TAB: TeamTab = 'library';
 

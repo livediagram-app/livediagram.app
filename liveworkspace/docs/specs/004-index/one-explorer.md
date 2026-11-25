@@ -964,7 +964,8 @@ The journeys, one way each:
    the team if it was made and otherwise says none was, never a bare "try again" that could make a second one
    ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
 2. **Run a team.** Choose the team (sidebar or panel rail). Its page opens (see [A team's page](#a-teams-page)
-   below): a header, then the tabs **Library** (where it opens), **People** and, for its admins, **Audit Log**. People
+   below): a header, then the tabs **Library** (where it opens), **People**, **Usage** (with Pro on) and, for its
+   admins, **Audit Log**. People
    is where the team is run; by role:
    - **Invite by Email** (admins): one or many addresses, typed or pasted (commas, semicolons, spaces or new lines; a
      pasted `Name <address>` keeps the address), each a chip, a role for them all, and **Send Invite** ("Send 3
@@ -1017,8 +1018,8 @@ Old addresses keep working: `liveworkspace.app/account/teams` goes to `/explorer
 #### A team's page
 
 `/explorer/team?id=<id>` opens on **Library**, the first tab, since the team's work is what people usually come for;
-`&tab=people` and `&tab=audit` open the other two (an unknown tab, Audit Log for a Member, or an older link's
-`&tab=library`, is Library). Until November 2026 the page opened on People. A tab is part of the address, so Back returns to it; the Library's lens
+`&tab=people`, `&tab=usage` and `&tab=audit` open the others (an unknown tab, Audit Log for a Member, Usage with Pro
+off or before the subscription service answers, or an older link's `&tab=library`, is Library). Until November 2026 the page opened on People. A tab is part of the address, so Back returns to it; the Library's lens
 (`q`) stays on the Library tab alone. The sidebar keeps the team lit on every tab. The Explorer's own header, sidebar and bottom bar
 are as on every view.
 
@@ -1045,6 +1046,11 @@ are as on every view.
   loaded whole and stay while a chip narrows it, and the chips hide while only one kind is there); **Sort** (Last
   Changed, Name; kept on this device) in Cards; the This app / All filter; Cards or Details; Help; and **New** (the
   Create menu).
+- **Usage** (owner, 2026-11-25; with Pro on, for everyone in the team): the team's usage against its limits, the
+  same list as Settings' Your Usage (`UsageList`): a line saying everything in the team's library counts toward
+  them, then each limit by group with its meter or its words, and on Free what Pro for Teams allows. It reads the
+  subscription the page already holds: no request of its own. See
+  [subscription.md](../019-subscription/subscription.md#what-people-see).
 - **Audit Log**: see [team-audit-log.md](./team-audit-log.md#the-audit-log-on-a-teams-page).
 
 The page's code (header, tabs, People) loads with the team's view, its Audit Log only when that tab opens, so the

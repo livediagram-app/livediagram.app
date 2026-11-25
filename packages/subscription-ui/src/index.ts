@@ -14,6 +14,7 @@ export {
 export * from './provider';
 export { ProBadge, PRO_BADGE_LABEL, type ProBadgeForm, type ProBadgeProps } from './ProBadge';
 export { UsageMeter, type UsageMeterProps } from './UsageMeter';
+export { UsageList } from './usage-list/UsageList';
 export {
   meterFraction,
   meterState,

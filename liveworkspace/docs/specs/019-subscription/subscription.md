@@ -427,6 +427,8 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   Free, Manage Billing for an admin of a subscribed team, Ask an Admin for a member of a Free team, and nothing for a
   member of a subscribed team. It loads with the team card, never in the first load, and is absent with Pro off or
   until the service answers.
+  Its **Usage** tab (owner, 2026-11-25) shows the team's usage against its limits for everyone in it, the same list
+  as Settings' Your Usage, with what Pro for Teams allows beside each row on Free.
 - **The upgrade dialog:** Subscribe For Just Me or A Team, and the comparison of every limit by tier beside your
   usage now, grouped (Automation; Publishing; AI; Storage and History; Recording and Calls; Knowledgebases),
   each row with the logos of the apps it applies to and an explanation. A limit shared by several apps shows each of

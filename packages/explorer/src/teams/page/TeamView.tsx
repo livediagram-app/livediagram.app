@@ -2,7 +2,7 @@
 
 // A team's page in the Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "A team's page"): the header (the
 // team's badge, name, plan, who is in it, Copy Link, Invite People and its menu), the tabs (Library, the default, People,
-// and for its admins Audit Log), and the open tab. The People tab is drawn here; the Library and the Audit Log come in from
+// Usage with Pro on, and for its admins Audit Log), and the open tab. The People tab is drawn here; the Library and the Audit Log come in from
 // the caller, which owns the list and loads the log's code only when it is opened.
 
 import { useMemo, useRef, useState, type ReactNode } from 'react';
@@ -17,7 +17,7 @@ import { useToast } from '../../ui/Toasts';
 import { LogOutIcon } from '../../ui/icons';
 import { memberName } from '../rules';
 import { initialsOf, teamFacts } from '../team-details';
-import { TeamPlan, useTeamTier } from '../TeamPlan';
+import { TeamPlan, TeamUsage, useTeamSubscription, useTeamTier } from '../TeamPlan';
 import { useTeamActions, type TeamActions } from '../useTeamActions';
 import { copyText } from './copy-link';
 import { InviteComposer, type InviteComposerHandle } from './InviteComposer';
@@ -57,7 +57,10 @@ export function TeamView({
   const actions = useTeamActions({ details, reload, viewerId, onGone });
   const composer = useRef<InviteComposerHandle>(null);
   // A Member who follows an Audit Log link lands on the Library, as with no tab named: the log is the admins' alone.
-  const shown: TeamTab = tab === 'audit' && !actions.admin ? DEFAULT_TEAM_TAB : tab;
+  // Usage only while the service has the team (Pro on, answered): a link to it lands on the Library until then.
+  const usage = useTeamSubscription(details.team.id) !== null;
+  const shown: TeamTab =
+    (tab === 'audit' && !actions.admin) || (tab === 'usage' && !usage) ? DEFAULT_TEAM_TAB : tab;
   const invite = () => {
     if (shown !== 'people') onTab('people');
     // After the tab has drawn the field.
@@ -70,6 +73,7 @@ export function TeamView({
         tab={shown}
         onTab={onTab}
         admin={actions.admin}
+        usage={usage}
         people={details.members.length}
         libraryCount={libraryCount}
       />
@@ -84,6 +88,8 @@ export function TeamView({
           />
         ) : shown === 'library' ? (
           library
+        ) : shown === 'usage' ? (
+          <TeamUsage teamId={details.team.id} />
         ) : (
           audit
         )}
@@ -241,6 +247,7 @@ function AvatarStack({
 const TAB_LABELS: Record<TeamTab, string> = {
   people: 'People',
   library: 'Library',
+  usage: 'Usage',
   audit: 'Audit Log',
 };
 
@@ -248,17 +255,22 @@ function TeamTabs({
   tab,
   onTab,
   admin,
+  usage,
   people,
   libraryCount,
 }: {
   tab: TeamTab;
   onTab: (tab: TeamTab) => void;
   admin: boolean;
+  /** Whether the Usage tab shows (Pro on, and the service has the team). */
+  usage: boolean;
   people: number;
   libraryCount: number | null;
 }) {
-  // Library first, then People, then (admins) Audit Log: the order of TEAM_TABS.
-  const tabs: TeamTab[] = admin ? [...TEAM_TABS] : TEAM_TABS.filter((t) => t !== 'audit');
+  // Library, People, Usage (with Pro on), then (admins) Audit Log: the order of TEAM_TABS.
+  const tabs: TeamTab[] = TEAM_TABS.filter(
+    (t) => (t !== 'audit' || admin) && (t !== 'usage' || usage),
+  );
   const counts: Partial<Record<TeamTab, number | null>> = { people, library: libraryCount };
   const refs = useRef<Partial<Record<TeamTab, HTMLButtonElement | null>>>({});
   // Arrow keys move between the tabs (the WAI-ARIA tabs pattern, activating as they move).
