@@ -5,6 +5,7 @@
 import { COLUMN_WIDTHS, type PlanColumn } from '@liveplanner/items';
 import { plural } from '@liveplanner/project';
 import { WIP_LIMIT_MAX } from './board-setup-edits';
+import { keptOnBadInput } from './kept-on-bad-input';
 
 const STEP =
   'w-8 text-[15px] text-slate-600 transition enabled:hover:bg-slate-100 disabled:opacity-35 dark:text-slate-300 dark:enabled:hover:bg-slate-800';
@@ -55,7 +56,11 @@ export function WipLimitRow({
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.currentTarget.blur();
           }}
-          onBlur={(e) => setWip(e.target.value ? Number(e.target.value) : null)}
+          onBlur={(e) => {
+            // Text the box can't read (some browsers let letters in) reads as empty: the limit stays, never Off.
+            if (keptOnBadInput(e.target, wip)) return;
+            setWip(e.target.value ? Number(e.target.value) : null);
+          }}
         />
         <button
           type="button"

@@ -28,20 +28,13 @@ import { DateTimeInput } from './DateTimeInput';
 import { DateRangeField } from './DateRangeField';
 import { PhoneField } from './PhoneField';
 import { PullRequestField } from './PullRequestField';
+import { keptOnBadInput } from './kept-on-bad-input';
 
 type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
 const LINK = /^https:\/\/\S+$/i;
 // Whether a typed Link is one the field keeps: an `https://` address with no spaces.
 export const isLinkText = (text: string): boolean => LINK.test(text);
-
-// A number box holding text it can't read as a number ("£12", "12 kg": some browsers let letters in) reads as empty;
-// that puts the stored value back rather than clearing it. True when it did.
-function keptOnBadInput(input: HTMLInputElement, value: ItemFieldValue | undefined): boolean {
-  if (!input.validity.badInput) return false;
-  input.value = typeof value === 'number' ? String(value) : '';
-  return true;
-}
 
 export function CustomFieldEditor({
   id,
