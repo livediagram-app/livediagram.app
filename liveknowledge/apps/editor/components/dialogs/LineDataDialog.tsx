@@ -3,6 +3,7 @@ import { Button, CloseIcon, DialogHeader, PlusIcon } from '@liveknowledge/ui';
 import type { LineSeries } from '@liveknowledge/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { NumberDraftInput } from '@liveworkspace/workbench/components/primitives/NumberDraftInput';
 import { parseCsvLineData } from '@/lib/csv';
 
 // Line-chart data editor in a modal (docs/specs/009-elements/pie-chart.md). The context menu's Data category
@@ -164,26 +165,19 @@ export function LineDataDialog({
                 </td>
                 {rows.map((s, si) => (
                   <td key={si}>
-                    <input
+                    <NumberDraftInput
                       className={`${cell} w-full text-right tabular-nums`}
-                      type="number"
                       value={s.values[i] ?? 0}
                       aria-label={`${s.name} ${c}`}
-                      onChange={(e) => {
-                        const n = Number(e.target.value);
+                      onValue={(n) =>
                         setRows((r) =>
                           r.map((x, j) =>
                             j === si
-                              ? {
-                                  ...x,
-                                  values: x.values.map((v, k) =>
-                                    k === i ? (Number.isFinite(n) ? n : 0) : v,
-                                  ),
-                                }
+                              ? { ...x, values: x.values.map((v, k) => (k === i ? n : v)) }
                               : x,
                           ),
-                        );
-                      }}
+                        )
+                      }
                       onBlur={() => store(cats, rows)}
                     />
                   </td>

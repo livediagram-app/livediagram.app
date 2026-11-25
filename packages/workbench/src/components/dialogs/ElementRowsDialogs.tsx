@@ -91,7 +91,7 @@ export type ElementRowsProfile<E> = {
     palette?: readonly string[];
     onChange: (items: LegendItem[]) => void;
   }>;
-  // `allowNegative` reaches the editors that take it (livediagram's column and bar charts); the rest ignore it.
+  // `allowNegative` is set on a column or bar chart, whose values may go below zero; a pie's stop at zero.
   PieDataEditor: ComponentType<{
     slices: PieSlice[];
     palette?: readonly string[];

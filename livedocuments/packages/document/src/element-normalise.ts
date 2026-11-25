@@ -14,7 +14,7 @@ import { orthogonalBends } from '@liveworkspace/element-model/arrow-orthogonal';
 import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
 import { CODE_LANGUAGES } from '@liveworkspace/element-model/data-shapes';
 import { isCodeThemeId } from '@liveworkspace/model-core/code-themes';
-import { variantFitsKind } from '@liveworkspace/element-model/chart-types';
+import { normaliseChart } from '@liveworkspace/element-model/chart-normalise';
 import { settleChips } from '@liveworkspace/element-model/attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
@@ -48,10 +48,6 @@ import {
 
 type Raw = Record<string, unknown>;
 
-const num = (v: unknown) => {
-  const n = typeof v === 'number' ? v : Number(v);
-  return Number.isFinite(n) ? n : 0;
-};
 const str = asText;
 
 function normaliseTable(el: Raw): Raw {
@@ -69,33 +65,6 @@ function normaliseCodeBlock(el: Raw): Raw {
   )
     out.codeLanguage = 'plain';
   if (out.codeTheme !== undefined && !isCodeThemeId(out.codeTheme as string)) delete out.codeTheme;
-  return out;
-}
-
-function normaliseChart(el: Raw): Raw {
-  const out = { ...el };
-  // A variant its kind does not take (docs/specs/009-elements/pie-chart.md "Chart types") draws as the kind's first
-  // type anyway; dropped, so what is stored says what is drawn.
-  if (out.chartVariant !== undefined && !variantFitsKind(String(el.shape), out.chartVariant))
-    delete out.chartVariant;
-  if (Array.isArray(el.pieSlices))
-    out.pieSlices = el.pieSlices.filter(isRecord).map((s) => ({
-      ...s,
-      label: str(s.label),
-      value: Math.max(0, num(s.value)),
-    }));
-  if (Array.isArray(el.lineCategories)) out.lineCategories = el.lineCategories.map(str);
-  if (Array.isArray(el.lineSeries)) {
-    const count = Array.isArray(out.lineCategories) ? out.lineCategories.length : undefined;
-    out.lineSeries = el.lineSeries.filter(isRecord).map((s) => {
-      const values = Array.isArray(s.values) ? s.values.map(num) : [];
-      const fitted =
-        count === undefined ? values : Array.from({ length: count }, (_, i) => values[i] ?? 0);
-      // A second axis is `right` or nothing.
-      const { axis, ...rest } = s;
-      return { ...rest, name: str(s.name), values: fitted, ...(axis === 'right' ? { axis } : {}) };
-    });
-  }
   return out;
 }
 
