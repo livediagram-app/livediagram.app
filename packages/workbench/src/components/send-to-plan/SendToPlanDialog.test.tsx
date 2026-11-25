@@ -285,6 +285,13 @@ describe('SendToPlanDialog', () => {
     );
     fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
     expect(await screen.findByText(/no board yet/)).toBeTruthy();
+    cleanup();
+    // A locked plan keeps its name on the row, Untitled plan when it has none, with the reason under it.
+    open(client({ listItems: vi.fn().mockResolvedValue({ items: [plan('U', '', 'view')] }) }));
+    const untitled = await screen.findByRole('button', { name: /Untitled plan/ });
+    expect(untitled.getAttribute('aria-disabled')).toBe('true');
+    expect(document.getElementById('locked-U')?.textContent).toBe("You can't add cards");
+    expect(untitled.getAttribute('aria-describedby')).toBe('locked-U');
   });
 
   it('searches the plans, says when none match or none load, and moves along them by keys', async () => {

@@ -69,6 +69,20 @@ describe('on the Not Found card', () => {
     expect(screen.queryByRole('button', { name: 'Request Access' })).toBeNull();
   });
 
+  it('keeps the card buttons above an open note, and leaves no empty row without them', () => {
+    render(<NotFound noun="plan" onOpenExplorer={vi.fn()} requestAccess={{ itemId: 'p1' }} />);
+    open();
+    const explorer = screen.getByRole('button', { name: 'Open Explorer' });
+    expect(explorer.parentElement?.className).not.toMatch(/\bhidden\b/);
+    expect(note().closest('form')?.className).toMatch(/\bmt-5\b/);
+    cleanup();
+    render(<RequestAccess itemId="p1" noun="plan" />);
+    open();
+    const form = note().closest('form');
+    expect(form?.className).not.toMatch(/\bmt-5\b/);
+    expect(form?.previousElementSibling?.className).toMatch(/\bhidden\b/);
+  });
+
   it('opens a note in place, focused, and sends it trimmed once', async () => {
     render(<RequestAccess itemId="p1" noun="plan" />);
     open();
