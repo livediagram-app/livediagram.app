@@ -61,7 +61,9 @@ export function planChangeOffers(
   };
   for (const el of elements) {
     if (el.type !== 'arrow' || readPlanElementId(el.id)) continue;
-    if (el.from.kind !== 'pinned' || el.to.kind !== 'pinned' || el.arrowEnds === 'both') continue;
+    if (el.from.kind !== 'pinned' || el.to.kind !== 'pinned') continue;
+    // Heads at both ends or none say no order.
+    if (el.arrowEnds === 'both' || el.arrowEnds === 'none') continue;
     let [a, b] = [cards.get(el.from.elementId), cards.get(el.to.elementId)];
     if (el.arrowEnds === 'from') [a, b] = [b, a];
     if (!a || !b || a.card === b.card || deps.has(`${a.card}>${b.card}`)) continue;
