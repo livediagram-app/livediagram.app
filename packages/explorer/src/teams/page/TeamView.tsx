@@ -17,7 +17,7 @@ import { useToast } from '../../ui/Toasts';
 import { LogOutIcon } from '../../ui/icons';
 import { memberName } from '../rules';
 import { initialsOf, teamFacts } from '../team-details';
-import { TeamPlan, useTeamTier } from '../TeamPlan';
+import { TeamPlan, SpaceProBadge, useTeamTier } from '../TeamPlan';
 import { useTeamActions, type TeamActions } from '../useTeamActions';
 import { copyText } from './copy-link';
 import { InviteComposer, type InviteComposerHandle } from './InviteComposer';
@@ -152,11 +152,13 @@ function TeamHeader({
             <h1 className="m-0 min-w-0 truncate text-2xl font-semibold tracking-tight text-slate-900 max-sm:text-xl dark:text-slate-100">
               <bdi>{team.name}</bdi>
             </h1>
-            {tier ? (
+            {tier === 'Free' ? (
               <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-600">
-                <span className="text-optical-line">{tier === 'Free' ? 'Free Plan' : tier}</span>
+                <span className="text-optical-line">Free Plan</span>
               </span>
-            ) : null}
+            ) : (
+              <SpaceProBadge teamId={team.id} size="md" />
+            )}
           </div>
           <p className={`m-0 truncate text-[13px] ${MUTED}`}>
             {line.map((part, i) => (

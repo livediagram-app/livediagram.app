@@ -25,6 +25,29 @@ export function useTeamTier(teamId: string): string | null {
   return team ? TIER_NAMES[team.tier] : null;
 }
 
+/** Whether a space is on a paid tier, for the Pro badge after its name: My Work (`null`) on the person's own Pro, a
+ *  team on Pro for Teams. False with Pro off, until the service answers, or for a team it doesn't list yet. */
+export function useSpacePro(teamId: string | null): boolean {
+  const load = useSubscription();
+  if (!proOn() || load.status !== 'ready') return false;
+  if (teamId === null) return load.me.personal.tier !== 'free';
+  const team = load.me.teams.find((t) => t.teamId === teamId);
+  return !!team && team.tier !== 'free';
+}
+
+/** The Pro badge after a paid space's name (a team's page header, the sidebar, Home's Spaces); nothing otherwise. */
+export function SpaceProBadge({
+  teamId,
+  size = 'sm',
+}: {
+  teamId: string | null;
+  size?: 'sm' | 'md';
+}) {
+  return useSpacePro(teamId) ? (
+    <ProBadge form="solid" size={size} label="Pro" className="shrink-0" />
+  ) : null;
+}
+
 /** `card` is the People tab's side card (a title over the tier, its line and its action); `row` the panel's band. */
 export function TeamPlan({ teamId, look = 'row' }: { teamId: string; look?: 'row' | 'card' }) {
   const load = useSubscription();
