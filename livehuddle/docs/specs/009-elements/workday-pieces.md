@@ -148,7 +148,8 @@ A round cushioned dog bed with a bone toy, and the office dog that lives in it: 
 a wagging tail.
 
 - **It wanders its room.** The dog's room is the innermost Room whose floor holds the bed's middle; a bed in no room
-  lets it wander a circle 240 px round the bed. Every 9 seconds is a **leg**. The dog walks one leg in three: it trots
+  lets it wander a circle 240 px round the bed. A turned room, or one drawn wall by wall, keeps it inside its walls as
+  drawn ([Office](office.md) "A Room turns"), and another such room it keeps out of whole. Every 9 seconds is a **leg**. The dog walks one leg in three: it trots
   to a spot in its room in the first 3 seconds of that leg, then lies down there and rests through the next two legs
   (about 24 seconds), still, before it sets off again (Work Tracker 1257: a still office stays still most of the
   time). Every fourth walk it goes back to its bed and naps.

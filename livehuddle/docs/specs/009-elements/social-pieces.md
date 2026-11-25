@@ -151,7 +151,8 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
   CC0 or royalty-free for any use, so v1 ships without a built-in list; a short list of checked, CC0 streams is a
   follow-up ([Future work](../005-project-roadmap/future-work.md)).
 - **Its area** is the room it stands in (the innermost Room whose floor holds the jukebox's base), or, standing in no
-  room, a circle 280 px round its base. Your character standing in the area hears it; leave and it stops. Two
+  room, a circle 280 px round its base. A turned room's floor, or a Room Builder room's, is its floor as drawn
+  ([Office](office.md) "A Room turns"). Your character standing in the area hears it; leave and it stops. Two
   jukeboxes whose areas overlap: you hear the one whose area is innermost, then the nearest.
 - **Off by default, per viewer.** Nobody hears a jukebox until they press its **Play** button once: browsers block
   sound that starts without a press, and music should never surprise anyone. After that it plays whenever you walk

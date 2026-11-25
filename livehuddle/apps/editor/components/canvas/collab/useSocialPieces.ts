@@ -8,7 +8,13 @@
 
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
-import { pieceFacing, roomInterior, type Element } from '@livehuddle/document';
+import {
+  pieceFacing,
+  pointInPolygon,
+  roomFloorPolygon,
+  roomInterior,
+  type Element,
+} from '@livehuddle/document';
 import type { SeatFacing } from '@livehuddle/avatar/facing';
 import { bubbleSide, signGrid, type PieceBubbleSide } from '@livehuddle/avatar/piece-bubble';
 import { setJukeboxArea } from '@/lib/jukebox-listening';
@@ -22,6 +28,9 @@ type Box = { id: string; x: number; y: number; width: number; height: number };
 type Jukebox = Box & { source?: string };
 type Arcade = Box & { chairFacing?: SeatFacing };
 type Point = { x: number; y: number };
+// A room, with its floor as drawn when it is turned or drawn wall by wall (docs/specs/009-elements/office.md "A Room
+// turns", room-floor-polygon.ts in @livehuddle/document), worked out once per board change.
+type Room = Box & { floor?: readonly Point[] | null };
 
 let nearArcade: string | null = null;
 // Where that machine's Insert Coin shows: above it, or beside (or below) it when a Room Sign stands where it would
@@ -57,22 +66,38 @@ export function useArcadeBubbleSide(id: string): PieceBubbleSide {
 const inside = (p: Point, b: { x: number; y: number; width: number; height: number }) =>
   p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height;
 
+// Whether a room's floor holds `p`: its floor polygon when it has one, else its upright interior.
+const onFloor = (p: Point, r: Room) =>
+  r.floor ? pointInPolygon(p, r.floor) : inside(p, roomInterior(r));
+
+/** A room with its floor polygon (null for an upright box room), for `jukeboxAt`. */
+export function jukeboxRoomOf(el: Box & { rotation?: unknown; roomOutline?: unknown }): Room {
+  return {
+    id: el.id,
+    x: el.x,
+    y: el.y,
+    width: el.width,
+    height: el.height,
+    floor: roomFloorPolygon(el),
+  };
+}
+
 const baseOf = (b: Box): Point => ({ x: b.x + b.width / 2, y: b.y + b.height * 0.9 });
 
 // The room each jukebox stands in depends on the board, not on your feet: kept per rooms list (the hook's memoised
 // one, so a walk reuses it) and per jukebox, so each step costs one look-up per jukebox, not a scan of every room.
-const roomCache = new WeakMap<readonly Box[], WeakMap<Box, Box | null>>();
+const roomCache = new WeakMap<readonly Room[], WeakMap<Box, Room | null>>();
 
 // The innermost (smallest) room a jukebox's base stands in, or null.
-function jukeboxRoom(b: Box, rooms: readonly Box[]): Box | null {
+function jukeboxRoom(b: Box, rooms: readonly Room[]): Room | null {
   let byJukebox = roomCache.get(rooms);
   if (!byJukebox) roomCache.set(rooms, (byJukebox = new WeakMap()));
   const cached = byJukebox.get(b);
   if (cached !== undefined) return cached;
   const base = baseOf(b);
-  let best: Box | null = null;
+  let best: Room | null = null;
   for (const r of rooms) {
-    if (!inside(base, roomInterior(r))) continue;
+    if (!onFloor(base, r)) continue;
     if (!best || r.width * r.height < best.width * best.height) best = r;
   }
   byJukebox.set(b, best);
@@ -86,12 +111,12 @@ function jukeboxRoom(b: Box, rooms: readonly Box[]): Box | null {
 export function jukeboxAt(
   feet: Point,
   jukeboxes: readonly Jukebox[],
-  rooms: readonly Box[],
+  rooms: readonly Room[],
 ): Jukebox | null {
   if (jukeboxes.length === 0) return null;
   const roomOf = (b: Box) => jukeboxRoom(b, rooms);
   const feetRooms = rooms
-    .filter((r) => inside(feet, roomInterior(r)))
+    .filter((r) => onFloor(feet, r))
     .sort((a, c) => a.width * a.height - c.width * c.height);
   let best: Jukebox | null = null;
   let bestRank = Infinity;
@@ -159,14 +184,14 @@ export function useSocialPieces({
   const pieces = useMemo(() => {
     const jukeboxes: Jukebox[] = [];
     const arcades: Arcade[] = [];
-    const rooms: Box[] = [];
+    const rooms: Room[] = [];
     const signs: Box[] = [];
     for (const el of elements) {
       if (el.type !== 'shape') continue;
       if (el.shape === 'jukebox')
         jukeboxes.push(el.jukeboxSource ? { ...el, source: el.jukeboxSource } : el);
       else if (el.shape === 'arcade-machine') arcades.push(el);
-      else if (el.shape === 'room') rooms.push(el);
+      else if (el.shape === 'room') rooms.push(jukeboxRoomOf(el));
       else if (el.shape === 'room-sign') signs.push(el);
     }
     // Where each machine's bubble shows, each reading only the signs near it (piece-bubble.ts).

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arcadeAt, jukeboxAt, JUKEBOX_RADIUS } from './useSocialPieces';
+import { arcadeAt, jukeboxAt, jukeboxRoomOf, JUKEBOX_RADIUS } from './useSocialPieces';
 
 // docs/specs/009-elements/social-pieces.md "Jukebox" and "Arcade Machine".
 const room = (id: string, x: number, y: number, width: number, height: number) => ({
@@ -67,5 +67,34 @@ describe('the arcade machine you stand at', () => {
     expect(arcadeAt({ x: 130, y: 220 }, [arcade])).toBe('arc');
     expect(arcadeAt({ x: 130, y: 260 }, [arcade])).toBeNull();
     expect(arcadeAt({ x: 400, y: 220 }, [arcade])).toBeNull();
+  });
+});
+
+// docs/specs/009-elements/office.md "A Room turns" (Work Tracker 1473): a turned room's jukebox is heard on its floor
+// as drawn.
+describe('the jukebox in a room turned 45 degrees', () => {
+  // An 800 by 400 room turned about its centre (400, 200).
+  const turned = jukeboxRoomOf({ id: 'lounge', x: 0, y: 0, width: 800, height: 400, rotation: 45 });
+  // Its base, (400, 255.8), stands on the turned floor.
+  const jukebox = box('j', 364, 155);
+
+  it('counts you in the room on its turned floor, not in its upright box', () => {
+    expect(turned.floor).toHaveLength(4);
+    expect(jukeboxAt({ x: 420, y: 220 }, [jukebox], [turned])?.id).toBe('j');
+    // The upright box's far corner: inside the box, outside the walls as drawn, and past the jukebox's radius.
+    expect(jukeboxAt({ x: 780, y: 20 }, [jukebox], [turned])).toBeNull();
+    // Out past the upright box along the turned room's long side, still on its floor.
+    expect(jukeboxAt({ x: 640, y: 470 }, [jukebox], [turned])?.id).toBe('j');
+  });
+
+  it('hears a jukebox whose base is off the turned floor round its base, as one in no room', () => {
+    // Its base, (780, 20), is in the upright box's corner, outside the turned walls.
+    const offFloor = box('off', 744, -80.8);
+    expect(jukeboxAt({ x: 780, y: 60 }, [offFloor], [turned])?.id).toBe('off');
+    expect(jukeboxAt({ x: 800 + JUKEBOX_RADIUS, y: 20 }, [offFloor], [turned])).toBeNull();
+  });
+
+  it('keeps an upright room on its box', () => {
+    expect(jukeboxRoomOf({ id: 'r', x: 0, y: 0, width: 600, height: 400 }).floor).toBeNull();
   });
 });
