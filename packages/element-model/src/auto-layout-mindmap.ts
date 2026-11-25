@@ -18,6 +18,7 @@ import {
   type Pt,
   type Size,
 } from './auto-layout-shared';
+import { ringClearRadius } from './ring-clearance';
 
 // The mindmap hub: the node the most arrows touch (undirected degree),
 // ties broken by input order so the pick is deterministic.
@@ -36,49 +37,6 @@ function hubOf(ids: ElementId[], edges: Edge[]): ElementId {
 
 // How far (radians, about half a degree) left of 12 o'clock a branch still counts as at 12.
 const TWELVE_TOLERANCE = 0.01;
-
-// The least radius at which no two of a ring's nodes, at their angles (centres), overlap with a
-// sibling gap between them: two boxes clear each other when either their x or their y centres are
-// far enough apart, and both grow with the radius, so each pair needs the smaller of the two radii.
-// Sorted by angle, each node looks ahead only while a pair that far round could still need more
-// than the ring already has (any pair `delta` apart is at least 2r sin(delta / 2) / sqrt 2 apart on
-// one axis), so a crowded ring costs about one look per neighbour, not one per pair.
-function ringClearRadius(
-  ring: readonly ElementId[],
-  angle: ReadonlyMap<ElementId, number>,
-  size: ReadonlyMap<ElementId, Size>,
-): number {
-  if (ring.length < 2) return 0;
-  const turn = 2 * Math.PI;
-  const nodes = ring
-    .map((id) => ({ a: ((angle.get(id)! % turn) + turn) % turn, s: size.get(id)! }))
-    .sort((p, q) => p.a - q.a);
-  let reachW = 0;
-  let reachH = 0;
-  for (const n of nodes) {
-    reachW = Math.max(reachW, n.s.w);
-    reachH = Math.max(reachH, n.s.h);
-  }
-  const reach = Math.max(reachW, reachH) + SIBLING_GAP;
-  let r = 0;
-  for (let i = 0; i < nodes.length; i++) {
-    const p = nodes[i]!;
-    for (let k = 1; k < nodes.length; k++) {
-      const q = nodes[(i + k) % nodes.length]!;
-      const delta = (q.a - p.a + turn) % turn;
-      if (delta > Math.PI) break;
-      const chord = 2 * Math.sin(delta / 2);
-      if (chord > 0 && reach / (chord / Math.SQRT2) <= r) break;
-      const needX = (p.s.w + q.s.w) / 2 + SIBLING_GAP;
-      const needY = (p.s.h + q.s.h) / 2 + SIBLING_GAP;
-      const dx = Math.abs(Math.cos(p.a) - Math.cos(q.a));
-      const dy = Math.abs(Math.sin(p.a) - Math.sin(q.a));
-      const need = Math.min(dx > 0 ? needX / dx : Infinity, dy > 0 ? needY / dy : Infinity);
-      if (Number.isFinite(need)) r = Math.max(r, need);
-    }
-  }
-  return r;
-}
 
 // Place one component as a radial mindmap around its hub.
 export function positionMindmapComponent(
@@ -163,7 +121,14 @@ export function positionMindmapComponent(
     const ringMax = Math.max(...ring.map(footprint));
     const clearPrev = prev + prevMax / 2 + ringMax / 2 + LAYER_GAP;
     const needed = ring.reduce((s, id) => s + footprint(id) + SIBLING_GAP, 0);
-    const r = Math.max(clearPrev, needed / (2 * Math.PI), ringClearRadius(ring, angle, size));
+    const r = Math.max(
+      clearPrev,
+      needed / (2 * Math.PI),
+      ringClearRadius(
+        ring.map((id) => ({ angle: angle.get(id)!, ...size.get(id)! })),
+        SIBLING_GAP,
+      ),
+    );
     radius.set(d, r);
     prev = r;
     prevMax = ringMax;

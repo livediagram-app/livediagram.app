@@ -23,6 +23,7 @@ import {
   type MindGaps,
 } from './mind-flow';
 import type { MindMap } from './mind-map';
+import { ringClearRadius } from './ring-clearance';
 import type { Element as ModelElement, ElementId } from './element';
 
 export type MindPoint = { x: number; y: number };
@@ -159,17 +160,7 @@ export function mindLayoutFor<E extends ModelElement>(
     walk(root, 0);
     // A box's worst-case reach from its centre in any direction, so a ring
     // clears the one inside it whichever way its nodes face.
-    const footprint = (n: ShapeElement) => Math.max(n.width, n.height);
-    const radius: number[] = [0];
-    for (let d = 1; d < byDepth.length; d++) {
-      const ring = byDepth[d]!;
-      const inner = Math.max(...byDepth[d - 1]!.map(footprint));
-      const outer = Math.max(...ring.map(footprint));
-      const clear = radius[d - 1]! + inner / 2 + outer / 2 + gaps.child;
-      const around = ring.reduce((s, n) => s + footprint(n) + gaps.sibling, 0) / TAU;
-      radius.push(Math.max(clear, around));
-    }
-    const origin = centre(root);
+    const angle = new Map<ElementId, number>();
     const place = (n: ShapeElement, start: number, share: number, depth: number) => {
       let a = start;
       const kids = kidsOf(tree, n.id);
@@ -180,17 +171,40 @@ export function mindLayoutFor<E extends ModelElement>(
         // sub-branch gets the room it needs without moving its neighbours' parents.
         const s =
           depth === 0 ? share / kids.length : (share * leaves.get(c.id)!) / leaves.get(n.id)!;
-        const mid = a + s / 2;
-        const r = radius[depth + 1]!;
-        out.set(c.id, {
-          x: origin.x + Math.cos(mid) * r - c.width / 2,
-          y: origin.y + Math.sin(mid) * r - c.height / 2,
-        });
+        angle.set(c.id, a + s / 2);
         place(c, a, s, depth + 1);
         a += s;
       }
     };
     place(root, BUBBLE_SEAM, TAU, 0);
+    // Each ring clears the one inside it, fits its nodes' footprints around its circumference, and
+    // grows until no two of its nodes overlap where their wedges put them (an equal share for a
+    // bushy branch packs its children closer than an even spread would).
+    const footprint = (n: ShapeElement) => Math.max(n.width, n.height);
+    const radius: number[] = [0];
+    for (let d = 1; d < byDepth.length; d++) {
+      const ring = byDepth[d]!;
+      const inner = Math.max(...byDepth[d - 1]!.map(footprint));
+      const outer = Math.max(...ring.map(footprint));
+      const clear = radius[d - 1]! + inner / 2 + outer / 2 + gaps.child;
+      const around = ring.reduce((s, n) => s + footprint(n) + gaps.sibling, 0) / TAU;
+      const apart = ringClearRadius(
+        ring.map((n) => ({ angle: angle.get(n.id)!, w: n.width, h: n.height })),
+        gaps.sibling,
+      );
+      radius.push(Math.max(clear, around, apart));
+    }
+    const origin = centre(root);
+    for (let d = 1; d < byDepth.length; d++) {
+      const r = radius[d]!;
+      for (const c of byDepth[d]!) {
+        const mid = angle.get(c.id)!;
+        out.set(c.id, {
+          x: origin.x + Math.cos(mid) * r - c.width / 2,
+          y: origin.y + Math.sin(mid) * r - c.height / 2,
+        });
+      }
+    }
   }
 
   // --- Public API ---------------------------------------------------------------
