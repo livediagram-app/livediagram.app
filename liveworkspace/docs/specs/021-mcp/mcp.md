@@ -138,7 +138,8 @@ page is liveworkspace.app's `/oauth/consent` (signed in, never indexed, linked f
 each ticked; clearing one keeps that app's tools away from this connection. Approving makes an ordinary account
 token named after the client (the Settings panel's API Tokens list it, and revoke it), hands it to the server, and
 the server keeps which apps it may reach, by the token's hash, as long as the client's registration. A token with no
-such record (one pasted from Settings) reaches every app. A reconnect replaces the client's earlier token, as each
+such record (one pasted from Settings) reaches every app; when the record can't be read (the store fails), the request
+answers 503, try again, rather than guessing, so a failure never widens a connection to every app. A reconnect replaces the client's earlier token, as each
 app's MCP does. Cancel mints nothing: the server forgets the request and the browser goes back to the client's
 redirect address with `error=access_denied` (and its `state`), so the AI tool says the connection was declined; when
 the request has already expired, the page says the connection was cancelled.

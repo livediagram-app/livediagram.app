@@ -686,6 +686,23 @@ describe('per-app consent', () => {
     ).toEqual(['livediagram', 'liveplanner']);
   });
 
+  it('answers 503 rather than every app when the grant can’t be read', async () => {
+    await grant(['livediagram'], 'lwt_narrow');
+    const kv = env.OAUTH_KV;
+    env = {
+      ...env,
+      OAUTH_KV: {
+        ...kv,
+        get: async () => {
+          throw new Error('KV GET failed: 503');
+        },
+      } as unknown as KVNamespace,
+    };
+    const response = await rpc('tools/list', {}, { all: true, token: 'lwt_narrow' });
+    expect(response.status).toBe(503);
+    expect(calls).toEqual([]);
+  });
+
   it('keeps nothing when every app is ticked, or none is named', async () => {
     const all = (await listNames({ all: true })).length;
     expect(

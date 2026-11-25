@@ -46,10 +46,27 @@ export function oneMcp<E extends { OAUTH_KV: KVNamespace }>(
       const token = bearerTokenOf(request.headers.get('Authorization'));
       // Nobody signs in at an old address: no token there is the pointer, not a sign-in challenge.
       if (oldApp && !token && !preflight) return withCors(movedChallenge(url));
+      let granted: Awaited<ReturnType<typeof allowedApps>> = [];
+      try {
+        if (token) granted = await allowedApps(env.OAUTH_KV, token);
+      } catch (err) {
+        // The person's ticks can't be read: answering with every app would ignore them, so the client tries again.
+        console.error('[mcp] grant unreadable', { err });
+        return withCors(
+          Response.json(
+            {
+              error: 'temporarily_unavailable',
+              error_description:
+                'Couldn’t check which apps this connection may use. Try again in a moment.',
+            },
+            { status: 503, headers: { 'Retry-After': '5' } },
+          ),
+        );
+      }
       const state: RequestState = {
         token,
         // An old address is that one app with every tool.
-        allowed: token ? narrowedApps(await allowedApps(env.OAUTH_KV, token), oldApp) : [],
+        allowed: token ? narrowedApps(granted, oldApp) : [],
         all: oldApp !== null || url.searchParams.get('tools') === 'all',
         refused: false,
       };

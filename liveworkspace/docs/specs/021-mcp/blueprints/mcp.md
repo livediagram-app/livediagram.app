@@ -14,7 +14,7 @@ Derived from [mcp.md](../mcp.md). The spec decides; this file adds engineering p
 | `apps/mcp/src/app-workers.ts`          | Each app's MCP package bound to its env (api binding, base URL, telemetry key) as an in-process `Fetcher`                               |
 | `apps/mcp/src/old-hosts.ts`            | `mcp.<app>.app` on this Worker: the narrowing to that app and the sign-in refusals that point here                                      |
 | `apps/mcp/src/server.ts`               | The per-request `McpServer`: low-level `tools/list` and `tools/call` handlers, the instructions                                         |
-| `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request                                                            |
+| `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request (a failed read throws; the entry answers 503)              |
 | `apps/mcp/src/oauth.ts`, `listing.ts`  | The authorization server's configuration (consent on liveworkspace.app, the five CLIs as built-in clients); serverInfo                  |
 | `<app>/apps/mcp/src/index.ts`          | Each app's MCP package: `createMcpApp` with no authorization server of its own, imported by `apps/mcp/src/app-workers.ts`               |
 | `apps/mcp/eval/`                       | The tool-pick eval: `requests.ts`, `score.ts`, `run.ts`, `snapshot.mjs`, the recorded `tools/`                                          |
