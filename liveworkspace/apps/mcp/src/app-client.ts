@@ -14,6 +14,15 @@ export class TokenRefused extends Error {
   }
 }
 
+/** An app answered a JSON-RPC error: its code and message, so a prompt or resource read can pass them on as they are. */
+export class AppRpcError extends Error {
+  readonly code: number;
+  constructor(app: string, code: number, message: string) {
+    super(`${app}: ${message}`);
+    this.code = code;
+  }
+}
+
 export type ToolResult = {
   content: { type: string; text?: string; [key: string]: unknown }[];
   structuredContent?: Record<string, unknown>;
@@ -55,11 +64,17 @@ export async function appRpc(
   if (response.status === 401) throw new TokenRefused(spec.app);
   const body = (await response.json().catch(() => null)) as {
     result?: Record<string, unknown>;
-    error?: { message?: string };
+    error?: { code?: unknown; message?: string };
   } | null;
   if (!response.ok || !body)
     throw new Error(`${spec.app} answered ${response.status} to ${method}`);
-  if (body.error) throw new Error(`${spec.app}: ${body.error.message ?? 'error'}`);
+  if (body.error)
+    throw new AppRpcError(
+      spec.app,
+      typeof body.error.code === 'number' ? body.error.code : -32603,
+      // The SDK says the code in the message too ("MCP error -32602: ..."); the code travels on its own.
+      (body.error.message ?? 'error').replace(/^MCP error -?\d+: /, ''),
+    );
   return body.result ?? {};
 }
 

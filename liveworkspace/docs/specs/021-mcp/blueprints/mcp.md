@@ -14,7 +14,7 @@ Derived from [mcp.md](../mcp.md). The spec decides; this file adds engineering p
 | `apps/mcp/src/app-workers.ts`          | Each app's MCP package bound to its env (api binding, base URL, telemetry key) as an in-process `Fetcher`                               |
 | `apps/mcp/src/old-hosts.ts`            | `mcp.<app>.app` on this Worker: the narrowing to that app and the sign-in refusals that point here                                      |
 | `apps/mcp/src/server.ts`               | The per-request `McpServer`: low-level `tools/list` and `tools/call` handlers, the instructions                                         |
-| `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request                                                            |
+| `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request (a failed read throws; the entry answers 503)              |
 | `apps/mcp/src/oauth.ts`, `listing.ts`  | The authorization server's configuration (consent on liveworkspace.app, the five CLIs as built-in clients); serverInfo                  |
 | `<app>/apps/mcp/src/index.ts`          | Each app's MCP package: `createMcpApp` with no authorization server of its own, imported by `apps/mcp/src/app-workers.ts`               |
 | `apps/mcp/eval/`                       | The tool-pick eval: `requests.ts`, `score.ts`, `run.ts`, `snapshot.mjs`, the recorded `tools/`                                          |
@@ -40,6 +40,18 @@ the picture tools draw with load as `Data` modules (`[[rules]]`). Hosts: `mcp.li
 `mcp.<app>.app`, staging `mcp-staging.liveworkspace.app` and `mcp-staging.<app>.app` (custom domains, no
 `workers.dev`). Local: `wrangler dev` on 3013 (inspector 9139), which serves every app's tools in one process.
 Deploys in tier 1 (`TIER_OF` in `.github/scripts/ci-plan.mjs`), after the apis it binds.
+
+## Transport
+
+mcp-kit's `createMcpApp`: `POST /mcp` through the SDK's `WebStandardStreamableHTTPServerTransport` with no session id
+and JSON answers; `GET /mcp` with a token is `405` with `Allow: POST, DELETE` before the transport is built (without
+a token, the 401 challenge first).
+
+## CORS
+
+mcp-kit's app allows any origin and exposes `Mcp-Session-Id` and `WWW-Authenticate`. The answers `one-mcp.ts` makes
+itself (a refused token's 401, an old address's challenge and sign-in refusals) carry the same headers
+(`withCors`), and a preflight (`OPTIONS`) on an old address goes to mcp-kit's CORS rather than its refusals.
 
 ## Calling an app
 
@@ -75,8 +87,9 @@ arguments, when the schema has no such property) becomes that argument, and a re
 Prompts, resources and guidance (mcp.md "Nothing an app's MCP offers is lost"): `prompts/list`, `prompts/get`,
 `resources/list`, `resources/templates/list` and `resources/read` go to each allowed app over the same JSON-RPC
 (`appRpc`), an app without them left out; `promptName` swaps the item word for the noun; a resource goes to the app
-whose name its URI's scheme or `ui://` host is. `appGuide` sends `initialize` and keeps the instructions per isolate
-10 minutes.
+whose name its URI's scheme or `ui://` host is. An app's JSON-RPC refusal of `prompts/get` or `resources/read`
+(`AppRpcError`) is passed on with its own code (a missing prompt argument stays `-32602`), and a refused token there
+answers 401 as a listing does. `appGuide` sends `initialize` and keeps the instructions per isolate 10 minutes.
 
 `create_item` defaults: deck `blank-slide-deck`, article `blank-article`, infographic `blank-infographic`, plan
 `kanban`; any other kind with no template gets one blank tab (`tabs: [{ elements: [] }]`); a knowledgebase takes
@@ -103,6 +116,6 @@ whose name its URI's scheme or `ui://` host is. `appGuide` sends `initialize` an
 | `apps/mcp/src/catalogue.test.ts`    | No clash, no bare "document", every name has a subject, openings, no old name left, the rename table                       |
 | `apps/mcp/src/router.test.ts`       | Listing both ways, routing as the person, rewritten answers, every core verb's mapping, an app down, 401s, per-app consent |
 | `apps/mcp/src/eval.test.ts`         | Every request's expected tool exists; the eval's mapping and judging                                                       |
-| `apps/site/lib/mcp-connect.test.ts` | The consent hand-over: mint, complete with the ticked apps, retire, refusals                                               |
+| `apps/site/lib/mcp-connect.test.ts` | The consent hand-over: mint, complete with the ticked apps, retire, refusals; Cancel’s `access_denied`                     |
 | `apps/mcp/src/old-hosts.test.ts`    | An old address narrows to its app with every tool, refuses sign-in with the pointer, answers `/health`                     |
 | `apps/mcp/src/app-workers.test.ts`  | Each app's env: its api binding, base URL and telemetry key, and no key when unset                                         |

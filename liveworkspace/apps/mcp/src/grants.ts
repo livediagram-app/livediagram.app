@@ -34,8 +34,11 @@ export async function allowedApps(kv: KVNamespace, token: string): Promise<AppSp
   const key = await tokenKey(token);
   const hit = kept.get(key);
   if (hit && Date.now() - hit.at < ALLOWED_TTL_MS) return hit.apps;
-  const stored = await kv.get<string[]>(key, 'json').catch(() => null);
-  const apps = (stored ?? [])
+  // A failed read throws rather than reading as no record: no record is every app, so a store failure would widen a
+  // connection the person narrowed (the entry answers 503).
+  const stored = await kv.get<unknown>(key, 'json');
+  const apps = (Array.isArray(stored) ? stored : [])
+    .filter((app): app is string => typeof app === 'string')
     .map((app) => appById(app))
     .filter((spec): spec is AppSpec => spec !== null);
   const result = apps.length > 0 ? apps : [...APPS];

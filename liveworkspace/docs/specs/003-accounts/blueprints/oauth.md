@@ -187,6 +187,10 @@ Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client'
   it, so a client that keeps its `client_id` (claude.ai does) can always sign in again.
 - Registration is limited 20 an hour per address, but Anthropic's egress range `160.79.104.0/21`, where every claude.ai
   connect comes from, has its own `ANTHROPIC_REGISTER_LIMIT` of 2,000 an hour (`anthropic-egress.ts`).
+- `POST /oauth/deny` with `{ session }` (the consent page's Cancel): the session goes and the answer is
+  `{ redirectTo }`, the session's redirect URI with `error=access_denied`, an `error_description` and its `state`; an
+  unknown or expired session is `400 invalid_session`. Every `/oauth/token` answer carries `Cache-Control: no-store`
+  and `Pragma: no-cache` (RFC 6749 §5.1).
 - `POST /oauth/token`: no refresh tokens are issued, so `refresh_token` is `400 invalid_grant`; another unknown grant is
   `400 unsupported_grant_type`; a body with no `grant_type` (JSON, which the form parser reads as nothing) is
   `400 invalid_request` saying to send it form-encoded. Every refusal of the authorization server carries an
