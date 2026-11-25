@@ -975,7 +975,10 @@ canvas's ink.
 
 - **Docked as a sidebar** (the default): a filmstrip pinned flush against the canvas's left edge,
   the way a slide editor shows its slides. It starts below the Toolbar strip and runs down to the
-  canvas's foot, 236 px wide (at the panels' UI scale), opaque, with no gap at its edge, so no page
+  canvas's foot, 236 px wide (at the panels' UI scale) up to a 1,439 px window and wider on wider windows (272, 296
+  and 320 px from 1,440, 1,520 and 1,600 px), resizable by dragging its right edge (double-click resets; the width is
+  kept per browser; the shared rule is liveworkspace/docs/specs/011-workbench/sidebar-width.md), its pictures and
+  names filling its width and a name still cut off shown whole in a tooltip, opaque, with no gap at its edge, so no page
   shows round or through it; only its inner top corner is rounded, and a border and a soft shadow
   part it from the canvas. It has no header of its own: the list starts at its top, and its foot
   holds Add Page with **Contents Options** to its right (a square button the height of Add Page, a

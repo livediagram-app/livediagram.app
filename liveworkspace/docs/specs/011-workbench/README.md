@@ -13,4 +13,6 @@ Follow the references below only as needed; never upfront.
   corner card's actions in the Apps drawer, its tiles per role, the unread dot and the 56 px row
 - ./editor-preferences.md - when working on how an editor keeps a person's settings: the browser's copy, the
   account's, the merge on load (a cleared setting clears everywhere), writing, saving and fitting
+- ./sidebar-width.md - when working on how wide an editor's left sidebar is (Contents, the page tree): the default
+  that steps up on wide windows, the drag handle, the kept width and cut-off names
 - ./blueprints/README.md - when implementing a workbench spec: the blueprints hold the engineering detail derived from it

@@ -62,7 +62,11 @@ Web](publishing.md)): its "public site", never its "Public".
 - A tree is never a cycle: one read from storage is cut at its first page, which keeps the rest of it as its
   subpages. Reading is forgiving and every edit is checked: a move, an indent or an add that would break a limit
   is refused and changes nothing.
-- The tree is the left sidebar, replacing the tab bar: 264 px wide, the knowledgebase's name at its head (its menu's
+- The tree is the left sidebar, replacing the tab bar: 264 px wide up to a 1,439 px window, stepping up to 272, 296
+  and 320 px from 1,440, 1,520 and 1,600 px, and resizable by dragging its right edge (double-click resets; the width
+  is kept per browser), the shared rule in
+  [Sidebar width](../../../../liveworkspace/docs/specs/011-workbench/sidebar-width.md). A title still cut off shows
+  whole in a tooltip on hover and on keyboard focus. The knowledgebase's name at its head (its menu's
   button, "The knowledgebase's menu"), then the pages. Rows indent 20 px a level, a page with subpages has a chevron, and open or closed is kept
   per browser, per knowledgebase. The current page's ancestors are always open, so a page opened by its link shows
   where it is. The current page wears the brand tint. A button at the sidebar's head collapses it to a narrow rail
