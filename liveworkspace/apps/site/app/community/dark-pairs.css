@@ -63,6 +63,7 @@
 @source inline("dark:from-emerald-500/15");
 @source inline("dark:from-emerald-500/20");
 @source inline("dark:from-slate-800");
+@source inline("dark:hover:bg-brand-400");
 @source inline("dark:hover:bg-brand-400/[0.06]");
 @source inline("dark:hover:bg-brand-500");
 @source inline("dark:hover:bg-brand-500/10");
@@ -71,6 +72,7 @@
 @source inline("dark:hover:bg-slate-700/50");
 @source inline("dark:hover:bg-slate-700/60");
 @source inline("dark:hover:bg-slate-800/50");
+@source inline("dark:hover:bg-slate-900");
 @source inline("dark:hover:border-brand-400");
 @source inline("dark:hover:border-brand-400/60");
 @source inline("dark:hover:border-slate-700");

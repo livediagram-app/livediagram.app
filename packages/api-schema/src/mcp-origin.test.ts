@@ -2,7 +2,12 @@
 // (docs/specs/015-api/mcp-server.md §3). A blank build value must fall back to
 // the hosted MCP, never to '' (a same-origin path on the editor's own host).
 import { describe, expect, it } from 'vitest';
-import { createMcpOriginResolver, mcpEndpoint } from './mcp-origin';
+import {
+  createMcpOriginResolver,
+  mcpEndpoint,
+  ONE_MCP_ORIGIN,
+  resolveOneMcpOrigin,
+} from './mcp-origin';
 
 const HOSTED = 'https://mcp.hosted.example';
 const resolveMcpOrigin = createMcpOriginResolver(HOSTED);
@@ -31,6 +36,16 @@ describe('createMcpOriginResolver', () => {
   it('puts the endpoint path on the origin', () => {
     expect(mcpEndpoint(resolveMcpOrigin('https://mcp.example.com/'))).toBe(
       'https://mcp.example.com/mcp',
+    );
+  });
+});
+
+describe('the one MCP', () => {
+  it('is liveworkspace’s hosted MCP unless the build names another', () => {
+    expect(ONE_MCP_ORIGIN).toBe('https://mcp.liveworkspace.app');
+    expect(mcpEndpoint(resolveOneMcpOrigin(undefined))).toBe('https://mcp.liveworkspace.app/mcp');
+    expect(resolveOneMcpOrigin('https://mcp-staging.liveworkspace.app/')).toBe(
+      'https://mcp-staging.liveworkspace.app',
     );
   });
 });

@@ -19,7 +19,8 @@ packages/marketing-site/src
 │  ├─ feature-art/              what every product's card art draws from: shared (Frame, colours, the
 │  │                            teammate Cursor), canvas-marks, page-kit, versatility-parts
 │  ├─ ai/                       the Build with AI page (BuildWithAi) and its client picker, code
-│  │                            blocks, copy buttons, address card, prompts, control and help
+│  │                            blocks, copy buttons, address card, prompts, capability grid
+│  │                            (AiCapabilityGrid), control and help; liveworkspace.app's /ai too
 │  ├─ together/                 the "Better together" band: every cross-app card on liveworkspace.app,
 │  │                            a product's own (at most six) on its landing page
 │  ├─ faq/                      the FAQ browser (search, category index) and the question card
@@ -41,6 +42,7 @@ packages/marketing-site/src
 
 <product>/apps/marketing
 ├─ app/ai/page.tsx              wraps BuildWithAi in its header and footer, with its own words and art
+│                               (liveworkspace.app's too: liveworkspace/apps/site/app/ai, for every app)
 ├─ lib/ai-clients.ts            AI_PRODUCT (its name, MCP_URL, hosted MCP host) and its starter prompts
 ├─ lib/faq-content.tsx          its questions; components/faq/FaqBrowser.tsx hands them over
 └─ app/licences/page.tsx        its heading and lede for the licences page

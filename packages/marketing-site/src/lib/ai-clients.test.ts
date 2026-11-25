@@ -5,6 +5,7 @@ import {
   CONNECTOR_NAME,
   aiClients,
   cursorInstallLink,
+  tickedOf,
   vscodeInstallLink,
 } from './ai-clients';
 
@@ -122,5 +123,43 @@ describe('a product binding', () => {
       'liveknowledge',
     ])
       expect(commands(product)).not.toContain('<product>');
+  });
+});
+
+// liveworkspace/docs/specs/010-site/site.md "Build with AI": liveworkspace.app's page, for every app at once.
+describe('the platform binding', () => {
+  const platform = aiClients({
+    name: 'liveworkspace',
+    mcpUrl: MCP_URL,
+    ticked: 'every app you want',
+    cli: false,
+  });
+  const text = JSON.stringify(platform);
+
+  it('says to keep every app wanted ticked, never one app or liveworkspace itself', () => {
+    expect(text).toContain('with every app you want ticked');
+    expect(text).not.toContain('liveworkspace ticked');
+    expect(text).not.toMatch(/live(diagram|planner|documents|design|knowledge)/);
+  });
+
+  it('offers no CLI, since liveworkspace has none', () => {
+    expect(platform.find((c) => c.id === 'claude-code')!.note).toBeUndefined();
+    expect(text).not.toContain('CLI is another way in');
+    expect(
+      aiClients({ name: 'livediagram', mcpUrl: MCP_URL }).find((c) => c.id === 'claude-code')!.note,
+    ).toContain('The livediagram CLI');
+  });
+
+  it('writes the same steps as a product, but for what is ticked', () => {
+    const steps = (clients: readonly { steps: { code?: { code: string } }[] }[]) =>
+      clients.flatMap((c) => c.steps.flatMap((s) => (s.code ? [s.code.code] : [])));
+    expect(steps(platform)).toEqual(steps(aiClients({ name: 'livediagram', mcpUrl: MCP_URL })));
+  });
+
+  it('ticks the product by default', () => {
+    expect(tickedOf({ name: 'livedesign', mcpUrl: MCP_URL })).toBe('livedesign');
+    expect(tickedOf({ name: 'liveworkspace', mcpUrl: MCP_URL, ticked: 'every app you want' })).toBe(
+      'every app you want',
+    );
   });
 });

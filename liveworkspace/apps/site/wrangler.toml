@@ -27,7 +27,7 @@ main = "worker/index.ts"
 directory = "./out"
 binding = "ASSETS"
 not_found_handling = "404-page"
-run_worker_first = ["/", "/compare", "/pricing", "/privacy", "/terms", "/licences"]
+run_worker_first = ["/", "/ai", "/compare", "/pricing", "/privacy", "/terms", "/licences"]
 
 [env.staging]
 name = "liveworkspace-site-staging"
@@ -38,4 +38,4 @@ workers_dev = false
 directory = "./out"
 binding = "ASSETS"
 not_found_handling = "404-page"
-run_worker_first = ["/", "/compare", "/pricing", "/privacy", "/terms", "/licences"]
+run_worker_first = ["/", "/ai", "/compare", "/pricing", "/privacy", "/terms", "/licences"]

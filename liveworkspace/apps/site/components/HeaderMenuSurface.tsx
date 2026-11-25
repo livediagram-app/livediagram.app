@@ -8,6 +8,7 @@ import {
   lucideColumns2,
   lucideHeartPulse,
   lucideLayoutGrid,
+  lucideSparkles,
   lucideTag,
   lucideUsers,
 } from '@liveworkspace/icons/lucide';
@@ -60,6 +61,12 @@ const SUPPORT_ROWS: Row[] = [
     label: 'Help',
     hint: 'Guides for every app',
     icon: lucideGlyph(lucideCircleHelp, 16),
+  },
+  {
+    href: '/ai',
+    label: 'Build with AI',
+    hint: 'Connect your AI to every app',
+    icon: lucideGlyph(lucideSparkles, 16),
   },
   {
     href: '/status',
