@@ -165,6 +165,19 @@ describe('applyMindOutline', () => {
     expect(outlineOf(out).split('\n')[1]).toBe('- Travel');
   });
 
+  // mind-node.md "Tidy Map": a node on a locked layer keeps its place through an outline save.
+  it('leaves a node on a locked layer where it is while the map is laid out again', () => {
+    const els = offsite();
+    const text = 'Team offsite\n- Travel\n- Venue\n  - Lake District\n- Agenda\n  - Day 1';
+    const free = applyMindOutline(els, 'root', parse(text), dress)!;
+    const held = applyMindOutline(els, 'root', parse(text), dress, new Set(['venue']))!;
+    expect(shape(free, 'venue').y).not.toBe(shape(els, 'venue').y);
+    expect(shape(held, 'venue')).toMatchObject({
+      x: shape(els, 'venue').x,
+      y: shape(els, 'venue').y,
+    });
+  });
+
   it('adds a new line as a node that looks like its siblings, joined by a connector', () => {
     const els = offsite();
     const out = applyMindOutline(els, 'root', parse(`${outlineOf(els)}\n  - Ferry`), dress)!;

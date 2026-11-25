@@ -69,6 +69,14 @@ describe('fitMindNodeHeight', () => {
     expect(box(next, 'r')).toMatchObject({ x: 0, y: 0 });
   });
 
+  // mind-node.md "Tidy Map": a node on a locked layer keeps its place when the map is laid out again.
+  it('keeps a node on a locked layer where it is while the rest re-lays out', () => {
+    const els = tidyMap();
+    const next = fitMindNodeHeight(els, 'b', 140, new Set(['c']));
+    expect(box(next, 'c')).toEqual(box(els, 'c'));
+    expect(box(next, 'b').height).toBe(140);
+  });
+
   it('grows a hand-arranged map downward and moves nothing else', () => {
     const els = tidyMap().map((el) => (el.id === 'c' ? { ...el, x: 900, y: 900 } : el));
     const next = fitMindNodeHeight(els, 'b', 140);

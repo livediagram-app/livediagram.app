@@ -15,6 +15,7 @@ import {
   type Tab,
   type TextRun,
   growTextToLabel,
+  lockedLayerElementIds,
 } from '@livediagram/document';
 import { whiteboardTakesTyping } from '@/lib/whiteboard-tool';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
@@ -226,7 +227,9 @@ export function useSelectionEditing(opts: {
     const measureMind =
       target && isMindNode(target) ? measureDrawnMindLabel(activeTab.font, activeTab.finish) : null;
     const fitted = (els: Element[]) =>
-      measureMind ? fitMindLabel(els, elementId, measureMind) : els;
+      measureMind
+        ? fitMindLabel(els, elementId, measureMind, lockedLayerElementIds(els, activeTab.layers))
+        : els;
     commit((els) =>
       fitted(
         els.flatMap((el): Element[] => {

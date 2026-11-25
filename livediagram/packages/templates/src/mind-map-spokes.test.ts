@@ -4,6 +4,7 @@ import {
   elementIndexFor,
   endpointPosition,
   planMindGrowth,
+  relayoutMindMap,
   type Element,
   type ShapeElement,
 } from '@livediagram/document';
@@ -80,24 +81,33 @@ function crossings(elements: Element[]): string[] {
   return out;
 }
 
+// The Mind Map template starts balanced (mind-node.md "Templates"); Bubble is still one pick of its flow.
+function asBubble(elements: Element[]): Element[] {
+  const root = elements.find((el) => isNode(el) && el.mindFlow)!;
+  const plan = relayoutMindMap(elements, root.id, 'bubble')!;
+  const next = applyMindMoves(elements, plan.moves, plan.reanchored);
+  return next.map((el) => (el.id === root.id ? { ...el, mindFlow: 'bubble' as const } : el));
+}
+
 describe('bubble mind map spokes', () => {
   it('clear every sibling after Travel grows Hotel and Taxi', () => {
-    let map = buildMindMap(0, 0);
+    let map = asBubble(buildMindMap(0, 0));
     const travel = map.find((el) => isNode(el) && el.label === 'Travel')!;
     map = grow(map, travel.id, 'child', 'Hotel');
     map = grow(map, 'Hotel', 'sibling', 'Taxi');
     expect(crossings(map)).toEqual([]);
   });
 
-  it('clear every node on the template as built', () => {
+  it('clear every node on the template as built, balanced or switched to bubble', () => {
     expect(crossings(buildMindMap(0, 0))).toEqual([]);
+    expect(crossings(asBubble(buildMindMap(0, 0)))).toEqual([]);
   });
 });
 
 // docs/specs/008-canvas/arrow-anchors.md "In mind maps and flowcharts it is on by default".
 describe('mind map template connectors', () => {
   it.each([
-    ['bubble', buildMindMap],
+    ['balanced', buildMindMap],
     ['tree', buildMindMapTree],
   ])('start at the exact anchor on the %s map', (_, build) => {
     const arrows = build(0, 0).filter((el) => el.type === 'arrow');
