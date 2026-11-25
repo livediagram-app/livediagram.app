@@ -42,7 +42,14 @@ Derived from [Canvas and palette](../canvas-and-palette.md) "Duplicate" and [Roo
    `duplicateOffset` (never as a Room); `{ DUPLICATE_GAP, DUPLICATE_GAP }` when none of the ids is on the tab. The hook
    moves every copy by it through `duplicateElements`, then `snapMovedDoors` over the copies: a wall piece riding a
    copied Room is already on that Room's wall (a no-op), one whose Room stayed behind snaps onto a wall in reach.
-5. The hook commits the copies (one undo step) and selects them, as before, and notes the pair in
+5. A single Room or Corridor (Work Tracker 1452): `duplicateWithWallPieces(source, elements)` takes the move
+   `placeDuplicate` gives the Room's copy, then copies the Room and every wall piece standing on its walls
+   (`withAttachedDoors(elements, {source.id})`) through `duplicateElements` by that same move, so each wall piece
+   lands on the copy's same wall at the same place, with a fresh id and `freshCopyFields`. A copied wall piece whose
+   centre stands nearer than half the two widths to a wall piece already on the tab (the copy shares the original's
+   wall, where the original's own Door already stands) is dropped. It returns the copies, the Room's first; the hook
+   commits them all in one commit and selects the Room's copy. Any other single piece is `placeDuplicate` as before.
+6. The hook commits the copies (one undo step) and selects them, as before, and notes the pair in
    `apps/editor/lib/duplicate-origin.ts` (`noteDuplicate(sourceIds, copyIds)`, one slot, the latest duplicate).
 
 ## The toolbar keeps clear of the original
@@ -69,6 +76,10 @@ Work Tracker 849 (spec "Selection popover", "It never covers what you just dupli
 - A piece inside a full Room: the floor has no free spot, so the nearest free spot off it wins.
 - A Door on a wall too short for a second: no stretch is clear, so it falls back to a box spot and the nearest wall.
 - A rotated element is placed by its unrotated box, as every box test on the canvas is.
+- A turned Room (office.md "A Room turns") is placed as a piece, a gap away, never on the original's wall: its walls
+  are not on its box. Its Doors ride the same move, so they stay on its turned walls.
+- A Door on a wall the original shares with a neighbour is on the original's wall, so it is copied; it lands on the
+  copy's wall, and is dropped only when a wall piece already stands there.
 
 ## Performance and limits
 
@@ -92,6 +103,8 @@ Work Tracker 849 (spec "Selection popover", "It never covers what you just dupli
 | A Door or a Window slides along its wall, clear of other wall pieces; a free one    | `lib/duplicate-placement.test.ts`                          |
 | A multi-selection moves as one group; a Door left without its Room snaps            | `hooks/canvas/useElementDuplication.test.tsx`              |
 | The copy is selected                                                                | `hooks/canvas/useElementDuplication.test.tsx`              |
+| A Room or a Corridor brings its Doors and Windows; one on a shared wall is not stacked | `lib/duplicate-placement.test.ts` "duplicateWithWallPieces" |
+| The Room and its Doors are one commit, so one Undo                                  | `hooks/canvas/useElementDuplication.test.tsx`              |
 | Budget on 5,000 pieces                                                              | `lib/duplicate-placement.test.ts` "duplicateOffset budget" |
 
 ## Constants and configuration

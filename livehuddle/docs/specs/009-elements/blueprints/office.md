@@ -64,6 +64,15 @@ Derived from [Office](../office.md).
 - **Room walls**: back at `y + ROOM_BACK_FACE - ROOM_WALL / 2`, front at `y + h - ROOM_WALL / 2`, sides at
   `x + ROOM_WALL / 2` and `x + w - ROOM_WALL / 2`; the doorway's wall split at `roomDoorSpan(length, door)`:
   centred, `min(ROOM_DOOR_WIDTH, length - 2 · ROOM_WALL - 8)` wide, none if that is ≤ 0 or `door` is `'none'`.
+- **A turned room** (office.md "A Room turns", Work Tracker 1454): `roomWalls` builds the walls above (or a Room Builder
+  room's `outlineWalls`), then turns every end by `el.rotation` (clockwise degrees) about the box centre with
+  `rotatePoint`; an upright room (rotation absent or a multiple of 360) skips the turn and returns the same lines as
+  before. Every reader of `roomWalls` (`fenceSegments`, `wallsOf` / `wholeWalls` in room-builder.ts, the 3D walls) gets
+  the turned lines, so the walk, a Door's snap, `doorsFollowRooms` on a turn and the 3D view agree. `roomZones`
+  (`packages/document/src/call-geometry.ts`) gives a turned room a `polygon` (its interior's four corners, or its
+  outline, turned the same way) and the polygon's bounds. `onFloorOf` (a Window's facing) turns the probe back into the
+  room's frame. A turned room is left out of `snapRoomWalls` / `snapRoomWallsResize` (both as a target and as the moved
+  room, `isBoxRoomId`) and of the duplicate's shared-wall step (`isBoxRoom` in duplicate-placement.ts).
 - **Destinations**: `elementUnderFeet` skips `isFloorShape`, `plant` and `bookshelf`. A meeting table and the
   machines remain destinations.
 - **Sitting at the table**: `seatPoints` (`@livehuddle/avatar/seats`) returns the six `MEETING_TABLE_SEATS` with
@@ -163,6 +172,8 @@ Element add / change telemetry as every element; `Canvas · Used · WaterCooler 
 | Walls, doorway span, room drawing           | same                                                         |
 | Footprints, table seats and facings         | same                                                         |
 | Walls and footprints block; doorway passes  | `apps/editor/lib/avatar-fence.test.ts`                       |
+| A turned room's walls block where drawn; a Door in one passes | `packages/avatar/src/collision.turned-room.test.ts` |
+| A turned room's Doors turn with it; its call is its turned floor | `packages/document/src/room-builder.test.ts`, `call-geometry.test.ts` |
 | Floor and scenery never rung                | `apps/editor/lib/avatar-walk.test.ts`                        |
 | Drink held, refreshed, put down; on arrival | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`            |
 | Views draw; plant stays green; table pill   | `apps/editor/components/canvas/collab/office-views.test.tsx` |
