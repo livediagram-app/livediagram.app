@@ -231,7 +231,12 @@ per-currency amounts, which the Worker reads so the page and the charge match.
 its own copy of who is subscribed.
 
 - **A person's browser** (the site and every app) reads its own subscription, usage and teams, and starts a checkout
-  or opens the billing portal, with the account's access token.
+  or opens the billing portal, with the account's access token. That token is the one the page already holds: on
+  liveworkspace.app the site's, and on an app's address (the Explorer each app serves at `/explorer`, an editor's
+  Settings) that app's, addressed to that app's API. So the Worker takes a token addressed to **every registered
+  app's API**, the same list the index, Drive and the Community keep, in each environment. An app missing from it
+  reads as signed out there: no Pro badge, plan or meter shows on that app's address while every other shows them. A
+  guard test reads the deployed lists.
 - **An app's Worker** asks for an owner's entitlement, spends from a meter and reports gauges, with that app's own
   key, over a service binding. A browser can never call these routes.
 - With `PRO_ENABLED` off every route answers 404.
