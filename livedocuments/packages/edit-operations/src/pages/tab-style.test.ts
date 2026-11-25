@@ -53,6 +53,13 @@ describe('tab_style', () => {
     expect(refused([{ op: 'tab_style', font: 'comic' }])).toContain('"font": unknown "comic"');
     expect(refused([{ op: 'tab_style', finish: 'glossy' }])).toContain('"finish": unknown');
     expect(refused([{ op: 'tab_style', colour: 'red' }])).toContain('tab_style takes no "colour"');
+    expect(refused([{ op: 'tab_style', font: ' ' }])).toContain('"font" is an id.');
+    expect(refused([{ op: 'tab_style', theme: 3 }])).toContain('"theme" is an id.');
+    expect(parsed([{ op: 'tab_style', theme: 'ocean', finish: 'sketch' }])[0]).toEqual({
+      op: 'tab_style',
+      theme: 'ocean',
+      finish: 'sketch',
+    });
   });
 
   it('restyles the tab as a recipe: theme, typeface, finish and page design, and says so', () => {
@@ -80,6 +87,14 @@ describe('tab_style', () => {
   it('picks a recipe for the tab’s words on "auto"', () => {
     const out = run(tabOf(), [{ op: 'tab_style', style: 'auto' }]);
     expect(out.lines.join(' ')).toContain('as formal-report');
+  });
+
+  it('takes the first recipe on "auto" when the tab’s words suit none', () => {
+    const quiet = { ...box, label: 'Zzz' } as Element;
+    const out = run(tabOf({ name: 'Qqq', elements: [quiet] }), [
+      { op: 'tab_style', style: 'auto' },
+    ]);
+    expect(out.lines.join(' ')).toContain(`as ${STYLE_RECIPES[0]!.id}`);
   });
 
   it('sets its articles in the typeface too', () => {

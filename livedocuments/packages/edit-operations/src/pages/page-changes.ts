@@ -378,9 +378,10 @@ export function applyPageChanges(
             said.push(`finish ${finish}`);
           }
           if (recipe && recipe.design !== 'none') {
-            const d = tabDesignFor(current, { id: recipe.design });
+            // A design named, never "auto", so there is one.
+            const d = tabDesignFor(current, { id: recipe.design })!;
             current = withTabPageDesign(current, d);
-            if (d) said.push(`page design ${describeDesign(d)}`);
+            said.push(`page design ${describeDesign(d)}`);
           }
           lines.push(
             `Restyled the tab${recipe ? ` as ${recipe.id}` : ''}: ${said.join(', ')}. A page with its own background or design keeps it.`,

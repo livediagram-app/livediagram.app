@@ -8,6 +8,7 @@ import {
   partPath,
   partsOf,
   slotsInWords,
+  tableInWords,
   type SlotElement,
 } from './layout-slots';
 
@@ -388,6 +389,71 @@ describe('compound elements, tables and sample left unnamed', () => {
     expect(
       given(fillLayoutSlots([text('h', 'H', 60, 0)], { table: [['x']] }, sizeOf, relabel).lines),
     ).toEqual(['This layout has no table, so the 1 row given was not placed.']);
+  });
+
+  it('skips a part with no words, and names a step by its place', () => {
+    const odd = {
+      id: 'o',
+      type: 'shape',
+      size: 0,
+      stats: [null, 'loose', { value: '', caption: 'Kept' }],
+      processSteps: [3, ' ', 'Ship'],
+    } as unknown as El;
+    expect(partsOf(odd).map((p) => [partPath(p.at), p.text])).toEqual([
+      ['stats[2].caption', 'Kept'],
+      ['processSteps[2]', 'Ship'],
+    ]);
+  });
+
+  it('reads a table’s header row in words, and none from what is not a table', () => {
+    const t = {
+      id: 'tb',
+      type: 'table',
+      cells: [
+        ['a', 'b'],
+        ['c', 'd'],
+      ],
+    } as unknown as El;
+    expect(tableInWords(t)).toBe('a | b');
+    expect(tableInWords(text('h', 'H', 60, 0))).toBeNull();
+    expect(tableInWords({ ...t, cells: [] } as unknown as El)).toBeNull();
+  });
+
+  it('writes a plain table, and keeps sizes and the recommended column that still fit', () => {
+    const plain = { id: 'tb', type: 'table', size: 0, cells: [['x']] } as unknown as El;
+    const bare = fillLayoutSlots([plain], { table: [['a', 'b']] }, sizeOf, relabel);
+    expect(bare.elements[0]).toEqual({ ...plain, cells: [['a', 'b']] });
+    const sized = {
+      ...plain,
+      cells: [['x', 'y']],
+      colWidths: [120, 80],
+      highlightColumn: 1,
+    } as unknown as El;
+    const same = fillLayoutSlots([sized], { table: [['a', 'b']] }, sizeOf, relabel);
+    expect(same.elements[0]).toMatchObject({ colWidths: [120, 80], highlightColumn: 1 });
+    const unsized = { ...sized, colWidths: [] } as unknown as El;
+    const wider = fillLayoutSlots([unsized], { table: [['a', 'b', 'c']] }, sizeOf, relabel);
+    expect(wider.elements[0]).toMatchObject({ colWidths: [null, null, null] });
+  });
+
+  it('cuts long sample words in what it names, and names a part it cannot find as empty', () => {
+    const long = 'A subtitle long enough to run past forty characters';
+    const out = fillLayoutSlots(
+      [text('h', 'Heading', 60, 0, { textBold: true }), text('s', long, 30, 80)],
+      { title: 'New' },
+      sizeOf,
+      relabel,
+    );
+    expect(out.lines[0]).toContain(`subtitle "${long.slice(0, 39)}…"`);
+    // Two elements share an id: the slot for the stat row's part finds the plain text first.
+    const twin = [
+      text('h', 'Heading', 60, 0, { textBold: true }),
+      text('r', 'Plain words', 30, 80),
+      { ...KEY_STATS[2]!, id: 'r' },
+    ];
+    expect(fillLayoutSlots(twin, { title: 'New' }, sizeOf, relabel).lines[0]).toContain(
+      'figures[0] ""',
+    );
   });
 
   it('reads and refuses a table slot', () => {
