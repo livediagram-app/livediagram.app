@@ -167,6 +167,7 @@ function OpenEditorModals() {
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
     setEveryPageBackground,
+    setPageStyle,
     pagesMode,
     setCanvasThemeTab,
   ]);

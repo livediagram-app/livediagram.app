@@ -125,9 +125,6 @@ export function LayerRows({
             className={`${CELL} disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-slate-200 disabled:hover:bg-transparent dark:disabled:hover:border-slate-700`}
             onClick={row.onOpen}
             disabled={row.disabled}
-            title={
-              row.disabled ? 'Sets every page: turn on Affect All Pages to change it' : undefined
-            }
             data-page-layer={row.key}
           >
             <span
@@ -146,6 +143,13 @@ export function LayerRows({
         ))}
         {after}
       </div>
+      {/* Why the tab's cards are off: they set every page (said on the screen, not in a hover, which a disabled
+          button never gets). */}
+      {extra?.some((row) => row.disabled) ? (
+        <p className="mt-2 px-1 text-[11px] text-slate-500 dark:text-slate-400">
+          Colours, Text and Finish set every page: turn on Affect All Pages to change them.
+        </p>
+      ) : null}
     </div>
   );
 }

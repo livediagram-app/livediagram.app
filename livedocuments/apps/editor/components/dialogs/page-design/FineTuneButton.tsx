@@ -3,7 +3,7 @@
 // Page Design's Fine Tune (docs/specs/011-theme/canvas-and-theme-dialog.md "Page Design"): a full-width row pinned to
 // the foot of the screen, as the layers' rows are, that opens the worn design's controls beside the dialog, or as a drawer on a phone, so the
 // layers and their pickers keep the dialog's room (owner, 2026-11-25).
-import { useRef, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { lucideChevronRight } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
@@ -54,7 +54,8 @@ export function FineTuneButton({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const button = useRef<HTMLButtonElement>(null);
+  // The button as state, not a ref: the popover anchors to it while rendering.
+  const [button, setButton] = useState<HTMLButtonElement | null>(null);
   const phone = useIsMobileViewport();
   const close = () => setOpen(false);
   // Beside the dialog it draws its own surface (the popover paints one only with a pointer); the drawer has its own.
@@ -89,7 +90,7 @@ export function FineTuneButton({
   return (
     <>
       <button
-        ref={button}
+        ref={setButton}
         type="button"
         aria-expanded={open}
         aria-haspopup="dialog"
@@ -110,15 +111,15 @@ export function FineTuneButton({
         </span>
         <Chevron className="text-slate-400 transition-transform group-hover:translate-x-0.5" />
       </button>{' '}
-      {open && button.current ? (
+      {open && button ? (
         phone ? (
           <PhoneDrawer name={`Fine Tune, ${title}`} layer="modal" onClose={close}>
             {body}
           </PhoneDrawer>
         ) : (
           <AnchoredPopover
-            anchor={button.current}
-            beside={button.current.closest<HTMLElement>('[role="dialog"]')}
+            anchor={button}
+            beside={button.closest<HTMLElement>('[role="dialog"]')}
             name={`Fine Tune, ${title}`}
             width={WIDTH}
             layer="modal"

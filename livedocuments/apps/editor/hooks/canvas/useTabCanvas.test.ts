@@ -249,8 +249,8 @@ describe('useTabCanvas Quick Picks', () => {
       motion: 'drift' as const,
     };
     h.api.setEveryPageBackground({ fill: motion } as never);
-    const [a, r] = pagesOf(h.tabs()[0]!);
-    expect((a!.background?.fill as { motion?: string }).motion).toBe('drift');
+    const [a, r] = pagesOf(h.tabs()[0]);
+    expect((a!.background?.fill as { motion?: string } | undefined)?.motion).toBe('drift');
     expect(r!.background).toBeUndefined();
     expect(h.tabs()[0]!.newPageBackground).toBeUndefined();
   });
@@ -259,7 +259,7 @@ describe('useTabCanvas Quick Picks', () => {
     const h = setup([], false, vi.fn(), [slide('a'), slide('b')]);
     h.api.setPageStyle('a', { fill: mint }, { id: 'waves' });
     expect(h.commitTabs).toHaveBeenCalledTimes(1);
-    const [a, b] = pagesOf(h.tabs()[0]!);
+    const [a, b] = pagesOf(h.tabs()[0]);
     expect(a!.background?.fill).toEqual(mint);
     expect(a!.design).toMatchObject({ id: 'waves' });
     expect(b!.background).toBeUndefined();

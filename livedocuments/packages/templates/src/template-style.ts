@@ -62,5 +62,5 @@ export function templateStyleOverrides(kind: TemplateKind): Partial<Tab> {
     ...(style.design ? { pageDesign: style.design } : {}),
     ...(style.font ? { font: style.font } : {}),
     ...(style.finish ? { finish: style.finish } : {}),
-  } as Partial<Tab>;
+  };
 }
