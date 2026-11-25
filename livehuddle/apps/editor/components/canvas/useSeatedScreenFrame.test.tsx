@@ -11,14 +11,25 @@ import { SELF_MEDIA_ID } from '@/lib/calls/calls-media-store';
 import { setMeetingLive } from '@/lib/office/meeting-live';
 import { screensInYourRoom, useSeatedScreenFrame } from './useSeatedScreenFrame';
 
+// A glide lands at once, unless a test stops it partway (`glide.lands` false): then it is halfway, and never lands.
+const glide = vi.hoisted(() => ({ lands: true }));
 vi.mock('@liveworkspace/workbench/lib/viewport-glide', () => ({
   glideViewport: (
-    _from: unknown,
+    from: { zoom: number },
     to: { zoom: number; offset: { x: number; y: number } },
-    set: { zoom: (z: number) => void; offset: (o: { x: number; y: number }) => void },
+    set: {
+      zoom: (z: number) => void;
+      offset: (o: { x: number; y: number }) => void;
+      landed?: () => void;
+    },
   ) => {
+    if (!glide.lands) {
+      set.zoom((from.zoom + to.zoom) / 2);
+      return () => {};
+    }
     set.zoom(to.zoom);
     set.offset(to.offset);
+    set.landed?.();
     return () => {};
   },
 }));
@@ -66,6 +77,7 @@ function setup(initial: {
 }
 
 beforeEach(() => {
+  glide.lands = true;
   zoom = 1.4;
   offset = { x: 0, y: 0 };
   vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
@@ -91,6 +103,18 @@ describe('useSeatedScreenFrame', () => {
     expect(zoom).toBe(1.4);
     expect(offset).toEqual({ x: 720 + 300, y: 422 - 200 });
     expect(framed).toBeGreaterThan(0.5);
+  });
+
+  it('puts the zoom back when you stand up before the glide out has landed', () => {
+    const { view, props } = setup({ seatedOn: null });
+    glide.lands = false;
+    view.rerender(props('chair1'));
+    // Partway out: the glide's own zoom, not one you chose.
+    expect(zoom).toBeLessThan(1.4);
+    glide.lands = true;
+    view.rerender(props(null));
+    expect(zoom).toBe(1.4);
+    expect(offset).toEqual({ x: 720 + 300, y: 422 - 200 });
   });
 
   it('keeps a zoom you chose while seated', () => {
