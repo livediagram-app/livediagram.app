@@ -118,7 +118,7 @@ export const partId = (id: string, n: number) => `${id}#${n}`;
 // A table's fields the table slot keeps in step with its cells: each product's table element has them.
 type TableLike = SlotElement & {
   cells: string[][];
-  cellStyles?: (unknown | null)[][];
+  cellStyles?: unknown[][];
   colWidths?: (number | null)[];
   rowHeights?: (number | null)[];
   highlightColumn?: number;
