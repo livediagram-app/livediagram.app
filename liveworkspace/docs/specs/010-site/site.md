@@ -468,7 +468,11 @@ built once here. It is shown here and, through each switched-on app's router, at
   nothing until the person is known, and nothing for a guest.
 
 - **Who it reads as.** The index is asked with a short-lived token from `GET /api/auth/workspace-token`: the
-  signed-in account's, or this browser's guest's ([accounts.md](../003-accounts/accounts.md)). Signing out here asks again.
+  signed-in account's, or this browser's guest's ([accounts.md](../003-accounts/accounts.md)). **Signing out here
+  leaves the Explorer** (Work Tracker 1443): the header menu's Sign Out, or Settings › Your Account's, goes to the
+  signed-out home page (`/`, the address's own landing page on an app's address) and never asks for a token again
+  first, so a sign-out makes no guest, and the page never shows the old account's teams or items as a guest who
+  can't load them. Until the page is gone the Explorer drops what it showed for its skeleton.
   Until the answer comes (seconds on a slow session) the page shows the Explorer's own skeleton under the header
   (`ExplorerSkeleton`: the sidebar's rows and a pane of cards, pulsing, `aria-busy`), never a blank page. The wait
   is bounded: with no answer in 12 s (`IDENTITY_WAIT_MS`), or a failed one (the app's token answer is a 5xx, or none
@@ -1001,14 +1005,15 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     has neither, so a second dialog here would be a second way to close an account, not the same one.
     On an app's own address (the Explorer at `www.livediagram.app/explorer`, signed in with that app's token), Your
     Account has the app's own two rows (Work Tracker 1228): **Sign Out**, which signs out of the app as its editor's
-    Sign Out does (`appSignOut`: every liveworkspace app in this browser, through the accounts site's hop, back to this
-    page as a visitor). It is the editors' sign-out, not a lighter one (Work Tracker 1283): the page posts to the app's
+    Sign Out does (`appSignOut`: every liveworkspace app in this browser, through the accounts site's hop), landing on
+    the app's landing page (`/`) as a visitor, never back in the Explorer, whose reload would start a guest (Work
+    Tracker 1443). It is the editors' sign-out, not a lighter one (Work Tracker 1283): the page posts to the app's
     own `POST /api/auth/sign-out` on this address (the app's router sends `/api/auth/*` to the app's API, never to
     liveworkspace.app), whose shared handler (`createAppAuth`) ends the liveworkspace session its refresh token came
     from, with every app's tokens from that session, and answers the hop through the accounts site that clears its
     cookie there; so the row's "Sign out of every liveworkspace app in this browser." holds. Only when the accounts
     site doesn't answer (or there is no refresh token) is it this app alone, remembered by its signed-out mark, as in
-    the editors ([accounts.md](../003-accounts/accounts.md#signing-out)), and then the page it reloads to says so
+    the editors ([accounts.md](../003-accounts/accounts.md#signing-out)), and then the page it lands on says so
     under its account control: "Signed out of livediagram only" (the app's name), with what that means and a Dismiss
     button (`SignedOutHereNotice`, accounts.md "Signed out of this app only"), so the row's promise is never broken
     in silence. The header's account menu on this address does the same. And **Delete Account**, "Permanently deletes your liveworkspace account and everything you own

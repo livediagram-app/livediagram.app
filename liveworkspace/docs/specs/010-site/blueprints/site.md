@@ -24,6 +24,16 @@ control in a positioned box with `SignedOutHereNotice` (`@liveworkspace/account-
 sign-out of that app alone the reloaded page says so (`components/explorer/app-account-control.test.tsx`; Work Tracker
 1283, accounts.md "Signed out of this app only"); on liveworkspace.app (`pageApp()` null) it draws none.
 
+Signing out from the Explorer leaves it (Work Tracker 1443, accounts.md "From the Explorer"). On liveworkspace.app,
+`useExplorerIdentity` sees the session go `in` then `out` and, instead of asking for a token again (which made a
+guest and reloaded a team's page as that guest), forgets the cached token, sets `identity` to null (the Explorer's
+skeleton, none of the old account's teams or items) and replaces the page with `SIGNED_OUT_HREF` (`/`,
+`lib/explorer/signed-out.ts`); after that the hook asks nothing, Try Again included. On an app's address the site's
+`appSignOut` passes `returnTo: SIGNED_OUT_HREF` to the account menu's, so the hop (or the straight return) lands on
+the app's landing page rather than the Explorer, whose reload would take a guest hand-off. Pinned by
+`components/explorer/explorer-sign-out.test.tsx` (the real session and token modules: after `POST …/sign-out`, no
+request at all), `useExplorerIdentity.test.tsx` and `lib/explorer/app-sign-out.test.ts`.
+
 ### Opening from an open item (`components/explorer/useItemArrival.ts`)
 
 `/explorer?item=<id>` ([one-explorer.md](../../004-index/one-explorer.md#opening-from-an-open-item)): `pending` while
@@ -121,10 +131,10 @@ beside an editor's own Delete Account.
 ### Settings' Sign Out and Delete Account on an app's address (Work Tracker 1228)
 
 On an app's address (`pageApp()`), the site's `AccountHost` carries `onSignOut: () => appSignOut()` (`lib/explorer/
-app-session.ts`, the account menu's own app sign-out: `POST /api/auth/sign-out?return=<this page>` on the page's own
+app-session.ts`, the account menu's own app sign-out: `POST /api/auth/sign-out?return=/` (the app's landing page) on the page's own
 origin, then the accounts site's hop it answers; `lib/explorer/app-sign-out.test.ts` pins that it signs out
 everywhere, as the row's copy says, and `site-settings-app-account.test.tsx` pins the copy, Work Tracker 1283; when
-the accounts site didn't answer it notes "Signed out of this app only" for the reloaded page, see above) and
+the accounts site didn't answer it notes "Signed out of this app only" for the landing page, see above) and
 `deleteAccount`, which opens
 `components/settings/AppDeleteAccountDialog.tsx`, loaded with `next/dynamic` the first time it is asked for. That
 dialog is `DeleteAccountDialog` from `@liveworkspace/workbench/components/dialogs/DeleteAccountDialog`, unchanged,
@@ -361,6 +371,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `liveworkspace/apps/site/lib/drive/client.ts`                    | The Drive service as this site's pages call it (liveworkspace/docs/specs/005-drive/drive.md "The service"): `/api/drive` on this origin, liveworkspace.app or an app's router, with the pe…                                                                              |
 | `liveworkspace/apps/site/lib/drive/pages.ts`                     | What liveworkspace's three Drive pages decide (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "Open with"), pure so every outcome is tested: /drive/connect asks for a consent …                                                                              |
 | `liveworkspace/apps/site/lib/explorer/app-session.ts`            | The app's own session, for the Explorer shown on that app's address (page-app.ts): its signed-in account from the app's API, its sign-in and sign-out, and its guest token                                                                                               |
+| `liveworkspace/apps/site/lib/explorer/signed-out.ts`             | Where signing out from the Explorer goes (`SIGNED_OUT_HREF`, `/`), never the Explorer again (Work Tracker 1443)                                                                                                                                                          |
 | `liveworkspace/apps/site/lib/explorer/daily-return.ts`           | The app's returning visitor (liveworkspace/docs/specs/008-telemetry/telemetry.md "The Explorer on liveworkspace.app"), counted by the Explorer on the app's own address the way the app's edit…                                                                          |
 | `liveworkspace/apps/site/lib/explorer/host.ts`                   | What liveworkspace.app hands the shared Explorer (@liveworkspace/explorer) to be its host (liveworkspace/docs/specs/010-site/site.md "The Explorer"): which app the person came from, and…                                                                               |
 | `liveworkspace/apps/site/lib/explorer/imports.tsx`               | "Import from" on liveworkspace.app's Explorer: the shared Import From host (@liveworkspace/explorer/imports), over each app's own address                                                                                                                                |
