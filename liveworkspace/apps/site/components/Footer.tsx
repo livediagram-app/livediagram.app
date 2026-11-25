@@ -55,6 +55,10 @@ export function Footer({ base = '' }: { base?: string }) {
           <a href={`${base}/help`} className={linkClass}>
             Help
           </a>
+          {/* The one MCP, for every app (liveworkspace/docs/specs/010-site/site.md "Build with AI"). */}
+          <a href={`${base}/ai`} className={linkClass}>
+            Build with AI
+          </a>
           <a href={`${base}/status`} className={linkClass}>
             Status
           </a>

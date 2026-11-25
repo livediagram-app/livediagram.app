@@ -59,13 +59,23 @@ export type AiProduct = {
   name: string;
   /** This deployment's MCP address, from the product's api schema (`mcpEndpoint(resolveMcpOrigin(...))`). */
   mcpUrl: string;
+  /** What to keep ticked on the approval page, after "with": the product's name unless given (liveworkspace.app's
+   *  page, for every app, says "every app you want"). */
+  ticked?: string;
+  /** Whether the product has a CLI, which Claude Code's note offers as another way in (liveworkspace has none). */
+  cli?: boolean;
 };
 
+/** What to keep ticked on the approval page, for a product. */
+export const tickedOf = ({ name, ticked }: AiProduct): string => ticked ?? name;
+
 /** The clients the page walks through, in the spec's order, each pointed at the product's one MCP address. */
-export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
+export function aiClients(product: AiProduct): readonly AiClient[] {
+  const { name, mcpUrl, cli = true } = product;
   const MCP_URL = mcpUrl;
   const MCP_NAME = CONNECTOR_NAME;
-  const approve = `approve on the liveworkspace page that opens, with ${name} ticked`;
+  const ticked = tickedOf(product);
+  const approve = `approve on the liveworkspace page that opens, with ${ticked} ticked`;
   return [
     {
       id: 'claude',
@@ -110,7 +120,7 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           code: { lang: 'text', code: MCP_URL, label: 'URL' },
         },
         {
-          text: `Approve on the liveworkspace page that opens, with ${name} ticked, then pick ${MCP_NAME} from the tools menu in a new chat.`,
+          text: `Approve on the liveworkspace page that opens, with ${ticked} ticked, then pick ${MCP_NAME} from the tools menu in a new chat.`,
         },
       ],
       note: 'Developer mode depends on your ChatGPT plan, and OpenAI moves its menus now and then: look for custom connectors in Settings.',
@@ -129,11 +139,13 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           },
         },
         {
-          text: `In a Claude Code session, run **/mcp**, choose ${MCP_NAME} and **Authenticate**. Approve in the browser, with ${name} ticked.`,
+          text: `In a Claude Code session, run **/mcp**, choose ${MCP_NAME} and **Authenticate**. Approve in the browser, with ${ticked} ticked.`,
           code: { lang: 'text', code: '/mcp', label: 'In Claude Code' },
         },
       ],
-      note: `Working in a repository? The ${name} CLI is another way in, on the same account.`,
+      ...(cli && {
+        note: `Working in a repository? The ${name} CLI is another way in, on the same account.`,
+      }),
     },
     {
       id: 'codex',
@@ -187,7 +199,7 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           },
         },
         {
-          text: `In Cursor’s MCP settings, choose to sign in to ${MCP_NAME}, then approve in the browser, with ${name} ticked.`,
+          text: `In Cursor’s MCP settings, choose to sign in to ${MCP_NAME}, then approve in the browser, with ${ticked} ticked.`,
         },
       ],
     },
@@ -230,7 +242,7 @@ export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
           },
         },
         {
-          text: `Refresh the servers, then sign in to ${MCP_NAME} and approve in the browser, with ${name} ticked.`,
+          text: `Refresh the servers, then sign in to ${MCP_NAME} and approve in the browser, with ${ticked} ticked.`,
         },
       ],
     },

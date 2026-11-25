@@ -38,11 +38,27 @@
 @source '../../../../packages/marketing-site/src/components/PageHero.tsx';
 @source '../../../../packages/marketing-site/src/components/together';
 @source '../../../../packages/marketing-site/src/components/faq/FaqItem.tsx';
+/* The Build with AI page (app/ai), every product's page bound to the one MCP. */
+@source '../../../../packages/marketing-site/src/components/ai';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */
 :root {
   --color-brand-500: #64748b;
   --color-brand-400: #94a3b8;
+}
+
+/* A shared page drawn whole in the platform's slate (the Build with AI page, app/ai), its every brand shade the
+ * slate's, as app-colours.css paints liveworkspace.app's own Explorer and Community. */
+[data-platform-ramp] {
+  --color-brand-50: #f8fafc;
+  --color-brand-100: #f1f5f9;
+  --color-brand-200: #e2e8f0;
+  --color-brand-300: #cbd5e1;
+  --color-brand-600: #475569;
+  --color-brand-700: #334155;
+  --color-brand-800: #1e293b;
+  --color-brand-900: #0f172a;
+  --color-brand-950: #020617;
 }
 
 /* The account pages' card and pitch rows settle in as the page opens. */

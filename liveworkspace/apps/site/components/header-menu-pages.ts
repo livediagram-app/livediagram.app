@@ -9,7 +9,7 @@ export type HeaderMenuName = 'Product' | 'Support';
 /** The pages a menu's rows lead to (Pricing only where Pro is on in the build). A section of a page is no page. */
 export const headerMenuPages = (menu: HeaderMenuName): readonly string[] =>
   menu === 'Support'
-    ? ['/help', '/status', '/telemetry']
+    ? ['/help', '/ai', '/status', '/telemetry']
     : [...(proOn() ? ['/pricing'] : []), '/compare', '/community'];
 
 /** The page a row is for: the same path (`/#apps` is the home page's section, never "current"). */

@@ -24,3 +24,9 @@ export function createMcpOriginResolver(
 
 /** The address an AI tool connects to: the MCP worker's streamable HTTP endpoint. */
 export const mcpEndpoint = (origin: string): string => `${origin}/mcp`;
+
+/** liveworkspace's one MCP, hosted (liveworkspace/docs/specs/021-mcp/mcp.md): the address every app's AI tools use. */
+export const ONE_MCP_ORIGIN = 'https://mcp.liveworkspace.app';
+
+/** The build-time NEXT_PUBLIC_MCP_ORIGIN, or the one MCP when it is unset or blank: for liveworkspace.app's pages. */
+export const resolveOneMcpOrigin = /* @__PURE__ */ createMcpOriginResolver(ONE_MCP_ORIGIN);

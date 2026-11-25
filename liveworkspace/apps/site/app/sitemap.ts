@@ -21,6 +21,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
           },
         ]
       : []),
+    // Build with AI: the one MCP, for every app (liveworkspace/docs/specs/010-site/site.md "Build with AI").
+    { url: 'https://www.liveworkspace.app/ai', changeFrequency: 'monthly', priority: 0.6 },
     { url: 'https://www.liveworkspace.app/telemetry', changeFrequency: 'daily', priority: 0.5 },
     // Status: every app's services, checked live (liveworkspace/docs/specs/010-site/site.md "Status").
     { url: 'https://www.liveworkspace.app/status', changeFrequency: 'daily', priority: 0.4 },

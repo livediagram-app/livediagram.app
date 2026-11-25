@@ -98,12 +98,9 @@ export function workerSteps(worker, { environment, ref, exists = existsSync }) {
     const extraEnv = { NEXT_PUBLIC_BUILD_ID: ref, ...(pro && { NEXT_PUBLIC_PRO_ENABLED: 'true' }) };
     const hasHosted = exists(hosted);
     // Staging's sites name staging's one MCP (liveworkspace/docs/specs/021-mcp/mcp.md), which runs every app's MCP
-    // package. A product with no MCP package keeps the default.
-    if (
-      hasHosted &&
-      environment === 'staging' &&
-      exists(`${worker.product}/apps/mcp/package.json`)
-    ) {
+    // package: each product's, and liveworkspace.app's (its Build with AI page, which has no hosted vars). A product
+    // with no MCP package keeps the default.
+    if (environment === 'staging' && exists(`${worker.product}/apps/mcp/package.json`)) {
       extraEnv.NEXT_PUBLIC_MCP_ORIGIN = 'https://mcp-staging.liveworkspace.app';
     }
     steps.push({

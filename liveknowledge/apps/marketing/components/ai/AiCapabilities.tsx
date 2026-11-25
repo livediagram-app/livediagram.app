@@ -7,11 +7,15 @@ import {
   lucideSearch,
 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveknowledge/ui';
+import {
+  AiCapabilityGrid,
+  type AiCapability,
+} from '@liveworkspace/marketing-site/components/ai/AiCapabilityGrid';
 
 // What it can do (docs/specs/019-marketing/build-with-ai.md "The page" 5): the MCP's tools in plain words. Every
 // card maps to a shipped tool (docs/specs/024-agents/knowledgebase-for-agents.md "MCP tools"); a new tool earns a
 // card here only once it ships.
-const CAPABILITIES = [
+const CAPABILITIES: readonly AiCapability[] = [
   {
     icon: lucideGlyph(lucideBookOpen, 20),
     title: 'Context First',
@@ -45,22 +49,5 @@ const CAPABILITIES = [
 ];
 
 export function AiCapabilities() {
-  return (
-    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {CAPABILITIES.map(({ icon: Icon, title, body }) => (
-        <li
-          key={title}
-          className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"
-        >
-          <span className="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
-            <Icon aria-hidden />
-          </span>
-          <h3 className="mt-4 font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            {body}
-          </p>
-        </li>
-      ))}
-    </ul>
-  );
+  return <AiCapabilityGrid items={CAPABILITIES} />;
 }

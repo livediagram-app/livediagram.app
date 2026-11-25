@@ -2,7 +2,9 @@ import { lucideArrowRight } from '@liveworkspace/icons/lucide';
 import { buttonClassName, ButtonContent, lucideGlyph } from '@liveworkspace/ui';
 import type { ReactNode } from 'react';
 
-import type { AiClient, AiProduct, StarterPrompt } from '../../lib/ai-clients';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
+
+import { tickedOf, type AiClient, type AiProduct, type StarterPrompt } from '../../lib/ai-clients';
 import { BAND_LEAD, BAND_SECTION, BAND_TITLE } from '../../lib/band-classes';
 import { EYEBROW } from '../../lib/eyebrow';
 import { AiControl } from './AiControl';
@@ -36,7 +38,18 @@ export type BuildWithAiProps = AiProduct & {
   /** The help article the page's guide links point at, in the app's own help centre (the app's help-links test
    *  checks it is registered). */
   helpGuide: string;
+  /** Try it's lead, when the product's own does not fit (liveworkspace.app's prompts name two apps each). */
+  promptsLead?: ReactNode;
+  /** Where Create a free account goes: a product's `/get-started`, liveworkspace.app's `/sign-up`. */
+  signUpHref?: string;
+  /** A product's page links to liveworkspace.app's for prompts that cross apps; that page itself does not. */
+  crossApp?: boolean;
+  /** What it can do's title: "Everything you make in <name>" unless given. */
+  capabilitiesTitle?: string;
 };
+
+/** liveworkspace.app's Build with AI prompts, every one starting in one app and finishing in another. */
+export const CROSS_APP_PROMPTS_HREF = `${PLATFORM_SITE.url}/ai#prompts`;
 
 function SectionHead({
   id,
@@ -61,8 +74,6 @@ function SectionHead({
 }
 
 export function BuildWithAi({
-  name,
-  mcpUrl,
   clients,
   prompts,
   heroLede,
@@ -71,7 +82,13 @@ export function BuildWithAi({
   capabilities,
   controlLead,
   helpGuide,
+  promptsLead,
+  signUpHref = '/get-started',
+  crossApp = true,
+  capabilitiesTitle,
+  ...product
 }: BuildWithAiProps) {
+  const { name, mcpUrl } = product;
   return (
     <main>
       {/* Hero: what it is, the one address, and the picture of it working. */}
@@ -137,7 +154,7 @@ export function BuildWithAi({
             lead="One address, one approval, then you just ask. There is nothing to install or run on your computer."
           />
           <div className="mt-12">
-            <HowItWorks name={name} ask={ask} />
+            <HowItWorks ticked={tickedOf(product)} ask={ask} />
           </div>
         </div>
       </section>
@@ -170,11 +187,26 @@ export function BuildWithAi({
             id="prompts-title"
             eyebrow="Try it"
             title="Your first prompts"
-            lead={`Connected? Paste one of these into your AI tool, or ask in your own words. One connection reaches every liveworkspace app, so each prompt names ${name}: do the same in yours.`}
+            lead={
+              promptsLead ??
+              `Connected? Paste one of these into your AI tool, or ask in your own words. One connection reaches every liveworkspace app, so each prompt names ${name}: do the same in yours.`
+            }
           />
           <div className="mt-12">
             <StarterPrompts prompts={prompts} />
           </div>
+          {crossApp ? (
+            <p className="mt-8 text-center text-sm text-slate-600 dark:text-slate-300">
+              One request can start in {name} and finish in another app.{' '}
+              <a
+                href={CROSS_APP_PROMPTS_HREF}
+                className="inline-flex items-center gap-1 font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-300"
+              >
+                Prompts That Cross Apps
+                <ArrowIcon aria-hidden />
+              </a>
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -186,7 +218,7 @@ export function BuildWithAi({
           <SectionHead
             id="can-title"
             eyebrow="What it can do"
-            title={`Everything you make in ${name}`}
+            title={capabilitiesTitle ?? `Everything you make in ${name}`}
             lead="Your AI gets the same building blocks you have in the editor, and everything it makes is yours to change."
           />
           <div className="mt-12">{capabilities}</div>
@@ -206,7 +238,7 @@ export function BuildWithAi({
             <p className={BAND_LEAD}>{controlLead}</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a
-                href="/get-started"
+                href={signUpHref}
                 className={buttonClassName({ size: 'cta-sm', className: 'shadow-sm' })}
               >
                 <ButtonContent>Create a free account</ButtonContent>
