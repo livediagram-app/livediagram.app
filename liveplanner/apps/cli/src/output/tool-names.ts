@@ -12,6 +12,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   create_project: 'project create',
   add_tab: 'tab add',
   update_project: 'changeset apply',
+  style_project: 'api POST /projects/<id>/tabs/<tab>/changesets',
   share_project: 'project share',
   rename_project: 'project rename',
   delete_project: 'project rm',

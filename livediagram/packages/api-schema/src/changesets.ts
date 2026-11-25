@@ -198,11 +198,20 @@ export type ChangesetReplaceBody = {
   sources?: ChangesetReplaceSources;
 };
 
-// `operations` is the JSON form (an array) or the line form (a string), CS8; exactly one of it
-// and `replace`.
+// An existing tab restyled (docs/specs/024-agents/agent-changesets.md "A style restyles an existing tab"): at least
+// one of a theme id, a finish and a font id, each one the catalogue knows.
+export type ChangesetStyleBody = {
+  theme?: string;
+  finish?: Finish;
+  font?: string;
+};
+
+// `operations` is the JSON form (an array) or the line form (a string), CS8; exactly one of it,
+// `replace` and `style`.
 export type ChangesetRequest = {
   operations?: unknown[] | string;
   replace?: ChangesetReplaceBody;
+  style?: ChangesetStyleBody;
   base?: ChangesetBase;
   strict?: boolean;
   summary?: string;

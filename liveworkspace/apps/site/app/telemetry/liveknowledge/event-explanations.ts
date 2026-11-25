@@ -609,6 +609,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Mcp|Used|FindDocuments':
     "An AI tool connected over MCP searched for one of the user's knowledgebases.",
   'Mcp|Used|RenameDocument': 'An AI tool connected over MCP renamed a knowledgebase.',
+  'Mcp|Used|StyleDocument':
+    'An AI tool connected over MCP changed a knowledgebase’s theme, font or finish.',
   'Mcp|Used|ShareDocument':
     'An AI tool connected over MCP generated a share link for a knowledgebase.',
   // The knowledgebase tools (docs/specs/024-agents/knowledgebase-for-agents.md).
@@ -2231,6 +2233,8 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   SetFolder: 'moving a document into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',
   ShareDocument: 'generating a share link, from an AI tool connected over MCP',
+  StyleDocument:
+    'changing a knowledgebase’s theme, font or finish, from an AI tool connected over MCP',
   UpdateCustomTheme: 'updating a saved custom theme',
   UpdateDocument: 'updating a document, from an AI tool connected over MCP',
   UpdateFolder: 'renaming or updating a folder',

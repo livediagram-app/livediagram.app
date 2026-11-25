@@ -68,6 +68,7 @@ import {
   mcpShareProject,
 } from '@liveplanner/agent-verbs/mcp';
 import { registerTabTools } from './tab-tools';
+import { registerStyleTool } from './style-tools';
 import { registerViewTool, VIEW_TOOL_META } from './view-tab';
 import { changesetErrorText, isChangesetRefusal } from './changeset-client';
 import { DASHBOARD_ALONE, addOperationsFor, addToTemplateTab, getTab } from './template-elements';
@@ -279,6 +280,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   // A tab added to a plan, and a tab's elements changed (tab-tools.ts).
   registerTabTools(server, env);
+  registerStyleTool(server, env);
 
   registerTool(server, env, mcpShareProject, async (args, extra) => {
     const token = requireToken(extra);

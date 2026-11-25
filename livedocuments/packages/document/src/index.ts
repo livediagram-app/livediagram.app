@@ -148,6 +148,7 @@ export * from './article-pages';
 export * from './flashcards';
 export * from './flashcard-guard';
 export * from './article-style';
+export * from './recipe-slides';
 export * from './article-zones';
 export * from './article-notes';
 export * from './article-intake';

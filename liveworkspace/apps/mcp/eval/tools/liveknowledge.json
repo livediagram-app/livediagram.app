@@ -735,6 +735,46 @@
     "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
+    "name": "style_document",
+    "title": "Restyle a knowledgebase",
+    "description": "Change a knowledgebase’s theme, fonts or reading sizes at any time; every page is drawn in it. Needs the write scope.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "description": "The knowledgebase (from find_documents)."
+        },
+        "theme": { "description": "A theme id.", "type": "string" },
+        "font": { "description": "A font id for headings and text both.", "type": "string" },
+        "headingFont": { "description": "A font id for headings.", "type": "string" },
+        "bodyFont": { "description": "A font id for text.", "type": "string" },
+        "textSize": {
+          "description": "Text size.",
+          "type": "string",
+          "enum": ["small", "medium", "large"]
+        },
+        "lineSpacing": {
+          "description": "Line spacing.",
+          "type": "string",
+          "enum": ["compact", "comfortable", "relaxed"]
+        },
+        "headingStyle": {
+          "description": "Headings plain or ruled.",
+          "type": "string",
+          "enum": ["plain", "ruled"]
+        },
+        "accent": {
+          "description": "A hex accent, or null for the theme’s.",
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["documentId"],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
+  },
+  {
     "name": "share_document",
     "title": "Share a knowledgebase",
     "description": "Create a shareable link to a knowledgebase so anyone with the URL can open it, with no sign-in required. Choose \"participate\" (the default: edit text and comment), \"view\" (read-only) or \"edit\". Returns the link URL. Use after creating or finding a knowledgebase to hand it to teammates.",

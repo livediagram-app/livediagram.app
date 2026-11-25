@@ -237,6 +237,16 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'updateDesignOutput',
     args: { designId: 'd1', mode: 'replace', elements: [] },
   },
+  {
+    tool: 'style_design',
+    output: 'styleDesignOutput',
+    args: { designId: 'd1', theme: 'forest', finish: 'sketch' },
+  },
+  {
+    tool: 'style_design',
+    output: 'styleDesignOutput',
+    args: { designId: 'd1', tabId: 't2', font: 'poppins' },
+  },
   { tool: 'share_design', output: 'shareDesignOutput', args: { designId: 'd1' } },
   {
     tool: 'rename_design',

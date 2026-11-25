@@ -6040,6 +6040,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "page"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "finish": {
+            "$ref": "#/components/schemas/Finish"
+          },
+          "font": {
+            "type": "string"
+          },
+          "op": {
+            "const": "tab_style",
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "type": "object"
       }
     ]
   },

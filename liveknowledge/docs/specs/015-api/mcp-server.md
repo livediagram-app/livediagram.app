@@ -527,6 +527,15 @@ assistant to "rename that" or "delete the old one":
 Both inherit the ordinary owner/team authorization the routes already enforce
 ([Public API and API tokens §3.4](public-api-and-tokens.md)).
 
+### 4.9f Restyling a knowledgebase: `style_document`
+
+`style_document {documentId, theme, font, headingFont, bodyFont, textSize, lineSpacing, headingStyle, accent}` changes
+a knowledgebase's look at any time, as the editor's style panel does: the metadata write's `knowledgeStyle`, checked
+strictly by the api (an unknown theme or font is refused naming what it takes) and relayed to every open editor. `font`
+sets headings and text both unless a part is named beside it; `accent: null` goes back to the theme's. At least one is
+given. Its pages have no style of their own, so nothing else is written. The one liveworkspace MCP's `style_item` calls
+it for a knowledgebase. Needs the write scope.
+
 ### 4.9a `list_trash` and `restore_document`
 
 The way back from `delete_document`, with exactly the REST Trash's authority
@@ -729,7 +738,7 @@ Three behaviours cover the nineteen tools, and each is a preset in
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                       |
 | --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_images`                            |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image`                   |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image`, `style_document` |
 | **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `change_pages`, `write_article`, `delete_image`, `share_document` |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on

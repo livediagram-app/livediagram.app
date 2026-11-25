@@ -14,7 +14,14 @@ import {
   TAB_VIEW_NAMES,
   VIEW_BUDGET_MAX,
 } from '@livedesign/api-schema';
-import { FINISHES, type Finish, NAME_MAX_LENGTH, THEMES, truncateName } from '@livedesign/design';
+import {
+  FINISHES,
+  FONTS,
+  type Finish,
+  NAME_MAX_LENGTH,
+  THEMES,
+  truncateName,
+} from '@livedesign/design';
 import { themeIds, ELEMENT_SCHEMA_HINT } from './element-docs';
 export { SCHEMA_RESOURCE_URI, elementSchemaDoc, SERVER_INSTRUCTIONS } from './element-docs';
 
@@ -356,4 +363,24 @@ export const renameDesignShape = {
     .string()
     .optional()
     .describe('Rename this tab within the design instead of the design itself.'),
+};
+
+// Restyling tabs that exist (docs/specs/015-api/mcp-server.md §4.9g): each id checked as create_design's theme is, so
+// a typo is refused naming the ids there are rather than landing as the default.
+const fontIds = FONTS.map((f) => f.id).join(', ');
+export const styleDesignShape = {
+  designId: z.string().describe('The design to restyle.'),
+  tabId: z.string().optional().describe('Restyle this tab only; omit for every tab.'),
+  theme: themeId.optional().describe('A theme id, as create_design takes.'),
+  finish: z
+    .enum(FINISHES as unknown as [Finish, ...Finish[]])
+    .optional()
+    .describe('How the tab is drawn.'),
+  font: z
+    .string()
+    .refine((id) => FONTS.some((f) => f.id === id), {
+      message: `Unknown font. One of: ${fontIds}.`,
+    })
+    .optional()
+    .describe(`The tab's font: ${fontIds}.`),
 };

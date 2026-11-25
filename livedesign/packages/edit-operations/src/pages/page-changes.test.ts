@@ -696,3 +696,42 @@ describe('photo pages (docs/specs/031-photo/photo-pages.md "Agents")', () => {
     expect('refusal' in over && over.refusal.code).toBe('photo_limit');
   });
 });
+
+// pages-for-agents.md "tab_style": the editor's theme pick, in the light half.
+describe('restyling the tab', () => {
+  const ocean = getBuiltInTheme('ocean', 'light');
+  const forest = getBuiltInTheme('forest', 'light');
+  const themed = { ...box('themed', 0, 0), fillColor: ocean.elementFill } as Element;
+  const chosen = { ...box('chosen', 50, 0), fillColor: '#123456' } as Element;
+
+  it('moves a colour on the old theme, keeps a chosen one and sets the theme, finish and font', () => {
+    const out = run(tabOf({ theme: 'ocean', elements: [themed, chosen] }), [
+      { op: 'tab_style', theme: 'forest', finish: 'sketch', font: 'poppins' },
+    ]);
+    expect(out.tab).toMatchObject({ theme: 'forest', finish: 'sketch', font: 'poppins' });
+    expect(out.tab.elements[0]).toMatchObject({ fillColor: forest.elementFill });
+    expect(out.tab.elements[1]).toMatchObject({ fillColor: '#123456' });
+    expect(out.lines).toEqual(['Restyled the tab: theme forest, finish sketch, font poppins.']);
+  });
+
+  it('keeps every element colour on a tab set to Keep as They Are', () => {
+    const out = run(tabOf({ theme: 'ocean', keepElementColours: true, elements: [themed] }), [
+      { op: 'tab_style', theme: 'forest' },
+    ]);
+    expect(out.tab.theme).toBe('forest');
+    expect(out.tab.elements[0]).toBe(themed);
+  });
+
+  it('sets a finish alone without touching the colours', () => {
+    const before = tabOf({ theme: 'ocean', elements: [themed] });
+    const out = run(before, [{ op: 'tab_style', finish: 'marker' }]);
+    expect(out.tab).toMatchObject({ theme: 'ocean', finish: 'marker' });
+    expect(out.tab.elements).toBe(before.elements);
+  });
+
+  it('refuses a locked tab', () => {
+    expect(refusal(tabOf({ locked: true }), [{ op: 'tab_style', theme: 'forest' }]).code).toBe(
+      'tab_locked',
+    );
+  });
+});

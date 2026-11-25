@@ -38,6 +38,7 @@ import {
   mcpRenameDocument,
   mcpRestoreDocument,
   mcpShareDocument,
+  mcpStyleDocument,
 } from '@liveknowledge/agent-verbs/mcp';
 
 // The id of the page a rename or a delete names by id or title: one read of the page tree, no page's writing.
@@ -104,6 +105,51 @@ export function registerTools(server: McpServer, env: Env): void {
       name: liveDoc.name,
       url: deepLink(env, liveDoc.id),
     });
+  });
+
+  // A knowledgebase's look at any time: the metadata write's knowledgeStyle, strict, relayed to every open editor.
+  registerTool(server, env, mcpStyleDocument, async (args, extra) => {
+    const token = requireToken(extra);
+    const { documentId, font, ...rest } = args;
+    const write: Record<string, string | null> = {};
+    for (const [k, v] of Object.entries(rest)) if (v !== undefined) write[k] = v;
+    // One font for both, unless a part is named beside it.
+    if (font !== undefined) {
+      write.headingFont ??= font;
+      write.bodyFont ??= font;
+    }
+    if (Object.keys(write).length === 0)
+      return errorResult(
+        'Give at least one of theme, font, headingFont, bodyFont, textSize, lineSpacing, headingStyle and accent.',
+      );
+    try {
+      const { document: liveDoc } = await apiJson<DocumentResponse>(
+        env,
+        token,
+        knowledgePath(documentId),
+        { method: 'PUT', body: JSON.stringify({ knowledgeStyle: write }) },
+      );
+      const said = Object.entries(write).map(
+        ([k, v]) => `${k} ${v === null ? 'the theme’s' : String(v)}`,
+      );
+      return textResult({
+        documentId,
+        style: liveDoc.knowledgeStyle,
+        lines: [`Restyled the knowledgebase: ${said.join(', ')}.`],
+      });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) {
+        let message = '';
+        try {
+          const parsed = (JSON.parse(err.body) as { message?: unknown }).message;
+          message = typeof parsed === 'string' ? parsed : '';
+        } catch {
+          // Not the style refusal's JSON: thrown as it is below.
+        }
+        if (message) return errorResult(message);
+      }
+      throw err;
+    }
   });
 
   registerTool(server, env, mcpShareDocument, async (args, extra) => {

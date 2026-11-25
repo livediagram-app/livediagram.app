@@ -15,6 +15,8 @@ import { mcpListVersions, mcpRestoreVersion } from '../mcp/version-tools';
 import {
   changePagesOutput,
   changePagesShape,
+  styleDocumentOutput,
+  styleDocumentShape,
   writeArticleOutput,
   writeArticleShape,
 } from '../mcp/pages-schema';
@@ -142,9 +144,19 @@ export const mcpUpdateDocument = mcpTool('update_document', {
     'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
     'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
     'takes "edits": edit operations as text (insert between, connect, layout a selection, ' +
-    'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG.',
+    'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG. ' +
+    'The theme is style_document\u2019s.',
   inputSchema: updateDocumentShape,
   outputSchema: updateDocumentOutput,
+});
+
+export const mcpStyleDocument = mcpTool('style_document', {
+  behaviour: 'write',
+  title: 'Restyle a document',
+  description:
+    'Change a document’s theme, font, finish or style recipe at any time, on one tab or all.',
+  inputSchema: styleDocumentShape,
+  outputSchema: styleDocumentOutput,
 });
 
 export const mcpShareDocument = mcpTool('share_document', {
@@ -255,6 +267,7 @@ export const mcpWriteArticle = mcpTool('write_article', {
 export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpChangePages,
   mcpWriteArticle,
+  mcpStyleDocument,
   mcpListImages,
   mcpUploadImage,
   mcpDeleteImage,

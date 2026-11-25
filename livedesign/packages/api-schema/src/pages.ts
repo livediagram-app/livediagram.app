@@ -3,6 +3,7 @@
 // and what it answers. Shared by the api route, the engine (@livedesign/edit-operations), the
 // verbs (CLI and MCP) and the views.
 import type {
+  Finish,
   PageKind,
   PageOrientation,
   PagePattern,
@@ -90,7 +91,10 @@ export type PageChange =
   | { op: 'duplicate'; page: PageRef }
   | { op: 'delete'; page: PageRef }
   // Every other page of the page's kind takes its background, as the Background tab's Apply to All.
-  | { op: 'apply_background_to_all'; page: PageRef };
+  | { op: 'apply_background_to_all'; page: PageRef }
+  // The tab's style, as the Tab Style dialog sets it (docs/specs/024-agents/pages-for-agents.md "tab_style"): at
+  // least one field. style_design sends it; change_pages does not offer it.
+  | { op: 'tab_style'; theme?: string; finish?: Finish; font?: string };
 
 type PageChangeOp = PageChange['op'];
 export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
@@ -101,6 +105,7 @@ export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
   'duplicate',
   'delete',
   'apply_background_to_all',
+  'tab_style',
 ];
 
 export type PagesRequest = { pages: PageChange[] };

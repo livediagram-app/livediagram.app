@@ -534,6 +534,14 @@ describe('the calls’ every path', () => {
     expect(blank.ok && blank.reading.respondsTo).toEqual({ to: 'nowhere' });
     const form = writes.at(-1)!.body as { replace: { theme: string } };
     expect(form.replace.theme).toBe('forest');
+    const before = writes.length;
+    const unknown = await addForm(
+      client,
+      { projectId: 'doc', starter: 'blank', theme: 'nope' },
+      'mcp',
+    );
+    expect(unknown.ok).toBe(false);
+    expect(writes.length).toBe(before);
     const feature = await addForm(
       client,
       {

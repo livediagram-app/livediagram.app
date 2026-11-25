@@ -330,6 +330,21 @@ linking Tab Style Help as **Learn More**:
 While it runs, Escape belongs to the tour. Telemetry: `UI · Started · TabStyleTour`, `UI · Ended ·
 TabStyleTourCompleted` / `TabStyleTourSkipped`.
 
+## Agents
+
+An assistant restyles an existing tab with the MCP's `style_document`
+([MCP server](../015-api/mcp-server.md#49f-restyle-a-tab-style_document)), a `style` changeset on the tab
+([Agent changesets](../024-agents/agent-changesets.md)). It does what the panels here do, through the same pure
+transforms in `@livediagram/document` (`tabWithTheme`, `withTabFinish`, `withTabFont`):
+
+- **Theme** lands exactly as picking it in the Colours panel: preserve-customs for shapes, text and the backdrop (a
+  colour still on the old theme's value takes the new one's, one set by hand stays), every arrow re-tinted, labels
+  kept readable on what is behind them, and a tab whose old theme names nothing known reset to the new one outright.
+  It is applied in the light half, as an agent's new tabs are painted, so a dark-mode viewer sees the theme's dark half
+  as for any other tab ([Light and dark halves](light-and-dark.md)).
+- **Finish** and **font** apply to the whole tab as the Finish and Text panels do, the elements' own cleared.
+- A theme, finish or font id nobody knows is refused, naming the valid ones; nothing is written.
+
 ## Telemetry
 
 Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button, Change Theme) or

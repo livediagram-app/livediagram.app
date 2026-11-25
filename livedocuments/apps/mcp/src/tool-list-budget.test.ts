@@ -1,7 +1,8 @@
 // The tools/list answer's size (docs/specs/015-api/mcp-server.md §4.18 "A byte budget"): what a client loads each
 // session, measured as the Worker sends it (compacted, output schemas shallow). Its budget holds the cut made by
 // Work Tracker 1325 (136,821 characters before, 96,528 after); a change that grows the list past it says so
-// here, with the new number and why, rather than in silence.
+// here, with the new number and why, rather than in silence. 107,000 since style_document (2026-11-25): changing a
+// document's theme at any time is a tool of its own, about 1,200 characters.
 import { describe, expect, it, vi } from 'vitest';
 vi.mock('./image-result', () => ({
   imageResult: (value: Record<string, unknown>) => ({
@@ -12,7 +13,7 @@ vi.mock('./image-result', () => ({
 import { compactToolList } from '@liveworkspace/mcp-kit/tool-list-compact';
 import { connectTestClient } from './mcp-test-client';
 
-export const TOOL_LIST_BUDGET_BYTES = 105_000;
+export const TOOL_LIST_BUDGET_BYTES = 107_000;
 const SCHEMA_RESOURCE = 'livedocuments://schema/elements';
 
 type Listed = {

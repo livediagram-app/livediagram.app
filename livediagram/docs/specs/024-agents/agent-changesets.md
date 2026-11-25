@@ -23,25 +23,31 @@ persistence boundary"). That write never reached the room, so:
 
 ## What a changeset is
 
-| Field        | Meaning                                                                                                         |
-| ------------ | --------------------------------------------------------------------------------------------------------------- |
-| `id`         | `cs_` and 10 base32 characters, minted by the api                                                               |
-| `documentId` | The document                                                                                                    |
-| `tabId`      | The one tab it writes; a changeset never spans tabs                                                             |
-| `agent`      | The token id and the owner id; absent when a signed-in session writes                                           |
-| `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history |
-| `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (graph, Mermaid, template or elements)   |
-| `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target             |
-| `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`     |
-| `rev`        | The tab revision the changeset produced                                                                         |
-| `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply     |
-| `inverse`    | The element ops that undo it, computed from the before-images                                                   |
+| Field        | Meaning                                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `id`         | `cs_` and 10 base32 characters, minted by the api                                                                 |
+| `documentId` | The document                                                                                                      |
+| `tabId`      | The one tab it writes; a changeset never spans tabs                                                               |
+| `agent`      | The token id and the owner id; absent when a signed-in session writes                                             |
+| `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history   |
+| `body`       | Ordered [edit operations](edit-operations.md), one `replace` (graph, Mermaid, template or elements), or a `style` |
+| `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target               |
+| `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`       |
+| `rev`        | The tab revision the changeset produced                                                                           |
+| `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply       |
+| `inverse`    | The element ops that undo it, computed from the before-images                                                     |
 
 - **Atomic.** Every operation lands or none does. A rejected changeset writes nothing and says why.
 - **One tab, one changeset.** A new tab is a changeset that creates it (`replace` on a tab id the document lacks).
   A `replace`'s name names the tab it creates; on an existing tab it is ignored.
 - **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` creates it, compiling
   graph, Mermaid or template tabs with the same engine.
+- **A style restyles an existing tab** (`style: { theme?, finish?, font? }`, at least one): the theme applied as the
+  Tab Style dialog applies it, the finish and font set on the tab with the elements' own cleared
+  ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#agents)). The recoloured elements are its element ops,
+  and the tab's changed style fields reach the open editors as a `tab-meta` op after the changeset op. A style on a
+  tab id the document lacks is `404`; an unknown id is `422 invalid_value`, naming the valid ones. A style that
+  changes nothing writes nothing.
 - **A replace may carry the files it was drawn from** (`replace.sources`, or `sources` on a created document's
   graph tab): the tab's sources record, written in the same revision, and heard by the editors that have the tab
   open. A replace without it leaves the tab with no record; edit operations leave the record alone
@@ -199,6 +205,7 @@ erases nothing:
 - `remove` is the edit operation `rm`: arrows pinned to the element go with it and are listed.
 - Landing event-storming notes on lanes and coercing shapes are the engine's, for every front door.
 - `rename_document` with a tab renames through the tab name route.
+- `style_document` sends one `style` changeset a tab, no base: a restyle sets the look whatever was read.
 
 ## Limits
 

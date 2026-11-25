@@ -43,8 +43,21 @@ const refused = (status: number, refusal: PagesRefusal): PagesResult => {
   return { status, body: { error: code, ...rest } };
 };
 
-// The tab fields an editor's `tab-meta` patch carries for pages: absent ones are cleared.
-const PAGE_FIELDS = ['pages', 'opensIn', 'pageOrientation'] as const;
+// The tab fields an editor's `tab-meta` patch carries for pages, and for a tab_style (its theme, the backdrop and
+// New Page Background the theme moves, its finish and font): absent ones are cleared.
+const PAGE_FIELDS = [
+  'pages',
+  'opensIn',
+  'pageOrientation',
+  'theme',
+  'backgroundColor',
+  'backgroundPattern',
+  'patternColor',
+  'backgroundOpacity',
+  'newPageBackground',
+  'finish',
+  'font',
+] as const;
 
 /** The ops an editor's own edit would send for the same change, minus the elements (the changeset
  *  carries those): the pages patch, then the photo of each photo page added, duplicated or deleted

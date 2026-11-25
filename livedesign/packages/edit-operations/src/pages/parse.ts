@@ -12,13 +12,19 @@ import {
   type PageChange,
 } from '@livedesign/api-schema';
 import {
+  FINISHES,
+  FONTS,
+  isFinish,
   isRecord,
+  isTabThemeId,
   PAGE_NAME_MAX,
   PAGE_ORIENTATIONS,
   PAGE_PATTERNS,
   PAGE_SIZE_IDS,
   WIREFRAME_DEVICE_IDS,
+  THEMES,
   WIREFRAME_FRAME_LOOKS,
+  type Finish,
 } from '@livedesign/design';
 import { PHOTO_MAX_AREA, PHOTO_PIXEL_CAP } from '@livedesign/photo-engine';
 
@@ -259,12 +265,34 @@ function pageChange(v: unknown, i: number): PageChange {
     case 'move':
       onlyKeys(v, [...COMMON, 'page', 'to'], 'move', i);
       return { op, page: pageRef(v.page, i), to: place(v.to, 'to', i) };
+    case 'tab_style':
+      return tabStyle(v, i);
     case 'duplicate':
     case 'delete':
     case 'apply_background_to_all':
       onlyKeys(v, [...COMMON, 'page'], op, i);
       return { op, page: pageRef(v.page, i) };
   }
+}
+
+// A tab's style (pages-for-agents.md "tab_style"): each id checked against what the editor offers, an unknown one
+// refused with the ids there are, so a typo never lands as the default.
+function tabStyle(v: Raw, i: number): PageChange {
+  onlyKeys(v, [...COMMON, 'theme', 'finish', 'font'], 'tab_style', i);
+  if (v.theme === undefined && v.finish === undefined && v.font === undefined)
+    bad('"tab_style" sets at least one of theme, finish or font.', i);
+  if (v.theme !== undefined && (typeof v.theme !== 'string' || !isTabThemeId(v.theme)))
+    bad(`"theme" is one of ${THEMES.map((t) => t.id).join(', ')}.`, i);
+  if (v.finish !== undefined && !isFinish(v.finish))
+    bad(`"finish" is one of ${FINISHES.join(', ')}.`, i);
+  if (v.font !== undefined && !FONTS.some((f) => f.id === v.font))
+    bad(`"font" is one of ${FONTS.map((f) => f.id).join(', ')}.`, i);
+  return {
+    op: 'tab_style',
+    ...(v.theme === undefined ? {} : { theme: v.theme as string }),
+    ...(v.finish === undefined ? {} : { finish: v.finish as Finish }),
+    ...(v.font === undefined ? {} : { font: v.font as string }),
+  };
 }
 
 /** The request, or why it was refused. */

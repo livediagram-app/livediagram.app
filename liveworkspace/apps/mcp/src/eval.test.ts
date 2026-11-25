@@ -17,11 +17,11 @@ describe('the tool-pick eval', () => {
   it('shows the one MCP far fewer tools than the five servers', () => {
     const apps = setupOf(world, 'apps');
     const one = setupOf(world, 'one');
-    expect(one.tools).toHaveLength(10);
+    expect(one.tools).toHaveLength(11);
     expect(apps.tools.length).toBeGreaterThan(140);
     expect(JSON.stringify(one.tools).length * 10).toBeLessThan(JSON.stringify(apps.tools).length);
     expect(apps.tools.every((t) => /^[a-zA-Z0-9_-]{1,64}$/.test(t.name))).toBe(true);
-    expect(setupOf(world, 'one-all').tools.length).toBe(apps.tools.length + 10);
+    expect(setupOf(world, 'one-all').tools.length).toBe(apps.tools.length + 11);
   });
 
   it('lists no draft-07 tuple, which the Claude API refuses (mcp-kit untuple says them as plain arrays)', () => {

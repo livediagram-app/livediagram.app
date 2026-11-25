@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@liveplanner/project';
+import { resolveThemeIn, type Element, type Tab } from '@liveplanner/project';
 import { getProject } from '../db';
 import { seedTabs } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -236,5 +236,120 @@ describe('a template’s Sheets', () => {
     ) as { elements: { planSheet?: { sheetId: string; start?: string; fillTab?: true } }[] };
     const ref = els.find((e) => e.planSheet)!.planSheet!;
     expect(ref).toEqual({ sheetId: sheets[0]!.id, fillTab: true });
+  });
+});
+
+// docs/specs/024-agents/agent-changesets.md "Style": any kind of tab restyled through the pipeline, written,
+// recorded and relayed.
+describe('a style changeset', () => {
+  const brand = resolveThemeIn('brand', 'light')!;
+  const forest = resolveThemeIn('forest', 'light')!;
+
+  async function styledDb(tab: Record<string, unknown>) {
+    const sent: { url: string; body: string }[] = [];
+    const room = {
+      idFromName: (name: string) => name,
+      get: () => ({
+        fetch: async (url: string, init?: RequestInit) => {
+          if (url.includes('/selections')) return Response.json({ selections: [] });
+          sent.push({ url, body: typeof init?.body === 'string' ? init.body : '' });
+          return new Response(null, { status: 204 });
+        },
+      }),
+    };
+    const db = sqliteD1({ PLAN_ROOM: room } as unknown as Partial<Env>);
+    db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
+                 VALUES ('D', 'user_o', 'Doc', 0, 1, 1)`);
+    await seedTabs(db.env, 'D', [{ id: 't1', name: 'T', elements: [], ...tab }]);
+    return { db, sent };
+  }
+
+  async function style(db: SqliteD1, body: unknown) {
+    const parsed = parseChangesetRequest({ style: body });
+    if (!parsed.ok) throw new Error('bad request');
+    return submitChangeset({
+      env: db.env,
+      project: (await getProject(db.env, 'D'))!,
+      tabId: 't1',
+      request: parsed.value,
+      dryRun: false,
+      author: { id: 'user_o', name: 'W', color: '#000' },
+      tokenId: 'tok_1',
+      frontDoor: 'Api',
+    });
+  }
+
+  const storedTab = (db: SqliteD1) =>
+    JSON.parse(
+      db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
+    ) as Tab;
+
+  it('recolours a Board tab’s elements still on the old theme, keeps a hand-set one, and tells open editors', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { db, sent } = await styledDb({
+      kind: 'board',
+      theme: 'brand',
+      backgroundColor: brand.backgroundColor,
+      elements: [
+        { ...box('on'), fillColor: brand.elementFill },
+        { ...box('mine'), fillColor: '#123456' },
+      ],
+    });
+    const res = await style(db, { theme: 'forest', finish: 'sketch' });
+    expect(res.status).toBe(200);
+    expect((res.body as { text: string }).text).toContain(
+      '~ tab  theme brand→forest · finish →sketch',
+    );
+    const tab = storedTab(db);
+    expect(tab).toMatchObject({ theme: 'forest', finish: 'sketch', kind: 'board' });
+    expect(tab.backgroundColor).toBe(forest.backgroundColor);
+    const fill = (id: string) =>
+      (tab.elements.find((e) => e.id === id) as { fillColor?: string }).fillColor;
+    expect(fill('on')).toBe(forest.elementFill);
+    expect(fill('mine')).toBe('#123456');
+    const meta = sent.map((r) => r.body).find((b) => b.includes('"tab-meta"'));
+    expect(meta).toBeDefined();
+    expect(JSON.parse(meta!)).toMatchObject({
+      op: {
+        kind: 'tab-meta',
+        tabId: 't1',
+        patch: { theme: 'forest', finish: 'sketch', backgroundColor: forest.backgroundColor },
+      },
+    });
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM agent_changesets').get()!.n).toBe(1);
+  });
+
+  it('writes a Form tab’s theme though it holds no elements', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { db, sent } = await styledDb({ kind: 'form', form: { heading: 'Bugs', sections: [] } });
+    const res = await style(db, { theme: 'office' });
+    expect(res.status).toBe(200);
+    expect(storedTab(db)).toMatchObject({ kind: 'form', theme: 'office' });
+    expect(sent.some((r) => r.body.includes('"tab-meta"'))).toBe(true);
+  });
+
+  it('writes nothing when the tab already has that style', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { db } = await styledDb({ font: 'inter' });
+    const res = await style(db, { font: 'inter' });
+    expect(res).toMatchObject({ status: 200, body: { changeset: null } });
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM agent_changesets').get()!.n).toBe(0);
+  });
+
+  it('answers 404 for a tab the plan lacks', async () => {
+    const { db } = await styledDb({});
+    const parsed = parseChangesetRequest({ style: { theme: 'forest' } });
+    if (!parsed.ok) throw new Error('bad request');
+    const res = await submitChangeset({
+      env: db.env,
+      project: (await getProject(db.env, 'D'))!,
+      tabId: 'missing',
+      request: parsed.value,
+      dryRun: false,
+      author: { id: 'user_o', name: 'W', color: '#000' },
+      tokenId: null,
+      frontDoor: 'Api',
+    });
+    expect(res.status).toBe(404);
   });
 });

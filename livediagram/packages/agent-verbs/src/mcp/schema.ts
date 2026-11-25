@@ -27,6 +27,7 @@ import {
   INK_PEN_COLOUR,
   PEN_COLOUR_NAMES,
   FINISHES,
+  FONTS,
   type Finish,
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
@@ -908,4 +909,25 @@ export const renameDocumentShape = {
     .string()
     .optional()
     .describe('Rename this tab within the document instead of the document itself.'),
+};
+
+// Restyle an existing tab (docs/specs/015-api/mcp-server.md §4.9f): its theme, finish and font, as the Tab Style dialog
+// sets them. At least one is required; the MCP refuses an unknown id naming the valid ones.
+export const styleDocumentShape = {
+  documentId: z.string().describe('The document to restyle (from find_documents / read_document).'),
+  tabId: z
+    .string()
+    .optional()
+    .describe('The tab to restyle; every tab of the document when left out.'),
+  theme: z
+    .string()
+    .optional()
+    .describe(
+      'A theme id, as create_document takes: recolours the tab, keeping colours set by hand.',
+    ),
+  finish: finishField,
+  font: z
+    .string()
+    .optional()
+    .describe(`The tab's typeface, one of: ${FONTS.map((f) => f.id).join(', ')}.`),
 };

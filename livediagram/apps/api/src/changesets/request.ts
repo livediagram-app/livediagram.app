@@ -16,9 +16,11 @@ import {
 import {
   isFinish,
   isRecord,
+  tabStyleIssue,
   ELEMENT_FINGERPRINT_LENGTH,
   type Finish,
   type GraphInput,
+  type TabStyle,
 } from '@livediagram/document';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
@@ -34,7 +36,9 @@ export type ChangesetBody =
       name?: string;
       // The tab's sources record as sent; the engine checks it (diagram-sources.md "Writing the record").
       sources?: unknown;
-    };
+    }
+  // An existing tab restyled (agent-changesets.md "A style restyles an existing tab").
+  | { kind: 'style'; style: TabStyle };
 
 export type ParsedChangeset = {
   body: ChangesetBody;
@@ -48,6 +52,7 @@ export type Refusal = { status: number; body: Record<string, unknown> };
 export type ParseResult = { ok: true; value: ParsedChangeset } | { ok: false; refusal: Refusal };
 
 const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'elements'] as const;
+const STYLE_FIELDS = ['theme', 'finish', 'font'] as const;
 const FINGERPRINT = new RegExp(`^[0-9a-f]{${ELEMENT_FINGERPRINT_LENGTH}}$`);
 
 const refuse = (status: number, body: Record<string, unknown>): ParseResult => ({
@@ -78,10 +83,11 @@ export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): Pa
     return refuse(400, { error: 'invalid_body', message: 'expected a JSON object' });
   const hasOps = raw.operations !== undefined;
   const hasReplace = raw.replace !== undefined;
-  if (hasOps === hasReplace) {
+  const hasStyle = raw.style !== undefined;
+  if (Number(hasOps) + Number(hasReplace) + Number(hasStyle) !== 1) {
     return refuse(400, {
       error: 'invalid_body',
-      message: 'send exactly one of "operations" or "replace"',
+      message: 'send exactly one of "operations", "replace" or "style"',
     });
   }
   const strict = raw.strict === true;
@@ -106,7 +112,11 @@ export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): Pa
         '"base" is { rev: a non-negative integer, elements?: { <element id>: <16 hex fingerprint> } }',
     });
   }
-  const body = hasOps ? parseOperations(raw.operations, log) : parseReplace(raw.replace);
+  const body = hasOps
+    ? parseOperations(raw.operations, log)
+    : hasReplace
+      ? parseReplace(raw.replace)
+      : parseStyle(raw.style);
   if ('refusal' in body) return { ok: false, refusal: body.refusal };
   return { ok: true, value: { body, ...(base ? { base } : {}), strict, summary: summary.text } };
 }
@@ -176,6 +186,38 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     ...(typeof raw.name === 'string' ? { name: raw.name } : {}),
     ...(raw.sources !== undefined ? { sources: raw.sources } : {}),
   };
+}
+
+// A style: at least one of theme, finish and font, each a known id. An unknown id names the ones that field takes, so
+// the caller can pick again without a second read.
+function parseStyle(raw: unknown): ChangesetBody | { refusal: Refusal } {
+  const bad = (message: string) => ({
+    refusal: { status: 400, body: { error: 'invalid_body', message } },
+  });
+  if (!isRecord(raw)) return bad('"style" must be an object');
+  const given = STYLE_FIELDS.filter((key) => raw[key] !== undefined);
+  if (given.length === 0) return bad('"style" takes at least one of theme, finish or font');
+  const wrongType = given.find((key) => typeof raw[key] !== 'string');
+  if (wrongType) return bad(`"style.${wrongType}" must be a string`);
+  const issue = tabStyleIssue(raw);
+  if (issue) {
+    return {
+      refusal: {
+        status: 422,
+        body: {
+          error: 'invalid_value',
+          message: `"style.${issue.field}" ${JSON.stringify(raw[issue.field])} is not one of: ${issue.valid.join(', ')}`,
+          field: issue.field,
+          valid: issue.valid,
+        },
+      },
+    };
+  }
+  const style: TabStyle = {};
+  if (typeof raw.theme === 'string') style.theme = raw.theme;
+  if (isFinish(raw.finish)) style.finish = raw.finish;
+  if (typeof raw.font === 'string') style.font = raw.font;
+  return { kind: 'style', style };
 }
 
 function replaceBodyOf(

@@ -48,6 +48,7 @@ export {
 export { argvToOperationLine } from '@liveworkspace/agent-verbs/argv-line';
 export { baseFromCopy, readPlainTab, recordCopy, type ReadCopies, type ReadCopy } from './copies';
 export { classifySource } from './source-kind';
+export { THEME_IDS, unknownThemeText } from './theme-ids';
 export { HELD_RETRY_INTERVAL_MS, submitChangeset, type WriteFlags } from './write';
 export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';

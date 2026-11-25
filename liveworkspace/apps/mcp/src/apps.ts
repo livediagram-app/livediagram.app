@@ -34,6 +34,8 @@ export type AppSpec = {
     trash: string;
     restore: string;
     listTrash: string;
+    // Its theme and look at any time (style_item).
+    style: string;
   };
   // Names that read better by hand than by the rules.
   overrides: Readonly<Record<string, string>>;
@@ -48,6 +50,7 @@ const docTools = {
   trash: 'delete_document',
   restore: 'restore_document',
   listTrash: 'list_trash',
+  style: 'style_document',
 };
 
 export const APPS: readonly AppSpec[] = [
@@ -93,6 +96,7 @@ export const APPS: readonly AppSpec[] = [
       trash: 'delete_project',
       restore: 'restore_project',
       listTrash: 'list_trash',
+      style: 'style_project',
     },
     overrides: { change_items: 'change_cards', list_items: 'list_cards' },
   },
@@ -114,6 +118,7 @@ export const APPS: readonly AppSpec[] = [
       trash: 'delete_design',
       restore: 'restore_design',
       listTrash: 'list_trash',
+      style: 'style_design',
     },
     overrides: {},
   },

@@ -73,6 +73,20 @@ export const relayChangeset: (
   op: ChangesetRoomOp,
 ) => Promise<boolean> = room.relayChangeset;
 
+// The style fields a changeset changed on an existing tab (agent-changesets.md "A style restyles an existing tab"), as
+// the tab-meta op an editor's own Tab Style change sends: a changeset op brings a tab's fields only when it creates
+// the tab. `clear` names the fields removed, which a patch cannot carry. Best-effort and logged, like the rename relay.
+export async function relayTabStyle(
+  env: Env,
+  documentId: string,
+  tabId: string,
+  patch: Record<string, unknown>,
+  clear: readonly string[],
+): Promise<boolean> {
+  const op = { kind: 'tab-meta', tabId, patch, ...(clear.length > 0 ? { clear: [...clear] } : {}) };
+  return (await room.relayRoomOps(env, documentId, [op], '[changeset] tab-style')) === 1;
+}
+
 // A document an agent renamed, as the document-meta op an editor's own rename sends.
 export const relayDocumentRename: (
   env: Env,
