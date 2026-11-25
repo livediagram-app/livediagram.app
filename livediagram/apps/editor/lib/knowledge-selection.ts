@@ -126,12 +126,14 @@ export const KNOWLEDGE_PICTURE_MARGIN = 24;
 export const KNOWLEDGE_PICTURE_TITLE_ROOM = 40;
 
 /**
- * A frame or lane cropped to the items in the picture: drawn snug around them with a small margin (more above, for
- * its title), never past its own sides, so a sparse lane is not a tall, mostly empty picture.
+ * A frame or lane cropped to the items in the picture: drawn snug around them with a small margin, never past its own
+ * left, right or bottom, so a sparse lane is not a tall, mostly empty picture. Its top is always its title's room
+ * above the highest item, raised past its own top when an item reaches into its title band: a crop moves a
+ * right-aligned title in over the items, and the band above them keeps it clear of every one.
  */
 export function cropContainer<E extends Box>(container: E, items: Box): E {
   const left = Math.max(container.x, items.x - KNOWLEDGE_PICTURE_MARGIN);
-  const top = Math.max(container.y, items.y - KNOWLEDGE_PICTURE_TITLE_ROOM);
+  const top = items.y - KNOWLEDGE_PICTURE_TITLE_ROOM;
   const right = Math.min(
     container.x + container.width,
     items.x + items.width + KNOWLEDGE_PICTURE_MARGIN,

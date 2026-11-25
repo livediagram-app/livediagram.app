@@ -188,7 +188,6 @@ livedocuments/packages/document/src/article-bands.ts	liveknowledge/packages/docu
 livedocuments/packages/document/src/article-flow-ops.ts	liveknowledge/packages/document/src/article-flow-ops.ts
 livedocuments/packages/document/src/article-footnotes.ts	liveknowledge/packages/document/src/article-footnotes.ts
 livedocuments/packages/document/src/article-intake.ts	liveknowledge/packages/document/src/article-intake.ts
-livedocuments/packages/document/src/article-layout-set.ts	liveknowledge/packages/document/src/article-layout-set.ts
 livedocuments/packages/document/src/article-markdown.ts	liveknowledge/packages/document/src/article-markdown.ts
 livedocuments/packages/document/src/article-notes.ts	liveknowledge/packages/document/src/article-notes.ts
 livedocuments/packages/document/src/article-readability.ts	liveknowledge/packages/document/src/article-readability.ts

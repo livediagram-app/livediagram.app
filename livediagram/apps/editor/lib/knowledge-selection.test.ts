@@ -156,10 +156,15 @@ describe('the picture cropped to the items', () => {
     });
   });
 
-  it('never grows a frame past its own sides, and leaves one with nothing in it whole', () => {
+  it('never grows a frame past its sides or foot, and leaves one with nothing in it whole', () => {
     expect(
       cropContainer({ x: 0, y: 0, width: 120, height: 60 }, { x: 5, y: 5, width: 100, height: 50 }),
-    ).toEqual({ x: 0, y: 0, width: 120, height: 60 });
+    ).toEqual({
+      x: 0,
+      y: 5 - KNOWLEDGE_PICTURE_TITLE_ROOM,
+      width: 120,
+      height: 60 + KNOWLEDGE_PICTURE_TITLE_ROOM - 5,
+    });
     const empty = { id: 't', elements: [frame('f', 0, 0, 900, 900)] };
     expect(rect(selectionTab(empty as never, new Set(['f'])).elements[0])).toEqual({
       x: 0,
@@ -167,6 +172,23 @@ describe('the picture cropped to the items', () => {
       width: 900,
       height: 900,
     });
+  });
+});
+
+// Round 2: cropped, a frame's right-aligned title moved in over an item near its top-right (the Key's "Input or
+// output" under "Frame"). Its title band is always clear of the items: raised past the frame's own top if need be.
+describe('the cropped frame’s title band', () => {
+  it('stands clear above an item that reaches the frame’s top', () => {
+    const tab = {
+      id: 't',
+      elements: [frame('f', 0, 0, 1200, 800), box('key', 600, 8), box('low', 100, 500)],
+    };
+    const f = selectionTab(tab as never, new Set(['f'])).elements.find((e) => e.id === 'f');
+    const r = f as unknown as { x: number; y: number; width: number };
+    expect(r.y).toBe(8 - KNOWLEDGE_PICTURE_TITLE_ROOM);
+    // The key's top is a whole title band below the frame's top, wherever the title sits across it.
+    expect(8 - r.y).toBeGreaterThanOrEqual(KNOWLEDGE_PICTURE_TITLE_ROOM);
+    expect(r.x + r.width).toBe(700 + KNOWLEDGE_PICTURE_MARGIN);
   });
 });
 

@@ -76,7 +76,8 @@ on a page in liveknowledge. They stay as they are here.", and liveknowledge's ar
 
 1. **What's sent**: a strip with the picture of the selection, large enough to read, and its count ("6 items, 4
    arrows"). The picture is cropped to the selected items with a small margin: the frames and lanes that gathered
-   them are drawn but do not widen it.
+   them are drawn but do not widen it, each with its title's room above the highest item, so a title the crop moves
+   in stays clear of every item.
 2. **Knowledgebase**: the person's knowledgebases they can edit, most recent first, with a search. The one last sent to
    from this item opens picked (remembered per item in this browser, the newest 50 kept, as Send to Plan's).
 3. **Page**, as two cards: **Existing Page** (chosen) lists the knowledgebase's pages as a tree read through

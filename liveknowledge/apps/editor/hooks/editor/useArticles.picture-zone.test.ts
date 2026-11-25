@@ -66,7 +66,7 @@ const laidOut: FlowLayout = {
   local: false,
 };
 
-function open(tab: Tab, canEdit: boolean) {
+function open(tab: Tab, canEdit: boolean, layout: FlowLayout = laidOut) {
   const tickTabs = vi.fn();
   const commitTabs = vi.fn();
   const hook = renderHook(() =>
@@ -87,9 +87,12 @@ function open(tab: Tab, canEdit: boolean) {
       reveal: vi.fn(),
     }),
   );
-  hook.result.current!.onLayout(laidOut);
-  hook.result.current!.onLayout({ ...laidOut, local: true });
-  return { tickTabs, commitTabs };
+  hook.result.current!.onLayout(layout);
+  hook.result.current!.onLayout({ ...layout, local: true });
+  // The tabs as every tick so far leaves them.
+  const written = (ts: Tab[]): Tab[] =>
+    (tickTabs.mock.calls as [(ts: Tab[]) => Tab[]][]).reduce((acc, [map]) => map(acc), ts);
+  return { tickTabs, commitTabs, written };
 }
 
 beforeEach(() => {
@@ -108,5 +111,25 @@ describe('a sent picture, opened to read', () => {
     const { tickTabs, commitTabs } = open(sent({ locked: true }), true);
     expect(tickTabs).not.toHaveBeenCalled();
     expect(commitTabs).not.toHaveBeenCalled();
+  });
+});
+
+// Round 2: the write places the zone where the estimate (which spaces blocks as the stylesheet does) puts it, so an
+// Editor's Edit on a fresh send finds it settled: a layout within the settle tolerance (0.75 px) moves nothing.
+describe('a sent picture, opened to edit', () => {
+  it('writes nothing when the layout finds the zone where the write put it', () => {
+    const tab = sent();
+    const { commitTabs, written } = open(tab, true, {
+      ...laidOut,
+      zones: [{ id: 'z', index: 0, x: 64, y: 120.5, width: 300, height: 150 }],
+    });
+    expect(commitTabs).not.toHaveBeenCalled();
+    expect(written([tab])[0]).toBe(tab);
+  });
+
+  it('settles a zone the layout finds further off', () => {
+    const tab = sent();
+    const { written } = open(tab, true);
+    expect(written([tab])[0]).not.toBe(tab);
   });
 });

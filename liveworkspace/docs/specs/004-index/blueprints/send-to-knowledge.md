@@ -96,8 +96,9 @@ refuses answers 429 `ai_credits_used` and the summary is dropped; the service re
 - `@liveknowledge/edit-operations` `applyArticleWrite`: an append with `after` splices the new blocks at the end of that
   heading's part (`sectionEndOf`); with `picture`, an object zone (aligned left) and its image element follow the written blocks. The zone is made
   parked as an import's is, then once the writing is in `withPictureZonePlaced` moves it to where the layout estimate
-  (`estimateArticle` on the writing up to the zone) puts it on the continuous page, so a Viewer, whose open settles
-  nothing, reads it in place. A paper page keeps the parking place for the editor's first layout.
+  (`estimateArticle`'s `zoneTops`, its margins collapsing as the stylesheet's do) puts it on the continuous page, on
+  the editor's half-pixel grid, so a Viewer, whose open settles nothing, reads it in place, and an Editor's first
+  layout finds it settled (within the 0.75 px settle tolerance) and writes nothing. A paper page keeps the parking place for the editor's first layout.
 - `apps/api/src/document-room/knowledge-send-door.ts`: `op: 'outline'` (the stored tab's article headings) and
   `op: 'write'` through `route()` as the person (no `automation`), the picture uploaded first.
 - `apps/api/src/routes/knowledge-agent-routes.ts`: `PUT pages/<tab>` passes `after`; `sentFrom` on create and write
