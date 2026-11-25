@@ -68,6 +68,9 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 - **A space inside a search is part of it.** While letters typed in the last half second are
   still building a search, a space joins it ("move t" finds Move to Trash) and never presses
   the row the search reached; with no search under way, Space presses the focused item.
+- **A search being built stays where it is while it still matches.** The first letter moves to
+  the next item it starts; each letter after it searches from the item already reached, so
+  "sha" over Share and Share link stays on the one "s" found, rather than hopping between them.
 - **Focus moves into the menu on open**, however it was opened: to the checked entry of a
   one-of-a-set menu, else the first item. A menu opened by hovering (the zoom presets) is the one
   exception: hover is not asking for the keyboard, so focus stays where it was.
