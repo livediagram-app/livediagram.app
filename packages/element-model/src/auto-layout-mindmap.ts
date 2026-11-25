@@ -37,6 +37,49 @@ function hubOf(ids: ElementId[], edges: Edge[]): ElementId {
 // How far (radians, about half a degree) left of 12 o'clock a branch still counts as at 12.
 const TWELVE_TOLERANCE = 0.01;
 
+// The least radius at which no two of a ring's nodes, at their angles (centres), overlap with a
+// sibling gap between them: two boxes clear each other when either their x or their y centres are
+// far enough apart, and both grow with the radius, so each pair needs the smaller of the two radii.
+// Sorted by angle, each node looks ahead only while a pair that far round could still need more
+// than the ring already has (any pair `delta` apart is at least 2r sin(delta / 2) / sqrt 2 apart on
+// one axis), so a crowded ring costs about one look per neighbour, not one per pair.
+function ringClearRadius(
+  ring: readonly ElementId[],
+  angle: ReadonlyMap<ElementId, number>,
+  size: ReadonlyMap<ElementId, Size>,
+): number {
+  if (ring.length < 2) return 0;
+  const turn = 2 * Math.PI;
+  const nodes = ring
+    .map((id) => ({ a: ((angle.get(id)! % turn) + turn) % turn, s: size.get(id)! }))
+    .sort((p, q) => p.a - q.a);
+  let reachW = 0;
+  let reachH = 0;
+  for (const n of nodes) {
+    reachW = Math.max(reachW, n.s.w);
+    reachH = Math.max(reachH, n.s.h);
+  }
+  const reach = Math.max(reachW, reachH) + SIBLING_GAP;
+  let r = 0;
+  for (let i = 0; i < nodes.length; i++) {
+    const p = nodes[i]!;
+    for (let k = 1; k < nodes.length; k++) {
+      const q = nodes[(i + k) % nodes.length]!;
+      const delta = (q.a - p.a + turn) % turn;
+      if (delta > Math.PI) break;
+      const chord = 2 * Math.sin(delta / 2);
+      if (chord > 0 && reach / (chord / Math.SQRT2) <= r) break;
+      const needX = (p.s.w + q.s.w) / 2 + SIBLING_GAP;
+      const needY = (p.s.h + q.s.h) / 2 + SIBLING_GAP;
+      const dx = Math.abs(Math.cos(p.a) - Math.cos(q.a));
+      const dy = Math.abs(Math.sin(p.a) - Math.sin(q.a));
+      const need = Math.min(dx > 0 ? needX / dx : Infinity, dy > 0 ? needY / dy : Infinity);
+      if (Number.isFinite(need)) r = Math.max(r, need);
+    }
+  }
+  return r;
+}
+
 // Place one component as a radial mindmap around its hub.
 export function positionMindmapComponent(
   ids: ElementId[],
@@ -80,9 +123,34 @@ export function positionMindmapComponent(
   };
   walkDepth(hub, 0);
 
+  // Wedge assignment: the hub's children split the full circle by leaf
+  // count; every descendant recursively splits its parent's wedge and sits
+  // at the wedge's bisector on its depth's ring.
+  const angle = new Map<ElementId, number>();
+  const placeWedge = (id: ElementId, start: number, span: number) => {
+    const kids = children.get(id)!;
+    let a = start;
+    for (const k of kids) {
+      const share = (span * leaves.get(k)!) / leaves.get(id)!;
+      angle.set(k, a + share / 2);
+      placeWedge(k, a, share);
+      a += share;
+    }
+  };
+  // The first branch sits at 12 o'clock (its wedge centred there), as layout-cleanup.md "Mindmap
+  // order" has it: a wedge starting there put it half its share clockwise, so a map drawn with one
+  // branch up and one down came out turned a quarter, one at 3 and one at 9.
+  const first = children.get(hub)![0];
+  const firstShare =
+    first === undefined ? 0 : (2 * Math.PI * leaves.get(first)!) / leaves.get(hub)!;
+  placeWedge(hub, -Math.PI / 2 - firstShare / 2, 2 * Math.PI);
+
   // Ring radii: each ring clears the previous by the largest node on it plus
-  // a gap, and additionally grows until its circumference fits every node on
-  // that ring (footprint + sibling gap), the anti-collision guarantee.
+  // a gap, grows until its circumference fits every node on that ring
+  // (footprint + sibling gap), and then until no two of its nodes overlap
+  // where their wedges put them. Wedges follow leaf counts, not an even
+  // spread: a bushy branch leaves its light neighbours' children closer
+  // together than the circumference sum allows for.
   const byDepth = new Map<number, ElementId[]>();
   for (const id of ids) pushTo(byDepth, depth.get(id)!, id);
   const footprint = (id: ElementId) => Math.max(size.get(id)!.w, size.get(id)!.h);
@@ -95,37 +163,19 @@ export function positionMindmapComponent(
     const ringMax = Math.max(...ring.map(footprint));
     const clearPrev = prev + prevMax / 2 + ringMax / 2 + LAYER_GAP;
     const needed = ring.reduce((s, id) => s + footprint(id) + SIBLING_GAP, 0);
-    const r = Math.max(clearPrev, needed / (2 * Math.PI));
+    const r = Math.max(clearPrev, needed / (2 * Math.PI), ringClearRadius(ring, angle, size));
     radius.set(d, r);
     prev = r;
     prevMax = ringMax;
   }
 
-  // Wedge assignment: the hub's children split the full circle by leaf
-  // count; every descendant recursively splits its parent's wedge and sits
-  // at the wedge's bisector on its depth's ring. Positions are node centres
-  // for now; normalised to top-left local coords at the end.
+  // Positions are node centres for now; normalised to top-left local coords at the end.
   const centerPos = new Map<ElementId, Pt>();
   centerPos.set(hub, { x: 0, y: 0 });
-  const placeWedge = (id: ElementId, start: number, span: number) => {
-    const kids = children.get(id)!;
-    let a = start;
-    for (const k of kids) {
-      const share = (span * leaves.get(k)!) / leaves.get(id)!;
-      const mid = a + share / 2;
-      const r = radius.get(depth.get(k)!)!;
-      centerPos.set(k, { x: r * Math.cos(mid), y: r * Math.sin(mid) });
-      placeWedge(k, a, share);
-      a += share;
-    }
-  };
-  // The first branch sits at 12 o'clock (its wedge centred there), as layout-cleanup.md "Mindmap
-  // order" has it: a wedge starting there put it half its share clockwise, so a map drawn with one
-  // branch up and one down came out turned a quarter, one at 3 and one at 9.
-  const first = children.get(hub)![0];
-  const firstShare =
-    first === undefined ? 0 : (2 * Math.PI * leaves.get(first)!) / leaves.get(hub)!;
-  placeWedge(hub, -Math.PI / 2 - firstShare / 2, 2 * Math.PI);
+  for (const [id, a] of angle) {
+    const r = radius.get(depth.get(id)!)!;
+    centerPos.set(id, { x: r * Math.cos(a), y: r * Math.sin(a) });
+  }
 
   // Normalise to local top-left coords with the block starting at 0,0.
   let minX = Infinity;
