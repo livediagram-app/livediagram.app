@@ -9,7 +9,7 @@ import {
   takeSnapshot,
   type SnapshotDb,
 } from './store';
-import { SNAPSHOT_NAME_MAX } from './limits';
+import { SNAPSHOTS_KEPT, SNAPSHOT_NAME_MAX } from './limits';
 import type { SnapshotAuthor, SnapshotRevertResponse } from './wire';
 
 /** What an app does for snapshots: its own export file, and its content replaced from one. */
@@ -60,7 +60,8 @@ export type RevertResult =
 /**
  * SN12, SN13: read the target, keep the item as it is (never skipped), replace, advance the generation, tell the
  * room. Refused before anything changes when the target is gone or unreadable, or the safety snapshot can't be
- * taken. The safety snapshot is an ordinary one: it may remove the oldest of the latest five, never one a rule keeps.
+ * taken. The safety snapshot is an ordinary one: it may remove the oldest of the latest five, never one a rule keeps
+ * and never the one being reverted to (it removes the oldest other one instead, so the count stays the same).
  */
 export async function revertToSnapshot(input: RevertInput): Promise<RevertResult> {
   const { db, itemId, snapshotId, door } = input;
@@ -74,14 +75,18 @@ export async function revertToSnapshot(input: RevertInput): Promise<RevertResult
   if (typeof text !== 'string') return refuse('unreadable');
   const now = await door.exportFile();
   if (now === null) return { ok: false, reason: 'item_missing' };
+  const keptIds = await keptIdsOf(door);
+  // The target is held beside the rule-kept ones; unless a rule already holds it, one fewer of the rest stays, so the
+  // item keeps as many snapshots as before and the safety snapshot is always one of them.
+  const keep = input.keep ?? SNAPSHOTS_KEPT;
   const safety = await takeSnapshot(db, {
     itemId,
     text: now,
     name: beforeRevertName(target.name),
     kind: 'before-revert',
     author: input.author,
-    keptIds: await keptIdsOf(door),
-    ...(input.keep !== undefined ? { keep: input.keep } : {}),
+    keptIds: keptIds.includes(snapshotId) ? keptIds : [...keptIds, snapshotId],
+    keep: keptIds.includes(snapshotId) ? keep : Math.max(1, keep - 1),
     ...(input.now !== undefined ? { now: input.now } : {}),
   });
   if (!safety.ok) return refuse('too_large', 'safety-too-large');

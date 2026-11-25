@@ -117,9 +117,9 @@ describe('comments', () => {
     expect(comments.text!({ page: 'deploys', threads: [], count: 0 })).toEqual(['no comments']);
   });
 
-  it('names a page with no threads as asked', async () => {
-    const { ctx } = setup({ [path]: { threads: [] } });
-    expect((await run(comments, ctx, { doc: DOC_A, page: 'Deploys' })).page).toBe('Deploys');
+  it('names the page by its id, with threads or none', async () => {
+    const { ctx } = setup({ [path]: { page: 'tab-deploys', threads: [] } });
+    expect((await run(comments, ctx, { doc: DOC_A, page: 'Deploys' })).page).toBe('tab-deploys');
   });
 });
 

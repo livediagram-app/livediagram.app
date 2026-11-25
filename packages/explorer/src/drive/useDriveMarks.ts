@@ -51,11 +51,19 @@ export function useDriveMarks(
       try {
         if (connected === null) {
           const config = await client.config();
-          connected = config.ok && config.data.enabled && config.data.connected;
+          // A failed read says nothing either way: the next focus asks again.
+          if (!config.ok) return;
+          connected = config.data.enabled && config.data.connected;
         }
         if (!connected) return;
         const [answer, connection] = await Promise.all([client.marks(), client.connection()]);
         if (!live) return;
+        if (connection.ok && !connection.data.connected) {
+          // Disconnected elsewhere: nothing shows, as for someone never connected.
+          connected = false;
+          setMarks(NONE);
+          return;
+        }
         setMarks((previous) => ({
           byId: answer.ok ? new Map(answer.data.marks.map((m) => [m.id, m])) : previous.byId,
           needsReconnect: connection.ok
@@ -69,7 +77,8 @@ export function useDriveMarks(
 
     void read();
     const onFocus = () => {
-      // Someone not connected was answered once; a connection made elsewhere shows on the next visit.
+      // Someone not connected was answered once; a connection made elsewhere shows on the next visit. A failed config
+      // read left `connected` unknown, so it is asked again here.
       if (connected === false) return;
       if (clock.current() - lastRead < DRIVE_MARKS_MIN_GAP_MS) return;
       void read();

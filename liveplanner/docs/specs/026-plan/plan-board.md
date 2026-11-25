@@ -193,7 +193,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   phone the sheet stays put. Under it: its **name**, **colour** (a row like the WIP limit's: "Colour" over
   its effect, or "No colour", and the colour's swatch at the row's end; pressed, the
   [colour picker](../004-interface-design/colour-picker.md) opens in its own popover beside it, No colour or any
-  colour, the column popover staying open), **WIP limit**, **Width**, **Counts as Done** (a switch, on for a
+  colour, the column popover staying open), **WIP limit** (text its number box can't read keeps the limit, never
+  turns it off), **Width**, **Counts as Done** (a switch, on for a
   [done column](#done-columns) found by its name too), then, one to a row, **+ Add Column
   After** and **Delete Status**. The two ways to take it away: **Remove Column** (the toolbar's) takes it off this board only, at once: the
   state and its cards stay, so another board's column for it still shows them (where none does, the cards read

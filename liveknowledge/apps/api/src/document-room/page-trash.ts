@@ -7,13 +7,7 @@
 //
 // Purged as the Trash is read or written: past PAGE_TRASH_DAYS, and past the newest MAX_TRASHED_PAGES. Removing a
 // trashed page for good is `DELETE FROM tabs`, which takes the rest by the foreign keys, as a delete always has.
-import {
-  MAX_KNOWLEDGEBASE_PAGES,
-  MAX_PAGE_DEPTH,
-  pageCount,
-  pageDepth,
-  parseTabParent,
-} from '@liveknowledge/document';
+import { MAX_PAGE_DEPTH, pageCount, pageDepth, parseTabParent } from '@liveknowledge/document';
 import {
   MAX_TRASHED_PAGES,
   PAGE_TRASH_DAYS,
@@ -23,6 +17,7 @@ import {
 import type { DeletedTab } from '../db/tabs';
 import type { DocumentEnv } from '../types';
 import { readStoredPages } from './page-tree-store';
+import { knowledgePagesMax } from '../knowledge/tier-limits';
 
 type Exec = (query: string) => unknown;
 
@@ -259,7 +254,7 @@ export async function restorePages(
   const pages = subtreeOf(root, children);
   const linked = await readStoredPages(env, documentId);
   const restoring = pages.filter((r) => !r.connected).length;
-  if (pageCount(linked) + restoring > MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
+  if (pageCount(linked) + restoring > knowledgePagesMax()) return 'page_limit';
   // How deep the restored pages run under their root (the root is 1).
   const depthBelow = new Map<string, number>([[root.tab_id, 1]]);
   let deepest = 1;

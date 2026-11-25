@@ -508,6 +508,19 @@ describe('sharing a screen recording', () => {
     expect(rest.headers.get('Content-Range')).toBe(
       `bytes 10-${WEBM.byteLength - 1}/${WEBM.byteLength}`,
     );
+    // RFC 9110: an end past the file is clamped to its last byte; a start past it is 416.
+    const past = await shared(`${code}/media`, { headers: { Range: 'bytes=10-999999' } });
+    expect(past.status).toBe(206);
+    expect(past.headers.get('Content-Range')).toBe(
+      `bytes 10-${WEBM.byteLength - 1}/${WEBM.byteLength}`,
+    );
+    expect(past.headers.get('Content-Length')).toBe(String(WEBM.byteLength - 10));
+    expect(new Uint8Array(await past.arrayBuffer())).toEqual(WEBM.slice(10));
+    const beyond = await shared(`${code}/media`, {
+      headers: { Range: `bytes=${WEBM.byteLength}-` },
+    });
+    expect(beyond.status).toBe(416);
+    expect(beyond.headers.get('Content-Range')).toBe(`bytes */${WEBM.byteLength}`);
   });
 
   it('reads a range header as a video element sends one, and nothing else', () => {

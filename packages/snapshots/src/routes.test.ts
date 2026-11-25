@@ -107,7 +107,7 @@ describe('serveSnapshots: the routes', () => {
     expect(body.snapshots[0]!.name).toBeNull();
   });
 
-  it('reverting to the oldest of five still works: it is read before the safety snapshot prunes it', async () => {
+  it('reverting to the oldest of five keeps it: the safety snapshot removes the oldest other one', async () => {
     const { db } = testDb();
     const { state, door } = item('v0');
     const ids: string[] = [];
@@ -120,7 +120,13 @@ describe('serveSnapshots: the routes', () => {
     const res = await serve(db, door, 'POST', ['snapshots', ids[0]!, 'revert']);
     expect(res.status).toBe(200);
     expect(state.content).toBe('v0');
-    expect(await listSnapshots(db, 'p1')).toHaveLength(5);
+    const { safetySnapshotId } = ((await res.json()) as { reverted: { safetySnapshotId: string } })
+      .reverted;
+    const left = (await listSnapshots(db, 'p1')).map((s) => s.id);
+    expect(left).toHaveLength(5);
+    expect(left).toContain(ids[0]);
+    expect(left).toContain(safetySnapshotId);
+    expect(left).not.toContain(ids[1]);
   });
 
   it('deletes one, and 404s a second time', async () => {

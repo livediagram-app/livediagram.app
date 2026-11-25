@@ -108,14 +108,20 @@ export async function handleSheetRange(ctx: RouteContext, id: string): Promise<R
   const loaded = await ownSource(ctx, id);
   if (loaded instanceof Response) return loaded;
   const watcher = await watcherOf(ctx, body?.watch);
+  const doors = doorsFor(ctx.env);
+  // A tab-scoped link reads its own tab's sheets only. With a watch asked, the sheet's tab is checked before the read,
+  // so a refused read never leaves a watch behind (that reader would be told of changes it cannot read).
+  const tab = loaded.access.tabId;
   let read;
   try {
-    read = await doorsFor(ctx.env).readSheetRange(loaded.row.app, id, { ...ask, watcher });
+    if (tab && watcher) {
+      const sheets = await doors.listSheets(loaded.row.app, id);
+      if (!sheets.some((s) => s.id === ask.sheetId && s.tabId === tab)) return notFound();
+    }
+    read = await doors.readSheetRange(loaded.row.app, id, { ...ask, watcher });
   } catch (err) {
     return doorRefusal(err);
   }
-  // A tab-scoped link reads its own tab's sheets only.
-  const tab = loaded.access.tabId;
   if (tab && read.tabId !== tab) return notFound();
   const answer: SheetRangeRead = {
     ...read,

@@ -315,7 +315,14 @@ export async function handleOverviewRoutes(route: KnowledgeRoute): Promise<Respo
   if (segments[3] === 'questions' && segments.length === 5 && id) {
     if (request.method !== 'DELETE') return methodNotAllowed();
     if (!writer) return forbidden();
-    await runAll(env, dismissQuestion(decodeURIComponent(id)));
+    let key: string;
+    try {
+      key = decodeURIComponent(id);
+    } catch {
+      // A malformed escape (a lone `%`) names no question.
+      return invalid('bad_key', 'That question key is not valid.');
+    }
+    await runAll(env, dismissQuestion(key));
     return noContent();
   }
   if (segments[3] === 'conflicts' && segments.length === 6 && id && segments[5] === 'dismiss') {

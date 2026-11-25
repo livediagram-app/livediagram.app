@@ -34,6 +34,13 @@ describe('withPageAddedTo', () => {
   it('is the same list when the tree refuses', () => {
     expect(withPageAddedTo(TABS, tab('n'), 'gone')).toBe(TABS);
   });
+  it('holds to the open knowledgebase’s limit, not only the fixed 500', () => {
+    setKnowledgeTier('kb', { pagesMax: 500, pagesLimit: 500, historyDays: 30 });
+    setOpenPagesBound('kb', { max: TABS.length, account: { limit: 500, whose: 'yours' } });
+    expect(withPageAddedTo(TABS, tab('n'))).toBe(TABS);
+    expect(withPageDuplicated(TABS, 'e', tab('n'))).toBe(TABS);
+    forgetKnowledgeTiersForTests();
+  });
 });
 
 describe('withPageDuplicated', () => {

@@ -32,7 +32,8 @@ shape, the agents' module and the editor's foot and meta row, so they are built 
   `tab-meta` patch as Verify does. A reject emails the owner (`knowledge/approval-email.ts`, `PageRejected`, the
   Review Due email's notifier and ceiling) after the answer, in `waitUntil`.
 - `GET|POST /documents/<id>/pages/<tab>/threads` (`routes/knowledge-thread-routes.ts`, the change itself in
-  `knowledge/page-thread-changes.ts`): start, reply (reopens), resolve, reopen, and edit or delete of one's own
+  `knowledge/page-thread-changes.ts`). `GET` answers `{ page, threads }`, `page` the page's id however the path named
+  it (so `list_page_comments` and `liveknowledge comments` name it by id, threads or none). `POST`: start, reply (reopens), resolve, reopen, and edit or delete of one's own
   comment (matched by account id, or token id for an agent). Each change relays one `page-thread` op (the whole thread
   or its removal) through the room's `/mutation`, which sequences it as a system op; clients cannot send one
   (`SYSTEM_OP_KINDS`). Authors are named on the wire by collab key, never account id.

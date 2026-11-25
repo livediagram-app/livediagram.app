@@ -48,7 +48,9 @@ Returns an ask or null: `sheetId` a string of 1 to 64 id characters; exactly one
 4. The watcher: when `watch.itemId` is an id and `X-Index-Grant` verifies (`verifyOwnGrant`) with `item === watch.itemId`,
    `app` in `SOURCE_WATCH_APPS` and `link` not a public link's code, the door is sent `watcher: watch.itemId`.
    Otherwise the read goes ahead with no watcher.
-5. `doors.readSheetRange(app, id, {...ask, watcher})`. A `DoorError` 404 answers `404 not_found`; 409 answers
+5. With a watcher and a tab-scoped access, `doors.listSheets(app, id)` first: a sheet not on the access's tab answers
+   `404` before the read, so no watch is recorded for a read that is refused. Then
+   `doors.readSheetRange(app, id, {...ask, watcher})`. A `DoorError` 404 answers `404 not_found`; 409 answers
    `409 range_gone`; 400 answers `400 invalid_range`; anything else (or not configured) `503 source_unavailable`
    and logs `[index] sheet-range door failed` with the status.
 6. The read's `tabId` must be the access's `tabId` when that is set, else `404`.

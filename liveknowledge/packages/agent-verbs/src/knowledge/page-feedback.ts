@@ -61,13 +61,15 @@ export async function listPageComments(
   page: string,
   status: 'open' | 'resolved' | 'all' = 'open',
 ): Promise<{ page: string; threads: ListedPageThread[] }> {
-  const { threads } = await api.json<PageThreadsResponse>(
+  // The page's id, threads or none; an api from before it was answered names it by a thread's page.
+  const answer = await api.json<Partial<PageThreadsResponse>>(
     knowledgePath(documentId, 'pages', page, 'threads'),
   );
+  const threads = answer.threads ?? [];
   const shown = threads.filter((t) =>
     status === 'all' ? true : status === 'resolved' ? t.resolved : !t.resolved,
   );
-  return { page: threads[0]?.tab ?? page, threads: shown.map(listedPageThread) };
+  return { page: answer.page ?? threads[0]?.tab ?? page, threads: shown.map(listedPageThread) };
 }
 
 const short = (id: string) => id.slice(0, 8);

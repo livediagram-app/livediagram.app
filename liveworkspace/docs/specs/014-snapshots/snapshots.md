@@ -124,7 +124,7 @@ Revert replaces the item's content in place with the snapshot's. Its steps, in o
 2. **Take an automatic snapshot of the item as it is now** (`before-revert`, named `Before reverting to "<name>"`, or
    `Before reverting` for an unnamed one). This is the safety net and is **never skipped**: if it cannot be taken (the item is too large, the write
    fails), the revert is refused and nothing changes. With five kept it removes the oldest, which is never the one
-   being reverted to: step 1 already holds that one.
+   being reverted to: reverting to the oldest removes the next oldest instead, so it stays in History.
 3. **Replace the content.** The tabs become the snapshot's, in its order and folders, with their own ids, so share
    links to a tab, connected tabs and comment threads keep pointing at the same tab. Every written tab's revision
    moves forward. A tab made since the snapshot is removed as a tab delete removes it; a tab removed since comes back.

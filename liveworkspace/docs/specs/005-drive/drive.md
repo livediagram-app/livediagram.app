@@ -327,7 +327,9 @@ its symbol takes a colour, and it is named on hover and focus:
 **Synced** when the item's `updatedAt` last uploaded is at least its `updatedAt`; **Waiting** otherwise, or
 **Syncing** while a pass runs; **Failed** when that item's last upload failed on its own (not a network, rate-limit
 or sign-in failure, which stop the pass and show in Cloud Sync), cleared by the next success. Nothing shows for someone who isn't connected, and the marks
-request isn't made for them (the config answer says whether they are).
+request isn't made for them (the config answer says whether they are). A config answer that fails is asked again when
+the window next regains focus, not taken as "not connected"; and a read that finds the person no longer connected
+(disconnected in another tab) clears the marks.
 
 ## Open with
 
