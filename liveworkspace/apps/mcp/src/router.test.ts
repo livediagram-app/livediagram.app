@@ -696,7 +696,7 @@ describe('per-app consent', () => {
         get: async () => {
           throw new Error('KV GET failed: 503');
         },
-      } as unknown as KVNamespace,
+      },
     };
     const response = await rpc('tools/list', {}, { all: true, token: 'lwt_narrow' });
     expect(response.status).toBe(503);
