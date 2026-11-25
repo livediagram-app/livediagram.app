@@ -782,6 +782,14 @@ tokens issued on the session, then Better Auth deletes the session and its cooki
 another device and Sign Out Others (Better Auth's `revoke-session`, `revoke-other-sessions`, and `revoke-sessions`)
 do the same for the sessions they end, so that device's apps are signed out with it.
 
+**From the Explorer.** Signing out from the Explorer (its header's account menu, or Settings › Your Account) leaves
+it for the signed-out home page: `/` on liveworkspace.app, and on an app's own address that app's landing page, `/`,
+which the hop returns to instead of the Explorer. The Explorer asks for no token after the sign-out (no
+`GET /api/auth/workspace-token`, no guest hand-off) and the index for nothing, so signing out never makes a guest
+identity or a guest account, and the page never shows the old account's teams or items to a guest who can't load
+them. Opening the Explorer again afterwards is a visit like any other: it reads as this browser's guest
+([Guests](#guests)).
+
 **When it doesn't go.** A sign-out the server refuses, or one that never reaches it (offline), leaves the person
 signed in. The account menu stays open and its Sign Out item says "Couldn't sign out. Check your connection and try
 again." in place of its hint, read out to a screen reader too, until the menu closes (`@liveworkspace/account-menu`).

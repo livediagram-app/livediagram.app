@@ -14,6 +14,7 @@ import { SIGNED_IN_HINT_COOKIE as KNOWLEDGE_HINT } from '@liveknowledge/api-sche
 import type { AppName } from '@liveworkspace/sites';
 import { fullNameOf } from '../accounts';
 import { pageApp } from './page-app';
+import { SIGNED_OUT_HREF } from './signed-out';
 
 // Each app's readable "this browser has a session here" cookie (`1`), set beside its refresh cookie.
 // A held app's too: the Explorer on its own address is its page (page-app.ts).
@@ -230,14 +231,16 @@ export function forgetAppAccount() {
 }
 
 /** Signs out of the app, and so of every liveworkspace app in this browser (liveworkspace/docs/specs/003-accounts/
- *  accounts.md "Signing out"), then goes through the accounts site's hop, or straight back to this page, as a visitor
- *  (the account menu's own sign-out, `@liveworkspace/account-menu`). Resolves false when the API refused. Signed out
- *  of this app alone, the page it lands on says so, unless `noteHereOnly` is false (after Delete Account). */
+ *  accounts.md "Signing out"), then goes through the accounts site's hop, or straight to the app's landing page
+ *  (SIGNED_OUT_HREF), as a visitor (the account menu's own sign-out, `@liveworkspace/account-menu`). Never back to
+ *  the Explorer, whose reload would start a guest ("From the Explorer", Work Tracker 1443). Resolves false when the
+ *  API refused. Signed out of this app alone, the page it lands on says so, unless `noteHereOnly` is false (after
+ *  Delete Account). */
 export async function appSignOut(
   go?: (to: string) => void,
   options?: { noteHereOnly?: boolean },
 ): Promise<boolean> {
-  const left = await signOutOfApp(go, options);
+  const left = await signOutOfApp(go, { ...options, returnTo: SIGNED_OUT_HREF });
   if (left) account = null;
   return left;
 }

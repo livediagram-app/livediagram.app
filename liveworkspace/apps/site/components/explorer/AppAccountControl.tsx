@@ -2,8 +2,8 @@
 
 // The header's account control for the Explorer shown on an app's own address (lib/explorer/page-app.ts): the app's
 // session rather than liveworkspace.app's. Signed in, the same menu as everywhere on the site, its Settings the
-// Explorer's panel in place on this address (`settings`, the bottom bar's) and its Sign out the app's (the page
-// reloads as a guest); signed out, the same control as Guest, its Sign in and Create account the app's own, which
+// Explorer's panel in place on this address (`settings`, the bottom bar's) and its Sign out the app's (landing on the
+// app's landing page as a visitor, never the Explorer again: lib/explorer/signed-out.ts); signed out, the same control as Guest, its Sign in and Create account the app's own, which
 // come back here, and Settings, the guest's settings for this app kept in this browser (the same panel). Under it
 // hangs the "Signed out of <app> only" notice after a sign-out of this app alone (the menu's or Settings' Sign Out,
 // liveworkspace/docs/specs/003-accounts/accounts.md "Signed out of this app only").

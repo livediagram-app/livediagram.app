@@ -77,6 +77,41 @@ describe('useExplorerIdentity', () => {
     expect(hook.result.current.failed).toBe(false);
   });
 
+  // Work Tracker 1443: a sign-out here leaves rather than asking again (which started a guest).
+  it('leaves on a sign-out here, forgetting the person and asking nothing more', async () => {
+    token.workspaceIdentity.mockResolvedValue(ADA);
+    const leave = vi.fn();
+    const hook = renderHook(
+      ({ session }) => useExplorerIdentity({ ready: true, sessionState: session, leave }),
+      { initialProps: { session: 'in' } },
+    );
+    await act(async () => {});
+    expect(hook.result.current.identity).toBe(ADA);
+    hook.rerender({ session: 'out' });
+    await act(async () => {});
+    expect(leave).toHaveBeenCalledExactlyOnceWith('/');
+    expect(token.resetWorkspaceIdentity).toHaveBeenCalledTimes(1);
+    expect(token.workspaceIdentity).toHaveBeenCalledTimes(1);
+    expect(hook.result.current.identity).toBeNull();
+    act(() => hook.result.current.retry());
+    await act(async () => vi.advanceTimersByTimeAsync(IDENTITY_WAIT_MS));
+    expect(token.workspaceIdentity).toHaveBeenCalledTimes(1);
+    expect(hook.result.current.failed).toBe(false);
+  });
+
+  it('asks as usual when the session was never in (a visitor whose session check answers out)', async () => {
+    token.workspaceIdentity.mockResolvedValue({ ...ADA, kind: 'guest', sub: 'guest_1' });
+    const leave = vi.fn();
+    const hook = renderHook(
+      ({ session }) => useExplorerIdentity({ ready: true, sessionState: session, leave }),
+      { initialProps: { session: 'checking' } },
+    );
+    hook.rerender({ session: 'out' });
+    await act(async () => {});
+    expect(leave).not.toHaveBeenCalled();
+    expect(hook.result.current.identity?.kind).toBe('guest');
+  });
+
   it('drops a superseded answer once unmounted', async () => {
     token.workspaceIdentity.mockImplementation(never);
     const hook = mount();
