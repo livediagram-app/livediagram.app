@@ -595,6 +595,11 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
 `lib/explorer/page-app.ts` reads the app from the page's own host (a static page sees no request), or locally from
 the `liveworkspace-app` meta an app's E2E stack adds ([one-explorer.md](../004-index/one-explorer.md#the-explorer-on-each-apps-address)), and with it:
 
+- **Links to other apps follow the page's environment** (Work Tracker 1446). Every link the Explorer builds to an app
+  (an item, New, a template, a share link, an Inbox row, a source) goes to that app's own origin when the page is on
+  it, and otherwise to `siteUrlHere(site)` (`@liveworkspace/sites`): the app's `staging.` origin from a staging page
+  (`staging.liveworkspace.app` has no app of its own), its live address from production and from a local run. The
+  environment is read from the page's host, never fixed in the code.
 - **Who it reads as** (`lib/explorer/app-session.ts`, `lib/explorer/token.ts`): the app's access token from the
   app's `POST /api/auth/token`, one request in flight at a time (it rotates the refresh cookie), else the app's
   guest token under `<app>:v2:guest-token`. The site's own session is not asked on these pages.

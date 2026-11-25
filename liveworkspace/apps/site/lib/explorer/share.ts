@@ -16,7 +16,14 @@ import type {
   ShareHost,
 } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
-import { APP_ITEMS, APP_NAMES, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
+import {
+  APP_ITEMS,
+  APP_NAMES,
+  isAppName,
+  siteOfApp,
+  siteUrlHere,
+  type AppName,
+} from '@liveworkspace/sites';
 import { appOrigin, pageApp } from './page-app';
 import { trackShare } from './telemetry';
 import { workspaceToken } from './token';
@@ -27,7 +34,7 @@ const fill = (path: string, values: Record<string, string>) =>
 /** An app's embed and live image for its passes, or undefined when it serves neither. */
 export function handOverFor(app: AppName): ShareHandOver | undefined {
   const { share } = APP_ITEMS[app];
-  const url = siteOfApp(app).url;
+  const url = siteUrlHere(siteOfApp(app));
   if (!share.embedPath && !share.liveImagePath) return undefined;
   return {
     embedUrl: share.embedPath
@@ -78,7 +85,7 @@ export async function loadTabsOf(
 /** The app's help articles on sharing, in its own help centre. */
 export function shareHelpHrefFor(app: AppName): ShareHelpHref {
   const { help } = APP_ITEMS[app].share;
-  const url = siteOfApp(app).url;
+  const url = siteUrlHere(siteOfApp(app));
   return (article) => `${url}/help/${help[article]}/`;
 }
 
@@ -122,7 +129,7 @@ export function communityShareOf(
   const { communityPath } = APP_ITEMS[app].share;
   const communityApp = APP_ITEMS[app].site;
   if (!communityPath || !isCommunityApp(communityApp)) return undefined;
-  const url = siteOfApp(app).url;
+  const url = siteUrlHere(siteOfApp(app));
   return {
     host: {
       app: communityApp,

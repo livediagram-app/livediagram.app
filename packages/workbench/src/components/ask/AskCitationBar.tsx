@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom';
 import { askCitationOf } from '@liveworkspace/index-client';
 import { lucideArrowLeft, lucideSparkles, lucideX } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
-import { APP_ITEMS, siteOfApp } from '@liveworkspace/sites';
+import { APP_ITEMS, siteOfApp, siteUrlHere } from '@liveworkspace/sites';
 
 const AskIcon = lucideGlyph(lucideSparkles, 14);
 const BackIcon = lucideGlyph(lucideArrowLeft, 14);
@@ -19,7 +19,7 @@ const CloseIcon = lucideGlyph(lucideX, 14);
 /** Where Back to the Answer goes: the knowledgebase's Ask view (`origin` liveknowledge's, for tests). */
 export function answerHref(
   knowledgebaseId: string,
-  origin = siteOfApp('liveknowledge').url,
+  origin = siteUrlHere(siteOfApp('liveknowledge')),
 ): string {
   return `${origin}${APP_ITEMS.liveknowledge.itemPath}${encodeURIComponent(knowledgebaseId)}?view=ask`;
 }

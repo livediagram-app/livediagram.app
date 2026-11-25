@@ -15,13 +15,13 @@ import type {
 } from '@liveworkspace/explorer';
 import { placeHash } from '@liveworkspace/explorer';
 import { helpArticleHref, type HelpArticleKey } from './help-articles';
-import { APP_ITEMS, siteOfApp } from '@liveworkspace/sites';
+import { APP_ITEMS, siteOfApp, siteUrlHere } from '@liveworkspace/sites';
 import { teamsOfToken } from '@liveworkspace/index-client/browser';
 import { currentBearer } from './api/core';
 
 // livedesign's own designs open here; another app's item opens on its own site (`@liveworkspace/sites` APP_ITEMS).
 export const itemHref: ItemHref = (item, at) => {
-  const origin = item.app === 'livedesign' ? '' : siteOfApp(item.app).url;
+  const origin = item.app === 'livedesign' ? '' : siteUrlHere(siteOfApp(item.app));
   const query = item.sharedVia ? `?s=${encodeURIComponent(item.sharedVia)}` : '';
   // The editor's deep link (lib/collab-deep-link.ts), built by the Explorer.
   const pin = placeHash(at);

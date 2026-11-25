@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   appOfAnyOrigin,
   appOfOrigin,
@@ -6,6 +6,8 @@ import {
   isLiveEmbedFrameRequest,
   liveEmbedFrameAncestors,
   siteHrefFrom,
+  siteUrlFrom,
+  siteUrlHere,
   stagingOrigin,
 } from './app-origins';
 import { APP_SITES, PLATFORM_SITE, SITES } from './index';
@@ -127,5 +129,26 @@ describe("a live embed frame's frame-ancestors", () => {
     expect(at('http://localhost:3201/embed/workbench?d=p&live=1')).toBe(
       "'self' http://localhost:* http://127.0.0.1:*",
     );
+  });
+});
+
+describe('the address a page reaches a site on', () => {
+  const planner = APP_SITES.find((site) => site.id === 'liveplanner.app')!;
+
+  it('is the staging origin from a staging host, the live address from production and local ones', () => {
+    expect(siteUrlFrom(planner, 'staging.liveworkspace.app')).toBe(
+      'https://staging.liveplanner.app',
+    );
+    expect(siteUrlFrom(planner, 'www.liveworkspace.app')).toBe(planner.url);
+    expect(siteUrlFrom(planner, 'localhost:3200')).toBe(planner.url);
+  });
+
+  it('reads the host of the page it runs on, and is the live address with no page', () => {
+    expect(siteUrlHere(planner)).toBe(planner.url);
+    vi.stubGlobal('window', { location: { host: 'staging.livediagram.app' } });
+    expect(siteUrlHere(planner)).toBe('https://staging.liveplanner.app');
+    vi.stubGlobal('window', {});
+    expect(siteUrlHere(planner)).toBe(planner.url);
+    vi.unstubAllGlobals();
   });
 });
