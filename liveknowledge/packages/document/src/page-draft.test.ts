@@ -22,6 +22,7 @@ import {
   withDraftMade,
   withDraftSaved,
   withoutDraft,
+  withoutDraftData,
   type ArticleBlock,
   type ArticleFlow,
   type Tab,
@@ -302,5 +303,25 @@ describe('an agent writing under a draft', () => {
     expect(DRAFT_FLOW).not.toMatch(/^art-/);
     expect(isDraftFlow(DRAFT_FLOW)).toBe(true);
     expect(isDraftFlow('art-1')).toBe(false);
+  });
+});
+
+describe('withoutDraftData', () => {
+  it('takes the draft out of stored JSON, and leaves any other text as it is', () => {
+    const stored = JSON.stringify({
+      elements: [],
+      articles: { main: { blocks: [] }, [DRAFT_FLOW]: { blocks: [] } },
+      draft: { by: 'Priya', at: 1 },
+    });
+    expect(JSON.parse(withoutDraftData(stored))).toEqual({
+      elements: [],
+      articles: { main: { blocks: [] } },
+    });
+    const plain = JSON.stringify({ elements: [], articles: { main: { blocks: [] } } });
+    expect(withoutDraftData(plain)).toBe(plain);
+    const mentions = JSON.stringify({ elements: [], name: '"draft"' });
+    expect(withoutDraftData(mentions)).toBe(mentions);
+    expect(withoutDraftData('{"draft": oops')).toBe('{"draft": oops');
+    expect(withoutDraftData('["draft"]')).toBe('["draft"]');
   });
 });

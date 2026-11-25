@@ -13,6 +13,7 @@ import {
   storedKnowledgeSettings,
   storedKnowledgeStyle,
   withPageRefsRemapped,
+  withoutDraftData,
   type DeckSlidePatch,
   type Element,
   type KnowledgeSettings,
@@ -460,8 +461,11 @@ export async function exportDocumentCopy(
     images: [],
     tabs: rows.map((row) => {
       // No copy carries a legacy article suggestion (docs/specs/007-editor/suggestions.md "Writing stored with a
-      // suggestion"): the copy takes the stored JSON as it is, so it is settled here.
-      const remapped = settleStoredArticlesData(remapTabDataLinks(row.data, tabIdMap));
+      // suggestion"): the copy takes the stored JSON as it is, so it is settled here. Nor a page's draft: a copy takes
+      // the saved page, as every reader but the people editing it does (editing.md "What reads the saved page only").
+      const remapped = settleStoredArticlesData(
+        remapTabDataLinks(withoutDraftData(row.data), tabIdMap),
+      );
       return {
         id: tabIdMap.get(row.id)!,
         name: row.name,
