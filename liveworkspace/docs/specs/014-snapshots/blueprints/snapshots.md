@@ -195,7 +195,8 @@ its gate. `useHistorySnapshotsHost()` returns null without a door, else one stab
 to `useItemToolsRows({ snapshots })` (workbench, blueprint FM9): the workbench never imports this package.
 
 SN23. No row of its own (owner, 2026-11-17). `useExtras()` (`useSnapshotsExtras(door)`) gives History
-`{ top, pins }`: `top` is `TakeSnapshotForm` over `SnapshotNotices` (snapshot-parts.tsx); each pin is
+`{ top, pins }`: `top` is `SnapshotListFailed` (the failed list's `listError` in an error `Callout`, Try Again as its
+action when `canRetry` and not offline) over `SnapshotNotices` (snapshot-parts.tsx); each pin is
 `{ key: 'snapshot:<id>', at: createdAt, render(last) }`, an `li data-history-snapshot` on History's rail: the rail
 line (left 16 px, under every pin but the last), a 32 px disc in `bg-brand-50 text-brand-700` (dark
 `bg-brand-500/15 text-brand-200`) holding the camera at 15 px, a "Snapshot" label (11 px, uppercase, brand ink), and
@@ -209,7 +210,9 @@ Rows are `li` in a `ul aria-label="Snapshots"`; the confirm replaces the row's a
 `data-keeps-escape`, so the Tools popover leaves that Escape to it.
 
 SN25. States: loading (`LoadingSweep`), empty (`CompactEmptyState`), the list failed (`CompactEmptyState` in a
-`role="alert"` with a Try Again button that fetches it again; `useSnapshots` keeps `listFailed` apart from `error`),
+`role="alert"` saying why, from `useSnapshots`' `listError` (`ErrorWords`, `@liveworkspace/ui/error-words`), with a Try
+Again button that fetches it again only when `canRetry` and not offline; offline, `whenBackOnline` fetches it again;
+`useSnapshots` keeps `listFailed` apart from `error`),
 error (a `role="alert"` line for a refused action), busy (the busy button's label: "Taking…", "Reverting…",
 "Deleting…"; every other action disabled). Below `sm` the row's `Before revert` badge sits on its own line under the
 name (`flex-col`), so a long automatic name stays readable on a phone. A summary with `kept` true wears a second badge

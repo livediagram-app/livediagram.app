@@ -64,12 +64,14 @@ export function SnapshotsDialog({
             <CompactEmptyState
               icon={<SnapshotGlyph size={18} />}
               title="Couldn't load snapshots"
-              description="Check your connection, then try again."
+              description={state.listError?.message}
               className="py-8"
               action={
-                <Button variant="secondary" size="sm" onClick={state.retry}>
-                  Try Again
-                </Button>
+                state.listError?.canRetry && state.listError.kind !== 'offline' ? (
+                  <Button variant="secondary" size="sm" onClick={state.retry}>
+                    Try Again
+                  </Button>
+                ) : undefined
               }
             />
           </div>

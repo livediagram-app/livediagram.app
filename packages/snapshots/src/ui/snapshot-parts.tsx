@@ -93,6 +93,23 @@ export function SnapshotNotices({
   );
 }
 
+/** The list that failed to load, in History (snapshots.md "In History"): why, in the words of error-words.md, with Try
+ *  Again only where trying again can help; offline, the list loads again by itself once back online. */
+export function SnapshotListFailed({ state }: { state: SnapshotsState }) {
+  const failure = state.listError;
+  if (!failure) return null;
+  const retry = failure.canRetry && failure.kind !== 'offline';
+  return (
+    <Callout
+      tone="error"
+      role="alert"
+      action={retry ? { label: 'Try Again', onSelect: state.retry } : undefined}
+    >
+      Couldn't load snapshots. {failure.message}
+    </Callout>
+  );
+}
+
 /** The Snapshot button (snapshots.md "In History"): Take a Snapshot is not always on show; the button opens its form
  *  beside the list as a popover (a drawer from the bottom on a phone), which closes once the snapshot is taken. */
 export function SnapshotButton({ state }: { state: SnapshotsState }) {
