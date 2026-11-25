@@ -717,7 +717,8 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
 - **A new database.** Before its migrations, each Worker with D1 runs `ensure-d1.mjs`. A pinned `database_id`
   costs nothing: no API call. A new Worker can leave the id as the placeholder
   `00000000-0000-0000-0000-000000000000`: the step finds the database by its `database_name` (`wrangler d1 list`),
-  or creates it in Western Europe (`--location weur`, where every other database is), and writes the id into that
+  or creates it in Western Europe (`--location weur`, where every other database is) and reads its id (from wrangler's
+  output, JSON or TOML, else by name), and writes the id into that
   job's checkout of `wrangler.toml` for the migrations and the deploy. The repository is never changed: the job's
   notice names the id, to pin in `wrangler.toml` so remote reads and the next deploy go straight to it (until then
   each deploy finds it by name again). Before 2026-11-25 the owner created each database by hand and the Worker was

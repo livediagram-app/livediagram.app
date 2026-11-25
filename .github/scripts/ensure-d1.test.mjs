@@ -38,11 +38,23 @@ database_id = "${PINNED}"
 `;
 
 // A fake wrangler: answers `d1 list` with `databases`, `d1 create` with wrangler's snippet.
-function fakeWrangler({ databases = [], listStatus = 0, createStatus = 0, createOut } = {}) {
+function fakeWrangler({
+  databases = [],
+  listStatus = 0,
+  createStatus = 0,
+  createOut,
+  listAfterCreate,
+} = {}) {
   const calls = [];
+  let created = false;
   const wrangler = (args) => {
     calls.push(args.join(' '));
-    if (args[1] === 'list') return { status: listStatus, stdout: JSON.stringify(databases) };
+    if (args[1] === 'list')
+      return {
+        status: listStatus,
+        stdout: JSON.stringify(created && listAfterCreate ? listAfterCreate : databases),
+      };
+    created = true;
     return {
       status: createStatus,
       stdout:
@@ -131,6 +143,35 @@ test('every failure says what went wrong and pins nothing', () => {
   );
   assert.match(run(CONFIG, { createStatus: 1 }).message, /d1 create svc failed/);
   assert.match(run(CONFIG, { createOut: 'created, no id' }).message, /could not read its id/);
+});
+
+test('reads the new id from wrangler 4.166 TOML output', () => {
+  const { wrangler } = fakeWrangler({
+    createOut: `✅ Successfully created DB\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = "svc"\ndatabase_id = "${MADE}"\n`,
+  });
+  const result = ensureDatabase({
+    binding: 'SVC_DB',
+    environment: 'production',
+    config: CONFIG,
+    wrangler,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.id, MADE);
+});
+
+test('looks a new database up by name when the create output has no id', () => {
+  const { wrangler, calls } = fakeWrangler({
+    createOut: 'created, no id',
+    listAfterCreate: [{ name: 'svc', uuid: MADE }],
+  });
+  const result = ensureDatabase({
+    binding: 'SVC_DB',
+    environment: 'production',
+    config: CONFIG,
+    wrangler,
+  });
+  assert.equal(result.id, MADE);
+  assert.equal(calls.filter((c) => c.startsWith('d1 list')).length, 2);
 });
 
 test('pinning changes only the id line', () => {
