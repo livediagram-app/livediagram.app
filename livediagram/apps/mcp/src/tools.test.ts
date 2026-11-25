@@ -426,6 +426,7 @@ describe('tool annotations', () => {
       'change_threads',
       'delete_document',
       'delete_image',
+      'share_document',
       'update_document',
     ]);
   });

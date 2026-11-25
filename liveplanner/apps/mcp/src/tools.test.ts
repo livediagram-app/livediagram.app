@@ -513,6 +513,7 @@ describe('tool annotations', () => {
       .sort();
     expect(destructive).toEqual([
       'archive_project',
+      'change_board',
       'change_card_types',
       'change_form',
       'change_items',
@@ -520,6 +521,8 @@ describe('tool annotations', () => {
       'change_sheet',
       'change_threads',
       'delete_project',
+      'share_form',
+      'share_project',
       'update_project',
     ]);
   });

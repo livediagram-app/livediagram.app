@@ -434,6 +434,7 @@ describe('tool annotations', () => {
       'delete_document',
       'delete_image',
       'restore_version',
+      'share_document',
       'update_document',
       'write_article',
     ]);
