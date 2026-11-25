@@ -576,7 +576,11 @@ export const articles: Article[] = [
     categorySlug: 'tips-and-tricks',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
     byApp: {
-      liveplanner: { title: 'Run Commands with ⌘K' },
+      liveplanner: {
+        title: 'Run Commands with ⌘K',
+        description:
+          'Press Cmd/Ctrl+K and type to add a tab, rename, export, share or change a setting, without leaving the keyboard.',
+      },
     },
   },
   {
