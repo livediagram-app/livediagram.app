@@ -63,7 +63,8 @@ src/engine/spill-shape.ts  which formulas may spill (static)
 src/engine/workbook.ts     Workbook: the sheets of one tab, lazy values, spills, cycles, budgets, cards
 src/engine/render.ts       renderWindow, renderModelsForTab, sheetFramesOf -> SheetRenderModel (exports, images)
 src/store.ts               SheetWrite, applySheetWrite, inverseSheetWrite, mergeSheetChange, rebase
-src/chart-data.ts          sheetChartTable (a range as categories and series), regionAround, CHART_*_MAX
+src/chart-data.ts          sheetChartTable (a range as categories and series, hidden and filtered-out rows left
+                           out, the filter's rows kept per workbook version), regionAround, CHART_*_MAX
 src/store-layout.ts        applyLayoutChange (insert, delete, move, order, size, hide, freeze, merge(s), filter, options)
 src/validate.ts            validateWrite(sheet, write) -> ok | rejection; validateSheetCreate
 src/write-caps.ts          writesCapsProblem(sheet, writes, projectCells) -> sheet_full | sheet_too_large |
