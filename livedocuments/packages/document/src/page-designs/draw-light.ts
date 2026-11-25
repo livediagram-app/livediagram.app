@@ -9,6 +9,7 @@ import {
   trio,
   unit,
   type DesignLayer,
+  type DesignPlate,
   type DrawCtx,
   type Drawer,
 } from './draw-kit';
@@ -240,40 +241,54 @@ const cardCascade: Drawer = (c) => {
   return [{ svg: cards.join('') }];
 };
 
-// Polaroids: instant photos round the corners (or along the bottom edge), each a white frame with a soft picture in
-// the palette inside (a sky, a sun and a hill), a strip of tape across its top and a tilt of its own.
+// Polaroids: small instant photos tucked into the page's four corners, each hanging well off its edges so only a
+// margin's worth shows (owner's verifier, 2026-11-25: a full photo covered the layouts' titles and author lines): a
+// frame (white, a little see-through on a dark page) with a soft picture in the palette (a sky, a sun and a hill), a
+// strip of tape and a tilt of its own. Each frame is a plate, so the guard sees it under any text that still meets it.
 const polaroids: Drawer = (c) => {
-  const u = unit(c) * 1.4;
+  const u = unit(c);
   const colours = trio(c);
-  const edge = c.t.variant === 'edge';
-  const spots: [number, number][] = edge
-    ? [0.1, 0.32, 0.58, 0.82].map((x) => [x, 0.93])
-    : [
-        [0.08, 0.1],
-        [0.92, 0.12],
-        [0.9, 0.86],
-        [0.1, 0.9],
-      ];
-  const frame = c.p.dark ? '#f1f5f9' : '#ffffff';
-  const photos = spots.map(([fx, fy], i) => {
-    const w = u * 20;
-    const h = u * 24;
-    const cx = fx * c.w + between(c.rnd, -u * 2, u * 2);
-    const cy = fy * c.h + between(c.rnd, -u * 2, u * 2);
+  const frame = c.p.dark ? '#e2e8f0' : '#ffffff';
+  const frameOpacity = c.p.dark ? 0.82 : 0.95;
+  const w = u * 17;
+  const h = u * 20;
+  const plates: DesignPlate[] = [];
+  // Each corner's centre, as the share of the frame that hangs off the page across and down.
+  const corners: [number, number, number, number][] = [
+    [0, 0, 1, 1],
+    [1, 0, -1, 1],
+    [1, 1, -1, -1],
+    [0, 1, 1, -1],
+  ];
+  const photos = corners.map(([fx, fy, sx, sy], i) => {
+    // About 55% of the frame shows across and half of it down: a corner of a photo, kept to the margin.
+    const cx = fx * c.w + sx * (w * 0.05 + between(c.rnd, 0, u));
+    const cy = fy * c.h + sy * between(c.rnd, 0, u);
     const x = cx - w / 2;
     const y = cy - h / 2;
-    const pad = u * 1.4;
+    const pad = u * 1.1;
     const pw = w - pad * 2;
     const ph = pw;
     const sky = `${c.uid}-po${i}`;
     const a = colours[i % 3]!;
     const b = colours[(i + 1) % 3]!;
+    const land = colours[(i + 2) % 3]!;
     const hill = `M${n(x + pad)} ${n(y + pad + ph * 0.72)}Q${n(x + pad + pw * 0.35)} ${n(y + pad + ph * between(c.rnd, 0.45, 0.6))} ${n(x + pad + pw * 0.65)} ${n(y + pad + ph * 0.68)}T${n(x + pad + pw)} ${n(y + pad + ph * 0.62)}V${n(y + pad + ph)}H${n(x + pad)}Z`;
-    const turn = between(c.rnd, -12, 12);
+    const turn = between(c.rnd, -14, 14);
+    // The turned frame's box, a little wider than the frame.
+    const reach = Math.hypot(w, h) / 2;
+    plates.push({
+      x: cx - reach,
+      y: cy - reach,
+      w: reach * 2,
+      h: reach * 2,
+      colours: [frame, a, b, land],
+      opacity: frameOpacity,
+    });
     return (
       `<g transform="rotate(${n(turn)} ${n(cx)} ${n(cy)})">` +
       softShadow(x, y, w, h, u * 0.4, u * 0.4, u * 1.2, c.p.dark ? 0.3 : 0.1) +
-      `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${n(u * 0.4)}" fill="${frame}"/>` +
+      `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${n(u * 0.4)}" fill="${frame}" fill-opacity="${frameOpacity}"/>` +
       `<defs>${linearDef(
         sky,
         [
@@ -284,11 +299,11 @@ const polaroids: Drawer = (c) => {
       )}</defs>` +
       `<rect x="${n(x + pad)}" y="${n(y + pad)}" width="${n(pw)}" height="${n(ph)}" fill="url(#${sky})"/>` +
       `<circle cx="${n(x + pad + pw * between(c.rnd, 0.6, 0.8))}" cy="${n(y + pad + ph * 0.32)}" r="${n(pw * 0.1)}" fill="#ffffff" fill-opacity="0.75"/>` +
-      `<path d="${hill}" fill="${colours[(i + 2) % 3]}" fill-opacity="0.8"/>` +
-      `<rect x="${n(cx - u * 4)}" y="${n(y - u * 1.2)}" width="${n(u * 8)}" height="${n(u * 2.4)}" fill="${frame}" fill-opacity="0.55" stroke="${c.p.ink}" stroke-opacity="0.08" transform="rotate(${n(between(c.rnd, -8, 8))} ${n(cx)} ${n(y)})"/></g>`
+      `<path d="${hill}" fill="${land}" fill-opacity="0.8"/>` +
+      `<rect x="${n(cx - u * 3)}" y="${n(y - u * 1)}" width="${n(u * 6)}" height="${n(u * 2)}" fill="${frame}" fill-opacity="0.55" stroke="${c.p.ink}" stroke-opacity="0.08" transform="rotate(${n(between(c.rnd, -8, 8))} ${n(cx)} ${n(y)})"/></g>`
     );
   });
-  return [{ svg: photos.join('') }];
+  return [{ svg: photos.join(''), plates }];
 };
 
 export const LIGHT_DRAWERS = {

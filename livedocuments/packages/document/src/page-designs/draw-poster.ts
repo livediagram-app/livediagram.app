@@ -50,22 +50,28 @@ function bauhausTile(
   );
 }
 
-// Bauhaus: a band of square tiles along the bottom (or down the left, or an L in the bottom right corner), each a
-// quarter circle, a half circle, a disc, a triangle or a square on a ground of another colour.
+// Bauhaus: a band of square tiles along the bottom (or down the left, or round the bottom right corner), each a
+// quarter circle, a half circle, a disc, a triangle or a square on a ground of another colour. The band hangs off the
+// page's edge, so only a margin's worth shows and it never reaches a layout's words (verifier, 2026-11-25: a full band
+// ran under author lines); each tile is a plate, so the guard sees it under any text that still meets it.
 const bauhaus: Drawer = (c) => {
-  const s = unit(c) * 13;
+  const s = unit(c) * 9;
+  // How much of a tile hangs off the page.
+  const hang = s * 0.45;
   const colours = [...trio(c), c.p.ink];
   const v = c.t.variant;
   const cells: [number, number][] = [];
-  if (v === 'left') for (let y = 0; y < c.h; y += s) cells.push([0, y]);
+  if (v === 'left') for (let y = 0; y < c.h; y += s) cells.push([-hang, y]);
   else if (v === 'corner') {
-    const cols = Math.ceil((c.w * 0.4) / s);
-    const rows = Math.ceil((c.h * 0.5) / s);
-    for (let i = 0; i < cols; i += 1) cells.push([c.w - s * (i + 1), c.h - s]);
-    for (let j = 1; j < rows; j += 1) cells.push([c.w - s, c.h - s * (j + 1)]);
-    cells.push([c.w - s * 2, c.h - s * 2]);
-  } else for (let x = 0; x < c.w; x += s) cells.push([x, c.h - s]);
-  return [{ svg: cells.map(([x, y]) => bauhausTile(c.rnd, x, y, s, colours)).join('') }];
+    for (let i = 0; i < 4; i += 1) cells.push([c.w - s * (i + 1) + hang, c.h - s + hang]);
+    for (let j = 1; j < 4; j += 1) cells.push([c.w - s + hang, c.h - s * (j + 1) + hang]);
+  } else for (let x = 0; x < c.w; x += s) cells.push([x, c.h - s + hang]);
+  return [
+    {
+      svg: cells.map(([x, y]) => bauhausTile(c.rnd, x, y, s, colours)).join(''),
+      plates: cells.map(([x, y]) => ({ x, y, w: s, h: s, colours, opacity: 0.95 })),
+    },
+  ];
 };
 
 // One brush stroke: a tapered body along a gently bending line from (x, y) at `angle` for `length`, with the dry

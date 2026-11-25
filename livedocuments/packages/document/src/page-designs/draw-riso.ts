@@ -68,7 +68,8 @@ function fadePlate(c: DrawCtx, colour: string, screen: number, side: 1 | -1, pit
       if (x < -pitch || y < -pitch || x > c.w + pitch || y > c.h + pitch) continue;
       // -1 at the far side, 1 at this plate's side.
       const along = (side * ((x - c.w / 2) * fx + (y - c.h / 2) * fy)) / half;
-      const share = (along - 0.05) / 0.95;
+      // Clear of the middle third, where an article's copy runs.
+      const share = (along - 0.3) / 0.7;
       if (share <= 0.05) continue;
       const r = pitch * 0.48 * Math.min(1, share * 1.2);
       d += `M${n(x - r)} ${n(y)}a${n(r)} ${n(r)} 0 1 0 ${n(r * 2)} 0a${n(r)} ${n(r)} 0 1 0 ${n(-r * 2)} 0`;

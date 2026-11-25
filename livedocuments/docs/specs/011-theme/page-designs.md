@@ -54,10 +54,10 @@ clearly different in the picker rather than a recolour, and five are new.
 | Blob Echo      | Organic   | Blobs         | A few solid blobs on the corners, each ringed by outlines that echo its shape outward, like ripples or a sticker's offset cut.           |
 | Lava Lamp      | Organic   | Blobs         | Tall gooey blobs rising from the bottom and hanging from the top, stretched and pinched as a lava lamp's are; they drift when animated.  |
 | Card Cascade   | Light     | Layered Cards | A diagonal run of small cards stepping out of a corner, each smaller and paler than the one before it, as a deck of cards dealt out.     |
-| Polaroids      | Light     | Layered Cards | Instant photos pinned around the page's edges: a white frame, a picture of soft colour inside, a strip of tape, each at its own tilt.    |
+| Polaroids      | Light     | Layered Cards | Small instant photos tucked into the four corners, hanging off the edges so only a margin's worth shows: a frame, a soft picture, tape.  |
 | Moiré          | Geometric | new           | Two sets of fine rings from two centres laid over each other, so their interference draws a shimmering pattern of its own.               |
 | Terrazzo       | Texture   | new           | Chips of stone in the theme's colours scattered over the page, thicker toward the edges, as a terrazzo floor.                            |
-| Bauhaus        | Bold      | new           | A band of square tiles along one edge, each a quarter circle, a half circle or a square in one of the colours, as a Bauhaus poster.      |
+| Bauhaus        | Bold      | new           | A band of square tiles hanging off one edge (the bottom, the left or round a corner), each a quarter circle, half circle or square.      |
 | Brush Strokes  | Bold      | new           | A few wide painterly swipes across the corners, tapered at each end, with the dry brush's streaks running along them.                    |
 | Sunburst       | Bold      | new           | Rays fanning out from a point at the page's edge, alternate wedges coloured and fading out, as a retro sunburst; it turns when animated. |
 
@@ -163,11 +163,15 @@ Designs keep words readable in three ways.
 
 - **Safe area.** Each design keeps the middle of the page calmer (its Safe area, a soft fall-off from the edges to
   the centre), where layouts put their words.
+- **Margins.** A design whose parts are solid (Polaroids, Bauhaus) keeps them to the page's margins, hanging off its
+  edges, so a layout's words never sit on them.
 - **Content zones.** A page's words are its content zones: every text on the page, wherever a layout or a person put
   it. The contrast guard checks each one.
 - **Contrast guard.** For every text that sits on the page with no fill of its own, the guard estimates the backdrop
   under it (the page's fill with the design's colours at the strength they show there) and checks the text's colour
-  against it: 4.5 to 1 for body text, 3 to 1 for large text (WCAG 2.2 AA). A text that fails gets a **scrim**, a soft
+  against it: 4.5 to 1 for body text, 3 to 1 for large text (WCAG 2.2 AA). A design's **solid parts** (a photo's
+  frame, a tile: its plates) count at their own strength under any text whose box meets them, not at the design's
+  average, so a text on a frame or a tile fails as it reads. A text that fails gets a **scrim**, a soft
   plate of the page's own colour under it, drawn with the design (on screen and in every export). The guard is a
   setting of the design: **Add a scrim** (the default) or **Warn only**, which draws no scrim and says in the panel how
   many texts are hard to read.

@@ -94,7 +94,7 @@ calm?; variant?; animate?: true; speed?; rhythm?: true; flow?: true; guard?: 'wa
   identity, so the first frame is the still frame. The duration is the motion's seconds divided by the speed.
 - **Guard** (`guard.ts`, `designGuard(painted, rect, elements)`): for each `text` element whose centre is on the page
   with a label and no opaque fill, the backdrop estimate is `base` mixed with each of `a`, `b`, `c` and `ink` at
-  `busy x intensity x calmShareAt(calm, centre)`; its contrast is the worst against the text's colour (its
+  `busy x intensity x calmShareAt(calm, centre)`; each plate (`DesignLayer.plates`: a box, its colours and opacity, drawn by Polaroids and Bauhaus) whose box meets the text's box adds its colours mixed at `opacity x intensity x calmShareAt(the overlap's centre)`; its contrast is the worst against the text's colour (its
   `textColor`, else the page ink). Below `TEXT_CONTRAST` (or `LARGE_TEXT_CONTRAST` for large text) it fails. `scrim`
   guard: a rounded plate (`SCRIM_PAD`, radius 12, `base` at `SCRIM_OPACITY`) per failing text; `warn`: none. Answers
   `{ scrims, failing }`.

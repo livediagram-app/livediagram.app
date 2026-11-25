@@ -51,12 +51,14 @@ type TextLike = {
 
 /** Which texts on the page fail on its design, and their scrims (page px). */
 export function designGuard(
-  d: Pick<PaintedDesign, 'id' | 'palette' | 'intensity' | 'calm' | 'tuning'>,
+  d: Pick<PaintedDesign, 'id' | 'palette' | 'intensity' | 'calm' | 'tuning'> &
+    Partial<Pick<PaintedDesign, 'layers'>>,
   rect: PageRect,
   elements: readonly Element[],
 ): DesignGuardResult {
   const busy = PAGE_DESIGN_BY_ID[d.id].busy;
   const p = d.palette;
+  const plates = d.layers?.flatMap((l) => l.plates ?? []) ?? [];
   const out: DesignGuardResult = { scrims: [], failing: [] };
   for (const el of elements) {
     if (el.type !== 'text') continue;
@@ -67,9 +69,23 @@ export function designGuard(
     if (cx < 0 || cy < 0 || cx > rect.width || cy > rect.height) continue;
     const share = busy * d.intensity * calmShareAt(d.calm, cx / rect.width, cy / rect.height);
     const ink = t.textColor && /^#[0-9a-f]{6}$/i.test(t.textColor) ? t.textColor : p.ink;
-    const worst = Math.min(
-      ...[p.a, p.b, p.c, p.ink].map((c) => contrastRatio(ink, mixHex(c, p.base, share))),
-    );
+    const under = [p.a, p.b, p.c, p.ink].map((c) => mixHex(c, p.base, share));
+    // A solid part under any of the text's box shows at its own strength there, not the design's average.
+    const tx = t.x - rect.x;
+    const ty = t.y - rect.y;
+    for (const pl of plates) {
+      const x0 = Math.max(tx, pl.x);
+      const y0 = Math.max(ty, pl.y);
+      const x1 = Math.min(tx + t.width, pl.x + pl.w);
+      const y1 = Math.min(ty + t.height, pl.y + pl.h);
+      if (x1 <= x0 || y1 <= y0) continue;
+      const at =
+        pl.opacity *
+        d.intensity *
+        calmShareAt(d.calm, (x0 + x1) / 2 / rect.width, (y0 + y1) / 2 / rect.height);
+      for (const c of pl.colours) under.push(mixHex(c, p.base, at));
+    }
+    const worst = Math.min(...under.map((c) => contrastRatio(ink, c)));
     const need = isLargeText(labelDrawnPx(el), labelIsBold(el))
       ? LARGE_TEXT_CONTRAST
       : TEXT_CONTRAST;

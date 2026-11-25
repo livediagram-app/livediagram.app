@@ -4,6 +4,7 @@ import { PAGE_DESIGN_BY_ID, PAGE_DESIGN_IDS, type PageDesignId } from './catalog
 import { designPalette } from './palette';
 import { clearPageDesignCache, pageDesignSvg, paintPageDesign } from './render';
 import { DESIGN_GUIDE } from '../style-guide';
+import { designGuard } from './guard';
 
 // docs/specs/011-theme/page-designs.md "The twelve added on 2026-11-25": each new design, what it varies (or null).
 const ADDED: readonly [PageDesignId, PageDesignId | null][] = [
@@ -119,5 +120,68 @@ describe('the twelve page designs added on 2026-11-25', () => {
       for (let r = 0; r < 3; r += 1) best = Math.min(best, cpuMsOf(draw));
       expect(best / 3, id).toBeLessThan(cpuBudgetMs(16));
     }
+  });
+});
+
+const textAt = (id: string, x: number, y: number, width = 300, height = 50) =>
+  ({ id, type: 'text', x, y, width, height, label: 'Relay', textColor: '#ffffff' }) as never;
+
+// How far a part reaches into the page from its nearest edge, as a share of the page's short side.
+const inset = (p: { x: number; y: number; w: number; h: number }, w: number, h: number) =>
+  Math.min(Math.min(p.x + p.w, w) - Math.max(p.x, 0), Math.min(p.y + p.h, h) - Math.max(p.y, 0)) /
+  Math.min(w, h);
+
+describe('the contrast guard sees a design’s solid parts (plates)', () => {
+  const rect = { x: 0, y: 0, width: 1920, height: 1080 };
+  const polaroids = paintPageDesign({
+    design: { id: 'polaroids' },
+    palette: dark,
+    width: 1920,
+    height: 1080,
+  });
+  // A slide's title and author line at the usual margins.
+  const words = [textAt('title', 160, 120), textAt('author', 160, 900)];
+
+  it('fails white text on the first Polaroids’ opaque frame, which the average alone missed', () => {
+    // The first Polaroids: a 20 x 24 unit frame centred at 8% and 10% of the page, under a slide's title.
+    const u = 10.8 * 1.1;
+    const frame = { x: 0.08 * 1920 - 10 * u, y: 0.1 * 1080 - 12 * u, w: 20 * u, h: 24 * u };
+    const title = textAt('title', 100, 80);
+    const averageOnly = designGuard({ ...polaroids, layers: [{ svg: '' }] }, rect, [title]);
+    expect(averageOnly.failing).toEqual([]);
+    const withPlate = designGuard(
+      {
+        ...polaroids,
+        layers: [{ svg: '', plates: [{ ...frame, colours: ['#f1f5f9'], opacity: 1 }] }],
+      },
+      rect,
+      [title],
+    );
+    expect(withPlate.failing).toEqual(['title']);
+  });
+
+  it('keeps Polaroids and every Bauhaus style to the margins, so a layout’s words pass', () => {
+    const frames = polaroids.layers.flatMap((l) => l.plates ?? []);
+    expect(frames).toHaveLength(4);
+    for (const p of frames) expect(inset(p, 1920, 1080)).toBeLessThan(0.16);
+    expect(designGuard(polaroids, rect, words).failing).toEqual([]);
+    for (const variant of ['bottom', 'left', 'corner']) {
+      const bauhaus = paintPageDesign({
+        design: { id: 'bauhaus', variant },
+        palette: dark,
+        width: 1920,
+        height: 1080,
+      });
+      const tiles = bauhaus.layers.flatMap((l) => l.plates ?? []);
+      expect(tiles.length, variant).toBeGreaterThan(3);
+      for (const t of tiles) expect(inset(t, 1920, 1080), variant).toBeLessThan(0.06);
+      expect(designGuard(bauhaus, rect, words).failing, variant).toEqual([]);
+    }
+  });
+
+  it('fails and scrims a text laid over a plate that still meets it', () => {
+    const out = designGuard(polaroids, rect, [textAt('corner', 0, 0, 200, 60)]);
+    expect(out.failing).toEqual(['corner']);
+    expect(out.scrims).toHaveLength(1);
   });
 });
