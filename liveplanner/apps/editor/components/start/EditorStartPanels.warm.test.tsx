@@ -14,16 +14,36 @@ vi.mock('@/app/project/[id]/useSelectTab', () => ({ useSelectTab: () => vi.fn() 
 vi.mock('@/components/start/useTemplatePickMove', () => ({ useTemplatePickMove: () => vi.fn() }));
 vi.mock('@/hooks/persistence/useIsOfflineProject', () => ({ useIsOfflineProject: () => false }));
 // Only the Dashboard page draws here (a Viewer sees no Start Planning; no Form tab): it names what it was handed.
-vi.mock('next/dynamic', () => ({
-  default: () =>
-    function Page(props: { tab?: Tab; standIns?: readonly Tab[] }) {
-      return (
-        <p>
-          Page {props.tab?.id} with {props.standIns?.map((t) => t.name).join(', ')}
-        </p>
-      );
-    },
-}));
+// The empty-canvas card, loaded the same way, is drawn for real (it takes a tab's name, not the tab).
+vi.mock('next/dynamic', async () => {
+  const { EmptyCanvasBanner } = await vi.importActual<
+    typeof import('@/components/canvas/EmptyCanvasBanner')
+  >('@/components/canvas/EmptyCanvasBanner');
+  return {
+    default: () =>
+      function Page(props: {
+        tab?: Tab;
+        standIns?: readonly Tab[];
+        tabId?: string;
+        tabName?: string;
+        participant?: boolean;
+      }) {
+        if (props.tabName !== undefined && !props.tab)
+          return (
+            <EmptyCanvasBanner
+              tabId={props.tabId!}
+              tabName={props.tabName}
+              participant={!!props.participant}
+            />
+          );
+        return (
+          <p>
+            Page {props.tab?.id} with {props.standIns?.map((t) => t.name).join(', ')}
+          </p>
+        );
+      },
+  };
+});
 
 import { EditorStartPanels } from './EditorStartPanels';
 

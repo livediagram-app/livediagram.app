@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import { createPortal } from 'react-dom';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
-import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { emptyCardShownOf, templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import {
   closeKnowledgebaseStart,
@@ -20,6 +19,13 @@ import { pageIsUntouched } from '@/lib/knowledge-setup/setup-empty';
 import { takeTitleFocus, wantTitleFocus } from '@/lib/page-title-focus';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
+
+// The empty-canvas card a Participant or Viewer sees on an empty tab (liveworkspace/docs/specs/011-workbench/
+// first-edit.md): loaded only when one is shown, never on an Editor's first load.
+const EmptyCanvasBanner = dynamic(
+  () => import('@/components/canvas/EmptyCanvasBanner').then((m) => m.EmptyCanvasBanner),
+  { ssr: false },
+);
 
 // The start (docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen") carries every template's preview:
 // loaded the first time a new knowledgebase offers it, never on the editor's first load.

@@ -1,6 +1,5 @@
 'use client';
 
-import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { readDashboard } from '@liveplanner/project';
@@ -9,6 +8,13 @@ import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
+
+// The empty-canvas card a Participant or Viewer sees on an empty tab (liveworkspace/docs/specs/011-workbench/
+// first-edit.md): loaded only when one is shown, never on an Editor's first load.
+const EmptyCanvasBanner = dynamic(
+  () => import('@/components/canvas/EmptyCanvasBanner').then((m) => m.EmptyCanvasBanner),
+  { ssr: false },
+);
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost").
 const PlanBoardPicker = dynamic(
