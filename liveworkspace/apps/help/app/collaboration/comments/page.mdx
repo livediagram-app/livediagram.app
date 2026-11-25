@@ -32,7 +32,8 @@ Because a thread lives on the element rather than inside its content, you can le
   <Step n={1}>
     Right-click the element (or long-press it on a touch screen) and open **Resources** at the foot of
     its menu and press **Add Comment**. Every boxed element can carry a thread; arrows cannot. On a
-    Participant link there is no right-click menu: select the element and press **Add Comment** on its
+    Participant link, the right-click menu is a short list with **Add Comment** in it (it reads **View
+    Comments** once the element has a thread), or select the element and press **Add Comment** on its
     toolbar.
   </Step>
 
@@ -58,10 +59,10 @@ To comment on a **place** rather than a shape, an empty patch of canvas or the g
 <AppNote app="livedesign">
   <Step n={1}>
     Right-click the element (or long-press it on a touch screen), open **Resources**, the last
-    category of its menu, and press **Add Comment** (it reads **View Comments** once the element has a
-    thread). Every boxed element can carry a thread; arrows cannot. On a Participant link, the
-    right-click menu is a short list with **Add Comment** in it, or select the element and press **Add
-    Comment** on its toolbar.
+    category of its menu, and press **Add Comment** (once the element has a thread, the row shows its
+    comment count and opens it). Every boxed element can carry a thread; arrows cannot. On a
+    Participant link, the right-click menu is a short list with **Add Comment** in it, or select the
+    element and press **Add Comment** on its toolbar.
   </Step>
 
 <Step n={2}>
@@ -108,6 +109,16 @@ On an [article page](/help/pages/articles/), you can comment on words: select th
   </Figure>
 </AppNote>
 
+<AppNote app="liveknowledge">
+  A page takes comments in two places. **Comments** at the foot of a page hold threads about the
+  page as a whole: type in the field under the heading and press **Comment** (or **Ctrl+Enter**,
+  **Cmd+Enter** on a Mac). Once a page has threads, each ends in its own **Reply…** field, and **Start
+  a New Thread** opens the field for another. To comment on words, select them in the writing and
+  press **Comment** in the page's toolbar (**Ctrl+Alt+M**, **Cmd+Option+M** on a Mac): the words are
+  tinted and a marker in the margin opens the thread. A Viewer sees the threads at the foot only
+  when there are some, and can't add to them.
+</AppNote>
+
 <AppNote app="liveplanner">
   **Commenting on a card.** A card holds **comment threads** at the end of the **Overview** tab of its card panel, under **Comments**: as many separate conversations as it needs, each with its own title and replies.
 
@@ -134,6 +145,12 @@ While a tab has cell comments, a **Collaborate** button appears in the bottom-ri
 </AppNote>
 
 Each comment shows its author's name, colour and how long ago it was posted. You can delete your own comments; people who can edit the <Noun /> can delete anyone's.
+
+<AppNote app="liveknowledge">
+  On the threads at the foot of a page, you can edit and delete your own comments only, whatever
+  your role: nobody can delete someone else's. Those threads take no reactions and no @ mentions;
+  comments on words do.
+</AppNote>
 
 <AppNote app="livediagram,livedocuments,livedesign">
   While a thread is open, the bin that appears when you hover a comment deletes it.
