@@ -260,6 +260,7 @@
     "./components/primitives/PopoverOrSheet": "./src/components/primitives/PopoverOrSheet.tsx",
     "./components/primitives/AnimatedHeightBox": "./src/components/primitives/AnimatedHeightBox.tsx",
     "./components/primitives/BottomSheet": "./src/components/primitives/BottomSheet.tsx",
+    "./components/primitives/NumberDraftInput": "./src/components/primitives/NumberDraftInput.tsx",
     "./components/primitives/ChartReadout": "./src/components/primitives/ChartReadout.tsx",
     "./components/primitives/ChevronIcon": "./src/components/primitives/ChevronIcon.tsx",
     "./components/primitives/CollapseWidth": "./src/components/primitives/CollapseWidth.tsx",

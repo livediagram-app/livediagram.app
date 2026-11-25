@@ -82,6 +82,27 @@ describe('content kinds', () => {
     });
   });
 
+  it('keeps a column chart value below zero, as it draws one (pie-chart.md "Below zero")', () => {
+    const [bar] = normaliseElements([
+      {
+        id: 'b',
+        type: 'shape',
+        shape: 'bar-chart',
+        ...box,
+        pieSlices: [
+          { label: 'Q1', value: -20 },
+          { label: 'Q2', value: 'x' },
+        ],
+      },
+    ]);
+    expect(bar).toMatchObject({
+      pieSlices: [
+        { label: 'Q1', value: -20 },
+        { label: 'Q2', value: 0 },
+      ],
+    });
+  });
+
   it('reads a label that is no text and no number as empty, never as [object Object]', () => {
     const [pie] = normaliseElements([
       {

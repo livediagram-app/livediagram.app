@@ -1,4 +1,4 @@
-import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
+import { useFollowingDraft } from '../../hooks/ui/useFollowingDraft';
 
 // A chart value's number field (docs/specs/009-elements/pie-chart.md). It keeps what is typed as text and
 // passes on only a whole number: a number field reads a lone minus (or a cleared field) as empty, and turning

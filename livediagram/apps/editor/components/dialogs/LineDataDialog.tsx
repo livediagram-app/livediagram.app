@@ -5,7 +5,7 @@ import { Button, CloseIcon, PlusIcon } from '@livediagram/ui';
 import type { LineSeries } from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { NumberDraftInput } from '@/components/primitives/NumberDraftInput';
+import { NumberDraftInput } from '@liveworkspace/workbench/components/primitives/NumberDraftInput';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerChartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-handle';
 import { parseCsvLineData } from '@/lib/csv';

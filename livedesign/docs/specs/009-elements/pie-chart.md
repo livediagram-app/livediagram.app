@@ -111,7 +111,9 @@ Chart" and a screen reader hears "Column chart", as the palette's tile says, nev
   bar's), and a column's name stays under the whole plot, never in among the hanging columns. Show Axis covers the
   negatives too: its ticks run from a round value under the smallest to one over the largest, zero always a tick.
   A chart with no negative value draws exactly as before (the baseline at the plot's foot). Only a pie reads below
-  zero as zero. A value that is not a number draws as zero.
+  zero as zero. A value that is not a number draws as zero. The chart's data rows take a negative value on a column or bar chart, the minus typed first or last, as Edit
+  Data's grid does on a line chart; on a pie its values stop at zero. An agent's write keeps them the same way: a column or bar chart's value below zero is stored as written (and one
+  already stored survives an agent's edit to the chart), a pie's is stored as zero.
 - **Scatter's x**: when every category reads as a number (`12`, `-3.5`, `1,200`), each point sits at its number on
   an x-axis running from the least to the greatest (widened by 1 when they are all equal), labelled at five evenly
   spaced values; otherwise the categories are evenly spaced, as Line's are, and labelled as Line's. Its readout reads

@@ -113,7 +113,8 @@ Chart" and a screen reader hears "Column chart", as the palette's tile says, nev
   negatives too: its ticks run from a round value under the smallest to one over the largest, zero always a tick.
   A chart with no negative value draws exactly as before (the baseline at the plot's foot). Only a pie reads below
   zero as zero. A value that is not a number draws as zero. The Data section takes a negative value on a column or bar chart, the minus typed first or last; on
-  a pie its values stop at zero.
+  a pie its values stop at zero. Edit Data's grid on a line chart takes a negative the same way. An agent's write keeps them the same way: a column or bar chart's value below zero is stored as written (and one
+  already stored survives an agent's edit to the chart), a pie's is stored as zero.
 - **Scatter's x**: when every category reads as a number (`12`, `-3.5`, `1,200`), each point sits at its number on
   an x-axis running from the least to the greatest (widened by 1 when they are all equal), labelled at five evenly
   spaced values; otherwise the categories are evenly spaced, as Line's are, and labelled as Line's. Its readout reads

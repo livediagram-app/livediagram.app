@@ -11,7 +11,7 @@ import {
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
-import { NumberDraftInput } from '@/components/primitives/NumberDraftInput';
+import { NumberDraftInput } from '@liveworkspace/workbench/components/primitives/NumberDraftInput';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';
 

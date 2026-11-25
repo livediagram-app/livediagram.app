@@ -46,6 +46,25 @@ describe('LineDataDialog', () => {
     expect(onCommit).toHaveBeenCalledWith(['Jan', 'Feb'], [{ name: 'Sales', values: [10, 25] }]);
   });
 
+  it('takes a negative typed minus first: a lone minus is not a 0', () => {
+    const onCommit = vi.fn();
+    render(
+      <LineDataDialog
+        categories={['Jan', 'Feb']}
+        series={series}
+        onCommit={onCommit}
+        onClose={vi.fn()}
+      />,
+    );
+    const field = screen.getByLabelText('Sales Feb');
+    // What a number field reports for "-": empty. It must stay empty, not snap to 0.
+    fireEvent.change(field, { target: { value: '' } });
+    expect(field).toHaveProperty('value', '');
+    fireEvent.change(field, { target: { value: '-5' } });
+    fireEvent.blur(field);
+    expect(onCommit).toHaveBeenCalledWith(['Jan', 'Feb'], [{ name: 'Sales', values: [10, -5] }]);
+  });
+
   it('commits nothing for a blur or a close with no change', () => {
     const onCommit = vi.fn();
     render(
