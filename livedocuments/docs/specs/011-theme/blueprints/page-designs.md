@@ -144,9 +144,10 @@ The Page Design panel ([Tab Style dialog](../canvas-and-theme-dialog.md) "Page D
   (`panels`, `renderPanel`, `panelHelp`) and the shared dialog draws the row (`panelValues`, `panelIcons`).
 - Edits: `apps/editor/hooks/canvas/usePageDesignEdits.ts` (`pageDesignEdits`, mounted by `useTabCanvas`): picks and
   switches through `commitTabs`, sliders through `checkpointBurst` and `tickTabs`.
-- Quick Picks (`PageDesignLayers.tsx` `QuickPicks`): the `PagedCarousel`'s `controls` hold Keep Theme (a `label`
-  with the small `Switch`, `data-page-design-keep-theme`) then Shuffle, one `items-center` row; with `pageOnly` Keep
-  Theme is not rendered and Shuffle stays where it was. No row under the picks.
+- Quick Picks (`PageDesignLayers.tsx` `QuickPicks`): the `PagedCarousel`'s `heading` holds the title and, pushed right,
+  Keep Theme (a `label` with the small `Switch`, `data-page-design-keep-theme`) then Shuffle, one `items-center` row
+  (`data-page-design-quick-controls`); below `sm` that heading takes the full line, so the page controls wrap under it
+  and Shuffle keeps its place whether Keep Theme shows. With `pageOnly` Keep Theme is not rendered. No row under the picks.
 - Tiles are 3 across (2 on a phone), 16:10, a 2 px brand ring when selected; the family chips scroll the grid to their
   heading. Sliders are the shared `RANGE_SLIDER`; colour swatches open the one colour picker.
 
