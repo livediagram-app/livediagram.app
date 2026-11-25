@@ -229,3 +229,34 @@ export function withArticleStyleChanged<
   }
   return next;
 }
+
+// The typefaces long text reads well in; a display, condensed, handwritten or monospace face heads an article but
+// never sets its paragraphs.
+const ARTICLE_BODY_FONTS: ReadonlySet<string> = new Set([
+  'inter',
+  'poppins',
+  'nunito',
+  'space-grotesk',
+  'lora',
+  'roboto-slab',
+]);
+
+/**
+ * An article's fonts for a tab's typeface (a style recipe's or one chosen alone): its headings always, its body only
+ * in a reading face, else its look's body font.
+ */
+export function articleFontsForTab(font: string): Pick<ArticleStyle, 'headingFont' | 'bodyFont'> {
+  return ARTICLE_BODY_FONTS.has(font)
+    ? { headingFont: font, bodyFont: font }
+    : { headingFont: font };
+}
+
+/** Every article of the tab in the tab's typeface (`articleFontsForTab`), its other style fields kept. */
+export function withArticlesInFont<T extends Tab>(tab: T, font: string): T {
+  let out = tab;
+  for (const [flow, doc] of Object.entries(articlesOf(tab))) {
+    const { headingFont: _h, bodyFont: _b, ...rest } = doc.style ?? {};
+    out = withArticleFlow(out, flow, { ...doc, style: { ...rest, ...articleFontsForTab(font) } });
+  }
+  return out;
+}

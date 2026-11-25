@@ -14,6 +14,13 @@ import {
 } from '@livedocuments/api-schema';
 import {
   isRecord,
+  isTabThemeId,
+  FINISHES,
+  FONTS,
+  isFinish,
+  STYLE_RECIPES,
+  THEMES,
+  type Finish,
   ARTICLE_LOOK_IDS,
   ARTICLE_MARKDOWN_MAX,
   isArticleHex,
@@ -47,6 +54,13 @@ function onlyKeys(raw: Raw, allowed: readonly string[], where: string, change?: 
     if (!allowed.includes(key))
       bad(`${where} takes no "${key}" (it takes ${allowed.join(', ')}).`, change);
 }
+
+// An id given as a non-empty string, or absent.
+const optionalId = (v: unknown, field: string, change?: number): string | undefined => {
+  if (v === undefined) return undefined;
+  if (typeof v !== 'string' || !v.trim()) return bad(`"${field}" is an id.`, change);
+  return v.trim();
+};
 
 const oneOf = <T extends string>(
   list: readonly T[],
@@ -223,6 +237,33 @@ function pageChange(v: unknown, i: number): PageChange {
       if (read !== null && typeof read === 'object' && 'refused' in read)
         throw new Refused(read.refused.code, read.refused.message, i);
       return { op, design: read };
+    }
+    case 'tab_style': {
+      onlyKeys(v, [...COMMON, 'style', 'theme', 'font', 'finish'], 'tab_style', i);
+      const style = optionalId(v.style, 'style', i);
+      const theme = optionalId(v.theme, 'theme', i);
+      const font = optionalId(v.font, 'font', i);
+      const finish = optionalId(v.finish, 'finish', i);
+      if (!style && !theme && !font && !finish)
+        bad('"tab_style" takes at least one of style, theme, font and finish.', i);
+      if (style && style !== 'auto' && !STYLE_RECIPES.some((r) => r.id === style))
+        bad(
+          `"style": unknown "${style}". Use "auto" or one of: ${STYLE_RECIPES.map((r) => r.id).join(', ')}.`,
+          i,
+        );
+      if (theme && !isTabThemeId(theme))
+        bad(`"theme": unknown "${theme}". One of: ${THEMES.map((t) => t.id).join(', ')}.`, i);
+      if (font && !FONTS.some((f) => f.id === font))
+        bad(`"font": unknown "${font}". One of: ${FONTS.map((f) => f.id).join(', ')}.`, i);
+      if (finish && !isFinish(finish))
+        bad(`"finish": unknown "${finish}". One of: ${FINISHES.join(', ')}.`, i);
+      return {
+        op,
+        ...(style ? { style } : {}),
+        ...(theme ? { theme } : {}),
+        ...(font ? { font } : {}),
+        ...(finish ? { finish: finish as Finish } : {}),
+      };
     }
     case 'duplicate':
     case 'delete':

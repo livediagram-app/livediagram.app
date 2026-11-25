@@ -24,6 +24,7 @@ import type { PageText } from '@liveworkspace/edit-operations/laid-out-texts';
 
 export {
   LAYOUT_SLOT_ITEMS_MAX,
+  LAYOUT_TABLE_COLUMNS_MAX,
   LAYOUT_SLOT_NAMES,
   LAYOUT_TEXT_MAX,
   readLayoutText,

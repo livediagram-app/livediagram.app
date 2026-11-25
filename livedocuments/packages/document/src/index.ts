@@ -158,6 +158,7 @@ export * from './article-markdown-export';
 export * from './page-paint';
 export * from './page-default-background';
 export * from './page-theme-fills';
+export * from './tab-theme-apply';
 export * from './pages-edits';
 export * from './pages-background-copy';
 export * from './tab-new-page-background';

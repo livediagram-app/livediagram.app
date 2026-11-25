@@ -167,8 +167,12 @@ function registerPromptsAndResources(server: McpServer, env: Env, state: Request
   );
   server.server.setRequestHandler(ListResourcesRequestSchema, () =>
     guarded({ resources: [] as Resource[] }, async () => ({
+      // A resource's description names the tools to read it before, by the names they have here.
       resources: (await fromEachApp<Resource>(env, state, 'resources/list', 'resources')).flatMap(
-        ({ items }) => items,
+        ({ items, rewrite }) =>
+          items.map((r) =>
+            typeof r.description === 'string' ? { ...r, description: rewrite(r.description) } : r,
+          ),
       ),
     })),
   );

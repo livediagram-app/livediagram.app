@@ -11,10 +11,12 @@ import type {
   PageSizeId,
 } from '@livedocuments/document';
 import type { LayoutText, LayoutTextSlot } from '@liveworkspace/edit-operations/layout-slots';
+import type { Finish } from '@livedocuments/document';
 import type { PageText } from '@liveworkspace/edit-operations/laid-out-texts';
 
 export {
   LAYOUT_SLOT_ITEMS_MAX,
+  LAYOUT_TABLE_COLUMNS_MAX,
   LAYOUT_SLOT_NAMES,
   LAYOUT_TEXT_MAX,
   readLayoutText,
@@ -100,7 +102,10 @@ export type PageChange =
   // Every other page of the page's kind takes its background, as the Background tab's Apply to All.
   | { op: 'apply_background_to_all'; page: PageRef }
   // The design every page of the tab wears (Tab Style's Page Design).
-  | { op: 'tab_design'; design: TabDesignChoice };
+  | { op: 'tab_design'; design: TabDesignChoice }
+  // The tab's whole look at once (Tab Style), as create_document's style takes it: a recipe ("auto" picks one for the
+  // tab's words) and its theme, typeface, finish and page design, each named one winning over the recipe's.
+  | { op: 'tab_style'; style?: string; theme?: string; font?: string; finish?: Finish };
 
 type PageChangeOp = PageChange['op'];
 export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
@@ -112,6 +117,7 @@ export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
   'delete',
   'apply_background_to_all',
   'tab_design',
+  'tab_style',
 ];
 
 export type ArticleWriteMode = 'replace' | 'append';

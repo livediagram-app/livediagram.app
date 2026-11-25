@@ -323,8 +323,8 @@ captions and running copy); pinned arrows (node -> node) track their boxes; and 
 its own). Stickies, tables, code blocks and charts carry content fields, documented on each tool's element argument.
 Dress every document for its content and tone: create_document's "style" takes a whole look (theme, page design,
 typeface, finish) in one choice, "auto" or a recipe such as formal-report, product-pitch or workshop; the
-livedocuments://guide/styles resource says when to use each. Formal work wants the Professional finish and a quiet
-design; bold designs suit title and section pages.
+livedocuments://guide/styles resource says when to use each; change_pages' tab_style restyles a tab that exists.
+Formal work wants the Professional finish and a quiet design; bold designs suit title and section pages.
 Pictures make a document its subject's own: asked about a product, a place, a team or a game, use real pictures of it,
 never only shapes and sample text. Use what the person gave you or what list_images already holds; else, when you can
 search the web, find pictures they may use, add each with upload_image (a public https URL is enough) and put it on an

@@ -105,6 +105,16 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   - `body`: every other text with words, a button's and a field's label among them, in the order the layout builds
     them (top to bottom, then the next column);
   - `figures`: each figure (a time, a price), in the same order.
+  - a **compound element's own words** are slots too, each in its place in that order: a stat row's value (a
+    figure) then its caption (body), a process's steps, a checklist's rows, a concept graphic's or timeline's rows
+    and notes (a year a figure). The answer's texts name each by its element's ref and `part` (`stats[0].value`).
+    The Key Stats, Process and Timeline layouts used to keep their sample numbers whatever the call gave;
+  - `table`: the layout's first table, every row at once (header row first, any size), its cell styles and first
+    column's width kept where they still fit;
+  - a slot the change never named that still holds sample words is said in one line (`Still the layout's sample:
+body[0] "Presenter name · October 2026"`), so a page is not shared still reading its sample. A text given longer
+    words than its box holds shrinks its type to fit (to 60% at the least, `shrinkTextToBox`) rather than running
+    onto the line under it.
 
   A **figure**, a text with no letter or a number with a unit or two (`9:41`, `$49.00`, `73%`, `3.2M`, `01`), is
   one of `figures`. Slots are read from the layout's sample before any words go in, so words written into a

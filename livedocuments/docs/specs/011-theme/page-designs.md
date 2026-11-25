@@ -181,6 +181,8 @@ speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, 
   the tab design (the `tab_design` change: a design, `null` to clear, or `"auto"`), and `create_document` takes a
   `design` for its tabs (an id, a saved design's `saved:<id>`, or `"auto"`, picked for each tab's words); `"auto"` picks a fitting design for the tab's words ([Pages for
   agents](../024-agents/pages-for-agents.md) "Page designs"). The `pages` view names each page's design.
+- An agent's page preview draws a page an article's estimate adds past the tab's own ("added as the writing is laid
+  out") in the tab design, resolved as the next page of the row, since the page the editor adds wears it.
 - The command line (`livedocuments page set`) takes the same, as `--design` and `--tab-design`.
 - **Saved designs.** `list_templates` lists the designs saved to the caller's My Work and teams (`savedDesigns`: id,
   title, whose), and `livedocuments page designs` prints them. Either one's id, as `saved:<id>`, is a design anywhere a

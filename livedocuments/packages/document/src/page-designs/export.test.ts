@@ -37,6 +37,13 @@ describe('page design exports', () => {
     expect(pageDesignExportSvg(tab(), a!)).toBe('');
   });
 
+  it('dresses a page an article’s estimate adds past the tab’s own, as the editor’s will be', () => {
+    const t = tab({ pageDesign: { id: 'grid' } });
+    const last = layOutPages(pagesOf(t)).at(-1)!;
+    const added = { ...last, id: 'added-1', index: last.index + 1, design: undefined };
+    expect(pageDesignExportSvg(t, added)).toContain('pattern');
+  });
+
   it('tells which pages wear a design', () => {
     const t = tab({ pageDesign: { id: 'aurora' } });
     const [a, b, c] = layOutPages(pagesOf(t));

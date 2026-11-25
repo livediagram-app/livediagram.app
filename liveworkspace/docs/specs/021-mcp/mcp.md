@@ -121,7 +121,8 @@ The core verbs map to each app's existing tools: `find_items` to `find_documents
 `find_designs` (or `list_trash` with `where: "trash"`), across every allowed app at once, five at most, each app's
 matches marked with their refs; `read_item` to the app's read tool (`list_pages` for a knowledgebase); `create_item`
 to its create tool, a deck, article or infographic starting from livedocuments' blank slide deck, blank article or
-blank infographic template; the rest to the matching share, rename, delete and restore tools. An app that fails
+blank infographic template, and a doc's `style` (a recipe from livedocuments' style guide, or `auto`) and `font` passed
+on as its look; the rest to the matching share, rename, delete and restore tools. An app that fails
 during `find_items` is named in the answer with its error; the others still answer.
 
 Each app's tool list is read from its package once per isolate and kept 10 minutes.
@@ -202,7 +203,10 @@ One address, in every place a person could copy one (Work Tracker 1423):
   Tools" has a few that cross apps (a plan's status as a livedocuments article, a retro board as a livediagram mind
   map), which is what one connection is for.
 - **Tool names in copy are this server's** (`create_item`, `change_cards`, `get_knowledge_context`), never an app's
-  own name for the tool.
+  own name for the tool. That holds in what the apps answer too: a resource's description, a text view's last line
+  (its "left out: read with a bigger budget" footer; the lines above it are the item's own words and stay), and a core
+  verb's refusal, where the app's tool for what a core verb does is named as that verb (`restore it with
+restore_item`, `find_items lists them`).
 - **Someone still on an app's old address** is told it takes no new connections, that a connection made before
   keeps working until its token ends, and that some old hosts no longer resolve; they remove the server and add the
   one address once, ticking every app they use. The note lives in the shared troubleshooting list and the help

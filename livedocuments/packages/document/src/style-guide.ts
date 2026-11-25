@@ -449,10 +449,10 @@ export function styleGuideMarkdown(labels: {
     'tab’s and reaches every page; a page may wear its own design. Designs draw in the theme’s colours, behind',
     'everything, and keep text readable.',
     '',
-    '## Recipes (theme, design, typeface, finish)',
+    '## Recipes (the id create_document’s style takes: theme, design, typeface, finish)',
     ...STYLE_RECIPES.map(
       (r) =>
-        `- **${r.occasion}**: theme \`${r.theme}\`, design \`${r.design}\`, font \`${r.font}\`, finish \`${r.finish}\``,
+        `- \`${r.id}\` **${r.occasion}**: theme \`${r.theme}\`, design \`${r.design}\`, font \`${r.font}\`, finish \`${r.finish}\``,
     ),
     '',
     '## Finishes',
