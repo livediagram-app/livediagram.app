@@ -45,8 +45,9 @@ export function useSeatedScreenFrame(input: {
   setViewportZoom: Dispatch<SetStateAction<number>>;
 }): void {
   const latest = useLatest(input);
-  // The zoom before the frame and the zoom it set, while a frame stands.
-  const framedRef = useRef<{ before: number; set: number } | null>(null);
+  // The zoom before the frame and the zoom it set, while a frame stands; `landed` once the glide out reached it, so a
+  // zoom read before then is the glide's own, never one you chose.
+  const framedRef = useRef<{ before: number; set: number; landed: boolean } | null>(null);
   const stopRef = useRef<() => void>(() => {});
   useEffect(() => () => stopRef.current(), []);
 
@@ -67,8 +68,10 @@ export function useSeatedScreenFrame(input: {
       if (!framed) return;
       stopRef.current();
       const pos = l.poseStore.get().pos;
-      // Zoomed while seated: that zoom holds, and the walk's camera brings you back to the middle.
-      if (!pos || !main || Math.abs(l.viewportZoom - framed.set) > SAME_ZOOM) return;
+      // Zoomed while seated: that zoom holds, and the walk's camera brings you back to the middle. Standing up before
+      // the glide out landed puts the zoom back too: the zoom then is the glide's, partway.
+      const zoomedSeated = framed.landed && Math.abs(l.viewportZoom - framed.set) > SAME_ZOOM;
+      if (!pos || !main || zoomedSeated) return;
       // At once: the walk that stood you up moves the view from the next step.
       stopRef.current = glideViewport(
         { zoom: l.viewportZoom, offset: l.readViewportOffset() },
@@ -95,12 +98,22 @@ export function useSeatedScreenFrame(input: {
         now.viewportZoom,
       );
       // Moving seat to seat keeps the zoom you had before the first.
-      framedRef.current = { before: framedRef.current?.before ?? now.viewportZoom, set: to.zoom };
+      const framed = {
+        before: framedRef.current?.before ?? now.viewportZoom,
+        set: to.zoom,
+        landed: false,
+      };
+      framedRef.current = framed;
       stopRef.current();
       stopRef.current = glideViewport(
         { zoom: now.viewportZoom, offset: now.readViewportOffset() },
         to,
-        set,
+        {
+          ...set,
+          landed: () => {
+            framed.landed = true;
+          },
+        },
         SEATED_FRAME_GLIDE_MS,
       );
     });

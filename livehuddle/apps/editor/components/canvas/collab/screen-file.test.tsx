@@ -134,6 +134,37 @@ describe('the Screen with a file', () => {
     expect(await screen.findByRole('dialog', { name: 'Launch Plan on the Screen' })).toBeTruthy();
   });
 
+  it('closes the file opened large when the file goes, and never reopens it by itself', async () => {
+    const { rerender } = render(<ScreenView element={screenEl} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open Launch Plan' }));
+    expect(await screen.findByRole('dialog', { name: 'Launch Plan on the Screen' })).toBeTruthy();
+    // An Editor clears the Screen while it is open large (or a share in its room takes it over)...
+    const cleared = { ...screenEl, liveItem: undefined, liveName: undefined } as ShapeElement;
+    rerender(<ScreenView element={cleared} />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // ...and later puts a file on it again: the Screen waits for a press, as it did before.
+    rerender(<ScreenView element={screenEl} />);
+    await act(async () => {});
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('opens a new file afresh when an Editor changes the file while it is open large', async () => {
+    const { rerender } = render(
+      <ScreenView element={{ ...screenEl, liveTab: { id: 't2', name: 'Roadmap' } }} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open Launch Plan' }));
+    await waitFor(() => expect(ticket.asked).toContainEqual({ itemId: 'P1', tabId: 't2' }));
+    const other = {
+      ...screenEl,
+      liveItem: { app: 'livedocuments', itemId: 'D1' },
+      liveName: 'Brief',
+    } as ShapeElement;
+    rerender(<ScreenView element={other} />);
+    // The new file opens on its own first tab, never on the old file's tab.
+    await waitFor(() => expect(ticket.asked).toContainEqual({ itemId: 'D1' }));
+    expect(ticket.asked).not.toContainEqual({ itemId: 'D1', tabId: 't2' });
+  });
+
   it('shows a share in its room over its file', () => {
     // A share is received only with a stream; with none, the file stays.
     render(<ScreenView element={screenEl} />);

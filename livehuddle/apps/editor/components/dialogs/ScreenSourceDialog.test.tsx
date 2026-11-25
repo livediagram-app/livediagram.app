@@ -14,6 +14,11 @@ import {
 } from '@/lib/office/screen-picker-store';
 import { ScreenSourceDialog, ScreenSourceDialogHost } from './ScreenSourceDialog';
 
+const tracked = vi.hoisted(() => [] as string[][]);
+vi.mock('@/lib/telemetry', () => ({
+  track: (...args: string[]) => void tracked.push(args),
+}));
+
 let context: unknown = null;
 vi.mock('@/app/document/[id]/EditorContext', () => ({
   useEditorContext: () => context,
@@ -47,6 +52,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  tracked.length = 0;
   context = null;
   act(() => closeScreenPicker());
 });
@@ -68,6 +74,14 @@ function open(initialTab: 'file' | 'video' = 'file', savedUrl = '') {
 }
 
 describe('Show on the Screen', () => {
+  it('counts a chosen file as the Screen changing, never as a Live Embed added', async () => {
+    const { onChoose } = open();
+    fireEvent.click(await screen.findByText('Launch Plan'));
+    await waitFor(() => expect(onChoose).toHaveBeenCalled());
+    // The Screen's patch counts Element · Changed · Screen (screen-and-room-sign.md "Telemetry"); the dialog adds none.
+    expect(tracked).toEqual([]);
+  });
+
   it('lists Recent files any app shows live, never a Space, and puts one on the Screen with no picture', async () => {
     const { onChoose, onClose } = open();
     expect(screen.getByRole('dialog', { name: 'Show on the Screen' })).toBeTruthy();

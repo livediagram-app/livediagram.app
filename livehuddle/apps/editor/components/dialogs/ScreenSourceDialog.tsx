@@ -22,7 +22,6 @@ import {
   type ScreenPickerTab,
 } from '@/lib/office/screen-picker-store';
 import { isScreenLink, normalisedScreenLink } from '@/lib/screen-link';
-import { track } from '@/lib/telemetry';
 import { screenWords as words } from '@/components/canvas/collab/screen-words';
 
 const LinkGlyph = lucideGlyph(lucideLink, 15);
@@ -108,10 +107,9 @@ export function ScreenSourceDialog({
             hostId={hostId}
             connectedIds={[]}
             poster={false}
-            onChoose={(choice) => {
-              track('Element', 'Added', 'LiveEmbed');
-              onChoose({ kind: 'file', liveItem: choice.liveItem, liveName: choice.liveName });
-            }}
+            onChoose={(choice) =>
+              onChoose({ kind: 'file', liveItem: choice.liveItem, liveName: choice.liveName })
+            }
             onClose={onClose}
           />
         ) : (
