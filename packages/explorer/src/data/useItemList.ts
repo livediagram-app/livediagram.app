@@ -41,6 +41,8 @@ type Loaded = {
   // When its first page's read started (overlay.stamp), for overlay.raced.
   startedAt: number;
   items: Item[];
+  // How many of `items` its first page gave: the rest came from later pages.
+  firstLen: number;
   cursor: string | null;
   error: boolean;
   missing: boolean;
@@ -95,16 +97,7 @@ export function useItemList({
       .then((page) => {
         // What the index says now retires the person's patches it already took.
         overlayRef.current.observe(page.items, startedAt);
-        setLoaded({
-          key: fullKey,
-          startedAt,
-          items: page.items,
-          cursor: page.nextCursor,
-          error: false,
-          missing: false,
-          done: page.nextCursor === null,
-          moreError: false,
-        });
+        setLoaded((had) => firstPageRead(had, fullKey, startedAt, page));
       })
       .catch((error: unknown) => {
         if (isAbort(error)) return;
@@ -116,6 +109,7 @@ export function useItemList({
                 key: fullKey,
                 startedAt,
                 items: [],
+                firstLen: 0,
                 cursor: null,
                 error: true,
                 missing: error instanceof IndexError && error.status === 404,
@@ -221,6 +215,35 @@ export function useItemList({
 }
 
 const EMPTY: ShownItem[] = [];
+
+/**
+ * The list once its first page is read. A quiet read again of the same list (a raced move, a return to the page)
+ * swaps in the new first page and keeps the later pages already loaded, less any row the new page now holds, with
+ * their cursor: rows the person scrolled to never drop, and the next scroll goes on from where the list was.
+ */
+function firstPageRead(had: Loaded | null, key: string, startedAt: number, page: ListPage): Loaded {
+  const first: Loaded = {
+    key,
+    startedAt,
+    items: page.items,
+    firstLen: page.items.length,
+    cursor: page.nextCursor,
+    error: false,
+    missing: false,
+    done: page.nextCursor === null,
+    moreError: false,
+  };
+  if (!had || had.key !== key || had.error || had.items.length <= had.firstLen) return first;
+  const fresh = new Set(page.items.map((i) => i.id));
+  const later = had.items.slice(had.firstLen).filter((i) => !fresh.has(i.id));
+  return {
+    ...first,
+    items: [...page.items, ...later],
+    cursor: had.cursor,
+    done: had.done,
+    moreError: had.moreError,
+  };
+}
 
 function appendNew(have: Item[], next: Item[]): Item[] {
   const seen = new Set(have.map((i) => i.id));
