@@ -249,6 +249,8 @@ export function EditorContextMenuHost() {
   const ctxSelectedEl = selectedId
     ? (activeTab.elements.find((e) => e.id === selectedId) ?? null)
     : null;
+  // A locked element's rows are not edited: its rows and Fields dialogs are not offered.
+  const rowsLocked = ctxSelectedEl?.locked === true;
   const ctxMemberIds =
     multiSelectedIds.size > 0 ? [...multiSelectedIds] : ctxSelectedEl ? [ctxSelectedEl.id] : [];
 
@@ -433,10 +435,15 @@ export function EditorContextMenuHost() {
         closeContextMenu();
         setCodeEditOpenForId(id);
       }}
-      onEditRows={(id, kind) => {
-        closeContextMenu();
-        setRowsEditorOpenFor({ id, kind });
-      }}
+      // A locked element's rows dialogs close as they open (EditorElementDialogs), so none is offered.
+      onEditRows={
+        rowsLocked
+          ? undefined
+          : (id, kind) => {
+              closeContextMenu();
+              setRowsEditorOpenFor({ id, kind });
+            }
+      }
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
       onEditSequence={
@@ -476,10 +483,14 @@ export function EditorContextMenuHost() {
       onSelectMindMap={() => selectMindBranchOf(menuMindRoot)}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
-      onEditEntityFields={(id) => {
-        closeContextMenu();
-        setEntityFieldsOpenForId(id);
-      }}
+      onEditEntityFields={
+        rowsLocked
+          ? undefined
+          : (id) => {
+              closeContextMenu();
+              setEntityFieldsOpenForId(id);
+            }
+      }
       onSetHeroCaption={setHeroCaptionSelected}
       onSetEstimateScale={setEstimateScaleSelected}
       onSetAgendaItems={setAgendaItemsSelected}
