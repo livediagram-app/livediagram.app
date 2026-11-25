@@ -238,7 +238,7 @@ page), logging `[new] restored, back out <target>` (`../packages/workbench/src/h
 ### The empty-canvas hint
 
 An Editor gets the tab's start ([Template start](start-diagramming.md)), and an empty page offers nothing on itself ([Pages
-mode](pages-mode.md) "An empty page offers nothing on itself"). A Viewer or Participant, where an Editor would see the start, gets the **empty-canvas card** over the empty page (`emptyCardShownOf`; [From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "The empty-canvas card"): "<Tab> is empty" and "Nothing here yet. The owner can build it out, and your view updates live.", with a picture of a page and a × that closes it for good on that tab.
+mode](pages-mode.md) "An empty page offers nothing on itself"). A Viewer or Participant, where an Editor would see the start, gets the **empty-canvas card** over the empty page (`emptyCardShownOf`; [From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "The empty-canvas card"): "<Tab> is empty" and "Nothing here yet. The owner can build it out, and your view updates live.", with a picture of a page and a × that closes it for good on that tab. While the card is up, the page's own read state ("Nothing Written Yet", `EmptyPage`) steps aside, so a reader sees one empty state, not two; once the × closes the card, the page's line is back.
 
 ## Start Blank
 
