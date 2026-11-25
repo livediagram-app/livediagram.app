@@ -7,42 +7,8 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { createTab } from '../editor-page-helpers';
 import { guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
-import { liftTabs, lowerTabs, type LensWriter } from '@/lib/page-edit/lens';
-import { liftViewTabs, lowerViewTabs } from '@/lib/page-surface/page-view-lens';
-import { pageViewState } from '@/lib/page-surface/page-view-store';
-
-type PageEditRef = { readonly current: { tabId: string; writer: LensWriter } | null };
-type PageViewRef = { readonly current: string | null };
-
-// A map over the tabs through the narrow view (lib/page-surface/page-view-lens.ts) of the page drawn, when this window
-// draws it narrower than it is stored: lifted, mapped, lowered back, so the narrow layout is never written.
-function throughViewLens(viewRef: PageViewRef, mapTabs: (ts: Tab[]) => Tab[]) {
-  return (ts: Tab[]) => {
-    const tabId = viewRef.current;
-    if (!tabId) return mapTabs(ts);
-    const lifted = liftViewTabs(ts, tabId, pageViewState());
-    if (lifted === ts) return mapTabs(ts);
-    return lowerViewTabs(ts, lifted, mapTabs(lifted), tabId);
-  };
-}
-
-// Every map over the tabs, while a page is being edited, runs over that page as its draft (lib/page-edit/lens.ts):
-// lifted into the lens, mapped, lowered back. A map with no page being edited runs as it is. The narrow view sits on
-// top of either, as it does where the page is drawn (useEditorCollaboration).
-function throughPageLens(
-  ref: PageEditRef,
-  viewRef: PageViewRef,
-  mapTabsOuter: (ts: Tab[]) => Tab[],
-) {
-  const mapTabs = throughViewLens(viewRef, mapTabsOuter);
-  return (ts: Tab[]) => {
-    const editing = ref.current;
-    if (!editing) return mapTabs(ts);
-    // Lowered even when the lens is the tab itself (a page with no draft yet): its first change makes the draft.
-    const lifted = liftTabs(ts, editing.tabId);
-    return lowerTabs(ts, lifted, mapTabs(lifted), editing.tabId, editing.writer);
-  };
-}
+import type { LensWriter } from '@/lib/page-edit/lens';
+import { throughPageLens } from '@/lib/page-edit/through-lens';
 
 // The guard every local edit of the active tab passes (Pages mode): locked pages, saying why after the commit.
 const guardPagesIn = (prev: readonly Tab[], next: Tab[], guard: PageLockGuard | null): Tab[] =>
@@ -257,6 +223,7 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     setEditingTabIdState,
     pageEditRef,
     pageViewRef,
+    throughLens,
     markCheckpoint,
     resetTabs,
     cancelToCheckpoint,

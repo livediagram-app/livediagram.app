@@ -563,23 +563,24 @@ preset: CoverGradientId } | { kind: 'animated', preset: PageMotion, colouring?: 
 
 ## Testing
 
-| Rule                                                                    | Test                                                                                                                                                    |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The column: centred, 100% at every width, side room, 320 px to 3,840 px | `page-lock.test.ts`                                                                                                                                     |
-| The narrow view: drawn narrow, lowered to the stored page, no loop      | `page-view-lens.test.ts`, `page-view-store.test.ts`, `page-view-lens.perf.test.ts`                                                                      |
-| The view is locked; a move is a scroll; a scroll tells nobody           | `page-viewport-store.test.ts`, `useEditorViewport.test.tsx`                                                                                             |
-| The page's scroll keys                                                  | `page-keys.test.ts`                                                                                                                                     |
-| The ground follows the appearance alone                                 | `view-backdrop.test.ts`                                                                                                                                 |
-| No zoom chords, no Hand, no Fit                                         | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts`                                                                                        |
-| The bar: the slot, Undo and Redo, no canvas tool                        | `PageFormattingBar.test.tsx`                                                                                                                            |
-| A short page does not scroll; the free height                           | `page-lock.test.ts` "the world's box inside the scroll container"                                                                                       |
-| The breadcrumb is over the paper and pressable                          | `PageSurfaceSheet.test.tsx`                                                                                                                             |
-| A drawing's tools: four categories, no Selection mode, no Library       | `ToolbarPalette.test.tsx`, `CategoryBar.test.tsx`                                                                                                       |
-| The tools stay while reached for and used                               | `drawing-zone-store.test.ts`                                                                                                                            |
-| Space is the page's; no tool keys or commands                           | `useCanvasPanAndMarquee.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts`, `shortcut-sections.test.ts`                         |
-| A stored background, style or lock is dropped as a tab is read          | `page-looks.test.ts`, `tab-row.test.ts`                                                                                                                 |
-| Templates carry no style; no Open Theme command                         | `article-templates.test.ts`, `editor-commands.test.ts`                                                                                                  |
-| The slash menu: groups, matching, Recent, keys, placement, sheet        | `slash-menu-model.test.ts`, `slash-recent.test.ts`, `article-slash.test.ts`, `slash-menu-place.test.ts`, `SlashMenu.test.tsx`, `e2e/slash-menu.spec.ts` |
+| Rule                                                                                       | Test                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The column: centred, 100% at every width, side room, 320 px to 3,840 px                    | `page-lock.test.ts`                                                                                                                                     |
+| The narrow view: drawn narrow, lowered to the stored page, no loop                         | `page-view-lens.test.ts`, `page-view-store.test.ts`, `page-view-lens.perf.test.ts`                                                                      |
+| The narrow view: a wide zone's intake fit and Cancel's dirty check store no narrow measure | `apps/editor/lib/page-edit/page-edit-dirty.test.ts`                                                                                                     |
+| The view is locked; a move is a scroll; a scroll tells nobody                              | `page-viewport-store.test.ts`, `useEditorViewport.test.tsx`                                                                                             |
+| The page's scroll keys                                                                     | `page-keys.test.ts`                                                                                                                                     |
+| The ground follows the appearance alone                                                    | `view-backdrop.test.ts`                                                                                                                                 |
+| No zoom chords, no Hand, no Fit                                                            | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts`                                                                                        |
+| The bar: the slot, Undo and Redo, no canvas tool                                           | `PageFormattingBar.test.tsx`                                                                                                                            |
+| A short page does not scroll; the free height                                              | `page-lock.test.ts` "the world's box inside the scroll container"                                                                                       |
+| The breadcrumb is over the paper and pressable                                             | `PageSurfaceSheet.test.tsx`                                                                                                                             |
+| A drawing's tools: four categories, no Selection mode, no Library                          | `ToolbarPalette.test.tsx`, `CategoryBar.test.tsx`                                                                                                       |
+| The tools stay while reached for and used                                                  | `drawing-zone-store.test.ts`                                                                                                                            |
+| Space is the page's; no tool keys or commands                                              | `useCanvasPanAndMarquee.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts`, `shortcut-sections.test.ts`                         |
+| A stored background, style or lock is dropped as a tab is read                             | `page-looks.test.ts`, `tab-row.test.ts`                                                                                                                 |
+| Templates carry no style; no Open Theme command                                            | `article-templates.test.ts`, `editor-commands.test.ts`                                                                                                  |
+| The slash menu: groups, matching, Recent, keys, placement, sheet                           | `slash-menu-model.test.ts`, `slash-recent.test.ts`, `article-slash.test.ts`, `slash-menu-place.test.ts`, `SlashMenu.test.tsx`, `e2e/slash-menu.spec.ts` |
 
 Not covered by a test: `usePageSurface` (it reads layout boxes jsdom does not lay out), the scroll container's
 extent, the rail's inset, and everything a browser would show.
@@ -670,6 +671,12 @@ moved goes back through the inverse transform, the stored element itself when it
 the same. Writing typed through it lowers as it is (the edit lens then sends it to the draft). When nothing but
 layout changed, the real tab itself comes back, and `lowerTabs` returns the real array, so a narrow layout can never
 start a commit and render loop.
+
+**What reads the drawn writing back** reads it through the lens too (Work Tracker 1432). The intake's zone fit
+(`useArticleIntake`, `withZonesFitted` at the narrow text width) runs on the drawn page inside a tick and is lowered
+like any change, so a picture fitted to the narrow column keeps its stored size. Cancel's dirty check takes the article
+editor's writing (drawn at the narrow size) through the same lenses (`pageEditDirty`, editing blueprint "Errors and
+edge cases"), so Edit then Cancel on an untouched page asks nothing and stores nothing.
 
 **Measuring:** `useArticles`' `onLayout`, when the drawn tab is a narrow lens, puts the layout's height, zone places
 and note corners into the store and writes nothing to the tabs (no height, no zone settle, no note settle, no absent

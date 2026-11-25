@@ -49,20 +49,20 @@ tabs and writes `articles[flow]`. Two ways were open.
 
 States of a page, per editor: **reading** and **editing**; per page in the knowledgebase: **no draft** and **draft**.
 
-| Transition                             | Guard                                                                   | Effect                                                                                           |
-| -------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| reading → editing (Edit)               | `can.editPage` (an Editor of the knowledgebase), the page loaded        | `editingTabId = tab`, `page-editing { tabId }` sent; undo history starts here (`markCheckpoint`) |
-| first change while editing             | the page has no draft                                                   | the lowering makes the draft: `withDraftMade(real, viewAfter, by, now)`                          |
-| any change while editing               | the draft exists                                                        | the lowering writes `articles.draft`, `draft.height`, `draft.by`/`at` (at most once a minute)    |
-| Save (button, `Mod-S`)                 | editing, the writing taken as typed (`flush()`, then `takeBlocks()`)    | commit `withDraftSaved`; `page-saved` sent; editing → reading; history reset                     |
-| Cancel, others editing                 | `othersEditing(tab) > 0`                                                | editing → reading; the draft stays                                                               |
-| Cancel, last, no changes               | `!draftDiffers(tab)`                                                    | commit `withDraftDiscarded` when a draft exists; editing → reading                               |
-| Cancel, last, changes                  | `draftDiffers(tab)`                                                     | asks "Discard your changes to this page?" (Discard Changes / Keep Editing)                       |
-| Discard Changes                        | the question answered                                                   | commit `withDraftDiscarded`; editing → reading; history reset                                    |
-| leaving (another page, close, offline) | none                                                                    | editing → reading (`page-editing { tabId: null }`); the draft stays                              |
-| a peer's Save arrives                  | this editor editing that page                                           | stays editing; the lens now shows the new saved page; toast "<name> saved the page"              |
-| a new page made here                   | made by this editor (New Page, Add Subpage, Describe to Set Up's first) | opens editing, the caret in its Title (`usePageTitleFocus`)                                      |
-| daily upkeep                           | `draft.at` older than `DRAFT_KEEP_MS`                                   | the room writes `withDraftDiscarded` to the stored tab                                           |
+| Transition                             | Guard                                                                              | Effect                                                                                           |
+| -------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| reading → editing (Edit)               | `can.editPage` (an Editor of the knowledgebase), the page loaded                   | `editingTabId = tab`, `page-editing { tabId }` sent; undo history starts here (`markCheckpoint`) |
+| first change while editing             | the page has no draft                                                              | the lowering makes the draft: `withDraftMade(real, viewAfter, by, now)`                          |
+| any change while editing               | the draft exists                                                                   | the lowering writes `articles.draft`, `draft.height`, `draft.by`/`at` (at most once a minute)    |
+| Save (button, `Mod-S`)                 | editing, the writing taken as typed (`flush()`, then `takeBlocks()`)               | commit `withDraftSaved`; `page-saved` sent; editing → reading; history reset                     |
+| Cancel, others editing                 | `othersEditing(tab) > 0`                                                           | editing → reading; the draft stays                                                               |
+| Cancel, last, no changes               | `!pageEditDirty(...)`: no draft differs after the typed writing is lowered (below) | commit `withDraftDiscarded` when a draft exists; editing → reading                               |
+| Cancel, last, changes                  | `pageEditDirty(...)`                                                               | asks "Discard your changes to this page?" (Discard Changes / Keep Editing)                       |
+| Discard Changes                        | the question answered                                                              | commit `withDraftDiscarded`; editing → reading; history reset                                    |
+| leaving (another page, close, offline) | none                                                                               | editing → reading (`page-editing { tabId: null }`); the draft stays                              |
+| a peer's Save arrives                  | this editor editing that page                                                      | stays editing; the lens now shows the new saved page; toast "<name> saved the page"              |
+| a new page made here                   | made by this editor (New Page, Add Subpage, Describe to Set Up's first)            | opens editing, the caret in its Title (`usePageTitleFocus`)                                      |
+| daily upkeep                           | `draft.at` older than `DRAFT_KEEP_MS`                                              | the room writes `withDraftDiscarded` to the stored tab                                           |
 
 - **One draft a page.** The draft is made by whoever changes the page first in edit mode; two editors changing it
   first at once both make it from the same saved blocks with the same block ids, so their `created` article frames
@@ -137,6 +137,14 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
   saved page, so the keystrokes are kept, as a change on the new saved page.
 - **Two people press Save together:** the first commit's frames remove the draft; the second editor's Save finds no
   draft (`withDraftSaved` answers the same tab) and only leaves edit mode.
+- **Cancel in the narrow view** (Work Tracker 1432): the article editor hands back the writing as it draws it, so a
+  zone it shows fitted to a narrow column comes back at the narrow size (a 900 x 420 picture as 756 x 353 at a 756 px
+  column). Cancel never compares that with the saved writing directly. `pageEditDirty` (`lib/page-edit/page-edit-dirty.ts`)
+  runs the flush's own map through the same lenses every commit passes (`throughPageLens`,
+  `lib/page-edit/through-lens.ts`: lift edit, lift view, map, lower view, lower edit) and asks `draftDiffers` of the
+  tab that comes back: a zone within a px of its drawn size lowers to its stored size (`lowerPageView`), so an
+  untouched page is not dirty, and a real edit is dirty with its zones stored at their full-width size. Leaving the
+  page with unsaved changes (`unsavedNow`, the leave guard and the browser's own question) asks the same check.
 - **Cancel by the last editor while a peer's join is in flight:** the count is read from the roster at the press;
   a peer who arrives after the discard finds the saved page, as if nobody had edited.
 - **A Participant's or a Viewer's draft frames** are dropped by the room's role gate, as their writing frames are.
@@ -240,6 +248,7 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
 | the draft's helpers, merge, prints, upkeep cut-off                                                                   | `packages/document/src/page-draft.test.ts`                                                                                                                                                                                                              |
 | entering edit and Save on a 5,000 word page under budget                                                             | `packages/document/src/page-draft.perf.test.ts`, `apps/editor/lib/page-edit/lens.perf.test.ts`                                                                                                                                                          |
 | lift and lower: the draft written, the saved flow untouched, no-op identity, a peer's save                           | `apps/editor/lib/page-edit/lens.test.ts`                                                                                                                                                                                                                |
+| Cancel's dirty check in the narrow view: a wide zone drawn narrow is no change, a real edit stores no narrow measure | `apps/editor/lib/page-edit/page-edit-dirty.test.ts`                                                                                                                                                                                                     |
 | the mode switch, the bar's states, Cancel's three cases, the keys                                                    | `apps/editor/components/page-edit/PageEditBar.test.tsx`, `lib/page-edit/page-edit-keys.test.ts`, the e2e                                                                                                                                                |
 | double-click to edit off the writing only, no pointer label; read-only writing selectable                            | `apps/editor/components/page-edit/useDoubleClickToEdit.test.tsx`, `apps/editor/components/canvas/article/read-mode-selection.test.ts`, `apps/editor/lib/page-surface/read-selection.test.ts`, `apps/editor/lib/article/article-clipboard-lists.test.ts` |
 | role gate: Editor edits, Participant and Viewer and a link read                                                      | `apps/editor/lib/page-edit/page-edit-roles.test.ts`, `apps/api/src/document-room.test.ts` "DocumentRoom page editing", `apps/api/src/routes/page-draft-route.test.ts`                                                                                   |
