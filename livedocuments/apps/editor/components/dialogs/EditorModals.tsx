@@ -87,8 +87,12 @@ function OpenEditorModals() {
   const pageId = useCurrentPageId();
   // Copy to All Tabs while another tab wears a different style, kept for the dialog's opening once offered, so its
   // Copied shows after the copy makes every tab alike.
-  const tabsDiffer = tabs.some((t) => !sameTabStyle(t, activeTab));
   const opening = canvasThemeTab === null ? null : activeTab.id;
+  // Only while the dialog is open: closed, no tab is compared.
+  const tabsDiffer = useMemo(
+    () => opening !== null && tabs.some((t) => !sameTabStyle(t, activeTab)),
+    [opening, tabs, activeTab],
+  );
   const [copyOpening, setCopyOpening] = useState<string | null>(null);
   if (tabsDiffer && opening && copyOpening !== opening) setCopyOpening(opening);
   if (!opening && copyOpening !== null) setCopyOpening(null);
