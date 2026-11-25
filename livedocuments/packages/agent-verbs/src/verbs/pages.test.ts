@@ -110,12 +110,29 @@ describe('which tab', () => {
     expect(await pagesTabOf(api, DOC_A, undefined)).toMatchObject({ tabId: ONE });
   });
 
+  it('names the document’s tabs for a tab it does not hold, never blaming the document', async () => {
+    const { api } = setUp();
+    const out = await pagesTabOf(api, DOC_A, 'nope');
+    expect(out).toMatchObject({ ok: false, code: 'unknown_tab' });
+    expect((out as { message: string }).message).toMatch(
+      new RegExp(`^No tab "nope" in this document\\. Tabs: .*\\(${ONE}\\)`),
+    );
+  });
+
+  it('keeps the api’s refusal when the document does hold the tab that answered 404', async () => {
+    // The tab is in the document's list but its own route is gone (deleted between the two reads).
+    const { api } = setUp({ [TWO]: { id: TWO, elements: [] } });
+    expect(await pagesTabOf(api, DOC_A, ONE)).toMatchObject({ ok: false, code: 'not_found' });
+  });
+
   it('turns a missing document into the api’s refusal', async () => {
     const { api } = setUp();
     expect(await pagesTabOf(api, 'nope', undefined)).toMatchObject({
       ok: false,
       code: 'not_found',
     });
+    // A named tab in a missing document: the document is what is missing, not the tab.
+    expect(await pagesTabOf(api, 'nope', ONE)).toMatchObject({ ok: false, code: 'not_found' });
   });
 
   it('asks for a tab when the document has none the caller can reach', async () => {
