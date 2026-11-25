@@ -24,6 +24,7 @@
     "./hero-theme": "./src/hero/hero-theme.ts",
     "./approvals": "./src/approvals/index.ts",
     "./move-current-request": "./src/panel/move-current-request.ts",
+    "./new-team": "./src/teams/new-team-entry.ts",
     "./explorer.css": "./explorer.css"
   },
   "scripts": {
