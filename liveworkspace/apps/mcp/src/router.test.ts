@@ -275,9 +275,13 @@ describe('tools/list', () => {
     expect(calls.find((c) => c.method === 'tools/call')).toMatchObject({ app: 'liveplanner' });
   });
 
-  it('answers 401 when an app refuses the token while listing', async () => {
+  it('answers 401 when an app refuses the token while listing, readable from a page', async () => {
     refusing = 'liveplanner';
-    expect((await rpc('tools/list', {}, { all: true })).status).toBe(401);
+    const response = await rpc('tools/list', {}, { all: true });
+    expect(response.status).toBe(401);
+    // A client in a page reads the challenge only when CORS lets it.
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(response.headers.get('Access-Control-Expose-Headers')).toContain('WWW-Authenticate');
   });
 
   it('gives every tool a title and its hints in full, as Claude’s connector directory requires', async () => {
@@ -689,6 +693,38 @@ describe('an app’s old address (mcp.<app>.app)', () => {
     refusing = 'livediagram';
     const response = await rpc('tools/list', {}, { host: 'mcp.livediagram.app' });
     expect(response.status).toBe(401);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(await response.text()).toContain('https://mcp.liveworkspace.app/mcp');
+  });
+
+  it('answers a page’s preflight and its sign-in refusals with CORS, as the one MCP does', async () => {
+    const preflight = await worker.fetch(
+      new Request('https://mcp.livediagram.app/mcp', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://inspector.test',
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'authorization, content-type',
+        },
+      }),
+      env,
+      ctx,
+    );
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    const register = await worker.fetch(
+      new Request('https://mcp.livediagram.app/oauth/register', { method: 'POST', body: '{}' }),
+      env,
+      ctx,
+    );
+    expect(register.status).toBe(400);
+    expect(register.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    const noToken = await worker.fetch(
+      new Request('https://mcp.livediagram.app/mcp', { method: 'POST', body: '{}' }),
+      env,
+      ctx,
+    );
+    expect(noToken.status).toBe(401);
+    expect(noToken.headers.get('Access-Control-Expose-Headers')).toContain('WWW-Authenticate');
   });
 });

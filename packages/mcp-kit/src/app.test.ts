@@ -63,6 +63,8 @@ describe('refusals in words', () => {
     expect(await res.json()).toMatchObject({
       error_description: expect.stringContaining('Sign in'),
     });
+    // A client in a page can read the challenge: it is exposed to CORS.
+    expect(res.headers.get('Access-Control-Expose-Headers')).toContain('WWW-Authenticate');
   });
 
   it('names the MCP endpoint for an unknown path', async () => {
