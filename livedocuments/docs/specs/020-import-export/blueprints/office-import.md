@@ -147,7 +147,8 @@ Follows the spec's table. Precisely:
   `emphasis`. A run in a monospace font (`w:rFonts` ascii or hAnsi, or its character style's) is `code` (D64:
   the font list in `docx-styles.ts`); a hidden run (`runHidden`: its own `w:vanish`, else its character style's, off
   when its `w:val` says so) adds no text. A paragraph is a code block when its style is a code style or every run
-  with text is monospace; consecutive code paragraphs join with `\n`.
+  with text is monospace; consecutive code paragraphs join with `\n`, and an empty paragraph in a code style between
+  two of them is a blank line of the code (one after the last code line is dropped).
 - Containers walked into: `w:hyperlink`, `w:ins`, `w:moveTo`, `w:smartTag`, `w:customXml`, `w:sdt` /
   `w:sdtContent`, `w:fldSimple`, `w:dir`, `w:bdo`, `mc:AlternateContent` (its first `mc:Choice` only). Skipped:
   `w:del`, `w:moveFrom`, `w:proofErr`, bookmarks, permissions.

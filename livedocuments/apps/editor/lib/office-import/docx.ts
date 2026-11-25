@@ -91,6 +91,8 @@ class DocxWalker {
   private para: Para = { code: false };
   private runs: ArticleRun[] = [];
   private allMono = true;
+  // Blank code-style paragraphs since the last code line, written into the code block if another code line follows.
+  private codeBlanks = 0;
   // Inside a table cell, pictures and breaks are dropped.
   private inTable = 0;
 
@@ -201,7 +203,13 @@ class DocxWalker {
     const allMono = this.allMono;
     this.allMono = true;
     const text = runs.map((r) => r.text).join('');
-    if (text.trim() === '') return;
+    if (text.trim() === '') {
+      // A blank line inside a code listing is a paragraph of its own in Word: held, and kept only when the listing
+      // goes on, so the code keeps its blank lines but never ends on one.
+      if (this.para.code && this.blocks[this.blocks.length - 1]?.type === 'code')
+        this.codeBlanks += 1;
+      return;
+    }
     if (this.para.code || (allMono && !this.para.style && !this.para.list)) {
       this.code(text);
       return;
@@ -246,7 +254,8 @@ class DocxWalker {
   private code(text: string): void {
     const last = this.blocks[this.blocks.length - 1];
     if (last?.type === 'code') {
-      const joined = `${last.text}\n${text}`;
+      const joined = `${last.text}${'\n'.repeat(1 + this.codeBlanks)}${text}`;
+      this.codeBlanks = 0;
       if (joined.length > MAX_ARTICLE_BLOCK_TEXT) addSkip(this.tally, 'longText');
       last.text = joined.slice(0, MAX_ARTICLE_BLOCK_TEXT);
       return;
@@ -260,6 +269,7 @@ class DocxWalker {
   }
 
   private push(block: DocxBlock): void {
+    this.codeBlanks = 0;
     this.blocks.push(block);
     if (this.blocks.length > MAX_ARTICLE_BLOCKS) {
       // Counted on to the end, so the message can say how many it makes.
