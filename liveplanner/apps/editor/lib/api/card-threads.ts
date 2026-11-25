@@ -10,6 +10,7 @@ import { isOfflineId } from '../offline/offline-store';
 import { offlineFetchThreads, offlineWriteThread } from '../offline/offline-threads';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 import type { ItemsScope } from './items';
+import { workbenchAllows } from './workbench-confinement';
 
 export type ThreadAction =
   // `field`: the Comments field it starts in (absent: the built-in Comments).
@@ -54,6 +55,8 @@ function url(scope: ItemsScope, rest: string): string {
 
 export async function fetchThreads(scope: ItemsScope): Promise<CardThread[]> {
   if (await isOfflineId(scope.projectId)) return offlineFetchThreads(scope.projectId);
+  // A workbench frame whose session may not read them (a live embed's read-only board) shows none, asking nothing.
+  if (!workbenchAllows(url(scope, '/threads'))) return [];
   return fetchCloudThreads(scope);
 }
 

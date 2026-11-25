@@ -41,6 +41,14 @@ with you" and **Open in <App>**, and never the target's content.
 - The ticket is minted with the reader's own token, on the host app's address, and the workbench service asks the index
   for the reader's own grant on the target (the access rule), as it does for any workbench ticket. A share code the
   reader holds for the host gives nothing on the target.
+- **Who may mint.** A person with their own token: an account (its access token) or a guest (its guest token), for
+  a target they can open: their own, their team's, or one whose live link they opened before (it is in their Shared
+  with me). A guest is the same as an account here: a guest who shows their own plan on a livehuddle Screen, or
+  embeds it with Embed File, sees it live. Refused: a target they cannot open (`404`, the no-access card); a link
+  visitor with no token of their own (`401`, whatever share code they hold); an API token or a workbench session
+  (`403`). The frame's view session reads the target as that same person, so a guest's frame loads what the
+  guest's own grant opens and nothing more ([Reaching the index](one-explorer-contracts.md#reaching-the-index): a
+  guest is answered on the grant alone).
 - The level is always **view**, whatever the reader's own level: an embed is for reading. Opening the target to work
   on it is **Open**, in its own app.
 - Nothing widens without a click. Making an embed mints no share link, and an embed never lets a reader of the host

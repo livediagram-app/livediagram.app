@@ -212,7 +212,8 @@ export function useCardThreads(opts: {
       set(new Map(fetched.map((t) => [t.id, keepOwnThreadAuthors(held.get(t.id), t)])));
       setStatus('ready');
     } catch (err) {
-      // A confined workbench session (a live embed's read-only frame) refuses threads on purpose, and says so once.
+      // A confined workbench session refuses threads on purpose (fetchThreads asks nothing where it may not read
+      // them, so this is a session narrowed since): the confinement said so once already.
       if (!(err instanceof WorkbenchConfinedError))
         console.warn('[threads] threads.load-failed', { error: String(err) });
       setStatus((prev) => (prev === 'ready' ? prev : 'error'));

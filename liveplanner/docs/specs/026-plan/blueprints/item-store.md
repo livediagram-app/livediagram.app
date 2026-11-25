@@ -237,7 +237,9 @@ color: '#64748b' }`, a system author as `REPEAT_PERSON` is; never a person to no
 [The Assignee picker, the AI mark and progress](../items.md#handing-a-card-to-an-ai-assistant).
 
 - `apps/editor/lib/api/plan-assistants.ts` `apiPlanAssistants(scope)`: the GET above, through the plan's items scope
-  (owner, share code); a tab-scoped link and an offline plan read none, with no request.
+  (owner, share code); a tab-scoped link, an offline plan and a workbench frame whose session may not read it (a
+  live embed's, a project-scope workbench's: `workbenchAllows`, the client confinement's verdict asked quietly) read
+  none, with no request, so a live embed of a board logs no `request-confined` and no `plan.assistants.load-failed`.
 - `hooks/plan/usePlanAssistants.ts`: `planAssistants(held, remembered)` over the cards and the fetched list; fetched
   once a plan with Plan content and a server copy loads, and again on `refresh()` (the picker's open) at most once a
   `PLAN_ASSISTANTS_REFRESH_MS` (60 s). Kept as the same array until the assistants change (`peopleKey`). A failure
@@ -706,7 +708,8 @@ many of the plan's cards it is on.
 
 - `lib/api/card-threads.ts`: `fetchThreads(scope)`, `writeThread(scope, action)` (`ThreadAction = start { itemId,
 text, mentions?, field? } | reply | edit | delete | resolve | rename | addToCard { projectId, itemId } | deleteThread`),
-  offline through `lib/offline/offline-threads.ts`.
+  offline through `lib/offline/offline-threads.ts`. In a workbench frame whose session may not read them (a live
+  embed's read-only board: `workbenchAllows`), `fetchThreads` answers none with no request.
 - `hooks/plan/useCardThreads.ts`: the plan's threads (`Map` by id), loaded with the items and again on a reconnect,
   kept live by `receive(op)` (`keepOwnThreadAuthors`), `countsByItem` (memoised `openCommentCount` per card), and
   `act(action)`: telemetry, applied now (a start shows at once under a temporary id), sent, settled on the answer;

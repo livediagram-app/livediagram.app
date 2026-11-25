@@ -7,6 +7,8 @@
 //     an account in X-Index-Person: handoffPersonOf);
 //   - accounts, by the merge key: its own internal calls, and acting for an account it checked itself (a workbench's
 //     token) as an app's server does, for the app X-Index-App names;
+//   - an app's server or accounts acting for a guest (a live embed's ticket and view session), on one item's grant
+//     alone;
 //   - the Google Drive mirror's service, by its key, X-Index-App: drive and X-Index-Person: that account, for
 //     their personal items and folders only, in every app (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index");
 //   - the data export's service, by its key, X-Index-App: export and X-Index-Person: that account, listing their
@@ -49,7 +51,14 @@ export type Person = {
   // Set when the data export's service acts for the person: it lists one scope's items alone, their personal items
   // or the one team in `teams` (accounts checked they administer it), never one shared with them.
   export?: true;
+  // Set when an app's server (or accounts) acts for a guest: only `POST /items/:id/grant` answers them, for a live
+  // embed's ticket and session (one-explorer-contracts.md "Reaching the index").
+  grantOnly?: true;
 };
+
+// Whether a grant-only caller's request is the one route it may make: `POST /items/:id/grant`.
+export const isGrantRoute = (method: string, segments: readonly string[]): boolean =>
+  method === 'POST' && segments.length === 3 && segments[0] === 'items' && segments[2] === 'grant';
 
 // `visitor`: the network a password guess is counted against (share-guesses.ts), null when the request can't say.
 export type ShareCredentials = { code: string; password: string | null; visitor: string | null };
@@ -142,10 +151,16 @@ export async function delegatedPersonOf(
   // The app's own key, or accounts' (its workbench service acting for a token's account on one app's items,
   // liveworkspace/docs/specs/011-workbench/workbench.md).
   const app = (await callerApp(request, env)) ?? (await mergeDelegateApp(request, env));
-  // An account only: a guest has no API token, and a link visitor is no person.
-  if (!app || !isId(personId) || personId.startsWith('guest_') || personId.includes(':')) {
-    return 'refused';
+  if (!app) return 'refused';
+  // A guest on the grant alone (one-explorer-contracts.md "Reaching the index"): a live embed's ticket, which accounts
+  // mints on the guest's own token, and its view session, which the target app serves. `grantOnly` keeps every other
+  // route from them (index.ts); a guest has no teams, so X-Index-Teams is ignored.
+  if (personId.startsWith('guest_')) {
+    if (!GUEST_ID.test(personId)) return 'refused';
+    return { id: personId, kind: 'guest', teams: [], app, grantOnly: true };
   }
+  // Otherwise an account: a guest has no API token, and a link visitor is no person.
+  if (!isId(personId) || personId.includes(':')) return 'refused';
   const teams = (request.headers.get(INDEX_TEAMS_HEADER) ?? '')
     .split(',')
     .map((t) => t.trim())

@@ -818,10 +818,30 @@ describe('live embed tickets', () => {
   });
 
   it('works for a guest reader too', async () => {
+    indexCalls.length = 0;
     const res = await embed({}, 'gt-guest');
     expect(res.status).toBe(201);
+    // The guest's own grant, asked as the guest, with no teams (the index answers a guest's delegate on the grant
+    // alone, one-explorer-contracts.md "Reaching the index").
+    const grants = indexCalls.filter((c) => c.url.endsWith('/grant'));
+    expect(grants).toHaveLength(1);
+    expect(grants[0]!.headers.get('x-index-person')).toBe('guest_g1');
+    expect(grants[0]!.headers.get('x-index-teams')).toBe('');
     const { ticket } = (await res.json()) as { ticket: string };
     expect(((await (await redeem(ticket)).json()) as { role: string }).role).toBe('view');
+  });
+
+  it("refuses a guest an item they can't open, at mint and at redemption", async () => {
+    grantAnswer = () => Response.json({ error: 'not_found' }, { status: 404 });
+    const refused = await embed({}, 'gt-guest');
+    expect(refused.status).toBe(404);
+    expect(await refused.json()).toEqual({ error: 'not_found' });
+    // Minted while they could, redeemed after they lost it: the session is refused too.
+    grantAnswer = () =>
+      Response.json({ grant: 'g', level: 'view', tabId: null, expiresAt: Date.now() + 60_000 });
+    const { ticket } = (await (await embed({}, 'gt-guest')).json()) as { ticket: string };
+    grantAnswer = () => Response.json({ error: 'not_found' }, { status: 404 });
+    expect((await redeem(ticket)).status).toBe(404);
   });
 
   it('refuses a reader without access, a trashed item, and an index that cannot answer', async () => {
