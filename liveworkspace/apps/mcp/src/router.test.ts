@@ -357,6 +357,7 @@ describe('routing', () => {
     answers['liveknowledge.read_page'] = () => ({
       page: { title: 'get_context', markdown, tags: ['read_page'] },
       next: 'suggest_edit proposes a change to this page.',
+      notes: ['Tab "read_page": list_pages for the tree.'],
     });
     const read = await tool('read_with_app_tool', {
       tool: 'read_knowledge_page',
@@ -367,6 +368,7 @@ describe('routing', () => {
       expect(value).toEqual({
         page: { title: 'get_context', markdown, tags: ['read_page'] },
         next: 'suggest_knowledge_edit proposes a change to this page.',
+        notes: ['Tab "read_page": list_knowledge_pages for the tree.'],
       });
     answers['liveknowledge.list_pages'] = () => ({ pages: [{ title: 'search_pages' }] });
     const listed = await tool('read_with_app_tool', {

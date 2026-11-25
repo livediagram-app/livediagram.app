@@ -112,17 +112,26 @@ export function rewriteJson<T>(value: T, rewrite: (text: string) => string): T {
 
 // The keys under which an app's answer carries its own guidance ("read_page reads it back"). Every other string in
 // an answer may be what a person wrote (a page's Markdown, a card's title, a comment) and is never rewritten.
-const GUIDANCE_KEYS: ReadonlySet<string> = new Set(['next', 'note', 'hint']);
+const GUIDANCE_KEYS: ReadonlySet<string> = new Set(['next', 'note', 'notes', 'hint']);
+
+/** An app's own words rewritten, but never what they quote (`No page "get_context"`): a name a person gave. */
+export function rewriteUnquoted(text: string, rewrite: (text: string) => string): string {
+  return text
+    .split(/("[^"\n]*")/)
+    .map((part, i) => (i % 2 === 1 ? part : rewrite(part)))
+    .join('');
+}
 
 /** The strings under an answer's guidance keys, rewritten, at any depth; everything else exactly as it was. */
 export function rewriteGuidance<T>(value: T, rewrite: (text: string) => string): T {
+  const unquoted = (text: string) => rewriteUnquoted(text, rewrite);
   const walk = (node: unknown): unknown => {
     if (Array.isArray(node)) return node.map(walk);
     if (node && typeof node === 'object')
       return Object.fromEntries(
         Object.entries(node).map(([k, v]) => [
           k,
-          GUIDANCE_KEYS.has(k) ? rewriteJson(v, rewrite) : walk(v),
+          GUIDANCE_KEYS.has(k) ? rewriteJson(v, unquoted) : walk(v),
         ]),
       );
     return node;

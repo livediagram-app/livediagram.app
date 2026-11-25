@@ -71,14 +71,15 @@ answers `401 invalid_token` with `bearerChallenge(origin, true)`. Any other fail
 | `list_app_tools` `tools` | at most 10 names                                                                                                          |
 | Grant record             | `apps:<sha256 hex of the token>` → app ids, `expirationTtl` = `CLIENT_TTL` (200 days); none kept when every app is ticked |
 
-Renaming, in order: a hand-made name (`overrides`); in liveknowledge, `page(s)` → `knowledge_page(s)`; the app's
-item word (`document`, `project`, `design`) → its noun (`diagram`, `doc`, `plan`, `design`, `knowledgebase`); a
-name still without a subject word gets the insert noun after its verb. An answer's old names are rewritten in its refusal text
-(`isError`, outside what it quotes in double quotes) and in the `next`, `note` and `hint` strings of its JSON (`rewriteGuidance`, on the `structuredContent`
-and on a text part that is that JSON); a plain text part of a success (a tab's view) and every other string are
-left as the app sent them, since they hold what a person wrote. Subject words: diagram, doc, plan, design,
-knowledge, knowledgebase, card, sheet, board, form, article, item (and plurals). A tool whose title ends
-"(deprecated)" or whose description starts "Deprecated:" is left out. Descriptions open `For <noun phrase> (<app>).`
+Renaming, in order: a hand-made name (`overrides`); in liveknowledge, `page(s)` → `knowledge_page(s)`; the app's item
+word (`document`, `project`, `design`) → its noun (`diagram`, `doc`, `plan`, `design`, `knowledgebase`); a name still
+without a subject word gets the insert noun after its verb. An answer's old names are rewritten in its refusal text
+(`isError`) and in the `next`, `note`, `notes` and `hint` strings of its JSON (`rewriteGuidance`, on the
+`structuredContent` and on a text part that is that JSON), never inside double quotes, where an app quotes a name a
+person gave; a plain text part of a success (a tab's view) and every other string are left as the app sent them, since
+they hold what a person wrote. Subject words: diagram, doc, plan, design, knowledge, knowledgebase, card, sheet,
+board, form, article, item (and plurals). A tool whose title ends "(deprecated)" or whose description starts
+"Deprecated:" is left out. Descriptions open `For <noun phrase> (<app>).`
 
 Default listing: `coreToolsWith(catalogues)`, the core verbs with each reachable app's tool names in
 `list_app_tools`' description (`<kind>: reads …; changes ….`), so a cold isolate's first `tools/list` reads each
