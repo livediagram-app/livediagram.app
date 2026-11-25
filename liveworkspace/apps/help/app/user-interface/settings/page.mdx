@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
 
 **Settings** opens from the **Settings** button (the sliders icon) in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular <Noun />, which is why there is one set of them and not one per <Noun />.
 
-<AppNote app="livediagram,livehuddle">
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle,liveknowledge,liveplanner">
   Signed in, the dialog's header has a **
   <AppName />
   ** / **All** switch. **All** shows every setting your liveworkspace account keeps, in one list of
@@ -32,7 +32,7 @@ export const metadata = helpMetadata({
   ** side shows no logos, since everything there applies to <AppName />. Both list the categories
   under three headings: **Account** (**Profile**, with **Name and Colour**, **Time Zone**, **Sign-in
   Methods**, **Where You’re Signed In**, **Sign Out** and **Cloud Sync**, then **Notifications**,
-  **Privacy**, **Accessibility** and **Your Data**), **Apps** (the app's own categories) and
+  **Privacy**, **Accessibility**, **Calls**, **AI** and **Your Data**), **Apps** (the app's own categories) and
   **Developers** (**API Tokens**). A guest sees this app's settings only.
 </AppNote>
 
@@ -109,6 +109,7 @@ Under **Mouse**:
 - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
 - **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
 - **Element Indicators**: how an element shows that it has a link, a note, an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+- **When I Delete an Unused Image**: after you delete an image nothing else uses, **Ask Every Time** (the default) whether to delete it from storage too, **Always Delete** it or **Always Keep** it.
 
 - **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
 - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
@@ -126,6 +127,7 @@ Under **Logo Pages**:
 - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
 - **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
 - **Element Indicators**: how an element shows that it has a link, a note, an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+- **When I Delete an Unused Image**: after you delete an image nothing else uses, **Ask Every Time** (the default) whether to delete it from storage too, **Always Delete** it or **Always Keep** it.
 
 - **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
 - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
@@ -145,6 +147,7 @@ Under **Draw**:
 - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
 - **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
 - **Element Indicators**: how an element shows that it has an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+- **When I Delete an Unused Image**: after you delete an image nothing else uses, **Ask Every Time** (the default) whether to delete it from storage too, **Always Delete** it or **Always Keep** it.
 
 - **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
 - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
@@ -156,6 +159,8 @@ Under **Draw**:
 
 <AppNote app="livehuddle">
 - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
+- **Rotate in 3D View**: shows **Turn Left** and **Turn Right** in the 3D view, to walk the camera round the room. Off by default.
+- **When I Delete an Unused Image**: after you delete an image nothing else uses, **Ask Every Time** (the default) whether to delete it from storage too, **Always Delete** it or **Always Keep** it.
 
 - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
 </AppNote>
@@ -329,7 +334,9 @@ On a Dashboard tab, where other people's cursors are drawn, the section also hol
   Map never shows and these rows have no effect. See [Map](/help/user-interface/minimap/). -
   **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It
   only appears while the tab has a comment or an action. With it off, comments and actions still
-  work from the elements. See [Comments](/help/collaboration/comments/).
+  work from the elements. See [Comments](/help/collaboration/comments/). Beside it, where the tab
+  draws other people's cursors, **Hide Participant Cursors** stops drawing their cursors and names
+  on your screen; their avatars and Follow stay. Saved on this device only.
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -594,7 +601,7 @@ Once called <Noun plural capital />.
 
 <AppNote app="livedesign">
   Signed in, the list has an **Account** heading over **Profile** (in Account's place),
-  Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own,
+  Notifications, Privacy, Accessibility, **Calls** (where **Call** opens in every app), **AI** (your own AI key, and your teams’, used by every app’s AI features, see [AI Keys](/help/account-and-data/ai-keys/)) and **Your Data**, where you download everything you own,
   and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Connections, the Slack, Microsoft Teams and other addresses your rules post to, are set per design, in **Automations…** under **Tools** in the editor's bottom bar (see [Automations](/help/tools/automations/#connections)). With your profile are your **Time Zone** (when the emails that can wait arrive;
   **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**, always on, and
   **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed
@@ -604,11 +611,11 @@ Once called <Noun plural capital />.
 
 <AppNote app="livediagram">
   Signed in, the list has an **Account** heading over **Profile** (in Account's place),
-  Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own,
+  Notifications, Privacy, Accessibility, **Calls** (where **Call** opens in every app), **AI** (your own AI key, and your teams’, used by every app’s AI features, see [AI Keys](/help/account-and-data/ai-keys/)) and **Your Data**, where you download everything you own,
   and each team's you run, as one zip (see [Download Your
   Data](/help/account-and-data/download-your-data/)), and a **Developers** heading over API Tokens
   alone. Connections, the Slack, Microsoft Teams and other addresses your rules post to, are set per canvas, in **Automations…** under **Tools** in the editor's bottom bar (see [Automations](/help/tools/automations/#connections)). With your profile are your
-  **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and
+  **Time Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and
   **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and
   **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right
   here.
@@ -616,7 +623,7 @@ Once called <Noun plural capital />.
 
 <AppNote app="livedocuments">
   Signed in, the list has an **Account** heading over **Profile** (in Account's place),
-  Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own,
+  Notifications, Privacy, Accessibility, **Calls** (where **Call** opens in every app), **AI** (your own AI key, and your teams’, used by every app’s AI features, see [AI Keys](/help/account-and-data/ai-keys/)) and **Your Data**, where you download everything you own,
   and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Connections, the Slack, Microsoft Teams and other addresses your rules post to, are set per document, in **Automations…** under **Tools** in the editor's bottom bar (see [Automations](/help/tools/automations/#connections)). With your profile are your **Time
   Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in
   Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where
@@ -626,8 +633,8 @@ Once called <Noun plural capital />.
 
 <AppNote app="livehuddle">
   Signed in, the list has an **Account** heading over **Profile** (in Account's place),
-  Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own,
-  and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Connections, the Slack, Microsoft Teams and other addresses your rules post to, are set per Space, in **Automations…** under **Tools** in the editor's bottom bar (see [Automations](/help/tools/automations/#connections)). With your profile are your **Sign-in Methods** (**Email Code**,
+  Notifications, Privacy, Accessibility, **Calls** (where **Call** opens in every app), **AI** (your own AI key, and your teams’, used by every app’s AI features, see [AI Keys](/help/account-and-data/ai-keys/)) and **Your Data**, where you download everything you own,
+  and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Connections, the Slack, Microsoft Teams and other addresses your rules post to, are set per Space, in **Automations…** under **Tools** in the editor's bottom bar (see [Automations](/help/tools/automations/#connections)). With your profile are your **Time Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**,
   always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser
   you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are
   the same as in liveworkspace.app's Settings, right here.
@@ -635,7 +642,7 @@ Once called <Noun plural capital />.
 
 <AppNote app="liveplanner">
   Signed in, the list has an **Account** heading over **Profile** (in Account's place),
-  Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own,
+  Notifications, Privacy, Accessibility, **Calls** (where **Call** opens in every app), **AI** (your own AI key, and your teams’, used by every app’s AI features, see [AI Keys](/help/account-and-data/ai-keys/)) and **Your Data**, where you download everything you own,
   and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Connections, the Slack, Microsoft Teams and other addresses your rules post to, are set per plan, in **Automations…** under **Tools** in the editor's bottom bar (see [Automations](/help/plan/automations/)). With your profile are your **Time Zone** (when the emails that
   can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**,
   always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser
@@ -670,7 +677,7 @@ A few things deliberately stay on the device you are using:
 - **Theme** (light, dark or system) in **Appearance**.
 - The **Keyboard Shortcuts** switch, so you can keep shortcuts on where you have a full keyboard and off where you don't.
 
-<AppNote app="livedesign,livediagram,livehuddle,liveplanner">
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle,liveknowledge,liveplanner">
   - **Hide Participant Cursors** in **Panels**.
 </AppNote>
 
