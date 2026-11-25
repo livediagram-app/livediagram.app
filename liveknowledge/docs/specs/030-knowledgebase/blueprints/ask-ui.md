@@ -47,7 +47,7 @@ justify-center`: 20 px and 16 px lines, 36 px in the 48 px row), its buttons cen
     line height, so its baseline sat a pixel off the name's (WI-1337, `KnowledgeViewHeader.test.tsx`).
 - **The way back** (`components/ask/ViewBackChevron.tsx`, in `KnowledgeViewHeader` between the logo's divider and the
   name): `BackChevron` from `@liveworkspace/ui` in a `HoverCard` ("Back to <view>", "Returns to where you were, as you
-  left it."), 44 px on a phone. `knowledge-view.ts` keeps `trail`, the steps this tab took by a history entry, newest
+  left it."), its 32 px well pressed anywhere in the 44 px around it (`absolute -inset-1.5`). `knowledge-view.ts` keeps `trail`, the steps this tab took by a history entry, newest
   last, each `{ view, path }`: `showKnowledgeView` pushes the view it leaves (never for `replace`), and `popstate`
   (`onHistoryMove`) pops the top when the address is now that step (a Back) or pushes the view last `seen` when it
   is another (a Forward). `previousKnowledgeView()` is the top's view while its path is this knowledgebase's, else

@@ -118,8 +118,10 @@ export function BackChevron({
       aria-describedby={describedBy}
       data-back-chevron=""
       onClick={onClick}
-      className={`group flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition hover:bg-brand-100 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-brand-500/25 dark:hover:text-brand-200 ${className}`}
+      className={`group relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition hover:bg-brand-100 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-brand-500/25 dark:hover:text-brand-200 ${className}`}
     >
+      {/* A 44 px press area around the 32 px well, for a finger (the well's own size is the look). */}
+      <span aria-hidden="true" data-back-chevron-hit="" className="absolute -inset-1.5" />
       <ChevronGlyph />
     </button>
   );

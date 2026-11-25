@@ -32,11 +32,7 @@ export function ViewBackChevron() {
       description="Returns to where you were, as you left it."
       className="mr-2.5 shrink-0 phone:mr-2"
     >
-      <BackChevron
-        label={label}
-        onClick={backFromKnowledgeView}
-        className="phone:h-11 phone:w-11"
-      />
+      <BackChevron label={label} onClick={backFromKnowledgeView} />
     </HoverCard>
   );
 }

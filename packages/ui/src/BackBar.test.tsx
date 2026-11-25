@@ -96,4 +96,13 @@ describe('BackChevron', () => {
     expect(cls).toMatch(/\bfocus-visible:outline-2\b/);
     expect(cls).toMatch(/\bphone:h-11\b/);
   });
+
+  it('keeps a 44 px press area around its 32 px well', () => {
+    render(<BackChevron label="Back to Pages" onClick={() => {}} />);
+    const button = screen.getByRole('button', { name: 'Back to Pages' });
+    expect(button.className).toMatch(/\brelative\b/);
+    // -inset-1.5 is 6 px each side: 32 + 12 = 44.
+    const hit = button.querySelector('[data-back-chevron-hit]')!;
+    expect(hit.className).toBe('absolute -inset-1.5');
+  });
 });

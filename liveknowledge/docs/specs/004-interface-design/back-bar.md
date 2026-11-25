@@ -50,8 +50,8 @@ to the top of the scroll area, so the way back never leaves the screen.
 ## The header chevron
 
 Where a header has no room for a full-width row (liveknowledge's Ask, Insights and Connect views), the way back is the
-bar's chevron alone, `BackChevron` from the same file: the bar's well grown to a 32 px square (44 px where the host
-makes it a touch target), on the bar's hover (the well takes the brand, the chevron nudges left) and a focus ring. It
+bar's chevron alone, `BackChevron` from the same file: the bar's well grown to a 32 px square on every
+screen, pressed anywhere in the 44 px around it, on the bar's hover (the well takes the brand, the chevron nudges left) and a focus ring. It
 is named for where it goes ("Back to Pages") and the host gives it a hover card. The bar's rules hold: one step back,
 to the host's own target. Nothing hand-rolls another.
 
