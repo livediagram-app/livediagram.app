@@ -129,6 +129,67 @@ describe('parseMermaid', () => {
     ]);
   });
 
+  it('reads a hyphenated id as one node, never cut at its dash', () => {
+    const r = parseMermaid(`flowchart LR
+  api-gateway-->auth-service
+  auth-service-.->user-db[(Users)]
+  user-db --- x-ray
+  x-ray -- ok --> api-gateway`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.unread).toBeUndefined();
+    expect(r.graph.nodes.map((n) => n.id)).toEqual([
+      'api-gateway',
+      'auth-service',
+      'user-db',
+      'x-ray',
+    ]);
+    expect(r.graph.edges).toEqual([
+      { from: 'api-gateway', to: 'auth-service' },
+      { from: 'auth-service', to: 'user-db', line: 'dashed' },
+      { from: 'user-db', to: 'x-ray', ends: 'none' },
+      { from: 'x-ray', to: 'api-gateway', label: 'ok' },
+    ]);
+  });
+
+  it('reads an inline label written without spaces, as Mermaid does', () => {
+    const r = parseMermaid(`flowchart LR
+  A--yes-->B
+  B--plain---C
+  C-.maybe.->D
+  D==no==>E
+  E<--both-->F
+  F-- left-->G
+  G--right -->H
+  H--I
+  I--oJ`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.map((n) => n.id)).toEqual([
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'H',
+      'I',
+      'J',
+    ]);
+    expect(r.graph.edges).toEqual([
+      { from: 'A', to: 'B', label: 'yes' },
+      { from: 'B', to: 'C', label: 'plain', ends: 'none' },
+      { from: 'C', to: 'D', label: 'maybe', line: 'dashed' },
+      { from: 'D', to: 'E', label: 'no', line: 'thick' },
+      { from: 'E', to: 'F', label: 'both', ends: 'both' },
+      { from: 'F', to: 'G', label: 'left' },
+      { from: 'G', to: 'H', label: 'right' },
+      { from: 'H', to: 'I', ends: 'none' },
+      { from: 'I', to: 'J', head: 'circle' },
+    ]);
+  });
+
   it('reads a start marker on an inline-labelled edge as a head at its start', () => {
     const r = parseMermaid(`flowchart LR
   A <-- both --> B

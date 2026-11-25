@@ -178,6 +178,28 @@ describe('boxed element degradation', () => {
     });
   });
 
+  it("turns a rotated box's bound label with it", () => {
+    const scene = parse(
+      tabToExcalidrawText(
+        tab([
+          {
+            id: 's1',
+            type: 'shape',
+            shape: 'square',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 40,
+            rotation: 45,
+            label: 'Tilted',
+          },
+        ]),
+      ),
+    );
+    const label = scene.elements.find((e) => e.id === 's1-label');
+    expect(label).toMatchObject({ type: 'text', containerId: 's1', angle: Math.PI / 4 });
+  });
+
   it('reverse-maps stroke width and dash presets', () => {
     const scene = parse(
       tabToExcalidrawText(

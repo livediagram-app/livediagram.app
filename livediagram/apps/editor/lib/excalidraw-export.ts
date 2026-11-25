@@ -110,6 +110,9 @@ export function tabToExcalidrawText(tab: Tab): string {
       height: fontSize * 1.25,
       strokeColor: color,
       backgroundColor: 'transparent',
+      // Excalidraw draws bound text at its own angle (rotating a container turns its text with
+      // it), so a rotated box's label carries the box's angle; an arrow's label stays level.
+      angle: 'rotation' in host ? rad(host.rotation) : 0,
       text,
       originalText: text,
       fontSize,

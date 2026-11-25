@@ -47,7 +47,8 @@ only the sweep direction differs).
 - **Header**: `graph`/`flowchart` + a direction (`TD`/`TB` → top-to-bottom,
   `LR`/`RL` → left-to-right; `BT` folds to TB). Missing header still parses as
   a top-down graph.
-- **Nodes**: a bare id (`A`, letters and digits in any script and `_`, as Mermaid's own: `Ä`, `日本`) is a box
+- **Nodes**: a bare id (`A`, letters and digits in any script and `_`, as Mermaid's own: `Ä`, `日本`, joined by a `-`
+  that no `-`, `>` or `.` follows: `api-gateway`) is a box
   labelled with its id; a bracketed def
   sets the label + shape. Shape brackets map to the shape vocabulary:
   `["…"]` square · `(…)` / `([…])` stadium · `{…}` diamond · `((…))` /
@@ -60,7 +61,8 @@ only the sweep direction differs).
   `hex`/`prepare`, `cyl`/`database`, `lean-r`/`lean-l`, `trap-b`/`trap-t`,
   `doc`/`document`, `tri`/`triangle`; unknown names → square).
 - **Edges**: `A --> B`, with an optional label (`A -->|yes| B` or the inline
-  form `A -- yes --> B`), chained (`A --> B --> C` = two edges), and fanned
+  form `A -- yes --> B`, which Mermaid also takes tight, `A--yes-->B`, `A-.maybe.->B`, `A==no==>B`; an opener
+  followed straight by a link character stays a plain operator, `A--oB`, and a bare `A--B` an unlabelled edge), chained (`A --> B --> C` = two edges), and fanned
   (`A & B --> C & D` = the cartesian product). Operators map onto the arrow
   element's real style fields, not just "an arrow":
   - stroke: `-->` solid · `-.->` dashed (`strokeStyle: 'dashed'`) · `==>`

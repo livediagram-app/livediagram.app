@@ -89,3 +89,77 @@ export function readInlineLabel(
   }
   return null;
 }
+
+// The same edge written tight, as Mermaid's lexer also takes it: no whitespace needed after the opener or before the
+// closing run (`A--text-->B`, `A-.text.->B`, `A==text==>B`, `A--text---B`). Called only when readInlineLabel finds no
+// spaced form. An opener followed straight by a link character is a plain operator (`-->`, `--o`, `-.->`, `==>`),
+// and the closing run must be a whole link (`---`, `-->`, `===`, `.-`), as Mermaid's LINK token is, so a plain
+// `A--B` stays a bare edge. The label is the shortest text before such a closing run; one pass, as each run of one
+// character either closes there or nowhere inside it.
+const TIGHT_FORMS: {
+  open: string;
+  line: EdgeLine;
+  plainNext: string;
+  stopRun?: string;
+  close: (s: string, at: number) => number;
+}[] = [
+  {
+    open: '--',
+    line: 'solid',
+    plainNext: '-xo>',
+    stopRun: '-',
+    close: (s, at) => wholeRun(s, at, '-'),
+  },
+  { open: '-.', line: 'dashed', plainNext: '.-', close: INLINE_LABEL_FORMS[1]!.close },
+  {
+    open: '==',
+    line: 'thick',
+    plainNext: '=xo>',
+    stopRun: '=',
+    close: (s, at) => wholeRun(s, at, '='),
+  },
+];
+
+// A closing run of `ch` that is a link by itself: three or more, or two with a head after them.
+function wholeRun(s: string, at: number, ch: string): number {
+  const end = runOf(s, at, ch, 2);
+  if (end === -1) return -1;
+  return end - at >= 3 || s[end] === '>' || s[end] === 'o' || s[end] === 'x' ? end : -1;
+}
+
+export function readTightInlineLabel(
+  s: string,
+): { label: string; lead?: string; trail?: string; line: EdgeLine; length: number } | null {
+  let i = 0;
+  while (isSpace(s[i])) i += 1;
+  const lead = s[i] === '<' || s[i] === 'o' || s[i] === 'x' ? s[i] : undefined;
+  for (const form of TIGHT_FORMS) {
+    const opensAt = lead && s.startsWith(form.open, i + 1) ? i + 1 : i;
+    if (!s.startsWith(form.open, opensAt)) continue;
+    let start = opensAt + form.open.length;
+    const next = s[start];
+    if (next === undefined || (!isSpace(next) && form.plainNext.includes(next))) continue;
+    while (isSpace(s[start])) start += 1;
+    for (let at = start + 1; at < s.length;) {
+      const end = form.close(s, at);
+      if (end !== -1) {
+        const trail = s[end] === '>' || s[end] === 'o' || s[end] === 'x' ? s[end] : undefined;
+        return {
+          label: s.slice(start, at).trimEnd(),
+          ...(opensAt > i ? { lead } : {}),
+          ...(trail ? { trail } : {}),
+          line: form.line,
+          length: trail ? end + 1 : end,
+        };
+      }
+      const ch = s[at];
+      const from = at;
+      at += 1;
+      while (s[at] === ch) at += 1;
+      // Mermaid's label text never holds two of the opener's run (`--`, `==`) that don't close it: the edge ends
+      // there unread, and the scan stops, so a chain of bare `A--B--C` hops costs each hop only its own text.
+      if (form.stopRun && ch === form.stopRun && at - from >= 2) break;
+    }
+  }
+  return null;
+}

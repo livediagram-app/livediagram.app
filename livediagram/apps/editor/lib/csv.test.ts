@@ -43,6 +43,19 @@ describe('parseCsvLineData (docs/specs/009-elements/pie-chart.md)', () => {
     expect(tabbed!.series).toEqual([{ name: 'Sales', values: [3, 4] }]);
   });
 
+  it('finds the separator past a stray quote in the header row', () => {
+    const semi = parseCsvLineData('27" screens;Sales;Costs\nJan;10;5');
+    expect(semi!.series).toEqual([
+      { name: 'Sales', values: [10] },
+      { name: 'Costs', values: [5] },
+    ]);
+    const tabbed = parseCsvLineData('5" units\tSales\tCosts\nJan\t3\t4');
+    expect(tabbed!.series.map((s) => s.name)).toEqual(['Sales', 'Costs']);
+    // An escaped quote inside a quoted header cell still hides that cell's separators.
+    const quoted = parseCsvLineData('Model;"a ""b"", c, d";X\nJan;1;2');
+    expect(quoted!.series.map((s) => s.name)).toEqual(['a "b", c, d', 'X']);
+  });
+
   it('keeps the number a spreadsheet formatted: thousands, currency and percent', () => {
     // `"1,234"` and `$10` read 0.
     const out = parseCsvLineData(
