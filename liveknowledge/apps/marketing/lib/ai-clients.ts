@@ -20,8 +20,9 @@ export const AI_PRODUCT: AiProduct = {
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);
 
-// Each maps to a shipped MCP tool (docs/specs/024-agents/knowledgebase-for-agents.md "MCP tools"): get_context,
-// search_pages and read_page, suggest_edit, report_gap, create_page, and list_pages with its trust fields.
+// Each maps to a shipped MCP tool (docs/specs/024-agents/knowledgebase-for-agents.md "MCP tools"): get_knowledge_context,
+// search_knowledge_pages and read_knowledge_page, suggest_knowledge_edit, report_knowledge_gap, create_knowledge_page, and
+// list_knowledge_pages with its trust fields.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Answer From the Pages',

@@ -45,7 +45,11 @@ describe('the Build With AI band', () => {
 
   it('leads to /ai and names the tools an agent calls', () => {
     expect(html).toContain('href="/ai"');
-    for (const tool of ['get_context', 'search_pages', 'suggest_edit'])
+    for (const tool of [
+      'get_knowledge_context',
+      'search_knowledge_pages',
+      'suggest_knowledge_edit',
+    ])
       expect(html).toContain(tool);
   });
 

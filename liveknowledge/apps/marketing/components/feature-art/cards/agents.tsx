@@ -18,7 +18,7 @@ import {
 
 /** An agent calling the MCP server's tools, each answered from the knowledgebase. */
 export function McpArt() {
-  const calls = ['get_context', 'search_pages', 'read_page'];
+  const calls = ['get_knowledge_context', 'search_knowledge_pages', 'read_knowledge_page'];
   return (
     <Scene>
       <Agent x={22} y={36} s={22} />

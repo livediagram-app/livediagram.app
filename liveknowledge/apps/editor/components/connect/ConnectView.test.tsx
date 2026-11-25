@@ -80,7 +80,7 @@ describe('the steps', () => {
     [
       'Claude Code',
       null,
-      'claude mcp add --transport http --scope user liveknowledge https://mcp.liveworkspace.app/mcp',
+      'claude mcp add --transport http --scope user liveworkspace https://mcp.liveworkspace.app/mcp',
     ],
     ['ChatGPT', 'Open ChatGPT settings', 'https://mcp.liveworkspace.app/mcp'],
     ['Cursor', 'Add to Cursor', '"url": "https://mcp.liveworkspace.app/mcp"'],

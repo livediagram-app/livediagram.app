@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { AI_CLIENT_GROUPS, aiClients, cursorInstallLink, vscodeInstallLink } from './ai-clients';
+import {
+  AI_CLIENT_GROUPS,
+  CONNECTOR_NAME,
+  aiClients,
+  cursorInstallLink,
+  vscodeInstallLink,
+} from './ai-clients';
 
 // docs/specs/019-marketing/build-with-ai.md "The clients", in each product. A product binds the list to its name
 // and MCP address; any product will do here.
-const MCP_URL = 'https://mcp.livediagram.app/mcp';
+const MCP_URL = 'https://mcp.liveworkspace.app/mcp';
 const AI_CLIENTS = aiClients({
   name: 'livediagram',
   mcpUrl: MCP_URL,
@@ -85,15 +91,36 @@ describe('one-click install links', () => {
 });
 
 describe('a product binding', () => {
-  it('names the product, never another product, and offers no copy of it to run', () => {
-    const text = JSON.stringify(
-      aiClients({
-        name: 'liveplanner',
-        mcpUrl: 'https://mcp.liveplanner.app/mcp',
-      }),
+  const text = (name: string) =>
+    JSON.stringify(aiClients({ name, mcpUrl: 'https://mcp.liveworkspace.app/mcp' }));
+
+  it('names the product only to say which app to keep ticked, never another product', () => {
+    const planner = text('liveplanner');
+    expect(planner).toContain('liveplanner ticked');
+    expect(planner).not.toMatch(/running your own|your own MCP host/i);
+    expect(planner).not.toMatch(/live(diagram|documents|design|knowledge)/);
+  });
+
+  it('adds the same connector on every product, so following two pages adds it once', () => {
+    const commands = (name: string) =>
+      aiClients({ name, mcpUrl: MCP_URL })
+        .flatMap((c) => c.steps.flatMap((s) => (s.code ? [s.code.code] : [])))
+        .join('\n')
+        .replaceAll(name, '<product>');
+    expect(CONNECTOR_NAME).toBe('liveworkspace');
+    expect(commands('livediagram')).toContain(
+      `claude mcp add --transport http --scope user ${CONNECTOR_NAME} `,
     );
-    expect(text).toContain('liveplanner');
-    expect(text).not.toMatch(/running your own|your own MCP host/i);
-    expect(text).not.toMatch(/live(diagram|documents|design)/);
+    expect(commands('livedocuments')).toBe(
+      commands('livediagram').replaceAll('livediagram', 'livedocuments'),
+    );
+    for (const product of [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'liveknowledge',
+    ])
+      expect(commands(product)).not.toContain('<product>');
   });
 });

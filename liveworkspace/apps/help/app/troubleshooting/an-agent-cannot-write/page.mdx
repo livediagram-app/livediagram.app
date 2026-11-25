@@ -15,7 +15,7 @@ An agent that is refused says why, in the refusal's own words. Find the code bel
 
 ## AI Editing Is Suggest Edits Only
 
-`ai_editing_suggest_only`, with "This knowledgebase's AI Editing setting is Suggest Edits Only, so agents do not change pages directly. Suggest the change instead with suggest_edit, for a person to accept."
+`ai_editing_suggest_only`, with "This knowledgebase's AI Editing setting is Suggest Edits Only, so agents do not change pages directly. Suggest the change instead with suggest_knowledge_edit, for a person to accept."
 
 **Suggest Edits Only** is the default. To let agents write, an Editor opens the Knowledgebase's menu (its name at the top of the sidebar), chooses **AI Editing**, picks **Edit Unverified Pages** or **Edit Any Page**, and presses **Save**. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
 
@@ -23,10 +23,10 @@ An agent that is refused says why, in the refusal's own words. Find the code bel
 
 | Code              | The refusal says                                                                              |
 | ----------------- | --------------------------------------------------------------------------------------------- |
-| `page_verified`   | "This page is verified, and this knowledgebase's AI Editing setting is Edit Unverified Pages, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept." |
-| `page_review_due` | "This page is due for review, and this knowledgebase's AI Editing setting is Edit Unverified Pages, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept." |
+| `page_verified`   | "This page is verified, and this knowledgebase's AI Editing setting is Edit Unverified Pages, so an agent does not rewrite it. Suggest the change instead with suggest_knowledge_edit, for a person to accept." |
+| `page_review_due` | "This page is due for review, and this knowledgebase's AI Editing setting is Edit Unverified Pages, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_knowledge_edit, for a person to accept." |
 
-Under **Edit Unverified Pages** a page a person vouched for changes only when a person accepts the change. Have the agent use `suggest_edit` (the CLI's `suggest`), then accept it under **Edits Suggested by Agents**. See [Suggested Edits](/help/knowledgebase/suggested-edits/). To let agents rewrite verified pages too, an Editor sets AI Editing to **Edit Any Page**.
+Under **Edit Unverified Pages** a page a person vouched for changes only when a person accepts the change. Have the agent use `suggest_knowledge_edit` (the CLI's `suggest`), then accept it under **Edits Suggested by Agents**. See [Suggested Edits](/help/knowledgebase/suggested-edits/). To let agents rewrite verified pages too, an Editor sets AI Editing to **Edit Any Page**.
 
 ## The Connection Does Not Hold the Write Scope
 

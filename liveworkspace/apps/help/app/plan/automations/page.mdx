@@ -223,8 +223,8 @@ The owner, and the owning team, see **Runs This Month** in place of **Runs today
 
 An AI tool connected through the [MCP server](/help/account-and-data/connect-ai-mcp/), or a script with the [command line](/help/developers/cli/), can read and work your rules as you would:
 
-- **List rules** (`list_rules`, or `liveplanner rule ls`) reads each rule's sentence, whether it is on, paused or needs attention, its last run, its runs this week and its next run. Ask for one rule by its name to get it whole (`liveplanner rule get`), or for the Audit Trail (`liveplanner rule log`) to see what recent runs did.
-- **Change rules** (`change_rules`) adds, changes, turns on and off, copies and deletes rules, tests one on a card and runs a Run from a Card rule. On the command line those are `rule add`, `rule set`, `rule on`, `rule off`, `rule duplicate`, `rule rm`, `rule test` and `rule run`, a rule written as JSON in a file.
+- **List rules** (`list_plan_rules`, or `liveplanner rule ls`) reads each rule's sentence, whether it is on, paused or needs attention, its last run, its runs this week and its next run. Ask for one rule by its name to get it whole (`liveplanner rule get`), or for the Audit Trail (`liveplanner rule log`) to see what recent runs did.
+- **Change rules** (`change_plan_rules`) adds, changes, turns on and off, copies and deletes rules, tests one on a card and runs a Run from a Card rule. On the command line those are `rule add`, `rule set`, `rule on`, `rule off`, `rule duplicate`, `rule rm`, `rule test` and `rule run`, a rule written as JSON in a file.
 - The AI names columns, card types, fields and people the way your board shows them ("Done", "Bug", "Ana Costa"). A rule it saves says **Edited by** you, marked **(Agent)**.
 - It can add **Take Snapshot**, but a rule that holds **Revert to Snapshot** is saved only by a person, in the builder.
 - It reaches your rules only when you are an Editor of the whole plan, as you would. A read-only connection can list rules and the Audit Trail but never change, test or run them.

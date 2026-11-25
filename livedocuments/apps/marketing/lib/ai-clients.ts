@@ -20,8 +20,8 @@ export const AI_PRODUCT: AiProduct = {
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): write_article, change_pages with slide
-// layouts, an infographic page from a layout, create_document from a template, find + read_document, share_document.
+// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): write_article, change_doc_pages with slide
+// layouts, an infographic page from a layout, create_item from a template, find_items + read_item, share_item.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Write it up',
@@ -51,6 +51,6 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Find and improve',
     prompt:
-      'Find my livedocuments document about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
+      'Find my livedocuments deck or article about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
   },
 ];

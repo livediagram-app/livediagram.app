@@ -12,6 +12,10 @@ const issues = [
     a: `You can have ${MAX_API_TOKENS_PER_ACCOUNT} unexpired tokens. The approval page lists them: revoke one you no longer use there, then connect.`,
   },
   {
+    q: 'I connected an older address, such as mcp.livediagram.app',
+    a: 'Each app used to have its own address. They now take no new connections, and one made before keeps working only until its token ends (some no longer resolve at all). Remove it in your tool and add the one address above, once, for every app: ticking an app on the approval page is all it takes.',
+  },
+  {
     q: 'My tool keeps asking me to sign in',
     a: 'The token it held may have expired (they last six months) or been revoked. Remove the connection in your tool and add it again.',
   },

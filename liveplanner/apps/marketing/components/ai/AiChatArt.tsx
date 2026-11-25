@@ -51,7 +51,7 @@ export function AiChatArt() {
         </p>
         <p className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
           <CheckIcon className="text-emerald-600 dark:text-emerald-400" />
-          liveplanner · change_items
+          liveplanner · change_cards
         </p>
         <div className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-slate-950">
           {COLUMNS.map((column) => (
