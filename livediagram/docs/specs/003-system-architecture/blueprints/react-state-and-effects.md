@@ -54,10 +54,9 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 
 ### Ref-only wrappers: the sites
 
-| Site                                                        | The wrapper carried          | Becomes                                                          |
-| ----------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| `apps/editor/components/canvas/whiteboard/ShapesFlyout.tsx` | focus for the search field   | `<Fragment ref>`; `FragmentInstance.focus()` lands on the input  |
-| `apps/editor/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
+| Site                                                        | The wrapper carried        | Becomes                                                         |
+| ----------------------------------------------------------- | -------------------------- | --------------------------------------------------------------- |
+| `apps/editor/components/canvas/whiteboard/ShapesFlyout.tsx` | focus for the search field | `<Fragment ref>`; `FragmentInstance.focus()` lands on the input |
 
 Stay, carrying more than a ref: `../packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
 ones among them) and `../packages/help-site/src/components/ArticleShell.tsx` (reads `textContent`).
