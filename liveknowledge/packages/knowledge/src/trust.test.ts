@@ -215,6 +215,7 @@ describe('knowledgeForCommunity', () => {
     const stored = { owner: 'acct_a', verifiedAt: 9, verifiedBy: 'acct_b', context: true };
     expect(knowledgeForCommunity(stored)).toEqual({ verifiedAt: 9, context: true });
     expect(knowledgeForCommunity({ owner: 'acct_a' })).toBeUndefined();
+    expect(knowledgeForCommunity({ owner: 'acct_a', context: true })).toEqual({ context: true });
     expect(knowledgeForCommunity('odd')).toBeUndefined();
   });
 
@@ -222,5 +223,8 @@ describe('knowledgeForCommunity', () => {
     const page = { id: 'p1' };
     expect(withKnowledgeForCommunity(page)).toBe(page);
     expect(withKnowledgeForCommunity({ id: 'p1', knowledge: { owner: 'acct_a' } })).toEqual(page);
+    expect(
+      withKnowledgeForCommunity({ id: 'p1', knowledge: { owner: 'acct_a', verifiedAt: 3 } }),
+    ).toEqual({ id: 'p1', knowledge: { verifiedAt: 3 } });
   });
 });
