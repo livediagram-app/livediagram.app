@@ -24,6 +24,9 @@ const HELD_AT_100 = [
   'src/components/chrome/TabFolderDialog.tsx',
   'src/components/chrome/TabFolderList.tsx',
   'src/components/chrome/FolderColourButton.tsx',
+  // The one tab menu every editor binds (action-parity.md "The tab menu", Work Tracker 1442).
+  'src/components/chrome/TabMenu.tsx',
+  'src/components/chrome/tab-menu-rows.tsx',
   'src/components/chrome/folder-colour.ts',
   'src/components/dialogs/OrganiseDialogFrame.tsx',
   // Request Access, the requester's side (liveworkspace/docs/specs/004-index/request-access.md "On screen"; Work
