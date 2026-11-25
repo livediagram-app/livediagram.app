@@ -9,6 +9,7 @@
 // the art, which is a module constant, so it paints once however often the dialog re-renders.
 import { memo, useContext, type CSSProperties, type ReactNode } from 'react';
 import { SHEET_HANDLE_PX } from '../../SheetHandle';
+import { Tooltip } from '../../Tooltip';
 import { DialogCloseButton } from '../DialogCloseButton';
 import { InlineDialogHeader } from '../InlineDialogHeader';
 import { DialogPhoneSheetContext, useDialogInline } from '../dialog-slot';
@@ -124,30 +125,31 @@ export function HeroDialogHeader({
     >
       <HeroBand art={art} underHandle={under} />
       {onBack ? (
-        <button
-          type="button"
-          aria-label={backLabel}
-          title={backLabel}
-          onClick={onBack}
-          data-dialog-hero-back=""
-          className="group flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[var(--hero-wash)] text-[var(--hero-ink)] shadow-[inset_0_0_0_1px_var(--hero-line)] transition-shadow hover:shadow-[inset_0_0_0_1.5px_var(--hero-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-            focusable="false"
-            className="transition-transform duration-micro group-hover:-translate-x-0.5 motion-reduce:transition-none"
+        <Tooltip label={backLabel ?? 'Back'}>
+          <button
+            type="button"
+            aria-label={backLabel ?? 'Back'}
+            onClick={onBack}
+            data-dialog-hero-back=""
+            className="group flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[var(--hero-wash)] text-[var(--hero-ink)] shadow-[inset_0_0_0_1px_var(--hero-line)] transition-shadow hover:shadow-[inset_0_0_0_1.5px_var(--hero-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           >
-            <path d="M12 4.5 6.5 10l5.5 5.5" />
-          </svg>
-        </button>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+              focusable="false"
+              className="transition-transform duration-micro group-hover:-translate-x-0.5 motion-reduce:transition-none"
+            >
+              <path d="M12 4.5 6.5 10l5.5 5.5" />
+            </svg>
+          </button>
+        </Tooltip>
       ) : (
         <HeroTitleMark art={art} />
       )}

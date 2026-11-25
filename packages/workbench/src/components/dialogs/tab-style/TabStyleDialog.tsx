@@ -91,9 +91,10 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
   // pages), so Show Me tours the home that is there.
   const viewBox = useRef<HTMLDivElement>(null);
   const [ownHomeShown, setOwnHomeShown] = useState(false);
+  // Read after each screen change (the home's cards mount with it).
   useEffect(() => {
     setOwnHomeShown(!!viewBox.current?.querySelector('[data-tour-id="tab-style-cards"]'));
-  });
+  }, [view]);
   const go = (next: TabStyleView) => {
     setEnter(next === 'looks' ? 'back' : 'forward');
     setSubView(null);
