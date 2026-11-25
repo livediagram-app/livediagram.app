@@ -111,8 +111,8 @@ in a new browser tab. Beside Send to Plan's chip when the place has both.
 
 ## On a touch screen
 
-As [Send to Plan's](send-to-plan.md#on-a-touch-screen): the words are read as the press starts, the reader's pill
-stays through its own tap, and every entry is at least 44px to tap on a coarse pointer.
+As [Send to Plan's](send-to-plan.md#on-a-touch-screen): the words are read as the press starts, the
+[selection menu](send-to-plan.md#the-selection-menu) stays through its own tap, and every entry is at least 44px to tap on a coarse pointer.
 
 ## Sending again
 
