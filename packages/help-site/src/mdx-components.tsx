@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { articleHref, categoryHref } from '@liveworkspace/help-registry';
 import { APP_NOTE_MARK, AppNote, type AppNoteProps } from './components/AppNote';
 import { NoteIcon, TipIcon } from './components/chrome-icons';
-import { AppName, Noun, TabWord } from './components/ScopeWords';
+import { AllLabel, AppName, Noun, TabWord } from './components/ScopeWords';
 import { ForApps, NotFor } from './components/ForApps';
 import { Figure, figureShowsIn } from './components/Figure';
 import { FEATURE_FALLBACK_HEX, FEATURE_TILE_CLASS, featureTileStyle } from './lib/feature-tile';
@@ -212,6 +212,7 @@ export function createUseMdxComponents(
     <Noun scope={scope} {...props} />
   );
   const BoundAppName = () => <AppName scope={scope} />;
+  const BoundAllLabel = () => <AllLabel scope={scope} />;
   const BoundFigure = ({ app, ...props }: ComponentProps<typeof Figure> & { app?: string }) =>
     figureShowsIn(app, site.scope) ? <Figure {...props} /> : null;
   return (components) => ({
@@ -292,6 +293,7 @@ export function createUseMdxComponents(
     ForApps: BoundForApps,
     NotFor: BoundNotFor,
     AppName: BoundAppName,
+    AllLabel: BoundAllLabel,
     ...components,
   });
 }

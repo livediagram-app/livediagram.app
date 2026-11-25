@@ -81,7 +81,8 @@ only the articles that apply to it; All Apps shows every article.
   list with the reason.
 - **The work's name.** Shared copy names the work with `<Noun />` (and `<Noun plural />`, `<Noun capital />`), which
   reads canvas, plan, document, design or Space for the current app and "file" under All Apps, the words the
-  Explorer uses. Product names in shared copy come from `<AppName />`.
+  Explorer uses. Product names in shared copy come from `<AppName />`. The Explorer's switch to every app's items is
+  `<AllLabel />`: **All** in an app's Explorer, **All Apps** on liveworkspace.app's.
 - **Figures** may carry one variant per app; a page shows the current app's, and a shared figure in liveworkspace's
   slate where an app has none.
 - **Read It In.** An article for more than one app lists those apps in its Contents card under **Read It In**, the
