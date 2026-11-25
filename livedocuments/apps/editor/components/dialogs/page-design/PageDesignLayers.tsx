@@ -522,42 +522,44 @@ export function QuickPicks({
         perPage={6}
         label="Quick Picks"
         heading={
-          <h3 className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Quick Picks
-          </h3>
-        }
-        controls={
           // Keep Theme sits straight left of Shuffle, one row centred with it (owner, 2026-11-25, Work Tracker 1477);
-          // not while Affect All Pages is off, which keeps the theme already, and Shuffle keeps its place then.
-          <span className="flex items-center gap-1.5" data-page-design-quick-controls="">
-            {pageOnly ? null : (
-              <label
-                className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md py-1 pl-1 text-[11px] font-medium text-slate-600 dark:text-slate-300"
-                data-page-design-keep-theme=""
+          // not while Affect All Pages is off, which keeps the theme already, and Shuffle keeps its place then. The pair
+          // rides in the heading's row (pushed right), so on a phone the heading, Keep Theme and Shuffle hold the first
+          // line and the page controls the next, whether Keep Theme shows or not.
+          <div className="flex min-w-0 basis-full items-center gap-2 sm:flex-1 sm:basis-auto">
+            <h3 className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Quick Picks
+            </h3>
+            <span className="ml-auto flex items-center gap-1.5" data-page-design-quick-controls="">
+              {pageOnly ? null : (
+                <label
+                  className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md py-1 pl-1 text-[11px] font-medium text-slate-600 dark:text-slate-300"
+                  data-page-design-keep-theme=""
+                >
+                  <span id="quick-keep-theme">Keep Theme</span>
+                  <Switch
+                    checked={keepTheme}
+                    onChange={setKeepTheme}
+                    labelledBy="quick-keep-theme"
+                    size="sm"
+                  />
+                </label>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const picks = rollQuick(look.paperDark);
+                  if (openId) rolled = { openId, picks };
+                  setRoll(picks);
+                  setSeq((n) => n + 1);
+                }}
+                className="cursor-pointer whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                data-page-design-quick-shuffle=""
               >
-                <span id="quick-keep-theme">Keep Theme</span>
-                <Switch
-                  checked={keepTheme}
-                  onChange={setKeepTheme}
-                  labelledBy="quick-keep-theme"
-                  size="sm"
-                />
-              </label>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                const picks = rollQuick(look.paperDark);
-                if (openId) rolled = { openId, picks };
-                setRoll(picks);
-                setSeq((n) => n + 1);
-              }}
-              className="cursor-pointer whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-              data-page-design-quick-shuffle=""
-            >
-              Shuffle
-            </button>
-          </span>
+                Shuffle
+              </button>
+            </span>
+          </div>
         }
         gridClass="grid grid-cols-3 gap-1.5"
         renderItem={(p) => {
