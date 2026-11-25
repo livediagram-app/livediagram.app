@@ -410,3 +410,48 @@ describe('signpostBoards', () => {
     expect(best).toBeLessThan(cpuBudgetMs(10));
   });
 });
+
+// docs/specs/009-elements/office.md "A Room turns" (Work Tracker 1454): a Walk There to a turned room heads for its
+// Door on the turned wall, and arrives on the turned floor.
+describe('placePoints: a turned room', () => {
+  it("walks to a turned room's Door from outside and arrives on its turned floor", () => {
+    const [upright, door] = withDoorPiece(createShape('room', 0, 0)) as [
+      ShapeElement,
+      ShapeElement,
+    ];
+    const turned = { ...upright, rotation: 180 };
+    // Half a turn: the front wall's Door now stands on the top wall line, so the walk comes in from above.
+    const moved = snapDoorToWall({ ...door, y: upright.y + 36 - 5 - 12 }, [turned]);
+    const { approach, arrival } = placePoints(turned, [turned, moved]);
+    expect(approach!.y).toBeLessThan(arrival.y);
+    expect(arrival.y).toBeGreaterThan(turned.y);
+  });
+
+  it("turns an older room's built-in doorway with it", () => {
+    const room = at('room', 0, 0, { roomDoor: 's', rotation: 180 }) as never as ShapeElement;
+    const { approach, arrival } = placePoints(room, []);
+    // The front doorway, turned half way, faces up: the approach is above the box, the arrival inside it.
+    expect(approach!.y).toBeLessThan(room.y);
+    expect(arrival.y).toBeGreaterThan(room.y);
+  });
+
+  it('turns a Room Builder room outline with it', () => {
+    const outline = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 0, y: 1 },
+    ];
+    const room = at('room', 0, 0, {
+      width: 400,
+      height: 300,
+      roomOutline: outline,
+      rotation: 180,
+    }) as never as ShapeElement;
+    // Its Door on the bottom outline wall, turned: now on the top line (y = 0).
+    const door = at('door', 152, -12, { width: 96, height: 24 });
+    const { approach, arrival } = placePoints(room, [room, door]);
+    expect(approach!.y).toBeLessThan(0);
+    expect(arrival.y).toBeGreaterThan(0);
+  });
+});

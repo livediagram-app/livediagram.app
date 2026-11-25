@@ -95,6 +95,29 @@ describe('CallSpacePanel', () => {
     expect(onChange).toHaveBeenLastCalledWith('b');
   });
 
+  it('keeps the Space it chooses, never Default, and a refused keep changes nothing', async () => {
+    const onChange = vi.fn();
+    const keep = vi.fn(async (_id: string) => {
+      throw new Error('offline');
+    });
+    const spaces = { ...host([space('a', { title: 'Standup' })]), keep };
+    const { rerender } = render(
+      <CallSpacePanel spaces={spaces} value={null} onChange={onChange} />,
+    );
+    const group = await screen.findByRole('radiogroup', { name: 'Calls Open In' });
+    fireEvent.click(within(group).getByRole('radio', { name: 'Standup' }));
+    expect(onChange).toHaveBeenLastCalledWith('a');
+    expect(keep).toHaveBeenCalledWith('a');
+    rerender(<CallSpacePanel spaces={spaces} value="a" onChange={onChange} />);
+    fireEvent.click(
+      within(await screen.findByRole('radiogroup', { name: 'Calls Open In' })).getByRole('radio', {
+        name: 'A New Space for Each Call',
+      }),
+    );
+    expect(onChange).toHaveBeenLastCalledWith(null);
+    expect(keep).toHaveBeenCalledTimes(1);
+  });
+
   it('shows the chosen Space as chosen, and Default writes null', async () => {
     const onChange = vi.fn();
     render(

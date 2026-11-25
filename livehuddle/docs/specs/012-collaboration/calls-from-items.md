@@ -22,6 +22,15 @@ audio, video and screen share are livehuddle's own calls ([Proximity audio](prox
 bubbles](video-and-screen-bubbles.md)): no second video stack. Presenting the item is the Screen; screen share stays for anything else. Everything a Space
 offers works in it, and its minutes are the host's as any Space's ([Call Minutes](call-minutes.md)).
 
+**A Space made for a call is deleted when the call ends** (Work Tracker 1445, the platform's [When a call
+ends](../../../../liveworkspace/docs/specs/004-index/item-calls.md#when-a-call-ends)). The index marks it made by
+Call on the call's record when it makes it, and once the call has been live and stood empty for two minutes, moves the
+Space to its host's Trash within the quarter hour, as an Explorer Delete would. Anything drawn on its walls and floors
+goes with it; the summary and the actions are already on the item's Meetings, in their knowledgebase and plan.
+Someone back in the Space before then keeps the call going. A Calls Space, any Space the index did not make for the
+call, and a Space made by Call that its host renamed, moved, archived, chose as their Calls Space or restored from the
+Trash are never deleted. livehuddle itself deletes nothing: the room only tells the index who is in it, as below.
+
 The room keeps the call's id once the index marks it (the internal door `POST /api/internal/items/:id/call`), and from
 then on tells the index who is in it, a count and their presence names, at most every 1.5 seconds of changes
 (`PUT /app/items/:id/call-people`). A Space that is not a call says nothing.

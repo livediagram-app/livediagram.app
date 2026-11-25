@@ -2,7 +2,8 @@
 
 // The lens under a list's header (liveplanner/docs/specs/013-workspace/explorer-filters.md "The chip row",
 // "States"): one chip per dimension, each writing its token into the one lens string; Clear; the reported words;
-// what a filtered list says when nothing matches; and the live region that says how many are left.
+// and what a filtered list says when nothing matches. Its own chunk (lazy-lens.tsx): a list draws it once its code is
+// in; the live region that says how many are left is LensAnnouncer.tsx, in the first load.
 
 import {
   useCallback,
@@ -14,10 +15,8 @@ import {
   type KeyboardEvent,
 } from 'react';
 import {
-  announceResults,
   chooseChipValue,
   issueMessage,
-  LENS_SETTLE_MS,
   LENS_TELEMETRY_TYPES,
   lensChips,
   type LensChip,
@@ -356,43 +355,5 @@ export function FilteredEmpty({
         </Button>
       </div>
     </EmptyState>
-  );
-}
-
-/**
- * The polite live region that says how many items the lens left, once the list for a changed lens has loaded and
- * LENS_SETTLE_MS has passed. Silent on arrival: opening a view is not a change.
- */
-export function LensAnnouncer({
-  lens,
-  loading,
-  shown,
-  more,
-  words,
-}: {
-  lens: string;
-  loading: boolean;
-  shown: number;
-  more: boolean;
-  words: Words;
-}) {
-  const [message, setMessage] = useState('');
-  // The lens the view arrived with; null once it has changed, so changing back speaks too.
-  const arrived = useRef<string | null>(lens);
-  const counts = useRef({ shown, more, words });
-  counts.current = { shown, more, words };
-  useEffect(() => {
-    if (lens === arrived.current || loading) return;
-    arrived.current = null;
-    const timer = setTimeout(() => {
-      const { shown, more, words } = counts.current;
-      setMessage(announceResults(shown, more, words));
-    }, LENS_SETTLE_MS);
-    return () => clearTimeout(timer);
-  }, [lens, loading]);
-  return (
-    <div role="status" aria-live="polite" className="sr-only">
-      {message}
-    </div>
   );
 }

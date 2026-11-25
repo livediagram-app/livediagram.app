@@ -100,6 +100,19 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   staying put. When a shared-wall snap and an edge snap are both in range on an axis, the nearer wins, the wall on a
   tie. Custom rooms snap by their box only (their walls are not on it). Cmd / Ctrl places freely, as every snap
   ([Snap override](../008-canvas/snap-override.md)). (`snapRoomWalls`, `snapRoomWallsResize` in `@livehuddle/document`.)
+- **A Room turns** (Work Tracker 1454). The element menu's Rotation turns any Room, a box or a Room Builder room,
+  about its centre at any angle, as a [Corridor](corridor.md) turns, and everything its walls do turns with it:
+  - **its walls block walking along their turned lines**: a character bumps into the wall where it is drawn, slides
+    along it, and walks through an open Door in it (`roomWalls` in `@livehuddle/avatar` turns them by the room's
+    `rotation` about its centre, so the walk, the Doors, the 3D view and the Receptionist all read the same lines);
+  - **its Doors and Windows turn with it**: each keeps its place along its wall and turns to the wall's new angle, so
+    its opening still cuts the wall where it is drawn, in the same Undo step as the turn (`doorsFollowRooms`); a Door
+    dropped or slid onto a turned room's wall snaps onto the turned wall;
+  - **its call is its turned floor**: someone is in the room when their feet are on the floor as drawn
+    ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)).
+  - A turned room shares walls by its walls, not its box: it is left out of the wall-to-wall snap (moving it, or a
+    room beside it, snaps edges only) and a duplicate of it stands a gap away rather than on its wall. On Grass a
+    turned room has no roof in the 3D view ([3D view](../008-canvas/3d-view.md)).
 
 ### Room presets
 
@@ -332,6 +345,15 @@ a Long Table and back (Work Tracker 628).
   changes every selected piece of that kind; other kinds are left alone (two rugs and a door, Persian: both rugs). Picking
   the type a piece already has changes nothing. One undoable change, `Element · Changed · <Kind>` (`Door`, `Rug`,
   `Corridor`, `Meeting-table`).
+- **A Corridor's Doors move to its new walls** (Work Tracker 1453). A new type has different walls (a Straight's two
+  runs, a Corner's two bends, a T-Junction's three, a Crossroads' four inside corners), so every Door and Window that
+  stood on the corridor's old walls is put on the nearest stretch of its new walls: from its own centre, the nearest
+  point of a wall run long enough to hold it, clear of the run's ends, turned to that wall (a Window to face into the
+  corridor), and never on top of another Door or Window there (the next nearest run then). One that no run can hold
+  (every run is shorter, or taken) is removed, and a notice says so: **"1 Door didn't fit the new corridor's walls and
+  was removed."** (or "2 Doors", "1 Window", "1 Door and 1 Window"). The type change, the Doors it moves and the ones it
+  removes are one change: one Undo puts the corridor and all its Doors back (`retypeCorridorDoors` in
+  `@livehuddle/document`).
 
 ## Stage
 

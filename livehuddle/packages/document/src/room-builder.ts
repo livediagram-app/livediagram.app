@@ -5,7 +5,6 @@ import {
   doorLine,
   doorSpanOnWall,
   nearestWall,
-  outlineWalls,
   pointInPolygon,
   type OutlinePoint,
 } from '@livehuddle/avatar/room-outline';
@@ -114,10 +113,10 @@ function isWalled(el: Element): el is ShapeElement {
   return el.type === 'shape' && (el.shape === 'room' || el.shape === 'corridor');
 }
 
-// A room's or a corridor's walls, uncut by any door.
+// A room's or a corridor's walls, uncut by any door, turned with the piece (office.md "A Room turns").
 function wallLines(el: ShapeElement) {
   if (el.shape === 'corridor') return corridorWalls(el);
-  return isOutlinedRoom(el) ? outlineWalls(el, el.roomOutline) : roomWalls(el);
+  return roomWalls(el);
 }
 
 /** Every room's and corridor's walls, uncut, with the piece each belongs to. */
@@ -139,18 +138,20 @@ export function isWallPiece(el: Element): el is ShapeElement {
 }
 
 // Whether `p` is on the floor of a room or a corridor: a rectangle's interior, a custom room's outline, a corridor's
-// floor turned by its rotation.
-function onFloorOf(piece: ShapeElement, p: OutlinePoint): boolean {
+// floor, each turned by the piece's rotation (corridor.md "It turns", office.md "A Room turns").
+function onFloorOf(piece: ShapeElement, canvasPoint: OutlinePoint): boolean {
+  const turn = (-(piece.rotation ?? 0) * Math.PI) / 180;
+  const cx = piece.x + piece.width / 2;
+  const cy = piece.y + piece.height / 2;
+  const dx = canvasPoint.x - cx;
+  const dy = canvasPoint.y - cy;
+  // The point in the piece's own upright frame, canvas px.
+  const p = {
+    x: cx + dx * Math.cos(turn) - dy * Math.sin(turn),
+    y: cy + dx * Math.sin(turn) + dy * Math.cos(turn),
+  };
   if (piece.shape === 'corridor') {
-    const turn = (-(piece.rotation ?? 0) * Math.PI) / 180;
-    const cx = piece.x + piece.width / 2;
-    const cy = piece.y + piece.height / 2;
-    const dx = p.x - cx;
-    const dy = p.y - cy;
-    const local = {
-      x: cx + dx * Math.cos(turn) - dy * Math.sin(turn) - piece.x,
-      y: cy + dx * Math.sin(turn) + dy * Math.cos(turn) - piece.y,
-    };
+    const local = { x: p.x - piece.x, y: p.y - piece.y };
     return pointInPolygon(local, corridorShape(piece.width, piece.height, piece.variant).floor);
   }
   if (isOutlinedRoom(piece)) return pointInPolygon(p, roomOutlinePoints(piece));
@@ -341,7 +342,7 @@ function presetDoor(room: ShapeElement, variant: string | undefined): ShapeEleme
 function wholeWalls(room: ShapeElement) {
   if (room.shape === 'corridor') return corridorWalls(room);
   return isOutlinedRoom(room)
-    ? outlineWalls(room, room.roomOutline)
+    ? roomWalls(room)
     : roomWalls({ ...room, roomDoor: 'none', roomOutline: undefined });
 }
 

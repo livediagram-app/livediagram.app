@@ -2,8 +2,8 @@
 // one-explorer.md "Cost and performance"): Inbox, Invites, Gallery and Shape Libraries were static imports of
 // Explorer.tsx, in every /explorer page's first load. A static import of any of them again, or of an item's History
 // from a module the Explorer loads up front, passes every other test; this one fails.
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { preloadExplorerPanesWhenIdle } from './lazy-panes';
 
@@ -39,6 +39,42 @@ describe('the Explorer’s sections', () => {
       expect(staticImports(read(file)), file).not.toContain('../teams/page/TeamView');
     }
     expect(read('TeamPane.tsx')).toContain("import('../teams/page/TeamView')");
+  });
+});
+
+// Offline's view, the Details layout and the lens's chips left the first load (liveworkspace/docs/specs/010-site/
+// blueprints/site.md "Performance and limits"): /explorer had reached its budget on main.
+describe('Offline, Details and the lens’s chips', () => {
+  const src = join(__dirname, '..');
+  const sources = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return entry.name === 'test' ? [] : sources(path);
+      return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [path] : [];
+    });
+  // Every static import in the package's code, as the path it resolves to from src/.
+  const importsOf = (target: string) =>
+    sources(src).filter((file) =>
+      staticImports(readFileSync(file, 'utf8')).some(
+        (spec) => spec.startsWith('.') && relative(src, join(file, '..', spec)) === target,
+      ),
+    );
+
+  it('no module imports them statically', () => {
+    expect(importsOf('explorer/Lens')).toEqual([]);
+    expect(importsOf('explorer/DetailsView')).toEqual([]);
+    expect(importsOf('explorer/ThisBrowserPane')).toEqual([]);
+  });
+
+  it('each loads from its own chunk', () => {
+    expect(read('lazy-lens.tsx')).toContain("import('./Lens')");
+    expect(read('lazy-panes.ts')).toContain("import('./DetailsView')");
+    expect(read('lazy-panes.ts')).toContain("import('./ThisBrowserPane')");
+  });
+
+  it('the guard sees a static import', () => {
+    // It would pass on an empty tree: ItemsPane's own static import of the lazy lens is found.
+    expect(importsOf('explorer/lazy-lens')).toContain(join(src, 'explorer/ItemsPane.tsx'));
   });
 });
 

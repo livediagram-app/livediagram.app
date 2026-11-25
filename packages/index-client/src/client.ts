@@ -491,6 +491,10 @@ export function createIndexClient({
         method: 'POST',
         body: ask,
       }),
+    // Settings › Calls chose the Space as the person's Calls Space: a Space made by Call stays (item-calls.md "When a
+    // call ends").
+    keepCallSpace: (spaceId: string) =>
+      call<void>(`/items/${enc(spaceId)}/call/keep`, { method: 'POST' }),
     callInvitePeople: (spaceId: string, share?: ShareAccess | null) =>
       call<{ teamId: string | null; people: ApprovalCandidate[] }>(
         `/items/${enc(spaceId)}/call/people`,
