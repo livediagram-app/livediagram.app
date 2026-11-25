@@ -11,7 +11,10 @@ Spec: [one-explorer.md "Offline, a Space"](../one-explorer.md#offline-a-space) a
   `renameThisBrowserFolder`, `deleteThisBrowserFolder` moving its folders and items up, `moveThisBrowserFolder`
   refusing a cycle, `moveThisBrowserItem`), the folder tree helpers (`localChildren`, `localPath`, `isLocalWithin`)
   and the sync-place notes (`noteSyncPlace`, `readSyncPlaces`, `dropSyncPlace`).
-- `packages/explorer/src/explorer/ThisBrowser.tsx`: the view, and `useThisBrowserSpace` for visibility.
+- `packages/explorer/src/explorer/ThisBrowser.tsx`: the hooks and rows Home, the Trash and the panel share
+  (`useThisBrowserSpace`, for visibility, is in `this-browser-space/space.ts`).
+- `packages/explorer/src/explorer/ThisBrowserPane.tsx`: the view (`/explorer/offline`), from its own chunk
+  (`lazy-panes.ts`).
 - `packages/explorer/src/explorer/this-browser-store.ts`: the hooks (`useThisBrowserList`, `useThisBrowserFolders`),
   one parse per stored text change.
 - `packages/explorer/src/explorer/ThisBrowserItemMenu.tsx`: one item's verbs (open, archive, reload after a move), the
