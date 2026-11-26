@@ -156,8 +156,9 @@ export function CallSpacePanel({
 
   const intro = (
     <p className="text-sm text-slate-600 dark:text-slate-400">
-      Call, at the top right of every app, starts a livehuddle call about what you have open, in a
-      new tab. Choose where those calls happen.
+      Call, at the top right of every app, asks where to meet before a livehuddle call about what
+      you have open starts in a new tab. Choose the place it suggests; you can still pick another
+      for any one call.
     </p>
   );
 

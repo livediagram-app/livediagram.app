@@ -10,7 +10,8 @@ a second for Calls Spaces (`0033_item_calls_spaces.sql`, below) and a third for 
 ## Flow
 
 ```
-item's editor: Call ── window.open('', 'lw-call-<item>') (an empty tab, named) ──┐
+item's editor: Call ── the Start a Call popover (where: A New Space or a Space)
+   └─ Start Call ── window.open('', 'lw-call-<item>') (an empty tab, named) ──┐
    └─ POST /api/index/items/:item/calls {} ─▶ index (person, account)            │
         limiter `item-call:<person>`; loadItem(view) as the person (share code)  │
         a live call for the item? → answer it (started: false)                  │
@@ -192,8 +193,22 @@ edit` and no `sharedVia` (`choosableSpaces`). Each preview is `GET /api/previews
 
 ## Every editor's Call
 
-- `startCall` sends `readCallSpaceSetting(workbench.readPreferences())`; `fallback` answers an info toast
-  (`callFallbackWords`), the call opening all the same.
+- Call opens the Start a Call popover (`StartCallPopover.tsx`, its own lazy chunk, preloaded when the pointer comes
+  over Call or it takes focus). Its open state, its anchor and `starting` live in `call-chooser-store.ts` (a
+  module-level store, as the calls' store is), so the corner card's Call and the phone's Apps drawer tile open the same
+  one, which `ItemCallHost` mounts. It is `ResponsivePopover` (`@liveworkspace/ui`: anchored under Call from `sm` up, a
+  phone sheet below) with the anchor, and the shared `Dialog` phone sheet with none (the Apps drawer's tile, a phone
+  held sideways); `HeroDialogHeader` with `meetingHeroArt`; `Button` secondary Cancel and primary Start Call in a
+  `<form>`, so Enter submits.
+- The rows are `listCallSpaces()` (the Settings host's read, `listItems({app: livehuddle, view: all, limit:
+CALL_SPACES_LISTED})`) kept with `choosableSpaces` and previewed with `useSpacePreviews`, both from
+  `@liveworkspace/settings-ui/call-spaces`. The last list is kept for the page and shown at once on the next open,
+  read again behind it. The chosen row starts as `readCallSpaceSetting(workbench.readPreferences())` (A New Space when
+  null or `isUnavailable`); a change is the popover's state alone, never a settings write.
+- Start Call calls `startCall(source, indexClient, chosen)` inside its submit handler, so `window.open` runs in the
+  press before any await (popup blockers); `chosen` is null for A New Space, which the index starts as the default
+  whatever the setting says. `fallback` answers an info toast (`callFallbackWords`), the call opening all the same.
+- Join (the pill, the drawer's Join Call) opens the live call at once, as before: nothing to choose.
 
 ## livehuddle
 
@@ -240,6 +255,9 @@ edit` and no `sharedVia` (`choosableSpaces`). Each preview is `GET /api/previews
   Inbox `calls`, purge.
 - index-client: each reader's caps and wrong types; `readSourceChange` with `calls`.
 - livehuddle: the room's push settles and pushes once, only for a call; the door.
-- workbench: the button's states (idle, live, guest, failure), Join and Start open the named tab, the Meetings list's
+- workbench: the button's states (idle, live, guest, failure); Call opens the popover and starts nothing; the popover
+  preselects the setting (unset, a Space, Unavailable), a pick for this call writes no setting, A New Space sends
+  null over a set Space, Cancel, Escape and a press outside start nothing, Enter starts, the Spaces' loading, empty
+  and error states, the phone tile opens it with no anchor; Join and Start open the named tab, the Meetings list's
   rows and empty state, the store re-reads on a `calls` signal and on nothing else.
 - Every app: its corner card holds the button (a render test).

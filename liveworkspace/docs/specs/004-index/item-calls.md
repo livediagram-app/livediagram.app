@@ -28,10 +28,13 @@ Where each app's button sits is that app's spec (`<app>/docs/specs/013-workspace
 ## Starting
 
 **Call** sits in the editor's top-right corner card, first, before Copy and Share. Its hover card reads "Start a Call
-Here: a livehuddle call about this <noun>, in a new tab."
+Here: choose where to meet, then a livehuddle call about this <noun> opens in a new tab."
 
-- Pressing it opens a **new browser tab** at once (an empty one, so no pop-up blocker stops it), and the index answers
-  with the call's address, which the tab then goes to. The call never opens inside the item's tab (owner, 2026-11-22).
+- **Pressing Call asks first** (Work Tracker 1470). A call never starts by accident: Call opens the
+  [Start a Call popover](#the-start-a-call-popover), and only its **Start Call** starts one.
+- **Start Call** opens a **new browser tab** in that press (an empty one, so no pop-up blocker stops it), and the index
+  answers with the call's address, which the tab then goes to. The call never opens inside the item's tab (owner,
+  2026-11-22).
 - **One call an item.** While a call about the item is live, pressing starts nothing new: the person joins that call.
 - **A Document Room with the item on its wall** (Work Tracker 1427). A Space made for the call is livehuddle's
   [Document Room](../../../../livehuddle/docs/specs/012-collaboration/virtual-office-template.md#document-room)
@@ -50,6 +53,38 @@ Here: a livehuddle call about this <noun>, in a new tab."
 - If the index can't make the call, the new tab closes and a toast says "Couldn't start the call. Try again."
 - With a [Calls Space](#your-calls-space) chosen, the call starts there instead of in a new Space.
 
+### The Start a Call popover
+
+The popover opens under Call, right-aligned to it, in the look of Share (the meeting hero band, the same buttons and
+radius); on a phone, from the Apps drawer's Call tile, it is a sheet rising from the bottom edge.
+
+- **Header**: the meeting art's band, "Start a Call", and "About <item title>".
+- **Where to Meet**: one choice, as a list of rows, each a native radio so the arrow keys move between them:
+  **A New Space** ("Made for this call, named after the <noun>") first, then the person's choosable livehuddle
+  Spaces (the [Calls Space](#your-calls-space) picker's list: owned or the team's, most recently changed first), each
+  with its preview, its name and "Your Space" or "Team Space". A search field shows from 7 Spaces; the list scrolls
+  inside the popover.
+- **Preselected from the setting.** The person's **Calls Open In** is chosen when it opens, its Space marked "Your
+  Calls Space" (A New Space, marked "Default", when it is unset or Default). A setting that is Unavailable leaves A New Space chosen and says so
+  ("Your Calls Space isn't available, so a new Space is chosen.").
+- **For this call only.** Choosing another row changes only this call: the setting is never written. Under the list:
+  "For this call only. Change where calls open in Settings › Calls."
+- **Start Call** (the primary button, last) starts the call as above with the chosen row: A New Space starts it as
+  the default does even when a Calls Space is set; a Space starts it there, checked as any Calls Space is
+  ([below](#your-calls-space)). Enter in the popover is Start Call. **Cancel**, Escape, the close, or a press outside
+  it closes it with nothing started.
+- **While the Spaces load** the rows they will fill pulse, and A New Space and Start Call already work; a list kept
+  from an earlier open this page shows at once and is read again behind it. **A list that can't load** says "Your
+  Spaces couldn't be loaded." with Try Again, and Start Call still starts in the chosen place (the setting's Space,
+  named "Your Calls Space", or A New Space). **No Spaces** shows A New Space alone and "Make a Space in livehuddle to
+  meet in it."
+- **Starting**: Start Call says "Starting" and is disabled until the index answers; the popover closes once the tab
+  is open, and the toasts are those above.
+- **Join is not asked.** While a call about the item is live, the pill's Join opens it at once: the call has its
+  Space already, and there is nothing to choose.
+- **Who sees it**: whoever may start a call (an account). A guest sees what they saw before: Join while a call is
+  live, nothing otherwise.
+
 ## Your Calls Space
 
 **Calls Open In**, in Settings › **Calls** (an account category, [site.md](../010-site/site.md#settings)), picks where
@@ -64,7 +99,8 @@ a person's Call opens (Work Tracker 1409). It is one setting on the account, the
   preview and whose space it is in (Yours, or a team's), the most recently changed first, at most
   `CALL_SPACES_LISTED` (200). A Space can be chosen when the person **owns it or it is their team's** (they reach it as
   its owner or a member, never through someone's link), and it is out of the Trash and Archived.
-- **Starting.** The editor sends the chosen Space with the start. The index checks it again as the person, at that
+- **Starting.** The editor sends the Space chosen in the [Start a Call popover](#the-start-a-call-popover) with the
+  start (the setting's, unless the person picked another for this call). The index checks it again as the person, at that
   moment: owned or the team's, livehuddle's, not trashed or archived. Then the call starts in it: the item's call row
   points at that Space, the room is told the call's id, and the tab opens the Space. Everyone who joins from the item
   lands in the same Space. The Space keeps its own name; nothing in it is changed or moved.

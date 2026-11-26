@@ -10,7 +10,8 @@
     "./connections": "./src/connections/index.ts",
     "./token-list": "./src/token-list.ts",
     "./ai-source": "./src/ai-source/index.ts",
-    "./request": "./src/request.ts"
+    "./request": "./src/request.ts",
+    "./call-spaces": "./src/account-panels/calls/call-spaces.ts"
   },
   "scripts": {
     "lint": "oxlint",

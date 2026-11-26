@@ -46,15 +46,15 @@ From the top:
 - **A grid of tiles**, three to a row, each 84 px tall with its glyph over its name. In this order, and **only where the
   app and the viewer's role offer the action today** (no dead tiles):
 
-  | Tile        | Shown when                                                                       | Does                                                                               |
-  | ----------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-  | Explorer    | Always                                                                           | Goes to the Explorer page on the item's place (`explorerItemHref`), no panel       |
-  | Call        | The app has Start a Call Here and the viewer may start one, or a call is live    | Starts the call in its own tab, or joins the live one (**Join Call**, `3 in Call`) |
-  | Share       | The corner card would show Share (an Editor who may share, hydrated, no welcome) | Opens the Share dialog                                                             |
-  | Present     | The corner card would show Present                                               | Starts the presentation                                                            |
-  | Copy Link   | The item has an address others can open (not an Offline item)                    | Copies the page's address and says so in a toast                                   |
-  | Make a Copy | The corner card would show Copy (a visitor)                                      | Duplicates the item into the viewer's own files                                    |
-  | Inbox       | A signed-in account, in an app with an Inbox (not livehuddle)                    | Goes to the Explorer's Inbox page; a red count while it has unread items           |
+  | Tile        | Shown when                                                                       | Does                                                                                                                        |
+  | ----------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+  | Explorer    | Always                                                                           | Goes to the Explorer page on the item's place (`explorerItemHref`), no panel                                                |
+  | Call        | The app has Start a Call Here and the viewer may start one, or a call is live    | Opens the Start a Call sheet, whose Start Call starts it in its own tab, or joins the live one (**Join Call**, `3 in Call`) |
+  | Share       | The corner card would show Share (an Editor who may share, hydrated, no welcome) | Opens the Share dialog                                                                                                      |
+  | Present     | The corner card would show Present                                               | Starts the presentation                                                                                                     |
+  | Copy Link   | The item has an address others can open (not an Offline item)                    | Copies the page's address and says so in a toast                                                                            |
+  | Make a Copy | The corner card would show Copy (a visitor)                                      | Duplicates the item into the viewer's own files                                                                             |
+  | Inbox       | A signed-in account, in an app with an Inbox (not livehuddle)                    | Goes to the Explorer's Inbox page; a red count while it has unread items                                                    |
 
 - **The item's own actions.** What an app adds to its corner card beyond these (the approval's badge, livedesign's
   Prototype, liveplanner's Preview and Share Form while a form tab is open, which then stand in for Share, livehuddle's
