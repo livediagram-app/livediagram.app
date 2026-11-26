@@ -95,7 +95,8 @@ describe('shares in the Inbox read', () => {
     const spy = vi.spyOn(h.db.env.INDEX_DB, 'batch');
     await sharesOf(bo.auth);
     expect(spy).toHaveBeenCalledTimes(1);
-    // Threads, actions, forms, access requests, shares, suggestions, updates and notices.
-    expect(spy.mock.calls[0]![0]).toHaveLength(9);
+    // Threads, actions, forms, access requests, shares, suggestions, updates, notices and calls, then the
+    // reader's read rows and Mark All Read mark (inbox-reading.md "Read and unread").
+    expect(spy.mock.calls[0]![0]).toHaveLength(11);
   });
 });

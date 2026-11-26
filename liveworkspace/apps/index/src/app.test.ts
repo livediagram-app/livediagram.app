@@ -202,6 +202,8 @@ describe('the Inbox', () => {
       updates: [],
       notices: [],
       calls: [],
+      // An account's read state, with nothing read yet (inbox-reading.md "Read and unread").
+      read: { before: 0, at: {} },
     });
     // Given a link and having opened it, Cat sees them.
     const { link } = await body<{ link: { code: string } }>(
