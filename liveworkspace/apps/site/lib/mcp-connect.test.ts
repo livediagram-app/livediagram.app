@@ -7,6 +7,8 @@ import {
   handOverError,
   isCliClient,
   mcpOrigin,
+  opensApp,
+  safeRedirect,
 } from './mcp-connect';
 
 // The one MCP's consent hand-over (liveworkspace/docs/specs/021-mcp/mcp.md "Sign-in and per-app consent"): every
@@ -94,8 +96,25 @@ describe('fetchConsentSession', () => {
       redirectHost: 'claude.ai',
       verified: false,
       cli: false,
+      localScheme: null,
     });
     expect(await fetchConsentSession('https://mcp.test', 'gone')).toBeNull();
+  });
+
+  // liveworkspace/docs/specs/021-mcp/mcp.md "Redirect addresses": a sign-in going to an app on this computer.
+  it('reads the app scheme the sign-in goes to, and nothing that isn’t one', async () => {
+    const answer = (localScheme: unknown) => {
+      routes['GET https://mcp.test/oauth/session/s1'] = () =>
+        Response.json({
+          clientName: 'Cursor',
+          redirectHost: 'anysphere.cursor-retrieval',
+          localScheme,
+        });
+      return fetchConsentSession('https://mcp.test', 's1');
+    };
+    expect((await answer('cursor'))?.localScheme).toBe('cursor');
+    for (const odd of ['javascript', 'cursor:evil', '<b>', 'x'.repeat(65), 7, null])
+      expect((await answer(odd))?.localScheme).toBeNull();
   });
 
   it('names an unnamed client "An app"', async () => {
@@ -178,6 +197,16 @@ describe('connect', () => {
       reason: 'failed',
     });
     expect(seen.filter((s) => s.method === 'DELETE')).toHaveLength(1);
+  });
+
+  it('hands the sign-in to an app’s own scheme the client registered', async () => {
+    routes['POST https://mcp.test/oauth/complete'] = () =>
+      Response.json({ redirectTo: 'cursor://anysphere.cursor-retrieval/cb?code=c&state=s' });
+    expect(await connect('https://mcp.test', 's1', 'Cursor', [])).toEqual({
+      ok: true,
+      redirectTo: 'cursor://anysphere.cursor-retrieval/cb?code=c&state=s',
+    });
+    expect(seen.filter((s) => s.method === 'DELETE')).toEqual([]);
   });
 
   it('leaves tokens be when nothing is replaced or the list can’t be read', async () => {
@@ -278,5 +307,23 @@ describe('connectDevice', () => {
       ok: false,
       reason: 'token_limit',
     });
+  });
+});
+
+describe('safeRedirect and opensApp', () => {
+  it('sends the browser to a web address or an app scheme, never one the browser runs itself', () => {
+    expect(safeRedirect('https://claude.ai/cb')).toBe(true);
+    expect(safeRedirect('http://127.0.0.1:5/cb')).toBe(true);
+    expect(safeRedirect('cursor://anysphere.cursor-retrieval/cb')).toBe(true);
+    for (const bad of [
+      'javascript:alert(1)',
+      'data:text/html,x',
+      'file:///etc/passwd',
+      'not a url',
+      7,
+    ])
+      expect(safeRedirect(bad)).toBe(false);
+    expect(opensApp('cursor://anysphere.cursor-retrieval/cb')).toBe(true);
+    expect(opensApp('https://claude.ai/cb')).toBe(false);
   });
 });

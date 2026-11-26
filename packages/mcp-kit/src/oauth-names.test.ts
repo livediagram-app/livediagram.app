@@ -59,4 +59,21 @@ describe('reservedNameRefusal', () => {
   it('reads an unparseable redirect as elsewhere', () => {
     expect(reservedNameRefusal('Claude', ['not a url'])).toBe('client_name claude is reserved');
   });
+
+  // liveworkspace/docs/specs/021-mcp/mcp.md "Redirect addresses": any app can claim a scheme, so a reserved name
+  // passes on one only when it is that tool's own, and an app scheme is never loopback, whatever its host.
+  it('lets a tool use its own app scheme and no other', () => {
+    expect(reservedNameRefusal('Cursor', ['cursor://anysphere.cursor-retrieval/cb'])).toBeNull();
+    expect(reservedNameRefusal('Claude', ['claude://callback'])).toBeNull();
+    expect(reservedNameRefusal('Cursor', ['claude://callback'])).toBe(
+      'client_name cursor is reserved',
+    );
+    expect(reservedNameRefusal('Claude', ['cursor://localhost/cb'])).toBe(
+      'client_name claude is reserved',
+    );
+    expect(reservedNameRefusal('liveworkspace', ['liveworkspace://cb'])).toBe(
+      'client_name liveworkspace is reserved',
+    );
+    expect(reservedNameRefusal('Notes helper', ['notes://cb'])).toBeNull();
+  });
 });

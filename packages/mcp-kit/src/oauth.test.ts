@@ -9,6 +9,7 @@ import {
   registerOauthRoutes,
   type OauthServer,
 } from './oauth';
+import { ACCESS_TOKEN_TTL_S, resolveAccessToken } from './oauth-tokens';
 
 // A product's MCP env, as far as the authorization server reads it, and its configuration: a CLI client of its own
 // and a consent page on its editor (here example.app, the hosted default when CONSENT_BASE_URL is unset).
@@ -298,7 +299,7 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
 });
 
 describe('full authorize -> complete -> token flow', () => {
-  it('round-trips a PKCE code to the minted token', async () => {
+  it('round-trips a PKCE code to this server’s own tokens, never the minted account token', async () => {
     const clientId = await register();
     const verifier = 'x'.repeat(64);
     const challenge = await pkceChallenge(verifier);
@@ -343,13 +344,24 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    const token = await tok.json<{ access_token: string; expires_in: number }>();
-    expect(token.access_token).toBe('lwt_secret');
+    const token = await tok.json<{
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+      token_type: string;
+    }>();
+    // liveworkspace/docs/specs/021-mcp/mcp.md "Tokens": the client gets an hour's access token for this server and
+    // a refresh token; the account token stays here, so nothing the client holds works on an app's api.
+    expect(token.access_token).toMatch(/^lwm_/);
+    expect(token.refresh_token).toMatch(/^lwr_/);
+    expect(JSON.stringify(token)).not.toContain('lwt_secret');
+    expect(token.token_type).toBe('Bearer');
+    expect(token.expires_in).toBe(ACCESS_TOKEN_TTL_S);
+    const held = await resolveAccessToken(env.OAUTH_KV, token.access_token, 'http://localhost/mcp');
+    expect(held).toMatchObject({ ok: true, upstream: 'lwt_secret', clientId });
     // RFC 6749 §5.1: an answer carrying a token is never cached.
     expect(tok.headers.get('Cache-Control')).toBe('no-store');
     expect(tok.headers.get('Pragma')).toBe('no-cache');
-    // expires_in reflects the ~6-month token life (docs/specs/015-api/mcp-server.md §3.5).
-    expect(token.expires_in).toBeGreaterThan(60 * 60 * 24 * 179);
   });
 
   it('rejects a wrong PKCE verifier and a reused code', async () => {
@@ -493,7 +505,7 @@ describe('full authorize -> complete -> token flow', () => {
     expect((await redeem({ code, client_id: clientId })).error).toBe('invalid_request');
     expect((await redeem({ code, redirect_uri: REDIRECT })).error).toBe('invalid_request');
     expect(await redeem({ code, redirect_uri: REDIRECT, client_id: clientId })).toMatchObject({
-      access_token: 'lwt_secret',
+      access_token: expect.stringMatching(/^lwm_/),
     });
     expect(
       await redeem({
@@ -628,6 +640,7 @@ describe('the CLI client (docs/specs/015-api/blueprints/cli.md "OAuth server", C
     expect(meta.device_authorization_endpoint).toContain('/oauth/device_authorization');
     expect(meta.grant_types_supported).toEqual([
       'authorization_code',
+      'refresh_token',
       'urn:ietf:params:oauth:grant-type:device_code',
     ]);
   });
@@ -770,7 +783,11 @@ describe('Claude connector directory', () => {
     expect(reg.status).toBe(201);
     const { client_id } = await reg.json<{ client_id: string }>();
     const token = await signIn(client_id, CLAUDE_AI);
-    expect(await token.json()).toMatchObject({ access_token: 'lwt_claude', token_type: 'Bearer' });
+    expect(await token.json()).toMatchObject({
+      access_token: expect.stringMatching(/^lwm_/),
+      refresh_token: expect.stringMatching(/^lwr_/),
+      token_type: 'Bearer',
+    });
     expect(network).not.toHaveBeenCalled();
     network.mockRestore();
   });
@@ -779,7 +796,7 @@ describe('Claude connector directory', () => {
     const reg = await registerFrom('Claude Code (liveexample)', ['http://localhost:3118/callback']);
     const { client_id } = await reg.json<{ client_id: string }>();
     const token = await signIn(client_id, 'http://localhost:54321/callback');
-    expect(await token.json()).toMatchObject({ access_token: 'lwt_claude' });
+    expect(await token.json()).toMatchObject({ access_token: expect.stringMatching(/^lwm_/) });
   });
 
   it('gives Anthropic’s egress range its own, larger registration budget', async () => {
@@ -831,17 +848,19 @@ describe('Claude connector directory', () => {
     return { status: res.status, body: await res.json<Record<string, string>>() };
   }
 
-  it('answers a refresh token invalid_grant, since it issues none, and an unknown grant in words', async () => {
+  it('answers an unknown refresh token invalid_grant, and an unknown grant in words', async () => {
     const refresh = await token(
-      new URLSearchParams({ grant_type: 'refresh_token', refresh_token: 'rt_old' }),
+      new URLSearchParams({ grant_type: 'refresh_token', refresh_token: 'rt_old', client_id: 'c' }),
     );
     expect(refresh).toEqual({
       status: 400,
       body: {
         error: 'invalid_grant',
-        error_description: 'This server issues no refresh tokens. Sign in again.',
+        error_description: 'This refresh token is unknown, revoked or expired. Sign in again.',
       },
     });
+    const bare = await token(new URLSearchParams({ grant_type: 'refresh_token' }));
+    expect(bare.body.error).toBe('invalid_request');
     const password = await token(new URLSearchParams({ grant_type: 'password' }));
     expect(password.body.error).toBe('unsupported_grant_type');
     expect(password.body.error_description).toBeTruthy();

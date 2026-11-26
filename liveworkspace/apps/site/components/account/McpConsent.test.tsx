@@ -20,11 +20,13 @@ let root: Root;
 let client: Record<string, unknown>;
 let completed: unknown;
 let denied: unknown;
+let handedTo: string;
 
 beforeEach(() => {
   tracked.mockReset();
   completed = null;
   denied = null;
+  handedTo = 'http://127.0.0.1:9/cb?code=c';
   vi.stubGlobal('fetch', async (input: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET';
     if (input.endsWith('/oauth/session/s1')) return Response.json(client);
@@ -36,7 +38,7 @@ beforeEach(() => {
     }
     if (input.endsWith('/oauth/complete')) {
       completed = JSON.parse(init!.body as string);
-      return Response.json({ redirectTo: 'http://127.0.0.1:9/cb?code=c' });
+      return Response.json({ redirectTo: handedTo });
     }
     return Response.json({});
   });
@@ -82,6 +84,40 @@ describe('McpConsent', () => {
     expect(denied).toEqual({ session: 's1' });
     expect(container.textContent).toContain('Connection cancelled');
     expect(tracked).not.toHaveBeenCalled();
+  });
+
+  // liveworkspace/docs/specs/021-mcp/mcp.md "Redirect addresses" (Work Tracker 1450).
+  it('names the app and warns when the sign-in goes to an app on this computer', async () => {
+    client = {
+      clientName: 'Cursor',
+      redirectHost: 'anysphere.cursor-retrieval',
+      verified: false,
+      clientId: 'c1',
+      localScheme: 'cursor',
+    };
+    handedTo = 'cursor://anysphere.cursor-retrieval/cb?code=c';
+    act(() => root.render(<McpConsent />));
+    await settle();
+    expect(container.textContent).toContain('Connect Cursor');
+    expect(container.textContent).toContain('Cursor isn’t made by liveworkspace.');
+    expect(container.textContent).toContain(
+      'Access goes to an app on this computer that opens cursor:// links. Any app here can claim those links, so only continue if you just started this in Cursor.',
+    );
+    expect(container.textContent).not.toContain('anysphere.cursor-retrieval');
+    await connect();
+    // The browser stays on this page while the app opens, so it says the connection is made.
+    expect(await vi.waitFor(() => container.querySelector('h1, h2')?.textContent)).toBe(
+      'Connected',
+    );
+    expect(container.textContent).toContain('You can close this window.');
+  });
+
+  it('keeps the web address line for a sign-in going to a website', async () => {
+    client = { clientName: 'Claude', redirectHost: 'claude.ai', verified: false, clientId: 'c1' };
+    act(() => root.render(<McpConsent />));
+    await settle();
+    expect(container.textContent).toContain('Access goes to claude.ai.');
+    expect(container.textContent).not.toContain('app on this computer');
   });
 
   it('offers an app’s CLI no app list, and grants it every app', async () => {

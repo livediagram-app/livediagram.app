@@ -52,6 +52,8 @@ export function routerEnv(env: WorkerEnv, ctx: ExecutionContext): Env {
   return {
     ...fetchers,
     OAUTH_KV: env.OAUTH_KV,
+    // Any app api answers for an account token (liveworkspace made it); livediagram's, as the first app.
+    TOKEN_API: env.LIVEDIAGRAM_API,
     ...(env.CONSENT_BASE_URL ? { CONSENT_BASE_URL: env.CONSENT_BASE_URL } : {}),
   };
 }

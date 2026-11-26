@@ -4,22 +4,26 @@ Derived from [mcp.md](../mcp.md). The spec decides; this file adds engineering p
 
 ## Files
 
-| File                                   | Role                                                                                                                                    |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/mcp/src/index.ts`                | The Worker entry: per request, the token's allowed apps and `?tools=all`, then mcp-kit's app; a refused token becomes the 401 challenge |
-| `apps/mcp/src/apps.ts`                 | The five apps: kind, binding, item word and noun, id argument, the tools the core verbs map to, hand-made names                         |
-| `apps/mcp/src/catalogue.ts`            | Renaming (`renameTool`), the rewrite of old names in texts (`nameRewriter`, `rewriteJson`, `rewriteGuidance`), `namingProblems`         |
-| `apps/mcp/src/core.ts`                 | The ten core verbs: their schemas (`CORE_TOOLS`) and `runCore`                                                                          |
-| `apps/mcp/src/app-client.ts`           | JSON-RPC to an app's MCP package in process; the per-isolate tool lists; `TokenRefused`                                                 |
-| `apps/mcp/src/app-workers.ts`          | Each app's MCP package bound to its env (api binding, base URL, telemetry key) as an in-process `Fetcher`                               |
-| `apps/mcp/src/old-hosts.ts`            | `mcp.<app>.app` on this Worker: `/mcp` passed through to that app's own package, the sign-in refusals that point here                   |
-| `apps/mcp/src/server.ts`               | The per-request `McpServer`: low-level `tools/list` and `tools/call` handlers, the instructions                                         |
-| `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request (a failed read throws; the entry answers 503)              |
-| `apps/mcp/src/oauth.ts`, `listing.ts`  | The authorization server's configuration (consent on liveworkspace.app, the five CLIs as built-in clients); serverInfo                  |
-| `<app>/apps/mcp/src/index.ts`          | Each app's MCP package: `createMcpApp` with no authorization server of its own, imported by `apps/mcp/src/app-workers.ts`               |
-| `apps/mcp/eval/`                       | The tool-pick eval: `requests.ts`, `score.ts`, `run.ts`, `snapshot.mjs`, the recorded `tools/`                                          |
-| `apps/site/app/oauth/consent/page.tsx` | The consent page (`components/account/McpConsent.tsx`, `lib/mcp-connect.ts`)                                                            |
-| `packages/mcp-kit/src/oauth.ts`        | `OauthServer.onGrant`: told of each grant with the consent page's body                                                                  |
+| File                                   | Role                                                                                                                                                                                           |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/mcp/src/index.ts`                | The Worker entry: per request, the token's allowed apps and `?tools=all`, then mcp-kit's app; a refused token becomes the 401 challenge                                                        |
+| `apps/mcp/src/apps.ts`                 | The five apps: kind, binding, item word and noun, id argument, the tools the core verbs map to, hand-made names                                                                                |
+| `apps/mcp/src/catalogue.ts`            | Renaming (`renameTool`), the rewrite of old names in texts (`nameRewriter`, `rewriteJson`, `rewriteGuidance`), `namingProblems`                                                                |
+| `apps/mcp/src/core.ts`                 | The ten core verbs: their schemas (`CORE_TOOLS`) and `runCore`                                                                                                                                 |
+| `apps/mcp/src/app-client.ts`           | JSON-RPC to an app's MCP package in process; the per-isolate tool lists; `TokenRefused`                                                                                                        |
+| `apps/mcp/src/app-workers.ts`          | Each app's MCP package bound to its env (api binding, base URL, telemetry key) as an in-process `Fetcher`                                                                                      |
+| `apps/mcp/src/old-hosts.ts`            | `mcp.<app>.app` on this Worker: `/mcp` passed through to that app's own package, the sign-in refusals that point here                                                                          |
+| `apps/mcp/src/server.ts`               | The per-request `McpServer`: low-level `tools/list` and `tools/call` handlers, the instructions                                                                                                |
+| `apps/mcp/src/bearer.ts`               | The Bearer a request carries, resolved to the account token behind it: this server's `lwm_` (audience, chain), an account token in the move-over window, liveworkspace's check; `refusedToken` |
+| `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request (a failed read throws; the entry answers 503)                                                                     |
+| `apps/mcp/src/oauth.ts`, `listing.ts`  | The authorization server's configuration (consent on liveworkspace.app, the five CLIs as built-in clients); serverInfo                                                                         |
+| `<app>/apps/mcp/src/index.ts`          | Each app's MCP package: `createMcpApp` with no authorization server of its own, imported by `apps/mcp/src/app-workers.ts`                                                                      |
+| `apps/mcp/eval/`                       | The tool-pick eval: `requests.ts`, `score.ts`, `run.ts`, `snapshot.mjs`, the recorded `tools/`                                                                                                 |
+| `apps/site/app/oauth/consent/page.tsx` | The consent page (`components/account/McpConsent.tsx`, `lib/mcp-connect.ts`)                                                                                                                   |
+| `packages/mcp-kit/src/oauth.ts`        | `OauthServer.onGrant`: told of each grant with the consent page's body; the token endpoint's code and refresh grants                                                                           |
+| `packages/mcp-kit/src/oauth-tokens.ts` | This server's tokens: `issueTokens`, `refreshTokens`, `resolveAccessToken`, `revokeSignIn`, the sealed account token                                                                           |
+| `packages/mcp-kit/src/oauth-cimd.ts`   | Client ID Metadata Documents: `cimdUrl`, `cimdClient` (fetch, limits, cache)                                                                                                                   |
+| `packages/api-kit/src/oauth.ts`        | `appSchemeRedirectUrl`: an app's own redirect scheme, the web and system ones refused                                                                                                          |
 
 ## Bindings
 
@@ -56,11 +60,51 @@ itself (a refused token's 401, an old address's challenge and sign-in refusals) 
 ## Calling an app
 
 `POST https://<app>.internal/mcp` to the app's package (`app-workers.ts`: its Hono app's `fetch` with the app's env and
-this request's `ExecutionContext`), `Authorization: Bearer <the person's token>`,
+this request's `ExecutionContext`), `Authorization: Bearer <the account token the connection holds>` (never the
+client's `lwm_`; the request handed to mcp-kit's app carries the same, so a handshake's client name is kept by the
+account token and found by every app),
 `Accept: application/json, text/event-stream`, a bare JSON-RPC `tools/list` or `tools/call` (each app's MCP is
 stateless, so no `initialize` first). A 401 throws `TokenRefused`, which marks the request refused; the entry then
 answers `401 invalid_token` with `bearerChallenge(origin, true)`. Any other failure is a tool error in words, or, in
 `find_items`, that app's entry in `failed`.
+
+## Tokens
+
+| Constant / record     | Value                                                                                                                                                                                                                                                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCESS_TOKEN_TTL_S`  | 3,600                                                                                                                                                                                                                                                                  |
+| `REFRESH_TOKEN_TTL_S` | 90 days, from each refresh token's issue; both capped at the account token's `expiresAt` (180 days from the grant when unsent)                                                                                                                                         |
+| Access token          | `lwm_` + 32 random bytes, base64url                                                                                                                                                                                                                                    |
+| Refresh token         | `lwr_` + the sign-in's id (32 hex) + 32 random bytes, base64url                                                                                                                                                                                                        |
+| `mcp-fam:<id>`        | `{ aud, clientId, refresh, access, sealed, upstreamEndsAt, refreshEndsAt, previous, rotatedAt }`: hashes of the current pair (and the refresh token it replaced, for `REUSE_GRACE_MS`, 30 s), the account token sealed under the refresh token; TTL to `refreshEndsAt` |
+| `mcp-at:<sha256 hex>` | `{ aud, clientId, family, sealed, endsAt }`: the account token sealed under the access token; TTL an hour                                                                                                                                                              |
+| Seal                  | AES-256-GCM, key `SHA-256("lw-seal:" + token)`, a random 12-byte IV, stored base64url(IV + ciphertext)                                                                                                                                                                 |
+| `LEGACY_TOKENS_UNTIL` | `2026-12-27T00:00:00Z`; a legacy warning at most once per token per isolate every 10 minutes (500 kept, then cleared)                                                                                                                                                  |
+| Account token check   | `GET https://livediagram-api/api/tokens/current` on `TOKEN_API` (the `LIVEDIAGRAM_API` binding); 401 refuses, anything else passes; kept a minute per isolate, 500 at most                                                                                             |
+
+Order on `/mcp` (`one-mcp.ts`): the URL-token refusal and no-token challenge stay mcp-kit's; with a token,
+`resolveBearer` runs before mcp-kit's app (so before `initialize`), and a refusal is `401 invalid_token` with
+`bearerChallenge(origin, true)` (on an old address, `movedChallenge`). An app's 401 later in the request ends the
+sign-in (`revokeSignIn`) as well as answering 401.
+
+Token endpoint: `authorization_code` for a built-in client answers the account token (unchanged); for any other
+client `issueTokens` (an optional `resource` must be `<origin>/mcp`, query ignored, else `invalid_target`).
+`refresh_token` needs `refresh_token` and `client_id`; a spent one deletes the sign-in's record and its current
+access token (`invalid_grant`); a client id that isn't the sign-in's is `invalid_grant` with nothing revoked.
+
+## Client ID Metadata Documents
+
+| Constant             | Value                                                                    |
+| -------------------- | ------------------------------------------------------------------------ |
+| `CIMD_MAX_BYTES`     | 5,120                                                                    |
+| `CIMD_TIMEOUT_MS`    | 3,000, the whole fetch and read                                          |
+| `CIMD_CACHE_S`       | 86,400 (`cimd:<sha256 hex of the URL>`); a refusal 300                   |
+| `CIMD_URL_MAX`       | 255                                                                      |
+| Fetch limit          | `cimd-rate`, 30 an hour per address, 2,000 from Anthropic's egress range |
+| Refetch on a new URI | once, when the kept copy is over 5 minutes old                           |
+
+`/oauth/authorize` reads an `https://` client id through `cimdClient`; a refusal answers the page (400) in words.
+Such a client is never renewed in KV and never built in; `/oauth/token` binds its code to the URL as to any id.
 
 ## Catalogue
 
@@ -115,11 +159,15 @@ answers 401 as a listing does. `appGuide` sends `initialize` and keeps the instr
 
 ## Testing
 
-| Test                                | Pins                                                                                                                                                                                                                                                                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/mcp/src/catalogue.test.ts`    | No clash, no bare "document", every name has a subject, openings, no old name left, the rename table; every listed tool's hints (core verbs and `?tools=all`) fit its name: a delete, trash, archive, overwrite or share tool destructive, a find, read, list, search or get tool read-only |
-| `apps/mcp/src/router.test.ts`       | Listing both ways, routing as the person, rewritten answers, every core verb's mapping, an app down, an app's JSON-RPC refusal as a tool error, 401s, per-app consent; each app's old address passes its own tool names, texts and instructions through                                     |
-| `apps/mcp/src/eval.test.ts`         | Every request's expected tool exists; the eval's mapping and judging                                                                                                                                                                                                                        |
-| `apps/site/lib/mcp-connect.test.ts` | The consent hand-over: mint, complete with the ticked apps, retire, refusals; Cancel’s `access_denied`                                                                                                                                                                                      |
-| `apps/mcp/src/old-hosts.test.ts`    | Which hosts are old addresses; each refuses sign-in with the pointer, with CORS                                                                                                                                                                                                             |
-| `apps/mcp/src/app-workers.test.ts`  | Each app's env: its api binding, base URL and telemetry key, and no key when unset                                                                                                                                                                                                          |
+| Test                                        | Pins                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/mcp/src/catalogue.test.ts`            | No clash, no bare "document", every name has a subject, openings, no old name left, the rename table; every listed tool's hints (core verbs and `?tools=all`) fit its name: a delete, trash, archive, overwrite or share tool destructive, a find, read, list, search or get tool read-only |
+| `apps/mcp/src/router.test.ts`               | Listing both ways, routing as the person, rewritten answers, every core verb's mapping, an app down, an app's JSON-RPC refusal as a tool error, 401s, per-app consent; each app's old address passes its own tool names, texts and instructions through                                     |
+| `apps/mcp/src/eval.test.ts`                 | Every request's expected tool exists; the eval's mapping and judging                                                                                                                                                                                                                        |
+| `apps/site/lib/mcp-connect.test.ts`         | The consent hand-over: mint, complete with the ticked apps, retire, refusals; Cancel’s `access_denied`                                                                                                                                                                                      |
+| `apps/mcp/src/old-hosts.test.ts`            | Which hosts are old addresses; each refuses sign-in with the pointer, with CORS                                                                                                                                                                                                             |
+| `apps/mcp/src/app-workers.test.ts`          | Each app's env: its api binding, base URL and telemetry key, and no key when unset; the token check's binding                                                                                                                                                                               |
+| `apps/mcp/src/bearer.test.ts`               | Audience, chain, legacy window either side of its date, made-up and revoked tokens, the account-token check and its cache                                                                                                                                                                   |
+| `apps/mcp/src/compat.test.ts`               | An existing client replayed from its side: an account token from today's main through `initialize`, `tools/list` and `tools/call`, an existing registered `client_id` signing in again, both after the window                                                                               |
+| `packages/mcp-kit/src/oauth-tokens.test.ts` | Issue, rotate, reuse, expiry, audience, the seal                                                                                                                                                                                                                                            |
+| `packages/mcp-kit/src/oauth-cimd.test.ts`   | Accepted and refused URLs, non-https, redirects, oversized, slow, bad documents, the cache and refetch, the rate limit, CPU time                                                                                                                                                            |

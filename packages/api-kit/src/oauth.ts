@@ -43,3 +43,63 @@ export async function pkceChallenge(verifier: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
   return bytesToBase64Url(digest);
 }
+
+// Schemes an app's own redirect may never use (liveworkspace/docs/specs/021-mcp/mcp.md "Redirect addresses"): ones a
+// browser runs or reads itself, the system's own handlers, and the web's, which have rules of their own (https; http
+// on loopback only).
+const REFUSED_APP_SCHEMES = new Set([
+  'javascript',
+  'data',
+  'file',
+  'vbscript',
+  'about',
+  'blob',
+  'filesystem',
+  'ftp',
+  'ws',
+  'wss',
+  'http',
+  'https',
+  'mailto',
+  'tel',
+  'sms',
+  'intent',
+  'content',
+  'jar',
+  'view-source',
+  'chrome',
+  'chrome-extension',
+  'moz-extension',
+  'edge',
+  'resource',
+]);
+
+export const APP_REDIRECT_MAX_CHARS = 512;
+
+const isSchemeChar = (ch: string, first: boolean) =>
+  (ch >= 'a' && ch <= 'z') ||
+  (!first && ((ch >= '0' && ch <= '9') || ch === '+' || ch === '.' || ch === '-'));
+
+/**
+ * An app's own redirect address (`cursor://anysphere.cursor-retrieval/oauth/callback`, `com.example.app:/cb`), or
+ * null: a scheme of two or more letters, digits, `+`, `.` or `-` starting with a letter (one letter is a drive),
+ * none of the refused ones, something after the colon, no fragment, white space or control character, at most 512
+ * characters. Read one character at a time, no pattern, so a long address costs a single pass.
+ */
+export function appSchemeRedirectUrl(uri: string): URL | null {
+  if (uri.length > APP_REDIRECT_MAX_CHARS || uri.includes('#')) return null;
+  const colon = uri.indexOf(':');
+  if (colon < 2 || colon === uri.length - 1) return null;
+  for (let i = 0; i < uri.length; i++) {
+    const code = uri.charCodeAt(i);
+    if (code <= 0x20 || code === 0x7f) return null;
+  }
+  const scheme = uri.slice(0, colon).toLowerCase();
+  for (let i = 0; i < scheme.length; i++) if (!isSchemeChar(scheme[i]!, i === 0)) return null;
+  if (REFUSED_APP_SCHEMES.has(scheme)) return null;
+  try {
+    return new URL(uri);
+  } catch {
+    return null;
+  }
+}

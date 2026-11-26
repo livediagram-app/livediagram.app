@@ -17,6 +17,7 @@ import {
   fetchConsentSession,
   handOverError,
   mcpOrigin,
+  opensApp,
   type ConsentSession,
   type McpApp,
 } from '@/lib/mcp-connect';
@@ -56,6 +57,8 @@ function ConsentCard() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [cancelled, setCancelled] = useState(false);
+  // Handed to an app on this computer (an app scheme such as cursor://): the browser stays on this page, so it says so.
+  const [handedToApp, setHandedToApp] = useState(false);
   // At the token cap: the account's tokens are listed to revoke one in place (`atLimit`), and once one is, the card
   // says there is room and the keyboard goes to Connect (`freed`), as on each app's consent page.
   const [atLimit, setAtLimit] = useState(false);
@@ -91,6 +94,15 @@ function ConsentCard() {
     if (step && step.getBoundingClientRect().top < 0) step.scrollIntoView({ block: 'start' });
   }, [atLimit]);
 
+  if (handedToApp)
+    return (
+      <AccountCard narrow>
+        <AccountHeading title="Connected">
+          Your AI tool should open to finish. You can close this window.
+        </AccountHeading>
+      </AccountCard>
+    );
+
   if (cancelled)
     return (
       <AccountCard narrow>
@@ -121,7 +133,10 @@ function ConsentCard() {
   const cancel = async () => {
     setBusy(true);
     const redirectTo = await cancelConnect(origin, session);
-    if (redirectTo) return window.location.assign(redirectTo);
+    if (redirectTo) {
+      window.location.assign(redirectTo);
+      if (!opensApp(redirectTo)) return;
+    }
     setBusy(false);
     setCancelled(true);
   };
@@ -165,7 +180,12 @@ function ConsentCard() {
     if (result.ok) {
       // Anonymous telemetry: an AI tool connected, or a CLI signed in, which mints a token.
       trackMcpTokenCreated(request.cli ? 'Cli' : 'MCP');
-      return window.location.assign(result.redirectTo);
+      window.location.assign(result.redirectTo);
+      if (opensApp(result.redirectTo)) {
+        setBusy(false);
+        setHandedToApp(true);
+      }
+      return;
     }
     setBusy(false);
     if (result.reason === 'token_limit') setAtLimit(true);
@@ -225,15 +245,25 @@ function ConsentCard() {
             ) : null
           ) : (
             <OauthWarning title={`${client} isn’t made by liveworkspace.`}>
-              <p>
-                {request.redirectHost ? (
-                  <>
-                    Access goes to{' '}
-                    <strong className="break-all font-mono">{request.redirectHost}</strong>.{' '}
-                  </>
-                ) : null}
-                Only continue if you started this.
-              </p>
+              {request.localScheme ? (
+                // An app scheme (mcp.md "Redirect addresses"): any app on this computer can claim it.
+                <p>
+                  Access goes to an app on this computer that opens{' '}
+                  <strong className="break-words font-mono">{request.localScheme}://</strong> links.
+                  Any app here can claim those links, so only continue if you just started this in{' '}
+                  <bdi>{client}</bdi>.
+                </p>
+              ) : (
+                <p>
+                  {request.redirectHost ? (
+                    <>
+                      Access goes to{' '}
+                      <strong className="break-all font-mono">{request.redirectHost}</strong>.{' '}
+                    </>
+                  ) : null}
+                  Only continue if you started this.
+                </p>
+              )}
             </OauthWarning>
           )}
           {request.cli ? null : (

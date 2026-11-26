@@ -90,9 +90,12 @@ The server is built to be listed in Claude's connector directory, so it meets it
   as plain arrays with an exact length).
 - **No instructions out of place**: descriptions say what a tool does and when; they never send the assistant to
   other tools the person didn't ask for, nor to outside instructions. What items hold is data.
-- **Sign-in as the directory expects**: OAuth 2.1 with S256 PKCE, dynamic client registration, a 401 with
-  `resource_metadata` for a missing or refused token, and `https://claude.ai/api/mcp/auth_callback` and loopback
-  redirects accepted (mcp-kit's authorization server). Every answer that carries a token says
+- **Sign-in as the directory expects**: OAuth 2.1 with S256 PKCE, dynamic client registration and Client ID
+  Metadata Documents, a 401 with `resource_metadata` for a missing or refused token, and
+  `https://claude.ai/api/mcp/auth_callback`, loopback and registered app-scheme redirects accepted (mcp-kit's
+  authorization server, [Tokens](#tokens) and [Redirect addresses](#redirect-addresses)). Access tokens are this
+  server's own, short-lived, with rotating refresh tokens, and never reach an app's api (MCP 2025-11-25
+  authorization, "Token Handling", "Access Token Privilege Restriction", "Token Theft"). Every answer that carries a token says
   `Cache-Control: no-store` (RFC 6749 §5.1), and Cancel on the consent page sends the person back to the client
   with `error=access_denied` (RFC 6749 §4.1.2.1), so the AI tool stops waiting rather than hanging on a page that
   says to close it. Once the client and its redirect URI are known good, an authorize request it got wrong (a
@@ -115,13 +118,14 @@ centre's contact page, and its icon `liveworkspace-icon-512.png`.
 
 A router in front of each app's tools, in one Worker. Each app's MCP is a package in that app's folder
 (`<app>/apps/mcp`: its tools, prompts, resources and views, with their tests), and this Worker runs each one in
-process, as the person, with the person's own `Authorization: Bearer lwt_…` (an account token works on every app).
+process, as the person, with the account token the connection holds on the server (an account token works on every
+app). The client's own token is never passed on: it is this server's, for this server alone ([Tokens](#tokens)).
 An app's tools reach its api over this Worker's service binding to that api. An app's answer comes back as it is,
 the old tool names in its guidance and refusals rewritten, never in what a person wrote. A tool call the app's MCP
 answers with a JSON-RPC error comes back as a tool error (`isError`) in the app's own words, so the assistant can
 correct the call; only a tool name this server doesn't have is a protocol error, and only a failure to reach the app
 answers "try again". A refused token (401 from any app) makes the whole request answer 401 with the sign-in
-challenge.
+challenge, and ends the connection's sign-in, so its refresh token stops too.
 
 The core verbs map to each app's existing tools: `find_items` to `find_documents`, `find_projects` or
 `find_designs` (or `list_trash` with `where: "trash"`), across every allowed app at once, five at most, each app's
@@ -156,12 +160,13 @@ Everything each app's own MCP serves reaches the person through the one MCP, for
 
 ## Sign-in and per-app consent
 
-OAuth 2.1 with PKCE and dynamic registration, the same as each app's MCP (`@liveworkspace/mcp-kit`). The consent
+OAuth 2.1 with PKCE, dynamic registration and Client ID Metadata Documents (`@liveworkspace/mcp-kit`). The consent
 page is liveworkspace.app's `/oauth/consent` (signed in, never indexed, linked from nowhere). It lists the five apps,
 each ticked; clearing one keeps that app's tools away from this connection. Approving makes an ordinary account
-token named after the client (the Settings panel's API Tokens list it, and revoke it), hands it to the server, and
-the server keeps which apps it may reach, by the token's hash, as long as the client's registration. A token with no
-such record (one pasted from Settings) reaches every app; when the record can't be read (the store fails), the request
+token named after the client (the Settings panel's API Tokens list it, and revoke it), hands it to the server, which
+keeps it and hands the client tokens of its own ([Tokens](#tokens)), and the server keeps which apps it may reach, by
+the account token's hash, as long as the client's registration. A token with no such record (one pasted from Settings,
+during the [move-over window](#existing-connections)) reaches every app; when the record can't be read (the store fails), the request
 answers 503, try again, rather than guessing, so a failure never widens a connection to every app. A reconnect replaces the client's earlier token, as each
 app's MCP does. Cancel mints nothing: the server forgets the request and the browser goes back to the client's
 redirect address with `error=access_denied` (and its `state`), so the AI tool says the connection was declined; when
@@ -179,8 +184,10 @@ Worker runs every app's MCP, so there is one deploy, one KV namespace and one pl
   A deployment that sets no telemetry key sends no MCP telemetry for that app.
 - **Its old address.** `mcp.<app>.app` is a custom domain on this Worker. A request to `/mcp` there with a token is
   passed through to that app's own MCP package as it is, so a connection made before the fold keeps the tool names,
-  descriptions, instructions, prompts and resources it was given, until its token ends (a client holds the tool list
-  it read and calls those names). A token whose per-app consent leaves that app out gets the pointer at
+  descriptions, instructions, prompts and resources it was given, until its token ends or the
+  [move-over window](#existing-connections) closes, whichever is first (a client holds the tool list it read and
+  calls those names). A token this server issued is for `mcp.liveworkspace.app` alone, so an old address refuses it
+  with the pointer. A token whose per-app consent leaves that app out gets the pointer at
   `https://mcp.liveworkspace.app/mcp` instead. Its sign-in endpoints refuse in words that point there: registration,
   authorize and the token exchange; its discovery metadata says the same. A token that ended answers 401 with that
   pointer. `/health` answers there, for the status page.
@@ -195,6 +202,89 @@ sign-in uses liveworkspace.app's `/oauth/device`.
 
 **Moving the old addresses.** A custom domain belongs to one Worker, so each app's MCP Worker is deleted before this
 Worker's deploy claims its address (docs/ci.md "Deploys"); between the two, the old address does not answer.
+
+## Tokens
+
+The client never holds a credential an app's api accepts (Work Tracker 1447, 1448). What the token exchange hands an
+AI tool:
+
+| Token         | Shape           | Lives                                                                                     |
+| ------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| Access token  | `lwm_…`, opaque | 1 hour (never past the account token behind it)                                           |
+| Refresh token | `lwr_…`, opaque | 90 days from its own issue, rotated on every use (never past the account token behind it) |
+
+- **Audience.** Each access token is issued for this server's resource, `<origin>/mcp` (RFC 8707: a `resource`
+  the client names at authorize or token must be that, or the request is refused `invalid_target`). `/mcp` accepts
+  only an access token issued for its own origin; any other (another server's, an old address's, an expired or
+  revoked one, a made-up one) answers `401 invalid_token` with the `WWW-Authenticate` challenge, before
+  `initialize` or `tools/list` run.
+- **No passthrough.** The account token the consent page minted stays on the server, sealed in `OAUTH_KV` under a
+  key only the client's own tokens derive, so the store alone opens nothing. Each request opens it with the access
+  token and calls the apps with it; the client's `lwm_` token goes nowhere past this Worker, and an app's api would
+  refuse it.
+- **Still live.** Before a request runs, the account token behind it is checked with liveworkspace (an app api's
+  `GET /api/tokens/current`, kept a minute per isolate), so a token revoked in Settings stops `initialize` and
+  `tools/list` within a minute, not just tool calls. liveworkspace out of reach lets the request on; the app call
+  then judges.
+- **Refresh.** `grant_type=refresh_token` with the client's `client_id` answers a new access token and a new
+  refresh token; the old refresh token is spent. Presenting a spent refresh token ends the whole sign-in: the
+  refresh chain and every access token from it stop (they are checked against the chain's record on every request),
+  and the client signs in again. The one just spent, presented again within 30 seconds, is a client's own two
+  calls at once: refused, nothing ended. A refused account token (revoked in Settings, or ended) ends the chain the same way,
+  so a client never loops refreshing a dead sign-in. Discovery advertises `refresh_token` among the grants.
+- **Storage.** One record per sign-in (`mcp-fam:<id>`, as long as its refresh token) and one per live access token
+  (`mcp-at:<hash>`, an hour), both with KV expirations, so nothing outlives its token. Refresh tokens carry their
+  sign-in's id, so a spent one needs no record of its own to be caught.
+- **The CLIs are unchanged.** A built-in client (`<app>-cli`) calls its app's api, not this server, so it still gets
+  the account token itself, as every CLI version expects.
+
+### Existing connections
+
+Tokens handed out before this change are account tokens (`lwt_…`, or `lvd_…` carried over from the old
+livediagram.app, docs/migration.md), and the clients holding them keep them (owner,
+2026-11-25: accept them for 30 days, then refuse). `/mcp`, and the old addresses, accept an account token until
+**2026-12-27** (00:00 UTC), checked with liveworkspace first, so a revoked or made-up one is refused; each use logs
+`[mcp] legacy token` (once per token per isolate every ten minutes). From that date an account token answers `401
+invalid_token` with "sign in again", and the client's sign-in gives it the new tokens. A Settings API token in a
+client's `Authorization` header is an account token too, so it follows the same window; afterwards a tool connects
+by signing in. Its dynamic registration (`client_id`) keeps working, as before.
+
+## Client ID Metadata Documents
+
+Besides dynamic registration, a client may use an `https` URL as its `client_id`, pointing at a JSON document that
+describes it (draft-ietf-oauth-client-id-metadata-document; Work Tracker 1449), so Claude needs no registration per
+connection. Discovery says `client_id_metadata_document_supported: true`.
+
+- **Which URLs.** `https` only, at most 255 characters, a path other than `/`, no user, password, fragment, dot
+  segments or port other than 443, and a host name (no IP address, `localhost`, `.local`, `.localhost` or
+  `.internal`).
+- **The fetch.** No redirects followed (a 3xx is refused), at most 5 KB (a larger `Content-Length` is refused
+  before reading, and reading stops at 5 KB), 3 seconds for the whole fetch, at most 30 uncached fetches an hour
+  per address (2,000 from Anthropic's range).
+- **The document.** JSON whose `client_id` is exactly the URL, with `redirect_uris` every one of which this server
+  accepts ([Redirect addresses](#redirect-addresses)), `token_endpoint_auth_method` absent or `none`, and a
+  `client_name` that is not reserved. Its `redirect_uris` are enforced exactly as a registered client's.
+- **The cache.** A good document is kept 24 hours; a refused one 5 minutes. A `redirect_uri` the kept copy doesn't
+  list fetches the document again once, if the copy is over 5 minutes old, so a client that changed its document
+  isn't locked out for a day.
+- **On the consent page** such a client is unverified, as a registered one.
+
+## Redirect addresses
+
+Work Tracker 1450, decided by the owner (2026-11-25): app schemes are allowed. A client may register, or list in its
+metadata document:
+
+- `https` addresses, matched exactly;
+- `http` on a loopback host (`localhost`, `127.0.0.1`, `[::1]`), the port free (RFC 8252 §7.3);
+- an app's own scheme (`cursor://…`, `com.example.app:/cb`), matched **exactly** as registered. Web and system
+  schemes are refused: `javascript`, `data`, `file`, `vbscript`, `about`, `blob`, `filesystem`, `ftp`, `ws`, `wss`,
+  `mailto`, `tel`, `sms`, `intent`, `content`, `jar`, `view-source` and browser-internal ones, plain `http` off
+  loopback, a one-letter scheme (a drive letter), a fragment, white space or control characters.
+
+Any app on a computer can claim a scheme, so only PKCE keeps a code it intercepts useless. The consent page names
+the client and warns: the sign-in goes to an app on this computer that opens `<scheme>://` links, so continue only
+if you just started it there. A name that reads as one of our apps is refused with an app scheme, and a well-known
+tool's name passes only with its own scheme (`Cursor` with `cursor://`).
 
 ## What people are told
 

@@ -1,11 +1,14 @@
-// OAuth 2.1 + PKCE (S256) + dynamic client registration for the MCP (docs/specs/015-api/mcp-server.md
-// §3). The flow mints an ordinary lwt_ token under the hood (via the api
-// worker's /api/oauth/exchange, called by the signed-in consent page in
-// apps/editor) and hands it to the client through the standard code+PKCE exchange.
-// All transient state lives in OAUTH_KV with short TTLs; no parallel credential
-// model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
+// OAuth 2.1 + PKCE (S256) + dynamic client registration and Client ID Metadata Documents for the one MCP
+// (liveworkspace/docs/specs/021-mcp/mcp.md "Sign-in and per-app consent", "Tokens"). The signed-in consent page mints
+// an ordinary lwt_ account token and hands it here; an AI tool gets this server's own short-lived tokens for it
+// (oauth-tokens.ts), never the account token, while a built-in CLI, which calls its app's api, gets the account token.
+// All transient state lives in OAUTH_KV with TTLs.
 import { cleanText } from '@liveworkspace/api-kit/typed-text';
-import { DEVICE_CODE_GRANT, pkceChallenge } from '@liveworkspace/api-kit/oauth';
+import {
+  DEVICE_CODE_GRANT,
+  appSchemeRedirectUrl,
+  pkceChallenge,
+} from '@liveworkspace/api-kit/oauth';
 import { isLoopbackHostname, oauthRedirectUrl } from '@liveworkspace/api-kit/request-auth';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
@@ -22,6 +25,8 @@ import { formText } from './oauth-form';
 import { handleDeviceToken, registerDeviceRoutes } from './oauth-device';
 import { overWindowLimit, type RateWindow } from './rate-window';
 import { isAnthropicEgress } from './anthropic-egress';
+import { cimdClient, isCimdClientId } from './oauth-cimd';
+import { issueTokens, refreshTokens } from './oauth-tokens';
 
 // What a product's authorization server is configured with: where its signed-in consent and device pages live
 // (its editor, `CONSENT_BASE_URL` or the hosted app), and the clients it ships.
@@ -109,7 +114,28 @@ export function registeredName(value: unknown): string {
 }
 
 export function isAllowedRedirectUri(uri: string): boolean {
-  return oauthRedirectUrl(uri) !== null;
+  return oauthRedirectUrl(uri) !== null || appSchemeRedirectUrl(uri) !== null;
+}
+
+/** An app scheme a redirect goes to (`cursor`), or null for a web address: the consent page warns for one. */
+export function appSchemeOf(uri: string): string | null {
+  return appSchemeRedirectUrl(uri)?.protocol.slice(0, -1) ?? null;
+}
+
+// The resource this server's tokens are for (RFC 8707): its own `/mcp`. A `resource` a client names must be that,
+// its query aside (`/mcp?tools=all` is the same server).
+export function mcpResource(reqUrl: string): string {
+  return `${selfOrigin(reqUrl)}/mcp`;
+}
+
+function namesOtherResource(resource: string | undefined, reqUrl: string): boolean {
+  if (!resource) return false;
+  try {
+    const url = new URL(resource);
+    return `${url.origin}${url.pathname}` !== mcpResource(reqUrl);
+  } catch {
+    return true;
+  }
 }
 
 // The MCP's own public origin, derived from the request so it's host-agnostic
@@ -140,9 +166,10 @@ export function registerOauthRoutes<E extends OauthEnv>(
       registration_endpoint: `${base}/oauth/register`,
       response_types_supported: ['code'],
       device_authorization_endpoint: `${base}/oauth/device_authorization`,
-      grant_types_supported: ['authorization_code', DEVICE_CODE_GRANT],
+      grant_types_supported: ['authorization_code', 'refresh_token', DEVICE_CODE_GRANT],
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
+      client_id_metadata_document_supported: true,
     });
   });
 
@@ -186,7 +213,7 @@ export function registerOauthRoutes<E extends OauthEnv>(
       return c.json(
         oauthError(
           'invalid_redirect_uri',
-          'redirect_uris must be https, or http on a loopback host, with no fragment',
+          'redirect_uris must be https, http on a loopback host, or an app’s own scheme (such as cursor://), with no fragment',
         ),
         400,
       );
@@ -209,7 +236,7 @@ export function registerOauthRoutes<E extends OauthEnv>(
         client_name: clientName,
         redirect_uris: uris,
         token_endpoint_auth_method: 'none',
-        grant_types: ['authorization_code'],
+        grant_types: ['authorization_code', 'refresh_token'],
         response_types: ['code'],
       },
       201,
@@ -226,7 +253,26 @@ export function registerOauthRoutes<E extends OauthEnv>(
     if (!clientId || !redirectUri) {
       return c.text('missing client_id or redirect_uri', 400);
     }
-    const reg = await lookupClient(c.env, server.builtInClients, clientId);
+    // A client id that is a URL is its own metadata document (oauth-cimd.ts): fetched, checked and kept a day.
+    const metadataClient = isCimdClientId(clientId);
+    let reg: ClientReg | null;
+    if (metadataClient) {
+      const found = await cimdClient(c.env, clientId, {
+        request: c.req.raw,
+        redirectUri,
+        allowedRedirect: isAllowedRedirectUri,
+        cleanName: registeredName,
+      });
+      if (!found.ok) {
+        console.warn('[oauth] authorize refused: client metadata document', {
+          reason: found.reason,
+        });
+        return c.text(found.reason, 400);
+      }
+      reg = found.reg;
+    } else {
+      reg = await lookupClient(c.env, server.builtInClients, clientId);
+    }
     // Re-check the scheme: a client registered before the scheme check was
     // tightened can still hold an unsafe redirect_uri until its record expires.
     // And the name, for one registered before reserved names were refused.
@@ -268,8 +314,13 @@ export function registerOauthRoutes<E extends OauthEnv>(
           : 'Missing code_challenge: PKCE with S256 is required.',
       );
     }
+    if (namesOtherResource(q.resource, c.req.url))
+      return refuse(
+        'invalid_target',
+        `This server issues tokens for ${mcpResource(c.req.url)} only.`,
+      );
     // Renew a registered client on every sign-in (CLIENT_TTL), so one in use never expires under its holder.
-    if (!builtInClient(server.builtInClients, clientId)) {
+    if (!metadataClient && !builtInClient(server.builtInClients, clientId)) {
       await c.env.OAUTH_KV.put(`client:${clientId}`, JSON.stringify(reg), {
         expirationTtl: CLIENT_TTL,
       });
@@ -344,11 +395,15 @@ export function registerOauthRoutes<E extends OauthEnv>(
     // The client id is public; the consent page reads it only to tell the CLI apart for telemetry (CLI77).
     // `verified` is true for a built-in client only: every registered one is shown as Unverified App, since
     // registration is open and its name is whatever it sent.
+    // An app scheme (`cursor`) when the sign-in goes to an app on the person's computer: the page names it and warns
+    // that any app there could claim it (mcp.md "Redirect addresses").
+    const localScheme = appSchemeOf(session.redirectUri);
     return c.json({
       clientName: session.clientName,
       redirectHost,
       clientId: session.clientId,
       verified: builtInClient(server.builtInClients, session.clientId) !== null,
+      ...(localScheme ? { localScheme } : {}),
     });
   });
 
@@ -419,13 +474,25 @@ export function registerOauthRoutes<E extends OauthEnv>(
     const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
     const grantType = formText(form, 'grant_type');
     if (grantType === DEVICE_CODE_GRANT) return handleDeviceToken(c, server, form);
-    // This server issues no refresh tokens (each access token lives six months), so any refresh token is one it
-    // does not know: invalid_grant (RFC 6749 §5.2) tells the client to sign in again.
-    if (grantType === 'refresh_token')
-      return c.json(
-        oauthError('invalid_grant', 'This server issues no refresh tokens. Sign in again.'),
-        400,
-      );
+    if (grantType === 'refresh_token') {
+      const refreshToken = formText(form, 'refresh_token');
+      const clientId = formText(form, 'client_id');
+      if (!refreshToken || !clientId)
+        return c.json(
+          oauthError('invalid_request', 'refresh_token and client_id are required (form-encoded)'),
+          400,
+        );
+      if (namesOtherResource(formText(form, 'resource') || undefined, c.req.url))
+        return c.json(
+          oauthError(
+            'invalid_target',
+            `This server issues tokens for ${mcpResource(c.req.url)} only.`,
+          ),
+          400,
+        );
+      const answer = await refreshTokens(c.env.OAUTH_KV, { refreshToken, clientId });
+      return c.json(answer, 'error' in answer ? 400 : 200);
+    }
     // A JSON body parses as nothing: say how the request is meant to arrive rather than answer 415.
     if (!grantType)
       return c.json(
@@ -439,7 +506,7 @@ export function registerOauthRoutes<E extends OauthEnv>(
       return c.json(
         oauthError(
           'unsupported_grant_type',
-          'grant_type must be authorization_code or the device code grant',
+          'grant_type must be authorization_code, refresh_token or the device code grant',
         ),
         400,
       );
@@ -485,8 +552,27 @@ export function registerOauthRoutes<E extends OauthEnv>(
     if (challenge !== record.codeChallenge) {
       return c.json({ error: 'invalid_grant', error_description: 'PKCE verification failed' }, 400);
     }
-    // expires_in reflects the token's remaining 6-month life (docs/specs/015-api/mcp-server.md §3.5);
-    // fall back to the full window if the consent page didn't pass an expiry.
+    // An AI tool gets this server's own tokens, for this server alone (oauth-tokens.ts); the account token stays here.
+    if (!builtInClient(server.builtInClients, clientId)) {
+      if (namesOtherResource(formText(form, 'resource') || undefined, c.req.url))
+        return c.json(
+          oauthError(
+            'invalid_target',
+            `This server issues tokens for ${mcpResource(c.req.url)} only.`,
+          ),
+          400,
+        );
+      return c.json(
+        await issueTokens(c.env.OAUTH_KV, {
+          aud: mcpResource(c.req.url),
+          clientId,
+          upstream: record.token,
+          upstreamEndsAt: record.expiresAt,
+        }),
+      );
+    }
+    // A built-in CLI calls its app's api, so it gets the account token itself. expires_in reflects the token's
+    // remaining 6-month life (docs/specs/015-api/mcp-server.md §3.5); the full window if the page sent no expiry.
     const SIX_MONTHS = 60 * 60 * 24 * 180;
     const expiresIn = record.expiresAt
       ? Math.max(0, Math.floor((record.expiresAt - Date.now()) / 1000))
