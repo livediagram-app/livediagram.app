@@ -35,12 +35,34 @@ export type TitledMarkdown = { title: string | null; markdown: string };
  * opens it (it becomes the page's Title block). Front matter is dropped. No heading: a null title.
  */
 export function titleOfMarkdown(source: string): TitledMarkdown {
-  const lines = source.replace(FRONT_MATTER, '').replace(/\r\n?/g, '\n').split('\n');
+  const front = FRONT_MATTER.exec(source)?.[0] ?? '';
+  const lines = source.slice(front.length).replace(/\r\n?/g, '\n').split('\n');
   for (const [index, line] of proseLines(lines)) {
     const title = HEADING.exec(line)?.[1];
     if (!title) continue;
     if (lines.slice(0, index).every((before) => before.trim() === '')) lines.splice(0, index + 1);
     return { title, markdown: lines.join('\n').trim() };
   }
-  return { title: null, markdown: lines.join('\n').trim() };
+  // No heading: the front matter's `title`, as an export written by liveknowledge before it wrote the heading, Hugo
+  // and Obsidian say it (knowledgebase-import.md "Titles").
+  return { title: frontMatterTitle(front), markdown: lines.join('\n').trim() };
+}
+
+/** The `title:` of a page's front matter, unquoted; null when it has none or an empty one. */
+export function frontMatterTitle(front: string): string | null {
+  for (const line of front.split(/\r?\n/)) {
+    if (!line.startsWith('title:')) continue;
+    let value = line.slice('title:'.length).trim();
+    if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
+      try {
+        value = String(JSON.parse(value));
+      } catch {
+        value = value.slice(1, -1);
+      }
+    } else if (value.length >= 2 && value.startsWith("'") && value.endsWith("'")) {
+      value = value.slice(1, -1).replaceAll("''", "'");
+    }
+    return value.trim() || null;
+  }
+  return null;
 }

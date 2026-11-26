@@ -152,6 +152,7 @@ export * from './page-title';
 export * from './page-draft';
 export * from './page-tree';
 export * from './article-page-links';
+export * from './knowledgebase-export';
 export * from './continuous-page-estimate';
 export * from './continuous-page-width';
 export * from './speaking-time';

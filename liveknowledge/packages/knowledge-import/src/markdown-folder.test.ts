@@ -55,6 +55,26 @@ describe('Markdown Folder', () => {
     expect(plan.pages[1]!.links).toEqual([{ target: 'p1', text: 'deploys' }]);
   });
 
+  it('takes a page’s title from its front matter when it has no heading, and drops the front matter', async () => {
+    const plan = await planImport(
+      'markdown-folder',
+      archiveOf({
+        'a.md': '---\ntitle: "Deploys: \\"how\\""\nowner: "Ana"\n---\n\nWe deploy.',
+        'b.md': "---\ntitle: 'It''s here'\n---\nBody.",
+        'c.md': '---\ntitle: Plain words\n---\n# Heading wins',
+        'd.md': '---\ntitle: ""\n---\nNo title.',
+        'e.md': '---\ntitle: "broken\\"\n---\n',
+      }),
+    );
+    expect(plan.pages.map((p) => [p.title, p.markdown])).toEqual([
+      ['Deploys: "how"', 'We deploy.'],
+      ["It's here", 'Body.'],
+      ['Heading wins', ''],
+      ['d', 'No title.'],
+      ['broken\\', ''],
+    ]);
+  });
+
   it('makes the tree from the folders: the zipped folder’s README is the top page, listed first', async () => {
     const plan = await planImport('markdown-folder', handbook());
     expect(tree(plan)).toEqual([
