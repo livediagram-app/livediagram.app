@@ -10,6 +10,7 @@ import {
   AiCommentMark,
   EditedCommentMark,
 } from '@liveworkspace/workbench/components/comments/CommentMarks';
+import { AiCommentMarks } from '@liveworkspace/ui/ai-comment-marks';
 import { useReactionTray } from '@liveworkspace/workbench/components/comments/CommentReactions';
 import {
   ScopedAddReactionButton,
@@ -293,7 +294,7 @@ function CommentRow({
           style={identityVars(comment.authorColor)}
           className={`text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
         >
-          {initialsOf(comment.authorName)}
+          {initialsOf(comment.agent ?? comment.authorName)}
         </GlyphDisc>
       </span>
       <div className="min-w-0 flex-1">
@@ -301,8 +302,11 @@ function CommentRow({
           className={`flex items-baseline gap-1.5 ${comfortable ? 'text-[13px]' : 'text-[11px]'}`}
         >
           <span className="truncate font-medium text-slate-900 dark:text-slate-50">
-            {comment.authorName}
+            {comment.agent ?? comment.authorName}
           </span>
+          {comment.agent ? (
+            <AiCommentMarks forName={comment.authorName} needsResponse={comment.needsResponse} />
+          ) : null}
           <Tooltip label={when}>
             <time
               dateTime={new Date(comment.createdAt).toISOString()}
@@ -316,7 +320,7 @@ function CommentRow({
           {comment.editedAt ? <EditedCommentMark /> : null}
         </div>
         {/* An agent's comment says so (docs/specs/024-agents/agent-presence.md "Comments"). */}
-        {comment.ai ? <AiCommentMark /> : null}
+        {comment.ai && !comment.agent ? <AiCommentMark /> : null}
         <p
           className={`mt-0.5 whitespace-pre-wrap break-words text-slate-700 dark:text-slate-200 ${
             comfortable ? 'text-[13px] leading-relaxed' : 'text-xs'
