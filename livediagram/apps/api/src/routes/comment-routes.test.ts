@@ -52,6 +52,7 @@ type Call = {
   owner?: string | null;
   code?: string;
   token?: string;
+  headers?: Record<string, string>;
 };
 
 function call({
@@ -61,12 +62,13 @@ function call({
   owner = 'guest_00000000-0000-4000-8000-000000000001',
   code,
   token,
+  headers,
 }: Call) {
   return handleDocuments(
     makeTestRouteContext(method, `/api/documents/d1${path}`, {
       env: sql.env,
       owner,
-      ...(code ? { headers: { 'X-Share-Code': code } } : {}),
+      ...(code || headers ? { headers: { ...(code ? { 'X-Share-Code': code } : {}), ...headers } } : {}),
       ...(token ? { token: { id: token } } : {}),
       ...(body === undefined ? {} : { body }),
       waitUntil: (p) => void pending.push(p),
@@ -450,6 +452,45 @@ describe('agents’ comments', () => {
     expect((await reply.json<{ comment: Comment }>()).comment.ai).toBe(true);
     expect((await threadOf('a'))!.comments.map((c) => c.ai ?? false)).toEqual([true, false, true]);
     expect((await listed()).map((c) => c.ai ?? false)).toEqual([true, false, true]);
+  });
+
+  // inbox-reading.md "AI comments": an agent's comment carries its assistant's name, and its ask when the body asks;
+  // a person's never does, whatever it sends.
+  it('names a token’s assistant and keeps its ask, and marks a person’s comment neither', async () => {
+    seed([shape('a')]);
+    const add = await call({
+      path: '/tabs/t1/comments',
+      body: { elementId: 'a', text: 'Which date?', needsResponse: true },
+      token: 'tok_1',
+      headers: { 'X-Livediagram-Client': 'mcp', 'X-Livediagram-Agent': 'Claude' },
+    });
+    const asked = (await add.json<{ comment: Comment }>()).comment;
+    expect(asked).toMatchObject({ ai: true, agent: 'Claude', needsResponse: true });
+    const plain = await call({
+      path: `/tabs/t1/comments/${asked.id}/reply`,
+      body: { text: 'Noted', needsResponse: 'yes' },
+      token: 'tok_1',
+    });
+    const noted = (await plain.json<{ comment: Comment }>()).comment;
+    expect(noted).toMatchObject({ ai: true, agent: 'API Token' });
+    expect(noted).not.toHaveProperty('needsResponse');
+    const person = await call({
+      path: `/tabs/t1/comments/${asked.id}/reply`,
+      body: { text: 'Friday', agent: 'Claude', needsResponse: true },
+    });
+    const mine = (await person.json<{ comment: Comment }>()).comment;
+    expect(mine).not.toHaveProperty('agent');
+    expect(mine).not.toHaveProperty('needsResponse');
+    const listedComments = (
+      await (await call({ method: 'GET', path: '/comments?status=all' })).json<{
+        threads: { comments: { agent?: string; needsResponse?: true }[] }[];
+      }>()
+    ).threads.flatMap((t) => t.comments);
+    expect(listedComments.map((c) => [c.agent ?? null, c.needsResponse ?? null])).toEqual([
+      ['Claude', true],
+      ['API Token', null],
+      [null, null],
+    ]);
   });
 
   it('edits the caller’s own comment, stamping editedAt and relaying it, and refuses anyone else’s', async () => {

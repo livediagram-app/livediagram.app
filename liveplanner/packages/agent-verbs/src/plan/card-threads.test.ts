@@ -323,6 +323,28 @@ describe('changing threads', () => {
     ]);
   });
 
+  // inbox-reading.md "AI comments": only an asking start or reply sends the ask.
+  it('sends needsResponse on an asking start or reply alone', async () => {
+    const made = thread('th-newnewnewnewnew1', { title: 'Priya: Which' });
+    const { api, sent } = writes(() => Response.json({ thread: made, commentId: 'cm-1' }));
+    const out = await applyThreadChanges(
+      api,
+      P,
+      [
+        { op: 'start', item: '#12', text: 'Which?', needsResponse: true },
+        { op: 'reply', thread: T1.id, text: 'Ok?', needsResponse: true },
+        { op: 'reply', thread: T1.id, text: 'Noted', needsResponse: false },
+      ],
+      STATE,
+    );
+    expect(out.refusal).toBeUndefined();
+    expect(sent.map((s) => s.body)).toEqual([
+      { text: 'Which?', needsResponse: true },
+      { text: 'Ok?', needsResponse: true },
+      { text: 'Noted' },
+    ]);
+  });
+
   it('starts a thread in a Comments field named by name, sending its id; the built-in sends none', async () => {
     const made = thread('th-newnewnewnewnew1', { field: 'f-review' });
     const { api, sent } = writes(() => Response.json({ thread: made, commentId: 'cm-1' }));

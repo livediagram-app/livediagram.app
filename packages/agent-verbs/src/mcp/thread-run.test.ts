@@ -155,6 +155,26 @@ describe('applyThreadChanges', () => {
     ]);
   });
 
+  // inbox-reading.md "AI comments": only an asking start or reply sends the ask, so an old client's body is unchanged.
+  it('sends needsResponse on a start or a reply that asks, and nothing when it does not', async () => {
+    const a = api();
+    await applyThreadChanges(
+      a,
+      ID,
+      [
+        { op: 'start', ref: 'ship', text: 'Which date?', needsResponse: true },
+        { op: 'reply', ref: 'pay', tabId: 't1', text: 'Ok?', needsResponse: true },
+        { op: 'reply', ref: 'pay', tabId: 't1', text: 'Noted', needsResponse: false },
+      ],
+      noRefusal,
+    );
+    expect(a.sent.map((c) => c.body)).toEqual([
+      { elementId: 'ship-step', text: 'Which date?', needsResponse: true },
+      { text: 'Ok?', needsResponse: true },
+      { text: 'Noted' },
+    ]);
+  });
+
   const stopped = async (change: ThreadChange, over: Record<string, unknown> = {}) =>
     (await applyThreadChanges(api(over), ID, [change], noRefusal)).refusal;
 
