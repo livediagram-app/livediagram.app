@@ -171,7 +171,20 @@ function StartCallChooser({ source, anchor }: { source: CallSource; anchor: HTML
   // Preselected: the setting's Space, unless it can't be used (A New Space then).
   const preset = unavailable ? null : setting;
   const chosen = picked === undefined ? preset : picked;
-  const matching = useMemo(() => spaces.filter((s) => matchesSpace(s, query)), [spaces, query]);
+  // The setting's Space first, so the preselected row opens in view however long the list is.
+  const ordered = useMemo(
+    () =>
+      setting === null
+        ? spaces
+        : [...spaces.filter((s) => s.id === setting), ...spaces.filter((s) => s.id !== setting)],
+    [spaces, setting],
+  );
+  // Find a Space narrows the list but keeps the chosen row, so Start Call never starts somewhere out of sight.
+  const found = useMemo(() => ordered.some((s) => matchesSpace(s, query)), [ordered, query]);
+  const matching = useMemo(
+    () => ordered.filter((s) => s.id === chosen || matchesSpace(s, query)),
+    [ordered, query, chosen],
+  );
   // The setting's Space while the list loads or can't (or past the listed): chosen, with no name to show.
   const settingRow =
     setting !== null && !unavailable && !spaces.some((s) => s.id === setting) ? (
@@ -365,7 +378,7 @@ function StartCallChooser({ source, anchor }: { source: CallSource; anchor: HTML
             to meet in it.
           </p>
         ) : null}
-        {load.state === 'ready' && spaces.length > 0 && matching.length === 0 ? (
+        {load.state === 'ready' && spaces.length > 0 && !found ? (
           <p className="text-xs text-slate-600 dark:text-slate-400">No Space is called that.</p>
         ) : null}
         <p className="text-xs text-slate-600 dark:text-slate-400" data-start-call-note="">

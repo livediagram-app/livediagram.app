@@ -412,6 +412,23 @@ describe('Call', () => {
     expect(await screen.findByText('No Space is called that.')).toBeTruthy();
   });
 
+  it('puts the Calls Space first and keeps the chosen row through a search', async () => {
+    prefs.current = { callSpace: 'lh_6' };
+    listItems.mockResolvedValue({
+      items: Array.from({ length: SEARCH_FROM }, (_, i) => space(`lh_${i}`, `Room ${i}`)),
+    });
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    const find = await screen.findByRole('searchbox', { name: 'Find a Space' });
+    const names = screen.getAllByRole('radio').map((r) => r.getAttribute('aria-label'));
+    expect(names.slice(0, 2)).toEqual(['A New Space', 'Room 6']);
+    fireEvent.change(find, { target: { value: 'zzz' } });
+    expect(await screen.findByText('No Space is called that.')).toBeTruthy();
+    expect((await radio('Room 6')).checked).toBe(true);
+    expect(screen.queryByRole('radio', { name: 'Room 0' })).toBeNull();
+  });
+
   it('asks for its chunk early, and leaves a touch screen’s focus where the sheet puts it', async () => {
     const coarse = vi.fn(() => ({
       matches: true,
