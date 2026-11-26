@@ -6,7 +6,7 @@
 // which opens the call at once. A call opens in its own browser tab, never this one (owner, 2026-11-22). No call code
 // here: the call is livehuddle's page, in its tab; this is a button and a pill over one small read.
 import { callInProgressWords, inCallWords } from '@liveworkspace/index-client';
-import { HoverCard, lucideGlyph } from '@liveworkspace/ui';
+import { HoverCard, Spinner, lucideGlyph } from '@liveworkspace/ui';
 import { lucideVideo } from '@liveworkspace/icons/lucide';
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { CORNER_BTN, CORNER_TONE } from '../chrome/EditorCornerActions';
@@ -56,8 +56,8 @@ export function ItemCallButton() {
   return (
     <HoverCard
       title="Start a Call Here"
-      // Not over its own popover.
-      disabled={open}
+      // Not over its own popover, nor while the start it made is on its way (focus comes back here then).
+      disabled={open || starting}
       description={`Choose where to meet, then a video call about this ${noun} opens in a new tab. Everyone who can open it sees the call and can join.`}
     >
       <button
@@ -68,12 +68,20 @@ export function ItemCallButton() {
         onFocus={preloadStartCallPopover}
         // aria-disabled, not disabled: focus comes back here when the popover closes on Start Call.
         aria-disabled={starting || undefined}
+        aria-busy={starting || undefined}
         aria-haspopup="dialog"
         aria-expanded={open}
         data-item-call="start"
-        className={`${CORNER_BTN} ${CORNER_TONE}`}
+        className={`${CORNER_BTN} ${CORNER_TONE} aria-busy:cursor-progress`}
       >
-        <VideoGlyph />
+        {/* Busy where the label is hidden too (a phone, a compact card): the glyph turns. */}
+        {starting ? (
+          <span data-item-call-busy="" className="inline-flex">
+            <Spinner size={14} />
+          </span>
+        ) : (
+          <VideoGlyph />
+        )}
         <span className="phone:sr-only [[data-compact]_&]:sr-only">
           {starting ? 'Starting' : 'Call'}
         </span>

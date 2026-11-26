@@ -523,10 +523,48 @@ describe('Call', () => {
     await pressCallThenStart();
     const call = await screen.findByRole('button', { name: 'Starting' });
     expect(call.getAttribute('aria-disabled')).toBe('true');
+    // Busy where its words are hidden too: the glyph turns.
+    expect(call.getAttribute('aria-busy')).toBe('true');
+    expect(call.querySelector('[data-item-call-busy]')).not.toBeNull();
     fireEvent.click(call);
     expect(screen.queryByRole('heading', { name: 'Start a Call' })).toBeNull();
     await act(async () => answer({ call: meeting({ people: 0 }), started: true }));
     expect(await screen.findByRole('button', { name: 'Call' })).toBeTruthy();
+  });
+
+  it('keeps its hover card shut while the start it made is on its way', async () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: true,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      })),
+    );
+    try {
+      vi.spyOn(window, 'open').mockReturnValue(fakeTab(true) as unknown as Window);
+      startItemCall.mockReturnValue(new Promise(() => undefined));
+      render(<Editor />);
+      await flush();
+      const call = screen.getByRole('button', { name: 'Call' });
+      fireEvent.pointerEnter(call, { pointerType: 'mouse' });
+      expect(await screen.findByText('Start a Call Here')).toBeTruthy();
+      fireEvent.pointerLeave(call, { pointerType: 'mouse' });
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 400));
+      });
+      expect(screen.queryByText('Start a Call Here')).toBeNull();
+
+      fireEvent.click(call);
+      fireEvent.click(await screen.findByRole('button', { name: 'Start Call' }));
+      const busy = await screen.findByRole('button', { name: 'Starting' });
+      fireEvent.pointerEnter(busy, { pointerType: 'mouse' });
+      fireEvent.focus(busy);
+      await flush();
+      expect(screen.queryByText('Start a Call Here')).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('is for an account only: a guest through a link sees no Call', async () => {
