@@ -115,7 +115,7 @@ describe('each kind', () => {
     const [ask, note] = noticeRows(
       inbox({
         threads: [
-          thread({ latestAgent: 'Claude', aiState: 'ask', onYourItem: false, latestAt: NOW - 400 }),
+          thread({ latestAgent: 'Claude', asks: true, onYourItem: false, latestAt: NOW - 400 }),
           thread({ elementId: 'e2', latestAgent: 'Claude' }),
         ],
       }),

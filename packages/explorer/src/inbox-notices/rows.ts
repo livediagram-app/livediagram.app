@@ -119,7 +119,7 @@ function threadRow(
     verb = 'mentioned you';
     // Who mentioned the reader, unless that was the reader (a mention of themselves).
     if (t.mentionedBy?.name && t.mentionedBy.id !== viewerId) who = t.mentionedBy.name;
-  } else if (t.aiState === 'ask') {
+  } else if (t.asks) {
     // An assistant asks the people its thread reaches (inbox-reading.md "AI comments").
     kind = 'comment';
     verb = 'asked for your response';
