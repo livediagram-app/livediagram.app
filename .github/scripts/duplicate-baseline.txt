@@ -192,7 +192,6 @@ livedocuments/packages/document/src/collab-index-rows.ts	liveknowledge/packages/
 livedocuments/packages/document/src/collab-ledger.ts	liveknowledge/packages/document/src/collab-ledger.ts
 livedocuments/packages/document/src/component-factories.ts	liveknowledge/packages/document/src/component-factories.ts
 livedocuments/packages/document/src/duplicate.ts	liveknowledge/packages/document/src/duplicate.ts
-livedocuments/packages/document/src/element-action.ts	liveknowledge/packages/document/src/element-action.ts
 livedocuments/packages/document/src/element-deltas.ts	liveknowledge/packages/document/src/element-deltas.ts
 livedocuments/packages/document/src/element-fields.ts	liveknowledge/packages/document/src/element-fields.ts
 livedocuments/packages/document/src/element-images.ts	liveknowledge/packages/document/src/element-images.ts

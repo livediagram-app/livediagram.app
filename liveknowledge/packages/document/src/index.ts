@@ -160,6 +160,7 @@ export * from './article-style';
 export * from './article-zones';
 export * from './page-meta-row';
 export * from './article-notes';
+export * from './article-note-anchors';
 export * from './article-intake';
 export * from '@liveworkspace/article/article-markdown';
 export * from '@liveworkspace/article/article-markdown-io';

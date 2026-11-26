@@ -41,6 +41,7 @@ import {
   type DiagramSendRequest,
 } from '../send-to-diagram/send-to-diagram-entry';
 import { PRESS_HOLD_MS } from '../send-to-plan/press-hold';
+import { setSelectionNoteEntry } from './selection-note-entry';
 
 const LINE = { left: 0, right: 80, top: 100, bottom: 120 };
 
@@ -278,10 +279,42 @@ describe('a right-click', () => {
     expect(menu.actions.cut).toBeNull();
     expect(menu.actions.paste).toBeNull();
     expect(menu.actions.sendToDiagram).toBeNull();
-    menu.actions.sendToPlan();
+    menu.actions.sendToPlan!();
     expect(heard[0]!.places[0]).toMatchObject({ elementId: 'b1', text: 'Book' });
     unbind();
     expect(currentSelectionMenu()).toBeNull();
+  });
+
+  it('adds Comment and Add Action where the app notes the words, picking them again first', () => {
+    const { dom, view } = writing();
+    const note = vi.fn();
+    const unregister = setSelectionNoteEntry({ canNote: (w) => w === dom, note });
+    const unbind = bindSelectionMenu(view, () => false);
+    pick(dom, 4);
+    expect(rightClick(dom)).toBe(true);
+    const { actions } = currentSelectionMenu()!;
+    document.getSelection()!.removeAllRanges();
+    actions.addAction!();
+    expect(note).toHaveBeenCalledWith('action', dom);
+    expect(document.getSelection()!.toString()).toBe('Book');
+    unbind();
+    unregister();
+  });
+
+  it('opens for the notes alone where the session may note but not send', () => {
+    const { dom, view } = writing();
+    setSendHere(null);
+    const unregister = setSelectionNoteEntry({ canNote: () => true, note: vi.fn() });
+    const unbind = bindSelectionMenu(view, () => false);
+    pick(dom, 4);
+    expect(rightClick(dom)).toBe(true);
+    const { actions } = currentSelectionMenu()!;
+    expect(actions.sendToPlan).toBeNull();
+    expect(actions.sendToDiagram).toBeNull();
+    expect(actions.comment).not.toBeNull();
+    unbind();
+    unregister();
+    setSendHere({ app: 'liveknowledge', tabId: 't1' });
   });
 
   it('leaves the browser’s menu off the words, with nothing picked, with Shift, or where it can’t send', () => {

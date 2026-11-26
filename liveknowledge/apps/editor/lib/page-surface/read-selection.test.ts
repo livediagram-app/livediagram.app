@@ -58,4 +58,16 @@ describe('a reader selection lets go on a press off the writing', () => {
     releaseReadSelection(document.getElementById('margin'));
     expect(selected()).toBe('Some words here');
   });
+
+  it('keeps the words on a press in a portal outside the page (the reading selection bar)', () => {
+    const { words, margin } = page(true);
+    const scroller = document.querySelector('[data-page-scroller]')!;
+    const bar = document.createElement('button');
+    document.body.appendChild(bar);
+    select(words);
+    releaseReadSelection(bar, scroller);
+    expect(selected()).toBe('Some words here');
+    releaseReadSelection(margin, scroller);
+    expect(selected()).toBe('');
+  });
 });

@@ -61,6 +61,13 @@ describe('AssignActionDialog seed', () => {
     expect(myself().getAttribute('aria-pressed')).toBe('true');
   });
 
+  it('names the words for a note on words, and the element otherwise', () => {
+    const { rerender } = render(<AssignActionDialog {...props({ onWords: true })} />);
+    expect(document.body.textContent).toContain('Attach a piece of work to these words');
+    rerender(<AssignActionDialog {...props()} />);
+    expect(document.body.textContent).toContain('Attach a piece of work to this element');
+  });
+
   it('shows the existing action with its self assignee preselected on edit', () => {
     render(<AssignActionDialog {...props({ existing: selfAction })} />);
     expect(nameInput().value).toBe('Ship it');

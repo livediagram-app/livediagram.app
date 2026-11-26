@@ -68,6 +68,29 @@ describe('the selection menu', () => {
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
+  it('adds Comment and Add Action after Paste where the app notes the words, and leaves out the sends it may not make', async () => {
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { readText: vi.fn() } });
+    render(<SelectionMenuHost />);
+    const actions = verbs({
+      cut: null,
+      paste: null,
+      sendToPlan: null,
+      sendToDiagram: null,
+      comment: vi.fn(),
+      addAction: vi.fn(),
+    });
+    open(actions);
+    const rows = (await screen.findAllByRole('menuitem')).map((r) => r.textContent);
+    expect(rows).toEqual([
+      expect.stringMatching(/^Copy/),
+      expect.stringMatching(/^Comment(⌘⌥M|Ctrl\+Alt\+M)$/),
+      expect.stringMatching(/^Add Action/),
+    ]);
+    fireEvent.click(screen.getByRole('menuitem', { name: /^Add Action/ }));
+    expect(actions.addAction).toHaveBeenCalledTimes(1);
+    expect(currentSelectionMenu()).toBeNull();
+  });
+
   it('runs each verb from its row', async () => {
     vi.stubGlobal('navigator', { ...navigator, clipboard: { readText: vi.fn() } });
     render(<SelectionMenuHost />);

@@ -109,6 +109,18 @@ describe('listedThread', () => {
   });
 });
 
+describe('a thread on some words', () => {
+  it('carries its anchor, the words or detached, and none otherwise', () => {
+    expect(listedThread({ ...THREADS[0]!, anchor: { text: 'release train' } }).anchor).toEqual({
+      text: 'release train',
+    });
+    expect(listedThread({ ...THREADS[0]!, anchor: { detached: true } }).anchor).toEqual({
+      detached: true,
+    });
+    expect('anchor' in listedThread(THREADS[0]!)).toBe(false);
+  });
+});
+
 describe('listThreads', () => {
   it('lists the status asked for on every tab, or one tab by id or name', async () => {
     const a = api();

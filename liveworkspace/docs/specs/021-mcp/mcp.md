@@ -146,6 +146,14 @@ comments"](../004-index/inbox-reading.md#ai-comments)). Left out, the comment is
 with the assistant's name, and makes no Inbox entry, so a run of an agent's comments never fills the Inbox. The
 tools' descriptions say so, and so does this server's own guidance on comments, which every host reads.
 
+### Threads on words
+
+A thread can sit on some words of an article's writing rather than on a canvas element (a margin note: livedocuments'
+and liveknowledge's). The comment listing every app's `list_threads` reads (`@liveworkspace/api-schema`
+`DocumentCommentThread`) then carries `anchor`: `{ text }`, the words the thread is on (at most 280 characters, from
+the saved writing, never a draft), or `{ detached: true }` when those words were deleted and the thread kept. An app
+that has no such threads never sends it. `change_threads` works such a thread by its ref like any other.
+
 ### Nothing an app's MCP offers is lost
 
 Everything each app's own MCP serves reaches the person through the one MCP, for the apps they allowed:

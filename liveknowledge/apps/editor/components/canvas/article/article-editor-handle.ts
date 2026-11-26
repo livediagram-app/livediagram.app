@@ -157,6 +157,21 @@ export function createArticleHandle({
       y: frame.y + (y - root.top) / z,
     });
   };
+  // The words the browser holds picked in this writing, as positions in it; null with none there.
+  const domPicked = (): { from: number; to: number } | null => {
+    const sel = view.dom.ownerDocument.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    if (!view.dom.contains(range.startContainer) || !view.dom.contains(range.endContainer))
+      return null;
+    try {
+      const a = view.posAtDOM(range.startContainer, range.startOffset);
+      const b = view.posAtDOM(range.endContainer, range.endOffset);
+      return { from: Math.min(a, b), to: Math.max(a, b) };
+    } catch {
+      return null;
+    }
+  };
   // The writing taken as written now: the host writes these blocks itself (with what goes with
   // them, in one edit), so no idle commit follows.
   const takeBlocks = (): ArticleBlock[] => {
@@ -299,8 +314,12 @@ export function createArticleHandle({
       return out;
     },
     markNote: (id, kind) => {
-      const { from, to, empty } = view.state.selection;
-      if (empty) return null;
+      // Editing, the writing's own selection; reading, the view takes no selection of its own, so the words the
+      // browser holds picked in it (page-comments.md "Comments on the writing").
+      const picked = view.state.selection.empty ? domPicked() : view.state.selection;
+      if (!picked) return null;
+      const { from, to } = picked;
+      if (from >= to) return null;
       const mark = articleSchema.marks.note.create({ id, kind });
       view.dispatch(view.state.tr.addMark(from, to, mark));
       const { frame, root, z } = scale();

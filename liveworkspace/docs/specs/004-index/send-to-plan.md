@@ -173,6 +173,10 @@ Diagram**:
   the browser has no clipboard to read.
 - **Send to Plan** and **Send to Diagram** open their pickers with the words picked and the block they start in, as
   the page toolbar's do. Send to Diagram shows only in an app that drafts diagrams.
+- **Comment** and **Add Action**, after Copy and Paste, in an app that puts notes on words while they are read
+  (liveknowledge, [Comments on the writing](../../../../liveknowledge/docs/specs/030-knowledgebase/page-comments.md#comments-on-the-writing)):
+  the app registers them (`setSelectionNoteEntry`) and they show only while it says the session may note these words.
+  Elsewhere the rows are absent, and the menu opens for them alone where the session may note but not send.
 - **Only while the session may send** (the "Who may send" above). Where it can't (a guest, Offline, an embed,
   Community), the browser's own menu is left alone, since the custom one would only repeat it.
 - Escape, a press outside it, or the words going close it; a row's press closes it and does its verb.
