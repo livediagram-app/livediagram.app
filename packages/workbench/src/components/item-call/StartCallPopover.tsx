@@ -8,6 +8,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { readCallSpaceSetting, type Item } from '@liveworkspace/index-client';
 import { Button, Dialog, ResponsivePopover, lucideGlyph } from '@liveworkspace/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { meetingHeroArt } from '@liveworkspace/ui/dialog-hero-art/meeting';
 import { lucidePlus, lucideSearch, lucideVideo } from '@liveworkspace/icons/lucide';
@@ -260,13 +261,9 @@ function StartCallChooser({ source, anchor }: { source: CallSource; anchor: HTML
           ) : null}
         </div>
         {unavailable ? (
-          <p
-            role="status"
-            data-start-call-unavailable=""
-            className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-500/10 dark:text-amber-200"
-          >
+          <Callout tone="warning" role="status">
             Your Calls Space isn’t available, so a new Space is chosen.
-          </p>
+          </Callout>
         ) : null}
         <div
           role="radiogroup"
@@ -341,19 +338,19 @@ function StartCallChooser({ source, anchor }: { source: CallSource; anchor: HTML
             : null}
         </div>
         {load.state === 'error' ? (
-          <p role="alert" className="text-xs text-slate-700 dark:text-slate-300">
-            Your Spaces couldn’t be loaded.{' '}
-            <button
-              type="button"
-              onClick={() => {
+          <Callout
+            tone="error"
+            role="alert"
+            action={{
+              label: 'Try Again',
+              onSelect: () => {
                 setLoad({ state: 'loading' });
                 setAttempt((n) => n + 1);
-              }}
-              className="cursor-pointer font-semibold text-brand-700 underline-offset-2 hover:underline dark:text-brand-300"
-            >
-              Try Again
-            </button>
-          </p>
+              },
+            }}
+          >
+            Your Spaces couldn’t be loaded.
+          </Callout>
         ) : null}
         {load.state === 'ready' && spaces.length === 0 ? (
           <p data-start-call-empty="" className="text-xs text-slate-600 dark:text-slate-400">
