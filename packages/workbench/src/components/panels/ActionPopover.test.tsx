@@ -142,6 +142,23 @@ describe('ActionPopover', () => {
     expect(screen.queryByRole('button', { name: 'Complete' })).toBeNull();
   });
 
+  it('shows the due day, red only while an open action is past it', () => {
+    anchor({ left: 100, right: 200, top: 100 });
+    const dueLine = () => document.querySelector('[data-action-due]') as HTMLElement | null;
+    const { unmount } = popover();
+    expect(dueLine()).toBeNull();
+    unmount();
+    const past = popover({ action: { ...action, due: '2001-01-02' } });
+    expect(dueLine()!.textContent).toMatch(/^Due /);
+    expect(dueLine()!.className).toContain('text-red-700');
+    past.unmount();
+    const done = popover({ action: { ...action, due: '2001-01-02', status: 'done' } });
+    expect(dueLine()!.className).not.toContain('text-red-700');
+    done.unmount();
+    popover({ action: { ...action, due: '2999-01-02' } });
+    expect(dueLine()!.className).not.toContain('text-red-700');
+  });
+
   it('deletes in two steps', () => {
     anchor({ left: 100, right: 200, top: 100 });
     popover();
