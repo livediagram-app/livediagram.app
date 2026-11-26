@@ -45,6 +45,8 @@ import {
   type ArticleFlow,
   type LaidOutPage,
   type Tab,
+  noteHoldsConversation,
+  withAbandonedNoteDropped,
 } from '@liveknowledge/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useArticleIntake } from './useArticleIntake';
@@ -210,6 +212,9 @@ export function useArticles(deps: {
   clearSelection: () => void;
   // A margin note's marker opened as made: its comment thread, or the Assign Action dialog.
   openNote: (id: string, kind: ArticleNoteKind) => void;
+  // The note whose comment thread or Assign Action dialog is open, if any: a note put while reading that closes holding
+  // nothing goes (withAbandonedNoteDropped).
+  openNoteId?: string | null;
   // A canvas rect panned into sight, the least move that shows it (useEditorViewport scrollIntoView).
   reveal: (x: number, y: number, w: number, h: number) => void;
 }): ArticlesView | null {
@@ -221,6 +226,28 @@ export function useArticles(deps: {
   useEffect(() => {
     latest.current = deps;
   });
+  // A note put on words while reading (putNote), until its thread or Assign dialog has opened and closed again. Left
+  // holding nothing, it goes, mark and marker in one commit (docs/specs/030-knowledgebase/page-comments.md "Comments on
+  // the writing"), so an abandoned press never leaves a tint on the saved page.
+  const freshNote = useRef<{ id: string; seen: boolean } | null>(null);
+  const openNoteId = deps.openNoteId ?? null;
+  useEffect(() => {
+    const fresh = freshNote.current;
+    if (!fresh) return;
+    if (openNoteId === fresh.id) {
+      fresh.seen = true;
+      return;
+    }
+    if (!fresh.seen) return;
+    freshNote.current = null;
+    const d = latest.current;
+    const el = d.activeTab.elements.find((e) => e.id === fresh.id);
+    if (!el || noteHoldsConversation(el)) return;
+    d.commitTabs((ts) =>
+      ts.map((t) => (t.id === d.activeTab.id ? withAbandonedNoteDropped(t, fresh.id) : t)),
+    );
+    debugLog('[article] abandoned note dropped', { id: fresh.id });
+  }, [openNoteId]);
   const [focusRequest, setFocusRequest] = useState<FocusRequest>(null);
   const seq = useRef(0);
   const focusTaken = useCallback(
@@ -598,6 +625,7 @@ export function useArticles(deps: {
           return { ...written, elements: [...written.elements, newArticleNote(id, kind, corner)] };
         }),
       );
+      if (reading) freshNote.current = { id, seen: false };
       d.openNote(id, kind);
       debugLog('[article] margin note added', { tabId, flow, kind, reading });
       return true;

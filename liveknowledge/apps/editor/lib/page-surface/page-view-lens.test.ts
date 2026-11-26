@@ -20,6 +20,7 @@ import {
   narrowLayoutOf,
   pageViewLens,
   pageViewNarrows,
+  PAGE_VIEW_NOTE_ROOM,
 } from './page-view-lens';
 import {
   notePageViewLayout,
@@ -86,9 +87,10 @@ const typed = (tab: Tab, text: string): Tab => {
 const EMPTY_LAYOUT: NarrowLayout = { zones: new Map(), notes: new Map() };
 const writer = { by: 'Priya', now: () => 1000 };
 
-// A phone's room: 390 px less 20 px either side.
+// A phone's room: 390 px less 20 px either side; the column, less room either side for the page's margin notes.
 const PHONE = 350;
-const S = PHONE / 960;
+const C = PHONE - 2 * PAGE_VIEW_NOTE_ROOM;
+const S = C / 960;
 
 afterEach(() => resetPageViewStore());
 
@@ -110,7 +112,7 @@ describe('the narrow view lens', () => {
       pages: [{ ...page().pages![0]!, fit: { width: 856, height: 1200 } }],
     };
     expect(pageViewNarrows(held, 900)).toBe(true);
-    expect(fitOf(pageViewLens(held, 900))).toEqual({ width: 996, height: 1200 });
+    expect(fitOf(pageViewLens(held, 900))).toEqual({ width: 996 - 32, height: 1200 });
     expect(pageViewLens(held, 960)).toBe(held);
   });
 
@@ -119,9 +121,12 @@ describe('the narrow view lens', () => {
     const lens = pageViewLens(tab, PHONE, undefined);
     expect(isPageViewLens(lens)).toBe(true);
     expect(pageViewNarrows(tab, PHONE)).toBe(true);
-    expect(fitOf(lens)).toEqual({ width: PHONE + 96, height: 1200 });
+    expect(fitOf(lens)).toEqual({ width: C + 96, height: 1200 });
     const measured = pageViewLens(tab, PHONE, { ...EMPTY_LAYOUT, height: 2600 });
-    expect(fitOf(measured)).toEqual({ width: PHONE + 96, height: 2600 });
+    expect(fitOf(measured)).toEqual({ width: C + 96, height: 2600 });
+    // A page with no margin notes keeps the whole room.
+    const bare = { ...tab, elements: [IMAGE] };
+    expect(fitOf(pageViewLens(bare, PHONE))).toEqual({ width: PHONE + 96, height: 1200 });
     // The stored tab is untouched.
     expect(fitOf(tab)).toEqual({ width: CONTINUOUS_PAGE_WIDTH, height: 1200 });
   });
@@ -129,18 +134,18 @@ describe('the narrow view lens', () => {
   it('fits a wide zone and its picture to the column, kept inside it', () => {
     const lens = pageViewLens(page(), PHONE);
     const zone = zoneOf(lens);
-    expect(zone.width).toBeCloseTo(PHONE, 6);
+    expect(zone.width).toBeCloseTo(C, 6);
     expect(zone.height).toBeCloseTo(380 * S, 6);
     expect(zone.at).toEqual({ page: 'p1', x: 48, y: 200 });
     // The narrow page's left edge is where the page's is (-428), its column's 48 further in.
     const img = elementOf(lens, 'img');
     expect(img.x).toBeCloseTo(-428 + 48, 6);
-    expect(img.width).toBeCloseTo(PHONE, 6);
+    expect(img.width).toBeCloseTo(C, 6);
     expect(img.height).toBeCloseTo(380 * S, 6);
-    expect(img.x + img.width).toBeLessThanOrEqual(-428 + 48 + PHONE + 1e-6);
+    expect(img.x + img.width).toBeLessThanOrEqual(-428 + 48 + C + 1e-6);
   });
 
-  it('stands a zone where this window measured it, and a note at its measured corner', () => {
+  it('stands a zone where this window measured it, and a note level with its measured line', () => {
     const layout: NarrowLayout = {
       height: 3000,
       zones: new Map([['z1', { page: 'p1', x: 48, y: 640 }]]),
@@ -149,13 +154,13 @@ describe('the narrow view lens', () => {
     const lens = pageViewLens(page(), PHONE, layout);
     expect(zoneOf(lens).at).toEqual({ page: 'p1', x: 48, y: 640 });
     expect(elementOf(lens, 'img').y).toBeCloseTo(640, 6);
-    expect(elementOf(lens, 'n1')).toMatchObject({ x: 230, y: 120 });
+    // Beside the column (its right edge at -428 + 48 + C), not in the page's margin, which is off the window.
+    expect(elementOf(lens, 'n1')).toMatchObject({ x: -428 + 48 + C + 2, y: 120 });
   });
 
-  it('keeps a margin note as far from the right edge as it was until measured', () => {
+  it('stands a margin note beside the column, at its stored height until measured', () => {
     const lens = pageViewLens(page(), PHONE);
-    // The right edge moved from 628 to 18.
-    expect(elementOf(lens, 'n1').x).toBeCloseTo(636 - 610, 6);
+    expect(elementOf(lens, 'n1')).toMatchObject({ x: -428 + 48 + C + 2, y: 60 });
   });
 
   it('is one cached lens per stored tab, room and layout', () => {
@@ -228,9 +233,7 @@ describe('lowering through the narrow view', () => {
       ...lens,
       articles: {
         'art-1': {
-          blocks: flowOf(lens).blocks.map((b) =>
-            b.type === 'zone' ? { ...b, width: PHONE / 2 } : b,
-          ),
+          blocks: flowOf(lens).blocks.map((b) => (b.type === 'zone' ? { ...b, width: C / 2 } : b)),
         },
       },
     };

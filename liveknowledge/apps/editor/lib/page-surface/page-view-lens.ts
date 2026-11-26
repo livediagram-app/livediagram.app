@@ -32,6 +32,13 @@ import type { NarrowLayout, PageViewState } from './page-view-store';
 /** The least column the narrow view draws, canvas px: narrower than any phone leaves. */
 export const PAGE_VIEW_MIN_COLUMN = 120;
 
+/** The room the narrow view takes off each side of a column whose page has margin notes, canvas px: a phone's side
+ *  room (20) is narrower than a marker, so the column gives this much on each side for the marker to stand in the
+ *  window, beside the writing (page-comments.md "Comments on the writing"). */
+export const PAGE_VIEW_NOTE_ROOM = 16;
+// A marker's gap from the column's right edge in the narrow view, canvas px.
+const NOTE_BESIDE = 2;
+
 type Point = { x: number; y: number };
 /** A move from a stored place to a drawn one, scaled by `s` about it. */
 type Transform = { from: Point; to: Point; s: number };
@@ -118,7 +125,9 @@ function build(tab: Tab, room: number, layout: NarrowLayout | undefined): Tab {
   const doc = storedFlow(tab, flow);
   const margin = articleMarginPx(doc?.style);
   if (room >= fit.width - 2 * margin) return tab;
-  const column = Math.max(PAGE_VIEW_MIN_COLUMN, room);
+  // The page's margin is off the window in the narrow view: a page with notes gives room beside its column for them.
+  const notes = tab.elements.some((e) => e.type === 'article-note');
+  const column = Math.max(PAGE_VIEW_MIN_COLUMN, room - (notes ? 2 * PAGE_VIEW_NOTE_ROOM : 0));
   // Read at its own sides (a stored continuous page is read at the continuous width whatever it says).
   const lensPage: Page = asViewPage({
     ...page,
@@ -155,14 +164,14 @@ function build(tab: Tab, room: number, layout: NarrowLayout | undefined): Tab {
     });
     if (zones.size > 0) blocks = out;
   }
-  // Margin notes: at the corner this browser measured, else as far from the page's right edge as they were.
-  const realRect = laidReal.find((p) => p.id === page.id)?.rect;
+  // Margin notes: level with their words as this browser measured them, else where they were; beside the column, not
+  // in the page's margin, which is off the window here.
   const lensRect = laidLens.find((p) => p.id === page.id)?.rect;
-  const shift =
-    realRect && lensRect ? lensRect.x + lensRect.width - (realRect.x + realRect.width) : 0;
+  const beside = lensRect ? lensRect.x + margin + column + NOTE_BESIDE : null;
   for (const el of tab.elements) {
     if (el.type !== 'article-note' || moved.has(el.id)) continue;
-    const to = layout?.notes.get(el.id) ?? { x: el.x + shift, y: el.y };
+    const y = layout?.notes.get(el.id)?.y ?? el.y;
+    const to = { x: beside ?? el.x, y };
     if (to.x !== el.x || to.y !== el.y) moved.set(el.id, { t: { from: el, to, s: 1 }, zone: null });
   }
   const elements =

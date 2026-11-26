@@ -5,6 +5,7 @@ import {
   detachedNoteIds,
   noteAnchorTexts,
   noteHoldsConversation,
+  withAbandonedNoteDropped,
   withEmptyNoteMarkersRemoved,
   withHeldNotesKept,
 } from './article-note-anchors';
@@ -128,5 +129,24 @@ describe('a version restored', () => {
     const stored = { elements: [marker('old'), talked('since'), marker('empty')] };
     expect(withHeldNotesKept(restored, stored).elements.map((e) => e.id)).toEqual(['old', 'since']);
     expect(withHeldNotesKept(restored, { elements: [marker('old')] })).toBe(restored);
+  });
+});
+
+describe('a note left holding nothing', () => {
+  it('takes its mark and its marker off together, and keeps one holding a conversation', () => {
+    const tab = {
+      elements: [marker('a'), talked('b')],
+      articles: writing([
+        { text: 'Ship ' },
+        { text: 'on', note: 'a', nk: 'comment' },
+        { text: ' Friday', note: 'b' },
+      ]),
+    };
+    const next = withAbandonedNoteDropped(tab, 'a');
+    expect(next.elements.map((e) => e.id)).toEqual(['b']);
+    expect(next.articles).toEqual(writing([{ text: 'Ship on' }, { text: ' Friday', note: 'b' }]));
+    expect(withAbandonedNoteDropped(tab, 'b')).toBe(tab);
+    expect(withAbandonedNoteDropped(tab, 'gone')).toBe(tab);
+    expect(withAbandonedNoteDropped({ elements: [marker('a')] }, 'a').elements).toEqual([]);
   });
 });

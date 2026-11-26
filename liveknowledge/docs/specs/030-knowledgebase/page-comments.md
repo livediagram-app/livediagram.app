@@ -88,8 +88,14 @@ writing, so the anchor moves with the text through any edit, live co-editing inc
   its composer focused; Add Action opens the Assign Action dialog (assignee, optional due date). Both write the same
   way for an Editor and a Participant; a Participant assigns actions as an Editor does (Participant is an Editor minus
   three things, [Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)).
+- **Left with nothing, it goes.** Comment or Add Action pressed, then the thread closed with nothing posted or the
+  Assign Action dialog cancelled: the note holds no conversation, so its mark and its marker come off in one edit,
+  and no tint stays on the saved page that nobody can take off. A note that holds a comment or an action stays.
 - **Not an update.** Notes, their marks and their conversation move no **Updated** stamp, no "Edited since verified",
   no watcher's "Edited" notice: the api's test for a changed page ignores `note` marks and margin note markers.
+- **Markers inside the window.** In a narrow window (a phone, a window under the page's column) the page's margin
+  is off the window, so a note's marker stands just right of the column, level with its words, and a page with notes
+  narrows its column 16 px each side to make that room. Never cut off at the window's edge.
 - **Highlight.** An open comment's words are tinted indigo with a solid underline, an open action's emerald with a
   dashed one ([Article pages](../007-editor/article-pages.md#comments-and-actions)). **A resolved thread, and a done
   or Won't Do action, take their tint off** (the words read as plain writing); the marker stays, showing its
@@ -125,6 +131,8 @@ one compact card each, on the page's ground as a thread's card is:
   and closed actions fold under "N Resolved" with the resolved threads.
 - A Viewer sees the list as everyone does (they read margin notes); the heading shows for a Viewer whenever there is
   a note or a thread to read.
+- No **Collaborate** button in the bottom-right dock on a page: this list is where a page's threads and actions are
+  read, and that corner is the Edit and Zen buttons'.
 
 ### Share roles (comments on the writing)
 

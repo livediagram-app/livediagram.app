@@ -60,21 +60,24 @@ export function noteAnchorTexts(articles: Articles): Map<string, string> {
   return out;
 }
 
-/** The writing without its notes' marks: what a reader reads, for telling an edit from a comment. */
-export function articlesWithoutNoteMarks(articles: Articles): Articles {
+/** The writing without its notes' marks: what a reader reads, for telling an edit from a comment. With `only`, just
+ *  that note's marks go. The same object when no mark goes. */
+export function articlesWithoutNoteMarks(articles: Articles, only?: string): Articles {
+  const marked = (r: Run) =>
+    only === undefined ? r.note !== undefined || r.nk !== undefined : r.note === only;
   let changed = false;
   const out: Record<string, unknown> = {};
   for (const [flow, doc] of Object.entries(articles)) {
     let flowChanged = false;
     const blocks = (doc.blocks as { runs?: Run[] }[]).map((b) => {
-      if (!b.runs?.some((r) => r.note !== undefined || r.nk !== undefined)) return b;
+      if (!b.runs?.some(marked)) return b;
       flowChanged = true;
       // Joined again where the mark had split a run, so the words read as they did before it.
       return {
         ...b,
         runs: normaliseRuns(
           b.runs.map((r) => {
-            if (r.note === undefined && r.nk === undefined) return r;
+            if (!marked(r)) return r;
             const { note: _n, nk: _k, ...rest } = r;
             void _n;
             void _k;
@@ -87,6 +90,20 @@ export function articlesWithoutNoteMarks(articles: Articles): Articles {
     out[flow] = flowChanged ? { ...doc, blocks } : doc;
   }
   return changed ? (out as Articles) : articles;
+}
+
+/**
+ * The tab without a note left with nothing in it (page-comments.md "Comments on the writing"): Comment or Add Action
+ * pressed, then the thread closed with nothing posted or the Assign dialog cancelled. Its mark and its marker go
+ * together, so no tint stays that nobody can take off. The same tab when the note holds a conversation or is gone.
+ */
+export function withAbandonedNoteDropped<T extends NotesTab>(tab: T, id: string): T {
+  const el = tab.elements.find((e) => e.id === id && e.type === 'article-note');
+  if (!el || noteHoldsConversation(el)) return tab;
+  const elements = tab.elements.filter((e) => e !== el);
+  const articles = 'articles' in tab ? (tab.articles as Articles | undefined) : undefined;
+  const stripped = articles ? articlesWithoutNoteMarks(articles, id) : articles;
+  return stripped === articles ? { ...tab, elements } : { ...tab, elements, articles: stripped };
 }
 
 /**

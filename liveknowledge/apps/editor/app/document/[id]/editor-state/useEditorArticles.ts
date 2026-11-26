@@ -43,10 +43,10 @@ export function useEditorArticles({
   'use no memo';
   const { localEditSeqRef, tickTabs, commitTabs } = documentSlice;
   const { activeId, setSelectedId, setMultiSelectedIds } = selectionSlice;
-  const { openComments, isReadOnly, participant } = sessionSlice;
+  const { openComments, commentThreadOpenId, isReadOnly, participant } = sessionSlice;
   const { activeTab } = collaborationSlice;
   const { scrollIntoView, slideDeck } = viewportSlice;
-  const { openActionPopover, openAssignActionDialog } = commentsSlice;
+  const { openActionPopover, openAssignActionDialog, assignActionFor } = commentsSlice;
   const { articleFocusRef, pagesMode, guardedCommitTabs } = pagesSlice;
   const { undo, redo } = historySlice;
   // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md); read only while a page
@@ -82,6 +82,7 @@ export function useEditorArticles({
       if (opens === 'popover') openActionPopover(id);
       else if (opens === 'assign') openAssignActionDialog(id);
     },
+    openNoteId: assignActionFor ?? commentThreadOpenId,
     // Not while the view glides to a page just added: that frame brings its writing into view (usePagesMode framing).
     reveal: (x, y, w, h) => {
       if (pagesMode.framing?.()) return;

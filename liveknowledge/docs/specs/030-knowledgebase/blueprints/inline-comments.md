@@ -38,6 +38,9 @@ storage, route or room op.
   `locked: true` is not a refusal. `markNote` takes the browser's selection when the view's own is empty
   (`domPicked`), adds the mark, the host commits the flow's blocks and the marker in one `commitTabs` over the real
   tab (no edit lens while reading, so it writes the saved flow), then `openNote(id, kind)`.
+- **Abandoned**: the note `addReadingNote` put is watched through `openNoteId` (the Assign dialog's note, else the
+  open thread's). Once it has opened and closed again holding nothing (`noteHoldsConversation` false),
+  `withAbandonedNoteDropped` takes its mark and its marker off in one `commitTabs`. Once per note.
 - **Text deleted**: `useArticleIntake` and `write_article` (`article-write.ts`) call `withEmptyNoteMarkersRemoved`:
   only notes holding nothing lose their marker. Save keeps markers as before; Discard still drops the notes only the
   draft marked (`withDraftDiscarded`, unchanged).
@@ -111,17 +114,17 @@ chip, the words "Due").
 
 ## Testing
 
-| Rule                                                     | Test                                                              |
-| -------------------------------------------------------- | ----------------------------------------------------------------- |
-| anchor survives edits, undo; detached kept, empty gone   | `apps/editor/lib/article/article-note-anchoring.test.ts`          |
-| the package helpers                                      | `packages/document/src/article-note-anchors.test.ts`              |
-| addReadingNote writes the saved page, refusals           | `apps/editor/hooks/editor/useArticles.reading-note.test.ts`       |
-| bar, keys, menu rows and the list, by role               | `apps/editor/components/page-notes/page-notes-roles.test.tsx`     |
-| list derivation, styles, the pick, the bar's place, keys | `apps/editor/lib/page-notes/*.test.ts`                            |
-| not an update, restore keeps notes, the anchor on wire   | `apps/api/src/knowledge/note-anchors-api.test.ts`                 |
-| agent write keeps detached notes                         | `packages/edit-operations/src/pages/article-write.test.ts`        |
-| menu rows and entry, due words                           | workbench `selection-menu/*.test.ts(x)`, `lib/action-due.test.ts` |
-| MCP anchor                                               | `packages/agent-verbs/src/mcp/thread-run.test.ts`                 |
+| Rule                                                      | Test                                                              |
+| --------------------------------------------------------- | ----------------------------------------------------------------- |
+| anchor survives edits, undo; detached kept, empty gone    | `apps/editor/lib/article/article-note-anchoring.test.ts`          |
+| the package helpers                                       | `packages/document/src/article-note-anchors.test.ts`              |
+| addReadingNote writes the saved page, refusals, abandoned | `apps/editor/hooks/editor/useArticles.reading-note.test.ts`       |
+| bar, keys, menu rows and the list, by role                | `apps/editor/components/page-notes/page-notes-roles.test.tsx`     |
+| list derivation, styles, the pick, the bar's place, keys  | `apps/editor/lib/page-notes/*.test.ts`                            |
+| not an update, restore keeps notes, the anchor on wire    | `apps/api/src/knowledge/note-anchors-api.test.ts`                 |
+| agent write keeps detached notes                          | `packages/edit-operations/src/pages/article-write.test.ts`        |
+| menu rows and entry, due words                            | workbench `selection-menu/*.test.ts(x)`, `lib/action-due.test.ts` |
+| MCP anchor                                                | `packages/agent-verbs/src/mcp/thread-run.test.ts`                 |
 
 ## Constants and configuration
 

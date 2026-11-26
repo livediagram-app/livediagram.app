@@ -521,7 +521,10 @@ function CanvasChromeView(props: CanvasChromeProps) {
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before the brush, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
+            {/* Not on the pages (docs/specs/030-knowledgebase/page-comments.md "Listed with the page's comments"):
+                the page's own Comments list holds every thread and action, and this corner is the Edit button's. */}
             {!zenMode &&
+            !props.pagesMode &&
             panelsOn.collaborate &&
             (commentRows.length > 0 || actionRows.length > 0) ? (
               <CollaborateClusterButton

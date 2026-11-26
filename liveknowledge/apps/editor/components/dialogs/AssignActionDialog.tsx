@@ -50,6 +50,8 @@ type AssignActionDialogProps = {
   // default action name on create so it reads as the work item it sits
   // on. Null for an unlabelled element (the field starts empty).
   elementLabel: string | null;
+  // A margin note on a page's words: the intro names the words, not an element.
+  onWords?: boolean;
   // Teams the current user has joined (useTeams already filters to
   // joined memberships server-side via listTeamsByUser).
   teams: { id: string; name: string }[];
@@ -82,6 +84,7 @@ export function AssignActionDialog({
   open,
   existing,
   elementLabel,
+  onWords = false,
   teams,
   onMoveToTeam,
   ownerId,
@@ -244,7 +247,7 @@ export function AssignActionDialog({
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {editing
               ? 'Change what needs doing, or hand it to someone else.'
-              : 'Attach a piece of work to this element, for yourself or a teammate.'}
+              : `Attach a piece of work to ${onWords ? 'these words' : 'this element'}, for yourself or a teammate.`}
           </p>
         </div>
 
