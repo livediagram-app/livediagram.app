@@ -4,12 +4,22 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { shareGateOf, shareRestrictionOf } from '../../lib/share-restriction';
 import { accountsSignInUrl } from '../chrome/auth-routes';
 import { SharePasswordGate } from './SharePasswordGate';
-import { domainsInWords, ShareRestricted } from './ShareRestricted';
+import { DEFERRED_AUTH_DEFAULT, DeferredAuthContext } from '../providers/deferred-auth';
+import { domainsInWords, restrictedWords, ShareRestricted } from './ShareRestricted';
 
 afterEach(() => cleanup());
 beforeEach(() => window.history.replaceState(null, '', '/project/p1?s=CODE#t=2'));
 
 const HERE = '/project/p1?s=CODE#t=2';
+const bob = {
+  id: 'u-bob',
+  firstName: 'Bob',
+  lastName: null,
+  fullName: 'Bob',
+  username: null,
+  email: 'bob@other.org',
+  createdAt: null,
+};
 const hrefOf = (name: string) => screen.getByRole('link', { name }).getAttribute('href');
 
 // liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access": a share's sign-in rule turned the
@@ -62,17 +72,49 @@ describe('ShareRestricted', () => {
       />,
     );
     expect(
-      screen.getByRole('heading', { name: 'This design is restricted to 2 email domains' }),
+      screen.getByRole('heading', { name: 'This design is only available to 2 email domains' }),
     ).toBeTruthy();
     expect(
       screen.getByText(
-        'You’re signed in with an account at another domain. Sign in with your @acme.com or @b.org account to open it.',
+        'You’re signed in with a different account. Sign in with your @acme.com or @b.org account to open it.',
       ),
     ).toBeTruthy();
     expect(hrefOf('Use Another Account')).toBe(accountsSignInUrl(HERE, 'switch'));
     expect(hrefOf('Use Another Account')).toContain('screen=switch');
     expect(screen.getByRole('list', { name: 'Email domains' }).textContent).toBe('@acme.com@b.org');
     expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
+  });
+
+  it('names the one domain and the account the visitor is signed in as', () => {
+    render(
+      <DeferredAuthContext.Provider
+        value={{ ...DEFERRED_AUTH_DEFAULT, authLoaded: true, isSignedIn: true, user: bob }}
+      >
+        <ShareRestricted
+          noun="document"
+          restriction={{ reason: 'domain', domains: ['acme.com'] }}
+          ownerName="Ada"
+        />
+      </DeferredAuthContext.Provider>,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'This document is only available to @acme.com' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        'You’re signed in as bob@other.org, a different account. Sign in with your @acme.com account to open it.',
+      ),
+    ).toBeTruthy();
+    expect(hrefOf('Use Another Account')).toBe(accountsSignInUrl(HERE, 'switch'));
+  });
+
+  it('words another account turned away with no domains named', () => {
+    expect(
+      restrictedWords('plan', { reason: 'domain', domains: [] }, null, 'bob@other.org'),
+    ).toEqual({
+      title: 'This plan isn’t available to this account',
+      body: 'You’re signed in as bob@other.org, a different account. Sign in with another account to open it.',
+    });
   });
 
   it('opens the accounts site in a new tab from inside an embed', () => {

@@ -103,7 +103,7 @@ fits wins (`notFoundReason`, `@liveworkspace/workbench/lib/not-found-reason`, th
 - **Page Not Found**: the address names no space.
 - **No Longer Shared With You**: the space was open a moment ago and access ended.
 - **Link Not Valid** ("This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared
-  it for a new one."): the address carries a share code (`?s=`) the api refused, unknown, revoked or expired alike.
+  it for a new one."): the address carries a share code (`?s=`) the api refused, unknown, revoked or expired alike. A code the item's sign-in rule refused (`sign_in_required`, `domain_not_allowed`) is not dead: the restricted page shows instead (`013-workspace/share-password.md`).
   No "404" line.
 - **Space Not Found** with **Sign In to Request Access** ("This space doesn’t exist, or you don’t have access to it.", then on its own line "Joining a colleague on this space? Sign in to request access, and whoever runs it is asked to share it with you."): a signed-out
   visitor. It signs in and comes back to the same address with the request's note open

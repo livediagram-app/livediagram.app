@@ -3,6 +3,7 @@
 // (`/document/<id>`). DOCUMENT_ARRIVAL names the document's loaders, share-password store and session kernel, and
 // arrivalSetters hands the bootstrap's guarded setters to the arrival under its names.
 import type { Dispatch, SetStateAction } from 'react';
+import type { ShareGate } from '@liveworkspace/workbench/lib/share-restriction';
 import type { CommunityShareInfo } from '@liveknowledge/api-schema';
 import type { ArrivalProduct, ArrivalSetters } from '@liveworkspace/workbench/lib/editor-arrival';
 import {
@@ -57,7 +58,7 @@ export type BootstrapSet = {
   setSessionCommunity: SetState<CommunitySession | null>;
   // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
   setSessionTabScope: (scope: string | null) => void;
-  setSharePasswordGate: SetState<{ invalid: boolean; changed?: boolean } | null>;
+  setSharePasswordGate: SetState<ShareGate | null>;
   setIdentityPromptOpen: SetState<boolean>;
 };
 
