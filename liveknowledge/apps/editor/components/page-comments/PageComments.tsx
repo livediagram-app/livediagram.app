@@ -14,6 +14,9 @@ import { CommentsIcon } from '@/components/knowledge/approval/feedback-icons';
 import { PageCommentComposer } from './PageCommentComposer';
 import { PageThreadCard } from './PageThreadCard';
 import { usePageComments } from './usePageComments';
+import { PageNoteCard, type OpenPageNote } from '@/components/page-notes/PageNoteCard';
+import { usePageNotes } from '@/components/page-notes/usePageNotes';
+import type { PageNote } from '@/lib/page-notes/page-notes';
 
 const PlusIcon = lucideGlyph(lucidePlus, 14);
 
@@ -26,7 +29,13 @@ export type PageCommentsViewProps = {
   change: (change: PageThreadChange) => Promise<boolean>;
   /** The writer, for the composer's disc. */
   me?: { name: string; color: string } | undefined;
+  /** The comments and actions on the page's words, listed before the threads (page-comments.md "Comments on the
+   *  writing"), and what a press on one does. */
+  notes?: readonly PageNote[];
+  onOpenNote?: OpenPageNote;
 };
+
+const NO_NOTES: readonly PageNote[] = [];
 
 export function PageCommentsView({
   status,
@@ -36,6 +45,8 @@ export function PageCommentsView({
   now,
   change,
   me,
+  notes = NO_NOTES,
+  onOpenNote,
 }: PageCommentsViewProps) {
   // A new thread's composer, opened from New Thread while there are threads to reply to.
   const [starting, setStarting] = useState(false);
@@ -46,9 +57,21 @@ export function PageCommentsView({
     }),
     [threads],
   );
+  const { openNotes, closedNotes } = useMemo(
+    () => ({
+      openNotes: notes.filter((n) => n.open),
+      closedNotes: notes.filter((n) => !n.open),
+    }),
+    [notes],
+  );
   // Nothing drawn before the read lands (the foot holds no skeleton), nor for a reader with nothing to read.
-  if (status === 'loading') return null;
-  if (!canWrite && threads.length === 0) return null;
+  if (status === 'loading' && notes.length === 0) return null;
+  if (!canWrite && threads.length === 0 && notes.length === 0) return null;
+  const noteCard = (note: PageNote) => (
+    <PageNoteCard key={note.id} note={note} now={now} onOpen={(n) => onOpenNote?.(n)} />
+  );
+  const openCount = open.length + openNotes.length;
+  const resolvedCount = resolved.length + closedNotes.length;
   const card = (thread: PageThread) => (
     <PageThreadCard
       key={thread.id}
@@ -72,18 +95,19 @@ export function PageCommentsView({
         className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
       >
         Comments
-        {open.length > 0 ? (
+        {openCount > 0 ? (
           <Chip
             data-open-count=""
             className="bg-slate-100 px-1.5 py-px text-[11px] font-semibold tabular-nums tracking-normal text-slate-600 dark:bg-slate-800 dark:text-slate-300"
           >
-            {open.length}
+            {openCount}
           </Chip>
         ) : null}
       </h2>
       <div className="mt-3 flex flex-col gap-3">
+        {openNotes.map(noteCard)}
         {open.map(card)}
-        {resolved.length > 0 ? (
+        {resolvedCount > 0 ? (
           <details data-resolved-threads="" className="group/resolved">
             <summary className="flex min-h-8 cursor-pointer list-none items-center gap-1.5 rounded-md text-[13px] font-medium text-slate-600 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-slate-400 dark:hover:text-slate-100 [&::-webkit-details-marker]:hidden">
               <span
@@ -92,16 +116,19 @@ export function PageCommentsView({
               >
                 ›
               </span>
-              {resolved.length} Resolved
+              {resolvedCount} Resolved
             </summary>
-            <div className="mt-2 flex flex-col gap-3">{resolved.map(card)}</div>
+            <div className="mt-2 flex flex-col gap-3">
+              {closedNotes.map(noteCard)}
+              {resolved.map(card)}
+            </div>
           </details>
         ) : null}
         {canWrite ? (
           <>
             {/* No threads yet: no empty-state box, one quiet line and the composer resting as a line beside the
                 writer's disc (owner 2026-11-21: "make it amazing"). */}
-            {threads.length === 0 ? (
+            {threads.length === 0 && notes.length === 0 ? (
               <p
                 data-comments-empty=""
                 className="-mt-1 flex items-center gap-1.5 text-[13px] text-slate-500 dark:text-slate-400"
@@ -160,6 +187,7 @@ export function PageComments() {
   const name = useEditorChrome((s) => s.selfParticipant.name);
   const color = useEditorChrome((s) => s.selfParticipant.color);
   const me = useMemo(() => ({ name: name || 'Guest', color }), [name, color]);
+  const { notes, open } = usePageNotes();
   if (view.hidden) return null;
   return (
     <PageCommentsView
@@ -172,6 +200,8 @@ export function PageComments() {
       now={now}
       change={view.change}
       me={me}
+      notes={notes}
+      onOpenNote={open}
     />
   );
 }

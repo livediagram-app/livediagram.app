@@ -1,11 +1,18 @@
 'use client';
 
 // The selection menu (liveworkspace/docs/specs/004-index/send-to-plan.md "The selection menu", Work Tracker 1462):
-// Cut, Copy and Paste, then Send to Plan and Send to Diagram, for the words picked in an article's writing. Drawn by
+// Cut, Copy and Paste, then Comment and Add Action where the app notes words, then Send to Plan and Send to Diagram,
+// for the words picked in an article's writing. Drawn by
 // the editor's SendToPlanHost from the one open request (selection-menu-store), on the shared PortalMenu: at the
 // pointer for a right-click, under the words from the keyboard, docked to the screen's edge on a touch screen.
 import { useEffect, useRef, useSyncExternalStore } from 'react';
-import { lucideClipboardPaste, lucideCopy, lucideScissors } from '@liveworkspace/icons/lucide';
+import {
+  lucideCircleCheck,
+  lucideClipboardPaste,
+  lucideCopy,
+  lucideMessageSquare,
+  lucideScissors,
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { keyLabel } from '../../lib/key-label';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '../primitives/PortalMenu';
@@ -26,6 +33,8 @@ const FOCUS_TRIES = 10;
 const CutIcon = lucideGlyph(lucideScissors, 16);
 const CopyIcon = lucideGlyph(lucideCopy, 16);
 const PasteIcon = lucideGlyph(lucideClipboardPaste, 16);
+const CommentIcon = lucideGlyph(lucideMessageSquare, 16);
+const ActionIcon = lucideGlyph(lucideCircleCheck, 16);
 
 // A row's shortcut, as this computer spells it (⌘C, Ctrl+C), quiet at the row's right edge.
 function Keys({ k }: { k: string }) {
@@ -123,13 +132,34 @@ export function SelectionMenu({ request }: { request: SelectionMenuRequest }) {
             onClick={then(actions.paste)}
           />
         ) : null}
-        <MenuGroupSeparator />
-        <MenuActionRow
-          plain
-          label="Send to Plan"
-          icon={<SendToPlanMenuIcon />}
-          onClick={then(actions.sendToPlan)}
-        />
+        {actions.comment || actions.addAction ? <MenuGroupSeparator /> : null}
+        {actions.comment ? (
+          <MenuActionRow
+            plain
+            label="Comment"
+            icon={<CommentIcon />}
+            aside={keys('Mod-Alt-m')}
+            onClick={then(actions.comment)}
+          />
+        ) : null}
+        {actions.addAction ? (
+          <MenuActionRow
+            plain
+            label="Add Action"
+            icon={<ActionIcon />}
+            aside={keys('Mod-Alt-a')}
+            onClick={then(actions.addAction)}
+          />
+        ) : null}
+        {actions.sendToPlan || actions.sendToDiagram ? <MenuGroupSeparator /> : null}
+        {actions.sendToPlan ? (
+          <MenuActionRow
+            plain
+            label="Send to Plan"
+            icon={<SendToPlanMenuIcon />}
+            onClick={then(actions.sendToPlan)}
+          />
+        ) : null}
         {actions.sendToDiagram ? (
           <MenuActionRow
             plain

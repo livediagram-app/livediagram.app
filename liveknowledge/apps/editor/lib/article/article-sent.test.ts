@@ -183,7 +183,7 @@ describe('the writing as it shows sends', () => {
     expect(anchor).toBe(view.dom);
     expect(actions.cut).toBeNull();
     expect(actions.paste).toBeNull();
-    actions.sendToPlan();
+    actions.sendToPlan!();
     expect(heard[0]!.places[0]).toMatchObject({ elementId: 'l1', text: 'Book' });
   });
 

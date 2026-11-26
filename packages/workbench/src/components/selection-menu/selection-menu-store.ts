@@ -9,8 +9,11 @@ export type SelectionMenuActions = {
   cut: (() => void) | null;
   copy: () => void;
   paste: (() => void) | null;
-  sendToPlan: () => void;
+  sendToPlan: (() => void) | null;
   sendToDiagram: (() => void) | null;
+  // A note on the words (selection-note-entry): only in an app that registered one, for a session that may note.
+  comment?: (() => void) | null;
+  addAction?: (() => void) | null;
 };
 
 export type SelectionMenuAsk = {

@@ -18,7 +18,7 @@ import {
   looseOnArticles,
   objectsDraggedOut,
   withNoteMarksRemoved,
-  withNoteMarkersRemoved,
+  withEmptyNoteMarkersRemoved,
   articleNoteIds,
   zoneCanvasRect,
   type Element,
@@ -198,12 +198,13 @@ export function useArticleIntake({
             .map((e) => e.id),
         );
         next = withNoteMarksRemoved(next, goneNotes);
-        // Text with a margin note deleted takes its marker, and so its comment or action, with it.
+        // Text with a margin note deleted takes its marker with it while the note holds nothing; one holding a
+        // comment or an action stays, detached (page-comments.md "Comments on the writing").
         const kept = articleNoteIds(articlesOf(next));
         const textGone = new Set(
           [...articleNoteIds(articlesOf({ articles: was.articles }))].filter((id) => !kept.has(id)),
         );
-        next = withNoteMarkersRemoved(next, textGone);
+        next = withEmptyNoteMarkersRemoved(next, textGone);
         for (const [flow, gone] of goneZones) next = withZoneContentsRemoved(next, flow, gone);
         for (const { flow, ids, plan, res } of intakes) {
           const landed = withZoneLanded(next, flow, res);

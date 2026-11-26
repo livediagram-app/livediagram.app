@@ -95,6 +95,8 @@ export function AssignActionDialog({
 }: AssignActionDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  // The day it is due, as the date field holds it ('2026-12-03'), '' for none.
+  const [due, setDue] = useState('');
   // Editing: Open, Done or Won't Do (docs/specs/012-collaboration/assigned-actions.md), saved with the rest.
   const [status, setStatus] = useState<ElementActionStatus>('open');
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
@@ -143,6 +145,7 @@ export function AssignActionDialog({
     setSeededFor({ existing, elementLabel });
     setName(existing?.name ?? elementLabel ?? '');
     setDescription(existing?.description ?? '');
+    setDue(existing?.due ?? '');
     setStatus(existing?.status ?? 'open');
     setAssignee(existing ? null : selfRow);
     setNotifyEmail(true);
@@ -206,6 +209,7 @@ export function AssignActionDialog({
       teamId: assignee.teamId,
       notifyEmail: showEmailControl && notifyEmail,
       ...(editing && status !== existing.status ? { status } : {}),
+      due: due || null,
     });
   };
 
@@ -270,6 +274,20 @@ export function AssignActionDialog({
               maxLength={2000}
               placeholder="Any detail the assignee needs…"
               className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+              Due date{' '}
+              <span className="font-normal text-slate-500 dark:text-slate-400">(optional)</span>
+            </span>
+            <TextInput
+              type="date"
+              data-action-due=""
+              value={due}
+              onChange={(e) => setDue(e.target.value)}
+              className="cursor-pointer dark:[color-scheme:dark]"
             />
           </label>
 

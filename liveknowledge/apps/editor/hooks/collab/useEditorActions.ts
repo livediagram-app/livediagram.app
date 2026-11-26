@@ -41,7 +41,18 @@ export type SaveActionInput = {
   notifyEmail: boolean;
   // An edit's new status, when the dialog's Status changed it.
   status?: ElementActionStatus;
+  // The day it is due ('2026-12-03'), or null for none.
+  due?: string | null;
 };
+
+// The action with the dialog's due day, or without one when it was cleared; the same action when unchanged.
+function withDue<A extends { due?: string }>(action: A, due: string | null | undefined): A {
+  if (due === undefined || (due ?? undefined) === action.due) return action;
+  if (due) return { ...action, due };
+  const { due: _gone, ...rest } = action;
+  void _gone;
+  return rest as A;
+}
 
 type EditorActionsDeps = {
   activeId: string;
@@ -183,7 +194,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
         teamId: input.teamId,
         assigner: { id: deps.self.userId, name: deps.self.name },
       });
-      updateActions(elementId, () => [action]);
+      updateActions(elementId, () => [withDue(action, input.due)]);
       track('Action', 'Created', input.notifyEmail ? 'EmailOn' : 'EmailOff');
       deps.onCreated?.(elementId);
       // Email needs a team context (the endpoint verifies shared
@@ -206,15 +217,20 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
       const reassigned =
         existing.assignee.userId !== input.assignee.userId ||
         existing.assignee.memberId !== input.assignee.memberId;
-      updateOne(elementId, existing.id, (action) => ({
-        ...action,
-        name,
-        description: input.description.trim(),
-        assignee: input.assignee,
-        teamId: input.teamId,
-        ...(input.status ? { status: input.status } : {}),
-        updatedAt: Date.now(),
-      }));
+      updateOne(elementId, existing.id, (action) =>
+        withDue(
+          {
+            ...action,
+            name,
+            description: input.description.trim(),
+            assignee: input.assignee,
+            teamId: input.teamId,
+            ...(input.status ? { status: input.status } : {}),
+            updatedAt: Date.now(),
+          },
+          input.due,
+        ),
+      );
       track('Action', 'Changed', reassigned ? 'Reassigned' : 'Edited');
       // A status picked in the dialog counts as the popover's buttons do.
       if (input.status === 'done') track('Action', 'Resolved');

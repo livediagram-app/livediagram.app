@@ -100,6 +100,9 @@ export type ArticlesView = {
   embed: (flow: string, ids: readonly string[], wrap: ArticleZoneWrap) => void;
   // A comment or an action put on the selected text: a marker in the margin beside it, opened.
   addNote: (flow: string, kind: ArticleNoteKind) => void;
+  // The same on words picked while the page is read (page-comments.md "Comments on the writing"): written straight
+  // into the page as saved, for whoever may write it, though the read lens is locked. False when nothing was put on.
+  addReadingNote: (flow: string, kind: ArticleNoteKind) => boolean;
   // A margin note's thread, or its action, opened (a click on its text).
   openNote: (id: string, kind: ArticleNoteKind) => void;
   // A zone dragged to the block boundary nearest a canvas point, or stepped a block up or down
@@ -566,14 +569,19 @@ export function useArticles(deps: {
     [tabId],
   );
 
-  const addNote = useCallback(
-    (flow: string, kind: ArticleNoteKind) => {
+  // A note on the words picked: while editing, refused as any edit of a locked page is; while reading, the lens's own
+  // lock (read mode) is no refusal, a locked page still is.
+  const putNote = useCallback(
+    (flow: string, kind: ArticleNoteKind, reading: boolean): boolean => {
       const d = latest.current;
       const handle = articleHandleOf(flow);
-      if (!handle || articleEditRefused(d.canEdit, d.activeTab, flow)) return;
+      const refused = reading
+        ? !d.canEdit || articleLocked(d.activeTab, flow)
+        : articleEditRefused(d.canEdit, d.activeTab, flow);
+      if (!handle || refused) return false;
       const id = crypto.randomUUID();
       const res = handle.markNote(id, kind);
-      if (!res) return;
+      if (!res) return false;
       track('Element', 'Added', kind === 'action' ? 'ArticleAction' : 'ArticleComment');
       d.commitTabs((ts) =>
         ts.map((t) => {
@@ -591,9 +599,18 @@ export function useArticles(deps: {
         }),
       );
       d.openNote(id, kind);
-      debugLog('[article] margin note added', { tabId, flow, kind });
+      debugLog('[article] margin note added', { tabId, flow, kind, reading });
+      return true;
     },
     [tabId],
+  );
+  const addNote = useCallback(
+    (flow: string, kind: ArticleNoteKind) => void putNote(flow, kind, false),
+    [putNote],
+  );
+  const addReadingNote = useCallback(
+    (flow: string, kind: ArticleNoteKind) => putNote(flow, kind, true),
+    [putNote],
   );
 
   const openNote = useCallback(
@@ -664,6 +681,7 @@ export function useArticles(deps: {
     zoneAction,
     embed,
     addNote,
+    addReadingNote,
     openNote,
     moveZone,
     setStyle,

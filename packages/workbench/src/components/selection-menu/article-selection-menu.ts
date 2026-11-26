@@ -11,6 +11,7 @@ import {
   type ArticlePick,
 } from '../send-to-plan/article-send-dom';
 import { pasteClipboard, runClipboardCommand, writeClipboardText } from './selection-clipboard';
+import { canNoteHere, selectionNoteVerb } from './selection-note-entry';
 import {
   closeSelectionMenu,
   onSelectionMenuChange,
@@ -174,7 +175,7 @@ function fromKeyboard(e: MouseEvent): boolean {
 
 /**
  * Binds the menu to a writing; answers the unbind. `editable` says whether the words can be changed now (Cut and
- * Paste show only then). Only while the session may send: elsewhere the browser's own menu is left alone.
+ * Paste show only then). Only while the session may send or note: elsewhere the browser's own menu is left alone.
  */
 export function bindSelectionMenu(view: SelectionView, editable: () => boolean): () => void {
   // The pointer of the last press, so a touch's long press (a contextmenu on Android) is left to the dock.
@@ -184,6 +185,8 @@ export function bindSelectionMenu(view: SelectionView, editable: () => boolean):
   let open: number | null = null;
   let settle: ReturnType<typeof setTimeout> | null = null;
 
+  // The menu is this writing's while the session may send its words, or note them.
+  const menuHere = () => canSendHere() || canNoteHere(view.dom);
   const close = () => {
     if (open !== null) closeSelectionMenu(open);
     open = null;
@@ -217,12 +220,24 @@ export function bindSelectionMenu(view: SelectionView, editable: () => boolean):
           view.dispatch(view.state.tr.deleteSelection());
       });
     };
+    // A note puts its mark on the words as the browser holds them: picked again first, since a tap on the menu may
+    // have cleared them.
+    const noted = (verb: (() => void) | null) =>
+      verb
+        ? () => {
+            restore();
+            verb();
+          }
+        : null;
+    const sends = canSendHere();
     return {
       cut: writable ? clip('cut') : null,
       copy: clip('copy'),
       paste: writable ? () => void pasteClipboard(view) : null,
-      sendToPlan: () => sendArticleWords(pick),
-      sendToDiagram: canSendDiagramHere() ? () => sendArticleWordsToDiagram(pick) : null,
+      sendToPlan: sends ? () => sendArticleWords(pick) : null,
+      sendToDiagram: sends && canSendDiagramHere() ? () => sendArticleWordsToDiagram(pick) : null,
+      comment: noted(selectionNoteVerb(view.dom, 'comment')),
+      addAction: noted(selectionNoteVerb(view.dom, 'action')),
     };
   };
 
@@ -233,7 +248,7 @@ export function bindSelectionMenu(view: SelectionView, editable: () => boolean):
   };
 
   const onContextMenu = (e: MouseEvent) => {
-    if (pointer === 'touch' || e.shiftKey || !canSendHere()) return;
+    if (pointer === 'touch' || e.shiftKey || !menuHere()) return;
     const live = livePick(view);
     if (!live) return;
     const keyboard = fromKeyboard(e);
@@ -265,7 +280,7 @@ export function bindSelectionMenu(view: SelectionView, editable: () => boolean):
   const dock = () => {
     settle = null;
     const live = livePick(view);
-    if (!live || !canSendHere()) return;
+    if (!live || !menuHere()) return;
     show(
       { ...dockSpot(live.range.getBoundingClientRect(), dockScreen(view.dom)), docked: true },
       live,
