@@ -113,6 +113,8 @@ function host(
     refuse?: (body: Record<string, unknown>) => Response | undefined;
     holidays?: Tab;
     rows?: typeof ROWS;
+    /** An api from before `names`: owners go unnamed. */
+    unnamed?: boolean;
   } = {},
 ) {
   const tabs: Record<string, Tab> = {
@@ -144,7 +146,10 @@ function host(
     if (path === `/documents/${KB}`)
       return Response.json({ document: { id: KB, name: 'Handbook', tabs: [] } });
     if (path === `/documents/${KB}/pages`)
-      return Response.json({ pages: options.rows ?? ROWS, names: { user_o: 'Olu Owner' } });
+      return Response.json({
+        pages: options.rows ?? ROWS,
+        ...(options.unnamed ? {} : { names: { user_o: 'Olu Owner' } }),
+      });
     if (path === '/images/img_1')
       return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'image/png' } });
     if (path === '/images/img_gone') return Response.json({ error: 'not_found' }, { status: 404 });
@@ -212,6 +217,7 @@ describe('export <knowledgebase> <dir>', () => {
 
   it('writes a picture’s address when its bytes are no picture or cannot be fetched, and reads a share link', async () => {
     const { route } = host({
+      unnamed: true,
       holidays: page('holidays', 'Holidays', [para('b1', [{ text: 'December.' }])], {
         elements: ['img_odd', 'img_bare', 'img_down'].map((imageId, i) => ({
           id: `e${i}`,
@@ -230,6 +236,8 @@ describe('export <knowledgebase> <dir>', () => {
     for (const id of ['img_odd', 'img_bare', 'img_down'])
       expect(text).toContain(`![](${HOST}/api/images/${id})`);
     expect(err).toContain('picture img_down could not be read (TypeError: fetch failed)');
+    // An api that names no owners: the file says nothing of one.
+    expect(await io.files.read('out/deploys/rollbacks.md')).not.toContain('owner:');
     expect(io.requests.some((r) => r.headers.get('X-Share-Code') === 'AB12')).toBe(true);
     TABS.holidays = page('holidays', 'Holidays', [
       para('b1', [{ text: 'Last week of December.' }]),

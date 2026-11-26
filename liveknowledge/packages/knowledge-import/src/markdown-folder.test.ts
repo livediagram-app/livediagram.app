@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { archiveOf } from './__fixtures__/archive';
+import { frontMatterTitle } from './page-source';
 import { planImport } from './plan';
 
 const tree = (plan: Awaited<ReturnType<typeof planImport>>) =>
@@ -53,6 +54,13 @@ describe('Markdown Folder', () => {
     ]);
     expect(plan.pages[0]!.links).toEqual([{ target: 'p2', text: 'rollbacks' }]);
     expect(plan.pages[1]!.links).toEqual([{ target: 'p1', text: 'deploys' }]);
+  });
+
+  it('reads a front matter title unquoted only when its quotes close', () => {
+    expect(frontMatterTitle("title: 'open")).toBe("'open");
+    expect(frontMatterTitle("title: '")).toBe("'");
+    expect(frontMatterTitle('title: open"')).toBe('open"');
+    expect(frontMatterTitle('owner: "Ana"')).toBeNull();
   });
 
   it('takes a page’s title from its front matter when it has no heading, and drops the front matter', async () => {

@@ -114,7 +114,7 @@ export async function exportKnowledgebase(
     await mkdir(folderOf(file));
     await io.files.write(
       `${root}/${file}`,
-      pageFileMarkdown(tab, file, files, (imageId) => pictures.get(imageId) ?? null, {
+      pageFileMarkdown(tab, file, files, (imageId) => pictures.get(imageId)!, {
         ...links,
         title: row.title,
         facts: {
