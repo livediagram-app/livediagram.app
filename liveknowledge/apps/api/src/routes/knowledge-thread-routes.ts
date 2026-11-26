@@ -21,6 +21,8 @@ import {
   writePageThread,
 } from '../knowledge/page-threads';
 import { getParticipant } from '../person/profiles';
+import { agentCommentMarksOf } from '@liveworkspace/index-app';
+import { AGENT_HEADERS } from '../changesets/front-door';
 import { conflict, forbidden, json, methodNotAllowed } from '../responses';
 import { relayPages } from '../room-client';
 import type { DocumentDTO } from '../types';
@@ -97,7 +99,10 @@ async function authorOf(
     // A guest's says so after it: "Bright Marlin (Guest)" (owner 2026-11-21).
     name: person?.name || (ctx.token ? 'Anonymous' : guestName(typed)),
     color: person?.color ?? '#94a3b8',
-    ...(ctx.token ? { tokenId: ctx.token.id } : {}),
+    // An agent's, named by its client (a page thread has no Inbox row, so no ask: inbox-reading.md "AI comments").
+    ...(ctx.token
+      ? { tokenId: ctx.token.id, ...agentCommentMarksOf(ctx.request, ctx.token, AGENT_HEADERS, {}) }
+      : {}),
   };
 }
 
