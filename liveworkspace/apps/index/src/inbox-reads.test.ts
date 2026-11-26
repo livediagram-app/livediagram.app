@@ -121,7 +121,9 @@ describe('Inbox read state', () => {
       { read: [{ key: '', at: 1 }] },
       { read: [{ key: 'k', at: -1 }] },
       { unread: ['x'.repeat(301)] },
-      { read: Array.from({ length: INBOX_READ_BATCH_MAX + 1 }, (_, i) => ({ key: `k${i}`, at: 1 })) },
+      {
+        read: Array.from({ length: INBOX_READ_BATCH_MAX + 1 }, (_, i) => ({ key: `k${i}`, at: 1 })),
+      },
     ]) {
       const res = await mark(ada.auth, bad);
       expect(res.status, JSON.stringify(bad).slice(0, 60)).toBe(400);

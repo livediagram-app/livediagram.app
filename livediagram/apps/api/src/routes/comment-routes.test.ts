@@ -68,7 +68,9 @@ function call({
     makeTestRouteContext(method, `/api/documents/d1${path}`, {
       env: sql.env,
       owner,
-      ...(code || headers ? { headers: { ...(code ? { 'X-Share-Code': code } : {}), ...headers } } : {}),
+      ...(code || headers
+        ? { headers: { ...(code ? { 'X-Share-Code': code } : {}), ...headers } }
+        : {}),
       ...(token ? { token: { id: token } } : {}),
       ...(body === undefined ? {} : { body }),
       waitUntil: (p) => void pending.push(p),
@@ -482,7 +484,9 @@ describe('agents’ comments', () => {
     expect(mine).not.toHaveProperty('agent');
     expect(mine).not.toHaveProperty('needsResponse');
     const listedComments = (
-      await (await call({ method: 'GET', path: '/comments?status=all' })).json<{
+      await (
+        await call({ method: 'GET', path: '/comments?status=all' })
+      ).json<{
         threads: { comments: { agent?: string; needsResponse?: true }[] }[];
       }>()
     ).threads.flatMap((t) => t.comments);

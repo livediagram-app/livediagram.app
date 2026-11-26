@@ -12,6 +12,7 @@
     "./visibility-tones": "./src/visibility-tones.ts",
     "./this-browser-record": "./src/this-browser-record.ts",
     "./inbox-actions": "./src/inbox-actions.ts",
+    "./inbox-cross-app": "./src/inbox-cross-app.ts",
     "./local-preview": "./src/explorer/LocalPreview.tsx",
     "./other-app-thumbnail": "./src/explorer/OtherAppThumbnail.tsx",
     "./conversion-handoff": "./src/conversion-handoff.ts",

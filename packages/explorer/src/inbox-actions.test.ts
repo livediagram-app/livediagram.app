@@ -130,8 +130,62 @@ describe('createInboxActions', () => {
     expect(calls.filter((c) => c.method === 'GET')).toHaveLength(1);
     await actions.loadThread!(target(), SIGNAL);
     expect(calls.filter((c) => c.method === 'GET')).toHaveLength(2);
-    // A card's thread isn't read here: Open shows it.
+    // A card's thread from before it named its card isn't read here: Open shows it.
     expect(await actions.loadThread!(target({ kind: 'CardThread' }), SIGNAL)).toBeNull();
+  });
+
+  // inbox-reading.md: a card's thread reads with its card's threads alone, and an agent's comment keeps its marks.
+  it('reads a card’s thread with its card alone, marking an agent’s comment and its ask', async () => {
+    const calls: string[] = [];
+    const api: InboxApi = vi.fn(async (path) => {
+      calls.push(path);
+      return Response.json({
+        threads: [
+          { id: 'th-other', comments: [] },
+          {
+            id: 'th-7',
+            comments: [
+              { id: 'k1', text: 'Date?', createdAt: 1, authorName: 'Ada', authorColor: '#222' },
+              {
+                id: 'k2',
+                text: 'Friday?',
+                createdAt: 2,
+                authorName: 'Me',
+                authorColor: '#111',
+                authorId: 'u',
+                ai: true,
+                agent: 'Claude',
+                needsResponse: true,
+              },
+            ],
+          },
+        ],
+      });
+    });
+    const actions = createInboxActions({ api: () => api });
+    const card = target({
+      kind: 'CardThread',
+      app: 'liveplanner',
+      itemId: 'p1',
+      elementId: 'th-7',
+      cardId: 'card 7',
+    });
+    expect(await actions.loadThread!(card, SIGNAL)).toEqual([
+      { id: 'k1', authorName: 'Ada', authorColor: '#222', mine: false, text: 'Date?', at: 1 },
+      {
+        id: 'k2',
+        authorName: 'Me',
+        authorColor: '#111',
+        mine: true,
+        text: 'Friday?',
+        at: 2,
+        ai: true,
+        agent: 'Claude',
+        needsResponse: true,
+      },
+    ]);
+    expect(calls).toEqual(['/projects/p1/threads?item=card%207']);
+    expect(await actions.loadThread!({ ...card, elementId: 'th-gone' }, SIGNAL)).toBeNull();
   });
 
   it('fails a refused write, so the pane can say so', async () => {

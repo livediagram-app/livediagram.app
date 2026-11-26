@@ -1093,9 +1093,9 @@ describe("the account API, for the Explorer on an app's address (by the app's be
       expiresAt: number;
     };
     expect(short.expiresAt).toBe(soon * 1000);
-    expect((await call('/workspace-token', bearer(ADA_ON_SESSION, { method: 'POST' }))).status).not.toBe(
-      200,
-    );
+    expect(
+      (await call('/workspace-token', bearer(ADA_ON_SESSION, { method: 'POST' }))).status,
+    ).not.toBe(200);
     delete (auth.api as Record<string, unknown>).signJWT;
   });
 

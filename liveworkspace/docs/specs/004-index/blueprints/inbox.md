@@ -23,10 +23,10 @@ Scope, by file:
 | `packages/index-client/src/updates.ts`                          | `UPDATE_KINDS`, `isUpdateKind`, `UpdatePush`, `UpdateActor`, `InboxUpdate` and the updates' caps                                                                |
 | `liveworkspace/apps/index/src/updates.ts`                       | `parseUpdate`, `parseUpdates`, `pushUpdates`, `updatesQuery`, `inboxUpdateOf`, `sweepUpdates`: updates on watched pages                                         |
 | `liveworkspace/apps/index/src/inbox-reads.ts`                   | `handleInboxRead` (`PUT /inbox/read`), `readStateStatements`, `inboxReadOf`: read and unread per person                                                         |
-| `packages/index-client/src/inbox-keys.ts`                       | `inboxRowKey` and each kind's key (`threadKey`, `actionKey`, ...): one row key for the index's read state and the Explorer                                    |
-| `packages/model-core/src/comment-ai.ts`                         | `threadAiState`: a thread's `latestAgent` and `aiState` from its comments, for every app's push                                                                |
-| `packages/explorer/src/inbox-cross-app.ts`                      | `createWorkspaceTokenSource`, `crossAppInboxApi`: an app page's token for every app's api, and the Inbox's calls with it                                       |
-| `packages/explorer/src/data/inbox-read-state.ts`                | `isUnread`, `useInboxReadState`: read and unread as the index said, with this page's changes on top until it agrees                                           |
+| `packages/index-client/src/inbox-keys.ts`                       | `inboxRowKey` and each kind's key (`threadKey`, `actionKey`, ...): one row key for the index's read state and the Explorer                                      |
+| `packages/model-core/src/comment-ai.ts`                         | `threadAiState`: a thread's `latestAgent` and `aiState` from its comments, for every app's push                                                                 |
+| `packages/explorer/src/inbox-cross-app.ts`                      | `createWorkspaceTokenSource`, `crossAppInboxApi`: an app page's token for every app's api, and the Inbox's calls with it                                        |
+| `packages/explorer/src/data/inbox-read-state.ts`                | `isUnread`, `useInboxReadState`: read and unread as the index said, with this page's changes on top until it agrees                                             |
 
 ## Domain and naming
 

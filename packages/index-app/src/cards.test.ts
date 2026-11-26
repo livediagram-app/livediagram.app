@@ -256,7 +256,12 @@ describe('cardsCollabPush', () => {
     const cards = [
       await card('c1', {
         threads: [
-          { id: 'quiet', title: 'Q', resolved: false, comments: [at(1, { ai: true, agent: 'Claude' })] },
+          {
+            id: 'quiet',
+            title: 'Q',
+            resolved: false,
+            comments: [at(1, { ai: true, agent: 'Claude' })],
+          },
           {
             id: 'asks',
             title: 'A',

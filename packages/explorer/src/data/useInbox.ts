@@ -25,6 +25,7 @@ import type { InboxEntry } from '../explorer/inbox/sections';
 import { isAbort } from './errors';
 import { settledStoreFor } from './inbox-settled';
 import { useReturnToTab } from './useReturnToTab';
+import { useInboxReadMarks, type InboxReadMarks } from './inbox-read-state';
 import { inboxSignature, inboxWatchFor } from '../inbox-notices/watch';
 
 /** The Inbox as the Explorer holds it: the index's rows and the host's, the host's marked `local`. */
@@ -40,7 +41,7 @@ export type InboxState = {
   reload: () => void;
   /** A row's work was done here (resolved, marked done): it leaves the Inbox at once, while reads list it unchanged. */
   settle: (entry: InboxEntry) => void;
-};
+} & InboxReadMarks;
 
 const NO_LOCAL: InboxLocalRows = { actions: [], threads: [] };
 const NO_SETTLED: ReadonlyMap<string, number> = new Map();
@@ -81,6 +82,8 @@ type Held = {
   // The host's read that gave `local`: a host that reads for someone else (the person settled) is read again.
   localFrom: LocalRead;
   error: boolean;
+  // When the read behind `raw` started (a watch's answer: when it was read), for the read state's marks.
+  readStarted: number;
 };
 
 export function useInbox(
@@ -99,6 +102,7 @@ export function useInbox(
     local: NO_LOCAL,
     localFrom: undefined,
     error: false,
+    readStarted: 0,
   });
   const [attempt, setAttempt] = useState(0);
   // A re-read on returning to the tab: the same key, so the list stays on screen while it reads.
@@ -111,19 +115,22 @@ export function useInbox(
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
-    readAt.current = Date.now();
+    const started = Date.now();
+    readAt.current = started;
     inboxWatchFor(client).touch();
     const localFrom = hostRef.current?.localRows;
     Promise.all([client.inbox({}, { signal: controller.signal }), readLocal(hostRef.current)])
       .then(([raw, local]) => {
-        if (!controller.signal.aborted) setState({ key, raw, local, localFrom, error: false });
+        if (!controller.signal.aborted) {
+          setState({ key, raw, local, localFrom, error: false, readStarted: started });
+        }
       })
       .catch((e: unknown) => {
         if (isAbort(e) || controller.signal.aborted) return;
         setState((prev) =>
           prev.key === key && prev.raw
             ? prev
-            : { key, raw: null, local: NO_LOCAL, localFrom, error: true },
+            : { key, raw: null, local: NO_LOCAL, localFrom, error: true, readStarted: 0 },
         );
       });
     return () => controller.abort();
@@ -140,7 +147,9 @@ export function useInbox(
       const prev = held.current;
       if (!answer || !prev.raw || prev.key !== key || at < readAt.current) return;
       if (inboxSignature(prev.raw) === inboxSignature(answer)) return;
-      setState((p) => (p.key === key && p.raw ? { ...p, raw: answer, error: false } : p));
+      setState((p) =>
+        p.key === key && p.raw ? { ...p, raw: answer, error: false, readStarted: at } : p,
+      );
     });
   }, [client, key, enabled]);
   // The host's rows alone, read again: the latest read wins, and the index's rows stay as they are.
@@ -192,15 +201,23 @@ export function useInbox(
   const current = state.key === key ? state : null;
   const raw = current?.raw ?? null;
   const local = current?.local ?? NO_LOCAL;
-  const data = useMemo(
-    () => (raw ? withoutSettled(merged(raw, local), settled) : null),
-    [raw, local, settled],
+  // Read and unread: the index's, with this page's marks over it at once (./inbox-read-state).
+  const { read, markRead, markUnread, markAllRead } = useInboxReadMarks(
+    client,
+    raw?.read,
+    raw?.read !== undefined,
+    current?.readStarted ?? 0,
   );
+  const data = useMemo(() => {
+    if (!raw) return null;
+    const listed = withoutSettled(merged(raw, local), settled);
+    return read === listed.read ? listed : { ...listed, read };
+  }, [raw, local, settled, read]);
   const loading = enabled && !current;
   const error = current?.error ?? false;
   return useMemo(
-    () => ({ data, loading, error, reload, settle }),
-    [data, loading, error, reload, settle],
+    () => ({ data, loading, error, reload, settle, markRead, markUnread, markAllRead }),
+    [data, loading, error, reload, settle, markRead, markUnread, markAllRead],
   );
 }
 
