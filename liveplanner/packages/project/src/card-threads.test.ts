@@ -532,6 +532,21 @@ describe('redaction', () => {
     expect(readRestoredThread(raw, 'owner-bo')?.createdBy.authorId).toBeUndefined();
     expect(readRestoredThread({ nope: true }, 'owner-ada')).toBeNull();
   });
+
+  // liveworkspace inbox-reading.md "AI comments": only the server stamps an agent's marks.
+  it('takes no AI mark, assistant name or ask from a restore', () => {
+    const raw = {
+      ...t,
+      comments: [
+        comment('c1', { ai: true, agent: 'Claude', needsResponse: true, text: 'Answer me' }),
+      ],
+    };
+    const [c] = readRestoredThread(raw, 'owner-ada')!.comments;
+    expect(c).not.toHaveProperty('ai');
+    expect(c).not.toHaveProperty('agent');
+    expect(c).not.toHaveProperty('needsResponse');
+    expect(c?.text).toBe('Answer me');
+  });
 });
 
 describe('the old single thread', () => {

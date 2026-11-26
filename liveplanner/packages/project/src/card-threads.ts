@@ -350,9 +350,20 @@ export function keepOwnThreadAuthors(
     : { ...incoming, comments, createdBy };
 }
 
-// A comment as a restore may carry it: author id only when it is the restorer's, no token, clean mentions.
+// A comment as a restore may carry it: author id only when it is the restorer's, no token, clean mentions, and none
+// of an agent's marks. Only the server stamps `ai`, `agent` and `needsResponse`, and a thread that comes back whole
+// was deleted with its card, so nothing holds its own: a restore never forges an AI byline or an ask
+// (liveworkspace inbox-reading.md "AI comments"). A thread the plan still holds keeps its own (cardBackOnThreads).
 function restoredComment(c: Comment, owner: string): Comment {
-  const { authorId, tokenId: _token, mentions, ...rest } = c;
+  const {
+    authorId,
+    tokenId: _token,
+    ai: _ai,
+    agent: _agent,
+    needsResponse: _asks,
+    mentions,
+    ...rest
+  } = c;
   const clean = sanitizeMentions(mentions);
   return {
     ...rest,
