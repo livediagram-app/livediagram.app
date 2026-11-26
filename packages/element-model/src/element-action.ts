@@ -47,6 +47,9 @@ export type ElementAction = {
   assignerName: string | null;
   // 'wont-do' (docs/specs/012-collaboration/assigned-actions.md): decided against, closed without being done.
   status: ElementActionStatus;
+  // When it is due, a calendar day ('2026-12-03'), with no time or zone: absent when none was set
+  // (liveknowledge/docs/specs/030-knowledgebase/page-comments.md "Comments on the writing").
+  due?: string;
   createdAt: number; // unix ms
   updatedAt: number; // unix ms
 };

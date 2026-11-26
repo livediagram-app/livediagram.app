@@ -1,5 +1,13 @@
-import type { CommentListStatus, DocumentCommentThread } from '@liveknowledge/api-schema';
+import type {
+  CommentListStatus,
+  CommentThreadAnchor,
+  DocumentCommentThread,
+} from '@liveknowledge/api-schema';
 import {
+  articleNoteIds,
+  articlesOf,
+  noteAnchorTexts,
+  savedArticlesOf,
   cleanReactions,
   commentWithReactions,
   reactionSummary,
@@ -293,10 +301,23 @@ export function threadsOfTab(
 ): DocumentCommentThread[] {
   const elements = redactCommentAuthorIds(tab.elements, viewerId);
   const byId = new Map(elements.map((el) => [el.id, el]));
+  // A margin note's words, from the saved writing only: a draft is never read out (page-comments.md "Agents").
+  let quotes: Map<string, string> | null = null;
+  let marked: Set<string> | null = null;
+  const anchorOf = (el: { id: string; type: string }): CommentThreadAnchor | null => {
+    if (el.type !== 'article-note') return null;
+    quotes ??= noteAnchorTexts(savedArticlesOf(tab));
+    const text = quotes.get(el.id);
+    if (text !== undefined) return { text };
+    marked ??= articleNoteIds(articlesOf(tab));
+    // Its words only in a draft: on the page as it is saved, it is on nothing a reader can see yet.
+    return marked.has(el.id) ? null : { detached: true };
+  };
   return commentHosts(buildViewModel({ ...tab, elements })).flatMap(({ el, ref, label }) => {
     const thread = commentThreadOf(byId.get(el.id)!);
     if (!thread || thread.comments.length === 0) return [];
     if (status !== 'all' && thread.resolved !== (status === 'resolved')) return [];
+    const anchor = anchorOf(byId.get(el.id)!);
     return [
       {
         tabId: tab.id,
@@ -304,6 +325,7 @@ export function threadsOfTab(
         elementId: el.id,
         ref,
         label,
+        ...(anchor ? { anchor } : {}),
         resolved: thread.resolved,
         comments: thread.comments.map((c) => ({
           id: c.id,

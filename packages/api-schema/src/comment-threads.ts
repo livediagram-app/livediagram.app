@@ -14,12 +14,19 @@ export function isCommentListStatus(value: unknown): value is CommentListStatus 
   return COMMENT_LIST_STATUSES.some((status) => status === value);
 }
 
+/** Where a thread on words sits: those words, or nowhere once they were deleted. */
+export type CommentThreadAnchor = { text: string } | { detached: true };
+
 export type DocumentCommentThread = {
   tabId: string;
   tabName: string;
   elementId: string;
   ref: string;
   label: string | null;
+  // A thread on some words of an article's writing (a margin note; liveworkspace/docs/specs/021-mcp/mcp.md "Threads on
+  // words"): the words it is on in the saved writing, at most 280 characters, or detached once they were deleted.
+  // Absent for a thread on anything else.
+  anchor?: CommentThreadAnchor;
   resolved: boolean;
   comments: {
     id: string;

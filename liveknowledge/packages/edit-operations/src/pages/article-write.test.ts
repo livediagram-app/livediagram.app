@@ -256,6 +256,34 @@ describe('the writing', () => {
     expect(write(tab, { markdown: 'More', mode: 'append' }).tab.elements).toHaveLength(1);
   });
 
+  it('keeps a margin note holding a comment, detached, when its text is gone', () => {
+    const marker = {
+      id: 'n1',
+      type: 'article-note',
+      articleNote: 'comment',
+      x: 0,
+      y: 0,
+      width: 32,
+      height: 32,
+      commentThread: {
+        comments: [
+          { id: 'c', text: 'Why?', createdAt: 1, authorName: 'Priya', authorColor: '#000' },
+        ],
+        resolved: false,
+      },
+    } as unknown as Element;
+    const tab = withArticle(
+      'f',
+      { blocks: [{ id: '1', type: 'paragraph', runs: [{ text: 'noted', note: 'n1' }] }] },
+      { elements: [marker] },
+    );
+    const out = write(tab, { markdown: 'Fresh text' });
+    expect(out.tab.elements.map((e) => e.id)).toEqual(['n1']);
+    expect(out.lines).toContain(
+      'Kept 1 margin note whose text is gone, detached: each holds a comment or an action.',
+    );
+  });
+
   it('sets no look: the style is the knowledgebase’s, and what the flow holds is kept as it was', () => {
     const tab = withArticle('f', { blocks: [para('1', 'x')], style: { margins: 'wide' } });
     const out = write(tab, { markdown: 'y' });
