@@ -101,3 +101,42 @@ export async function workspaceToken(
   );
   return Response.json(body, { headers });
 }
+
+/** The same token for the account an app's bearer names (account-api/bearer-door.ts, accounts.md "A workspace token
+ *  by an app's bearer"), so an app's Inbox replies and resolves in another app's thread, whose API takes this token
+ *  and not the app's own. The door checks the bearer's session is live; this never outlasts the bearer, and carries
+ *  the account's teams as they are now. */
+export async function workspaceTokenFor(
+  env: Env,
+  auth: Auth,
+  account: { userId: string; email?: string | null; emailVerified?: boolean },
+  bearerExp: number | undefined,
+  now = Date.now(),
+): Promise<Response> {
+  const iat = Math.floor(now / 1000);
+  const exp = Math.min(iat + WORKSPACE_TOKEN_TTL_SECONDS, bearerExp ?? Infinity);
+  if (exp <= iat) return Response.json({ error: 'signed_out' }, { status: 401, headers: NO_STORE });
+  const { token } = await auth.api.signJWT({
+    body: {
+      payload: {
+        iss: `${env.BASE_URL}${AUTH_BASE_PATH}`,
+        aud: RESOURCES[env.ENVIRONMENT],
+        azp: 'liveworkspace.app',
+        iat,
+        exp,
+        sub: account.userId,
+        ...(account.email
+          ? { email: account.email, email_verified: account.emailVerified === true }
+          : {}),
+        teams: await teamsClaim(env.AUTH_DB, account.userId),
+      },
+    },
+  });
+  const body: WorkspaceToken = {
+    token,
+    kind: 'account',
+    sub: account.userId,
+    expiresAt: exp * 1000,
+  };
+  return Response.json(body, { headers: NO_STORE });
+}

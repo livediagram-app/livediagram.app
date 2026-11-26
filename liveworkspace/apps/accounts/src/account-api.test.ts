@@ -1043,6 +1043,62 @@ describe("the account API, for the Explorer on an app's address (by the app's be
     expect((await call('/data-export', bearer('tok-guest'))).status).toBe(401);
   });
 
+  // inbox-reading.md "Cross-app verbs": an app's Inbox replies in another app's thread with a workspace token.
+  it('mints a workspace token for the bearer’s account while its session is live, never past the bearer', async () => {
+    const signed: Record<string, unknown>[] = [];
+    (auth.api as Record<string, unknown>).signJWT = async ({
+      body,
+    }: {
+      body: { payload: Record<string, unknown> };
+    }) => {
+      signed.push(body.payload);
+      return { token: 'ws-token' };
+    };
+    const soon = Math.floor(Date.now() / 1000) + 120;
+    const SHORT = `${b64({ alg: 'EdDSA' })}.${b64({ sub: 'user_ada', sid: 's-here', exp: soon })}.sig`;
+    __setBearerVerifier(
+      () => async (token) =>
+        token === ADA_ON_SESSION || token === SHORT || token === 'tok-ada'
+          ? {
+              kind: 'account',
+              userId: 'user_ada',
+              email: 'ada@example.com',
+              emailVerified: true,
+              scopes: [],
+              teams: null,
+            }
+          : token === 'tok-guest'
+            ? { kind: 'guest', guestId: 'guest_00000000-0000-4000-8000-000000000009' }
+            : null,
+    );
+    // No live session behind the bearer: refused.
+    expect((await call('/workspace-token', bearer(ADA_ON_SESSION))).status).toBe(401);
+    expect((await call('/workspace-token', bearer('tok-ada'))).status).toBe(401);
+    expect((await call('/workspace-token', bearer('tok-guest'))).status).toBe(401);
+    addSession('s-here', 'user_ada');
+    const res = await call('/workspace-token', bearer(ADA_ON_SESSION));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    const body = (await res.json()) as { token: string; kind: string; sub: string };
+    expect(body).toMatchObject({ token: 'ws-token', kind: 'account', sub: 'user_ada' });
+    expect(signed[0]).toMatchObject({
+      sub: 'user_ada',
+      azp: 'liveworkspace.app',
+      email: 'ada@example.com',
+      email_verified: true,
+    });
+    expect((signed[0]!.exp as number) - (signed[0]!.iat as number)).toBe(15 * 60);
+    // A bearer that ends in two minutes gets a token that ends with it.
+    const short = (await (await call('/workspace-token', bearer(SHORT))).json()) as {
+      expiresAt: number;
+    };
+    expect(short.expiresAt).toBe(soon * 1000);
+    expect((await call('/workspace-token', bearer(ADA_ON_SESSION, { method: 'POST' }))).status).not.toBe(
+      200,
+    );
+    delete (auth.api as Record<string, unknown>).signJWT;
+  });
+
   it('lists the account’s live sessions, newest first, marking the token’s own and never a token', async () => {
     addSession('s-old', 'user_ada', { updated: 1_000 });
     addSession('s-here', 'user_ada', { updated: 5_000 });

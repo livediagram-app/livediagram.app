@@ -1,6 +1,8 @@
 // The account API's door for an app's bearer (account-api.ts).
 
+import { decodeJwt } from 'jose';
 import { bearerPerson, bearerSessionId } from '../bearer.ts';
+import { workspaceTokenFor } from '../workspace-token.ts';
 import {
   listOwnSessions,
   endOtherSessions,
@@ -74,6 +76,15 @@ export async function handleBearer(
     !(await isLiveSession(db, actor.id, bearerSessionId(token)))
   ) {
     return error(401, 'signed_out');
+  }
+  // A workspace token for this account, so the app's Inbox replies and resolves in another app's thread
+  // (inbox-reading.md "Cross-app verbs"): only while the bearer's session is live, never past the bearer itself.
+  if (section === 'workspace-token' && !id && method === 'GET') {
+    if (!(await isLiveSession(db, actor.id, bearerSessionId(token)))) {
+      return error(401, 'signed_out');
+    }
+    const { exp } = decodeJwt(token);
+    return workspaceTokenFor(env, auth, person, typeof exp === 'number' ? exp : undefined);
   }
   const ai = await aiKeyRoutes(request, env, actor, parts, waitUntil);
   if (ai) return ai;
