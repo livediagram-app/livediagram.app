@@ -220,6 +220,17 @@ function StartCallChooser({ source, anchor }: { source: CallSource; anchor: HTML
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  // The list replacing the placeholder row (or the chosen row going) drops focus to the page: put it back on the
+  // chosen row, so Enter still starts. Never takes focus from anything else, nor on a touch screen.
+  useEffect(() => {
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches)
+      return;
+    if (document.activeElement && document.activeElement !== document.body) return;
+    formRef.current
+      ?.querySelector<HTMLInputElement>('input[type="radio"]:checked')
+      ?.focus({ preventScroll: true });
+  }, [load.state, chosen]);
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (starting) return;

@@ -3,7 +3,7 @@
 // store, reads its calls once and again only on the room's word or the tab's return; Call (an account) starts the call
 // in its own tab, opened in the Start a Call popover's Start Call press (Work Tracker 1470); "3 in Call" with Join (anyone who reads the item) brings the call's tab back or
 // opens it; Meetings in Tools lists the calls. Nothing for a session that can't call, nor in livehuddle itself.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ItemCallsRead, ItemMeeting } from '@liveworkspace/index-client';
 
@@ -324,6 +324,21 @@ describe('Call', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Call' }));
     expect(await screen.findByText(/isn’t available, so a new Space is chosen/)).toBeTruthy();
     expect((await radio('A New Space')).checked).toBe(true);
+  });
+
+  it('keeps focus on the chosen row when the list replaces the Calls Space placeholder', async () => {
+    prefs.current = { callSpace: 'lh_room' };
+    let answer: (v: { items: unknown[] }) => void = () => undefined;
+    listItems.mockReturnValue(new Promise((r) => (answer = r)));
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    const placeholder = await radio('Your Calls Space');
+    await waitFor(() => expect(document.activeElement).toBe(placeholder));
+    answer({ items: [space('lh_room', 'Daily Room')] });
+    await flush();
+    const row = await radio('Daily Room');
+    await waitFor(() => expect(document.activeElement).toBe(row));
   });
 
   it('closes with nothing started on Cancel, Escape or the close', async () => {
