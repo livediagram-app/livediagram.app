@@ -12,6 +12,7 @@ import {
 } from '@liveknowledge/api-schema';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { shareGateOf } from '@liveworkspace/workbench/lib/share-restriction';
 import {
   API_BASE,
   apiHeaders,
@@ -20,14 +21,11 @@ import {
   type SharedDocumentResolution,
   apiFetch,
 } from './core';
-import { documentGrant, documentGrantRefusal } from './document-grants';
-
-// A refusal the password gate answers: none sent yet (401) or a wrong one (403).
-function passwordRefusal(code: string | null): SharedDocumentResolution | null {
-  if (code === 'password_required') return { passwordRequired: true, invalid: false };
-  if (code === 'password_invalid') return { passwordRequired: true, invalid: true };
-  return null;
-}
+import {
+  documentGrant,
+  documentGrantRefusal,
+  documentGrantRefusalDomains,
+} from './document-grants';
 
 // Resolve a share code to the document it opens, the level it grants and its tab. With the document's id (the address
 // `/document/<id>?s=<code>` carries it) this is the grant, which the page asked for while its code loaded, and the
@@ -43,13 +41,16 @@ async function _apiLoadShared(
     try {
       id = (await indexClient.resolveShare(code, password)).item.id;
     } catch (err) {
-      if (err instanceof IndexError) return passwordRefusal(err.code);
+      if (err instanceof IndexError) return shareGateOf(err.code, err.domains);
       throw err;
     }
   }
   const share = { code, password };
   const grant = await documentGrant(id, share, { fresh: true });
-  if (!grant) return passwordRefusal(documentGrantRefusal(id, share));
+  // Refused: the password gate (none sent yet, or a wrong one) or the restricted page (the document's sign-in rule,
+  // with the domains it is for); any other refusal opens nothing, the Link Not Valid card.
+  if (!grant)
+    return shareGateOf(documentGrantRefusal(id, share), documentGrantRefusalDomains(id, share));
   // A community link is a view link to every tab, so only such a link can be one: its post is asked beside the read.
   const maybeCommunity = grant.level === 'view' && grant.tabId === null;
   const [res, community] = await Promise.all([

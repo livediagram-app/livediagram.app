@@ -304,6 +304,15 @@ describe('the Trash, folders, teams and links', () => {
     expect(await gone.json()).toEqual({ error: 'not_found' });
   });
 
+  // The sign-in rule's refusals keep their domains, for the visitor's restricted page.
+  it('passes a sign-in refusal on with the domains it names', async () => {
+    routes['GET /share/RULE2345'] = () =>
+      Response.json({ error: 'domain_not_allowed', domains: ['acme.com'] }, { status: 403 });
+    const refused = await handleShare(ctx('GET', '/api/share/RULE2345'));
+    expect(refused.status).toBe(403);
+    expect(await refused.json()).toEqual({ error: 'domain_not_allowed', domains: ['acme.com'] });
+  });
+
   it('resolves a share code to what it opens', async () => {
     routes['GET /share/CODE2345'] = () =>
       Response.json({ item: item('P'), level: 'view', tabId: null });

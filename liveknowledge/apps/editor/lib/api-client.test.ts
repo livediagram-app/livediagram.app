@@ -29,6 +29,7 @@ import { guestTokenFor } from '@liveworkspace/index-client/testing';
 const grants = vi.hoisted(() => ({
   documentGrant: vi.fn(),
   documentGrantRefusal: vi.fn(() => null as string | null),
+  documentGrantRefusalDomains: vi.fn(() => null as string[] | null),
 }));
 vi.mock('./api/document-grants', () => ({
   withDocumentGrant: async (_base: string, _input: string, init?: RequestInit) => init,
@@ -36,6 +37,7 @@ vi.mock('./api/document-grants', () => ({
   seedDocumentGrant: () => {},
   documentGrant: grants.documentGrant,
   documentGrantRefusal: grants.documentGrantRefusal,
+  documentGrantRefusalDomains: grants.documentGrantRefusalDomains,
 }));
 const index = vi.hoisted(() => ({
   recordOpen: vi.fn(async () => {}),
@@ -132,6 +134,7 @@ describe('apiLoadShared', () => {
     setSessionSharePassword(null);
     grants.documentGrant.mockReset();
     grants.documentGrantRefusal.mockReset().mockReturnValue(null);
+    grants.documentGrantRefusalDomains.mockReset().mockReturnValue(null);
   });
 
   const GRANT = {

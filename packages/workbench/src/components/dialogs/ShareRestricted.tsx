@@ -3,12 +3,14 @@
 // The page a share link's visitor sees when the item's sign-in rule turns them away (liveworkspace/docs/specs/004-index/
 // one-explorer-contracts.md "Sharing and access"; each product's 013-workspace/share-password.md "Restricted to
 // accounts"). Signed out, or a guest: sign in or create an account, and the accounts site brings them straight back
-// to this address, where the link opens with its role. Signed in at another domain: Use Another Account, which asks the
-// accounts site to sign in afresh. It says who the item is for (the domains the refusal named), never anything else
+// to this address, where the link opens with its role. Signed in at another domain: it names the domains the link is
+// for and the account the visitor is signed in as, a different one, and Use Another Account asks the accounts site to
+// sign in afresh. It says who the item is for (the domains the refusal named), never anything else
 // of it. Shown in the password gate's place (SharePasswordGate, with `restricted`).
 
 import { buttonClassName, Glyph } from '@liveworkspace/ui';
 import { accountsSignInUrl } from '../chrome/auth-routes';
+import { useDeferredAuth } from '../providers/deferred-auth';
 import type { ShareRestriction } from '../../lib/share-restriction';
 
 export type { ShareRestriction } from '../../lib/share-restriction';
@@ -20,6 +22,43 @@ export function domainsInWords(domains: readonly string[]): string {
   const named = domains.map(at);
   if (named.length <= 1) return named[0] ?? '';
   return `${named.slice(0, -1).join(', ')} or ${named[named.length - 1]}`;
+}
+
+/** The restricted page's heading and line. A guest is asked to sign in (at the listed domains, when there are any);
+ *  an account at another domain is told who the item is for and that they are signed in as a different account,
+ *  named by its email when the session says. */
+export function restrictedWords(
+  noun: string,
+  { reason, domains }: ShareRestriction,
+  ownerName: string | null,
+  signedInAs: string | null = null,
+): { title: string; body: string } {
+  const toDomains = domains.length > 0;
+  const forWhom = domains.length === 1 ? at(domains[0]!) : `${domains.length} email domains`;
+  if (reason === 'domain') {
+    const account = signedInAs
+      ? `You’re signed in as ${signedInAs}, a different account.`
+      : 'You’re signed in with a different account.';
+    return toDomains
+      ? {
+          title: `This ${noun} is only available to ${forWhom}`,
+          body: `${account} Sign in with your ${domainsInWords(domains)} account to open it.`,
+        }
+      : {
+          title: `This ${noun} isn’t available to this account`,
+          body: `${account} Sign in with another account to open it.`,
+        };
+  }
+  const who = ownerName ?? 'The owner';
+  return toDomains
+    ? {
+        title: `This ${noun} is restricted to ${forWhom}`,
+        body: `${who} shared it with people at ${domainsInWords(domains)}. Sign in with an account there to open it.`,
+      }
+    : {
+        title: `Sign in to open this ${noun}`,
+        body: `${who} asked everyone who opens this ${noun} to sign in with a liveworkspace account first.`,
+      };
 }
 
 // The page only renders in the browser: the gate opens after the arrival resolves the link, never on the server.
@@ -51,20 +90,10 @@ export function ShareRestricted({
   ownerName: string | null;
 }) {
   const { reason, domains } = restriction;
+  // The account the visitor is signed in as, when the session says (never inside an editor without one).
+  const signedInAs = useDeferredAuth().user?.email ?? null;
   const out = framed() ? { target: '_blank', rel: 'noopener noreferrer' } : {};
-  const toDomains = domains.length > 0;
-  const who = ownerName ?? 'The owner';
-  const title = toDomains
-    ? domains.length === 1
-      ? `This ${noun} is restricted to ${at(domains[0]!)}`
-      : `This ${noun} is restricted to ${domains.length} email domains`
-    : `Sign in to open this ${noun}`;
-  const body =
-    reason === 'domain'
-      ? `You’re signed in with an account at another domain. Sign in with your ${domainsInWords(domains)} account to open it.`
-      : toDomains
-        ? `${who} shared it with people at ${domainsInWords(domains)}. Sign in with an account there to open it.`
-        : `${who} asked everyone who opens this ${noun} to sign in with a liveworkspace account first.`;
+  const { title, body } = restrictedWords(noun, restriction, ownerName, signedInAs);
   return (
     <div className="absolute inset-0 flex items-center justify-center p-6">
       <section

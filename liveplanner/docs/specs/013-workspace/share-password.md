@@ -23,7 +23,8 @@ joined member of the plan's team; a listed Community post locks it, and a plan b
   `@liveworkspace/workbench/lib/share-restriction`) turns either into the gate with `restricted`, and the password
   gate's place shows the restricted page instead (`ShareRestricted` in the workbench, titled "Sign In Required"): Sign
   In and Create Account for a guest, Use Another Account (`screen=switch`, `prompt=login`) for another domain's
-  account. Each comes back to the same address, where the link opens with its role. A remembered password is kept: the
+  account, which names the domains the link is for and says the visitor is signed in as a different account (by its
+  email when the page knows it). Each comes back to the same address, where the link opens with its role. A remembered password is kept: the
   rule refused the visitor, not it.
 - **In an embed** the restricted page's links open the accounts site in a new tab (it refuses framing), and the embed
   opens once reloaded signed in.
