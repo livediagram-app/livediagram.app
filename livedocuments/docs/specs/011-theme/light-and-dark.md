@@ -89,7 +89,15 @@ the header (`colourIsOpaque`).
   colours they had then; those are read as the same preset, so the box is drawn as today's version of it (a stored
   Bold of white on a mid-tone fill is drawn with the darker fill).
 - Writing follows the writer: a new element takes the writer's half of the theme, and everyone else sees it in theirs.
-  Picking a theme or a look applies it in the picker's half.
+  Picking a theme or a look applies it in the picker's half, except on a page with a fill of its own: its content
+  takes the theme in the half that page draws it in (a dark slide's words the dark half's near-white text, a light
+  slide's the light half's), whoever picks it and from wherever (Tab Style, `tab_style`, `style_item`). Stored in the
+  picker's half, a dark slide's words were the light half's dark text: the re-inking that follows a fill change (a
+  stage deck's night slides moving to the new theme's night) then baked them into a dim colour of their own that no
+  longer followed the theme, and the page design's guard laid a plate under each, flat panels behind the title and
+  footer (Work Tracker 1482). `tabWithTheme` (`packages/document/src/tab-theme-apply.ts`) restyles the tab once per
+  half in use and takes each element from its page's half; `packages/document/src/tab-theme-apply.test.ts` and the
+  keynote cases in `packages/edit-operations/src/pages/tab-style.test.ts` pin it.
 - Everything that draws a tab for a person follows their half: the canvas, the Map, layer and slide thumbnails,
   exports made from the editor, the palette's tile tint, the theme and look previews in Tab Style, and the quick
   style swatches. Server-made images (thumbnails, the MCP's inline renders) have no viewer and draw what is stored.

@@ -172,7 +172,11 @@ Designs keep words readable in three ways.
   against it: 4.5 to 1 for body text, 3 to 1 for large text (WCAG 2.2 AA). A design's **solid parts** (a photo's
   frame, a tile: its plates) count at their own strength under any text whose box meets them, not at the design's
   average, so a text on a frame or a tile fails as it reads. A text that fails gets a **scrim**, a soft
-  plate of the page's own colour under it, drawn with the design (on screen and in every export). The guard is a
+  plate of the page's own colour under it, drawn with the design (on screen and in every export). The plate's colour
+  is read from the page's fill as it is now, so it follows a theme change with the page (a dark slide moving to the
+  new theme's night takes that night's tone); a restyle also gives the words on a filled page the theme's ink for that
+  page ([Light and dark halves](light-and-dark.md#what-a-viewer-sees)), so a restyled stage deck's words read and need
+  no plate at all. The guard is a
   setting of the design: **Add a scrim** (the default) or **Warn only**, which draws no scrim and says in the panel how
   many texts are hard to read.
 
