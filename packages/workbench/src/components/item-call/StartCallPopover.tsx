@@ -119,7 +119,7 @@ function Row({
 function SettingBadge({ children }: { children: string }) {
   return (
     <span className="shrink-0 rounded-full bg-emerald-100 px-1.5 py-px text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
-      {children}
+      <span className="text-optical-centre">{children}</span>
     </span>
   );
 }
