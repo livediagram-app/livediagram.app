@@ -67,9 +67,10 @@ Web](publishing.md)): its "public site", never its "Public".
   is kept per browser), the shared rule in
   [Sidebar width](../../../../liveworkspace/docs/specs/011-workbench/sidebar-width.md). A title still cut off shows
   whole in a tooltip on hover and on keyboard focus. The knowledgebase's name at its head (its menu's
-  button, "The knowledgebase's menu"), then the pages. Rows indent 20 px a level, a page with subpages has a chevron, and open or closed is kept
-  per browser, per knowledgebase. The current page's ancestors are always open, so a page opened by its link shows
-  where it is. The current page wears the brand tint. A button at the sidebar's head collapses it to a narrow rail
+  button, "The knowledgebase's menu"), then the pages. Rows indent 20 px a level, and a page with subpages has a chevron.
+  Pages start closed, so a knowledgebase loads showing only its top-level pages; a page the reader opens stays open,
+  kept per browser, per knowledgebase (a viewer's own, never written to the knowledgebase, so one reader's tree never
+  changes another's). The current page's ancestors are always open, so a page opened by its link shows where it is. The current page wears the brand tint. A button at the sidebar's head collapses it to a narrow rail
   and back, kept per browser.
 - **The list scrolls as any list does.** The wheel, a trackpad's two-finger scroll and a finger's swipe over the
   pages scroll them, with the Trash row under them, in the sidebar and in the phone's Pages sheet; at either end the

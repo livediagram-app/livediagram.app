@@ -1,16 +1,15 @@
 'use client';
 
 // The page tree's props from the editor (docs/specs/030-knowledgebase/blueprints/page-tree.md "The sidebar"): the
-// tabs as the tree reads them, who may change them, what is closed in this browser, and the actions, each read from
+// tabs as the tree reads them, who may change them, what is opened in this browser, and the actions, each read from
 // the editor's chrome store one slice at a time. A typing commit changes none of them (`sameTabsForBar` compares the
 // tabs without their writing), so it renders nothing here.
-import { useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useCallback, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import { pageCount, truncateName } from '@liveknowledge/document';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { useToast } from '@/hooks/ui/useToast';
-import { readClosedPages, writeClosedPages } from '@/lib/page-tree-open';
 import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
@@ -30,6 +29,7 @@ import { useFeedOpenPagesBound } from '@/lib/use-pages-bound';
 import type { PageTreeActions, PageTreeKnowledge, PageTreeProps } from './PageTree';
 import { selectPage } from './select-page';
 import { useConnectedRows } from './useConnectedRows';
+import { useOpenedPages } from './useOpenedPages';
 import { useLabelFilterPages } from '@/components/page-labels/useLabelFilter';
 
 /** The link to one page of a knowledgebase: the knowledgebase's address with the page pinned in its fragment, which
@@ -71,26 +71,8 @@ export function usePageTreeModel(): PageTreeModel {
   const followingId = useEditorChrome((s) => s.followMe.followingId);
   const followerCount = useEditorChrome((s) => s.followMe.followerCount);
 
-  // What is closed, per knowledgebase, in this browser. Read again when another knowledgebase opens.
-  const [closedFor, setClosedFor] = useState(() => ({
-    documentId,
-    closed: readClosedPages(documentId),
-  }));
-  if (closedFor.documentId !== documentId) {
-    setClosedFor({ documentId, closed: readClosedPages(documentId) });
-  }
-  const onSetOpen = useCallback(
-    (id: string, open: boolean) =>
-      setClosedFor((state) => {
-        if (state.closed.has(id) !== open) return state;
-        const closed = new Set(state.closed);
-        if (open) closed.delete(id);
-        else closed.add(id);
-        writeClosedPages(state.documentId, closed);
-        return { ...state, closed };
-      }),
-    [],
-  );
+  // What this reader has opened, per knowledgebase, in this browser: every page starts closed.
+  const { opened, onSetOpen } = useOpenedPages(documentId);
 
   // The handlers read the newest view-model when they run, so the object keeps its identity and the rows stay put.
   const actions = useMemo<PageTreeActions>(
@@ -239,7 +221,7 @@ export function usePageTreeModel(): PageTreeModel {
     connected,
     connectDialog,
     only,
-    closed: closedFor.closed,
+    opened,
     onSetOpen,
     canEdit,
     isOutOfScope,

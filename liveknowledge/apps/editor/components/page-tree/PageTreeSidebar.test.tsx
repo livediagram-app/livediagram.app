@@ -77,7 +77,7 @@ function props(over: Partial<PageTreeSidebarProps> = {}): PageTreeSidebarProps {
   return {
     tabs: TABS,
     activeId: 'a',
-    closed: new Set(),
+    opened: new Set(TABS.map((t) => t.id)),
     onSetOpen: vi.fn(),
     canEdit: true,
     actions: actions(),
@@ -181,7 +181,7 @@ describe('PageTreeSidebar', () => {
       id: `t${i}`,
       name: `P${i}`,
     }));
-    render(<PageTreeSidebar {...props({ tabs: full, activeId: 't0', closed: new Set() })} />);
+    render(<PageTreeSidebar {...props({ tabs: full, activeId: 't0', opened: new Set() })} />);
     const button = screen.getByRole<HTMLButtonElement>('button', { name: 'New Page' });
     expect(button.disabled).toBe(true);
     expect(document.getElementById(button.getAttribute('aria-describedby')!)?.textContent).toBe(

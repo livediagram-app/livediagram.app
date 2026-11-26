@@ -253,7 +253,7 @@ describe('the sidebar button', () => {
       tabs,
       activeId: 'start',
       canEdit: true,
-      closed: new Set<string>(),
+      opened: new Set<string>(),
       actions: new Proxy({}, { get: () => () => {} }),
       knowledge: { marks: new Map(), inContext: new Set<string>() },
     } as unknown as Parameters<typeof PageTreeSheet>[0];
