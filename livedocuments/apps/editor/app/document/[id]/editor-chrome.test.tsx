@@ -524,7 +524,6 @@ describe('the canvas chrome and the page title bar (Work Tracker 907)', () => {
           styleRequest: 0,
           textRequest: 0,
           layoutsRequest: 0,
-          backgroundRequest: 0,
           shownName: undefined,
           many: false,
           act: act0,

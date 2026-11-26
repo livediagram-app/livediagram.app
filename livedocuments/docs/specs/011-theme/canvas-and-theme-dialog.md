@@ -14,8 +14,9 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 - **Opening it.** Once a tab has pages, **Design** (a painter's palette, named "Design") sits at the foot of
   Contents, docked or as a popover, where Add Page was ([Pages mode](../007-editor/pages-mode.md) "Contents",
   2026-11-25), opening the dialog on its home as a centred modal (a bottom sheet on a phone); the bottom-right cluster then holds no Theme & canvas button. A page's
-  title bar no longer carries it on a desktop; a phone, which has no sidebar, keeps it as the first row of a page's
-  Appearance sheet ("Beside the cog"). An article page (or a card) already has a Style for its writing, so
+  title bar no longer carries it on a desktop; a phone, which has no sidebar, reaches it from a page's Appearance
+  sheet's **Design** row (on Page Design; its looks one Back away), the sheet's one door to it since its Style row
+  left (Work Tracker 1480, [Pages mode](../007-editor/pages-mode.md) "On a phone, three buttons at most"). An article page (or a card) already has a Style for its writing, so
   it never shows two: its Style popover **leads with a Tab Style row** (a brand icon tile, "Tab Style", "The tab's
   colours and the canvas around its pages", a chevron) above the article's own style, and the row opens the dialog.
   The line says only what reaches an article: the theme's accent colours its writing, and the dialog sets the page

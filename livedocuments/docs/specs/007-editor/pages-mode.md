@@ -744,7 +744,7 @@ buttons 28 px tall, quiet until hovered and tinted while their popover is open o
 They come in groups, a short hairline between, read left to right: **how the page looks** (on an article page
 its own Style, leading with a Tab Style row; then an article's Text, Layout, **Design**; the tab's own **Style**
 moved to the foot of Contents as **Design** on 2026-11-25, "Contents"), then **tools** (Notes, Tidy), last at the
-corner. **Design** (a palette glyph, `PageDesignButton`) replaced the Background popover on 2026-11-25: it opens
+corner. **Design** (a palette glyph) replaced the Background popover on 2026-11-25: it opens
 Tab Style on Page Design, where a page's background and the art over it are one concept; on a phone the
 Appearance sheet's **Design** row does the same, and Page Settings has no Background. The page's **lock** and
 **cog** left the bar on 2026-11-25: Lock and Page Settings are in Contents' ⋯ menu
@@ -763,12 +763,15 @@ touch target:
 
 - **Appearance** (a sparkles glyph, named **Appearance** beside it while the page on screen holds the named bar,
   `appearanceNamed`, its icon alone on a page too narrow; `APPEARANCE_LABELLED_ROOM` 108 px) gathers how the page looks. It
-  opens a bottom sheet of rows, one per look control the page would show on a desktop for that person: **Style**
-  (the tab's look; on an article page the article's own Style, leading with its Tab Style row), **Layout** (an
-  infographic or slide page), **Background**, and **Text** (an article page). Each row has its icon, its name and a
-  short line; a press closes the Appearance sheet and opens that control's own sheet, the very sheet its desktop
-  button opens (one body, one place to change it). A locked page's Appearance holds Style alone (the tab's look, as
-  its desktop bar keeps Style); a page with no look controls at all shows no Appearance. Telemetry `UI / Opened / PageAppearance` as it opens; the control it then opens tracks as its own
+  opens a bottom sheet of rows, one per look control the page would show on a desktop for that person: **Text** (an
+  article page), **Layout** (an infographic or slide page) and **Design** (Tab Style on Page Design, the page's
+  background and the art over it). There is **no Style row** (owner, Work Tracker 1480, 2026-11-26): Design opens the
+  very dialog Style did, so the two rows were one door twice. Tab Style's looks are one Back away from Design, and on
+  an article page its **Article Style** row leads to the article's own Style (as does the article toolbar's ⋯ Style),
+  so nothing left the phone. Each row has its icon, its name and a short line; a press closes the Appearance sheet and
+  opens that control's own sheet, the very sheet its desktop button opens (one body, one place to change it); Design's
+  dialog drops from the Appearance button. A locked page's Appearance holds Design alone (the tab's look, which a page
+  lock does not reach); a page with no look controls at all shows no Appearance. Telemetry `UI / Opened / PageAppearance` as it opens; the control it then opens tracks as its own
   button does (`PageAppearanceRows`, `apps/editor/components/canvas/PageAppearanceButton.tsx`).
   While something on the page is selected that the Quick Style bar styles, the sheet goes on under a hairline and a
   **Selected Element** heading with one row per Quick Style button that applies (Stroke, Fill, Text, Width, Line,
@@ -776,7 +779,7 @@ touch target:
   own bottom sheet, named by the row's full name ([Quick Style bar](../008-canvas/quick-style-panel.md) "On a
   phone").
 - **No Tidy** on a phone: it straightens a page by a few pixels, which is a desktop's precision job.
-- **No lock button** on a phone. A lock is still honoured (a locked page's Appearance offers only Style, and its panel says it
+- **No lock button** on a phone. A lock is still honoured (a locked page's Appearance offers only Design, and its panel says it
   is locked), and the page's cog sheet holds **Lock** or **Unlock** in its actions row, so a phone can still lock
   and unlock a page.
 - **No page label** above a page's top-left corner on a phone: its name is read in Contents, renamed in the cog
