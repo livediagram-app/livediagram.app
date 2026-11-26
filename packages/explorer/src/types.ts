@@ -119,6 +119,8 @@ export type InboxTarget = {
   elementId: string;
   actionId: string | null;
   local: boolean;
+  /** A card's thread: the card it is on, so its comments read with the card's alone (`?item=`). */
+  cardId?: string | null;
 };
 
 /** A verb the reading pane can offer: reply to a thread, resolve a thread, mark an action or a card done, accept or
@@ -134,10 +136,15 @@ export type InboxComment = {
   authorId?: string | null;
   /** The author's Google picture, where the host already has it. */
   authorPicture?: string | null;
-  /** Written by the person reading. */
+  /** Written by the person reading (an agent writing as them included: `ai` then). */
   mine?: boolean;
   text: string;
   at: number;
+  /** Written by an agent with its person's token: shown with the assistant's name (`agent`) and an AI mark, for its
+   *  person (inbox-reading.md "AI comments"). `needsResponse`: it asks the thread's people to respond. */
+  ai?: boolean;
+  agent?: string | null;
+  needsResponse?: boolean;
 };
 
 /** What the reading pane can do on this page, through the app's own code. Each verb is offered only where `offers`

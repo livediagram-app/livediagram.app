@@ -88,6 +88,26 @@ describe('titles', () => {
     expect(threadTitle({ ...thread(), title: 'Basket bug' })).toBe('Basket bug');
   });
 
+  it('titles an assistant’s thread by its assistant, not the person it wrote for', () => {
+    const ai = startThread({
+      id: 'th-aaaaaaaaaaaaaaab',
+      home: 'p1',
+      card: { projectId: 'p1', itemId: 'i1', key: 1 },
+      comment: comment('c1', { text: 'Catering is empty', ai: true, agent: 'Claude' }),
+      now: 100,
+    });
+    expect(ai.title).toBe('Claude: Catering is empty');
+    expect(threadTitle({ ...ai, title: '' })).toBe('Claude: Catering is empty');
+    // Renamed, then cleared: back to the assistant's automatic title.
+    const renamed = applyThreadChange(ai, { kind: 'rename', title: 'Catering' }, 5);
+    const back = applyThreadChange(
+      renamed.ok ? renamed.thread! : ai,
+      { kind: 'rename', title: '' },
+      6,
+    );
+    expect(back.ok && back.thread!.title).toBe('Claude: Catering is empty');
+  });
+
   it('reads a rename: trimmed onto one line, empty for automatic, null past the cap or not text', () => {
     expect(readThreadTitle('  Basket\n bug ')).toBe('Basket bug');
     expect(readThreadTitle('')).toBe('');
@@ -531,6 +551,21 @@ describe('redaction', () => {
     expect(r?.createdBy.authorId).toBe('owner-ada');
     expect(readRestoredThread(raw, 'owner-bo')?.createdBy.authorId).toBeUndefined();
     expect(readRestoredThread({ nope: true }, 'owner-ada')).toBeNull();
+  });
+
+  // liveworkspace inbox-reading.md "AI comments": only the server stamps an agent's marks.
+  it('takes no AI mark, assistant name or ask from a restore', () => {
+    const raw = {
+      ...t,
+      comments: [
+        comment('c1', { ai: true, agent: 'Claude', needsResponse: true, text: 'Answer me' }),
+      ],
+    };
+    const [c] = readRestoredThread(raw, 'owner-ada')!.comments;
+    expect(c).not.toHaveProperty('ai');
+    expect(c).not.toHaveProperty('agent');
+    expect(c).not.toHaveProperty('needsResponse');
+    expect(c?.text).toBe('Answer me');
   });
 });
 

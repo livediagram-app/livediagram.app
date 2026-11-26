@@ -22,15 +22,18 @@ import {
   type InboxShare,
   type InboxSuggestion,
   type InboxThread,
+  type InboxResponse,
+  inboxRowKeys,
 } from '@liveworkspace/index-client';
 import { scopesOf } from './auth';
 import { INBOX_LIMIT_DEFAULT } from './config';
 import { parseLimit } from './codec';
 import type { PersonContext } from './context';
-import { badRequest, json } from './http';
+import { badRequest, json, notFound } from './http';
 import { inviteOf, invitesQuery } from './item-call-reads';
 import { LIVE_LINK } from './rows';
 import { inboxUpdateOf, updatesQuery, type UpdateRow } from './updates';
+import { handleInboxRead, inboxReadOf, keepsReadState, readStateStatements } from './inbox-reads';
 
 // Reached as owner, through a scope, or through a live link the person opened, on the tab that link opens: a link
 // scoped to one tab reaches that tab's threads and actions alone, as it opens that tab alone, and the cards on that
@@ -66,6 +69,8 @@ type ThreadRow = {
   latest_author_color: string;
   latest_author_id: string | null;
   card: string | null;
+  latest_agent: string | null;
+  ai_state: string;
   mentions_you: number;
   mentioned_by_you: string | null;
   you_commented: number;
@@ -162,7 +167,7 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       )
       SELECT t.app, t.item_id, i.title AS item_title, i.team_id AS item_team_id, t.tab_id, t.tab_name, t.element_id, t.element_label,
         t.resolved, t.comment_count, t.latest_text, t.latest_author_name, t.latest_author_color, t.latest_author_id,
-        t.card,
+        t.card, t.latest_agent, t.ai_state,
         EXISTS (SELECT 1 FROM json_each(t.mentioned_ids) WHERE value = ?) AS mentions_you,
         (SELECT value FROM json_each(t.mentioned_by) WHERE key = ?) AS mentioned_by_you,
         EXISTS (SELECT 1 FROM json_each(t.participant_ids) WHERE value = ?) AS you_commented,
@@ -171,7 +176,7 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       JOIN collab_threads t ON t.app = c.app AND t.item_id = c.item_id AND t.tab_id = c.tab_id
         AND t.element_id = c.element_id
       JOIN items i ON i.id = t.item_id
-      WHERE t.resolved = 0 AND i.trashed_at IS NULL ${appClause} AND ${reachable('t')}
+      WHERE t.resolved = 0 AND t.ai_state <> 'quiet' AND i.trashed_at IS NULL ${appClause} AND ${reachable('t')}
       ORDER BY t.latest_at DESC LIMIT ?`,
     args: [
       personId,
@@ -296,6 +301,9 @@ function cardOf(text: string | null): CollabCard | null {
 }
 
 export async function handleInbox(ctx: PersonContext): Promise<Response> {
+  // Read and unread (inbox-reads.ts): `PUT /inbox/read`.
+  if (ctx.segments.length === 2 && ctx.segments[1] === 'read') return handleInboxRead(ctx);
+  if (ctx.segments.length !== 1) return notFound();
   const { env, url, person } = ctx;
   const app = url.searchParams.get('app');
   if (app !== null && !isApp(app)) return badRequest('invalid_app');
@@ -309,6 +317,7 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   const now = Date.now();
   const notices = noticesQuery(person.id, now);
   const invites = invitesQuery(person.id, now);
+  const reads = keepsReadState(person) ? readStateStatements(db, person.id) : [];
   const [
     threadRes,
     actionRes,
@@ -319,6 +328,8 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     updateRes,
     noticeRes,
     inviteRes,
+    markRes,
+    readRes,
   ] = (await db.batch([
     db.prepare(q.threads.sql).bind(...q.threads.args),
     db.prepare(q.actions.sql).bind(...q.actions.args),
@@ -331,6 +342,8 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     db.prepare(notices.sql).bind(...notices.args),
     // Invites to calls about items (item-call-reads.ts), in every app's Inbox.
     db.prepare(invites.sql).bind(...invites.args),
+    // The reader's read state (inbox-reads.ts), an account's alone.
+    ...reads,
   ])) as D1Result<Record<string, unknown>>[];
   const threads: InboxThread[] = (threadRes!.results as ThreadRow[]).map((r) => ({
     app: r.app,
@@ -348,6 +361,8 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     latestAuthorColor: r.latest_author_color,
     latestAuthorId: r.latest_author_id,
     card: cardOf(r.card),
+    latestAgent: r.latest_agent,
+    asks: r.ai_state === 'ask',
     mentionsYou: r.mentions_you === 1,
     mentionedBy: r.mentions_you === 1 ? mentionerOf(r.mentioned_by_you) : null,
     youCommented: r.you_commented === 1,
@@ -427,7 +442,7 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     createdAt: r.created_at,
   }));
   const updates = (updateRes!.results as UpdateRow[]).map(inboxUpdateOf);
-  return json({
+  const answer: InboxResponse = {
     threads,
     actions,
     forms,
@@ -437,5 +452,9 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     updates,
     notices: noticeRes!.results.map(noticeOf),
     calls: inviteRes!.results.map(inviteOf(now)),
-  });
+  };
+  if (markRes && readRes) {
+    answer.read = inboxReadOf(markRes.results, readRes.results, inboxRowKeys(answer));
+  }
+  return json(answer);
 }

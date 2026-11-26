@@ -119,6 +119,10 @@ function threadRow(
     verb = 'mentioned you';
     // Who mentioned the reader, unless that was the reader (a mention of themselves).
     if (t.mentionedBy?.name && t.mentionedBy.id !== viewerId) who = t.mentionedBy.name;
+  } else if (t.asks) {
+    // An assistant asks the people its thread reaches (inbox-reading.md "AI comments").
+    kind = 'comment';
+    verb = 'asked for your response';
   } else if (t.onYourItem && !t.youCommented) {
     kind = 'comment';
     verb = 'commented';
@@ -129,6 +133,8 @@ function threadRow(
     // Reached only through the reader's agent: theirs, so not news.
     return null;
   }
+  // An assistant's comment is named by the assistant, never as the person whose token it wrote with.
+  if (t.latestAgent && !t.mentionsYou) who = t.latestAgent;
   const key = threadKey(t);
   // Where in the item, as the Inbox row says it: the card, else the tab and the element, so rows on one canvas
   // differ. A part that only repeats the item's name ("Launch plan › Launch plan") is left out.

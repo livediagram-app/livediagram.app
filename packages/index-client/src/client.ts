@@ -25,6 +25,7 @@ import type {
   FolderPreview,
   SpacePreview,
   GrantResponse,
+  InboxReadChange,
   InboxResponse,
   CalendarCard,
   CalendarFeedRead,
@@ -602,6 +603,9 @@ export function createIndexClient({
     // Inbox
     inbox: (query: { app?: App; limit?: number } = {}, options: RequestOptions = {}) =>
       call<InboxResponse>('/inbox', { query, signal: options.signal }),
+    // The reader's read state (inbox-reading.md "Read and unread"): an account's alone.
+    markInbox: (change: InboxReadChange) =>
+      call<void>('/inbox/read', { method: 'PUT', body: change }),
 
     // The person's calendar feed of their open, dated cards (one-explorer-contracts.md "Calendar feeds"): only an app
     // acting for an account may ask. `putCalendarFeed` makes it, or resets it over an existing one.

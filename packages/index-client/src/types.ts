@@ -141,6 +141,12 @@ export type CollabThreadInput = {
   // Who mentioned each person in `mentionedIds`: the author of the latest comment that mentioned them (a comment
   // mentioning its own author names no one), so a later reply never changes it. Absent: unknown.
   mentionedBy?: Record<string, CollabMentioner>;
+  // The assistant's name when the latest comment is an agent's (an API token's); absent for a person's
+  // (inbox-reading.md "AI comments").
+  latestAgent?: string;
+  // `quiet`: only agents wrote in it and none asked (listed in nobody's Inbox); `ask`: an agent's comment asking for a
+  // response is newer than every person's. Absent: neither, or an app from before.
+  aiState?: 'quiet' | 'ask';
   firstAt: number;
   latestAt: number;
   // A card's thread rather than an element's (pushed under COLLAB_CARDS_TAB, `elementId` the card's id).
@@ -263,7 +269,14 @@ type InboxPlace = {
 export type InboxThread = InboxPlace &
   Omit<
     CollabThreadInput,
-    'participantIds' | 'mentionedIds' | 'agentIds' | 'latestAuthorColor' | 'card' | 'mentionedBy'
+    | 'participantIds'
+    | 'mentionedIds'
+    | 'agentIds'
+    | 'latestAuthorColor'
+    | 'card'
+    | 'mentionedBy'
+    | 'latestAgent'
+    | 'aiState'
   > & {
     latestAuthorColor: string;
     card: CollabCard | null;
@@ -273,6 +286,10 @@ export type InboxThread = InboxPlace &
     mentionsYou: boolean;
     youCommented: boolean;
     onYourItem: boolean;
+    // The assistant's name when the latest comment is an agent's; absent or null for a person's.
+    latestAgent?: string | null;
+    // An agent's comment asks for a response and no person has written since (inbox-reading.md "AI comments").
+    asks?: boolean;
   };
 export type InboxAction = InboxPlace &
   Omit<CollabActionInput, 'description' | 'assigneeName' | 'assignerName' | 'card'> & {
@@ -332,6 +349,20 @@ export type InboxResponse = {
   notices?: InboxAutomationNotice[];
   // Invites to calls about items the reader reaches (item-calls.md "Invites"); absent from an index before them.
   calls?: InboxCallInvite[];
+  // The reader's read state (inbox-reading.md "Read and unread"): absent for a guest and from an index before it.
+  read?: InboxReadState;
+};
+
+/** Read and unread as the index keeps them: `before` the reader's last Mark All Read (0 for never), `at` the time
+ *  each listed row was read at by its key (`inboxRowKey`), 0 for one marked unread. */
+export type InboxReadState = { before: number; at: Record<string, number> };
+
+/** A change to the reader's read state (`PUT /inbox/read`): rows read at their time, rows marked unread, or every
+ *  row read. */
+export type InboxReadChange = {
+  read?: { key: string; at: number }[];
+  unread?: string[];
+  all?: true;
 };
 
 // One Notify step's notice: the item whose rule sent it, the rule's name and its text.

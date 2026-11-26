@@ -24,6 +24,8 @@ export type ThreadAuthor = {
   name: string;
   color: string;
   tokenId?: string;
+  /** An agent's assistant name, from its client's headers. */
+  agent?: string;
 };
 
 export type ThreadRefusal =
@@ -53,7 +55,13 @@ function newComment(id: string, text: string, author: ThreadAuthor, now: number)
     authorColor: author.color,
     by: author.key,
     authorId: author.id,
-    ...(author.tokenId ? { tokenId: author.tokenId, ai: true as const } : {}),
+    ...(author.tokenId
+      ? {
+          tokenId: author.tokenId,
+          ai: true as const,
+          ...(author.agent ? { agent: author.agent } : {}),
+        }
+      : {}),
   };
 }
 

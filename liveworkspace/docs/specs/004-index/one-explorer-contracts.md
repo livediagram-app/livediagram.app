@@ -780,8 +780,8 @@ minute, with retries ([When a push fails](#when-a-push-fails)):
   ([approvals.md](approvals.md#changed-since-approval-the-items-revision)).
 - `PUT /app/items/:id/collab/:tabId`: the tab's comment threads and actions, replacing that tab's rows:
   `{tabName?, threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds,
-latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, mentionedBy?, card?,
-firstAt, latestAt}],
+latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, mentionedBy?,
+latestAgent?, aiState?, card?, firstAt, latestAt}],
 actions: [{elementId, actionId, elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId,
 assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the event log's
   collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
@@ -792,6 +792,9 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   still waits on me. `mentionedBy` says who mentioned each person: `{[mentionedId]: {id, name, color?}}`, keyed by
   the ids in `mentionedIds`, naming the author of the latest comment that mentioned them (a comment mentioning its
   own author names no one), so a reply in the thread, theirs or anyone's, never changes who mentioned them.
+  `latestAgent` names the assistant when the latest comment is an AI's, and `aiState` is `quiet` for a thread only
+  AIs wrote in with nothing asked (listed in nobody's Inbox) or `ask` while an AI's comment asking for a response
+  is newer than every person's ([inbox-reading.md "AI comments"](inbox-reading.md#ai-comments)).
 - The same collab push carries the tab's **suggested edits** where the app has them (liveknowledge: an agent's edit
   waiting on a page, its `030-knowledgebase/insights.md` "Edits suggested by agents"): `suggestions?: [{id,
 ownerId, agent, reason, kind: 'replace' | 'append', before, after, createdAt}]`, at most 50
@@ -1133,6 +1136,10 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   `collab_actions` rows whose `app` is livehuddle and nothing else, emits no event, and changes nothing a second
   time.
 
+- **How a row reads, opens and is acted on** is [inbox-reading.md](inbox-reading.md): four lines (who and what
+  happened, what it is, the words, the app and item), an unread dot, the whole thread in the pane, Reply and Resolve
+  on every app's threads from every page, read state kept by the index and Mark All Read, and how AI comments reach
+  it (Work Tracker 1466, Work Tracker 1472). What follows is the rest of the contract.
 - **The list.** Every row newest first, under **Today**, **Earlier This Week** (the six days before) and **Older**.
   A card thread read through two items (shared between plans) is one row: its newest copy.
   Each row is three lines: who is behind it (who assigned it, who it waits on, who mentioned me, who wrote last;
@@ -1235,10 +1242,11 @@ latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a
   - **Reply** (r) and **Resolve** (e) on a thread, through the owning app's comment routes: an element's thread by
     `POST /api/<items>/:id/tabs/:tabId/comments` and `…/comments/:firstCommentId/resolve` (the thread named by its
     first comment, read from `GET /api/<items>/:id/comments?status=all`, which also gives the pane the whole thread),
-    a card thread's by `POST /api/projects/:id/threads/:threadId/comments` and `…/threads/:threadId/resolve`. On liveworkspace.app every
-    app's threads (the workspace token's audience is every app's api); on an app's own address and in its editor's
-    panel that app's threads only (their token is their own api's). `Activity·Added` (`Reply`) and
-    `Activity·Resolved` (`Thread`).
+    a card thread's by `POST /api/projects/:id/threads/:threadId/comments` and `…/threads/:threadId/resolve`. Every
+    app's threads on every page: liveworkspace.app's workspace token is addressed to every app's api, and an app's
+    page and editor ask accounts for one with their own bearer ([inbox-reading.md "Acting in place"](inbox-reading.md#acting-in-place-in-every-app-for-every-apps-threads)).
+    Offered at `participate` or above on the item (a Viewer neither replies nor resolves). `Activity·Added`
+    (`Reply`) and `Activity·Resolved` (`Thread`).
   - **Mark Done** (e) on a livediagram action, wherever the Inbox shows it: in an editor's panel for an action on
     the tab it has open, the canvas's own Mark Done; anywhere else through livediagram's action route,
     `POST /api/documents/:id/tabs/:tabId/actions/:actionId/status` with `{ elementId, status: 'done' }`, an Editor's
@@ -1258,9 +1266,11 @@ latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a
     first, so a run of resolves works down the list; with nothing left the list shows its empty state. On a phone
     and in the panel the pane stays open on that next row (Back still returns to the list), and closes only when
     no row is left.
-    The Inbox keeps no read state: no Seen, Later or Done of its own (one-explorer.md "Open questions").
+    Read and unread are the index's, per person ([inbox-reading.md "Read and unread"](inbox-reading.md#read-and-unread-kept-by-the-index));
+    there is no Later or Done of its own (one-explorer.md "Open questions").
 - **Keys.** j/k or ↑/↓ move, Home and End jump, ↵ opens the row in its app (where the pane stands beside the list) or
-  opens the pane (where it stands in for the list), r replies, e resolves or marks done, Esc returns from the pane.
+  opens the pane (where it stands in for the list), r replies, e resolves or marks done, u marks it unread (or read),
+  Esc returns from the pane.
   The keys show on the buttons, except on a touch screen.
 - **Narrow.** Under 768 px, and always in the editor's panel, the list stands alone; choosing a row opens the pane in
   its place (on a phone, full screen) under the shared back bar to **Inbox** (`BackBar`, `@liveworkspace/ui`). The browser's Back (Android's, an iPhone's swipe) and
@@ -1270,9 +1280,9 @@ latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a
   another. The
   filter stays the header's dropdown (36 px tall; a phone's native picker opens from it); rows and Back are at least 44 px tall; the page keeps its 16 px gutter.
 
-The sidebar's badge counts what waits on me: My Actions, the threads that ask something of me (a mention, or a
-thread on my item I have not written in myself, an agent's question with my token included), and the suggested edits
-waiting on my pages. At 0 it shows no badge,
+The sidebar's badge counts what waits on me and is unread: My Actions, the threads that ask something of me (a
+mention, a thread on my item I have not written in myself, an AI's comment that asks for my response), the access
+requests and the suggested edits waiting on my pages, each while unread ([inbox-reading.md](inbox-reading.md#read-and-unread-kept-by-the-index)). At 0 it shows no badge,
 on the sidebar and the rail alike, in every app. The editor's panel rail counts its own app's rows, as the editor's
 Explorer button does ([inbox-notices.md "The count"](inbox-notices.md#the-count)); the Explorer page's sidebar
 counts the list it shows.

@@ -1251,8 +1251,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 ## Open questions
 
 - The CLI and MCP server across apps.
-- Proposed, not built: the Inbox remembering what a person has seen, put off till later or marked done (Seen, Later,
-  Done, snooze). It would need read state per person and row, which the index doesn't keep; the Inbox has
-  none, and a row leaves only when its work is done in its app.
+- Proposed, not built: the Inbox putting a row off till later or marking it done (Later, Done, snooze). Read and
+  unread are kept ([inbox-reading.md](inbox-reading.md)); a row leaves only when its work is done in its app.
 - Proposed, not built: Mark Done on a Plan card from the Inbox. Done is the board's done column, which the Inbox
   doesn't know; the card opens on its board instead.

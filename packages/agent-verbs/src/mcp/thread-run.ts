@@ -15,8 +15,9 @@ import { computeRefs, resolveRef } from '@liveworkspace/element-model/element-re
 import { wordOf, type AgentProduct } from '../product';
 
 export type ThreadChange =
-  | { op: 'start'; ref: string; tabId?: string; text: string }
-  | { op: 'reply'; ref: string; tabId?: string; text: string }
+  // `needsResponse`: the comment asks the thread's people to respond, so it reaches their Inbox (inbox-reading.md).
+  | { op: 'start'; ref: string; tabId?: string; text: string; needsResponse?: boolean }
+  | { op: 'reply'; ref: string; tabId?: string; text: string; needsResponse?: boolean }
   | { op: 'resolve'; ref: string; tabId?: string }
   | { op: 'reopen'; ref: string; tabId?: string }
   | { op: 'edit'; ref: string; tabId?: string; comment: string; text: string }
@@ -28,6 +29,8 @@ export type ListedThreadComment = {
   at: string;
   text: string;
   ai?: true;
+  agent?: string;
+  needsResponse?: true;
   edited?: true;
   reactions?: { emoji: string; name: string; count: number; by: string[] }[];
 };
@@ -78,6 +81,8 @@ export function listedThread(t: Thread): ListedCanvasThread {
       at: new Date(c.createdAt).toISOString(),
       text: c.text,
       ...(c.ai ? { ai: true as const } : {}),
+      ...(c.agent ? { agent: c.agent } : {}),
+      ...(c.needsResponse ? { needsResponse: true as const } : {}),
       ...(c.editedAt ? { edited: true as const } : {}),
       ...(c.reactions?.length ? { reactions: c.reactions } : {}),
     })),
@@ -221,14 +226,18 @@ export function createThreadRun(product: AgentProduct) {
         if (change.op === 'start') {
           const tab = tabOf((tabs ??= await readTabs(api, id)), change.tabId);
           const elementId = await elementOn(api, id, tab, change.ref);
-          await send(api, commentsPath(id, tab.id), 'POST', { elementId, text: change.text });
+          await send(api, commentsPath(id, tab.id), 'POST', {
+            elementId,
+            text: change.text,
+            ...asks(change),
+          });
           applied.push(`+ comment on ${change.ref}`);
         } else {
           const thread = threadOn(await current(), change.ref, tabId);
           const at = commentsPath(id, thread.tabId);
           const last = encodeURIComponent(thread.comments.at(-1)!.id);
           if (change.op === 'reply') {
-            await send(api, `${at}/${last}/reply`, 'POST', { text: change.text });
+            await send(api, `${at}/${last}/reply`, 'POST', { text: change.text, ...asks(change) });
             applied.push(`+ reply on ${thread.ref}`);
           } else if (change.op === 'resolve' || change.op === 'reopen') {
             await send(api, `${at}/${last}/${change.op}`, 'POST');
@@ -269,3 +278,7 @@ export function threadStopText(applied: readonly string[], refusal: { message: s
     ? `Applied before it stopped:\n${applied.join('\n')}\nThen: ${refusal.message}`
     : refusal.message;
 }
+
+// The ask a start or a reply sends, only when it asks: an old client's body is unchanged.
+const asks = (change: { needsResponse?: boolean }) =>
+  change.needsResponse === true ? { needsResponse: true as const } : {};

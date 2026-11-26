@@ -9183,6 +9183,9 @@ importers:
       '@liveworkspace/migration':
         specifier: workspace:*
         version: link:../migration
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261120.1

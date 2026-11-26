@@ -110,6 +110,37 @@ const inbox = (over: Partial<InboxResponse> = {}): InboxResponse => ({
 });
 
 describe('each kind', () => {
+  // inbox-reading.md "AI comments": an assistant is named by itself, and its ask says so.
+  it('names an assistant’s comment by the assistant, and its ask as asking for a response', () => {
+    const [ask, note] = noticeRows(
+      inbox({
+        threads: [
+          thread({ latestAgent: 'Claude', asks: true, onYourItem: false, latestAt: NOW - 400 }),
+          thread({ elementId: 'e2', latestAgent: 'Claude' }),
+        ],
+      }),
+      ME,
+      'livediagram',
+    );
+    expect(noticeHeadline(ask!)).toBe('Claude asked for your response');
+    expect(noticeHeadline(note!)).toBe('Claude commented');
+    // A mention still names the person who mentioned the reader.
+    const [mention] = noticeRows(
+      inbox({
+        threads: [
+          thread({
+            latestAgent: 'Claude',
+            mentionsYou: true,
+            mentionedBy: { id: 'user_q', name: 'Quinn' },
+          }),
+        ],
+      }),
+      ME,
+      'livediagram',
+    );
+    expect(noticeHeadline(mention!)).toBe('Quinn mentioned you');
+  });
+
   it('a mention says who mentioned the reader, with the first line', () => {
     const [row] = noticeRows(
       inbox({

@@ -5239,6 +5239,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Comment": {
     "additionalProperties": false,
     "properties": {
+      "agent": {
+        "type": "string"
+      },
       "ai": {
         "const": true,
         "type": "boolean"
@@ -5282,6 +5285,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/CommentMention"
         },
         "type": "array"
+      },
+      "needsResponse": {
+        "const": true,
+        "type": "boolean"
       },
       "reactions": {
         "items": {
@@ -12752,6 +12759,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "agent": {
+              "type": "string"
+            },
             "ai": {
               "const": true,
               "type": "boolean"
@@ -12779,6 +12789,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "$ref": "#/components/schemas/CommentMention"
               },
               "type": "array"
+            },
+            "needsResponse": {
+              "const": true,
+              "type": "boolean"
             },
             "reactions": {
               "items": {

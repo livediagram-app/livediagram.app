@@ -5,6 +5,7 @@ import {
   IndexError,
   type App,
   type Folder,
+  type InboxReadChange,
   type InboxResponse,
   type IndexClient,
   type Item,
@@ -364,7 +365,21 @@ export function createFakeIndex(
         updates: (inbox.updates ?? []).filter((u) => !query.app || u.app === query.app),
         calls: (inbox.calls ?? []).filter((c) => !query.app || c.app === query.app),
         notices: (inbox.notices ?? []).filter((n) => !query.app || n.app === query.app),
+        // The read state the index keeps for an account (inbox-reading.md), when a test sets it.
+        ...(inbox.read ? { read: { before: inbox.read.before, at: { ...inbox.read.at } } } : {}),
       })),
+    // PUT /inbox/read: kept as the index keeps it.
+    markInbox: (change: InboxReadChange) =>
+      answer('markInbox', [change], undefined, () => {
+        const read = (inbox.read ??= { before: 0, at: {} });
+        if (change.all) {
+          read.before = Date.now();
+          read.at = {};
+        }
+        for (const r of change.read ?? []) read.at[r.key] = Math.max(r.at, read.at[r.key] ?? 0);
+        for (const key of change.unread ?? []) read.at[key] = 0;
+        return undefined;
+      }),
     // Request Access (request-access.md): a grant or a decline closes the open request.
     grantAccessRequest: (itemId: string, requestId: string, input: { level?: string } = {}) =>
       answer('grantAccessRequest', [itemId, requestId, input], undefined, () => {

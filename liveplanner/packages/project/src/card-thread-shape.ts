@@ -110,7 +110,8 @@ export function autoThreadTitle(name: string, text: string): string {
 
 /** What a thread is called: its title, or (a moved thread, a title cleared) the automatic one. */
 export function threadTitle(thread: Pick<CardThread, 'title' | 'createdBy' | 'comments'>): string {
-  return thread.title || autoThreadTitle(thread.createdBy.name, thread.comments[0]?.text ?? '');
+  const first = thread.comments[0];
+  return thread.title || autoThreadTitle(first?.agent ?? thread.createdBy.name, first?.text ?? '');
 }
 
 /** A title as a rename gives it: trimmed and on one line; '' (the automatic one) or the title, or null past the cap. */

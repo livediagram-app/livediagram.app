@@ -315,11 +315,11 @@ export function ExplorerShell() {
   const inbox = useMemo(
     () =>
       localInboxHost(
-        { ...inboxHost, onTelemetry: trackInbox, actions: inboxActionsFor(host) },
+        { ...inboxHost, onTelemetry: trackInbox, actions: inboxActionsFor(host, signedIn) },
         host,
         viewerId,
       ),
-    [host, viewerId],
+    [host, viewerId, signedIn],
   );
   // Offline: the app's own list on its address; nothing on liveworkspace.app, which can't read it.
   const { thisBrowser, itemMenu } = useExplorerThisBrowser(host, signedIn);

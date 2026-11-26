@@ -15,6 +15,7 @@
 // for nothing, so moving the selection re-renders two rows. Its clock is the shared one (../../time), read by the
 // time alone, so a tick re-renders the times and not the rows.
 
+import { AiChip as SharedAiChip } from '@liveworkspace/ui/ai-comment-marks';
 import { memo, type ReactNode } from 'react';
 import { cardNumber, type CardColumn, type InboxThread } from '@liveworkspace/index-client';
 import { PictureDisc } from '@liveworkspace/ui';
@@ -25,6 +26,7 @@ import { useNow } from '../../time';
 import { avatarFill } from '../../ui/avatar-fill';
 import {
   ActionIcon,
+  AskIcon,
   AtSignIcon,
   ClockIcon,
   EyeIcon,
@@ -40,6 +42,7 @@ import {
 } from '../../ui/icons';
 import { AppMark, CardStatusChip } from '../badges';
 import { SIDEBAR_LABELS } from '../../views';
+import { siteOf } from '../../words';
 import { ThisBrowserPill } from '../ThisBrowser';
 import { useExplorer } from '../context';
 import { useExtras } from '../extras';
@@ -84,8 +87,12 @@ export type EntryFacts = {
   local: boolean;
   /** A thread's latest comment: who wrote it, the reader (`mine`) or someone else; null off a thread. */
   latest: { person: Person; mine: boolean } | null;
-  /** An agent is behind it (a suggested edit): its lead is the agent's glyph, not a person's disc. */
+  /** An agent is behind it (a suggested edit, a thread an agent wrote in last): its lead is the agent's glyph, not a
+   *  person's disc. */
   agent?: boolean;
+  /** A thread whose latest comment an agent wrote (inbox-reading.md "AI comments"): the assistant's name, and whether
+   *  it wrote for the reader (with their token) rather than for someone else. */
+  ai?: { agent: string; forYou: boolean } | null;
 };
 
 const nameOf = (name: string | null | undefined) => name?.trim() || null;
@@ -135,10 +142,14 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
       // Who is behind it: on a mention, whoever mentioned the reader, never the reader (a reply after the mention,
       // theirs or anyone's, changes nothing); otherwise whoever wrote last.
       const by = reason.kind === 'mention' ? mentioner(r, viewerId, mine, latest) : null;
+      // An agent wrote last: the assistant is who, with an AI mark, never its person (inbox-reading.md "AI comments").
+      const agentName = reason.kind === 'mention' ? null : nameOf(r.latestAgent);
+      const ai = agentName ? { agent: agentName, forYou: mine } : null;
       return {
-        person: reason.kind === 'mention' ? (by ?? { id: null, name: null }) : latest,
-        who:
-          reason.kind === 'mention'
+        person: ai ? null : reason.kind === 'mention' ? (by ?? { id: null, name: null }) : latest,
+        who: ai
+          ? ai.agent
+          : reason.kind === 'mention'
             ? (by?.name ?? 'A teammate')
             : mine
               ? 'You'
@@ -164,6 +175,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         column: card?.column ?? null,
         local,
         latest: { person: latest, mine },
+        ...(ai ? { agent: true, ai } : {}),
       };
     }
     case 'FormResponses': {
@@ -315,6 +327,8 @@ export function reasonIcon(kind: InboxReason['kind'], size = 12): ReactNode {
       return <ReplyIcon size={size} />;
     case 'agent':
       return <SparkleIcon size={size} />;
+    case 'ask':
+      return <AskIcon size={size} />;
     case 'responses':
       return <FormIcon size={size} />;
     case 'access':
@@ -332,7 +346,7 @@ export function reasonIcon(kind: InboxReason['kind'], size = 12): ReactNode {
 
 /** A reason icon's colour: a suggested edit's pencil is violet, the agent's colour; the rest are quiet. */
 export const reasonTone = (kind: InboxReason['kind']): string =>
-  kind === 'suggestion'
+  kind === 'suggestion' || kind === 'ask'
     ? 'shrink-0 text-violet-600 dark:text-violet-400'
     : 'shrink-0 text-slate-500 dark:text-slate-400';
 
@@ -345,8 +359,8 @@ const ROW_CHOSEN =
 const ROW_ACTIVE =
   'group-focus-visible/list:outline-2 group-focus-visible/list:-outline-offset-2 group-focus-visible/list:outline-brand-500';
 const ROW_DENSITY: Record<InboxDensity, string> = {
-  comfortable: 'min-h-[4.75rem] gap-3 px-4 py-3',
-  compact: 'min-h-[4.5rem] gap-2.5 px-3 py-2.5',
+  comfortable: 'min-h-[4.75rem] gap-3 py-3 pl-5 pr-4',
+  compact: 'min-h-[4.5rem] gap-2.5 py-2.5 pl-4 pr-3',
 };
 
 /** One row of the Inbox's listbox. `onPick` chooses it (a click or a tap); the list moves the choice by keyboard. */
@@ -354,6 +368,7 @@ export const InboxRow = memo(function InboxRow({
   entry,
   id,
   selected,
+  unread = false,
   density,
   viewerId,
   onPick,
@@ -361,6 +376,8 @@ export const InboxRow = memo(function InboxRow({
   entry: InboxEntry;
   id: string;
   selected: boolean;
+  /** Not read yet (inbox-reading.md "Read and unread"): a dot, and its who and what in bold. */
+  unread?: boolean;
   density: InboxDensity;
   viewerId: string | null;
   onPick: (key: string) => void;
@@ -368,14 +385,21 @@ export const InboxRow = memo(function InboxRow({
   const f = entryFacts(entry, viewerId);
   const compact = density === 'compact';
   const fullTitle = f.cardNumber == null ? f.title : `${f.cardNumber} ${f.title}`;
+  const appName = siteOf(entry.row.app).name;
   const path = [f.item, ...f.where].join(' › ');
-  // One sentence for a screen reader: what, why, who, where.
+  // A thread's latest words, under its title on the page's roomy row.
+  const snippet =
+    !compact && (entry.kind === 'Thread' || entry.kind === 'CardThread')
+      ? entry.row.latestText.replace(/\s+/g, ' ').trim()
+      : '';
+  // One sentence for a screen reader: unread, what, why, who, where.
   const label = [
+    unread ? 'Unread' : null,
     fullTitle,
     f.column ? `Status: ${f.column.name}` : null,
     f.reason?.label,
-    f.who,
-    `In ${[f.item, ...f.where].join(', ')}${f.local ? `, ${SIDEBAR_LABELS.thisBrowser}` : ''}`,
+    f.ai ? `${f.who}, AI${f.ai.forYou ? ', for you' : ''}` : f.who,
+    `In ${appName}, ${[f.item, ...f.where].join(', ')}${f.local ? `, ${SIDEBAR_LABELS.thisBrowser}` : ''}`,
   ]
     .filter(Boolean)
     .join('. ');
@@ -389,21 +413,32 @@ export const InboxRow = memo(function InboxRow({
       data-inbox-row={entry.kind}
       data-inbox-key={entry.key}
       data-density={density}
+      data-inbox-unread={unread ? '' : undefined}
       onClick={() => onPick(entry.key)}
       className={`${ROW} ${ROW_DENSITY[density]} ${selected ? `${ROW_CHOSEN} ${ROW_ACTIVE}` : ROW_IDLE} [contain-intrinsic-size:auto_4.75rem] [content-visibility:auto]`}
     >
+      {unread ? (
+        <span
+          aria-hidden
+          data-inbox-unread-dot=""
+          className={`absolute top-[1.375rem] size-2 rounded-full bg-brand-600 dark:bg-brand-400 ${compact ? 'left-1.5' : 'left-2'}`}
+        />
+      ) : null}
       <Lead person={f.person} compact={compact} glyph={leadGlyph(entry)} agent={f.agent} />
       <span className="min-w-0 flex-1">
         <span className="flex min-w-0 items-baseline gap-2">
-          <span
-            data-inbox-who=""
-            className={`min-w-0 flex-1 truncate text-[13px] leading-5 ${
-              f.needsYou
-                ? 'font-semibold text-slate-900 dark:text-slate-50'
-                : 'text-slate-600 dark:text-slate-300'
-            }`}
-          >
-            {f.who}
+          <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
+            <span
+              data-inbox-who=""
+              className={`min-w-0 truncate text-[13px] leading-5 ${
+                unread
+                  ? 'font-semibold text-slate-900 dark:text-slate-50'
+                  : 'text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              {f.who}
+            </span>
+            {f.ai ? <AiChip forYou={f.ai.forYou} /> : null}
           </span>
           <InboxTime at={entry.at} />
         </span>
@@ -411,7 +446,11 @@ export const InboxRow = memo(function InboxRow({
           <span
             data-inbox-title=""
             title={fullTitle}
-            className="block min-w-0 truncate text-[13px] font-medium leading-5 text-slate-900 dark:text-slate-100"
+            className={`block min-w-0 truncate text-[13px] leading-5 ${
+              unread
+                ? 'font-semibold text-slate-900 dark:text-slate-50'
+                : 'font-medium text-slate-700 dark:text-slate-200'
+            }`}
           >
             {f.cardNumber == null ? null : (
               <span className="mr-1 tabular-nums text-slate-500 dark:text-slate-400">
@@ -422,6 +461,14 @@ export const InboxRow = memo(function InboxRow({
           </span>
           <CardStatusChip column={f.column} />
         </span>
+        {snippet ? (
+          <span
+            data-inbox-snippet=""
+            className="block min-w-0 truncate text-xs leading-5 text-slate-500 dark:text-slate-400"
+          >
+            {snippet}
+          </span>
+        ) : null}
         <span className="mt-1 flex min-w-0 items-center gap-1.5 text-xs leading-5 text-slate-600 dark:text-slate-300">
           {f.reason ? <Status reason={f.reason} /> : null}
           {f.reason ? (
@@ -429,8 +476,15 @@ export const InboxRow = memo(function InboxRow({
               ·
             </span>
           ) : null}
-          <span title={path} className="flex min-w-0 items-center gap-1">
+          <span title={`${appName} › ${path}`} className="flex min-w-0 items-center gap-1">
             <AppMark app={entry.row.app} size={13} />
+            {/* The app's name, then the item (inbox-reading.md "A row says ... where"): which app, at a glance. */}
+            <span data-inbox-app="" className="shrink-0 text-slate-600 dark:text-slate-300">
+              {appName}
+            </span>
+            <span aria-hidden className="shrink-0 text-slate-300 dark:text-slate-600">
+              ›
+            </span>
             <span className="min-w-0 truncate text-slate-500 dark:text-slate-400">{f.item}</span>
           </span>
           {f.local ? <ThisBrowserPill inLink /> : null}
@@ -439,6 +493,12 @@ export const InboxRow = memo(function InboxRow({
     </li>
   );
 });
+
+/** An agent's mark beside its name: AI, and "for you" when it wrote with the reader's own token. */
+/** The AI chip, the one every app's thread draws too (@liveworkspace/ui's AiCommentMarks). */
+export function AiChip({ forYou }: { forYou: boolean }) {
+  return <SharedAiChip forYou={forYou} data-inbox-ai="" />;
+}
 
 /** Why the row is here: an icon and its words, so it never rests on colour alone. */
 export function Status({ reason }: { reason: InboxReason }) {

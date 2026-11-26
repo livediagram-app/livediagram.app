@@ -19,6 +19,7 @@ import {
   type CollabPush,
   type CollabThreadInput,
 } from '@liveworkspace/index-client';
+import { threadAiState } from '@liveworkspace/model-core/comment-ai';
 
 export type InboxCardComment = {
   // The server-stamped author, when the comment has one.
@@ -32,6 +33,10 @@ export type InboxCardComment = {
   // Written by an agent (an API token) as its author: the author reaches the thread but has not answered it
   // themselves (one-explorer-contracts.md "What an item pushes", `agentIds`).
   ai?: boolean;
+  // An agent's comment: the assistant's name, and whether it asks the people in the thread for a response
+  // (inbox-reading.md "AI comments"). Absent on a person's.
+  agent?: string;
+  needsResponse?: boolean;
 };
 
 export type InboxCardSource = {
@@ -130,6 +135,8 @@ export async function cardsCollabPush(
         ...(mentionedBy.size > 0
           ? { mentionedBy: Object.fromEntries([...mentionedBy].map(([id, m]) => [id, m.who])) }
           : {}),
+        // Who of the agents wrote last, and whether only agents wrote or one asks (inbox-reading.md "AI comments").
+        ...threadAiState(comments),
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,

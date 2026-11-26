@@ -764,7 +764,8 @@ Every write is applied by the home plan to the thread as stored, so concurrent w
 - **Trash and Archive** keep a card's threads; restoring brings them back as they were.
 - **Deleting a card for good** takes it off its threads; a thread on no other card is deleted with it. Undoing that
   delete puts the card back on its threads (a thread it was alone on comes back whole, keeping author ids only on the
-  restorer's own comments). A thread another plan stores (one shared in before threads stayed in one plan) takes
+  restorer's own comments, and none of an agent's marks: `ai`, `agent` and `needsResponse` are the server's to stamp,
+  so a restore never forges an AI byline or an ask). A thread another plan stores (one shared in before threads stayed in one plan) takes
   the card back only while it still lists another card of this plan: what the restore names is never what lets a
   plan onto another plan's thread, so a card that was this plan's only one on it comes back without it.
   - [x] TR1: an Editor of one plan, whatever their role on another, cannot put a card onto that plan's thread by

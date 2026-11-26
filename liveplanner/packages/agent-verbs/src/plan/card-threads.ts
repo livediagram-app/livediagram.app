@@ -47,8 +47,9 @@ export const THREAD_PREFIX_MIN = 4;
 
 export type ThreadChange =
   // `field`: the Comments field it starts in, by name or id (the built-in Comments when absent).
-  | { op: 'start'; item: string; text: string; field?: string }
-  | { op: 'reply'; thread: string; text: string }
+  // `needsResponse`: the comment asks the thread's people to respond, so it reaches their Inbox (inbox-reading.md).
+  | { op: 'start'; item: string; text: string; field?: string; needsResponse?: boolean }
+  | { op: 'reply'; thread: string; text: string; needsResponse?: boolean }
   | { op: 'resolve'; thread: string }
   | { op: 'reopen'; thread: string }
   | { op: 'edit'; thread: string; comment: string; text: string }
@@ -61,6 +62,8 @@ export type ListedComment = {
   at: string;
   text: string;
   ai?: true;
+  agent?: string;
+  needsResponse?: true;
   edited?: true;
   // Who reacted, one entry per emoji used (docs/specs/012-collaboration/comment-reactions.md). Read only.
   reactions?: ReactionSummary[];
@@ -103,6 +106,8 @@ export function listedComment(c: Comment): ListedComment {
     at: iso(c.createdAt),
     text: c.text,
     ...(c.ai ? { ai: true as const } : {}),
+    ...(c.agent ? { agent: c.agent } : {}),
+    ...(c.needsResponse ? { needsResponse: true as const } : {}),
     ...(c.editedAt ? { edited: true as const } : {}),
     ...(c.reactions?.length ? { reactions: reactionSummary(c.reactions) } : {}),
   };
@@ -323,7 +328,11 @@ export async function applyThreadChanges(
           }
           const { thread: made } = await post(
             `${itemsPath(projectId)}/${encodeURIComponent(item.id)}/threads`,
-            { text: change.text, ...(field && field !== COMMENTS_FIELD ? { field } : {}) },
+            {
+              text: change.text,
+              ...(field && field !== COMMENTS_FIELD ? { field } : {}),
+              ...(change.needsResponse === true ? { needsResponse: true } : {}),
+            },
           );
           keep(made, '');
           applied.push(
@@ -333,7 +342,10 @@ export async function applyThreadChanges(
         }
         case 'reply': {
           const t = thread(change.thread);
-          const out = await post(`${threadPath(projectId, t.id)}/comments`, { text: change.text });
+          const out = await post(`${threadPath(projectId, t.id)}/comments`, {
+            text: change.text,
+            ...(change.needsResponse === true ? { needsResponse: true } : {}),
+          });
           keep(out.thread, t.id);
           applied.push(`+ comment ${out.commentId ?? ''} on "${t.title}"`.replace('  ', ' '));
           break;
