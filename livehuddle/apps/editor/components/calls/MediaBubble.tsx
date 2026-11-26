@@ -161,7 +161,7 @@ export function MediaBubble({
     <div
       data-call-bubble-tile={media}
       style={style}
-      className="group pointer-events-auto relative aspect-video overflow-hidden rounded-xl transition-[transform,width] duration-200 ease-out hover:scale-[1.04] has-[button:active]:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+      className="group pointer-events-auto relative aspect-video overflow-hidden rounded-xl transition-[transform,width] duration-150 ease-out hover:scale-[1.04] has-[button:active]:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
     >
       <HoverCard
         title={label}
