@@ -2,7 +2,13 @@
 
 import type { Tab } from '@liveknowledge/document';
 import { describe, expect, it, vi } from 'vitest';
-import { newKnowledgebaseLayer, openKnowledgebaseLayer, unownedPagesLayer } from './save-layers';
+import { readOpenedPages } from '@/lib/page-tree-open';
+import {
+  newKnowledgebaseLayer,
+  openKnowledgebaseLayer,
+  revealingLayer,
+  unownedPagesLayer,
+} from './save-layers';
 
 const tab = (id: string, parent?: string): Tab => ({
   id,
@@ -212,5 +218,38 @@ describe('unownedPagesLayer', () => {
       ],
       'f1',
     );
+  });
+});
+
+describe('revealingLayer', () => {
+  it("opens the pages each batch lands under, an earlier batch's and the knowledgebase's own, before storing it", async () => {
+    const store = new Map<string, string>();
+    // This file runs in Node: a window holding only the storage the tree reads.
+    vi.stubGlobal('window', {
+      localStorage: {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => void store.set(k, v),
+        removeItem: (k: string) => void store.delete(k),
+      },
+    });
+    try {
+      const seen: string[][] = [];
+      const inner = {
+        writeBatch: vi.fn(async () => {
+          seen.push([...readOpenedPages('doc')].sort());
+          return { failed: new Map<string, string>() };
+        }),
+      };
+      const layer = revealingLayer('doc', inner, () => [tab('home')]);
+      await layer.writeBatch([tab('team', 'home'), tab('a', 'team')], 'f1');
+      await layer.writeBatch([tab('b', 'a')], 'f2');
+      expect(seen).toEqual([
+        ['home', 'team'],
+        ['a', 'home', 'team'],
+      ]);
+      expect(inner.writeBatch).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

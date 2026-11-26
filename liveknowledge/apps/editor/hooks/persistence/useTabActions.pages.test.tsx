@@ -11,6 +11,7 @@ import {
 import { pageTitleOf } from '@liveknowledge/document';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { takeTitleFocus } from '@/lib/page-title-focus';
+import { readOpenedPages } from '@/lib/page-tree-open';
 import { useTabActions } from './useTabActions';
 
 // The tab actions in tree terms (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree" and "Share
@@ -272,6 +273,46 @@ describe('duplicating a page', () => {
     expect(shape(s.tabs())).toBe(`a b<a d<b ${copy.id}<a c<a e`);
     // Its Title says its name, as every page's does.
     expect(pageTitleOf(copy)).toBe('Release Process copy');
+  });
+});
+
+// Every page starts closed in the tree (Work Tracker 1486): what a person makes as a subpage, or moves under another
+// page, opens the pages above it for this reader, so it shows where it went.
+describe('the tree shows where a page went', () => {
+  const opened = () => [...readOpenedPages('k1')].sort();
+
+  it('creating a subpage opens its parent, and the pages above it', () => {
+    window.localStorage.clear();
+    const s = setup({ documentId: 'k1' });
+    s.actions().addTab('d');
+    expect(opened()).toEqual(['a', 'b', 'd']);
+  });
+
+  it('a new top-level page opens nothing', () => {
+    window.localStorage.clear();
+    setup({ documentId: 'k1' }).actions().addTab();
+    expect(opened()).toEqual([]);
+  });
+
+  it('a subpage made from a page link opens the page it was made from', () => {
+    window.localStorage.clear();
+    setup({ documentId: 'k1' }).actions().addNamedSubpage('e', 'Rollbacks');
+    expect(opened()).toEqual(['e']);
+  });
+
+  it('an indent opens the sibling it now sits under', () => {
+    window.localStorage.clear();
+    const s = setup({ documentId: 'k1' });
+    s.actions().indentPage('c');
+    expect(shape(s.tabs())).toBe('a b<a d<b c<b e');
+    expect(opened()).toEqual(['a', 'b']);
+  });
+
+  it('a page refused or not made opens nothing', () => {
+    window.localStorage.clear();
+    setup({ documentId: 'k1', canEditStructure: false }).actions().addTab('d');
+    setup({ documentId: 'k1' }).actions().indentPage('a');
+    expect(opened()).toEqual([]);
   });
 });
 

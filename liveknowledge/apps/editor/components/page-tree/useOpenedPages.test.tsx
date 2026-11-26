@@ -2,7 +2,8 @@
 // What a reader opens in the page tree (knowledgebases-and-pages.md "The page tree"): nothing at first, then what they
 // open, kept per knowledgebase across a reload (Work Tracker 1486).
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { openParentsOf } from '@/lib/page-tree-open';
 import { useOpenedPages } from './useOpenedPages';
 
 beforeEach(() => window.localStorage.clear());
@@ -43,5 +44,28 @@ describe('useOpenedPages', () => {
     expect(result.current.opened.size).toBe(0);
     rerender({ id: 'k1' });
     expect([...result.current.opened]).toEqual(['a']);
+  });
+
+  it('creating a subpage opens its parent in the tree on screen, and only in its own knowledgebase', () => {
+    const { result } = renderHook(() => useOpenedPages('k1'));
+    const pages = [{ id: 'a' }, { id: 'b', parent: 'a' }, { id: 'new', parent: 'b' }];
+    act(() => openParentsOf('k1', pages, ['new']));
+    expect([...result.current.opened].sort()).toEqual(['a', 'b']);
+    const before = result.current.opened;
+    act(() => openParentsOf('k2', pages, ['new']));
+    expect(result.current.opened).toBe(before);
+  });
+
+  it('opens it even where this browser keeps nothing', () => {
+    const { result } = renderHook(() => useOpenedPages('k1'));
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota');
+    });
+    try {
+      act(() => openParentsOf('k1', [{ id: 'a' }, { id: 'new', parent: 'a' }], ['new']));
+      expect([...result.current.opened]).toEqual(['a']);
+    } finally {
+      setItem.mockRestore();
+    }
   });
 });

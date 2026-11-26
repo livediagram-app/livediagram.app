@@ -48,6 +48,66 @@ export function writeOpenedPages(documentId: string | null, opened: ReadonlySet<
   );
 }
 
+type TreePage = { id: string; parent?: string | undefined };
+
+// The trees open on screen hear a page opened from outside them (a page just made under a closed one).
+type OpenedListener = (
+  documentId: string,
+  pages: readonly TreePage[],
+  ids: readonly string[],
+) => void;
+const listeners = new Set<OpenedListener>();
+
+/** Calls `listener` whenever the pages above `ids` are opened in a knowledgebase from outside the tree. */
+export function subscribeOpenedPages(listener: OpenedListener): () => void {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+}
+
+/**
+ * `opened` with every page above each of `ids` added, so each shows in the tree: a page just made as a subpage, or
+ * moved under another, never lands under a closed one. Answers `opened` itself when nothing changes. Linear in the
+ * pages (times the depth of the ones asked about); a cycle in a damaged list stops the climb.
+ */
+export function withParentsOpened(
+  opened: ReadonlySet<string>,
+  pages: readonly TreePage[],
+  ids: Iterable<string>,
+): ReadonlySet<string> {
+  const parentOf = new Map<string, string | undefined>();
+  for (const page of pages) parentOf.set(page.id, page.parent);
+  let out: Set<string> | null = null;
+  for (const id of ids) {
+    const seen = new Set<string>([id]);
+    for (let up = parentOf.get(id); up !== undefined && !seen.has(up); up = parentOf.get(up)) {
+      seen.add(up);
+      if ((out ?? opened).has(up)) continue;
+      out ??= new Set(opened);
+      out.add(up);
+    }
+  }
+  return out ?? opened;
+}
+
+/**
+ * Opens the pages above each of `ids` in knowledgebase `documentId`, for this reader, and tells the tree: what a person
+ * makes as a subpage (Add Subpage, a page link's Create Page, an import, a structure) or moves under another page
+ * shows where it went. `pages` holds the pages they sit under (the knowledgebase's, with the new ones).
+ */
+export function openParentsOf(
+  documentId: string | null,
+  pages: readonly TreePage[],
+  ids: Iterable<string>,
+): void {
+  if (!documentId) return;
+  const asked = [...ids];
+  const before = readOpenedPages(documentId);
+  const after = withParentsOpened(before, pages, asked);
+  if (after !== before) writeOpenedPages(documentId, after);
+  // The tree adds them to what it holds, so they show even where this browser keeps nothing.
+  for (const listener of listeners) listener(documentId, pages, asked);
+}
+
 /** Whether the sidebar is collapsed to its rail in this browser. */
 export function readTreeCollapsed(): boolean {
   return readLocalStorageSafe(COLLAPSED_KEY) === '1';

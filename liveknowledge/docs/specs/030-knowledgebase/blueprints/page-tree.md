@@ -178,7 +178,7 @@ overscroll-contain` too, inside the area: never taller than its rows, it could n
   holds a swipe at its end, and a box that cannot scroll must never carry it. `PageTree.test.tsx` holds both.
 - **Collapsed** (`readTreeCollapsed`, per browser): a rail `PAGE_TREE_RAIL_WIDTH` (48) wide under the menu box,
   which keeps its own card, with Show Pages and, for an Editor, New Page.
-- **Rows.** `visiblePageRows(tabs, closed, activeId)` once per change of the list, of what is closed or of the
+- **Rows.** `visiblePageRows(tabs, opened, activeId)` once per change of the list, of what is opened or of the
   current page; 20 px a level (`PAGE_TREE_INDENT`); 32 px tall, 44 px on a touch screen. A row is `role="treeitem"`
   with `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (a page with subpages) and `aria-current` (the
   current page, in `brand-100` with `brand-900` text: 10.1:1). One row is the Tab stop (roving tabindex): the last one
@@ -245,6 +245,15 @@ overscroll-contain` too, inside the area: never taller than its rows, it could n
   top-level pages showing (Work Tracker 1486). The current page's ancestors are open whatever is stored, which is how
   a page opened by its link (`#t=<page>`) shows where it is. The older `v2:page-tree-closed` record (open until
   closed) is not read: its meaning was the reverse, and every tree simply starts closed once.
+- **What a person makes or moves shows where it went.** `openParentsOf(documentId, pages, ids)` (`lib/page-tree-open.ts`)
+  adds every page above `ids` to the stored set and tells the open tree (`subscribeOpenedPages`, heard by
+  `useOpenedPages`, which adds them to what it holds even where storage is refused). `useTabActions` calls it for
+  `addTab(parent)`, `addNamedSubpage` (a page link's Create Page: the new page is not opened, so only its parent
+  shows it) and every tree edit (`movePage`, `indentPage`, ...: an Indent puts a page under the sibling above, which
+  may be closed). An Import and a structure (`runImport`, `runSetup`) wrap their save layer in `revealingLayer`
+  (`lib/knowledge-import/save-layers.ts`), which opens each batch's parents as it goes in; a new knowledgebase's
+  set is written before it is opened, so it opens with its imported tree showing. Pages a collaborator adds open
+  nothing here.
 - **Phone:** no sidebar. `PageTreeSheet`'s Pages button stands under the menu box, for every role (the fork's strip,
   whose row it rode in on an Editor's phone, is not a page's bar any more:
   [page surface blueprint](page-surface.md) "The formatting bar"); it opens the same `PageTree` in the shared

@@ -7,6 +7,7 @@
 import { withPageAdded, type Tab } from '@liveknowledge/document';
 import { asUnownedPage } from '@liveknowledge/knowledge';
 import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
+import { openParentsOf } from '@/lib/page-tree-open';
 import type { BatchResult, ImportSaveLayer } from './write-plan';
 
 /** How long a batch waits for the autosave to store it before the import stops (what was added keeps saving). */
@@ -169,5 +170,28 @@ export function newKnowledgebaseLayer(deps: NewKnowledgebaseDeps): ImportSaveLay
 export function unownedPagesLayer(layer: ImportSaveLayer): ImportSaveLayer {
   return {
     writeBatch: (pages, flow) => layer.writeBatch(pages.map(asUnownedPage), flow),
+  };
+}
+
+/** An import's or a structure's pages, each batch's parents then opened in this reader's page tree
+ *  (knowledgebases-and-pages.md "The page tree"): the pages made show where they went, a new knowledgebase's too, once
+ *  it opens. `existing` reads the pages already there, which the first batch may land under. */
+export function revealingLayer(
+  documentId: string,
+  layer: ImportSaveLayer,
+  existing: () => readonly Tab[] = () => [],
+): ImportSaveLayer {
+  const written: Tab[] = [];
+  return {
+    // Opened as the batch goes in, not once it is stored: an open knowledgebase shows its pages at once.
+    writeBatch: (pages, flow) => {
+      written.push(...pages);
+      openParentsOf(
+        documentId,
+        [...existing(), ...written],
+        pages.map((p) => p.id),
+      );
+      return layer.writeBatch(pages, flow);
+    },
   };
 }
