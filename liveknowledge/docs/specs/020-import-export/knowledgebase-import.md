@@ -13,7 +13,8 @@ single-file imports the fork already has ([Markdown import](markdown-import.md),
 | **Notion**          | Notion's "Markdown & CSV" export `.zip`           | Notion's nested folders, with the 32-character ids removed  |
 | **Confluence**      | a space's HTML export `.zip`                      | `index.html`'s nested list, else each page's breadcrumb     |
 
-- **Titles:** the first `#` heading, else the file name (Notion's id suffix and Confluence's numeric suffix removed).
+- **Titles:** the first `#` heading, else the front matter's `title` (quoted or not), else the file name (Notion's id
+  suffix and Confluence's numeric suffix removed). Front matter is never part of the writing.
 - **Links between pages** (relative `.md` links, Notion's encoded paths, Confluence's `href`s to sibling files, and
   `[[Title]]`) become page links. A link whose target is not in the import stays a plain link.
 - **Pictures** in the archive upload to Media and sit in the writing as picture zones; other attachments are listed
