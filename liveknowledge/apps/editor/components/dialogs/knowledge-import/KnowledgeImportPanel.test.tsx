@@ -4,6 +4,7 @@
 // step, the review of what was found and where it lands, a plan that cannot fit, the progress and the summary.
 
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@liveknowledge/document';
 import type { ImportSource } from '@liveknowledge/knowledge-import';
@@ -41,6 +42,7 @@ function mount(
     source?: ImportSource;
     tabs?: Tab[];
     run?: (args: RunImportArgs) => Promise<RunImportResult>;
+    strict?: boolean;
   } = {},
 ) {
   const tabs = opts.tabs ?? [tab('home', 'Start Here'), tab('guides', 'Guides', 'home')];
@@ -58,7 +60,7 @@ function mount(
   const onOpenPage = vi.fn();
   const onClose = vi.fn();
   const onBack = vi.fn();
-  render(
+  const panel = (
     <KnowledgeImportPanel
       source={opts.source ?? 'markdown-folder'}
       host={host}
@@ -68,8 +70,9 @@ function mount(
       loadRunner={async () => run}
       onBack={onBack}
       onClose={onClose}
-    />,
+    />
   );
+  render(opts.strict ? <StrictMode>{panel}</StrictMode> : panel);
   return { run, onOpenPage, onClose, onBack };
 }
 
@@ -127,6 +130,12 @@ describe('KnowledgeImportPanel, picking', () => {
 const FULL_KNOWLEDGEBASE = { timeout: 30_000 };
 
 describe('KnowledgeImportPanel, review', () => {
+  it('reaches the review under Strict Mode, which mounts the panel twice in development', async () => {
+    mount({ strict: true });
+    chooseFolder(THREE);
+    expect((await screen.findByTestId('knowledge-import-found')).textContent).toBe('3 Pages Found');
+  });
+
   it('shows what was found as a tree, what is left out, where it lands and Import <n> Pages', async () => {
     mount();
     chooseFolder(THREE);
