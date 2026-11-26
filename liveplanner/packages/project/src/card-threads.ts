@@ -141,7 +141,11 @@ export function applyThreadChange(
       if (change.title.length > THREAD_TITLE_MAX) return { ok: false, reason: 'title_too_long' };
       // Cleared, it goes back to the automatic title, written down so it stays what it was when cleared.
       const title =
-        change.title || autoThreadTitle(thread.createdBy.name, thread.comments[0]?.text ?? '');
+        change.title ||
+        autoThreadTitle(
+          thread.comments[0]?.agent ?? thread.createdBy.name,
+          thread.comments[0]?.text ?? '',
+        );
       if (title === thread.title) return { ok: false, reason: 'unchanged' };
       return next({ title });
     }
@@ -192,7 +196,8 @@ export function startThread(input: {
   const { comment } = input;
   return {
     id: input.id,
-    title: input.title || autoThreadTitle(comment.authorName, comment.text),
+    // An assistant's thread is titled by its assistant, as its comment is named (inbox-reading.md "AI comments").
+    title: input.title || autoThreadTitle(comment.agent ?? comment.authorName, comment.text),
     resolved: false,
     comments: [comment],
     createdAt: input.now,

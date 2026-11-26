@@ -4,6 +4,7 @@ import type { CardThread, Comment } from '@liveplanner/project';
 import { fakeApi } from '../testing/fake-api';
 import {
   applyThreadChanges,
+  listedComment,
   listedThread,
   readThreadsState,
   resolveComment,
@@ -508,5 +509,17 @@ describe('changing threads', () => {
     const blank = { ...item(5, 'card5', ''), fields: { title: '' } };
     const t = thread('th-u', { cards: [{ projectId: P, itemId: 'card5', key: 5 }] });
     expect(listedThread(t, P, new Map([['card5', blank]])).cards).toEqual(['#5 Untitled']);
+  });
+});
+
+// inbox-reading.md "AI comments": an agent reads back an assistant's name and its ask, and a person's comment has neither.
+describe('listedComment', () => {
+  it('lists an assistant’s name and its ask, and leaves both off a person’s comment', () => {
+    expect(
+      listedComment(comment('cm-ai', { ai: true, agent: 'Claude', needsResponse: true })),
+    ).toMatchObject({ ai: true, agent: 'Claude', needsResponse: true });
+    const person = listedComment(comment('cm-person'));
+    expect(person).not.toHaveProperty('agent');
+    expect(person).not.toHaveProperty('needsResponse');
   });
 });

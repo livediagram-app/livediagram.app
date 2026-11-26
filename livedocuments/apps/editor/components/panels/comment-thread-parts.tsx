@@ -292,7 +292,7 @@ function CommentRow({
       </span>
       <div className="min-w-0 flex-1">
         <div
-          className={`flex items-baseline gap-1.5 ${comfortable ? 'text-[13px]' : 'text-[11px]'}`}
+          className={`flex items-baseline gap-1.5 ${comment.agent ? 'flex-wrap gap-y-0.5' : ''} ${comfortable ? 'text-[13px]' : 'text-[11px]'}`}
         >
           <span className="truncate font-medium text-slate-900 dark:text-slate-50">
             {comment.agent ?? comment.authorName}

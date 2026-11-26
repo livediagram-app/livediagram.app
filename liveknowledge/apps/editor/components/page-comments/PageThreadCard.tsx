@@ -71,7 +71,9 @@ function CommentItem({
         {initialsOf(comment.agent ?? comment.authorName)}
       </GlyphDisc>
       <div className="min-w-0 flex-1">
-        <div className="flex min-h-7 items-center gap-1.5 text-[13px]">
+        <div
+          className={`flex min-h-7 items-center gap-1.5 text-[13px] ${comment.agent ? 'flex-wrap gap-y-0.5' : ''}`}
+        >
           <span className="truncate font-medium text-slate-900 dark:text-slate-50">
             {comment.agent ?? comment.authorName}
           </span>
