@@ -2,7 +2,12 @@
 // Effort vs Impact. Same contract as page-layouts.ts: the page's content box in, uncoloured
 // elements out, in proportions of the box so each fits every size and orientation; a wide page
 // sets things side by side where a stack would be squashed.
-import type { Element, TextElement } from '@livedocuments/document';
+import {
+  LABEL_FONT_PX,
+  LABEL_LINE_HEIGHT,
+  type Element,
+  type TextElement,
+} from '@livedocuments/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 
 const CENTRED = { textAlignX: 'center' } as const;
@@ -105,17 +110,15 @@ function swot(k: Kit): Element[] {
         }),
       );
     }
-    // A rule under the heading, then the points sharing the card under it, a dot beside each.
-    const ruleY = nameY + nameH + u * 2;
-    els.push(
-      k.shape('square', x + pad, ruleY, Math.min(u * 16, innerW), u * 0.8, {
-        label: '',
-        borderRadius: 'full',
-      }),
-    );
-    const listTop = ruleY + u * 3;
+    // The points share the card under the heading, a dot beside each.
+    const listTop = nameY + nameH + u * 3;
     const rowH = (y + cardH - pad - listTop) / points.length;
     const dot = u * 1.8;
+    // Every point at one size, the card's page type (large on a card wide enough to keep a point to one line). A
+    // point may wrap to two lines, so its box is at least two lines tall, centred on its row: a box's words are cut
+    // at its edge, and a row alone was shorter than two lines, which cut a wrapped point's descenders ("budaet").
+    const pointSize = cardW > u * 60 ? 'lg' : 'md';
+    const pointH = Math.max(rowH, LABEL_FONT_PX[pointSize] * LABEL_LINE_HEIGHT * 2);
     points.forEach((p, r) => {
       const ry = listTop + r * rowH;
       els.push(
@@ -123,8 +126,8 @@ function swot(k: Kit): Element[] {
           label: '',
           strokeWidth: 'thick',
         }),
-        k.text(x + pad + dot + u * 3, ry, innerW - dot - u * 3, rowH, p, {
-          textSize: cardW > u * 60 ? 'lg' : 'md',
+        k.text(x + pad + dot + u * 3, ry + rowH / 2 - pointH / 2, innerW - dot - u * 3, pointH, p, {
+          textSize: pointSize,
           textAlignY: 'middle',
         }),
       );

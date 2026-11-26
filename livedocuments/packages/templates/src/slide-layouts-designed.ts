@@ -13,7 +13,6 @@ import {
   eyebrow,
   numberDisc,
   over,
-  rule,
   slideHeading,
   slideType,
 } from './slide-layout-kit';
@@ -129,7 +128,6 @@ export function titleOnlySlide(k: Kit): Element[] {
     k.text(0, u * 12.5, W * 0.86, u * 8, 'Add a diagram, a chart or a picture below.', {
       ...slideType(k, 4),
     }),
-    rule(k, 0, u * 23),
   ];
 }
 
@@ -145,7 +143,6 @@ export function statImageSlide(k: Kit): Element[] {
     bleedImage(k, -b, -b, imageW + b, H + 2 * b),
     eyebrow(k, x, top, w, 'THIS YEAR'),
     k.title(x, top + u * 7, w, u * 30, '3.2M'),
-    rule(k, x, top + u * 40),
     k.text(x, top + u * 45, w, u * 9, 'meals delivered by volunteers', {
       ...slideType(k, 4.8),
       textBold: true,

@@ -28,7 +28,7 @@ import {
   Strip,
   TopRow,
 } from './editor-chrome';
-import { Heading, Lines, Page, Rule, Sheet, SlideContent } from './doc-page';
+import { Heading, Lines, Page, Sheet, SlideContent } from './doc-page';
 
 // --- The bottom bar ----------------------------------------------------------
 
@@ -294,7 +294,6 @@ export function ElementContextMenu() {
         <Heading x={42} y={62} size={11}>
           Our Promise
         </Heading>
-        <Rule x={42} y={71} />
         <Lines x={42} y={84} w={70} n={3} />
       </Sheet>
       <Shape x={128} y={92} w={80} h={48} accent label="Quality" labelTone="onAccent" />

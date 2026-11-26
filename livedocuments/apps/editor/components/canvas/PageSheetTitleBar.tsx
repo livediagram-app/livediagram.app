@@ -17,7 +17,6 @@ import { openTabStyleFrom } from '@/lib/tab-style-opener';
 import { appearanceRows, PageAppearanceButton } from './PageAppearanceButton';
 import { ArticleStyleSection } from './article/ArticleStyleSection';
 import { PageArticleButtons } from './PageArticleButtons';
-import { PageDesignButton } from './PageDesignButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageNotesButton } from './PageNotesButton';
 import { PageTabStyleButton } from './PageTabStyleButton';
@@ -55,7 +54,6 @@ export type PageSheetTitleBarProps = {
   styleRequest: number;
   textRequest: number;
   layoutsRequest: number;
-  backgroundRequest: number;
   shownName: string | undefined;
   many: boolean;
   act: PageSheetActions;
@@ -82,7 +80,6 @@ function PageSheetTitleBarView({
   styleRequest,
   textRequest,
   layoutsRequest,
-  backgroundRequest,
   act,
 }: PageSheetTitleBarProps) {
   const id = page.id;
@@ -123,12 +120,10 @@ function PageSheetTitleBarView({
                 key="appearance"
                 pageId={id}
                 rows={appearanceRows(buttons)}
-                article={articleButtons}
                 labelled={appearanceLabelled}
+                // Design is Tab Style on Page Design, dropping from Appearance; the rest open their own sheets.
                 onPick={(choice, from) =>
-                  choice === 'style' && !articleButtons
-                    ? openTabStyleFrom(from)
-                    : act.ask(id, choice)
+                  choice === 'background' ? openTabStyleFrom(from, 'design') : act.ask(id, choice)
                 }
               />
             ) : null,
@@ -158,11 +153,6 @@ function PageSheetTitleBarView({
                 onApply={(layout) => act.applyLayout(id, layout)}
                 onPreview={(layout) => act.previewLayout(id, layout ?? null)}
               />
-            ) : null,
-            // Style is by the zoom now (ThemeStrip, owner 2026-11-25): Design stays headless here for the page's
-            // Appearance sheet on a phone to open it.
-            pageButtons || articleButtons ? (
-              <PageDesignButton key="design" openRequest={backgroundRequest} />
             ) : null,
           ],
           [

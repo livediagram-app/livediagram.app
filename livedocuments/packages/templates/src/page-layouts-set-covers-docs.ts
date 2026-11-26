@@ -284,8 +284,7 @@ function contents(k: Kit): Element[] {
     return [
       kicker(k, 0, 0, colW, 'Inside this report'),
       fitted(k, 0, u * 7, colW, u * 16, 'Contents'),
-      rule(k, 0, u * 26, u * 14),
-      k.text(0, u * 31, colW, u * 16, intro, { textSize: 'lg' }),
+      k.text(0, u * 27, colW, u * 16, intro, { textSize: 'lg' }),
       k.image(0, u * 51, colW, H - u * 51),
       ...contentsRows(k, listX, 0, W - listX, H),
     ];
@@ -294,8 +293,7 @@ function contents(k: Kit): Element[] {
   return [
     kicker(k, 0, 0, W, 'Inside this report'),
     fitted(k, 0, u * 7, W, u * 16, 'Contents'),
-    rule(k, 0, u * 26, u * 14),
-    k.text(0, u * 30, W, u * 7, intro, { textSize: 'lg', textAlignY: 'middle' }),
+    k.text(0, u * 27, W, u * 7, intro, { textSize: 'lg', textAlignY: 'middle' }),
     ...contentsRows(k, 0, top, W, H - top),
   ];
 }

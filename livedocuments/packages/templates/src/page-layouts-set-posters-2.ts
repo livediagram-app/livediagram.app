@@ -5,7 +5,6 @@
 import type { Element } from '@livedocuments/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import {
-  accentRule,
   centredTitle,
   column,
   eyebrow,
@@ -121,11 +120,6 @@ function comingSoon(k: Kit): Element[] {
           ...centre,
         }),
       ],
-    },
-    {
-      h: u * 1.2,
-      gap: u * 4,
-      draw: (y: number) => [accentRule(k, x + (w - u * 14) / 2, y)],
     },
     {
       h: u * 12,

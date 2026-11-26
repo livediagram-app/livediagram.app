@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createShape } from './testing/elements';
 import { getBuiltInTheme, themedForTab } from './themes';
 import { themeHalf } from './theme-halves';
+import { rederiveColorPresetForTheme } from './theme-presets';
 import { isLightColor } from './colour-math';
 import type { Element } from './element';
 
@@ -30,6 +31,23 @@ describe('a layout in its tab’s theme', () => {
     expect(onDark!.textColor).toBe(dark.elementText);
     expect(isLightColor(onDark!.textColor!)).toBe(true);
     expect(isLightColor(onLight!.textColor!)).toBe(false);
+  });
+
+  it('takes a preset-bound shape with no colours of its own from its preset, in the page’s half', () => {
+    const soft = { ...createShape('square', 0, 0), id: 'p', colorPreset: 'soft' } as Element;
+    for (const half of ['light', 'dark'] as const) {
+      const [placed] = themedForTab([soft], 'ocean', { dark: half === 'dark' }) as (Element & {
+        fillColor?: string;
+      })[];
+      const theme = themeHalf(getBuiltInTheme('ocean'), half);
+      expect(placed!.fillColor).toBe(
+        (rederiveColorPresetForTheme(soft, theme) as { fillColor?: string }).fillColor,
+      );
+      expect(placed!.fillColor).not.toBe(theme.elementFill);
+    }
+    // A colour the shape already carries is its own: the preset does not repaint it.
+    const owned = { ...soft, fillColor: '#ff0000' } as Element;
+    expect((themedForTab([owned], 'ocean')[0] as { fillColor?: string }).fillColor).toBe('#ff0000');
   });
 
   it('leaves it as built on the default scheme, an unknown theme, or no theme', () => {

@@ -237,13 +237,12 @@ export function CanvasPages({
             deck={notes ? view.deck : undefined}
             tidyEdit={tidy ? edit : undefined}
             open={openId === page.id}
-            styleRequest={styleRequestFor(page.id) + askOf(page.id, 'style')}
+            styleRequest={styleRequestFor(page.id)}
             textRequest={askOf(page.id, 'text')}
             layoutsRequest={
               (layoutsRequest?.pageId === page.id ? layoutsRequest.seq : 0) +
               askOf(page.id, 'layout')
             }
-            backgroundRequest={askOf(page.id, 'background')}
             empty={emptyPages?.has(page.id) === true}
             previewing={view.layoutPreview?.pageId === page.id}
             layoutsOpen={layoutsOpenFor === page.id}

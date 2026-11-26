@@ -150,8 +150,3 @@ export function spread(top: number, bottom: number, heights: readonly number[], 
   ys.push(bottom - heights[n - 1]!);
   return ys;
 }
-
-// A short accent rule.
-export function rule(k: Kit, x: number, y: number): Element {
-  return k.shape('square', x, y, k.u * 14, k.u * 1.2, { label: '', borderRadius: 'full' });
-}

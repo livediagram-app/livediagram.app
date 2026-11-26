@@ -13,7 +13,6 @@ import {
   handleRow,
   pill,
   pillW,
-  rule,
   spread,
   titleStack,
 } from './page-layouts-set-social-parts';
@@ -85,15 +84,13 @@ function tipOfTheDay(k: Kit): Element[] {
       ...foot,
     ];
   }
-  // Tall: the tip set as large as the page allows, a rule, why it works, the handle at the foot.
-  const ruleH = u * 1.2;
-  const room = H - topH - footH - gap * 4 - ruleH - rowsH;
+  // Tall: the tip set as large as the page allows, why it works, the handle at the foot.
+  const room = H - topH - footH - gap * 3 - rowsH;
   const stack = titleStack(k, 0, 0, W, Math.min(room, H * 0.5), TIP);
-  const [, stackY, ruleY, rowsY] = spread(0, H, [topH, stack.h, ruleH, rowsH, footH], gap);
+  const [, stackY, rowsY] = spread(0, H, [topH, stack.h, rowsH, footH], gap);
   return [
     ...top,
     ...titleStack(k, 0, stackY!, W, Math.min(room, H * 0.5), TIP).els,
-    rule(k, 0, ruleY!),
     ...rows(0, rowsY!, W),
     ...foot,
   ];
@@ -348,7 +345,6 @@ function carouselCover(k: Kit): Element[] {
   const gap = u * GAP;
   const topH = u * FOOT;
   const kickerH = bigH(k, 4.2);
-  const ruleH = u * 1.2;
   // The handle on the left, which slide this is on the right.
   const count = '1 / 7';
   const countW = pillW(k, count, 'lg');
@@ -359,9 +355,9 @@ function carouselCover(k: Kit): Element[] {
     // The hook across the left, a big swipe cue on the right.
     const colW = W * 0.68;
     const subH = bigH(k, 4.6, 2);
-    const room = H - topH - kickerH - ruleH - subH - gap * 5;
+    const room = H - topH - kickerH - subH - gap * 4;
     const hook = titleStack(k, 0, 0, colW, room, HOOK_WIDE);
-    const ys = spread(0, H, [topH, kickerH, hook.h, ruleH, subH], gap);
+    const ys = spread(0, H, [topH, kickerH, hook.h, subH], gap);
     const d = Math.min(W - colW - u * 10, H * 0.4);
     const discX = W - d;
     const discY = topH + (H - topH - d - bigH(k, 4.6)) / 2;
@@ -369,7 +365,6 @@ function carouselCover(k: Kit): Element[] {
       ...top,
       kicker(0, ys[1]!, colW),
       ...titleStack(k, 0, ys[2]!, colW, room, HOOK_WIDE).els,
-      rule(k, 0, ys[3]!),
       k.text(0, H - subH, colW, subH, HOOK_SUB, big(k, 4.6)),
       ...iconDisc(k, discX, discY, d, 'arrow-right').els,
       k.text(discX, discY + d + u * 2, d, bigH(k, 4.6), 'Swipe', {
@@ -379,22 +374,21 @@ function carouselCover(k: Kit): Element[] {
       }),
     ];
   }
-  // Tall: the hook as big as the page allows, a rule, a line that teases the inside, and a swipe
+  // Tall: the hook as big as the page allows, a line that teases the inside, and a swipe
   // cue at the foot pointing on.
   const lines = H > W * 1.15 ? HOOK_TALL : HOOK_WIDE;
   const subH = bigH(k, 4.8, 2);
   const cueD = u * 14;
   const tight = gapOf(k);
-  const room = H - topH - kickerH - ruleH - subH - cueD - tight * 5;
+  const room = H - topH - kickerH - subH - cueD - tight * 4;
   const hook = titleStack(k, 0, 0, W, room, lines);
-  const ys = spread(0, H, [topH, kickerH, hook.h, ruleH, subH, cueD], tight);
+  const ys = spread(0, H, [topH, kickerH, hook.h, subH, cueD], tight);
   const cueW = W * 0.5;
   return [
     ...top,
     kicker(0, ys[1]!, W),
     ...titleStack(k, 0, ys[2]!, W, room, lines).els,
-    rule(k, 0, ys[3]!),
-    k.text(0, ys[4]!, W * 0.9, subH, HOOK_SUB, big(k, 4.8)),
+    k.text(0, ys[3]!, W * 0.9, subH, HOOK_SUB, big(k, 4.8)),
     k.text(W - cueD - u * 4 - cueW, H - cueD, cueW, cueD, 'Swipe for all 7', {
       ...big(k, 4.8),
       textBold: true,

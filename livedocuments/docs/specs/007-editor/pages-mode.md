@@ -744,7 +744,7 @@ buttons 28 px tall, quiet until hovered and tinted while their popover is open o
 They come in groups, a short hairline between, read left to right: **how the page looks** (on an article page
 its own Style, leading with a Tab Style row; then an article's Text, Layout, **Design**; the tab's own **Style**
 moved to the foot of Contents as **Design** on 2026-11-25, "Contents"), then **tools** (Notes, Tidy), last at the
-corner. **Design** (a palette glyph, `PageDesignButton`) replaced the Background popover on 2026-11-25: it opens
+corner. **Design** (a palette glyph) replaced the Background popover on 2026-11-25: it opens
 Tab Style on Page Design, where a page's background and the art over it are one concept; on a phone the
 Appearance sheet's **Design** row does the same, and Page Settings has no Background. The page's **lock** and
 **cog** left the bar on 2026-11-25: Lock and Page Settings are in Contents' ⋯ menu
@@ -763,12 +763,15 @@ touch target:
 
 - **Appearance** (a sparkles glyph, named **Appearance** beside it while the page on screen holds the named bar,
   `appearanceNamed`, its icon alone on a page too narrow; `APPEARANCE_LABELLED_ROOM` 108 px) gathers how the page looks. It
-  opens a bottom sheet of rows, one per look control the page would show on a desktop for that person: **Style**
-  (the tab's look; on an article page the article's own Style, leading with its Tab Style row), **Layout** (an
-  infographic or slide page), **Background**, and **Text** (an article page). Each row has its icon, its name and a
-  short line; a press closes the Appearance sheet and opens that control's own sheet, the very sheet its desktop
-  button opens (one body, one place to change it). A locked page's Appearance holds Style alone (the tab's look, as
-  its desktop bar keeps Style); a page with no look controls at all shows no Appearance. Telemetry `UI / Opened / PageAppearance` as it opens; the control it then opens tracks as its own
+  opens a bottom sheet of rows, one per look control the page would show on a desktop for that person: **Text** (an
+  article page), **Layout** (an infographic or slide page) and **Design** (Tab Style on Page Design, the page's
+  background and the art over it). There is **no Style row** (owner, Work Tracker 1480, 2026-11-26): Design opens the
+  very dialog Style did, so the two rows were one door twice. Tab Style's looks are one Back away from Design, and on
+  an article page its **Article Style** row leads to the article's own Style (as does the article toolbar's ⋯ Style),
+  so nothing left the phone. Each row has its icon, its name and a short line; a press closes the Appearance sheet and
+  opens that control's own sheet, the very sheet its desktop button opens (one body, one place to change it); Design's
+  dialog drops from the Appearance button. A locked page's Appearance holds Design alone (the tab's look, which a page
+  lock does not reach); a page with no look controls at all shows no Appearance. Telemetry `UI / Opened / PageAppearance` as it opens; the control it then opens tracks as its own
   button does (`PageAppearanceRows`, `apps/editor/components/canvas/PageAppearanceButton.tsx`).
   While something on the page is selected that the Quick Style bar styles, the sheet goes on under a hairline and a
   **Selected Element** heading with one row per Quick Style button that applies (Stroke, Fill, Text, Width, Line,
@@ -776,7 +779,7 @@ touch target:
   own bottom sheet, named by the row's full name ([Quick Style bar](../008-canvas/quick-style-panel.md) "On a
   phone").
 - **No Tidy** on a phone: it straightens a page by a few pixels, which is a desktop's precision job.
-- **No lock button** on a phone. A lock is still honoured (a locked page's Appearance offers only Style, and its panel says it
+- **No lock button** on a phone. A lock is still honoured (a locked page's Appearance offers only Design, and its panel says it
   is locked), and the page's cog sheet holds **Lock** or **Unlock** in its actions row, so a phone can still lock
   and unlock a page.
 - **No page label** above a page's top-left corner on a phone: its name is read in Contents, renamed in the cog
@@ -867,13 +870,36 @@ The Layout popover keeps to its layouts: it has no **Change Theme** button (the 
 the dock's Theme button and the tab's Style button, and a layout is placed in the tab's theme either
 way). On a phone the Layout sheet closes by a swipe, with no X.
 
+- **No stray bars** (owner, Work Tracker 1481, 2026-11-26). A layout draws no short word-less accent bar: no
+  "accent rule" under a title, over a statement, under a name or between a magazine's cover lines. Space and type
+  set the rhythm instead. A line stays only where it does a job: a divider between rows or columns (a contents
+  list, a scorecard's score and criteria, a price and its features), a full-width header rule on a cover, the
+  connectors of an org chart, the hairlines either side of a book cover's ornament, a certificate's signature
+  lines, a chart's axes, a timeline's track and a spectrum's rails. A feature matrix marks a missing feature with a
+  small cross icon beside the ticks, never a dash. A layout test holds every layout, infographic and slide, to it:
+  no word-less horizontal bar thicker than a hairline and shorter than 18% of the page's short side
+  (`apps/editor/lib/layout-accent-bars.test.ts`).
+- **Soft boxes** (owner, Work Tracker 1481). A layout's boxes read as light panels, not solid blocks
+  (`softenLayoutBoxes`, `packages/templates/src/layout-soft-boxes.ts`, run by `buildPageLayout`, so the editor, an
+  agent's `change_pages` and the layout decks all place them the same). Every plain box at least 5% of the page's
+  short side across is bound to the theme's **Soft** colour preset ([Style presets](../010-palette/style-presets.md):
+  a pale tint of the accent, a lighter accent border, the thin border, words in a deep shade of the accent held to
+  the text floor), with no colours written by the layout itself. Placing it fills those colours from the tab's
+  theme and the page's half (`themedForTab` takes a preset-bound shape's colours from its preset), and a theme
+  picked later re-derives them as for any preset-bound shape. On the Default scheme the box keeps the plain look,
+  which is already a pale tint, on the thin border. The panel is solid, never see-through: a page design behind it
+  (Brutalist Blocks, Split Fields, Edge Bands) can never show through and split a card in two. A box that says
+  something by its own colour, icon, picture, opacity or border (a recommended option's heavy border, a frame's
+  none) is left as it is. The preset is the element's own, so the person can restyle it like any other.
+
 - **Ninety-two layouts**, each a complete, editable starting point in the tab's theme: a layout is built without
   colours where it means the theme's, and placing it (in the editor or by an agent) fills each of those from the
-  tab's built-in theme (`themedForTab`), keeping the colours it sets itself; on a dark page (a dark fill), from the
-  theme's dark half, so its words are light there. Most open with
+  tab's built-in theme (`themedForTab`), keeping the colours it sets itself (a shape bound to a colour preset takes
+  that preset's colours for the theme); on a dark page (a dark fill), from the theme's dark half, so its words are
+  light there. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
-  1. **Title Page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
+  1. **Title Page**: an eyebrow line, a large title, a subtitle, an image
      placeholder (below on a tall page, to the right on a wide one) and a footer line.
   2. **Big Number**: one huge figure, its caption, a paragraph, a progress bar and a source line.
   3. **Key Stats**: two stat rows of three figures, a trend line where the page has room, and a
@@ -898,7 +924,7 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       then "n of 6 done" and a progress bar.
   13. **Event**: "You're invited", a title, an image, when and where (icon rows) and a "Save your
       spot" banner.
-  14. **Section Divider**: a big section number, an accent rule, a title and a line, centred
+  14. **Section Divider**: a big section number, a title and a line, centred
       down the page.
   15. **Poster**: a large image (top, or the left on a wide page), a bold headline, a line and a
       footer.
@@ -936,7 +962,7 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       everything stacks, the year above the title. Wide: the title, lead and figures on the left;
       the year and picture on the right.
   33. **Magazine Cover**: a tracked masthead, an issue strip between hairlines (issue and price),
-      cover lines (an accent rule, a bold lead and a line each) and the cover story. Tall: three
+      cover lines (a bold lead with room for two lines, and a line each) and the cover story. Tall: three
       cover lines beside the picture (two on a square), the cover story across the foot. Wide: the
       cover story on the left, the picture in the middle, the cover lines on the right.
   34. **Book Cover**: inside a double rule, the author in tracked capitals, the title centred, a
@@ -958,12 +984,12 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       issue" in a tinted panel listing four page-numbered stories. Tall: stacked, with the stories
       two by two; the standfirst and picture drop where there is no room. Wide: the headline and
       standfirst, then the picture, then "In this issue" as a column on the right.
-  38. **Contents**: "Inside this report", a "Contents" title, an accent rule and an intro line, then
+  38. **Contents**: "Inside this report", a "Contents" title and an intro line, then
       six chapters, each a hairline, a big number, a bold name, a note and its page number on the
       right. Notes drop where rows are short. Tall: the chapters run down the page. Wide: the title
       block and a picture on the left, the chapters on the right.
   39. **Certificate**: inside a double rule, the heading, "This is proudly presented to", the name
-      set large over an accent rule, the reason, and two signature lines (name, then Date) around an
+      set large, the reason, and two signature lines (name, then Date) around an
       award seal. Pages up to 1.3 times taller than wide (including square) set one line of tracked
       capitals with the seal between the signatures. Taller pages set "CERTIFICATE" large over "of
       achievement", with the seal above the two signatures.
@@ -977,7 +1003,7 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       with its figure set large, Conclusions and References with a slot for a code. Three columns on
       a page about as wide as tall or wider, two on a tall one.
   42. **Coming Soon**: a key image, "This winter", the title huge over two lines, a tagline in
-      italics, an accent rule, the release date set large, where to watch and a billing block of
+      italics, the release date set large, where to watch and a billing block of
       credits. Tall: the image on top. Square or wide: the image down the left, the words centred on
       the right.
   43. **Exhibition**: the gallery and "Free entry" over a hairline, then "Form" and "Colour" set
@@ -1004,7 +1030,7 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       over two lines at one size, three ticked dos and a contact footer. Tall: stacked and centred.
       Square or wide: the band across the top, the disc on the left, the words on the right.
   49. **Motivational**: a framed, type-only poster with three words set huge (START, USE, DO), each
-      over its phrase, an accent rule and who said it. Tall or square: stacked and centred. Wide:
+      over its phrase, and who said it. Tall or square: stacked and centred. Wide:
       the three pairs side by side at one size.
   50. **KPI Dashboard**: four metric cards, each a name, a big figure, its change against last
       quarter with a trend icon (green when good, rose when bad) and a six-month area sparkline,
@@ -1057,11 +1083,12 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       clearly taller than wide: the contenders out at either side, the badge and stats between them,
       no lead line.
   60. **Pricing Tiers**: three plan cards side by side, each a name, a line on who it is for
-      (dropped where the card is short), the price set large, what it is per, an accent rule, four
+      (dropped where the card is short), the price set large, what it is per, a divider across the card, four
       ticked features and a button. The middle plan is drawn heavier and badged "Most popular". A
       wide page drops the lead line.
   61. **SWOT**: Strengths, Weaknesses, Opportunities and Threats, each a card with its letter set
-      large, its name at one shared size, an icon where there is room, a rule and three points. Two
+      large, its name at one shared size, an icon where there is room, and three points (at page type, each in a
+      box two lines tall, so a point that wraps is never cut at its row's edge). Two
       by two with Helpful / Harmful column heads and a "Top row: inside the business" foot line.
       Four in a row under "Inside the business" / "Outside it" on a wide page. Stacked on a page
       over 1.6 times taller than wide. Lead line only when clearly taller than wide.
@@ -1072,9 +1099,9 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       columns on a page clearly taller than wide.
   63. **Scorecard**: three options, each a card with its name, its overall score set large over "out
       of 5", and star ratings on four criteria. The top scorer is drawn heavier and badged "Top
-      score". A source line ends the page. Three cards down the page (score at the left, a rule, the
+      score". A source line ends the page. Three cards down the page (score at the left, a divider, the
       criteria two by two) where it is clearly taller than wide; three across otherwise (score over
-      a rule, criteria down the card).
+      the criteria down the card).
   64. **Spectrum**: a rail across the page with five options placed on it at their positions from
       simple to powerful. Each option is an icon disc, with its name and note above and below the
       rail in turn. The pick is drawn heavier and badged "Our pick", and the two ends are named
@@ -1089,7 +1116,7 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       tall; otherwise three cards down the page, each with the image and cost at the left and the
       letter, name and points beside them.
   67. **Org Chart**: a lead's card (round photo, name, role) joined by thin lines to three crew
-      cards. Each crew card has its lead's photo, name and role, a short rule and its members, one
+      cards. Each crew card has its lead's photo, name and role, and its members, one
       per line (two to a line in a wide card). A page much taller than wide closes on a stat row of
       the team's numbers.
   68. **Testimonials**: three customer quotes, each with a star rating, a round photo, a name and a
@@ -1104,7 +1131,7 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       facts as icon rows and three interview questions in bold, each answered. Wide or not much
       taller than wide: the photo down the left, the words beside it. Tall: the photo beside the
       name and facts, the interview under them. A story: the photo across the top.
-  71. **Our Values**: six values, each an icon in a disc, a name, a short accent rule and a line,
+  71. **Our Values**: six values, each an icon in a disc, a name and a line,
       centred in their cells. Three across (two on a page much taller than wide).
   72. **Idea Board**: a "How might we" question, six sticky notes slightly turned, each with its
       vote count in a disc on its corner, and a Next step callout. Three across (two on a tall
@@ -1120,10 +1147,10 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       that card across the top (photo beside the words), the notes under it.
   75. **Carousel Cover**: the account's handle and a "1 / 7" slide count, a "Save this for later"
       kicker, a hook stacked over four lines at one size (three lines on a page not much taller than
-      wide), an accent rule, a teaser line and "Swipe for all 7" beside an arrow disc at the foot; a
+      wide), a teaser line and "Swipe for all 7" beside an arrow disc at the foot; a
       wide page sets the hook on the left and a large arrow disc with "Swipe" on the right.
   76. **Tip of the Day**: a "Tip of the day" pill and a large "#12", the tip stacked over three
-      lines as large as the page allows, an accent rule, three reasons (an icon beside a line each)
+      lines as large as the page allows, three reasons (an icon beside a line each)
       and the handle row with "Save for later"; a wide page puts the reasons on a card to the right
       of the tip.
   77. **Milestone**: "We just hit", the figure ("10,000") set as wide as the page, what it counts, a
@@ -1231,7 +1258,7 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   - **The same element carries its data**: a stat row's stats, a chart's figures, a callout's
     title and words, a progress bar's value, a checklist's items, an icon's icon, each into the
     next element of the same kind in reading order. A shape's words go only into a shape that holds words (a
-    labelled box), never onto a plain one of the same kind such as Title Page's accent rule: a shape with only
+    labelled box), never onto a plain one of the same kind such as a word-less card: a shape with only
     words waits for the next one that holds words, and one with data too leaves its words behind.
   - **Words fit their new place**: carried words keep the place's type, shrinking (never growing)
     only when they would overflow it, and never below 40% of the place's own size.
@@ -1499,25 +1526,25 @@ previews and rendered tiles). They are
 built for a landscape slide's content box (16:9 or 4:3), in the tab's theme, with type sized to
 be read across a room:
 
-- **Openers**: **Title Slide** (a large title, a subtitle, an accent rule, and the presenter and
-  date at the foot), **Section Header** (a big section number, an accent rule, the section's title
-  and a line), **Agenda** (the infographic Agenda), **Title and Image** (an eyebrow, a title, a rule
+- **Openers**: **Title Slide** (a large title, a subtitle, and the presenter and
+  date at the foot), **Section Header** (a big section number, the section's title
+  and a line), **Agenda** (the infographic Agenda), **Title and Image** (an eyebrow, a title
   and a subtitle on the left half, a picture filling the right), **Keynote Title** (everything
-  centred: an eyebrow, a large title, a rule, a subtitle, the event at the foot), **Opening
-  Question** (an eyebrow, one question set very large, a rule and a line), **About the Speaker** (a
-  round photo, an eyebrow, the name, the role, a rule and three facts), **Objectives** (three
+  centred: an eyebrow, a large title, a subtitle, the event at the foot), **Opening
+  Question** (an eyebrow, one question set very large and a line), **About the Speaker** (a
+  round photo, an eyebrow, the name, the role and three facts), **Objectives** (three
   numbered cards, each a name and a note), **Agenda Grid** (four cards, two by two, each a large
   number, the part and its time) and **Agenda and Image** (a picture down the left edge, full
   bleed, four numbered parts beside it).
 - **Content**: **Title and Bullets** (a title over five bullet points, each a dot beside a line),
   **Two Columns** (a title over two columns, each a heading and three bullet points), **Image and
   Text** (an image filling the left half, a title, a line and three bullet points to its right),
-  **Statement** (an accent rule, one sentence set very large, centred, and a line under it),
+  **Statement** (one sentence set very large, centred, and a line under it),
   **Quote** (the infographic Quote), **Three Points** (three icons in discs, each a heading and a
   line), **Full Image** (a picture filling the slide under a caption card at its lower left), **Key
   Takeaway** (a card holding the one thing to remember, set large, beside three supporting points),
   **Four Ideas** (four cards, two by two, each an icon in a disc, a heading and a line), **Title
-  Only** (a title, a lead line and a rule, the rest of the slide left for the author's own content),
+  Only** (a title and a lead line, the rest of the slide left for the author's own content),
   **Sidebar Title** (a panel in the theme's fill down the left edge, full bleed, holding an eyebrow
   and the title, five bullet points beside it), **Compare Two** (two cards side by side, each a
   name, a line and three points, a "vs" disc between them), **Logo Strip** (an eyebrow, a title and
@@ -1525,21 +1552,21 @@ be read across a room:
   **Testimonials** (two quote cards side by side, each a customer's words, their initial in a disc, their name and
   role; see [quote.md](../009-elements/quote.md)).
 - **Pictures**: slides led by a picture, as a slide app lays them out. **Text and Picture** (an
-  eyebrow, a two-line title, a rule, a lead and three points on the left half, a picture filling
+  eyebrow, a two-line title, a lead and three points on the left half, a picture filling
   the right half to the slide's edges), **Picture and Text** (the same words on the right, a
   picture filling the left two-fifths), **Hero Picture** (a picture filling the slide under a dark
   scrim, an eyebrow, a large title and a line centred over it in white), **Picture Band** (a
   picture across the top half, edge to edge, an eyebrow and title beside a paragraph under it),
   **Picture and Card** (a picture filling the slide, a full-height card on its right holding an
-  eyebrow, a title, a rule and three points), **Quote and Picture** (an eyebrow over a Plain quote on the left, its
+  eyebrow, a title and three points), **Quote and Picture** (an eyebrow over a Plain quote on the left, its
   mark, its words, the speaker's initial, name and role, a picture filling the right to the edges), **Two
   Pictures** and **Three Pictures** (a title over pictures side by side, a name and a caption under
-  each) and **Picture Mosaic** (an eyebrow, a title, a rule and a line beside one large picture and
+  each) and **Picture Mosaic** (an eyebrow, a title and a line beside one large picture and
   two small ones stacked).
 - **Data**: **Big Number**, **Number and Picture** (a picture down the left edge, full bleed, an
-  eyebrow, one large figure, a rule, what it counts, a note and a source beside it), **Key Stats**, **Chart Story**, **Comparison**, **KPI Dashboard** and
+  eyebrow, one large figure, what it counts, a note and a source beside it), **Key Stats**, **Chart Story**, **Comparison**, **KPI Dashboard** and
   **Market Share** (the infographic ones, side by side), **Three Big Numbers** (three figures
-  across, fitted as the longest so all stand the same size, a rule, a caption and a note under
+  across, fitted as the longest so all stand the same size, a caption and a note under
   each), **Big Chart** (a full-height bar chart and its headline figure on a card beside it),
   **Chart and Insights** (an area chart beside three numbered insights) and **Goals Progress**
   (three progress rings, never wider than their column, each a goal and its target) and **Pricing

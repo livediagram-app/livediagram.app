@@ -112,7 +112,6 @@ export type PageSheetProps = {
   styleRequest: number;
   textRequest: number;
   layoutsRequest: number;
-  backgroundRequest: number;
   empty: boolean;
   previewing: boolean;
   layoutsOpen: boolean;
@@ -151,7 +150,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   styleRequest,
   textRequest,
   layoutsRequest,
-  backgroundRequest,
   empty,
   previewing,
   layoutsOpen,
@@ -320,7 +318,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           styleRequest={styleRequest}
           textRequest={textRequest}
           layoutsRequest={layoutsRequest}
-          backgroundRequest={backgroundRequest}
           shownName={shownName}
           many={many}
           act={act}
