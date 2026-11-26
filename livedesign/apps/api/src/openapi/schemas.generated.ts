@@ -3339,6 +3339,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "description": {
         "type": "string"
       },
+      "due": {
+        "type": "string"
+      },
       "id": {
         "type": "string"
       },
