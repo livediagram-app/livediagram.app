@@ -31,6 +31,7 @@ import { capStoredName } from '../names';
 import { badRequest, conflict, json, notFound, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import { lockTabWrite } from '../whole-tab-lock';
+import { restoreHiddenPeople } from '@liveworkspace/api-kit/hidden-people';
 import type { TabSaveDocument } from '../db/tab-save-document';
 import { grantOn, readBody, type DocumentRouteContext } from './context';
 
@@ -123,8 +124,10 @@ export async function writeTabSave(
     ]);
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
-    // A copy: each attempt starts again from the save as sent.
-    const body: Tab = { ...ledger.tab };
+    // A copy: each attempt starts again from the save as sent, with every id a Viewer's copy had hidden put back
+    // from the stored tab first, so no rule below reads a placeholder and no save wipes an id
+    // (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees").
+    const body: Tab = { ...restoreHiddenPeople(ledger.tab, existingTab) };
     // A sources record a changeset wrote after what this editor has seen is newer than the save's copy
     // (docs/specs/027-repositories/diagram-sources.md "Writing the record"): the stored one stays.
     if (merge.records > 0 && existingTab?.sources !== undefined) body.sources = existingTab.sources;

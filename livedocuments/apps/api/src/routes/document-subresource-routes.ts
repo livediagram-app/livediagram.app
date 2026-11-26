@@ -3,6 +3,7 @@
 
 import { handleTabLink } from './tab-link-route';
 import { redactTabForCommunity } from '@liveworkspace/community/app';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
 import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { conflict, forbidden, json, missingAuth, noContent, notFound } from '../responses';
@@ -148,7 +149,12 @@ export async function handleDocumentSubresources(
           : grant.community
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactTabForCommunity(tab), connection: undefined }
-            : { ...tab, elements: redactCommentAuthorIds(tab.elements, caller) };
+            : // A Viewer reads names, not other people's ids (share-roles.md "Ids a Viewer sees").
+              peopleForReader(
+                { ...tab, elements: redactCommentAuthorIds(tab.elements, caller) },
+                grant.role,
+                caller,
+              );
       // A view may read the caller's own selection, so it needs a caller.
       if (view) {
         return caller === null

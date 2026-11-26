@@ -25,6 +25,7 @@
       "types": "./scripts/hosted-vars.d.mts",
       "default": "./scripts/hosted-vars.mjs"
     },
+    "./hidden-people": "./src/hidden-people.ts",
     "./image-ref-index": "./src/image-ref-index.ts",
     "./image-upload": "./src/image-upload.ts",
     "./image-refs": "./src/image-refs.ts",

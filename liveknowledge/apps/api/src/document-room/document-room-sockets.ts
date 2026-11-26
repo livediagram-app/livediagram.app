@@ -5,6 +5,12 @@ import type { ServerMessage } from '../types';
 import { opForScope } from '../room-scope';
 import { opForReader, roleReadsDraft } from '../room-draft-filter';
 import {
+  frameForViewer,
+  hidePeople,
+  viewerOwnIds,
+  type IsOwnId,
+} from '@liveworkspace/api-kit/hidden-people';
+import {
   accessCloseCode,
   sessionMatchesAccessClose,
   type AccessCloseMatch,
@@ -82,7 +88,8 @@ export function broadcast(room: DocumentRoom, payload: ServerMessage, except?: W
 
 // The frame one socket should receive for `payload`: as serialised for an
 // unscoped session, redacted or withheld (null) for a tab-scoped one
-// (docs/specs/013-workspace/tab-scoped-share-links.md). Only op frames carry tab content.
+// (docs/specs/013-workspace/tab-scoped-share-links.md), and with other people's ids hidden for a Viewer's
+// (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees"). Only op frames carry tab content.
 export function frameFor(
   room: DocumentRoom,
   ws: WebSocket,
@@ -92,7 +99,25 @@ export function frameFor(
   if (payload.kind !== 'op') return serialized;
   const op = opForSocket(room, ws, payload.op);
   if (op === null) return null;
-  return op === payload.op ? serialized : JSON.stringify({ ...payload, op });
+  const frame = op === payload.op ? serialized : JSON.stringify({ ...payload, op });
+  const viewer = viewerOf(room, ws);
+  return viewer === null ? frame : frameForViewer({ ...payload, op }, frame, viewer);
+}
+
+// One op as this socket replays it in a catch-up: opForSocket's, with other people's ids hidden for a Viewer's.
+export function replayForSocket(room: DocumentRoom, ws: WebSocket, op: unknown): unknown {
+  const seen = opForSocket(room, ws, op);
+  const viewer = seen === null ? null : viewerOf(room, ws);
+  return viewer === null ? seen : hidePeople(seen, viewer);
+}
+
+// A socket's own ids when it is a Viewer's, read once per socket and kept on the room (its `viewers`).
+export function viewerOf(room: DocumentRoom, ws: WebSocket): IsOwnId | null {
+  if (room.viewers.has(ws)) return room.viewers.get(ws) ?? null;
+  const session = room.readSession(ws);
+  const own = viewerOwnIds(session);
+  if (session) room.viewers.set(ws, own);
+  return own;
 }
 
 // One op as this socket may receive it: confined to its tab scope, and without a page's draft for a session that

@@ -4,6 +4,7 @@
 // race, and reaches the room as an `el-delta` without author or token ids.
 
 import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
 import { agentCommentMarksOf } from '@liveworkspace/index-app';
 import { AGENT_HEADERS } from '../changesets/front-door';
 import {
@@ -393,7 +394,10 @@ async function listThreads(ctx: DesignRouteContext, id: string): Promise<Respons
   if (scope !== null && (await gateRead(ctx, id, doc.ownerId, doc.teamId, scope))) readable = true;
   if (!readable) return deniedOnTab(ctx, doc);
   console.info('[comments] listed', { designId: id, status, tabsRead, threads: threads.length });
-  const body: DesignCommentsResponse = { threads };
+  // A Viewer reads who was mentioned by name, not by id (share-roles.md "Ids a Viewer sees").
+  const body: DesignCommentsResponse = {
+    threads: peopleForReader(threads, grantOn(ctx, id)?.role, viewer),
+  };
   return json(body);
 }
 

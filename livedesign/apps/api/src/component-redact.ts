@@ -4,11 +4,14 @@
 // threads and adders), but a main written through the api may, and resolve never draws them, so nothing is lost.
 
 import { redactTabForCommunity } from '@liveworkspace/community/app';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
 import type { DesignComponent } from '@livedesign/design';
 import { redactCommentAuthorIds } from './comments';
 
 // `redactFor`: whose own comment author ids stay (every other is blanked); null keeps them all (the owner).
-export type MainReader = { community: boolean; redactFor: string | null };
+// `role`: the reader's grant; a Viewer's reads no one else's account or guest id
+// (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees").
+export type MainReader = { community: boolean; redactFor: string | null; role?: string };
 
 export function mainsForReader(
   mains: readonly DesignComponent[],
@@ -17,8 +20,11 @@ export function mainsForReader(
   if (reader.community) return mains.map((main) => redactTabForCommunity(main));
   const viewer = reader.redactFor;
   if (viewer === null) return [...mains];
-  return mains.map((main) => ({
-    ...main,
-    elements: redactCommentAuthorIds(main.elements, viewer),
-  }));
+  return mains.map((main) =>
+    peopleForReader(
+      { ...main, elements: redactCommentAuthorIds(main.elements, viewer) },
+      reader.role,
+      viewer,
+    ),
+  );
 }

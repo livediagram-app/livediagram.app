@@ -175,5 +175,6 @@ function forReader(
   return mainsForReader(mains, {
     community: grant.community,
     redactFor: owner === meta.ownerId ? null : owner,
+    role: grant.role,
   });
 }
