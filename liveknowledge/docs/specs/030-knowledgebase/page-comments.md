@@ -95,7 +95,8 @@ writing, so the anchor moves with the text through any edit, live co-editing inc
   no watcher's "Edited" notice: the api's test for a changed page ignores `note` marks and margin note markers.
 - **Markers inside the window.** In a narrow window (a phone, a window under the page's column) the page's margin
   is off the window, so a note's marker stands just right of the column, level with its words, and a page with notes
-  narrows its column 16 px each side to make that room. Never cut off at the window's edge.
+  narrows its column 20 px each side to make that room. Never cut off at the window's edge, an action's assignee
+  badge included.
 - **Highlight.** An open comment's words are tinted indigo with a solid underline, an open action's emerald with a
   dashed one ([Article pages](../007-editor/article-pages.md#comments-and-actions)). **A resolved thread, and a done
   or Won't Do action, take their tint off** (the words read as plain writing); the marker stays, showing its

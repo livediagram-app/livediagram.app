@@ -728,8 +728,8 @@ narrow layout measured (the stored height until it has); each zone is scaled by 
 at its narrow `at` (until measured: its stored `at`, kept inside the column) and its elements are drawn through the
 transform from the stored zone box to the narrow one (position and size; text keeps its size). The page's margin is off
 the window here, so margin notes stand beside the column (2 px off its right edge), level with their measured line: a
-page with a margin note narrows its column by `PAGE_VIEW_NOTE_ROOM` (16) more each side, so a 32 px marker stands
-inside a phone's 20 px side room (page-comments.md "Comments on the writing"). The drawn `activeTab` is `pageViewLens(editLens or readLens(pageTab))`, so the article engine,
+page with a margin note narrows its column by `PAGE_VIEW_NOTE_ROOM` (20) more each side, so a 32 px marker and its
+assignee badge stand inside a phone's 20 px side room (page-comments.md "Comments on the writing"). The drawn `activeTab` is `pageViewLens(editLens or readLens(pageTab))`, so the article engine,
 the grips, drag, resize, snapping and hit tests all work in one coherent, narrower page: nothing in the engine knows
 the lens is there.
 

@@ -112,7 +112,10 @@ describe('the narrow view lens', () => {
       pages: [{ ...page().pages![0]!, fit: { width: 856, height: 1200 } }],
     };
     expect(pageViewNarrows(held, 900)).toBe(true);
-    expect(fitOf(pageViewLens(held, 900))).toEqual({ width: 996 - 32, height: 1200 });
+    expect(fitOf(pageViewLens(held, 900))).toEqual({
+      width: 996 - 2 * PAGE_VIEW_NOTE_ROOM,
+      height: 1200,
+    });
     expect(pageViewLens(held, 960)).toBe(held);
   });
 

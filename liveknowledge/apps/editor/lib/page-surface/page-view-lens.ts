@@ -33,9 +33,9 @@ import type { NarrowLayout, PageViewState } from './page-view-store';
 export const PAGE_VIEW_MIN_COLUMN = 120;
 
 /** The room the narrow view takes off each side of a column whose page has margin notes, canvas px: a phone's side
- *  room (20) is narrower than a marker, so the column gives this much on each side for the marker to stand in the
- *  window, beside the writing (page-comments.md "Comments on the writing"). */
-export const PAGE_VIEW_NOTE_ROOM = 16;
+ *  room (20) is narrower than a marker and its assignee badge, so the column gives this much on each side for both
+ *  to stand in the window, beside the writing (page-comments.md "Comments on the writing"). */
+export const PAGE_VIEW_NOTE_ROOM = 20;
 // A marker's gap from the column's right edge in the narrow view, canvas px.
 const NOTE_BESIDE = 2;
 
