@@ -114,10 +114,11 @@ function swot(k: Kit): Element[] {
     const listTop = nameY + nameH + u * 3;
     const rowH = (y + cardH - pad - listTop) / points.length;
     const dot = u * 1.8;
-    // Every point at one size: medium where a row holds two lines of it (a point often wraps to two), else small,
-    // so a two-line point is never cut at its row's edge; large on a card wide enough to keep it to one.
-    const pointSize =
-      cardW > u * 60 ? 'lg' : rowH >= LABEL_FONT_PX.md * LABEL_LINE_HEIGHT * 2 ? 'md' : 'sm';
+    // Every point at one size, the card's page type (large on a card wide enough to keep a point to one line). A
+    // point may wrap to two lines, so its box is at least two lines tall, centred on its row: a box's words are cut
+    // at its edge, and a row alone was shorter than two lines, which cut a wrapped point's descenders ("budaet").
+    const pointSize = cardW > u * 60 ? 'lg' : 'md';
+    const pointH = Math.max(rowH, LABEL_FONT_PX[pointSize] * LABEL_LINE_HEIGHT * 2);
     points.forEach((p, r) => {
       const ry = listTop + r * rowH;
       els.push(
@@ -125,7 +126,7 @@ function swot(k: Kit): Element[] {
           label: '',
           strokeWidth: 'thick',
         }),
-        k.text(x + pad + dot + u * 3, ry, innerW - dot - u * 3, rowH, p, {
+        k.text(x + pad + dot + u * 3, ry + rowH / 2 - pointH / 2, innerW - dot - u * 3, pointH, p, {
           textSize: pointSize,
           textAlignY: 'middle',
         }),

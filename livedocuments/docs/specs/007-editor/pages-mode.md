@@ -892,15 +892,6 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   something by its own colour, icon, picture, opacity or border (a recommended option's heavy border, a frame's
   none) is left as it is. The preset is the element's own, so the person can restyle it like any other.
 
-- **Words fit their boxes** (Work Tracker 1481). A box's words are cut at its edge on the canvas, so a label that
-  wraps to more lines than its box holds would lose its descenders (a SWOT point's "budget" read "budaet").
-  `fitLayoutText` (`packages/templates/src/layout-text-fit.ts`, run by `buildPageLayout`) wraps each label at its
-  box's width with a glyph a little wider than the canvas's sans draws (`LAYOUT_TEXT_CHAR_EM`, 0.5 of the size) and
-  steps one that needs more lines than its box holds down a size (large to medium to small, keeping a scale the page
-  gave it); a list's rows (the same box and size) step together, so a list never mixes sizes. A label set to scale
-  or to a size of its own is left alone. SWOT sets its points small where a row holds under two lines of medium. A
-  guard (`layout-text-fit.test.ts`) checks every infographic layout on A4 and every slide layout on every slide size.
-
 - **Ninety-two layouts**, each a complete, editable starting point in the tab's theme: a layout is built without
   colours where it means the theme's, and placing it (in the editor or by an agent) fills each of those from the
   tab's built-in theme (`themedForTab`), keeping the colours it sets itself (a shape bound to a colour preset takes
@@ -1096,7 +1087,8 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
       ticked features and a button. The middle plan is drawn heavier and badged "Most popular". A
       wide page drops the lead line.
   61. **SWOT**: Strengths, Weaknesses, Opportunities and Threats, each a card with its letter set
-      large, its name at one shared size, an icon where there is room, and three points. Two
+      large, its name at one shared size, an icon where there is room, and three points (at page type, each in a
+      box two lines tall, so a point that wraps is never cut at its row's edge). Two
       by two with Helpful / Harmful column heads and a "Top row: inside the business" foot line.
       Four in a row under "Inside the business" / "Outside it" on a wide page. Stacked on a page
       over 1.6 times taller than wide. Lead line only when clearly taller than wide.

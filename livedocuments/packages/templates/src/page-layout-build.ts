@@ -10,7 +10,6 @@ import {
 } from '@livedocuments/document';
 import { pageLayoutById } from './layout-catalogue';
 import { softenLayoutBoxes } from './layout-soft-boxes';
-import { fitLayoutText } from './layout-text-fit';
 import { carryPageContent } from './page-layout-carry';
 import type { PageLayoutId } from './page-layouts';
 
@@ -23,10 +22,9 @@ export function buildPageLayout(layout: PageLayoutId, page: LayoutPage): Element
     ...pageContentBox(page),
     bleed: pageMargin(page),
   });
-  // Its boxes soft panels in the theme's Soft look (layout-soft-boxes.ts), its words fitted to their boxes
-  // (layout-text-fit.ts).
+  // Its boxes soft panels in the theme's Soft look (layout-soft-boxes.ts).
   const soft = softenLayoutBoxes(built, Math.min(page.rect.width, page.rect.height));
-  return settleChips([], fitLayoutText(soft), { attachLoose: false });
+  return settleChips([], soft, { attachLoose: false });
 }
 
 /** The layout built for the page with the page's own content carried into it (`previous`, the
