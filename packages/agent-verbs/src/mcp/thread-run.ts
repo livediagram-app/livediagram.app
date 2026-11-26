@@ -8,6 +8,7 @@
 import { ApiError, type ApiClient } from '@liveworkspace/api-client';
 import type {
   CommentListStatus,
+  CommentThreadAnchor,
   DocumentCommentThread,
   DocumentCommentsResponse,
 } from '@liveworkspace/api-schema/comment-threads';
@@ -40,6 +41,8 @@ export type ListedCanvasThread = {
   tabName: string;
   ref: string;
   label: string | null;
+  // A thread on some words of the writing (mcp.md "Threads on words"): those words, or detached.
+  anchor?: CommentThreadAnchor;
   state: 'open' | 'resolved';
   comments: ListedThreadComment[];
 };
@@ -74,6 +77,7 @@ export function listedThread(t: Thread): ListedCanvasThread {
     tabName: t.tabName,
     ref: t.ref,
     label: t.label,
+    ...(t.anchor ? { anchor: t.anchor } : {}),
     state: t.resolved ? 'resolved' : 'open',
     comments: t.comments.map((c) => ({
       id: c.id,
