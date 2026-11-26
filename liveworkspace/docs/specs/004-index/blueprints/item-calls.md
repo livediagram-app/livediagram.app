@@ -201,7 +201,7 @@ edit` and no `sharedVia` (`choosableSpaces`). Each preview is `GET /api/previews
   held sideways); `HeroDialogHeader` with `meetingHeroArt`; `Button` secondary Cancel and primary Start Call in a
   `<form>`, so Enter submits.
 - The rows are `listCallSpaces()` (the Settings host's read, `listItems({app: livehuddle, view: all, limit:
-  CALL_SPACES_LISTED})`) kept with `choosableSpaces` and previewed with `useSpacePreviews`, both from
+CALL_SPACES_LISTED})`) kept with `choosableSpaces` and previewed with `useSpacePreviews`, both from
   `@liveworkspace/settings-ui/call-spaces`. The last list is kept for the page and shown at once on the next open,
   read again behind it. The chosen row starts as `readCallSpaceSetting(workbench.readPreferences())` (A New Space when
   null or `isUnavailable`); a change is the popover's state alone, never a settings write.

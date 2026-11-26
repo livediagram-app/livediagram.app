@@ -64,8 +64,8 @@ radius); on a phone, from the Apps drawer's Call tile, it is a sheet rising from
   Spaces (the [Calls Space](#your-calls-space) picker's list: owned or the team's, most recently changed first), each
   with its preview, its name and "Your Space" or "Team Space". A search field shows from 7 Spaces; the list scrolls
   inside the popover.
-- **Preselected from the setting.** The person's **Calls Open In** is chosen when it opens, marked "Your Calls Space"
-  (A New Space when it is unset or Default). A setting that is Unavailable leaves A New Space chosen and says so
+- **Preselected from the setting.** The person's **Calls Open In** is chosen when it opens, its Space marked "Your
+  Calls Space" (A New Space, marked "Default", when it is unset or Default). A setting that is Unavailable leaves A New Space chosen and says so
   ("Your Calls Space isn't available, so a new Space is chosen.").
 - **For this call only.** Choosing another row changes only this call: the setting is never written. Under the list:
   "For this call only. Change where calls open in Settings › Calls."

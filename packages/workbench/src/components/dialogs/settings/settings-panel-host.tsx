@@ -16,15 +16,12 @@ import {
   workspaceOriginFor,
   type AppName,
 } from '@liveworkspace/sites';
-import { CALL_SPACES_LISTED } from '@liveworkspace/index-client';
 import { workbench } from '../../../bindings';
 import { indexClient } from '../../../lib/index-client';
+import { listCallSpaces } from '../../item-call/call-spaces-read';
 
-/** The person's livehuddle Spaces, theirs and their teams', for Settings › Calls (the panel keeps the ones they may
- *  choose). */
-export const listCallSpaces = async () =>
-  (await indexClient.listItems({ app: 'livehuddle', view: 'all', limit: CALL_SPACES_LISTED }))
-    .items;
+// Settings › Calls' list, one read shared with the Start a Call popover.
+export { listCallSpaces };
 
 /** The Space chosen as the Calls Space stays when its call ends (item-calls.md "When a call ends"). */
 export const keepCallSpace = (spaceId: string) => indexClient.keepCallSpace(spaceId);
@@ -68,7 +65,7 @@ export function createSettingsPanelHost(app: AppName) {
       // Settings › Calls (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): the person's
       // livehuddle Spaces from the index through this app's router, read only when the category is shown, and the
       // chosen one kept.
-      callSpaces: { list: listCallSpaces, token, keep: keepCallSpace },
+      callSpaces: { list: () => listCallSpaces(), token, keep: keepCallSpace },
       // Settings' Subscription (liveworkspace/docs/specs/019-subscription/subscription.md "A person's browser"):
       // liveworkspace's subscription service, with the person's token. Listed only in a build with Pro on.
       subscription: {

@@ -1,26 +1,35 @@
 // @vitest-environment jsdom
 // Start a Call Here in the editor (liveworkspace/docs/specs/004-index/item-calls.md): the host names the item to the
 // store, reads its calls once and again only on the room's word or the tab's return; Call (an account) starts the call
-// in its own tab, opened in the press; "3 in Call" with Join (anyone who reads the item) brings the call's tab back or
+// in its own tab, opened in the Start a Call popover's Start Call press (Work Tracker 1470); "3 in Call" with Join (anyone who reads the item) brings the call's tab back or
 // opens it; Meetings in Tools lists the calls. Nothing for a session that can't call, nor in livehuddle itself.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ItemCallsRead, ItemMeeting } from '@liveworkspace/index-client';
 
-const { itemCalls, startItemCall, track, toastError, toastWarning, prefs } = vi.hoisted(() => ({
-  itemCalls: vi.fn(),
-  startItemCall: vi.fn(),
-  track: vi.fn(),
-  toastError: vi.fn(),
-  toastWarning: vi.fn(),
-  prefs: { current: {} },
+const { itemCalls, startItemCall, listItems, track, toastError, toastWarning, prefs } = vi.hoisted(
+  () => ({
+    itemCalls: vi.fn(),
+    startItemCall: vi.fn(),
+    listItems: vi.fn(),
+    track: vi.fn(),
+    toastError: vi.fn(),
+    toastWarning: vi.fn(),
+    prefs: { current: {} },
+  }),
+);
+vi.mock('../../lib/index-client', () => ({
+  indexClient: { itemCalls, startItemCall, listItems },
 }));
-vi.mock('../../lib/index-client', () => ({ indexClient: { itemCalls, startItemCall } }));
 vi.mock('../../hooks/ui/useToast', () => ({
   useToast: () => ({ success: vi.fn(), error: toastError, warning: toastWarning }),
 }));
 vi.mock('../../bindings', () => ({
-  workbench: { track, readPreferences: () => prefs.current },
+  workbench: {
+    track,
+    readPreferences: () => prefs.current,
+    api: { currentBearer: async () => null },
+  },
 }));
 
 import { emitSourceChanged } from '../sheet-links/sheet-link-signal';
@@ -30,6 +39,9 @@ import { canCall, ItemCallHost } from './ItemCallHost';
 import { setCallSource } from './item-call-store';
 import { focusOrOpen, isBlank, nameItemTab } from '@liveworkspace/index-client/browser';
 import { meetingLength, meetingWhen, meetingWho } from './MeetingsDialog';
+import { forgetKeptSpaces, SEARCH_FROM } from './StartCallPopover';
+import { closeCallChooser, openCallChooser, resetCallChooser } from './call-chooser-store';
+import type { Item } from '@liveworkspace/index-client';
 
 const LINK = 'https://www.livehuddle.app/document/shared?s=abc';
 // The call's tab enters by way of livehuddle's no-click sign-in (call-tabs.ts viaSilentSignIn).
@@ -105,16 +117,37 @@ const flush = () => act(async () => {});
 
 beforeAll(async () => {
   await import('./MeetingsDialog');
+  await import('./StartCallPopover');
 });
+
+// A livehuddle Space the person may choose (choosableSpaces), or one they may not with `over`.
+const space = (id: string, title: string, over: Partial<Item> = {}): Item =>
+  ({
+    id,
+    title,
+    app: 'livehuddle',
+    access: 'edit',
+    sharedVia: null,
+    trashedAt: null,
+    archivedAt: null,
+    teamId: null,
+    updatedAt: 1,
+    summary: null,
+    ...over,
+  }) as unknown as Item;
 
 beforeEach(() => {
   itemCalls.mockResolvedValue(reads(null));
+  listItems.mockResolvedValue({ items: [] });
   window.name = '';
 });
 
 afterEach(() => {
   cleanup();
   act(() => setCallSource(null));
+  act(() => resetCallChooser());
+  forgetKeptSpaces();
+  prefs.current = {};
   vi.restoreAllMocks();
   vi.clearAllMocks();
 });
@@ -172,15 +205,40 @@ describe('the host', () => {
   });
 });
 
+// Call, then the popover's Start Call: the press that opens the call's tab.
+async function pressCallThenStart() {
+  fireEvent.click(await screen.findByRole('button', { name: 'Call' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Start Call' }));
+}
+
+const radio = (name: string) => screen.findByRole<HTMLInputElement>('radio', { name });
+
 describe('Call', () => {
-  it('opens the call’s tab in the press, then sends it to the call', async () => {
+  it('asks first: Call opens the popover and starts nothing', async () => {
+    const open = vi.spyOn(window, 'open');
+    render(<Editor />);
+    await flush();
+    const call = screen.getByRole('button', { name: 'Call' });
+    expect(call.getAttribute('aria-haspopup')).toBe('dialog');
+    fireEvent.click(call);
+    expect(await screen.findByRole('heading', { name: 'Start a Call' })).toBeTruthy();
+    expect(screen.getByText('Retro')).toBeTruthy();
+    expect(call.getAttribute('aria-expanded')).toBe('true');
+    expect(open).not.toHaveBeenCalled();
+    expect(startItemCall).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'ItemCall');
+  });
+
+  it('opens the call’s tab in the Start Call press, then sends it to the call', async () => {
     const tab = fakeTab(true);
     const open = vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window);
     startItemCall.mockResolvedValue({ call: meeting({ people: 0 }), started: true });
     render(<Editor />);
     await flush();
-    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    await pressCallThenStart();
     expect(open).toHaveBeenCalledWith('', 'lw-call-D1');
+    // Closed once the tab is open.
+    expect(screen.queryByRole('heading', { name: 'Start a Call' })).toBeNull();
     await flush();
     // No Calls Space chosen: nothing sent beside the item, as before the setting.
     expect(startItemCall).toHaveBeenCalledWith('D1', { code: 'link1' }, null);
@@ -190,30 +248,201 @@ describe('Call', () => {
     expect(toastWarning).not.toHaveBeenCalled();
   });
 
+  it('preselects A New Space, marked Default, when no Calls Space is set', async () => {
+    listItems.mockResolvedValue({ items: [space('lh_a', 'Studio')] });
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    expect((await radio('A New Space')).checked).toBe(true);
+    expect((await radio('Studio')).checked).toBe(false);
+    expect(screen.getByText('Default')).toBeTruthy();
+    expect(screen.getByText('Your Space')).toBeTruthy();
+    expect(listItems).toHaveBeenCalledWith({ app: 'livehuddle', view: 'all', limit: 200 });
+  });
+
   it('starts the call in the chosen Calls Space, and says so when it was skipped', async () => {
     prefs.current = { callSpace: 'lh_room' };
+    listItems.mockResolvedValue({
+      items: [space('lh_room', 'Daily Room', { teamId: 't1' }), space('lh_b', 'Studio')],
+    });
+    const open = vi.spyOn(window, 'open').mockReturnValue(fakeTab(true) as unknown as Window);
+    startItemCall.mockResolvedValue({ call: meeting({ people: 0 }), started: true });
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    expect((await radio('Daily Room')).checked).toBe(true);
+    expect(screen.getByText('Your Calls Space')).toBeTruthy();
+    expect(screen.getByText('Team Space')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Start Call' }));
+    await flush();
+    expect(startItemCall).toHaveBeenLastCalledWith('D1', { code: 'link1' }, 'lh_room');
+    expect(toastWarning).not.toHaveBeenCalled();
+
+    open.mockReturnValue(fakeTab(true) as unknown as Window);
+    startItemCall.mockResolvedValue({
+      call: meeting({ people: 0 }),
+      started: true,
+      fallback: 'unavailable',
+    });
+    await pressCallThenStart();
+    await flush();
+    expect(toastWarning).toHaveBeenCalledWith(expect.stringMatching(/Settings › Calls/));
+  });
+
+  it('picks another place for this call only, leaving the setting as it is', async () => {
+    prefs.current = { callSpace: 'lh_room' };
+    listItems.mockResolvedValue({
+      items: [space('lh_room', 'Daily Room'), space('lh_b', 'Studio')],
+    });
+    const open = vi.spyOn(window, 'open').mockReturnValue(fakeTab(true) as unknown as Window);
+    startItemCall.mockResolvedValue({ call: meeting({ people: 0 }), started: true });
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    fireEvent.click(await radio('Studio'));
+    expect((await radio('Studio')).checked).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Start Call' }));
+    await flush();
+    expect(startItemCall).toHaveBeenLastCalledWith('D1', { code: 'link1' }, 'lh_b');
+
+    // A New Space over a set Calls Space sends none, so the index makes a Space as the default does.
+    open.mockReturnValue(fakeTab(true) as unknown as Window);
+    fireEvent.click(await screen.findByRole('button', { name: 'Call' }));
+    expect((await radio('Daily Room')).checked).toBe(true);
+    fireEvent.click(await radio('A New Space'));
+    fireEvent.click(screen.getByRole('button', { name: 'Start Call' }));
+    await flush();
+    expect(startItemCall).toHaveBeenLastCalledWith('D1', { code: 'link1' }, null);
+    expect(prefs.current).toEqual({ callSpace: 'lh_room' });
+  });
+
+  it('chooses A New Space and says why when the Calls Space is unavailable', async () => {
+    prefs.current = { callSpace: 'lh_gone' };
+    listItems.mockResolvedValue({ items: [space('lh_b', 'Studio')] });
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    expect(await screen.findByText(/isn’t available, so a new Space is chosen/)).toBeTruthy();
+    expect((await radio('A New Space')).checked).toBe(true);
+  });
+
+  it('closes with nothing started on Cancel, Escape or the close', async () => {
+    const open = vi.spyOn(window, 'open');
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('heading', { name: 'Start a Call' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    const heading = await screen.findByRole('heading', { name: 'Start a Call' });
+    fireEvent.keyDown(heading, { key: 'Escape' });
+    await flush();
+    expect(screen.queryByRole('heading', { name: 'Start a Call' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    fireEvent.click(await screen.findByRole('button', { name: /close/i }));
+    expect(screen.queryByRole('heading', { name: 'Start a Call' })).toBeNull();
+    expect(open).not.toHaveBeenCalled();
+    expect(startItemCall).not.toHaveBeenCalled();
+  });
+
+  it('starts on Enter, as the form’s submit', async () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue(fakeTab(true) as unknown as Window);
+    startItemCall.mockResolvedValue({ call: meeting({ people: 0 }), started: true });
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    fireEvent.submit((await radio('A New Space')).form!);
+    expect(open).toHaveBeenCalledWith('', 'lw-call-D1');
+    await flush();
+    expect(startItemCall).toHaveBeenCalledOnce();
+  });
+
+  it('keeps Start Call working while the Spaces can’t load, and tries again', async () => {
+    prefs.current = { callSpace: 'lh_room' };
+    listItems.mockRejectedValueOnce(new Error('offline'));
+    vi.spyOn(window, 'open').mockReturnValue(fakeTab(true) as unknown as Window);
+    startItemCall.mockResolvedValue({ call: meeting({ people: 0 }), started: true });
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    // The setting's Space, unnamed until the list comes, stays chosen.
+    expect((await radio('Your Calls Space')).checked).toBe(true);
+
+    listItems.mockResolvedValue({ items: [space('lh_room', 'Daily Room')] });
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    expect((await radio('Daily Room')).checked).toBe(true);
+    expect(screen.queryByRole('alert')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start Call' }));
+    await flush();
+    expect(startItemCall).toHaveBeenLastCalledWith('D1', { code: 'link1' }, 'lh_room');
+  });
+
+  it('shows the kept list at once on the next open, and offers to make a Space when there are none', async () => {
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    expect(await screen.findByRole('link', { name: /Make a Space in livehuddle/ })).toBeTruthy();
+    act(() => closeCallChooser());
+
+    listItems.mockReturnValue(new Promise(() => undefined));
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    expect(await screen.findByRole('link', { name: /Make a Space in livehuddle/ })).toBeTruthy();
+  });
+
+  it('lists only the Spaces the person may choose, with a search from seven', async () => {
+    const many = Array.from({ length: SEARCH_FROM }, (_, i) =>
+      space(`lh_${i}`, i === 3 ? 'Design Crit' : `Room ${i}`),
+    );
+    listItems.mockResolvedValue({
+      items: [...many, space('lh_x', 'Not Mine', { sharedVia: 'link' })],
+    });
+    render(<Editor />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    const find = await screen.findByRole('searchbox', { name: 'Find a Space' });
+    expect(screen.queryByRole('radio', { name: 'Not Mine' })).toBeNull();
+    fireEvent.change(find, { target: { value: 'crit' } });
+    expect(await radio('Design Crit')).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: 'Room 0' })).toBeNull();
+    fireEvent.change(find, { target: { value: 'zzz' } });
+    expect(await screen.findByText('No Space is called that.')).toBeTruthy();
+  });
+
+  it('asks for its chunk early, and leaves a touch screen’s focus where the sheet puts it', async () => {
+    const coarse = vi.fn(() => ({
+      matches: true,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+    vi.stubGlobal('matchMedia', coarse);
     try {
-      const open = vi.spyOn(window, 'open').mockReturnValue(fakeTab(true) as unknown as Window);
-      startItemCall.mockResolvedValue({ call: meeting({ people: 0 }), started: true });
+      prefs.current = { callSpace: 'lh_room' };
+      listItems.mockRejectedValueOnce(new Error('offline'));
       render(<Editor />);
       await flush();
-      fireEvent.click(screen.getByRole('button', { name: 'Call' }));
-      await flush();
-      expect(startItemCall).toHaveBeenLastCalledWith('D1', { code: 'link1' }, 'lh_room');
-      expect(toastWarning).not.toHaveBeenCalled();
-
-      open.mockReturnValue(fakeTab(true) as unknown as Window);
-      startItemCall.mockResolvedValue({
-        call: meeting({ people: 0 }),
-        started: true,
-        fallback: 'unavailable',
-      });
-      fireEvent.click(await screen.findByRole('button', { name: 'Call' }));
-      await flush();
-      expect(toastWarning).toHaveBeenCalledWith(expect.stringMatching(/Settings › Calls/));
+      const call = screen.getByRole('button', { name: 'Call' });
+      fireEvent.pointerEnter(call);
+      fireEvent.focus(call);
+      fireEvent.click(call);
+      fireEvent.click(await radio('A New Space'));
+      fireEvent.click(await radio('Your Calls Space'));
+      expect((await radio('Your Calls Space')).checked).toBe(true);
+      expect(coarse).toHaveBeenCalledWith('(pointer: coarse)');
     } finally {
-      prefs.current = {};
+      vi.unstubAllGlobals();
     }
+  });
+
+  it('opens as a sheet with no Call to sit under (the phone’s Apps drawer)', async () => {
+    render(<Editor />);
+    await flush();
+    act(() => openCallChooser(null));
+    expect(await screen.findByRole('heading', { name: 'Start a Call' })).toBeTruthy();
+    expect(screen.getByRole('dialog')).toBeTruthy();
   });
 
   it('brings back a tab already at the call rather than starting another', async () => {
@@ -235,24 +464,47 @@ describe('Call', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     render(<Editor />);
     await flush();
-    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    await pressCallThenStart();
     await flush();
     expect(toastError).toHaveBeenCalledWith(expect.stringMatching(/blocked/));
 
     const tab = fakeTab(true);
     open.mockReturnValue(tab as unknown as Window);
     startItemCall.mockRejectedValue(new Error('503'));
-    fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+    await pressCallThenStart();
     await flush();
     expect(tab.close).toHaveBeenCalled();
     expect(toastError).toHaveBeenCalledWith(expect.stringMatching(/couldn’t start/));
     expect(track).toHaveBeenCalledWith('UI', 'Refused', 'ItemCall');
   });
 
+  it('says Starting until the index answers, and opens no second popover meanwhile', async () => {
+    vi.spyOn(window, 'open').mockReturnValue(fakeTab(true) as unknown as Window);
+    let answer: (v: unknown) => void = () => undefined;
+    startItemCall.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve;
+      }),
+    );
+    render(<Editor />);
+    await flush();
+    await pressCallThenStart();
+    const call = await screen.findByRole('button', { name: 'Starting' });
+    expect(call.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(call);
+    expect(screen.queryByRole('heading', { name: 'Start a Call' })).toBeNull();
+    await act(async () => answer({ call: meeting({ people: 0 }), started: true }));
+    expect(await screen.findByRole('button', { name: 'Call' })).toBeTruthy();
+  });
+
   it('is for an account only: a guest through a link sees no Call', async () => {
     render(<Editor signedIn={false} />);
     await flush();
     expect(screen.queryByRole('button', { name: 'Call' })).toBeNull();
+    // Nor the popover, should anything ask for it.
+    act(() => openCallChooser(null));
+    await flush();
+    expect(screen.queryByRole('heading', { name: 'Start a Call' })).toBeNull();
   });
 });
 
