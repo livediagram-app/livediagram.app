@@ -102,7 +102,7 @@ const update = { kind: 'el', tabId: 't1', op: { kind: 'update', element: assigne
 const opFrames = (s: Socket) =>
   s.sent.map((f) => JSON.parse(f) as { kind: string }).filter((f) => f.kind === 'op');
 const lastAction = (s: Socket) =>
-  (opFrames(s).at(-1) as { op: { op: { element: typeof assigned } } }).op.op.element.action;
+  (opFrames(s).at(-1) as unknown as { op: { op: { element: typeof assigned } } }).op.op.element.action;
 
 beforeEach(() => {
   store.data = JSON.stringify({ elements: [{ ...assigned, action: undefined }] });
