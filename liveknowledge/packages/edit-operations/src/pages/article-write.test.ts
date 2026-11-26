@@ -284,6 +284,45 @@ describe('the writing', () => {
     );
   });
 
+  it('counts several detached margin notes in the plural', () => {
+    const marker = (id: string) =>
+      ({
+        id,
+        type: 'article-note',
+        articleNote: 'comment',
+        x: 0,
+        y: 0,
+        width: 32,
+        height: 32,
+        commentThread: {
+          comments: [
+            { id: `c-${id}`, text: 'Why?', createdAt: 1, authorName: 'Priya', authorColor: '#000' },
+          ],
+          resolved: false,
+        },
+      }) as unknown as Element;
+    const tab = withArticle(
+      'f',
+      {
+        blocks: [
+          {
+            id: '1',
+            type: 'paragraph',
+            runs: [
+              { text: 'one', note: 'n1' },
+              { text: 'two', note: 'n2' },
+            ],
+          },
+        ],
+      },
+      { elements: [marker('n1'), marker('n2')] },
+    );
+    const out = write(tab, { markdown: 'Fresh text' });
+    expect(out.lines).toContain(
+      'Kept 2 margin notes whose text is gone, detached: each holds a comment or an action.',
+    );
+  });
+
   it('sets no look: the style is the knowledgebase’s, and what the flow holds is kept as it was', () => {
     const tab = withArticle('f', { blocks: [para('1', 'x')], style: { margins: 'wide' } });
     const out = write(tab, { markdown: 'y' });
