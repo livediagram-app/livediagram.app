@@ -66,14 +66,17 @@ export function useKnowledgeImport(
   const asked = useRef(0);
   const stop = useRef(false);
   const alive = useRef(true);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    // Set on every mount: React's Strict Mode mounts twice in development, and a flag left false by the first
+    // unmount dropped every plan, so a picked archive stayed on "Reading" for good.
+    alive.current = true;
+    stop.current = false;
+    return () => {
       alive.current = false;
       // A dialog closed mid-import stops at the next batch; what was written stays.
       stop.current = true;
-    },
-    [],
-  );
+    };
+  }, []);
 
   const plan = useCallback(
     async (archive: PickedArchive, destination: ImportDestination, trimmed = false) => {

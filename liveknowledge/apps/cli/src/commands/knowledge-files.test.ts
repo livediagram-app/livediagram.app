@@ -2,18 +2,11 @@ import { mkdtempSync, mkdirSync, rmSync, truncateSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import {
-  KNOWLEDGEBASE_FLOW,
-  layOutPages,
-  newKnowledgebasePageContent,
-  pagesOf,
-  type Tab,
-} from '@liveknowledge/document';
+import { KNOWLEDGEBASE_FLOW, newKnowledgebasePageContent, type Tab } from '@liveknowledge/document';
 import { run } from '../main';
 import { fakeIo, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
 import { zipOf } from '../testing/zip';
 import { IMPORT_BATCH_PAGES, pageMarkdownFor, planLines } from './knowledge-import';
-import { pageFileMarkdown, pagePictures } from './knowledge-page-file';
 
 // `export <knowledgebase> <dir>` and `import <folder|zip>` through the whole command
 // (docs/specs/024-agents/knowledgebase-for-agents.md "CLI").
@@ -29,7 +22,6 @@ const para = (id: string, runs: object[], style?: string) => ({
 });
 // A knowledgebase page as the editor stores one: its one page of writing, holding these blocks.
 const CONTENT = newKnowledgebasePageContent();
-const PAGE_ID = CONTENT.pages[0]!.id;
 const page = (id: string, name: string, blocks: object[], extra: object = {}): Tab =>
   ({
     id,
@@ -100,7 +92,10 @@ const ROWS = [
     depth: 2,
     parent: 'deploys',
     subpages: 0,
-    trust: { state: 'never-verified', stale: false },
+    owner: 'user_o',
+    updatedAt: Date.UTC(2026, 10, 20),
+    labels: ['Ops'],
+    trust: { state: 'verified', stale: false, verifiedAt: Date.UTC(2026, 10, 2) },
   },
   {
     tab: 'holidays',
@@ -118,6 +113,8 @@ function host(
     refuse?: (body: Record<string, unknown>) => Response | undefined;
     holidays?: Tab;
     rows?: typeof ROWS;
+    /** An api from before `names`: owners go unnamed. */
+    unnamed?: boolean;
   } = {},
 ) {
   const tabs: Record<string, Tab> = {
@@ -148,7 +145,11 @@ function host(
       return Response.json({ documents: [{ id: KB, name: 'Handbook', savedAt: 1, ownerId: 'u' }] });
     if (path === `/documents/${KB}`)
       return Response.json({ document: { id: KB, name: 'Handbook', tabs: [] } });
-    if (path === `/documents/${KB}/pages`) return Response.json({ pages: options.rows ?? ROWS });
+    if (path === `/documents/${KB}/pages`)
+      return Response.json({
+        pages: options.rows ?? ROWS,
+        ...(options.unnamed ? {} : { names: { user_o: 'Olu Owner' } }),
+      });
     if (path === '/images/img_1')
       return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'image/png' } });
     if (path === '/images/img_gone') return Response.json({ error: 'not_found' }, { status: 404 });
@@ -184,17 +185,20 @@ describe('export <knowledgebase> <dir>', () => {
       '1 knowledgebase · 4 files',
     ]);
     expect(await io.files.read('docs/kb/deploys.md')).toBe(
-      '# When we deploy\n\nSee [Rollbacks](deploys/rollbacks.md) and [Holidays](holidays.md).\n',
+      '---\ntitle: "Deploys"\n---\n\n# Deploys\n\n' +
+        '# When we deploy\n\nSee [Rollbacks](deploys/rollbacks.md) and [Holidays](holidays.md).\n',
     );
     // A picture's file is one level up from a subpage; one the api would not hand over is its address.
     expect(await io.files.read('docs/kb/deploys/rollbacks.md')).toBe(
-      'Back to [Deploys](../deploys.md).\n\n' +
+      '---\ntitle: "Rollbacks"\nowner: "Olu Owner"\nupdated: "2026-11-20T00:00:00.000Z"\n' +
+        'verified: "2026-11-02T00:00:00.000Z"\nlabels: ["Ops"]\n---\n\n# Rollbacks\n\n' +
+        'Back to [Deploys](../deploys.md).\n\n' +
         '![The release  channel](../pictures/img_1.png)\n\n' +
         `![](${HOST}/api/images/img_gone)\n\n` +
         '![again.png](../pictures/img_1.png)\n',
     );
     expect(await io.files.read('docs/kb/holidays.md')).toBe(
-      'Last week of December.\n\n![](pictures/img_1.png)\n',
+      '---\ntitle: "Holidays"\n---\n\n# Holidays\n\nLast week of December.\n\n![](pictures/img_1.png)\n',
     );
     expect([...(await io.files.readBytes('docs/kb/pictures/img_1.png'))!]).toEqual([1, 2, 3]);
     expect(err).toContain('picture img_gone could not be read (HTTP 404): its address is written');
@@ -213,6 +217,7 @@ describe('export <knowledgebase> <dir>', () => {
 
   it('writes a picture’s address when its bytes are no picture or cannot be fetched, and reads a share link', async () => {
     const { route } = host({
+      unnamed: true,
       holidays: page('holidays', 'Holidays', [para('b1', [{ text: 'December.' }])], {
         elements: ['img_odd', 'img_bare', 'img_down'].map((imageId, i) => ({
           id: `e${i}`,
@@ -231,6 +236,8 @@ describe('export <knowledgebase> <dir>', () => {
     for (const id of ['img_odd', 'img_bare', 'img_down'])
       expect(text).toContain(`![](${HOST}/api/images/${id})`);
     expect(err).toContain('picture img_down could not be read (TypeError: fetch failed)');
+    // An api that names no owners: the file says nothing of one.
+    expect(await io.files.read('out/deploys/rollbacks.md')).not.toContain('owner:');
     expect(io.requests.some((r) => r.headers.get('X-Share-Code') === 'AB12')).toBe(true);
     TABS.holidays = page('holidays', 'Holidays', [
       para('b1', [{ text: 'Last week of December.' }]),
@@ -243,92 +250,6 @@ describe('export <knowledgebase> <dir>', () => {
     expect(none).toMatchObject({ code: 2 });
     expect(none.err).toContain('export needs a knowledgebase and a folder, or --all --to <dir>');
     expect((await cli(['export', '--all'], route)).err).toContain('--to <dir>');
-  });
-});
-
-describe('a page as its file', () => {
-  it('puts a picture where its zone sits, drops an empty zone, and keeps a link with no file as text', () => {
-    const blocks = [
-      para('b1', [{ text: 'Before.' }]),
-      // A zone standing at its page's top left corner, and one never laid out.
-      {
-        id: 'z1',
-        type: 'zone',
-        zone: 'object',
-        width: 500,
-        height: 500,
-        at: { page: PAGE_ID, x: 0, y: 0 },
-      },
-      { id: 'z2', type: 'zone', zone: 'object', width: 100, height: 100 },
-      para('b2', [{ text: 'To ' }, { text: 'Gone', page: 'gone' }, { text: '.' }]),
-    ];
-    const { rect } = layOutPages(pagesOf(page('p', 'P', blocks)))[0]!;
-    const tab = page('p', 'P', blocks, {
-      elements: [
-        {
-          id: 'in',
-          type: 'image',
-          imageId: 'a',
-          alt: 'In the zone',
-          x: rect.x + 10,
-          y: rect.y + 10,
-          width: 20,
-          height: 20,
-        },
-        {
-          id: 'ext',
-          type: 'image',
-          imageId: 'b',
-          x: rect.x + 5000,
-          y: rect.y + 5000,
-          width: 20,
-          height: 20,
-        },
-        { id: 'box', type: 'shape', shape: 'square', x: rect.x, y: rect.y, width: 5, height: 5 },
-        { id: 'noid', type: 'image', x: rect.x, y: rect.y, width: 5, height: 5 },
-      ],
-    });
-    expect(pagePictures(tab)).toEqual(['a', 'b']);
-    const out = pageFileMarkdown(tab, 'guides/p.md', new Map(), (id) =>
-      id === 'a' ? 'pictures/a.png' : 'https://cdn.test/b.png',
-    );
-    expect(out).toBe(
-      'Before.\n\n![In the zone](../pictures/a.png)\n\nTo Gone.\n\n![](https://cdn.test/b.png)\n',
-    );
-  });
-
-  it('keeps a code block that reads like a zone line as code', () => {
-    const blocks = [
-      { id: 'c1', type: 'code', text: 'Before.\n[zone abc]\n\nAfter.' },
-      { id: 'z1', type: 'zone', zone: 'object', width: 100, height: 100 },
-      { id: 'c2', type: 'code', text: '[zone z1]' },
-    ];
-    const tab = page('p', 'P', blocks);
-    expect(pageFileMarkdown(tab, 'p.md', new Map(), () => '')).toBe(
-      '```\nBefore.\n[zone abc]\n\nAfter.\n```\n\n```\n[zone z1]\n```\n',
-    );
-  });
-
-  it('reads the first article of a tab whose pages show none', () => {
-    const tab = {
-      id: 't',
-      name: 'T',
-      elements: [],
-      articles: { 'art-1': { blocks: [para('b1', [{ text: 'Only writing.' }])] } },
-    } as unknown as Tab;
-    expect(pageFileMarkdown(tab, 't.md', new Map(), () => '')).toBe('Only writing.\n');
-  });
-
-  it('writes a page with no writing as its pictures alone, or an empty file', () => {
-    const bare = { id: 'e', name: 'E', elements: [] } as unknown as Tab;
-    expect(pageFileMarkdown(bare, 'e.md', new Map(), () => '')).toBe('\n');
-    const pictured = {
-      ...bare,
-      elements: [{ id: 'i', type: 'image', imageId: 'a', x: 0, y: 0, width: 1, height: 1 }],
-    } as unknown as Tab;
-    expect(pageFileMarkdown(pictured, 'e.md', new Map(), () => 'pictures/a.png')).toBe(
-      '![](pictures/a.png)\n',
-    );
   });
 });
 

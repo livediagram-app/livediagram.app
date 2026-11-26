@@ -1,7 +1,8 @@
 // `export <knowledgebase> <dir>` (docs/specs/024-agents/knowledgebase-for-agents.md "CLI"): a knowledgebase as a
 // folder of Markdown to keep beside a repository. One file a page, a page's subpages in a folder of its name
-// (`pageFilePaths`), links between pages relative, pictures as files under `pictures/` where the api hands their
-// bytes and as their addresses where it does not.
+// (`pageFilePaths`), each file its front matter, title and writing (`pageFileMarkdown`, the app's Markdown Folder's
+// writer, docs/specs/020-import-export/knowledgebase-export.md), links between pages relative, pictures as files under
+// `pictures/` where the api hands their bytes and as their addresses where it does not.
 //
 // Streamed: the page tree is one read (no page's writing), then each page is read, written and let go before the
 // next, so the export holds one page at a time however large the knowledgebase is. A picture is fetched once, the
@@ -13,11 +14,17 @@ import {
   type VerbContext,
 } from '@liveknowledge/agent-verbs';
 import { isKnowledgePageRow, type KnowledgePagesResponse } from '@liveknowledge/api-schema';
-import { pageFilePaths, type Tab } from '@liveknowledge/document';
+import {
+  pageByTitleIn,
+  pageFileMarkdown,
+  pageFilePaths,
+  pageFilePictures,
+  pageOfAddress,
+  type Tab,
+} from '@liveknowledge/document';
 import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { patiently } from './export';
-import { pageFileMarkdown, pagePictures } from './knowledge-page-file';
 
 export type KnowledgeExportInput = { doc: string; dir: string };
 
@@ -43,13 +50,23 @@ export async function exportKnowledgebase(
   const resolved = await resolveDocument(ctx.api, input.doc, ctx.host, ctx.log);
   if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
   const listed = await patiently(ctx, () =>
-    ctx.api.json<KnowledgePagesResponse>(knowledgePath(resolved.id, 'pages')),
+    ctx.api.json<KnowledgePagesResponse>(`${knowledgePath(resolved.id, 'pages')}?names=1`),
   );
   // A connected file in the tree is another app's, with no writing here: it is not exported.
   const pages = listed.pages.filter(isKnowledgePageRow);
-  const files = pageFilePaths(
-    pages.map((p) => ({ id: p.tab, name: p.title, ...(p.parent ? { parent: p.parent } : {}) })),
-  );
+  const tree = pages.map((p) => ({
+    id: p.tab,
+    name: p.title,
+    ...(p.parent ? { parent: p.parent } : {}),
+  }));
+  const files = pageFilePaths(tree);
+  const titles = new Map(tree.map((p) => [p.id, p.name]));
+  const links = {
+    pageByTitle: pageByTitleIn(tree),
+    pageOfHref: pageOfAddress(resolved.id),
+    titleOf: (tab: string) => titles.get(tab),
+  };
+  const names = listed.names ?? {};
   ctx.log(`export ${pages.length} pages as Markdown`);
   const paths: string[] = [];
   const made = new Set<string>();
@@ -92,12 +109,21 @@ export async function exportKnowledgebase(
     const { tab } = await patiently(ctx, () =>
       ctx.api.json<{ tab: Tab }>(tabPath(resolved.id, row.tab)),
     );
-    for (const imageId of pagePictures(tab))
+    for (const imageId of pageFilePictures(tab))
       if (!pictures.has(imageId)) pictures.set(imageId, await pictureFile(imageId));
     await mkdir(folderOf(file));
     await io.files.write(
       `${root}/${file}`,
-      pageFileMarkdown(tab, file, files, (imageId) => pictures.get(imageId)!),
+      pageFileMarkdown(tab, file, files, (imageId) => pictures.get(imageId)!, {
+        ...links,
+        title: row.title,
+        facts: {
+          ...(row.owner && names[row.owner] ? { owner: names[row.owner] } : {}),
+          ...(row.updatedAt !== undefined ? { updated: row.updatedAt } : {}),
+          ...(row.trust.verifiedAt !== undefined ? { verified: row.trust.verifiedAt } : {}),
+          ...(row.labels?.length ? { labels: row.labels } : {}),
+        },
+      }),
     );
     paths.push(`${root}/${file}`);
   }

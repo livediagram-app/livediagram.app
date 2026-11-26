@@ -19,6 +19,7 @@ import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-shar
 import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
 import { useKnowledgeImportProps } from '@/components/dialogs/knowledge-import/useKnowledgeImportProps';
+import { useMarkdownFolderProp } from '@/components/dialogs/markdown-folder/useMarkdownFolderProp';
 import { SetupWhenOpen } from '@/components/setup/SetupHost';
 import { DescribeStructureWhenOpen } from '@/components/describe-structure/DescribeStructureHost';
 import { usePublishingOpen } from '@/lib/publishing/publish-open';
@@ -116,6 +117,8 @@ function OpenEditorTabDialogs() {
   const toast = useToast();
   // The three Knowledgebase import sources, for an Editor on the whole knowledgebase only.
   const knowledgebase = useKnowledgeImportProps();
+  // The whole knowledgebase as a Markdown Folder, for a session that reads all of it (knowledgebase-export.md).
+  const markdownFolder = useMarkdownFolderProp();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
   const exportingSelection = exportOpen && exportScope === 'selection';
@@ -155,6 +158,7 @@ function OpenEditorTabDialogs() {
           pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
           // The PowerPoint export's speaker notes and hidden slides (docs/specs/020-import-export/office-export.md).
           deck={slideDeck?.deck}
+          {...(exportScope === 'tab' && markdownFolder ? { markdownFolder } : {})}
           documentName={documentName}
           // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
           // Every other page too, in the knowledgebase's style (page-surface.md "Knowledgebase Style").

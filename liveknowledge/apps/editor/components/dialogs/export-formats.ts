@@ -15,6 +15,8 @@ export const PAGES_FORMATS: readonly Format[] = [
   // No PowerPoint: liveknowledge has no slides (docs/specs/002-project-scope/not-in-liveknowledge.md).
   'docx',
   'markdown',
+  // The whole knowledgebase, for a session that reads all of it (docs/specs/020-import-export/knowledgebase-export.md).
+  'markdown-folder',
   'file',
 ];
 // The page formats' card copy in Pages mode, which speaks of pages rather than the tab.
@@ -32,7 +34,8 @@ export const ARTICLE_MARKDOWN_BLURB =
   "This article as Markdown, in the form Import reads back. Edit it here to copy a variant; your edits don't change the article.";
 
 // The format keys ('file' is the liveknowledge .json).
-export type Format = 'markdown' | 'pdf' | 'print' | 'png' | 'svg' | OfficeFormat | 'file';
+export type Format =
+  'markdown' | 'markdown-folder' | 'pdf' | 'print' | 'png' | 'svg' | OfficeFormat | 'file';
 
 // The two text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
@@ -74,6 +77,13 @@ export const CARDS: { kind: Format; title: string; description: string }[] = [
     title: 'Print',
     description:
       'Send the current page or the whole knowledgebase to your printer, each page its own sheet.',
+  },
+  {
+    // The whole knowledgebase (docs/specs/020-import-export/knowledgebase-export.md "Where it is offered").
+    kind: 'markdown-folder',
+    title: 'Markdown Folder',
+    description:
+      'Every page as a Markdown file in one .zip, folders following the page tree, pictures beside them. For Confluence, Notion or a Git repository.',
   },
   // A slide tab's or an article tab's only (docs/specs/020-import-export/office-export.md "Where it is offered").
   { kind: 'pptx', ...OFFICE_CARDS.pptx },

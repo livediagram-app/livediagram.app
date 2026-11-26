@@ -216,9 +216,17 @@ export function importedPageTab(input: ImportedPageInput): ImportedPage {
       `It makes ${blocks.length.toLocaleString('en-GB')} blocks; a page holds at most ${MAX_ARTICLE_BLOCKS.toLocaleString('en-GB')}.`,
     );
   }
-  // A starter structure's page may carry an icon and a cover; an import's plan carries none. Read as stored ones are.
+  // A starter structure's page may carry an icon and a gradient cover; an import's, a cover picture once it is
+  // stored (a liveknowledge export's front matter). Read as stored ones are.
   const icon = parseTabIcon(page.icon ? { iconId: page.icon } : undefined);
-  const cover = parseTabCover(page.cover ? { gradient: page.cover } : undefined);
+  const coverPicture = page.coverPicture === undefined ? undefined : pictures[page.coverPicture];
+  const cover = parseTabCover(
+    coverPicture?.ok
+      ? { imageId: coverPicture.imageId }
+      : page.cover
+        ? { gradient: page.cover }
+        : undefined,
+  );
   const tab: Tab = {
     id,
     name,

@@ -542,6 +542,8 @@ export type KnowledgePageRow = KnowledgePageRef & {
   trust: KnowledgePageTrust;
   /** The page's labels by name (page-surface.md "Page labels"); absent for none. */
   labels?: string[];
+  /** When the page was last saved, ms since the epoch (knowledgebase-export.md "What the zip holds"). */
+  updatedAt?: number;
 };
 /** A connected file in the tree (links-and-embeds.md "Connected files in the sidebar"): another app's file placed
  *  among the pages, which is no page. It holds no subpages and no trust, and `read_page` does not read it. */
@@ -563,6 +565,9 @@ export const isKnowledgePageRow = (row: KnowledgeTreeRow): row is KnowledgePageR
 export type KnowledgePagesResponse = {
   reviewEvery: KnowledgeReviewEvery;
   pages: KnowledgeTreeRow[];
+  /** With `?names=1`: each page owner's name, by account id, so an export names them (knowledgebase-export.md);
+   *  an owner with no name is absent. */
+  names?: Record<string, string>;
 };
 /** `GET .../pages/<tab>`: one page as Markdown, its page links by their current titles. `heading` and `maxChars`
  *  narrow it; `leftOut` counts the characters not sent and `headings` lists the page's sections. */

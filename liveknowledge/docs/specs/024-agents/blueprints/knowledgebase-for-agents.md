@@ -19,27 +19,27 @@ Derived from [Knowledgebase for agents](../knowledgebase-for-agents.md), with
 
 ## Modules
 
-| Where                                                                                | What                                                                          |
-| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| `packages/api-schema/src/knowledge.ts`                                               | The wire types of every route below                                           |
-| `packages/api-schema/src/agent-scopes.ts`                                            | `AGENT_SCOPES`, `DEFAULT_AGENT_SCOPES`, `parseAgentScopes`, `agentScopesFor`  |
-| `packages/knowledge/src/page-markdown.ts`                                            | `markdownHeadings`, `markdownSection`, `cutMarkdown`, `replacePassage` (pure) |
-| `packages/edit-operations/src/pages/new-page.ts`                                     | `newPageFromMarkdown`: a page's tab from Markdown, for the api and the MCP    |
-| `apps/api/src/knowledge/agent-grants.ts`                                             | `agent_grants`, `withAgentGrant`, `scopeRefusalOf`                            |
-| `apps/api/src/knowledge/agent-seen.ts`, `connected-agents.ts`                        | `agent_seen`, `noteAgentSeen`, `seenAgents`; `connectedAgents` (pure)         |
-| `apps/editor/components/insights/AgentCard.tsx`, `useAgentWrite.ts`                  | The card's menu, Allow Writing and Stop Writing                               |
-| `apps/api/src/knowledge/suggestions.ts`                                              | The `suggestions` table's reads, the capped insert, the prune                 |
-| `apps/api/src/knowledge/page-read.ts`                                                | `pageMarkdownOf`, `pageNamed`, `pageTrustOf`, `openConflictPages`             |
-| `apps/api/src/routes/knowledge-suggestion-routes.ts`                                 | Suggest, list, accept, dismiss                                                |
-| `apps/api/src/routes/knowledge-agent-routes.ts`                                      | The page tree, a page, the context, create, write, move, scopes               |
-| `packages/agent-verbs/src/mcp/knowledge-schema.ts`                                   | The nine tools' input and output shapes                                       |
-| `packages/agent-verbs/src/mcp/server-instructions.ts`                                | `SERVER_INSTRUCTIONS`                                                         |
-| `packages/agent-verbs/src/knowledge/`                                                | `knowledgePath`, `trustFieldsOf`, `resultTrustOf`, `trustLine`: both doors'   |
-| `packages/agent-verbs/src/verbs/knowledge.ts`                                        | The nine CLI commands as verbs                                                |
-| `apps/mcp/src/knowledge-read-tools.ts`, `knowledge-write-tools.ts`, `create-tool.ts` | The tools' handlers                                                           |
-| `apps/mcp/src/agent-name.ts`, `knowledge-client.ts`                                  | The client's name, remembered and sent                                        |
-| `apps/cli/src/commands/knowledge-export.ts`, `knowledge-page-file.ts`                | `export <knowledgebase> <dir>`                                                |
-| `apps/cli/src/commands/knowledge-import.ts`, `zip-reader.ts`                         | `import <folder                                                               | zip>` |
+| Where                                                                                | What                                                                                      |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/knowledge.ts`                                               | The wire types of every route below                                                       |
+| `packages/api-schema/src/agent-scopes.ts`                                            | `AGENT_SCOPES`, `DEFAULT_AGENT_SCOPES`, `parseAgentScopes`, `agentScopesFor`              |
+| `packages/knowledge/src/page-markdown.ts`                                            | `markdownHeadings`, `markdownSection`, `cutMarkdown`, `replacePassage` (pure)             |
+| `packages/edit-operations/src/pages/new-page.ts`                                     | `newPageFromMarkdown`: a page's tab from Markdown, for the api and the MCP                |
+| `apps/api/src/knowledge/agent-grants.ts`                                             | `agent_grants`, `withAgentGrant`, `scopeRefusalOf`                                        |
+| `apps/api/src/knowledge/agent-seen.ts`, `connected-agents.ts`                        | `agent_seen`, `noteAgentSeen`, `seenAgents`; `connectedAgents` (pure)                     |
+| `apps/editor/components/insights/AgentCard.tsx`, `useAgentWrite.ts`                  | The card's menu, Allow Writing and Stop Writing                                           |
+| `apps/api/src/knowledge/suggestions.ts`                                              | The `suggestions` table's reads, the capped insert, the prune                             |
+| `apps/api/src/knowledge/page-read.ts`                                                | `pageMarkdownOf`, `pageNamed`, `pageTrustOf`, `openConflictPages`                         |
+| `apps/api/src/routes/knowledge-suggestion-routes.ts`                                 | Suggest, list, accept, dismiss                                                            |
+| `apps/api/src/routes/knowledge-agent-routes.ts`                                      | The page tree, a page, the context, create, write, move, scopes                           |
+| `packages/agent-verbs/src/mcp/knowledge-schema.ts`                                   | The nine tools' input and output shapes                                                   |
+| `packages/agent-verbs/src/mcp/server-instructions.ts`                                | `SERVER_INSTRUCTIONS`                                                                     |
+| `packages/agent-verbs/src/knowledge/`                                                | `knowledgePath`, `trustFieldsOf`, `resultTrustOf`, `trustLine`: both doors'               |
+| `packages/agent-verbs/src/verbs/knowledge.ts`                                        | The nine CLI commands as verbs                                                            |
+| `apps/mcp/src/knowledge-read-tools.ts`, `knowledge-write-tools.ts`, `create-tool.ts` | The tools' handlers                                                                       |
+| `apps/mcp/src/agent-name.ts`, `knowledge-client.ts`                                  | The client's name, remembered and sent                                                    |
+| `apps/cli/src/commands/knowledge-export.ts`                                          | `export <knowledgebase> <dir>` (the file: `@liveknowledge/document`'s `pageFileMarkdown`) |
+| `apps/cli/src/commands/knowledge-import.ts`, `zip-reader.ts`                         | `import <folder                                                                           | zip>` |
 
 ## Scopes
 
@@ -108,15 +108,15 @@ Each is one request for one tool. `<page>`, `parent` and `before` take a page re
 `404` (`409` in a body) `page_unknown` naming up to twelve pages, or `page_ambiguous` naming the ids. A link
 confined to one page names it by id and reads any other as a plain `404`.
 
-| Route                       | Reads and writes                                                                                                                                                                  |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET pages`                 | The tab summaries (parent and knowledge fields are in them) and the open conflicts: no page body                                                                                  |
-| `GET pages/<page>`          | One tab, its backlink rows, the open conflicts, the verifier's profile; counts a read; `?heading=`, `?maxChars=`                                                                  |
-| `GET context`               | The summaries, then one tab a context page (the budget bounds them), and the open conflicts; counts a read each; answers `role`, `scopes`                                         |
-| `POST pages`                | `newPageFromMarkdown`, `tabParentRefusal`, one tab insert, a `document-meta` relay; `id` and `pageIds` for an import                                                              |
-| `PUT pages/<page>`          | The article write (`handleTabPages`): its gate, `page_verified`, held paragraphs, its relay                                                                                       |
-| `POST pages/<page>/move`    | `moveRefusal` (a `suggest` token: `verifiedInSubtree` over the summaries, no read), `pageMoveRefusal`, `withPageMoved`, `reorderTabs`, `writeTabParents`, a `document-meta` relay |
-| `GET search` (for an agent) | Adds `text`, `reviewAt` and `conflictsWith` to each result: one more statement, when there are results                                                                            |
+| Route                       | Reads and writes                                                                                                                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET pages`                 | The tab summaries (parent, knowledge fields and `updatedAt` are in them) and the open conflicts: no page body; `?names=1` adds one accounts read for the owners' names (`getParticipants`) |
+| `GET pages/<page>`          | One tab, its backlink rows, the open conflicts, the verifier's profile; counts a read; `?heading=`, `?maxChars=`                                                                           |
+| `GET context`               | The summaries, then one tab a context page (the budget bounds them), and the open conflicts; counts a read each; answers `role`, `scopes`                                                  |
+| `POST pages`                | `newPageFromMarkdown`, `tabParentRefusal`, one tab insert, a `document-meta` relay; `id` and `pageIds` for an import                                                                       |
+| `PUT pages/<page>`          | The article write (`handleTabPages`): its gate, `page_verified`, held paragraphs, its relay                                                                                                |
+| `POST pages/<page>/move`    | `moveRefusal` (a `suggest` token: `verifiedInSubtree` over the summaries, no read), `pageMoveRefusal`, `withPageMoved`, `reorderTabs`, `writeTabParents`, a `document-meta` relay          |
+| `GET search` (for an agent) | Adds `text`, `reviewAt` and `conflictsWith` to each result: one more statement, when there are results                                                                                     |
 
 - `depth` is 1 at the top level (`pageTreeRows`).
 - A new page's writing opens with its title as front matter (`withTitleFrontMatter`) unless the Markdown brings its
@@ -168,10 +168,13 @@ found_at }` (`trustFieldsOf`); the CLI's trust line adds ` on "<question>"` (`tr
 - Nine verbs in `VERBS` and `TOP_LEVEL` (`context`, `pages`, `search`, `read`, `new`, `suggest`, `write`, `move`,
   `gap`), each its tool's route and output without `next`; a knowledgebase is addressed as every command addresses
   one (one read to resolve an id, the library's list for a name).
-- **`export <knowledgebase> <dir>`**: `GET pages`, `pageFilePaths` (a page's subpages in a folder of its name),
-  then a page at a time: `GET tabs/<id>`, its pictures (`GET /images/<id>`, each once an export), its file
-  (`pageFileMarkdown`: `withPageLinksAsFiles` and `relativePagePath`; a zone's line gives way to the pictures in
-  it, `zoneMemberIds`). A picture the api does not hand over as a picture is written as its address.
+- **`export <knowledgebase> <dir>`**: `GET pages?names=1`, `pageFilePaths` (a page's subpages in a folder of its
+  name), then a page at a time: `GET tabs/<id>`, its pictures and cover (`pageFilePictures`, `GET /images/<id>`,
+  each once an export), its file (`pageFileMarkdown` in `@liveknowledge/document`, the app's Markdown Folder's
+  writer: front matter with the title, owner, last saved, verified and labels, the title as a `#` heading, then
+  the writing; page links, `[[Title]]` and page addresses as relative links, `relativePagePath`; a zone's line
+  gives way to the pictures in it, `zoneMemberIds`). A picture the api does not hand over as a picture is written
+  as its address.
 - **`import <folder|zip>`**: the files walked (or `openZip`, at most 200 MB and the engine's entry limit),
   `planImport`, the plan printed. Unless `--dry-run`: a new knowledgebase with no page (`POST /documents`) or
   `--to`, every page's id minted, then `POST pages` a page in plan order with `id`, `parent` and `pageIds`,

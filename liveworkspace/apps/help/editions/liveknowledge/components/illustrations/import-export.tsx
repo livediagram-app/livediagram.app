@@ -186,9 +186,9 @@ export function ImportDoneScene() {
   );
 }
 
-const FORMATS = ['PDF', 'Print', 'PNG', 'SVG', 'Word', 'Markdown', 'JSON'] as const;
+const FORMATS = ['PDF', 'Print', 'PNG', 'SVG', 'Word', 'Markdown', 'MD Folder', 'JSON'] as const;
 
-/** Export: the formats a page saves to, as cards. */
+/** Export: the formats a page saves to, and the whole knowledgebase's Markdown Folder, as cards. */
 export function ExportFormatsScene() {
   const x = 40;
   return (

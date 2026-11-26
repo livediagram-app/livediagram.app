@@ -88,7 +88,7 @@ import {
 import { pageHealthWires } from '../knowledge/page-health-read';
 import { TabTooLargeError } from '../limits';
 import { capStoredName } from '../names';
-import { getParticipant } from '../person/profiles';
+import { getParticipant, getParticipants } from '../person/profiles';
 import {
   conflict,
   forbidden,
@@ -126,7 +126,10 @@ async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> 
   const scope = labelScopeOf(document, labelsParam(ctx.url.searchParams));
   if (scope instanceof Response) return scope;
   const { byTab } = await openConflictPages(ctx.env, document.tabs);
-  const rows = treeOf(document).filter((row) => !scope || scope.tabs.has(row.page.id));
+  // A page outside a scoped caller's scope is never listed (a page-confined link is refused before this).
+  const rows = treeOf(document).filter(
+    (row) => !row.page.outOfScope && (!scope || scope.tabs.has(row.page.id)),
+  );
   const pages: KnowledgeTreeRow[] = rows.map(({ page, depth, subpages }) => {
     if (page.connection)
       return {
@@ -150,10 +153,19 @@ async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> 
         conflictsWith: byTab.get(page.id),
       }),
       ...(labels ? { labels } : {}),
+      ...(Number.isFinite(page.updatedAt) ? { updatedAt: page.updatedAt } : {}),
     } satisfies KnowledgePageRow;
   });
+  // The owners' names, only when asked (an export's front matter, knowledgebase-export.md): one accounts read.
+  let names: Record<string, string> | undefined;
+  if (ctx.url.searchParams.get('names') === '1') {
+    const owners = [...new Set(pages.flatMap((p) => ('owner' in p && p.owner ? [p.owner] : [])))];
+    const people = await getParticipants(ctx.env, owners);
+    names = {};
+    for (const [id, person] of people) if (person.name) names[id] = person.name;
+  }
   // The Review Period, said once: every page's `reviewAt` is its `verifiedAt` plus this.
-  return json({ reviewEvery, pages } satisfies KnowledgePagesResponse);
+  return json({ reviewEvery, pages, ...(names ? { names } : {}) } satisfies KnowledgePagesResponse);
 }
 
 async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Response> {

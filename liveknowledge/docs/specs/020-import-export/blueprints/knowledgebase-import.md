@@ -26,28 +26,28 @@ writing the plan through the save pipeline. Nothing of the editor's half is veri
 
 All in `packages/knowledge-import/src/`, each with its test beside it.
 
-| Module                | Holds                                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `index.ts`            | The package's surface: `planImport`, `zipEntries`, the limits, the plan's types and the two schemes               |
-| `plan.ts`             | `planImport(source, archive, options)`: the one door, and the order of the steps below                            |
-| `types.ts`            | The archive, options, plan, summary, warning and skip types                                                       |
-| `limits.ts`           | Every bound as a named constant, and `ImportLimits` / `DEFAULT_LIMITS`                                            |
-| `paths.ts`            | `normalisePath`, `keyOf`, `resolveFrom`, `decodeTarget`, name ordering, picture extensions                        |
-| `archive.ts`          | `listArchive`, `readText`, `ImportSizeError`, `zipEntries` (a zip reader's entries as an archive)                 |
-| `draft.ts`            | `DraftPage`, `ReadContext`, `SourceReader`                                                                        |
-| `page-source.ts`      | `readPageSource` (one page's text, or a skip), `titleOfMarkdown` (first `#` heading, front matter dropped)        |
-| `markdown-scan.ts`    | `rewriteMarkdown`: one pass that hands links, pictures and `[[Title]]` outside code to a visitor; `proseLines`    |
-| `folder-tree.ts`      | `folderDrafts`: the tree a folder of files makes, shared by Markdown Folder and Notion                            |
-| `tree.ts`             | `arrangeTree`: tree order, missing parents, loops, the depth limit                                                |
-| `resolve.ts`          | `buildLookups` (once an import) and `resolvePage`: page links, pictures, attachments, unsafe links                |
-| `markdown-folder.ts`  | The Markdown Folder reader                                                                                        |
-| `notion.ts`           | The Notion reader; `stripNotionId`                                                                                |
-| `notion-markdown.ts`  | Callouts (`<aside>`) to quotes, toggles (`<details>`, `<summary>`) to a heading and content                       |
-| `csv.ts`              | `parseCsv` (RFC 4180, one pass) and `csvToMarkdownTable`                                                          |
-| `confluence.ts`       | The Confluence reader: the index's tree, breadcrumbs, titles, the attachment list                                 |
-| `html-document.ts`    | `parseHtmlDocument`: the only place archive HTML is parsed, through `parseInert` (`@liveworkspace/trusted-types`) |
-| `html-to-markdown.ts` | `htmlToMarkdown(element)`: the walk over the inert document                                                       |
-| `__fixtures__/`       | `archiveOf`: a test archive built from strings that records every read                                            |
+| Module                | Holds                                                                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.ts`            | The package's surface: `planImport`, `zipEntries`, the limits, the plan's types and the two schemes                                          |
+| `plan.ts`             | `planImport(source, archive, options)`: the one door, and the order of the steps below                                                       |
+| `types.ts`            | The archive, options, plan, summary, warning and skip types                                                                                  |
+| `limits.ts`           | Every bound as a named constant, and `ImportLimits` / `DEFAULT_LIMITS`                                                                       |
+| `paths.ts`            | `normalisePath`, `keyOf`, `resolveFrom`, `decodeTarget`, name ordering, picture extensions                                                   |
+| `archive.ts`          | `listArchive`, `readText`, `ImportSizeError`, `zipEntries` (a zip reader's entries as an archive)                                            |
+| `draft.ts`            | `DraftPage`, `ReadContext`, `SourceReader`                                                                                                   |
+| `page-source.ts`      | `readPageSource` (one page's text, or a skip), `titleOfMarkdown` (first `#` heading, front matter's `title` and `cover`), `frontMatterValue` |
+| `markdown-scan.ts`    | `rewriteMarkdown`: one pass that hands links, pictures and `[[Title]]` outside code to a visitor; `proseLines`                               |
+| `folder-tree.ts`      | `folderDrafts`: the tree a folder of files makes, shared by Markdown Folder and Notion                                                       |
+| `tree.ts`             | `arrangeTree`: tree order, missing parents, loops, the depth limit                                                                           |
+| `resolve.ts`          | `buildLookups` (once an import) and `resolvePage`: page links, pictures, attachments, unsafe links                                           |
+| `markdown-folder.ts`  | The Markdown Folder reader                                                                                                                   |
+| `notion.ts`           | The Notion reader; `stripNotionId`                                                                                                           |
+| `notion-markdown.ts`  | Callouts (`<aside>`) to quotes, toggles (`<details>`, `<summary>`) to a heading and content                                                  |
+| `csv.ts`              | `parseCsv` (RFC 4180, one pass) and `csvToMarkdownTable`                                                                                     |
+| `confluence.ts`       | The Confluence reader: the index's tree, breadcrumbs, titles, the attachment list                                                            |
+| `html-document.ts`    | `parseHtmlDocument`: the only place archive HTML is parsed, through `parseInert` (`@liveworkspace/trusted-types`)                            |
+| `html-to-markdown.ts` | `htmlToMarkdown(element)`: the walk over the inert document                                                                                  |
+| `__fixtures__/`       | `archiveOf`: a test archive built from strings that records every read                                                                       |
 
 ## planImport
 
@@ -170,6 +170,11 @@ draft's Markdown:
 | A picture the archive does not hold                                      | Its alt text; warning `missing-picture`                                                          |
 | `[[Target]]` with a match in `byName`                                    | `[label or target](knowledgebase-page:<key>)` (`#heading` dropped from the target)               |
 | `[[Target]]` with none                                                   | Kept as written                                                                                  |
+
+A draft's `cover` (Markdown Folder: the front matter's `cover`, `frontMatterValue`) resolves as a picture does, against
+the page's file, with no Markdown: a picture the archive holds joins `pictures` (once, shared with the writing's) and
+its index is the page's `coverPicture`; one it does not hold warns `missing-picture`; one at `http(s):` is dropped.
+Writing the plan, a stored cover picture is the tab's `cover: { imageId }`; one that failed to store leaves no cover.
 
 Then the draft's `attached` addresses (Confluence's attachment list) add the names of the files that exist and are
 no pictures, and a page with attachments ends with `**Attachments**` and a list of the names.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { archiveOf } from './__fixtures__/archive';
+import { frontMatterTitle } from './page-source';
 import { planImport } from './plan';
 
 const tree = (plan: Awaited<ReturnType<typeof planImport>>) =>
@@ -53,6 +54,58 @@ describe('Markdown Folder', () => {
     ]);
     expect(plan.pages[0]!.links).toEqual([{ target: 'p2', text: 'rollbacks' }]);
     expect(plan.pages[1]!.links).toEqual([{ target: 'p1', text: 'deploys' }]);
+  });
+
+  it('takes a liveknowledge export’s front matter cover as the page’s cover picture, relative to its file', async () => {
+    const plan = await planImport(
+      'markdown-folder',
+      archiveOf({
+        'a.md': '---\ntitle: "A"\ncover: "pictures/c.png"\n---\n\n# A\n\n![Shown](pictures/s.png)',
+        'a/b.md': '---\ncover: "../pictures/c.png"\n---\n\n# B\n\n![Same](../pictures/c.png)',
+        'c.md': '---\ncover: "pictures/gone.png"\n---\n\n# C',
+        'd.md': '---\ncover: "https://x.test/c.png"\n---\n\n# D',
+        'pictures/c.png': 4,
+        'pictures/s.png': 4,
+      }),
+    );
+    const [a, b, c, d] = plan.pages;
+    expect(a!.pictures.map((p) => p.path)).toEqual(['pictures/s.png', 'pictures/c.png']);
+    expect(a!.coverPicture).toBe(1);
+    expect(a!.markdown).toBe('![Shown](knowledgebase-picture:0)');
+    // One picture both shows in the writing and covers the page: read once.
+    expect(b!.pictures.map((p) => p.path)).toEqual(['pictures/c.png']);
+    expect(b!.coverPicture).toBe(0);
+    expect(c!.coverPicture).toBeUndefined();
+    expect(c!.warnings).toEqual([{ kind: 'missing-picture', detail: 'pictures/gone.png' }]);
+    expect(d!).not.toHaveProperty('coverPicture');
+    expect(plan.summary).toMatchObject({ pictures: 2, ignoredFiles: 0 });
+  });
+
+  it('reads a front matter title unquoted only when its quotes close', () => {
+    expect(frontMatterTitle("title: 'open")).toBe("'open");
+    expect(frontMatterTitle("title: '")).toBe("'");
+    expect(frontMatterTitle('title: open"')).toBe('open"');
+    expect(frontMatterTitle('owner: "Ana"')).toBeNull();
+  });
+
+  it('takes a page’s title from its front matter when it has no heading, and drops the front matter', async () => {
+    const plan = await planImport(
+      'markdown-folder',
+      archiveOf({
+        'a.md': '---\ntitle: "Deploys: \\"how\\""\nowner: "Ana"\n---\n\nWe deploy.',
+        'b.md': "---\ntitle: 'It''s here'\n---\nBody.",
+        'c.md': '---\ntitle: Plain words\n---\n# Heading wins',
+        'd.md': '---\ntitle: ""\n---\nNo title.',
+        'e.md': '---\ntitle: "broken\\"\n---\n',
+      }),
+    );
+    expect(plan.pages.map((p) => [p.title, p.markdown])).toEqual([
+      ['Deploys: "how"', 'We deploy.'],
+      ["It's here", 'Body.'],
+      ['Heading wins', ''],
+      ['d', 'No title.'],
+      ['broken\\', ''],
+    ]);
   });
 
   it('makes the tree from the folders: the zipped folder’s README is the top page, listed first', async () => {

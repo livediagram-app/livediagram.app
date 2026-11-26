@@ -10,6 +10,7 @@ import type {
   KnowledgeBacklink,
   KnowledgeBacklinksResponse,
   KnowledgeOverviewResponse,
+  KnowledgePagesResponse,
   KnowledgeSearchResponse,
   KnowledgeSearchResult,
   KnowledgeSettingsPreviewResponse,
@@ -140,6 +141,16 @@ export function apiKnowledgeSummary(
     signal,
     fresh ? 'reload' : undefined,
   );
+}
+
+/** The page tree the caller may read, in order, with each owner's name (`?names=1`): what a Markdown Folder export
+ *  writes (docs/specs/020-import-export/knowledgebase-export.md). */
+export function apiKnowledgePages(
+  who: KnowledgeCaller,
+  documentId: string,
+  signal?: AbortSignal,
+): Promise<KnowledgePagesResponse> {
+  return read(who, knowledgeUrl(documentId, 'pages?names=1'), 'read pages', signal);
 }
 
 /** The pages whose writing links to this one, in tree order. */
