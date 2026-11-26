@@ -45,7 +45,7 @@ function mount(over: Partial<Parameters<typeof PageTree>[0]> = {}) {
     <PageTree
       tabs={TABS}
       activeId="b"
-      closed={new Set()}
+      opened={new Set(TABS.map((t) => t.id))}
       onSetOpen={vi.fn()}
       canEdit
       actions={act_}

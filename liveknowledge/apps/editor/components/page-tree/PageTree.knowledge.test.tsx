@@ -51,7 +51,7 @@ function mount(level: AccessLevel, extra: Partial<PageTreeKnowledge> = {}) {
     <PageTree
       tabs={TABS}
       activeId="a"
-      closed={new Set()}
+      opened={new Set(TABS.map((t) => t.id))}
       onSetOpen={vi.fn()}
       canEdit={can.editPages}
       actions={actions()}

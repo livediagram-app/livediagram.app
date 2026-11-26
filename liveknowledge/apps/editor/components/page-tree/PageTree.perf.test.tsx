@@ -30,7 +30,8 @@ const FULL: TreeTab[] = Array.from({ length: MAX_KNOWLEDGEBASE_PAGES }, (_, i) =
   name: `Page ${i}`,
   parent: i % 5 === 0 ? undefined : `t${i - (i % 5)}`,
 }));
-const NONE: ReadonlySet<string> = new Set();
+// Every page open: the most rows the tree can draw.
+const ALL: ReadonlySet<string> = new Set(FULL.map((t) => t.id));
 const noop = () => {};
 const ACTIONS = {
   onSelect: noop,
@@ -47,7 +48,7 @@ const ACTIONS = {
 
 const mount = () =>
   render(
-    <PageTree tabs={FULL} activeId="t0" closed={NONE} onSetOpen={noop} canEdit actions={ACTIONS} />,
+    <PageTree tabs={FULL} activeId="t0" opened={ALL} onSetOpen={noop} canEdit actions={ACTIONS} />,
   );
 const row = (i: number) => document.querySelector<HTMLElement>(`[data-page-row="t${i}"]`)!;
 const total = () => [...rowRenders.values()].reduce((sum, n) => sum + n, 0);
@@ -166,7 +167,7 @@ describe('500 pages', { timeout: 30_000 }, () => {
       <PageTree
         tabs={FULL}
         activeId="t0"
-        closed={NONE}
+        opened={ALL}
         onSetOpen={noop}
         canEdit
         actions={ACTIONS}
@@ -177,7 +178,7 @@ describe('500 pages', { timeout: 30_000 }, () => {
       <PageTree
         tabs={FULL}
         activeId="t7"
-        closed={NONE}
+        opened={ALL}
         onSetOpen={noop}
         canEdit
         actions={ACTIONS}

@@ -38,6 +38,7 @@ import {
 } from '@liveknowledge/document';
 import { withPageTitle } from '@liveknowledge/document';
 import { wantTitleFocus } from '@/lib/page-title-focus';
+import { openParentsOf } from '@/lib/page-tree-open';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import {
   deletedPageMessage,
@@ -146,6 +147,8 @@ export function useTabActions(deps: TabActionsDeps) {
     const tab: Tab = { ...createTab(NEW_PAGE_NAME), ...seed };
     commitTabs((ts) => withPageAddedTo(ts, tab, parent));
     markTabLoaded(tab.id);
+    // A subpage shows where it went: its parents open in this reader's tree, and stay open once it is left.
+    if (parent) openParentsOf(documentId, [...tabs, { id: tab.id, parent }], [tab.id]);
     track('Tab', 'Created');
     wantTitleFocus(tab.id);
     setActiveId(tab.id);
@@ -169,6 +172,8 @@ export function useTabActions(deps: TabActionsDeps) {
     const tab: Tab = withPageTitle({ ...createTab(title), ...seed }, title);
     commitTabs((ts) => withPageAddedTo(ts, tab, parent));
     markTabLoaded(tab.id);
+    // Not opened, so it shows in the tree only with its parents open.
+    openParentsOf(documentId, [...tabs, { id: tab.id, parent }], [tab.id]);
     track('Tab', 'Created', 'FromPageLink');
     // Not opened now; the first time it is, the caret is at the end of its Title.
     wantTitleFocus(tab.id);
@@ -385,9 +390,13 @@ export function useTabActions(deps: TabActionsDeps) {
 
   // A tree edit the tree itself checks (page-tree.ts): it answers null when it is refused or changes nothing, and
   // the list then stays as it is.
-  const editTree = (edit: (ts: Tab[]) => Tab[] | null) => {
+  // The moved page shows where it went: the pages it now sits under open in this reader's tree (an Indent puts it
+  // under the sibling above, which may be closed).
+  const editTree = (id: string, edit: (ts: Tab[]) => Tab[] | null) => {
     if (!deps.canEditStructure) return;
-    commitTabs((ts) => edit(ts) ?? ts);
+    const moved = edit(tabs);
+    commitTabs((ts) => (ts === tabs && moved ? moved : (edit(ts) ?? ts)));
+    if (moved) openParentsOf(documentId, moved, [id]);
     track('Tab', 'Reordered');
   };
 
@@ -398,12 +407,12 @@ export function useTabActions(deps: TabActionsDeps) {
       toast.error(pageTreeRefusalText(refused));
       return;
     }
-    editTree((ts) => withPageMoved(ts, id, to));
+    editTree(id, (ts) => withPageMoved(ts, id, to));
   };
   // The row menu's verbs, for keyboards and touch.
-  const stepPage = (id: string, by: -1 | 1) => editTree((ts) => withPageStepped(ts, id, by));
-  const indentPage = (id: string) => editTree((ts) => withPageIndented(ts, id));
-  const outdentPage = (id: string) => editTree((ts) => withPageOutdented(ts, id));
+  const stepPage = (id: string, by: -1 | 1) => editTree(id, (ts) => withPageStepped(ts, id, by));
+  const indentPage = (id: string) => editTree(id, (ts) => withPageIndented(ts, id));
+  const outdentPage = (id: string) => editTree(id, (ts) => withPageOutdented(ts, id));
 
   // Reset canvas empties the tab at once, and a toast offers Undo, which puts every element back
   // (liveworkspace/docs/specs/022-interface-design/undo-not-confirm.md).

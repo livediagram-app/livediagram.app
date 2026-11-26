@@ -17,12 +17,14 @@ import {
 const tab = (id: string, parent?: string): TreeTab => ({ id, name: id.toUpperCase(), parent });
 // a > (b > d, c), e
 const TABS = [tab('a'), tab('b', 'a'), tab('d', 'b'), tab('c', 'a'), tab('e')];
+// Nothing opened: how every knowledgebase starts. Every page with subpages opened: a and b.
 const NONE: ReadonlySet<string> = new Set();
+const ALL: ReadonlySet<string> = new Set(['a', 'b']);
 const ids = (rows: { id: string }[]) => rows.map((r) => r.id);
 
 describe('visiblePageRows', () => {
-  it('lists every page in tree order, a level deeper under its parent, open until closed', () => {
-    const rows = visiblePageRows(TABS, NONE, null);
+  it('lists every page in tree order, a level deeper under its parent, once its parents are opened', () => {
+    const rows = visiblePageRows(TABS, ALL, null);
     expect(rows.map((r) => [r.id, r.level, r.parent, r.open])).toEqual([
       ['a', 1, undefined, true],
       ['b', 2, 'a', true],
@@ -49,7 +51,7 @@ describe('visiblePageRows', () => {
       tab('d'),
       tab('e'),
     ];
-    const rows = visiblePageRows(tabs, NONE, null);
+    const rows = visiblePageRows(tabs, ALL, null);
     expect(rows.map((r) => [r.id, r.icon !== null, r.iconSlot])).toEqual([
       ['a', false, false],
       ['b', true, false],
@@ -59,16 +61,26 @@ describe('visiblePageRows', () => {
     ]);
   });
 
+  it('starts every page closed, so only the top-level pages show', () => {
+    const rows = visiblePageRows(TABS, NONE, null);
+    expect(rows.map((r) => [r.id, r.open, r.subpages])).toEqual([
+      ['a', false, 3],
+      ['e', false, 0],
+    ]);
+  });
+
   it('folds a closed page’s subpages away, at every level under it', () => {
-    expect(ids(visiblePageRows(TABS, new Set(['a']), null))).toEqual(['a', 'e']);
-    expect(ids(visiblePageRows(TABS, new Set(['b']), null))).toEqual(['a', 'b', 'c', 'e']);
+    expect(ids(visiblePageRows(TABS, new Set(['b']), null))).toEqual(['a', 'e']);
+    expect(ids(visiblePageRows(TABS, new Set(['a']), null))).toEqual(['a', 'b', 'c', 'e']);
   });
 
   it('always opens the current page’s ancestors: opening a page by its link shows where it is', () => {
-    const rows = visiblePageRows(TABS, new Set(['a', 'b']), 'd');
+    const rows = visiblePageRows(TABS, NONE, 'd');
     expect(ids(rows)).toEqual(['a', 'b', 'd', 'c', 'e']);
-    // The current page itself stays as the person left it.
-    expect(ids(visiblePageRows(TABS, new Set(['a']), 'a'))).toEqual(['a', 'e']);
+    expect(rows.filter((r) => r.open).map((r) => r.id)).toEqual(['a', 'b']);
+    // The current page itself stays as the person left it: closed until opened.
+    expect(ids(visiblePageRows(TABS, NONE, 'a'))).toEqual(['a', 'e']);
+    expect(ids(visiblePageRows(TABS, new Set(['a']), 'a'))).toEqual(['a', 'b', 'c', 'e']);
   });
 
   it('names a locked page and a page with no name as they are', () => {
@@ -80,17 +92,18 @@ describe('visiblePageRows', () => {
     const full: TreeTab[] = Array.from({ length: MAX_KNOWLEDGEBASE_PAGES }, (_, i) =>
       i % MAX_PAGE_DEPTH === 0 ? tab(`t${i}`) : tab(`t${i}`, `t${i - 1}`),
     );
+    const every = new Set(full.map((t) => t.id));
     const start = cpuNowMs();
-    const rows = visiblePageRows(full, NONE, `t${MAX_KNOWLEDGEBASE_PAGES - 1}`);
+    const rows = visiblePageRows(full, every, `t${MAX_KNOWLEDGEBASE_PAGES - 1}`);
     expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(50));
     expect(rows).toHaveLength(MAX_KNOWLEDGEBASE_PAGES);
   });
 });
 
 describe('visiblePageRows under a label filter (page-surface.md "The label filter")', () => {
-  it('keeps the matches and the pages above them, open whatever is closed, the rest away', () => {
+  it('keeps the matches and the pages above them, open whatever is opened, the rest away', () => {
     // d matches under b under a; e matches at the top. a and b are closed.
-    const rows = visiblePageRows(TABS, new Set(['a', 'b']), null, new Set(['d', 'e']));
+    const rows = visiblePageRows(TABS, NONE, null, new Set(['d', 'e']));
     expect(rows.map((r) => [r.id, r.open, r.subpages, r.context])).toEqual([
       ['a', true, 1, true],
       ['b', true, 1, true],
@@ -128,7 +141,7 @@ describe('visiblePageRows under a label filter (page-surface.md "The label filte
 });
 
 describe('treeKeyAction', () => {
-  const rows = visiblePageRows(TABS, new Set(['b']), null); // a, b (closed), c, e
+  const rows = visiblePageRows(TABS, new Set(['a']), null); // a, b (closed), c, e
   const key = (from: string, k: string, shift = false) => treeKeyAction(rows, from, k, shift);
 
   it('moves through the rows on screen with Up, Down, Home and End', () => {
@@ -177,7 +190,7 @@ describe('the drop', () => {
     expect(dropZoneOf(5, 0)).toBe('inside');
   });
 
-  const rows = visiblePageRows(TABS, NONE, null);
+  const rows = visiblePageRows(TABS, ALL, null);
   const order = (id: string, target: string, zone: 'before' | 'after' | 'inside') => {
     const moved = withPageMoved(TABS, id, dropMove(rows, target, zone)!);
     return moved?.map((t) => `${t.id}${t.parent ? `<${t.parent}` : ''}`).join(' ');
@@ -202,7 +215,7 @@ describe('the drop', () => {
   });
 
   it('lands after the whole closed page when it is closed', () => {
-    const closed = visiblePageRows(TABS, new Set(['a']), null);
+    const closed = visiblePageRows(TABS, NONE, null);
     expect(dropMove(closed, 'a', 'after')).toEqual({ parent: undefined, before: 'e' });
   });
 

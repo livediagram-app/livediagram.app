@@ -290,7 +290,7 @@ function PageTreeRowView({
   );
 }
 
-// The tree reads its rows afresh whenever the list, what is closed or the current page changes, so a row's `row` is
+// The tree reads its rows afresh whenever the list, what is opened or the current page changes, so a row's `row` is
 // a new object each time: compared field by field, a row whose page did not change does not render.
 function sameRowProps(a: PageTreeRowProps, b: PageTreeRowProps): boolean {
   for (const key of Object.keys(b) as (keyof PageTreeRowProps)[]) {

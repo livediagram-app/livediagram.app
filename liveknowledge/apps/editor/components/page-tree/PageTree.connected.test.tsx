@@ -80,7 +80,7 @@ function mount({ canEdit = true, states = READY, canConnect = true } = {}) {
     <PageTree
       tabs={TABS}
       activeId="b"
-      closed={new Set()}
+      opened={new Set(TABS.map((t) => t.id))}
       onSetOpen={vi.fn()}
       canEdit={canEdit}
       actions={act_}
@@ -296,7 +296,7 @@ describe('the rows and the open page', () => {
       <PageTree
         tabs={TABS}
         activeId="b"
-        closed={new Set()}
+        opened={new Set(TABS.map((t) => t.id))}
         onSetOpen={vi.fn()}
         canEdit
         actions={actions()}
