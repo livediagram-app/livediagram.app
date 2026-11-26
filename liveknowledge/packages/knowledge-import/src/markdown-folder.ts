@@ -29,13 +29,14 @@ async function read(context: ReadContext) {
     heading: string | null;
     markdown: string;
     owns: string | null;
+    cover?: string;
   }[] = [];
   const { folders, owned } = foldersOf([...context.listing.files.values()].map((f) => f.path));
   for (const file of context.listing.files.values()) {
     if (!isPage(file.path)) continue;
     const source = await readPageSource(file, context);
     if (source === null) continue;
-    const { title, markdown } = titleOfMarkdown(source);
+    const { title, markdown, cover } = titleOfMarkdown(source);
     const dir = dirOf(file.path);
     const beside = dir === '' ? stemOf(file.path) : `${dir}/${stemOf(file.path)}`;
     const owns = isFolderPage(file.path)
@@ -43,12 +44,12 @@ async function read(context: ReadContext) {
       : folders.has(keyOf(beside)) && !owned.has(keyOf(beside))
         ? beside
         : null;
-    found.push({ file, heading: title, markdown, owns });
+    found.push({ file, heading: title, markdown, owns, ...(cover ? { cover } : {}) });
   }
   // The top folder: the archive's root, or the folder a zip wraps everything in. A folder picked and a zip of that
   // folder read the same way (knowledgebase-import.md "The top folder's own page").
   const top = keyOf(wrapperFolder(found.map(({ file, owns }) => ({ path: file.path, owns }))));
-  const pages: FolderPage[] = found.map(({ file, heading, markdown, owns }) => {
+  const pages: FolderPage[] = found.map(({ file, heading, markdown, owns, cover }) => {
     const isTop = owns !== null && keyOf(owns) === top;
     // A folder's page with no heading is named after its folder; the top one keeps its file's name.
     const name = owns !== null && !isTop ? baseOf(owns) : stemOf(file.path);
@@ -60,6 +61,7 @@ async function read(context: ReadContext) {
       markdown,
       attached: [],
       warnings: [],
+      ...(cover ? { cover } : {}),
       owns,
       // The page of the top folder leads its siblings (folderDrafts).
       sortName: name,

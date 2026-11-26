@@ -42,6 +42,19 @@ describe('importedPageTab', () => {
     expect(plain).not.toHaveProperty('cover');
   });
 
+  it('takes an export’s cover picture once stored, never as a picture in the writing', () => {
+    const covered = (outcome: ImportedPageInput['pictures'][number]) =>
+      make({
+        page: plannedPage('p1', { pictures: [picture('pictures/c.png')], coverPicture: 0 }),
+        pictures: [outcome],
+      });
+    const tab = covered(storedPicture('img-c'));
+    expect(tab.cover).toEqual({ imageId: 'img-c' });
+    expect(tab.elements).toEqual([]);
+    expect(isValidTab(tab)).toBe(true);
+    expect(covered({ ok: false, failure: 'upload-failed' })).not.toHaveProperty('cover');
+  });
+
   it('makes a knowledgebase page: one article, its Title the page name, under its parent', () => {
     const tab = make({
       markdown: '## Steps\n\n- One\n- Two',

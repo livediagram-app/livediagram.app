@@ -28,7 +28,12 @@ export async function readPageSource(
 const FRONT_MATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
 const HEADING = /^#\s+(.*?)\s*#*\s*$/;
 
-export type TitledMarkdown = { title: string | null; markdown: string };
+export type TitledMarkdown = {
+  title: string | null;
+  markdown: string;
+  /** The front matter's `cover`: a picture's address, as an export from liveknowledge writes it. */
+  cover?: string;
+};
 
 /**
  * A Markdown page's title and its writing: the first `#` heading outside code, which leaves the writing when it
@@ -36,23 +41,28 @@ export type TitledMarkdown = { title: string | null; markdown: string };
  */
 export function titleOfMarkdown(source: string): TitledMarkdown {
   const front = FRONT_MATTER.exec(source)?.[0] ?? '';
+  const cover = frontMatterValue(front, 'cover');
+  const more = cover ? { cover } : {};
   const lines = source.slice(front.length).replace(/\r\n?/g, '\n').split('\n');
   for (const [index, line] of proseLines(lines)) {
     const title = HEADING.exec(line)?.[1];
     if (!title) continue;
     if (lines.slice(0, index).every((before) => before.trim() === '')) lines.splice(0, index + 1);
-    return { title, markdown: lines.join('\n').trim() };
+    return { title, markdown: lines.join('\n').trim(), ...more };
   }
   // No heading: the front matter's `title`, as an export written by liveknowledge before it wrote the heading, Hugo
   // and Obsidian say it (knowledgebase-import.md "Titles").
-  return { title: frontMatterTitle(front), markdown: lines.join('\n').trim() };
+  return { title: frontMatterTitle(front), markdown: lines.join('\n').trim(), ...more };
 }
 
 /** The `title:` of a page's front matter, unquoted; null when it has none or an empty one. */
-export function frontMatterTitle(front: string): string | null {
+export const frontMatterTitle = (front: string): string | null => frontMatterValue(front, 'title');
+
+/** One top-level field of a page's front matter, unquoted; null when it has none or an empty one. */
+export function frontMatterValue(front: string, field: string): string | null {
   for (const line of front.split(/\r?\n/)) {
-    if (!line.startsWith('title:')) continue;
-    let value = line.slice('title:'.length).trim();
+    if (!line.startsWith(`${field}:`)) continue;
+    let value = line.slice(field.length + 1).trim();
     if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
       try {
         value = String(JSON.parse(value));

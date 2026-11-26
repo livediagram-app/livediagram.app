@@ -157,7 +157,11 @@ describe('Markdown Folder', () => {
     expect(plan.pages[1]!.links).toEqual([{ target: 'p1', text: 'Deploys' }]);
     expect(plan.pages[1]!.pictures.map((p) => [p.path, p.alt])).toEqual([
       ['pictures/img_1.png', 'Channel'],
+      ['pictures/img_cover.png', ''],
     ]);
+    // The cover comes back as the page's cover, not as a file left unused.
+    expect(plan.pages[1]!.coverPicture).toBe(1);
+    expect(plan.summary.ignoredFiles).toBe(0);
     expect(plan.pages.every((p) => p.warnings.length === 0)).toBe(true);
   });
 

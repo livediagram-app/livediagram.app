@@ -66,6 +66,8 @@ export type PlannedPage = {
   icon?: string;
   /** A built-in theme gradient cover (`theme-<name>`); the same. */
   cover?: string;
+  /** The cover picture's index in `pictures` (a liveknowledge export's front matter `cover`). */
+  coverPicture?: number;
 };
 
 export type SkipReason = 'outside-archive' | 'page-failed' | 'page-too-large' | 'picture-too-large';

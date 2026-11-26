@@ -56,6 +56,31 @@ describe('Markdown Folder', () => {
     expect(plan.pages[1]!.links).toEqual([{ target: 'p1', text: 'deploys' }]);
   });
 
+  it('takes a liveknowledge export’s front matter cover as the page’s cover picture, relative to its file', async () => {
+    const plan = await planImport(
+      'markdown-folder',
+      archiveOf({
+        'a.md': '---\ntitle: "A"\ncover: "pictures/c.png"\n---\n\n# A\n\n![Shown](pictures/s.png)',
+        'a/b.md': '---\ncover: "../pictures/c.png"\n---\n\n# B\n\n![Same](../pictures/c.png)',
+        'c.md': '---\ncover: "pictures/gone.png"\n---\n\n# C',
+        'd.md': '---\ncover: "https://x.test/c.png"\n---\n\n# D',
+        'pictures/c.png': 4,
+        'pictures/s.png': 4,
+      }),
+    );
+    const [a, b, c, d] = plan.pages;
+    expect(a!.pictures.map((p) => p.path)).toEqual(['pictures/s.png', 'pictures/c.png']);
+    expect(a!.coverPicture).toBe(1);
+    expect(a!.markdown).toBe('![Shown](knowledgebase-picture:0)');
+    // One picture both shows in the writing and covers the page: read once.
+    expect(b!.pictures.map((p) => p.path)).toEqual(['pictures/c.png']);
+    expect(b!.coverPicture).toBe(0);
+    expect(c!.coverPicture).toBeUndefined();
+    expect(c!.warnings).toEqual([{ kind: 'missing-picture', detail: 'pictures/gone.png' }]);
+    expect(d!).not.toHaveProperty('coverPicture');
+    expect(plan.summary).toMatchObject({ pictures: 2, ignoredFiles: 0 });
+  });
+
   it('reads a front matter title unquoted only when its quotes close', () => {
     expect(frontMatterTitle("title: 'open")).toBe("'open");
     expect(frontMatterTitle("title: '")).toBe("'");
