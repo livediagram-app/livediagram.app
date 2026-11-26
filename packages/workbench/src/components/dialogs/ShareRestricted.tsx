@@ -106,11 +106,11 @@ export function ShareRestricted({
         <div>
           <h1
             id="share-restricted-title"
-            className="text-lg font-semibold text-slate-900 dark:text-slate-100"
+            className="text-balance text-lg font-semibold text-slate-900 dark:text-slate-100"
           >
             {title}
           </h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{body}</p>
+          <p className="mt-1 text-pretty text-sm text-slate-600 dark:text-slate-400">{body}</p>
         </div>
         {domains.length > 1 ? (
           <ul aria-label="Email domains" className="flex flex-wrap justify-center gap-1.5">
@@ -150,7 +150,7 @@ export function ShareRestricted({
             </a>
           </div>
         )}
-        <p className="text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-pretty text-xs text-slate-500 dark:text-slate-400">
           {framed()
             ? 'It opens in a new tab. Once you’re signed in, reload this page.'
             : 'You come straight back here, with the role the link gives.'}
