@@ -12,6 +12,7 @@ import {
 } from '@livedesign/design';
 import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { redactTabDataAuthors } from '../comments';
+import { copyDataWithoutPeople, ownIdIs } from '@liveworkspace/api-kit/hidden-people';
 import { mainsForReader } from '../component-redact';
 import {
   componentInsertStatements,
@@ -328,7 +329,10 @@ export async function exportDesignCopy(
       data: community
         ? redactTabDataForCommunity(remapped).data
         : redactAuthorsFor !== null
-          ? redactTabDataAuthors(remapped, redactAuthorsFor)
+          ? copyDataWithoutPeople(
+                redactTabDataAuthors(remapped, redactAuthorsFor),
+                ownIdIs(redactAuthorsFor),
+              )
           : remapped,
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       elementCount: row.element_count,
