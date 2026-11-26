@@ -2,7 +2,12 @@
 // #495): who may receive whom from what the room knows, conservative at every edge.
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import type { CallLevel, CallStage, CallZone } from '@livehuddle/document';
+import {
+  CALL_RELEASE_RADIUS_PX,
+  type CallLevel,
+  type CallStage,
+  type CallZone,
+} from '@livehuddle/document';
 import {
   EDGE_MARGIN_PX,
   HEARING_MARGIN_PX,
@@ -77,7 +82,7 @@ describe('hearingVerdict', () => {
   });
 
   it('hears the open floor by distance, with a margin past the release radius', () => {
-    const near = 300 + HEARING_MARGIN_PX;
+    const near = CALL_RELEASE_RADIUS_PX + HEARING_MARGIN_PX;
     const w = world({ a: [2000, 2000], b: [2000 + near, 2000], c: [2000 + near + 1, 2000] });
     expect(hearingVerdict(w, 'a', 'b')).toBe('heard');
     expect(hearingVerdict(w, 'a', 'c')).toBe('apart');
@@ -252,7 +257,7 @@ describe('a voice from the podium, as the server sees it', () => {
     ...world({}, { tab: LECTERN_TAB }),
     placed: placedAt({ speaker, listener }),
   });
-  const OPEN_REACH = 300 + HEARING_MARGIN_PX;
+  const OPEN_REACH = CALL_RELEASE_RADIUS_PX + HEARING_MARGIN_PX;
 
   it('lets a podium speaker be heard three times as far across the open floor', () => {
     const at = (x: number) => ({ x, y: 2000 });
