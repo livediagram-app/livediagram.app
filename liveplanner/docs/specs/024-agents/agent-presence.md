@@ -46,6 +46,12 @@ presence as that person's agent, and comments are how people and agents talk on 
 ## Comments
 
 - An agent comments through the comment endpoints; the comment's author is the token's owner.
+- **The Inbox** ([Inbox reading "AI comments"](../../../liveworkspace/docs/specs/004-index/inbox-reading.md#ai-comments)).
+  An agent's comment is also stamped `agent`, the assistant's name (`itemAgentOf`: the MCP's client name, else the
+  token's name, else its door), public like `ai`. It makes no Inbox entry unless the body asks for one:
+  `needsResponse: true` on an add or a reply (a card thread's start or reply too), kept only on an agent's
+  comment, lists the thread in the Inbox of the people it reaches as **Needs your response** until a person writes
+  in it. A person's comment never carries either.
 - The comment endpoints gain **reply**, **resolve** and **reopen** (today only add and delete exist), each relayed to
   the room as an `el-delta` like add. Agents and people use the same endpoints.
 - An editor that may comment but not edit resolves and reopens through these endpoints, as it adds; an editor that
