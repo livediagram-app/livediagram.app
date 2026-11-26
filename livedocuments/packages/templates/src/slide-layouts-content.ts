@@ -9,7 +9,6 @@ import {
   columns,
   eyebrow,
   iconDisc,
-  rule,
   slideHeading,
   slideType,
 } from './slide-layout-kit';
@@ -74,7 +73,6 @@ export function takeawaySlide(k: Kit): Element[] {
   return [
     card(k, 0, 0, cardW, H),
     eyebrow(k, pad, pad, cardW - 2 * pad, 'KEY TAKEAWAY'),
-    rule(k, pad, pad + u * 9),
     k.text(
       pad,
       pad + u * 14,

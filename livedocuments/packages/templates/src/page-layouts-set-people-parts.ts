@@ -1,5 +1,5 @@
 // Parts the People and Ideas set shares (docs/specs/007-editor/pages-mode.md "Layouts"): a
-// round photo, a card, a thin accent rule, an eyebrow line and a sticky note, each placed in the
+// round photo, a card, a thin line (the org chart connectors and dividers), an eyebrow line and a sticky note, each placed in the
 // page's content box like the kit's own factories.
 import { createSticky, type Element, type StickyElement } from '@livedocuments/document';
 import type { Kit } from './page-layout-kit';

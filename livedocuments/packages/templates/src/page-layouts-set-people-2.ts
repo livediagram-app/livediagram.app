@@ -13,7 +13,7 @@ const CREWS = [
   ['Dan Whitfield', 'Research lead', ['Sofia Ruiz', 'Owen Hart', 'Mei Tan', 'Cara Doyle']],
 ] as const;
 
-// A crew in a card: its lead's photo, name and role, a short rule, then who is in it, a line each
+// A crew in a card: its lead's photo, name and role, then who is in it, a line each
 // (two to a line in a wide card).
 function crewCard(
   k: Kit,
@@ -33,7 +33,7 @@ function crewCard(
   const cols = w > u * 40 ? 2 : 1;
   const colW = (w - u * 4) / cols;
   const rows = Math.ceil(people.length / cols);
-  // The members share the card under the rule: as many rows as fit.
+  // The members share the card under the role: as many rows as fit.
   const rowH = clamp((y + h - pad - listY) / rows, u * 6, u * 10);
   const shown = Math.min(people.length, cols * Math.floor((y + h - pad - listY) / rowH));
   return [
@@ -41,7 +41,6 @@ function crewCard(
     avatar(k, x + (w - d) / 2, y + pad, d),
     k.text(x + u * 2, nameY, w - u * 4, u * 6, name, { textBold: true, ...centred }),
     k.text(x + u * 2, nameY + u * 6, w - u * 4, u * 6, role, centred),
-    rule(k, x + (w - u * 10) / 2, nameY + u * 13.5, u * 10, u * 0.8),
     ...people
       .slice(0, shown)
       .map((person, j) =>
@@ -308,12 +307,7 @@ function spotlight(k: Kit): Element[] {
     const imgW = k.wide ? Math.min(W * 0.4, H * 0.8) : W * 0.4;
     const x = imgW + u * 7;
     const w = W - x;
-    return [
-      k.image(0, 0, imgW, H),
-      ...intro(x, 0, w),
-      rule(k, x, u * 31, u * 14, u * 1.2),
-      ...answers(x, u * 37, w),
-    ];
+    return [k.image(0, 0, imgW, H), ...intro(x, 0, w), ...answers(x, u * 37, w)];
   }
   // Much taller than wide (a story): the photo across the top, the name and quick facts side by
   // side under it, then the interview.
@@ -323,7 +317,7 @@ function spotlight(k: Kit): Element[] {
     const top = imgH + u * 7;
     const fx = colW + u * 4;
     const factH = u * 9;
-    const ruleY = top + u * 31;
+    const answersY = top + u * 37;
     return [
       k.image(0, 0, W, imgH),
       ...intro(0, top, colW),
@@ -332,8 +326,7 @@ function spotlight(k: Kit): Element[] {
           lineH: factH,
         }),
       ),
-      rule(k, 0, ruleY, u * 14, u * 1.2),
-      ...answers(0, ruleY + u * 6, W),
+      ...answers(0, answersY, W),
     ];
   }
   // Tall: the photo beside the name and three quick facts, the interview under them.
@@ -343,15 +336,14 @@ function spotlight(k: Kit): Element[] {
   const w = W - x;
   const factsY = u * 31;
   const factH = Math.min(u * 9, (imgH - factsY) / FACTS.length);
-  const ruleY = imgH + u * 7;
+  const answersY = imgH + u * 13;
   return [
     k.image(0, 0, imgW, imgH),
     ...intro(x, 0, w),
     ...FACTS.flatMap(([iconId, line], i) =>
       iconRow(k, x, factsY + i * factH, w, factH * 0.7, iconId, line, { lineH: factH }),
     ),
-    rule(k, 0, ruleY, u * 14, u * 1.2),
-    ...answers(0, ruleY + u * 6, W),
+    ...answers(0, answersY, W),
   ];
 }
 

@@ -105,15 +105,8 @@ function swot(k: Kit): Element[] {
         }),
       );
     }
-    // A rule under the heading, then the points sharing the card under it, a dot beside each.
-    const ruleY = nameY + nameH + u * 2;
-    els.push(
-      k.shape('square', x + pad, ruleY, Math.min(u * 16, innerW), u * 0.8, {
-        label: '',
-        borderRadius: 'full',
-      }),
-    );
-    const listTop = ruleY + u * 3;
+    // The points share the card under the heading, a dot beside each.
+    const listTop = nameY + nameH + u * 3;
     const rowH = (y + cardH - pad - listTop) / points.length;
     const dot = u * 1.8;
     points.forEach((p, r) => {

@@ -77,7 +77,7 @@ function scorecard(k: Kit): Element[] {
   const rule = (x: number, y: number, w: number, h: number) =>
     k.shape('square', x, y, w, h, { label: '', borderRadius: 'full' });
   if (!rows) {
-    // Each card: the name, the overall score set large, a rule, then the criteria down the card.
+    // Each card: the name, the overall score set large, then the criteria down the card.
     const cardW = (W - gap * 2) / 3;
     const cardH = bottom - top;
     const innerW = cardW - pad * 2;
@@ -101,7 +101,6 @@ function scorecard(k: Kit): Element[] {
           ...CENTRED,
         }),
         ...score(x + pad, scoreY + (listTop - u * 5 - scoreY - scoreH) / 2, innerW, scoreH, value),
-        rule(x + (cardW - u * 14) / 2, listTop - u * 3, u * 14, u * 0.8),
         ...CRITERIA.flatMap((c, j) =>
           criterion(x + pad, listTop + j * critH, innerW, critH - u, c, stars[j]!),
         ),

@@ -12,7 +12,7 @@ import {
   Shape,
 } from '@liveworkspace/help-site/art/primitives';
 import { Icon } from './editor-chrome';
-import { BarChart, Heading, Lines, Page, Pointer, Rule, SlideContent } from './doc-page';
+import { BarChart, Heading, Lines, Page, Pointer, SlideContent } from './doc-page';
 import { PickerTrigger } from './selection-modes';
 
 /** The slide most mode scenes work on, under the strip: a title, its text, and a chart. */
@@ -22,7 +22,6 @@ function ModeSlide({ x = 72, y = 62 }: { x?: number; y?: number }) {
       <Heading x={x + 20} y={y + 24} size={13}>
         Q3 Results
       </Heading>
-      <Rule x={x + 20} y={y + 34} />
       <Lines x={x + 20} y={y + 48} w={96} n={4} gap={7} />
       <BarChart x={x + 150} y={y + 22} w={106} h={110} />
     </Page>

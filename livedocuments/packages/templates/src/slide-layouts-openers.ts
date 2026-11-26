@@ -9,7 +9,6 @@ import {
   columns,
   eyebrow,
   numberDisc,
-  rule,
   slideHeading,
   slideType,
 } from './slide-layout-kit';
@@ -30,8 +29,7 @@ export function titleImageSlide(k: Kit): Element[] {
       textBold: true,
       textAlignY: 'middle',
     }),
-    rule(k, 0, top + u * 31),
-    // The subtitle starts under the rule, as on the other openers (5 units below it), never on it.
+    // The subtitle starts well under the title, as on the other openers.
     k.text(
       0,
       top + u * 36,
@@ -50,7 +48,7 @@ export function titleImageSlide(k: Kit): Element[] {
   ];
 }
 
-/** Everything centred: an eyebrow, a large title, a rule, a subtitle and the event at the foot. */
+/** Everything centred: an eyebrow, a large title, a subtitle and the event at the foot. */
 export function keynoteSlide(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
@@ -60,7 +58,6 @@ export function keynoteSlide(k: Kit): Element[] {
   return [
     { ...eyebrow(k, x, top, w, 'KEYNOTE'), ...CENTRE },
     { ...k.title(x, top + u * 8, w, u * 20, 'The next ten years'), ...CENTRE },
-    rule(k, (W - u * 14) / 2, top + u * 32),
     k.text(x, top + u * 37, w, u * 10, 'What changes, what stays and what we do about it', {
       ...slideType(k, 4.6),
       ...CENTRE,
@@ -85,7 +82,6 @@ export function openingQuestionSlide(k: Kit): Element[] {
       textBold: true,
       textAlignY: 'middle',
     }),
-    rule(k, 0, H * 0.16 + u * 59),
     k.text(0, H * 0.16 + u * 64, w, u * 10, 'Hold on to your answer. We will come back to it.', {
       ...slideType(k, 4.4),
     }),
@@ -105,7 +101,6 @@ export function speakerSlide(k: Kit): Element[] {
     eyebrow(k, x, H * 0.14, w, 'ABOUT ME'),
     k.title(x, H * 0.14 + u * 7, w, u * 13, 'Alex Morgan'),
     k.text(x, H * 0.14 + u * 21, w, u * 8, 'Head of Product, Example Co', slideType(k, 4.2)),
-    rule(k, x, H * 0.14 + u * 31),
     ...bullets(k, x, H * 0.14 + u * 36, w, H * 0.86 - u * 36, [
       'Twelve years building tools people love',
       'Led the team behind our biggest launch',

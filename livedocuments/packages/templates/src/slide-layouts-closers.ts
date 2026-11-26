@@ -3,15 +3,7 @@
 // slide's height.
 import type { Element } from '@livedocuments/document';
 import type { Kit } from './page-layout-kit';
-import {
-  eyebrow,
-  iconDisc,
-  numberDisc,
-  over,
-  rule,
-  slideHeading,
-  slideType,
-} from './slide-layout-kit';
+import { eyebrow, iconDisc, numberDisc, over, slideHeading, slideType } from './slide-layout-kit';
 
 const CENTRE = { textAlignX: 'center' } as const;
 
@@ -136,7 +128,6 @@ export function contactSlide(k: Kit): Element[] {
     eyebrow(k, x, top, w, 'STAY IN TOUCH'),
     k.title(x, top + u * 7, w, u * 13, 'Alex Morgan'),
     k.text(x, top + u * 21, w, u * 8, 'Head of Product, Example Co', slideType(k, 4)),
-    rule(k, x, top + u * 31),
     ...rows.flatMap(([iconId, line], i) => {
       const y = rowY + i * rowH;
       return [
@@ -175,7 +166,6 @@ export function thanksImageSlide(k: Kit): Element[] {
   const top = H * 0.26;
   return [
     k.title(0, top, textW, u * 20, 'Thank you'),
-    rule(k, 0, top + u * 23),
     k.text(0, top + u * 27, textW, u * 18, 'Slides and notes: example.com/talk', slideType(k, 4.2)),
     k.text(0, H - u * 6, textW, u * 6, '@alexmorgan · alex@example.com', {
       ...slideType(k, 3),

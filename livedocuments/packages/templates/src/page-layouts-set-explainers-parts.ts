@@ -1,6 +1,6 @@
 // Parts the Explainers layouts share (docs/specs/007-editor/pages-mode.md "Layouts"): the
 // room a source line takes, a heading that keeps its lead line only where the page has height to
-// spare, a leader line, a section's label over its accent rule, and the page type a line of words
+// spare, a leader line, a section's label, and the page type a line of words
 // fits in.
 import {
   createPinnedArrow,
@@ -29,7 +29,7 @@ export function leader(fromId: string, from: Anchor, toId: string, to: Anchor): 
   return { ...createPinnedArrow(fromId, from, toId, to), arrowEnds: 'none' };
 }
 
-// A section's name in bold page type over a short accent rule; `top` is where its content starts.
+// A section's name in bold page type; `top` is where its content starts.
 export function section(
   k: Kit,
   x: number,
@@ -39,11 +39,8 @@ export function section(
 ): { els: Element[]; top: number } {
   const { u } = k;
   return {
-    els: [
-      k.text(x, y, w, u * 7, label, { textSize: 'lg', textBold: true }),
-      k.shape('square', x, y + u * 7.5, u * 10, u * 1, { label: '', borderRadius: 'full' }),
-    ],
-    top: y + u * 11,
+    els: [k.text(x, y, w, u * 7, label, { textSize: 'lg', textBold: true })],
+    top: y + u * 9,
   };
 }
 

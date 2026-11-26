@@ -41,7 +41,6 @@ function values(k: Kit): Element[] {
       return [
         ...iconDisc(k, x + (cellW - d) / 2, y, d, iconId).els,
         k.text(x, nameY, cellW, u * 6, name, { textSize: 'lg', textBold: true, ...centred }),
-        rule(k, x + (cellW - u * 8) / 2, nameY + u * 7, u * 8, u * 0.8),
         k.text(x + u, nameY + u * 9.5, cellW - u * 2, u * 10.5, line, centred),
       ];
     }),

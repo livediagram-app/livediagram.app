@@ -13,7 +13,6 @@ import {
   kicker,
   KICKER_H,
   panel,
-  rule,
 } from './page-layouts-set-covers-parts';
 
 // A masthead's tracking, in em.
@@ -28,7 +27,7 @@ const COVER_LINES = [
 // A cover line's least room, in units.
 const COVER_LINE_H = 20;
 
-// The magazine's cover lines down a column: a bold kicker over its line, an accent rule between.
+// The magazine's cover lines down a column: a bold kicker over its line, room for the kicker to take two lines.
 function coverLines(k: Kit, x: number, y: number, w: number, h: number): Element[] {
   const { u } = k;
   // As many as get a row of COVER_LINE_H units each: three on most pages, two on a square.
@@ -37,8 +36,7 @@ function coverLines(k: Kit, x: number, y: number, w: number, h: number): Element
   return COVER_LINES.slice(0, n).flatMap(([lead, line], i) => {
     const ry = y + i * rowH;
     return [
-      rule(k, x, ry, u * 10, u * 1),
-      k.text(x, ry + u * 3, w, u * 8, lead, { textSize: 'lg', textBold: true }),
+      k.text(x, ry, w, u * 10, lead, { textSize: 'lg', textBold: true }),
       k.text(x, ry + u * 11, w, Math.max(u * 7, rowH - u * 12), line, {
         textSize: rowH > u * 30 ? 'lg' : 'md',
       }),
@@ -317,7 +315,6 @@ function certificate(k: Kit): Element[] {
       textAlignY: 'middle',
     }),
     fitted(k, pad, nameY, innerW, nameH, 'Amara Okafor', 'center'),
-    rule(k, cx - u * 10, nameY + nameH + u * 2, u * 20, u * 1),
     k.text(
       pad + (wide ? innerW * 0.08 : 0),
       nameY + nameH + u * 6,

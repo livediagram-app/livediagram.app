@@ -7,7 +7,7 @@
 // the box so a 16:9 and a 4:3 slide both fit. Type is sized up for reading across a room.
 import type { Element } from '@livedocuments/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
-import { bullets, rule, slideType } from './slide-layout-kit';
+import { bullets, slideType } from './slide-layout-kit';
 import {
   bigChartSlide,
   chartInsightsSlide,
@@ -138,7 +138,6 @@ function titleSlide(k: Kit): Element[] {
   const top = H * 0.26;
   return [
     k.title(0, top, W * 0.85, u * 18, 'Your presentation title'),
-    rule(k, 0, top + u * 21),
     k.text(
       0,
       top + u * 25,
@@ -160,7 +159,6 @@ function sectionSlide(k: Kit): Element[] {
   const top = H * 0.2;
   return [
     k.title(0, top, W * 0.3, u * 26, '01'),
-    rule(k, 0, top + u * 29),
     k.title(0, top + u * 33, W * 0.8, u * 13, 'Section title'),
     k.text(0, top + u * 49, W * 0.7, u * 10, 'One line on what this section covers.', slideType(k)),
   ];
@@ -229,8 +227,6 @@ function statementSlide(k: Kit): Element[] {
   const textH = H * 0.42;
   const top = (H - textH - u * 14) / 2;
   return [
-    // A short accent rule, centred, over the statement.
-    rule(k, (W - u * 14) / 2, Math.max(0, top - u * 6)),
     k.text(W * 0.06, top, W * 0.88, textH, 'One sentence that changes how the room sees it.', {
       ...slideType(k, 9),
       textBold: true,
@@ -250,7 +246,6 @@ function closingSlide(k: Kit): Element[] {
   const top = H * 0.24;
   return [
     k.title(0, top, W * 0.7, u * 22, 'Thank you'),
-    rule(k, 0, top + u * 25),
     k.text(0, top + u * 29, W * 0.7, u * 11, 'Questions?', { ...slideType(k, 6), textBold: true }),
     k.text(0, H - u * 7, W * 0.7, u * 7, 'your.name@example.com · example.com', {
       ...slideType(k, 3.2),
