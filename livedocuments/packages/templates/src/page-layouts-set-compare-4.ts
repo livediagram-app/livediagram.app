@@ -2,7 +2,12 @@
 // Effort vs Impact. Same contract as page-layouts.ts: the page's content box in, uncoloured
 // elements out, in proportions of the box so each fits every size and orientation; a wide page
 // sets things side by side where a stack would be squashed.
-import type { Element, TextElement } from '@livedocuments/document';
+import {
+  LABEL_FONT_PX,
+  LABEL_LINE_HEIGHT,
+  type Element,
+  type TextElement,
+} from '@livedocuments/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 
 const CENTRED = { textAlignX: 'center' } as const;
@@ -109,6 +114,10 @@ function swot(k: Kit): Element[] {
     const listTop = nameY + nameH + u * 3;
     const rowH = (y + cardH - pad - listTop) / points.length;
     const dot = u * 1.8;
+    // Every point at one size: medium where a row holds two lines of it (a point often wraps to two), else small,
+    // so a two-line point is never cut at its row's edge; large on a card wide enough to keep it to one.
+    const pointSize =
+      cardW > u * 60 ? 'lg' : rowH >= LABEL_FONT_PX.md * LABEL_LINE_HEIGHT * 2 ? 'md' : 'sm';
     points.forEach((p, r) => {
       const ry = listTop + r * rowH;
       els.push(
@@ -117,7 +126,7 @@ function swot(k: Kit): Element[] {
           strokeWidth: 'thick',
         }),
         k.text(x + pad + dot + u * 3, ry, innerW - dot - u * 3, rowH, p, {
-          textSize: cardW > u * 60 ? 'lg' : 'md',
+          textSize: pointSize,
           textAlignY: 'middle',
         }),
       );

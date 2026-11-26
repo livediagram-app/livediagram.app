@@ -882,17 +882,30 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
 - **Soft boxes** (owner, Work Tracker 1481). A layout's boxes read as light panels, not solid blocks
   (`softenLayoutBoxes`, `packages/templates/src/layout-soft-boxes.ts`, run by `buildPageLayout`, so the editor, an
   agent's `change_pages` and the layout decks all place them the same). Every plain box at least 5% of the page's
-  short side across wears the **thin** border in place of the default medium one, and a **word-less card** (its
-  words are text set over it) is drawn at **75% opacity** (`SOFT_CARD_OPACITY`), so the page's background and its
-  design show through it in light and dark alike. A box with words of its own keeps full opacity, so its words
-  keep their contrast; text over a card is its own element and never fades. A box that says something by its own
-  colour, icon, picture, opacity or border (a recommended option's heavy border, a frame's none) is left as it is.
-  The opacity and border are the element's own, so the person can change them like any other.
+  short side across is bound to the theme's **Soft** colour preset ([Style presets](../010-palette/style-presets.md):
+  a pale tint of the accent, a lighter accent border, the thin border, words in a deep shade of the accent held to
+  the text floor), with no colours written by the layout itself. Placing it fills those colours from the tab's
+  theme and the page's half (`themedForTab` takes a preset-bound shape's colours from its preset), and a theme
+  picked later re-derives them as for any preset-bound shape. On the Default scheme the box keeps the plain look,
+  which is already a pale tint, on the thin border. The panel is solid, never see-through: a page design behind it
+  (Brutalist Blocks, Split Fields, Edge Bands) can never show through and split a card in two. A box that says
+  something by its own colour, icon, picture, opacity or border (a recommended option's heavy border, a frame's
+  none) is left as it is. The preset is the element's own, so the person can restyle it like any other.
+
+- **Words fit their boxes** (Work Tracker 1481). A box's words are cut at its edge on the canvas, so a label that
+  wraps to more lines than its box holds would lose its descenders (a SWOT point's "budget" read "budaet").
+  `fitLayoutText` (`packages/templates/src/layout-text-fit.ts`, run by `buildPageLayout`) wraps each label at its
+  box's width with a glyph a little wider than the canvas's sans draws (`LAYOUT_TEXT_CHAR_EM`, 0.5 of the size) and
+  steps one that needs more lines than its box holds down a size (large to medium to small, keeping a scale the page
+  gave it); a list's rows (the same box and size) step together, so a list never mixes sizes. A label set to scale
+  or to a size of its own is left alone. SWOT sets its points small where a row holds under two lines of medium. A
+  guard (`layout-text-fit.test.ts`) checks every infographic layout on A4 and every slide layout on every slide size.
 
 - **Ninety-two layouts**, each a complete, editable starting point in the tab's theme: a layout is built without
   colours where it means the theme's, and placing it (in the editor or by an agent) fills each of those from the
-  tab's built-in theme (`themedForTab`), keeping the colours it sets itself; on a dark page (a dark fill), from the
-  theme's dark half, so its words are light there. Most open with
+  tab's built-in theme (`themedForTab`), keeping the colours it sets itself (a shape bound to a colour preset takes
+  that preset's colours for the theme); on a dark page (a dark fill), from the theme's dark half, so its words are
+  light there. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
   1. **Title Page**: an eyebrow line, a large title, a subtitle, an image
