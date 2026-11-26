@@ -14,27 +14,32 @@ livediagram's [Later](../../../../../livediagram/docs/specs/013-workspace/share-
 
 ## Scope, by file
 
-| File                                                                                                                                     | Role                                                                                          |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/access-levels.ts` (new)                                                                                      | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`        |
-| `packages/api-schema/src/index.ts`                                                                                                       | `ShareRole` becomes an alias of `AccessLevel`                                                 |
-| `packages/api-schema/src/room-op-kinds.ts`                                                                                               | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
-| `packages/document/src/participant-content.ts` (new)                                                                                     | The participant content rule: `applyParticipantOp`, the piece fields, `participantTabChange`  |
-| `packages/document/src/element-types.ts`, `validate.ts`                                                                                  | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
-| `packages/document/src/collab-ledger.ts`                                                                                                 | `mergeLedgerAnswersIntoTab`: reactions only (responses and ideas gone in part 4, votes later) |
-| `../liveworkspace/apps/index/migrations/0001_index.sql`                                                                                  | A `level` column on `share_links`                                                             |
-| `apps/api/src/room-op-gate.ts`, `apps/api/src/adder-key.ts`                                                                              | Readers through `parseStoredLevel`; the room's `adderKeyFor`                                  |
-| `apps/api/src/routes/context.ts`                                                                                                         | Gates compare levels on the index's grant                                                     |
-| `apps/api/src/routes/context.ts`                                                                                                         | `gateParticipate` is the Participant check                                                    |
-| `../liveworkspace/apps/index/src/sharing.ts`                                                                                             | The index's share route takes three levels                                                    |
-| `apps/api/src/adder-key.ts` (new)                                                                                                        | `adderKeyFor(documentId, ownerId)`                                                            |
-| `apps/api/src/routes/document-room-routes.ts`                                                                                            | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`      |
-| `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/room-message.ts`, `room-op-gate.ts`, `document-room-rules.ts` | Level on the session; op gate by class; participant `el` ops through the tab write queue      |
-| `apps/api/src/participant-write.ts` (new)                                                                                                | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
-| `apps/editor/lib/editor-capabilities.ts` (new)                                                                                           | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
-| `apps/editor/app/document/[id]/*` (`useEditorState`, `tab-save-flow`, `editor-page-helpers`)                                             | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
-| `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                                                  | Three cards                                                                                   |
-| `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                                             | Participant badge; Participate chip                                                           |
+| File                                                                                                                                     | Role                                                                                                                                 |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `../packages/api-schema/src/access-levels.ts` (new)                                                                                      | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`                                               |
+| `packages/api-schema/src/index.ts`                                                                                                       | `ShareRole` becomes an alias of `AccessLevel`                                                                                        |
+| `packages/api-schema/src/room-op-kinds.ts`                                                                                               | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                                                           |
+| `packages/document/src/participant-content.ts` (new)                                                                                     | The participant content rule: `applyParticipantOp`, the piece fields, `participantTabChange`                                         |
+| `packages/document/src/element-types.ts`, `validate.ts`                                                                                  | `addedBy?: string` on `StickyElement` and `TextElement`; validated                                                                   |
+| `packages/document/src/collab-ledger.ts`                                                                                                 | `mergeLedgerAnswersIntoTab`: reactions only (responses and ideas gone in part 4, votes later)                                        |
+| `../liveworkspace/apps/index/migrations/0001_index.sql`                                                                                  | A `level` column on `share_links`                                                                                                    |
+| `apps/api/src/room-op-gate.ts`, `apps/api/src/adder-key.ts`                                                                              | Readers through `parseStoredLevel`; the room's `adderKeyFor`                                                                         |
+| `apps/api/src/routes/context.ts`                                                                                                         | Gates compare levels on the index's grant                                                                                            |
+| `apps/api/src/routes/context.ts`                                                                                                         | `gateParticipate` is the Participant check                                                                                           |
+| `../liveworkspace/apps/index/src/sharing.ts`                                                                                             | The index's share route takes three levels                                                                                           |
+| `apps/api/src/adder-key.ts` (new)                                                                                                        | `adderKeyFor(documentId, ownerId)`                                                                                                   |
+| `apps/api/src/routes/document-room-routes.ts`                                                                                            | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`                                             |
+| `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/room-message.ts`, `room-op-gate.ts`, `document-room-rules.ts` | Level on the session; op gate by class; participant `el` ops through the tab write queue                                             |
+| `apps/api/src/participant-write.ts` (new)                                                                                                | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output                                        |
+| `apps/editor/lib/editor-capabilities.ts` (new)                                                                                           | `resolveEditorCapabilities`, `EditorCapabilities`                                                                                    |
+| `apps/editor/app/document/[id]/*` (`useEditorState`, `tab-save-flow`, `editor-page-helpers`)                                             | `sessionRole: AccessLevel`; `can`; the participant save flow                                                                         |
+| `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                                                  | Three cards                                                                                                                          |
+| `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                                             | Participant badge; Participate chip                                                                                                  |
+| `../packages/api-kit/src/hidden-people.ts` (new)                                                                                         | Ids a Viewer sees: `peopleForReader`, `hidePeople`, `copyDataWithoutPeople`, `frameForViewer`, `viewerOwnIds`, `restoreHiddenPeople` |
+| `apps/api/src/routes/document-subresource-routes.ts`, `routes/comment-routes.ts`                                                         | A Viewer's reads go through `peopleForReader`                                                                                        |
+| `apps/api/src/document-room/document-content.ts`                                                                                         | A non-owner's copy through `copyDataWithoutPeople`                                                                                   |
+| `apps/api/src/document-room/room-sockets.ts`, `document-room/room-message.ts`, `document-room/document-room.ts`                          | `viewerOf` (cached per socket on `viewers`); Viewer frames and catch-ups hide ids                                                    |
+| `apps/api/src/routes/tab-put-route.ts`, `changesets/submit.ts`                                                                           | Saves put hidden ids back with `restoreHiddenPeople`                                                                                 |
 
 ## Domain and naming
 
@@ -336,6 +341,33 @@ lands in a new document, where no adder key matches it.
 - The collab key is the server's (`X-Verified-Collab-Key`, set on every path): no session can publish, answer or react
   under another's key, at any level. An Editor's whole-tab save can still write any key into the stored tab.
 - Rate: room frames ride `OP_RATE_CAP`; each drain of a tab's waiting ops is one read and one compare-and-swap in the document's SQLite.
+
+### Ids a Viewer sees (Work Tracker 1451)
+
+The spec's "Ids a Viewer sees". One rule, `@liveworkspace/api-kit/hidden-people`, for every product.
+
+- Who: a session whose level is below Participant (`view`, or no level), never the owner. `peopleForReader(value,
+role, caller)` passes a Participant's and an Editor's value through untouched.
+- What: the person fields (`userId`, `memberId`, `assignerId`) always,
+  and the key fields (`participantId`, `startedBy`, `voter`, `voters`, `votes`) only when they hold an account or guest
+  id (`user_` or `guest_`). A hidden field reads `hidden`; a hidden list entry `hidden-<n>`. Names stay.
+- Own id: kept, so For You and "mine" still work. On a read the caller's id; in the room, an id whose collab key is the
+  session's (`ownIdsOfCollabKey`, a bounded cache of `sha256HexSync`).
+- Where: the tab read (and the views and MCP reads built on it), the comment list, a non-owner's
+  copy (every id but the copier's cleared, `someone-<n>` in a list), and the room's op frames and catch-up for a Viewer
+  socket (`frameFor`, `viewerOf`).
+- Restore: every save (`tab-put-route.ts`, so the delta save too, and `withServerRules` in `changesets/submit.ts`)
+  runs `restoreHiddenPeople(incoming, stored)` first: a hidden value takes the stored one back by element id (or
+  index), a hidden value with nothing stored is cleared, and a list keeps its stored ids. A save never stores a
+  placeholder and never wipes an id.
+- Fails closed: an unknown level hides; the regex pre-scan (`mayNamePeople`) can only say "maybe", never skip a field
+  that names someone.
+- Tests: `apps/api/src/routes/viewer-ids.test.ts` (each level's read, the comment list, the Viewer-copy save) and
+  `apps/api/src/document-room-viewer-ids.test.ts` (frames and catch-up by level, own id kept); the rule in
+  `packages/api-kit/src/hidden-people.test.ts`, with CPU budgets.
+- Cost, measured: hiding a 2,000-element tab (541 KB) 1.9 ms CPU, 5,000 (1.4 MB) 4.6 ms, on Viewer reads only. Restore
+  on every save: 0.26 ms at 2,000 and 0.71 ms at 5,000 when nothing was hidden, 1.9 ms and 4.9 ms when it was. A
+  Viewer's frame with no id in it: one regex test, cached per frame (1,000 frames 0.1 ms).
 
 ## Performance and limits
 
