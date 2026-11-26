@@ -144,7 +144,7 @@ describe('ActionPopover', () => {
 
   it('shows the due day, red only while an open action is past it', () => {
     anchor({ left: 100, right: 200, top: 100 });
-    const dueLine = () => document.querySelector('[data-action-due]') as HTMLElement | null;
+    const dueLine = () => document.querySelector<HTMLElement>('[data-action-due]');
     const { unmount } = popover();
     expect(dueLine()).toBeNull();
     unmount();
