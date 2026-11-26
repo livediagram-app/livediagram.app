@@ -189,6 +189,37 @@ chooses it.
   with the server's key, so peers see them as its person's; a reload, which the new-version prompt offers, brings it
   in line.
 
+### Ids a Viewer sees
+
+A Viewer reads names, never other people's account or guest ids (owner, 2026-11-25, Work Tracker 1451). An id ties a
+person to every liveworkspace item they touch, and a guest's id is the one their api calls carry, so it is no more a
+reader's than the owner id is ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
+
+- **Hidden.** Every person field reads `hidden` unless it is the Viewer's own id: an assigned action's assignee
+  (`assignee.userId`, `assignee.memberId`) and assigner (`assignerId`), a comment mention's person (`userId`,
+  `memberId`), a component's open edit session (`componentEditBy`, which names the account or guest editing it). Names, colours and pictures stay, so the screen reads as it did. A comment's author id was
+  already left out for everyone but its author.
+- **Keys stay.** A collab key ([The collab key](#the-collab-key)), an adder key and a Q&A voter id are one-way and
+  give no id away, so answers, dots, votes, reactions and added stickies count and show as before. Only an entry from
+  before those keys that holds an account or guest id (`user_…`, `guest_…`) in an answer, a dot, a dot vote's
+  starter or a Q&A vote reads `hidden-<n>`, numbered so a count stays right.
+- **For You still works.** The Viewer's own id is never hidden, so a signed-in Viewer's own actions still read as
+  theirs. The realtime room holds no id, only each session's collab key: an id is the session's own when it derives
+  that key.
+- **Where.** The tab read and everything built on it (document views, the MCP's and the CLI's reads), the comment
+  list, and every op frame the realtime room sends a Viewer's socket, its catch-up included. A Viewer is a grant
+  below Participant, or a room session below Participant (one from before the role stamp included), that is not the
+  owner. Participants and Editors read every id, as they always did.
+- **Restore on save.** A whole-tab write (the tab save, its delta save, a changeset and its revert) puts every hidden
+  value back from the stored tab before anything else reads the write: objects match by field, list entries by `id`,
+  and a hidden answer, dot or vote is swapped for the stored one it stood for. So a save made from a Viewer's copy (a
+  link raised to Editor while the editor was open) never wipes an id. A hidden value with nothing stored behind it is
+  cleared (an assignee's id null, an assigner blank, anything else gone), so the placeholder is never stored.
+- **A copy.** A copy made by anyone but the owner keeps no one's id but the copier's, as it already keeps no one's
+  comment author id: an assignee's id is cleared, an assigner blank, and an id-shaped key reads `someone-<n>`.
+- **One rule.** `@liveworkspace/api-kit/hidden-people` (`hidePeople`, `restoreHiddenPeople`, `copyWithoutPeople`,
+  `frameForViewer`) is every product's; this product's api calls it at each of the doors above.
+
 ## Telemetry
 
 `Document·Shared` and `Document·Joined` take the type `Participate` beside `Edit` and `View`
