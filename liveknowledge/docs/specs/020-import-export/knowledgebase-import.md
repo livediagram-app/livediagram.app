@@ -19,6 +19,9 @@ single-file imports the fork already has ([Markdown import](markdown-import.md),
   `[[Title]]`) become page links. A link whose target is not in the import stays a plain link.
 - **Pictures** in the archive upload to Media and sit in the writing as picture zones; other attachments are listed
   at the foot of their page as plain names (v1 does not store files).
+- **Covers:** a Markdown page whose front matter names a `cover` picture the archive holds (a liveknowledge export
+  writes one, relative to the page's file) takes it as its cover. One the archive does not hold is warned about as a
+  missing picture; one at a web address is left out.
 - **Notion:** a database's CSV becomes a table on its page; callouts become quotes; toggles become a heading and its
   content. **Confluence:** info, note and warning macros become quotes with a bold first word; code macros become
   code blocks; user mentions become plain names; everything else falls back to its text.

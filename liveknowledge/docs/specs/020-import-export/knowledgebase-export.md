@@ -107,7 +107,8 @@ limit); past that the export stops and says so.
 
 A zip exported here imports back through **Import → Markdown Folder** as the same tree: the same titles, the same
 parents and order (siblings are written in tree order and the importer orders them by name, so the order is the
-names' when titles were reordered by hand), page links as page links, pictures as pictures.
+names' when titles were reordered by hand), page links as page links, pictures as pictures, and each page's cover
+(its front matter `cover`) as that page's cover again, never a file left unused.
 
 ## Telemetry
 
