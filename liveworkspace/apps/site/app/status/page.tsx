@@ -9,7 +9,7 @@ import './status-motion.css';
 
 const TITLE = 'Status · liveworkspace';
 const DESCRIPTION =
-  'Live status of liveworkspace and every app in it: accounts, the Explorer, Community, telemetry and media, and each app’s API, realtime rooms, editor, help centre and MCP server.';
+  'Live status of liveworkspace and every app in it: accounts, the Explorer, Community, telemetry, media and the MCP server, and each app’s API, realtime rooms, editor and marketing site.';
 
 export const metadata: Metadata = {
   title: TITLE,

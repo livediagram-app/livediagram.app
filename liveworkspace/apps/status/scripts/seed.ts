@@ -38,7 +38,7 @@ function random(seed: number): () => number {
 // Planned spells, `daysAgo` before the last run, at an hour of that day: [service, daysAgo, hour, hours, state].
 const SPELLS: ReadonlyArray<[string, number, number, number, 'slow' | 'down']> = [
   ['livediagram:api', 37, 14, 2, 'down'],
-  ['liveplanner:mcp', 12, 3, 5, 'down'],
+  ['liveworkspace:mcp', 12, 3, 5, 'down'],
   ['liveworkspace:community', 4, 18, 3, 'slow'],
   ['livedesign:editor', 61, 9, 1, 'down'],
   ['liveworkspace:help', 22, 11, 2, 'slow'],

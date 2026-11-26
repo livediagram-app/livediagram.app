@@ -51,19 +51,17 @@ Scope, by file:
 | liveworkspace | `telemetry`       | read `OPTIONS /api/telemetry/events`, 204 ("Answers; database not checked")   |
 | liveworkspace | `media`           | read `GET /api/previews`, 404, JSON ("Answers; storage not checked")          |
 | liveworkspace | `help`            | read `HEAD /help/robots.txt`, 200 (one Worker serves every app's `/help`)     |
+| liveworkspace | `mcp`             | read `GET <mcp>/health`, 200, JSON; `skipped` on staging (no public MCP host) |
 | each app      | `api`             | read `GET <app>/api/capabilities`, 200, JSON                                  |
 | each app      | `realtime`        | derived `same` from `api`                                                     |
 | each app      | `editor`          | reach `HEAD <app>/icon.svg`                                                   |
 | each app      | `marketing`       | reach `HEAD <app>/robots.txt`                                                 |
 | livediagram   | `community-pages` | reach `HEAD <app>/community/`                                                 |
-| app with MCP  | `mcp`             | read `GET <mcp>/health`, 200, JSON; `skipped` on staging (no public MCP host) |
 | each app      | `router`          | derived `any` from `api`, `editor`, `marketing` (and `community-pages`)       |
 
 `appOrigin(site, env)`: development `http://localhost:<LOCAL_PORTS[site]>`; staging `https://staging.<site>`;
-production `https://www.<site>`. `mcpOrigin`: development `http://localhost:<MCP_DEV_PORTS>` (3013, the one MCP, for each app;
-livehuddle has none), staging none, production `https://mcp.<site>`. `hasMcp(site)`: whether the app has an entry in
-`MCP_DEV_PORTS`; an app without one gets no `mcp` row, and `mcpOrigin` is null for it in every
-environment. `appGroup(site, env)` is exported for one app's group; `statusGroups` lists `APP_SITES` only, so a held
+production `https://www.<site>`. `mcpOrigin(env)`: development `http://localhost:3013` (the one MCP), staging none, production `https://mcp.liveworkspace.app`.
+No app group has an `mcp` row. `appGroup(site, env)` is exported for one app's group; `statusGroups` lists `APP_SITES` only, so a held
 app is never on the page. Paths starting `/` resolve on `PLATFORM_ORIGIN` (`resolveProbeUrl`).
 
 ## Behaviour and state
@@ -240,7 +238,7 @@ them apart.
 | `STATUS_HISTORY_PATH` | `'/history'`                                                       | `wire.ts`                      | the read                       |
 | `HISTORY_DAYS`        | `90`                                                               | `wire.ts`                      | the window, `parseDays`        |
 | `INCIDENTS_MAX`       | `50`                                                               | `wire.ts`                      | `buildHistory`                 |
-| `MCP_DEV_PORTS`       | 3013 (the one MCP) for each app but livehuddle (none)              | `services.ts`                  | which apps have an MCP row     |
+| `MCP_DEV_PORT`        | 3013 (the one MCP)                                                 | `services.ts`                  | liveworkspace's MCP row        |
 
 | Setting             | Production                                                           | Staging                                 |
 | ------------------- | -------------------------------------------------------------------- | --------------------------------------- |

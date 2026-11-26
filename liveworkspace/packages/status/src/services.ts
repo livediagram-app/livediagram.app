@@ -4,14 +4,7 @@
 // check is a route the service serves anyway, picked to be cheap (no database read where one can be avoided, or one
 // the edge caches).
 
-import {
-  APP_SITES,
-  LOCAL_PORTS,
-  PLATFORM_SITE,
-  possessive,
-  type Site,
-  type SiteId,
-} from '@liveworkspace/sites';
+import { APP_SITES, LOCAL_PORTS, PLATFORM_SITE, possessive, type Site } from '@liveworkspace/sites';
 
 // How a check is made and what counts as up.
 //  - `read`: the page can read the answer (this origin, or a CORS `*` route), so its status code must be one of
@@ -86,19 +79,9 @@ export function environmentOf(host: string): StatusEnvironment {
   return 'production';
 }
 
-type AppSiteId = Exclude<SiteId, 'liveworkspace.app'>;
-
-// The local port of the one MCP (apps/mcp's dev, 3013), which serves every app's tools; an app's own MCP Worker is gone,
-// and its old host (`mcp.<app>`) is a custom domain on the one MCP that still answers /health. The MCP server is optional per app: an app with
-// no entry ships none, and its group has no MCP row (livehuddle, livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md).
-const ONE_MCP_DEV_PORT = 3013;
-const MCP_DEV_PORTS: Partial<Record<AppSiteId, number>> = {
-  'livediagram.app': ONE_MCP_DEV_PORT,
-  'liveplanner.app': ONE_MCP_DEV_PORT,
-  'livedocuments.app': ONE_MCP_DEV_PORT,
-  'livedesign.app': ONE_MCP_DEV_PORT,
-  'liveknowledge.app': ONE_MCP_DEV_PORT,
-};
+// The local port of the one MCP (apps/mcp's dev), which serves every app's tools. It is checked once, under liveworkspace;
+// the apps' `mcp.<app>` hosts are custom domains on the same Worker and are not probed.
+const MCP_DEV_PORT = 3013;
 
 /** An app's address in `env`: its router's port on a dev server, its `staging.` host, else its live site. */
 export function appOrigin(site: Site, env: StatusEnvironment): string {
@@ -107,20 +90,11 @@ export function appOrigin(site: Site, env: StatusEnvironment): string {
   return `https://www.${site.id}`;
 }
 
-/** Whether an app ships an MCP server, so the page checks one. */
-export function hasMcp(site: Site): boolean {
-  return site.id !== 'liveworkspace.app' && MCP_DEV_PORTS[site.id] !== undefined;
-}
-
-/** An app's MCP server in `env`, or null where the page doesn't check it (staging has no public MCP host; an app
- *  without one has none anywhere). */
-export function mcpOrigin(site: Site, env: StatusEnvironment): string | null {
-  if (site.id === 'liveworkspace.app') return null;
-  const devPort = MCP_DEV_PORTS[site.id];
-  if (devPort === undefined) return null;
-  if (env === 'development') return `http://localhost:${devPort}`;
+/** The one MCP server in `env`, or null where the page doesn't check it (staging has no public MCP host). */
+export function mcpOrigin(env: StatusEnvironment): string | null {
+  if (env === 'development') return `http://localhost:${MCP_DEV_PORT}`;
   if (env === 'staging') return null;
-  return `https://mcp.${site.id}`;
+  return 'https://mcp.liveworkspace.app';
 }
 
 const read = (
@@ -136,9 +110,12 @@ const reach = (url: string): Check => ({
   probe: { kind: 'reach', url, method: 'HEAD' },
 });
 
+const MCP_DESCRIPTION = 'Lets AI assistants read and make your work, with your permission.';
+
 // liveworkspace's own services, all on this origin, so every answer can be read.
-function platformGroup(): ServiceGroup {
+function platformGroup(env: StatusEnvironment): ServiceGroup {
   const g = 'liveworkspace';
+  const mcp = mcpOrigin(env);
   return {
     id: g,
     site: PLATFORM_SITE,
@@ -210,18 +187,29 @@ function platformGroup(): ServiceGroup {
         // One Worker serves every app's /help through its router's binding, so it is checked once, here.
         check: read('/help/robots.txt', 'HEAD', [200]),
       },
+      {
+        id: `${g}:mcp`,
+        name: 'MCP server',
+        description: MCP_DESCRIPTION,
+        icon: 'sparkles',
+        label: mcp ? 'GET /health' : 'Not checked here',
+        // One Worker serves every app's tools; the apps' mcp.<app> hosts are aliases of it, so it is checked once.
+        check: mcp
+          ? read(`${mcp}/health`, 'GET', [200], true)
+          : {
+              mode: 'skipped',
+              reason: 'Staging has no public MCP address, so it isn’t checked here.',
+            },
+      },
     ],
   };
 }
 
-const MCP_DESCRIPTION = 'Lets AI assistants read and make your work, with your permission.';
-
-// What each app adds to the page: the services every app has, its MCP server where it ships one, and livediagram's
+// What each app adds to the page: the services every app has, and livediagram's
 // Community pages. Exported for a held app's group, which `statusGroups` leaves off the page until launch.
 export function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
   const g = site.id.replace(/\.app$/, '');
   const origin = appOrigin(site, env);
-  const mcp = mcpOrigin(site, env);
   const api = `${g}:api`;
   const throughRouter = [api, `${g}:editor`, `${g}:marketing`];
   const services: Service[] = [
@@ -274,21 +262,6 @@ export function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
     });
     throughRouter.push(`${g}:community-pages`);
   }
-  if (hasMcp(site)) {
-    services.push({
-      id: `${g}:mcp`,
-      name: 'MCP server',
-      description: MCP_DESCRIPTION,
-      icon: 'sparkles',
-      label: mcp ? 'GET /health' : 'Not checked here',
-      check: mcp
-        ? read(`${mcp}/health`, 'GET', [200], true)
-        : {
-            mode: 'skipped',
-            reason: 'Staging has no public MCP address, so it isn’t checked here.',
-          },
-    });
-  }
   services.push({
     id: `${g}:router`,
     name: 'Router',
@@ -307,7 +280,7 @@ export function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
 
 /** Every group the page shows: liveworkspace first, then each app in the shared order. */
 export function statusGroups(env: StatusEnvironment): ServiceGroup[] {
-  return [platformGroup(), ...APP_SITES.map((site) => appGroup(site, env))];
+  return [platformGroup(env), ...APP_SITES.map((site) => appGroup(site, env))];
 }
 
 /** Every service on the page, flattened, in page order. */
