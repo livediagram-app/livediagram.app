@@ -49,7 +49,7 @@ From the top:
   | Tile        | Shown when                                                                       | Does                                                                               |
   | ----------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
   | Explorer    | Always                                                                           | Goes to the Explorer page on the item's place (`explorerItemHref`), no panel       |
-  | Call        | The app has Start a Call Here and the viewer may start one, or a call is live    | Starts the call in its own tab, or joins the live one (**Join Call**, `3 in Call`) |
+  | Call        | The app has Start a Call Here and the viewer may start one, or a call is live    | Opens the Start a Call sheet, whose Start Call starts it in its own tab, or joins the live one (**Join Call**, `3 in Call`) |
   | Share       | The corner card would show Share (an Editor who may share, hydrated, no welcome) | Opens the Share dialog                                                             |
   | Present     | The corner card would show Present                                               | Starts the presentation                                                            |
   | Copy Link   | The item has an address others can open (not an Offline item)                    | Copies the page's address and says so in a toast                                   |
