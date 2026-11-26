@@ -3,6 +3,17 @@ import type { PageChange } from '@livedocuments/api-schema';
 import {
   STYLE_RECIPES,
   createShape,
+  darkSlideBackground,
+  designGuard,
+  designPalette,
+  layOutPages,
+  pageFillTone,
+  pagesOf,
+  paintPageDesign,
+  renderPagesToSvg,
+  resolvePageDesigns,
+  resolveThemeIn,
+  SCRIM_OPACITY,
   tabPageDesignOf,
   type Element,
   type Page,
@@ -107,6 +118,73 @@ describe('tab_style', () => {
     expect(same.lines.join(' ')).not.toContain('slides');
     const back = run(dark.tab, [{ op: 'tab_style', style: 'technical' }]);
     expect(back.lines.join(' ')).toContain('Steel slides');
+  });
+
+  // docs/specs/011-theme/light-and-dark.md "A page's own paper": a restyle gives a dark slide's words the theme's dark
+  // half, so no re-inking bakes them dim and the page design lays no plate under them (Work Tracker 1482).
+  describe('a keynote deck restyled', () => {
+    const keynote = () => {
+      const made = run(tabOf({ elements: [] }), [{ op: 'tab_style', style: 'keynote' }]);
+      return run(made.tab, [
+        { op: 'layout', page: 1, layout: 'slide-title' },
+        { op: 'add', kind: 'slide', layout: 'slide-three-stats' },
+      ]).tab;
+    };
+    const texts = (tab: Tab) => tab.elements.filter((e) => e.type === 'text');
+    const scrimFill = `fill-opacity="${SCRIM_OPACITY}"`;
+
+    it.each(['midnight', 'forest', 'ocean', 'sunset'])(
+      'to %s keeps its words the theme’s and lays no plate under the title, subtitle or footer',
+      (theme) => {
+        const tab = run(keynote(), [{ op: 'tab_style', theme }]).tab;
+        const dark = resolveThemeIn(theme, 'dark')!;
+        expect(texts(tab).length).toBeGreaterThan(4);
+        for (const t of texts(tab))
+          expect((t as { textColor?: string }).textColor).toBe(dark.elementText);
+        const pages = layOutPages(pagesOf(tab));
+        const designs = resolvePageDesigns(tabPageDesignOf(tab), pages, tab.elements);
+        for (const page of pages) {
+          const r = designs.get(page.id)!;
+          const palette = designPalette(
+            resolveThemeIn(theme, 'light')!,
+            page,
+            false,
+            r.tuning.colors,
+          );
+          // The plate's colour is the page's, and the page is this theme's night.
+          expect(palette.base).toBe(pageFillTone(darkSlideBackground(theme).fill!));
+          const painted = paintPageDesign({
+            design: r.design,
+            tuning: r.tuning,
+            palette,
+            width: page.rect.width,
+            height: page.rect.height,
+          });
+          expect(designGuard(painted, page.rect, tab.elements).scrims).toEqual([]);
+        }
+        // The MCP's preview draws the same: light words, no plate.
+        expect(renderPagesToSvg(tab)).not.toContain(scrimFill);
+      },
+    );
+
+    it('to midnight draws as the deck was made', () => {
+      const made = keynote();
+      expect(renderPagesToSvg(made)).not.toContain(scrimFill);
+      const restyled = run(made, [{ op: 'tab_style', theme: 'midnight' }]).tab;
+      const colours = (tab: Tab) => texts(tab).map((t) => (t as { textColor?: string }).textColor);
+      expect(new Set(colours(restyled))).toEqual(
+        new Set([resolveThemeIn('midnight', 'dark')!.elementText]),
+      );
+    });
+
+    it('leaves a light deck’s words in the light half', () => {
+      const light = run(tabOf({ elements: [] }), [
+        { op: 'layout', page: 1, layout: 'slide-title' },
+      ]).tab;
+      const out = run(light, [{ op: 'tab_style', theme: 'forest' }]).tab;
+      const ink = resolveThemeIn('forest', 'light')!.elementText;
+      for (const t of texts(out)) expect((t as { textColor?: string }).textColor).toBe(ink);
+    });
   });
 
   it('sets its articles in the typeface too', () => {
