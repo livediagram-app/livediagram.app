@@ -40,6 +40,7 @@
     "./undo": "./src/undo/index.ts",
     "./callout": "./src/callout/index.ts",
     "./ai-writer-mark": "./src/ai-writer/AiWriterMark.tsx",
+    "./ai-comment-marks": "./src/ai-writer/AiCommentMarks.tsx",
     "./agent-for-person": "./src/ai-writer/agent-for-person.ts"
   },
   "scripts": {

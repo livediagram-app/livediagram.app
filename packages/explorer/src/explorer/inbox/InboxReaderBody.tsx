@@ -12,7 +12,7 @@ import { kindWords, siteOf } from '../../words';
 import { CardStatusChip } from '../badges';
 import { CallInviteBody } from './CallInvitePane';
 import { AiChip, CardGlyph, Lead, reasonIcon, reasonTone, type EntryFacts } from './InboxRows';
-import { AskIcon } from '../../ui/icons';
+import { AsksForResponse } from '@liveworkspace/ui/ai-comment-marks';
 import { firstName, type InboxEntry } from './sections';
 
 // A suggested edit's body loads only when one is opened, off the Explorer's first load.
@@ -342,15 +342,7 @@ function Comment({ c }: { c: InboxComment }) {
           {c.ai && !c.mine && c.authorName ? (
             <span className="text-slate-500 dark:text-slate-400">for {c.authorName}</span>
           ) : null}
-          {c.needsResponse ? (
-            <span
-              data-inbox-asks=""
-              className="inline-flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300"
-            >
-              <AskIcon size={12} />
-              Asks for a response
-            </span>
-          ) : null}
+          {c.needsResponse ? <AsksForResponse data-inbox-asks="" /> : null}
           {now && c.at ? (
             <span className="text-slate-500 dark:text-slate-400">{relativeSince(c.at, now)}</span>
           ) : null}

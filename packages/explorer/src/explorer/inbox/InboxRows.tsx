@@ -15,6 +15,7 @@
 // for nothing, so moving the selection re-renders two rows. Its clock is the shared one (../../time), read by the
 // time alone, so a tick re-renders the times and not the rows.
 
+import { AiChip as SharedAiChip } from '@liveworkspace/ui/ai-comment-marks';
 import { memo, type ReactNode } from 'react';
 import { cardNumber, type CardColumn, type InboxThread } from '@liveworkspace/index-client';
 import { PictureDisc } from '@liveworkspace/ui';
@@ -494,17 +495,9 @@ export const InboxRow = memo(function InboxRow({
 });
 
 /** An agent's mark beside its name: AI, and "for you" when it wrote with the reader's own token. */
+/** The AI chip, the one every app's thread draws too (@liveworkspace/ui's AiCommentMarks). */
 export function AiChip({ forYou }: { forYou: boolean }) {
-  return (
-    <span
-      data-inbox-ai=""
-      title={forYou ? 'Written by an AI assistant for you' : 'Written by an AI assistant'}
-      className="inline-flex shrink-0 items-center gap-1 rounded-md bg-violet-50 px-1.5 text-[10px] font-semibold leading-4 text-violet-700 ring-1 ring-inset ring-violet-200 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-500/30"
-    >
-      AI
-      {forYou ? <span className="font-medium">for you</span> : null}
-    </span>
-  );
+  return <SharedAiChip forYou={forYou} data-inbox-ai="" />;
 }
 
 /** Why the row is here: an icon and its words, so it never rests on colour alone. */
