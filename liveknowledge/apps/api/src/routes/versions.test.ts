@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../person/profiles', () => import('../test-profiles'));
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { personToken } from '../knowledge/viewer-people';
 import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { VERSION_NAMED_MAX } from '@liveknowledge/api-schema';
 import type { Element } from '@liveknowledge/document';
@@ -268,9 +269,10 @@ describe('reading', () => {
       headers: { 'X-Share-Code': 'VIEW' },
     });
     const read = await res.json<{ tab: { knowledge?: unknown } }>();
-    // The page's owner is its knowledge, which every reader sees (verification.md "The owner"); the comment is not.
+    // The page's owner is its knowledge, which every reader sees (verification.md "The owner"), a Viewer as a
+    // stand-in, never the id (share-roles.md "Ids a Viewer sees"); the comment is not.
     const { knowledge, ...tab } = read.tab;
-    expect(knowledge).toEqual({ owner: OWNER });
+    expect(knowledge).toEqual({ owner: personToken('D', OWNER) });
     expect(JSON.stringify({ ...read, tab })).not.toContain(OWNER);
   });
 });

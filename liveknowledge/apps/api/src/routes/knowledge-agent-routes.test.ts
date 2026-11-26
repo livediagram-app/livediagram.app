@@ -12,6 +12,7 @@ import type {
 import { isKnowledgePageRow } from '@liveknowledge/api-schema';
 import { knowledgeKit, TOKEN_ID, type Kit, type Who } from './knowledge-test-kit';
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { personToken } from '../knowledge/viewer-people';
 
 // The knowledgebase as an agent reads and shapes it (docs/specs/024-agents/knowledgebase-for-agents.md): the page
 // tree, a page as Markdown, the context, a new page, a move, and what each scope and share role may do.
@@ -48,7 +49,8 @@ describe('GET pages', () => {
     expect(pages[0]!.trust).toEqual({ state: 'never-verified', stale: false });
     const rollbacks = pages[1]!;
     expect(rollbacks.parent).toBe('deploys');
-    expect(rollbacks.owner).toBe('user_o');
+    // A Viewer's list holds a stand-in for the owner (share-roles.md "Ids a Viewer sees").
+    expect(rollbacks.owner).toBe(personToken('kb', 'user_o'));
     expect(rollbacks.trust).toMatchObject({ state: 'verified', stale: false });
     expect(rollbacks.trust.reviewAt).toBe(rollbacks.trust.verifiedAt! + 90 * 86_400_000);
   });
@@ -88,7 +90,7 @@ describe('GET pages', () => {
     for (const row of plain.pages.filter(isKnowledgePageRow))
       expect(row.updatedAt).toEqual(expect.any(Number));
     const named = await get<KnowledgePagesResponse>('viewer', 'pages?names=1');
-    expect(named.names).toEqual({ user_o: 'Olu Owner' });
+    expect(named.names).toEqual({ [personToken('kb', 'user_o')]: 'Olu Owner' });
     clearTestProfiles();
     expect((await get<KnowledgePagesResponse>('viewer', 'pages?names=1')).names).toEqual({});
   });
