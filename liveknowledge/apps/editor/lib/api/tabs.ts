@@ -116,6 +116,26 @@ export const apiAdoptPeerSave = calls.adoptPeerSave;
 // The tab alone, for callers that need no revision (a duplicate, Take Offline, the Drive mirror).
 export const apiLoadTab = calls.loadTab;
 
+// A page's saved copy for an export (docs/specs/020-import-export/knowledgebase-export.md "How it is built"): the plain
+// read, which holds no base copy for delta saves, keeps no draft and records no open, so reading every page of a
+// knowledgebase changes nothing the editor holds. Null when the page is gone; an Offline knowledgebase's from this
+// browser.
+export async function apiReadSavedTab(
+  ownerId: string,
+  documentId: string,
+  tabId: string,
+  shareCode: string | null,
+  signal?: AbortSignal,
+): Promise<Tab | null> {
+  if (await isOfflineId(documentId)) return offlineLoadTab(documentId, tabId);
+  const res = await apiFetch(
+    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}`,
+    { headers: await apiHeaders(ownerId, { share: shareCode }), ...(signal ? { signal } : {}) },
+  );
+  const body = await expectOkOrNull<{ tab: Tab }>(res, 'read page');
+  return body ? body.tab : null;
+}
+
 // Upsert a single tab: the active edit path (docs/specs/006-document/per-tab-storage.md).
 export const apiSaveTab: (
   ownerId: string,
