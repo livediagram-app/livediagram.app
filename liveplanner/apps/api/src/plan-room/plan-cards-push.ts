@@ -73,6 +73,8 @@ const inboxThreadOf = (t: CardThread): InboxCardThread => ({
       [m.userId, m.memberId].filter((id): id is string => !!id),
     ),
     ...(c.ai ? { ai: true } : {}),
+    ...(c.agent ? { agent: c.agent } : {}),
+    ...(c.needsResponse ? { needsResponse: true } : {}),
   })),
 });
 

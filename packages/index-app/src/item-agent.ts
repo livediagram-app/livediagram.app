@@ -4,6 +4,7 @@
 // server's tools, the CLI, a script with a token), as liveknowledge's page stamps and liveplanner's card history
 // already count one. A signed-in person's editor, a guest and a link visitor carry no token and are people.
 import { cleanItemAgentName, type ItemAgent, type ItemAgentVia } from '@liveworkspace/index-client';
+import { agentCommentMarks } from '@liveworkspace/model-core/comment-ai';
 
 // An agent that names neither its client nor its token, named by its door (liveknowledge's knowledge-caller.ts names
 // its readers so too).
@@ -26,4 +27,17 @@ export function itemAgentOf(
   const via: ItemAgentVia = door === 'mcp' || door === 'cli' ? door : 'api';
   const named = headers.agent ? cleanItemAgentName(request.headers.get(headers.agent)) : null;
   return { name: named ?? cleanItemAgentName(token.name) ?? DOOR_NAMES[via], via };
+}
+
+/** The marks an agent's new comment carries (liveworkspace/docs/specs/004-index/inbox-reading.md "AI comments"): the
+ *  assistant's name as `itemAgentOf` names it, and `needsResponse` when the body asks with `true`. A person's request
+ *  (no API token) carries none, whatever its body says. */
+export function agentCommentMarksOf(
+  request: Request,
+  token: { name?: string | null } | null | undefined,
+  headers: AgentHeaders,
+  body: { needsResponse?: unknown },
+): { agent?: string; needsResponse?: true } {
+  if (!token) return {};
+  return agentCommentMarks(itemAgentOf(request, token, headers)?.name, body);
 }

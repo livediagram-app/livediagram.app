@@ -18,6 +18,7 @@ import {
   withMentionedBy,
   type ThreadMentioner,
 } from '@liveworkspace/element-model/thread-mentioners';
+import { threadAiState, type ThreadAiState } from '@liveworkspace/model-core/comment-ai';
 import type { Comment } from './comments';
 import { elementActions, isClosedAction } from './element-action';
 import { elementDisplayLabel } from '@liveworkspace/element-model/element-display-label';
@@ -49,6 +50,9 @@ export type CollabThreadRow = {
   // Comments written before `authorId` existed contribute nothing here;
   // the thread still indexes, it just can't be attributed to them.
   participantIds: string[];
+  // Authors who wrote in it only through an agent (a comment marked `ai`): the Inbox reaches them, but it is not
+  // "you commented".
+  agentIds?: string[];
   // Distinct user ids and team member ids @-mentioned anywhere in the thread
   // (docs/specs/012-collaboration/comment-mentions.md), so the Inbox lists it for them.
   mentionedIds: string[];
@@ -60,6 +64,9 @@ export type CollabThreadRow = {
   latestAuthorColor: string;
   // Who wrote the latest comment (the Timeline's `commented` names them), null when it has no author id.
   latestAuthorId: string | null;
+  // The agent that wrote the latest comment, and whether only agents wrote or one asks (model-core comment-ai).
+  latestAgent?: string;
+  aiState?: ThreadAiState;
   firstAt: number;
   latestAt: number;
 };
@@ -109,6 +116,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
       let latest = comments[0]!;
       let first = comments[0]!;
       const participants: string[] = [];
+      const agents: string[] = [];
       const mentioned: string[] = [];
       for (const c of comments) {
         for (const m of c.mentions ?? []) {
@@ -118,7 +126,8 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         }
         if (c.createdAt > latest.createdAt) latest = c;
         if (c.createdAt < first.createdAt) first = c;
-        if (c.authorId && !participants.includes(c.authorId)) participants.push(c.authorId);
+        const by = c.ai ? agents : participants;
+        if (c.authorId && !by.includes(c.authorId)) by.push(c.authorId);
       }
       threads.push({
         elementId: el.id,
@@ -126,8 +135,10 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         resolved: thread.resolved === true,
         commentCount: comments.length,
         participantIds: participants,
+        ...agentsOnly(agents, participants),
         mentionedIds: mentioned,
         ...withMentionedBy(mentionedByOf(comments, mentionIdsOf)),
+        ...threadAiState(comments),
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,
@@ -138,4 +149,10 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
     }
   }
   return { actions, threads };
+}
+
+// Who wrote only through an agent, beside those who wrote themselves; absent when none.
+function agentsOnly(agents: readonly string[], participants: readonly string[]) {
+  const only = agents.filter((id) => !participants.includes(id));
+  return only.length > 0 ? { agentIds: only } : {};
 }

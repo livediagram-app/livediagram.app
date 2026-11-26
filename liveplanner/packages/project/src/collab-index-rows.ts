@@ -27,6 +27,7 @@ import {
   withMentionedBy,
   type ThreadMentioner,
 } from '@liveworkspace/element-model/thread-mentioners';
+import { threadAiState, type ThreadAiState } from '@liveworkspace/model-core/comment-ai';
 import type { Comment } from './comments';
 import {
   ACTION_CARD_MAX,
@@ -76,6 +77,9 @@ export type CollabThreadRow = {
   // The latest comment's server-stamped author, for the Timeline's "Comment Added"; null before authorId existed.
   latestAuthorId: string | null;
   latestAuthorColor: string;
+  // The agent that wrote the latest comment, and whether only agents wrote or one asks (model-core comment-ai).
+  latestAgent?: string;
+  aiState?: ThreadAiState;
   firstAt: number;
   latestAt: number;
 };
@@ -135,6 +139,7 @@ function threadRow(
     agentIds: agents.filter((id) => !participants.includes(id)),
     mentionedIds: mentioned,
     ...withMentionedBy(mentionedByOf(comments, mentionIdsOf)),
+    ...threadAiState(comments),
     latestText: latest.text,
     latestAuthorName: latest.authorName,
     latestAuthorId: latest.authorId ?? null,

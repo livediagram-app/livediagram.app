@@ -73,6 +73,9 @@ export function collabPushOf(
       ...(t.agentIds.length > 0 ? { agentIds: t.agentIds } : {}),
       mentionedIds: t.mentionedIds,
       ...(t.mentionedBy ? { mentionedBy: t.mentionedBy } : {}),
+      // An agent's latest comment, and a thread only agents wrote in or one asks in (inbox-reading.md "AI comments").
+      ...(t.latestAgent ? { latestAgent: t.latestAgent } : {}),
+      ...(t.aiState ? { aiState: t.aiState } : {}),
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
       latestAuthorId: t.latestAuthorId ?? null,

@@ -242,6 +242,9 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('collab_form_reads'),
     // The updates on watched pages told to them (updates.ts), and their name on the updates they made.
     byPerson('item_update_people'),
+    // Their Inbox read state (inbox-reads.ts).
+    byPerson('inbox_reads'),
+    byPerson('inbox_read_marks'),
     // Calls (item-calls.ts): the invites to them go; the calls they started stay in their items' Meetings, the host
     // anonymised.
     byPerson('item_call_invites'),

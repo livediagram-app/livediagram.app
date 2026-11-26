@@ -242,6 +242,39 @@ describe('cardsCollabPush', () => {
     expect(byId.human).not.toHaveProperty('agentIds');
   });
 
+  // inbox-reading.md "AI comments": a thread only agents wrote in is quiet, one that asks says so, and the latest
+  // agent is named.
+  it('says which agent wrote last, and whether a thread is quiet or asks', async () => {
+    const at = (createdAt: number, extra: Record<string, unknown> = {}) => ({
+      authorId: 'user_a',
+      authorName: 'Ada',
+      authorColor: '',
+      text: 'Hm',
+      createdAt,
+      ...extra,
+    });
+    const cards = [
+      await card('c1', {
+        threads: [
+          { id: 'quiet', title: 'Q', resolved: false, comments: [at(1, { ai: true, agent: 'Claude' })] },
+          {
+            id: 'asks',
+            title: 'A',
+            resolved: false,
+            comments: [at(1), at(2, { ai: true, agent: 'Claude', needsResponse: true })],
+          },
+          { id: 'human', title: 'H', resolved: false, comments: [at(3)] },
+        ],
+      }),
+    ];
+    const { push } = await cardsCollabPush(cards, { people: [], hashOf, fallbackAssignerId: 'o' });
+    const byId = Object.fromEntries(push.threads.map((t) => [t.elementId, t]));
+    expect(byId.quiet).toMatchObject({ latestAgent: 'Claude', aiState: 'quiet' });
+    expect(byId.asks).toMatchObject({ latestAgent: 'Claude', aiState: 'ask' });
+    expect(byId.human).not.toHaveProperty('latestAgent');
+    expect(byId.human).not.toHaveProperty('aiState');
+  });
+
   it('lists each thread once, on the first card naming it, and skips one with no comments', async () => {
     const comment = { authorName: 'Ada', authorColor: '#f00', text: 'hi', createdAt: 5 };
     const shared = { id: 'th-s', title: 'Shared', resolved: false, comments: [comment] };

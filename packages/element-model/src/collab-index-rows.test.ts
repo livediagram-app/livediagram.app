@@ -187,3 +187,39 @@ describe('collabIndexRowsFromElements', () => {
     expect(rows.threads).toHaveLength(1);
   });
 });
+
+describe('collab rows: agents (inbox-reading.md "AI comments")', () => {
+  it('keeps an agent’s author apart, names the latest agent and says quiet or ask', () => {
+    const rows = collabIndexRowsFor<{ id: string; commentThread?: unknown }>(() => true);
+    const comment = (createdAt: number, extra: Record<string, unknown> = {}) => ({
+      id: `c${createdAt}`,
+      text: 'Hm',
+      createdAt,
+      authorName: 'Ada',
+      authorColor: '#000',
+      authorId: 'user_a',
+      ...extra,
+    });
+    const { threads } = rows([
+      {
+        id: 'q',
+        commentThread: { resolved: false, comments: [comment(1, { ai: true, agent: 'Claude' })] },
+      },
+      {
+        id: 'a',
+        commentThread: {
+          resolved: false,
+          comments: [comment(1), comment(2, { ai: true, agent: 'Claude', needsResponse: true })],
+        },
+      },
+    ]);
+    expect(threads[0]).toMatchObject({
+      participantIds: [],
+      agentIds: ['user_a'],
+      latestAgent: 'Claude',
+      aiState: 'quiet',
+    });
+    expect(threads[1]).toMatchObject({ participantIds: ['user_a'], aiState: 'ask' });
+    expect(threads[1]).not.toHaveProperty('agentIds');
+  });
+});

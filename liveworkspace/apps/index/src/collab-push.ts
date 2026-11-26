@@ -157,6 +157,8 @@ const THREAD_COLUMNS = [
   'latest_author_color',
   'latest_author_id',
   'mentioned_by',
+  'latest_agent',
+  'ai_state',
   'card',
   'first_at',
   'latest_at',
@@ -223,13 +225,14 @@ export function collabRowStatements(
       .prepare(
         `INSERT INTO collab_threads (app, item_id, tab_id, tab_name, element_id, element_label, resolved,
            comment_count, participant_ids, mentioned_ids, latest_text, latest_author_name, latest_author_color,
-           latest_author_id, mentioned_by, card, first_at, latest_at)
+           latest_author_id, mentioned_by, latest_agent, ai_state, card, first_at, latest_at)
          SELECT ?, ?, ?, ?, json_extract(value, '$.elementId'), json_extract(value, '$.elementLabel'),
            json_extract(value, '$.resolved'), json_extract(value, '$.commentCount'),
            json_extract(value, '$.participantIds'), json_extract(value, '$.mentionedIds'),
            json_extract(value, '$.latestText'), json_extract(value, '$.latestAuthorName'),
            json_extract(value, '$.latestAuthorColor'), json_extract(value, '$.latestAuthorId'),
            COALESCE(json_extract(value, '$.mentionedBy'), '{}'),
+           json_extract(value, '$.latestAgent'), COALESCE(json_extract(value, '$.aiState'), ''),
            CASE WHEN json_type(value, '$.card') = 'object' THEN json_extract(value, '$.card') END,
            json_extract(value, '$.firstAt'), json_extract(value, '$.latestAt')
          FROM json_each(?) WHERE true
