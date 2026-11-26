@@ -98,6 +98,8 @@ writing, so the anchor moves with the text through any edit, live co-editing inc
 - **@mentions** are the thread composer's own ([Comment mentions](../012-collaboration/comment-mentions.md)): the
   candidates are the members of the knowledgebase's team, who can open every page, and a mention puts the thread on
   that person's Inbox. An action's assignee is picked from the same people and notified as every assigned action is.
+  The Inbox titles a note on words by its words, quoted and cut to 80 characters (the saved page's, never a draft's),
+  where an element would give its label; a detached note keeps the plain fallback.
 - **Detached.** Deleting every word a note was on keeps the note when it holds anything (a comment or an action):
   it is **detached**. Its marker leaves the margin (it beside unrelated words would mislead), its thread and action
   are kept as they were, and it is listed under Comments with "Its words were deleted" in place of the quote. Undo,

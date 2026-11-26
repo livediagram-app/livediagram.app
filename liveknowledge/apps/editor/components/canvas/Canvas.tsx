@@ -406,8 +406,9 @@ function CanvasView(props: CanvasProps) {
               <div
                 ref={scrollerRef}
                 data-page-scroller=""
-                // A press off the writing lets go of a reader's selection in it (lib/page-surface/read-selection.ts).
-                onPointerDownCapture={(e) => releaseReadSelection(e.target)}
+                // A press off the writing lets go of a reader's selection in it (lib/page-surface/read-selection.ts);
+                // a press in a portal (the reading selection bar) bubbles here through React and keeps it.
+                onPointerDownCapture={(e) => releaseReadSelection(e.target, e.currentTarget)}
                 // A page is shown at 100% and re-wraps to a narrow window (the narrow view), so nothing scrolls sideways.
                 className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
               >

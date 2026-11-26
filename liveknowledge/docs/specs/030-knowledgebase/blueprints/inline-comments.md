@@ -52,7 +52,10 @@ storage, route or room op.
 - api: `savedPageChanged` compares the saved writing without note marks and the elements without `article-note`
   markers, only after the plain comparison says they differ. `threadsOfTab` adds `anchor` to an `article-note`
   thread: `{ text }` from `savedArticlesOf(tab)`, `{ detached: true }` when no writing marks it, none when only the
-  draft does.
+  draft does. The index push (`document-outbox.ts`) titles a note's thread and action rows by their words through
+  `withNoteQuotes` (`document-room/note-row-labels.ts`), parsing the saved writing only when a row is a note's.
+- editor: the page scroller's press-off-the-writing release (`read-selection.ts`) skips a press from outside the
+  scroller, which reaches it only through a React portal, so the bar's buttons keep the words they act on.
 - agent-verbs: `ListedCanvasThread.anchor`, described in `list_threads`' output schema.
 - workbench: `setSelectionNoteEntry({ canNote, note })` answers its unregister; `selectionNoteVerb`, `canNoteHere`.
   `SelectionMenuActions.sendToPlan` is now nullable.
