@@ -36,7 +36,7 @@ const thread = (app: InboxTarget['app']): InboxTarget => ({
 describe('the Inbox’s verbs here', () => {
   it('replies to any app’s thread on liveworkspace.app, as the workspace token, with no cookies', async () => {
     const doFetch = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
-    const actions = inboxActionsFor(null, doFetch);
+    const actions = inboxActionsFor(null, true, doFetch);
     for (const app of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const)
       expect(actions.offers(thread(app))).toEqual(['reply', 'resolve']);
     await actions.reply!(thread('livedesign'), 'Yes');
@@ -48,7 +48,7 @@ describe('the Inbox’s verbs here', () => {
   });
 
   it('on an app’s own address, acts on every app’s threads and marks its actions done', () => {
-    const actions = inboxActionsFor('livediagram');
+    const actions = inboxActionsFor('livediagram', true);
     expect(actions.offers(thread('livediagram'))).toEqual(['reply', 'resolve']);
     // Another app's, by the workspace token traded for this app's (inbox-reading.md "Cross-app verbs").
     expect(actions.offers(thread('liveplanner'))).toEqual(['reply', 'resolve']);
@@ -57,5 +57,11 @@ describe('the Inbox’s verbs here', () => {
       'done',
     ]);
     expect(actions.offers({ ...thread('livediagram'), local: true })).toEqual([]);
+  });
+
+  it('offers a guest no Reply or Resolve on another app’s thread, which needs an account to trade for', () => {
+    const actions = inboxActionsFor('livediagram', false);
+    expect(actions.offers(thread('livediagram'))).toEqual(['reply', 'resolve']);
+    expect(actions.offers(thread('liveplanner'))).toEqual([]);
   });
 });

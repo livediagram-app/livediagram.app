@@ -60,7 +60,15 @@ export const INBOX_STACKED_QUERY = '(max-width: 767px)';
 /** How long a row is shown in the pane before it reads as read (inbox-reading.md): a glance on the way past isn't. */
 export const READ_AFTER_MS = 1_000;
 
-const isUnread = (e: InboxEntry, read: InboxReadState | undefined) => {
+const isUnread = (e: InboxEntry, read: InboxReadState | undefined, viewerId: string | null) => {
+  // A thread whose latest comment is the reader's own (a reply sent from here or from its app) has nothing new for them.
+  if (
+    (e.kind === 'Thread' || e.kind === 'CardThread') &&
+    viewerId &&
+    e.row.latestAuthorId === viewerId &&
+    !e.row.latestAgent
+  )
+    return false;
   const { key, at } = readOf(e);
   return isInboxRowUnread(key, at, read);
 };
@@ -126,8 +134,11 @@ export function InboxPane({
   const selected = picked ?? (stacked ? undefined : visible[0]);
   const selectedIndex = selected ? visible.indexOf(selected) : -1;
   const showPane = stacked ? paneOpen && Boolean(picked) : Boolean(selected);
-  const shownUnread = showPane && selected ? isUnread(selected, read) : false;
-  const anyUnread = useMemo(() => entries.some((e) => isUnread(e, read)), [entries, read]);
+  const shownUnread = showPane && selected ? isUnread(selected, read, viewerId) : false;
+  const anyUnread = useMemo(
+    () => entries.some((e) => isUnread(e, read, viewerId)),
+    [entries, read, viewerId],
+  );
 
   const [message, setMessage] = useState('');
   const announce = useCallback((m: string) => setMessage(m), []);
@@ -201,33 +212,40 @@ export function InboxPane({
   }, [paneStands]);
 
   // The row on show reads as read after a moment in the pane; moving on before then leaves it unread.
-  const shownRead = showPane && selected ? readOf(selected) : null;
-  const readKey = shownUnread && shownRead ? `${shownRead.key}@${shownRead.at}` : null;
+  const shownRead = showPane && picked ? readOf(picked) : null;
+  // Only a row the person chose reads as read: the first row shown on its own as the page opens is not.
+  const pickedUnread = showPane && picked ? isUnread(picked, read, viewerId) : false;
+  const readKey = pickedUnread && shownRead ? `${shownRead.key}@${shownRead.at}` : null;
+  // A row marked unread by hand stays unread while it is on show: the timer reads it only once it is chosen again.
+  const [keptUnread, setKeptUnread] = useState<string | null>(null);
+  const pickedKey = picked?.key ?? null;
+  useEffect(() => setKeptUnread(null), [pickedKey]);
   const toRead = useRef(shownRead);
   toRead.current = shownRead;
   useEffect(() => {
-    if (!readKey) return;
+    if (!readKey || readKey === keptUnread) return;
     const timer = setTimeout(() => {
       const row = toRead.current;
       if (row) markRead([row]);
     }, READ_AFTER_MS);
     return () => clearTimeout(timer);
-  }, [readKey, markRead]);
+  }, [readKey, keptUnread, markRead]);
 
   const toggleRead = useCallback(
     (entry: InboxEntry) => {
       const row = readOf(entry);
-      if (isUnread(entry, read)) {
+      if (isUnread(entry, read, viewerId)) {
         markRead([row]);
         onTelemetry?.('Changed', 'Read');
         announce('Marked read');
       } else {
         markUnread(row.key);
+        setKeptUnread(`${row.key}@${row.at}`);
         onTelemetry?.('Changed', 'Unread');
         announce('Marked unread');
       }
     },
-    [read, markRead, markUnread, onTelemetry, announce],
+    [read, viewerId, markRead, markUnread, onTelemetry, announce],
   );
   const readAll = useCallback(() => {
     if (!anyUnread) return;
@@ -238,9 +256,9 @@ export function InboxPane({
   // A verb done on the row reads it, whatever the clock says.
   const onActed = useCallback(
     (entry: InboxEntry) => {
-      if (isUnread(entry, read)) markRead([readOf(entry)]);
+      if (isUnread(entry, read, viewerId)) markRead([readOf(entry)]);
     },
-    [read, markRead],
+    [read, viewerId, markRead],
   );
 
   const onPick = useCallback(
@@ -539,7 +557,7 @@ function Rows({
         entry={e}
         id={rowId(i)}
         selected={e.key === selectedKey}
-        unread={isUnread(e, read)}
+        unread={isUnread(e, read, viewerId)}
         density={density}
         viewerId={viewerId}
         onPick={onPick}

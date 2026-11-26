@@ -137,12 +137,20 @@ export type InboxOpenAction = {
 export function explorerInboxActions(
   ownerId: string | null,
   open: InboxOpenAction | null,
+  signedIn = false,
 ): InboxActions {
   return createInboxActions({
     // This app's rows through its own api; another app's through that app's, by the person's workspace token
     // (inbox-reading.md "Cross-app verbs"). Signed out, none.
     api: (app) =>
-      !ownerId ? null : app === 'livediagram' ? inboxApi(ownerId) : explorerCrossAppApi(app),
+      !ownerId
+        ? null
+        : app === 'livediagram'
+          ? inboxApi(ownerId)
+          : // A guest has no account to trade for a workspace token: no Reply or Resolve on another app's rows.
+            signedIn
+            ? explorerCrossAppApi(app)
+            : null,
     openAction: open,
   });
 }

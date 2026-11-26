@@ -101,8 +101,9 @@ function ExplorerImpl({
         currentProjectId && inboxOpenAction
           ? { itemId: currentProjectId, ...inboxOpenAction }
           : null,
+        !!accountUserId,
       ),
-    [inboxOwner, currentProjectId, inboxOpenAction],
+    [inboxOwner, currentProjectId, inboxOpenAction, accountUserId],
   );
   // Subscribe to Calendar on My Work: the Inbox header's calendar door, an account's only
   // (docs/specs/026-plan/calendar-feed.md "The My Work feed").

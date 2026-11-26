@@ -477,6 +477,13 @@ export const InboxRow = memo(function InboxRow({
           ) : null}
           <span title={`${appName} › ${path}`} className="flex min-w-0 items-center gap-1">
             <AppMark app={entry.row.app} size={13} />
+            {/* The app's name, then the item (inbox-reading.md "A row says ... where"): which app, at a glance. */}
+            <span data-inbox-app="" className="shrink-0 text-slate-600 dark:text-slate-300">
+              {appName}
+            </span>
+            <span aria-hidden className="shrink-0 text-slate-300 dark:text-slate-600">
+              ›
+            </span>
             <span className="min-w-0 truncate text-slate-500 dark:text-slate-400">{f.item}</span>
           </span>
           {f.local ? <ThisBrowserPill inLink /> : null}

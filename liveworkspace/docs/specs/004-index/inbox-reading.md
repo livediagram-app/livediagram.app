@@ -52,8 +52,8 @@ every app's API. On an app's own address, and in its editors, the page asks acco
 bearer: `GET /api/workspace/account/workspace-token` (the app's router forwards it to accounts'
 `/api/account/workspace-token`, [accounts.md "liveworkspace.app's own token"](../003-accounts/accounts.md#liveworkspaceapps-own-token)),
 kept until a minute before it runs out and asked once for every app's rows. With it the pane calls the owning app's
-comment routes as the person, exactly as liveworkspace.app does. A signed-out reader, and a page whose ask fails,
-offers no Reply or Resolve on another app's rows (Open in the app stays).
+comment routes as the person, exactly as liveworkspace.app does. A signed-out reader, a guest (who has no account
+to trade for a token) and a page whose ask fails offer no Reply or Resolve on another app's rows (Open in the app stays).
 
 ### Share roles
 
@@ -71,9 +71,11 @@ state"](blueprints/inbox.md#read-state)), so a row read in livediagram reads as 
 liveworkspace.app and on another device, at the next read of the Inbox (at most 30 seconds on an open page, at once
 on coming back to the tab).
 
-- A row is **read** when it has been shown in the pane for 1 second, or acted on there (Reply, Resolve, Open in the
-  app), and **unread again when it changes**: a new comment, a card handed over again (its time moves past the time it
-  was read at).
+- A row is **read** when the person has chosen it and it has been shown in the pane for 1 second (the first row the
+  page shows on its own as it opens is not read by that), or acted on there (Reply, Resolve, Open in the app), and
+  **unread again when it changes**: a new comment, a card handed over again (its time moves past the time it was read
+  at). A thread whose latest comment is the reader's own (not their assistant's) is read: their reply, here or in the
+  app, has nothing new for them.
 - **Mark Unread** (u) in the pane makes it unread until it is read again; **Mark Read** undoes that.
 - **Mark All Read**: a glyph button (a double tick, tooltip **Mark All Read**) in the Inbox's header row, beside the
   filter, on the page and in the panel; disabled while nothing is unread. Every row listed or not becomes read; what

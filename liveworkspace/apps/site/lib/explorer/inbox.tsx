@@ -63,13 +63,19 @@ export function localInboxHost(
  *  is every app's api; on an app's address that app's by its own token, and every other app's by the workspace token
  *  traded for it. Mark Done on a
  *  livediagram action goes through its action route; nothing here reaches Offline's items. */
-export function inboxActionsFor(host: AppName | null, doFetch: typeof fetch = fetch): InboxActions {
+export function inboxActionsFor(
+  host: AppName | null,
+  signedIn: boolean,
+  doFetch: typeof fetch = fetch,
+): InboxActions {
   return createInboxActions({
     api: (app) => {
       if (!isAppName(app)) return null;
       // On an app's address its token reaches that app's api alone: another app's goes by the workspace token traded
       // for it (inbox-reading.md "Cross-app verbs").
-      if (host !== null && host !== app) return crossAppInboxApi(app, crossAppToken(), doFetch);
+      // A guest has no account to trade for one, so their Inbox offers no Reply or Resolve there (Open stays).
+      if (host !== null && host !== app)
+        return signedIn ? crossAppInboxApi(app, crossAppToken(), doFetch) : null;
       return async (path, init) => {
         const token = await workspaceToken();
         const headers = new Headers();

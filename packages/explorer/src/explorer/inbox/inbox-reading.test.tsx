@@ -116,7 +116,7 @@ afterEach(() => {
 });
 
 describe('read and unread', () => {
-  it('reads a row after a moment in the pane, never on a glance, and keeps it with the index', async () => {
+  it('reads a chosen row after a moment in the pane, never on a glance nor the first row shown alone, and keeps it with the index', async () => {
     const index = withItem();
     index.inbox.threads.push(thread());
     index.inbox.actions.push(action());
@@ -124,7 +124,11 @@ describe('read and unread', () => {
     await ready();
     // Both unread: a dot each.
     expect(options().map((o) => o.hasAttribute('data-inbox-unread'))).toEqual([true, true]);
-    // The first row shows beside the list: under a second, still unread.
+    // The first row shows beside the list on its own: not chosen, so it stays unread however long it shows.
+    act(() => void vi.advanceTimersByTime(READ_AFTER_MS * 3));
+    expect(marks(index)).toEqual([]);
+    // Chosen: under a second, still unread.
+    fireEvent.click(options()[0]!);
     act(() => void vi.advanceTimersByTime(READ_AFTER_MS - 100));
     expect(marks(index)).toEqual([]);
     act(() => void vi.advanceTimersByTime(200));
@@ -137,6 +141,21 @@ describe('read and unread', () => {
     expect(options()[1]!.hasAttribute('data-inbox-unread')).toBe(true);
   });
 
+  it('reads a thread whose latest comment is the reader’s own as read, but not one their assistant wrote', async () => {
+    const index = withItem();
+    index.inbox.threads.push(thread({ latestAuthorId: 'user_me' }));
+    index.inbox.threads.push(
+      thread({ elementId: 'e2', latestAuthorId: 'user_me', latestAgent: 'Claude' }),
+    );
+    renderInbox(index, { inbox: { actions: host() } });
+    await ready();
+    const dots = options().map((o) => o.hasAttribute('data-inbox-unread'));
+    expect(dots).toHaveLength(2);
+    expect(dots.filter(Boolean)).toHaveLength(1);
+    // Each row names its app beside the item.
+    expect(options()[0]!.querySelector('[data-inbox-app]')?.textContent).toBe('liveplanner');
+  });
+
   it('marks the chosen row unread and read again with u and the pane’s button, and reports it', async () => {
     const onTelemetry = vi.fn();
     const index = withItem();
@@ -146,10 +165,14 @@ describe('read and unread', () => {
     renderInbox(index, { inbox: { actions: host(), onTelemetry } });
     await ready();
     expect(options()[0]!.hasAttribute('data-inbox-unread')).toBe(false);
+    fireEvent.click(options()[0]!);
     const toggle = await within(pane()).findByRole('button', { name: 'Mark Unread' });
     fireEvent.click(toggle);
     expect(options()[0]!.hasAttribute('data-inbox-unread')).toBe(true);
     expect(marks(index).at(-1)).toEqual({ unread: [threadKey(t)] });
+    // Still on show, it stays unread: the pane's timer doesn't read it back.
+    act(() => void vi.advanceTimersByTime(READ_AFTER_MS * 3));
+    expect(options()[0]!.hasAttribute('data-inbox-unread')).toBe(true);
     expect(onTelemetry).toHaveBeenCalledWith('Changed', 'Unread');
     // u reads it again.
     fireEvent.keyDown(list(), { key: 'u' });
