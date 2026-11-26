@@ -13,6 +13,7 @@ import {
   SELF_MEDIA_ID,
   setCallMaximised,
   useCallMedia,
+  useCallSelf,
   type CallMedia,
   type CallMediaStreams,
 } from '@/lib/calls/calls-store';
@@ -20,17 +21,19 @@ import type { Point } from '@/lib/calls/hearing';
 import {
   BUBBLE_GAP_PX,
   BUBBLE_NUDGE_MS,
+  crowdedIds,
   groupWidth,
   layoutBubbles,
   tailShift,
   type BubbleBox,
   type BubbleRect,
   type BubbleView,
+  type CrowdPoint,
 } from '@/lib/calls/bubble-layout';
 import { useLocalOnly } from '@/lib/calls/local-preview';
 import { track } from '@/lib/telemetry';
 import { MaximisedBubble } from './MaximisedBubble';
-import { BUBBLE_WIDTH_PX, MediaBubble } from './MediaBubble';
+import { BUBBLE_COMPACT_WIDTH_PX, BUBBLE_WIDTH_PX, MediaBubble } from './MediaBubble';
 import { BubbleBars, type TalkingBarsPeer } from './TalkingBars';
 
 /**
@@ -41,8 +44,7 @@ import { BubbleBars, type TalkingBarsPeer } from './TalkingBars';
  */
 export const BUBBLE_LIFT_PX = AVATAR_HEAD_CHROME + 8;
 
-const MEDIA_ORDER: readonly CallMedia[] = ['video', 'screen'];
-const BUBBLE_HEIGHT_PX = (BUBBLE_WIDTH_PX * 9) / 16;
+const NO_CROWD: ReadonlySet<string> = new Set();
 // The nudge and the swap: a short ease-out slide, apart from the walk's linear glide.
 const NUDGE_TRANSITION = `transform ${BUBBLE_NUDGE_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
 
@@ -51,7 +53,11 @@ export function useCallBubbleRects(): RefObject<readonly BubbleRect[]> {
   return useRef<readonly BubbleRect[]>([]);
 }
 
-const countOf = (streams: CallMediaStreams) => MEDIA_ORDER.filter((m) => streams[m]).length;
+// Camera and screen together are one bubble: the screen, the camera a circle in its corner (video-and-screen-bubbles.md
+// "Camera and screen together are one bubble").
+const countOf = (streams: CallMediaStreams) => (streams.video || streams.screen ? 1 : 0);
+const shownMedia = (streams: CallMediaStreams): CallMedia | null =>
+  streams.screen ? 'screen' : streams.video ? 'video' : null;
 const bottomOf = (at: Point, scale: number) => at.y - AVATAR_HEIGHT * scale - BUBBLE_LIFT_PX;
 
 function Group({
@@ -60,6 +66,7 @@ function Group({
   scale,
   dx,
   dy,
+  width,
   glideMs,
   walking,
   streams,
@@ -67,6 +74,7 @@ function Group({
   color,
   onStopShare,
   localOnly,
+  alone = false,
 }: {
   id: string;
   at: Point;
@@ -75,6 +83,8 @@ function Group({
   dx: number;
   // Canvas px lifted onto a wrapped row (negative), or 0.
   dy: number;
+  // Each bubble's width in canvas px: smaller in a crowd, which also leaves the name off.
+  width: number;
   glideMs: number;
   walking: boolean;
   streams: CallMediaStreams;
@@ -84,6 +94,9 @@ function Group({
   onStopShare?: () => void;
   // Your own bubbles that are local previews, nobody else's (video-and-screen-bubbles.md "Local preview").
   localOnly?: { video: boolean; screen: boolean };
+  // Your own, in a call with nobody within earshot: nobody receives it (video-and-screen-bubbles.md "Nobody close
+  // enough").
+  alone?: boolean;
 }) {
   const placed = useRef<HTMLDivElement>(null);
   const from = useRef(at);
@@ -127,15 +140,16 @@ function Group({
           className="absolute -bottom-[5px] left-1/2 size-[10px] rounded-[2px] motion-reduce:transition-none"
           style={{
             background: color,
-            transform: `translateX(calc(-50% + ${tailShift(dx, groupWidth(countOf(streams), BUBBLE_WIDTH_PX))}px)) rotate(45deg)`,
+            transform: `translateX(calc(-50% + ${tailShift(dx, groupWidth(countOf(streams), width))}px)) rotate(45deg)`,
             transition: NUDGE_TRANSITION,
           }}
         />
         {/* Their talking equaliser, on the bubble's top-left corner while they talk. */}
         <BubbleBars id={id} color={color} />
-        {MEDIA_ORDER.map((media) => {
-          const stream = streams[media];
-          if (!stream) return null;
+        {[shownMedia(streams)].map((media) => {
+          const stream = media ? streams[media] : null;
+          if (!media || !stream) return null;
+          const inset = media === 'screen' ? streams.video : null;
           return (
             <MediaBubble
               key={media}
@@ -143,9 +157,24 @@ function Group({
               media={media}
               name={name}
               color={color}
+              width={width}
+              compact={width < BUBBLE_WIDTH_PX}
               // Your own camera is a mirror, as every video call shows it; others see it the right way round.
               mirrored={name === null && media === 'video'}
-              localOnly={localOnly?.[media] === true}
+              inset={
+                inset
+                  ? {
+                      stream: inset,
+                      mirrored: name === null,
+                      onMaximise: () => {
+                        track('Canvas', 'Used', 'BubbleMaximise');
+                        setCallMaximised({ id, media: 'video' });
+                      },
+                    }
+                  : undefined
+              }
+              localOnly={localOnly?.[media] === true || (!!inset && localOnly?.video === true)}
+              alone={alone}
               onStopShare={onStopShare}
               onMaximise={() => {
                 track('Canvas', 'Used', 'BubbleMaximise');
@@ -173,12 +202,27 @@ export function CallBubbles(props: {
   const media = useCallMedia();
   const own = media.get(SELF_MEDIA_ID);
   const previews = useLocalOnly();
+  const call = useCallSelf();
+  // Many bubbles in one place shrink (video-and-screen-bubbles.md "A crowd shrinks"). Kept in state like the order
+  // below, so the edge of a crowd is sticky.
+  const heads: CrowdPoint[] = [];
+  const head = (id: string, at: Point, streams: CallMediaStreams | undefined) => {
+    const count = streams ? countOf(streams) : 0;
+    if (count > 0) heads.push({ id, x: at.x, y: at.y, count });
+  };
+  for (const p of props.peers) head(p.id, p.at, media.get(p.id));
+  if (props.self) head(SELF_MEDIA_ID, props.self.at, own);
+  const [crowd, setCrowd] = useState<ReadonlySet<string>>(NO_CROWD);
+  const nextCrowd = crowdedIds(heads, crowd);
+  if (nextCrowd !== crowd) setCrowd(nextCrowd);
+  const widthOf = (id: string) => (nextCrowd.has(id) ? BUBBLE_COMPACT_WIDTH_PX : BUBBLE_WIDTH_PX);
   const boxes: BubbleBox[] = [];
   const box = (id: string, at: Point, scale: number, streams: CallMediaStreams | undefined) => {
     const count = streams ? countOf(streams) : 0;
     if (count === 0) return;
-    const width = groupWidth(count, BUBBLE_WIDTH_PX);
-    boxes.push({ id, x: at.x, bottom: bottomOf(at, scale), width, height: BUBBLE_HEIGHT_PX });
+    const each = widthOf(id);
+    const width = groupWidth(count, each);
+    boxes.push({ id, x: at.x, bottom: bottomOf(at, scale), width, height: (each * 9) / 16 });
   };
   for (const p of props.peers) box(p.id, p.at, p.scale, media.get(p.id));
   if (props.self) box(SELF_MEDIA_ID, props.self.at, props.self.scale, own);
@@ -214,6 +258,7 @@ export function CallBubbles(props: {
             scale={p.scale}
             dx={layout.dx.get(p.id) ?? 0}
             dy={layout.dy.get(p.id) ?? 0}
+            width={widthOf(p.id)}
             glideMs={p.glideMs}
             walking={p.walking}
             streams={streams}
@@ -230,12 +275,14 @@ export function CallBubbles(props: {
           scale={props.self.scale}
           dx={layout.dx.get(SELF_MEDIA_ID) ?? 0}
           dy={layout.dy.get(SELF_MEDIA_ID) ?? 0}
+          width={widthOf(SELF_MEDIA_ID)}
           glideMs={0}
           walking={false}
           streams={own}
           name={null}
           color={props.self.color}
           localOnly={previews}
+          alone={call.phase === 'live' && !call.someoneNear}
         />
       ) : null}
       <MaximisedBubble

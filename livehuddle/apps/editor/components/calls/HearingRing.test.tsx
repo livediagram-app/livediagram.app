@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetCallSelf, setCallSelf } from '@/lib/calls/calls-store';
 import { callStages } from '@/lib/calls/stage';
 import { roomZones } from '@/lib/calls/zones';
-import { HEARING_RING_FADE_MS, HearingRing } from './HearingRing';
+import { HEARING_RING_FADE_MS, HEARING_RING_FLASH_MS, HearingRing } from './HearingRing';
+import { HEARING_RADIUS_PX } from '@/lib/calls/hearing';
 
 // docs/specs/012-collaboration/proximity-audio.md "Your hearing ring".
 const zones = roomZones([
@@ -49,7 +50,7 @@ describe('HearingRing', () => {
     // Centred on your feet, the hearing radius round them, with no mask on the open floor.
     const edge = shown.querySelector('circle')!;
     expect(edge.getAttribute('cx')).toBe('2000');
-    expect(edge.getAttribute('r')).toBe('260');
+    expect(edge.getAttribute('r')).toBe(String(HEARING_RADIUS_PX));
     expect(shown.querySelector('mask')).toBeNull();
     act(() => setCallSelf({ level: 0 }));
     expect(svg(container)!.style.opacity).toBe('0');
@@ -92,5 +93,34 @@ describe('HearingRing', () => {
     act(() => setCallSelf({ stage: 'speaker' }));
     const far = render(ring());
     expect(svg(far.container)).toBeNull();
+  });
+
+  // proximity-audio.md "Your hearing ring": someone coming within earshot flashes it for a second.
+  it('flashes for a second when someone comes within earshot, talking or not', () => {
+    const at = { x: 2000, y: 2000 };
+    const flash = (n: number) => (
+      <HearingRing
+        self={{ at, color: '#0af' }}
+        zones={zones}
+        stages={stages}
+        level="participate"
+        flash={n}
+      />
+    );
+    const { container, rerender } = render(flash(0));
+    expect(svg(container)).toBeNull();
+    rerender(flash(1));
+    const shown = svg(container)!;
+    expect(shown.style.opacity).toBe('1');
+    // A flash is not talking: no ripple.
+    expect(shown.querySelector('.animate-hearing-ripple')).toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(HEARING_RING_FLASH_MS);
+    });
+    expect(svg(container)!.style.opacity).toBe('0');
+    act(() => {
+      vi.advanceTimersByTime(HEARING_RING_FADE_MS);
+    });
+    expect(svg(container)).toBeNull();
   });
 });

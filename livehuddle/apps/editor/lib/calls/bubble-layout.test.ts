@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  BUBBLE_CROWD_REACH_PX,
+  BUBBLE_CROWD_STICK,
   BUBBLE_GAP_PX,
+  crowdedIds,
   BUBBLE_SWAP_PX,
   BUBBLE_TAIL_INSET_PX,
   groupWidth,
@@ -216,5 +219,34 @@ describe('tailShift', () => {
     expect(tailShift(30, 120)).toBe(-30);
     expect(tailShift(-500, 120)).toBe(60 - BUBBLE_TAIL_INSET_PX);
     expect(tailShift(0, 10)).toBe(0);
+  });
+});
+
+// video-and-screen-bubbles.md "A crowd shrinks".
+describe('crowdedIds', () => {
+  const head = (id: string, x: number, count = 1) => ({ id, x, y: 300, count });
+  const none: ReadonlySet<string> = new Set();
+
+  it('crowds three or more bubbles within reach of each other, chained', () => {
+    const near = [head('a', 0), head('b', 200), head('c', 400)];
+    expect([...crowdedIds(near, none)].sort()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('leaves two bubbles, or heads out of reach, uncrowded', () => {
+    expect(crowdedIds([head('a', 0), head('b', 100)], none).size).toBe(0);
+    const apart = [head('a', 0), head('b', 0), head('c', BUBBLE_CROWD_REACH_PX * 3)];
+    expect(crowdedIds(apart, none).size).toBe(0);
+  });
+
+  it('counts a wearer of two bubbles twice', () => {
+    expect([...crowdedIds([head('a', 0, 2), head('b', 100)], none)].sort()).toEqual(['a', 'b']);
+  });
+
+  it('keeps the crowd a little further out, so its edge does not flicker, and returns prev when unchanged', () => {
+    const past = BUBBLE_CROWD_REACH_PX * ((1 + BUBBLE_CROWD_STICK) / 2);
+    const points = [head('a', 0), head('b', 100), head('c', 100 + past)];
+    expect(crowdedIds(points, none).has('c')).toBe(false);
+    const prev = new Set(['a', 'b', 'c']);
+    expect(crowdedIds(points, prev)).toBe(prev);
   });
 });

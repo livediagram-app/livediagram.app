@@ -7,11 +7,11 @@ import { CALL_RELEASE_RADIUS_PX, voiceReach } from '@livehuddle/document';
 import type { CallZoning } from './zones';
 
 /** A speaker within this many canvas px of you, feet to feet, is subscribed. */
-export const HEARING_RADIUS_PX = 260;
+export const HEARING_RADIUS_PX = 400;
 /** A subscribed speaker is let go only beyond this, so somebody on the edge does not flicker in and out. */
 export const RELEASE_RADIUS_PX = CALL_RELEASE_RADIUS_PX;
 /** Full volume within this. */
-export const FULL_VOLUME_RADIUS_PX = 90;
+export const FULL_VOLUME_RADIUS_PX = 140;
 /** Never hard left or right. */
 export const MAX_PAN = 0.8;
 /** Out of earshot, the bars fade from BARS_FAR_OPACITY_NEAR at the release radius to the minimum here. */
@@ -162,4 +162,33 @@ export function walkTowards(self: Point, target: Point): Point {
   if (d <= WALK_TO_TALKER_STOP_PX) return self;
   const k = (d - WALK_TO_TALKER_STOP_PX) / d;
   return { x: self.x + (target.x - self.x) * k, y: self.y + (target.y - self.y) * k };
+}
+
+/**
+ * Who stands within earshot of you now, whoever has a microphone (proximity-audio.md "Your hearing ring": the ring
+ * flashes when someone comes into it). Joins inside your hearing radius (times your reach), and, like a speaker heard,
+ * leaves only beyond the release radius, so someone on the edge does not flash it again and again. Walls and stages
+ * decide first (togetherWith). Returns `prev` itself when nothing changed.
+ */
+export function nextNear(
+  prev: ReadonlySet<string>,
+  self: Point,
+  walkers: Iterable<{ id: string; at: Point }>,
+  zoning: CallZoning,
+): ReadonlySet<string> {
+  const next = new Set<string>();
+  const reach = reachOf(self);
+  for (const { id, at } of walkers) {
+    const together = togetherWith(id, zoning);
+    if (together === 'apart' || together === 'stage') continue;
+    const d = distance(self, at);
+    if (
+      together === 'room' ||
+      d <= HEARING_RADIUS_PX * reach ||
+      (prev.has(id) && d <= RELEASE_RADIUS_PX * reach)
+    )
+      next.add(id);
+  }
+  if (next.size === prev.size && [...next].every((id) => prev.has(id))) return prev;
+  return next;
 }

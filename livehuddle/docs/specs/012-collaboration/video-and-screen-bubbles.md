@@ -13,7 +13,7 @@ that only you see.
 
 Video and screens ride the call exactly as voices do: you see the bubbles of the people you hear
 ([Hearing](proximity-audio.md#hearing): everyone in your [room](meeting-rooms-and-stage.md#rooms-are-calls-part-1-built),
-or in the open within 260 canvas px, let go beyond 300), and nobody else. A room's cameras and screens stay in it. Nothing is sent to
+or in the open within 400 canvas px, let go beyond 460), and nobody else. A room's cameras and screens stay in it. Nothing is sent to
 someone out of earshot, so a bubble costs nothing until somebody walks up.
 
 On top of earshot, a bubble is received only while it can be seen:
@@ -96,8 +96,11 @@ waits for it.
 - **The camera has no controls of its own** beyond its on and off button in the call group (no device switch, no
   blur, no mirror toggle: your own camera is always mirrored), so turning it on changes nothing else in the strip
   (owner, 2026-11-06: "Maybe same with camera too, if that has any controls").
-- Viewers in earshot see the share as a bubble above the sharer, next to their camera bubble when both are on, and
-  maximise it the same way.
+- Viewers in earshot see the share as a bubble above the sharer, and maximise it the same way.
+- **Camera and screen together are one bubble** (owner, 2026-11-25: "if I share my camera and screen at the same
+  time, I only see one bubble"). The screen fills it, and the camera shows as a circle in its bottom-left corner,
+  ringed in the person's colour, for your own and for everyone else's. Pressing the circle maximises the camera;
+  pressing anywhere else maximises the screen. With either one off, the other is a bubble on its own as before.
 - **It stops** when the sharer presses Stop Sharing (on the Call dock), when they stop it from the browser's own
   control, when they leave the call, the mode or the tab, and when the kill switch tightens. Walking away from people
   stops them receiving it, as with a voice; the share itself carries on for whoever is still near.
@@ -139,7 +142,8 @@ your own screen and nothing is sent; once a call is joined, the same bubble is s
 One bubble for both kinds, drawn in the canvas layer so it zooms and slides with the character:
 
 - A rounded 16:9 tile, **180 canvas px wide** (owner, 2026-11-07: "Make the bubble bigger"), just over the head, with
-  a ring in the person's colour. A screen bubble has a small screen badge in its corner.
+  a ring in the person's colour. A screen bubble has a small screen badge in its corner, which gives way to the
+  camera circle when the camera is on too.
 - Hover or focus shows **"Maximise Sam's camera"** (or screen); pressing it maximises. In Avatar mode a press on a
   bubble (anyone's, your own too), on Stop Sharing or on the maximised panel **only** does that: it never also walks
   you to the spot behind it (owner, 2026-11-07: "when sharing camera or screen, anybody including me who clicks the
@@ -154,6 +158,13 @@ One bubble for both kinds, drawn in the canvas layer so it zooms and slides with
 - **Place.** Its bottom sits `BUBBLE_LIFT_PX` = the head's chrome (`AVATAR_HEAD_CHROME`, what the name chip, status chip
   and away Zz take) + 8 px over the head, 32 px above the top of the head (it was 50, above the talking equaliser)
   (owner, 2026-11-07: "bring it slightly closer to their body, atm it floats quite high far away").
+- **Name.** A bubble above a head carries its person's name ("You" on your own) in a small chip in its top-right
+  corner, so you know whose face or screen it is without hovering (owner, 2026-11-25). The chip gives way to the
+  maximise mark on hover, and a crowd's smaller bubbles (below) leave it off.
+- **Nobody close enough.** While your camera or screen is on in a call and nobody stands within earshot of you (the
+  microphone's Nobody Near, [proximity audio](proximity-audio.md)), your own bubble says **Nobody close enough to
+  see** in a small chip in its bottom-right corner, so you know nobody is receiving it (owner, 2026-11-25). It goes
+  the moment someone walks within earshot. A local preview shows its Only You tag there instead.
 - **The talking equaliser moves onto the bubble.** Someone wearing a bubble no longer shows the
   [equaliser](proximity-audio.md#the-talking-equaliser) over their head: it shows on the bubble's **top-left corner**
   while they talk, your own too. Someone with no bubble keeps it over the head.
@@ -165,7 +176,7 @@ People talking stand close, so their bubbles would cover each other. They never 
 - **Bubbles slide apart sideways.** Bubbles at about the same height (their tops and bottoms within 8 canvas px of
   meeting) are laid out in one row, in their people's left-to-right order, 8 canvas px apart. A crowded row is
   centred on its people, each bubble moved as little as the others; a bubble with room to spare stays exactly above
-  its head. A person's camera and screen move together.
+  its head. A person's camera and screen are one bubble.
 - **A small tail** in the person's colour under each bubble points down at its own head, so a bubble nudged aside
   still says whose it is. It slides along the bubble's lower edge with the nudge, never past its rounded corners.
 - **No jitter when people walk past each other.** Two bubbles swap sides only once their people have crossed by 24
@@ -180,7 +191,13 @@ People talking stand close, so their bubbles would cover each other. They never 
   edge of the visible canvas, slides in just far enough to show every bubble whole, as a speech bubble does; only the
   bubbles at the edge move, so someone further in keeps theirs over their head. The order and the gaps stay, so it
   adds no jitter, and each tail still points down at its own head.
-- Under reduced motion the nudge and the swap are not animated.
+- **A crowd shrinks** (owner, 2026-11-25: "When many camera and screen share bubbles are in the same area, make them
+  smaller"). Three or more bubbles over people standing near each other (heads within 360 canvas px across and 120
+  canvas px up or down, chained) make a crowd, and its bubbles drop to 120 canvas px wide with no name chip; the
+  hover card and the maximised panel still name them. A bubble already in a crowd stays small until its person is a
+  quarter further out, so someone on the edge does not flicker between sizes. The size change is a short ease, not a
+  jump.
+- Under reduced motion the nudge, the swap and the size change are not animated.
 
 **Speech bubbles stay clear.** A speech bubble ([Avatar mode](../008-canvas/avatar-mode.md#speech-bubbles)) floats
 up from a head, and a camera or screen bubble sits right there. Wherever a speech bubble's path up would cross a

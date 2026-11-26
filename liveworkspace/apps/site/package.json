@@ -68,6 +68,7 @@
     "@livediagram/templates": "workspace:*",
     "@livedocuments/agent-verbs": "workspace:*",
     "@livedocuments/templates": "workspace:*",
+    "@livehuddle/templates": "workspace:*",
     "@liveknowledge/agent-verbs": "workspace:*",
     "@liveknowledge/templates": "workspace:*",
     "@liveplanner/agent-verbs": "workspace:*",

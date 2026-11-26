@@ -4,6 +4,7 @@ import type { AccessLevel } from '@livehuddle/api-schema';
 import { STAGE_FRONT } from '@livehuddle/document';
 import { buildTemplate } from '@livehuddle/templates';
 import {
+  HEARING_RADIUS_PX,
   inEarshot,
   MAX_PAN,
   nextHeard,
@@ -198,11 +199,11 @@ describe('the stage', () => {
     const others: Who = [
       ['speaker', onStage, 'edit'],
       ['passer-by', { x: 100, y: 820 }],
-      ['in the meeting', { x: 1600, y: 250 }],
+      ['in the meeting', { x: 1665, y: 265 }],
     ];
     expect(scene({ x: 100, y: 760 }, others).heard).toEqual(['speaker']);
     // In the meeting room: the stage, and the meeting by distance (its far corner out of earshot).
-    const meeting = scene({ x: 1320, y: 50 }, others);
+    const meeting = scene({ x: 1320, y: 40 }, others);
     expect(meeting.heard).toEqual(['speaker']);
     expect(togetherWith('in the meeting', meeting.zoning)).toBe('open');
     expect(scene({ x: 1450, y: 250 }, others).heard).toEqual(['in the meeting', 'speaker']);
@@ -214,7 +215,7 @@ describe('the stage', () => {
     });
     expect(heard).toEqual(['co-speaker']);
     expect(togetherWith('co-speaker', z)).toBe('room');
-    expect(placeFor(onStage, { x: onStage.x + 300, y: onStage.y }, 'room')).toEqual({
+    expect(placeFor(onStage, { x: onStage.x + HEARING_RADIUS_PX, y: onStage.y }, 'room')).toEqual({
       gain: 1,
       pan: MAX_PAN,
     });
@@ -275,7 +276,11 @@ describe('the stage', () => {
     const many = roomZones(rooms);
     const stages = callStages([stage('s', 100, 40)], many);
     const walkers = new Map<string, Point>(
-      Array.from({ length: 100 }, (_, i) => [`p${i}`, { x: i * 300 + 50, y: 200 }] as const),
+      // Two to a room, at its far ends: beyond the release radius of each other.
+      Array.from(
+        { length: 100 },
+        (_, i) => [`p${i}`, { x: Math.floor(i / 2) * 600 + (i % 2 ? 550 : 50), y: 200 }] as const,
+      ),
     );
     walkers.set('speaker', { x: 200, y: 100 });
     const levels = new Map<string, AccessLevel>([['speaker', 'edit']]);
