@@ -99,6 +99,14 @@ describe('listedThread', () => {
       { emoji: '👍', name: 'Thumbs Up', count: 1, by: ['Bea'] },
     ]);
   });
+
+  it('marks an agent’s comment and one that needs a response', () => {
+    const listed = listedThread({
+      ...THREADS[0]!,
+      comments: [comment('c9', { agent: 'Claude', needsResponse: true })],
+    });
+    expect(listed.comments[0]).toMatchObject({ agent: 'Claude', needsResponse: true });
+  });
 });
 
 describe('listThreads', () => {
