@@ -43,7 +43,7 @@ The pane's verbs:
 
 - **Reply** (r): a field under the thread and **Send** (⌘↵). The reply joins the thread at once.
 - **Resolve** (e): the thread is resolved in its app; the row leaves the list and the pane moves to the next row.
-- **Mark Unread** / **Mark Read** (u): the row's read state, below.
+- **Mark Unread** / **Mark Read** (u): an icon button at the end of the pane's place line, with its name as a tooltip; the row's read state, below.
 - **Open in <app>** (↵): always there, opening the row at its place in its app, as before.
 
 Reply and Resolve work on **every app's threads from every page with the Inbox**: liveworkspace.app, each app's

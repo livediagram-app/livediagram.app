@@ -23,7 +23,8 @@ import {
   useState,
 } from 'react';
 import { APP_KINDS, levelAtLeast } from '@liveworkspace/index-client';
-import { BackBar, Button, Tooltip } from '@liveworkspace/ui';
+import { BackBar, Button } from '@liveworkspace/ui';
+import { HeaderIconButton } from '../../ui/HeaderIconButton';
 import type { InboxComment, InboxVerb } from '../../types';
 import {
   CheckIcon,
@@ -290,6 +291,17 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           </span>
         ))}
         {f.local ? <ThisBrowserPill /> : null}
+        {onToggleRead ? (
+          <span className="ml-auto flex shrink-0 pl-2">
+            <HeaderIconButton
+              label={unread ? 'Mark Read' : 'Mark Unread'}
+              onClick={() => onToggleRead(entry)}
+              dataId={unread ? 'inbox-mark-read' : 'inbox-mark-unread'}
+            >
+              {unread ? <CheckIcon size={15} /> : <MarkUnreadIcon size={15} />}
+            </HeaderIconButton>
+          </span>
+        ) : null}
       </nav>
       <h2
         id={titleId}
@@ -376,21 +388,6 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
             </kbd>
           </span>
         </Link>
-        {onToggleRead ? (
-          <Tooltip label={unread ? 'Mark Read (U)' : 'Mark Unread (U)'}>
-            <button
-              type="button"
-              data-inbox-toggle-read={unread ? 'read' : 'unread'}
-              aria-keyshortcuts="u"
-              aria-label={unread ? 'Mark Read' : 'Mark Unread'}
-              onClick={() => onToggleRead(entry)}
-              className={`${SECONDARY} px-2.5`}
-            >
-              {unread ? <CheckIcon size={15} /> : <MarkUnreadIcon size={15} />}
-              <span className="max-sm:sr-only">{unread ? 'Mark Read' : 'Mark Unread'}</span>
-            </button>
-          </Tooltip>
-        ) : null}
       </div>
       {viewOnly ? (
         <p

@@ -374,7 +374,7 @@ describe('choosing a row', () => {
     expect(
       within(pane())
         .queryAllByRole('button')
-        .filter((b) => !b.hasAttribute('data-inbox-toggle-read')),
+        .filter((b) => !b.getAttribute('data-header-action')?.startsWith('inbox-mark')),
     ).toHaveLength(0);
   });
 
@@ -573,7 +573,7 @@ describe('the verbs', () => {
     const verbs = () =>
       within(pane())
         .queryAllByRole('button')
-        .filter((b) => !b.hasAttribute('data-inbox-toggle-read'))
+        .filter((b) => !b.getAttribute('data-header-action')?.startsWith('inbox-mark'))
         .map((b) => b.textContent);
     // The card: Open only.
     expect(verbs()).toEqual([]);
