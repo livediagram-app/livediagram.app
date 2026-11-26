@@ -76,6 +76,24 @@ describe('createSettingsPanelHost', () => {
     panels.mockRestore();
   });
 
+  it("hands Settings' Calls the shared Spaces read, the keep call and the bearer", async () => {
+    const items = [{ id: 'lh_2' }] as unknown as Awaited<
+      ReturnType<typeof indexClient.listItems>
+    >['items'];
+    vi.spyOn(indexClient, 'listItems').mockResolvedValue({ items } as Awaited<
+      ReturnType<typeof indexClient.listItems>
+    >);
+    const keep = vi.spyOn(indexClient, 'keepCallSpace').mockResolvedValue(undefined);
+    const panels = vi.spyOn(settingsUi, 'accountPanels');
+    createSettingsPanelHost('livediagram');
+    const callSpaces = panels.mock.calls[0]![0].callSpaces!;
+    await expect(callSpaces.list()).resolves.toBe(items);
+    await callSpaces.keep!('lh_2');
+    expect(keep).toHaveBeenCalledWith('lh_2');
+    withBearer('tok-2');
+    await expect(callSpaces.token()).resolves.toBe('tok-2');
+  });
+
   it("carries the Account section's sign-in panel", () => {
     const { ACCOUNT_SETTINGS } = createSettingsPanelHost('livehuddle');
     expect(ACCOUNT_SETTINGS.security).toBeDefined();
