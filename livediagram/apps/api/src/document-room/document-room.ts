@@ -300,15 +300,10 @@ export class DocumentRoom extends DurableObject<Env> {
   // A Participant's content and answers (docs/specs/013-workspace/share-roles.md), see room-participant.ts.
   participantWrites: RoomParticipantWrites;
 
-  // A socket's tab scope. Read from the attachment, so it survives
-  // hibernation; fixed for the life of the session (a rescoped link closes
-  // its sessions), so it is read once per socket and kept here: every op
-  // frame asks it of every recipient, and a cursor stream in a full room
-  // made that a structured-clone read per peer per packet. Lost with the
-  // object when the room hibernates, and read again on the next frame.
+  // A socket's tab scope, and a Viewer socket's own ids (null when it reads every id; share-roles.md "Ids a Viewer
+  // sees", room-sockets.ts viewerOf). Read from the attachment once per socket: fixed for the session, and every op
+  // frame asks them of every recipient. Lost when the room hibernates, and read again on the next frame.
   readonly scopes = new WeakMap<WebSocket, string | null>();
-  // A Viewer socket's own ids (null for anyone who reads every id), kept per socket for the same reason
-  // (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees"; room-sockets.ts viewerOf).
   readonly viewers = new WeakMap<WebSocket, IsOwnId | null>();
   // When each share link last changed, so a socket still joining on a grant signed before it is turned away
   // (@liveworkspace/api-kit/room-link-changes, docs/specs/013-workspace/tab-scoped-share-links.md).
