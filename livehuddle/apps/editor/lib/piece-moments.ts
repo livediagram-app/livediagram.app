@@ -351,6 +351,16 @@ export function usePieceMoment(id: string): PieceMomentPlay | null {
   );
 }
 
+/** Calls `cb` whenever a moment starts on any piece (the 3D scene's effects read `latestMoments`). */
+export function subscribeMoments(cb: () => void): () => void {
+  return listeners.subscribe(cb);
+}
+
+/** Every piece's latest moment, by piece. */
+export function latestMoments(): ReadonlyMap<string, PieceMomentPlay> {
+  return plays;
+}
+
 /** Forgets every moment (tests). */
 export function resetPieceMoments(): void {
   plays.clear();

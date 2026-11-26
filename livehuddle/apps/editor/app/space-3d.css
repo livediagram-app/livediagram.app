@@ -143,7 +143,8 @@
   transform-style: preserve-3d;
 }
 [data-space-view] [data-pod-furniture] {
-  transform-origin: 50% var(--pod-foot, 100%);
+  /* Each piece about its own middle and foot, so a turned camera turns it where it stands. */
+  transform-origin: var(--pod-middle, 50%) var(--pod-foot, 100%);
   transition: rotate 520ms var(--space-ease);
 }
 [data-space-view] [data-space-stands='inside'][data-space-near] [data-pod-furniture] {
@@ -167,6 +168,15 @@
   transition: translate 520ms var(--space-ease);
 }
 [data-space-view] [data-space-stands='rows'][data-space-near] [data-space-row='slab'] {
+  translate: 0 calc(var(--row-lift, 0px) * (1 - cos(var(--space-tilt))))
+    calc(var(--row-lift, 0px) * sin(var(--space-tilt)));
+}
+/* A long, low piece seen side on (3d-view.md "Turning the camera"): a low box, its end face standing about its foot
+   and its top raised along it to sit level on the face, as a built table's slab does. */
+[data-space-view] [data-space-near] [data-space-length-face] {
+  rotate: x calc(var(--space-tilt) * -1);
+}
+[data-space-view] [data-space-near] [data-space-length-top] {
   translate: 0 calc(var(--row-lift, 0px) * (1 - cos(var(--space-tilt))))
     calc(var(--row-lift, 0px) * sin(var(--space-tilt)));
 }
@@ -220,7 +230,7 @@
   transition: transform 520ms var(--space-ease);
 }
 /* A sitter behind their piece (a table's far side, behind a desk) has their legs under its front. */
-[data-space-view] [data-avatar-figure] {
+[data-space-view] [data-avatar-figure][data-seat-hide] {
   clip-path: inset(0 0 var(--space-seat-hide, 0px) 0);
 }
 /* What floats above a head turns about that character's feet: `--space-billboard-origin` is the feet, from the
@@ -241,7 +251,11 @@
 [data-space-view] [data-space-overlay] [data-space-billboard] {
   rotate: none;
   transition: none;
-  translate: var(--space-flat-x, 0px) var(--space-flat-y, 0px);
+  /* Added to the card's own anchoring (Tailwind's -translate-x-1/2 -translate-y-full, which centre a bubble over the
+     head and stand it on it), never in place of it: replacing it set a call bubble half its width right and its
+     height low, over the face (owner, 2026-11-25). */
+  translate: calc(var(--space-flat-x, 0px) + var(--tw-translate-x, 0px))
+    calc(var(--space-flat-y, 0px) + var(--tw-translate-y, 0px));
   scale: var(--space-flat-scale, 1);
 }
 
@@ -430,6 +444,42 @@
     repeating-linear-gradient(to right, var(--space-fence) 0 5px, transparent 5px 40px);
   border-top: 0;
 }
+/* A fence's thickness: its far side a step back along the floor and a cap over the gap, inside the face so they fold
+   up and ghost with it (3d-view.md "Fences stand as fences"). */
+[data-space-wall='fence'],
+[data-space-wall='picket'] {
+  --wall-t: 8px;
+}
+[data-space-wall='picket'] {
+  --wall-t: 6px;
+}
+[data-space-wall='fence'] > [data-space-wall-face],
+[data-space-wall='picket'] > [data-space-wall-face] {
+  overflow: visible;
+}
+[data-space-wall-depth] {
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  transform: translateZ(var(--wall-t));
+  pointer-events: none;
+}
+[data-space-wall-cap] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: var(--wall-t);
+  transform-origin: 50% 0;
+  transform: rotateX(90deg);
+  pointer-events: none;
+}
+[data-space-wall='fence'] [data-space-wall-cap] {
+  background: color-mix(in srgb, var(--space-fence) 80%, white);
+}
+[data-space-wall='picket'] [data-space-wall-cap] {
+  background: var(--space-picket);
+}
 /* A Stage's sides: dark wood boards under a lit lip, from the floor up to its raised top (3d-view.md "A stage stands
    up"). */
 [data-space-wall='stage'] > [data-space-wall-face] {
@@ -558,6 +608,21 @@
     repeating-linear-gradient(to bottom, transparent 0 22px, rgb(0 0 0 / 0.12) 22px 24px),
     color-mix(in srgb, var(--space-roof) 90%, black);
 }
+/* A flat roof: a Room Builder room's tiles, laid flat; a glass room's is the glass of its walls, its edge catching
+   the light (3d-view.md "Rooms on grass have roofs"). */
+[data-space-roof-slope][data-flat] {
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 14px, rgb(0 0 0 / 0.18) 14px 16px),
+    color-mix(in srgb, var(--space-roof) 88%, black);
+}
+[data-space-roof-slope][data-flat][data-glass] {
+  background:
+    linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.22) 38%, transparent 46%),
+    rgb(186 230 253 / 0.28);
+  box-shadow: inset 0 0 0 2px rgb(224 242 254 / 0.9);
+  /* Already see-through: the ghost would halve it again. */
+  opacity: calc(var(--space-roof-ghost) * 2);
+}
 /* A room's name is on its back wall here, so its flat name on the floor goes (BoxedElementView). */
 [data-space-view] [data-room-floor-label] {
   display: none;
@@ -633,4 +698,24 @@
   [data-space-seen-stand] {
   /* On the drawing that stands, never on a box that keeps its children in 3D (a filter flattens them). */
   filter: drop-shadow(0 0 6px rgb(56 189 248 / 0.85));
+}
+
+/* Real 3D (docs/specs/008-canvas/3d-engine.md): the WebGL scene draws the walls, roofs, standing pieces and figures,
+   so the DOM's stand-ins are hidden (kept in the page, so a press on a door or a piece still finds its box). The
+   floor, a Stage's raised top, the chips and the bubbles stay the DOM's. */
+[data-real-3d] [data-space-wall],
+[data-real-3d] [data-space-roof],
+[data-real-3d] [data-space-stands]:not([data-space-stands='inside'], [data-space-stands='raised']),
+[data-real-3d] [data-pod-furniture],
+[data-real-3d] [data-avatar-figure] {
+  visibility: hidden;
+}
+/* In real 3D the walkers ride the flat overlay: each stand (its chips) is a card moved to where the camera stands its
+   feet (useFlatBillboards), never turned or tilted itself. */
+[data-space-view] [data-space-overlay] [data-avatar-stand] {
+  transform: none;
+  rotate: none;
+  transition: none;
+  translate: var(--space-flat-x, 0px) var(--space-flat-y, 0px);
+  scale: var(--space-flat-scale, 1);
 }

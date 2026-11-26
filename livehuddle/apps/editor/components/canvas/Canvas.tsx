@@ -69,10 +69,18 @@ import {
   useSpace3DView,
 } from './space-3d/useSpace3DView';
 import { useSpace3DZoom } from './space-3d/useSpace3DZoom';
-import { Space3DOverlayProvider, Space3DOverlayStage } from './space-3d/Space3DOverlay';
+import { useFloorPointer } from './space-3d/useFloorPointer';
+import { useScenePresses } from './real-3d/useScenePresses';
+import {
+  InSpace3DOverlay,
+  Space3DOverlayProvider,
+  Space3DOverlayStage,
+} from './space-3d/Space3DOverlay';
 
 // The 3D view's walls (docs/specs/008-canvas/3d-view.md "Performance"): loaded the first time a walk wants them.
 const Space3DWalls = dynamic(loadSpace3DWalls, { ssr: false });
+// Real 3D (docs/specs/008-canvas/3d-engine.md): the WebGL scene, fetched the first time it shows.
+const Real3DLayer = dynamic(() => import('./real-3d/Real3DLayer'), { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -334,14 +342,21 @@ function CanvasView(props: CanvasProps) {
   // A walking click on a reading piece opens it large (docs/specs/008-canvas/avatar-mode.md "The reader").
   const elementReader = useElementReader(elements, canvasTool === 'avatar');
   // The 3D view (docs/specs/008-canvas/3d-view.md): while you walk with it on, the stage tilts the world back.
-  const space3D = useSpace3DView(canvasTool === 'avatar', props.settings?.rotateIn3D === true);
+  // The 3D view shows in Edit as well as Walk (3d-view.md "Editing in 3D").
+  const space3D = useSpace3DView(true, props.settings?.rotateIn3D === true);
   const spaceTurn = useSpace3DTurn();
+  // Real 3D (3d-engine.md): behind its setting while it is built; the 3D view draws its scene in WebGL.
+  const real3DOn = props.settings?.real3D !== false;
+  const real3D = real3DOn && space3D !== 'flat';
+  // While editing in Real 3D, a press on a model goes to its piece (3d-view.md "Editing in 3D").
+  useScenePresses(real3D && canvasTool !== 'avatar', mainRef);
   const offscreenContent = useOffscreenContent(elements, mainRef, undefined, {
     tilted: space3D !== 'flat',
     turned: space3DTurned(space3D, spaceTurn) !== undefined,
   });
   // 3D is closer than the flat plan: switching it on while walking zooms you in, off zooms you back out.
-  useSpace3DZoom(canvasTool === 'avatar', viewportZoom, setViewportZoom);
+  useSpace3DZoom(true, viewportZoom, setViewportZoom);
+  useFloorPointer(space3D !== 'flat', mainRef, viewportZoom, readViewportOffset);
   // The overlay's world layer, where what floats over a head is drawn while the view is 3D (Space3DOverlay).
   const [space3DOverlayNode, setSpace3DOverlayNode] = useState<HTMLElement | null>(null);
   const space3DOverlay = useMemo(
@@ -415,6 +430,7 @@ function CanvasView(props: CanvasProps) {
         data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}
         data-space-view={space3D === 'flat' ? undefined : space3D}
         data-space-turned={space3DTurned(space3D, spaceTurn)}
+        data-real-3d={real3D ? '' : undefined}
         onContextMenuCapture={surface.onContextMenuCapture}
         onContextMenu={surface.onContextMenu}
         onPointerUp={surface.onContextMenuPointerUp}
@@ -557,14 +573,32 @@ function CanvasView(props: CanvasProps) {
               />
             )}
             <Space3DOverlayProvider value={space3DOverlay}>
-              <CanvasCharactersLayer
-                props={props}
-                canvasAvatar={canvasAvatar}
-                mainSize={mainSize}
-              />
+              {real3DOn ? (
+                // In real 3D the figures are the scene's; their chips and bubbles stand over it, in the overlay.
+                <InSpace3DOverlay>
+                  <CanvasCharactersLayer
+                    props={props}
+                    canvasAvatar={canvasAvatar}
+                    mainSize={mainSize}
+                  />
+                </InSpace3DOverlay>
+              ) : (
+                <CanvasCharactersLayer
+                  props={props}
+                  canvasAvatar={canvasAvatar}
+                  mainSize={mainSize}
+                />
+              )}
             </Space3DOverlayProvider>
           </div>
         </div>
+        {real3D ? (
+          <Real3DLayer
+            elements={elements}
+            turn={spaceTurn}
+            paletteKey={`${tabWallColor ?? ''}|${isDarkCanvas(tabBackgroundColor)}`}
+          />
+        ) : null}
         {/* The horizon the tilted floor fades into (docs/specs/008-canvas/3d-view.md "What it shows"). */}
         {space3D === 'flat' ? null : (
           <div

@@ -20,6 +20,8 @@ const EDGE_WIDTH_PX = 2;
 const pointsOf = (outline: readonly Point[]) => outline.map((p) => `${p.x},${p.y}`).join(' ');
 /** The fade after you stop: the ring stays mounted this long at opacity 0, then goes. */
 export const HEARING_RING_FADE_MS = 200;
+/** How long the ring shows when someone comes within earshot (owner, 2026-11-25: "show the radius for a second"). */
+export const HEARING_RING_FLASH_MS = 1000;
 
 export function HearingRing(props: {
   self: { at: Point; color: string } | null;
@@ -27,13 +29,29 @@ export function HearingRing(props: {
   // The tab's stages and your share level: speaking from a stage, the whole tab hears you and no ring shows.
   stages: readonly CallStage[];
   level: AccessLevel;
+  // Goes up each time someone comes within earshot (useEarshotFlash): the ring shows for HEARING_RING_FLASH_MS.
+  flash?: number;
 }) {
   const call = useCallSelf();
   const maskId = useId();
   const self = props.self;
   // Whenever your own bars show (in a call, or the microphone's local preview): your level, unmuted. A stage speaker
   // is heard by the whole tab, so there is no ring to show.
-  const talking = !!self && !call.muted && call.level > 0 && call.stage !== 'speaker';
+  const speaking = !!self && !call.muted && call.level > 0 && call.stage !== 'speaker';
+  // Someone just came within earshot: the ring shows a moment, talking or not (not from a stage, heard by all).
+  const flash = props.flash ?? 0;
+  const [flashedAt, setFlashedAt] = useState(flash);
+  const [flashing, setFlashing] = useState(false);
+  if (flashedAt !== flash) {
+    setFlashedAt(flash);
+    setFlashing(flash > 0 && !!self && call.stage !== 'speaker');
+  }
+  useEffect(() => {
+    if (!flashing) return;
+    const timer = setTimeout(() => setFlashing(false), HEARING_RING_FLASH_MS);
+    return () => clearTimeout(timer);
+  }, [flashing, flashedAt]);
+  const talking = speaking || flashing;
   // Kept a moment after you stop, so the ring fades out rather than vanishing.
   const [fading, setFading] = useState(false);
   const [wasTalking, setWasTalking] = useState(talking);
@@ -101,10 +119,10 @@ export function HearingRing(props: {
           cy={ring.cy}
           r={ring.r}
           fill={color}
-          fillOpacity={FILL_OPACITY_BASE + FILL_OPACITY_PER_LEVEL * call.level}
+          fillOpacity={FILL_OPACITY_BASE + FILL_OPACITY_PER_LEVEL * Math.max(call.level, flashing ? 2 : 0)}
         />
         {/* The pulse: a ripple running out from your feet to the edge, only while you talk. */}
-        {talking ? (
+        {speaking ? (
           <circle
             className="animate-hearing-ripple [transform-box:fill-box] origin-center"
             cx={ring.cx}
@@ -117,7 +135,7 @@ export function HearingRing(props: {
           />
         ) : null}
         <circle
-          className={talking ? 'animate-hearing-edge' : undefined}
+          className={speaking ? 'animate-hearing-edge' : undefined}
           cx={ring.cx}
           cy={ring.cy}
           r={ring.r}

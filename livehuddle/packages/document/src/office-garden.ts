@@ -146,22 +146,100 @@ const POD_FURNITURE_FILLS: ReadonlySet<string> = new Set([
   T.woodDeep,
 ]);
 
+/** One piece of a pod's furniture (a bench, the table with its mug): its parts, its middle across and its foot. */
+export type PodFurnitureGroup = { indices: number[]; foot: number; middle: number };
+
+/** Parts closer than this in the drawing's px, either way, are one piece of furniture. */
+const POD_GROUP_GAP = 2;
+
+type Span = { i: number; left: number; right: number; top: number; bottom: number };
+
 /**
  * A pod drawing's furniture: the indices of its parts and the line they stand on (the lowest edge among them, in the
- * drawing's px), which the 3D view stands them up about.
+ * drawing's px), and the same split into its pieces (`groups`: parts whose boxes overlap, chained), each of which the
+ * 3D view stands up about its own foot and middle, so the far bench stands on the floor rather than floating over it
+ * and a turned camera turns each piece where it stands rather than swinging them round the pod's middle (the owner,
+ * 2026-11-25).
  */
-export function podFurniture(parts: readonly FurniturePart[]): { indices: number[]; foot: number } {
+export function podFurniture(parts: readonly FurniturePart[]): {
+  indices: number[];
+  foot: number;
+  groups: PodFurnitureGroup[];
+} {
   const indices: number[] = [];
+  const spans: Span[] = [];
   let foot = 0;
   parts.forEach((p, i) => {
     const mug = p.tag === 'rect' && p.fill === T.glass && p.w <= 8 && p.h <= 9;
     if (!(p.role === 'rail' || mug || (p.fill !== undefined && POD_FURNITURE_FILLS.has(p.fill))))
       return;
     indices.push(i);
-    const bottom = p.tag === 'rect' ? p.y + p.h : p.tag === 'ellipse' ? p.cy + p.ry : lowest(p.d);
-    foot = Math.max(foot, bottom);
+    const span = spanOf(p, i);
+    spans.push(span);
+    foot = Math.max(foot, span.bottom);
   });
-  return { indices, foot };
+  // Union the overlapping boxes.
+  const root = spans.map((_, k) => k);
+  const find = (k: number): number => {
+    while (root[k] !== k) k = root[k] = root[root[k]!]!;
+    return k;
+  };
+  const g = POD_GROUP_GAP;
+  for (let a = 0; a < spans.length; a++)
+    for (let b = a + 1; b < spans.length; b++) {
+      const s = spans[a]!;
+      const t = spans[b]!;
+      if (s.left <= t.right + g && t.left <= s.right + g && s.top <= t.bottom + g && t.top <= s.bottom + g)
+        root[find(a)] = find(b);
+    }
+  const byRoot = new Map<number, Span[]>();
+  spans.forEach((s, k) => {
+    const r = find(k);
+    byRoot.set(r, [...(byRoot.get(r) ?? []), s]);
+  });
+  const groups: PodFurnitureGroup[] = [...byRoot.values()].map((members) => ({
+    indices: members.map((m) => m.i).sort((x, y) => x - y),
+    foot: Math.max(...members.map((m) => m.bottom)),
+    middle: (Math.min(...members.map((m) => m.left)) + Math.max(...members.map((m) => m.right))) / 2,
+  }));
+  // Far pieces first, so a near one is drawn over them.
+  groups.sort((x, y) => x.foot - y.foot);
+  return { indices, foot, groups };
+}
+
+// A part's box in the drawing's px: a rect's and an ellipse's exactly, a path's from its absolute points and its
+// relative runs.
+function spanOf(p: FurniturePart, i: number): Span {
+  if (p.tag === 'rect') return { i, left: p.x, right: p.x + p.w, top: p.y, bottom: p.y + p.h };
+  if (p.tag === 'ellipse')
+    return { i, left: p.cx - p.rx, right: p.cx + p.rx, top: p.cy - p.ry, bottom: p.cy + p.ry };
+  let x = 0;
+  let y = 0;
+  let left = Infinity;
+  let right = -Infinity;
+  let top = Infinity;
+  let bottom = -Infinity;
+  for (const m of p.d.matchAll(/([MLHVQvh])([^MLHVQvh]*)/g)) {
+    const nums = (m[2]!.match(/-?[\d.]+/g) ?? []).map(Number);
+    if (m[1] === 'M' || m[1] === 'L') {
+      x = nums[0] ?? x;
+      y = nums[1] ?? y;
+    } else if (m[1] === 'H') x = nums[0] ?? x;
+    else if (m[1] === 'V') y = nums[0] ?? y;
+    else if (m[1] === 'h') x += nums[0] ?? 0;
+    else if (m[1] === 'v') y += nums[0] ?? 0;
+    else if (m[1] === 'Q') {
+      x = nums[2] ?? x;
+      y = nums[3] ?? y;
+    }
+    left = Math.min(left, x);
+    right = Math.max(right, x);
+    top = Math.min(top, y);
+    bottom = Math.max(bottom, y);
+  }
+  return Number.isFinite(left)
+    ? { i, left, right, top, bottom: Math.max(bottom, lowest(p.d)) }
+    : { i, left: 0, right: 0, top: 0, bottom: lowest(p.d) };
 }
 
 // The lowest y a part's path reaches: its absolute points and the ends of its relative vertical runs.

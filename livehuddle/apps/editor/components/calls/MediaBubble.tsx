@@ -10,6 +10,7 @@ import {
   lucideMaximize2,
   lucideScreenShare,
   lucideScreenShareOff,
+  lucideUserX,
 } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livehuddle/ui';
 import type { CallMedia } from '@/lib/calls/calls-store';
@@ -19,9 +20,23 @@ const ScreenIcon = lucideGlyph(lucideScreenShare, 10);
 const StopIcon = lucideGlyph(lucideScreenShareOff, 12);
 const OnlyYouIcon = lucideGlyph(lucideEyeOff, 10);
 const OnlyYouPanelIcon = lucideGlyph(lucideEyeOff, 14);
+const NobodyNearIcon = lucideGlyph(lucideUserX, 10);
 
 /** A local preview's hover card line (video-and-screen-bubbles.md "Local preview"). */
 export const ONLY_YOU_DESCRIPTION = 'Only you see this. Nothing is sent.';
+
+/** Your own bubble's tag while nobody stands within earshot (video-and-screen-bubbles.md "Nobody close enough"). */
+export function NobodyNearTag({ compact }: { compact: boolean }) {
+  return (
+    <span
+      data-call-nobody-near
+      className="absolute right-1 bottom-1 flex items-center gap-0.5 rounded-md bg-slate-950/75 px-1 py-0.5 text-[9px] leading-none font-semibold text-white"
+    >
+      <NobodyNearIcon />
+      {compact ? 'Nobody near' : 'Nobody close enough to see'}
+    </span>
+  );
+}
 
 /** The Only You tag: on a preview bubble, small; in the maximised panel's bar, its larger size. */
 export function OnlyYouTag({ size = 'bubble' }: { size?: 'bubble' | 'panel' }) {
@@ -46,6 +61,8 @@ export function OnlyYouTag({ size = 'bubble' }: { size?: 'bubble' | 'panel' }) {
 
 /** A bubble's width in canvas px: a face and a screen readable at 100% (owner, 2026-11-07: "Make the bubble bigger"). */
 export const BUBBLE_WIDTH_PX = 180;
+/** A bubble's width in a crowd (owner, 2026-11-25: "When many ... are in the same area, make them smaller"). */
+export const BUBBLE_COMPACT_WIDTH_PX = 120;
 
 /** "Sam's Camera", "Your Screen": the bubble's and the panel's name. */
 export function mediaTitle(name: string | null, media: CallMedia): string {
@@ -101,7 +118,11 @@ export function MediaBubble({
   name,
   color,
   mirrored,
+  width = BUBBLE_WIDTH_PX,
+  compact = false,
+  inset,
   localOnly = false,
+  alone = false,
   onMaximise,
   onStopShare,
 }: {
@@ -111,8 +132,16 @@ export function MediaBubble({
   name: string | null;
   color: string;
   mirrored?: boolean;
+  // In canvas px: BUBBLE_COMPACT_WIDTH_PX in a crowd.
+  width?: number;
+  // A crowd's smaller bubble: no name chip (the hover card still names it).
+  compact?: boolean;
+  // A screen bubble's camera, as a circle in its bottom-left corner, with its own maximise press.
+  inset?: { stream: MediaStream; mirrored: boolean; onMaximise: () => void };
   // Your own local preview: nobody else sees it (the Only You tag).
   localOnly?: boolean;
+  // Your own, in a call with nobody within earshot: the Nobody Near tag.
+  alone?: boolean;
   onMaximise: () => void;
   // An Editor stopping someone else's share (video-and-screen-bubbles.md "Share roles"); absent for anyone else.
   onStopShare?: () => void;
@@ -121,7 +150,7 @@ export function MediaBubble({
   const label = `Maximise ${title}`;
   const stop = media === 'screen' && name !== null ? onStopShare : undefined;
   const style: CSSProperties = {
-    width: BUBBLE_WIDTH_PX,
+    width,
     // The person's colour rings the tile and tints it until the first frame arrives.
     boxShadow: `0 0 0 2px ${color}, 0 8px 18px -8px rgb(15 23 42 / 0.55)`,
     background: `color-mix(in srgb, ${color} 22%, rgb(15 23 42))`,
@@ -132,7 +161,7 @@ export function MediaBubble({
     <div
       data-call-bubble-tile={media}
       style={style}
-      className="group pointer-events-auto relative aspect-video overflow-hidden rounded-xl transition-transform duration-150 hover:scale-[1.04] has-[button:active]:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+      className="group pointer-events-auto relative aspect-video overflow-hidden rounded-xl transition-[transform,width] duration-200 ease-out hover:scale-[1.04] has-[button:active]:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
     >
       <HoverCard
         title={label}
@@ -152,7 +181,7 @@ export function MediaBubble({
             fit={media === 'video' ? 'cover' : 'contain'}
             mirrored={mirrored}
           />
-          {media === 'screen' ? (
+          {media === 'screen' && !inset ? (
             <span
               aria-hidden
               className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded-md bg-slate-950/70 px-1 py-0.5 text-white"
@@ -160,7 +189,18 @@ export function MediaBubble({
               <ScreenIcon />
             </span>
           ) : null}
-          {localOnly ? <OnlyYouTag /> : null}
+          {localOnly ? <OnlyYouTag /> : alone ? <NobodyNearTag compact={compact} /> : null}
+          {/* Whose it is, at a glance (video-and-screen-bubbles.md "Name"); the maximise mark takes the corner on
+              hover. */}
+          {compact ? null : (
+            <span
+              aria-hidden
+              data-call-bubble-name
+              className="absolute top-1 right-1 max-w-[70%] truncate rounded-md bg-slate-950/65 px-1.5 py-0.5 text-[10px] leading-tight font-semibold text-white transition-opacity group-hover:opacity-0 group-has-[button:focus-visible]:opacity-0"
+            >
+              {name ?? 'You'}
+            </span>
+          )}
           <span
             aria-hidden
             className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-md bg-slate-950/65 text-white opacity-0 transition-opacity group-hover:opacity-100 group-has-[button:focus-visible]:opacity-100"
@@ -169,6 +209,28 @@ export function MediaBubble({
           </span>
         </button>
       </HoverCard>
+      {inset ? (
+        <HoverCard
+          title={`Maximise ${mediaTitle(name, 'video')}`}
+          className="absolute bottom-1.5 left-1.5 aspect-square"
+          style={{ width: '34%' }}
+        >
+          <button
+            type="button"
+            aria-label={`Maximise ${mediaTitle(name, 'video')}`}
+            data-call-bubble-inset
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={inset.onMaximise}
+            className="block size-full cursor-pointer overflow-hidden rounded-full transition-transform duration-150 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 motion-reduce:transition-none motion-reduce:hover:scale-100"
+            style={{
+              boxShadow: `0 0 0 2px ${color}, 0 4px 10px -4px rgb(15 23 42 / 0.6)`,
+              background: `color-mix(in srgb, ${color} 22%, rgb(15 23 42))`,
+            }}
+          >
+            <MediaVideo stream={inset.stream} fit="cover" mirrored={inset.mirrored} />
+          </button>
+        </HoverCard>
+      ) : null}
       {stop ? (
         <HoverCard
           title={`Stop ${title}`}

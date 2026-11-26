@@ -19,12 +19,13 @@ export type WelcomeFile = {
   popular: WelcomeStart[];
 };
 
-// A held app (livehuddle) has none until its fork brings its templates; no Explorer lists it before then.
+// Every app with templates; one without stays on Home's skeleton, so each listed app needs its file here.
 const FILES: Partial<Record<AppName, () => Promise<{ default: unknown }>>> = {
   livediagram: () => import('@livediagram/templates/welcome.json'),
   liveplanner: () => import('@liveplanner/templates/welcome.json'),
   livedocuments: () => import('@livedocuments/templates/welcome.json'),
   livedesign: () => import('@livedesign/templates/welcome.json'),
+  livehuddle: () => import('@livehuddle/templates/welcome.json'),
   liveknowledge: () => import('@liveknowledge/templates/welcome.json'),
 };
 

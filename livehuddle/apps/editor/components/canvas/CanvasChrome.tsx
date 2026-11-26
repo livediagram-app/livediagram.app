@@ -1,7 +1,9 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { MarqueeState } from '@liveworkspace/workbench/components/canvas/MarqueeRect';
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
-import { ViewZoomControls } from '@/components/canvas/view-readers';
+import { ViewDialReader, ViewZoomControls } from '@/components/canvas/view-readers';
+import { turnSpace3D } from '@/lib/space-3d/space-3d-turn';
+import { useSpace3DPreference } from '@/components/canvas/space-3d/useSpace3DView';
 
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
@@ -227,6 +229,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Walking is being in the room, not editing it (docs/specs/008-canvas/avatar-mode.md "No editing chrome while
   // walking"): Undo, Redo and Tab Style step aside for as long as the mode is on.
   const walking = canvasTool === 'avatar';
+  const space3DOn = useSpace3DPreference();
   // Start a Space in front of the canvas greys the toggle's Walk (avatar-mode.md "Not over a start").
   const startOpen = useStartPanelOpen();
   // Which strip, from the session's `can` (lib/avatar-palette, docs/specs/013-workspace/share-roles.md): the building
@@ -547,15 +550,29 @@ export function CanvasChrome(props: CanvasChromeProps) {
               {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
                 read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
               {!chromeAway && !walking ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
-              {/* The 3D View switch (docs/specs/008-canvas/3d-view.md "Turning it on and off"): while walking. */}
-              {walking ? <Space3DButton turning={props.settings?.rotateIn3D === true} /> : null}
-              <ViewZoomControls
-                onZoomIn={handleZoomIn}
-                onZoomOut={handleZoomOut}
-                onSetZoom={handleSetZoom}
-                onFitToScreen={onFitToScreen}
-                pinchOnly={isMobile}
-              />
+              {/* The 3D View switch (docs/specs/008-canvas/3d-view.md "Turning it on and off"): in Edit and Walk. */}
+              <Space3DButton turning={isMobile && props.settings?.rotateIn3D === true} />
+              {/* On a desktop the zoom is the view dial, standing over the row's right end (3d-view.md "The view
+                  dial"); a phone keeps the row's zoom. */}
+              {isMobile ? (
+                <ViewZoomControls
+                  onZoomIn={handleZoomIn}
+                  onZoomOut={handleZoomOut}
+                  onSetZoom={handleSetZoom}
+                  onFitToScreen={onFitToScreen}
+                  pinchOnly
+                />
+              ) : (
+                <div className="pointer-events-none absolute bottom-[calc(100%+12px)] right-0">
+                  <ViewDialReader
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onSetZoom={handleSetZoom}
+                    onFitToScreen={onFitToScreen}
+                    onTurn={space3DOn && props.settings?.rotateIn3D === true ? turnSpace3D : null}
+                  />
+                </div>
+              )}
             </>
           )}
         </div>

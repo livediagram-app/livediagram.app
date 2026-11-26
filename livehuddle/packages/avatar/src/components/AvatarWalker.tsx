@@ -133,8 +133,9 @@ function AvatarWalkerView({
   // In the 3D view (docs/specs/008-canvas/3d-view.md "Pieces stand up"), how far in front of its feet a sitter is
   // drawn, in canvas px along the floor, so the piece it sits on never covers it. 0 (the default) for none.
   seatLift?: number;
-  // In the 3D view, whether the sitter sits behind their piece, which then hides their legs (app/space-3d.css).
-  seatBehind?: boolean;
+  // In the 3D view, whether the sitter sits behind their piece, which then hides their legs (app/space-3d.css), or
+  // `whole` behind one that closes round them (a Phone Booth from its back), which hides all of them but their chips.
+  seatBehind?: boolean | 'whole';
   // In the 3D view, how far up off the floor the character stands, in canvas px: on a Stage, its height (3d-view.md
   // "A stage stands up"). 0 (the default) on the floor.
   raised?: number;
@@ -165,6 +166,19 @@ function AvatarWalkerView({
     if (chipBox.current) chipBox.current.style.transition = transition;
   }, [x, y, glideMs, walking]);
   const placement = `translate(${pos.x - box.offsetX}px, ${pos.y - box.offsetY}px)`;
+  const figureKey = JSON.stringify({
+    facing,
+    config,
+    walking,
+    stepFrame,
+    lift,
+    wave,
+    pose,
+    seated,
+    holding,
+    shirt,
+    status,
+  });
   // In the 3D view (docs/specs/008-canvas/3d-view.md "What it shows") the figure and its chips stand up about the feet,
   // facing the camera: the editor's stylesheet turns this box; flat, it is the placed box's own size and does nothing.
   const standOrigin = `${box.offsetX}px ${box.offsetY}px`;
@@ -172,6 +186,9 @@ function AvatarWalkerView({
   // A character standing at a piece (a treadmill's belt, a standing desk) is lifted the same way, so the piece never
   // covers them (the owner, 2026-11-18: "I seem to be hidden behind it"); one standing behind theirs (a Podium's
   // speaker) stays where the piece's own front hides their legs.
+  // Only a sitter behind their piece is clipped: a clip on every standing figure in the 3D view drew a dark bar over
+  // the head now and then (the owner, 2026-11-25), so the stylesheet clips only a figure marked for it.
+  const hidesLegs = seatLift > 0 && seated && seatBehind;
   const liftVar =
     seatLift > 0 && (seated || !seatBehind)
       ? ({
@@ -180,7 +197,10 @@ function AvatarWalkerView({
           // Behind the piece: the legs, and the slack under the feet, are hidden under its front.
           ...(seatBehind
             ? {
-                '--space-seat-hide': `${Math.round(box.height - box.offsetY + AVATAR_HEIGHT * scale * SEATED_LEGS_SHARE)}px`,
+                '--space-seat-hide':
+                  seatBehind === 'whole'
+                    ? `${Math.ceil(box.height)}px`
+                    : `${Math.round(box.height - box.offsetY + AVATAR_HEIGHT * scale * SEATED_LEGS_SHARE)}px`,
               }
             : null),
         } as CSSProperties)
@@ -258,6 +278,10 @@ function AvatarWalkerView({
         // Your own character is the Avatar tour's push step's anchor (docs/specs/008-canvas/avatar-tour.md).
         data-tour-id={self ? 'avatar-self' : undefined}
         data-seated={seated ? '' : undefined}
+        // Real 3D (livehuddle docs/specs/008-canvas/3d-engine.md "Block figures"): what the figure looks like and does,
+        // read by the 3D scene, which builds the character's block figure from the same sprite.
+        data-figure={figureKey}
+        data-figure-scale={scale}
         className="pointer-events-none absolute"
         style={{
           // The box is bigger than the figure: it reserves headroom above for
@@ -297,6 +321,7 @@ function AvatarWalkerView({
           ) : null}
           <div
             data-avatar-figure=""
+            data-seat-hide={hidesLegs ? '' : undefined}
             className="absolute inset-0 motion-reduce:transition-none"
             style={{
               ...(status === 'away' ? { opacity: AWAY_OPACITY } : null),

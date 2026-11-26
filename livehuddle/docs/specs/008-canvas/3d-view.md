@@ -1,6 +1,8 @@
 # 3D view
 
-Status: **implemented** (Work Tracker 1043).
+Status: **implemented** (Work Tracker 1043). Being rebuilt as real 3D, behind a flag:
+[Real 3D](3d-engine.md) replaces how pieces, walls and characters are drawn; what this page says the view does
+(switching, the camera, turning, cut-away, arriving) stays.
 
 While you walk a Space, the **3D View** tilts it back like Apple Maps' 3D: a perspective camera looks down at the
 floor at an angle, the walls of Rooms, Corridors and Fences stand up with their doorways cut in them, and
@@ -48,7 +50,10 @@ not laggy.
     blade sign does, so its words still read. Wall pieces are only ever placed on a wall
     ([Wall pieces](../009-elements/wall-pieces.md)).
   - **Fences stand as fences**: a Fence's run stands as wooden rails and posts, a Garden Fence's as white pickets on
-    two rails, the picket fence its flat drawing shows. A Window's flat frame and sill give way to the standing one,
+    two rails, the picket fence its flat drawing shows. Each has a thickness (a Fence 8 canvas px, a Garden Fence 6):
+    its far side stands that far back with a cap along the top, so a fence seen end on, turned or running away from
+    the camera, still reads as a fence rather than a hairline (the owner, 2026-11-25). Lower than a character, a fence
+    is never cut away as you walk along or past it, as grass is not. A Window's flat frame and sill give way to the standing one,
     leaving only its light on the floor (the owner, 2026-11-18: windows "leave a line along the floor line"). A fence's flat drawing on the floor is hidden while the view
     shows (as a room's flat name is), so the fence is never drawn twice, once standing and once lying under it (the
     owner, 2026-11-17: "what is the white stuff under the garden fences").
@@ -81,8 +86,11 @@ not laggy.
   a Room whose middle stands on Grass is a house, so a hipped roof sits on its walls, rising from all four of them
   (the owner: "roof should come up from all sides") to a ridge along the room's long side, every slope tiled, at about 35 degrees and never more than 150 canvas px over
   the wall tops. It is a ghost, like the walls in front of you (half see-through), so it never hides anyone, and it
-  fades away while you stand inside that room. A room on any other floor is a room inside a building and has none;
-  a turned room or one drawn with the Room Builder has none either.
+  fades away while you stand inside that room. A **glass room** on grass has a **flat glass roof** instead, the
+  same glass as its walls, lying on its wall tops (the owner, 2026-11-25: "a glass roof as its glass walls, not
+  sloping, just a flat glass roof"), and a room drawn with the Room Builder has a flat roof the shape of its outline
+  (glass for a glass room, tiled otherwise), since a hipped roof needs four walls. A room on any other floor is a room
+  inside a building and has none; a turned room has none either.
 - **The pieces stand up** (the owner, 2026-11-17: "none of the furniture and items are 3d, they remain 2d
   in 3d mode"): every piece of the Space drawn upright in the flat plan (furniture, seats, desks, tables, plants and
   trees, machines, shelves, signs, screens, boards, portals, everything with legs or a pot on the ground) rises from
@@ -109,7 +117,11 @@ not laggy.
 - **Sitters are drawn over their piece**, as the flat plan draws them: a sitter on a chair, a sofa, a bench or
   either side of a table stands just in front of the standing piece. One sitting behind it (further back than 60 % of
   its depth: a table's far side, behind a desk turned to face you) has their legs hidden under its front, so they read
-  as sitting behind it, never hidden by it or sitting on the floor (the owner, 2026-11-17).
+  as sitting behind it, never hidden by it or sitting on the floor (the owner, 2026-11-17). A seat that is the piece
+  itself (a chair, a bar stool) never hides its sitter, whichever way it faces (the owner, 2026-11-25: on a bar stool
+  turned away, "I can't see the left half of my body"). A piece that closes round its sitter (a Phone Booth, a Toilet
+  Cubicle, a Nap Pod) seen from behind hides the whole of them, and only their name and status show over its top (the
+  owner, 2026-11-25: "my head pokes out").
 - **What floats above heads stands up with them**: speech bubbles, the talking bars, raised hands and camera and
   screen bubbles turn to face the camera about the same feet, so they stay over the head they belong to. They are
   drawn over the whole scene, so no wall ever hides one, however near the wall the speaker stands; the Receptionist's
@@ -131,8 +143,10 @@ not laggy.
   Windows (part of a wall), the Rug, Grass, Garden Path, Pond, Swimming Pool, Car Park, Stairs and Avatar Pad,
   and the board's controls (Mode Button, Focus Button, Timer, Stopwatch), icons and stickers. Every other element
   (stickies, text, cards, pictures, charts) is the floor's. An **Office Pod's furniture stands up inside
-  its walls**: its walls stand as a room's do, and its benches, table and mug stand up together about the table's
-  front edge, as a piece does, so the booth's inside reads as furniture rather than a floor plan (the owner,
+  its walls**: its walls stand as a room's do, and each of its benches, and its table with its mug, stands up about
+  its own front edge and middle, as a piece does (the owner, 2026-11-25: the far bench was "floating in the air, its
+  not connected to the ground" while they all stood about the near one; and a turned camera turns each piece where
+  it stands, the seats staying where they are rather than swinging round the pod's middle), so the booth's inside reads as furniture rather than a floor plan (the owner,
   2026-11-17: "I meant the furniture inside"). Its sitters are drawn over its benches.
 - **Tables are built, not stood** (the owner, 2026-11-18: "the chairs are floating in the air, they need to still be
   connected to the ground but look 3d"): a Meeting Table, a Long Table and a Picnic Table are not stood up as one
@@ -217,7 +231,7 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
 - **Off unless asked for** (the owner, 2026-11-18: hide it until it is right, keep the code). **Settings › Editor ›
   Canvas › Rotate in 3D View** (`rotateIn3D`, missing means off) turns it on. While it is off there are no Turn
   buttons, `[` and `]` do nothing, and the camera stays looking up the screen (turning the setting off turns it back).
-- **Turn Left and Turn Right** sit beside the 3D View switch while it is on (a curved arrow each, with tooltips), and
+- **Turn Left and Turn Right** are the left and right of the view dial (below) while it is on, and
   `[` and `]` while walking do the same, with the action keys' guards. Each turns the camera a quarter turn about
   your character, over the tilt's 520 ms ease; turning on past a full turn keeps going round, never back.
 - **It is yours, in this browser tab**: never synced, never remembered, and back to looking up the screen when the view
@@ -243,9 +257,18 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
   every other kind's side drawing is the plan's box turned (a desk's top, a sofa's seat, a printer), which stood up
   lies the piece on its side (the owner, 2026-11-18: "the Printer, its lying on its side"), so side on it shows its
   front drawing narrowed to about its depth (half its front at most), upright on its foot, as a piece turned steeply
-  away reads. A piece drawn the same from every side (a coat stand) is never narrowed. It stands on the edge
+  away reads. A **long, low piece** (its front drawing under 0.7 times as tall as it is wide: a bench, a sofa, a bar, a
+  pool table) is the exception: side on it shows its whole length, built as a low box: its side drawing as its top,
+  raised to the piece's own height over an upright end face (the drawing's lowest band), so a two-seater bench turned
+  to face right still reads as a two-seater running away from you (the owner, 2026-11-25: "It should be taller when
+  rotated that way"), never as a rug, and whoever stands at it is taller than it (a turned reception desk, "hits my
+  face"). The heights keep an order under a character's 56 canvas px (the owner: "there should be some visual height
+  hierarchy"): counters, bars and desks 30, pool and foosball tables 26, a ping-pong table 24, a sofa 20, a bench 18, a
+  bike rack 16, anything else 22. A piece drawn the same from every side (a coat stand) is never narrowed. It stands on the edge
   of its own footprint nearest the camera, so it covers exactly the floor that stops you walking: a turned fountain
-  is never stood in (the owner: "the original blocks ... move"). Only a table drawn from above (a Long Table, one
+  is never stood in (the owner: "the original blocks ... move"). A one-seat piece (a Phone Booth, a Bar Stool, a
+  chair) slides across, turned, so the seat it draws is over the seat its sitter sits on: you sit inside a turned
+  booth, never beside it (the owner, 2026-11-25). Only a table drawn from above (a Long Table, one
   built row by row) turns its box.
 - **A piece turned on the plan** by quarter turns (a sofa facing into the room, lockers along a side wall) is seen the
   same way in the 3D view, its own turn added to the camera's, so it stands grounded from every side, the camera
@@ -299,14 +322,39 @@ as sharp, flat cards, as the characters' chips do.
 - **It is remembered per person, in this browser** (Browser Storage, `livehuddle:v2:space-3d`): turn it off and every
   walk on every board opens flat until you turn it back on. Nothing is sent to the server or to anyone else.
 
-## What stays editable
+## The view dial
 
-- **The 3D view is a view of walking.** It shows only while you walk (Avatar mode); walking is already read-only for
-  you ([Avatar mode](avatar-mode.md) "Read-only while active"), so the 3D view locks nothing that walking did not.
-- **Editing needs the flat plan**: switching to Edit (the Edit | Walk toggle, `E`, Escape, a tile dragged in) flattens
-  the view, with the same animation, and the building strip, handles and menus work on the flat plan as always. The
-  choice is kept, so the next walk tilts back again. This is the difference from livediagram's retired Isometric view,
-  which was its own tool and turned editing off while it showed ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-presenting-tools-isometric-and-zen)).
+The owner (2026-11-26): "change the zoom to be a larger circular control which allows me to control zoom (height) up
+and down and angle left and right".
+
+On a desktop the corner's zoom buttons are one round dial, 128 px across, standing just above the corner's row on its
+right, in Edit and Walk, flat and 3D:
+
+- **Up zooms in, down zooms out** (the camera lower or higher over the floor). A press steps 10% as the old buttons
+  did; holding glides on until you let go, within the zoom's bounds.
+- **Left and right turn the camera** a quarter turn each way, as Turn Left and Turn Right did. They show only while the
+  view is 3D and Rotate in 3D View is on.
+- **The middle** shows the zoom: a click fits the tab, hovering offers the zoom levels, as the old percentage did.
+- **The wheel over the dial** zooms, and **dragging its middle** up or down zooms smoothly, left or right past a short
+  way turns the camera once.
+- Each part has a tooltip and a name for screen readers; the dial is reached by Tab like the buttons it replaces.
+- On a phone the corner keeps its row (pinch zooms, Fit stays), since a dial would cover the plan.
+
+## Editing in 3D
+
+The owner (2026-11-26): "Can you make the edit mode 3d as well? So it looks the same as I built and then walk in it".
+
+- **The 3D view shows in Edit too.** Switching between Edit and Walk keeps the view as it is: 3D stays 3D, flat stays
+  flat. The 3D button and Shift+3 work in both, with one remembered choice.
+- **Editing works on the floor under the pointer**: a press, a drag, a marquee, a drop from the building strip, a
+  drawn wall or outline all land where the pointer meets the floor, through the tilted and turned camera, so a piece
+  dragged follows the pointer across the floor at every turn.
+- **Pieces are picked from the scene** ([Real 3D](3d-engine.md)): a press on a model selects that piece, as a press on
+  its drawing does flat.
+- **What you look at stays in view**: with no character of yours while editing, the floor at the middle of the view
+  stands in for your feet, so the walls in front of it fade and the roof over it lifts, as they do for you walking.
+- Selection outlines and handles lie on the floor around the piece's footprint; menus and the building strip stay
+  flat over the view.
 - **Everything you can do while walking still works in 3D**: walking, sitting, using pieces, opening doors, the
   reader, speech, reactions, calls, the avatar palette.
 
@@ -314,7 +362,7 @@ as sharp, flat cards, as the characters' chips do.
 
 It only changes the viewer's own view, so every role has it ([Share roles](../013-workspace/share-roles.md)):
 
-- **Editor**: while walking.
+- **Editor**: while walking and while editing.
 - **Participant** and **Viewer**: always, since they are always walking.
 
 ## Phones and narrow windows
@@ -370,7 +418,6 @@ Office, and 30 fps or better on a phone.
 ## Out of scope
 
 - Orbiting the camera freely; it turns only in quarter turns ([Turning the camera](#turning-the-camera)).
-- A 3D model of any piece (sides, a top, turning to show its back as the camera moves): pieces stand as their flat
-  drawing, facing the camera.
+- A 3D model of any piece: now [Real 3D](3d-engine.md)'s block models, behind its flag.
 - People arrows ([People arrows](people-arrows.md)) aimed through the 3D camera: they still point from the flat view.
-- A 3D view while editing, and 3D in exports.
+- 3D in exports.

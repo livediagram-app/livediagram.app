@@ -195,3 +195,53 @@ export function layoutBubbles(
   }
   return { dx, dy, rects, order };
 }
+
+/** A crowd: this many bubbles or more over people standing together shrink (owner, 2026-11-25). */
+export const BUBBLE_CROWD_COUNT = 3;
+/** Two heads this close across, in canvas px, stand together. */
+export const BUBBLE_CROWD_REACH_PX = 360;
+/** And this close up or down. */
+export const BUBBLE_CROWD_RISE_PX = 120;
+/** Someone already in a crowd leaves it only this much further out, so the edge does not flicker. */
+export const BUBBLE_CROWD_STICK = 1.25;
+
+/** A bubble wearer's head, in canvas px, and how many bubbles they wear. */
+export type CrowdPoint = { id: string; x: number; y: number; count: number };
+
+/**
+ * Who stands in a crowd of bubbles: heads within reach of each other, chained, holding BUBBLE_CROWD_COUNT bubbles or
+ * more between them. `prev` is the last answer: its members reach BUBBLE_CROWD_STICK times as far. Returns `prev`
+ * itself when nothing changed, so a caller can compare by identity.
+ */
+export function crowdedIds(
+  points: readonly CrowdPoint[],
+  prev: ReadonlySet<string>,
+): ReadonlySet<string> {
+  const n = points.length;
+  const root = points.map((_, i) => i);
+  const find = (i: number): number => {
+    while (root[i] !== i) i = root[i] = root[root[i]!]!;
+    return i;
+  };
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const a = points[i]!;
+      const b = points[j]!;
+      const k = prev.has(a.id) && prev.has(b.id) ? BUBBLE_CROWD_STICK : 1;
+      if (
+        Math.abs(a.x - b.x) <= BUBBLE_CROWD_REACH_PX * k &&
+        Math.abs(a.y - b.y) <= BUBBLE_CROWD_RISE_PX * k
+      ) {
+        root[find(i)] = find(j);
+      }
+    }
+  }
+  const total = new Map<number, number>();
+  for (let i = 0; i < n; i++) total.set(find(i), (total.get(find(i)) ?? 0) + points[i]!.count);
+  const next = new Set<string>();
+  for (let i = 0; i < n; i++) {
+    if ((total.get(find(i)) ?? 0) >= BUBBLE_CROWD_COUNT) next.add(points[i]!.id);
+  }
+  if (next.size === prev.size && [...next].every((id) => prev.has(id))) return prev;
+  return next;
+}

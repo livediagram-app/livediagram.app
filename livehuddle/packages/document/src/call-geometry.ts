@@ -15,7 +15,7 @@ import { DEFAULT_STAGE_SPEAKERS, isStageSpeakers, stageTop, type StageSpeakers }
  * A subscribed speaker in the open is let go only beyond this many canvas px, feet to feet (proximity-audio.md
  * "Hearing"): the furthest the open floor ever carries a voice, which the api's hearing check measures from.
  */
-export const CALL_RELEASE_RADIUS_PX = 300;
+export const CALL_RELEASE_RADIUS_PX = 460;
 
 /**
  * How much further a voice carries from a Podium's speaker spot (venue-pieces.md "Speaking from the Podium", owner

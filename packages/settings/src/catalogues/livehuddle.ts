@@ -148,6 +148,20 @@ export const CATALOGUE: AppCatalogue = {
           },
         },
         {
+          kind: 'toggle',
+          id: 'real3D',
+          label: 'Real 3D',
+          description:
+            'Draws the 3D view as a real 3D scene, with every piece and character modelled.',
+          keywords: 'real 3d view webgl models depth',
+          section: 'Canvas',
+          key: 'real3D',
+          on: true,
+          off: false,
+          fallback: true,
+          event: { category: 'UI', on: 'Real3DOn', off: 'Real3DOff' },
+        },
+        {
           kind: 'choice',
           id: 'unusedImageChoice',
           label: 'When I Delete an Unused Image',

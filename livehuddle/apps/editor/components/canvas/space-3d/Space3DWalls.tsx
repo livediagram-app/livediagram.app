@@ -164,6 +164,14 @@ function Wall({
     >
       <div data-space-wall-face="" data-shut={wall.shut ? '' : undefined}>
         {wall.kind === 'window' ? <span data-space-window-pane="" /> : null}
+        {/* A fence has a thickness (3d-view.md "Fences stand as fences"): its far side and a cap along its top, so
+            seen end on it is a fence, not a hairline (the owner, 2026-11-25). */}
+        {wall.kind === 'fence' || wall.kind === 'picket' ? (
+          <>
+            <span data-space-wall-depth="" />
+            <span data-space-wall-cap="" />
+          </>
+        ) : null}
         {wall.kind === 'doorway' ? (
           <span data-space-door-frame="" data-space-door-id={wall.doorId}>
             {wall.shut ? <span data-space-door-leaf="" /> : null}

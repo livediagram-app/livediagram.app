@@ -163,9 +163,10 @@ export function cutAwayIds(
     room,
     middle: (room.x + room.width / 2) * toward.x + (room.y + room.height / 2) * toward.y,
   }));
-  // Blades of grass are too low to hide anyone: never cut.
+  // Blades of grass and fences are too low to hide anyone: never cut (a ghosted fence you walked along read as a
+  // hairline, the owner 2026-11-25).
   for (const wall of walls) {
-    if (wall.kind === 'grass') continue;
+    if (wall.kind === 'grass' || wall.kind === 'fence' || wall.kind === 'picket') continue;
     if (segmentMeetsBox(wall.a, wall.b, box.x, box.y, right, bottom)) {
       out.add(wall.id);
       continue;

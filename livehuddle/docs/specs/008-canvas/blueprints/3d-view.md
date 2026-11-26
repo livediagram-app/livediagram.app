@@ -236,3 +236,17 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
 | `SPACE_CUT_DEPTH`         | 150         | A wall's height seen at the tilt, with the character's own height                        |
 | `SPACE_CUT_OPACITY`       | 0.18        | A ghost you can still place                                                              |
 | `SPACE_AREA_*`            | 1.5, 3, 1.5 | Covers the tilted view's floor with room to walk before a re-cull                        |
+
+## Editing in 3D and the view dial (2026-11-26)
+
+| Path                                                        | What it does                                                                                                |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `apps/editor/lib/space-3d/floor-pointer.ts`                 | The tilted view's pointer-to-floor slot: `setFloorPointer`, `floorPointer`                                  |
+| `apps/editor/components/canvas/space-3d/useFloorPointer.ts` | Sets the slot while the view stands, through `floorPointAt` with the tilt, turn, zoom and pan               |
+| `apps/editor/lib/canvas.ts`                                 | `pointerToCanvas` reads the floor point while tilted; `pointerDelta` for drags                              |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`                 | Moves by `pointerDelta`, so a dragged piece follows the pointer on the floor                                |
+| `apps/editor/components/canvas/real-3d/useScenePresses.ts`  | Editing in Real 3D: a press on a model is handed to its piece's element                                     |
+| `apps/editor/components/canvas/real-3d/selection-marks.ts`  | The selected pieces' model boxes drawn in the selection colour                                              |
+| `apps/editor/lib/real-3d/real-3d-pick.ts`                   | Also `real3DPieceAt`, the piece id under a press                                                            |
+| `apps/editor/components/chrome/ViewDial.tsx`                | The view dial: zoom up and down (step, hold, wheel, drag), turn left and right, the zoom menu in the middle |
+| `apps/editor/components/canvas/CanvasChrome.tsx`            | The dial over the corner row on a desktop; the 3D switch in Edit too; Turn buttons only on a phone          |

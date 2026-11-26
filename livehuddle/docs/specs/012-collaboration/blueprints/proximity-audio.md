@@ -230,7 +230,11 @@ held frames for one step. The editor's store is memory only and empties on leavi
   under the characters, centred on your feet, radius `HEARING_RADIUS_PX`, masked to the room you stand in
   (`zoneAt`, its outline or box) less every other room the ring reaches that you are not inside. A faint fill, a steady edge and a ripple (`animate-hearing-ripple`) in your
   colour; shown while your own bars would (unmuted, `level > 0`, in a call or the preview mic) and you are not a stage speaker; opacity fades over 200 ms
-  and the ripple is dropped while silent. Reduced motion stops the ripple.
+  and the ripple is dropped while silent. Reduced motion stops the ripple. The flash: `useEarshotFlash`
+  (`lib/calls/useEarshotFlash.ts`) runs `nextNear` (`lib/calls/hearing.ts`: walls and stages first, joins within
+  `HEARING_RADIUS_PX`, leaves beyond `RELEASE_RADIUS_PX`, times your reach) over the coarse copy of the feet and counts
+  up when someone new joins (not those near as you start walking); `HearingRing` takes the count as `flash` and shows
+  for `HEARING_RING_FLASH_MS` (1000) with the edge and fill, no ripple, then the same fade.
 - **Click to Hear** (`AudioHeldSegment`): while `audioHeld` and somebody is heard, a warn segment before the
   microphone (headphones glyph, name Click to Hear, title Sound Held Back); a press resumes the context (any press
   would, the segment says so).
@@ -281,9 +285,9 @@ token. The editor logs through `debugLog('calls', …)`.
 
 | Constant                 | Value     | Why                                                |
 | ------------------------ | --------- | -------------------------------------------------- |
-| `HEARING_RADIUS_PX`      | 260       | A meeting room of the Virtual Office holds a group |
-| `RELEASE_RADIUS_PX`      | 300       | About 15% more, so the edge does not flicker       |
-| `FULL_VOLUME_RADIUS_PX`  | 90        | Two or three characters side by side               |
+| `HEARING_RADIUS_PX`      | 400       | Owner, 2026-11-25: presence reaches further        |
+| `RELEASE_RADIUS_PX`      | 460       | About 15% more, so the edge does not flicker       |
+| `FULL_VOLUME_RADIUS_PX`  | 140       | Two or three characters side by side               |
 | `MAX_PAN`                | 0.8       | Never hard left or right                           |
 | `LECTERN_VOICE_REACH`    | 3         | Owner, 2026-11-10: a Podium carries 3x as far      |
 | `GLIDE_S`                | 0.12      | Gain and pan changes are never heard as steps      |

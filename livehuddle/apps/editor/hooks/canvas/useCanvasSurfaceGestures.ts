@@ -6,6 +6,7 @@ import {
 import { pointerToCanvas } from '@/lib/canvas';
 import { floorPointAt } from '@/lib/space-3d/space-3d-camera';
 import { standingPiecePointAt } from '@/lib/space-3d/space-3d-pieces';
+import { real3DDrawing, real3DPointAt } from '@/lib/real-3d/real-3d-pick';
 import { doorPointAt, standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
 import { space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
 import { space3DTurn } from '@/lib/space-3d/space-3d-turn';
@@ -162,11 +163,14 @@ export function useCanvasSurfaceGestures({
       // piece (3d-view.md "Pieces stand up"), else the floor.
       return (
         doorPointAt(main, elements ?? [], { x: clientX, y: clientY }) ??
-        standingPiecePointAt(
-          standingPiecesOnScreen(main, elements ?? []),
-          { x: clientX, y: clientY },
-          space3DTurn.get(),
-        ) ??
+        // Real 3D (3d-engine.md): the model the press lands on, from the scene itself.
+        (real3DDrawing()
+          ? real3DPointAt(clientX, clientY)
+          : standingPiecePointAt(
+              standingPiecesOnScreen(main, elements ?? []),
+              { x: clientX, y: clientY },
+              space3DTurn.get(),
+            )) ??
         floorPointAt(
           { x: clientX, y: clientY },
           main.getBoundingClientRect(),

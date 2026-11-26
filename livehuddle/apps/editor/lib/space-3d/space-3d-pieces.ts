@@ -14,6 +14,13 @@ export const SPACE_NEAR_ATTR = 'data-space-near';
 
 /** A sitter whose feet are within this share of the piece's depth of its front edge is drawn in front of it (DEFAULTS.md D144). */
 export const SPACE_SEAT_LIFT_SHARE = 0.6;
+/**
+ * The pieces that close round their sitter (3d-view.md "Pieces stand up"): seen from behind, they hide the whole of
+ * them, and only the name and status show over the top (the owner, 2026-11-25: in a Phone Booth "my head pokes out").
+ */
+export const ENCLOSING_KINDS: ReadonlySet<string> = new Set(['phone-booth', 'toilet-cubicle', 'nap-pod']);
+/** The pieces whose sitter sits on them, never behind them (3d-view.md "Pieces stand up"). */
+const SAT_ON_KINDS: ReadonlySet<string> = new Set(['chair', 'bar-stool']);
 
 // The Space's shape kinds that lie on the floor (3d-view.md "Which pieces"): floor coverings, the pieces whose walls
 // stand instead, a wall's own parts, and the board's controls. Every other shape kind stands.
@@ -129,6 +136,9 @@ export function seatLift(piece: Box | null | undefined, feet: Point, turn = 0): 
 export function seatBehind(piece: Box | null | undefined, feet: Point, turn = 0): boolean {
   // A piece built row by row hides a sitter's legs itself, with its own rows (3d-view.md "Tables are built").
   if (!piece || (piece as { rows?: true }).rows) return false;
+  // A seat that is the piece itself is sat on, never behind: a bar stool's seat lies on the 60% line, so turned away
+  // its sitter read as behind it and lost their body (the owner, 2026-11-25).
+  if (SAT_ON_KINDS.has((piece as { shape?: string }).shape ?? '')) return false;
   if (turnQuarter(turn) !== 0) return seatBehind(boxToCamera(piece, turn), toCamera(feet, turn));
   const depth = piece.y + piece.height - feet.y;
   return depth > piece.height * SPACE_SEAT_LIFT_SHARE && depth <= piece.height;
@@ -321,6 +331,41 @@ export const SIDE_IS_ELEVATION: ReadonlySet<string> = new Set([
   'fridge',
   'hammock',
 ]);
+
+/** A front drawing less tall than this share of its width is long and low (a bench, a sofa, a bar). */
+export const SPACE_LONG_LOW_SHARE = 0.7;
+
+/**
+ * How tall a long, low piece stands seen side on, in canvas px at its drawing's own scale (3d-view.md "Turning the
+ * camera"): a height order under a character's 56 px (the owner, 2026-11-25: "there should be some visual height
+ * hierarchy"), counters and desks at the waist, tables a little lower, seats lower still.
+ */
+const LENGTH_HEIGHT: Readonly<Record<string, number>> = {
+  'reception-desk': 30,
+  bar: 30,
+  'kitchen-counter': 30,
+  'kitchen-sink': 30,
+  'pool-table': 26,
+  'foosball-table': 26,
+  'ping-pong-table': 24,
+  sofa: 20,
+  bench: 18,
+  'bike-rack': 16,
+};
+const LENGTH_HEIGHT_DEFAULT = 22;
+
+/** A long, low piece's standing height side on, in canvas px at its drawing's scale. */
+export function lengthHeight(kind: string): number {
+  return LENGTH_HEIGHT[kind] ?? LENGTH_HEIGHT_DEFAULT;
+}
+
+/**
+ * Whether a piece seen side on shows its whole length rather than its end (3d-view.md "Turning the camera"): a long,
+ * low piece, whose end alone read as a single chair (the owner, 2026-11-25).
+ */
+export function showsLength(front: { width: number; height: number }): boolean {
+  return front.height < front.width * SPACE_LONG_LOW_SHARE;
+}
 
 /**
  * The end of a piece's front drawing the 3D view shows when the camera sees its side (3d-view.md "Turning the

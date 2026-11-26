@@ -25,5 +25,6 @@ Follow the references below only as needed; never upfront.
 - ./duplicate-placement.md - when implementing or changing where a duplicate lands: the free-spot search, a Room's shared wall, a Door or Window sliding along its wall
 - ./space-mini-view.md - when implementing or changing the mini view: Pop Out, the Picture-in-Picture window, who it shows, its knock and Back to Space
 - ./3d-view.md - when implementing or changing the 3D view: the stage and its phases, the projection, the standing walls and their culling, the cut-away, the billboards or the switch
+- ./3d-engine.md - when implementing or changing Real 3D: the WebGL layer over the 3D view, its projection, mesh kit, block models and figures, the ink pass and the contact sheet
 - ./DEFAULTS.md - when a canvas blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a canvas blueprint covers

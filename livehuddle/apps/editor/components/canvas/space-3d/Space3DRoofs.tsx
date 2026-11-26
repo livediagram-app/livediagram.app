@@ -50,6 +50,7 @@ export function Space3DRoofs({
 }
 
 function Roof({ roof, nodeRef }: { roof: SpaceRoof; nodeRef: (node: HTMLElement | null) => void }) {
+  if (roof.flat) return <FlatRoof roof={roof} nodeRef={nodeRef} />;
   const { length, span, slant, pitch, base } = roofShape(roof);
   const half = span / 2;
   // Along the ridge on its own x axis; a roof whose ridge runs down the plan is turned a quarter onto it.
@@ -109,6 +110,35 @@ function Roof({ roof, nodeRef }: { roof: SpaceRoof; nodeRef: (node: HTMLElement 
           transform: `rotateY(${pitch}deg)`,
           clipPath: 'polygon(100% 0, 100% 100%, 0 50%)',
         }}
+      />
+    </div>
+  );
+}
+
+// A flat roof on the wall tops (3d-view.md "Rooms on grass have roofs"): a glass room's glass, or a Room Builder room's
+// outline, which a hipped roof cannot follow.
+function FlatRoof({
+  roof,
+  nodeRef,
+}: {
+  roof: SpaceRoof;
+  nodeRef: (node: HTMLElement | null) => void;
+}) {
+  const { base } = roofShape(roof);
+  const clip = roof.outline
+    ? `polygon(${roof.outline.map((p) => `${p.x * 100}% ${p.y * 100}%`).join(', ')})`
+    : undefined;
+  return (
+    <div
+      ref={nodeRef}
+      data-space-roof=""
+      style={{ transform: `translate(${roof.x}px, ${roof.y}px) translateZ(${base}px)` }}
+    >
+      <div
+        data-space-roof-slope=""
+        data-flat=""
+        data-glass={roof.glass ? '' : undefined}
+        style={{ width: roof.width, height: roof.height, clipPath: clip }}
       />
     </div>
   );

@@ -87,6 +87,8 @@ export type UserPreferences = {
   // Rotate in 3D View (docs/specs/008-canvas/3d-view.md "Turning the camera"): when true the 3D view offers Turn Left
   // and Turn Right (and [ and ]). Missing / false === off, the default.
   rotateIn3D?: boolean;
+  // Real 3D (docs/specs/008-canvas/3d-engine.md): when true the 3D view draws a real WebGL scene. Missing / false === off.
+  real3D?: boolean;
   // Reduce motion (accessibility, docs/specs/007-editor/user-preferences.md). When `true`, the editor adds
   // `.reduce-motion` to <html> so the CSS in globals.css collapses every
   // decorative animation + transition to ~instant. Independent of the OS

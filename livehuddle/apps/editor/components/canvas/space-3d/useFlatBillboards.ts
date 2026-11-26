@@ -40,7 +40,10 @@ export function useFlatBillboards(world: RefObject<HTMLElement | null>, zoom: nu
       const turn = v && cos > 0.01 ? Math.atan2((v[1] ?? 0) / cos, v[0] ?? 1) : 0;
       const box = stage.getBoundingClientRect();
       const size = { width: box.width, height: box.height };
-      const cards = node.querySelectorAll<HTMLElement>('[data-space-billboard]');
+      const cards = node.querySelectorAll<HTMLElement>(
+        // A walker's stand is a card too in real 3D, whose figures are the scene's (3d-engine.md): its chips ride it.
+        '[data-space-billboard], [data-avatar-stand]',
+      );
       const next: Placed[] = [];
       // Reads first.
       for (const el of cards) {

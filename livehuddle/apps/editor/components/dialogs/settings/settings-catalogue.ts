@@ -373,6 +373,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'RotateIn3DOn', off: 'RotateIn3DOff' },
       },
       {
+        // docs/specs/008-canvas/3d-engine.md: the 3D view as a real scene. On unless turned off.
+        kind: 'toggle',
+        key: 'real3D',
+        keywords: 'real 3d view webgl models depth',
+        section: 'Canvas',
+        label: 'Real 3D',
+        description: 'Draws the 3D view as a real 3D scene, with every piece and character modelled.',
+        read: (p) => p.real3D !== false,
+        write: (p, v) => ({ ...p, real3D: v }),
+        event: { category: 'UI', on: 'Real3DOn', off: 'Real3DOff' },
+      },
+      {
         // docs/specs/009-elements/images.md "Deleting an unused picture": one setting in every app, also set by the
         // offer's Remember My Choice.
         kind: 'choice',

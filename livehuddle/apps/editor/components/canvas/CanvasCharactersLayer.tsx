@@ -43,6 +43,7 @@ import type { Element as CanvasElement } from '@livehuddle/document';
 import {
   builtIn3D,
   seatBehind,
+  ENCLOSING_KINDS,
   seatLift,
   standsIn3D,
   standsRaised,
@@ -147,8 +148,15 @@ export function CanvasCharactersLayer({
     seatedOn && at
       ? seatLift(seatBox(seatedOn, at), at, turn)
       : wallLiftAt(figureWalls, at, turn, scale);
-  const behindOf = (seatedOn: string | null | undefined, at: { x: number; y: number } | null) =>
-    !!seatedOn && !!at && seatBehind(seatBox(seatedOn, at), at, turn);
+  // Behind an enclosing piece (a Phone Booth seen from its back), the whole sitter is hidden, not just their legs.
+  const behindOf = (
+    seatedOn: string | null | undefined,
+    at: { x: number; y: number } | null,
+  ): boolean | 'whole' => {
+    if (!seatedOn || !at || !seatBehind(seatBox(seatedOn, at), at, turn)) return false;
+    const piece = piecesById.get(seatedOn);
+    return piece?.type === 'shape' && ENCLOSING_KINDS.has(piece.shape) ? 'whole' : true;
+  };
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
   // The coarse copy (blueprint: peer-motion-store.md "The coarse copy"): everyone's characters and your feet at most
   // 10 times a second while people walk, at once when someone appears, leaves, sits, stands or crosses a wall or a
