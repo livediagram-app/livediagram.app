@@ -494,6 +494,14 @@ export function themedForTab<E extends Element>(
   if (!found) return [...elements];
   const theme = themeHalf(found, dark ? 'dark' : 'light');
   return elements.map((el) => {
+    // A shape bound to a colour preset with no colours of its own (a layout's soft box) takes that preset's look
+    // for this theme and half, as a theme change re-derives it later.
+    const bound = el as E &
+      ThemedElement & { fillColor?: string; strokeColor?: string; textColor?: string };
+    if (bound.colorPreset && !bound.fillColor && !bound.strokeColor && !bound.textColor) {
+      const preset = rederiveColorPresetForTheme(bound, theme);
+      if (preset !== bound) return preset;
+    }
     const patch: Record<string, string> = {};
     for (const { element, theme: key } of themeColourFields(el)) {
       const value = theme[key];
