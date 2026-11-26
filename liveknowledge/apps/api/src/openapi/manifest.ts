@@ -1140,7 +1140,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "The page tree in order, for an agent's `list_pages`: each page's id, title, depth, parent, subpage count, owner, whether it is Always in Context, and its trust (verified state, when it was verified, when its review is due, `stale`, and the pages an open conflict sets it against). One request, read from the tab summaries: no page's writing is loaded. Every role.",
+      "The page tree in order, for an agent's `list_pages`: each page's id, title, depth, parent, subpage count, owner, whether it is Always in Context, and its trust (verified state, when it was verified, when its review is due, `stale`, and the pages an open conflict sets it against), and when it was last saved (`updatedAt`). `?names=1` adds `names`, each owner's name by account id, for an export. One request, read from the tab summaries: no page's writing is loaded. Every role.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgePagesResponse',

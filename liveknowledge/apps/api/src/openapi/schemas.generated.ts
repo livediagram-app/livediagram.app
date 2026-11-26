@@ -7000,6 +7000,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "trust": {
         "$ref": "#/components/schemas/KnowledgePageTrust"
+      },
+      "updatedAt": {
+        "description": "When the page was last saved, ms since the epoch (knowledgebase-export.md \"What the zip holds\").",
+        "type": "number"
       }
     },
     "required": [
@@ -7057,6 +7061,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "`reviewEvery` is the knowledgebase's Review Period, said once for every page's `reviewAt`. `pages` is the tree in order, its connected files among its pages.",
     "properties": {
+      "names": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "With `?names=1`: each page owner's name, by account id, so an export names them (knowledgebase-export.md); an owner with no name is absent.",
+        "type": "object"
+      },
       "pages": {
         "items": {
           "$ref": "#/components/schemas/KnowledgeTreeRow"

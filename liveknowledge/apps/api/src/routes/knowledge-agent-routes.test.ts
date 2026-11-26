@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
 import type {
   CreatePageResponse,
   KnowledgeAgentContextResponse,
@@ -10,6 +11,7 @@ import type {
 } from '@liveknowledge/api-schema';
 import { isKnowledgePageRow } from '@liveknowledge/api-schema';
 import { knowledgeKit, TOKEN_ID, type Kit, type Who } from './knowledge-test-kit';
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 
 // The knowledgebase as an agent reads and shapes it (docs/specs/024-agents/knowledgebase-for-agents.md): the page
 // tree, a page as Markdown, the context, a new page, a move, and what each scope and share role may do.
@@ -75,6 +77,20 @@ describe('GET pages', () => {
     expect((await read('deploys')).trust.conflictsWith).toEqual([
       { tab: 'holidays', title: 'Holidays', question: 'When do we deploy?', foundAt: 1 },
     ]);
+  });
+
+  it('says when each page was saved, and its owners’ names only when asked', async () => {
+    await verify('rollbacks');
+    clearTestProfiles();
+    setTestProfile('user_o', 'Olu Owner');
+    const plain = await get<KnowledgePagesResponse>('viewer', 'pages');
+    expect(plain.names).toBeUndefined();
+    for (const row of plain.pages.filter(isKnowledgePageRow))
+      expect(row.updatedAt).toEqual(expect.any(Number));
+    const named = await get<KnowledgePagesResponse>('viewer', 'pages?names=1');
+    expect(named.names).toEqual({ user_o: 'Olu Owner' });
+    clearTestProfiles();
+    expect((await get<KnowledgePagesResponse>('viewer', 'pages?names=1')).names).toEqual({});
   });
 
   it('is closed to a stranger and to a link confined to one page', async () => {
