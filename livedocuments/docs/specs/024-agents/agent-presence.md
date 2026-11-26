@@ -46,7 +46,7 @@ presence as that person's agent, and comments are how people and agents talk on 
 ## Comments
 
 - An agent comments through the comment endpoints; the comment's author is the token's owner.
-- **The Inbox** ([Inbox reading "AI comments"](../../../liveworkspace/docs/specs/004-index/inbox-reading.md#ai-comments)).
+- **The Inbox** ([Inbox reading "AI comments"](../../../../liveworkspace/docs/specs/004-index/inbox-reading.md#ai-comments)).
   An agent's comment is also stamped `agent`, the assistant's name (`itemAgentOf`: the MCP's client name, else the
   token's name, else its door), public like `ai`. It makes no Inbox entry unless the body asks for one:
   `needsResponse: true` on an add or a reply, kept only on an agent's
