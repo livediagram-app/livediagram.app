@@ -4,6 +4,7 @@
 // reopen on a tab) answers 410 `comments_gone`, so stored threads stay exactly as they are.
 
 import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
 import {
   isCommentListStatus,
   type DocumentCommentThread,
@@ -66,7 +67,10 @@ async function listThreads(ctx: DocumentRouteContext, id: string): Promise<Respo
   if (scope !== null && (await gateRead(ctx, id, doc.ownerId, doc.teamId, scope))) readable = true;
   if (!readable) return deniedOnTab(ctx, doc);
   console.info('[comments] listed', { documentId: id, status, tabsRead, threads: threads.length });
-  const body: DocumentCommentsResponse = { threads };
+  // A Viewer reads who was mentioned by name, not by id (share-roles.md "Ids a Viewer sees").
+  const body: DocumentCommentsResponse = {
+    threads: peopleForReader(threads, grantOn(ctx, id)?.role, viewer),
+  };
   return json(body);
 }
 

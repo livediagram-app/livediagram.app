@@ -10,6 +10,7 @@
 import { truncateName } from '@livedocuments/document';
 import { VERSION_NAMED_MAX, type VersionSummary } from '@livedocuments/api-schema';
 import { redactCommentAuthorIds } from '../comments';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
 import { VERSION_NAMED_EVENT } from '@livedocuments/document/automations';
 import { getDocument, getVersion, listVersions, nameVersion, namedVersionCount } from '../db';
 import {
@@ -85,11 +86,16 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
     const body = parseVersionBody(version.data);
     if (!body) return notFound();
     const tab = { ...body, id: tabId, name: version.tabName };
-    // A visitor sees only their own comment author ids, as in a tab read.
+    // A visitor sees only their own comment author ids, and a Viewer no one else's account or guest id, as in a tab
+    // read (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees").
     const safe =
       owner === document.ownerId
         ? tab
-        : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+        : peopleForReader(
+            { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) },
+            grantOn(ctx, document.id)?.role,
+            owner,
+          );
     return json({ version: version.summary, tab: safe });
   }
   if (door === 'rename') return rename(ctx, document, tabId, version.summary);

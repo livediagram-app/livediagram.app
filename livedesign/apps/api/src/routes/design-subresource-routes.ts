@@ -2,6 +2,7 @@
 // presence and changesets.
 
 import { redactTabForCommunity } from '@liveworkspace/community/app';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
 import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDesign, getDesignForSave, getTab } from '../db';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
@@ -150,7 +151,12 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
           : grant.community
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactTabForCommunity(tab), connection: undefined }
-            : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+            : // A Viewer reads names, not other people's ids (share-roles.md "Ids a Viewer sees").
+              peopleForReader(
+                { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) },
+                grant.role,
+                owner,
+              );
       if (view) return answerTabView(ctx, view, existing, safe, owner);
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.

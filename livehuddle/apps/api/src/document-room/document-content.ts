@@ -4,6 +4,7 @@
 
 import { remapTabLinks, type Element } from '@livehuddle/document';
 import { redactTabDataAuthors } from '../comments';
+import { copyDataWithoutPeople, ownIdIs } from '@liveworkspace/api-kit/hidden-people';
 import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { servableImageIds } from '../db/image-grants';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
@@ -288,7 +289,8 @@ export async function readContentTabRows(
 }
 
 // The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only.
-// `redactAuthorsFor`: anyone but the owner copies the comments as the tab read serves them to them.
+// `redactAuthorsFor`: anyone but the owner copies the comments as the tab read serves them to them, and no one's
+// account or guest id but their own (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees").
 // `redactForCommunity`: a copy through a Community post's link (docs/specs/025-community/community.md) carries the
 // document without its comments or the people on its actions.
 // `withRules`: the copy carries the Space's Automations rules (room-rpc.ts exportCopy decides).
@@ -316,7 +318,10 @@ export async function exportDocumentCopy(
         data: redactForCommunity
           ? redactTabDataForCommunity(remapped).data
           : redactAuthorsFor !== null
-            ? redactTabDataAuthors(remapped, redactAuthorsFor)
+            ? copyDataWithoutPeople(
+                redactTabDataAuthors(remapped, redactAuthorsFor),
+                ownIdIs(redactAuthorsFor),
+              )
             : remapped,
         // Link remapping rewrites ids inside elements, never their number, so the count carries over.
         elementCount: row.element_count,

@@ -5,6 +5,7 @@
 
 import { redactCommentAuthorIds } from '../comments';
 import { redactTabForCommunity } from '@liveworkspace/community/app';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { indexFor } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
@@ -148,7 +149,12 @@ export async function handleDocumentSubresources(
           : communityVisit
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactTabForCommunity(tab), connection: undefined }
-            : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+            : // A Viewer reads names, not other people's ids (share-roles.md "Ids a Viewer sees").
+              peopleForReader(
+                { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) },
+                grant.role,
+                owner,
+              );
       if (view) return answerTabView(ctx, view, existing, safe, owner);
       // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home and Most Used, at the
       // index. Only when the editor declares this read an open: a resync, a duplicate, Take Offline, the Drive
