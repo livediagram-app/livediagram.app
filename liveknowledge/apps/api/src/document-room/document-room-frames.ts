@@ -16,7 +16,7 @@ import { withoutApiOnlyFields } from '../room-api-only-fields';
 import { helloChangesRoster } from '@liveworkspace/api-kit/room-roster';
 import { type SessionAttachment } from '../room-session';
 import type { DocumentRoom } from './document-room';
-import { opForSocket, sequenceMutation, sendTo } from './document-room-sockets';
+import { replayForSocket, sequenceMutation, sendTo } from './document-room-sockets';
 import { sendFollowers, noteMultiplayer } from './document-room-presence';
 import { answerArticleHold } from './document-room-holds';
 
@@ -237,9 +237,10 @@ export function sendCatchup(
     { epoch, lastSeq },
     { epoch: room.epoch, seq: room.seq, opLog: room.opLog },
   );
-  // A tab-scoped session replays its own tab only, and a session that cannot edit no draft, like the live relay.
+  // A tab-scoped session replays its own tab only, a session that cannot edit no draft, and a Viewer's no one else's
+  // id, like the live relay.
   const visible = ops.flatMap((o) => {
-    const op = opForSocket(room, ws, o.op);
+    const op = replayForSocket(room, ws, o.op);
     if (op === null) return [];
     return op === o.op ? [o] : [{ ...o, op }];
   });
