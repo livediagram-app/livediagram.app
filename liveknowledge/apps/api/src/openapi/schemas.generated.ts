@@ -9402,7 +9402,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "additionalProperties": {
           "type": "string"
         },
-        "description": "The names of the accounts this page names (its creator, its last writer, its editors, its owner, who verified it), by account id, so every reader can name them (verification.md \"Created and Updated\"); absent when none has a name.",
+        "description": "The names of the accounts this page names (its creator, its last writer, its editors, its owner, who verified it, who asked for and decided its approval), by account id, so every reader can name them (verification.md \"Created and Updated\"); a Viewer's by the stand-ins its read holds in place of the ids (share-roles.md \"Ids a Viewer sees\"). Absent when none has a name.",
         "type": "object"
       },
       "reads": {

@@ -190,6 +190,18 @@ reader's than the owner id is ([Auth + guest access](../014-identity/auth-and-gu
   cleared (an assignee's id null, an assigner blank, anything else gone), so the placeholder is never stored.
 - **A copy.** A copy made by anyone but the owner keeps no one's id but the copier's, as it already keeps no one's
   comment author id: an assignee's id is cleared, an assigner blank, and an id-shaped key reads `someone-<n>`.
+- **A page's people (Work Tracker 1479).** A page's knowledge fields name people too: its owner (`owner`), who
+  verified it (`verifiedBy`) and who asked for and decided its approval (`approval.requestedBy`,
+  `approval.decidedBy`). A Viewer reads each as a stand-in, `hidden-p` and 16 hex characters, unless it is their own
+  id. The stand-in is one-way and the same for one person across one knowledgebase, salted with its id, so it names
+  nobody elsewhere. Page Health's names (and colours), and its Created, Updated and editors stamps, are keyed by the
+  same stand-ins, as is the page list's owner and its names, so "Verified by", the owner, Created and Updated and the
+  approval lines still show the person's name. An approval keeps the asker's and the decider's names as it always did,
+  and Page Health now names them too. A guest's Verify already holds their name, never an id, and passes as it is.
+  Where: the knowledgebase read (each page's summary), the tab read, versions, Page Health, the page list, and the
+  room's `tab` and `tab-meta` frames and catch-up for a Viewer's socket. A whole-tab save never takes the knowledge
+  fields from what it is sent (the stored ones stay), and a changeset puts any stand-in back from the stored page
+  before anything reads it, so no save stores a stand-in or loses an id.
 - **One rule.** `@liveworkspace/api-kit/hidden-people` (`hidePeople`, `restoreHiddenPeople`, `copyWithoutPeople`,
   `frameForViewer`) is every product's; this product's api calls it at each of the doors above.
 

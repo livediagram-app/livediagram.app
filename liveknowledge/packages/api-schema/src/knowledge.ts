@@ -153,8 +153,9 @@ export type PageKnowledgeResponse = { knowledge: PageKnowledge };
 export type PageHealthResponse = PageKnowledgeResponse & {
   reads: { people: number; agents: number };
   /** The names of the accounts this page names (its creator, its last writer, its editors, its owner, who verified
-   *  it), by account id, so every reader can name them (verification.md "Created and Updated"); absent when none has
-   *  a name. */
+   *  it, who asked for and decided its approval), by account id, so every reader can name them (verification.md
+   *  "Created and Updated"); a Viewer's by the stand-ins its read holds in place of the ids (share-roles.md "Ids a
+   *  Viewer sees"). Absent when none has a name. */
   names?: Record<string, string>;
   /** Each of those accounts' colour (their avatar's, Version History's dot), by account id, so Page Health's foot draws
    *  a person's disc in it; absent when none has one. */

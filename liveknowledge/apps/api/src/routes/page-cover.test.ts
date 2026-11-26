@@ -37,8 +37,9 @@ const readPage = async (kit: Kit, tab = 'deploys') =>
   ).page;
 type Stamp = { by: string; at: number; kind: string; agent?: string; via?: string };
 const health = async (kit: Kit, tab = 'deploys') =>
-  await (
-    await kit.call('viewer', 'GET', `/api/documents/kb/pages/${tab}/health`)
+  await // A Participant reads every id; a Viewer's stamps hold stand-ins (viewer-knowledge-ids.test.ts).
+  (
+    await kit.call('participant', 'GET', `/api/documents/kb/pages/${tab}/health`)
   ).json<{
     created?: Stamp;
     updated?: Stamp;

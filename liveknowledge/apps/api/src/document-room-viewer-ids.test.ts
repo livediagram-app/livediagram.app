@@ -15,6 +15,7 @@ vi.mock('./db', async (orig) => ({
 }));
 
 import { DocumentRoom } from './document-room/document-room';
+import { replayForSocket } from './document-room/document-room-sockets';
 
 const ALICE = 'user_alice';
 const BOB = 'guest_00000000-0000-4000-8000-00000000b0b0';
@@ -74,7 +75,7 @@ function newRoom() {
     room.webSocketMessage(wsOf(from), JSON.stringify(msg));
     await new Promise((r) => setTimeout(r, 0));
   };
-  return { join, send };
+  return { join, send, room, wsOf };
 }
 
 const assigned = {
@@ -167,5 +168,32 @@ describe('DocumentRoom: the ids a Viewer sees', () => {
     };
     await send(editor, { kind: 'op', op: plain });
     expect(JSON.stringify(opFrames(viewer).at(-1))).toContain('Ship it');
+  });
+
+  // A page's people (Work Tracker 1479): its owner, verifier and approval reach a Viewer as stand-ins, live and in a
+  // catch-up, and a Participant with their ids. The api tells the room a Page Health change (page-fields-save.ts);
+  // a session's own `tab-meta` never carries the knowledge fields.
+  it("hands a Viewer a page's people as stand-ins, and a Participant their ids", () => {
+    const { join, room, wsOf } = newRoom();
+    const viewer = join('V', 'view');
+    const participant = join('P', 'participate');
+    const knowledge = {
+      owner: ALICE,
+      verifiedAt: 1,
+      verifiedBy: ALICE,
+      approval: { state: 'pending', requestedBy: BOB, requestedAt: 1, requestedByName: 'Bob' },
+    };
+    const op = { kind: 'tab-meta', tabId: 't1', patch: { knowledge } } as const;
+    room.broadcast({ kind: 'op', from: 'api', op, seq: 1 });
+    const seen = JSON.stringify(opFrames(viewer).at(-1));
+    expect(seen).toContain('hidden-p');
+    expect(seen).toContain('Bob');
+    expect(seen).not.toContain(ALICE);
+    expect(seen).not.toContain(BOB);
+    expect(JSON.stringify(opFrames(participant).at(-1))).toContain(ALICE);
+    const replayed = JSON.stringify(replayForSocket(room, wsOf(viewer), op));
+    expect(replayed).toContain('hidden-p');
+    expect(replayed).not.toContain(ALICE);
+    expect(JSON.stringify(replayForSocket(room, wsOf(participant), op))).toContain(ALICE);
   });
 });

@@ -105,6 +105,7 @@ import { requireOwner, writesPages } from './context';
 import { withAgentSentFrom } from './agent-sent-from';
 import { labelNamesOf, labelScopeOf, labelsParam } from '../knowledge/label-scope';
 import type { KnowledgeRoute } from './knowledge-routes';
+import { seerFor } from '../knowledge/viewer-people';
 
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
 
@@ -119,7 +120,7 @@ const refOf = (t: Summary): KnowledgePageRef => ({ tab: t.id, title: t.name });
 // it is never named, placed under, linked to or counted as one.
 const pagesOf = (document: DocumentDTO) => document.tabs.filter((t) => !isConnectedRow(t));
 
-async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> {
+async function handleList({ ctx, document, grant }: KnowledgeRoute): Promise<Response> {
   const now = Date.now();
   const { reviewEvery } = document.knowledgeSettings;
   // `labels=` lists only the pages carrying any of them (page-surface.md "Page labels"), in tree order.
@@ -164,8 +165,23 @@ async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> 
     names = {};
     for (const [id, person] of people) if (person.name) names[id] = person.name;
   }
+  // A Viewer reads each owner as its stand-in, the names keyed the same (share-roles.md "Ids a Viewer sees").
+  const caller = ctx.resolveOwner();
+  const see =
+    caller !== null && caller === document.ownerId
+      ? null
+      : seerFor(grant.role, caller, document.id);
+  const listed = see
+    ? pages.map((p) => ('owner' in p && p.owner ? { ...p, owner: see(p.owner) } : p))
+    : pages;
+  const named =
+    see && names ? Object.fromEntries(Object.entries(names).map(([id, n]) => [see(id), n])) : names;
   // The Review Period, said once: every page's `reviewAt` is its `verifiedAt` plus this.
-  return json({ reviewEvery, pages, ...(names ? { names } : {}) } satisfies KnowledgePagesResponse);
+  return json({
+    reviewEvery,
+    pages: listed,
+    ...(named ? { names: named } : {}),
+  } satisfies KnowledgePagesResponse);
 }
 
 async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Response> {

@@ -16,6 +16,7 @@ import {
   type AccessCloseMatch,
 } from '@liveworkspace/api-kit/room-access';
 import { type SessionAttachment } from '../room-session';
+import { opSeen, viewerSeer } from '../knowledge/viewer-people';
 import type { DocumentRoom } from './document-room';
 
 // How many recent mutation ops the room keeps for reconnect catch-up
@@ -97,18 +98,25 @@ export function frameFor(
   serialized: string,
 ): string | null {
   if (payload.kind !== 'op') return serialized;
-  const op = opForSocket(room, ws, payload.op);
-  if (op === null) return null;
-  const frame = op === payload.op ? serialized : JSON.stringify({ ...payload, op });
+  const scoped = opForSocket(room, ws, payload.op);
+  if (scoped === null) return null;
   const viewer = viewerOf(room, ws);
+  // A Viewer reads a page's people (its owner, verifier and approval) as stand-ins (knowledge/viewer-people.ts).
+  const op = viewer === null ? scoped : pagePeopleSeen(room, scoped, viewer);
+  const frame = op === payload.op ? serialized : JSON.stringify({ ...payload, op });
   return viewer === null ? frame : frameForViewer({ ...payload, op }, frame, viewer);
+}
+
+// An op with a page's people as a Viewer sees them: only a `tab` or `tab-meta` op carries any.
+function pagePeopleSeen(room: DocumentRoom, op: unknown, viewer: IsOwnId): unknown {
+  return opSeen(op, viewerSeer(room.documentId ?? '', viewer));
 }
 
 // One op as this socket replays it in a catch-up: opForSocket's, with other people's ids hidden for a Viewer's.
 export function replayForSocket(room: DocumentRoom, ws: WebSocket, op: unknown): unknown {
   const seen = opForSocket(room, ws, op);
   const viewer = seen === null ? null : viewerOf(room, ws);
-  return viewer === null ? seen : hidePeople(seen, viewer);
+  return viewer === null ? seen : hidePeople(pagePeopleSeen(room, seen, viewer), viewer);
 }
 
 // A socket's own ids when it is a Viewer's, read once per socket and kept on the room (its `viewers`).

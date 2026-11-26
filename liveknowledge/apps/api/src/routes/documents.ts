@@ -17,6 +17,7 @@ import { notePageWrites } from '../knowledge/page-authors';
 import { writerOf } from '../knowledge/page-writer';
 import { pageCreatorOf } from '../knowledge/knowledge-caller';
 import { keepStoredKnowledge } from '../knowledge/page-knowledge';
+import { documentSeen, seerFor } from '../knowledge/viewer-people';
 import type { Tab } from '@liveknowledge/document';
 import {
   carriedKnowledgeStyle,
@@ -487,7 +488,14 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
         caller !== null && caller === d.ownerId
           ? { ...d, communityState: await readOwnerCommunityState(ctx.env) }
           : d;
-      const reader = redactDocumentForReader(own, caller);
+      const redacted = redactDocumentForReader(own, caller);
+      // A Viewer reads each page's people (its owner, verifier and approval) as stand-ins, never their ids
+      // (share-roles.md "Ids a Viewer sees"). A Community visitor's pages carry no people at all.
+      const see =
+        grant.community || (caller !== null && caller === d.ownerId)
+          ? null
+          : seerFor(grant.role, caller, d.id);
+      const reader = see ? documentSeen(redacted, see) : redacted;
       const liveDoc = redactDocumentForScope(
         grant.community ? redactDocumentForCommunity(reader) : reader,
         grant.tabScope,

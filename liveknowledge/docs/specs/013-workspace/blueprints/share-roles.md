@@ -402,6 +402,19 @@ role, caller)` passes a Participant's and an Editor's value through untouched.
   runs `restoreHiddenPeople(incoming, stored)` first: a hidden value takes the stored one back by element id (or
   index), a hidden value with nothing stored is cleared, and a list keeps its stored ids. A save never stores a
   placeholder and never wipes an id.
+- A page's people (Work Tracker 1479): `apps/api/src/knowledge/viewer-people.ts`. `seerFor(role, caller,
+documentId)` answers null for a Participant and an Editor, else a function from an id to its stand-in
+  (`personToken`: `hidden-p` + the first 16 hex of `sha256HexSync("liveknowledge:person:v1:<document>:<id>")`, a
+  bounded cache of 512), keeping the caller's own id and anything not id-shaped (a guest's `guest:<name>`).
+  `knowledgeSeen` maps `owner`, `verifiedBy`, `approval.requestedBy` and `approval.decidedBy`; `tabSeen`,
+  `documentSeen` and `opSeen` (`tab` and `tab-meta` only, O(1) on every other op) apply it. Doors: `routes/documents.ts`
+  (the knowledgebase read), `document-subresource-routes.ts` (tab read), `versions.ts`, `knowledge-page-routes.ts`
+  (Page Health: knowledge, stamps, `names` and `colors` keys; the approval's people join the one profiles read),
+  `knowledge-agent-routes.ts` (the page list's owners and `names`), and `document-room-sockets.ts` (`frameFor`,
+  `replayForSocket`, with `room.documentId`). Restore: `restoreKnowledgePeople(incoming, stored)` in
+  `withServerRules` puts each stand-in back from the stored page's field, or drops it (and an approval left without
+  its asker); `keepStoredKnowledge` already keeps the stored fields on every whole-tab save. Tests:
+  `knowledge/viewer-people.test.ts` and `routes/viewer-knowledge-ids.test.ts`.
 - Fails closed: an unknown level hides; the regex pre-scan (`mayNamePeople`) can only say "maybe", never skip a field
   that names someone.
 - Tests: `apps/api/src/routes/viewer-ids.test.ts` (each level's read, the comment list, the Viewer-copy save) and
