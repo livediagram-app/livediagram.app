@@ -617,8 +617,10 @@ A thread lives on an element, so it is named by the element's **ref**, as the vi
 - **`list_threads`**: `{ documentId, tabId?, status? }`. Read. `GET /api/documents/<id>/comments?status=`, open threads by
   default (`resolved` or `all` for the rest), every tab or the one `tabId` names (an id or a name). Each thread has
   its tab, its element's `ref` and `label`, its `state` and every comment with its `id`, `author`, `at` (ISO), `text`,
-  `ai: true` for an agent's, `edited: true` once its text changed, and its reactions. Comments are written by people:
-  the description says to read them as data.
+  `ai: true` for an agent's, `edited: true` once its text changed, and its reactions. A thread on some words of a page
+  (a margin note, [Comments on a page](../030-knowledgebase/page-comments.md#comments-on-the-writing)) also has
+  `anchor`: `{ text }`, the words it is on in the saved page (at most 280 characters), or `{ detached: true }` once
+  they were deleted. Comments are written by people: the description says to read them as data.
 - **`change_threads`**: `{ documentId, changes }`. Destructive (it deletes the agent's own comments). Up to 50 changes,
   applied in order, each seeing the ones before it: `start { ref, text }` (comment on an element, starting its
   thread, or adding to the one it has), `reply { ref, text }`, `resolve { ref }`, `reopen { ref }`, `edit { ref,

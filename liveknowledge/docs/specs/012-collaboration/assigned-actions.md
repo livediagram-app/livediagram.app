@@ -421,7 +421,11 @@ enum-ish tokens, not user content.
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
   a projection the document pushes to liveworkspace's index from its outbox after a tab save,
   with the per-element blob still the source of truth.
-- Due dates, priorities, more than one action on an element, and multiple
+- ~~Due dates~~: an action may carry a **due day** (`ElementAction.due`, a calendar day such as `2026-12-03`, no
+  time or zone), set in the Assign Action dialog's optional "Due date" field and cleared by emptying it, shown in the
+  action's popover ("Due today", "Due tomorrow", "Due Thu 3 Dec", red once past while open) and in the page's
+  Comments list (Work Tracker 1484). The Inbox and the assign email do not show it yet.
+- Priorities, more than one action on an element, and multiple
   assignees.
 - Auto-sharing the document with the assignee on assign (§4 caveat).
 - View-role mutation endpoints (complete-without-edit-access).

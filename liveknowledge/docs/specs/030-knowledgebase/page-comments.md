@@ -2,7 +2,7 @@
 
 Owner, 2026-11-21: "Pages should also support comment threads at the bottom."
 
-Status: **built, not yet verified in a browser** ([blueprint](blueprints/approval-and-comments.md)). Details marked
+Status: **built, not yet verified in a browser** (Comments on the writing: built 2026-11-26, Work Tracker 1484) ([blueprint](blueprints/approval-and-comments.md); [Comments on the writing](blueprints/inline-comments.md)). Details marked
 "(decided)" were decided by the builder and stand until the owner overturns them.
 
 A page's writing is what the knowledgebase says. Comments are the conversation about it: a question for the owner, a
@@ -10,7 +10,8 @@ correction, a "this changed last week". They sit at the foot of the page, after 
 mode alike: they are never part of the writing, the draft, search, Ask or what agents read of the page.
 
 Margin notes ([Article pages](../007-editor/article-pages.md)) stay as they are: a note on one place in the writing.
-Comments are about the page as a whole.
+Comments are about the page as a whole. Both are listed together under the page's **Comments** heading
+([Comments on the writing](#comments-on-the-writing), Work Tracker 1484).
 
 ## What a thread is
 
@@ -58,6 +59,101 @@ Comments are about the page as a whole.
   drawing shows instead), the Comments section is not drawn for anyone, threads or not. It appears once the page has
   some saved writing: words typed in edit mode count only after Save, never while they are an unsaved draft.
 - Light and dark, phone and desktop: on a phone the composer and each action are 44 px tall.
+
+## Comments on the writing
+
+Owner card (Work Tracker 1484): "select any text on a page and, from a small toolbar that appears, either Comment or
+Add action". Built on the margin note ([Article pages](../007-editor/article-pages.md#comments-and-actions)), not on
+`page_threads`: a comment or an action on some words is an element thread on the marker beside them, so threads,
+replies, resolving, @mentions, the Inbox, assignees, due dates and email are the platform's own, shared with
+livedocuments (decided: one comment system, no anchor column on `page_threads`). The words carry a `note` mark in the
+writing, so the anchor moves with the text through any edit, live co-editing included, never by character offset.
+
+- **While reading** (decided; edit mode keeps the formatting bar's Comment and Assign Action, ⌘⌥M): an Editor or a
+  Participant who picks words in the writing with a mouse, a pen or a trackpad gets a small **selection bar** the
+  moment the press lets go: two buttons, **Comment** (a speech bubble, indigo) and **Add Action** (a tick in a ring,
+  emerald), on a white card (slate-900 in dark mode) with the app's shadow, 8 px above the words' first line, centred
+  on them, or under their last line when there is no room above. Each button's tooltip names it and its key:
+  "Comment (⌘⌥M)", "Add Action (⌘⌥A)" (Ctrl+Alt elsewhere); the keys work too while words are picked, without the
+  bar. Hover tints a button in its note's colour, focus shows the brand ring, and the bar rises in with a 120 ms fade
+  (none under reduced motion). The bar goes when the words go, on Escape, on a scroll that takes the words away, and
+  on a press anywhere else. Not offered for words in the Title, in a table's cell (a note marks a block's own runs),
+  across the meta row or the foot, or for a Viewer or a link visitor who may only view.
+- **On a touch screen** no bar floats over the words: the browser's own callout sits there and no page may replace it
+  ([The selection menu](../../../../liveworkspace/docs/specs/004-index/send-to-plan.md#the-selection-menu)). The
+  docked selection menu gains **Comment** and **Add Action** rows, after Copy, so a long press, then a tap on the
+  menu, comments without fighting the callout. Right-click on desktop shows the same rows.
+- **What it does:** the words get the note's mark and its marker appears in the margin, in one edit straight into
+  the page as saved (no draft, no Edit): a comment is not an edit of the page. Comment opens the marker's thread with
+  its composer focused; Add Action opens the Assign Action dialog (assignee, optional due date). Both write the same
+  way for an Editor and a Participant; a Participant assigns actions as an Editor does (Participant is an Editor minus
+  three things, [Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)).
+- **Not an update.** Notes, their marks and their conversation move no **Updated** stamp, no "Edited since verified",
+  no watcher's "Edited" notice: the api's test for a changed page ignores `note` marks and margin note markers.
+- **Highlight.** An open comment's words are tinted indigo with a solid underline, an open action's emerald with a
+  dashed one ([Article pages](../007-editor/article-pages.md#comments-and-actions)). **A resolved thread, and a done
+  or Won't Do action, take their tint off** (the words read as plain writing); the marker stays, showing its
+  resolved or done glyph. A plain click on tinted words, or on the marker, opens the thread or the action, for every
+  reader (a Viewer reads it).
+- **@mentions** are the thread composer's own ([Comment mentions](../012-collaboration/comment-mentions.md)): the
+  candidates are the members of the knowledgebase's team, who can open every page, and a mention puts the thread on
+  that person's Inbox. An action's assignee is picked from the same people and notified as every assigned action is.
+- **Detached.** Deleting every word a note was on keeps the note when it holds anything (a comment or an action):
+  it is **detached**. Its marker leaves the margin (it beside unrelated words would mislead), its thread and action
+  are kept as they were, and it is listed under Comments with "Its words were deleted" in place of the quote. Undo,
+  or a restore that brings the words back with their mark, attaches it again, beside them. A note with nothing in it
+  yet goes with its words, as before. The same holds for a draft saved without the words, for an agent's
+  `write_article` and for a version restored from before the note was made.
+- **Versions.** A restored version keeps every note the page has: one whose words the version holds stays anchored;
+  one made after the version is kept, detached, with its conversation.
+
+### Listed with the page's comments
+
+Under the **Comments** heading, before the threads at the foot, the page's notes are listed in the writing's order,
+one compact card each, on the page's ground as a thread's card is:
+
+- A comment: the indigo speech bubble, the words it is on as a quote (two lines at most, cut with an ellipsis), then
+  its newest comment's author disc, name, "3 hours ago" and words (one line), and "4 comments" when there are more.
+- An action: the emerald tick, the quote, then the assignee's disc and name ("Not assigned yet" while none), the due
+  date ("Due 3 Dec", red when past) and its status.
+- Detached: the quote's place reads "Its words were deleted" in italics, with a **Detached** chip.
+- A press on the card (a real button, the quote its name) brings the words into view and opens the thread or the
+  action; a detached one opens it where its marker last stood. A note with no comments and no action is not listed.
+- The heading's count counts open threads at the foot, open comment notes and open actions. Resolved comment notes
+  and closed actions fold under "N Resolved" with the resolved threads.
+- A Viewer sees the list as everyone does (they read margin notes); the heading shows for a Viewer whenever there is
+  a note or a thread to read.
+
+### Share roles (comments on the writing)
+
+| Action                                                   | Editor | Participant | Viewer | Link visitor (view) | Link visitor (edit) |
+| -------------------------------------------------------- | ------ | ----------- | ------ | ------------------- | ------------------- |
+| See the highlights, the markers and the list             | yes    | yes         | yes    | yes                 | yes                 |
+| Open a note's thread or action                           | yes    | yes         | yes    | yes                 | yes                 |
+| Selection bar, menu rows, ⌘⌥M / ⌘⌥A: Comment, Add Action | yes    | yes         | no     | no                  | yes                 |
+| Reply, resolve, reopen; assign, complete an action       | yes    | yes         | no     | no                  | yes                 |
+
+Gated on `can.takePart` in the editor and by the room and the api as every element thread is, with a test per role.
+
+### Agents (comments on the writing)
+
+`list_threads` lists a note's thread as any element's, with `anchor`: `{ text }`, the words it is on in the saved
+page (at most 280 characters), or `{ detached: true }`; `change_threads` replies to, resolves and reopens it by its
+ref. Starting a note on some words from an agent is not built (an agent comments at the foot with
+`change_page_comments`).
+
+### Telemetry (comments on the writing)
+
+`Element·Added` typed `ArticleComment` or `ArticleAction` as in edit mode, and `UI·Used ReadingNoteBar`,
+`UI·Used ReadingNoteMenu` or `UI·Used ReadingNoteKey` for where it came from; a card in the list opened as
+`UI·Used OpenNoteFromComments`.
+
+### Performance (comments on the writing)
+
+Nothing runs per keystroke: the bar listens for a press letting go and for the selection changing, and only while
+reading. The highlights are the writing's own marks; hiding resolved tints and detached markers is one small style
+sheet rebuilt when the page's elements or writing change, never a pass over the page's text. The list is derived
+from the tab's elements and saved writing in one memo, keyed on their identities.
 
 ## Live
 
