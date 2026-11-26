@@ -21,14 +21,16 @@ describe("Home's first run on liveworkspace.app", () => {
   });
 
   it("loads each app's manifest, with its starts", async () => {
-    for (const app of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const) {
+    for (const app of [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+    ] as const) {
       const m = await loadWelcome(app);
       expect(m?.blanks.length).toBeGreaterThan(0);
       expect(m?.popular.length).toBeLessThanOrEqual(8);
     }
-  });
-
-  it('has none for a held app, which no Explorer lists yet', async () => {
-    expect(await loadWelcome('livehuddle')).toBeNull();
   });
 });

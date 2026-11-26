@@ -7683,6 +7683,9 @@ importers:
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/templates
+      '@livehuddle/templates':
+        specifier: workspace:*
+        version: link:../../../livehuddle/packages/templates
       '@liveknowledge/agent-verbs':
         specifier: workspace:*
         version: link:../../../liveknowledge/packages/agent-verbs

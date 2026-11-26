@@ -147,7 +147,7 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   the lift.
 
 - `components/calls/MediaBubble.tsx`: the one bubble (camera or screen), and `CallBubbles.tsx`, the layer that places
-  them above characters (just over the head, `BUBBLE_LIFT_PX` = `AVATAR_HEAD_CHROME` + 8), each with its talking equaliser on its top-left corner (`BubbleBars` in `TalkingBars.tsx`; `TalkingBars` skips anyone wearing a bubble), side by side when a person has both.
+  them above characters (just over the head, `BUBBLE_LIFT_PX` = `AVATAR_HEAD_CHROME` + 8), each with its talking equaliser on its top-left corner (`BubbleBars` in `TalkingBars.tsx`; `TalkingBars` skips anyone wearing a bubble), one bubble when a person has both: the screen, with the camera as `MediaBubble`'s `inset` circle (`data-call-bubble-inset`, bottom left, 34% of the width, its own maximise button beside the screen's, never inside it); `countOf` counts such a group as one bubble.
 - **Close together** (`lib/calls/bubble-layout.ts`, pure): `layoutBubbles(boxes, prevOrder)` takes each person's
   bubble group as a box (`{ id, x, bottom, width, height }` in canvas px: centred on the head, bottom
   `BUBBLE_LIFT_PX` over it, `groupWidth(count)` wide, 16:9 tall) and answers each group's sideways nudge `dx`, its
@@ -159,6 +159,16 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   come within `BUBBLE_GAP_PX`. `CallBubbles` keeps the order in state, adjusted during render (it settles in one
   extra render, as the order it hands back is already stable), passes each `Group` its `dx`, and writes the rects to
   its `rectsRef` (`useCallBubbleRects`, made in `Canvas.tsx`; emptied with no stream and on unmount) after each commit.
+- **Nobody close enough**: `CallBubbles` reads `useCallSelf()` and hands your own group `alone` while the call is
+  `live` and `someoneNear` is false; `MediaBubble` then shows `NobodyNearTag` (`data-call-nobody-near`, bottom right,
+  where a preview's Only You tag goes, which wins).
+- **Crowds** (`crowdedIds` in `lib/calls/bubble-layout.ts`, pure): each bubble wearer's head as `{ id, x, y, count }`;
+  two join when within `BUBBLE_CROWD_REACH_PX` (360) across and `BUBBLE_CROWD_RISE_PX` (120) up or down, chained
+  (union-find over at most the 9 groups the caps allow); a chain holding `BUBBLE_CROWD_COUNT` (3) bubbles or more is a
+  crowd. Someone already in the previous crowd joins at 1.25 times the reach (hysteresis). `CallBubbles` keeps the
+  set in state like the order and lays out a crowd's groups at `BUBBLE_COMPACT_WIDTH_PX` (120); `MediaBubble` takes
+  the width (eased over `BUBBLE_NUDGE_MS`) and `compact`, which drops the name chip (`data-call-bubble-name`, top
+  right, hidden on hover where the maximise mark shows).
 - A group's inner row carries the nudge as `translateX(dx)` with a `BUBBLE_NUDGE_MS` ease-out transition (off under
   reduced motion), apart from the outer box's `left`/`top` glide, so a swap slides while a walk keeps its linear
   glide. The tail: a 10 px square turned 45°, the person's colour, under the row, at `tailShift(dx, width)` off the

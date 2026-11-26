@@ -14,6 +14,7 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, withVoiceReach, type Point } from '@/lib/calls/hearing';
 import { useProximityCall } from '@/lib/calls/useProximityCall';
+import { useEarshotFlash } from '@/lib/calls/useEarshotFlash';
 import { mayLetSpeakSelf } from '@/lib/calls/stage';
 import { callPlacesOf } from '@/lib/calls/call-places';
 import {
@@ -168,6 +169,8 @@ export function useCanvasCall(deps: {
   const send = props.onCallSignal;
   const mayLetSpeak = inMode && !!send && mayLetSpeakSelf(self, level, stages);
   const selfBadge = self ? { at: self, scale: deps.avatarScale } : null;
+  // The ring flashes when someone comes within earshot (proximity-audio.md "Your hearing ring").
+  const flash = useEarshotFlash(callSelfAt, callWalkers, zones);
 
   return {
     bubbles: {
@@ -202,6 +205,7 @@ export function useCanvasCall(deps: {
       zones,
       stages,
       level,
+      flash,
     },
     hands: {
       peers,

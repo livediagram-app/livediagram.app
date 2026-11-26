@@ -64,10 +64,12 @@ describe('CallBubbles', () => {
     });
     const sam = container.querySelector<HTMLElement>('[data-call-bubbles="p1"]')!;
     expect(sam.style.left).toBe('100px');
-    expect(sam.querySelectorAll('[data-call-bubble]')).toHaveLength(2);
+    // Camera and screen together are one bubble: the screen, the camera a circle in its corner.
+    expect(sam.querySelectorAll('[data-call-bubble]')).toHaveLength(1);
     expect(container.querySelector('[data-call-bubbles="p2"]')).toBeNull();
-    expect(screen.getByRole('button', { name: "Maximise Sam's Camera" })).toBeTruthy();
     expect(screen.getByRole('button', { name: "Maximise Sam's Screen" })).toBeTruthy();
+    const inset = screen.getByRole('button', { name: "Maximise Sam's Camera" });
+    expect(inset.hasAttribute('data-call-bubble-inset')).toBe(true);
     const mine = screen.getByRole('button', { name: 'Maximise Your Camera' });
     expect(mine.querySelector('video')!.className).toContain('-scale-x-100');
     // A video shows only once its first frame is in.
@@ -82,23 +84,42 @@ describe('CallBubbles', () => {
     const { container } = render(<CallBubbles peers={[peer('p1', 'Sam', 100)]} self={self} />);
     act(() => {
       setCallMedia('self', 'video', stream('c'));
-      setCallMedia('self', 'screen', stream('d'));
       setCallMedia('p1', 'video', stream('a'));
-      setCallSelf({ previewCamera: 'on', previewScreen: 'on' });
+      setCallSelf({ previewCamera: 'on' });
     });
     const tags = () =>
       container.querySelectorAll('[data-call-bubbles="self"] [data-call-only-you]');
-    expect(tags()).toHaveLength(2);
+    expect(tags()).toHaveLength(1);
     expect(container.querySelector('[data-call-bubbles="p1"] [data-call-only-you]')).toBeNull();
     const mine = screen.getByRole('button', { name: 'Maximise Your Camera, Only You' });
     fireEvent.click(mine);
     const dialog = screen.getByRole('dialog', { name: 'Your Camera' });
     expect(dialog.querySelector('[data-call-only-you]')).not.toBeNull();
     act(() => setCallMaximised(null));
-    // The call took the camera: its tag goes, the screen's stays.
+    // The call took the camera: its tag goes.
     act(() => setCallSelf({ previewCamera: 'off', camera: 'on' }));
-    expect(tags()).toHaveLength(1);
+    expect(tags()).toHaveLength(0);
     expect(screen.getByRole('button', { name: 'Maximise Your Camera' })).toBeTruthy();
+    // A screen still only previewed tags the one bubble it shares with the camera.
+    act(() => {
+      setCallMedia('self', 'screen', stream('d'));
+      setCallSelf({ previewScreen: 'on' });
+    });
+    expect(tags()).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Maximise Your Screen, Only You' })).toBeTruthy();
+  });
+
+  // video-and-screen-bubbles.md "Nobody close enough".
+  it('tags your own bubble while you are live and nobody stands within earshot', () => {
+    const { container } = render(<CallBubbles peers={[]} self={self} />);
+    const tag = () => container.querySelector('[data-call-bubbles="self"] [data-call-nobody-near]');
+    act(() => {
+      setCallMedia('self', 'video', stream('c'));
+      setCallSelf({ phase: 'live', someoneNear: false, camera: 'on' });
+    });
+    expect(tag()?.textContent).toContain('Nobody close enough to see');
+    act(() => setCallSelf({ someoneNear: true }));
+    expect(tag()).toBeNull();
   });
 
   it('slides with a walking character, and lands at once on a jump', () => {
@@ -279,15 +300,14 @@ describe('CallBubbles', () => {
   it('lifts a wrapped bubble onto a row above and hides its tail', () => {
     const { container } = render(
       <CallBubbles
-        peers={[peer('p1', 'Sam', 200), peer('p2', 'Kim', 230), peer('p3', 'Lee', 260)]}
+        peers={[peer('p1', 'Sam', 200), peer('p3', 'Lee', 230)]}
         self={null}
-        view={{ left: 0, width: 450 }}
+        view={{ left: 0, width: 300 }}
       />,
     );
+    // Two bubbles (too few to shrink as a crowd) that cannot sit side by side in the view.
     act(() => {
       setCallMedia('p1', 'video', stream('a'));
-      setCallMedia('p1', 'screen', stream('b'));
-      setCallMedia('p2', 'video', stream('c'));
       setCallMedia('p3', 'video', stream('d'));
     });
     const row = (id: string) =>

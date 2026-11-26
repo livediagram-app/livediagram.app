@@ -60,10 +60,10 @@ earshot, from the positions the room already shares in the `avatar` op.
 Tracker #319, #436): an [Office Room](../009-elements/office.md#room) is walled off: nobody outside it hears anyone
 inside, and walls block sound fully. Inside a room, as on the open floor, the rules below apply (owner, 2026-11-06):
 
-- **Hearing radius: 260 canvas px**, feet to feet. A speaker inside it is subscribed.
-- **Release radius: 300 canvas px.** A subscribed speaker is let go only beyond it, so somebody standing on the edge
+- **Hearing radius: 400 canvas px**, feet to feet. A speaker inside it is subscribed.
+- **Release radius: 460 canvas px.** A subscribed speaker is let go only beyond it, so somebody standing on the edge
   does not flicker in and out.
-- **Volume fades with distance** (in the open; full in a shared room): full within 90 canvas px, then an equal-power fade to silence at the release
+- **Volume fades with distance** (in the open; full in a shared room): full within 140 canvas px, then an equal-power fade to silence at the release
   radius, so letting go of a speaker makes no audible step.
 - **Pans by position**: a speaker to your left is heard on the left, up to 80% of the way at the hearing radius.
 - Volume and pan glide over 120 ms as people walk, so steps are never heard.
@@ -176,9 +176,11 @@ audio. Nobody out of earshot receives any media: it costs no Realtime egress and
 - **Your own bars** show above your own head while you talk, so you can see you are coming through.
 - **Your hearing ring** (owner, 2026-11-07): whenever your own bars show (unmuted and talking, in a call or on the
   microphone's local preview), a soft ring in your colour lies on the floor round your feet at the hearing radius
-  (260 canvas px), so you see where people can hear you. It pulses while you talk, a ripple running out from your
+  (400 canvas px), so you see where people can hear you. It pulses while you talk, a ripple running out from your
   feet to its edge, and fades away within a moment of your stopping (the same 600 ms hangover as the bars, then a 200
-  ms fade). Walls block sound both ways, so inside a room (or a Phone Booth) it is cut to the room's floor, and every
+  ms fade). **It also shows for a second whenever someone comes within earshot**, by their walking or yours, talking
+  or not (owner, 2026-11-25: "show the radius for a second so I can see they are within earshot"), then fades the
+  same way; someone on the edge flashes it once, not again until they have gone beyond the release radius. Walls block sound both ways, so inside a room (or a Phone Booth) it is cut to the room's floor, and every
   other room it reaches (standing outside one, or in the room round it) is cut out of it; on the top of a stage that
   lets you speak, where the whole tab hears you, it does not show (worked out from the board, so on the local preview
   too). Only you see it, never others; with the local preview it shows where you would be heard once the call is on.
