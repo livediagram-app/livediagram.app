@@ -85,7 +85,7 @@ describe('poolUptime', () => {
       ['livediagram:api', { checks: 100, answered: 90 }],
       ['livediagram:editor', { checks: 300, answered: 300 }],
       ['liveplanner:api', { checks: 100, answered: 100 }],
-      ['liveplanner:mcp', { checks: 0, answered: 0 }],
+      ['liveplanner:router', { checks: 0, answered: 0 }],
       ['livedesign:api', { checks: 0, answered: 0 }],
     ]);
     // Weighted by checks: 390 of 400, not the mean of 90% and 100%.

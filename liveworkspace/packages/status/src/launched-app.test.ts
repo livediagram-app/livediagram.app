@@ -1,25 +1,35 @@
 import { APP_SITES } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
-import { appGroup, hasMcp, mcpOrigin, statusGroups } from './services';
+import { appGroup, mcpOrigin, statusGroups } from './services';
 
-// The MCP server is optional per app (liveworkspace/docs/specs/009-status/status.md "Where the checks go"), and
-// livehuddle, launched, is on the page as every app is, with no MCP server (Work Tracker #562).
+// There is one MCP server, checked once under liveworkspace and never under an app
+// (liveworkspace/docs/specs/009-status/status.md "Where the checks go"; Work Tracker 1483).
 const huddle = APP_SITES.find((site) => site.id === 'livehuddle.app')!;
 
-describe('the MCP check, optional per app', () => {
-  it('stays for every listed app that ships one', () => {
-    for (const site of APP_SITES.filter((s) => s.id !== 'livehuddle.app')) {
-      expect(hasMcp(site)).toBe(true);
-      const ids = appGroup(site, 'production').services.map((s) => s.id);
-      expect(ids).toContain(`${site.name}:mcp`);
+describe('the one MCP check', () => {
+  it('is no app group’s row, in any environment', () => {
+    for (const env of ['production', 'staging', 'development'] as const) {
+      for (const site of APP_SITES) {
+        const ids = appGroup(site, env).services.map((s) => s.id);
+        expect(
+          ids.some((id) => id.endsWith(':mcp')),
+          site.id,
+        ).toBe(false);
+      }
     }
   });
 
-  it('is left out for livehuddle, which ships no MCP server, in every environment', () => {
-    expect(hasMcp(huddle)).toBe(false);
+  it('is one row under liveworkspace, on the one MCP’s address', () => {
+    expect(mcpOrigin('production')).toBe('https://mcp.liveworkspace.app');
+    expect(mcpOrigin('development')).toBe('http://localhost:3013');
+    expect(mcpOrigin('staging')).toBeNull();
     for (const env of ['production', 'staging', 'development'] as const) {
-      expect(mcpOrigin(huddle, env)).toBeNull();
+      const mcp = statusGroups(env)[0]!.services.filter((s) => s.id.endsWith(':mcp'));
+      expect(mcp.map((s) => s.id)).toEqual(['liveworkspace:mcp']);
     }
+  });
+
+  it('leaves livehuddle with its five services', () => {
     expect(appGroup(huddle, 'production').services.map((s) => s.id)).toEqual([
       'livehuddle:api',
       'livehuddle:realtime',
@@ -30,10 +40,6 @@ describe('the MCP check, optional per app', () => {
     expect(appGroup(huddle, 'development').services[0]!.check).toMatchObject({
       probe: { url: 'http://localhost:3500/api/capabilities' },
     });
-  });
-
-  it('is never asked of the platform itself', () => {
-    expect(hasMcp({ ...huddle, id: 'liveworkspace.app' })).toBe(false);
   });
 });
 
@@ -50,22 +56,5 @@ describe('a launched app', () => {
         'liveknowledge',
       ]);
     }
-  });
-});
-
-describe('liveknowledge', () => {
-  const knowledge = APP_SITES.find((site) => site.id === 'liveknowledge.app')!;
-
-  it('is checked like every app with an MCP server: six services, its MCP on its own port locally', () => {
-    expect(hasMcp(knowledge)).toBe(true);
-    expect(appGroup(knowledge, 'production').services.map((s) => s.id)).toContain(
-      'liveknowledge:mcp',
-    );
-    expect(mcpOrigin(knowledge, 'production')).toBe('https://mcp.liveknowledge.app');
-    expect(mcpOrigin(knowledge, 'development')).toBe('http://localhost:3013');
-    expect(mcpOrigin(knowledge, 'staging')).toBeNull();
-    expect(appGroup(knowledge, 'development').services[0]!.check).toMatchObject({
-      probe: { url: 'http://localhost:3600/api/capabilities' },
-    });
   });
 });

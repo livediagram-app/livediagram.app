@@ -28,6 +28,7 @@ describe('the status page’s services', () => {
       'Telemetry',
       'Media & previews',
       'Help centre',
+      'MCP server',
     ]);
   });
 
@@ -43,17 +44,29 @@ describe('the status page’s services', () => {
     );
   });
 
-  it('gives every app its API, realtime rooms, editor, marketing site and router, and an MCP server where it ships one', () => {
+  it('gives every app its API, realtime rooms, editor, marketing site and router, and no MCP row of its own', () => {
     for (const group of groups.slice(1)) {
       const names = group.services.map((s) => s.name);
       for (const name of ['API', 'Realtime rooms', 'Editor', 'Marketing site', 'Router'])
         expect(names, group.id).toContain(name);
       // One help centre serves every app, so it is the platform's row, not each app's.
       expect(names, group.id).not.toContain('Help centre');
-      // livehuddle removed its MCP server (Work Tracker #562); every other app keeps one.
-      if (group.id === 'livehuddle') expect(names, group.id).not.toContain('MCP server');
-      else expect(names, group.id).toContain('MCP server');
+      // There is one MCP server, checked once under liveworkspace (Work Tracker 1483).
+      expect(names, group.id).not.toContain('MCP server');
+      expect(
+        group.services.map((s) => s.id),
+        group.id,
+      ).not.toContain(`${group.id}:mcp`);
     }
+  });
+
+  it('checks the one MCP server once, under liveworkspace', () => {
+    const rows = allServices(groups).filter((s) => s.name === 'MCP server');
+    expect(rows.map((s) => s.id)).toEqual(['liveworkspace:mcp']);
+    expect(groups[0]!.services.map((s) => s.id)).toContain('liveworkspace:mcp');
+    expect(rows[0]!.check).toMatchObject({
+      probe: { url: 'https://mcp.liveworkspace.app/health', method: 'GET' },
+    });
   });
 
   it('keeps every id unique, and every derived service standing on a real check', () => {
@@ -87,14 +100,15 @@ describe('the status page’s services', () => {
     expect(appOrigin(site, 'production')).toBe('https://www.livediagram.app');
     expect(appOrigin(site, 'staging')).toBe('https://staging.livediagram.app');
     expect(appOrigin(site, 'development')).toBe('http://localhost:3100');
-    expect(mcpOrigin(site, 'production')).toBe('https://mcp.livediagram.app');
-    expect(mcpOrigin(site, 'staging')).toBeNull();
-    const staging = statusGroups('staging')[1]!.services.find((s) => s.name === 'MCP server');
+    expect(mcpOrigin('production')).toBe('https://mcp.liveworkspace.app');
+    expect(mcpOrigin('development')).toBe('http://localhost:3013');
+    expect(mcpOrigin('staging')).toBeNull();
+    const staging = statusGroups('staging')[0]!.services.find((s) => s.name === 'MCP server');
     expect(staging?.check.mode).toBe('skipped');
   });
 
   it('resolves liveworkspace’s own paths on its origin, and leaves every app’s address as written', () => {
-    const [site, , , , , , , api] = probedServices(groups);
+    const [site, , , , , , , , api] = probedServices(groups);
     expect(site!.id).toBe('liveworkspace:site');
     expect(resolveProbeUrl(site!.check.probe, 'https://lw.example/')).toBe(
       'https://lw.example/robots.txt',
@@ -105,9 +119,9 @@ describe('the status page’s services', () => {
     );
   });
 
-  it('keeps one round small: 31 probes, under a Worker’s 50 subrequests with room to spare', () => {
-    expect(probedServices(groups)).toHaveLength(31);
+  it('keeps one round small: 27 probes, under a Worker’s 50 subrequests with room to spare', () => {
+    expect(probedServices(groups)).toHaveLength(27);
     expect(probedServices(groups).length).toBeLessThan(40);
-    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(43);
+    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(39);
   });
 });

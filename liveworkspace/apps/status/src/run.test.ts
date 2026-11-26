@@ -37,9 +37,9 @@ describe('runOnce', () => {
   it('stores a row for every service, the day’s rollup and both answers', async () => {
     const env = testEnv();
     const report = await runOnce(env, T0, { results: results() });
-    expect(report).toMatchObject({ at: T0, checked: 43, up: 43, down: 0, opened: 0 });
-    expect(rows(env, 'SELECT * FROM checks')).toHaveLength(43);
-    expect(rows(env, 'SELECT * FROM daily WHERE day = ?', '2026-10-25')).toHaveLength(43);
+    expect(report).toMatchObject({ at: T0, checked: 39, up: 39, down: 0, opened: 0 });
+    expect(rows(env, 'SELECT * FROM checks')).toHaveLength(39);
+    expect(rows(env, 'SELECT * FROM daily WHERE day = ?', '2026-10-25')).toHaveLength(39);
 
     const latest = snapshot<StatusLatest>(env, 'latest');
     expect(latest.at).toBe(T0);
@@ -50,7 +50,7 @@ describe('runOnce', () => {
 
     const history = snapshot<StatusHistory>(env, 'history');
     expect(history.from).toBe('2026-07-28');
-    expect(Object.keys(history.services)).toHaveLength(43);
+    expect(Object.keys(history.services)).toHaveLength(39);
     const site = history.services['liveworkspace:site']!;
     expect(site.w).toBe(`${'-'.repeat(89)}u`);
     // A fully up day isn't listed: only days under 100% are.
@@ -163,6 +163,21 @@ describe('runOnce', () => {
     expect(snapshot<StatusHistory>(env, 'history').incidents).toEqual([]);
   });
 
+  it('retires the old per-app MCP rows: an open incident of liveplanner:mcp is closed and left off the page', async () => {
+    const env = testEnv();
+    const started = T0 - 3 * HOUR;
+    env.raw.exec(`
+      INSERT INTO incidents (service, started_at, last_at, ended_at, worst, checks, error)
+        VALUES ('liveplanner:mcp', ${started}, ${started}, NULL, 'down', 1, 'timeout');
+    `);
+    const report = await runOnce(env, T0, { results: results() });
+    expect(report.closed).toBe(1);
+    expect(snapshot<StatusHistory>(env, 'history').incidents).toEqual([]);
+    expect(Object.keys(snapshot<StatusHistory>(env, 'history').services)).not.toContain(
+      'liveplanner:mcp',
+    );
+  });
+
   it('prunes checks, days and closed incidents past 90 days in the same run', async () => {
     const env = testEnv();
     const old = T0 - 91 * DAY_MS;
@@ -227,7 +242,7 @@ describe('runOnce', () => {
       });
     };
     const report = await runOnce(env, T0, { fetch: fetchImpl });
-    expect(report).toMatchObject({ checked: 43, down: 1, opened: 1 });
+    expect(report).toMatchObject({ checked: 39, down: 1, opened: 1 });
     const latest = snapshot<StatusLatest>(env, 'latest');
     expect(latest.services['liveplanner:editor']).toEqual(['d', 502, expect.any(Number), 'status']);
     expect(latest.services['liveplanner:router']![0]).toBe('u');
@@ -243,7 +258,7 @@ describe('runOnce', () => {
       batch: (stmts: D1PreparedStatement[]) => (batches.push(stmts.length), db.batch(stmts)),
     } as unknown as D1Database;
     await runOnce(env, T0, { results: results() });
-    // One read batch (4 queries), one write batch: 43 checks, 43 days, 3 prunes, 2 snapshots.
-    expect(batches).toEqual([4, 91]);
+    // One read batch (4 queries), one write batch: 39 checks, 39 days, 3 prunes, 2 snapshots.
+    expect(batches).toEqual([4, 83]);
   });
 });
