@@ -10,6 +10,7 @@
 // cannot answer is an empty ledger, so the stored entries stand (the lock fails closed) and the person whose live
 // entry it was puts it back with their own next save.
 
+import { restoreHiddenPeople } from '@liveworkspace/api-kit/hidden-people';
 import {
   lockCreatedTab,
   lockWholeTab,
@@ -76,17 +77,19 @@ export function lockRecommittedTabs(
   person: string | null,
 ): Promise<Tab[]> {
   return Promise.all(
-    tabs.map(async (tab) =>
-      lockTabWrite(
+    tabs.map(async (tab) => {
+      const stored = await getTab(env, documentId, tab.id);
+      // Every id a Viewer's copy had hidden, put back first (share-roles.md "Ids a Viewer sees").
+      return lockTabWrite(
         env,
         documentId,
         tab.id,
-        tab,
-        await getTab(env, documentId, tab.id),
+        restoreHiddenPeople(tab, stored),
+        stored,
         person,
         'recommit',
-      ),
-    ),
+      );
+    }),
   );
 }
 
