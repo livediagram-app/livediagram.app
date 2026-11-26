@@ -93,7 +93,7 @@ describe('id shapes', () => {
 describe('hidePeople', () => {
   it('hides every other person a Viewer would be handed, and keeps their own', () => {
     const seen = hidePeople(storedTab(), ownIdIs(ME));
-    const [e1, e2, e3, e4] = seen.elements as ReturnType<typeof storedTab>['elements'];
+    const [e1, e2, e3, e4] = seen.elements;
     expect(e1!.action!.assignee.userId).toBe(HIDDEN_PERSON);
     expect(e1!.action!.assignerId).toBe(HIDDEN_PERSON);
     // Names stay: a Viewer reads who, never their id.
@@ -127,16 +127,19 @@ describe('hidePeople', () => {
 
   it('hides an own id too when the reader has none', () => {
     const seen = hidePeople(storedTab(), NOBODY);
-    expect((seen.elements[1] as { actions: { assignee: { userId: string } }[] }).actions[0]!.assignee.userId).toBe(
-      HIDDEN_PERSON,
-    );
+    expect(
+      (seen.elements[1] as { actions: { assignee: { userId: string } }[] }).actions[0]!.assignee
+        .userId,
+    ).toBe(HIDDEN_PERSON);
     expect(ownIdIs(null)(ME)).toBe(false);
   });
 
   it('hands back the very same object when nobody else is named', () => {
     const plain = {
       id: 'tab1',
-      elements: [{ id: 'e1', label: 'user_manual', x: 1, tags: ['a'], responses: [{ participantId: KEY }] }],
+      elements: [
+        { id: 'e1', label: 'user_manual', x: 1, tags: ['a'], responses: [{ participantId: KEY }] },
+      ],
       vote: { votes: { e1: [KEY] } },
     };
     expect(hidePeople(plain, NOBODY)).toBe(plain);
@@ -149,11 +152,22 @@ describe('hidePeople', () => {
 
   it('reaches people in any room op, whatever its kind', () => {
     const ops = [
-      { kind: 'el', tabId: 't', op: { kind: 'update', element: { id: 'e1', action: action('a', ALICE, ALICE) } } },
-      { kind: 'tab-meta', tabId: 't', patch: { vote: { votes: { e1: [GUEST] }, startedBy: GUEST } } },
+      {
+        kind: 'el',
+        tabId: 't',
+        op: { kind: 'update', element: { id: 'e1', action: action('a', ALICE, ALICE) } },
+      },
+      {
+        kind: 'tab-meta',
+        tabId: 't',
+        patch: { vote: { votes: { e1: [GUEST] }, startedBy: GUEST } },
+      },
       { kind: 'el-delta', delta: { kind: 'response', participantId: ALICE } },
       { kind: 'vote', voter: GUEST },
-      { kind: 'changeset', elementOps: [{ kind: 'add', element: { id: 'x', componentEditBy: GUEST } }] },
+      {
+        kind: 'changeset',
+        elementOps: [{ kind: 'add', element: { id: 'x', componentEditBy: GUEST } }],
+      },
     ];
     const text = JSON.stringify(hidePeople(ops, NOBODY));
     expect(text).not.toContain(ALICE);
@@ -164,7 +178,7 @@ describe('hidePeople', () => {
 describe('copyWithoutPeople', () => {
   it('clears person fields and keeps counts under neutral keys', () => {
     const copy = copyWithoutPeople(storedTab(), ownIdIs(ME));
-    const [e1, e2, e3, e4] = copy.elements as ReturnType<typeof storedTab>['elements'];
+    const [e1, e2, e3, e4] = copy.elements;
     expect(e1!.action!.assignee.userId).toBeNull();
     expect(e1!.action!.assignerId).toBe('');
     expect(e2!.actions![0]!.assignee.userId).toBe(ME);
@@ -199,13 +213,13 @@ describe('restoreHiddenPeople', () => {
 
   it('keeps what the save changed while putting the ids back', () => {
     const stored = storedTab();
-    const seen = hidePeople(stored, NOBODY) as ReturnType<typeof storedTab>;
+    const seen = hidePeople(stored, NOBODY);
     // The save renamed an action, reordered the elements, added an answer and a vote, and dropped e4.
     seen.elements[0]!.action!.name = 'Renamed';
     seen.elements[2]!.responses!.push({ participantId: 'b'.repeat(32), value: 1, at: 3 });
-    seen.vote.votes.e3!.push('c'.repeat(32));
+    seen.vote.votes.e3.push('c'.repeat(32));
     const saved = { ...seen, elements: [seen.elements[2]!, seen.elements[1]!, seen.elements[0]!] };
-    const back = restoreHiddenPeople(saved, stored) as ReturnType<typeof storedTab>;
+    const back = restoreHiddenPeople(saved, stored);
     const byId = new Map(back.elements.map((e) => [e.id, e]));
     expect(byId.get('e1')!.action!.name).toBe('Renamed');
     expect(byId.get('e1')!.action!.assignee.userId).toBe(ALICE);
@@ -213,9 +227,12 @@ describe('restoreHiddenPeople', () => {
     expect(byId.get('e2')!.actions![0]!.assignee.userId).toBe(ME);
     expect(byId.get('e2')!.actions![1]!.assignee.memberId).toBe('member-7');
     expect(byId.get('e2')!.commentThread!.comments[0]!.mentions[0]!.userId).toBe(ALICE);
-    expect(byId.get('e3')!.responses!.map((r) => r.participantId).sort()).toEqual(
-      [KEY, GUEST, 'b'.repeat(32)].sort(),
-    );
+    expect(
+      byId
+        .get('e3')!
+        .responses!.map((r) => r.participantId)
+        .sort(),
+    ).toEqual([KEY, GUEST, 'b'.repeat(32)].sort());
     expect(byId.get('e3')!.qaNotes![0]!.voters).toEqual(['0123456789abcdef', ALICE]);
     expect(back.vote.votes.e1).toEqual([KEY, GUEST]);
     expect(back.vote.votes.e3).toEqual([KEY, 'c'.repeat(32)]);
@@ -226,14 +243,25 @@ describe('restoreHiddenPeople', () => {
   it('clears a placeholder with nothing stored behind it, so the sentinel is never stored', () => {
     const fresh = {
       elements: [
-        { id: 'new', action: action('a9', HIDDEN_PERSON, HIDDEN_PERSON, HIDDEN_PERSON), componentEditBy: 'hidden' },
-        { id: 'n2', responses: [{ participantId: 'hidden-1', value: 1, at: 1 }], voters: ['hidden-2'] },
+        {
+          id: 'new',
+          action: action('a9', HIDDEN_PERSON, HIDDEN_PERSON, HIDDEN_PERSON),
+          componentEditBy: 'hidden',
+        },
+        {
+          id: 'n2',
+          responses: [{ participantId: 'hidden-1', value: 1, at: 1 }],
+          voters: ['hidden-2'],
+        },
       ],
       vote: { votes: { e1: ['hidden-3'], e2: 'x' }, startedBy: 'hidden-4' },
     };
     const back = restoreHiddenPeople(fresh, null) as unknown as {
       elements: [
-        { action: { assignee: Record<string, unknown>; assignerId: string }; componentEditBy?: string },
+        {
+          action: { assignee: Record<string, unknown>; assignerId: string };
+          componentEditBy?: string;
+        },
         { responses: unknown[]; voters: unknown[] },
       ];
       vote: { votes: Record<string, unknown>; startedBy?: string };
@@ -251,7 +279,11 @@ describe('restoreHiddenPeople', () => {
   it('keeps a stored placeholder from a copy when the save brings it back', () => {
     const stored = { elements: [{ id: 'e', voters: ['someone-1', 'hidden-2', GUEST] }] };
     const saved = { elements: [{ id: 'e', voters: ['someone-1', 'hidden-1', 'hidden-2'] }] };
-    expect(restoreHiddenPeople(saved, stored).elements[0]!.voters).toEqual(['someone-1', 'hidden-2', GUEST]);
+    expect(restoreHiddenPeople(saved, stored).elements[0]!.voters).toEqual([
+      'someone-1',
+      'hidden-2',
+      GUEST,
+    ]);
   });
 
   it('hands back the very same save when it holds no placeholder', () => {
@@ -319,13 +351,24 @@ describe('the room', () => {
     expect(frameForViewer(cursor, text, NOBODY)).toBe(text);
     const roster = { kind: 'presence', participants: [] };
     expect(frameForViewer(roster, 'x', NOBODY)).toBe('x');
-    const el = { kind: 'op', from: 'p', op: { kind: 'el', op: { kind: 'update', element: { id: 'e', action: action('a', ALICE, ME) } } } };
+    const el = {
+      kind: 'op',
+      from: 'p',
+      op: {
+        kind: 'el',
+        op: { kind: 'update', element: { id: 'e', action: action('a', ALICE, ME) } },
+      },
+    };
     const elText = JSON.stringify(el);
     const out = frameForViewer(el, elText, ownIdIs(ME));
     expect(out).not.toContain(ALICE);
     expect(out).toContain(ME);
     // Their own action: the same frame back.
-    const own = { kind: 'op', from: 'p', op: { kind: 'el', op: { element: { id: 'e', action: action('a', ME, ME) } } } };
+    const own = {
+      kind: 'op',
+      from: 'p',
+      op: { kind: 'el', op: { element: { id: 'e', action: action('a', ME, ME) } } },
+    };
     const ownText = JSON.stringify(own);
     expect(frameForViewer(own, ownText, ownIdIs(ME))).toBe(ownText);
     expect(mayNamePeople('{"x":1}')).toBe(false);
@@ -333,7 +376,13 @@ describe('the room', () => {
 
   // A broadcast tests one frame once per Viewer socket: the scan of a large frame must not grow with the sockets.
   it('scans a large frame once however many Viewers it goes to', () => {
-    const big = { kind: 'op', op: { kind: 'tab', tab: { elements: Array.from({ length: 5_000 }, (_, i) => ({ id: `e${i}`, x: i })) } } };
+    const big = {
+      kind: 'op',
+      op: {
+        kind: 'tab',
+        tab: { elements: Array.from({ length: 5_000 }, (_, i) => ({ id: `e${i}`, x: i })) },
+      },
+    };
     const text = JSON.stringify(big);
     const cpu = cpuMsOf(() => {
       for (let i = 0; i < 100; i++) frameForViewer(big, text, NOBODY);

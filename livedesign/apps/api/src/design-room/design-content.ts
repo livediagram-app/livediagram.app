@@ -330,9 +330,9 @@ export async function exportDesignCopy(
         ? redactTabDataForCommunity(remapped).data
         : redactAuthorsFor !== null
           ? copyDataWithoutPeople(
-                redactTabDataAuthors(remapped, redactAuthorsFor),
-                ownIdIs(redactAuthorsFor),
-              )
+              redactTabDataAuthors(remapped, redactAuthorsFor),
+              ownIdIs(redactAuthorsFor),
+            )
           : remapped,
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       elementCount: row.element_count,

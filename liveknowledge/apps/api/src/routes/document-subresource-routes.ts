@@ -172,7 +172,11 @@ export async function handleDocumentSubresources(
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactPageForCommunity(tab), connection: undefined }
             : // A Viewer reads names, not other people's ids (share-roles.md "Ids a Viewer sees").
-              peopleForReader({ ...tab, elements: redactCommentAuthorIds(tab.elements, caller) }, grant.role, caller);
+              peopleForReader(
+                { ...tab, elements: redactCommentAuthorIds(tab.elements, caller) },
+                grant.role,
+                caller,
+              );
       // A view may read the caller's own selection, so it needs a caller.
       if (view) {
         return caller === null

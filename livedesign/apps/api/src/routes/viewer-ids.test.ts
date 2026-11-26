@@ -112,7 +112,7 @@ function call(method: string, path: string, who: Level | 'owner', as = ALICE, bo
 const read = async (who: Level | 'owner', as = ALICE) => {
   const res = await call('GET', '/tabs/t1', who, as);
   expect(res.status).toBe(200);
-  return ((await res.json()) as { tab: { id: string; name: string; elements: El[] } }).tab;
+  return (await res.json<{ tab: { id: string; name: string; elements: El[] } }>()).tab;
 };
 const stored = async () => (await db.getTab(sql.env, 'd1', 't1'))!.elements as unknown as El[];
 const actionOf = (els: El[], id: string) => els.find((e) => e.id === id)!.action as Action;

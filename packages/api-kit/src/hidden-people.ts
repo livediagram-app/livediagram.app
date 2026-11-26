@@ -70,7 +70,11 @@ const readsIds = (role: string | null | undefined): boolean =>
  * `value` as a reader holding a grant at `role` is handed it: as it is for a Participant or an Editor, and with people
  * hidden (keeping `caller`'s own id) for a Viewer. The owner's grant is an Editor's.
  */
-export function peopleForReader<T>(value: T, role: string | null | undefined, caller: string | null): T {
+export function peopleForReader<T>(
+  value: T,
+  role: string | null | undefined,
+  caller: string | null,
+): T {
   return readsIds(role) ? value : hidePeople(value, ownIdIs(caller));
 }
 
@@ -121,7 +125,7 @@ class Hider {
     if (Array.isArray(v)) {
       let out: unknown[] | null = null;
       for (let i = 0; i < v.length; i++) {
-        const item = v[i];
+        const item: unknown = v[i];
         if (!isObject(item)) continue;
         const next = this.walk(item);
         if (next !== item) (out ??= v.slice())[i] = next;
@@ -285,7 +289,8 @@ export function viewerOwnIds(session: ViewerSession | null | undefined): IsOwnId
 // a Viewer's copy) costs one walk and nothing else.
 function holdsHidden(v: unknown): boolean {
   if (Array.isArray(v)) {
-    for (const item of v) if (isObject(item) ? holdsHidden(item) : isHiddenPerson(item)) return true;
+    for (const item of v)
+      if (isObject(item) ? holdsHidden(item) : isHiddenPerson(item)) return true;
     return false;
   }
   if (!isObject(v)) return false;
@@ -300,13 +305,16 @@ function holdsHidden(v: unknown): boolean {
 
 // A list of keys with its hidden entries put back: the hidden ones go, and every stored entry they stood for (an
 // account or guest id, or an earlier placeholder) not already in the list comes back.
+// A stored value as a list (none when it is not one), typed as what it is: unknown entries.
+const asList = (v: unknown): readonly unknown[] => (Array.isArray(v) ? (v as unknown[]) : []);
+
 function restoreKeyList(incoming: unknown[], stored: unknown): unknown[] {
   if (!incoming.some(isHiddenPerson)) return incoming;
   const kept = incoming.filter((k) => !isHiddenPerson(k));
   const have = new Set(kept);
-  const back = Array.isArray(stored)
-    ? stored.filter((k) => (isPersonIdShape(k) || isHiddenPerson(k)) && !have.has(k))
-    : [];
+  const back = asList(stored).filter(
+    (k) => (isPersonIdShape(k) || isHiddenPerson(k)) && !have.has(k),
+  );
   return [...kept, ...back];
 }
 
@@ -315,21 +323,19 @@ function restoreAnswerList(incoming: Json[], stored: unknown): unknown[] {
   if (!incoming.some((r) => isHiddenPerson(r.participantId))) return incoming;
   const kept = incoming.filter((r) => !isHiddenPerson(r.participantId));
   const have = new Set(kept.map((r) => r.participantId));
-  const back = Array.isArray(stored)
-    ? stored.filter(
-        (r) =>
-          isObject(r) &&
-          (isPersonIdShape(r.participantId) || isHiddenPerson(r.participantId)) &&
-          !have.has(r.participantId),
-      )
-    : [];
+  const back = asList(stored).filter(
+    (r) =>
+      isObject(r) &&
+      (isPersonIdShape(r.participantId) || isHiddenPerson(r.participantId)) &&
+      !have.has(r.participantId),
+  );
   return [...kept, ...back];
 }
 
 function restoreArray(incoming: unknown[], stored: unknown): unknown[] {
   if (incoming.length > 0 && incoming.every((x) => isObject(x) && 'participantId' in x))
     return restoreAnswerList(incoming as Json[], stored);
-  const storedList = Array.isArray(stored) ? stored : [];
+  const storedList = asList(stored);
   // Lists of things with ids (elements, actions, comments, notes) match by id, so a list reordered or grown since
   // the read still finds each one's stored self; anything else matches by position.
   const byId = new Map<unknown, unknown>();
@@ -338,7 +344,7 @@ function restoreArray(incoming: unknown[], stored: unknown): unknown[] {
   for (let i = 0; i < incoming.length; i++) {
     const item = incoming[i];
     if (!isObject(item)) continue;
-    const from = typeof item.id === 'string' ? byId.get(item.id) : storedList[i];
+    const from: unknown = typeof item.id === 'string' ? byId.get(item.id) : storedList[i];
     const next = restoreValue(item, from);
     if (next !== item) (out ??= incoming.slice())[i] = next;
   }
@@ -361,7 +367,8 @@ function restoreValue(incoming: unknown, stored: unknown): unknown {
     } else if (KEY_LIST_FIELDS.has(k) && Array.isArray(value)) {
       out[k] = restoreKeyList(value, from[k]);
     } else if (KEY_RECORD_FIELDS.has(k) && isObject(value) && !Array.isArray(value)) {
-      const storedRecord = isObject(from[k]) ? (from[k] as Json) : {};
+      const storedFrom = from[k];
+      const storedRecord: Json = isObject(storedFrom) ? storedFrom : {};
       const record: Json = {};
       for (const id in value) {
         const list = value[id];

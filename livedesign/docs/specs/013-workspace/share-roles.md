@@ -206,7 +206,7 @@ reader's than the owner id is ([Auth + guest access](../014-identity/auth-and-gu
 - **For You still works.** The Viewer's own id is never hidden, so a signed-in Viewer's own actions still read as
   theirs. The realtime room holds no id, only each session's collab key: an id is the session's own when it derives
   that key.
-- **Where.** The tab read and everything built on it (document views, the MCP's and the CLI's reads), the comment
+- **Where.** The tab read and everything built on it (design views, the MCP's and the CLI's reads), the comment
   list, and every op frame the realtime room sends a Viewer's socket, its catch-up included. A Viewer is a grant
   below Participant, or a room session below Participant (one from before the role stamp included), that is not the
   owner. Participants and Editors read every id, as they always did.

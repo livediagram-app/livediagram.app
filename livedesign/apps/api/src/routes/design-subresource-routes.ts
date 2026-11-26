@@ -152,7 +152,11 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactTabForCommunity(tab), connection: undefined }
             : // A Viewer reads names, not other people's ids (share-roles.md "Ids a Viewer sees").
-              peopleForReader({ ...tab, elements: redactCommentAuthorIds(tab.elements, owner) }, grant.role, owner);
+              peopleForReader(
+                { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) },
+                grant.role,
+                owner,
+              );
       if (view) return answerTabView(ctx, view, existing, safe, owner);
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.

@@ -5,7 +5,9 @@ import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 // Tracker 1451): every op frame a Viewer's socket receives, live or in a catch-up, names people without their account
 // or guest ids, except the Viewer's own; a Participant's, an Editor's and the owner's frames carry every id.
 
-const { store } = vi.hoisted(() => ({ store: { data: '{"elements":[]}' as string | null, rev: 0 } }));
+const { store } = vi.hoisted(() => ({
+  store: { data: '{"elements":[]}', rev: 0 } as { data: string | null; rev: number },
+}));
 vi.mock('./db', async (orig) => ({
   ...(await orig<typeof import('./db')>()),
   getTabRow: async () =>
@@ -102,7 +104,8 @@ const update = { kind: 'el', tabId: 't1', op: { kind: 'update', element: assigne
 const opFrames = (s: Socket) =>
   s.sent.map((f) => JSON.parse(f) as { kind: string }).filter((f) => f.kind === 'op');
 const lastAction = (s: Socket) =>
-  (opFrames(s).at(-1) as { op: { op: { element: typeof assigned } } }).op.op.element.action;
+  (opFrames(s).at(-1) as unknown as { op: { op: { element: typeof assigned } } }).op.op.element
+    .action;
 
 beforeEach(() => {
   store.data = JSON.stringify({ elements: [{ ...assigned, action: undefined }] });
@@ -144,7 +147,9 @@ describe('DocumentRoom: the ids a Viewer sees', () => {
     await send(late, { kind: 'sync', epoch: null, lastSeq: 0 });
     await send(lateEditor, { kind: 'sync', epoch: null, lastSeq: 0 });
     const catchup = (s: Socket) =>
-      JSON.stringify(s.sent.map((f) => JSON.parse(f) as { kind: string }).find((f) => f.kind === 'catchup'));
+      JSON.stringify(
+        s.sent.map((f) => JSON.parse(f) as { kind: string }).find((f) => f.kind === 'catchup'),
+      );
     expect(catchup(late)).toContain('Alice');
     expect(catchup(late)).not.toContain(ALICE);
     expect(catchup(late)).not.toContain(BOB);
@@ -155,7 +160,11 @@ describe('DocumentRoom: the ids a Viewer sees', () => {
     const { join, send } = newRoom();
     const editor = join('E', 'edit');
     const viewer = join('V', 'view');
-    const plain = { kind: 'el', tabId: 't1', op: { kind: 'update', element: { ...assigned, action: undefined } } };
+    const plain = {
+      kind: 'el',
+      tabId: 't1',
+      op: { kind: 'update', element: { ...assigned, action: undefined } },
+    };
     await send(editor, { kind: 'op', op: plain });
     expect(JSON.stringify(opFrames(viewer).at(-1))).toContain('Ship it');
   });

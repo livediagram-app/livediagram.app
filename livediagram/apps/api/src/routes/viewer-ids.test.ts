@@ -62,7 +62,7 @@ const read = async (db: SqliteD1, who: 'owner' | 'view' | 'participate' | 'edit'
           visitor: { owner: as, grant: grantAt(who) },
         });
   expect(res.status).toBe(200);
-  return ((await res.json()) as { tab: { id: string; name: string; elements: Element[] } }).tab;
+  return (await res.json<{ tab: { id: string; name: string; elements: Element[] } }>()).tab;
 };
 
 const actionOf = (els: Element[], id: string) =>

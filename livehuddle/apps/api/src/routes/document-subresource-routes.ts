@@ -145,7 +145,11 @@ export async function handleDocumentSubresources(
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactTabForCommunity(tab), connection: undefined }
             : // A Viewer reads names, not other people's ids (share-roles.md "Ids a Viewer sees").
-              peopleForReader({ ...tab, elements: redactCommentAuthorIds(tab.elements, owner) }, grant.role, owner);
+              peopleForReader(
+                { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) },
+                grant.role,
+                owner,
+              );
       if (view) return answerTabView(ctx, view, existing, safe, owner);
       // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home and Most Used, at the
       // index. Only when the editor declares this read an open: a resync, a duplicate, Take Offline, the Drive
