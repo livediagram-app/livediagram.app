@@ -47,7 +47,7 @@ export function SessionActionBar({
   onUndo: () => void;
 }) {
   const shell =
-    'flex min-h-16 flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 dark:border-slate-800 dark:bg-slate-900/95';
+    'flex min-h-16 flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 xl:pr-[20rem] dark:border-slate-800 dark:bg-slate-900/95';
   if (decision) {
     const look = OUTCOME_LOOKS[decision.outcome];
     return (

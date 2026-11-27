@@ -93,7 +93,7 @@ export function SessionSidebar({
                   <span className="sr-only">{look.done}</span>
                 </>
               ) : (
-                at + 1
+                <span className="text-optical-centre">{at + 1}</span>
               )}
             </span>
             <span className="min-w-0 flex-1">

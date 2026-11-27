@@ -223,7 +223,7 @@ export function SessionPage({
                 aria-label={`${tab.name} session`}
                 // The bottom padding clears the canvas's bottom toolbars (about 64 px with their margin), as a Dashboard's does,
                 // so the action bar sits above them; on a phone also the home indicator's safe area.
-                className="flex h-full min-h-0 bg-white pb-[4.5rem] max-sm:flex-col max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom))] dark:bg-slate-950"
+                className="flex h-full min-h-0 bg-white pb-[4.5rem] max-sm:flex-col max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom))] xl:pb-0 dark:bg-slate-950"
                 data-session-kind={session.sessionKind}
               >
                 {phone ? (
