@@ -203,6 +203,52 @@ export const REQUESTS: readonly EvalRequest[] = [
     ask: 'Add a page called "On-call rota" to the team handbook explaining who is on call each week.',
     expect: [e('liveknowledge', 'create_page', { ...HB, title: 'On-call' })],
   },
+  // The starter prompts on each app's Build with AI page (Work Tracker 1488): each one's lead tool.
+  {
+    id: 'make-gantt',
+    ask: 'Create a Gantt chart for launching our new website, with a row each for design, copy, build, testing and go-live.',
+    expect: [e('livediagram', 'create_document', { tabs: 'gantt' })],
+  },
+  {
+    id: 'make-retro',
+    ask: 'Set up a retrospective for our sprint, with what went well, what to improve and actions, and share a participant link so the team can add their notes.',
+    expect: [e('livediagram', 'create_document', { tabs: 'retrospective' })],
+  },
+  {
+    id: 'make-poster',
+    ask: 'Lay out an event poster for a bakery called Bloom opening its doors on Saturday.',
+    expect: [e('livedocuments', 'create_document', { tabs: 'event-poster' })],
+  },
+  {
+    id: 'make-resume',
+    ask: 'Make me a resume from the resume template, filled in from the profile I paste below.',
+    expect: [e('livedocuments', 'create_document', { tabs: 'resume' })],
+  },
+  {
+    id: 'make-logo',
+    ask: 'Add a logo page for a bakery called Bloom: a simple symmetrical mark above the name.',
+    expect: [e('livedesign', 'create_design')],
+  },
+  {
+    id: 'make-wireframe',
+    ask: 'Wireframe the sign-up screen as a phone wireframe: the fields, the button and the error states.',
+    expect: [e('livedesign', 'create_design', { tabs: 'phone' })],
+  },
+  {
+    id: 'make-feedback-form',
+    ask: 'Make a feedback form with a rating, what people liked and what to improve, and send the answers to a board as cards.',
+    expect: [e('liveplanner', 'add_form')],
+  },
+  {
+    id: 'cards-from-notes',
+    ask: 'Add the action points from this conversation as tasks on the Launch plan, each with an owner and a due date where we agreed one.',
+    expect: [e('liveplanner', 'change_items', LAUNCH)],
+  },
+  {
+    id: 'kb-review-due',
+    ask: 'List the pages of the team handbook whose review is due, oldest first, with each page’s owner.',
+    expect: [e('liveknowledge', 'list_pages', HB)],
+  },
   {
     id: 'import-trello',
     ask: 'Here is a Trello export JSON; bring it in as a board: {"name":"Bugs","lists":[]}',
