@@ -109,13 +109,11 @@ export function BottomBar({
         <div aria-hidden className="min-w-0 flex-1 phone:hidden" />
         {/* Shared right-hand cluster (Get Started, Tools, Settings, the notification list, the appearance), reused by
             the Explorer's bottom bar (docs/specs/007-editor/editor-app.md). Labelled here on desktop. On a phone the
-            list stays in the row and the rest stand behind More. */}
+            cluster stands behind More, without the list and the appearance (CHROME_PHONE_HIDDEN_PAIR). */}
         {phone ? (
           <>
-            <ChromeControls parts="bell" />
             <FooterMore>
               <ChromeControls
-                parts="rest"
                 onOpenSearch={onOpenSearch}
                 onOpenHistory={onOpenHistory}
                 onOpenSettings={onOpenSettings}
