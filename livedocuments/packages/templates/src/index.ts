@@ -16,6 +16,7 @@ export * from './page-layouts';
 export * from './slide-layouts';
 export * from './layout-catalogue';
 export { buildPageLayout, buildPageLayoutOver } from './page-layout-build';
+export { SOFT_BOX_OPACITY, SOFT_BOX_PRESET } from './layout-soft-boxes';
 export { headlineTextScale } from './page-layout-kit';
 export { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 export * from './template-tab';

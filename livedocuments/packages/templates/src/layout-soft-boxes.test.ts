@@ -6,7 +6,12 @@ import {
   themedForTab,
   themeHalf,
 } from '@livedocuments/document';
-import { SOFT_BOX_PRESET, softenLayoutBoxes } from './layout-soft-boxes';
+import {
+  SOFT_BOX_OPACITY,
+  SOFT_BOX_PRESET,
+  softenLayoutBoxes,
+  solidWhenCarrying,
+} from './layout-soft-boxes';
 
 // docs/specs/007-editor/pages-mode.md "Layouts", "Soft boxes" (Work Tracker 1481).
 const box = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
@@ -19,13 +24,42 @@ const box = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
 const soft = (el: Element) => softenLayoutBoxes([el], 800)[0] as ShapeElement;
 
 describe('softenLayoutBoxes', () => {
-  it('binds a box, with words or without, to the Soft preset on a fine border, solid and with no colours of its own', () => {
+  it('binds a box, with words or without, to the Soft preset on a fine border, with no colours of its own', () => {
     for (const out of [soft(box()), soft(box({ label: 'Now' }))]) {
       expect(out.colorPreset).toBe(SOFT_BOX_PRESET);
       expect(out.strokeWidth).toBe('thin');
-      expect(out.opacity).toBeUndefined();
       expect(out.fillColor).toBeUndefined();
     }
+  });
+
+  // Work Tracker 1501: a box takes on the design it sits on; its words never fade with it.
+  it('draws a box with no words of its own part see-through, and one with words solid', () => {
+    expect(SOFT_BOX_OPACITY).toBeGreaterThanOrEqual(0.5);
+    expect(SOFT_BOX_OPACITY).toBeLessThanOrEqual(0.6);
+    expect(soft(box()).opacity).toBe(SOFT_BOX_OPACITY);
+    expect(soft(box({ label: '  ' })).opacity).toBe(SOFT_BOX_OPACITY);
+    expect(soft(box({ label: 'Now' })).opacity).toBeUndefined();
+    expect(soft(box({ richText: [{ text: 'Now' }] })).opacity).toBeUndefined();
+  });
+
+  it('turns a see-through box solid once it carries an icon, a sticker or words, and leaves the rest', () => {
+    const see = soft(box());
+    expect(solidWhenCarrying(see)).toBe(see);
+    for (const extra of [
+      { iconId: 'check' },
+      { stickerId: 'star' },
+      { label: 'Moved in' },
+      { richText: [] },
+    ]) {
+      const out = solidWhenCarrying({ ...see, ...extra });
+      expect(out.opacity, JSON.stringify(extra)).toBeUndefined();
+      expect(out.colorPreset).toBe(SOFT_BOX_PRESET);
+    }
+    // A box at an opacity the person chose, or not a soft box, is never touched.
+    const chosen = { ...see, opacity: 0.3, iconId: 'check' };
+    expect(solidWhenCarrying(chosen)).toBe(chosen);
+    const plain = box({ opacity: SOFT_BOX_OPACITY, iconId: 'check' });
+    expect(solidWhenCarrying(plain)).toBe(plain);
   });
 
   it("takes the tab theme's Soft look when placed, from the page's half", () => {
@@ -37,7 +71,7 @@ describe('softenLayoutBoxes', () => {
       expect(placed!.fillColor).toBe(preset.fill);
       expect(placed!.strokeColor).toBe(preset.stroke);
       expect(placed!.strokeWidth).toBe('thin');
-      expect(placed!.opacity).toBeUndefined();
+      expect(placed!.opacity).toBe(SOFT_BOX_OPACITY);
     }
   });
 

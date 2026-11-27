@@ -7,8 +7,6 @@
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   elementIdsOnPage,
-  elementsOnPage,
-  pagesOf,
   layOutPages,
   MAX_PAGES,
   nextArticleFlowId,
@@ -28,9 +26,6 @@ import {
   pageInsertedLike,
   pageBackgroundSet,
   pageDuplicated,
-  pageLaidOut,
-  themedForTab,
-  pageIsDark,
   pageLockRefuses,
   pageLockSet,
   pageMovedTo,
@@ -59,6 +54,22 @@ import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits } from './pages-background-copy-edits';
 import { pageSplitEdits } from './page-split-edits';
 import { pageTidyEdits } from './page-tidy-edits';
+import {
+  layoutPlacedTab,
+  showLayout,
+  shownLayoutElements,
+  shownLayoutFor,
+  type LayoutBuild,
+} from './page-layout-place';
+
+// The layout builders, loaded once on first use (a hover's preview or a press).
+let builder: Promise<LayoutBuild> | null = null;
+const layoutBuilder = (): Promise<LayoutBuild> =>
+  (builder ??= import('@livedocuments/templates/page-layout-build').then(
+    (m) => m.buildPageLayoutOver,
+  ));
+// The newest layout hover asked for: one answered after the hover moved on draws nothing.
+let layoutPreviewAsk = 0;
 
 export type { CardSplitState } from './page-split-edits';
 import type { PageEdits } from './page-edits-type';
@@ -396,31 +407,36 @@ export function pageEdits({
 
   // Laid out in the page's content box (the page less its margins), the page's own words and
   // pictures carried into it (docs/specs/007-editor/pages-mode.md "Content carries over"),
-  // one tab edit. The layout builders (every page layout set) load on the first apply rather than
-  // with the editor: the pickers that offer a layout load them already to draw their thumbnails,
-  // so by the time one is applied the module is in hand.
+  // one tab edit, through the one path a hover's preview takes too (page-layout-place.ts): a press
+  // on the layout a hover shows lands exactly the elements shown. The layout builders (every page
+  // layout set) load on the first use rather than with the editor: the pickers that offer a layout
+  // load them already to draw their thumbnails, so by then the module is in hand.
   const applyLayout = async (pageId: string, layoutId: PageLayoutId): Promise<void> => {
     if (refusedLocked(pageId, 'layout')) return;
-    const { buildPageLayoutOver } = await import('@livedocuments/templates/page-layout-build');
+    const build = await layoutBuilder();
     track('Tab', 'Changed', 'PageLayout');
     commitTab((t) => {
-      const pages = layOutPages(pagesOf(t));
-      const page = pages.find((p) => p.id === pageId);
-      if (!page) return null;
-      const previous = elementsOnPage(t.elements, pages, pageId);
-      return edited(
-        t,
-        pageLaidOut(
-          t,
-          pageId,
-          themedForTab(buildPageLayoutOver(layoutId, page, previous), t.theme, {
-            dark: pageIsDark(page),
-          }),
-        ),
-      );
+      const seen = shownLayoutFor(tabId, pageId, layoutId, t.elements);
+      return seen ? { ...t, elements: seen } : layoutPlacedTab(t, pageId, layoutId, build);
     });
+    showLayout(null);
     onLayoutPlaced();
     debugLog('[page] layout placed', { tabId, pageId, layout: layoutId });
+  };
+  // A layout tile hovered: the page drawn with it placed, by the canvas itself, writing nothing; null puts it back.
+  // The builders may still be loading on the first hover: a hover that has moved on by then draws nothing.
+  const previewLayout = (pageId: string, layoutId: PageLayoutId | null) => {
+    const ask = ++layoutPreviewAsk;
+    if (!layoutId || isLocked(pageId)) {
+      if (shownLayoutElements(tabId)) showLayout(null);
+      return;
+    }
+    void layoutBuilder().then((build) => {
+      if (ask !== layoutPreviewAsk) return;
+      const placed = layoutPlacedTab(tab, pageId, layoutId, build);
+      if (!placed) return;
+      showLayout({ tabId, pageId, layout: layoutId, over: elements, elements: placed.elements });
+    });
   };
   const laidOut = layOutPages(current);
   const contentCount = (pageId: string) => elementIdsOnPage(elements, laidOut, pageId).size;
@@ -502,6 +518,7 @@ export function pageEdits({
     splitCard,
     cardSplitState,
     applyLayout,
+    previewLayout,
     contentCount,
     isLocked,
     setLocked,

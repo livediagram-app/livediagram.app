@@ -25,6 +25,7 @@ const edits = (): PageEdits => ({
   canDuplicate: () => true,
   canMove: () => false,
   applyLayout: vi.fn(),
+  previewLayout: vi.fn(),
   contentCount: () => 0,
   previewInk: vi.fn(),
   isLocked: () => false,
