@@ -47,7 +47,7 @@ export function SessionProgress({
     >
       {total > SEGMENTS_MAX ? (
         <span className="relative h-full flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-          {fillOf('var(--color-brand-600)', total ? done / total : 0)}
+          {fillOf('var(--color-brand-600)', done / total)}
         </span>
       ) : (
         list.map((item) => {

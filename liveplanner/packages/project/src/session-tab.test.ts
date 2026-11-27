@@ -16,6 +16,7 @@ import {
   withoutDecision,
 } from './session-tab';
 import { isPlanTabKind, tabKindOf } from './tab-kind';
+import { SESSION_QUEUE_MAX } from '@liveplanner/items';
 
 // docs/specs/026-plan/session-tabs.md, blueprint session-tabs.md "Data and persistence", "Behaviour and state".
 const SAM = { id: 'k-sam', name: 'Sam', color: '#0ea5e9' };
@@ -94,6 +95,19 @@ describe('readSessionTab', () => {
         setup: { typeIds: Array.from({ length: 80 }, (_, i) => `t${i}`) },
       })!.setup.typeIds,
     ).toHaveLength(50);
+    expect(
+      readSessionTab({ sessionKind: 'refinement', decided: { c: 'x' } })!.decided,
+    ).toBeUndefined();
+    // Outcomes stop at the queue's cap.
+    const many = Object.fromEntries(
+      Array.from({ length: SESSION_QUEUE_MAX + 5 }, (_, i) => [
+        `c${i}`,
+        { outcome: 'skipped', at: i },
+      ]),
+    );
+    expect(
+      Object.keys(readSessionTab({ sessionKind: 'refinement', decided: many })!.decided!),
+    ).toHaveLength(SESSION_QUEUE_MAX);
   });
 });
 

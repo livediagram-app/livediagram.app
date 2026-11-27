@@ -50,6 +50,30 @@ describe('sessionQueue', () => {
     expect(q.capped).toBe(false);
   });
 
+  it('leaves out a card with no stage', () => {
+    const none = item({ title: 'N' }, { type: 'work' });
+    expect(
+      sessionQueue({
+        items: [none, a],
+        types: TYPES,
+        pick: { typeIds: ['work'], statuses: ['backlog'] },
+      }).toGo,
+    ).toEqual([a]);
+  });
+
+  it('orders cards decided at the same moment by rank', () => {
+    const q = sessionQueue({
+      items: [a, b],
+      types: TYPES,
+      pick: { typeIds: ['work'], statuses: ['backlog'] },
+      decided: {
+        [a.id]: { outcome: 'skipped', at: 5, by: '' },
+        [b.id]: { outcome: 'refined', at: 5, by: '' },
+      },
+    });
+    expect(q.decided).toEqual([b, a]);
+  });
+
   it('sorts as a board sorts', () => {
     const hi = card('Hi', 'backlog', {
       fields: { title: 'Hi', status: 'backlog', priority: 'urgent' },
@@ -105,6 +129,8 @@ describe('sessionTarget', () => {
   it('answers null with no later stage, or a stage the type does not use', () => {
     expect(sessionTarget(card('D', 'done'), TYPES, PLAN)).toBeNull();
     expect(sessionTarget(card('X', 'fixing'), TYPES, PLAN)).toBeNull();
+    // A card with no stage at all has none after it.
+    expect(sessionTarget(item({ title: 'N' }, { type: 'work' }), TYPES, PLAN)).toBeNull();
   });
 });
 
@@ -115,6 +141,7 @@ describe('nextToGo', () => {
     expect(nextToGo([a, b, c], c.id)).toBe(b);
     expect(nextToGo([a, b, c], 'gone')).toBe(a);
     expect(nextToGo([a, b, c])).toBe(a);
+    expect(nextToGo([a, b, c], null)).toBe(a);
     expect(nextToGo([a], a.id)).toBeNull();
     expect(nextToGo([], a.id)).toBeNull();
   });

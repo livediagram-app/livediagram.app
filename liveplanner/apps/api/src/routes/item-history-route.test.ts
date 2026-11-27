@@ -327,4 +327,32 @@ describe('a session outcome', () => {
     expect((await call('GET', `/items/${card.id}/session`)).status).toBe(405);
     expect(await kinds(card.id)).toEqual([['', ['created']]]);
   });
+
+  it('confines a tab-scoped Editor link to the cards its tab shows, and refuses a body that is not JSON', async () => {
+    const card = await make({ title: 'Login' });
+    const elsewhere = await make({ title: 'Signup' });
+    sql.sql.prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'`).run(
+      JSON.stringify({
+        elements: [
+          {
+            id: 'c1',
+            type: 'shape',
+            shape: 'plan-card',
+            x: 0,
+            y: 0,
+            width: 240,
+            height: 120,
+            planCard: { itemId: card.id },
+          },
+        ],
+      }),
+    );
+    const who = { owner: 'visitor', code: 'TAB1' };
+    const body = { session: 'refinement', outcome: 'refined' };
+    expect((await call('POST', `/items/${card.id}/session?tabId=t1`, body, who)).status).toBe(204);
+    expect((await call('POST', `/items/${elsewhere.id}/session?tabId=t1`, body, who)).status).toBe(
+      404,
+    );
+    expect((await call('POST', `/items/${card.id}/session`, '[1]')).status).toBe(400);
+  });
 });

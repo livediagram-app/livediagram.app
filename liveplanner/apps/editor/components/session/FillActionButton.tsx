@@ -5,7 +5,7 @@
 // out, about FILL_MS in all. `onConfirm` runs as the fill completes, so the tick shows while the work lands. Under
 // reduced motion it swaps to the tick and back with no fill. A press while it runs is ignored.
 import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
-import { lucideGlyph, useMediaQuery } from '@liveworkspace/ui';
+import { PREFERS_REDUCED_MOTION, lucideGlyph, useMediaQuery } from '@liveworkspace/ui';
 import { lucideCheck } from '@liveworkspace/icons/lucide';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
@@ -37,7 +37,7 @@ export function FillActionButton({
   shortcut?: string;
   ref?: Ref<HTMLButtonElement>;
 }) {
-  const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const reduced = useMediaQuery(PREFERS_REDUCED_MOTION);
   const [phase, setPhase] = useState<Phase>('idle');
   const timers = useRef<number[]>([]);
   // The latest onConfirm, so a press confirms what is on screen when the fill completes.

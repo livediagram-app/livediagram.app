@@ -105,6 +105,11 @@ export function SessionSetupDialog({
           <h3 id={`${titleId}-types`} className={HEADING}>
             Card Types
           </h3>
+          {types.length ? null : (
+            <p className={HINT}>
+              This plan has no card types yet. Add a board with cards first, then refine them here.
+            </p>
+          )}
           <ChoicePills
             label="Card types"
             data="session-types"
@@ -242,7 +247,8 @@ function withTarget(s: SessionSetup, typeId: string, stage: string): SessionSetu
 
 function withTimebox(s: SessionSetup, minutes: number): SessionSetup {
   const { timeboxMs: _was, ...rest } = s;
-  if (!Number.isFinite(minutes) || minutes <= 0) return rest;
+  // Off, a cleared field or anything not a number.
+  if (!(minutes > 0)) return rest;
   const ms = Math.min(SESSION_TIMEBOX_MAX_MS, Math.max(SESSION_TIMEBOX_MIN_MS, minutes * MINUTE));
   return { ...rest, timeboxMs: ms };
 }

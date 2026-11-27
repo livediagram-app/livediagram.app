@@ -4,18 +4,18 @@ Derived from [Session tabs](../session-tabs.md). File-level contracts, constants
 
 ## Domain and naming
 
-| Spec term     | Identifier                                                                  |
-| ------------- | --------------------------------------------------------------------------- |
-| Session tab   | `TabKind` `'session'` (`tab-kind.ts`), in `PLAN_TAB_KINDS`                   |
-| session state | `Tab.session: SessionTabState` (`packages/project/src/session-tab.ts`)       |
+| Spec term     | Identifier                                                                    |
+| ------------- | ----------------------------------------------------------------------------- |
+| Session tab   | `TabKind` `'session'` (`tab-kind.ts`), in `PLAN_TAB_KINDS`                    |
+| session state | `Tab.session: SessionTabState` (`packages/project/src/session-tab.ts`)        |
 | session kind  | `SessionKindId` (`'refinement'`), `SESSION_KINDS` (label, outcomes, grouping) |
-| set-up        | `SessionSetup` `{ typeIds, statuses, sortBy?, targets?, timeboxMs? }`        |
-| outcome       | `SessionOutcome` `'refined' \| 'skipped' \| 'flagged'`; `SessionDecision`    |
-| facilitator   | `SessionFacilitator` `{ id, name, color }`, `id` the collab key              |
-| queue         | `sessionQueue()` in `packages/items/src/session-queue.ts`                    |
-| target stage  | `sessionTarget()` in `session-queue.ts`                                      |
-| history entry | `ItemHistoryChange` `{ kind: 'session', session, outcome }`, tag `'session'` |
-| fill button   | `FillActionButton` (`apps/editor/components/session/FillActionButton.tsx`)  |
+| set-up        | `SessionSetup` `{ typeIds, statuses, sortBy?, targets?, timeboxMs? }`         |
+| outcome       | `SessionOutcome` `'refined' \| 'skipped' \| 'flagged'`; `SessionDecision`     |
+| facilitator   | `SessionFacilitator` `{ id, name, color }`, `id` the collab key               |
+| queue         | `sessionQueue()` in `packages/items/src/session-queue.ts`                     |
+| target stage  | `sessionTarget()` in `session-queue.ts`                                       |
+| history entry | `ItemHistoryChange` `{ kind: 'session', session, outcome }`, tag `'session'`  |
+| fill button   | `FillActionButton` (`apps/editor/components/session/FillActionButton.tsx`)    |
 
 Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy` host is unrelated.
 
@@ -57,17 +57,23 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 
 - `POST /api/projects/:id/items/:itemId/session` body `{ session: 'refinement', outcome }` (edit access; a tab-scoped
   caller only for a card its tab shows). Appends one history entry tagged `session` holding one session change, by
-  the caller, at now; writes nothing on the card. Answers `204`. Refusals: `invalid_body` (400) for an unknown session
-  kind or outcome, `item_not_found` (404), `forbidden` (403) below edit.
-- `apiItemSessionOutcome(scope, itemId, body)` in `apps/editor/lib/api/items.ts`; an offline plan records nothing.
+  the caller, at now; writes nothing on the card. Answers `204`. Refusals: `session_invalid` (422, naming `session` or
+  `outcome`) for an unknown session kind or outcome, `item_not_found` (404), `forbidden` (403) below edit. Lives in
+  `apps/api/src/routes/item-session-route.ts`.
+- A changeset on a Session tab is refused (422 `invalid_value`) in `apps/api/src/changesets/submit.ts`.
+- `recordSessionOutcome(scope, itemId, body)` in `apps/editor/lib/api/item-history.ts`; an offline plan records
+  nothing.
 
 ## Presentation and UX
 
 Files under `apps/editor/components/session/`: `SessionPage` (layout, lazy-loaded by `EditorStartPanels`),
-`SessionSidebar`, `SessionProgress`, `SessionCard` (embeds `ItemPanelBody`), `SessionActionBar`, `FillActionButton`,
-`SessionFacilitatorChip`, `SessionComplete`, `SessionSetupDialog` (+ `session-setup.ts`, pure), `session-kinds.tsx`
-(per-kind set-up parts and actions), `session-chime.ts`, `useSessionRun.ts` (writes and keys). Start Planning gains
-the `sessions` category and the `session` start kind.
+`SessionSidebar`, `SessionProgress`, `SessionCard` (embeds `ItemPanelEmbedded`, wired by the board panel's own
+`components/plan/item-panel-wiring.ts`), `SessionActionBar`, `FillActionButton`, `SessionFacilitatorChip`,
+`SessionComplete`, `SessionSetupDialog` (+ `session-setup.ts`, pure, and `SessionHeroArt`), `SessionStartHost`
+(Start Planning's dialog), `session-kinds.tsx` (per-kind looks), `session-chime.ts`, `useSessionRun.ts` (the room's
+card and outcomes), `useSessionFacilitator.ts` (the baton), `useSessionTimebox.ts` (the clock and chime) and
+`useSessionKeys.ts` (R, S, F, J, K). The tab writes go through `hooks/plan/useSessionTabActions.ts`. Start Planning
+gains the `sessions` category, the `session` start kind and `start/SessionPicture`.
 
 ## Accessibility
 
@@ -82,7 +88,7 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 
 ## Observability
 
-`[session] outcome.recorded` / `outcome.refused` on the api route; telemetry `Plan · Created · SessionTab`,
+`[session] outcome.recorded` on the api route (a refusal answers its code); `[changeset] session-tab` on a refused changeset; telemetry `Plan · Created · SessionTab`,
 `Plan · Changed · SessionSetup`, `Plan · Used · Session{Refined,Skipped,Flagged}`.
 
 ## Testing
@@ -90,22 +96,26 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 - `session-tab.test.ts`: reader bounds, decisions, facilitator rules, timebox.
 - `session-queue.test.ts`: filter, order, decided first, target defaults and overrides, no next stage, cap.
 - `item-history.test.ts`: a session change kept, read back, grouped only with its tag.
-- api `item-session-route.test.ts`: records, refuses below edit, unknown outcome.
-- editor: `FillActionButton.test.tsx` (fill, tick, reduced motion), `SessionPage.test.tsx` (sidebar order, select,
-  peek, Refined moves and records, Skip and Flag grey out and advance, roles), `session-setup.test.ts`.
+- api `item-history-route.test.ts` ("a session outcome"): records, refuses below edit, unknown outcome, tab scope;
+  `submit.test.ts`: a changeset on a Session tab refused.
+- editor: `FillActionButton.test.tsx` (fill, tick, reduced motion), `SessionPage.test.tsx` (queue, run, keys, peek,
+  phone queue, settings, roles), `session-parts.test.tsx` (action bar, sidebar, progress, complete, chip and keys per
+  role), `SessionSetupDialog.test.tsx`, `useSessionRun`, `useSessionFacilitator`, `useSessionTimebox` and
+  `useSessionTabActions` tests, `session-setup.test.ts`, `item-panel-wiring.test.tsx`,
+  `StartPlanning.session.test.tsx`.
 
 ## Constants and configuration
 
-| Constant                 | Value  | Why                                                    |
-| ------------------------ | ------ | ------------------------------------------------------ |
-| `SESSION_QUEUE_MAX`      | 500    | A session longer than this is not a session            |
-| `SESSION_TYPES_MAX`      | 50     | The type catalogue's own bound                         |
-| `SESSION_STAGES_MAX`     | 100    | Under the type's 128 statuses                          |
-| `SESSION_TIMEBOX_MIN_MS` | 60 000 | One minute                                             |
-| `SESSION_TIMEBOX_MAX_MS` | 1 800 000 | Thirty minutes                                      |
-| `FACILITATOR_GRACE_MS`   | 10 000 | Covers a refresh before Take Over shows                |
-| `FILL_MS`                | 700    | The Refined fill, in and out                           |
-| `SEGMENTS_MAX`           | 40     | Past this the progress bar is one smooth bar           |
+| Constant                 | Value     | Why                                          |
+| ------------------------ | --------- | -------------------------------------------- |
+| `SESSION_QUEUE_MAX`      | 500       | A session longer than this is not a session  |
+| `SESSION_TYPES_MAX`      | 50        | The type catalogue's own bound               |
+| `SESSION_STAGES_MAX`     | 100       | Under the type's 128 statuses                |
+| `SESSION_TIMEBOX_MIN_MS` | 60 000    | One minute                                   |
+| `SESSION_TIMEBOX_MAX_MS` | 1 800 000 | Thirty minutes                               |
+| `FACILITATOR_GRACE_MS`   | 10 000    | Covers a refresh before Take Over shows      |
+| `FILL_MS`                | 700       | The Refined fill, in and out                 |
+| `SEGMENTS_MAX`           | 40        | Past this the progress bar is one smooth bar |
 
 ## Defaults ledger
 

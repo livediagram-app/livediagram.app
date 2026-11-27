@@ -27,10 +27,10 @@ export function useSessionTimebox(
   const left = on ? timeboxLeftMs(session, now) : null;
   const leftMs = left === null || !totalMs ? null : Math.min(totalMs, left);
   // The card this screen saw with time still on it, so a card already over when it opened never chimes.
-  const watched = useRef<number | null>(null);
+  const watched = useRef<number | null | undefined>(null);
   useEffect(() => {
     if (leftMs === null) return;
-    const card = session.cardStartedAt ?? null;
+    const card = session.cardStartedAt;
     if (leftMs > 0) watched.current = card;
     else if (watched.current === card) {
       watched.current = null;

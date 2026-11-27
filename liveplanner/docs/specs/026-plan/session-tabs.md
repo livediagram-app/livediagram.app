@@ -16,19 +16,19 @@ edit, comment and move lands on the card itself, on every board it shows on.
 
 ## Domain language
 
-| Term                     | Meaning                                                                                                                        | Not                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
-| **Session tab**          | A tab of kind `session`: one queue of cards worked through together                                                            | meeting tab, ceremony               |
-| **session kind**         | What the session is for: `refinement` (later `standup`, `planning`, `triage`, `review`), stored as `session.sessionKind`       | type (a card's), template           |
-| **queue**                | The cards the session works through, in order: those its set-up picks, and every card it has already decided                   | list, backlog                       |
-| **set-up**               | What a session picks and how: its card types, its stages, its order, its target stages and its timebox                         | config, filter                      |
-| **stage**                | A status (a board column) the session takes cards from                                                                         | column (a board's), state           |
-| **target stage**         | Where Refined moves a card: the next stage in its card type's order, or the stage the set-up names for its type                 | destination (a form's)              |
-| **outcome**              | What the session decided for a card: **Refined**, **Skipped** or **Flagged**                                                    | result, verdict                     |
-| **current card**         | The card the session is on, shown on the right for everyone                                                                    | selected card                       |
-| **facilitator**          | The one person who runs the session: moves it from card to card and decides outcomes                                           | host, owner, driver                 |
-| **timebox**              | An optional length of time per card                                                                                            | timer (that is a session tool's)    |
-| **fill button**          | The action button that fills with the theme's accent as it confirms (`FillActionButton`), shared by every session kind         | progress button                     |
+| Term             | Meaning                                                                                                                  | Not                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| **Session tab**  | A tab of kind `session`: one queue of cards worked through together                                                      | meeting tab, ceremony            |
+| **session kind** | What the session is for: `refinement` (later `standup`, `planning`, `triage`, `review`), stored as `session.sessionKind` | type (a card's), template        |
+| **queue**        | The cards the session works through, in order: those its set-up picks, and every card it has already decided             | list, backlog                    |
+| **set-up**       | What a session picks and how: its card types, its stages, its order, its target stages and its timebox                   | config, filter                   |
+| **stage**        | A status (a board column) the session takes cards from                                                                   | column (a board's), state        |
+| **target stage** | Where Refined moves a card: the next stage in its card type's order, or the stage the set-up names for its type          | destination (a form's)           |
+| **outcome**      | What the session decided for a card: **Refined**, **Skipped** or **Flagged**                                             | result, verdict                  |
+| **current card** | The card the session is on, shown on the right for everyone                                                              | selected card                    |
+| **facilitator**  | The one person who runs the session: moves it from card to card and decides outcomes                                     | host, owner, driver              |
+| **timebox**      | An optional length of time per card                                                                                      | timer (that is a session tool's) |
+| **fill button**  | The action button that fills with the theme's accent as it confirms (`FillActionButton`), shared by every session kind   | progress button                  |
 
 **Naming beside the session tools.** A tab already carries **session tools**, the timer and the dot vote
 ([Session tools](../012-collaboration/session-tools.md), `session.ts`, `Tab.timer`, `Tab.vote`). A Session tab is a
@@ -169,11 +169,11 @@ a skip changes no Last Edited.
 
 ## Share roles
 
-| Role            | May                                                                                                                                 |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Role            | May                                                                                                                                    |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | **Editor**      | Make a Session tab and change its set-up; hold the facilitator baton (take it, hand it over, step down, take it over); run the session |
-| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board                                             |
-| **Viewer**      | Watch it live; peek at any card; read it                                                                                            |
+| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board                                               |
+| **Viewer**      | Watch it live; peek at any card; read it                                                                                               |
 
 The outcome route asks edit access. A locked tab reads as a Viewer's.
 
@@ -191,10 +191,10 @@ and the fill button. A kind brings only:
 
 ## Agents and export
 
-- Agents see a Session tab in a plan's tabs as kind `session` with its set-up in words; they do not run one. The MCP's
-  tab tools refuse to fill one ("A Session tab is run in the editor").
-- A Session tab exports nothing of its own: Export offers no formats for it, and Whole Plan leaves it out, as its
-  cards are on their boards.
+- Agents see a Session tab in a plan's tabs as kind `session`; they do not run one. A changeset on it (the MCP's tab
+  tools, the API's) is refused ("A Session tab is run in the editor: change its cards with the card tools instead").
+- A Session tab's page is no element, so Export offers its JSON alone (its set-up and outcomes, which Import reads
+  back), as a Form tab's; its cards export from their boards. Whole Plan carries it with the plan's other tabs.
 
 ## Telemetry
 

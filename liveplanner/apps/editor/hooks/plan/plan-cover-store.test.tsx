@@ -59,6 +59,15 @@ describe('plan-cover-store', () => {
     expect(renders).toHaveBeenCalledTimes(2);
   });
 
+  it('a Dashboard’s, a Form tab’s and a Session tab’s page cover the canvas; a board tab does not', () => {
+    for (const planKind of ['dashboard', 'form', 'session'] as const) {
+      act(() => setPlanCover({ fillTabId: null, fillTabKind: null, planKind }));
+      expect(isCanvasCovered()).toBe(true);
+    }
+    act(() => setPlanCover({ fillTabId: null, fillTabKind: null, planKind: null }));
+    expect(isCanvasCovered()).toBe(false);
+  });
+
   it('narrows the palette for a board filling the tab, never for a maximised one', () => {
     act(() => maximisePlanElement('v', 'View'));
     expect(isCanvasCovered()).toBe(true);

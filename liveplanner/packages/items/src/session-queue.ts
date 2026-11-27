@@ -92,7 +92,7 @@ export function sessionTarget(
 // The card after `currentId` among those still to go (the first when it is not among them), or null when none is
 // left: the session is complete.
 export function nextToGo(toGo: readonly Item[], currentId?: string | null): Item | null {
-  if (toGo.length === 0) return null;
+  // Not among them (at -1): the first.
   const at = currentId ? toGo.findIndex((i) => i.id === currentId) : -1;
-  return toGo[at + 1] ?? (at >= 0 ? (toGo[at - 1] ?? null) : toGo[0]!);
+  return toGo[at + 1] ?? toGo[at - 1] ?? null;
 }

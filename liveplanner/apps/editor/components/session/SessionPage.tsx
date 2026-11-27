@@ -183,7 +183,8 @@ export function SessionPage({
             const to = room.target(shown);
             return to ? statusName(to) : null;
           })()}
-          statusName={statusName(itemStatus(shown) ?? '')}
+          // A card the room is on is queued, so in one of the picked stages; a peeked one hides the bar.
+          statusName={statusName(itemStatus(shown)!)}
           timebox={timebox}
           refineRef={refineRef}
           onDecide={room.decide}
@@ -218,7 +219,9 @@ export function SessionPage({
               <div
                 role="region"
                 aria-label={`${tab.name} session`}
-                className="flex h-full min-h-0 bg-white max-sm:flex-col dark:bg-slate-950"
+                // The bottom padding clears the canvas's bottom toolbars (about 64 px with their margin), as a Dashboard's does,
+                // so the action bar sits above them; on a phone also the home indicator's safe area.
+                className="flex h-full min-h-0 bg-white pb-[4.5rem] max-sm:flex-col max-sm:pb-[calc(4.5rem+env(safe-area-inset-bottom))] dark:bg-slate-950"
                 data-session-kind={session.sessionKind}
               >
                 {phone ? (
