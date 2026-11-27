@@ -89,6 +89,8 @@ password_required`, naming the link (`link`, its code) only when the caller sent
    wrong one is `403 password_invalid`; else the link's level and tab.
 6. `loadItem(need, { manage })`: an app delegate reaches its own app's items only, the mirror its own personal
    items only (`404` otherwise); `manage` refuses a link (`403`); a level below `need` is `403 forbidden`.
+7. The grant route alone: a `404` (or no one's `401`) to a request with no code names the item's least live link
+   (`share-fallback.ts`, [sharing.md](sharing.md) "Opened by its editor address").
 
 ### Grants (`grants.ts`)
 
