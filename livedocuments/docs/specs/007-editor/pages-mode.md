@@ -1693,8 +1693,10 @@ dimmer the further back) and pages before it not drawn. One stage serves both (`
   the row underneath (an element belongs to the page it lies on, as ever). **A move stays on the page in front**: a
   box dragged toward its edge stops with its centre on the edge, half hanging off (that half clipped, as anything off
   a page is), however far the pointer goes and whatever it would snap to, so a drop never lands on a page hidden
-  behind and vanishes (`keepCentreOn`, `apps/editor/hooks/canvas/boxed-drag-resolve.ts`). A box already off the page
-  when the tab was stacked moves freely. To move content to another page, cut and paste it there.
+  behind and vanishes (`keepCentreOn`, `apps/editor/hooks/canvas/boxed-drag-resolve.ts`). Short of the edge the move
+  is left exactly as it came, so a move on a stack snaps and shows its guides as it does in a row, to what is on the
+  page in front alone (Work Tracker 1499: a delta re-derived through the box's centre read as held on most frames,
+  and snapping stopped on every stack). A box already off the page when the tab was stacked moves freely. To move content to another page, cut and paste it there.
 - **Going to a page flips**: Contents, the arrow keys, a page just added or duplicated, a swipe or a pan let go
   toward a neighbour, and the page's own **Previous** and **Next** bring a page to the front by the flip, the leaving
   page pictured with its elements. A delete brings the page before forward; undo works as ever; a peer's edit to a page
