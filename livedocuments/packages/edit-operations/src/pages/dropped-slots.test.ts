@@ -118,6 +118,7 @@ describe('dropped slots', () => {
           stats: [
             { value: '1', caption: DROPPED_SLOT },
             { value: DROPPED_SLOT, caption: DROPPED_SLOT },
+            { value: DROPPED_SLOT, caption: '' },
           ],
           processSteps: ['a', DROPPED_SLOT],
           checklistItems: [{ text: DROPPED_SLOT }, { text: 'keep' }, 'odd'],
@@ -133,8 +134,21 @@ describe('dropped slots', () => {
     expect(el!.conceptRows).toEqual([{ label: 'L', note: '' }]);
     const allGone = {
       ...tab,
-      elements: [{ id: 'p', type: 'shape', shape: 'process', processSteps: [DROPPED_SLOT] }],
+      // Placed, with no size of its own: the box it leaves is a point.
+      elements: [
+        { id: 'p', type: 'shape', shape: 'process', x: 0, y: 0, processSteps: [DROPPED_SLOT] },
+      ],
     } as unknown as Tab;
     expect(withoutDroppedSlots(allGone).elements).toEqual([]);
+    // Not yet placed (no box): a marked text first on the tab, with nothing before it, and an emptied compound.
+    const unplaced = {
+      ...tab,
+      elements: [
+        { id: 'a', type: 'text', label: DROPPED_SLOT },
+        { id: 'c', type: 'shape', shape: 'process', processSteps: [DROPPED_SLOT] },
+        { id: 'k', type: 'text', label: 'Kept' },
+      ],
+    } as unknown as Tab;
+    expect(withoutDroppedSlots(unplaced).elements.map((el) => el.id)).toEqual(['k']);
   });
 });

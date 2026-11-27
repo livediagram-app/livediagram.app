@@ -52,17 +52,15 @@ const hasWords = (el: Loose) =>
 const plainShape = (el: Loose) => el.type === 'shape' && !hasWords(el) && partsOf(el).length === 0;
 
 // A compound element's rows with the marked ones taken out, a half-marked row's mark cleared; null when none is left.
+// Called only for an element with a marked part, so something always changes.
 function withoutMarkedParts(el: Loose): Loose | null {
-  let changed = false;
   const rows = (field: string, keep: (row: unknown) => unknown) => {
     const v = el[field];
     if (!Array.isArray(v)) return undefined;
-    const next = v.flatMap((row) => {
+    return v.flatMap((row) => {
       const kept = keep(row);
-      if (kept !== row) changed = true;
       return kept === null ? [] : [kept];
     });
-    return next;
   };
   const keyed =
     (main: string, other?: string) =>
@@ -88,7 +86,6 @@ function withoutMarkedParts(el: Loose): Loose | null {
   if (steps) next.processSteps = steps;
   if (checks) next.checklistItems = checks;
   if (concepts) next.conceptRows = concepts;
-  if (!changed) return el;
   const left = [stats, steps, checks, concepts].some((r) => r && r.length > 0);
   return left ? next : null;
 }
