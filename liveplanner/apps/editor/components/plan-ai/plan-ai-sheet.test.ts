@@ -164,4 +164,24 @@ describe('readSheet', () => {
     const empty = new Workbook({ sheets: [sheetOf([])], locale: AGENT_LOCALE });
     expect(readSheet(empty, 'sh1')).toContain('(The sheet is empty.)');
   });
+
+  it('reads a spilled cell by what it shows, skips empty rows, and says which rows it did not read', () => {
+    const spill = new Workbook({
+      sheets: [sheetOf([['=SEQUENCE(2)'], [null], [null], ['After']])],
+      locale: AGENT_LOCALE,
+    });
+    const text = readSheet(spill, 'sh1')!;
+    expect(text).toContain('A1 =SEQUENCE(2) → 1');
+    expect(text).toContain('\nA2 2\n');
+    expect(text).not.toContain('A3');
+    expect(text).toContain('A4 After');
+    // 100 columns by 51 rows passes the 5,000 cells a read takes, in few words: the last row is not read.
+    const wide = new Workbook({
+      sheets: [sheetOf(Array.from({ length: 51 }, () => [...Array<null>(99).fill(null), 'x']))],
+      locale: AGENT_LOCALE,
+    });
+    const read = readSheet(wide, 'sh1')!;
+    expect(read).toContain('CV50 x');
+    expect(read).toMatch(/\(Rows from A51:CV51 not read\.\)$/);
+  });
 });

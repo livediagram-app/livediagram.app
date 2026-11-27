@@ -147,10 +147,9 @@ export function readBoard(input: {
 
 /** A sheet: its title and size, and each row's cells that hold anything, as typed (a formula with what it shows). */
 export function readSheet(wb: Workbook, sheetId: string): string | null {
-  const sheet = wb.sheet(sheetId);
-  if (!sheet) return null;
   const read = readRange(wb, sheetId);
-  if (!read.ok) return null;
+  const sheet = wb.sheet(sheetId);
+  if (!read.ok || !sheet) return null;
   const extent = wb.extent(sheetId);
   const head = [
     `Sheet "${sheet.title}": ${extent.rows} rows by ${extent.cols} columns used` +
