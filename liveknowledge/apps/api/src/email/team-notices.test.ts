@@ -235,6 +235,29 @@ describe('an action assigned', () => {
     expect(sent()[0]!.html).toContain('Roadmap');
   });
 
+  it('names a due day when the action has one, and none when it has none (Work Tracker 1487)', async () => {
+    expect((await assign({ assigneeUserId: BOB, due: '2026-12-03' })).status).toBe(202);
+    expect(sent()[0]!.html).toContain(
+      '<strong>Ship it</strong>, due <strong>3 December 2026</strong>.',
+    );
+    // An overdue day is still the day it names: the email has no clock of the reader's.
+    expect(
+      (await assign({ assigneeUserId: BOB, actionName: 'Late', due: '2026-11-20' })).status,
+    ).toBe(202);
+    expect(sent()[1]!.html).toContain('due <strong>20 November 2026</strong>');
+    expect((await assign({ assigneeUserId: BOB, actionName: 'Whenever', due: '' })).status).toBe(
+      202,
+    );
+    expect(sent()[2]!.html).toContain('<strong>Whenever</strong>.');
+    expect(sent()[2]!.html).not.toContain(', due');
+  });
+
+  it('refuses a due that is no calendar day', async () => {
+    expect((await assign({ assigneeUserId: BOB, due: '3 Dec' })).status).toBe(400);
+    expect((await assign({ assigneeUserId: BOB, due: 20261203 })).status).toBe(400);
+    expect(sent()).toEqual([]);
+  });
+
   it('reaches an invited teammate at their invite address', async () => {
     expect((await assign({ assigneeMemberId: 'm-inv' })).status).toBe(202);
     expect(sent()).toEqual([expect.objectContaining({ to: 'inv@x.test', kind: 'ActionAssigned' })]);

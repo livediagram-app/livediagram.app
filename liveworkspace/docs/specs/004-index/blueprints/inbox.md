@@ -66,7 +66,8 @@ malformed, is dropped, never the push refused), `card` (whose optional `id`, 1 t
 `elementId` is a card thread's own id, and whose optional `column` is `{ name ≤ 200, color? #rrggbb, done boolean }`
 or null; a malformed `column` is dropped from the card, never the push refused). An action needs `elementId`, `actionId`,
 `elementLabel`, `name`, `status` (`open`, `done`, `wont-do`), `assignerId`, `createdAt`, `updatedAt`, and may carry
-`description`, `assigneeId`, `assigneeName`, `assignerName`, `teamId`, `doneById`, `card`. A repeated key keeps its
+`description`, `assigneeId`, `assigneeName`, `assignerName`, `teamId`, `doneById`, `due` (a calendar day, `YYYY-MM-DD`,
+kept in `collab_actions.due`, migration 0038; a malformed one is dropped, never the push refused), `card`. A repeated key keeps its
 last entry. A form's `code` is `^[A-Za-z0-9_-]{1,64}$`; `responses` at most 10,000,000. A suggested edit
 (`parseSuggestion`) needs `id` (1 to 128 characters), `agent`, `kind` (`replace`, `append`), `after`, `createdAt`, and may
 carry `ownerId` (an id or null, null meaning the item's owner), `reason` and `before` (`''` when absent); `before` and
@@ -161,7 +162,9 @@ row before the filter's slot (`panel/Pane.tsx`) and in the page's `PaneHeader` a
 (`InboxPane.tsx`), whatever the list's state.
 
 A Plan card's row (an action or thread with `card`) draws `CardStatusChip` (`packages/explorer/src/explorer/badges.tsx`)
-from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. `inboxCount`
+from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. An action with a
+`due` (or a card with `card.due`) says it after the row's reason (`DueTag` in `InboxRows.tsx`, worded by
+`actionDueWords` from `@liveworkspace/index-client/action-due`, in the reader's zone), red once past. `inboxCount`
 (`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`, and the sidebar and the
 rail draw no badge at 0. It counts every app's rows, as the Inbox lists them, on the page's sidebar, the panel's rail
 (`panel/Rail.tsx`) and the editor's button alike. `useInbox` reads `GET /inbox` with no `app` whatever the Explorer's
@@ -259,6 +262,9 @@ and `mentioned_by` drops the entries keyed by the person or naming them.
 
 `collab_threads` also holds `latest_agent` (null: a person's comment) and `ai_state` (`''`, `quiet` or `ask`, CHECK),
 added by `0037_inbox_ai_reads.sql`; a push from an app before them leaves both as their defaults.
+
+`collab_actions` also holds `due` (null: no due day), the action's due day as pushed, added by `0038_action_due.sql`;
+a push from an app before it, and every card (whose due day rides in `card`), leaves it null.
 
 `collab_suggestions` (`0027_collab_suggestions.sql`, Work Tracker 1362) holds `tab_name`, `owner_id` (null: the item's
 owner), `agent`, `reason`, `kind` (CHECK `replace`, `append`), `before_text`, `after_text`, `created_at`. Archiving

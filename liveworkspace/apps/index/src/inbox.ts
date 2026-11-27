@@ -98,6 +98,7 @@ type ActionRow = {
   assigner_name: string | null;
   team_id: string | null;
   card: string | null;
+  due: string | null;
   created_at: number;
   updated_at: number;
 };
@@ -193,7 +194,7 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
   const actions = {
     sql: `SELECT a.app, a.item_id, i.title AS item_title, i.team_id AS item_team_id, a.tab_id, a.tab_name, a.element_id, a.action_id,
         a.element_label, a.name, a.description, a.status, a.assignee_id, a.assignee_name, a.assigner_id,
-        a.assigner_name, a.team_id, a.card, a.created_at, a.updated_at
+        a.assigner_name, a.team_id, a.card, a.due, a.created_at, a.updated_at
       FROM collab_actions a JOIN items i ON i.id = a.item_id
       WHERE a.status = 'open' AND (a.assignee_id = ? OR a.assigner_id = ?) AND i.trashed_at IS NULL
         ${app ? 'AND a.app = ?' : ''} AND ${reachable('a')}
@@ -389,6 +390,7 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     assignerName: r.assigner_name,
     teamId: r.team_id,
     card: cardOf(r.card),
+    ...(r.due ? { due: r.due } : {}),
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   }));

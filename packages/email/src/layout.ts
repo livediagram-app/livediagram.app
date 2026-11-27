@@ -77,6 +77,24 @@ export function mentionQuote(text: string): string {
   return `${(space > MENTION_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }
 
+// An action's due day as an email says it (docs/specs/012-collaboration/assigned-actions.md "The email"): the calendar
+// day it names ("3 December 2026"), the same in every zone, since an email knows nobody's; null for none, or for
+// anything that is no calendar day.
+const DUE_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
+const DUE_DAY_WORDS = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+export function dueDayWords(day: string | null | undefined): string | null {
+  const m = day ? DUE_DAY.exec(day) : null;
+  if (!m) return null;
+  const at = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return at.getUTCMonth() === Number(m[2]) - 1 ? DUE_DAY_WORDS.format(at) : null;
+}
+
 export function createEmailLayout(look: EmailBrand) {
   const { brand: BRAND, wordmarkAccent: WORDMARK_ACCENT } = look;
 
