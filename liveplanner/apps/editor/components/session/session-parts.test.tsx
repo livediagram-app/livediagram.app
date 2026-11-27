@@ -36,6 +36,7 @@ const card = (id: string, extra = {}): Item => ({
 
 describe('SessionActionBar', () => {
   const base = {
+    sessionKind: 'refinement' as const,
     item: card('a'),
     decision: undefined,
     holderName: 'Sam',
@@ -74,7 +75,7 @@ describe('SessionActionBar', () => {
       />,
     );
     expect(screen.queryByRole('button', { name: /Flag/ })).toBeNull();
-    expect(screen.getByText(/its type has no later stage/).textContent).toContain(
+    expect(screen.getByText(/no open stage comes after it/).textContent).toContain(
       'Stays in Backlog',
     );
     expect(screen.getByLabelText('Time’s up')).toBeTruthy();
@@ -319,9 +320,7 @@ describe('useSessionKeys', () => {
   function Keys(props: { on: boolean; spy: (k: string) => void }) {
     useSessionKeys({
       on: props.on,
-      refine: () => props.spy('r'),
-      skip: () => props.spy('s'),
-      flag: () => props.spy('f'),
+      outcomes: { r: () => props.spy('r'), s: () => props.spy('s'), f: () => props.spy('f') },
       next: () => props.spy('j'),
       previous: () => props.spy('k'),
     });
@@ -331,7 +330,8 @@ describe('useSessionKeys', () => {
   it('R, S, F, J and K act outside fields, never with a modifier, a repeat or while off', () => {
     const spy = vi.fn<(k: string) => void>();
     const { rerender } = render(<Keys on spy={spy} />);
-    for (const key of ['r', 'S', 'f', 'j', 'k', 'x']) fireEvent.keyDown(window, { key });
+    for (const key of ['r', 'S', 'f', 'j', 'k', 'x', 'constructor'])
+      fireEvent.keyDown(window, { key });
     fireEvent.keyDown(window, { key: 'r', metaKey: true });
     fireEvent.keyDown(window, { key: 'r', repeat: true });
     fireEvent.keyDown(screen.getByLabelText('field'), { key: 'r' });

@@ -92,6 +92,9 @@ describe('changeLine', () => {
       'Skipped this in a Refinement session',
       'Flagged this in a Refinement session',
     ]);
+    expect(words({ kind: 'session', session: 'planning', outcome: 'committed' })).toBe(
+      'Committed this in a Sprint Planning session',
+    );
     expect(words({ kind: 'set', field: 'title', value: 'New name' })).toBe(
       'Renamed this card to “New name”',
     );

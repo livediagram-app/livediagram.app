@@ -2,7 +2,7 @@
 
 // Running a Session tab (docs/specs/026-plan/session-tabs.md "The queue", "The sidebar", "The action bar"): the queue
 // read live from the plan's cards, the room's current card and this screen's peek, and the facilitator's moves and
-// outcomes. An outcome writes the real card (Refined's move, Flag's flag), keeps the outcome in the card's history and
+// outcomes. An outcome writes the real card (the completing outcome's move, Refined's or Commit's; Flag's flag), keeps the outcome in the card's history and
 // on the tab, and moves the room on. Nothing here runs for someone who is not facilitating but reading.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -15,6 +15,7 @@ import {
   type SessionOutcome,
 } from '@liveplanner/items';
 import {
+  SESSION_KINDS,
   withCurrent,
   withDecision,
   withNoDecisions,
@@ -31,6 +32,7 @@ const TRACK_TYPES = {
   refined: 'SessionRefined',
   skipped: 'SessionSkipped',
   flagged: 'SessionFlagged',
+  committed: 'SessionCommitted',
 } as const satisfies Record<SessionOutcome, string>;
 
 export type SessionRun = ReturnType<typeof useSessionRun>;
@@ -67,7 +69,11 @@ export function useSessionRun({
   const peek = peekId && peekId !== current?.id ? (items.get(peekId) ?? null) : null;
   const shown = peek ?? current;
   const planStatuses = useMemo(() => [...plan.statusNames.keys()], [plan.statusNames]);
-  const target = (item: Item) => sessionTarget(item, types, planStatuses, setup.targets);
+  const target = (item: Item) =>
+    sessionTarget(item, types, planStatuses, setup.targets, {
+      names: plan.statusNames,
+      phases: plan.statusPhases,
+    });
 
   // The facilitator's screen settles the room on a real card, its clock starting, when the tab names none still queued
   // (a fresh session, or the current card dragged out of the picked stages).
@@ -99,7 +105,7 @@ export function useSessionRun({
   const decide = (outcome: SessionOutcome) => {
     const item = current;
     if (!runs || !item || decided?.[item.id]) return;
-    if (outcome === 'refined') {
+    if (outcome === SESSION_KINDS[session.sessionKind].completes) {
       const to = target(item);
       if (to) plan.moveItem(item.id, { status: to, before: null });
     } else if (outcome === 'flagged' && !isFlagged(item)) {

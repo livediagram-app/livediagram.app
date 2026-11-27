@@ -1,7 +1,7 @@
 # Session tabs
 
-Status: **implemented** (Refinement). Stand-up, Sprint Planning, Bug Triage and Sprint Review are designed for here
-and come later (Work Tracker 1526 to 1529).
+Status: **implemented** (Refinement, Sprint Planning). Stand-up, Bug Triage and Sprint Review are designed for here
+and come later.
 
 A **Session tab** turns a filtered, ordered slice of the plan's cards into a **queue** the team works through one
 card at a time. The first **session kind** is **Refinement**: the team reads each card, sharpens it, and marks it
@@ -11,24 +11,28 @@ card at a time. The first **session kind** is **Refinement**: the team reads eac
 
 Teams refine by staring at one big board. Everything on it competes for attention, nobody is sure which card is
 next, and "is this one ready?" is decided by whoever drags first. A session tab shows one card, fully, with the
-queue beside it and one clear way to say "done, next". It is a **view over the real cards**, never a copy: every
+queue beside it and one clear way to say "done, next". A second kind, **Sprint Planning**, walks the top of the backlog the same way and
+**commits** cards into the sprint, tallying their estimates against the team's capacity
+([Sprint Planning](#sprint-planning)). It is a **view over the real cards**, never a copy: every
 edit, comment and move lands on the card itself, on every board it shows on.
 
 ## Domain language
 
-| Term             | Meaning                                                                                                                  | Not                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
-| **Session tab**  | A tab of kind `session`: one queue of cards worked through together                                                      | meeting tab, ceremony            |
-| **session kind** | What the session is for: `refinement` (later `standup`, `planning`, `triage`, `review`), stored as `session.sessionKind` | type (a card's), template        |
-| **queue**        | The cards the session works through, in order: those its set-up picks, and every card it has already decided             | list, backlog                    |
-| **set-up**       | What a session picks and how: its card types, its stages, its order, its target stages and its timebox                   | config, filter                   |
-| **stage**        | A status (a board column) the session takes cards from                                                                   | column (a board's), state        |
-| **target stage** | Where Refined moves a card: the next stage in its card type's order, or the stage the set-up names for its type          | destination (a form's)           |
-| **outcome**      | What the session decided for a card: **Refined**, **Skipped** or **Flagged**                                             | result, verdict                  |
-| **current card** | The card the session is on, shown on the right for everyone                                                              | selected card                    |
-| **facilitator**  | The one person who runs the session: moves it from card to card and decides outcomes                                     | host, owner, driver              |
-| **timebox**      | An optional length of time per card                                                                                      | timer (that is a session tool's) |
-| **fill button**  | The action button that fills with the theme's accent as it confirms (`FillActionButton`), shared by every session kind   | progress button                  |
+| Term             | Meaning                                                                                                                                | Not                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **Session tab**  | A tab of kind `session`: one queue of cards worked through together                                                                    | meeting tab, ceremony            |
+| **session kind** | What the session is for: `refinement`, `planning` (later `standup`, `triage`, `review`), stored as `session.sessionKind`               | type (a card's), template        |
+| **queue**        | The cards the session works through, in order: those its set-up picks, and every card it has already decided                           | list, backlog                    |
+| **set-up**       | What a session picks and how: its card types, its stages, its order, its target stages and its timebox                                 | config, filter                   |
+| **stage**        | A status (a board column) the session takes cards from                                                                                 | column (a board's), state        |
+| **target stage** | Where the kind's completing outcome (Refined, Committed) moves a card: the next stage in its type's order, or the one the set-up names | destination (a form's)           |
+| **outcome**      | What the session decided for a card: **Refined**, **Skipped**, **Flagged** or **Committed** (each kind offers its own)                 | result, verdict                  |
+| **capacity**     | Sprint Planning's optional figure, in estimate points, that the committed cards are tallied against                                    | budget, velocity                 |
+| **tally**        | The committed cards' estimates added up, beside the capacity; cards with no estimate are counted apart, never as zero                  | total, burn                      |
+| **current card** | The card the session is on, shown on the right for everyone                                                                            | selected card                    |
+| **facilitator**  | The one person who runs the session: moves it from card to card and decides outcomes                                                   | host, owner, driver              |
+| **timebox**      | An optional length of time per card                                                                                                    | timer (that is a session tool's) |
+| **fill button**  | The action button that fills with the theme's accent as it confirms (`FillActionButton`), shared by every session kind                 | progress button                  |
 
 **Naming beside the session tools.** A tab already carries **session tools**, the timer and the dot vote
 ([Session tools](../012-collaboration/session-tools.md), `session.ts`, `Tab.timer`, `Tab.vote`). A Session tab is a
@@ -48,9 +52,14 @@ never read `Tab.session`.
   3. **Order**: **Sort By** and **Then By**, the same choices and directions a board's Sort Cards offers
      ([Plan board](plan-board.md#the-board-set-up): `boardSortFieldsOf` over the picked types). None keeps the cards
      in their hand order (rank).
-  4. **When Refined**: one row per picked type, "Moves to" a stage picker. Each starts on **Next Stage**, the stage
-     after the card's own in its type's order ([Item types](item-types.md#the-statuses-a-type-uses)), and may name
-     one stage of the type's for every card of it instead.
+  4. **When Refined**: one row per picked type, "Moves to" a stage picker. Each starts on **Next Stage**, and may name
+     one stage of the type's for every card of it instead. **Next Stage** is the first **open** stage after the card's
+     own in its type's order ([Item types](item-types.md#the-statuses-a-type-uses)), stepping past a Backlog-like one
+     (Backlog, Icebox, Inbox, Ideas, Someday) and never into a Done-like one (Done, Closed, Complete, Shipped,
+     Released, Cancelled, or any stage in the Done phase): with none before Done, the card stays. A type that lists its
+     waiting stages after Done (the Sprint Board's To Do, Doing, Done, Backlog, Ready) wraps round: a card in such a
+     stage with no open stage after it goes to the type's first open stage (Ready to **To Do**). Refinement and Sprint
+     Planning share the rule.
   5. **Timebox**: off by default; on, a length per card from 1 to 30 minutes (2, 3, 5, 10 offered as chips).
 - The dialog previews the queue as it fills ("12 cards, highest priority first") and **Start Session** makes the tab
   a Session tab in one change and one undo step, named **Refinement** when it still has its default name.
@@ -108,7 +117,7 @@ A Session tab fills the tab, as a Board tab's board does, in two parts side by s
 Under the card, for the facilitator:
 
 - **Skip** (a skip arrow) and **Flag** (a flag, only when the card is not flagged already) on the left, then a line
-  saying where Refined takes the card ("Moves to **Ready**", or "Stays in **Done**: its type has no later stage"), then
+  saying where Refined takes the card ("Moves to **Ready**", or "Stays in **Review**: no open stage comes after it"), then
   the timebox's time left when on, then the **Refined** fill button on the right.
 - **Refined** is short and clear: the label and a tick. Pressed, the button **fills left to right** in the theme's
   accent (a lighter wash over the solid button), the label turns into a tick, then the fill **drains back out**: about
@@ -149,6 +158,51 @@ Participant or a Viewer, handed on rather than fought over. A Session tab keeps 
   session as they left it unless somebody chose to run it.
 - A Participant or Viewer sees the chip and who holds it, never a verb.
 
+## Sprint Planning
+
+A Sprint Planning session walks the top of the backlog one card at a time and **commits** cards into the sprint. It is
+the same tab, queue, sidebar, card, progress bar, timebox, facilitator and fill button as Refinement; what it brings
+is below.
+
+### Making one
+
+- Start Planning's **Sessions** holds **Sprint Planning** ("Walk the top of the backlog and commit cards into the
+  sprint, tallying estimates against capacity") beside Refinement. Choosing it opens **Set Up Sprint Planning**:
+  1. **Card Types** and **Stages** as Refinement's. It picks first the types with cards in a ready-like stage (Reviewed,
+     Ready, Refined, Ready for Development, Groomed, Selected, Backlog), and those stages; else each type's first
+     stage.
+  2. **Order** as Refinement's; None keeps the backlog's hand order, the top first.
+  3. **When Committed**: one row per picked type, "Moves to" a stage picker, starting on **Next Stage** (the same rule
+     as When Refined's: on the Sprint Board, Ready commits to To Do) and overridable with any stage of the type's, as When Refined is.
+  4. **Capacity**: optional, a number of estimate points from 1 to 9 999, empty by default ("No capacity").
+  5. **Timebox** as Refinement's.
+- A picked type with no **Estimate** field says so under Card Types ("Bug has no Estimate field: its cards count as
+  no estimate"), so nobody is surprised by the tally.
+- Start Session names the tab **Sprint Planning** while it keeps its default name.
+
+### Running it
+
+- The **action bar** holds **Skip** on the left, where Commit takes the card ("Moves to **Selected**"), the timebox's
+  time left when on, and the **Commit** fill button (the shared fill animation) on the right. Commit moves the real
+  card to its target stage (the end of that column), records **Committed** in its history and on the tab, and moves
+  the room on. Skip greys the card in the sidebar and moves on, as in Refinement. Keys: **C** Commit, **S** Skip,
+  **J** and **K**.
+- **Estimate** sits in a strip above the action bar: the story-point sizes (1, 2, 3, 5, 8, 13, 21) as chips, the card's
+  own value pressed, and **None**. Pressing one writes the card's Estimate at once, as the Estimate field does. It is
+  there for whoever may edit cards (an Editor or a Participant), whether or not they facilitate; a Viewer reads the
+  value. The strip says what Commit would make the tally ("Commit makes it **16 of 30**"). A card whose type has no
+  Estimate field says so in the strip instead of chips, and its committed card counts as no estimate.
+- Each sidebar row shows the card's estimate as a small pill on the right; a card with none shows a dashed **?** pill,
+  so a missing estimate shows before Commit.
+- The **tally** sits under the progress bar: "Committed", then "**13** of 30 points" (or "**13** points" with no
+  capacity) and a meter: the committed points in the accent, the room's card's estimate as a lighter segment after
+  them (what Commit would add). The meter reads its normal accent below 85% of capacity, **amber** from 85% up to the
+  capacity itself, and **red** past it, with the words "Near capacity" or "Over capacity by 4 points". It never stops a
+  Commit. Committed cards with no estimate are counted apart under it ("1 committed card has no estimate, not
+  counted"), never as zero.
+- **Session Complete** shows Committed and Skipped, and the tally ("21 of 30 points committed").
+- Undo Outcome on a committed card clears its outcome (the tally drops it); its move is undone with the editor's Undo.
+
 ## Real time
 
 - The set-up, the current card, the outcomes, the facilitator and the card's start time are the tab's `session`
@@ -163,17 +217,18 @@ Participant or a Viewer, handed on rather than fought over. A Session tab keeps 
 
 A card's history ([Items](items.md#history)) records each outcome as an entry of its own, tagged **session**:
 "Sam refined this in a Refinement session", "Sam skipped this in a Refinement session", "Sam flagged this in a
-Refinement session". Refined and Flagged also record the move or the flag itself, as any write does. The outcome is
-written by `POST /items/:itemId/session` (`{ session: 'refinement', outcome }`), which writes nothing on the card, so
-a skip changes no Last Edited.
+Refinement session". Sprint Planning's read "Sam committed this in a Sprint Planning session" and "Sam skipped this in a
+Sprint Planning session". Refined, Committed and Flagged also record the move or the flag itself, as any write does.
+The outcome is written by `POST /items/:itemId/session` (`{ session: 'refinement' | 'planning', outcome }`, the outcome
+one the kind offers), which writes nothing on the card, so a skip changes no Last Edited.
 
 ## Share roles
 
 | Role            | May                                                                                                                                    |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | **Editor**      | Make a Session tab and change its set-up; hold the facilitator baton (take it, hand it over, step down, take it over); run the session |
-| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board                                               |
-| **Viewer**      | Watch it live; peek at any card; read it                                                                                               |
+| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board (Sprint Planning's Estimate strip included)   |
+| **Viewer**      | Watch it live; peek at any card; read it (the Estimate strip reads its value, with no chips)                                           |
 
 The outcome route asks edit access. A locked tab reads as a Viewer's.
 
@@ -182,12 +237,17 @@ The outcome route asks edit access. A locked tab reads as a Viewer's.
 Every session kind shares the tab, the queue, the sidebar, the card, the progress bar, the timebox, the facilitator
 and the fill button. A kind brings only:
 
-- its **set-up parts** (Refinement's: card types, stages, order, When Refined, timebox),
-- its **actions** (Refinement's: Refined, Skip, Flag), each an outcome with a label, glyph and history wording,
-- its **grouping** of the sidebar (Refinement's: none; Stand-up's will be by person).
+- its **set-up parts** (Refinement's: card types, stages, order, When Refined, timebox; Sprint Planning's add
+  Capacity),
+- its **actions** (Refinement's: Refined, Skip, Flag; Sprint Planning's: Commit, Skip), each an outcome with a label,
+  glyph, key and history wording; the completing one is the fill button and moves the card to its target stage,
+- its **grouping** of the sidebar (Refinement's: none; Stand-up's will be by person),
+- its **tally** (Sprint Planning's: estimates against capacity; none for Refinement), which brings the tally meter, the
+  Estimate strip, the rows' estimate pills and the capacity set-up part.
 
-`SESSION_KINDS` (in `@liveplanner/project`) names each kind's label, outcomes and grouping, and the editor's
-`session-kinds.tsx` its set-up parts and action bar.
+`SESSION_KINDS` (in `@liveplanner/project`) names each kind's label, outcomes, completing outcome, grouping and tally,
+and the editor's `session-kinds.tsx` its wording and set-up defaults; a tally's parts live in their own folder
+(`components/session/planning/`) and the page draws them only for a kind with that tally.
 
 ## Agents and export
 
@@ -200,8 +260,10 @@ and the fill button. A kind brings only:
 
 In the `Plan` category (the `Session` category is a visit's): `Plan · Created · SessionTab` on Start Session,
 `Plan · Changed · SessionSetup` on a set-up change, and `Plan · Used · SessionRefined | SessionSkipped |
-SessionFlagged` on each outcome.
+SessionFlagged | SessionCommitted` on each outcome (the one chart of session outcomes, Sprint Planning's Commit
+included).
 
 ## Limits
 
-- 500 cards in a queue; 50 card types and 100 stages in a set-up; a timebox of 1 to 30 minutes.
+- 500 cards in a queue; 50 card types and 100 stages in a set-up; a timebox of 1 to 30 minutes; a capacity of 1 to
+  9 999 points.

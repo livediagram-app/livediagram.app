@@ -6,10 +6,11 @@
 import type { SessionKindId, SessionOutcome } from '@liveplanner/items';
 import { FLAG_COLOUR } from '@liveplanner/project';
 import { Glyph, lucideGlyph, type IconProps } from '@liveworkspace/ui';
-import { lucideCheck, lucideFlag } from '@liveworkspace/icons/lucide';
+import { lucideCalendarCheck, lucideCheck, lucideFlag } from '@liveworkspace/icons/lucide';
 
 const CheckIcon = lucideGlyph(lucideCheck, 16);
 const FlagIcon = lucideGlyph(lucideFlag, 16);
+const CommitIcon = lucideGlyph(lucideCalendarCheck, 16);
 
 // A skip arrow: lucide has none, so drawn here (a triangle to a bar).
 export function SkipIcon({ size = 16, ...rest }: IconProps) {
@@ -43,6 +44,13 @@ export const OUTCOME_LOOKS: Readonly<Record<SessionOutcome, OutcomeLook>> = {
   },
   skipped: { label: 'Skip', key: 's', Icon: SkipIcon, colour: '#64748b', done: 'Skipped' },
   flagged: { label: 'Flag', key: 'f', Icon: FlagIcon, colour: FLAG_COLOUR, done: 'Flagged' },
+  committed: {
+    label: 'Commit',
+    key: 'c',
+    Icon: CommitIcon,
+    colour: 'var(--color-brand-600)',
+    done: 'Committed',
+  },
 };
 
 export type SessionKindLook = {
@@ -52,6 +60,12 @@ export type SessionKindLook = {
   // The set-up dialog's title and subtitle.
   setupTitle: string;
   setupLine: string;
+  // The set-up's heading over where the completing outcome moves each type's cards.
+  targetHeading: string;
+  // The stage names (compared without case) the set-up picks first, else each picked type's first stage.
+  startStages: readonly string[];
+  // Words Start Planning's search finds it by, beyond every session's.
+  keywords: readonly string[];
 };
 
 export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>> = {
@@ -60,5 +74,36 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
     line: 'Work through cards one at a time, refining each, with everyone on the same card.',
     setupTitle: 'Set Up Refinement',
     setupLine: 'Pick the cards to refine, their order, and where each goes once refined.',
+    targetHeading: 'When Refined',
+    startStages: ['backlog', 'new', 'to do', 'todo', 'ideas', 'idea', 'needs detail', 'inbox'],
+    keywords: ['refine', 'refinement', 'grooming', 'backlog'],
+  },
+  planning: {
+    name: 'Sprint Planning',
+    line: 'Walk the top of the backlog and commit cards into the sprint, tallying estimates against capacity.',
+    setupTitle: 'Set Up Sprint Planning',
+    setupLine:
+      'Pick the cards to plan from, their order, where committed cards go and the team’s capacity.',
+    targetHeading: 'When Committed',
+    startStages: [
+      'reviewed',
+      'ready',
+      'refined',
+      'ready for development',
+      'ready for dev',
+      'groomed',
+      'selected',
+      'backlog',
+    ],
+    keywords: [
+      'sprint',
+      'planning',
+      'commit',
+      'capacity',
+      'estimate',
+      'points',
+      'scrum',
+      'iteration',
+    ],
   },
 };

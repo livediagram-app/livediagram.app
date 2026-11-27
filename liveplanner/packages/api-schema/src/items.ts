@@ -140,10 +140,10 @@ export type ItemsTallyRequest = {
 // POST /api/projects/:id/items/:itemId/session (docs/specs/026-plan/session-tabs.md "History"): a Session tab's
 // outcome for the card, kept in its history as an entry tagged `session`. Nothing on the card is written. 204.
 export type ItemSessionRequest = {
-  /** The session kind: `refinement`. */
-  session: 'refinement';
-  /** What the session decided: `refined`, `skipped` or `flagged`. */
-  outcome: 'refined' | 'skipped' | 'flagged';
+  /** The session kind: `refinement` or `planning` (Sprint Planning). */
+  session: 'refinement' | 'planning';
+  /** What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning). */
+  outcome: 'refined' | 'skipped' | 'flagged' | 'committed';
 };
 
 export type ItemTimeRequest = { field: string } & (

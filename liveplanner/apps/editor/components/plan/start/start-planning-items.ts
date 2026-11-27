@@ -29,18 +29,8 @@ import { FORM_STARTERS, type StarterId } from '@liveplanner/forms';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 import { SESSION_KIND_LOOKS } from '@/components/session/session-kinds';
 
-// What people look for a session by.
-const SESSION_KEYWORDS = [
-  'session',
-  'meeting',
-  'refine',
-  'refinement',
-  'grooming',
-  'backlog',
-  'one at a time',
-  'facilitate',
-  'ceremony',
-];
+// What people look for any session by; each kind adds its own (SESSION_KIND_LOOKS' keywords).
+const SESSION_KEYWORDS = ['session', 'meeting', 'one at a time', 'facilitate', 'ceremony'];
 
 export type StartKind =
   | 'board'
@@ -491,7 +481,7 @@ export function startItems({
     sessionKind: k,
     name: SESSION_KIND_LOOKS[k].name,
     line: SESSION_KIND_LOOKS[k].line,
-    keywords: SESSION_KEYWORDS,
+    keywords: [...SESSION_KEYWORDS, ...SESSION_KIND_LOOKS[k].keywords],
   }));
   const templates: StartItem[] = INSPIRATION_TEMPLATES.flatMap((kind) => {
     const t = TEMPLATES.find((d) => d.kind === kind);

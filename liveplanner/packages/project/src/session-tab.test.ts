@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   FACILITATOR_GRACE_MS,
+  SESSION_CAPACITY_MAX,
   SESSION_KINDS,
   SESSION_TIMEBOX_MAX_MS,
   SESSION_TIMEBOX_MIN_MS,
@@ -27,6 +28,12 @@ describe('the session kind', () => {
     expect(isPlanTabKind('session')).toBe(true);
     expect(tabKindOf({ kind: 'session' })).toBe('session');
     expect(SESSION_KINDS.refinement.outcomes).toEqual(['refined', 'skipped', 'flagged']);
+    expect(SESSION_KINDS.planning).toMatchObject({
+      label: 'Sprint Planning',
+      outcomes: ['committed', 'skipped'],
+      completes: 'committed',
+      tally: 'estimate',
+    });
   });
 });
 
@@ -108,6 +115,20 @@ describe('readSessionTab', () => {
     expect(
       Object.keys(readSessionTab({ sessionKind: 'refinement', decided: many })!.decided!),
     ).toHaveLength(SESSION_QUEUE_MAX);
+  });
+
+  it('keeps a Sprint Planning capacity as whole points within bounds, else none', () => {
+    const cap = (capacity: unknown) =>
+      readSessionTab({ sessionKind: 'planning', setup: { capacity } })!.setup.capacity;
+    expect(cap(30)).toBe(30);
+    expect(cap(12.6)).toBe(13);
+    expect(cap(1e9)).toBe(SESSION_CAPACITY_MAX);
+    expect(cap(0)).toBeUndefined();
+    expect(cap(0.2)).toBeUndefined();
+    expect(cap(-4)).toBeUndefined();
+    expect(cap('30')).toBeUndefined();
+    expect(cap(Number.POSITIVE_INFINITY)).toBeUndefined();
+    expect(readSessionTab({ sessionKind: 'planning' })!.sessionKind).toBe('planning');
   });
 });
 

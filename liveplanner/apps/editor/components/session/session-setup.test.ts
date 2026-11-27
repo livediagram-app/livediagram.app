@@ -91,7 +91,15 @@ describe('defaultSessionSetup', () => {
       card('bug', 'done'),
       statusless('bug'),
     ];
-    expect(defaultSessionSetup({ items, types, planStatuses: PLAN, statusNames: NAMES })).toEqual({
+    expect(
+      defaultSessionSetup({
+        sessionKind: 'refinement',
+        items,
+        types,
+        planStatuses: PLAN,
+        statusNames: NAMES,
+      }),
+    ).toEqual({
       typeIds: ['task'],
       statuses: ['backlog', 'detail', 'new'],
     });
@@ -99,14 +107,51 @@ describe('defaultSessionSetup', () => {
 
   it('falls back to every type with cards and its first stage, then to the first type', () => {
     const items = [card('bug', 'done')];
-    expect(defaultSessionSetup({ items, types, planStatuses: PLAN, statusNames: NAMES })).toEqual({
+    expect(
+      defaultSessionSetup({
+        sessionKind: 'refinement',
+        items,
+        types,
+        planStatuses: PLAN,
+        statusNames: NAMES,
+      }),
+    ).toEqual({
       typeIds: ['bug'],
       statuses: ['new'],
     });
     const plain = [type('work', ['doing', 'done'])];
     expect(
-      defaultSessionSetup({ items: [], types: plain, planStatuses: PLAN, statusNames: new Map() }),
+      defaultSessionSetup({
+        sessionKind: 'refinement',
+        items: [],
+        types: plain,
+        planStatuses: PLAN,
+        statusNames: new Map(),
+      }),
     ).toEqual({ typeIds: ['work'], statuses: ['doing'] });
+  });
+});
+
+describe('defaultSessionSetup for Sprint Planning', () => {
+  it('picks the types with cards in a ready-like stage, and those stages', () => {
+    const plan = ['backlog', 'reviewed', 'doing', 'done'];
+    const names = new Map([
+      ['backlog', 'Backlog'],
+      ['reviewed', 'Reviewed'],
+      ['doing', 'Doing'],
+      ['done', 'Done'],
+    ]);
+    const types = [type('feature'), type('bug', ['doing', 'done'])];
+    const items = [card('feature', 'reviewed'), card('bug', 'doing')];
+    expect(
+      defaultSessionSetup({
+        sessionKind: 'planning',
+        items,
+        types,
+        planStatuses: plan,
+        statusNames: names,
+      }),
+    ).toEqual({ typeIds: ['feature'], statuses: ['backlog', 'reviewed'] });
   });
 });
 

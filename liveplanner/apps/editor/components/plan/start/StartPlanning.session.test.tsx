@@ -38,6 +38,19 @@ describe('Start Planning: Sessions', () => {
     expect(onSession).toHaveBeenCalledWith('refinement');
   });
 
+  it('an Editor picks Sprint Planning from Sessions, and a search for capacity finds it', () => {
+    const onSession = vi.fn();
+    render(<StartPlanning onPickBoard={vi.fn()} onSession={onSession} />);
+    fireEvent.click(within(rail()).getByRole('button', { name: /^Sessions/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Sprint Planning/ }));
+    expect(onSession).toHaveBeenCalledWith('planning');
+    fireEvent.change(screen.getByRole('textbox', { name: /Find a board/ }), {
+      target: { value: 'capacity' },
+    });
+    expect(screen.getByRole('button', { name: /^Sprint Planning/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Refinement/ })).toBeNull();
+  });
+
   it('a search for grooming finds it', () => {
     render(<StartPlanning onPickBoard={vi.fn()} onSession={vi.fn()} />);
     fireEvent.change(screen.getByRole('textbox', { name: /Find a board/ }), {

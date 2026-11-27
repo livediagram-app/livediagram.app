@@ -180,8 +180,83 @@ describe('SessionSetupDialog, a long backlog', () => {
 describe('SessionStartHost', () => {
   it('opens Set Up Refinement on its first picks and hands Start Session on', () => {
     const onStart = vi.fn();
-    render(<SessionStartHost plan={plan()} onStart={onStart} onClose={vi.fn()} />);
+    render(
+      <SessionStartHost
+        sessionKind="refinement"
+        plan={plan()}
+        onStart={onStart}
+        onClose={vi.fn()}
+      />,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Start Session' }));
     expect(onStart).toHaveBeenCalledWith(expect.objectContaining({ typeIds: expect.any(Array) }));
+  });
+});
+
+// docs/specs/026-plan/session-tabs.md "Sprint Planning": When Committed, Capacity and the no-Estimate note.
+describe('Set Up Sprint Planning', () => {
+  it('names its target part, notes types with no Estimate, and keeps a capacity', () => {
+    const onDone = vi.fn<(setup: SessionSetup) => void>();
+    const withEstimate = { ...TYPES[0]!, fields: ['title', 'status', 'estimate'] };
+    render(
+      <SessionSetupDialog
+        sessionKind="planning"
+        initial={{ typeIds: ['task', 'bug'], statuses: ['backlog'] }}
+        plan={plan([withEstimate, TYPES[1]!])}
+        settings={false}
+        onDone={onDone}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Set Up Sprint Planning' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'When Committed' })).toBeTruthy();
+    expect(
+      screen.getByText('Bug has no Estimate field: its cards count as no estimate.'),
+    ).toBeTruthy();
+    const capacity = screen.getByLabelText<HTMLInputElement>('Capacity in points');
+    expect(capacity.value).toBe('');
+    fireEvent.change(capacity, { target: { value: '30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Start Session' }));
+    expect(onDone).toHaveBeenLastCalledWith({
+      typeIds: ['task', 'bug'],
+      statuses: ['backlog'],
+      capacity: 30,
+    });
+    fireEvent.change(capacity, { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Start Session' }));
+    expect(onDone).toHaveBeenLastCalledWith({ typeIds: ['task', 'bug'], statuses: ['backlog'] });
+  });
+
+  it('notes several types with no Estimate together, and none when every type has one', () => {
+    render(
+      <SessionSetupDialog
+        sessionKind="planning"
+        initial={{ typeIds: ['task', 'bug'], statuses: ['backlog'] }}
+        plan={plan()}
+        settings={false}
+        onDone={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getByText('Task and Bug have no Estimate field: their cards count as no estimate.'),
+    ).toBeTruthy();
+    cleanup();
+    render(
+      <SessionSetupDialog
+        sessionKind="planning"
+        initial={{ typeIds: ['task'], statuses: ['backlog'] }}
+        plan={plan([{ ...TYPES[0]!, fields: ['title', 'status', 'estimate'] }])}
+        settings
+        onDone={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText(/no Estimate field/)).toBeNull();
+    cleanup();
+    // Refinement has no Capacity.
+    open({ typeIds: ['task'], statuses: ['backlog'] });
+    expect(screen.queryByText(/no Estimate field/)).toBeNull();
+    expect(screen.queryByLabelText('Capacity in points')).toBeNull();
   });
 });

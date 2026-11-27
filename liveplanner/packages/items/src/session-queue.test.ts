@@ -6,6 +6,7 @@ import {
   isSessionKindId,
   isSessionOutcome,
   nextToGo,
+  outcomeFits,
   sessionQueue,
   sessionTarget,
 } from './session-queue';
@@ -126,6 +127,56 @@ describe('sessionTarget', () => {
     expect(sessionTarget(card('R', 'ready'), TYPES, PLAN, { work: 'ready' })).toBeNull();
   });
 
+  it('never takes a card on into a Done-like stage: it stays', () => {
+    expect(sessionTarget(card('R', 'ready'), TYPES, PLAN)).toBeNull();
+    // A phase marks Done too, whatever the stage is called.
+    const phases = new Map([['ready', 'done' as const]]);
+    expect(sessionTarget(card('T', 'detail'), TYPES, PLAN, undefined, { phases })).toBeNull();
+  });
+
+  it('steps past a Backlog-like stage to the next open one', () => {
+    const idea: ItemTypeDef = { ...work, id: 'idea', statuses: ['new', 'icebox', 'todo', 'done'] };
+    const c = card('I', 'new', { type: 'idea' });
+    expect(sessionTarget(c, [idea], ['new', 'icebox', 'todo', 'done'])).toBe('todo');
+  });
+
+  // The Sprint Board template lists each type's waiting stages after Done: To Do … Done, Backlog, Ready.
+  describe('a type that lists its waiting stages after Done', () => {
+    const story: ItemTypeDef = {
+      ...work,
+      id: 'story',
+      statuses: ['s-todo', 's-doing', 's-review', 's-done', 's-backlog', 's-ready'],
+    };
+    const plan = ['s-todo', 's-doing', 's-review', 's-done', 's-backlog', 's-ready'];
+    const names = new Map([
+      ['s-todo', 'To Do'],
+      ['s-doing', 'Doing'],
+      ['s-review', 'Review'],
+      ['s-done', 'Done'],
+      ['s-backlog', 'Backlog'],
+      ['s-ready', 'Ready'],
+    ]);
+    const at = (status: string) => card('S', status, { type: 'story' });
+
+    it('commits a Ready card to the type’s first open stage, To Do', () => {
+      expect(sessionTarget(at('s-ready'), [story], plan, undefined, { names })).toBe('s-todo');
+    });
+
+    it('refines a Backlog card on to Ready, the open stage after it', () => {
+      expect(sessionTarget(at('s-backlog'), [story], plan, undefined, { names })).toBe('s-ready');
+    });
+
+    it('still moves work in progress on, and leaves Done alone', () => {
+      expect(sessionTarget(at('s-doing'), [story], plan, undefined, { names })).toBe('s-review');
+      expect(sessionTarget(at('s-review'), [story], plan, undefined, { names })).toBeNull();
+    });
+
+    it('stays when the type has no open stage at all', () => {
+      const bare: ItemTypeDef = { ...story, statuses: ['s-done', 's-backlog'] };
+      expect(sessionTarget(at('s-backlog'), [bare], plan, undefined, { names })).toBeNull();
+    });
+  });
+
   it('answers null with no later stage, or a stage the type does not use', () => {
     expect(sessionTarget(card('D', 'done'), TYPES, PLAN)).toBeNull();
     expect(sessionTarget(card('X', 'fixing'), TYPES, PLAN)).toBeNull();
@@ -152,4 +203,15 @@ it('knows its session kinds and outcomes', () => {
   expect(isSessionKindId('standup')).toBe(false);
   expect(isSessionOutcome('skipped')).toBe(true);
   expect(isSessionOutcome('done')).toBe(false);
+  expect(isSessionKindId('planning')).toBe(true);
+  expect(isSessionOutcome('committed')).toBe(true);
+});
+
+it('offers each kind its own outcomes', () => {
+  expect(outcomeFits('planning', 'committed')).toBe(true);
+  expect(outcomeFits('planning', 'skipped')).toBe(true);
+  expect(outcomeFits('planning', 'refined')).toBe(false);
+  expect(outcomeFits('planning', 'flagged')).toBe(false);
+  expect(outcomeFits('refinement', 'committed')).toBe(false);
+  expect(outcomeFits('refinement', 'flagged')).toBe(true);
 });

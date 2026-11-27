@@ -2,10 +2,12 @@
 
 // A Session tab's page (docs/specs/026-plan/session-tabs.md "The page"): drawn over the canvas area as a Dashboard's
 // is (CanvasCover), the queue on the left (a fold-down list on a phone) and the room's card on the right with its
-// action bar. Its state is the tab's `session`, so every screen shows the same card; the cards are the plan's own.
-import { useCallback, useRef, useState } from 'react';
+// action bar. Its state is the tab's `session`, so every screen shows the same card; the cards are the plan's own. A
+// kind with a tally (Sprint Planning) adds its parts from ./planning: the tally under the progress bar, the Estimate
+// strip above the action bar, an estimate pill on each row and its line on Session Complete.
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { itemStatus } from '@liveplanner/items';
+import { estimateOf, itemStatus, sessionTally, typeIn, type Item } from '@liveplanner/items';
 import {
   SESSION_KINDS,
   type SessionFacilitator,
@@ -35,6 +37,12 @@ import { useSessionFacilitator } from './useSessionFacilitator';
 import { useSessionKeys } from './useSessionKeys';
 import { useSessionRun } from './useSessionRun';
 import { useSessionTimebox } from './useSessionTimebox';
+import { OUTCOME_LOOKS } from './session-kinds';
+import { EstimatePill, EstimateStrip } from './planning/EstimateStrip';
+import { PlanningSummary, PlanningTally } from './planning/PlanningTally';
+import { commitMakes } from './planning/planning-words';
+
+const estimatePill = (item: Item) => <EstimatePill item={item} />;
 
 const SettingsIcon = lucideGlyph(lucideSettings, 16);
 
@@ -85,22 +93,35 @@ export function SessionPage({
     run: actions.runSession,
   });
   const timebox = useSessionTimebox(session);
-  const refineRef = useRef<HTMLButtonElement>(null);
+  const completeRef = useRef<HTMLButtonElement>(null);
+  // Each of the kind's outcomes by its key; the completing one presses the fill button so its fill plays.
+  const outcomeKeys = Object.fromEntries(
+    kind.outcomes.map((o) => [
+      OUTCOME_LOOKS[o].key,
+      o === kind.completes ? () => completeRef.current?.click() : () => room.decide(o),
+    ]),
+  );
   useSessionKeys({
     on: runs && !settingsOpen && !!room.current,
-    refine: () => refineRef.current?.click(),
-    skip: () => room.decide('skipped'),
-    flag: () => room.decide('flagged'),
+    outcomes: outcomeKeys,
     next: room.next,
     previous: room.previous,
   });
+  const decided = session.decided;
+  const tallies = kind.tally === 'estimate';
+  const tally = useMemo(
+    () => (tallies ? sessionTally(room.list, decided) : null),
+    [tallies, room.list, decided],
+  );
+  const capacity = session.setup.capacity;
+  // What Commit would add: the room's card's estimate, while it is still to decide.
+  const adding = room.current && !decided?.[room.current.id] ? estimateOf(room.current) : null;
   // A phone folds the queue away again once a card is opened from it.
   const open = (id: string) => {
     room.goTo(id);
     setQueueOpen(false);
   };
   const shown = room.shown;
-  const decided = session.decided;
   const total = room.list.length;
   // How far through: the room's card's place, or the end once none is left.
   const place = room.current ? room.list.indexOf(room.current) + 1 : total;
@@ -140,6 +161,7 @@ export function SessionPage({
         currentId={room.current?.id ?? null}
         timebox={timebox}
       />
+      {tally ? <PlanningTally tally={tally} capacity={capacity} adding={adding} /> : null}
       {room.queue.capped ? (
         <p className="text-[11px] text-slate-500">Showing the first {total} cards.</p>
       ) : null}
@@ -154,6 +176,7 @@ export function SessionPage({
       currentId={room.current?.id ?? null}
       shownId={shown?.id ?? null}
       onOpen={open}
+      aside={tallies ? estimatePill : undefined}
     />
   );
   const statusName = (id: string) => plan.statusNames.get(id) ?? id;
@@ -175,8 +198,27 @@ export function SessionPage({
       <div className="flex min-h-0 flex-1 flex-col" data-session-card={shown.id}>
         <SessionCard plan={plan} item={shown} />
       </div>
+      {tally ? (
+        <EstimateStrip
+          item={shown}
+          type={typeIn(plan.types, shown.type)}
+          canEdit={plan.canEditCards}
+          preview={
+            decided?.[shown.id] || room.peeking
+              ? null
+              : commitMakes(tally.points, estimateOf(shown) ?? 0, capacity)
+          }
+          onSet={(points) =>
+            void plan.patchItem(
+              shown.id,
+              points === null ? { clear: ['estimate'] } : { set: { estimate: points } },
+            )
+          }
+        />
+      ) : null}
       {room.peeking ? null : (
         <SessionActionBar
+          sessionKind={session.sessionKind}
           item={shown}
           decision={decided?.[shown.id]}
           runs={runs}
@@ -188,7 +230,7 @@ export function SessionPage({
           // A card the room is on is queued, so in one of the picked stages; a peeked one hides the bar.
           statusName={statusName(itemStatus(shown)!)}
           timebox={timebox}
-          refineRef={refineRef}
+          completeRef={completeRef}
           onDecide={room.decide}
           onUndo={() => room.undo(shown.id)}
         />
@@ -196,6 +238,8 @@ export function SessionPage({
     </>
   ) : (
     <SessionComplete
+      outcomes={kind.outcomes}
+      summary={tally ? <PlanningSummary tally={tally} capacity={capacity} /> : null}
       empty={total === 0}
       decided={decided}
       runs={runs}

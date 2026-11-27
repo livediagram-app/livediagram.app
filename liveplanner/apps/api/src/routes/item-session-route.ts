@@ -1,8 +1,8 @@
 // POST /items/:itemId/session (docs/specs/026-plan/session-tabs.md "History", blueprint session-tabs.md "Interfaces
 // and contracts"): a Session tab's outcome for a card, kept in the card's history as an entry of its own, tagged
-// `session`. It writes nothing on the card, so a skip leaves its Last Edited alone; the move a Refined makes and the
-// flag a Flagged sets are their own writes. Edit access: running a session is an Editor's.
-import { isSessionKindId, isSessionOutcome } from '@liveplanner/items';
+// `session`. It writes nothing on the card, so a skip leaves its Last Edited alone; the move a Refined or Committed
+// makes and the flag a Flagged sets are their own writes. Edit access: running a session is an Editor's.
+import { isSessionKindId, isSessionOutcome, outcomeFits } from '@liveplanner/items';
 import { appendItemHistory } from '../db/item-history';
 import { readItem } from '../db';
 import { methodNotAllowed, noContent } from '../responses';
@@ -22,7 +22,9 @@ export async function recordSessionOutcome(
   if (body instanceof Response) return body;
   const { session, outcome } = body as { session?: unknown; outcome?: unknown };
   if (!isSessionKindId(session)) return rejected('session_invalid', 'session');
-  if (!isSessionOutcome(outcome)) return rejected('session_invalid', 'outcome');
+  // An outcome its kind does not offer (Committed in a Refinement) is as unknown as a made-up one.
+  if (!isSessionOutcome(outcome) || !outcomeFits(session, outcome))
+    return rejected('session_invalid', 'outcome');
   const item = await readItem(ctx.env, projectId, itemId);
   if (!item) return itemNotFound();
   const by = await writer(ctx, caller.owner);

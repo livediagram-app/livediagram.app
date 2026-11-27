@@ -1,8 +1,9 @@
 'use client';
 
-// Set Up Refinement (docs/specs/026-plan/session-tabs.md "Making one"): a centred dialog with an illustrated header in
-// parts: Card Types, Stages (with each one's cards counted), Order (a board's Sort Cards choices), When Refined (per
-// type: Next Stage or one of its stages) and Timebox. It previews the queue as it fills. Start Session makes the tab a
+// Set Up Refinement and Set Up Sprint Planning (docs/specs/026-plan/session-tabs.md "Making one", "Sprint Planning"):
+// a centred dialog with an illustrated header in parts: Card Types, Stages (with each one's cards counted), Order (a
+// board's Sort Cards choices), When Refined or When Committed (per type: Next Stage or one of its stages), a kind with
+// a tally's Capacity (planning/CapacityPart) and Timebox. It previews the queue as it fills. Start Session makes the tab a
 // Session tab; opened from Session Settings it saves the set-up in place.
 import { useId, useMemo, useState } from 'react';
 import {
@@ -16,6 +17,7 @@ import {
   type SessionKindId,
 } from '@liveplanner/items';
 import {
+  SESSION_KINDS,
   SESSION_TIMEBOX_MAX_MS,
   SESSION_TIMEBOX_MIN_MS,
   type SessionSetup,
@@ -28,6 +30,7 @@ import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { cardsWord, stageCounts, stagesFor } from './session-setup';
 import { SESSION_KIND_LOOKS } from './session-kinds';
 import { sessionHeroArt } from './SessionHeroArt';
+import { CapacityPart, NoEstimateNote } from './planning/CapacityPart';
 
 const MINUTE = 60_000;
 const TIMEBOX_CHIPS = [2, 3, 5, 10] as const;
@@ -54,6 +57,7 @@ export function SessionSetupDialog({
 }) {
   const titleId = useId();
   const look = SESSION_KIND_LOOKS[sessionKind];
+  const tallies = SESSION_KINDS[sessionKind].tally === 'estimate';
   const { items, types, statusNames } = plan;
   const planStatuses = useMemo(() => [...statusNames.keys()], [statusNames]);
   const [setup, setSetup] = useState<SessionSetup>(initial);
@@ -121,6 +125,7 @@ export function SessionSetupDialog({
             pressed={(id) => setup.typeIds.includes(id)}
             onPick={pickType}
           />
+          {tallies ? <NoEstimateNote picked={picked} /> : null}
         </section>
         <section className="flex flex-col gap-2" aria-labelledby={`${titleId}-stages`}>
           <h3 id={`${titleId}-stages`} className={HEADING}>
@@ -172,7 +177,7 @@ export function SessionSetupDialog({
         {picked.length ? (
           <section className="flex flex-col gap-2" aria-labelledby={`${titleId}-target`}>
             <h3 id={`${titleId}-target`} className={HEADING}>
-              When Refined
+              {look.targetHeading}
             </h3>
             <div className="grid grid-cols-[minmax(0,auto)_auto_1fr] items-center gap-x-3 gap-y-2">
               {picked.map((t) => (
@@ -188,6 +193,13 @@ export function SessionSetupDialog({
               ))}
             </div>
           </section>
+        ) : null}
+        {tallies ? (
+          <CapacityPart
+            id={titleId}
+            capacity={setup.capacity}
+            onChange={(capacity) => setSetup((s) => withCapacity(s, capacity))}
+          />
         ) : null}
         <section className="flex flex-col gap-2" aria-labelledby={`${titleId}-timebox`}>
           <h3 id={`${titleId}-timebox`} className={HEADING}>
@@ -243,6 +255,11 @@ function withTarget(s: SessionSetup, typeId: string, stage: string): SessionSetu
   const targets = stage === NEXT ? others : { ...others, [typeId]: stage };
   const { targets: _t, ...rest } = s;
   return Object.keys(targets).length ? { ...rest, targets } : rest;
+}
+
+function withCapacity(s: SessionSetup, capacity: number | undefined): SessionSetup {
+  const { capacity: _was, ...rest } = s;
+  return capacity ? { ...rest, capacity } : rest;
 }
 
 function withTimebox(s: SessionSetup, minutes: number): SessionSetup {

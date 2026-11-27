@@ -9,13 +9,9 @@ import {
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
+import type { SessionKindId } from '@liveplanner/items';
 import type { SessionSetup } from '@liveplanner/project';
-
-// The stage names a refinement starts from, compared without case.
-const REFINE_LIKE = ['backlog', 'new', 'to do', 'todo', 'ideas', 'idea', 'needs detail', 'inbox'];
-
-const isRefineLike = (name: string | undefined) =>
-  !!name && REFINE_LIKE.includes(name.trim().toLowerCase());
+import { SESSION_KIND_LOOKS } from './session-kinds';
 
 const live = (i: Item) => !isArchived(i) && !isTrashed(i);
 
@@ -49,19 +45,24 @@ export function stageCounts(
   return out;
 }
 
-// What Set Up Refinement starts on: the types with cards in a refinement-like stage (else every type with cards, else
-// the first type), and those types' refinement-like stages (else each one's first stage).
+// What a set-up starts on: the types with cards in a stage the kind starts from (Refinement's Backlog-like stages,
+// Sprint Planning's Reviewed-like ones; else every type with cards, else the first type), and those types' stages
+// the kind starts from (else each one's first stage).
 export function defaultSessionSetup(input: {
+  sessionKind: SessionKindId;
   items: Iterable<Item>;
   types: readonly ItemTypeDef[];
   planStatuses: readonly string[];
   statusNames: ReadonlyMap<string, string>;
 }): SessionSetup {
   const { types, planStatuses, statusNames } = input;
+  const starts = SESSION_KIND_LOOKS[input.sessionKind].startStages;
+  const isStartLike = (name: string | undefined) =>
+    !!name && starts.includes(name.trim().toLowerCase());
   const items = [...input.items].filter(live);
   const nameOf = (s: string) => statusNames.get(s) ?? s;
   const refining = types.filter((t) =>
-    items.some((i) => i.type === t.id && isRefineLike(nameOf(itemStatus(i) ?? ''))),
+    items.some((i) => i.type === t.id && isStartLike(nameOf(itemStatus(i) ?? ''))),
   );
   const withCards = types.filter((t) => items.some((i) => i.type === t.id));
   const picked = (
@@ -72,7 +73,7 @@ export function defaultSessionSetup(input: {
     const t = types.find((x) => x.id === id)!;
     return typeStatusesOf(t, planStatuses).slice(0, 1);
   });
-  const statuses = stages.filter((s) => isRefineLike(nameOf(s)));
+  const statuses = stages.filter((s) => isStartLike(nameOf(s)));
   return { typeIds: picked, statuses: statuses.length ? statuses : [...new Set(firsts)] };
 }
 

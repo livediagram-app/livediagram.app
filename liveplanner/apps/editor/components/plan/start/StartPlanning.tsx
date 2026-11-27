@@ -97,7 +97,8 @@ function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
   if (item.kind === 'template') return <TemplatePicture kind={item.template} />;
   if (item.kind === 'visualisation')
     return <VisualisationPreview view={item.view} palette={palette} />;
-  if (item.kind === 'session') return <SessionPicture palette={palette} />;
+  if (item.kind === 'session')
+    return <SessionPicture palette={palette} sessionKind={item.sessionKind} />;
   if (item.kind === 'form') return <FormStarterPicture starter={item.starter} palette={palette} />;
   if (item.kind === 'sheet') {
     const tile = SHEET_TILES.find((t) => t.start === item.start) ?? SHEET_TILES[0]!;

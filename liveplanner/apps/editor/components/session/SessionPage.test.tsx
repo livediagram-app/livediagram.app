@@ -251,9 +251,13 @@ describe('SessionPage', () => {
       items: [last, odd],
       session: { setup: { typeIds: ['work'], statuses: ['ready', 'limbo'] } },
     });
-    expect(screen.getByText(/its type has no later stage/).textContent).toContain('Stays in limbo');
+    expect(screen.getByText(/no open stage comes after it/).textContent).toContain(
+      'Stays in limbo',
+    );
     fireEvent.keyDown(window, { key: 'j' });
-    expect(screen.getByText(/its type has no later stage/).textContent).toContain('Stays in Ready');
+    expect(screen.getByText(/no open stage comes after it/).textContent).toContain(
+      'Stays in Ready',
+    );
   });
 
   it('draws nothing over the canvas until the canvas is there', () => {
