@@ -15,9 +15,8 @@ import {
   lucidePresentation,
   lucideShare2,
   lucideVideo,
-  lucideX,
 } from '@liveworkspace/icons/lucide';
-import { CountBadge, Glyph, PictureDisc, lucideGlyph } from '@liveworkspace/ui';
+import { CountBadge, DialogCloseButton, Glyph, PictureDisc, lucideGlyph } from '@liveworkspace/ui';
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { useToast } from '../../../hooks/ui/useToast';
 import { accountAvatarFill, accountInitials } from '../../../lib/account-avatar';
@@ -39,7 +38,6 @@ const ShareGlyph = lucideGlyph(lucideShare2, TILE_ICON);
 const PresentGlyph = lucideGlyph(lucidePresentation, TILE_ICON);
 const LinkGlyph = lucideGlyph(lucideLink, TILE_ICON);
 const CopyGlyph = lucideGlyph(lucideCopy, TILE_ICON);
-const CloseGlyph = lucideGlyph(lucideX, 18);
 const ChevronGlyph = lucideGlyph(lucideChevronRight, 18);
 
 // An Inbox tray: lucide's set here has none.
@@ -260,14 +258,7 @@ export function AppsDrawer({ app, itemId, inboxCount, hasInbox, onClose }: AppsD
               {snapshot?.shareWords ? ` · ${snapshot.shareWords}` : ''}
             </p>
           </div>
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          >
-            <CloseGlyph aria-hidden />
-          </button>
+          <DialogCloseButton onClick={onClose} />
         </div>
 
         {section ? (
