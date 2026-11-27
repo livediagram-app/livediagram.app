@@ -1,7 +1,13 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
 import { nameOpenPage, openPageId, paragraphs, writeLines } from '../knowledgebase';
-import { asPerson, openView, savedWith, signedInKnowledgebase } from './knowledge-session';
+import {
+  asPerson,
+  openInsightsTopic,
+  openView,
+  savedWith,
+  signedInKnowledgebase,
+} from './knowledge-session';
 
 // Insights (docs/specs/030-knowledgebase/insights.md; blueprints/insights-ui.md): what agents know of
 // the knowledgebase. Its sections with nothing in them, an agent's read arriving as its card, and an edit suggested
@@ -20,16 +26,22 @@ async function showAttention(page: Page, kind: string): Promise<void> {
   await expect(option).toHaveAttribute('aria-pressed', 'true');
 }
 
-test('every section shows, each with its empty state', async ({ page, pageErrors }) => {
+test('every section shows on its topic page, each with its empty state', async ({
+  page,
+  pageErrors,
+}) => {
   await signedInKnowledgebase(page);
-  await openView(page, 'Insights');
-  const empty: [string, string][] = [
-    ['Connected Agents', 'No Agents Yet'],
-    ['Needs Attention', 'Nothing Needs Attention'],
-    ['Always in Context', 'No Pages in Context Yet'],
-  ];
-  for (const [section, words] of empty)
-    await expect(page.getByRole('region', { name: section })).toContainText(words);
+  await openInsightsTopic(page, 'Agents');
+  await expect(page.getByRole('region', { name: 'Connected Agents' })).toContainText(
+    'No Agents Yet',
+  );
+  await expect(page.getByRole('region', { name: 'Always in Context' })).toContainText(
+    'No Pages in Context Yet',
+  );
+  await expect(page.getByRole('region', { name: 'What an Agent Sees' })).toBeVisible();
+
+  await openInsightsTopic(page, 'Needs Attention');
+  await expect(attention(page)).toContainText('Nothing Needs Attention');
   // Needs Attention's switch shows one kind at a time, each with its own empty state.
   const kinds: [string, string][] = [
     ['Questions', 'No Unanswered Questions Yet'],
@@ -40,10 +52,11 @@ test('every section shows, each with its empty state', async ({ page, pageErrors
     await showAttention(page, kind);
     await expect(attention(page)).toContainText(words);
   }
+
+  await openInsightsTopic(page, 'Page Health');
   await expect(
     page.getByRole('region', { name: 'Knowledge Health' }).getByRole('img'),
   ).toHaveAccessibleName('Of 1 page: 0 verified, 0 review due, 1 never verified.');
-  await expect(page.getByRole('region', { name: 'What an Agent Sees' })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -67,7 +80,7 @@ test("an agent's read of a page shows as its card under Connected Agents", async
   expect(read.status()).toBe(200);
   expect(await read.text()).toContain('blue lever');
 
-  await openView(page, 'Insights');
+  await openInsightsTopic(page, 'Agents');
   const agents = page.getByRole('region', { name: 'Connected Agents' });
   await expect(agents.locator('[data-agent="Coding Agent"]')).toBeVisible();
   await expect(agents.locator('[data-agent="Coding Agent"]')).toContainText('Runbook');
@@ -95,7 +108,7 @@ test('an edit suggested through the api waits for an Editor, and Accept changes 
   });
   expect(suggested.status(), await suggested.text()).toBeLessThan(300);
 
-  await openView(page, 'Insights');
+  await openInsightsTopic(page, 'Needs Attention');
   await showAttention(page, 'Edits');
   const suggestions = attention(page);
   const card = suggestions.locator('[data-suggestion]');

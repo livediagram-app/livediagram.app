@@ -99,6 +99,17 @@ export async function openView(page: Page, view: 'Pages' | 'Ask' | 'Insights'): 
   await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBe(param);
 }
 
+/** One of Insights' topic pages, opened from its dashboard tile (insights.md "The topics", "A topic's page"):
+ *  the dashboard shows a summary tile per topic, and a topic's sections live on its own page. */
+export async function openInsightsTopic(
+  page: Page,
+  topic: 'Needs Attention' | 'Page Health' | 'Reading' | 'Agents',
+): Promise<void> {
+  await openView(page, 'Insights');
+  await page.getByRole('button', { name: `Open ${topic}`, exact: true }).click();
+  await expect(page.getByRole('region', { name: `Insights, ${topic}` })).toBeVisible();
+}
+
 /** The AI Settings dialog, opened from the Ask view's head, once its settings have loaded: an Editor's Which AI choice
  *  is made, or anyone else's line says which AI is in use. */
 export async function openAiSettings(page: Page): Promise<Locator> {
