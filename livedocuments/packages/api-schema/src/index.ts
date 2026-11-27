@@ -373,6 +373,8 @@ export * from './community-categories';
 export * from './community-paths';
 export * from './workbench-messages';
 export * from './pages';
+// Describe a Page (docs/specs/007-editor/describe-a-page.md).
+export * from './page-drafts';
 export * from './article-frames';
 export * from './tab-save-header';
 export * from './pages-summary';
