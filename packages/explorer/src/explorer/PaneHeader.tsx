@@ -3,7 +3,9 @@
 // The pane header (livediagram's PaneHeader): the title and the breadcrumb (the shared back bar) on the left; on the right the
 // section's own actions, the This app / All filter, the List / Card / Details toggle, Help (where the host
 // has an article for the view), and Create (New <kind> and New Folder as two tiles in one menu where both
-// apply, else the one button).
+// apply, else the one button). A phone's one-row toolbar (`phoneRow`, a team's Library; Work Tracker 1516): the scope
+// chip and the section's actions at the left, New at the right, Help left to the page (the team's ⋯ menu), `leading`
+// on its own row under it.
 
 import type { App } from '@liveworkspace/index-client';
 import { possessive } from '@liveworkspace/sites';
@@ -25,6 +27,8 @@ import { HelpButton } from './HomeHero';
 import { ChoiceTile, NewChoices } from './NewChoices';
 import { useHostExtras } from './host';
 import { useExtras, type ViewModeTelemetry } from './extras';
+import { ScopeChip } from './ScopeChip';
+import { useIsPhone } from './useViewMode';
 import { HoverCard } from '@liveworkspace/ui';
 
 export type ViewMode = 'list' | 'card' | 'details';
@@ -45,6 +49,7 @@ export function PaneHeader({
   showFilter = true,
   leading,
   createLabel = 'Create',
+  phoneRow = false,
 }: {
   /** The pane's heading; left out where the page has its own (a team's Library tab), `leading` taking its place. */
   title?: string;
@@ -63,11 +68,15 @@ export function PaneHeader({
   leading?: ReactNode;
   /** The create menu's button ("Create"; "New" on a team's Library tab). */
   createLabel?: string;
+  /** On a phone, one row that never wraps: the scope chip, `actions`, then New; `leading` under it, Help left out. */
+  phoneRow?: boolean;
 }) {
   const { kind, helpHref, view, createChoices } = useExplorer();
   const help = helpHref?.(view);
   const [createOpen, setCreateOpen] = useState(false);
   const [createButton, setCreateButton] = useState<HTMLButtonElement | null>(null);
+  const phone = useIsPhone();
+  const row = phoneRow && phone;
   // Every app's New (and New Folder) in one menu while the list mixes every app.
   const choices = onCreateItem ? createChoices : null;
   const both = Boolean(onCreateItem && onCreateFolder) || Boolean(choices);
@@ -78,6 +87,95 @@ export function PaneHeader({
       : onCreateFolder
         ? { label: folderLabel, onClick: onCreateFolder }
         : null;
+  // On a phone's one row New is as tall as the chip beside it (36px, 44px to a thumb).
+  const createSize = row ? 'relative touch-target-y h-9 shadow-sm' : 'shadow-sm';
+  const createButtonSize = row ? 'sm' : 'xs';
+  const create = (
+    <>
+      {single ? (
+        <Button
+          size={createButtonSize}
+          onClick={single.onClick}
+          aria-label={single.label}
+          className={createSize}
+        >
+          <PlusIcon />
+          <span className="hidden sm:inline">{single.label}</span>
+        </Button>
+      ) : null}
+      {both ? (
+        <Button
+          ref={setCreateButton}
+          size={createButtonSize}
+          onClick={() => setCreateOpen((o) => !o)}
+          aria-haspopup="menu"
+          aria-expanded={createOpen}
+          className={createSize}
+        >
+          <PlusIcon />
+          {createLabel}
+          <CaretDownIcon />
+        </Button>
+      ) : null}
+      {createOpen && both ? (
+        <PortalMenu anchor={createButton} onClose={() => setCreateOpen(false)} label="Create">
+          {choices ? (
+            <NewChoices
+              apps={choices}
+              onPick={(app) => {
+                setCreateOpen(false);
+                onCreateItem!(app);
+              }}
+              after={
+                onCreateFolder ? (
+                  <ChoiceTile
+                    label={folderLabel}
+                    icon={<FolderOutlineIcon size={20} />}
+                    onClick={() => {
+                      setCreateOpen(false);
+                      onCreateFolder();
+                    }}
+                  />
+                ) : null
+              }
+            />
+          ) : (
+            /* Icon-over-label tiles, two across: bigger targets than thin rows. */
+            <div className="grid grid-cols-2 gap-1 px-1.5 py-0.5">
+              <MenuTile
+                label={`New ${kind.one}`}
+                icon={<ItemIcon size={20} />}
+                onClick={() => {
+                  setCreateOpen(false);
+                  onCreateItem!();
+                }}
+              />
+              <MenuTile
+                label={folderLabel}
+                icon={<FolderOutlineIcon size={20} />}
+                onClick={() => {
+                  setCreateOpen(false);
+                  onCreateFolder!();
+                }}
+              />
+            </div>
+          )}
+        </PortalMenu>
+      ) : null}
+    </>
+  );
+  if (row) {
+    return (
+      <div className="mb-4 flex flex-col gap-2">
+        <div className="flex min-w-0 flex-nowrap items-center gap-2" data-phone-toolbar="">
+          {showFilter ? <ScopeChip /> : null}
+          {actions}
+          <div className="ml-auto flex shrink-0 items-center">{create}</div>
+        </div>
+        {leading}
+      </div>
+    );
+  }
   return (
     <div className="mb-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
@@ -97,76 +195,7 @@ export function PaneHeader({
             <ViewToggle mode={viewMode} onChange={onSetViewMode} modes={viewModes} />
           ) : null}
           {help ? <HelpButton href={help} /> : null}
-          {single ? (
-            <Button
-              size="xs"
-              onClick={single.onClick}
-              aria-label={single.label}
-              className="shadow-sm"
-            >
-              <PlusIcon />
-              <span className="hidden sm:inline">{single.label}</span>
-            </Button>
-          ) : null}
-          {both ? (
-            <Button
-              ref={setCreateButton}
-              size="xs"
-              onClick={() => setCreateOpen((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={createOpen}
-              className="shadow-sm"
-            >
-              <PlusIcon />
-              {createLabel}
-              <CaretDownIcon />
-            </Button>
-          ) : null}
-          {createOpen && both ? (
-            <PortalMenu anchor={createButton} onClose={() => setCreateOpen(false)} label="Create">
-              {choices ? (
-                <NewChoices
-                  apps={choices}
-                  onPick={(app) => {
-                    setCreateOpen(false);
-                    onCreateItem!(app);
-                  }}
-                  after={
-                    onCreateFolder ? (
-                      <ChoiceTile
-                        label={folderLabel}
-                        icon={<FolderOutlineIcon size={20} />}
-                        onClick={() => {
-                          setCreateOpen(false);
-                          onCreateFolder();
-                        }}
-                      />
-                    ) : null
-                  }
-                />
-              ) : (
-                /* Icon-over-label tiles, two across: bigger targets than thin rows. */
-                <div className="grid grid-cols-2 gap-1 px-1.5 py-0.5">
-                  <MenuTile
-                    label={`New ${kind.one}`}
-                    icon={<ItemIcon size={20} />}
-                    onClick={() => {
-                      setCreateOpen(false);
-                      onCreateItem!();
-                    }}
-                  />
-                  <MenuTile
-                    label={folderLabel}
-                    icon={<FolderOutlineIcon size={20} />}
-                    onClick={() => {
-                      setCreateOpen(false);
-                      onCreateFolder!();
-                    }}
-                  />
-                </div>
-              )}
-            </PortalMenu>
-          ) : null}
+          {create}
         </div>
       </div>
       {crumbs.length >= 2 ? (

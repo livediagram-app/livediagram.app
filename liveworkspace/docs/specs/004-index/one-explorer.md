@@ -1093,6 +1093,15 @@ are as on every view.
   loaded whole and stay while a chip narrows it, and the chips hide while only one kind is there); **Sort** (Last
   Changed, Name; kept on this device) in Cards; the This app / All filter; Cards or Details; Help; and **New** (the
   Create menu).
+  On a phone the toolbar is one calm row at every width from 320px up, nothing wrapping (Work Tracker 1516): at the
+  left a **scope chip** (the current scope's logo, its name, "liveplanner" or "All Apps", and a chevron) that opens
+  a bottom sheet of the two scopes with the current one ticked; beside it **Sort** as an icon button that opens a
+  sheet of the orders with the current one ticked, wearing a small accent dot while an order other than Last Changed
+  is on; and at the right **New**, the one filled button, its chevron opening the Create menu. All three are 36px
+  tall (44px to a thumb) with one corner radius, left aligned with the cards below, no empty space before the chip.
+  Below 320px the chip's name truncates before anything wraps. Help leaves the row: on a phone it is the **Help**
+  row of the team's ⋯ menu, beside Invite People. The kind chips, when there are two kinds or more, sit on their
+  own row under it, scrolling sideways. From `sm` up the toolbar is as above, unchanged.
 - **Usage** (owner, 2026-11-25; with Pro on, for everyone in the team): the team's usage against its limits, the
   same list as Settings' Your Usage (`UsageList`): a line saying everything in the team's library counts toward
   them, then each limit by group with its meter or its words, and on Free what Pro for Teams allows. It reads the

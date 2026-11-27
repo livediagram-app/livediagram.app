@@ -39,7 +39,7 @@ import { TeamNotFound, TeamPage } from './TeamPane';
 import { NotFoundCard } from './NotFoundCard';
 import { PaneHeader, type Crumb } from './PaneHeader';
 import { viewTitle } from './view-title';
-import { useViewMode } from './useViewMode';
+import { useIsPhone, useViewMode } from './useViewMode';
 import { KindChips, SortMenu } from './team/LibraryToolbar';
 import {
   kindCounts,
@@ -55,6 +55,7 @@ export function ItemsPane({ view }: { view: ItemsView }) {
   const ctx = useExplorer();
   const { client, app, filter, overlay, epoch, folders, words, onCreate, viewerId } = ctx;
   const [mode, setMode] = useViewMode();
+  const phone = useIsPhone();
   // Details draws from its own chunk: a list that opens in it fetches the code while its items load.
   useEffect(() => {
     if (mode === 'details') void DetailsView.preload();
@@ -259,7 +260,8 @@ export function ItemsPane({ view }: { view: ItemsView }) {
   );
 
   if (teamRoot && view.kind === 'team') {
-    // The team's own header and tabs stand over the Library: its toolbar is the kind chips, Sort, the layout and New.
+    // The team's own header and tabs stand over the Library: its toolbar is the kind chips, Sort, the layout and New;
+    // on a phone one row (the scope chip, Sort as an icon, New), the kind chips under it (Work Tracker 1516).
     const teamMode = mode === 'list' ? 'card' : mode;
     const teamBody =
       mode === 'list' &&
@@ -295,9 +297,11 @@ export function ItemsPane({ view }: { view: ItemsView }) {
             onSetViewMode={setMode}
             viewModes={TEAM_VIEW_MODES}
             showFilter
+            phoneRow
             actions={
               teamMode === 'card' ? (
                 <SortMenu
+                  compact={phone}
                   sort={librarySort}
                   onSort={(next) => {
                     setLibrarySort(next);
