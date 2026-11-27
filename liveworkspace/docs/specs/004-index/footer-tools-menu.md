@@ -21,7 +21,7 @@ Settings, the appearance and one way into the rest.
 A popover, not a plain dropdown: a rounded panel with a pointer aimed at the button, 480px wide (never past the window's edges), opening above it
 (below when there is no room above), its right edge on the button's. It wears the [dialog hero
 header](./dialog-hero-header.md) (art `tools`: the tools hung on a pegboard), titled **Tools** with the line "Powerful tools to enhance
-your experience." (the title and line stop 7.5rem from the right, clear of the art), its close in the panel's top right corner. Under it, one **row** per tool the app offers and the person may use, in
+your experience." (the title and line stop 7.5rem from the right, clear of the art), its close in the panel's top right, centred on the band's row like a hero header's close. Under it, one **row** per tool the app offers and the person may use, in
 this order: the tool's glyph on a 40px plate in the hero's tokens (its soft, deepening to its wash under the pointer),
 its name, one line on what it does (never wrapping: kept short enough for one line, truncated past it), its count where it has one, and a chevron that steps right on hover. A row takes
 the band's paper under the pointer, so the list reads as the header's.

@@ -316,8 +316,15 @@ export type InboxForm = {
 };
 
 // A folder's newest items (at most FOLDER_PREVIEW_ITEMS) and how many live items it holds directly, counted up to
-// FOLDER_PREVIEW_COUNT_CAP.
-export type FolderPreview = { folderId: string; itemCount: number; items: Item[] };
+// FOLDER_PREVIEW_COUNT_CAP; and `apps`, each app's live items in it and every folder under it (an app with none left
+// out), every app whatever the filter, FOLDER_PREVIEW_COUNT_CAP items in all. Optional: an index from before it
+// sends none.
+export type FolderPreview = {
+  folderId: string;
+  itemCount: number;
+  items: Item[];
+  apps?: Partial<Record<App, number>>;
+};
 
 // A space's newest items (at most FOLDER_PREVIEW_ITEMS) and how many live items it holds in all, counted up to
 // FOLDER_PREVIEW_COUNT_CAP: the person's own (`teamId: null`) or a team's.

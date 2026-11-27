@@ -96,6 +96,7 @@ export function ListView({
           renaming={renamingId === f.id}
           itemCount={previews.get(f.id)?.itemCount}
           elsewhere={previews.get(f.id)?.elsewhere?.itemCount}
+          preview={previews.get(f.id)}
           showOwner={options.showOwner}
         />,
       );

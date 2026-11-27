@@ -6,15 +6,16 @@
 export const LIST_CARD =
   'overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800';
 
-/** One column on a phone, two from `sm:`, three from `lg:`. */
-export const CARD_GRID = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3';
+/** Two across on a phone (Work Tracker 1519: one a row wasted the width; three cut names to a letter), three from
+ *  `lg:`, with a little less air between them on a phone. */
+export const CARD_GRID = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3';
 
 export const CARD_SHELL =
   'group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-brand-300 hover:shadow dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/50';
 
 /** A fixed-height letterbox, so every card is the same height whatever its picture. */
 export const CARD_PREVIEW =
-  'flex h-48 w-full items-center justify-center overflow-hidden border-b border-slate-100 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30';
+  'flex h-36 w-full items-center sm:h-48 justify-center overflow-hidden border-b border-slate-100 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30';
 
 // A solid brand control's dark-mode fill is the design system's (it hovers a step deeper, never lighter, so white
 // text keeps its contrast).
@@ -28,6 +29,10 @@ export const FOCUS_RING_INSET =
   'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500';
 
 export const MUTED = 'text-slate-500 dark:text-slate-400';
+
+/** A phone toolbar's quiet control (a team's Library: the scope chip, Sort): 36px tall (44px to a thumb), bordered,
+ *  the radius (Button's) and height New wears beside it (Work Tracker 1516). */
+export const TOOLBAR_CONTROL = `relative touch-target-y inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white ${FOCUS_RING}`;
 
 /** The Explorer's body under its header: the sidebar and the pane side by side (and its skeleton's, so nothing jumps). */
 export const EXPLORER_MAIN = 'mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6';

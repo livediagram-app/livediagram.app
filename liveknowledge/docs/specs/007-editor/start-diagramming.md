@@ -10,7 +10,7 @@ where the work begins instead of in a step before it. The New Document route ask
 `StartPanel` (`apps/editor/components/start/StartPanel.tsx`, this app's binding of the panel every editor shares, `../packages/workbench/src/components/start/StartPanel.tsx`) draws the start; the start says what its groups and cards
 are, the panel draws them.
 
-- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Making Pages"), one line under it, the search box, and in the top right corner the
+- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Making Pages"), one line under it, the search box, and at its right, centred down the band, the
   **Help** link. There is no **Close** (see [A choice first](#a-choice-first)). On a phone the search takes its own
   row under the title, the help staying beside the title, and the sheet has no grab handle to drag it away.
 - **Rail:** led by the page type switch over a hairline ([Page type](#page-type)), then **Blank Pages**, then the groups, each with its glyph and count, Blank Pages chosen as the start opens.

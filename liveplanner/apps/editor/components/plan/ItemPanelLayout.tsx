@@ -20,6 +20,7 @@ import {
   stampMomentLabel,
   type Item,
 } from '@liveplanner/items';
+import { useHeadingSlot } from './field-heading-slot';
 import { PersonDisc } from './PersonDisc';
 import { ACCENT_BG, accentVars } from './plan-palette';
 
@@ -64,26 +65,22 @@ export function ItemPanelSection({
   actions?: ReactNode;
   children: ReactNode;
 }) {
-  const label = (
-    <label
-      htmlFor={htmlFor}
-      className={`${actions ? 'shrink-0' : 'mb-1 block'} text-[13px] font-semibold text-slate-800 dark:text-slate-100`}
-    >
-      {heading}
-      {required ? <RequiredMark /> : null}
-    </label>
-  );
+  // The heading line's end, where a field without hover puts its action (a rich text field's Edit).
+  const { slot, provide } = useHeadingSlot('touch');
   return (
     <section className="mb-8">
-      {actions ? (
-        <div className="mb-1 flex min-h-8 items-center gap-2">
-          {label}
-          {actions}
-        </div>
-      ) : (
-        label
-      )}
-      {children}
+      <div className={`mb-1 flex items-center gap-2 ${actions ? 'min-h-8' : ''}`}>
+        <label
+          htmlFor={htmlFor}
+          className={`${actions ? 'shrink-0' : 'min-w-0'} text-[13px] font-semibold text-slate-800 dark:text-slate-100`}
+        >
+          {heading}
+          {required ? <RequiredMark /> : null}
+        </label>
+        {actions}
+        {slot}
+      </div>
+      {provide(children)}
     </section>
   );
 }
@@ -107,6 +104,8 @@ export function ItemDetailsRow({
   wide?: boolean;
   children: ReactNode;
 }) {
+  // On a phone the label heads its control, and its line's end takes a field's action (field-heading-slot.tsx).
+  const { slot, provide } = useHeadingSlot('phone');
   return (
     <div
       data-item-field={field}
@@ -115,14 +114,17 @@ export function ItemDetailsRow({
       // two lines) spilling over the rows below instead of Details scrolling.
       className={`-mx-2 grid min-h-9 shrink-0 ${wide ? 'grid-cols-[8rem_1fr]' : 'grid-cols-[6.5rem_1fr]'} items-center gap-2 rounded-lg px-2 py-1 max-sm:mx-0 max-sm:grid-cols-1 max-sm:items-start max-sm:gap-1.5 max-sm:px-0 max-sm:py-2`}
     >
-      <label
-        htmlFor={htmlFor}
-        className="self-start pt-2 text-[12px] text-slate-500 max-sm:pt-0 max-sm:font-medium dark:text-slate-400"
-      >
-        {label}
-        {required ? <RequiredMark /> : null}
-      </label>
-      <div className="min-w-0 text-[13px]">{children}</div>
+      <div className="flex min-w-0 items-center gap-2 self-start">
+        <label
+          htmlFor={htmlFor}
+          className="min-w-0 pt-2 text-[12px] text-slate-500 max-sm:pt-0 max-sm:font-medium dark:text-slate-400"
+        >
+          {label}
+          {required ? <RequiredMark /> : null}
+        </label>
+        {slot}
+      </div>
+      <div className="min-w-0 text-[13px]">{provide(children)}</div>
     </div>
   );
 }

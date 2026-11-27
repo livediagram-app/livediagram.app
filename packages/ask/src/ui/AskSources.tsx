@@ -135,7 +135,7 @@ export function AskSources({
             {count} {count === 1 ? 'place' : 'places'} for “{question}”
           </p>
         </div>
-        <DialogCloseButton onClick={onClose} compact />
+        <DialogCloseButton onClick={onClose} />
       </div>
       <ul className="flex flex-col gap-2 p-3">
         {sources.map((source) => (

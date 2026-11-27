@@ -191,7 +191,7 @@ export function TilePicker<K extends string>({
       className="max-h-[min(44rem,calc(100dvh-2rem))] overflow-hidden"
     >
       {/* The dialog hero header (dialog-hero-header.md), under the sheet's handle on a phone. Only the close stands
-          beside the title, so the centre piece moves out to 4.5rem from the edge. */}
+          beside the title, so the centre piece moves out to 6rem from the edge, 28px clear of the close. */}
       <HeroDialogHeader
         art={art}
         titleId={titleId}
@@ -199,7 +199,7 @@ export function TilePicker<K extends string>({
         subtitle={line}
         onClose={onClose}
         underHandle
-        className="[--hero-centre-end:4.5rem]"
+        className="[--hero-centre-end:6rem]"
       />
       <div className="flex flex-col gap-3 border-b border-slate-100 px-6 py-3 dark:border-slate-800">
         <SearchInput

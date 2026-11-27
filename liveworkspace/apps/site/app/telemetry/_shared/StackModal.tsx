@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { CloseIcon } from '@livediagram/ui';
-import { useEscape } from '@liveworkspace/ui';
+import { DialogCloseButton, useEscape } from '@liveworkspace/ui';
 import { createPortal } from 'react-dom';
 
 // The modal an open stack deals its members into (docs/specs/017-telemetry/telemetry.md): centred over the
@@ -107,14 +106,7 @@ export function StackModal({
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={`Close ${title}`}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon size={16} />
-          </button>
+          <DialogCloseButton label={`Close ${title}`} onClick={onClose} />
         </div>
         <div
           className={`scrollbar-slim grid grid-cols-1 gap-4 overflow-y-auto overscroll-contain ${GRID_COLS[cols] ?? ''}`}

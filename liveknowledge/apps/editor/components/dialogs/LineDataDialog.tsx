@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Button, CloseIcon, DialogHeader, PlusIcon } from '@liveknowledge/ui';
+import { Button, CloseIcon, DialogCloseButton, DialogHeader, PlusIcon } from '@liveknowledge/ui';
 import type { LineSeries } from '@liveknowledge/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -70,14 +70,7 @@ export function LineDataDialog({
         subtitle="A row per category, a column per series. Or import a CSV (header = series names, first column = categories)."
       >
         <HelpArticleLink article="dataElements" size="md" />
-        <button
-          type="button"
-          onClick={close}
-          aria-label="Close"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <CloseIcon size={18} />
-        </button>
+        <DialogCloseButton onClick={close} />
       </DialogHeader>
 
       <div className="flex items-center gap-2 px-6 pt-4">

@@ -11,7 +11,7 @@ Start Planning is the panel's one start: there is no mode switch and no other mo
 
 ## The panel
 
-- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title, one line under it, the search box, and in the top right corner the **Help** link. On a
+- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title, one line under it, the search box, and at its right, centred down the band, the **Help** link. On a
   phone the search takes its own row under the title, the help staying beside the title.
 - **Rail:** **Recommended** and the start's groups, each with its glyph and count; long names wrap beside the glyph
   on a wide rail. The chosen group's count sits on a pill tinted with the accent, in the panel's ink: the accent on

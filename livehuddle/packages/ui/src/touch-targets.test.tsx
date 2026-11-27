@@ -42,12 +42,10 @@ describe('touch targets on the public sites', () => {
     for (const c of columnLinks) expect(c).toMatch(/\bpointer-coarse:py-3\b/);
     expect(html).toMatch(/class="mt-3 flex flex-col items-start gap-2[^"]*pointer-coarse:gap-0/);
   });
-  it('gives both dialog close shapes a 44px tap area', () => {
-    for (const compact of [false, true]) {
-      const html = renderToStaticMarkup(<DialogCloseButton onClick={() => {}} compact={compact} />);
-      const c = classOf(html, /<button[^>]*>/);
-      expect(c).toMatch(/\btouch-target\b/);
-      expect(c).toMatch(/\brelative\b/);
-    }
+  it('draws the dialog close as a 44px circle, its tap area at every width', () => {
+    const html = renderToStaticMarkup(<DialogCloseButton onClick={() => {}} />);
+    const c = classOf(html, /<button[^>]*>/);
+    expect(c).toMatch(/\bsize-11\b/);
+    expect(c).toMatch(/\brounded-full\b/);
   });
 });
