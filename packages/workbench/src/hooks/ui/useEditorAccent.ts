@@ -17,31 +17,47 @@
 //
 // Each editor's hooks/ui/useEditorAccent.ts resolves the tab's theme in its own catalogue and hands the
 // accent stroke here.
+//
+// An insertion effect (useHeadStyle), not an effect: the <style> lands in the commit that first draws the editor, before the browser
+// paints, so the editor never shows a frame in the built-in colours on its way to its theme (liveknowledge Work
+// Tracker 1521, docs/specs/030-knowledgebase/page-surface.md "Themed from the first frame"). A theme change swaps it
+// in the same frame too.
 
-import { useEffect } from 'react';
+import { useInsertionEffect, useMemo } from 'react';
 import { editorAccentCss } from './editor-accent';
 
 const STYLE_ID = 'lvd-editor-accent';
 
+/** Keeps one `<style id={id}>` in the head holding `css`, or none while `css` is null; gone when the caller unmounts.
+ *  An insertion effect, so it lands before any layout effect of the same commit reads a computed style (liveknowledge
+ *  Work Tracker 1521, page-surface.md "Themed from the first frame"). A change rewrites the element in place, never
+ *  removes and re-adds it: a switch from one knowledgebase to another mounts new buttons in the same commit, and a
+ *  style first computed in the gap between the two took the built-in colours and then animated (`transition-colors`)
+ *  from them into the theme. */
+export function useHeadStyle(id: string, css: string | null): void {
+  useInsertionEffect(() => {
+    if (css === null) {
+      document.getElementById(id)?.remove();
+      return;
+    }
+    let el = document.getElementById(id) as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement('style');
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    if (el.textContent !== css) el.textContent = css;
+  }, [id, css]);
+  // Removed on unmount only. The next editor's own insertion effect, in the same mutation phase, puts its style back
+  // before anything reads layout.
+  useInsertionEffect(() => () => document.getElementById(id)?.remove(), [id]);
+}
+
 /** Tints the chrome with `accent`, the active tab's theme stroke; null leaves the built-in brand and the
  *  dark palette in place (the "brand"/Default theme and an unthemed tab have no accent stroke). */
 export function useEditorAccentStroke(accent: string | null): void {
-  useEffect(() => {
-    if (!accent) {
-      document.getElementById(STYLE_ID)?.remove();
-      return;
-    }
-    const css = editorAccentCss(accent);
-
-    let el = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
-    if (!el) {
-      el = document.createElement('style');
-      el.id = STYLE_ID;
-      document.head.appendChild(el);
-    }
-    el.textContent = css;
-    return () => {
-      document.getElementById(STYLE_ID)?.remove();
-    };
-  }, [accent]);
+  useHeadStyle(
+    STYLE_ID,
+    useMemo(() => (accent ? editorAccentCss(accent) : null), [accent]),
+  );
 }

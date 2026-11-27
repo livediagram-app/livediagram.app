@@ -16,13 +16,22 @@ export function createKnowledgeStyleStore() {
   const listeners = new Set<() => void>();
   // The knowledgebase the editor has open, for a reader with no document id to hand (an export of a tab).
   let openId: string | null = null;
-  const styleOf = (documentId: string | null | undefined): KnowledgeStyle =>
-    (documentId ? held.get(documentId) : undefined) ?? DEFAULT_KNOWLEDGE_STYLE;
+  // The knowledgebase on screen before the editor holds its id: a warm open paints the last seen copy before the
+  // catch-up load names the document (page-surface.md "Themed from the first frame", Work Tracker 1521), so a reader
+  // with no id yet reads this one's style, never the default.
+  let shownId: string | null = null;
+  const notify = () => {
+    for (const listener of listeners) listener();
+  };
+  const styleOf = (documentId: string | null | undefined): KnowledgeStyle => {
+    const id = documentId ?? shownId;
+    return (id ? held.get(id) : undefined) ?? DEFAULT_KNOWLEDGE_STYLE;
+  };
   const set = (documentId: string, style: KnowledgeStyle): boolean => {
     // The same style again keeps the object every reader holds, so nothing re-renders.
-    if (sameKnowledgeStyle(styleOf(documentId), style)) return false;
+    if (sameKnowledgeStyle(held.get(documentId) ?? DEFAULT_KNOWLEDGE_STYLE, style)) return false;
     held.set(documentId, style);
-    for (const listener of listeners) listener();
+    notify();
     return true;
   };
   return {
@@ -42,11 +51,19 @@ export function createKnowledgeStyleStore() {
     },
     /** The open knowledgebase's style: the default when none is open. */
     openStyle: (): KnowledgeStyle => styleOf(openId),
+    /** The knowledgebase a paint put on screen (seed-fetched-document's showDocument, the warm open's included);
+     *  null when the editor leaves. */
+    show: (documentId: string | null): void => {
+      if (shownId === documentId) return;
+      shownId = documentId;
+      notify();
+    },
     /** A test's clean slate. */
     clear: (): void => {
       openId = null;
+      shownId = null;
       held.clear();
-      for (const listener of listeners) listener();
+      notify();
     },
   };
 }

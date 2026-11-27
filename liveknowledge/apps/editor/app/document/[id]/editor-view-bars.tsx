@@ -41,7 +41,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
 }) {
   const chrome = useEditorChromeStore();
   const hidden = useEditorChrome((s) => s.zenMode || !s.appChrome);
-  const anyWelcomeOpen = useEditorChrome((s) => s.anyWelcomeOpen);
   const documentId = useEditorChrome((s) => s.documentId);
   const documentShareable = useEditorChrome((s) => s.documentShareable);
   const hydrated = useEditorChrome((s) => s.hydrated);
@@ -59,7 +58,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
         // Read as the drawer draws, so a rename never renders this bar.
         itemName={() => chrome.get().documentName}
         approval={<ApprovalBadge corner />}
-        showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+        showShare={canShareDocument && hydrated}
         shareable={documentShareable}
         // The Share button's colour reads the knowledgebase's visibility.
         visibility={{
@@ -67,10 +66,10 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
           offline: view.isOffline,
           community: view.headerCommunity,
         }}
-        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
-        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during
+        // hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
-          !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !communityVisitor
+          !canShareDocument && hydrated && documentId && !communityVisitor
             ? () => void chrome.get().makeCopy()
             : undefined
         }
@@ -97,7 +96,7 @@ export function sameTabsForBar(a: readonly Tab[], b: readonly Tab[]): boolean {
 }
 
 // The bottom bar, the editor's footer: the three views as tabs at its left, then Tools, Settings and the
-// appearance. The pages are the page tree, down the editor's left (components/page-tree). Hidden through the welcome flow, in zen mode and in embeds. Side by side
+// appearance. The pages are the page tree, down the editor's left (components/page-tree). Hidden in zen mode and in embeds (a visitor's name card hides nothing). Side by side
 // (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
 function EditorViewFooterBar(view: {
   isOffline: boolean;
@@ -105,7 +104,7 @@ function EditorViewFooterBar(view: {
   phone: boolean;
 }) {
   const chrome = useEditorChromeStore();
-  const hidden = useEditorChrome((s) => s.anyWelcomeOpen || s.zenMode || s.embedMode);
+  const hidden = useEditorChrome((s) => s.zenMode || s.embedMode);
   const tabCount = useEditorChrome((s) => s.tabs.length);
   const activeTabHasContent = useEditorChrome((s) => s.activeTab.elements.length > 0);
   const activeTabLocked = useEditorChrome((s) => s.activeTab.locked === true);
@@ -127,7 +126,8 @@ function EditorViewFooterBar(view: {
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const { isOffline } = view;
   if (hidden) return null;
-  // The bar is already hidden in an embed and behind a welcome, so those two answer false here.
+  // The bar is already hidden in an embed, and this route has no welcome (a visitor's name card hides nothing), so
+  // those two answer false here.
   const history = offersHistory({
     documentId,
     hydrated,

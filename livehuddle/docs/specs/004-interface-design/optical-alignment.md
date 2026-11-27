@@ -52,7 +52,11 @@ transform moves text after the snap, so the snap follows the layout, not the tra
   judged by what sits at it: an icon, a dot or a disc by its ink; a word by its advance, whose side
   bearings are the typeface's spacing. Initials and symbols are judged by ink. **Numerals are
   advance-centred**: a "1" or a "7" leans inside its advance by design, and is left as the typeface
-  draws it.
+  draws it. A word of three letters or fewer counts as a symbol and is judged by its ink, so a strip button
+  named with one (the avatar palette's **Say**) takes a quarter step off the glyph's side (9px against 10px), where its
+  longer-named neighbours (Camera, Share, Pop Out) take half a step: the word's ink sits between the two. The strip buttons' names centre on their cap band too
+  (`STRIP_CONTROL_LABEL`), so the avatar palette and the Call strip hold the tolerance while a visitor's name card
+  is open over them.
 - **Tracked text gives back its trailing space.** Tracked (letter-spaced) text carries a space after
   its last letter, so a tracked label pulls its trailing edge in by one tracking step.
 - **An icon at an edge is compensated by its own margin.** An icon drawn inside its box leaves blank

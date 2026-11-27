@@ -93,6 +93,9 @@ function showDocument(
   setDocumentPresentation(fetched.presentation ?? null);
   // The Knowledgebase Style (page-surface.md "Knowledgebase Style"): what every page is drawn in.
   knowledgeStyleStore.take(fetched.id, fetched.knowledgeStyle);
+  // On screen from this paint on, before the editor holds the id (a warm open's paint sets none): every reader
+  // without an id reads this style, so the first frame is in it (page-surface.md "Themed from the first frame").
+  knowledgeStyleStore.show(fetched.id);
   // The knowledgebase's Review Period (verification.md): every state the editor works out reads it from here.
   knowledgeSettingsStore.take(fetched.id, fetched.knowledgeSettings);
   // Prefer the tab id pinned in the URL fragment (#t=<id>) when

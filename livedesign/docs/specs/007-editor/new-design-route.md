@@ -130,6 +130,9 @@ adding another.
   session, not about creating a design. It says others will see the name on the visitor's cursor and comments; a
   Viewer, who never comments, is told only its cursor. Its name field takes at most `MAX_PARTICIPANT_NAME_LEN` (120)
   characters, the participant route's own cap, so a typed name is always one the route saves.
+- The name card is a modal over the canvas and nothing more: the layout stays as it is while it shows and after
+  Join or Cancel, so the header's Share or Make a Copy, the tab bar and the canvas's floating chrome stay up (Work
+  Tracker 1522). Its state (`anyWelcomeOpen`) only holds the tours while it is open.
 - **Empty tab:** an Editor sees the template start in the middle of the canvas
   ([Template start](start-diagramming.md)); a Participant or Viewer sees the empty-canvas card instead, since the start is
   never offered to a read-only session (`templateStartMode`; `useEmptyCardShown`, [From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "The empty-canvas card"): a Viewer reads that the owner can build it out, a Participant that they can add a sticky, text or an image from the Palette.

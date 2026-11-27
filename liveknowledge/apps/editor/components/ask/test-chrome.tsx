@@ -34,7 +34,6 @@ export function chromeValue(
     appChrome: true,
     embedMode: false,
     zenMode: false,
-    anyWelcomeOpen: false,
     workbench: null,
     sessionCommunity: null,
     sessionTabScope: null,

@@ -35,6 +35,8 @@ export function useEditorKnowledgeStyle(opts: {
     knowledgeStyleStore.setOpen(documentId);
     return () => {
       knowledgeStyleStore.setOpen(null);
+      // Held by its id from here on, or the editor has gone: nothing on screen by a paint alone.
+      knowledgeStyleStore.show(null);
       history.clear();
     };
   }, [documentId, history]);

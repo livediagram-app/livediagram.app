@@ -119,7 +119,6 @@ export function EditorView() {
     activeTab,
     addTab,
     followMe,
-    anyWelcomeOpen,
     embedMode,
     // The app's surroundings.
     appChrome,
@@ -276,14 +275,14 @@ export function EditorView() {
   const header = !appChrome ? null : (
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
-        showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+        showShare={canShareDocument && hydrated}
         shareable={documentShareable}
         // The Share button's colour reads the document's visibility, as the header's badge did.
         visibility={{ team: !!documentTeamId, offline: isOffline, community: headerCommunity }}
-        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
-        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during
+        // hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
-          !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
+          !canShareDocument && hydrated && documentId && !sessionCommunity
             ? () => void makeCopy()
             : undefined
         }
@@ -314,80 +313,79 @@ export function EditorView() {
     </AreaErrorBoundary>
   );
 
-  // The tab bar, the editor's footer. Hidden through the welcome flow and in embeds.
+  // The tab bar, the editor's footer. Hidden in embeds (a visitor's name card hides nothing).
   // Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
-  const footer =
-    anyWelcomeOpen || embedMode ? null : (
-      <LandscapeBarFold shown={landscapeBars.shown}>
-        <AreaErrorBoundary area="TabBar" fallback="panel">
-          <TabBar
-            tabs={tabs}
-            activeId={activeId}
-            // Clicking an avatar in a presence stack opens the Collaborators
-            // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which is where Follow (docs/specs/012-collaboration/follow-me-viewport.md) lives.
-            followingId={followMe.followingId}
-            followerCount={followMe.followerCount}
-            onOpenCollaborators={openCollaborators}
-            onOpenAttendance={openAttendance}
-            onMoveTabToFolder={moveTabToFolder}
-            onRemoveTabFromFolder={removeTabFromFolder}
-            onSetFolderColour={setFolderColour}
-            onRenameFolder={renameTabFolder}
-            activeTabHasContent={activeTab.elements.length > 0}
-            onSelect={selectTab}
-            onAdd={() => addTab()}
-            onRename={renameTab}
-            onDuplicate={duplicateTab}
-            onDelete={deleteTab}
-            onConnectAgain={(id) => void ctx.connectedTabs.connectAgainTab(id)}
-            onClearContent={() => void clearTabContent()}
-            onImportTab={() => setImportOpen(true)}
-            onExportTab={() => {
-              setExportScope('tab');
-              setExportOpen(true);
-            }}
-            otherDocuments={addToDocumentTargets({
-              documentId,
-              documentList,
-              isOffline,
-              isOwner,
-            })}
-            onCopyTabTo={linkActiveTabTo}
-            onReorder={reorderTabs}
-            // A tab-scoped visitor edits their tab's content at most, never the
-            // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
-            readOnly={isStructureReadOnly}
-            isOutOfScope={isOutOfScope}
-            renameActiveNonce={renameTabNonce}
-            participantsByTab={participantsByTab}
-            selfId={selfParticipant.id}
-            selfRole={sessionRole}
-            onOpenSettings={() => {
-              // Preferences are user-scoped, not document-scoped, so
-              // view-role visitors can still flip them for their own
-              // browser (e.g. opt out of telemetry).
-              setSettingsOpen(true);
-              track('UI', 'Opened', 'Settings');
-            }}
-            onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
-            // Canvas right-click (desktop) + long-press (touch) open the active
-            // tab's menu with the canvas sections folded in, rendered by the
-            // TabBar so it reuses every tab handler. Element / multi context
-            // menus stay on EditorContextMenu below.
-            canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
-            onCloseCanvasMenu={closeContextMenu}
-            canvasActions={{
-              // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
-              onPaste: () => pasteFromClipboard(),
-              canPaste: hasClipboard,
-            }}
-          />
-        </AreaErrorBoundary>
-      </LandscapeBarFold>
-    );
+  const footer = embedMode ? null : (
+    <LandscapeBarFold shown={landscapeBars.shown}>
+      <AreaErrorBoundary area="TabBar" fallback="panel">
+        <TabBar
+          tabs={tabs}
+          activeId={activeId}
+          // Clicking an avatar in a presence stack opens the Collaborators
+          // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which is where Follow (docs/specs/012-collaboration/follow-me-viewport.md) lives.
+          followingId={followMe.followingId}
+          followerCount={followMe.followerCount}
+          onOpenCollaborators={openCollaborators}
+          onOpenAttendance={openAttendance}
+          onMoveTabToFolder={moveTabToFolder}
+          onRemoveTabFromFolder={removeTabFromFolder}
+          onSetFolderColour={setFolderColour}
+          onRenameFolder={renameTabFolder}
+          activeTabHasContent={activeTab.elements.length > 0}
+          onSelect={selectTab}
+          onAdd={() => addTab()}
+          onRename={renameTab}
+          onDuplicate={duplicateTab}
+          onDelete={deleteTab}
+          onConnectAgain={(id) => void ctx.connectedTabs.connectAgainTab(id)}
+          onClearContent={() => void clearTabContent()}
+          onImportTab={() => setImportOpen(true)}
+          onExportTab={() => {
+            setExportScope('tab');
+            setExportOpen(true);
+          }}
+          otherDocuments={addToDocumentTargets({
+            documentId,
+            documentList,
+            isOffline,
+            isOwner,
+          })}
+          onCopyTabTo={linkActiveTabTo}
+          onReorder={reorderTabs}
+          // A tab-scoped visitor edits their tab's content at most, never the
+          // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
+          readOnly={isStructureReadOnly}
+          isOutOfScope={isOutOfScope}
+          renameActiveNonce={renameTabNonce}
+          participantsByTab={participantsByTab}
+          selfId={selfParticipant.id}
+          selfRole={sessionRole}
+          onOpenSettings={() => {
+            // Preferences are user-scoped, not document-scoped, so
+            // view-role visitors can still flip them for their own
+            // browser (e.g. opt out of telemetry).
+            setSettingsOpen(true);
+            track('UI', 'Opened', 'Settings');
+          }}
+          onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
+          // Canvas right-click (desktop) + long-press (touch) open the active
+          // tab's menu with the canvas sections folded in, rendered by the
+          // TabBar so it reuses every tab handler. Element / multi context
+          // menus stay on EditorContextMenu below.
+          canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
+          onCloseCanvasMenu={closeContextMenu}
+          canvasActions={{
+            // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
+            onPaste: () => pasteFromClipboard(),
+            canPaste: hasClipboard,
+          }}
+        />
+      </AreaErrorBoundary>
+    </LandscapeBarFold>
+  );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in an embed or the welcome flow).
+  // where there are bars to fold (not in an embed).
   const landscapeBarsHandle =
     header && footer ? (
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
@@ -478,7 +476,7 @@ export function EditorView() {
                               {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
                               <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
                                 {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
-                                {ctx.activeTabConnected && !anyWelcomeOpen ? (
+                                {ctx.activeTabConnected && !ctx.identityOnlyScreenOpen ? (
                                   <ConnectedTabHost />
                                 ) : (
                                   <EditorCanvasHost />

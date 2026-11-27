@@ -18,6 +18,9 @@ export function CanvasModalCard({
 }) {
   return (
     <div
+      // Floating chrome drawn on the page rather than the canvas (liveknowledge's Edit and Zen pair) hides while this
+      // is open, by this mark (Work Tracker 1522): on a phone it would stand on the card's footer.
+      data-canvas-modal-card=""
       // Presses inside never reach the canvas behind it.
       onPointerDown={(e) => e.stopPropagation()}
       className="pointer-events-none absolute inset-0 z-[var(--z-canvas-modal)] flex items-center justify-center"

@@ -45,6 +45,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   (brand for Edit and Save, slate for Cancel), and the buttons that take over pop in; a double-click to edit sends a
   96 px ring out from the pointer. Reduced motion turns them off. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
   the buttons are named Edit and Save.
+  Both bars step out of sight while a canvas card is open (a guest's name card from Change Name, Work Tracker 1522):
+  they float above the canvas layer the card sits on, and on a phone they stood on its Cancel and Join.
 - A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
   to be written. So does a new blank knowledgebase's first page. The caret comes once the page's writing is on screen,
   which can be a moment after the page shows, so it never takes focus the person has already moved: if, since the

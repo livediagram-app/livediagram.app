@@ -209,6 +209,9 @@ navigation completes. It keeps:
 
 - The visitor identity confirmation (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
   `identityOnlyScreenOpen`), opening from the name tray's **Change Name** only: a visitor's name is defaulted, not asked, and the tray (`NameTray`, while `identityTrayOpen`) says which name they show under, with Change Name and Keep It ([From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "A visitor's name").
+- The name card is a modal over the canvas and nothing more: the layout stays as it is while it shows and after
+  Join or Cancel, so the header's Share or Make a Copy, the tab bar and the canvas's floating chrome stay up (Work
+  Tracker 1522). Its state (`anyWelcomeOpen`) only holds the tours while it is open.
 - Everything else: autosave, room, tab management, document metadata, the Share dialog.
 
 ## `/new` state

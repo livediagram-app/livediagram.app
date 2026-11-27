@@ -149,7 +149,10 @@ Home is laid out as a week at a glance (owner, 2026-11-24, option B "This Week" 
   on the left **Recent**, a timeline of what the person made and opened lately ("Recent, a timeline" below); on the
   right the **rail**, 20rem (22rem from 72rem), its panels one under another: **Most Used**, **Spaces** and **Shared
   With You Recently**. Narrower (a phone, a small window) it is one column, the rail's panels after the timeline.
-  A rail with nothing in it is left out and the timeline takes the width.
+  A rail with nothing in it is left out and the timeline takes the width. With nothing in the timeline (no Recent,
+  heading and all) its column is not kept empty: Most Used and the rail's other panels share the width, half and
+  half (`homeLayout`'s `split`), and a lone panel (or the rail's other panels alone) takes all of it (Work Tracker
+  1523).
 - **A rail panel** is a bordered panel (`HomeSection` with `panel`): its heading smaller than a section's, its rows
   flat (no frame of their own, the sidebar's hover wash), each at least 56 px tall so a finger finds it.
 - **Rows** are Home's own (`HomeRow`): the item's thumbnail, its name (the app's mark before it under All Apps),

@@ -340,13 +340,21 @@ describe('the view tabs', () => {
   it.each([
     ['an embed', { embedMode: true }],
     ['zen mode', { zenMode: true }],
-    ['the welcome flow', { anyWelcomeOpen: true }],
     ['a link confined to one page', { sessionTabScope: ['p1'] }],
     ['a Community visit', { sessionCommunity: {} }],
     ['a knowledgebase still loading', { hydrated: false }],
   ])('are not offered in %s', (_name, over) => {
     renderInEditor(<KnowledgeViewTabs />, chromeValue('edit', over));
     expect(screen.queryByRole('navigation')).toBeNull();
+  });
+
+  // Work Tracker 1522: a guest's name card is a modal over the canvas and takes nothing away.
+  it("stay offered while a guest's name card is open", () => {
+    renderInEditor(
+      <KnowledgeViewTabs />,
+      chromeValue('view', { identityOnlyScreenOpen: true, isOwner: false }),
+    );
+    expect(screen.getAllByRole('link')).toHaveLength(4);
   });
 });
 

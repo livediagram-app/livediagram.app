@@ -45,7 +45,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
 }) {
   const chrome = useEditorChromeStore();
   const hidden = useEditorChrome((s) => s.zenMode || !s.appChrome);
-  const anyWelcomeOpen = useEditorChrome((s) => s.anyWelcomeOpen);
   const documentId = useEditorChrome((s) => s.documentId);
   const documentShareable = useEditorChrome((s) => s.documentShareable);
   const hydrated = useEditorChrome((s) => s.hydrated);
@@ -66,7 +65,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
         itemName={() => chrome.get().documentName}
         approval={<ApprovalBadge corner />}
         call={<ItemCallButton />}
-        showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+        showShare={canShareDocument && hydrated}
         shareable={documentShareable}
         // The Share button's colour reads the document's visibility, as the header's badge did.
         visibility={{
@@ -74,10 +73,10 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
           offline: view.isOffline,
           community: view.headerCommunity,
         }}
-        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
-        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during
+        // hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
-          !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !communityVisitor
+          !canShareDocument && hydrated && documentId && !communityVisitor
             ? () => void chrome.get().makeCopy()
             : undefined
         }
@@ -87,7 +86,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
         copyDescription="Duplicate this document into your own files."
         // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
         present={
-          hydrated && !anyWelcomeOpen && !isMobileViewport && slideCount > 0
+          hydrated && !isMobileViewport && slideCount > 0
             ? {
                 slideCount,
                 starting: startingDeck,
@@ -117,7 +116,7 @@ export function sameTabsForBar(a: readonly Tab[], b: readonly Tab[]): boolean {
   return a.every((x, i) => sameTabExcept(x, b[i]!, TAB_CONTENT));
 }
 
-// The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
+// The tab bar, the editor's footer. Hidden in zen mode and in embeds (a visitor's name card hides nothing).
 // Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
 function EditorViewFooterBar(view: {
   isOffline: boolean;
@@ -125,7 +124,7 @@ function EditorViewFooterBar(view: {
   onSelectTab: (tabId: string) => void;
 }) {
   const chrome = useEditorChromeStore();
-  const hidden = useEditorChrome((s) => s.anyWelcomeOpen || s.zenMode || s.embedMode);
+  const hidden = useEditorChrome((s) => s.zenMode || s.embedMode);
   const tabs = useEditorChrome((s) => s.tabs, sameTabsForBar);
   const activeId = useEditorChrome((s) => s.activeId);
   const followingId = useEditorChrome((s) => s.followMe.followingId);
@@ -154,7 +153,7 @@ function EditorViewFooterBar(view: {
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const { isOffline, onSelectTab } = view;
   if (hidden) return null;
-  // The bar is already hidden in an embed and behind a welcome, so those two answer false here.
+  // The bar is already hidden in an embed, and this route has no welcome (a visitor's name card hides nothing), so those two answer false here.
   const history = offersHistory({
     documentId,
     hydrated,
