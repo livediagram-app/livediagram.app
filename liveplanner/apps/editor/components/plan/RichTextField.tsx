@@ -7,16 +7,33 @@
 // when focus leaves, and when the panel closes. With a `maxLength`, the line beneath counts what is left from 90% of
 // it, and text past it says how far over in amber and is not saved until shortened.
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { PencilIcon } from '@liveplanner/ui';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { TextRun } from '@liveplanner/project';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
 import { NoteRichText } from '@liveworkspace/workbench/components/notes/NoteRichText';
+import { useFieldHeadingSlot, type FieldHeadingSlotMode } from './field-heading-slot';
 
 // Quiet time after the last keystroke before the text is written.
 export const RICH_TEXT_SAVE_MS = 800;
 // The share of `maxLength` from which the count of what is left shows.
 const COUNT_FROM = 0.9;
+
+// The in-text Edit button and the room the text keeps for it. Alone (no heading line), it shows always where there is
+// no hover, and the text keeps clear of it. Beside a heading slot, it gives way to the slot's copy wherever that
+// shows (field-heading-slot.tsx), and the text takes the full width there.
+const IN_BOX_ALONE = {
+  box: 'max-sm:pr-16 [@media(hover:none)]:pr-16',
+  button: 'max-sm:opacity-100 [@media(hover:none)]:opacity-100',
+};
+const IN_BOX_BESIDE_SLOT: Record<FieldHeadingSlotMode, { box: string; button: string }> = {
+  touch: { box: '', button: 'max-sm:hidden [@media(hover:none)]:hidden' },
+  phone: {
+    box: 'sm:[@media(hover:none)]:pr-16',
+    button: 'max-sm:hidden [@media(hover:none)]:opacity-100',
+  },
+};
 
 type Status = { kind: 'idle' | 'saving' | 'saved' } | { kind: 'over'; by: number };
 
@@ -62,6 +79,8 @@ export function RichTextField({
   // The panel closing (or the item changing) writes what was typed.
   useEffect(() => save, [save]);
 
+  // The heading line's end, when the host gives one (field-heading-slot.tsx).
+  const slot = useFieldHeadingSlot();
   const empty = !runs.some((r) => r.text.trim());
   const finish = () => {
     save();
@@ -120,10 +139,25 @@ export function RichTextField({
 
   if (!editing) {
     // The text, its links live, and an Edit button; a click on the text (not a link) edits it too. Where the button
-    // is always shown (a phone, a screen with no hover) the text keeps clear of it, and it takes a finger's tap area.
+    // is always shown (a phone, a screen with no hover) it sits on the field's heading line when the host has one
+    // (field-heading-slot.tsx), the text then taking the full width; with none, the text keeps clear of it in its
+    // corner. Either way it takes a finger's tap area.
+    const button = (className: string) => (
+      <button
+        type="button"
+        onClick={edit}
+        onKeyDown={typeToEdit}
+        aria-label={`Edit the ${label.toLowerCase()}`}
+        className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-slate-500 transition dark:text-slate-400 ${className}`}
+      >
+        <PencilIcon size={11} />
+        Edit
+      </button>
+    );
+    const inBox = slot ? IN_BOX_BESIDE_SLOT[slot.mode] : IN_BOX_ALONE;
     return (
       <div
-        className="group relative rounded-xl border border-transparent px-3 py-2.5 transition max-sm:pr-16 [@media(hover:none)]:pr-16 hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/50"
+        className={`group relative rounded-xl border border-transparent px-3 py-2.5 transition ${inBox.box} hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/50`}
         onClick={(e) => {
           if (!(e.target as HTMLElement).closest('a, button')) edit();
         }}
@@ -133,16 +167,17 @@ export function RichTextField({
           noteRich={runs}
           className="text-slate-700 dark:text-slate-200"
         />
-        <button
-          type="button"
-          onClick={edit}
-          onKeyDown={typeToEdit}
-          aria-label={`Edit the ${label.toLowerCase()}`}
-          className="absolute right-2 top-2 flex items-center gap-1 rounded-md touch-target bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 opacity-0 shadow-sm transition focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-100 [@media(hover:none)]:opacity-100 dark:bg-slate-900 dark:text-slate-400"
-        >
-          <PencilIcon size={11} />
-          Edit
-        </button>
+        {button(
+          `absolute touch-target right-2 top-2 bg-white opacity-0 shadow-sm focus-visible:opacity-100 group-hover:opacity-100 dark:bg-slate-900 ${inBox.button}`,
+        )}
+        {slot
+          ? createPortal(
+              button(
+                'relative touch-target -my-1 cursor-pointer hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+              ),
+              slot.el,
+            )
+          : null}
       </div>
     );
   }

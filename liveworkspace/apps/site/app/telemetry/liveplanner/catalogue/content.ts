@@ -1348,6 +1348,14 @@ export const PLAN_CALENDAR_MOVES = chart(
   { types: ['CalendarDue', 'CalendarStart'] },
 );
 
+export const PLAN_STATUS_FROM_HEADER = chart(
+  'Plan',
+  'Changed',
+  'Cards Moved From the Status Pill',
+  "A card moved to another column from the status pill in a phone's card header.",
+  { types: ['StatusFromHeader'] },
+);
+
 export const PLAN_TABS_CREATED = chart(
   'Plan',
   'Created',
@@ -1773,6 +1781,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
+  PLAN_STATUS_FROM_HEADER,
   PLAN_VIEW_STATUSES,
   PLAN_VIEW_RANGE,
   PLAN_CARD_STYLES,
@@ -1792,7 +1801,7 @@ export const PLAN_BOARDS: MetricStack = {
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
-  // Calendar moves, chart statuses, flow chart ranges, card styles, webhook secrets regenerated, calendar links reset or
+  // Calendar moves, status pill moves, chart statuses, flow chart ranges, card styles, webhook secrets regenerated, calendar links reset or
   // changed and roadmap settings changed are slices of Boards Set Up (every
   // Plan·Changed), and time added by hand a slice of Items Added (every Plan·Added), so the head counts them once. A
   // card from a template is already one of Items Added.
@@ -1800,6 +1809,7 @@ export const PLAN_BOARDS: MetricStack = {
     (m) =>
       m !== PLAN_CARD_TEMPLATES_USED &&
       m !== PLAN_CALENDAR_MOVES &&
+      m !== PLAN_STATUS_FROM_HEADER &&
       m !== PLAN_AUTOMATION_SECRETS_REGENERATED &&
       m !== PLAN_CALENDAR_FEEDS_RESET &&
       m !== PLAN_CALENDAR_FEED_OPTIONS &&

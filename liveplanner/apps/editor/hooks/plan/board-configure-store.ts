@@ -34,8 +34,8 @@ export function useConfigurableBoard(): string | null {
   return useSyncExternalStore(subscribe, read, () => null);
 }
 
-// Whether Configure's screen is open: the cluster's Configure button toggles it, and Tab Style's Board Configure row
-// opens it (docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile").
+// Whether Configure's screen is open: the cluster's Configure Board button toggles it, the one way in (Tab Style lists
+// no Board Configure row: docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile").
 let configuring = false;
 const readConfiguring = () => configuring;
 
