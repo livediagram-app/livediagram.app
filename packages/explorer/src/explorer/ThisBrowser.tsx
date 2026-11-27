@@ -21,12 +21,12 @@ import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { ArchiveIcon, FolderOutlineIcon, TrashIcon } from '../ui/icons';
 import { useExplorer } from './context';
-import { useHostExtras } from './host';
+import { BrowserIcon, useHostExtras } from './host';
 import { PaneIconButton } from '../panel/pane-parts';
 import { LocalPreview } from './LocalPreview';
 import { useThisBrowserDrag } from '../drag/drag';
 import { useSyncLocal } from './this-browser-space/space';
-import { daysLeftLabel } from './TrashPane';
+import { daysLeftLabel, TrashGroupHeader } from './TrashPane';
 import { useArchiveLocal, ThisBrowserPill } from './ThisBrowserItemMenu';
 export { useThisBrowserList, useThisBrowserFolders } from './this-browser-store';
 export {
@@ -201,15 +201,18 @@ export function ThisBrowserTrashGroup() {
       data-trash-group="this-browser"
       className={LIST_CARD}
     >
-      <header className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-slate-700/60">
-        <h2
-          id="trash-this-browser"
-          className="min-w-0 truncate text-sm font-semibold text-slate-800 dark:text-slate-100"
-        >
-          {BROWSER_STORAGE_COPY.label}
-        </h2>
-        <span className={`text-xs ${MUTED}`}>Open one to restore or delete it.</span>
-      </header>
+      <TrashGroupHeader
+        id="trash-this-browser"
+        title={BROWSER_STORAGE_COPY.label}
+        icon={<BrowserIcon />}
+        tone="teal"
+        count={trashed.length}
+        action={
+          <span className={`text-xs ${MUTED} max-sm:hidden`}>
+            Open one to restore or delete it.
+          </span>
+        }
+      />
       <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
         {trashed.map((item) => (
           <LocalRow
