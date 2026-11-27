@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
+import type { SessionKindId } from '@liveplanner/items';
 import { newSessionTab, readDashboard, readSessionTab } from '@liveplanner/project';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSelectTab } from '@/app/project/[id]/useSelectTab';
@@ -36,7 +37,7 @@ const SessionPage = dynamic(
   () => import('@/components/session/SessionPage').then((m) => m.SessionPage),
   { ssr: false },
 );
-// Set Up Refinement (docs/specs/026-plan/session-tabs.md "Making one"), fetched only when chosen.
+// A session kind's set-up (docs/specs/026-plan/session-tabs.md "Making one"), fetched only when chosen.
 const SessionStartHost = dynamic(
   () => import('@/components/session/SessionStartHost').then((m) => m.SessionStartHost),
   { ssr: false },
@@ -78,8 +79,8 @@ export function EditorStartPanels() {
   const [describing, setDescribing] = useState(false);
   // Describe a Form open over Start Planning; it stays while the form it made takes the tab, until it closes.
   const [describingForm, setDescribingForm] = useState(false);
-  // Set Up Refinement open over Start Planning (session-tabs.md "Making one").
-  const [settingUpSession, setSettingUpSession] = useState(false);
+  // A session kind's set-up open over Start Planning (session-tabs.md "Making one"), or none.
+  const [settingUpSession, setSettingUpSession] = useState<SessionKindId | null>(null);
   const isOffline = useIsOfflineProject(ctx.projectId);
   // A template picked from Start Planning on a plan /new just made goes to its default folder
   // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
@@ -225,7 +226,7 @@ export function EditorStartPanels() {
           onVisualisation={ctx.planTabs.startVisualisationTab}
           onForm={ctx.forms.startForm}
           // A Session tab (session-tabs.md "Making one"): set up first, an Editor's as every choice here is.
-          onSession={ctx.plan ? () => setSettingUpSession(true) : undefined}
+          onSession={ctx.plan ? setSettingUpSession : undefined}
           // The one Import dialog, on its list (plan-tabs.md "The Import dialog"): an Editor's, as its tools are.
           onImport={ctx.trackerImport.canImport ? () => ctx.setImportOpen(true) : undefined}
           // Describe a Plan (describe-a-plan.md "Who may"): an Editor's, as Import is; a guest sees it with a nudge.
@@ -240,12 +241,13 @@ export function EditorStartPanels() {
       ) : null}
       {settingUpSession && ctx.plan ? (
         <SessionStartHost
+          sessionKind={settingUpSession}
           plan={ctx.plan.context}
           onStart={(setup) => {
-            ctx.sessions.startSession(newSessionTab('refinement', setup));
-            setSettingUpSession(false);
+            ctx.sessions.startSession(newSessionTab(settingUpSession, setup));
+            setSettingUpSession(null);
           }}
-          onClose={() => setSettingUpSession(false)}
+          onClose={() => setSettingUpSession(null)}
         />
       ) : null}
       {describing ? <DescribePlanHost onClose={() => setDescribing(false)} /> : null}

@@ -258,11 +258,13 @@ export function changeLine(
   }
 }
 
-// A Session tab's outcome, in words: "Refined this in a Refinement session".
+// A Session tab's outcome, in words: "Refined this in a Refinement session", "Committed this in a Sprint Planning
+// session".
 const OUTCOME_VERBS: Record<SessionOutcome, string> = {
   refined: 'Refined',
   skipped: 'Skipped',
   flagged: 'Flagged',
+  committed: 'Committed',
 };
 function sessionOutcomeLine(session: SessionKindId, outcome: SessionOutcome): string {
   return `${OUTCOME_VERBS[outcome]} this in a ${SESSION_KINDS[session].label} session`;

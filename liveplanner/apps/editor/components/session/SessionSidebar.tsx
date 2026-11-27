@@ -4,7 +4,7 @@
 // each with its place, number, title and its type's colour as an edge. The room's card reads in the accent's tint; a
 // decided card is greyed with its outcome's glyph for a number. Pressing a row opens it (the facilitator's press moves
 // the room; anyone else's is a peek). Up and Down move between rows, Enter opens one.
-import { useRef, type KeyboardEvent } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { itemTitle, typeIn, type Item, type ItemTypeDef } from '@liveplanner/items';
 import type { SessionDecision } from '@liveplanner/project';
 import { cardRefIn } from '@/components/plan/card-ref';
@@ -18,6 +18,7 @@ export function SessionSidebar({
   currentId,
   shownId,
   onOpen,
+  aside,
 }: {
   label: string;
   list: readonly Item[];
@@ -27,6 +28,8 @@ export function SessionSidebar({
   currentId: string | null;
   shownId: string | null;
   onOpen: (itemId: string) => void;
+  // A kind's own mark at a row's end (Sprint Planning's estimate pill).
+  aside?: ((item: Item) => ReactNode) | undefined;
 }) {
   const refOf = cardRefIn(types);
   const listRef = useRef<HTMLUListElement>(null);
@@ -104,6 +107,7 @@ export function SessionSidebar({
                 {itemTitle(item)}
               </span>
             </span>
+            {aside?.(item)}
           </li>
         );
       })}
