@@ -22,6 +22,7 @@ import {
 } from '../chat/chat-config';
 import { forgetWorkspace } from '../chat/chat-slack';
 import { chatWorkspace } from '../chat/chat-workspace';
+import { newTeamsCode } from '../chat/teams-code';
 import { forbidden, json, methodNotAllowed } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
 
@@ -29,15 +30,6 @@ import type { KnowledgeRoute } from './knowledge-routes';
 export const CHAT_STATE_TTL_MS = 600_000;
 /** A Teams connect code lasts this long. */
 export const CHAT_CODE_TTL_MS = 900_000;
-
-// No 0, O, 1, I or L: a code is read off one screen and typed into another.
-const CODE_LETTERS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-
-export function newTeamsCode(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
-  const letters = [...bytes].map((b) => CODE_LETTERS[b % CODE_LETTERS.length]).join('');
-  return `${letters.slice(0, 4)}-${letters.slice(4)}`;
-}
 
 async function readApps(route: KnowledgeRoute): Promise<KnowledgeChatApps> {
   const { env } = route.ctx;

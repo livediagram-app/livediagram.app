@@ -11,7 +11,7 @@ export function ChatReturnWatcher() {
     if (!outcome) return;
     const url = new URL(window.location.href);
     url.searchParams.delete('chat');
-    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
     openChatAppsWith(outcome);
   }, []);
   return null;

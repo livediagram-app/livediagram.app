@@ -63,6 +63,7 @@ up on this server".
 | `apps/api/src/chat/chat-workspace.ts`          | the `ChatWorkspace` class: its RPC and its alarm                                |
 | `apps/api/src/chat/chat-workspace-store.ts`    | its tables and statements                                                       |
 | `apps/api/src/chat/chat-test-kit.ts`           | the tests' kit: the instances on node:sqlite, signed requests, a test bot key   |
+| `apps/api/src/chat/teams-code.ts`              | `newTeamsCode`: a Teams connect code, its letters rejection-sampled (unbiased)  |
 | `apps/api/src/routes/knowledge-chat-routes.ts` | `GET chat`, `POST chat/slack`, `POST chat/teams`, `DELETE chat/<platform>`      |
 | `packages/api-schema/src/chat-apps.ts`         | the routes' answers                                                             |
 | `apps/editor/components/chat-apps/*`           | the dialog, its rows, the Teams code card, the art, `?chat=`'s watcher          |
