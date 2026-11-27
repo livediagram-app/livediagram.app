@@ -36,6 +36,7 @@ import { handleImages } from './routes/images';
 import { handleWalkthroughs } from './routes/walkthroughs';
 import { handleAccount } from './routes/account';
 import { handlePlanDrafts } from './routes/plan-drafts';
+import { handlePlanAi } from './routes/plan-ai';
 import { handleIntakeEmail } from './email-intake/email-handler';
 import { handleFormDrafts } from './routes/form-drafts';
 import { handleEvents } from './routes/events';
@@ -379,6 +380,10 @@ async function routeApiRequest(
     // Ask AI (liveworkspace/docs/specs/020-ask/ask.md): a question answered from the open item's own words.
     case 'ask':
       return await handleAsk(ctx);
+    // Plan AI (docs/specs/026-plan/plan-ai.md): a question or an instruction about one tab, answered with words and the
+    // changes for the editor to make.
+    case 'plan-ai':
+      return await handlePlanAi(ctx);
     case 'preferences':
       return await handlePreferences(ctx);
     case 'participants':
