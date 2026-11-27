@@ -24,6 +24,13 @@ describe('the Explorer’s sections', () => {
       expect(src).toContain(`import('${module}')`);
   });
 
+  // The phone's sidebar drawer draws only on a tap of the sections bar, so it is its own chunk.
+  it('the phone drawer is not a static import of the Explorer or the bar', () => {
+    for (const file of ['Explorer.tsx', 'PhoneSections.tsx'])
+      expect(staticImports(read(file)), file).not.toContain('./SectionsDrawer');
+    expect(read('lazy-panes.ts')).toContain("import('./SectionsDrawer')");
+  });
+
   // History loads when it is first opened (livediagram/docs/specs/013-workspace/history.md "Speed").
   it('History is not a static import of the dialogs', () => {
     const src = read('OpenDialog.tsx');

@@ -1280,6 +1280,9 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   loads; until the chips' code is in, their row keeps its place (the same height, empty and hidden from assistive
   tech), and a list that opens in Details fetches it while its items load, its skeleton rows standing in. Together
   about 6.2 KiB gzipped off `/explorer` (2026-11-25).
+  The phone's sidebar drawer (`SectionsDrawer.tsx`, fetched with the sections and as the sections bar is pressed) and the
+  Plan card glyphs an Inbox row draws (`lib/explorer/card-glyph.tsx`, a 16px blank holding the place while they land) are
+  their own chunks too, about 3 KiB gzipped off `/explorer` (2026-11-27).
 - **Opening an item, ahead.** A pointer resting on an item's link for 80 ms (`INTENT_DELAY_MS`), or focus reaching
   one (a tile, a card, a row, a search result: any item link in the page), counts as intent, and the Explorer asks its
   host to fetch what that open will need (`prefetchItem`, `packages/explorer/src/explorer/intent-prefetch.ts`). It is
