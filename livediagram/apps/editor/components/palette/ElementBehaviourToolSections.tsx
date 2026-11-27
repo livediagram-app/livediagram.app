@@ -113,6 +113,7 @@ export function ElementBehaviourToolSections({
           element={shapeTarget}
           onSetPickerSource={props.onSetPickerSource}
           onSetPickerOptions={props.onSetPickerOptions}
+          onSetPickerRemoveDrawn={props.onSetPickerRemoveDrawn}
           sectionProps={sectionProps('picker')}
         />
       ) : null}

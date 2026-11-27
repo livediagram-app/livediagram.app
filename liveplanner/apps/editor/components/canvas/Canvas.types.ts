@@ -124,6 +124,8 @@ export type CanvasProps = {
     candidates: import('@/lib/picker').PickerCandidate[];
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
+    // Remove Once Drawn's Reset (docs/specs/012-collaboration/picker.md): every drawn name back.
+    reset: () => void;
   };
   // The collaboration elements (docs/specs/012-collaboration/temperature-check.md): the viewer's identity and
   // the writes they may make — one prop for their faces.

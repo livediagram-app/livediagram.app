@@ -75,6 +75,8 @@ const ATTRIBUTE_SOURCES = [
   'quizLockedAt',
   'quizStartedAt',
   'pickerResult',
+  'pickerDrawn',
+  'pickerRolledAt',
   'revealed',
   'stats',
   'processSteps',

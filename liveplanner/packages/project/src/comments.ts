@@ -207,13 +207,21 @@ export const LIVE_ELEMENT_FIELDS = [
   'responses',
   'collabRound',
   'pickerResult',
+  // The names a Remove Once Drawn picker has drawn (docs/specs/012-collaboration/picker.md): a round's
+  // state, written with the result, so an undo must not put a drawn name back.
+  'pickerDrawn',
+  // Which press the result came from, so the room replays a repeat landing (picker.md).
+  'pickerRolledAt',
 ] as const;
 type LiveFieldBag = {
   commentThread?: CommentThread;
   cellComments?: CellCommentThreads;
   action?: ElementAction;
   actions?: ElementAction[];
-} & Pick<ShapeElement, 'responses' | 'collabRound' | 'pickerResult'>;
+} & Pick<
+  ShapeElement,
+  'responses' | 'collabRound' | 'pickerResult' | 'pickerDrawn' | 'pickerRolledAt'
+>;
 
 function applyLiveField<K extends keyof LiveFieldBag>(
   target: LiveFieldBag,

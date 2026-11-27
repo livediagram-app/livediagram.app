@@ -17,8 +17,11 @@ import { formatTimerClock } from './session';
 import { sessionButtonPlan, type SessionButtonConfig } from './behaviour-config';
 import { sessionButtonText } from './session-button-text';
 import { borderOf } from '@liveworkspace/element-model/svg-render-border';
+import { svgPicker } from '@liveworkspace/element-model/svg-render-picker';
+import { pickerAccent } from '@liveworkspace/element-model/picker-layout';
+import { ownColours } from './behaviour-skin';
 import type { CanvasSurface } from './colors';
-import { collabAccent, fitLine, pill, text, wrapLines, type Face } from './svg-render-face-kit';
+import { collabAccent, fitLine, text, wrapLines, type Face } from './svg-render-face-kit';
 import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
 
 /** The Behaviour kinds this module draws a face for, so the caller knows not
@@ -60,7 +63,7 @@ export function svgBehaviourFace(
       return sessionToolGlyph(tool, cx, cy - 12, color) + sessionWords(el, title, cx, cy, color);
     }
     case 'picker':
-      return picker(el, cx, cy, title, color, surface);
+      return picker(el, title, color, surface);
     case 'comment-pin':
       // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, read only.
       return svgCommentPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
@@ -137,48 +140,10 @@ function portalArt(el: Face, stroke: string): string {
   );
 }
 
-// PickerFace at rest: the reel window (a shade at the top and bottom lips,
-// clear through the middle, paper-kit's ReelWindow) behind a column of the
-// tracked kicker, the landed name at 17px, and the Pick / Again button.
-function picker(
-  el: Face,
-  cx: number,
-  cy: number,
-  title: string,
-  color: string,
-  surface: CanvasSurface,
-): string {
-  const b = borderOf(el);
-  const id = xmlEscape(el.id);
-  const c = xmlEscape(color);
-  const result = el.pickerResult;
-  const action = result ? 'Again' : 'Pick';
-  const buttonW = action.length * 6.4 + 24;
-  // Kicker 15, gap 4, name 21, gap 4 + 2, button 24.5: the column centred,
-  // one line shorter without a kicker.
-  const top = cy - (title ? 35 : 25);
-  const nameY = top + (title ? 19 : 0);
-  return (
-    `<defs><linearGradient id="reel-${id}" x1="0" y1="0" x2="0" y2="1">` +
-    `<stop offset="0" stop-color="${c}" stop-opacity="0.16"/><stop offset="0.26" stop-color="${c}" stop-opacity="0"/>` +
-    `<stop offset="0.74" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}" stop-opacity="0.16"/>` +
-    `</linearGradient></defs>` +
-    `<rect x="${r2(el.x + b.width)}" y="${r2(el.y + b.width)}" width="${r2(el.width - b.width * 2)}" height="${r2(el.height - b.width * 2)}" rx="${r2(Math.max(0, b.radius - b.width))}" fill="url(#reel-${id})"/>` +
-    (title
-      ? text(cx, top + 11, title, {
-          size: 10,
-          weight: 500,
-          color,
-          anchor: 'middle',
-          opacity: 0.6,
-          uppercase: true,
-          tracking: 0.08,
-        })
-      : '') +
-    text(cx, nameY + 16, result ?? '—', { size: 17, weight: 600, color, anchor: 'middle' }) +
-    pill(cx - buttonW / 2, nameY + 27, buttonW, 24.5, color, surface === 'dark' ? 0.1 : 0.06) +
-    text(cx, nameY + 43, action, { size: 11, weight: 600, color, anchor: 'middle' })
-  );
+// PickerFace at rest (docs/specs/012-collaboration/picker.md "The look"): the shared render, with the accent
+// the canvas takes (the element's own stroke, or the brand sky for the paper).
+function picker(el: Face, title: string, color: string, surface: CanvasSurface): string {
+  return svgPicker(el, title, color, pickerAccent(ownColours(el).stroke, surface));
 }
 
 // A Session tool's glyph, 20 px, centred at (x, y): a stopwatch or three vote dots.

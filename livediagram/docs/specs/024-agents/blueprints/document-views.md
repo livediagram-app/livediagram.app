@@ -348,7 +348,7 @@ The table line prints its label first when it has one. Every text a summary prin
 | `decision`              | `status=<decisionStatus>` when set                                                    |
 | `roll-call`             | `present=<rollCall.length>`                                                           |
 | `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready`             |
-| `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
+| `picker`                | `picked=<attrValue(pickerResult)>` when set; `drawn=<n>` with Remove Once Drawn       |
 | `reveal`                | `revealed` when `revealed`                                                            |
 | `stat-row`              | `stats=<stats.length>`                                                                |
 | `process`               | `steps=<processSteps.length>`                                                         |

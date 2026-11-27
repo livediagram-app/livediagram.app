@@ -7070,14 +7070,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "penTextColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
+      "pickerDrawn": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "pickerOptions": {
         "items": {
           "type": "string"
         },
         "type": "array"
       },
+      "pickerRemoveDrawn": {
+        "type": "boolean"
+      },
       "pickerResult": {
         "type": "string"
+      },
+      "pickerRolledAt": {
+        "type": "number"
       },
       "pickerSource": {
         "$ref": "#/components/schemas/PickerSource"

@@ -1,20 +1,19 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { DialTicks, ReelWindow, keycapEdge } from './paper-kit';
+import { DialTicks, keycapEdge } from './paper-kit';
 
 // docs/specs/012-collaboration/participant-responses.md "paper kit": decorative, in the element's own colour.
 describe('paper kit', () => {
-  it('draws the reel window and the dial ticks hidden from assistive tech and the pointer', () => {
+  it('draws the dial ticks hidden from assistive tech and the pointer', () => {
     const { container } = render(
       <>
-        <ReelWindow textColor="#336699" />
         <DialTicks textColor="#336699" />
         <DialTicks textColor="#336699" ticks={7} />
       </>,
     );
-    const [reel, dial, short] = [...container.children] as HTMLElement[];
-    for (const el of [reel!, dial!, short!]) {
+    const [dial, short] = [...container.children] as HTMLElement[];
+    for (const el of [dial!, short!]) {
       expect(el.getAttribute('aria-hidden')).toBe('true');
       expect(el.className).toContain('pointer-events-none');
     }

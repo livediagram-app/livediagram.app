@@ -7,7 +7,7 @@ import {
   type SessionButtonConfig,
 } from '@liveplanner/project';
 import { NOTE_CUT_CHARS, PROGRESS_DEFAULT } from './constants';
-import { arrayField, numberField, stringField, textField } from './fields';
+import { arrayField, flagField, numberField, stringField, textField } from './fields';
 import { attrValue, jsonString } from './text';
 import { countAttribute, flagAttribute, shapeKindOf, type ViewAttribute } from './view-attribute';
 
@@ -38,7 +38,13 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
     case 'decision':
       return textState('status', stringField(el, 'decisionStatus'), attrValue);
     case 'picker':
-      return textState('picked', stringField(el, 'pickerResult'), attrValue);
+      return [
+        ...textState('picked', stringField(el, 'pickerResult'), attrValue),
+        // Remove Once Drawn (docs/specs/012-collaboration/picker.md): how many have had their turn.
+        ...(flagField(el, 'pickerRemoveDrawn')
+          ? [countAttribute('drawn', countOf(el, 'pickerDrawn'))]
+          : []),
+      ];
     case 'stat-row':
       return [countAttribute('stats', countOf(el, 'stats'))];
     case 'process':

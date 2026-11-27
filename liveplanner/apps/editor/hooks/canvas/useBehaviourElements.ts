@@ -16,7 +16,13 @@ import {
   type TimerMode,
 } from '@liveplanner/project';
 import type { Participant } from '@/lib/identity';
-import { pickerCandidates, rollPicker } from '@/lib/picker';
+import {
+  pickerCandidates,
+  rollPicker,
+  undrawnCandidates,
+  withDraw,
+  withRoundCleared,
+} from '@/lib/picker';
 import { track } from '@/lib/telemetry';
 
 export function useBehaviourElements({
@@ -106,7 +112,10 @@ export function useBehaviourElements({
       // is what lets everyone watch the same spin (docs/specs/012-collaboration/picker.md).
       shared: !editsBlocked,
       roll: () => {
-        const picked = rollPicker(candidates);
+        // Remove Once Drawn (docs/specs/012-collaboration/picker.md): only a name not drawn this round.
+        const picked = rollPicker(
+          undrawnCandidates(candidates, element.pickerDrawn, element.pickerRemoveDrawn),
+        );
         if (picked === null) return null;
         const result = picked.label;
         // A view-role visitor still gets their roll — it just stays on their
@@ -121,7 +130,7 @@ export function useBehaviourElements({
                 : {
                     ...tab,
                     elements: tab.elements.map((el) =>
-                      el.id === element.id ? { ...el, pickerResult: result } : el,
+                      el.id === element.id && el.type === 'shape' ? withDraw(el, result) : el,
                     ),
                   },
             ),
@@ -129,6 +138,24 @@ export function useBehaviourElements({
           track('Element', 'Changed', 'Picker');
         }
         return picked;
+      },
+      // Every drawn name back and no result: a session event like the roll, so not undoable, and
+      // only for whoever spins for the room.
+      reset: () => {
+        if (editsBlocked) return;
+        tickTabs((ts) =>
+          ts.map((tab) =>
+            tab.id !== activeId
+              ? tab
+              : {
+                  ...tab,
+                  elements: tab.elements.map((el) =>
+                    el.id === element.id && el.type === 'shape' ? withRoundCleared(el) : el,
+                  ),
+                },
+          ),
+        );
+        track('Element', 'Changed', 'Picker');
       },
     };
   };
