@@ -110,6 +110,7 @@ export const ORDER: readonly string[] = [
   'canvas/themes',
   'canvas/templates',
   'pages/working-with-pages',
+  'pages/describe-a-page',
   'pages/infographic-layouts',
   'pages/articles',
   'pages/pages-tour',

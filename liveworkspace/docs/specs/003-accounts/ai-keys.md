@@ -227,8 +227,8 @@ person follows [Which key wins](#which-key-wins), and says which AI it runs on.
 ### The source line (AiSource)
 
 One shared component, `AiSource` (`@liveworkspace/settings-ui/ai-source`), drawn under the field of every AI feature:
-Describe a Plan, Describe a Form, Describe a Rule, the AI steps, livediagram's photo reader and liveknowledge's Ask,
-Describe to Set Up and Describe the Structure.
+Describe a Plan, Describe a Form, Describe a Rule, the AI steps, livediagram's photo reader, livedocuments' Describe a
+Page and liveknowledge's Ask, Describe to Set Up and Describe the Structure.
 
 - **Built-in AI**: a small sparkle mark, "Built-in AI", and the feature's own allowance as its quiet second line
   ("Plans and forms share 20 drafts a day").
@@ -266,6 +266,8 @@ Describe to Set Up and Describe the Structure.
   ([automations.md](../018-automations/automations.md#ai)).
 - **Every app but liveknowledge**: Ask AI in the footer's Tools ([ask.md](../020-ask/ask.md)), whose source line is the
   AI pill in its field: which AI the next question runs on, and Answer With to switch between built-in AI and the key.
+- **livedocuments**: Describe a Page, on Ask's rules and day
+  ([describe-a-page.md](../../../../livedocuments/docs/specs/007-editor/describe-a-page.md#which-ai-makes-it)).
 - **livediagram**: the photo reader ([note-reader.md](../../../../livediagram/docs/specs/021-event-storming/note-reader.md#on-your-own-key)), and Send to Knowledge Base's summary ([send-to-knowledge.md](../004-index/send-to-knowledge.md#the-summary)).
   Its way in is [Build with AI](../../../../livediagram/docs/specs/019-marketing/build-with-ai.md#your-own-ai-key).
 

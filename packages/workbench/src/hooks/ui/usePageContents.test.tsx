@@ -350,6 +350,15 @@ describe('usePageContents', () => {
     expect(result.current.current).toBe('p1');
   });
 
+  it('marks a page added from elsewhere (an AI-made page) as here once it arrives', () => {
+    const edit = editsOf();
+    const pages = pagesOf(2);
+    const { result, rerender } = setup({ edit, pages });
+    act(() => result.current.expectAdded());
+    rerender({ edit, pages: [pages[0]!, { id: 'made' }, pages[1]!] });
+    expect(result.current.current).toBe('made');
+  });
+
   it('gives way at the page limit, and offers no copy with no last page or no Add Page Like', () => {
     const full = setup({ maxPages: 3 });
     expect(full.result.current.full).toBe(true);

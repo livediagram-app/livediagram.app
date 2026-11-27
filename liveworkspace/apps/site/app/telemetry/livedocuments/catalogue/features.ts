@@ -698,6 +698,22 @@ export const ASK_AI_SWITCHED = chart(
   { types: ['AskAiBuiltIn', 'AskAiKey'] },
 );
 
+// Describe a Page (docs/specs/007-editor/describe-a-page.md "Telemetry"): its dialog opened from Contents, and a page AI
+// made from the words added. Never the words, the layout or which AI.
+export const DESCRIBE_PAGE_OPENED = opened(
+  'Describe a Page Opened',
+  'The AI button by Add Page pressed, opening Describe a Slide, Page, Article or Card.',
+  (t) => t === 'DescribePage',
+);
+
+export const PAGES_DESCRIBED = chart(
+  'Tab',
+  'Changed',
+  'Pages Made by AI',
+  'A page AI made from a description in Describe a Page, added to the tab.',
+  { types: ['PageDescribed'] },
+);
+
 export const SETTINGS_CATEGORIES_VISITED = opened(
   'Settings Categories Visited',
   'A category picked inside the open Settings dialog: Appearance, Editor, Account and the rest.',
@@ -804,6 +820,8 @@ export const PANELS_OPENED: MetricStack = {
     ASK_AI_SOURCES_OPENED,
     ASK_AI_ANSWERS_COPIED,
     ASK_AI_SWITCHED,
+    DESCRIBE_PAGE_OPENED,
+    PAGES_DESCRIBED,
     SETTINGS_CATEGORIES_VISITED,
     SHARE_OPENED,
     PICKERS_OPENED,

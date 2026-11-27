@@ -152,6 +152,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Added|AiSourceKey':
     'Someone added an AI key of their own in Settings › AI after opening it from an AI feature on built-in AI.',
   'UI|Used|AskAi': 'Someone asked Ask AI a question about the open document.',
+  'UI|Opened|DescribePage': 'Someone opened Describe a Page, the AI button by Add Page.',
   'UI|Opened|AskAiSources': 'Someone opened the sources of an Ask AI answer.',
   'UI|Opened|AskAiSource': 'Someone went from an Ask AI source to its place in the document.',
   'UI|Used|AskAiCopy': 'Someone copied an Ask AI answer.',
@@ -399,6 +400,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextFormat':
     "Someone applied rich-text formatting, such as bold, a colour, a list, a heading, or a link, to part of an element's label.",
   'Element|Changed|TextSize': "Someone changed a selected element's text size.",
+  'Tab|Changed|PageDescribed':
+    'Someone added a page AI made from their description, in Describe a Page.',
   'Tab|Changed|PageAddedLikeLast':
     'Someone added another page like the last one, with the + after the pages.',
   'Tab|Changed|PagesStacked':
