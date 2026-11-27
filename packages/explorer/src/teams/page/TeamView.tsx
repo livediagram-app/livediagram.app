@@ -199,7 +199,7 @@ function TeamHeader({
           <button
             type="button"
             onClick={copyLink}
-            className="relative touch-target-y inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 max-sm:flex-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            className="relative touch-target-y inline-flex h-9 cursor-pointer whitespace-nowrap items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 max-sm:flex-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           >
             <LinkIcon />
             Copy Link
@@ -209,7 +209,7 @@ function TeamHeader({
           <button
             type="button"
             onClick={onInvite}
-            className="relative touch-target-y inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-brand-700 max-sm:flex-1 dark:bg-brand-500 dark:hover:bg-brand-600"
+            className="relative touch-target-y inline-flex h-9 cursor-pointer whitespace-nowrap items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-brand-700 max-sm:flex-1 dark:bg-brand-500 dark:hover:bg-brand-600"
           >
             <PlusIcon />
             Invite People

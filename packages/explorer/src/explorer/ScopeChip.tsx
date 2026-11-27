@@ -38,7 +38,7 @@ export function ScopeChip() {
         className={`${TOOLBAR_CONTROL} min-w-0 gap-1.5 px-2.5 text-sm font-medium`}
       >
         {current.logo ? (
-          <span aria-hidden className="inline-flex shrink-0">
+          <span aria-hidden className="inline-flex shrink-0 [&_svg]:size-4">
             {current.logo}
           </span>
         ) : null}

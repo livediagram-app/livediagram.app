@@ -96,7 +96,7 @@ function ChoiceRows<T extends string>({
               }`}
             >
               {c.logo ? (
-                <span aria-hidden className="inline-flex shrink-0">
+                <span aria-hidden className="inline-flex shrink-0 [&_svg]:size-4">
                   {c.logo}
                 </span>
               ) : null}
