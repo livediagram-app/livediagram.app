@@ -3,7 +3,8 @@
 // A folder card's content preview (liveplanner's FolderPreview, docs/specs/013-workspace/folder-content-previews.md):
 // a centred 2x2 mosaic of up to four small sheets, the items the folder holds first (the same snapshot their own
 // cards show, so nothing new is drawn), then its subfolders, and a "+N" tile when there is more inside than fits.
-// An empty folder shows the empty state's art, so an empty card reads as waiting rather than broken. Filtered to one
+// A folder with nothing in it at all shows a muted outline and "Empty" (one-explorer.md "What a folder holds, at a
+// glance"); a subfolder's tile wears the stacked glyph when it holds folders itself. Filtered to one
 // app, a folder holding only other apps' items shows those, faded, under "N in other apps"
 // (liveworkspace/docs/specs/004-index/one-explorer.md "A place that is empty here but not elsewhere"), so it never reads as empty.
 
@@ -14,9 +15,10 @@ import {
   type Item,
 } from '@liveworkspace/index-client';
 import type { ShownFolderPreview } from '../data/useFolderPreviews';
-import { Chip, EmptyStateArt } from '@liveworkspace/ui';
-import { FolderSolidIcon, ItemIcon } from '../ui/icons';
+import { Chip } from '@liveworkspace/ui';
+import { ItemIcon } from '../ui/icons';
 import { useExplorer } from './context';
+import { FolderEmpty, FolderGlyph } from './FolderInside';
 
 // Four tiles: a 2x2 mosaic is the most a card-sized preview can show before each snapshot is too small to know.
 const TILES = 4;
@@ -51,11 +53,15 @@ const TILE =
 export function FolderMosaic({
   preview,
   subfolders,
+  reserve = false,
 }: {
   preview: ShownFolderPreview;
   subfolders: readonly Folder[];
+  // The card's app badges sit at its bottom right: the tiles keep clear of them.
+  reserve?: boolean;
 }) {
-  const { renderThumbnail } = useExplorer();
+  const pad = reserve ? 'px-3 pt-3 pb-10' : 'p-3';
+  const { renderThumbnail, folders } = useExplorer();
   const { tiles, hidden } = folderTiles(preview, subfolders);
   const elsewhere = preview.elsewhere;
   if (tiles.length === 0 && hidden === 0 && elsewhere && elsewhere.itemCount > 0) {
@@ -65,7 +71,9 @@ export function FolderMosaic({
         data-folder-elsewhere={elsewhere.itemCount}
         className="relative flex h-full w-full items-center justify-center"
       >
-        <span className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3 opacity-45 grayscale-[35%]">
+        <span
+          className={`flex h-full w-full flex-wrap content-center items-center justify-center gap-2 ${pad} opacity-45 grayscale-[35%]`}
+        >
           {shown.tiles.map((tile) =>
             tile.kind === 'item' ? (
               <span key={tile.item.id} className={TILE}>
@@ -84,20 +92,11 @@ export function FolderMosaic({
       </span>
     );
   }
-  if (tiles.length === 0 && hidden === 0) {
-    return (
-      <span
-        data-folder-empty=""
-        className="relative flex h-full w-full items-center justify-center overflow-hidden"
-      >
-        <EmptyStateArt compact icon={<FolderSolidIcon />} />
-      </span>
-    );
-  }
+  if (tiles.length === 0 && hidden === 0) return <FolderEmpty />;
   return (
     <span
       data-folder-mosaic=""
-      className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3"
+      className={`flex h-full w-full flex-wrap content-center items-center justify-center gap-2 ${pad}`}
     >
       {tiles.map((tile) =>
         tile.kind === 'item' ? (
@@ -109,11 +108,14 @@ export function FolderMosaic({
             )}
           </span>
         ) : (
-          <span
-            key={`f:${tile.folder.id}`}
-            className={`${TILE} text-brand-400 dark:text-brand-300 [&_svg]:h-5 [&_svg]:w-5`}
-          >
-            <FolderSolidIcon />
+          <span key={`f:${tile.folder.id}`} className={TILE}>
+            <FolderGlyph
+              size={20}
+              inside={{
+                folders: folders.childrenOf(tile.folder.id, tile.folder.teamId).length,
+                empty: false,
+              }}
+            />
           </span>
         ),
       )}

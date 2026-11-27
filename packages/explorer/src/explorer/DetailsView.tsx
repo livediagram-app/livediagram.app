@@ -14,14 +14,15 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { FOLDER_PREVIEW_IDS_MAX, type Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
-import { useFolderPreviews } from '../data/useFolderPreviews';
+import { useFolderPreviews, type ShownFolderPreview } from '../data/useFolderPreviews';
 import { elsewhereLabel } from './FolderMosaic';
+import { FolderAppBadges, FolderGlyph, useFolderInside } from './FolderInside';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { LIST_CARD, RENAME_INPUT } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
-import { FolderSolidIcon, ItemIcon } from '../ui/icons';
+import { ItemIcon } from '../ui/icons';
 import { useCascade } from '../ui/useCascade';
 import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import { kindWords, siteOf } from '../words';
@@ -179,6 +180,7 @@ export function DetailsView({
           renaming={renamingId === f.id}
           itemCount={previews.get(f.id)?.itemCount}
           elsewhere={previews.get(f.id)?.elsewhere?.itemCount}
+          preview={previews.get(f.id)}
           one={words.lowerOne}
           many={words.lowerMany}
         />,
@@ -262,6 +264,7 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
   renaming,
   itemCount,
   elsewhere,
+  preview,
   one,
   many,
 }: {
@@ -271,10 +274,13 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
   itemCount: number | undefined;
   // With none of this app's, how many other apps' items it holds.
   elsewhere?: number;
+  // What is inside, for its glyph and app badges (one-explorer.md "What a folder holds, at a glance").
+  preview?: ShownFolderPreview;
   one: string;
   many: string;
 }) {
   const bits = useFolderBits(f);
+  const inside = useFolderInside(f, preview);
   const menu = useRowMenu({ disabled: renaming });
   const drop = useDropTarget({ teamId: f.teamId, folderId: f.id });
   const drag = useFolderDrag(f, renaming);
@@ -291,8 +297,8 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
       {...drag}
     >
       <span role="rowheader" className="flex min-w-0 items-center gap-2">
-        <span aria-hidden className="inline-flex shrink-0 text-amber-500 [&_svg]:size-4">
-          <FolderSolidIcon />
+        <span aria-hidden className="inline-flex shrink-0 [&_svg]:size-4">
+          <FolderGlyph inside={inside} />
         </span>
         {renaming ? (
           <InlineRenameInput
@@ -313,6 +319,7 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
           </button>
         )}
         {renaming ? null : <DefaultFolderMarker folderId={f.id} />}
+        <FolderAppBadges inside={inside} size="row" className="ml-1 shrink-0" />
       </span>
       <span role="cell" className={CELLS.type}>
         <FolderTypeCell />
