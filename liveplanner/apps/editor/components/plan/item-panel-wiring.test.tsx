@@ -129,7 +129,7 @@ describe('itemPanelProps', () => {
     expect(ctx.addItem).toHaveBeenLastCalledWith(
       expect.objectContaining({ fields: { title: 'New story', blocks: ['a'] } }),
     );
-    props.onLinkExisting!(group, 'b', false);
+    void props.onLinkExisting!(group, 'b', false);
     expect(linkExistingCard).toHaveBeenCalled();
   });
 
@@ -138,17 +138,17 @@ describe('itemPanelProps', () => {
     const close = vi.fn();
     const props = itemPanelProps(ctx, card('a'), reads, close);
     expect(props).toHaveProperty('linkedActions');
-    props.onTrash!();
+    props.onTrash();
     expect(ctx.trashItem).toHaveBeenCalledWith('a');
-    props.onDuplicate!();
-    props.onFlag!();
+    props.onDuplicate();
+    props.onFlag();
     expect([duplicateItem, toggleFlag].every((f) => vi.mocked(f).mock.calls.length === 1)).toBe(
       true,
     );
-    props.onArchive!();
+    props.onArchive();
     expect(ctx.patchItem).toHaveBeenLastCalledWith('a', { set: { archived: true } });
     expect(track).toHaveBeenCalledWith('Plan', 'Moved', 'Archive');
-    itemPanelProps(ctx, card('z', { archived: true }), reads, close).onArchive!();
+    itemPanelProps(ctx, card('z', { archived: true }), reads, close).onArchive();
     expect(ctx.patchItem).toHaveBeenLastCalledWith('z', { clear: ['archived'] });
     expect(ctx.announce).toHaveBeenLastCalledWith('Card restored');
     props.onCopyLink!();

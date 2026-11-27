@@ -329,7 +329,7 @@ describe('useSessionKeys', () => {
   }
 
   it('R, S, F, J and K act outside fields, never with a modifier, a repeat or while off', () => {
-    const spy = vi.fn();
+    const spy = vi.fn<(k: string) => void>();
     const { rerender } = render(<Keys on spy={spy} />);
     for (const key of ['r', 'S', 'f', 'j', 'k', 'x']) fireEvent.keyDown(window, { key });
     fireEvent.keyDown(window, { key: 'r', metaKey: true });

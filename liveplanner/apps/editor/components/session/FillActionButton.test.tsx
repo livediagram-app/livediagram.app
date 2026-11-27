@@ -39,15 +39,23 @@ describe('FillActionButton', () => {
     expect(phase()).toBe('fill');
     fireEvent.click(button);
     expect(onConfirm).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(FILL_IN_MS));
+    act(() => {
+      vi.advanceTimersByTime(FILL_IN_MS);
+    });
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(phase()).toBe('done');
-    act(() => vi.advanceTimersByTime(FILL_HOLD_MS));
+    act(() => {
+      vi.advanceTimersByTime(FILL_HOLD_MS);
+    });
     expect(phase()).toBe('drain');
-    act(() => vi.advanceTimersByTime(FILL_DRAIN_MS));
+    act(() => {
+      vi.advanceTimersByTime(FILL_DRAIN_MS);
+    });
     expect(phase()).toBe('idle');
     fireEvent.click(button);
-    act(() => vi.advanceTimersByTime(FILL_IN_MS));
+    act(() => {
+      vi.advanceTimersByTime(FILL_IN_MS);
+    });
     expect(onConfirm).toHaveBeenCalledTimes(2);
   });
 
@@ -58,7 +66,9 @@ describe('FillActionButton', () => {
     fireEvent.click(screen.getByRole('button'));
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(phase()).toBe('done');
-    act(() => vi.advanceTimersByTime(FILL_STILL_MS));
+    act(() => {
+      vi.advanceTimersByTime(FILL_STILL_MS);
+    });
     expect(phase()).toBe('idle');
   });
 
@@ -72,7 +82,9 @@ describe('FillActionButton', () => {
     rerender(<FillActionButton label="Refined" onConfirm={onConfirm} />);
     fireEvent.click(screen.getByRole('button'));
     unmount();
-    act(() => vi.advanceTimersByTime(FILL_IN_MS * 4));
+    act(() => {
+      vi.advanceTimersByTime(FILL_IN_MS * 4);
+    });
     expect(onConfirm).not.toHaveBeenCalled();
   });
 });

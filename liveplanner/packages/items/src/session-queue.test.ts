@@ -67,8 +67,8 @@ describe('sessionQueue', () => {
       types: TYPES,
       pick: { typeIds: ['work'], statuses: ['backlog'] },
       decided: {
-        [a.id]: { outcome: 'skipped', at: 5, by: '' },
-        [b.id]: { outcome: 'refined', at: 5, by: '' },
+        [a.id]: { at: 5 },
+        [b.id]: { at: 5 },
       },
     });
     expect(q.decided).toEqual([b, a]);

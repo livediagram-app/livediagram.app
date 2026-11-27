@@ -53,7 +53,7 @@ const plan = (types = TYPES) =>
   }) as unknown as PlanContextValue;
 
 function open(initial: SessionSetup, settings = false, types = TYPES) {
-  const onDone = vi.fn();
+  const onDone = vi.fn<(setup: SessionSetup) => void>();
   const onClose = vi.fn();
   render(
     <SessionSetupDialog
@@ -76,9 +76,9 @@ describe('SessionSetupDialog', () => {
     expect(screen.getByRole('heading', { name: 'Set Up Refinement' })).toBeTruthy();
     expect(screen.getByText('Pick a card type to see its stages.')).toBeTruthy();
     expect(preview()).toBe('Pick at least one card type and one stage');
-    expect(
-      (screen.getByRole('button', { name: 'Start Session' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Start Session' }).disabled).toBe(
+      true,
+    );
     fireEvent.click(pill('Task'));
     // The stage pill counts its cards.
     expect(pill('Backlog').textContent).toBe('Backlog2');
@@ -167,7 +167,7 @@ describe('SessionSetupDialog, a long backlog', () => {
       <SessionSetupDialog
         sessionKind="refinement"
         initial={{ typeIds: ['task'], statuses: ['backlog'] }}
-        plan={{ ...plan(), items: new Map(many.map((i) => [i.id, i])) } as PlanContextValue}
+        plan={{ ...plan(), items: new Map(many.map((i) => [i.id, i])) }}
         settings={false}
         onDone={vi.fn()}
         onClose={vi.fn()}

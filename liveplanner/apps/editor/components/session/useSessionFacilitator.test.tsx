@@ -20,7 +20,7 @@ const peer = (who: SessionFacilitator, extra: Partial<Participant> = {}): Partic
   key: who.id,
   name: who.name,
   color: who.color,
-  status: 'active',
+  status: 'online',
   ...extra,
 });
 
@@ -70,7 +70,7 @@ describe('useSessionFacilitator', () => {
   });
 
   it('an Editor never takes a baton someone else took a moment before', () => {
-    const run = vi.fn();
+    const run = vi.fn<(tabId: string, change: (s: SessionTabState) => SessionTabState) => void>();
     renderHook(() =>
       useSessionFacilitator({
         tabId: 't1',
@@ -93,10 +93,14 @@ describe('useSessionFacilitator', () => {
     const f = setup({ mayHold: false });
     expect(f.run).not.toHaveBeenCalled();
     expect(f.hook.result.current.canFacilitate).toBe(false);
-    act(() => f.hook.result.current.take());
+    act(() => {
+      f.hook.result.current.take();
+    });
     expect(f.run).not.toHaveBeenCalled();
     const held = setup({ mayHold: false, holder: ALI });
-    act(() => vi.advanceTimersByTime(FACILITATOR_GRACE_MS));
+    act(() => {
+      vi.advanceTimersByTime(FACILITATOR_GRACE_MS);
+    });
     expect(held.hook.result.current.canTakeOver).toBe(false);
   });
 
@@ -113,7 +117,9 @@ describe('useSessionFacilitator', () => {
       ],
     });
     expect(f.hook.result.current.editors).toEqual([ALI]);
-    act(() => f.hook.result.current.handOver(ALI));
+    act(() => {
+      f.hook.result.current.handOver(ALI);
+    });
     expect(f.state().facilitator).toEqual(ALI);
     f.sync();
     expect(f.hook.result.current.mine).toBe(false);
@@ -125,30 +131,44 @@ describe('useSessionFacilitator', () => {
     });
     expect(f.state().facilitator).toEqual(ALI);
     const g = setup({ mayHold: true, holder: SAM });
-    act(() => g.hook.result.current.stepDown());
+    act(() => {
+      g.hook.result.current.stepDown();
+    });
     g.sync();
     expect(g.state().facilitator).toBeUndefined();
     expect(g.hook.result.current.canFacilitate).toBe(true);
-    act(() => g.hook.result.current.take());
+    act(() => {
+      g.hook.result.current.take();
+    });
     expect(g.state().facilitator).toEqual(SAM);
   });
 
   it('Take Over shows only once the facilitator has been away for the grace, and goes when they return', () => {
     const f = setup({ mayHold: true, holder: ALI, presence: [peer(ALI)] });
-    act(() => vi.advanceTimersByTime(FACILITATOR_GRACE_MS * 2));
+    act(() => {
+      vi.advanceTimersByTime(FACILITATOR_GRACE_MS * 2);
+    });
     expect(f.hook.result.current.canTakeOver).toBe(false);
     f.sync([]);
-    act(() => vi.advanceTimersByTime(FACILITATOR_GRACE_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(FACILITATOR_GRACE_MS - 1);
+    });
     expect(f.hook.result.current.canTakeOver).toBe(false);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(f.hook.result.current.canTakeOver).toBe(true);
     f.sync([peer(ALI)]);
     expect(f.hook.result.current.canTakeOver).toBe(false);
     // Gone again: the grace starts over.
     f.sync([]);
     expect(f.hook.result.current.canTakeOver).toBe(false);
-    act(() => vi.advanceTimersByTime(FACILITATOR_GRACE_MS));
-    act(() => f.hook.result.current.take());
+    act(() => {
+      vi.advanceTimersByTime(FACILITATOR_GRACE_MS);
+    });
+    act(() => {
+      f.hook.result.current.take();
+    });
     expect(f.state().facilitator).toEqual(SAM);
   });
 });

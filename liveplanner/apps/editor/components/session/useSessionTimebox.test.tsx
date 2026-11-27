@@ -25,11 +25,17 @@ describe('useSessionTimebox', () => {
     const chime = vi.fn();
     const { result } = renderHook(() => useSessionTimebox(boxed(100_000), chime));
     expect(result.current).toEqual({ leftMs: 60_000, totalMs: 60_000, up: false });
-    act(() => vi.advanceTimersByTime(30 * TIMEBOX_TICK_MS));
+    act(() => {
+      vi.advanceTimersByTime(30 * TIMEBOX_TICK_MS);
+    });
     expect(result.current?.leftMs).toBe(30_000);
-    act(() => vi.advanceTimersByTime(31 * TIMEBOX_TICK_MS));
+    act(() => {
+      vi.advanceTimersByTime(31 * TIMEBOX_TICK_MS);
+    });
     expect(result.current).toMatchObject({ leftMs: 0, up: true });
-    act(() => vi.advanceTimersByTime(5 * TIMEBOX_TICK_MS));
+    act(() => {
+      vi.advanceTimersByTime(5 * TIMEBOX_TICK_MS);
+    });
     expect(chime).toHaveBeenCalledTimes(1);
   });
 
@@ -40,7 +46,9 @@ describe('useSessionTimebox', () => {
       { initialProps: { s: boxed(0) } },
     );
     expect(result.current?.up).toBe(true);
-    act(() => vi.advanceTimersByTime(3 * TIMEBOX_TICK_MS));
+    act(() => {
+      vi.advanceTimersByTime(3 * TIMEBOX_TICK_MS);
+    });
     expect(chime).not.toHaveBeenCalled();
     rerender({ s: newSessionTab('refinement', { typeIds: [], statuses: [] }) });
     expect(result.current).toBeNull();

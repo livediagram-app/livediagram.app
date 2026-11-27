@@ -104,7 +104,7 @@ function mount(opts: {
   const actions: SessionTabActions = {
     startSession: vi.fn(),
     changeSetup: vi.fn(),
-    runSession: vi.fn((_t, change) => {
+    runSession: vi.fn((_t: string, change: (s: SessionTabState) => SessionTabState) => {
       state = change(state);
       view.rerender(state);
     }),

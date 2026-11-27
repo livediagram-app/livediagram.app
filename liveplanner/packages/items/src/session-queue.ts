@@ -79,7 +79,7 @@ export function sessionTarget(
   item: Item,
   types: readonly ItemTypeDef[],
   planStatuses: readonly string[],
-  targets?: Readonly<Record<string, string>> | undefined,
+  targets?: Readonly<Record<string, string>>,
 ): string | null {
   const order = typeStatusesOf(typeIn(types, item.type), planStatuses);
   const named = targets?.[item.type];

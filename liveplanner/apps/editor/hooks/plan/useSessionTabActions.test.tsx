@@ -10,8 +10,12 @@ import { useSessionTabActions } from './useSessionTabActions';
 
 // docs/specs/026-plan/session-tabs.md "Making one", "Real time": Start Session and a set-up change are one undo step
 // each; running the session ticks the tab without history; a locked tab refuses every one.
-const tab = (id: string, extra: Partial<Tab> = {}): Tab =>
-  ({ id, name: 'Tab 2', elements: [], ...extra }) as Tab;
+const tab = (id: string, extra: Partial<Tab> = {}): Tab => ({
+  id,
+  name: 'Tab 2',
+  elements: [],
+  ...extra,
+});
 const SETUP = { typeIds: ['task'], statuses: ['backlog'] };
 
 function setup(tabs: Tab[]) {
@@ -30,7 +34,7 @@ function setup(tabs: Tab[]) {
 
 describe('useSessionTabActions', () => {
   it('Start Session makes the open tab a Session tab named for its kind, one undo step', () => {
-    const f = setup([tab('t1', { dashboard: { rows: [] } as never }), tab('t2')]);
+    const f = setup([tab('t1', { dashboard: { rows: [] } }), tab('t2')]);
     f.actions.startSession(newSessionTab('refinement', SETUP));
     const [made, other] = f.tabs();
     expect(made).toMatchObject({ kind: 'session', name: 'Refinement', dashboard: undefined });
