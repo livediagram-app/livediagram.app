@@ -887,8 +887,15 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   the text floor), with no colours written by the layout itself. Placing it fills those colours from the tab's
   theme and the page's half (`themedForTab` takes a preset-bound shape's colours from its preset), and a theme
   picked later re-derives them as for any preset-bound shape. On the Default scheme the box keeps the plain look,
-  which is already a pale tint, on the thin border. The panel is solid, never see-through: a page design behind it
-  (Brutalist Blocks, Split Fields, Edge Bands) can never show through and split a card in two. A box that says
+  which is already a pale tint, on the thin border. **The panel is part see-through** (owner, Work Tracker 1501,
+  overturning the solid panel of 1481): a box with no words of its own is drawn at `SOFT_BOX_OPACITY` (0.6, the top
+  of the asked-for 50 to 60%), so on a designed page it takes on the design rather than standing out as a solid
+  block; a page design's bands now show through it, which is the point. The words a layout sets on it are their own
+  text elements, drawn solid; a box that holds words of its own stays solid, and one that comes to carry a person's
+  icon, sticker or words when a layout is placed over content turns solid (`solidWhenCarrying`). The opacity is the
+  element's own, written as the layout is placed: documents placed before keep their solid boxes, and the person can
+  change it in the box's style like any opacity. Its words keep reading in every theme on a plain page and a dark
+  one (`apps/editor/lib/layout-soft-box-contrast.test.ts`). A box that says
   something by its own colour, icon, picture, opacity or border (a recommended option's heavy border, a frame's
   none) is left as it is. The preset is the element's own, so the person can restyle it like any other.
 
