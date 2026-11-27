@@ -290,12 +290,12 @@ working through it.
 Every card the view has belongs to one of four topics, and is on its topic's page whole, with all its rows and
 actions: nothing that was on Insights is left out.
 
-| Topic           | Address            | Its page                                                                                     |
-| --------------- | ------------------ | -------------------------------------------------------------------------------------------- |
-| Needs Attention | `&topic=attention` | the Open Questions, Pages That Disagree and Suggested Edits tiles; the Needs Attention card  |
-| Page Health     | `&topic=health`    | Knowledge Health (Pages With Low Health, Remind the Owners); Not Read in 90 Days             |
-| Reading         | `&topic=reads`     | Reads Over 14 Days; Most Read; Required Reading                                              |
-| Agents          | `&topic=agents`    | Connected Agents; Always in Context; What an Agent Sees                                      |
+| Topic           | Address            | Its page                                                                                    |
+| --------------- | ------------------ | ------------------------------------------------------------------------------------------- |
+| Needs Attention | `&topic=attention` | the Open Questions, Pages That Disagree and Suggested Edits tiles; the Needs Attention card |
+| Page Health     | `&topic=health`    | Knowledge Health (Pages With Low Health, Remind the Owners); Not Read in 90 Days            |
+| Reading         | `&topic=reads`     | Reads Over 14 Days; Most Read; Required Reading                                             |
+| Agents          | `&topic=agents`    | Connected Agents; Always in Context; What an Agent Sees                                     |
 
 ### The dashboard
 
@@ -362,23 +362,23 @@ useful to look at and help me understand"), from the same overview read, its wor
 description: the figure tiles in a 28px strip at their foot, and the dashboard's Page Health, Reading and Agents
 tiles the Verified bar, the sparkline and the agents' bar.
 
-  - **Connected Agents** (the Agents tile): which agents lean on the knowledgebase. A bar split by each agent's share of this week's
-    agent reads (the 4 who read most, the rest as one "others" piece), in four tones of the brand, with its caption
-    naming the agent who reads most and its share ("Claude Code, 72% of reads"). With no agent reads this week, a
-    hairline and "No reads this week"; with no agents, "Connect one to start".
-  - **Open Questions:** where the gaps bite. A bar for each open question, most asked first (12 at most), its height
-    its asks, asks by people under asks by agents in the Reads tones. The line says the asks and how many were
-    agents' ("Asked 12 times, 9 by agents"). One tall bar means one gap everyone hits; many short ones, a scatter.
-  - **Pages That Disagree:** what disagrees, at a glance. The oldest open conflict's two page titles on two lines,
-    the second led by a not-equal mark, and "+2" when more are open. The line says how long the oldest has
-    been open ("Oldest found 3 days ago"). None open: a hairline.
-  - **Suggested Edits:** how long agents have waited. A track of the last 14 days, today at its right, with a dot
-    for each waiting edit on the day it was suggested (stacked on a busy day); a dot 7 days or older is amber, and
-    one older than the track sits at its left end. The line says the oldest wait ("Oldest waits 4 days"). None
-    waiting: the bare track.
-  - **Verified** (the Page Health tile): how far the pages can be trusted. A bar of every page in three parts,
-    verified (brand), Review Due (amber) and never verified (grey), with each part's count beside its colour as its
-    caption (its words also said as the tile's description). No pages: a hairline.
+- **Connected Agents** (the Agents tile): which agents lean on the knowledgebase. A bar split by each agent's share of this week's
+  agent reads (the 4 who read most, the rest as one "others" piece), in four tones of the brand, with its caption
+  naming the agent who reads most and its share ("Claude Code, 72% of reads"). With no agent reads this week, a
+  hairline and "No reads this week"; with no agents, "Connect one to start".
+- **Open Questions:** where the gaps bite. A bar for each open question, most asked first (12 at most), its height
+  its asks, asks by people under asks by agents in the Reads tones. The line says the asks and how many were
+  agents' ("Asked 12 times, 9 by agents"). One tall bar means one gap everyone hits; many short ones, a scatter.
+- **Pages That Disagree:** what disagrees, at a glance. The oldest open conflict's two page titles on two lines,
+  the second led by a not-equal mark, and "+2" when more are open. The line says how long the oldest has
+  been open ("Oldest found 3 days ago"). None open: a hairline.
+- **Suggested Edits:** how long agents have waited. A track of the last 14 days, today at its right, with a dot
+  for each waiting edit on the day it was suggested (stacked on a busy day); a dot 7 days or older is amber, and
+  one older than the track sits at its left end. The line says the oldest wait ("Oldest waits 4 days"). None
+  waiting: the bare track.
+- **Verified** (the Page Health tile): how far the pages can be trusted. A bar of every page in three parts,
+  verified (brand), Review Due (amber) and never verified (grey), with each part's count beside its colour as its
+  caption (its words also said as the tile's description). No pages: a hairline.
 
 ### The cards
 

@@ -31,6 +31,8 @@ import { useShowAll } from './useShowAll';
 import { useOpenKnowledgeTier } from '@/lib/use-knowledge-tier';
 
 export const NEEDS_ATTENTION_CAP = 4;
+/** Needs Attention on its own page, where the rows are worked through (insights.md "A topic's page"). */
+export const ATTENTION_PAGE_CAP = 10;
 
 const FILTERS = [
   { value: 'all', label: 'All', description: 'Everything waiting, most urgent first.' },
@@ -124,6 +126,8 @@ export type NeedsAttentionProps = {
   onAccept: (suggestion: KnowledgeSuggestion) => void;
   onDismissSuggestion: (suggestion: KnowledgeSuggestion) => void;
   onOpenAiSettings: () => void;
+  // How many rows show before Show All.
+  cap?: number;
 };
 
 /** What a conflict check costs, said where its findings are: "Each check after an edit uses 1 AI credit." */
@@ -134,7 +138,7 @@ export function NeedsAttention(props: NeedsAttentionProps) {
   const { overview, filter, onFilter, busy, now } = props;
   const tier = useOpenKnowledgeTier();
   const items = attentionItems(overview, filter);
-  const { shown, toggle, fold } = useShowAll(items, NEEDS_ATTENTION_CAP);
+  const { shown, toggle, fold } = useShowAll(items, props.cap ?? NEEDS_ATTENTION_CAP);
   // Another kind starts folded.
   useEffect(fold, [filter, fold]);
   const total = overview.conflicts.length + overview.suggestions.length + overview.questions.length;

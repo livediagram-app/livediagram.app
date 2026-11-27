@@ -12,8 +12,7 @@ import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { pageHealthFacts, pageShapeOf, sameShape } from '@/lib/knowledge/page-health-facts';
 import { track } from '@/lib/telemetry';
-import { askAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
-import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
+import { showInsightsTopic } from '@/lib/knowledge-ask/insights-topic';
 import { useHeldUntilRead } from './held-until-read';
 
 const reducedMotion = () =>
@@ -94,8 +93,7 @@ export function usePageHealthScore(page: PageKnowledgeView): {
       // Disagreements; the comments where they sit under the page; its suggested edits in the rail.
       conflicts: () => {
         track('UI', 'Used', 'HealthShowConflicts');
-        askAttentionFilter('conflicts');
-        showKnowledgeView('insights');
+        showInsightsTopic('attention', { show: 'conflicts' });
       },
       comments: () => {
         track('UI', 'Used', 'HealthShowComments');

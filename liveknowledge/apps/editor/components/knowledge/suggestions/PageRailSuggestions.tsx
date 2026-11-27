@@ -6,8 +6,7 @@
 // rail and the popover being where it shows. Review All opens Needs Attention at Suggested Edits.
 import type { KnowledgeSuggestion } from '@liveknowledge/api-schema';
 import { Chip } from '@liveknowledge/ui';
-import { askAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
-import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
+import { showInsightsTopic } from '@/lib/knowledge-ask/insights-topic';
 import { suggestionsView } from '@/lib/knowledge/page-suggestions-view';
 import { changeCounts, reasonLine } from '@/lib/knowledge/suggestion-passage';
 import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
@@ -105,8 +104,7 @@ export function PageRailSuggestions() {
       }}
       onReviewAll={() => {
         track('UI', 'Used', 'ReviewAllSuggestions');
-        askAttentionFilter('suggestions');
-        showKnowledgeView('insights');
+        showInsightsTopic('attention', { show: 'suggestions' });
       }}
     />
   );

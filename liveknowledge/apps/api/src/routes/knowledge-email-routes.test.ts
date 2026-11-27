@@ -366,12 +366,16 @@ describe('POST conflicts/<id>/ask-owners', () => {
     const { html, text } = lastEmail();
     expect(html).toContain('https://app.test/document/kb#t=deploys');
     expect(html).toContain('https://app.test/document/kb#t=holidays');
-    expect(html).toContain('https://app.test/document/kb?view=insights');
+    expect(html).toContain(
+      'https://app.test/document/kb?view=insights&topic=attention&show=conflicts',
+    );
     expect(html).toContain('Everyone takes the last week of December off.');
     // The question is other people's text: escaped.
     expect(html).toContain('When is the &lt;office&gt; closed?');
     expect(html).not.toContain('<office>');
-    expect(text).toContain('See both passages: https://app.test/document/kb?view=insights');
+    expect(text).toContain(
+      'See both passages: https://app.test/document/kb?view=insights&topic=attention&show=conflicts',
+    );
     at(T0 + 30 * DAY);
     expect(await result('editor', path)).toEqual({ outcome: 'already_sent', sentAt: T0 });
     expect(sent()).toHaveLength(2);

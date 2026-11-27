@@ -163,7 +163,8 @@ export function pagesDisagreeEmail(
   conflict: EmailConflict,
 ): RenderedEmail {
   const name = named(kb.name, 'a knowledgebase');
-  const insightsUrl = `${kbUrl(env, kb)}?view=insights`;
+  // Needs Attention at its Disagreements (insights.md "A topic's page").
+  const insightsUrl = `${kbUrl(env, kb)}?view=insights&topic=attention&show=conflicts`;
   const sides = [conflict.a, conflict.b].map((side) => ({
     title: named(side.title, 'Untitled Page'),
     href: pageUrl(env, kb, side.tab),

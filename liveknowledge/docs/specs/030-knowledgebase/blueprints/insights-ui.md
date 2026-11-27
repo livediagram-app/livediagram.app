@@ -61,10 +61,10 @@ and one read.
   to the view before.
 - `knowledge-view.ts`: `knowledgeViewHref(href, view, query = {})` drops `VIEW_QUERY_PARAMS` (`topic`, `show`) before
   it sets `view` and then `query`, so another view's address never carries a topic. `showKnowledgeView(view, { replace,
-  query })` does nothing only when the address it would make is the one shown; it adds a trail step only when the
+query })` does nothing only when the address it would make is the one shown; it adds a trail step only when the
   view itself changes.
 - `useInsightsTopic()`: `{ topic, show }` from `useSyncExternalStore(subscribeKnowledgeView, () =>
-  location.search)`, so Back, Forward and a press re-render it.
+location.search)`, so Back, Forward and a press re-render it.
 - The footer's Insights tab, pressed while a topic shows, calls `showInsightsTopic(null)`. The rail's Review All is
   `showInsightsTopic('attention', { show: 'suggestions' })`, a Health Score's Show Conflicts the same at
   `conflicts`, and Connect's way to the agents `showInsightsTopic('agents')`. `attention-filter-ask.ts` is gone. The
@@ -83,7 +83,7 @@ region (`tabIndex={-1}`, named by the topic's label).
   the 3 most read pages and the required-reading count, the agents and writers, the context budget).
 - **`TopicTile`** (`components/insights/TopicTile.tsx`): a `section` (`aria-labelledby` its heading) with the card's
   border and surface (`INSIGHTS_CARD`), `relative`, `group`, `p-4 sm:p-5`, `hover:border-slate-300
-  dark:hover:border-slate-600`, `hover:shadow-sm`. Its heading's `button` (`data-topic-open`, a pointer) holds the
+dark:hover:border-slate-600`, `hover:shadow-sm`. Its heading's `button` (`data-topic-open`, a pointer) holds the
   topic's icon well and its label, and its `after:absolute after:inset-0 after:rounded-2xl` covers the tile, so the
   whole tile is its target; its focus ring is drawn on that cover (`focus-visible:after:ring-2`). Its accessible
   name is "Open <label>", its description the summary's words (`aria-describedby`). A chevron (`RowChevronIcon`)
@@ -92,7 +92,7 @@ region (`tabIndex={-1}`, named by the topic's label).
   truncated, a hairline above them), all under the cover. Any control of its own (Needs Attention's three counts)
   is `relative z-10` above the cover. The amber mark is the figure tiles' dot.
 - **`InsightsTopicPage`** (`components/insights/InsightsTopicPage.tsx`): `BackBar label="Insights"
-  current={label} onClick={backToInsightsDashboard}` (sticky in the scroll box), then the topic's cards: Needs
+current={label} onClick={backToInsightsDashboard}` (sticky in the scroll box), then the topic's cards: Needs
   Attention's `AttentionTiles` and `NeedsAttention` with `cap={ATTENTION_PAGE_CAP}` (10); the others two
   `COLUMN` stacks in `lg:grid lg:grid-cols-2 lg:items-start`, one column below `lg`.
 - **Telemetry:** `UI·Opened·InsightsTopic` when a tile opens its topic (the topic's id is not sent).

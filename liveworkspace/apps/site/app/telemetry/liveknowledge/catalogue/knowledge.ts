@@ -146,6 +146,12 @@ export const INSIGHTS_OPENED = openedChart(
   (t) => t === 'InsightsView' || t === 'AiKnowledgeView',
 );
 
+export const INSIGHTS_TOPIC_OPENED = openedChart(
+  'Insights Topics Opened',
+  "A topic's page opened from the Insights dashboard: Needs Attention, Page Health, Reading or Agents.",
+  (t) => t === 'InsightsTopic',
+);
+
 export const SUGGESTIONS_ACCEPTED = chart(
   'UI',
   'Used',
@@ -225,6 +231,7 @@ export const INSIGHTS: MetricStack = {
     'Keeping the knowledgebase right: agent suggestions accepted or dismissed, conflicts and unanswered questions settled, and owners emailed.',
   members: [
     INSIGHTS_OPENED,
+    INSIGHTS_TOPIC_OPENED,
     CONNECT_OPENED,
     CONNECT_COPIED,
     SUGGESTIONS_ACCEPTED,
