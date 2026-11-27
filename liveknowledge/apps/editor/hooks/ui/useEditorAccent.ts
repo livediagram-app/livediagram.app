@@ -9,10 +9,13 @@
 // colours, everything stays white"): the shared hook tints only the dark surfaces, so liveknowledge adds its own
 // light ground, a pale wash of the theme's accent over the white ground and the palest slate surfaces, in one
 // <style> scoped to the light appearance. Text greys (slate-300 and darker) stay neutral and legible.
-import { useLayoutEffect } from 'react';
+import { useMemo } from 'react';
 import { mixHex } from '@liveworkspace/model-core/color-wash';
 import { knowledgeGroundWash } from '@liveknowledge/document';
-import { useEditorAccentStroke } from '@liveworkspace/workbench/hooks/ui/useEditorAccent';
+import {
+  useEditorAccentStroke,
+  useHeadStyle,
+} from '@liveworkspace/workbench/hooks/ui/useEditorAccent';
 import { knowledgeChromeAccent } from '@/lib/knowledge-style/knowledge-accent';
 
 const LIGHT_STYLE_ID = 'lk-light-ground';
@@ -36,18 +39,6 @@ export function useEditorAccent(themeId: string | undefined): void {
   const accent = knowledgeChromeAccent(themeId);
   useEditorAccentStroke(accent);
   // Before the first paint, as the shared tint is (page-surface.md "Themed from the first frame", Work Tracker 1521).
-  useLayoutEffect(() => {
-    if (!accent) {
-      document.getElementById(LIGHT_STYLE_ID)?.remove();
-      return;
-    }
-    let el = document.getElementById(LIGHT_STYLE_ID) as HTMLStyleElement | null;
-    if (!el) {
-      el = document.createElement('style');
-      el.id = LIGHT_STYLE_ID;
-      document.head.appendChild(el);
-    }
-    el.textContent = knowledgeLightGroundCss(accent);
-    return () => document.getElementById(LIGHT_STYLE_ID)?.remove();
-  }, [accent]);
+  const ground = useMemo(() => (accent ? knowledgeLightGroundCss(accent) : null), [accent]);
+  useHeadStyle(LIGHT_STYLE_ID, ground);
 }

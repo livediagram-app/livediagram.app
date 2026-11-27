@@ -508,7 +508,9 @@ per-page and no per-tab style.
     as it is now: a change after the open (made here or through the room) is folded into the copy
     (`useKnowledgeStyleCopyFollow`, the follower's `followItem`), and the style the open read is never written again.
     The editor's tint and light ground are written in the same commit that first draws the editor, before the
-    browser paints (`useEditorAccent`, a layout effect). No frame shows the knowledgebase in the product's own
+    browser paints (`useEditorAccent`, an insertion effect). Switching to another knowledgebase rewrites both in
+    place, never removing them, so the next knowledgebase's buttons, mounted in that commit, start in its theme
+    rather than animating (`transition-colors`) out of the product's colours. No frame shows the knowledgebase in the product's own
     colours on its way to its theme, in light, dark or any theme; nothing more is waited for, so the load takes no
     longer.
   - The top row and the footer follow it too (the formatting bar's active state, the footer's tabs): unlike the
