@@ -10,8 +10,9 @@ export class IndexError extends Error {
   // How long the answer's `Retry-After` asked the caller to wait (ms), or null when it sent none that parses. Raw:
   // the outbox caps it (@liveworkspace/index-app outbox.ts `failureDelayMs`).
   readonly retryAfterMs: number | null;
-  // The share code a `password_required` refusal names, or null: a person reopening an item with no code, whose
-  // editor asks for the link's password (one-explorer-contracts.md "Reopened without the code").
+  // The share code a grant's refusal names, or null: `password_required` to a person reopening an item with no code,
+  // whose editor asks for the link's password (one-explorer-contracts.md "Reopened without the code"), or `not_found`
+  // to someone with no access, whose editor opens the item through it ("Opened by its editor address").
   readonly link: string | null;
   // The domains a `sign_in_required` or `domain_not_allowed` refusal names (a share's sign-in rule), or null: what the
   // visitor's restricted page says the item is restricted to.

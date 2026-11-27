@@ -89,6 +89,8 @@ password_required`, naming the link (`link`, its code) only when the caller sent
    wrong one is `403 password_invalid`; else the link's level and tab.
 6. `loadItem(need, { manage })`: an app delegate reaches its own app's items only, the mirror its own personal
    items only (`404` otherwise); `manage` refuses a link (`403`); a level below `need` is `403 forbidden`.
+7. The grant route alone: a `404` (or no one's `401`) to a request with no code names the item's least live link
+   (`share-fallback.ts`, [sharing.md](sharing.md) "Opened by its editor address").
 
 ### Grants (`grants.ts`)
 
@@ -307,6 +309,7 @@ a notice queue's two lines are literals in its own file, written by `notice-queu
 | `liveworkspace/apps/index/src/personal.ts`          | A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders and defaults"): what they hid from Recent, and the folder Ne…                                                 |
 | `liveworkspace/apps/index/src/purge.ts`             | Purging (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Purging"): a permanent delete, emptying the Trash, or the daily sweep of items 30 days in it                                                    |
 | `liveworkspace/apps/index/src/rows.ts`              | Item rows and their wire shape                                                                                                                                                                                         |
+| `liveworkspace/apps/index/src/share-fallback.ts`    | An item's editor address opened by someone with no access (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Opened by its editor address"): the grant's refusal names the item's least live link          |
 | `liveworkspace/apps/index/src/share-guesses.ts`     | Share-password guesses (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): each try at an item's password that this isolate hasn't already found right is…                            |
 | `liveworkspace/apps/index/src/sharing.ts`           | Sharing (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): share links, the share password, what a link opens, and Shared with me                                                    |
 | `liveworkspace/apps/index/src/space-previews.ts`    | What Home's Spaces tiles show of each space the person is in (`GET /spaces/previews`): its newest few items and how many it holds                                                                                      |

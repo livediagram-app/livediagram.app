@@ -58,6 +58,18 @@ to `/explorer`, New Design to `/new`. An embed shows the card with New Design on
 Only the editor's own empty route (`/design`, `/design/placeholder`) hands off to `/new`, so a mistyped page never
 makes a design.
 
+### An editor address opened without access
+
+Its owner often copies the editor's address (`/design/<id>`) from the browser's bar, meaning to send the share link.
+Whoever opens it with no access of their own and no link they opened before is not stopped at a not-found card when
+the design has a live share link: the editor opens the design through that link, exactly as if they had followed it
+(Work Tracker 1518; [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
+"Opened by its editor address"). The link is the one that gives least: Viewer before Participant before Editor. Every
+rule on it holds as it does on the link itself: the password gate, Require Sign In and its allowed domains, the
+link's tab and its expiry (an expired or turned-off link is never used). The address stays the design's own. With no
+live link the not-found card below shows unchanged, and says nothing about whether the design exists. Its owner, and
+a signed-in member of its team, open the address as an editor as always, with no gate or prompt.
+
 ### Which not-found card
 
 Every refusal the api answers 404 is the same card; what it says depends only on what the visitor brought and who

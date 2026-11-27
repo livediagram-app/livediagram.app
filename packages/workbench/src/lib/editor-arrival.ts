@@ -68,8 +68,9 @@ export type ArrivalProduct<
   // The person's grant on the item: edit on it without a link is the owner's chrome. `link` (the code a link's access
   // came through) and `tabId` say who a visitor reopening the item by its own address is.
   grant: (id: string) => Promise<{ level: string; tabId?: string | null; link?: string } | null>;
-  // The link a person reopening the item by its own address must enter the password of: the code the index's
-  // `password_required` refusal named (liveworkspace one-explorer-contracts.md "Reopened without the code"), or null.
+  // The link to open the item through when its own address was refused: the code the index's grant refusal named,
+  // `password_required` to a person reopening it (liveworkspace one-explorer-contracts.md "Reopened without the code"),
+  // or `not_found` to someone with no access while the item has a live link ("Opened by its editor address"), or null.
   passwordLink: (id: string) => Promise<string | null>;
   // The local sentinel an Offline Mode item is owned by.
   offlineOwnerId: string;
@@ -449,7 +450,9 @@ export async function openOwnAddress<
     return endShort(product, set);
   }
   if (!fetched) {
-    // A protected item the person opened through its link before: through that link, as above, never Not Found.
+    // A protected item the person opened through its link before, or an editor address opened with no access while
+    // the item has a live link (Work Tracker 1518): through that link, as above, so its password, sign-in rule,
+    // level and tab all hold. With no link named, Not Found as before.
     const link = await passwordLinkOf(product, id);
     if (link) return openThroughLink(product, run, id, link);
     // The address named an item the api returned nothing for: it doesn't exist or isn't ours. A NotFound page

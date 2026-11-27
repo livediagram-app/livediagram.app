@@ -508,6 +508,38 @@ describe('openOwnAddress', () => {
     expect(h.product.loadOwn).toHaveBeenCalledTimes(2);
   });
 
+  // Work Tracker 1518: an editor address opened by someone with no access, while the item has a live link. The index's
+  // not-found names its least link, and the item opens through it as if the visitor had followed the link.
+  it('opens an editor address with no access through the link its refusal names, with every rule of that link', async () => {
+    const viewer = harness({
+      loadShared: vi.fn(async () => resolved({ role: 'view', tabId: 't1' })),
+      passwordLink: vi.fn(async () => 'code'),
+    });
+    expect(await openOwnAddress(viewer.product, viewer.run, own)).toBe(true);
+    expect(viewer.product.loadShared).toHaveBeenCalledWith('code', 'me', 'i1');
+    expect(viewer.calls).toEqual(
+      expect.arrayContaining(['tabScope:"t1"', 'isOwner:false', 'role:"view"', 'shareCode:"code"']),
+    );
+    expect(viewer.calls).not.toContain('notFound:true');
+    // The link's sign-in rule turns a guest away at the link's own gate, never into the item.
+    const restricted = { reason: 'sign_in' as const, domains: ['acme.com'] };
+    const guest = harness({
+      loadShared: vi.fn(async () => ({
+        passwordRequired: true as const,
+        invalid: false,
+        restricted,
+      })),
+      passwordLink: vi.fn(async () => 'code'),
+    });
+    expect(await openOwnAddress(guest.product, guest.run, own)).toBe(false);
+    expect(guest.calls).toContain(`gate:${JSON.stringify({ invalid: false, restricted })}`);
+    expect(guest.run.seed).not.toHaveBeenCalled();
+    // The link went between the refusal and the resolve: Not Found, as with no link at all.
+    const gone = harness({ passwordLink: vi.fn(async () => 'code') });
+    expect(await openOwnAddress(gone.product, gone.run, own)).toBe(false);
+    expect(gone.calls).toContain('notFound:true');
+  });
+
   it('keeps the gated reopens bounded, and per reader', async () => {
     const gate = { passwordRequired: true as const, invalid: false };
     const h = harness({

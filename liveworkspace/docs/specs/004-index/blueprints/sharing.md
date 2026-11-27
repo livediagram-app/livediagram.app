@@ -18,6 +18,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/notices.ts`          | `tellApp`, `firstVisitStatement`, `GET /app/people/:id/count`                               |
 | `liveworkspace/apps/index/src/community-states.ts` | `POST /app/community/states`: `communityStatesOf`, where each Community post's item stands  |
 | `liveworkspace/apps/index/src/codec.ts`            | `generateShareCode`, `isShareCode`                                                          |
+| `liveworkspace/apps/index/src/share-fallback.ts`   | `fallbackLinkOf`, `withFallbackLink`: the least live link a refused grant names             |
 
 ## Domain and naming
 
@@ -62,6 +63,24 @@ Scope, by file:
 5. A person through a non-public link: `shared_with` upserted (rewritten only for a new code or after 60 s); the first
    visit tells the app `{ type: 'joined', personId, level }`.
 6. `{ item, level, tabId, public }`.
+
+### Opened by its editor address (`share-fallback.ts`)
+
+`POST /items/:id/grant` refused by `loadItem` hands its refusal to `withFallbackLink`. It adds the item's least live
+link, `{ error: 'not_found', link }`, only when every one holds; otherwise the refusal goes out untouched, byte for
+byte:
+
+1. The refusal is `404`, or `401` to a caller with no person (`unauthorized`; a person's `401` is a password or
+   sign-in refusal through their own link, left alone).
+2. No code was sent (`caller.share` null), and the person, if any, is not an app's delegate, the Drive mirror or the
+   export.
+3. `fallbackLinkOf(env, id)` finds one: one query, `share_links` joined to `items`, live, `public = 0`, the item neither
+   trashed nor archived, ordered by level (`view`, `participate`, `edit`), then `tab_id IS NULL` (a one-tab link
+   first), then `created_at`, `code`; `LIMIT 1` over the `share_links_item` index (at most 100 rows).
+
+The query runs for every such refusal, item or no item, so a real id and a made-up one answer in the same time. The
+editor (`@liveworkspace/index-client` `passwordLink`, `@liveworkspace/workbench` `openOwnAddress`) opens the item
+through the named code, so the link's own door applies every rule above.
 
 ### Password guesses (`share-guesses.ts`)
 
@@ -159,12 +178,13 @@ counts the person's items in that app, Trash included, up to `OWNED_COUNT_MAX` (
 
 ## Testing
 
-| Test                                                 | Pins                                                                                                                                                                        |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/sharing.test.ts` (29)  | share links; share passwords; a password on links already opened; guesses; what a link opens, and Shared with me; a public link at its own level for its owner              |
-| `liveworkspace/apps/index/src/notices.test.ts` (6)   | notices; a person's count of items made                                                                                                                                     |
-| `liveworkspace/apps/index/src/share-sign-in.test.ts` | the rule's route; Require Sign In and domains on open, grant, reopen and lookup for each level; unverified and other-domain emails; guests; public links; sessions reloaded |
-| `packages/index-client/src/share-domains.test.ts`    | parsing, normalising and refusing domains; a worst-case text inside a CPU budget                                                                                            |
+| Test                                                  | Pins                                                                                                                                                                                                                                       |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `liveworkspace/apps/index/src/sharing.test.ts` (29)   | share links; share passwords; a password on links already opened; guesses; what a link opens, and Shared with me; a public link at its own level for its owner                                                                             |
+| `liveworkspace/apps/index/src/notices.test.ts` (6)    | notices; a person's count of items made                                                                                                                                                                                                    |
+| `liveworkspace/apps/index/src/share-fallback.test.ts` | the least live link named: none, one, several (level, tab, age), expired, public, trashed, archived; password and sign-in links still asked at the link; owner and team member granted edit; signed out, guests, delegates and a sent code |
+| `liveworkspace/apps/index/src/share-sign-in.test.ts`  | the rule's route; Require Sign In and domains on open, grant, reopen and lookup for each level; unverified and other-domain emails; guests; public links; sessions reloaded                                                                |
+| `packages/index-client/src/share-domains.test.ts`     | parsing, normalising and refusing domains; a worst-case text inside a CPU budget                                                                                                                                                           |
 
 ## Constants and configuration
 

@@ -22,6 +22,10 @@ export const GRANT_RETRY_MS = 15_000;
 // Items held at once; the oldest goes first. A person has one or two open.
 export const GRANTS_HELD_MAX = 32;
 
+// The refusals whose named link the item opens through (`passwordLink`): a password asked of a returning link visitor,
+// and the not-found an editor address with no access answers while the item has a live link.
+const REOPEN_REFUSALS: ReadonlySet<string> = new Set(['password_required', 'not_found']);
+
 export type ItemShare = { code: string; password?: string | null } | null;
 
 /** What an inline boot script leaves on `window[bootGlobal]`: the grant asked for before the page's code loaded. */
@@ -194,12 +198,14 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
     // Why the index last refused this item (`password_required`, `password_invalid`, `not_found`, ...), or null.
     refusal: (itemId, share = null) => refusals.get(keyOf(itemId, share)) ?? null,
     refusalDomains: (itemId, share = null) => refusalDomains.get(keyOf(itemId, share)) ?? null,
-    // The link to ask for the password through, when the item, asked for with no code, needs one
-    // (one-explorer-contracts.md "Reopened without the code"): the held answer, else one request. Null otherwise.
+    // The link to open the item through when it was asked for with no code and refused: a password asked of a person
+    // who opened that link before (one-explorer-contracts.md "Reopened without the code"), or, for someone with no
+    // access, the item's least live link ("Opened by its editor address"). The held answer, else one request. Null
+    // otherwise.
     passwordLink: async (itemId) => {
       const key = keyOf(itemId, null);
       if (await grant(itemId, null)) return null;
-      return refusals.get(key) === 'password_required' ? (refusalLinks.get(key) ?? null) : null;
+      return REOPEN_REFUSALS.has(refusals.get(key) ?? '') ? (refusalLinks.get(key) ?? null) : null;
     },
     // Keep the open item's grant fresh, for as long as it stays open. Answers the stop. One timer per item, however
     // many keep it fresh: it runs until the last of them stops. A renewal the network failed is tried again after
