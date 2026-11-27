@@ -240,6 +240,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const planStripFolded = isMobile && !!(props.sessionTools && stripTools);
   // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
   const tabShowsCards = useTabShowsCards(elements);
+  // Beside the Session strip on a phone the AI button joins the folded Plan strip's menu, so a voting board's cluster
+  // stays one row (docs/specs/026-plan/plan-ai.md "The button"). Only an editor has that menu (Card Types).
+  const aiFolds = planStripFolded && tabShowsCards && !readOnly && !!tabPlanKind;
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
   usePublishCardTypesTaken(elements);
   // Panel elements + their wiring live in useCanvasChromePanels.
@@ -452,7 +455,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : null}
             {/* The AI button (docs/specs/026-plan/plan-ai.md "The button"): left of the Plan strip, on a Board,
               Sheet, Form or Dashboard tab. */}
-            {!zenMode && tabPlanKind ? (
+            {!zenMode && tabPlanKind && !aiFolds ? (
               <PlanAiButton
                 open={activeDockPanel === 'plan-ai'}
                 onToggle={(button) => handleDockButtonClick('plan-ai', button, true)}
@@ -472,6 +475,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       }
                 }
                 folded={planStripFolded}
+                ai={
+                  aiFolds
+                    ? {
+                        open: activeDockPanel === 'plan-ai',
+                        onToggle: (button) => handleDockButtonClick('plan-ai', button, true),
+                      }
+                    : undefined
+                }
                 // The Trash leads the strip for an editor, off a phone or in its folded menu (docs/specs/026-plan/items.md "Trash").
                 trash={
                   !readOnly && (!isMobile || planStripFolded)

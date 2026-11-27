@@ -46,7 +46,11 @@ changes answered and dropped; never the instruction, the tab or the reply.
 
 - `PlanAiButton`: one `ClusterPopoverSegment` (sparkle, name **AI**, `Open AI`) in a `ClusterStrip` of its own,
   rendered by `CanvasChrome` left of `PlanCardsClusterStrip` while the tab has a Plan kind (`usePlanTabKind`) and Zen
-  is off. It toggles the `plan-ai` dock panel (`useDockPopovers`: width 416, `Plan·Opened·PlanAi`).
+  is off. It toggles the `plan-ai` dock panel (`useDockPopovers`: width 416, `Plan·Opened·PlanAi`). While the Plan
+  strip folds (`planStripFolded`: a phone beside the Session strip) for an editor on a tab that shows cards
+  (`aiFolds`), `CanvasChrome` draws no `PlanAiButton` and passes `ai` to `PlanCardsClusterStrip` instead, whose
+  `FoldedPlanStrip` lists it first (**AI**, sparkle) and toggles the same `plan-ai` panel from the More Card Tools
+  button. Guarded by `smoke.spec.ts` "the Session strip keeps Undo on screen" (one row at 390px).
 - `PlanAiPanel`: lazy (`useCanvasChromePanels`, `LazyPopover`), a `MovablePanel` popover with `planAiHeroArt`. A guest
   gets the sign-in state; otherwise the thread, the empty state with the kind's suggestions, a Viewer's note, the
   turns (`PlanAiTurn`) and the shared `AskComposer` with `AnswerWith` (`@liveworkspace/ask/composer`, which now also

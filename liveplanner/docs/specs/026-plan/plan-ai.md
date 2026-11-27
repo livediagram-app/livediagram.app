@@ -26,7 +26,11 @@ can change it. It is the same box, the same AI pill and the same answers, so the
 - It shows on a Board, Sheet, Form or Dashboard tab, for everyone who sees the cluster (an Editor, a Participant and a
   Viewer; a guest too, whose panel asks them to sign in), never in Zen or an embed (which draws no cluster). Offline, a
   turn fails with the failure words below, as every AI call does.
-- On a phone the cluster's row keeps it as an icon button; it never folds into the Plan strip's More menu.
+- On a phone the cluster's row keeps it as an icon button, except beside the Session strip (a tab whose cards take
+  votes) for an editor: there the Plan strip is one **More Card Tools** button, and the AI button folds into its menu
+  as the first row, **AI**, opening its panel above that button, so the voting board's cluster stays one row at 390px
+  ([Session tools](../012-collaboration/session-tools.md#the-session-strip)). A Participant or Viewer has no More Card
+  Tools button there, so the AI button stays in the row.
 
 ## The panel
 
