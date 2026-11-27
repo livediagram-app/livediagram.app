@@ -143,7 +143,11 @@ describe('a stacked move frame stays cheap', () => {
     );
     const els: StickyElement[] = pages.flatMap((p) =>
       Array.from({ length: PER_PAGE }, (_, j) =>
-        note(`${p.id}-${j}`, p.rect.x + 40 + (j % 5) * 140, p.rect.y + 40 + Math.floor(j / 5) * 130),
+        note(
+          `${p.id}-${j}`,
+          p.rect.x + 40 + (j % 5) * 140,
+          p.rect.y + 40 + Math.floor(j / 5) * 130,
+        ),
       ),
     );
     const front = pages[PAGES - 1]!;
