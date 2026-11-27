@@ -243,12 +243,10 @@ brings is below.
 
 ### Running it
 
-- **Priority** and the type's **severity-style fields** sit in the **triage strip** above the action bar: Priority's
-  four levels as chips in their colours (Urgent, High, Medium, Low) and **None**, then one row of chips for each
-  Choice field of the type named like a severity (Severity, Impact, Urgency, Criticality), its options and None. The
-  card's own values read pressed. A press writes the field at once, as the field does on the card. It is there for
-  whoever may edit cards (an Editor or a Participant), whether or not they facilitate; a Viewer reads the values. A
-  type with neither Priority nor such a field shows no strip.
+- **Priority** and the type's other fields (Severity, Impact) are set where they always are: inline in the card's
+  **Details** panel on the right (its Details tab on a phone), for whoever may edit cards (an Editor or a
+  Participant), whether or not they facilitate; a Viewer reads them. Nothing else sits between the card and the
+  action bar, so the page holds the card and the decision alone.
 - Each sidebar row shows the card's priority as a small pill in its colour on the right; a card with none shows a
   dashed **?** pill, so an unprioritised bug shows before it is accepted.
 - The **action bar** holds **Skip** and **Flag** on the left (after **Undo Last** once there is one), where Accept
@@ -257,11 +255,13 @@ brings is below.
   Undo Last, **J** and **K**.
 - **Accept** moves the real card to its target stage (the end of that column), records **Accepted** in its history
   and on the tab, and moves the room on.
-- **Close** opens the **close tray** in the action bar's place: a short **reason** (a text field of up to 200
+- **Close** opens the **Close dialog**, a centred dialog (a sheet on a phone) whose illustrated header names the card
+  ("Close Bug", "BUG-12 · Basket empties"): a short **reason** (a text field of up to 200
   characters, with Won't Fix, Can't Reproduce, Duplicate, Works as Intended and Not a Bug as chips that fill it in),
   an optional **Duplicate Of** (**Link Duplicate** opens the plan's card picker; the picked card shows as a chip with
   a remove button, and fills an empty reason with "Duplicate of BUG-12"), a line saying where the card goes ("Moves
-  to **Won't Fix**"), **Cancel** and **Close Bug**. Close Bug needs a reason; Enter in the reason presses it and
+  to **Won't Fix**"), then **Cancel** and **Close Bug** at its foot. The dialog keeps its height as a duplicate comes
+  and goes. Close Bug needs a reason; Enter in the reason presses it and
   Escape cancels. Closing moves the card to its close stage (with a duplicate linked and no close stage named in the
   set-up, to a stage of its type named Duplicate when it has one), records **Closed** with the reason and the
   duplicate in its history and on the tab, and moves the room on.
@@ -300,11 +300,11 @@ card, so a skip changes no Last Edited.
 
 ## Share roles
 
-| Role            | May                                                                                                                                                                |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Editor**      | Make a Session tab and change its set-up; hold the facilitator baton (take it, hand it over, step down, take it over); run the session                             |
-| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board (Sprint Planning's Estimate strip and Bug Triage's triage strip included) |
-| **Viewer**      | Watch it live; peek at any card; read it (the Estimate strip and the triage strip read their values, with no chips)                                                |
+| Role            | May                                                                                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Make a Session tab and change its set-up; hold the facilitator baton (take it, hand it over, step down, take it over); run the session                                    |
+| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board (Sprint Planning's Estimate strip and Bug Triage's priority in Details included) |
+| **Viewer**      | Watch it live; peek at any card; read it (the Estimate strip reads its value, with no chips; Details reads as on a board)                                                 |
 
 The outcome route asks edit access; deciding and undoing are the facilitator's alone. A locked tab reads as a
 Viewer's.
@@ -318,10 +318,10 @@ and the fill button. A kind brings only:
   Capacity; Bug Triage's add When Closed and start on oldest first),
 - its **actions** (Refinement's: Refined, Skip, Flag; Sprint Planning's: Commit, Skip; Bug Triage's: Accept, Close,
   Skip, Flag), each an outcome with a label, glyph, key and history wording; the completing one is the fill button and
-  moves the card to its target stage; a **closing** one (Bug Triage's Close) asks its reason in the close tray and
-  moves the card to its close stage,
-- its **field strip** above the action bar (Sprint Planning's Estimate strip, Bug Triage's triage strip) and the
-  sidebar rows' pill (the estimate, the priority),
+  moves the card to its target stage; a **closing** one (Bug Triage's Close) asks its reason in its own dialog
+  and moves the card to its close stage,
+- its **field strip** above the action bar when the decision needs one (Sprint Planning's Estimate strip; Bug
+  Triage has none, its fields live in Details) and the sidebar rows' pill (the estimate, the priority),
 - its **grouping** of the sidebar (Refinement's: none; Stand-up's will be by person),
 - its **tally** (Sprint Planning's: estimates against capacity; none for Refinement or Bug Triage), which brings the
   tally meter and the capacity set-up part.

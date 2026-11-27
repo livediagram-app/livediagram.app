@@ -3,7 +3,7 @@
 // A Session tab's action bar under the card (docs/specs/026-plan/session-tabs.md "The action bar", "Sprint Planning",
 // "Bug Triage"): for the facilitator, Undo Last once anything is decided, the kind's other outcomes (Refinement's Skip
 // and Flag, Sprint Planning's Skip, Bug Triage's Skip and Flag), where the completing outcome takes the card, the
-// timebox's time left, a closing outcome's button (Bug Triage's Close, which opens the close tray) and the completing
+// timebox's time left, a closing outcome's button (Bug Triage's Close, which opens the Close dialog) and the completing
 // outcome's fill button (Refined, Commit, Accept); a decided card's outcome, with its Close reason and duplicate, and
 // Undo Outcome; for everyone else, who is running the session.
 import type { Ref } from 'react';
@@ -25,10 +25,6 @@ const UndoIcon = lucideGlyph(lucideUndo2, 14);
 
 // Undo Last's chip: the latest decision named ("Closed BUG-33"), and what pressing it does.
 export type SessionUndoLast = { label: string; onUndo: () => void };
-
-// Close: the secondary button's shape in rose, apart from Skip and Flag so a closing decision reads as one.
-const closeButton =
-  'inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 text-[13px] font-medium text-rose-700 transition-colors hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:border-rose-900/70 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/40';
 
 const secondary =
   'inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
@@ -67,7 +63,7 @@ export function SessionActionBar({
   note?: string | null | undefined;
   // Undo Last, the facilitator's, once anything is decided.
   last?: SessionUndoLast | null | undefined;
-  // A kind with a closing outcome: opens its close tray.
+  // A kind with a closing outcome: opens its Close dialog.
   onCloseOpen?: (() => void) | undefined;
   onDecide: (outcome: SessionOutcome) => void;
   onUndo: () => void;
@@ -186,10 +182,11 @@ export function SessionActionBar({
       {closes ? (
         <button
           type="button"
-          className={closeButton}
+          // A close looks like any other action in its place (no red: docs/specs/004-interface-design).
+          className={secondary}
           onClick={onCloseOpen}
           aria-keyshortcuts={closes.key.toUpperCase()}
-          aria-haspopup="true"
+          aria-haspopup="dialog"
         >
           <closes.Icon size={15} aria-hidden />
           {closes.label}

@@ -1,6 +1,6 @@
 // A Bug Triage session's rules (docs/specs/026-plan/session-tabs.md "Bug Triage", blueprint session-tabs.md
-// "Behaviour and state"): where Close takes a card, the field a duplicate is linked through, the severity-style fields
-// the triage strip offers, and a Close reason as kept. Pure.
+// "Behaviour and state"): where Close takes a card, the field a duplicate is linked through, and a Close reason as kept.
+// Pure.
 import { doneNameKey } from './done-columns';
 import { itemStatus, type Item } from './item';
 import { linkTypesOf, type CustomFieldDef, type ItemTypeDef } from './item-types';
@@ -37,8 +37,6 @@ const CLOSE_LIKE = [
 ];
 const DUPLICATE_STAGES = ['duplicate', 'duplicates', 'duplicated'];
 const DUPLICATE_FIELDS = ['duplicate of', 'duplicates', 'duplicate', 'duplicated by'];
-// Choice fields the triage strip offers beside Priority, by name (lower case, a word of the label).
-const SEVERITY_WORDS = ['severity', 'impact', 'urgency', 'criticality'];
 
 // A Close reason as kept: trimmed, at most SESSION_REASON_MAX characters; empty reads as none.
 export function sessionReason(raw: unknown): string | undefined {
@@ -84,22 +82,4 @@ export function duplicateFieldOf(type: ItemTypeDef, toType: string): CustomField
       DUPLICATE_FIELDS.includes(c.label.trim().toLowerCase()) &&
       linkTypesOf(c).includes(toType),
   );
-}
-
-// The Choice fields of `type` the triage strip offers beside Priority: those named like a severity, in field order.
-export function severityFieldsOf(type: ItemTypeDef): CustomFieldDef[] {
-  const out: CustomFieldDef[] = [];
-  for (const id of type.fields) {
-    const c = type.custom?.find((x) => x.id === id);
-    if (
-      c?.kind === 'choice' &&
-      c.options?.length &&
-      c.label
-        .toLowerCase()
-        .split(/\s+/)
-        .some((w) => SEVERITY_WORDS.includes(w))
-    )
-      out.push(c);
-  }
-  return out;
 }

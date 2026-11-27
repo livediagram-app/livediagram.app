@@ -1,4 +1,4 @@
-// Bug Triage's close tray words (docs/specs/026-plan/session-tabs.md "Bug Triage", "Running it"): the reasons it
+// Bug Triage's Close dialog words (docs/specs/026-plan/session-tabs.md "Bug Triage", "Running it"): the reasons it
 // offers as chips and the reason a picked duplicate fills in. Pure.
 
 // The reasons a Close offers as chips; any other words may be typed.

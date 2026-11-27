@@ -3,12 +3,12 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Item, ItemTypeDef } from '@liveplanner/items';
 import { decisionNote, undoLabel } from '../session-words';
-import { CloseTray } from './CloseTray';
-import { PriorityPill, TriageStrip, triageRows } from './TriageStrip';
+import { CloseDialog } from './CloseDialog';
+import { PriorityPill } from './PriorityPill';
 import { duplicateLink, duplicateUnlink } from './triage-duplicate';
 
-// docs/specs/026-plan/session-tabs.md "Bug Triage": the triage strip, the rows' priority pill, the close tray, the
-// duplicate link and a decision in words.
+// docs/specs/026-plan/session-tabs.md "Bug Triage": the rows' priority pill, the Close dialog, the duplicate link
+// and a decision in words.
 afterEach(cleanup);
 
 const bug: ItemTypeDef = {
@@ -39,30 +39,7 @@ const card = (id: string, fields: Item['fields'] = {}, type = 'bug'): Item => ({
   updatedBy: { id: 'p', name: 'P', color: '#000' },
 });
 
-describe('TriageStrip', () => {
-  it('shows nothing for a type with neither Priority nor a severity-style field', () => {
-    const plain = { ...bug, fields: ['title', 'status'] };
-    expect(triageRows(card('a'), plain)).toEqual([]);
-    const { container } = render(
-      <TriageStrip item={card('a')} type={plain} canEdit onSet={vi.fn()} />,
-    );
-    expect(container.innerHTML).toBe('');
-  });
-
-  it('reads a severity the card holds, and None for an unset priority', () => {
-    render(
-      <TriageStrip
-        item={card('a', { 'f-sev': 'High' })}
-        type={bug}
-        canEdit={false}
-        onSet={vi.fn()}
-      />,
-    );
-    expect(document.querySelector('[data-triage-strip]')?.textContent).toBe(
-      'PriorityNoneSeverityHigh',
-    );
-  });
-
+describe('PriorityPill', () => {
   it('a row’s pill names the priority in its colour, or a dashed question mark', () => {
     render(
       <>
@@ -118,17 +95,17 @@ describe('a decision in words', () => {
   });
 });
 
-describe('CloseTray', () => {
+describe('CloseDialog', () => {
   const items = new Map([
     ['a', card('a')],
     ['z', card('z')],
     ['y', card('y', { archived: true })],
   ]);
-  const tray = (targetName: (dup: boolean) => string | null = () => null) => {
+  const open = (targetName: (dup: boolean) => string | null = () => null) => {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
     render(
-      <CloseTray
+      <CloseDialog
         item={items.get('a')!}
         items={items}
         types={[bug]}
@@ -142,8 +119,10 @@ describe('CloseTray', () => {
   };
   const reason = () => screen.getByRole<HTMLInputElement>('textbox', { name: 'Reason' });
 
-  it('says the card stays with no closing stage, and needs a reason before it closes', () => {
-    const t = tray();
+  it('is a dialog named for the card, says it stays with no closing stage, and needs a reason before it closes', () => {
+    const t = open();
+    expect(screen.getByRole('dialog', { name: 'Close Bug' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Close Bug' })).toHaveProperty('disabled', true);
     expect(screen.getByText(/Stays in/).textContent).toBe('Stays in New: no closing stage');
     fireEvent.keyDown(reason(), { key: 'Enter' });
     fireEvent.keyDown(reason(), { key: 'a' });
@@ -156,11 +135,11 @@ describe('CloseTray', () => {
   });
 
   it('a picked duplicate replaces the Duplicate chip’s word, offers only live other cards, and comes off again', () => {
-    const t = tray((dup) => (dup ? 'Duplicate' : 'Won’t Fix'));
+    const t = open((dup) => (dup ? 'Duplicate' : 'Won’t Fix'));
     fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
     expect(reason().value).toBe('Duplicate');
     fireEvent.click(screen.getByRole('button', { name: 'Link Duplicate' }));
-    const picker = screen.getByRole('dialog');
+    const picker = screen.getAllByRole('dialog').at(-1)!;
     expect(within(picker).queryByRole('button', { name: /Card Y/ })).toBeNull();
     expect(within(picker).queryByRole('button', { name: /Card A/ })).toBeNull();
     fireEvent.click(within(picker).getByRole('button', { name: /Card Z/ }));
@@ -171,9 +150,9 @@ describe('CloseTray', () => {
     // The picker closes without a pick, too.
     fireEvent.click(screen.getByRole('button', { name: 'Link Duplicate' }));
     fireEvent.click(
-      within(screen.getByRole('dialog')).getAllByRole('button', { name: /Close/ })[0]!,
+      within(screen.getAllByRole('dialog').at(-1)!).getAllByRole('button', { name: /Close/ })[0]!,
     );
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'Close Bug' }));
     expect(t.onConfirm).toHaveBeenCalledWith({ reason: 'Duplicate of BUG-122' });
   });

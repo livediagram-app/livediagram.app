@@ -6,11 +6,10 @@ import {
   duplicateFieldOf,
   sessionCloseTarget,
   sessionReason,
-  severityFieldsOf,
 } from './session-triage';
 
 // docs/specs/026-plan/session-tabs.md "Bug Triage": where Close takes a card, the field a duplicate links through,
-// the fields the triage strip offers and a reason as kept.
+// and a reason as kept.
 const bug: ItemTypeDef = {
   id: 'bug',
   label: 'Bug',
@@ -82,13 +81,6 @@ describe('duplicateFieldOf', () => {
     const dropped = { ...bug, fields: bug.fields.filter((f) => f !== 'f-dup') };
     expect(duplicateFieldOf(dropped, 'bug')).toBeUndefined();
     expect(duplicateFieldOf({ ...bug, custom: undefined }, 'bug')).toBeUndefined();
-  });
-});
-
-describe('severityFieldsOf', () => {
-  it('offers the Choice fields named like a severity, with options, in field order', () => {
-    expect(severityFieldsOf(bug).map((f) => f.id)).toEqual(['f-sev', 'f-impact']);
-    expect(severityFieldsOf({ ...bug, custom: undefined })).toEqual([]);
   });
 });
 

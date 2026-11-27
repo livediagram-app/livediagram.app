@@ -5,8 +5,8 @@
 // action bar. Its state is the tab's `session`, so every screen shows the same card; the cards are the plan's own. A
 // kind with a tally (Sprint Planning) adds its parts from ./planning: the tally under the progress bar, the Estimate
 // strip above the action bar, an estimate pill on each row and its line on Session Complete. Bug Triage adds its parts
-// from ./triage: the triage strip above the action bar, a priority pill on each row, and the close tray, which takes
-// the action bar's place while a Close is asked its reason.
+// from ./triage: a priority pill on each row and the Close dialog, which asks a Close its reason (priority and
+// severity are set in the card's own Details).
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { estimateOf, itemStatus, sessionTally, typeIn, type Item } from '@liveplanner/items';
@@ -43,8 +43,8 @@ import { OUTCOME_LOOKS } from './session-kinds';
 import { EstimatePill, EstimateStrip } from './planning/EstimateStrip';
 import { PlanningSummary, PlanningTally } from './planning/PlanningTally';
 import { commitMakes } from './planning/planning-words';
-import { CloseTray } from './triage/CloseTray';
-import { PriorityPill, TriageStrip } from './triage/TriageStrip';
+import { CloseDialog } from './triage/CloseDialog';
+import { PriorityPill } from './triage/PriorityPill';
 import { decisionNote, undoLabel } from './session-words';
 
 const estimatePill = (item: Item) => <EstimatePill item={item} />;
@@ -100,13 +100,13 @@ export function SessionPage({
   });
   const timebox = useSessionTimebox(session);
   const completeRef = useRef<HTMLButtonElement>(null);
-  // The card the close tray is open for (Bug Triage's Close asking its reason), or none.
+  // The card the Close dialog is open for (Bug Triage's Close asking its reason), or none.
   const [closingId, setClosingId] = useState<string | null>(null);
   const triage = session.sessionKind === 'triage';
   const last = room.last;
   const undoLast = runs && last ? () => room.undo(last.itemId) : undefined;
   // Each of the kind's outcomes by its key; the completing one presses the fill button so its fill plays, the closing
-  // one opens the close tray. U is Undo Last.
+  // one opens the Close dialog. U is Undo Last.
   const outcomeKeys: Record<string, () => void> = Object.fromEntries(
     kind.outcomes.map((o) => [
       OUTCOME_LOOKS[o].key,
@@ -235,38 +235,7 @@ export function SessionPage({
           }
         />
       ) : null}
-      {/* The close tray asks only its reason: the strip steps aside while it is open. */}
-      {triage && !closing ? (
-        <TriageStrip
-          item={shown}
-          type={typeIn(plan.types, shown.type)}
-          canEdit={plan.canEditCards}
-          onSet={(field, value) =>
-            void plan.patchItem(
-              shown.id,
-              value === null ? { clear: [field] } : { set: { [field]: value } },
-            )
-          }
-        />
-      ) : null}
-      {room.peeking ? null : closing ? (
-        <CloseTray
-          key={shown.id}
-          item={shown}
-          items={plan.items}
-          types={plan.types}
-          targetName={(duplicate) => {
-            const to = room.closeTarget(shown, duplicate);
-            return to ? statusName(to) : null;
-          }}
-          statusName={statusName(itemStatus(shown)!)}
-          onCancel={() => setClosingId(null)}
-          onConfirm={(input) => {
-            setClosingId(null);
-            room.decide('closed', input);
-          }}
-        />
-      ) : (
+      {room.peeking ? null : (
         <SessionActionBar
           sessionKind={session.sessionKind}
           item={shown}
@@ -295,6 +264,24 @@ export function SessionPage({
           onUndo={() => room.undo(shown.id)}
         />
       )}
+      {closing ? (
+        <CloseDialog
+          key={shown.id}
+          item={shown}
+          items={plan.items}
+          types={plan.types}
+          targetName={(duplicate) => {
+            const to = room.closeTarget(shown, duplicate);
+            return to ? statusName(to) : null;
+          }}
+          statusName={statusName(itemStatus(shown)!)}
+          onCancel={() => setClosingId(null)}
+          onConfirm={(input) => {
+            setClosingId(null);
+            room.decide('closed', input);
+          }}
+        />
+      ) : null}
     </>
   ) : (
     <SessionComplete

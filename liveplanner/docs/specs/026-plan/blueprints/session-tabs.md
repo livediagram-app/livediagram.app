@@ -14,8 +14,8 @@ Derived from [Session tabs](../session-tabs.md). File-level contracts, constants
 | close stage   | `sessionCloseTarget()` in `packages/items/src/session-triage.ts`                                                                                                                                                                       |
 | reason        | `sessionReason()`, `SESSION_REASON_MAX` (200), `session-triage.ts`                                                                                                                                                                     |
 | duplicate     | `duplicateFieldOf()` (`session-triage.ts`); the editor's `duplicateLink`, `duplicateUnlink` (`triage/triage-duplicate.ts`)                                                                                                             |
-| triage strip  | `TriageStrip`, `triageRows`, `PriorityPill` (`apps/editor/components/session/triage/TriageStrip.tsx`); `severityFieldsOf()`                                                                                                            |
-| close tray    | `CloseTray` (`apps/editor/components/session/triage/CloseTray.tsx`)                                                                                                                                                                    |
+| priority pill | `PriorityPill` (`apps/editor/components/session/triage/PriorityPill.tsx`)                                                                                                                                                              |
+| Close dialog  | `CloseDialog`, `closeHeroArt` (`apps/editor/components/session/triage/CloseDialog.tsx`, `CloseHeroArt.tsx`)                                                                                                                            |
 | Undo Last     | `lastDecided()` (`session-tab.ts`); `SessionUndoLast` on `SessionActionBar`                                                                                                                                                            |
 | tally         | `sessionTally()`, `capacityState()` in `packages/items/src/session-tally.ts`                                                                                                                                                           |
 | facilitator   | `SessionFacilitator` `{ id, name, color }`, `id` the collab key                                                                                                                                                                        |
@@ -63,8 +63,6 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 - `duplicateFieldOf(type, toType)`: the type's Card field (in its fields) labelled Duplicate Of, Duplicates, Duplicate
   or Duplicated By that links to `toType`. `duplicateLink` adds the duplicate to it (appending to a field holding
   several; null when it holds it already or holds one other card); `duplicateUnlink` takes only that card back out.
-- `severityFieldsOf(type)`: the type's Choice fields with options whose label has a word Severity, Impact, Urgency or
-  Criticality, in field order.
 - Undo (`useSessionRun.undo`): with the card present, moves it back to `from` while its status is still `to`, clears
   the flag when `flagSet` and still flagged, `duplicateUnlink`s a `linked` duplicate, records `{ ..., undone: true }`;
   then `withoutDecision` and `withCurrent` on the card. `lastDecided(session)` names Undo Last's decision (the newest
@@ -72,7 +70,7 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 - `outcomeFits(kind, outcome)`: the outcome is one `SESSION_KIND_OUTCOMES[kind]` offers (refinement: refined, skipped,
   flagged; planning: committed, skipped; triage: accepted, closed, skipped, flagged). The kind's `completes` outcome
   (`refined`, `committed`, `accepted`) is the fill button and moves the card to `sessionTarget`; its `closes` outcome
-  (`closed`) opens the close tray and moves the card to `sessionCloseTarget`.
+  (`closed`) opens the Close dialog and moves the card to `sessionCloseTarget`.
 - `sessionTally(cards, decided)`: over the cards decided `committed`, `{ points, counted, unestimated }`, a card's
   points its `estimate` when a finite number of 0 or more, else it is `unestimated` (never 0).
   `capacityState(points, capacity)`: `'none'` without a capacity, `'over'` past it, `'near'` from `CAPACITY_NEAR`
@@ -112,9 +110,10 @@ card and outcomes), `useSessionFacilitator.ts` (the baton), `useSessionTimebox.t
 `useSessionKeys.ts` (each outcome's key, J, K). `session-kind-parts.ts` names which parts a kind's tally adds;
 Sprint Planning's live in `planning/`: `PlanningTally` (the meter under the progress bar), `EstimateStrip` (the chips
 above the action bar), `EstimatePill` (a row's aside), `CapacityPart` (the set-up's Capacity and the no-Estimate
-notes) and `planning-words.ts` (pure wording). Bug Triage's live in `triage/`: `TriageStrip` (the strip above the
-action bar, and `PriorityPill`, a row's aside), `CloseTray` (in the action bar's place while a Close asks its reason;
-the shared `CardPickerDialog` for Duplicate Of), `triage-duplicate.ts` and `triage-words.ts` (the reason chips).
+notes) and `planning-words.ts` (pure wording). Bug Triage's live in `triage/`: `PriorityPill` (a row's aside),
+`CloseDialog` (the workbench `Dialog`, `size="md"`, a sheet on a phone, with `HeroDialogHeader` and `closeHeroArt`,
+`ChoicePills` for the reason chips, `TextInput` and `DialogFooter`; the shared `CardPickerDialog` for Duplicate Of
+opens over it), `triage-duplicate.ts` and `triage-words.ts` (the reason chips).
 `session-words.ts` (a decided card's note, Undo Last's label) serves every kind. The tab writes go through `hooks/plan/useSessionTabActions.ts`. Start Planning
 gains the `sessions` category, the `session` start kind and `start/SessionPicture`.
 
@@ -123,7 +122,7 @@ gains the `sessions` category, the `session` start kind and `start/SessionPictur
 The sidebar is a `listbox` of `option`s (`aria-current` on the room's card); the progress bar is a `progressbar` with
 `aria-valuenow`; the fill button announces "Refined" through the live region; reduced motion swaps the fill for an
 instant state change; keys R, S, F, C (Commit or Close), A, U, J, K act only outside text fields and never while the
-close tray is open. The close tray is a `group` named "Close {Type}", its reason a labelled text field (Enter closes,
+Close dialog is open. The Close dialog is a `dialog` named "Close {Type}", its reason a labelled text field (Enter closes,
 Escape cancels), its chips `aria-pressed`; Undo Last names its decision ("Undo Closed BUG-33") with
 `aria-keyshortcuts="U"`.
 
@@ -144,15 +143,15 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
   wrap from Ready to To Do, cap, outcomes
   per kind, Bug Triage's waiting stages passed; `session-tally.test.ts`: points, no estimate apart, capacity states at
   their edges; `session-triage.test.ts`: close stage preference, Duplicate stage, set-up override, stays, duplicate
-  field, severity fields, reason bounds.
+  field, reason bounds.
 - `item-history.test.ts`: a session change kept, read back, grouped only with its tag; an undo straight after cancels
   out.
 - api `item-history-route.test.ts` ("a session outcome"): records, refuses below edit, unknown outcome, tab scope, a
   Close's reason and duplicate, an undo, each refusal of `reason`, `duplicateOf` and `undone`;
   `submit.test.ts`: a changeset on a Session tab refused.
 - editor: `SessionPage.triage.test.tsx` (Accept past Needs Info, Close with reason and duplicate, Undo Last moving
-  back and unlinking, U undoing a Flag, a moved card staying, the triage strip, roles, Session Complete),
-  `triage-parts.test.tsx` (strip, pill, duplicate link, words, close tray), `planning-parts.test.tsx` (tally states, estimate strip per role, pills, capacity part),
+  back and unlinking, U undoing a Flag, a moved card staying, the priority pills, roles, Session Complete),
+  `triage-parts.test.tsx` (pill, duplicate link, words, Close dialog), `planning-parts.test.tsx` (tally states, estimate strip per role, pills, capacity part),
   `SessionPage.planning.test.tsx` (Commit moves the card and records it, C key, Skip, inline estimate, tally),
   `FillActionButton.test.tsx` (fill, tick, reduced motion), `SessionPage.test.tsx` (queue, run, keys, peek,
   phone queue, settings, roles), `session-parts.test.tsx` (action bar, sidebar, progress, complete, chip and keys per

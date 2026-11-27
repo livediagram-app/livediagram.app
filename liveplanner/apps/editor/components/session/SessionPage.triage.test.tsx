@@ -32,8 +32,8 @@ vi.mock('./session-chime', () => ({ playSessionChime: vi.fn() }));
 import { SessionPage } from './SessionPage';
 
 // docs/specs/026-plan/session-tabs.md "Bug Triage", "Share roles": Accept and Close move the real card and record it
-// (Close with its reason and duplicate, linked through the type's Duplicate Of field), the triage strip writes the
-// card's priority and severity, and Undo takes a decision back.
+// (Close with its reason and duplicate, linked through the type's Duplicate Of field), each row shows its card's
+// priority (set in the card's Details, no strip above the bar), and Undo takes a decision back.
 const bug: ItemTypeDef = {
   id: 'bug',
   label: 'Bug',
@@ -184,10 +184,10 @@ describe('SessionPage: Bug Triage', () => {
   it('Close asks a reason, links a duplicate, moves the card to Duplicate and records both', () => {
     const f = mount({ mayEdit: true });
     fireEvent.keyDown(window, { key: 'c' });
-    const tray = screen.getByRole('group', { name: 'Close Bug' });
+    const tray = screen.getByRole('dialog', { name: 'Close Bug' });
     expect(closeBug().disabled).toBe(true);
     expect(within(tray).getByText(/Moves to/).textContent).toBe('Moves to Won’t Fix');
-    // Keys never decide while the tray asks its reason.
+    // Keys never decide while the dialog asks its reason.
     fireEvent.keyDown(window, { key: 's' });
     expect(f.state().decided).toBeUndefined();
     fireEvent.click(within(tray).getByRole('button', { name: 'Can’t Reproduce' }));
@@ -195,11 +195,11 @@ describe('SessionPage: Bug Triage', () => {
       'Can’t Reproduce',
     );
     fireEvent.click(within(tray).getByRole('button', { name: 'Link Duplicate' }));
-    const picker = screen.getByRole('dialog');
+    const picker = screen.getByRole('dialog', { name: 'Link Duplicate' });
     // The card itself is never offered.
     expect(within(picker).queryByRole('button', { name: /Card A/ })).toBeNull();
     fireEvent.click(within(picker).getByRole('button', { name: /Card Z/ }));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Link Duplicate' })).toBeNull();
     expect(within(tray).getByText(/Moves to/).textContent).toBe('Moves to Duplicate');
     expect(document.querySelector('[data-duplicate-chip="z"]')?.textContent).toContain('BUG-9');
     // A typed reason stays when a duplicate is picked.
@@ -207,6 +207,7 @@ describe('SessionPage: Bug Triage', () => {
       'Can’t Reproduce',
     );
     fireEvent.click(closeBug());
+    expect(screen.queryByRole('dialog', { name: 'Close Bug' })).toBeNull();
     expect(f.plan.patchItem).toHaveBeenCalledWith('a', { set: { 'f-dup': 'z' } });
     expect(f.plan.moveItem).toHaveBeenCalledWith('a', { status: 'duplicate', before: null });
     expect(recordSessionOutcome).toHaveBeenCalledWith({ projectId: 'p1' }, 'a', {
@@ -236,7 +237,11 @@ describe('SessionPage: Bug Triage', () => {
     const f = mount({ mayEdit: true });
     fireEvent.click(screen.getByRole('button', { name: /^Close$/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Link Duplicate' }));
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Card Z/ }));
+    fireEvent.click(
+      within(screen.getByRole('dialog', { name: 'Link Duplicate' })).getByRole('button', {
+        name: /Card Z/,
+      }),
+    );
     // A picked duplicate fills an empty reason.
     const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Reason' });
     expect(input.value).toBe('Duplicate of BUG-9');
@@ -261,12 +266,12 @@ describe('SessionPage: Bug Triage', () => {
     expect(f.state().currentId).toBe('a');
   });
 
-  it('Escape cancels the tray, and U undoes a Flag, taking its flag off', () => {
+  it('Escape cancels the Close dialog, and U undoes a Flag, taking its flag off', () => {
     const f = mount({ mayEdit: true });
     fireEvent.keyDown(window, { key: 'c' });
-    expect(screen.getByRole('group', { name: 'Close Bug' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Close Bug' })).toBeTruthy();
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Reason' }), { key: 'Escape' });
-    expect(screen.queryByRole('group', { name: 'Close Bug' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Close Bug' })).toBeNull();
     fireEvent.keyDown(window, { key: 'f' });
     expect(f.plan.patchItem).toHaveBeenCalledWith('a', { set: { flagged: true } });
     expect(f.state().decided?.a).toMatchObject({ outcome: 'flagged', flagSet: true });
@@ -290,7 +295,11 @@ describe('SessionPage: Bug Triage', () => {
     });
     fireEvent.keyDown(window, { key: 'c' });
     fireEvent.click(screen.getByRole('button', { name: 'Link Duplicate' }));
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Card Z/ }));
+    fireEvent.click(
+      within(screen.getByRole('dialog', { name: 'Link Duplicate' })).getByRole('button', {
+        name: /Card Z/,
+      }),
+    );
     fireEvent.click(closeBug());
     expect(f.plan.patchItem).not.toHaveBeenCalled();
     expect(f.state().decided?.a).toMatchObject({ duplicateOf: 'z', to: 'duplicate' });
@@ -318,55 +327,29 @@ describe('SessionPage: Bug Triage', () => {
     expect(f.state().decided).toBeUndefined();
   });
 
-  it('the triage strip writes priority and severity, and the rows show each card’s priority', () => {
-    const f = mount({ mayEdit: true });
-    const priority = screen.getByRole('group', { name: 'Priority' });
-    expect(
-      within(priority).getByRole('button', { name: 'High' }).getAttribute('aria-pressed'),
-    ).toBe('true');
-    fireEvent.click(within(priority).getByRole('button', { name: 'Urgent' }));
-    fireEvent.click(within(priority).getByRole('button', { name: 'None' }));
-    fireEvent.click(
-      within(screen.getByRole('group', { name: 'Severity' })).getByRole('button', {
-        name: 'Critical',
-      }),
-    );
-    expect(vi.mocked(f.plan.patchItem).mock.calls).toEqual([
-      ['a', { set: { priority: 'urgent' } }],
-      ['a', { clear: ['priority'] }],
-      ['a', { set: { 'f-sev': 'Critical' } }],
-    ]);
+  it('the rows show each card’s priority, and no strip sits above the action bar', () => {
+    mount({ mayEdit: true });
     const pills = [...document.querySelectorAll('[data-priority-pill]')].map((p) =>
       p.getAttribute('data-priority-pill'),
     );
     expect(pills).toEqual(['high', 'none', 'none']);
+    expect(screen.queryByRole('group', { name: 'Priority' })).toBeNull();
   });
 
-  it('a Participant sets priority but never decides; a Viewer reads the strip', () => {
-    const p = mount({
-      mayEdit: false,
-      canEditCards: true,
-      session: { facilitator: ALI, currentId: 'a', cardStartedAt: 1 },
-    });
-    expect(screen.queryByRole('button', { name: /Accept|^Close$|Skip/ })).toBeNull();
-    fireEvent.click(
-      within(screen.getByRole('group', { name: 'Priority' })).getByRole('button', { name: 'Low' }),
-    );
-    expect(p.plan.patchItem).toHaveBeenCalledWith('a', { set: { priority: 'low' } });
-    fireEvent.keyDown(window, { key: 'c' });
-    fireEvent.keyDown(window, { key: 'u' });
-    expect(screen.queryByRole('group', { name: 'Close Bug' })).toBeNull();
-    expect(p.actions.runSession).not.toHaveBeenCalled();
-    cleanup();
-    mount({
-      mayEdit: false,
-      canEditCards: false,
-      session: { facilitator: ALI, currentId: 'a', cardStartedAt: 1 },
-    });
-    expect(screen.queryByRole('group', { name: 'Priority' })).toBeNull();
-    expect(document.querySelector('[data-triage-strip]')?.textContent).toBe(
-      'PriorityHighSeverityNone',
-    );
+  it('a Participant or a Viewer never decides, nor opens the Close dialog', () => {
+    for (const canEditCards of [true, false]) {
+      const p = mount({
+        mayEdit: false,
+        canEditCards,
+        session: { facilitator: ALI, currentId: 'a', cardStartedAt: 1 },
+      });
+      expect(screen.queryByRole('button', { name: /Accept|^Close$|Skip/ })).toBeNull();
+      fireEvent.keyDown(window, { key: 'c' });
+      fireEvent.keyDown(window, { key: 'u' });
+      expect(screen.queryByRole('dialog', { name: 'Close Bug' })).toBeNull();
+      expect(p.actions.runSession).not.toHaveBeenCalled();
+      cleanup();
+    }
   });
 
   it('Session Complete shows Accepted, Closed, Skipped and Flagged', () => {

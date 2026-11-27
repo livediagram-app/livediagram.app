@@ -81,7 +81,7 @@ export type SessionKindInfo = {
   label: string;
   outcomes: readonly SessionOutcome[];
   completes: SessionOutcome;
-  // Its closing outcome (Bug Triage's Closed): asked its reason in the close tray, it moves the card to its close
+  // Its closing outcome (Bug Triage's Closed): asked its reason in the Close dialog, it moves the card to its close
   // stage; absent: the kind has none.
   closes?: SessionOutcome;
   grouping: 'none';
