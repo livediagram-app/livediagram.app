@@ -8,6 +8,7 @@ import {
   isSessionKindId,
   isSessionOutcome,
   normaliseBoardSort,
+  sessionReason,
   type BoardSortLevel,
   type SessionKindId,
   type SessionOutcome,
@@ -30,6 +31,9 @@ export type SessionSetup = {
   // A card type id -> the stage the kind's completing outcome (Refined, Committed) moves its cards to; absent: the
   // next stage in the type's order.
   targets?: Record<string, string>;
+  // A card type id -> the stage a kind's closing outcome (Bug Triage's Closed) moves its cards to; absent: the type's
+  // close stage.
+  closeTargets?: Record<string, string>;
   // Per card; absent: no timebox.
   timeboxMs?: number;
   // A kind with a tally (Sprint Planning): the estimate points the committed cards are tallied against; absent: none.
@@ -38,7 +42,23 @@ export type SessionSetup = {
 
 export type SessionFacilitator = { id: string; name: string; color: string };
 
-export type SessionDecision = { outcome: SessionOutcome; at: number; by: string };
+export type SessionDecision = {
+  outcome: SessionOutcome;
+  at: number;
+  by: string;
+  // The move the outcome made, so Undo can take the card back: from its stage, to the one it was moved to.
+  from?: string;
+  to?: string;
+  // The outcome set the card's flag (Flag on a card not flagged yet).
+  flagSet?: true;
+  // A Close's reason and the card it duplicates (an id), and the Card field the duplicate was linked through.
+  reason?: string;
+  duplicateOf?: string;
+  linked?: string;
+};
+
+// What an outcome did beyond deciding, kept on its decision.
+export type SessionDecisionDetail = Omit<SessionDecision, 'outcome' | 'at' | 'by'>;
 
 export type SessionTabState = {
   v: 1;
@@ -61,6 +81,9 @@ export type SessionKindInfo = {
   label: string;
   outcomes: readonly SessionOutcome[];
   completes: SessionOutcome;
+  // Its closing outcome (Bug Triage's Closed): asked its reason in the close tray, it moves the card to its close
+  // stage; absent: the kind has none.
+  closes?: SessionOutcome;
   grouping: 'none';
   tally: 'none' | 'estimate';
 };
@@ -80,6 +103,14 @@ export const SESSION_KINDS: Readonly<Record<SessionKindId, SessionKindInfo>> = {
     grouping: 'none',
     tally: 'estimate',
   },
+  triage: {
+    label: 'Bug Triage',
+    outcomes: SESSION_KIND_OUTCOMES.triage,
+    completes: 'accepted',
+    closes: 'closed',
+    grouping: 'none',
+    tally: 'none',
+  },
 };
 
 const isObj = (v: unknown): v is Record<string, unknown> =>
@@ -96,6 +127,14 @@ const strings = (v: unknown, max: number): string[] => {
   return out;
 };
 
+// A type id -> stage map as kept: string pairs only, else none.
+function stringPairs(raw: unknown): Record<string, string> | undefined {
+  if (!isObj(raw)) return undefined;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw)) if (k && typeof v === 'string' && v) out[k] = v;
+  return Object.keys(out).length ? out : undefined;
+}
+
 function readSetup(raw: unknown): SessionSetup {
   const r = isObj(raw) ? raw : {};
   const setup: SessionSetup = {
@@ -104,12 +143,10 @@ function readSetup(raw: unknown): SessionSetup {
   };
   const sortBy = normaliseBoardSort(r['sortBy']);
   if (sortBy) setup.sortBy = sortBy;
-  if (isObj(r['targets'])) {
-    const targets: Record<string, string> = {};
-    for (const [k, v] of Object.entries(r['targets']))
-      if (k && typeof v === 'string' && v) targets[k] = v;
-    if (Object.keys(targets).length) setup.targets = targets;
-  }
+  const targets = stringPairs(r['targets']);
+  if (targets) setup.targets = targets;
+  const closeTargets = stringPairs(r['closeTargets']);
+  if (closeTargets) setup.closeTargets = closeTargets;
   const box = r['timeboxMs'];
   if (typeof box === 'number' && Number.isFinite(box) && box > 0)
     setup.timeboxMs = Math.min(SESSION_TIMEBOX_MAX_MS, Math.max(SESSION_TIMEBOX_MIN_MS, box));
@@ -142,10 +179,29 @@ function readDecided(raw: unknown): Record<string, SessionDecision> | undefined 
       outcome: d['outcome'],
       at: d['at'],
       by: typeof d['by'] === 'string' ? d['by'] : '',
+      ...readDetail(d),
     };
     if (++n === SESSION_QUEUE_MAX) break;
   }
   return n ? out : undefined;
+}
+
+const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
+
+// What a stored decision did beyond deciding, anything malformed left out.
+function readDetail(d: Record<string, unknown>): SessionDecisionDetail {
+  const out: SessionDecisionDetail = {};
+  const from = str(d['from']);
+  const to = str(d['to']);
+  if (from && to) Object.assign(out, { from, to });
+  if (d['flagSet'] === true) out.flagSet = true;
+  const reason = sessionReason(d['reason']);
+  if (reason) out.reason = reason;
+  const duplicateOf = str(d['duplicateOf']);
+  if (duplicateOf) out.duplicateOf = duplicateOf;
+  const linked = str(d['linked']);
+  if (linked && duplicateOf) out.linked = linked;
+  return out;
 }
 
 // The tab's session as stored, or null when it holds none this build can run (absent, malformed, or a kind from a
@@ -202,7 +258,8 @@ export function withCurrent(
   return itemId ? { ...rest, currentId: itemId, cardStartedAt: now } : rest;
 }
 
-// An outcome decided for `itemId` by `by` (a name), the room moving on to `nextId`.
+// An outcome decided for `itemId` by `by` (a name), the room moving on to `nextId`; `detail` what it did (its move,
+// its flag, a Close's reason and duplicate), for Undo and the decided card's line.
 export function withDecision(
   s: SessionTabState,
   itemId: string,
@@ -210,8 +267,9 @@ export function withDecision(
   by: string,
   now: number,
   nextId: string | null,
+  detail: SessionDecisionDetail = {},
 ): SessionTabState {
-  const decided = { ...s.decided, [itemId]: { outcome, at: now, by } };
+  const decided = { ...s.decided, [itemId]: { ...detail, outcome, at: now, by } };
   return withCurrent({ ...s, decided }, nextId, now);
 }
 
@@ -221,6 +279,16 @@ export function withoutDecision(s: SessionTabState, itemId: string): SessionTabS
   const { [itemId]: _gone, ...decided } = s.decided;
   const { decided: _d, ...rest } = s;
   return Object.keys(decided).length ? { ...rest, decided } : rest;
+}
+
+// The latest decision (Undo Last's), or null when nothing is decided.
+export function lastDecided(
+  s: SessionTabState,
+): { itemId: string; decision: SessionDecision } | null {
+  let out: { itemId: string; decision: SessionDecision } | null = null;
+  for (const [itemId, decision] of Object.entries(s.decided ?? {}))
+    if (!out || decision.at >= out.decision.at) out = { itemId, decision };
+  return out;
 }
 
 // Start Again: every outcome cleared, the room back at the start.

@@ -48,8 +48,16 @@ export type ItemHistoryChange =
   | { kind: 'set'; field: string; value?: ItemHistoryValue }
   | { kind: 'cleared'; field: string }
   // A Session tab's outcome for the card (docs/specs/026-plan/session-tabs.md "History"): its own entry, tagged
-  // `session`, written by the outcome route and never worked out from a write.
-  | { kind: 'session'; session: SessionKindId; outcome: SessionOutcome };
+  // `session`, written by the outcome route and never worked out from a write. A Close keeps its reason and the card
+  // it duplicates (an id); `undone` marks the outcome taken back.
+  | {
+      kind: 'session';
+      session: SessionKindId;
+      outcome: SessionOutcome;
+      reason?: string;
+      duplicateOf?: string;
+      undone?: true;
+    };
 
 // How an entry was made: by an agent (an API token), as an undo or redo, or from a form's response.
 // `automation_ai`: a rule's AI action (docs/specs/026-plan/automations.md "AI actions"), by Automation, marked as AI.
@@ -222,6 +230,15 @@ function merged(older: ItemHistoryChange, newer: ItemHistoryChange): ItemHistory
     unflagged: 'flagged',
   };
   if (pairs[older.kind] === newer.kind) return null;
+  // A session outcome undone straight after it was decided cancels out, as a flag and an unflag do.
+  if (
+    older.kind === 'session' &&
+    newer.kind === 'session' &&
+    !older.undone &&
+    newer.undone &&
+    older.outcome === newer.outcome
+  )
+    return null;
   return newer;
 }
 

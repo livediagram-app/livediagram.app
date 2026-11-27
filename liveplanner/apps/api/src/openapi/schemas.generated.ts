@@ -9369,6 +9369,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
+          "duplicateOf": {
+            "type": "string"
+          },
           "kind": {
             "const": "session",
             "type": "string"
@@ -9376,8 +9379,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "outcome": {
             "$ref": "#/components/schemas/SessionOutcome"
           },
+          "reason": {
+            "type": "string"
+          },
           "session": {
             "$ref": "#/components/schemas/SessionKindId"
+          },
+          "undone": {
+            "const": true,
+            "type": "boolean"
           }
         },
         "required": [
@@ -9630,23 +9640,39 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemSessionRequest": {
     "additionalProperties": false,
     "properties": {
+      "duplicateOf": {
+        "description": "The id of the card a closed card duplicates, a card of this plan other than itself; only with `closed`.",
+        "type": "string"
+      },
       "outcome": {
-        "description": "What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning).",
+        "description": "What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage).",
         "enum": [
           "refined",
           "skipped",
           "flagged",
-          "committed"
+          "committed",
+          "accepted",
+          "closed"
         ],
         "type": "string"
       },
+      "reason": {
+        "description": "A Close's reason, at most 200 characters; only with `closed`.",
+        "type": "string"
+      },
       "session": {
-        "description": "The session kind: `refinement` or `planning` (Sprint Planning).",
+        "description": "The session kind: `refinement`, `planning` (Sprint Planning) or `triage` (Bug Triage).",
         "enum": [
           "refinement",
-          "planning"
+          "planning",
+          "triage"
         ],
         "type": "string"
+      },
+      "undone": {
+        "const": true,
+        "description": "The outcome was taken back (Undo Outcome, Undo Last).",
+        "type": "boolean"
       }
     },
     "required": [
@@ -13922,8 +13948,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "by": {
         "type": "string"
       },
+      "duplicateOf": {
+        "type": "string"
+      },
+      "flagSet": {
+        "const": true,
+        "type": "boolean"
+      },
+      "from": {
+        "type": "string"
+      },
+      "linked": {
+        "type": "string"
+      },
       "outcome": {
         "$ref": "#/components/schemas/SessionOutcome"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "to": {
+        "type": "string"
       }
     },
     "required": [
@@ -13956,7 +14001,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SessionKindId": {
     "enum": [
       "refinement",
-      "planning"
+      "planning",
+      "triage"
     ],
     "type": "string"
   },
@@ -13965,7 +14011,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "refined",
       "skipped",
       "flagged",
-      "committed"
+      "committed",
+      "accepted",
+      "closed"
     ],
     "type": "string"
   },
@@ -13974,6 +14022,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "capacity": {
         "type": "number"
+      },
+      "closeTargets": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
       },
       "sortBy": {
         "items": {

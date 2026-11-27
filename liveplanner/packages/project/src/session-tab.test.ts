@@ -7,6 +7,7 @@ import {
   SESSION_TIMEBOX_MIN_MS,
   facilitatorAway,
   isFacilitator,
+  lastDecided,
   newSessionTab,
   readSessionTab,
   timeboxLeftMs,
@@ -117,6 +118,51 @@ describe('readSessionTab', () => {
     ).toHaveLength(SESSION_QUEUE_MAX);
   });
 
+  it('reads Bug Triage’s close stages and what each decision did, dropping what does not read', () => {
+    const s = readSessionTab({
+      sessionKind: 'triage',
+      setup: { typeIds: ['bug'], statuses: ['new'], closeTargets: { bug: 'wont-fix', x: 4 } },
+      decided: {
+        a: {
+          outcome: 'closed',
+          at: 1,
+          by: 'S',
+          from: 'new',
+          to: 'wont-fix',
+          flagSet: true,
+          reason: '  Not a Bug ',
+          duplicateOf: 'z',
+          linked: 'f-dup',
+        },
+        // A move with one end, a flag not true, an empty reason and a link with no duplicate all drop.
+        b: { outcome: 'accepted', at: 2, from: 'new', flagSet: 1, reason: ' ', linked: 'f-dup' },
+      },
+    })!;
+    expect(s.setup.closeTargets).toEqual({ bug: 'wont-fix' });
+    expect(s.decided?.a).toEqual({
+      outcome: 'closed',
+      at: 1,
+      by: 'S',
+      from: 'new',
+      to: 'wont-fix',
+      flagSet: true,
+      reason: 'Not a Bug',
+      duplicateOf: 'z',
+      linked: 'f-dup',
+    });
+    expect(s.decided?.b).toEqual({ outcome: 'accepted', at: 2, by: '' });
+    expect(
+      readSessionTab({ sessionKind: 'triage', setup: { closeTargets: { x: 4 } } })!.setup
+        .closeTargets,
+    ).toBeUndefined();
+    expect(SESSION_KINDS.triage).toMatchObject({
+      label: 'Bug Triage',
+      outcomes: ['accepted', 'closed', 'skipped', 'flagged'],
+      completes: 'accepted',
+      closes: 'closed',
+    });
+  });
+
   it('keeps a Sprint Planning capacity as whole points within bounds, else none', () => {
     const cap = (capacity: unknown) =>
       readSessionTab({ sessionKind: 'planning', setup: { capacity } })!.setup.capacity;
@@ -169,6 +215,33 @@ describe('moving through the queue', () => {
     expect(withoutDecision(withoutDecision(two, 'a'), 'b').decided).toBeUndefined();
     expect(withoutDecision(base, 'a')).toBe(base);
     expect(withNoDecisions(two)).toEqual(base);
+  });
+
+  // docs/specs/026-plan/session-tabs.md "The action bar" (Undo Last), "Bug Triage".
+  it('keeps what an outcome did, and names the latest decision', () => {
+    expect(lastDecided(base)).toBeNull();
+    const closed = withDecision(base, 'a', 'closed', 'S', 5, 'b', {
+      from: 'new',
+      to: 'wont-fix',
+      reason: 'Not a Bug',
+      duplicateOf: 'z',
+      linked: 'f-dup',
+    });
+    expect(closed.decided?.a).toEqual({
+      outcome: 'closed',
+      at: 5,
+      by: 'S',
+      from: 'new',
+      to: 'wont-fix',
+      reason: 'Not a Bug',
+      duplicateOf: 'z',
+      linked: 'f-dup',
+    });
+    const two = withDecision(closed, 'b', 'flagged', 'S', 9, null, { flagSet: true });
+    expect(lastDecided(two)).toEqual({ itemId: 'b', decision: two.decided!.b });
+    // By when each was decided, whatever order the record keeps them in.
+    const swapped = { ...two, decided: { b: two.decided!.b!, a: two.decided!.a! } };
+    expect(lastDecided(swapped)?.itemId).toBe('b');
   });
 });
 

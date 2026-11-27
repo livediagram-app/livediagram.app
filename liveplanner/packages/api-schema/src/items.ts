@@ -140,10 +140,16 @@ export type ItemsTallyRequest = {
 // POST /api/projects/:id/items/:itemId/session (docs/specs/026-plan/session-tabs.md "History"): a Session tab's
 // outcome for the card, kept in its history as an entry tagged `session`. Nothing on the card is written. 204.
 export type ItemSessionRequest = {
-  /** The session kind: `refinement` or `planning` (Sprint Planning). */
-  session: 'refinement' | 'planning';
-  /** What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning). */
-  outcome: 'refined' | 'skipped' | 'flagged' | 'committed';
+  /** The session kind: `refinement`, `planning` (Sprint Planning) or `triage` (Bug Triage). */
+  session: 'refinement' | 'planning' | 'triage';
+  /** What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage). */
+  outcome: 'refined' | 'skipped' | 'flagged' | 'committed' | 'accepted' | 'closed';
+  /** A Close's reason, at most 200 characters; only with `closed`. */
+  reason?: string;
+  /** The id of the card a closed card duplicates, a card of this plan other than itself; only with `closed`. */
+  duplicateOf?: string;
+  /** The outcome was taken back (Undo Outcome, Undo Last). */
+  undone?: true;
 };
 
 export type ItemTimeRequest = { field: string } & (
