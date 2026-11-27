@@ -216,6 +216,7 @@ export type EditorContextMenuProps = {
   onSetSession?: (config: import('@liveplanner/project').SessionButtonConfig) => void;
   onSetPickerSource: (source: import('@liveplanner/project').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
+  onSetPickerRemoveDrawn: (on: boolean) => void;
   // The decision record (docs/specs/012-collaboration/decision-record.md). The temperature check carries no
   // settings — everything it does happens on its own face — so it needs no setter here.
   onSetDecisionStatus: (status: DecisionStatus) => void;

@@ -108,6 +108,8 @@ export type BoxedElementViewProps = {
     candidates: import('@/lib/picker').PickerCandidate[];
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
+    // Remove Once Drawn's Reset (docs/specs/012-collaboration/picker.md): every drawn name back.
+    reset: () => void;
   };
   // The collaboration elements (docs/specs/012-collaboration/temperature-check.md, decision-record.md): who the
   // viewer is and the writes they may make. One prop for the faces — see CollabFaceRouter. Absent on a surface

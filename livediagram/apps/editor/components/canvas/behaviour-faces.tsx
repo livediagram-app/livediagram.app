@@ -20,7 +20,7 @@ import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
 import { RetiredElementFace } from '@/components/canvas/RetiredElementFace';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
-import { PickerFace } from '@/components/canvas/PickerFace';
+import { PickerFace, pickerOffer } from '@/components/canvas/PickerFace';
 import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
 import { RevealFace } from '@/components/canvas/RevealFace';
 import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
@@ -180,13 +180,10 @@ export function behaviourFace({
     ) : element.type === 'shape' && element.shape === 'picker' && !isEditing ? (
       /* Picker (docs/specs/012-collaboration/picker.md): rolls a person or an option. */
       <PickerFace
+        element={element}
         label={label}
-        result={element.pickerResult}
-        candidates={onRollPicker?.(element).candidates ?? []}
         textColor={textColor}
-        shared={onRollPicker?.(element).shared ?? false}
-        // Rolling is running the session (docs/specs/013-workspace/share-roles.md): an Editor's alone.
-        onRoll={onRollPicker && !readOnly ? () => onRollPicker(element).roll() : undefined}
+        picker={pickerOffer(onRollPicker?.(element), readOnly)}
       />
     ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
       /* The collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): an estimate card,

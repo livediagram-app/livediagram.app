@@ -66,6 +66,8 @@ export type CanvasSessionProps = {
     candidates: import('@/lib/picker').PickerCandidate[];
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
+    // Remove Once Drawn's Reset (docs/specs/012-collaboration/picker.md): every drawn name back.
+    reset: () => void;
   };
   // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): the viewer's identity,
   // the room, and the writes they may make, one prop for all five faces.

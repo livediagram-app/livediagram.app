@@ -25,6 +25,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuToggleRow } from '@liveworkspace/workbench/components/palette/MenuToggleRow';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';
@@ -195,11 +196,13 @@ export function PickerMenuSection({
   element,
   onSetPickerSource,
   onSetPickerOptions,
+  onSetPickerRemoveDrawn,
   sectionProps,
 }: {
   element: ShapeElement;
   onSetPickerSource: (source: PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
+  onSetPickerRemoveDrawn: (on: boolean) => void;
   sectionProps: { open: boolean; onToggle: () => void };
 }) {
   const source = element.pickerSource ?? DEFAULT_PICKER_SOURCE;
@@ -231,6 +234,13 @@ export function PickerMenuSection({
           onCommit={onSetPickerOptions}
         />
       ) : null}
+      {/* Remove Once Drawn (docs/specs/012-collaboration/picker.md): a round where nobody is picked twice. */}
+      <MenuToggleRow
+        label="Remove Once Drawn"
+        description="Nobody is picked twice until a reset."
+        checked={element.pickerRemoveDrawn === true}
+        onToggle={() => onSetPickerRemoveDrawn(element.pickerRemoveDrawn !== true)}
+      />
     </MenuAccordionSection>
   );
 }
