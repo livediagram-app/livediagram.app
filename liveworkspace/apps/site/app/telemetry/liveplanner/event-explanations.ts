@@ -796,6 +796,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone moved several selected cards at once, by dragging them as a group, a keyboard move or Move To.',
   'Plan|Changed|Cards':
     'Someone changed several selected cards at once from the selection bar (assign, priority, labels, a field, flag, archive or trash).',
+  'Plan|Opened|PlanAi':
+    'Someone pressed the AI button beside Card Types, opening Plan AI over the open tab.',
+  'Plan|Changed|PlanAiChange':
+    'A Plan AI turn made its changes to the open Board, Sheet, Form or Dashboard tab.',
+  'Plan|Undone|PlanAiChange':
+    "Someone pressed Undo under a Plan AI answer, taking back that turn's changes.",
   'Plan|Used|SavedFilter': "Someone applied one of a board's saved filters by pressing its chip.",
   'Plan|Used|CardTemplate':
     'Someone started a card from one of its card type’s templates in Add a Card, so it began filled in.',
@@ -2830,6 +2836,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Tested':
     'Someone tried an automation rule on a card with Test on a Card, changing nothing.',
   'Plan|Ran': "Someone ran an automation rule by hand from a card's menu.",
+  'Plan|Undone': 'Someone took back changes made for them on a plan, such as a Plan AI turn’s.',
   'Plan|Created':
     'Someone started a Plan tab from Start Planning (the value says which: a Board, Sheet, Dashboard or Visualisation tab, or a suggested dashboard), or saved a new automation rule.',
   'Sheet|Searched': 'Someone searched a list on a Sheet (the value says which: the functions).',

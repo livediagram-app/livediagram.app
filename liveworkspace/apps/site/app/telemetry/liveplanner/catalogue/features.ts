@@ -12,6 +12,9 @@ import {
   ASK_AI_QUESTIONS,
   ASK_AI_SOURCES_OPENED,
   ASK_AI_SWITCHED,
+  PLAN_AI_ASKED,
+  PLAN_AI_RAN,
+  PLAN_AI_UNDONE,
 } from './ask-ai';
 import { isSuggestionType } from '../../_shared/suggestion-metrics';
 
@@ -704,6 +707,9 @@ export const PANELS_OPENED: MetricStack = {
     ASK_AI_SOURCES_OPENED,
     ASK_AI_ANSWERS_COPIED,
     ASK_AI_SWITCHED,
+    PLAN_AI_ASKED,
+    PLAN_AI_UNDONE,
+    PLAN_AI_RAN,
     SETTINGS_CATEGORIES_VISITED,
     SHARE_OPENED,
     PICKERS_OPENED,

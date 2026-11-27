@@ -16,6 +16,10 @@ import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/c
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
+const PlanAiPanel = dynamic(
+  () => import('@/components/plan-ai/PlanAiPanel').then((m) => m.PlanAiPanel),
+  { ssr: false },
+);
 const TrashPanel = dynamic(() => import('@/components/plan/TrashPanel').then((m) => m.TrashPanel), {
   ssr: false,
 });
@@ -88,6 +92,7 @@ export function useCanvasChromePanels({
   // The Card Types panel over its cluster button (docs/specs/026-plan/item-types.md).
   cardTypesPopoverEl: ReactNode;
   trashPopoverEl: ReactNode;
+  planAiPopoverEl: ReactNode;
   // The Session strip's open popover (Timer or Vote), over its button.
   sessionPopoverEl: ReactNode;
 } {
@@ -180,6 +185,7 @@ export function useCanvasChromePanels({
   // loses edit rights with it open sees it close with its button (item-types.md "The Card Types panel").
   const cardTypesOpen = activeDockPanel === 'card-types' && !readOnly;
   const trashOpen = activeDockPanel === 'plan-trash';
+  const planAiOpen = activeDockPanel === 'plan-ai';
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
   // the folders someone expanded stay expanded.
@@ -333,6 +339,14 @@ export function useCanvasChromePanels({
     trashPopoverEl: trashOpen ? (
       <LazyPopover onError={closeDockPanel}>
         <TrashPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
+      </LazyPopover>
+    ) : null,
+    planAiPopoverEl: planAiOpen ? (
+      <LazyPopover onError={closeDockPanel}>
+        <PlanAiPanel
+          popoverAnchor={activeDockAnchor ?? undefined}
+          onPopoverClose={closeDockPanel}
+        />
       </LazyPopover>
     ) : null,
     sessionPopoverEl,

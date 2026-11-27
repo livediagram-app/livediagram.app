@@ -54,6 +54,8 @@ export const HELP_ARTICLES = {
   planCardTemplates: 'plan/card-templates',
   planBoards: 'plan/boards',
   planCards: 'plan/cards',
+  // Plan AI, the AI button beside Card Types (docs/specs/026-plan/plan-ai.md).
+  planAi: 'plan/plan-ai',
   planCardActivity: 'plan/card-activity',
   planSelectCards: 'plan/select-cards',
   planSheets: 'plan/sheets',
@@ -125,6 +127,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planCards: {
     title: 'Learn about cards',
     description: 'Open a card, fill it in, and archive, trash or present it.',
+  },
+  planAi: {
+    title: 'Learn about AI on a tab',
+    description:
+      'Ask about the open tab, or tell AI to change its cards, cells, questions or layout.',
   },
   planAutomations: {
     title: 'Learn about automations',

@@ -27,6 +27,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'public-roadmap': '#c2410c',
   'email-to-board': '#0f766e',
   'describe-a-plan': '#9333ea',
+  'plan-ai': '#7e22ce',
   'plan-tour': '#0284c7',
   dashboards: '#0ea5e9',
   forms: '#7c3aed',
