@@ -15,21 +15,23 @@ there shows what the page is.
 
 - **Where.** **Slack and Teams** in the knowledgebase's menu ([Knowledgebases and pages](knowledgebases-and-pages.md)
   "The knowledgebase's menu"), after AI Editing: a centred dialog (a sheet on a phone) under the shared illustrated
-  header, "Slack and Teams", "Ask this knowledgebase from chat. Answers use each person's own access." Two rows,
+  header, "Slack and Teams", "Ask this knowledgebase from chat, with sources and trust marks." Two rows,
   **Slack** and **Microsoft Teams**, each a generic mark (no company's logo), its name, its state and its action.
 - **Slack.** **Connect Slack** opens Slack's own install page ("Add to Slack") in the same tab; choosing a workspace
-  there and allowing it comes back to the knowledgebase with the dialog open and the row reading "Connected to
-  <workspace>". Refused or cancelled at Slack, the dialog says so ("Slack was not connected.").
+  there and allowing it comes back to the knowledgebase with the dialog open, saying "Slack is connected.", and the
+  row reading "Connected to <workspace> since <date>". Cancelled at Slack, the dialog says "Connecting Slack was
+  cancelled. Nothing changed."; failed, "Slack didn't finish connecting. Try again."
 - **Microsoft Teams.** Teams has no install page to come back from, so **Connect Teams** shows a one-time code
-  (`K7Q4-MZP2`, ten letters and digits, good for 15 minutes) with **Copy** and three steps: add the liveknowledge app
-  in Teams (**Open Teams**), open a chat with it, and send `connect K7Q4-MZP2`. The app answers in Teams, and the
+  (`K7Q4-MZP2`, eight letters and digits with no 0, O, 1, I or L, good once for 15 minutes) as the message to send,
+  `connect K7Q4-MZP2`, with **Copy** and **Open Teams** (where the server names the app's Teams link): "In Teams,
+  open the liveknowledge app and send it this message". The app answers "Connected." in Teams, and the
   row reads "Connected to <tenant>" the next time the dialog opens, or at once while it is open (it looks again every
   5 seconds while a code is showing, for the code's 15 minutes, only while the browser tab shows).
 - **One knowledgebase a workspace.** A workspace or tenant already connected to another knowledgebase is refused
   ("This Slack workspace is already connected to another knowledgebase. Disconnect it there first."), without naming
   it. Connecting the same one again replaces its token and keeps its linked people.
-- **Disconnect.** Each connected row has **Disconnect**, asked first ("Disconnect Slack?", "People in <workspace> can
-  no longer ask this knowledgebase. Everyone will need to connect their account again."). It removes the connection,
+- **Disconnect.** Each connected row has **Disconnect**, asked first ("Disconnect Slack?", "<workspace> stops getting
+  answers from this knowledgebase, and every account connected there is forgotten."). It removes the connection,
   revokes the token at Slack, forgets every linked account and anything waiting. Uninstalling the app in Slack does
   the same.
 - **Not configured.** On a server without the app's settings (self-hosted, or before the owner registers it), the
@@ -41,17 +43,17 @@ there shows what the page is.
 
 - **Slack**: `/ask <question>`, a mention (`@liveknowledge <question>`) in a channel the app is in, or a direct
   message to the app. **Teams**: a mention in a channel or group chat, or a message in the app's personal chat.
-- **Help**: `/ask` alone or `/ask help` (or `help` in Teams) answers how to ask, which knowledgebase is connected,
-  and whether the asker's account is linked. `/ask unlink` (`unlink` in Teams) forgets the asker's link.
+- **Help**: `/ask` alone or `/ask help` (or `help` in Teams) answers how to ask and how to unlink. `/ask unlink` (`unlink` in Teams) forgets the asker's link.
 - **Linking an account** (owner's answer 2026-11-27, A: each chat user links their liveworkspace account once). The
-  first question from someone not linked is not answered: they get, privately, "Connect your liveworkspace account
-  to ask <knowledgebase>. Answers use what you can open." with **Connect Your Account**. Its link opens
+  first question from someone not linked is not answered: they get, privately, "Connect your liveknowledge account
+  once, and answers will use the pages you can open." with **Connect Your Account**. Its link opens
   `/chat/link` in liveknowledge, good for 30 minutes and once only: signed out, it asks to sign in and comes back;
-  signed in, it shows the chat account (the workspace's name and the person's chat name) and **Connect** (and
-  **Not Now**). Connected, the page says to go back to Slack (or Teams) and ask again. A new prompt replaces an
-  unused one. An expired or used link says so ("This link has expired. Ask in Slack again for a new one.").
+  signed in, it shows the chat account (the workspace's name and the person's chat name) and **Connect My
+  Account**. Connected, the page says to go back to Slack (or Teams) and ask again. A new prompt replaces an
+  unused one. An expired or used link says so ("This Link Has Expired", "Each link works once, for 30 minutes. Ask the app again in Slack or Teams and use the
+  new link.").
 - **Whose access.** Each answer reads only the pages the linked account can open in this knowledgebase, worked out
-  from the index for each question. Someone who can no longer open it is told so ("You can't open <knowledgebase>
+  from the index for each question. Someone who can no longer open it is told so ("You can't open this knowledgebase
   with your liveworkspace account.") and given nothing from it. An answer is from the knowledgebase's pages alone:
   Connected Items and the team folder ([Search and Ask](search-and-ask.md) "Sources") need the person's own signed-in
   request, as a team's or a person's AI key does.
@@ -61,7 +63,7 @@ there shows what the page is.
 - **Share in Channel** (Slack, an answer asked in a channel): posts the same answer where it was asked, for
   everyone, headed "Shared by @<asker>". The asker chose to show it, as they could copy it. Kept 30 minutes; past
   that the button says the answer has expired.
-- **Acknowledged at once.** Slack: "Looking in <knowledgebase>…", privately; Teams: a typing indicator. The answer
+- **Acknowledged at once.** "Looking that up in the knowledgebase…", privately (in Teams, in the personal chat). The answer
   follows when it is ready (seconds, at most the model's 60).
 
 ## What an answer shows
@@ -108,11 +110,11 @@ A question in chat spends no more than one asked in the editor.
 
 ## Share roles
 
-| Action                                            | Editor | Participant | Viewer |
-| ------------------------------------------------- | ------ | ----------- | ------ |
-| See Slack and Teams in the menu, connect, disconnect | yes | no          | no     |
-| Ask from chat, once linked                         | yes    | yes         | yes    |
-| Answers and previews from pages they can open      | yes    | yes         | yes    |
+| Action                                               | Editor | Participant | Viewer |
+| ---------------------------------------------------- | ------ | ----------- | ------ |
+| See Slack and Teams in the menu, connect, disconnect | yes    | no          | no     |
+| Ask from chat, once linked                           | yes    | yes         | yes    |
+| Answers and previews from pages they can open        | yes    | yes         | yes    |
 
 Only an Editor of the whole knowledgebase, signed in, connects or disconnects; the Editor's own access is checked
 again when Slack sends them back. Every chat user asks with their own role: a linked Viewer is answered from the pages

@@ -21,6 +21,14 @@ MEDIA_KEY=dev-liveknowledge-media-key
 # What the knowledgebases' own AI keys (Claude's or OpenAI's) are sealed under (AI Settings). Unset, no key can be stored and Ask
 # answers ask_unavailable; search and everything else work.
 AI_KEY_SECRET=dev-liveknowledge-ai-key-secret
+# Slack and Teams (docs/specs/030-knowledgebase/chat-apps.md): off until set. CHAT_KEY is 32 bytes of base64
+# (`openssl rand -base64 32`); Slack needs its three, Teams its two, each from a test app of your own.
+# CHAT_KEY=
+# SLACK_CLIENT_ID=
+# SLACK_CLIENT_SECRET=
+# SLACK_SIGNING_SECRET=
+# TEAMS_APP_ID=
+# TEAMS_APP_PASSWORD=
 # Pro, through the local subscription Worker (liveworkspace/apps/subscription, in `corepack pnpm dev:workspace`): its
 # SUBSCRIPTION_KEY_LIVEKNOWLEDGE. PRO_ENABLED=false (or no line) turns Pro off, as a deployment that sets nothing has it.
 PRO_ENABLED=true

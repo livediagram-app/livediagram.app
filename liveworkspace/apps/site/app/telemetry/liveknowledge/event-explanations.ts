@@ -892,6 +892,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|AiModel': 'Someone picked another model for Ask and Insights.',
   'UI|Opened|AiEditing':
     "An Editor opened AI Editing from the knowledgebase's menu: how far agents may change pages themselves.",
+  'UI|Opened|ChatApps':
+    "An Editor opened Slack and Teams from the knowledgebase's menu, to connect a chat workspace or disconnect one.",
+  'UI|Used|ChatConnectSlack':
+    'An Editor started connecting a knowledgebase to a Slack workspace, and went to Slack to install the app.',
+  'UI|Used|ChatConnectTeams':
+    'An Editor started connecting a knowledgebase to Microsoft Teams, and was given a code to send the bot.',
+  'UI|Used|ChatDisconnect':
+    'An Editor disconnected a knowledgebase from a Slack workspace or a Teams organisation.',
+  'UI|Used|ChatAccountLinked':
+    'Someone connected their liveknowledge account to Slack or Teams from the link the app sent them.',
   'UI|Changed|AiEditingSuggest':
     'An Editor set AI Editing to Suggest Edits Only: agents only suggest changes for a person to accept.',
   'UI|Changed|AiEditingUnverified':

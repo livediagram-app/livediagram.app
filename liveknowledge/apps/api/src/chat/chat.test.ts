@@ -450,7 +450,11 @@ describe('Teams', () => {
     );
     await kit.drain();
     expect(kit.sent.some((s) => s.url.endsWith('/v3/conversations'))).toBe(true);
-    expect(kit.sent.at(-1)!.url).toContain('/v3/conversations/personal-1/activities');
+    const answered = kit.sent.find((s) =>
+      s.url.includes('/v3/conversations/personal-1/activities'),
+    );
+    expect(JSON.stringify(answered?.body)).toContain('Deploys go out on Tuesdays');
+    expect(said(kit).at(-1)).toContain('I sent you the answer in a private chat.');
     await kit.call('editor', 'DELETE', '/api/documents/kb/chat/teams');
     const asked = kit.asked.length;
     await teams(kit, activity());

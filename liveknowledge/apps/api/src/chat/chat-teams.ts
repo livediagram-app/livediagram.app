@@ -39,6 +39,7 @@ const CONNECTED =
 const UNLINKED = 'Your liveknowledge account is no longer connected here.';
 const NOT_LINKED = 'No liveknowledge account is connected here.';
 const LOOKING = 'Looking that up in the knowledgebase…';
+const SENT_PRIVATELY = 'I sent you the answer in a private chat.';
 
 /** A connect code as typed: `ABCD-EFGH`, any case, the dash optional. */
 const CODE = /^connect\s+([A-Z0-9]{4})-?([A-Z0-9]{4})$/i;
@@ -205,6 +206,7 @@ export async function handleTeams(
       personal,
       bot: activity.recipient?.id ?? '',
     });
+    if (!personal) await notice(SENT_PRIVATELY);
   }
   await workspace.noteServiceUrl(serviceUrl);
   return new Response(null, { status: 200 });

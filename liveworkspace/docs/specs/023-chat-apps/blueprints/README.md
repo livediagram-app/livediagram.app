@@ -6,20 +6,18 @@ Implements [chat-apps.md](../chat-apps.md).
 
 `packages/chat` (`@liveworkspace/chat`), pure, Web APIs only:
 
-| File                     | Holds                                                                                              |
-| ------------------------ | -------------------------------------------------------------------------------------------------- |
-| `src/limits.ts`          | every bound below, with its value                                                                  |
-| `src/constant-time.ts`   | `constantTimeEqual(a, b)`: both sides hashed (SHA-256), then diffed without an early exit          |
-| `src/slack-signature.ts` | `verifySlackRequest({ secret, timestamp, signature, body, now })`: `ok`, `stale`, `bad`, `missing` |
-| `src/slack-text.ts`      | `slackEscape`, `slackCut`, `SLACK_SECTION_MAX` (the index's connections import them)               |
-| `src/slack-blocks.ts`    | `slackAnswer`, `slackPreview`, `slackNotice`, `slackConnectPrompt`                                 |
-| `src/slack-api.ts`       | `slackCall(method, token, body)`, `slackOAuthAccess`, `postToResponseUrl`                          |
-| `src/teams-auth.ts`      | `verifyBotFrameworkRequest(...)`, `createBotFrameworkKeys()`: the JWT check and its key cache      |
-| `src/teams-connector.ts` | `botToken(credentials)`, `replyToActivity`, `sendPersonal`                                         |
-| `src/teams-cards.ts`     | `teamsAnswer`, `teamsPreview`, `teamsNotice`, `teamsConnectPrompt`                                 |
-| `src/answer.ts`          | `ChatAnswer`, `ChatSource`, `ChatPreview`, `ChatTrust`: what an app hands the builders             |
-| `src/signed.ts`          | `chatKeys(secret)` (HKDF: a seal key and a signing key), `signPayload`, `readSigned`               |
-| `src/replay.ts`          | `REPLAY_KEEP_MS` and the key each kind of request is de-duplicated by                              |
+| File                     | Holds                                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `src/limits.ts`          | every bound below, with its value                                                                     |
+| `src/slack-signature.ts` | `verifySlackRequest({ secret, timestamp, signature, body, now })`: `ok`, `stale`, `bad`, `missing`    |
+| `src/slack-text.ts`      | `slackEscape`, `slackCut`, `SLACK_SECTION_MAX` (the index's connections import them)                  |
+| `src/slack-blocks.ts`    | `slackAnswer`, `slackPreview`, `slackNotice`, `slackConnectPrompt`                                    |
+| `src/slack-api.ts`       | `slackCall(method, token, body)`, `slackOAuthAccess`, `postToResponseUrl`                             |
+| `src/teams-auth.ts`      | `verifyBotFrameworkRequest(...)`, `createBotFrameworkKeys()`: the JWT check and its key cache         |
+| `src/teams-connector.ts` | `createBotTokens()` (the bot's token, kept), `sendToConversation`, `personalConversation`             |
+| `src/teams-cards.ts`     | `teamsMessage`, `teamsAnswer`, `teamsPreview`, `teamsLinkResult`, `teamsNotice`, `teamsConnectPrompt` |
+| `src/answer.ts`          | `ChatAnswer`, `ChatSource`, `ChatPreview`, `ChatTrust`: what an app hands the builders                |
+| `src/signed.ts`          | `chatKeys(secret)` (HKDF: a seal key and a signing key), `signPayload`, `readSigned`                  |
 
 ## Constants
 

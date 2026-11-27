@@ -110,6 +110,7 @@ describe('the knowledgebase’s menu', () => {
       'Publish to the Web',
       'AI Settings',
       'AI Editing',
+      'Slack and Teams',
       'Delete',
     ]);
     const menu = screen.getByRole('menu');

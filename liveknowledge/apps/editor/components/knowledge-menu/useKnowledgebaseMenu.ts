@@ -2,7 +2,7 @@
 
 // What the knowledgebase's menu holds for this session (docs/specs/030-knowledgebase/knowledgebases-and-pages.md
 // "The knowledgebase's menu"): Rename, Describe to Add Pages, Import, Export, Publish to the Web, AI Settings,
-// AI Editing, then
+// AI Editing, Slack and Teams, then
 // Delete. Publish to the Web is an Editor's in person, signed in, for a knowledgebase not kept Offline
 // (publishing.md "Who"). Describe to Add
 // Pages and Import are a writer's (an Editor or a Participant of the whole knowledgebase); Rename, AI Settings and
@@ -17,9 +17,10 @@ import { useDescribeToAddPages } from '@/components/setup/SetupHost';
 import { openAiSettings } from '@/lib/knowledge-ask/ai-settings-open';
 import { openPublishing } from '@/lib/publishing/publish-open';
 import { openAiEditing } from '@/lib/knowledge-settings/ai-editing-open';
+import { openChatApps } from '@/lib/chat-apps/chat-apps-open';
 
 export type KnowledgeMenuVerb =
-  'rename' | 'describe' | 'import' | 'export' | 'publish' | 'ai' | 'aiEditing' | 'delete';
+  'rename' | 'describe' | 'import' | 'export' | 'publish' | 'ai' | 'aiEditing' | 'chat' | 'delete';
 
 export type KnowledgeMenuRow = { verb: KnowledgeMenuVerb; label: string; run: () => void };
 
@@ -70,6 +71,8 @@ export function useKnowledgebaseMenu(onRename: (() => void) | undefined): Knowle
       label: 'AI Editing',
       run: openAiEditing,
     });
+  // Slack and Teams (chat-apps.md "Connecting"): an Editor's in person, signed in, not kept Offline.
+  if (editor && publishes) rows.push({ verb: 'chat', label: 'Slack and Teams', run: openChatApps });
   if (editor)
     rows.push({
       verb: 'delete',

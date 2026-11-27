@@ -24,6 +24,8 @@ import { SetupWhenOpen } from '@/components/setup/SetupHost';
 import { DescribeStructureWhenOpen } from '@/components/describe-structure/DescribeStructureHost';
 import { usePublishingOpen } from '@/lib/publishing/publish-open';
 import { useAiEditingOpen } from '@/lib/knowledge-settings/ai-editing-open';
+import { useChatAppsOpen } from '@/lib/chat-apps/chat-apps-open';
+import { ChatReturnWatcher } from '@/components/chat-apps/ChatReturnWatcher';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -58,6 +60,14 @@ const AiEditingHost = dynamic(
 function AiEditingWhenOpen() {
   return useAiEditingOpen() ? <AiEditingHost /> : null;
 }
+// Slack and Teams (docs/specs/030-knowledgebase/chat-apps.md): its code is fetched the first time it is opened.
+const ChatAppsHost = dynamic(
+  () => import('@/components/chat-apps/ChatAppsDialog').then((m) => m.ChatAppsHost),
+  { ssr: false },
+);
+function ChatAppsWhenOpen() {
+  return useChatAppsOpen() ? <ChatAppsHost /> : null;
+}
 const ShareOfflineGate = dynamic(
   () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
@@ -83,6 +93,8 @@ export function EditorTabDialogs() {
       <DescribeStructureWhenOpen />
       <PublishWhenOpen />
       <AiEditingWhenOpen />
+      <ChatAppsWhenOpen />
+      <ChatReturnWatcher />
     </>
   );
 }
