@@ -10,8 +10,8 @@ where the work begins instead of in a step before it. The New Design route asks 
 `StartPanel` (`apps/live/components/start/StartPanel.tsx`, this app's binding of the panel every editor shares, `../packages/workbench/src/components/start/StartPanel.tsx`) draws the start; the start says what its groups and cards
 are, the panel draws them.
 
-- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Making Pages"), one line under it, the search box, and in the top right corner the
-  **Help** link and **Close** (×). On a phone the search takes its own row under the title, the help and × staying
+- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Making Pages"), one line under it, the search box, and at its right, centred down the band, the
+  **Help** link and **Close** (the circled X every modal wears, [close-button.md](../../../../liveworkspace/docs/specs/022-interface-design/close-button.md)). On a phone the search takes its own row under the title, the help and × staying
   beside the title.
 - **Rail:** led by the page type switch over a hairline ([Page type](#page-type)), then **Recommended**, then the groups, each with its glyph and count; long names wrap beside the glyph on a
   wide rail. The chosen group's count sits on a pill tinted with the accent, in the panel's ink: the accent on its own
