@@ -12,8 +12,8 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 const TickIcon = lucideGlyph(lucideCheck, 18);
 
 // The whole press, in and out: the fill, the tick held, the drain.
-export const FILL_IN_MS = 300;
-export const FILL_HOLD_MS = 150;
+export const FILL_IN_MS = 250;
+export const FILL_HOLD_MS = 200;
 export const FILL_DRAIN_MS = 250;
 export const FILL_MS = FILL_IN_MS + FILL_HOLD_MS + FILL_DRAIN_MS;
 // Under reduced motion: how long the tick shows.
@@ -68,7 +68,7 @@ export function FillActionButton({
   // The wash: grows from the left as it fills, shrinks to the right as it drains, and resets unseen.
   const wash =
     phase === 'fill' || phase === 'done'
-      ? `origin-left scale-x-100 ${phase === 'fill' ? 'transition-transform duration-300 ease-out' : ''}`
+      ? `origin-left scale-x-100 ${phase === 'fill' ? 'transition-transform duration-[250ms] ease-out' : ''}`
       : phase === 'drain'
         ? 'origin-right scale-x-0 transition-transform duration-[250ms] ease-in'
         : 'origin-left scale-x-0';
@@ -80,7 +80,7 @@ export function FillActionButton({
       disabled={disabled}
       aria-keyshortcuts={shortcut?.toUpperCase()}
       data-fill-phase={phase}
-      className="relative inline-flex h-10 min-w-[8.5rem] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-brand-600 px-5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-900"
+      className="relative inline-flex h-10 min-w-[8.5rem] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-brand-700 px-5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-900"
     >
       <span
         aria-hidden

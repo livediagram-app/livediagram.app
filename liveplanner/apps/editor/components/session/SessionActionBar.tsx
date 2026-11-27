@@ -124,6 +124,7 @@ export function SessionActionBar({
       {timebox ? (
         <span
           className={`tabular-nums text-[13px] font-medium ${timebox.up ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}
+          role="timer"
           aria-label={timebox.up ? 'Time’s up' : `${clockOf(timebox.leftMs)} left`}
         >
           {timebox.up ? 'Time’s up' : clockOf(timebox.leftMs)}

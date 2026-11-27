@@ -114,7 +114,7 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 | `SESSION_TIMEBOX_MIN_MS` | 60 000    | One minute                                   |
 | `SESSION_TIMEBOX_MAX_MS` | 1 800 000 | Thirty minutes                               |
 | `FACILITATOR_GRACE_MS`   | 10 000    | Covers a refresh before Take Over shows      |
-| `FILL_MS`                | 700       | The Refined fill, in and out                 |
+| `FILL_MS`                | 700       | The Refined fill: 250 in, 200 held, 250 out  |
 | `SEGMENTS_MAX`           | 40        | Past this the progress bar is one smooth bar |
 
 ## Defaults ledger

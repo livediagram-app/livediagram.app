@@ -11,7 +11,7 @@ import type { SessionBaton } from './useSessionFacilitator';
 const chip =
   'inline-flex h-8 max-w-full cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-white pl-1.5 pr-3 text-[12px] font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
 const verb =
-  'inline-flex h-8 cursor-pointer items-center rounded-full bg-brand-600 px-3 text-[12px] font-semibold text-white hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2';
+  'inline-flex h-8 cursor-pointer items-center rounded-full bg-brand-700 px-3 text-[12px] font-semibold text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2';
 const row =
   'flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-left text-[13px] text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
 

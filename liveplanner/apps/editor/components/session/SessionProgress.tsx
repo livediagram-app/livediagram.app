@@ -31,7 +31,7 @@ export function SessionProgress({
   const name = `${label} progress, ${done} of ${total} decided`;
   const fillOf = (colour: string, share: number) => (
     <span
-      className="absolute inset-y-0 left-0 rounded-[inherit] transition-[width] duration-700 ease-linear motion-reduce:transition-none"
+      className="absolute inset-y-0 left-0 rounded-[inherit] transition-[width] duration-200 ease-linear motion-reduce:transition-none"
       style={{ width: `${Math.round(share * 1000) / 10}%`, backgroundColor: colour }}
     />
   );

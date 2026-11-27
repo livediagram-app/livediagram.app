@@ -14,6 +14,7 @@ import {
 } from '@liveplanner/project';
 import { lucideSettings } from '@liveworkspace/icons/lucide';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { CanvasCover } from '@/components/plan/CanvasCover';
@@ -159,16 +160,17 @@ export function SessionPage({
   const detail = shown ? (
     <>
       {room.peeking ? (
-        <div className="flex items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-[13px] text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100">
-          <span>You are looking at another card.</span>
-          <button
-            type="button"
-            onClick={room.backToRoom}
-            className="cursor-pointer rounded-md px-2 py-1 font-semibold hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:hover:bg-amber-900/40"
-          >
-            Back to {holderName && holderName !== 'You' ? `${holderName}’s` : 'the Room’s'} Card
-          </button>
-        </div>
+        <Callout
+          tone="warning"
+          role="status"
+          className="m-3 mb-0"
+          action={{
+            label: `Back to ${holderName && holderName !== 'You' ? `${holderName}’s` : 'the Room’s'} Card`,
+            onSelect: room.backToRoom,
+          }}
+        >
+          You are looking at another card.
+        </Callout>
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col" data-session-card={shown.id}>
         <SessionCard plan={plan} item={shown} />

@@ -12,7 +12,7 @@ const RefinedIcon = OUTCOME_LOOKS.refined.Icon;
 const button =
   'inline-flex h-10 cursor-pointer items-center rounded-lg border border-slate-200 bg-white px-4 text-[13px] font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
 const primary =
-  'inline-flex h-10 cursor-pointer items-center rounded-lg bg-brand-600 px-4 text-[13px] font-semibold text-white hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2';
+  'inline-flex h-10 cursor-pointer items-center rounded-lg bg-brand-700 px-4 text-[13px] font-semibold text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2';
 
 export function SessionComplete({
   empty,
@@ -56,7 +56,7 @@ export function SessionComplete({
       className="flex flex-1 flex-col items-center justify-center gap-5 p-8 text-center"
       role="status"
     >
-      <span className="flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-950/50 dark:text-brand-300">
+      <span className="flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
         <RefinedIcon size={28} aria-hidden />
       </span>
       <h2 className="text-[20px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">

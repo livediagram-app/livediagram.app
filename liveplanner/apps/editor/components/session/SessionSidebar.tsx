@@ -82,7 +82,7 @@ export function SessionSidebar({
             <span
               className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums ${
                 isCurrent && !look
-                  ? 'bg-brand-600 text-white'
+                  ? 'bg-brand-700 text-white dark:bg-brand-600'
                   : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
               }`}
               style={look ? { color: look.colour } : undefined}
