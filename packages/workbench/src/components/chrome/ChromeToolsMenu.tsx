@@ -30,7 +30,6 @@ import {
 } from '@liveworkspace/ui';
 import { lucideCloudUpload, lucideLogIn } from '@liveworkspace/icons/lucide';
 import { HERO_TOKEN_STYLE } from '@liveworkspace/ui/dialog-hero';
-import { voiceInputListening } from '@liveworkspace/ui/voice-input';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
 import { PopoverOrSheet } from '../primitives/PopoverOrSheet';
 import {
@@ -95,12 +94,11 @@ const TOOL_SURFACES =
   '[data-dialog-backdrop], [data-anchored-popover], [role="menu"], [role="listbox"]';
 
 // Escape is left alone while a modal dialog is open (one a tool opened over Tools),
-// focus is in a part of a tool that takes Escape itself (a row's in-place confirm, `data-keeps-escape`), or a
-// microphone in the tool is listening (its Escape stops listening only: voice-input.md "Stopping").
+// or focus is in a part of a tool that takes Escape itself (a row's in-place confirm, `data-keeps-escape`).
+// (A listening microphone keeps its Escape in AnchoredPopover and PhoneDrawer themselves.)
 const modalOpen = () =>
   !!document.querySelector('[data-dialog-panel]') ||
-  !!document.activeElement?.closest('[data-keeps-escape]') ||
-  voiceInputListening();
+  !!document.activeElement?.closest('[data-keeps-escape]');
 
 // The tools glyph: a toolbox, its handle and its lid's line.
 export function ToolsGlyph({ size = 14 }: { size?: number }) {
