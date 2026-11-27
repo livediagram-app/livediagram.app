@@ -13,6 +13,7 @@ Follow the references below only as needed; never upfront.
 - ./linked-boards.md - when implementing linked boards: the Actions board, linked cards, the heal, Won't Do and the links between canvas and board
 - ./tracker-import.md - when implementing the import from another tool: the readers, the plan and preview, imported comments, the editor's Import dialog view and the agent doors
 - ./plan-file.md - when implementing the whole plan file: the Export dialog's Whole Plan, the Import dialog's A Whole Plan row, the api's file routes and their checks
+- ./plan-ai.md - when implementing Plan AI: the ask and its reader, the api route, the editor's button, panel, tab readers and each kind's changes
 - ./describe-a-plan.md - when implementing Describe a Plan: the ask and the reply's reader, the api route and its per-account count, the editor's entry, dialog and preview
 - ./github-pull-requests.md - when implementing GitHub pull requests: the Pull Request field's reading module, card mentions, every consumer of the kind, and the parts still to build (webhook receiver, connection, state, rules)
 - ./calendar-feed.md - when implementing the calendar feed: the plan's feed table, the token, the access check, the .ics writer and the route, and the My Work feed through the index

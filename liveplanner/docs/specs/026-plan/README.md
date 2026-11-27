@@ -21,4 +21,5 @@ Follow the references below only as needed; never upfront.
 - ./public-roadmap.md - when working on the public roadmap: a board published as a live public page of chosen columns, card types and allowlisted fields, its upvotes, Suggest an Idea through a form, who may publish and Unpublish
 - ./email-to-board.md - when working on Email to Board: a board's secret address on in.liveplanner.app, who may manage it, Who Can Send, what a message makes, which mail is taken and the limits
 - ./blueprints/README.md - when implementing Plan mode, the Plan board or the item store: file-level contracts, constants, defaults and tests
+- ./plan-ai.md - when working on Plan AI: the AI button beside Card Types, asked or told to change the open Board, Sheet, Form or Dashboard tab, its share roles, which AI answers and its limits
 - ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the plan is read, where a source opens, the suggested questions (the platform's `020-ask`)
