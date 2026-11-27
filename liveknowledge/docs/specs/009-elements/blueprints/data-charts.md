@@ -23,9 +23,10 @@ Scope, by file:
 | `packages/document/src/svg-render.ts`                                                                                                  | Export: resolves the chart palette per tab, routes the legend                                                                                                           |
 | `packages/document/src/svg-render-body.ts`                                                                                             | `svgElementBody`: routes the three charts to their emitters with the tab ramp                                                                                           |
 | `packages/document/src/validate.ts`                                                                                                    | `SHAPE_KINDS`, array bounds, `chartPalette`, `legendItems` checks                                                                                                       |
+| `../packages/element-model/src/chart-style.ts`                                                                                         | `chartTickPx`, `chartLineWidth`, `smoothPath`, `barPath`, `areaFadeId`, the chrome opacities                                                                            |
 | `apps/editor/lib/chart.ts`                                                                                                             | `chartAnim`; re-exports `chartFrame`                                                                                                                                    |
 | `apps/editor/lib/csv.ts`                                                                                                               | `parseCsvLineData`                                                                                                                                                      |
-| `apps/editor/components/canvas/PieChartView.tsx`, `BarChartView.tsx`, `LineChartView.tsx`                                              | Canvas marks                                                                                                                                                            |
+| `../packages/workbench/src/components/canvas/charts/PieChartView.tsx`, `BarChartView.tsx`, `LineChartView.tsx`                         | Canvas marks, one copy for every product; `apps/editor/components/canvas/*ChartView.tsx` bind the product's animation                                                   |
 | `../packages/workbench/src/components/canvas/LegendView.tsx`                                                                           | Canvas legend element                                                                                                                                                   |
 | `../packages/workbench/src/components/primitives/ChartSurface.tsx`, `ChartLegend.tsx`, `ChartReadout.tsx`                              | Frame, key, readout                                                                                                                                                     |
 | `../packages/workbench/src/hooks/canvas/useChartHover.ts`                                                                              | Hover key per mark                                                                                                                                                      |
@@ -117,25 +118,30 @@ chart beside it on any theme. The menu's data-row swatches read the same ladder 
 ### Marks
 
 - **Pie**: total of `max(0, value)`, or 1 when that is 0; radius `max(10, min(area) * 0.86 / 2)`;
-  wedges clockwise from twelve o'clock with a 1 px white separator; a datum at 99.9 % or more
+  wedges clockwise from twelve o'clock, each straight edge set in by half a clear gap (`rad * 0.022`, 1 to
+  3.5 px; a wedge narrower than 1.5 gaps keeps its width), its point where the set-in edges meet (the centre for a
+  wedge of half the pie or more); a datum at 99.9 % or more
   draws a full circle.
 - **Bar**: max of `max(0, value)` (or 1); side padding `min(20, area.w * 0.08)`; baseline at
-  88 % of the area; slot width `innerW / n`, bar width `min(slot * 0.7, 48)`, corner radius
-  `min(3, barW / 4)`; a slate-300 baseline.
+  88 % of the area; slot width `innerW / n`, bar width `min(slot * 0.66, max(48, min(area) / 6))`, its value end rounded and
+  its baseline end square (`barPath`); the baseline in the text colour at `CHART_BASELINE_OPACITY`.
 - Every type's geometry is `chart-marks`' (`pieMarks`, `barMarks`, `lineMarks`), in the element's own coordinates
   for the views and offset by the element's `x` / `y` for the exporter; path text carries two decimals.
-- **Doughnut**: the pie's wedges as ring segments, hole `DOUGHNUT_HOLE` (0.55) of the radius, drawn with
+- **Doughnut**: the pie's wedges as ring segments, hole `DOUGHNUT_HOLE` (0.6) of the radius, drawn with
   `fill-rule="evenodd"`; a 100 % datum is two half rings with the hole cut out; readouts at the ring's middle radius.
 - **Bar** (horizontal): baseline at 6 % of the area's width, bars to 94 %; side padding `min(20, area.h * 0.08)`;
-  slot `innerH / n`, thickness `min(slot * 0.7, 48)`; animation origin the baseline's middle; readout at the bar's end.
-- **Area**: Line's marks plus, per series, a closed path from the zero line through its points, filled in its colour
-  at `AREA_FILL_OPACITY` (0.25), drawn under its line; overlapping, never stacked.
-- **Scatter**: points only (radius 4), no polyline. When every category passes `scatterX` (commas removed, a finite
+  slot `innerH / n`, thickness `min(slot * 0.66, max(48, min(area) / 6))`; animation origin the baseline's middle; readout at the bar's end.
+- **Area**: Line's marks plus, per series, a closed path from the zero line through its points, filled with a vertical
+  gradient of its colour (`AREA_FILL_TOP_OPACITY` 0.32 to `AREA_FILL_FOOT_OPACITY` 0.03, id `areaFadeId`), drawn
+  under its line; overlapping, never stacked.
+- **Scatter**: points only (radius `max(4, width * 1.6)`), no line. When every category passes `scatterX` (commas removed, a finite
   number), x is linear from the least to the greatest (all equal: widened by 1) with `SCATTER_TICKS` (5) labels
   written in a fixed locale (`toPrecision(3)`, exponent form past 1e6 or under 1e-3); otherwise evenly spaced and
   labelled as Line.
 - **Line**: categories and series fall back to the defaults when empty; the value range always
-  includes 0 (an all-equal range widens by 1); each series a polyline with point markers;
+  includes 0 (an all-equal range widens by 1); each series a monotone smooth path (`smoothPath`) `chartLineWidth` thick
+  (2 to 3.5 px), beads of `max(2.5, width * 1.15)` at its points and an end dot of `max(4, width * 1.9)`, and an
+  invisible hit circle of at least 8 px over each point;
   readouts read `category · series: value` (D106).
 - The mark group carries `chartAnim(element, origin)`: pie origin its centre, bar the baseline
   centre. Axes, labels and the key stay still.
@@ -388,23 +394,25 @@ fallbacks are silent [GE12].
 
 ## Constants and configuration
 
-| Name                                   | Value                                                 | Provenance / safe range                                                      |
-| -------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `PIE_PALETTE`                          | 8 colours, `#0ea5e9` first                            | Built-in ramp; equals `vivid`                                                |
-| `CHART_PALETTES`                       | 8 palettes × 8 colours                                | Spec                                                                         |
-| `PIE_DEFAULT_SLICES`                   | A 40, B 30, C 20                                      | Sample data                                                                  |
-| `LINE_DEFAULT_CATEGORIES`              | Jan, Feb, Mar, Apr                                    | Sample data                                                                  |
-| `LEGEND_FONT_PX`                       | sm 11, md 14, lg 18, scale 14                         | Spec                                                                         |
-| `LEGEND_MAX_ITEMS` / `LEGEND_MAX_TEXT` | 40 / 120                                              | Bounds; `validate.ts` and the setter                                         |
-| `MAX_DATA_ARRAY`                       | 5 000                                                 | `validate.ts` bound                                                          |
-| Side key strip                         | `min(w * 0.4, 130)` px                                | Spec "up to 130 px"                                                          |
-| Key band                               | `min(h * 0.32, 72)` px                                | `chartFrame`                                                                 |
-| Key render floor                       | 48 px wide / 18 px tall                               | `ChartLegend`                                                                |
-| CSV caps                               | `MAX_SERIES` 12, `MAX_CATEGORIES` 200                 | `csv.ts` soft caps                                                           |
-| Sizes                                  | pie / bar 260 × 220, line 300 × 240, legend 180 × 132 | `SHAPE_DEFAULT_SIZE`                                                         |
-| Keyframe base durations                | grow 0.6 s, pop 0.5 s, spin 6 s, pulse 1.6 s          | `canvas-motion.css`                                                          |
-| `DOUGHNUT_HOLE`                        | 0.55 of the radius                                    | Spec "Chart types"; 0.3 to 0.75                                              |
-| `AREA_FILL_OPACITY`                    | 0.25                                                  | Spec "Chart types"; 0.15 to 0.4                                              |
-| `SCATTER_TICKS`                        | 5                                                     | Spec "Chart types"; 3 to 7                                                   |
-| `LINK_PREVIEW_DEBOUNCE_MS`             | 300                                                   | Typing pause before a preview read                                           |
-| `RELATIVE_TICK_MS`                     | 30 000                                                | The Linked to line's clock (`../packages/workbench/src/lib/relative-now.ts`) |
+| Name                                               | Value                                                 | Provenance / safe range                                                      |
+| -------------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `PIE_PALETTE`                                      | 8 colours, `#0ea5e9` first                            | Built-in ramp; equals `vivid`                                                |
+| `CHART_PALETTES`                                   | 8 palettes × 8 colours                                | Spec                                                                         |
+| `PIE_DEFAULT_SLICES`                               | A 40, B 30, C 20                                      | Sample data                                                                  |
+| `LINE_DEFAULT_CATEGORIES`                          | Jan, Feb, Mar, Apr                                    | Sample data                                                                  |
+| `LEGEND_FONT_PX`                                   | sm 11, md 14, lg 18, scale 14                         | Spec                                                                         |
+| `LEGEND_MAX_ITEMS` / `LEGEND_MAX_TEXT`             | 40 / 120                                              | Bounds; `validate.ts` and the setter                                         |
+| `MAX_DATA_ARRAY`                                   | 5 000                                                 | `validate.ts` bound                                                          |
+| Side key strip                                     | `min(w * 0.4, 130)` px                                | Spec "up to 130 px"                                                          |
+| Key band                                           | `min(h * 0.32, 72)` px                                | `chartFrame`                                                                 |
+| Key render floor                                   | 48 px wide / 18 px tall                               | `ChartLegend`                                                                |
+| CSV caps                                           | `MAX_SERIES` 12, `MAX_CATEGORIES` 200                 | `csv.ts` soft caps                                                           |
+| Sizes                                              | pie / bar 260 × 220, line 300 × 240, legend 180 × 132 | `SHAPE_DEFAULT_SIZE`                                                         |
+| Keyframe base durations                            | grow 0.6 s, pop 0.5 s, spin 6 s, pulse 1.6 s          | `canvas-motion.css`                                                          |
+| `DOUGHNUT_HOLE`                                    | 0.6 of the radius                                     | Spec "Chart types"; 0.3 to 0.75                                              |
+| `AREA_FILL_TOP_OPACITY` / `AREA_FILL_FOOT_OPACITY` | 0.32 / 0.03                                           | Spec "How a chart is drawn"; top 0.2 to 0.45                                 |
+| `CHART_BASELINE_OPACITY` / `CHART_GRID_OPACITY`    | 0.35 / 0.12                                           | Spec "How a chart is drawn"; grid 0.08 to 0.2                                |
+| Axis text                                          | `min(short side) / 20`, 9 px to the value size        | `chartTickPx`; spec "How a chart is drawn"                                   |
+| `SCATTER_TICKS`                                    | 5                                                     | Spec "Chart types"; 3 to 7                                                   |
+| `LINK_PREVIEW_DEBOUNCE_MS`                         | 300                                                   | Typing pause before a preview read                                           |
+| `RELATIVE_TICK_MS`                                 | 30 000                                                | The Linked to line's clock (`../packages/workbench/src/lib/relative-now.ts`) |
