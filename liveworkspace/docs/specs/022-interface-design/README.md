@@ -11,4 +11,6 @@ Follow the references below only as needed; never upfront.
   (offline, signed out, no access, not found, conflict, rate limited, server) and their words, and when Try Again shows
 - ./undo-not-confirm.md - when adding or changing a destructive action in any app: restorable actions act at once
   with an Undo toast, permanent ones keep a confirm, and every confirm sorted into one or the other
+- ./voice-input.md - when adding or changing a field where a person writes to an AI: the microphone every AI prompt
+  field wears, where it sits, how listening starts and stops, what it says when it can't, and who hears the sound
 - ./blueprints/README.md - when implementing an interface design spec: the blueprints hold the engineering detail derived from it
