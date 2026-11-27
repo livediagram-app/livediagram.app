@@ -23,6 +23,7 @@
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/app-doors": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/chat": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/media": "workspace:^",
