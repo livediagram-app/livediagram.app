@@ -49,6 +49,36 @@ export function pickerCandidates<Participant extends PickerPerson>(input: {
   return people;
 }
 
+// Remove Once Drawn (docs/specs/012-collaboration/picker.md "Remove once drawn"): the pool is
+// every candidate whose name has not been drawn since the last Reset. Matched by label, the same
+// text the result holds, so a name drawn once is out however many people carry it.
+export function undrawnCandidates<C extends PickerCandidate>(
+  candidates: C[],
+  drawn: readonly string[] | undefined,
+  removeDrawn: boolean | undefined,
+): C[] {
+  if (!removeDrawn || !drawn?.length) return candidates;
+  const out = new Set(drawn);
+  return candidates.filter((c) => !out.has(c.label));
+}
+
+// The drawn list after a roll landed on `label`: appended once, so a replayed write can't double it.
+export function drawnAfter(drawn: readonly string[] | undefined, label: string): string[] {
+  const list = drawn ?? [];
+  return list.includes(label) ? [...list] : [...list, label];
+}
+
+// Which of the drawn names still count against this pool: a name deleted from a written list
+// stops counting, so "5 of 8 left" never goes below what the list holds. Order kept (the draw order).
+export function drawnStillListed<C extends PickerCandidate>(
+  candidates: C[],
+  drawn: readonly string[] | undefined,
+): string[] {
+  if (!drawn?.length) return [];
+  const listed = new Set(candidates.map((c) => c.label));
+  return drawn.filter((label, i) => listed.has(label) && drawn.indexOf(label) === i);
+}
+
 // One roll. Null when there is nothing to choose from, which the face renders
 // as "nothing to pick from" rather than silently doing nothing.
 export function rollPicker<C extends PickerCandidate>(candidates: C[]): C | null {
@@ -81,4 +111,46 @@ export function spinFrameDelays(frameCount: number, totalMs = PICKER_SPIN_MS): n
     delays.push(Math.round(totalMs * progress * progress));
   }
   return delays;
+}
+
+// What a canvas offers one viewer for a picker (each editor's useBehaviourElements.pickerFor).
+export type PickerOffer<C extends PickerCandidate = PickerCandidate> = {
+  candidates: C[];
+  shared: boolean;
+  roll?: () => C | null;
+  reset?: () => void;
+};
+
+// What this viewer may press. Spinning is running the session (share-roles.md): an Editor's alone, so
+// a read-only surface gets the reel to watch and no button. Reset is for whoever spins FOR THE ROOM,
+// so an Editor rolling privately under somebody else's facilitation gets no Reset.
+export function pickerOffer<C extends PickerCandidate>(
+  offer: Required<PickerOffer<C>> | undefined,
+  readOnly: boolean | undefined,
+): PickerOffer<C> | undefined {
+  if (!offer) return undefined;
+  return {
+    candidates: offer.candidates,
+    shared: offer.shared,
+    roll: readOnly ? undefined : offer.roll,
+    reset: readOnly || !offer.shared ? undefined : offer.reset,
+  };
+}
+
+// The picker fields a draw and a Reset write (docs/specs/012-collaboration/picker.md "Remove once drawn").
+type PickerRound = { pickerRemoveDrawn?: boolean; pickerResult?: string; pickerDrawn?: string[] };
+
+// A roll landing on `label`, applied to the element as it is NOW (not as it was when the face rendered),
+// so the result and the drawn list go out in one write and never disagree.
+export function withDraw<E extends PickerRound>(el: E, label: string): E {
+  if (!el.pickerRemoveDrawn) return { ...el, pickerResult: label };
+  return { ...el, pickerResult: label, pickerDrawn: drawnAfter(el.pickerDrawn, label) };
+}
+
+// Reset: every name back in the pool and no result, the fields dropped rather than left undefined.
+export function withRoundCleared<E extends PickerRound>(el: E): E {
+  const next = { ...el };
+  delete next.pickerResult;
+  delete next.pickerDrawn;
+  return next;
 }

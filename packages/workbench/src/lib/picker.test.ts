@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { pickerCandidates, rollPicker, spinFrameDelays, spinReel } from './picker';
+import {
+  drawnAfter,
+  drawnStillListed,
+  pickerCandidates,
+  rollPicker,
+  spinFrameDelays,
+  spinReel,
+  undrawnCandidates,
+  withDraw,
+  withRoundCleared,
+  pickerOffer,
+} from './picker';
 
 // An editor's Participant, cut down.
 type Participant = { id: string; name: string; color: string; status: 'online' };
@@ -125,5 +136,85 @@ describe('spinFrameDelays', () => {
 
   it('has no frames to schedule for an empty reel', () => {
     expect(spinFrameDelays(0)).toEqual([]);
+  });
+});
+
+describe('Remove Once Drawn', () => {
+  const pool = [{ label: 'Ada' }, { label: 'Grace' }, { label: 'Linus' }];
+
+  it('leaves the drawn names out of the pool only while the setting is on', () => {
+    expect(labels(undrawnCandidates(pool, ['Grace'], true))).toEqual(['Ada', 'Linus']);
+    expect(labels(undrawnCandidates(pool, ['Grace'], false))).toEqual(['Ada', 'Grace', 'Linus']);
+    expect(undrawnCandidates(pool, undefined, true)).toBe(pool);
+    expect(undrawnCandidates(pool, [], true)).toBe(pool);
+  });
+
+  it('empties the pool once every name is drawn, so the face can offer Reset', () => {
+    expect(undrawnCandidates(pool, ['Ada', 'Grace', 'Linus'], true)).toEqual([]);
+  });
+
+  it('appends a draw once, in order', () => {
+    expect(drawnAfter(undefined, 'Ada')).toEqual(['Ada']);
+    expect(drawnAfter(['Ada'], 'Linus')).toEqual(['Ada', 'Linus']);
+    // A replayed write of the same draw does not double it.
+    expect(drawnAfter(['Ada', 'Linus'], 'Ada')).toEqual(['Ada', 'Linus']);
+  });
+
+  it('counts only drawn names still on the list, once each', () => {
+    expect(drawnStillListed(pool, ['Linus', 'Gone', 'Ada', 'Linus'])).toEqual(['Linus', 'Ada']);
+    expect(drawnStillListed(pool, undefined)).toEqual([]);
+  });
+});
+
+describe('the draw and the reset', () => {
+  it('writes only the result while Remove Once Drawn is off', () => {
+    expect(withDraw({ pickerDrawn: ['Ada'] }, 'Grace')).toEqual({
+      pickerDrawn: ['Ada'],
+      pickerResult: 'Grace',
+    });
+  });
+
+  it('writes the result and the drawn list together while it is on', () => {
+    expect(withDraw({ pickerRemoveDrawn: true, pickerDrawn: ['Ada'] }, 'Grace')).toEqual({
+      pickerRemoveDrawn: true,
+      pickerResult: 'Grace',
+      pickerDrawn: ['Ada', 'Grace'],
+    });
+  });
+
+  it('drops the result and the drawn list on a reset, keeping the setting', () => {
+    const cleared = withRoundCleared({
+      pickerRemoveDrawn: true,
+      pickerResult: 'Grace',
+      pickerDrawn: ['Ada', 'Grace'],
+    });
+    expect(cleared).toEqual({ pickerRemoveDrawn: true });
+    expect('pickerResult' in cleared).toBe(false);
+  });
+});
+
+describe('pickerOffer', () => {
+  const offer = { candidates: [], shared: true, roll: () => null, reset: () => {} };
+
+  it('gives an Editor spinning for the room both the spin and the reset', () => {
+    const got = pickerOffer(offer, false);
+    expect(got?.roll).toBe(offer.roll);
+    expect(got?.reset).toBe(offer.reset);
+  });
+
+  it('gives a read-only viewer the reel alone', () => {
+    const got = pickerOffer(offer, true);
+    expect(got?.roll).toBeUndefined();
+    expect(got?.reset).toBeUndefined();
+  });
+
+  it('gives a private roller (somebody else facilitating) the spin but no reset', () => {
+    const got = pickerOffer({ ...offer, shared: false }, false);
+    expect(got?.roll).toBe(offer.roll);
+    expect(got?.reset).toBeUndefined();
+  });
+
+  it('offers nothing with no session behind the canvas', () => {
+    expect(pickerOffer(undefined, false)).toBeUndefined();
   });
 });
