@@ -298,9 +298,10 @@ function PlatformRow({
       data-chat-platform={platform}
       aria-label={NAMES[platform]}
     >
-      <div className="flex items-start gap-3">
+      {/* On a phone the action drops under the words, in line with them, so the words keep the row's width. */}
+      <div className="flex items-start gap-3 max-sm:flex-wrap">
         <span className="shrink-0">{mark}</span>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 max-sm:basis-[calc(100%-52px)]">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               {NAMES[platform]}
@@ -323,7 +324,8 @@ function PlatformRow({
             onClick={connection ? onDisconnect : onConnect}
             disabled={busy !== null}
             data-chat-action={connection ? 'disconnect' : 'connect'}
-            className="shrink-0"
+            // A ghost button's words sit inside its padding: it moves left by that much to line up.
+            className={connection ? 'shrink-0 max-sm:ml-[40px]' : 'shrink-0 max-sm:ml-[52px]'}
           >
             {busy === platform
               ? connection

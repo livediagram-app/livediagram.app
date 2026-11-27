@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { ChatLinkPreview } from '@liveknowledge/api-schema';
 import { Button } from '@liveworkspace/ui';
 import { useAuthHrefs } from '@liveworkspace/workbench/components/chrome/auth-routes';
-import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import { apiChatLinkPreview, apiCompleteChatLink } from '@/lib/api/chat-apps';
 import { track } from '@/lib/telemetry';
@@ -39,29 +39,30 @@ export function ChatLinkView({ api = API }: { api?: Api }) {
     () => (query === null ? undefined : new URLSearchParams(query).get('code')),
     [query],
   );
-  const auth = useDeferredAuth();
+  // The account bootstrap, not the bare session: it puts the account's token on the api client before a request.
+  const auth = useAccountBootstrap();
   const { signInHref } = useAuthHrefs();
   const [read, setState] = useState<State>({ kind: 'loading' });
   // A link with no code is one copied in part: nothing to read.
   const state: State = code === null || code === '' ? { kind: 'expired' } : read;
 
   useEffect(() => {
-    if (!code) return;
+    if (!code || !auth.authLoaded) return;
     let live = true;
     api
-      .preview(auth.userId ?? '', code)
+      .preview(auth.accountUserId ?? '', code)
       .then((preview) => live && setState({ kind: 'ready', preview }))
       .catch((err: unknown) => live && setState({ kind: gone(err) ? 'expired' : 'error' }));
     return () => {
       live = false;
     };
-  }, [api, code, auth.userId]);
+  }, [api, code, auth.authLoaded, auth.accountUserId]);
 
   const connect = async () => {
-    if (state.kind !== 'ready' || !code || !auth.userId) return;
+    if (state.kind !== 'ready' || !code || !auth.accountUserId) return;
     setState({ kind: 'linking', preview: state.preview });
     try {
-      await api.complete(auth.userId, code);
+      await api.complete(auth.accountUserId, code);
       track('UI', 'Used', 'ChatAccountLinked');
       setState({ kind: 'linked', preview: state.preview });
     } catch (err) {
@@ -116,7 +117,7 @@ export function ChatLinkView({ api = API }: { api?: Api }) {
             <Button
               className="mt-6"
               busy={state.kind === 'linking'}
-              disabled={!auth.userId}
+              disabled={!auth.accountUserId}
               onClick={() => void connect()}
             >
               Connect My Account
