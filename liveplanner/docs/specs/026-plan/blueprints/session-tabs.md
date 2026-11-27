@@ -111,7 +111,7 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 - `item-history.test.ts`: a session change kept, read back, grouped only with its tag.
 - api `item-history-route.test.ts` ("a session outcome"): records, refuses below edit, unknown outcome, tab scope;
   `submit.test.ts`: a changeset on a Session tab refused.
-- editor: `planning/planning-parts.test.tsx` (tally states, estimate strip per role, pills, capacity part),
+- editor: `planning-parts.test.tsx` (tally states, estimate strip per role, pills, capacity part),
   `SessionPage.planning.test.tsx` (Commit moves the card and records it, C key, Skip, inline estimate, tally),
   `FillActionButton.test.tsx` (fill, tick, reduced motion), `SessionPage.test.tsx` (queue, run, keys, peek,
   phone queue, settings, roles), `session-parts.test.tsx` (action bar, sidebar, progress, complete, chip and keys per
