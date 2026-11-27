@@ -12,6 +12,12 @@ import {
 import { EXAMPLE_FIELD, TRASHED_FROM_FIELD, TRASH_STATUS, isArchived, isFlagged } from './board';
 import { AUTOMATION_PERSON_ID } from './automation/types';
 import { isRichFieldKey, richFieldOf } from './rich-text-field';
+import {
+  isSessionKindId,
+  isSessionOutcome,
+  type SessionKindId,
+  type SessionOutcome,
+} from './session-queue';
 
 // The newest entries a card keeps, and the oldest an entry may be: each write drops its card's entries past either.
 export const ITEM_HISTORY_MAX = 200;
@@ -40,7 +46,10 @@ export type ItemHistoryChange =
   | { kind: 'type'; from: string; to: string }
   // `value` absent: the field is named, its value not copied (a description, a checklist).
   | { kind: 'set'; field: string; value?: ItemHistoryValue }
-  | { kind: 'cleared'; field: string };
+  | { kind: 'cleared'; field: string }
+  // A Session tab's outcome for the card (docs/specs/026-plan/session-tabs.md "History"): its own entry, tagged
+  // `session`, written by the outcome route and never worked out from a write.
+  | { kind: 'session'; session: SessionKindId; outcome: SessionOutcome };
 
 // How an entry was made: by an agent (an API token), as an undo or redo, or from a form's response.
 // `automation_ai`: a rule's AI action (docs/specs/026-plan/automations.md "AI actions"), by Automation, marked as AI.
@@ -57,7 +66,9 @@ export type ItemHistoryTag =
   | 'github'
   | 'automation_github'
   // A card an email made (docs/specs/026-plan/email-to-board.md "What a message makes").
-  | 'email';
+  | 'email'
+  // A Session tab's outcome (docs/specs/026-plan/session-tabs.md "History").
+  | 'session';
 
 // An entry as the plan stores it: its author as the card names them (a hashed id, a name, a colour).
 export type StoredHistoryEntry = {
@@ -189,6 +200,8 @@ function keyOf(c: ItemHistoryChange): string {
     case 'set':
     case 'cleared':
       return `field:${c.field}`;
+    case 'session':
+      return `session:${c.session}`;
   }
 }
 
@@ -288,6 +301,7 @@ const TAGS: readonly string[] = [
   'github',
   'automation_github',
   'email',
+  'session',
 ];
 const CHANGE_KINDS = new Set([
   'created',
@@ -301,6 +315,7 @@ const CHANGE_KINDS = new Set([
   'type',
   'set',
   'cleared',
+  'session',
 ]);
 
 // A stored row read back, or null when it does not parse (a row from a later release, a hand edit).
@@ -319,7 +334,10 @@ export function readStoredHistory(row: {
     if (!Array.isArray(changes)) return null;
     const kept = changes.filter(
       (c): c is ItemHistoryChange =>
-        !!c && typeof c === 'object' && CHANGE_KINDS.has((c as { kind?: string }).kind ?? ''),
+        !!c &&
+        typeof c === 'object' &&
+        CHANGE_KINDS.has((c as { kind?: string }).kind ?? '') &&
+        sessionChangeReads(c as { kind: string }),
     );
     const tag = typeof row.tag === 'string' && TAGS.includes(row.tag) ? row.tag : undefined;
     return {
@@ -331,4 +349,9 @@ export function readStoredHistory(row: {
   } catch {
     return null;
   }
+}
+
+// A stored session change reads back only with a session kind and outcome this build knows.
+function sessionChangeReads(c: { kind: string; session?: unknown; outcome?: unknown }): boolean {
+  return c.kind !== 'session' || (isSessionKindId(c.session) && isSessionOutcome(c.outcome));
 }

@@ -120,7 +120,10 @@ export type ItemRejection =
   | 'time_not_yours'
   // A write that would make a card block itself, directly or through others (docs/specs/026-plan/item-types.md
   // "Blocked By").
-  | 'blocks_cycle';
+  | 'blocks_cycle'
+  // A Session tab's outcome naming a session kind or outcome this build does not know
+  // (docs/specs/026-plan/session-tabs.md "History").
+  | 'session_invalid';
 
 // A refusal names the field, and the limit its value broke when it broke one (field-limits.ts).
 export type FieldsRefusal = { ok: false; error: ItemRejection; field?: string; limit?: FieldLimit };

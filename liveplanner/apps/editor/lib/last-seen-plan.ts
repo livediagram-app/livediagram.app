@@ -130,7 +130,8 @@ export function planCopyPaints(copy: LastSeenCopy<PlanCopyItem, unknown>): boole
   if (!first) return false;
   const tab = first.tab as { kind?: string; elements?: readonly TabElement[]; dashboard?: unknown };
   const kind = tabKindOf(tab);
-  if (kind === 'form') return false;
+  // A Session tab's page waits for the plan's cards and its people (docs/specs/026-plan/session-tabs.md).
+  if (kind === 'form' || kind === 'session') return false;
   const elements = tab.elements ?? [];
   const drawsCards =
     kind === 'board' ||

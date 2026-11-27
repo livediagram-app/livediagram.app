@@ -13,6 +13,7 @@ import {
   lucideEraser,
   lucideFlag,
   lucideHistory,
+  lucideListChecks,
   lucideMoveRight,
   lucidePackage,
   lucidePencil,
@@ -57,6 +58,7 @@ const GLYPHS: Record<ActivityGlyph, (p: { 'aria-hidden'?: boolean }) => ReactNod
   trash: () => <TrashIcon size={12} />,
   restore: lucideGlyph(lucideUndo2, 12),
   type: lucideGlyph(lucideShapes, 12),
+  session: lucideGlyph(lucideListChecks, 12),
 };
 
 // The card's Activity tab, keyed by the card so Show N More starts folded on each one.

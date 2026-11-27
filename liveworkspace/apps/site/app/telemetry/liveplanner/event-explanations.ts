@@ -980,6 +980,13 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone started a Dashboard tab from Start Planning, from one of its layouts.',
   'Plan|Created|VisualisationTab':
     'Someone started a Visualisation tab from Start Planning: one chart of the cards filling the tab.',
+  'Plan|Created|SessionTab':
+    'Someone started a Session tab (Refinement) from Start Planning, to work through cards together.',
+  'Plan|Used|SessionRefined':
+    'A facilitator marked a card Refined in a Session tab, moving it on to its next stage.',
+  'Plan|Used|SessionSkipped': 'A facilitator skipped a card in a Session tab.',
+  'Plan|Used|SessionFlagged': 'A facilitator flagged a card in a Session tab.',
+  'Plan|Changed|SessionSetup': "Someone changed a Session tab's set-up from Session Settings.",
   'Plan|Created|SuggestedDashboard':
     'Someone started a dashboard Start Planning suggested for their cards, under For You.',
   'Plan|Changed|DashboardRow': 'Someone added, removed or resized a row on a Dashboard tab.',
@@ -2815,7 +2822,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone took a filter off a Card Search view, or deleted one of a board's saved filters.",
   'Plan|Selected': 'Someone started selecting several cards on a board, to change them together.',
   'Plan|Used':
-    "Someone applied one of a board's saved filters, or started a card from one of its card type's templates.",
+    "Someone applied one of a board's saved filters, started a card from one of its card type's templates, or decided a card in a Session tab.",
   'Plan|Copied': 'Someone copied something from a plan, like a new webhook secret.',
   'Plan|Shared': 'Someone handed something from a plan to another app, like a calendar link.',
   'Plan|Renamed': "Someone renamed one of a board's saved filters.",

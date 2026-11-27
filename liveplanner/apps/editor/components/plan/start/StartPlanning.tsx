@@ -16,6 +16,7 @@ import {
   lucideGrid3x3,
   lucideLayoutGrid,
   lucideLightbulb,
+  lucideListChecks,
   lucideSquareKanban,
   lucideStar,
 } from '@liveworkspace/icons/lucide';
@@ -43,7 +44,7 @@ import { DashboardLayoutPicture } from '../DashboardLayoutPicture';
 import { VisualisationPreview } from '../dashboard/slot-previews';
 import { FormStarterPicture } from '@liveplanner/template-previews';
 import type { StarterId } from '@liveplanner/forms';
-import type { PlanVisualisation } from '@liveplanner/items';
+import type { PlanVisualisation, SessionKindId } from '@liveplanner/items';
 import {
   DESCRIBE_ITEM,
   IMPORT_ITEM,
@@ -58,6 +59,7 @@ import {
 } from './start-planning-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { ImportPicture } from './ImportPicture';
+import { SessionPicture } from './SessionPicture';
 import { DescribePicture } from './describe-plan/DescribePicture';
 import { useConnectStart } from '@/components/connect/useConnectStart';
 import { COMMUNITY_START_GROUP, communityStartTiles } from './community-start-cards';
@@ -80,6 +82,7 @@ const RAIL_ICONS: Record<
   forms: lucideGlyph(lucideClipboardList, 16),
   visualisations: lucideGlyph(lucideChartPie, 16),
   dashboards: lucideGlyph(lucideLayoutGrid, 16),
+  sessions: lucideGlyph(lucideListChecks, 16),
   inspiration: lucideGlyph(lucideLightbulb, 16),
 };
 // The most card types a board's card shows as chips; the rest are counted.
@@ -94,6 +97,7 @@ function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
   if (item.kind === 'template') return <TemplatePicture kind={item.template} />;
   if (item.kind === 'visualisation')
     return <VisualisationPreview view={item.view} palette={palette} />;
+  if (item.kind === 'session') return <SessionPicture palette={palette} />;
   if (item.kind === 'form') return <FormStarterPicture starter={item.starter} palette={palette} />;
   if (item.kind === 'sheet') {
     const tile = SHEET_TILES.find((t) => t.start === item.start) ?? SHEET_TILES[0]!;
@@ -192,6 +196,7 @@ export function StartPlanning({
   onImport,
   onDescribe,
   onDescribeForm,
+  onSession,
   leave = (href) => window.location.assign(href),
 }: {
   onPickBoard: (preset: string) => void;
@@ -218,6 +223,8 @@ export function StartPlanning({
   onDescribe?: (() => void) | undefined;
   // Opens Describe a Form (an Editor's: describe-a-form.md "Who may"); absent, Forms has no Describe a Form card.
   onDescribeForm?: (() => void) | undefined;
+  // Sets up a Session tab of a kind (Sessions, session-tabs.md "Making one"); absent, Sessions is left out.
+  onSession?: ((kind: SessionKindId) => void) | undefined;
   // Leaving for a Community tile's copy (a full navigation; tests watch it instead).
   leave?: (href: string) => void;
 }) {
@@ -254,7 +261,8 @@ export function StartPlanning({
           (i.kind !== 'form' || !!onForm) &&
           (i.kind !== 'import' || !!onImport) &&
           (i.kind !== 'describe' || !!onDescribe) &&
-          (i.kind !== 'describe-form' || (!!onDescribeForm && !!onForm)),
+          (i.kind !== 'describe-form' || (!!onDescribeForm && !!onForm)) &&
+          (i.kind !== 'session' || !!onSession),
       ),
     [
       hasCards,
@@ -267,6 +275,7 @@ export function StartPlanning({
       onImport,
       onDescribe,
       onDescribeForm,
+      onSession,
     ],
   );
   // The Community's tiles join Inspiration: one read the first time the panel shows this session, none where
@@ -302,6 +311,7 @@ export function StartPlanning({
     else if (item.kind === 'import') onImport?.();
     else if (item.kind === 'describe') onDescribe?.();
     else if (item.kind === 'describe-form') onDescribeForm?.();
+    else if (item.kind === 'session') onSession?.(item.sessionKind);
     else if (item.suggestion) onSuggestedDashboard?.(item.suggestion);
     else if (item.layout) onDashboard?.(item.layout);
   };

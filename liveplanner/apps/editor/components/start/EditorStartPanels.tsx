@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
-import { readDashboard } from '@liveplanner/project';
+import { useMemo, useState } from 'react';
+import { newSessionTab, readDashboard, readSessionTab } from '@liveplanner/project';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
@@ -28,6 +28,17 @@ const FormPage = dynamic(() => import('@/components/forms/FormPage').then((m) =>
 // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): only a Dashboard tab draws it.
 const DashboardPage = dynamic(
   () => import('@/components/plan/dashboard/DashboardPage').then((m) => m.DashboardPage),
+  { ssr: false },
+);
+
+// A Session tab's page (docs/specs/026-plan/session-tabs.md "The page"): only a Session tab draws it.
+const SessionPage = dynamic(
+  () => import('@/components/session/SessionPage').then((m) => m.SessionPage),
+  { ssr: false },
+);
+// Set Up Refinement (docs/specs/026-plan/session-tabs.md "Making one"), fetched only when chosen.
+const SessionStartHost = dynamic(
+  () => import('@/components/session/SessionStartHost').then((m) => m.SessionStartHost),
   { ssr: false },
 );
 
@@ -67,6 +78,8 @@ export function EditorStartPanels() {
   const [describing, setDescribing] = useState(false);
   // Describe a Form open over Start Planning; it stays while the form it made takes the tab, until it closes.
   const [describingForm, setDescribingForm] = useState(false);
+  // Set Up Refinement open over Start Planning (session-tabs.md "Making one").
+  const [settingUpSession, setSettingUpSession] = useState(false);
   const isOffline = useIsOfflineProject(ctx.projectId);
   // A template picked from Start Planning on a plan /new just made goes to its default folder
   // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
@@ -78,6 +91,12 @@ export function EditorStartPanels() {
   // An empty tab: Start Planning, in the middle of the canvas, for someone who can edit. Anything already drawn (a
   // board, a shape, a view) hides it.
   const dashboardHasRows = (readDashboard(activeTab.dashboard)?.rows.length ?? 0) > 0;
+  // Read once per change of the tab's session, so the page's queue is worked out only when it changes.
+  const isSession = activeTab.kind === 'session';
+  const session = useMemo(
+    () => (isSession ? readSessionTab(activeTab.session) : null),
+    [isSession, activeTab.session],
+  );
   // A connected tab is empty but shows its own page, never a start (connected-tabs.md "How it looks").
   const tabEmpty =
     hydrated &&
@@ -88,7 +107,9 @@ export function EditorStartPanels() {
       ? !dashboardHasRows
       : activeTab.kind === 'form'
         ? !activeTab.form
-        : activeTab.elements.length === 0);
+        : activeTab.kind === 'session'
+          ? !session
+          : activeTab.elements.length === 0);
   const showPlanBoardPicker = tabEmpty && !isReadOnly;
   // A Participant's or Viewer's empty tab: the empty-canvas card every editor shares (plan-mode.md "Starting a board").
   const showEmptyCard = tabEmpty && isReadOnly;
@@ -101,6 +122,8 @@ export function EditorStartPanels() {
     (hydrated || warmShown) && activeTab.kind === 'dashboard' && dashboardHasRows;
   // A Form tab's page (docs/specs/030-forms/forms.md), for everyone who opens it.
   const showForm = hydrated && activeTab.kind === 'form' && !!activeTab.form;
+  // A Session tab's page (docs/specs/026-plan/session-tabs.md), for everyone who opens it, once its cards are there.
+  const showSession = hydrated && !!session && !!ctx.plan;
   return (
     <>
       {showDashboard ? (
@@ -140,6 +163,24 @@ export function EditorStartPanels() {
           onSyncToCloud={ctx.syncToCloud}
           syncReady={ctx.selfParticipant.id !== 'self'}
           tabScope={ctx.sessionTabScope}
+        />
+      ) : null}
+      {showSession && session && ctx.plan ? (
+        <SessionPage
+          key={activeTab.id}
+          tab={activeTab}
+          session={session}
+          plan={ctx.plan.context}
+          // A locked tab's session reads as a Viewer's does (session-tabs.md "Share roles").
+          mayEdit={ctx.can.level === 'edit' && !ctx.activeTabLocked}
+          actions={ctx.sessions}
+          self={{
+            id: ctx.voteSelfId,
+            name: ctx.selfParticipant.name,
+            color: ctx.selfParticipant.color,
+          }}
+          presence={ctx.livePresence}
+          renameTab={renameTab}
         />
       ) : null}
       {showEmptyCard ? (
@@ -183,6 +224,8 @@ export function EditorStartPanels() {
           onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
           onVisualisation={ctx.planTabs.startVisualisationTab}
           onForm={ctx.forms.startForm}
+          // A Session tab (session-tabs.md "Making one"): set up first, an Editor's as every choice here is.
+          onSession={ctx.plan ? () => setSettingUpSession(true) : undefined}
           // The one Import dialog, on its list (plan-tabs.md "The Import dialog"): an Editor's, as its tools are.
           onImport={ctx.trackerImport.canImport ? () => ctx.setImportOpen(true) : undefined}
           // Describe a Plan (describe-a-plan.md "Who may"): an Editor's, as Import is; a guest sees it with a nudge.
@@ -193,6 +236,16 @@ export function EditorStartPanels() {
           onDescribeForm={
             ctx.trackerImport.canImport && ctx.plan ? () => setDescribingForm(true) : undefined
           }
+        />
+      ) : null}
+      {settingUpSession && ctx.plan ? (
+        <SessionStartHost
+          plan={ctx.plan.context}
+          onStart={(setup) => {
+            ctx.sessions.startSession(newSessionTab('refinement', setup));
+            setSettingUpSession(false);
+          }}
+          onClose={() => setSettingUpSession(false)}
         />
       ) : null}
       {describing ? <DescribePlanHost onClose={() => setDescribing(false)} /> : null}

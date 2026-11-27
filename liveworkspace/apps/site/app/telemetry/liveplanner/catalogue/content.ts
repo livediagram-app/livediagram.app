@@ -1360,8 +1360,27 @@ export const PLAN_TABS_CREATED = chart(
   'Plan',
   'Created',
   'Plan Tabs Started',
-  'A Board, Sheet, Dashboard or Visualisation tab started from Start Planning, or a dashboard it suggested.',
-  { types: ['BoardTab', 'SheetTab', 'DashboardTab', 'VisualisationTab', 'SuggestedDashboard'] },
+  'A Board, Sheet, Dashboard, Visualisation or Session tab started from Start Planning, or a dashboard it suggested.',
+  {
+    types: [
+      'BoardTab',
+      'SheetTab',
+      'DashboardTab',
+      'VisualisationTab',
+      'SessionTab',
+      'SuggestedDashboard',
+    ],
+  },
+);
+
+// Session tabs (docs/specs/026-plan/session-tabs.md "Telemetry", in the liveplanner folder): each card's outcome as
+// the facilitator decides it. Never the card or the plan.
+export const PLAN_SESSION_OUTCOMES = chart(
+  'Plan',
+  'Used',
+  'Session Outcomes',
+  'A card decided in a Session tab: Refined (moved on to its next stage), Skipped or Flagged.',
+  { types: ['SessionRefined', 'SessionSkipped', 'SessionFlagged'] },
 );
 
 export const PLAN_REVEALED = chart(
@@ -1792,6 +1811,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_CARD_TYPES_INHERITED,
   PLAN_CARD_TYPES_DETACHED,
   PLAN_REVEALED,
+  PLAN_SESSION_OUTCOMES,
   PLAN_CSV_IMPORTED,
   PLAN_CSV_EXPORTED,
 ];

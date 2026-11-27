@@ -226,8 +226,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
     configuring && configurableBoard
       ? elements.find((e): e is ShapeElement => e.id === configurableBoard && e.type === 'shape')
       : undefined;
-  // A Dashboard's or a Form tab's page covers the canvas as a page, not an element.
-  const elementCovers = canvasCovered && tabPlanKind !== 'dashboard' && tabPlanKind !== 'form';
+  // A Dashboard's, a Form tab's or a Session tab's page covers the canvas as a page, not an element.
+  const elementCovers =
+    canvasCovered &&
+    tabPlanKind !== 'dashboard' &&
+    tabPlanKind !== 'form' &&
+    tabPlanKind !== 'session';
   const clusterInset = elementCovers
     ? COVERED_CLUSTER_INSET
     : canvasCovered && tabPlanKind === 'form' && !isMobile

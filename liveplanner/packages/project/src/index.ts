@@ -421,6 +421,7 @@ export * from './tab-folders';
 // Live session tools (docs/specs/012-collaboration/session-tools.md): the TabTimer / TabVote types used by the
 // Tab fields above, plus the pure timer + vote helpers.
 export * from './session';
+export * from './session-tab';
 
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in

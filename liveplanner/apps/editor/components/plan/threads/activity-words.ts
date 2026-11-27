@@ -16,9 +16,11 @@ import {
   type ItemHistoryEntry,
   type ItemHistoryValue,
   type ItemTypeDef,
+  type SessionKindId,
+  type SessionOutcome,
   type StatusPhase,
 } from '@liveplanner/items';
-import { PRIORITY_COLOURS } from '@liveplanner/project';
+import { PRIORITY_COLOURS, SESSION_KINDS } from '@liveplanner/project';
 import { colourName } from '@liveworkspace/workbench/components/colour/colour-options';
 
 // A chip's colour: a status's stage (its dot as the Details status pill draws it), or a priority's own colour.
@@ -42,7 +44,9 @@ export type ActivityGlyph =
   | 'archive'
   | 'trash'
   | 'restore'
-  | 'type';
+  | 'type'
+  // A Session tab's outcome (docs/specs/026-plan/session-tabs.md "History").
+  | 'session';
 
 export type ActivityLine = { glyph: ActivityGlyph; parts: ActivityPart[] };
 
@@ -233,6 +237,8 @@ export function changeLine(
       };
     case 'set':
       return setLine(ctx, change.field, change.value, previous);
+    case 'session':
+      return { glyph: 'session', parts: [t(sessionOutcomeLine(change.session, change.outcome))] };
     case 'cleared': {
       const name = s(fieldName(ctx, change.field));
       return {
@@ -250,6 +256,16 @@ export function changeLine(
       };
     }
   }
+}
+
+// A Session tab's outcome, in words: "Refined this in a Refinement session".
+const OUTCOME_VERBS: Record<SessionOutcome, string> = {
+  refined: 'Refined',
+  skipped: 'Skipped',
+  flagged: 'Flagged',
+};
+function sessionOutcomeLine(session: SessionKindId, outcome: SessionOutcome): string {
+  return `${OUTCOME_VERBS[outcome]} this in a ${SESSION_KINDS[session].label} session`;
 }
 
 // A line's plain words, as a test reads it.
