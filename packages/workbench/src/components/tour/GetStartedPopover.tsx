@@ -53,15 +53,16 @@ export function GetStartedBody<Id extends string>({
         title="Get Started"
         subtitle="Quick tutorials to get you going."
         // The title and its line stop short of the art in the bottom right and the close above it.
-        className="max-sm:pr-16 sm:pr-[7.5rem]"
+        className="max-sm:pr-[4.5rem] sm:pr-[7.5rem]"
         // A phone's drawer: the band runs up under its grab handle.
         underHandle={sheet}
       />
       <div className="min-h-0 overflow-y-auto overscroll-contain px-3.5 pb-3 pt-2">
         <TourTopics topics={topics} onPick={onPick} {...(idAttribute ? { idAttribute } : {})} />
       </div>
-      {/* Last in the DOM, so opening focuses the first lesson, not the close. */}
-      <div className="absolute right-3 top-3">
+      {/* Centred on the 100px band's row with a hero header's inset, as Tools' close. Last in the DOM, so opening
+      focuses the first lesson, not the close. */}
+      <div className="absolute right-4 top-7 sm:right-6">
         <DialogCloseButton onClick={onClose} />
       </div>
     </div>

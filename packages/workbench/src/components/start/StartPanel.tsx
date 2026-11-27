@@ -367,11 +367,9 @@ export function createStartPanel<
             // only the title's row needs it: the search below runs the full width, so a long placeholder ("Find a
             // board, sheet, form or layout") fits.
             // From `sm` it stands 100px tall, its row centred, so the band shows.
-            className={
-              isSheet
-                ? `relative isolate flex flex-wrap content-center items-center gap-x-4 gap-y-3 border-b py-4 pl-5 sm:min-h-[100px] sm:pl-6 max-sm:pr-5 max-sm:pt-1 ${onClose ? 'pr-28' : 'pr-14'}`
-                : `relative isolate flex flex-wrap content-center items-center gap-x-4 gap-y-3 border-b py-4 pl-5 sm:min-h-[100px] sm:pl-6 max-sm:pr-5 ${onClose ? 'pr-28' : 'pr-14'}`
-            }
+            className={`relative isolate flex flex-wrap content-center items-center gap-x-4 gap-y-3 border-b py-4 pl-5 sm:min-h-[100px] sm:pl-6 max-sm:pr-5 ${
+              isSheet ? 'max-sm:pt-1 ' : ''
+            }${onClose ? 'pr-28' : 'pr-14'}`}
             style={{ borderColor: palette.border }}
           >
             <StartHeaderBand

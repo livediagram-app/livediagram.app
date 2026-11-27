@@ -38,7 +38,7 @@ export function ToolsHeader({
       subtitle={tool ? tool.description : TOOLS_LINE}
       {...(tool ? { onBack, backLabel: TOOLS_BACK_LABEL } : {})}
       // The title and its line stop short of the art in the bottom right (96px, 12px in) and the close above it.
-      className="max-sm:pr-16 sm:pr-[7.5rem]"
+      className="max-sm:pr-[4.5rem] sm:pr-[7.5rem]"
       // A phone's drawer: the band runs up under its grab handle.
       underHandle={sheet}
     />
