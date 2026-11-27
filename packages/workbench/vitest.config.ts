@@ -261,6 +261,10 @@ const HELD_AT_100 = [
   // canvas-and-palette.md "A category that opens a dialog" and element-menu-quick-bar.md "Resources").
   'src/components/dialogs/ElementRowsDialogs.tsx',
   'src/components/dialogs/ElementResourcesDialog.tsx',
+  // A hovered page layout placed through the path a press takes, livedocuments' and livedesign's one copy
+  // (011-workbench/page-layout-preview.md, Work Tracker 1507).
+  'src/lib/page-layout-preview.ts',
+  'src/lib/layout-preview-settle.ts',
 ];
 
 export default defineProject({

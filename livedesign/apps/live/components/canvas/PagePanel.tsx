@@ -37,6 +37,7 @@ import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import type { PageLayoutId } from '@livedesign/templates';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { LayoutsSection } from './page-layouts-section';
 import { WireframeDeviceSettings } from './wireframe/WireframeDeviceSettings';
 import { OrientationSection, SizeSection } from './page-panel-sections';
@@ -103,8 +104,9 @@ export function PagePanel({
   themeBackgrounds: ThemeBackgroundPreset[];
   edit: PageEdits;
   onPreview: (preview: PagePreview) => void;
-  // A layout shown on the page while its tile is hovered (PageLayoutPreview); null clears.
-  onLayoutPreview: (layout: PageLayoutId | null) => void;
+  // A layout shown on the page while its tile is hovered or focused, exactly as a press lands it
+  // (page-layout-place.ts); null clears.
+  onLayoutPreview: (layout: PageLayoutId | null, how?: LayoutPreviewAsk) => void;
   onClose: (restoreFocus: boolean) => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -268,8 +270,8 @@ export function PagePanel({
         ) : tab === 'layouts' ? (
           <LayoutsSection
             page={page}
+            // The press lands what the hover shows, so the preview is left for the apply to take over.
             onApply={(layout) => {
-              onLayoutPreview(null);
               void edit.applyLayout(page.id, layout);
               onClose(false);
             }}

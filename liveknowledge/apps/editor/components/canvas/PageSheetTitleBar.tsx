@@ -159,8 +159,10 @@ function PageSheetTitleBarView({
                 section={articleSection}
               />
             ) : null,
-            // An infographic or slide page's Layouts (PageLayoutsButton).
-            pageButtons ? (
+            // An infographic or slide page's Layouts (PageLayoutsButton): cut from the fork, closed even on the
+            // infographic or slide page a JSON import still carries, whose press placed nothing while its hover
+            // drew a layout (docs/specs/002-project-scope/not-in-liveknowledge.md, Work Tracker 1507).
+            CUT_FROM_FORK && pageButtons ? (
               <PageLayoutsButton
                 key="layouts"
                 page={page}

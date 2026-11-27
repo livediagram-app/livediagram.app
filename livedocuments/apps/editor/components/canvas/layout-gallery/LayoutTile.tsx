@@ -6,7 +6,7 @@
 import { memo, type RefObject } from 'react';
 import type { LaidOutPage } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
-import type { LayoutPreviewAsk } from '@/hooks/editor/layout-preview-settle';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { LayoutCard } from '@liveworkspace/workbench/components/canvas/layout-gallery/LayoutCard';
 import { LayoutThumb } from '../infographic-layout-thumb';
 import type { GalleryLayout } from './layout-gallery-filter';

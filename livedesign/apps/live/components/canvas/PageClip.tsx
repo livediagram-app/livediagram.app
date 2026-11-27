@@ -40,7 +40,6 @@ export function PageClip({
   pages,
   elements,
   layers,
-  hiddenPageId = null,
   children,
 }: {
   // Absent outside Pages mode, where nothing is clipped.
@@ -48,8 +47,6 @@ export function PageClip({
   elements: Element[];
   // The tab's layers, for the paint order a chart's ground is found in (what is drawn under it).
   layers?: Layer[];
-  // A page whose content is hidden (left out of the clip): one under a layout preview.
-  hiddenPageId?: string | null;
   children: ReactNode;
 }) {
   // A background hovered in a page's panel inks the page's elements as the press would.
@@ -62,7 +59,7 @@ export function PageClip({
         <div
           data-page-clip=""
           className="absolute inset-0 transition-[clip-path] duration-200 ease-out motion-reduce:transition-none"
-          style={{ clipPath: pagesClipPath(pages.filter((p) => p.id !== hiddenPageId)) }}
+          style={{ clipPath: pagesClipPath(pages) }}
         >
           {children}
         </div>

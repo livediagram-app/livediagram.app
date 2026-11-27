@@ -1,6 +1,6 @@
 // What the page panel can do to a Pages tab's pages (docs/specs/007-editor/pages-mode.md), as pageEdits
 // (page-edits.ts) builds it. Split out of page-edits.ts, which re-exports it.
-import type { LayoutPreviewAsk } from './layout-preview-settle';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import type {
   PageBackground,
   PageKind,

@@ -25,7 +25,6 @@ import {
   type LaidOutPage,
 } from '@livedesign/design';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
-import { PageLayoutPreview } from './PageLayoutPreview';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
 import { PageSheet } from './PageSheet';
@@ -161,10 +160,6 @@ export function CanvasPages({
   const [galleryFor, setGalleryFor] = useState<string | null>(null);
   const galleryPage = galleryFor ? pages.find((p) => p.id === galleryFor) : undefined;
   const showsLayoutInvite = (page: LaidOutPage) => layoutInviteShows(page, layoutCardContext(page));
-  // The page a layout is previewed on: its panel's, or its in-page card's.
-  const previewed = view.layoutPreview
-    ? pages.find((p) => p.id === view.layoutPreview!.pageId)
-    : undefined;
   const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
   return (
     <>
@@ -330,16 +325,6 @@ export function CanvasPages({
           onAddDevice={(device) => edit.addPage!('wireframe', device)}
         />
       ) : null}
-      {previewed && view.layoutPreview ? (
-        <PageLayoutPreview
-          page={previewed}
-          layout={view.layoutPreview.layout}
-          tabFont={view.tabFont}
-          elements={view.elements}
-          pages={view.pages}
-          frameTheme={view.frameTheme}
-        />
-      ) : null}
       {edit
         ? pages.filter(showsLayoutCard).map((page) => (
             <div
@@ -412,9 +397,8 @@ export function CanvasPages({
           themeBackgrounds={view.themeBackgrounds}
           edit={edit}
           onPreview={setPreview}
-          onLayoutPreview={(layout) =>
-            view.setLayoutPreview(layout ? { pageId: open.id, layout } : null)
-          }
+          // The hovered layout drawn on its page by the canvas, exactly as a press lands it (page-layout-place.ts).
+          onLayoutPreview={(layout, how) => edit.previewLayout(open.id, layout, how)}
           onClose={close}
           // A locked page has nothing to show: its controls are held (pages-mode.md "Locking a page").
           // A page whose kind is not chosen yet has no track to show either.

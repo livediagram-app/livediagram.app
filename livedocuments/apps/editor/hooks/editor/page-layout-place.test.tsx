@@ -13,7 +13,7 @@ import { buildPageLayoutOver } from '@livedocuments/templates';
 import { buildPageLayoutOver as builtOnHover } from '@livedocuments/templates/page-layout-build';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { PageLayoutsButton } from '@/components/canvas/PageLayoutsButton';
-import { LAYOUT_PREVIEW_SETTLE_MS } from './layout-preview-settle';
+import { LAYOUT_PREVIEW_SETTLE_MS } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { pageEdits } from './page-edits';
 import {
   layoutPlacedTab,

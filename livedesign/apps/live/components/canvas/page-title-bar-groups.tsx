@@ -96,7 +96,7 @@ export function pageTitleBarGroups({
           headless={mobile}
           openRequest={askOf(page.id, 'layout')}
           onApply={(layout) => void edit.applyLayout(page.id, layout)}
-          onPreview={(layout) => view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)}
+          onPreview={(layout, how) => edit.previewLayout(page.id, layout, how)}
         />
       ) : null,
       // A wireframe page's Background (PageBackgroundButton).

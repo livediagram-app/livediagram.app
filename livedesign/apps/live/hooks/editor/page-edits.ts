@@ -3,7 +3,6 @@
 // step, synced to everyone) that moves the content of every page it shifts along with it
 // (withPages), re-reading the tab at commit time so two quick edits compose.
 import {
-  elementsOnPage,
   pageContentCounts,
   pagesOf,
   layOutPages,
@@ -23,9 +22,6 @@ import {
   pageAddedLike,
   pageBackgroundSet,
   pageDuplicated,
-  pageLaidOut,
-  themedForTab,
-  pageIsDark,
   pageLockRefuses,
   pageLockSet,
   pageMovedTo,
@@ -46,7 +42,6 @@ import {
   type WireframeDevicePatch,
   type WireframeFrameLook,
 } from '@livedesign/design';
-import type { PageLayoutId } from '@livedesign/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { lastWireframeDevice } from '@/lib/wireframe-device-memory';
@@ -57,6 +52,7 @@ import { track } from '@/lib/telemetry';
 import { restoreEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits } from './pages-background-copy-edits';
+import { pageLayoutEdits } from './page-layout-place';
 import type { PageEdits } from './page-edits-type';
 
 export type { PageEdits } from './page-edits-type';
@@ -418,34 +414,18 @@ export function pageEdits({
     debugLog('[page] page split', { tabId, pageId, pages: made });
   };
 
-  // Laid out in the page's content box (the page less its margins), the page's own words and
-  // pictures carried into it (docs/specs/007-editor/pages-mode.md "Content carries over"),
-  // one tab edit. The layout builders (every page layout set) load on the first apply rather than
-  // with the editor: the pickers that offer a layout load them already to draw their thumbnails,
-  // so by the time one is applied the module is in hand.
-  const applyLayout = async (pageId: string, layoutId: PageLayoutId): Promise<void> => {
-    if (refusedLocked(pageId, 'layout')) return;
-    const { buildPageLayoutOver } = await import('@livedesign/templates/page-layout-build');
-    track('Tab', 'Changed', 'PageLayout');
-    commitTab((t) => {
-      const pages = layOutPages(pagesOf(t));
-      const page = pages.find((p) => p.id === pageId);
-      if (!page) return null;
-      const previous = elementsOnPage(t.elements, pages, pageId);
-      return edited(
-        t,
-        pageLaidOut(
-          t,
-          pageId,
-          themedForTab(buildPageLayoutOver(layoutId, page, previous), t.theme, {
-            dark: pageIsDark(page),
-          }),
-        ),
-      );
-    });
-    onLayoutPlaced();
-    debugLog('[page] layout placed', { tabId, pageId, layout: layoutId });
-  };
+  // Laid out in the page's content box (the page less its margins), the page's own words and pictures carried into it
+  // (docs/specs/007-editor/pages-mode.md "Content carries over"), one tab edit; and a hovered layout previewed on its
+  // page exactly as that press lands it, through the one placing path (page-layout-place.ts, Work Tracker 1507).
+  const { applyLayout, previewLayout } = pageLayoutEdits({
+    tabId,
+    tab,
+    elements,
+    commitTab,
+    isLocked,
+    refusedLocked,
+    onLayoutPlaced,
+  });
   const laidOut = layOutPages(current);
   // Every page's count from one walk, on the first ask: the pages' row asks each page several times a
   // render, and a scan per ask made a render cost pages x elements (a 20-page, 2,000-element design).
@@ -498,6 +478,7 @@ export function pageEdits({
     removePage,
     splitPage,
     applyLayout,
+    previewLayout,
     contentCount,
     isLocked,
     setLocked,

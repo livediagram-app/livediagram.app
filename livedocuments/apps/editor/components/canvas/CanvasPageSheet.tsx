@@ -40,7 +40,7 @@ import {
   type PageBackground,
   type PageKind,
 } from '@livedocuments/document';
-import type { LayoutPreviewAsk } from '@/hooks/editor/layout-preview-settle';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import type { PageLayoutId } from '@livedocuments/templates';
 import type { PageDeckControls, PageEdits } from '@/hooks/editor/usePagesMode';
 import { pageSheetStyle } from '@/lib/page-paint';
