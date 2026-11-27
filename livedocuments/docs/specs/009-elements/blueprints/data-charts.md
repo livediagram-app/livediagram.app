@@ -16,14 +16,16 @@ Scope, by file:
 | `../packages/workbench/src/components/palette/ChartTypeTiles.tsx`                                                                      | The Chart Type section's seven tiles                                                                                                                                    |
 | `../packages/workbench/src/components/primitives/ChartTypeIcon.tsx`                                                                    | One glyph per chart type (menus, tiles)                                                                                                                                 |
 | `../packages/element-model/src/chart-palettes.ts`                                                                                      | `ChartPaletteId`, `CHART_PALETTES`, `chartPaletteColors`, `isChartPaletteId`                                                                                            |
-| `../packages/element-model/src/theme-presets.ts`                                                                                       | `themeChartPalette`: the tab theme's categorical ramp                                                                                                                   |
+| `../packages/element-model/src/theme-presets.ts`                                                                                       | `themeChartPalette`: the tab theme's categorical palette, via `chartCategorical`                                                                                        |
+| `../packages/element-model/src/chart-categorical.ts`                                                                                   | `chartCategorical`, `chartPaletteFailures`: the validated categorical palette per surface                                                                               |
+| `../packages/element-model/src/chart-drop-size.ts`                                                                                     | `chartDropInBox`: a chart dropped on a slide or infographic page, sized for it                                                                                          |
 | `../packages/model-core/src/label-font.ts`                                                                                             | `LEGEND_FONT_PX`, `legendFontPx`                                                                                                                                        |
 | `../packages/element-model/src/svg-render-charts.ts`                                                                                   | `svgPieChart`, `svgBarChart`, `svgLineChart` (each draws its kind's types from `chart-marks`)                                                                           |
 | `packages/document/src/svg-render-shapes.ts`                                                                                           | `svgLegendShape`                                                                                                                                                        |
 | `packages/document/src/svg-render.ts`                                                                                                  | Export: resolves the chart palette per tab, routes the legend                                                                                                           |
 | `packages/document/src/svg-render-body.ts`                                                                                             | `svgElementBody`: routes the three charts to their emitters with the tab ramp                                                                                           |
 | `packages/document/src/validate.ts`                                                                                                    | `SHAPE_KINDS`, array bounds, `chartPalette`, `legendItems` checks                                                                                                       |
-| `../packages/element-model/src/chart-style.ts`                                                                                         | `chartTickPx`, `chartLineWidth`, `smoothPath`, `barPath`, `areaFadeId`, the chrome opacities                                                                            |
+| `../packages/element-model/src/chart-style.ts`                                                                                         | `chartTextScale`, `chartLegendPx`, `chartValuePx`, `chartTickPx`, `chartLineWidth`, `smoothPath`, `barPath`                                                             |
 | `apps/editor/lib/chart.ts`                                                                                                             | `chartAnim`; re-exports `chartFrame`                                                                                                                                    |
 | `apps/editor/lib/csv.ts`                                                                                                               | `parseCsvLineData`                                                                                                                                                      |
 | `../packages/workbench/src/components/canvas/charts/PieChartView.tsx`, `BarChartView.tsx`, `LineChartView.tsx`                         | Canvas marks, one copy for every product; `apps/editor/components/canvas/*ChartView.tsx` bind the product's animation                                                   |
@@ -92,9 +94,12 @@ control).
 For datum `i` with optional `color`:
 `color ?? (chartPaletteColors(chartPalette) ?? (themeRamp non-empty ? themeRamp : PIE_PALETTE))[i % n]`.
 On the canvas `themeRamp = themeChartPalette(getTheme(activeTab.theme))`; in the export it is
-`themeChartPalette(getBuiltInTheme(tab.theme, surface))` [GE3]. `themeChartPalette` emits each
-palette entry's stroke, then accent tints and shades, then the text colour, deduplicated; it is
-never empty.
+`themeChartPalette(getBuiltInTheme(tab.theme, surface))` [GE3]. `themeChartPalette` hands the
+theme's palette strokes, then its element stroke, to `chartCategorical(seeds, surface)`: each seed
+stepped into the surface's lightness band (greys dropped), then the reference hues, the longest run
+up to 8 whose neighbours pass the CVD and normal-vision gates and whose every pair passes the twin
+floor, the theme's lead always first; memoised; never empty. A column or bar chart takes index 0
+for every bar unless a datum sets its own `color` (then its key shows).
 
 Every ladder goes through `chartRamp(chartPalette, themeRamp)` (`chart-palettes.ts`): the element's
 palette, then the theme ramp, then `PIE_PALETTE`. The legend element's is
@@ -394,25 +399,29 @@ fallbacks are silent [GE12].
 
 ## Constants and configuration
 
-| Name                                               | Value                                                 | Provenance / safe range                                                      |
-| -------------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `PIE_PALETTE`                                      | 8 colours, `#0ea5e9` first                            | Built-in ramp; equals `vivid`                                                |
-| `CHART_PALETTES`                                   | 8 palettes × 8 colours                                | Spec                                                                         |
-| `PIE_DEFAULT_SLICES`                               | A 40, B 30, C 20                                      | Sample data                                                                  |
-| `LINE_DEFAULT_CATEGORIES`                          | Jan, Feb, Mar, Apr                                    | Sample data                                                                  |
-| `LEGEND_FONT_PX`                                   | sm 11, md 14, lg 18, scale 14                         | Spec                                                                         |
-| `LEGEND_MAX_ITEMS` / `LEGEND_MAX_TEXT`             | 40 / 120                                              | Bounds; `validate.ts` and the setter                                         |
-| `MAX_DATA_ARRAY`                                   | 5 000                                                 | `validate.ts` bound                                                          |
-| Side key strip                                     | `min(w * 0.4, 130)` px                                | Spec "up to 130 px"                                                          |
-| Key band                                           | `min(h * 0.32, 72)` px                                | `chartFrame`                                                                 |
-| Key render floor                                   | 48 px wide / 18 px tall                               | `ChartLegend`                                                                |
-| CSV caps                                           | `MAX_SERIES` 12, `MAX_CATEGORIES` 200                 | `csv.ts` soft caps                                                           |
-| Sizes                                              | pie / bar 260 × 220, line 300 × 240, legend 180 × 132 | `SHAPE_DEFAULT_SIZE`                                                         |
-| Keyframe base durations                            | grow 0.6 s, pop 0.5 s, spin 6 s, pulse 1.6 s          | `canvas-motion.css`                                                          |
-| `DOUGHNUT_HOLE`                                    | 0.6 of the radius                                     | Spec "Chart types"; 0.3 to 0.75                                              |
-| `AREA_FILL_TOP_OPACITY` / `AREA_FILL_FOOT_OPACITY` | 0.32 / 0.03                                           | Spec "How a chart is drawn"; top 0.2 to 0.45                                 |
-| `CHART_BASELINE_OPACITY` / `CHART_GRID_OPACITY`    | 0.35 / 0.12                                           | Spec "How a chart is drawn"; grid 0.08 to 0.2                                |
-| Axis text                                          | `min(short side) / 20`, 9 px to the value size        | `chartTickPx`; spec "How a chart is drawn"                                   |
-| `SCATTER_TICKS`                                    | 5                                                     | Spec "Chart types"; 3 to 7                                                   |
-| `LINK_PREVIEW_DEBOUNCE_MS`                         | 300                                                   | Typing pause before a preview read                                           |
-| `RELATIVE_TICK_MS`                                 | 30 000                                                | The Linked to line's clock (`../packages/workbench/src/lib/relative-now.ts`) |
+| Name                                               | Value                                                    | Provenance / safe range                                                      |
+| -------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `PIE_PALETTE`                                      | 8 colours, `#0ea5e9` first                               | Built-in ramp; equals `vivid`                                                |
+| `CHART_PALETTES`                                   | 8 palettes × 8 colours                                   | Spec                                                                         |
+| `PIE_DEFAULT_SLICES`                               | A 40, B 30, C 20                                         | Sample data                                                                  |
+| `LINE_DEFAULT_CATEGORIES`                          | Jan, Feb, Mar, Apr                                       | Sample data                                                                  |
+| `LEGEND_FONT_PX`                                   | sm 11, md 14, lg 18, scale 14                            | Spec                                                                         |
+| `LEGEND_MAX_ITEMS` / `LEGEND_MAX_TEXT`             | 40 / 120                                                 | Bounds; `validate.ts` and the setter                                         |
+| `MAX_DATA_ARRAY`                                   | 5 000                                                    | `validate.ts` bound                                                          |
+| Side key strip                                     | `min(w * 0.4, 130 * scale)` px                           | Spec "up to 130 px", grown with the text                                     |
+| Key band                                           | `min(h * 0.32, 72 * scale)` px                           | `chartFrame`                                                                 |
+| Key render floor                                   | 48 px wide / 18 px tall                                  | `ChartLegend`                                                                |
+| CSV caps                                           | `MAX_SERIES` 12, `MAX_CATEGORIES` 200                    | `csv.ts` soft caps                                                           |
+| Sizes                                              | pie / bar 260 × 220, line 300 × 240, legend 180 × 132    | `SHAPE_DEFAULT_SIZE`                                                         |
+| Keyframe base durations                            | grow 0.6 s, pop 0.5 s, spin 6 s, pulse 1.6 s             | `canvas-motion.css`                                                          |
+| `DOUGHNUT_HOLE`                                    | 0.6 of the radius                                        | Spec "Chart types"; 0.3 to 0.75                                              |
+| `AREA_FILL_TOP_OPACITY` / `AREA_FILL_FOOT_OPACITY` | 0.32 / 0.03                                              | Spec "How a chart is drawn"; top 0.2 to 0.45                                 |
+| `CHART_BASELINE_OPACITY` / `CHART_GRID_OPACITY`    | 0.35 / 0.12                                              | Spec "How a chart is drawn"; grid 0.08 to 0.2                                |
+| Chart text scale                                   | `max(1, (short side / 240) ^ 0.6)`                       | `chartTextScale`; spec "How a chart is drawn"                                |
+| Axis text                                          | key size × 0.8 × scale, at least 9 px                    | `chartTickPx`                                                                |
+| Bar radius                                         | 14% of thickness, at least 2 px, half its length at most | `barPath`                                                                    |
+| Twin floor (ΔE)                                    | light 14, dark 9; neighbours CVD 8, normal 15            | `chart-categorical.ts`; dataviz gates                                        |
+| `CHART_PAGE_SHARE`                                 | 0.6 of the content box, height ≤ 0.75 × width            | `chart-drop-size.ts`                                                         |
+| `SCATTER_TICKS`                                    | 5                                                        | Spec "Chart types"; 3 to 7                                                   |
+| `LINK_PREVIEW_DEBOUNCE_MS`                         | 300                                                      | Typing pause before a preview read                                           |
+| `RELATIVE_TICK_MS`                                 | 30 000                                                   | The Linked to line's clock (`../packages/workbench/src/lib/relative-now.ts`) |
