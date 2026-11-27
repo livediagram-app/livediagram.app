@@ -20,7 +20,10 @@ agents use, and the same apply path as the MCP `change_pages` `layout` op and `w
     reference page, with each slot's role from `page-draft-slots.ts`: the page's heading, a card's texts, a
     stat's parts, by place; its cards from `page-draft-groups.ts`; `trend` when it holds a chart shape or a card
     with a `delta`) and asks for one name, a list's length fitting the content. Only `offeredCatalogue(kind, prompt)`
-    is listed: without `hasTrendData(prompt)` (`page-draft-trend.ts`, word by word: a trend word, "last"/"previous"
+    is listed, without the `numbered` layouts (two or more `figures` slots, each sample an `isOrdinal`: one digit, or
+    two with a leading zero) when `givesFigures(prompt)` (two or more numbers, one over 20 or with a unit, times and
+    years aside), and the `numbered` ones listed with "Numbered parts, not for figures."; and
+    without `hasTrendData(prompt)` (`page-draft-trend.ts`, word by word: a trend word, "last"/"previous"
     and a period, a signed figure, or two quarters, months or years) the `trend` layouts are left out.
     `readLayoutChoice(kind, text, prompt)` reads the reply through `layoutNamed` over the same offered list,
     `{"layout":null}` as off topic.
@@ -38,7 +41,10 @@ agents use, and the same apply path as the MCP `change_pages` `layout` op and `w
     `caption`, or `delta` when a change under a labelled value, then `detail`, `detail2`, three lines at most), and a
     free `figures` slot (or one alone in its card) with the free non-bullet lines under it in its column (centre
     within its width, no wider than 1.6 of it, starting within 2.5 of its heights, the figure 1.5 times their size;
-    two lines at most). `required` is the big text and its label or caption. `readGroups` keeps an object only with
+    two lines at most). `required` is the big text and its label or caption; `figureMax` (3) when every group's
+    number is an ordinal, and then `readGroups` skips an object whose number is longer (the fill does the same for a
+    loose number slot of a numbered layout, or one whose sample starts "0"). The fill's system line asks for the
+    request's own figures and words, never an invented caption. `readGroups` keeps an object only with
     both required keys written (`figure` and `value` read as one), drops one whose figure (case, spaces and commas
     aside) an earlier kept one shows (counted in `duplicates`), and `placesFor` puts the kept ones in the first
     groups, or round by round over two or more stat rows; every group left over is "" for the page to drop.
@@ -59,7 +65,9 @@ agents use, and the same apply path as the MCP `change_pages` `layout` op and `w
   then runs the engine's `applyPageChanges` with one `layout` op, or `applyArticleWrite` into the new page's article.
   It makes nothing at the page limit, for a kind the tab no longer holds, or on an engine refusal.
   `pageEdits().addDraftedPage` runs it on the newest tab inside `commitTabs` (so a peer's edit meanwhile is kept),
-  then goes to the page, and puts the caret in a new article.
+  then goes to the page, and puts the caret in a new article. On a phone `PageContentsPanel` hands `onClose` to
+  `ContentsAddPage` as `onDescribed`, through `DescribePageButton` to `DescribePageHost`'s `onMade`, called once the
+  page lands, so the sheet closes over the new page.
 - **The engine** (`@livedocuments/edit-operations/pages`) is imported when the dialog opens, never with the editor.
 - **Contents**: `usePageContents().expectAdded()` (packages/workbench) marks the page as here once it arrives, as Add
   Page does.

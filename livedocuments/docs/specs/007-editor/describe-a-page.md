@@ -53,6 +53,13 @@ it everywhere the feature shows:
   with before ("grew", "vs last year", "+18%"), figures for two or more periods (Q2 and Q3, March and April, 2025 and
   2026), or a chart asked for. Otherwise it would keep its sample chart and invent changes; four plain figures land
   on a figures layout instead.
+- **Figures, not numbered parts.** A layout of numbered parts (an agenda's "01", "02", steps, objectives) is marked
+  "not for figures" in the list AI chooses from, and is left out of it when the request gives figures (two or more
+  numbers, one of them more than a small count or with a unit: "12k", "94%", "1.4M"; a time or a year is no figure).
+  A part's number slot never takes a figure longer than it holds ("1.4M" in an "01"): that card, or that slot, is
+  dropped. A figures layout with more cards than figures is preferred over one sized to the count.
+- **Never an invented caption.** Where the request gives its own figures, AI writes those, each with the words the
+  request gives for it, and adds no caption, label or figure the request did not give or ask for.
 - **An article or a card** is written as `write_article` writes one ([pages-for-agents.md](../024-agents/pages-for-agents.md)
   "write_article"): Markdown read into the writing, the editor flowing it onto as many pages as it takes; a card
   keeps its text only.
@@ -86,7 +93,8 @@ line "Say what it is about and what it should say. AI picks a layout and writes 
   box says "Still working. A model that thinks first can take up to a minute." Cancel stops the request (nothing is
   made, and the model's work stops with it); closing the dialog is a Cancel.
 - **When it is made**: the dialog closes, the new page lands right after the page here (as Add Page's does, "Where a
-  new page goes"), carrying the last page's size and background, glides into view and Contents marks it here. A
+  new page goes"), carrying the last page's size and background, glides into view and Contents marks it here. On a
+  phone, Contents' sheet (which covered the canvas) closes, so the new page is in view. A
   toast says what was made ("Added a slide from the Agenda layout"). It is one edit: one undo takes the page away.
 - **When it cannot**: the dialog stays open with the words kept, and says why under the box in fixed words, never the
   model's: not about a page ("That doesn't describe a slide. Say what it should be about."), a reply that could not
