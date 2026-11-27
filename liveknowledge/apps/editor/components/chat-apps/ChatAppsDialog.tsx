@@ -135,6 +135,8 @@ export function ChatAppsDialog({
         setCode(null);
         return;
       }
+      // A tab in the background doesn't ask: the next look after it shows again catches up.
+      if (document.visibilityState === 'hidden') return;
       api
         .read(who, documentId)
         .then((next) => {
