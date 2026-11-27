@@ -40,6 +40,19 @@ it everywhere the feature shows:
   smaller line, a stat's figure or caption, a step, a text at a part of the page. The page's title goes in the
   heading whatever that slot is called (on a facts grid the largest words are a card's). It never invents a layout
   and never writes outside a slot.
+- **Cards written whole.** A number and the words that say what it is are one card, asked for and written as one
+  (`{figure, caption}`; a KPI's `{label, value, delta}`), never as a list of every number then a list of every
+  caption, so a caption always sits under its own number. A card is a figure with its lines in the plain box they
+  share, a stat of a stat row, or a big free figure with the lines set under it in its column; a box of words, or one
+  holding a list of numbered items, is no card. AI writes only the cards the content needs: a card with an empty half
+  (a number with no caption, or a caption with no number) is dropped whole, and so is a card showing a number another
+  card already shows, which also asks AI once more (as a placeholder does). On a layout of two stat rows the cards
+  written are spread evenly (four stats are two and two, not three and one).
+- **Charts and changes only for trends.** A layout with a chart, or whose cards each carry a change ("+18%" against
+  last quarter, a KPI Dashboard), is offered to AI only when the request gives a trend: a change or a comparison
+  with before ("grew", "vs last year", "+18%"), figures for two or more periods (Q2 and Q3, March and April, 2025 and
+  2026), or a chart asked for. Otherwise it would keep its sample chart and invent changes; four plain figures land
+  on a figures layout instead.
 - **An article or a card** is written as `write_article` writes one ([pages-for-agents.md](../024-agents/pages-for-agents.md)
   "write_article"): Markdown read into the writing, the editor flowing it onto as many pages as it takes; a card
   keeps its text only.
@@ -87,7 +100,7 @@ line "Say what it is about and what it should say. AI picks a layout and writes 
 Ask AI's rules ([ask.md](../../../../liveworkspace/docs/specs/020-ask/ask.md) "Which AI answers"): the item's team's key
 or the person's own when one applies, else built-in AI. On built-in AI a page is one of the day's built-in questions
 (Ask's count, `ASK_BUILT_IN_PER_PERSON_PER_DAY`), however many times the model is asked for it (two asks for a
-laid-out page, one for a written one, and one more when a reply held placeholders), and with Pro on it
+laid-out page, one for a written one, and one more when a reply held placeholders or showed one number on two cards), and with Pro on it
 costs **1 AI credit** (`AI_CREDIT_COSTS.pageDraft`), spent only once the page's words are in hand, so a failure, a
 refusal or a cancel costs nothing ([subscription.md](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)
 "What an AI operation costs"). A key spends neither.

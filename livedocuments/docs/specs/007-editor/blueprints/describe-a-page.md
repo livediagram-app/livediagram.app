@@ -18,12 +18,30 @@ agents use, and the same apply path as the MCP `change_pages` `layout` op and `w
   - A slide or an infographic page takes two. `chooseLayoutRequest` lists the kind's catalogue (`draftCatalogue`, each
     layout's name, slots and sample words, built once per isolate from `layoutCatalogueFor` and `buildPageLayout` on a
     reference page, with each slot's role from `page-draft-slots.ts`: the page's heading, a card's texts, a
-    stat's parts, by place) and asks for one name, a list's length fitting the content; `readLayoutChoice` reads it through `layoutNamed`, `{"layout":null}` as off
-    topic. `fillLayoutRequest` then names that layout's slots with their samples and asks for the words;
-    `readLayoutFill` keeps the layout's own slots only, every list as long as its slots, a slot not written or
-    holding a placeholder (`isPlaceholder`) as "" for the page to drop, cuts each text (400 characters, 160 for a
-    heading), drops links to other sites, and answers the heading's words as the page's `name`. A reply with
-    placeholders is asked once more (`withPlaceholderNote`), the one with fewer kept.
+    stat's parts, by place; its cards from `page-draft-groups.ts`; `trend` when it holds a chart shape or a card
+    with a `delta`) and asks for one name, a list's length fitting the content. Only `offeredCatalogue(kind, prompt)`
+    is listed: without `hasTrendData(prompt)` (`page-draft-trend.ts`, word by word: a trend word, "last"/"previous"
+    and a period, a signed figure, or two quarters, months or years) the `trend` layouts are left out.
+    `readLayoutChoice(kind, text, prompt)` reads the reply through `layoutNamed` over the same offered list,
+    `{"layout":null}` as off topic.
+  - The words (`page-draft-fill.ts`): `fillLayoutRequest` lists the loose slots (those no card holds) one by one with
+    role and sample, keyed by slot name (`"body[0]": "..."`), and the cards apart, "up to N", each as its sample
+    object; `readLayoutFill` reads each loose slot by its name (a reply in lists, `"body": [...]`, by its place among
+    the loose slots of that list), each card through `readGroups`, a slot not written or holding a placeholder
+    (`isPlaceholder`) as "" for the page to drop, cuts each text (400 characters, 160 for a heading), drops links to
+    other sites, and answers the heading's words (else a title no card holds) as the page's `name`, with
+    `placeholders` and `duplicates` counted. A reply with either is asked once more (`withPlaceholderNote`, its note
+    naming the repeated number when there was one), the one with fewer of both kept.
+  - The cards (`page-draft-groups.ts`): `slotGroups` finds them from the layout as built: a stat row's stat
+    (`figure`, `caption`, its `row` the stat row), a card whose largest text has a digit and which holds no other
+    `figures` slot but a change (a line above `label`, the big text `value` under a label else `figure`, under it
+    `caption`, or `delta` when a change under a labelled value, then `detail`, `detail2`, three lines at most), and a
+    free `figures` slot (or one alone in its card) with the free non-bullet lines under it in its column (centre
+    within its width, no wider than 1.6 of it, starting within 2.5 of its heights, the figure 1.5 times their size;
+    two lines at most). `required` is the big text and its label or caption. `readGroups` keeps an object only with
+    both required keys written (`figure` and `value` read as one), drops one whose figure (case, spaces and commas
+    aside) an earlier kept one shows (counted in `duplicates`), and `placesFor` puts the kept ones in the first
+    groups, or round by round over two or more stat rows; every group left over is "" for the page to drop.
   - An article or a flashcard takes one: `writePageRequest` asks for `{title, subtitle, markdown}`; `readWriting`
     writes the front matter and body, dropping pictures, HTML, zones and rules, cut at 12,000 characters.
 - **Answer**: `{draft, provider, model}`, `draft` a `{kind:'layout', layout, label, text}` or a
@@ -56,8 +74,10 @@ agents use, and the same apply path as the MCP `change_pages` `layout` op and `w
 
 - `packages/ask/src/server/serve-summary.test.ts`: the shared core (`ai-draft.ts`)'s key, day, credit and failure
   paths.
-- `apps/api/src/page-drafts/page-draft-asks.test.ts`, `apps/api/src/routes/page-drafts.test.ts`: the asks' readers and
-  the route's roles, refusals and answers.
+- `apps/api/src/page-drafts/page-draft-asks.test.ts`, `page-draft-fill.test.ts`, `page-draft-groups.test.ts`,
+  `page-draft-trend.test.ts`, `page-draft-slots.test.ts`, `apps/api/src/routes/page-drafts.test.ts`: the asks' readers
+  (cards mapped back to their slots, an empty half and a repeated number dropped, stat rows spread, trend layouts
+  offered only for a trend) and the route's roles, refusals, retries and answers.
 - `apps/editor/hooks/editor/page-draft-edit.test.ts`: every kind made, after the page here, on a peer's newer tab, and
   each refusal.
 - `apps/editor/components/canvas/describe-page/*.test.tsx`, `lib/api/page-drafts.test.ts`: the button's roles and
