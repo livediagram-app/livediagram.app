@@ -2,6 +2,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { vi } from 'vitest';
 import {
+  closedMark,
+  firstPageOf,
+  openedWithFirst,
+  withPageOpen,
   openParentsOf,
   subscribeOpenedPages,
   withParentsOpened,
@@ -97,5 +101,39 @@ describe('opening the pages above a page', () => {
     expect(heard).toHaveBeenCalledTimes(1);
     openParentsOf(null, pages, ['s']);
     expect(readOpenedPages(null).size).toBe(0);
+  });
+});
+
+describe('the first page, open by default (Work Tracker 1489)', () => {
+  it('is the first top-level page in tree order, a connected row skipped', () => {
+    expect(firstPageOf([])).toBeNull();
+    expect(
+      firstPageOf([{ id: 'c', connection: true }, { id: 'a' }, { id: 'b', parent: 'a' }]),
+    ).toBe('a');
+    // A page whose parent comes later in a damaged list is still under it, never the first.
+    expect(firstPageOf([{ id: 'b', parent: 'a' }, { id: 'a' }])).toBe('a');
+    expect(firstPageOf([{ id: 'c', connection: true }])).toBeNull();
+  });
+
+  it('shows open until the reader closes it', () => {
+    const none = new Set<string>();
+    expect([...openedWithFirst(none, 'a')]).toEqual(['a']);
+    expect(openedWithFirst(none, null)).toBe(none);
+    const opened = new Set(['a']);
+    expect(openedWithFirst(opened, 'a')).toBe(opened);
+    const closed = new Set([closedMark('a')]);
+    expect(openedWithFirst(closed, 'a')).toBe(closed);
+  });
+
+  it('closing the first page keeps a mark; opening it again drops the mark', () => {
+    const closed = withPageOpen(new Set(), 'a', false, 'a');
+    expect([...closed]).toEqual(['!a']);
+    expect(openedWithFirst(closed, 'a').has('a')).toBe(false);
+    const reopened = withPageOpen(closed, 'a', true, 'a');
+    expect([...reopened]).toEqual(['a']);
+    // Any other page opens and closes with no mark.
+    expect([...withPageOpen(new Set(['b']), 'b', false, 'a')]).toEqual([]);
+    const same = new Set(['b']);
+    expect(withPageOpen(same, 'b', true, 'a')).toBe(same);
   });
 });

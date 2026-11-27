@@ -1,9 +1,15 @@
 // What a person has opened in the page tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page
 // tree"): the pages whose subpages they unfolded, per knowledgebase, and whether the sidebar is collapsed to its
-// rail. Kept in this browser alone: not a synced preference (those are capped at 4 KB, and page ids would fill
+// rail. The first page opens by default, so a reader sees the knowledgebase's categories (Work Tracker 1489), until
+// they close it: that close is kept as `!<page id>` in the same list. Kept in this browser alone: not a synced preference (those are capped at 4 KB, and page ids would fill
 // it), and never in the knowledgebase, so one reader's tree never changes another's. A page with subpages is closed
 // until it is opened, so only the opened ones are stored; the most recent knowledgebases are kept, the oldest
 // dropped past PAGE_TREE_KEPT. The older v2 record held closed pages (open until closed) and is not read.
+import {
+  isConnectedRow,
+  pageParents,
+  type TreePage as DocumentTreePage,
+} from '@liveknowledge/document';
 import {
   readLocalStorageSafe,
   safeJson,
@@ -46,6 +52,54 @@ export function writeOpenedPages(documentId: string | null, opened: ReadonlySet<
     OPENED_KEY,
     JSON.stringify(Object.fromEntries(entries.slice(-PAGE_TREE_KEPT))),
   );
+}
+
+/** The knowledgebase's first page: the first top-level page in tree order (a connected row is no page); null for none.
+ *  Linear in the pages (times their depth), once a change of the list. */
+export function firstPageOf(pages: readonly DocumentTreePage[]): string | null {
+  const parents = pageParents(pages);
+  for (const page of pages) {
+    if (!isConnectedRow(page) && parents.get(page.id) === undefined) return page.id;
+  }
+  return null;
+}
+
+/** The stored mark of a page the reader closed that opens by default: the first page (a tab id never starts so). */
+export const closedMark = (id: string): string => `!${id}`;
+
+/**
+ * What shows open: the stored `opened`, with `first` (the first top-level page) added unless the reader closed it.
+ * Answers `opened` itself when nothing is added, so the tree's rows are worked out again only on a change.
+ */
+export function openedWithFirst(
+  opened: ReadonlySet<string>,
+  first: string | null,
+): ReadonlySet<string> {
+  if (first === null || opened.has(first) || opened.has(closedMark(first))) return opened;
+  return new Set(opened).add(first);
+}
+
+/**
+ * The stored set with `id` opened or closed: opening drops any closed mark, and closing the page that opens by default
+ * (`first`) keeps a mark, so it stays closed for this reader. Answers `stored` itself when nothing changes.
+ */
+export function withPageOpen(
+  stored: ReadonlySet<string>,
+  id: string,
+  open: boolean,
+  first: string | null,
+): ReadonlySet<string> {
+  const mark = closedMark(id);
+  const next = new Set(stored);
+  if (open) {
+    next.add(id);
+    next.delete(mark);
+  } else {
+    next.delete(id);
+    if (id === first) next.add(mark);
+  }
+  if (next.size === stored.size && [...next].every((v) => stored.has(v))) return stored;
+  return next;
 }
 
 type TreePage = { id: string; parent?: string | undefined };
