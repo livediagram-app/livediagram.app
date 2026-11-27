@@ -1346,9 +1346,15 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   preview and the placed page cannot differ: a press on the layout being shown commits the very elements shown. It
   is a preview only (the canvas's local preview, as Tidy Up's hover is): nothing is written and nothing enters the
   history; leaving the tiles (or closing the panel) puts the page back.
-- **It swaps in place**: moving from tile to tile redraws the page with the next layout at once, as Tidy Up's hover
-  does. (The earlier crossfade drew a separate picture over the sheet, which hid the page's design and missed the
-  tab's theme, so the preview and the placed page differed; exactness won over the fade.)
+- **It swaps in place**: moving from tile to tile redraws the page with the next layout, as Tidy Up's hover does.
+  (The earlier crossfade drew a separate picture over the sheet, which hid the page's design and missed the tab's
+  theme, so the preview and the placed page differed; exactness won over the fade.)
+- **It draws the tile the pointer settles on**: each preview places the layout and redraws the page, so a pointer
+  sweeping across the tiles draws nothing until it rests on one for `LAYOUT_PREVIEW_SETTLE_MS` (70 ms, under the
+  ~100 ms a hover reads as immediate, over the ~50 ms a sweep spends on a tile); a tile reached by the keyboard is
+  drawn on the next frame, with no wait; and at most one preview is drawn a frame. Putting the page back waits a
+  frame too, so focus moving tile to tile never flashes the page bare. A press lands what the hover shows at once,
+  whatever the popover does as it closes.
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and
   orientation and rendered as it lands, as the viewer sees it: placed in the tab's theme as a
   press places it, drawn in the viewer's half on the page's own background, and on a plain page

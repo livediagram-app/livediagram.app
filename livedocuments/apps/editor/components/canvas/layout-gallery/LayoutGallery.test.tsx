@@ -56,7 +56,7 @@ describe('LayoutGallery', () => {
     render(<LayoutGallery page={slide!} onApply={onApply} onPreview={onPreview} />);
     const tile = document.querySelector('[data-layout-tile="slide-split-image-right"]')!;
     fireEvent.pointerEnter(tile);
-    expect(onPreview).toHaveBeenLastCalledWith('slide-split-image-right');
+    expect(onPreview).toHaveBeenLastCalledWith('slide-split-image-right', 'pointer');
     fireEvent.click(tile);
     expect(onApply).toHaveBeenCalledWith('slide-split-image-right');
   });
@@ -122,7 +122,7 @@ describe('LayoutTile', () => {
     act(() => seen[0]!(true));
     expect(container.querySelector('svg')).not.toBeNull();
     fireEvent.focus(container.querySelector('[data-layout-tile]')!);
-    expect(onPreview).toHaveBeenCalledWith(layout.id);
+    expect(onPreview).toHaveBeenCalledWith(layout.id, 'focus');
     expect(screen.getByText(layout.description)).not.toBeNull();
     globalThis.IntersectionObserver = prior;
   });
