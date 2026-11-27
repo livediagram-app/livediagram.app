@@ -214,7 +214,8 @@ The rules:
   `lib/laser-config` exports `laserConfigStorage(key)`, and each editor's `lib/laser-config.ts` re-exports the module
   and binds `loadLaserConfig` and `saveLaserConfig` under its own `<product>:v2:laser-config`, unchanged;
   `hooks/ui/useEditorAccent` exports `useEditorAccentStroke(accent)`, and each editor's `useEditorAccent(themeId)`
-  hands it the stroke its own theme catalogue resolves; `lib/seasonal-looks` writes the looks as constants
+  hands it the stroke its own theme catalogue resolves (it writes its `<style>` in a layout effect, before the first
+  paint, so an editor never shows a frame in the default colours); `lib/seasonal-looks` writes the looks as constants
   (`as const satisfies`), so each editor's `TabLook`, with its own id and pattern unions, takes them as they are and
   typecheck fails if one ever stops fitting. Hooks that send telemetry stay in the editors until the telemetry
   scan reads this package.

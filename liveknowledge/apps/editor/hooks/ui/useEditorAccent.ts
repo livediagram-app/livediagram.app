@@ -9,7 +9,7 @@
 // colours, everything stays white"): the shared hook tints only the dark surfaces, so liveknowledge adds its own
 // light ground, a pale wash of the theme's accent over the white ground and the palest slate surfaces, in one
 // <style> scoped to the light appearance. Text greys (slate-300 and darker) stay neutral and legible.
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { mixHex } from '@liveworkspace/model-core/color-wash';
 import { knowledgeGroundWash } from '@liveknowledge/document';
 import { useEditorAccentStroke } from '@liveworkspace/workbench/hooks/ui/useEditorAccent';
@@ -35,7 +35,8 @@ export function knowledgeLightGroundCss(accent: string): string {
 export function useEditorAccent(themeId: string | undefined): void {
   const accent = knowledgeChromeAccent(themeId);
   useEditorAccentStroke(accent);
-  useEffect(() => {
+  // Before the first paint, as the shared tint is (page-surface.md "Themed from the first frame", Work Tracker 1521).
+  useLayoutEffect(() => {
     if (!accent) {
       document.getElementById(LIGHT_STYLE_ID)?.remove();
       return;

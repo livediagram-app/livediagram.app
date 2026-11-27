@@ -500,6 +500,12 @@ per-page and no per-tab style.
 - **The chrome follows the theme**, as in every liveworkspace editor: the accent the sidebar, tabs, buttons and
   links use is the knowledgebase's theme accent, in the light and dark halves the theme defines. **Review Due** stays
   amber and errors stay red in every theme; the Verified tick takes the theme accent.
+  - **Themed from the first frame** (Work Tracker 1521). The opening screen holds until the knowledgebase's read has
+    put its style in the style store (a first load, a reload, a warm open from the last seen copy, another
+    knowledgebase), and the editor's tint and light ground are written in the same commit that first draws the
+    editor, before the browser paints (`useEditorAccent`, a layout effect). No frame shows the knowledgebase in the
+    product's own colours on its way to its theme, in light, dark or any theme. The read is the same one; nothing
+    more is waited for, so the load takes no longer.
   - The top row and the footer follow it too (the formatting bar's active state, Share, the footer's tabs): unlike
     the other editors' header and tab bar, they carry no opt-out. Only the logo keeps the product's own colours.
   - A theme whose accent is too pale to carry text (a pastel's rose, a yellow, a mid orange) is deepened, hue kept,

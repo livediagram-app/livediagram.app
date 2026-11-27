@@ -17,8 +17,13 @@
 //
 // Each editor's hooks/ui/useEditorAccent.ts resolves the tab's theme in its own catalogue and hands the
 // accent stroke here.
+//
+// A layout effect, not an effect: the <style> lands in the commit that first draws the editor, before the browser
+// paints, so the editor never shows a frame in the built-in colours on its way to its theme (liveknowledge Work
+// Tracker 1521, docs/specs/030-knowledgebase/page-surface.md "Themed from the first frame"). A theme change swaps it
+// in the same frame too.
 
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { editorAccentCss } from './editor-accent';
 
 const STYLE_ID = 'lvd-editor-accent';
@@ -26,7 +31,7 @@ const STYLE_ID = 'lvd-editor-accent';
 /** Tints the chrome with `accent`, the active tab's theme stroke; null leaves the built-in brand and the
  *  dark palette in place (the "brand"/Default theme and an unthemed tab have no accent stroke). */
 export function useEditorAccentStroke(accent: string | null): void {
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!accent) {
       document.getElementById(STYLE_ID)?.remove();
       return;
