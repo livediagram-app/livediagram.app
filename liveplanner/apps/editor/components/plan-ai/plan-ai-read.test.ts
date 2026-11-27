@@ -226,5 +226,11 @@ describe('forPeople', () => {
   it('drops the sentence naming an agent’s next tool', () => {
     expect(forPeople('No item "x". List them with list_items.')).toBe('No item "x".');
     expect(forPeople('Use change_items.')).toBe('Use change_items.');
+    // A batch's lead and the list of every question and id are for an agent too (PR 2349 verifier).
+    expect(
+      forPeople(
+        'Change 1 (delete_question): No question "[q-9]". Questions: "How was it? (q-1)", "Your email (q-9)". Nothing was written.',
+      ),
+    ).toBe('Change 1: No question "[q-9]". Nothing was written.');
   });
 });

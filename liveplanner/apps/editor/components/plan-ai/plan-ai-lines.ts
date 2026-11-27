@@ -44,9 +44,15 @@ export function replyShown(reply: string, lines: readonly PlanAiLine[]): string 
 // The agent verbs' refusals end by naming the tool to call next ("List them with list_items."): those sentences are
 // for an agent, so a person sees the refusal without them.
 const TOOL_SENTENCE = /[^.]*\b(?:list|change|read|add|find|set)_[a-z_]+\b[^.]*\.?/g;
+// Also for an agent: the op's tool name in the batch's "Change 2 (delete_question): " lead (which change stays), and
+// the list of every name and id to pick from ('Questions: "How was it? (q-1)", "Email (q-2)".').
+const CHANGE_LEAD = /^(Change \d+) \([a-z_]+\):/;
+const NAME_LIST = /\s*\b[A-Z][a-z]+s: (?:"[^"]*"(?:, )?)+\./g;
 
 export function forPeople(message: string): string {
   const out = message
+    .replace(CHANGE_LEAD, '$1:')
+    .replace(NAME_LIST, '')
     .replace(TOOL_SENTENCE, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
