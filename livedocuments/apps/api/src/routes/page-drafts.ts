@@ -24,14 +24,13 @@ import type { PageKind } from '@livedocuments/document';
 import { accountCredentials } from '../auth/accounts';
 import {
   chooseLayoutRequest,
-  fillLayoutRequest,
   isLaidKind,
   readLayoutChoice,
-  readLayoutFill,
   withPlaceholderNote,
   readWriting,
   writePageRequest,
 } from '../page-drafts/page-draft-asks';
+import { fillLayoutRequest, readLayoutFill } from '../page-drafts/page-draft-fill';
 import { json, methodNotAllowed, notFound, signInRequired } from '../responses';
 import { readBody, type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
@@ -153,7 +152,7 @@ export async function handlePageDrafts(ctx: RouteContext): Promise<Response> {
   if (isLaidKind(kind)) {
     const chose = await ask(chooseLayoutRequest(kind, prompt));
     if ('refused' in chose) return done('failed', chose.refused);
-    const choice = readLayoutChoice(kind, chose.text);
+    const choice = readLayoutChoice(kind, chose.text, prompt);
     if ('offTopic' in choice) return offTopic();
     if ('unreadable' in choice) return unreadable();
     const { layout } = choice;
@@ -161,12 +160,13 @@ export async function handlePageDrafts(ctx: RouteContext): Promise<Response> {
     let filled = await ask(request);
     if ('refused' in filled) return done('failed', filled.refused, layout.id);
     let fill = readLayoutFill(layout, filled.text, prompt);
-    // Placeholders ("[Insert number here]", "N/A") are never laid on a page: asked once more, told so; a second
-    // reply that still has some keeps its real words, the placeholders' slots dropped.
-    if (fill && fill.placeholders > 0) {
-      const again = await ask(withPlaceholderNote(request));
+    // Placeholders ("[Insert number here]", "N/A") are never laid on a page, nor one number on two cards: asked once
+    // more, told so; a second reply that still has some keeps its real words, those slots and cards dropped.
+    const faults = (f: NonNullable<typeof fill>) => f.placeholders + f.duplicates;
+    if (fill && faults(fill) > 0) {
+      const again = await ask(withPlaceholderNote(request, fill.duplicates > 0));
       const reread = 'refused' in again ? null : readLayoutFill(layout, again.text, prompt);
-      if (reread && reread.placeholders <= fill.placeholders && !('refused' in again)) {
+      if (reread && faults(reread) <= faults(fill) && !('refused' in again)) {
         fill = reread;
         filled = again;
       }

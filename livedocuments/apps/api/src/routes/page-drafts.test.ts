@@ -128,33 +128,78 @@ describe('POST /api/page-drafts', () => {
   });
 
   it('asks once more when a reply holds placeholders, keeping the better reply, the day spent once', async () => {
+    const card = (figure: string, caption: string) => ({ figure, caption });
+    const fill = (...cards: { figure: string; caption: string }[]) =>
+      JSON.stringify({ title: 'Our Year', cards });
     replies = [
       '{"layout":"key-stats"}',
-      '{"title":"Our Year","figures":["12k","N/A","TBD","[Insert]","4","5"]}',
-      '{"title":"Our Year","figures":["12k","40","4.8","99%","",""]}',
+      fill(card('12k', 'Customers'), card('N/A', 'Rating'), card('TBD', 'Orders')),
+      fill(
+        card('12k', 'Customers'),
+        card('40', 'Countries'),
+        card('4.8', 'Rating'),
+        card('99%', 'Uptime'),
+      ),
     ];
     const res = await draft();
     const answer = await res.json<PageDraftResponse>();
     expect(asked).toHaveLength(3);
+    expect(asked[1]!.messages.at(-1)!.content).toContain('<cards>');
     expect(asked[2]!.messages.at(-1)!.content).toContain('Your last reply held placeholders');
+    // Four stats on two rows of three: two and two.
     expect(answer.draft).toMatchObject({
       kind: 'layout',
       name: 'Our Year',
-      text: { figures: ['12k', '40', '4.8', '99%', '', ''] },
+      text: { figures: ['12k', '40', '', '4.8', '99%', ''] },
     });
     expect(stores.get(askCountName('user_a'))!.get('ask-ai')).toMatchObject({ count: 1 });
-    // A worse second reply, or a failed one: the first is kept, its placeholders dropped.
+    // A worse second reply, or a failed one: the first is kept, its placeholders' cards dropped.
     asked = [];
     replies = [
       '{"layout":"key-stats"}',
-      '{"title":"Our Year","figures":["12k","N/A"]}',
+      fill(card('12k', 'Customers'), card('N/A', 'x')),
       'nonsense',
     ];
     expect((await (await draft()).json<PageDraftResponse>()).draft).toMatchObject({
       text: { figures: ['12k', '', '', '', '', ''] },
     });
-    replies = ['{"layout":"key-stats"}', '{"title":"Our Year","figures":["12k","N/A"]}'];
+    replies = ['{"layout":"key-stats"}', fill(card('12k', 'Customers'), card('N/A', 'x'))];
     expect((await draft()).status).toBe(200);
+  });
+
+  it('asks once more when two cards show one number, keeping the reply that gives each its own', async () => {
+    replies = [
+      '{"layout":"key-stats"}',
+      JSON.stringify({
+        title: 'Our Year',
+        cards: [
+          { figure: '12k', caption: 'A' },
+          { figure: '12k', caption: 'B' },
+        ],
+      }),
+      JSON.stringify({
+        title: 'Our Year',
+        cards: [
+          { figure: '12k', caption: 'A' },
+          { figure: '48', caption: 'B' },
+        ],
+      }),
+    ];
+    const answer = await (await draft()).json<PageDraftResponse>();
+    expect(asked).toHaveLength(3);
+    expect(asked[2]!.messages.at(-1)!.content).toContain('the same number on two cards');
+    expect(answer.draft).toMatchObject({ text: { figures: ['12k', '', '', '48', '', ''] } });
+  });
+
+  it('offers a chart or a change layout only for a request with a trend', async () => {
+    replies = ['{"layout":"agenda"}', '{"title":"Offsite"}'];
+    await draft({ prompt: 'Our year in four figures: 12k customers, 48 countries' });
+    expect(asked[0]!.messages.at(-1)!.content).not.toContain('- kpi-dashboard:');
+    asked = [];
+    replies = ['{"layout":"kpi-dashboard"}', '{"title":"Q3"}'];
+    const res = await draft({ prompt: 'Q3 KPIs against Q2: revenue up 18%' });
+    expect(asked[0]!.messages.at(-1)!.content).toContain('- kpi-dashboard:');
+    expect((await res.json<PageDraftResponse>()).draft).toMatchObject({ layout: 'kpi-dashboard' });
   });
 
   it('writes a card again when it holds placeholders, and drops their lines either way', async () => {

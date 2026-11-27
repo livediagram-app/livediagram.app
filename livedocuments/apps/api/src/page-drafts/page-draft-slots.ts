@@ -12,11 +12,13 @@ import {
   type SlotElement,
 } from '@liveworkspace/edit-operations/layout-slots';
 import type { PageRect } from '@livedocuments/document';
+import { slotGroups, type SlotGroup, type SlotRead } from './page-draft-groups';
 
 type Box = { x: number; y: number; width: number; height: number };
 
-/** Each slot's role in words, and which slot (if any) is the page's heading. */
-export type SlotRoles = { roles: Map<string, string>; heading: string | null };
+/** Each slot's role in words, which slot (if any) is the page's heading, and the texts written as one (a card's
+ *  figure and caption, page-draft-groups.ts). */
+export type SlotRoles = { roles: Map<string, string>; heading: string | null; groups: SlotGroup[] };
 
 const boxOf = (el: SlotElement): Box => ({
   x: el.x ?? 0,
@@ -75,7 +77,7 @@ export function slotRoles(
         best = c;
     return best;
   };
-  type Read = { slot: string; el: SlotElement; part: number | null; card: SlotElement | null };
+  type Read = SlotRead;
   const read: Read[] = slots.flatMap((s): Read[] => {
     if (!s.slot) return [];
     const { id, part } = splitPartId(s.id);
@@ -141,7 +143,16 @@ export function slotRoles(
     }
     roles.set(r.slot, role);
   }
-  return { roles, heading: heading?.slot ?? null };
+  const textOf = (slot: string) => {
+    const r = read.find((x) => x.slot === slot)!;
+    const t = r.part === null ? r.el.label : partsOf(r.el)[r.part]?.text;
+    return typeof t === 'string' ? t : '';
+  };
+  return {
+    roles,
+    heading: heading?.slot ?? null,
+    groups: slotGroups(read, heading, under, sizeOf, textOf),
+  };
 }
 
 // ---------- Placeholders

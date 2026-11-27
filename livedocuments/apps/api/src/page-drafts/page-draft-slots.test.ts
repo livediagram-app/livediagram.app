@@ -44,7 +44,7 @@ describe('slot roles', () => {
     expect(out.heading).toBe('title');
     expect(out.roles.get('body[0]')).toBe('a text at the bottom right of the page (16px)');
     expect(out.roles.get('body[1]')).toBe('card 1 of 1: its text (16px)');
-    expect(slotRoles([], [], page, size)).toEqual({ roles: new Map(), heading: null });
+    expect(slotRoles([], [], page, size)).toEqual({ roles: new Map(), heading: null, groups: [] });
   });
 });
 
