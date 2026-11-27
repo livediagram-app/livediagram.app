@@ -20,6 +20,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   templates: '#14b8a6',
   'pages-tour': '#be123c',
   'working-with-pages': '#e11d48',
+  'describe-a-page': '#7c3aed',
   'infographic-layouts': '#db2777',
   articles: '#0d9488',
   'exporting-pages': '#9333ea',

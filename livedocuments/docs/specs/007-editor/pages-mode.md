@@ -1379,12 +1379,13 @@ canvas's ink.
   names filling its width and a name still cut off shown whole in a tooltip, opaque, with no gap at its edge, so no page
   shows round or through it; only its inner top corner is rounded, and a border and a soft shadow
   part it from the canvas. It has no header of its own: the list starts at its top, and its foot
-  holds **Design** (an Editor's: opens Tab Style, "Design at the foot" below) with **Contents Options** to its right (a square button the height of Design, a
+  holds an Editor's **Add Page** and, after it, **Describe a Page**'s AI button ([Describe a Page](describe-a-page.md)
+  "The button"), with **Contents Options** to their right (a square button the height of Add Page, a
   cog glyph; tooltip "Contents Options"; tinted while its menu is open). It opens a small menu above it
   (`ContentsOptions`, `../packages/workbench/src/components/canvas/ContentsOptions.tsx`): **Stack Pages**, a switch
   for the tab ("Stacked or side by side"; an Editor's, on a tab not locked and not an article's), then, under a
   separator, **Collapse Contents** (tuck Contents into its button, bottom right; was the foot's own Minimise button
-  before 2026-11-04). A Viewer or Participant, who has no Design, finds the cog alone at the foot's right, holding
+  before 2026-11-04). A Viewer or Participant, who has no Add Page, finds the cog alone at the foot's right, holding
   Collapse Contents alone. It is
   always on the left: it cannot be moved to the other side. It stays open while the person works;
   the cluster has no Contents button while it shows, and the corner panels on the left start past
@@ -1516,10 +1517,9 @@ Both show the same list:
   shape), always of the tab's kind ("One kind a tab"). A new page lands right after the page here ("Where a new page goes") (carrying the background, theme's Dusk for a new infographic), glides into view and the list scrolls to its new row, marked as here. At the page
   limit the button is disabled with the limit in
   its tooltip. A page's ⋯ menu adds one exactly where it is wanted (Insert Page Above, Insert Page Below).
-- **Design at the foot** (2026-11-25): an Editor's foot holds a wide **Design** button (a painter's palette, named
-  "Design") where Add Page was, opening Tab Style as a centred modal (a bottom sheet on a phone), not hanging from the button
-  ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md) "Opening it"). In the popover and the phone's sheet it
-  is the foot alone. A Participant and a Viewer see the list without Add Page or Design.
+- **The foot's AI button** (2026-11-27): **Describe a Page** sits right after Add Page in the foot, in the docked
+  sidebar, the popover and the phone's sheet alike ([Describe a Page](describe-a-page.md)); Tab Style opens from Style
+  by the zoom, not from the foot. A Participant and a Viewer see the list without Add Page or the AI button.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed. The sidebar stays on screen while the person works, so

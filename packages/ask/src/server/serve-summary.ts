@@ -7,18 +7,7 @@
 // count). With Pro on, the credit is spent only once the model has answered: a failure, a refusal or a cancelled
 // request costs nothing. A month found used at that point answers 429 and the summary is not shown, so nothing is
 // given that was not paid for. Nothing here logs the items, the focus or the summary.
-import {
-  AI_KEY_FAILED,
-  ModelCallError,
-  callModel,
-  fenced,
-  isKeyFailureKind,
-  modelFailureWords,
-  ownKeyOf,
-  type AiKeyFailure,
-  type ModelCaller,
-  type ModelRequest,
-} from '@liveworkspace/ai';
+import { fenced, type ModelRequest } from '@liveworkspace/ai';
 import {
   KNOWLEDGE_SEND_FOCUS_MAX,
   KNOWLEDGE_SEND_SUMMARY_MAX,
@@ -28,8 +17,12 @@ import {
 } from '@liveworkspace/index-client';
 import { AI_CREDIT_COSTS } from '@liveworkspace/subscription';
 import { ASK_MAX_ID_CHARS } from '../limits';
-import { chargeAsk, type AskCreditRefusal } from './ask-credits';
-import type { AskDoor } from './serve-ask';
+import {
+  openAiDraft,
+  type AiDraftCodes,
+  type AiDraftSharedCode,
+  type ItemAiDoor,
+} from './ai-draft';
 
 /** What the summary route answers: the summary as Markdown, and which AI wrote it. */
 export type SelectionSummary = { markdown: string; provider: string; model: string };
@@ -45,7 +38,13 @@ export type SummaryRefusalCode =
   | 'ask_by_others_limit';
 
 /** Ask's door, without the item word Ask's answers use; the item is the route's own. */
-export type SummaryDoor = Omit<AskDoor, 'itemWord'> & { itemId: string };
+export type SummaryDoor = ItemAiDoor;
+
+const SUMMARY_CODES: AiDraftCodes<Exclude<SummaryRefusalCode, AiDraftSharedCode>> = {
+  unavailable: 'summary_unavailable',
+  limit: 'summary_built_in_limit',
+  failed: 'summary_failed',
+};
 
 /** The most of a request's body read: the selection at its limits, with room for the rest. */
 export const SUMMARY_BODY_MAX_CHARS = 64 * 1024;
@@ -170,7 +169,7 @@ const hasWords = (selection: KnowledgeSendSelection) =>
   selection.links.some((link) => link.label);
 
 export async function serveSelectionSummary(door: SummaryDoor): Promise<Response> {
-  const { request, itemId } = door;
+  const { request } = door;
   const headers = door.headers ?? {};
   const answer = (status: number, body: unknown) =>
     new Response(JSON.stringify(body), {
@@ -181,7 +180,7 @@ export async function serveSelectionSummary(door: SummaryDoor): Promise<Response
     status: number,
     error: SummaryRefusalCode,
     message: string,
-    more: Record<string, unknown> | AskCreditRefusal['more'] = {},
+    more: Record<string, unknown> = {},
   ) => answer(status, { error, message, ...more });
 
   if (request.method !== 'POST')
@@ -200,82 +199,39 @@ export async function serveSelectionSummary(door: SummaryDoor): Promise<Response
       : null;
   const clock = door.now ?? Date.now;
 
-  let caller: ModelCaller;
-  let keyed: Pick<AiKeyFailure, 'source' | 'provider'> | null = null;
-  const own =
-    body.ai === 'built-in'
-      ? ({ status: 'built-in' } as const)
-      : ownKeyOf(await door.aiKey(teamId), door.through);
-  if (own.status === 'refused')
-    return own.reason === 'unreadable'
-      ? refuse(422, AI_KEY_FAILED, own.words, { aiKey: own.failure })
-      : refuse(503, 'summary_unavailable', own.words);
-  let builtIn = false;
-  if (own.status === 'key') {
-    caller = own.caller;
-    keyed = { source: own.source, provider: own.provider };
-  } else {
-    if (!door.builtIn) return refuse(503, 'summary_unavailable', SUMMARY_WORDS.notSetUp);
-    // Built-in AI's day, as Ask counts it: a summary is a question of the day's.
-    const spent = await door.spend(accountId, clock());
-    if (spent === 'unavailable')
-      return refuse(503, 'summary_unavailable', SUMMARY_WORDS.countFailed);
-    if (!spent) return refuse(429, 'summary_built_in_limit', SUMMARY_WORDS.limit);
-    caller = { provider: 'built-in', ai: door.builtIn };
-    builtIn = true;
-  }
+  const ai = await openAiDraft(door, {
+    accountId,
+    teamId,
+    builtInChosen: body.ai === 'built-in',
+    codes: SUMMARY_CODES,
+    words: SUMMARY_WORDS,
+    refuse,
+    log: 'knowledge-summary',
+  });
+  if ('refused' in ai) return ai.refused;
 
   const started = clock();
-  let text: string;
-  let model: string;
-  try {
-    const reply = await callModel({
-      ...caller,
-      request: summaryRequest(selection, focus),
-      signal: request.signal,
-    });
-    text = cleanSummary(reply.text);
-    model = reply.model;
-  } catch (error) {
-    // The kind and its fixed words; never the upstream's own message, the request or the key.
-    const kind = error instanceof ModelCallError ? error.kind : 'other';
-    console.warn('[knowledge-summary] failed', { provider: caller.provider, kind });
-    const aiKey = keyed && isKeyFailureKind(kind) ? { ...keyed, kind } : null;
-    return aiKey
-      ? refuse(422, AI_KEY_FAILED, modelFailureWords(caller.provider, kind), { aiKey })
-      : refuse(502, 'summary_failed', modelFailureWords(caller.provider, kind));
-  }
+  const reply = await ai.ask(summaryRequest(selection, focus));
+  if ('refused' in reply) return reply.refused;
+  const text = cleanSummary(reply.text);
+  const { model } = reply;
   if (!text) return refuse(502, 'summary_failed', SUMMARY_WORDS.failed);
 
   // The credit, now the summary is in hand (Pro on, built-in AI only).
-  if (builtIn && door.credits) {
-    const refused = await chargeAsk(
-      door.credits,
-      accountId,
-      itemId,
-      clock(),
-      AI_CREDIT_COSTS.knowledgeSummary,
-    );
-    if (refused) {
-      if (refused.error === 'ai_credits_used')
-        return refuse(refused.status, 'ai_credits_used', SUMMARY_WORDS.used, refused.more);
-      if (refused.error === 'ask_by_others_limit')
-        return refuse(refused.status, 'ask_by_others_limit', refused.message);
-      return refuse(refused.status, 'summary_unavailable', refused.message);
-    }
-  }
+  const unpaid = await ai.charge(AI_CREDIT_COSTS.knowledgeSummary);
+  if (unpaid) return unpaid;
   console.info('[knowledge-summary] written', {
     items: selection.items.length,
     links: selection.links.length,
     focus: focus.length > 0,
-    provider: caller.provider,
+    provider: ai.provider,
     model,
     chars: text.length,
     tookMs: clock() - started,
   });
   return answer(200, {
     markdown: text,
-    provider: caller.provider,
+    provider: ai.provider,
     model,
   } satisfies SelectionSummary);
 }
