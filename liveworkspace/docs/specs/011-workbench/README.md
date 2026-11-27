@@ -17,4 +17,6 @@ Follow the references below only as needed; never upfront.
   the visitor's defaulted name and its tray, the shared empty-canvas card, and the measured baseline
 - ./sidebar-width.md - when working on how wide an editor's left sidebar is (Contents, the page tree): the default
   that steps up on wide windows, the drag handle, the kept width and cut-off names
+- ./page-layout-preview.md - when working on what hovering a page layout shows in livedocuments or livedesign: one
+  placing path for the hover and the press, drawn by the canvas, the settle on a sweep
 - ./blueprints/README.md - when implementing a workbench spec: the blueprints hold the engineering detail derived from it
