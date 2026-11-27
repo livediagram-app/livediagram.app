@@ -31,8 +31,9 @@ import { FilteredEmpty, LensBar } from './lazy-lens';
 import { LensAnnouncer } from './LensAnnouncer';
 import { DetailsView } from './lazy-panes';
 import { useLensContext } from './SearchField';
-import { TrashNote, TrashPane } from './TrashPane';
+import { TrashPane } from './TrashPane';
 import { ThisBrowserArchivedGroup, useThisBrowserArchived } from './ArchivedThisBrowser';
+import { ArchivedIntro } from './ShelfIntro';
 import { useArchivedAsk } from './useArchivedAsk';
 import { ListView } from './ListView';
 import { SharedList } from './SharedList';
@@ -178,11 +179,25 @@ export function ItemsPane({ view }: { view: ItemsView }) {
     key: string;
     kinds: ReturnType<typeof kindCounts>;
     total: number;
+    folders: number;
   } | null>(null);
-  if (whole && (counted.current?.key !== viewKey || counted.current.total !== state.items.length)) {
-    counted.current = { key: viewKey, kinds: kindCounts(state.items), total: state.items.length };
+  if (
+    whole &&
+    (counted.current?.key !== viewKey ||
+      counted.current.total !== state.items.length ||
+      counted.current.folders !== folderRows.length)
+  ) {
+    counted.current = {
+      key: viewKey,
+      kinds: kindCounts(state.items),
+      total: state.items.length,
+      folders: folderRows.length,
+    };
   }
   const libraryCounts = counted.current?.key === viewKey ? counted.current : null;
+  // The Library tab counts what its root lists: the items and the folders beside them (Work Tracker 1504), so a
+  // library of folders alone never reads 0. The kind chips count items only, as they filter items.
+  const libraryTabCount = libraryCounts ? libraryCounts.total + libraryCounts.folders : null;
   const sharedProps = {
     folders: folderRows,
     items: libraryItems,
@@ -262,7 +277,7 @@ export function ItemsPane({ view }: { view: ItemsView }) {
       );
     return (
       <div data-explorer-view={view.kind}>
-        <TeamPage teamId={view.id} tab={view.tab} libraryCount={libraryCounts?.total ?? null}>
+        <TeamPage teamId={view.id} tab={view.tab} libraryCount={libraryTabCount}>
           <PaneHeader
             leading={
               <KindChips
@@ -340,7 +355,13 @@ export function ItemsPane({ view }: { view: ItemsView }) {
           words={words}
         />
       ) : null}
-      {view.kind === 'trash' ? <TrashNote words={words} /> : null}
+      {archivedView && !state.loading && !state.error && !empty ? (
+        <ArchivedIntro
+          words={words}
+          count={state.items.length + localArchived.length}
+          more={state.hasMore}
+        />
+      ) : null}
       {body}
       {/* Kept in this browser, so it shows even when the account's list can't load (offline). */}
       {archivedView && !state.loading ? (
