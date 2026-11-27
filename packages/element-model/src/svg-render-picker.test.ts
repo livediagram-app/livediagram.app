@@ -77,13 +77,44 @@ describe('svgPicker', () => {
     expect(svg).not.toContain('left<');
   });
 
-  it('cuts a long name to the payline', () => {
+  it('wraps a long option across the payline, and cuts one that still runs over', () => {
     const svg = svgPicker(
       el({ pickerResult: 'A very long name that will never fit on one small payline' }),
       '',
       '#0f172a',
       '#0ea5e9',
     );
-    expect(svg).toContain('…</text>');
+    expect(svg).toContain('>A very long name</text>');
+    expect(svg).toContain('>payline</text>');
+    const essay = svgPicker(
+      el({ pickerResult: `${'Supercalifragilistic '.repeat(30)}end`, width: 140, height: 120 }),
+      '',
+      '#0f172a',
+      '#0ea5e9',
+    );
+    expect(essay).toContain('…</text>');
+  });
+
+  it('lays a compact card out as one row with a round Spin, and Reset once all are drawn', () => {
+    const svg = svgPicker(el({ pickerResult: 'Sam', height: 50 }), 'Kicker', '#0f172a', '#0ea5e9');
+    expect(svg).toContain('>Sam</text>');
+    expect(svg).toContain('<circle');
+    expect(svg).not.toContain('Spin Again');
+    expect(svg).not.toContain('KICKER');
+    const done = svgPicker(
+      el({
+        pickerSource: 'options',
+        pickerOptions: ['A'],
+        pickerRemoveDrawn: true,
+        pickerDrawn: ['A'],
+        pickerResult: 'A',
+        height: 50,
+      }),
+      '',
+      '#0f172a',
+      '#0ea5e9',
+    );
+    expect(done).toContain('>All drawn</text>');
+    expect(done).toContain('M3 3v5h5');
   });
 });

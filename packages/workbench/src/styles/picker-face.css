@@ -8,11 +8,24 @@
  * last frame anyway; these rules say what the calm version looks like rather than leaving it to that.
  */
 
-/* The rows above and below the payline fade into the card. */
+/*
+ * While the reel turns, the rows passing above and below the payline (--picker-peek of each shows)
+ * fade from half strength at the payline's edge to nothing at the window's, so a row cut by the
+ * window reads as a reel turning under glass. At rest the names either side sit whole in the peek
+ * (PickerReel), so there is nothing to fade.
+ */
 .picker-window {
-  mask-image: linear-gradient(180deg, transparent 0%, #000 34%, #000 66%, transparent 100%);
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    rgb(0 0 0 / 0.5) var(--picker-peek),
+    #000 var(--picker-peek),
+    #000 calc(100% - var(--picker-peek)),
+    rgb(0 0 0 / 0.5) calc(100% - var(--picker-peek)),
+    transparent 100%
+  );
 }
-/* One row tall (a short card): nothing above or below to fade. */
+/* At rest, or the payline alone (a short card, a long option taking the room): nothing to fade. */
 .picker-window-single {
   mask-image: none;
 }

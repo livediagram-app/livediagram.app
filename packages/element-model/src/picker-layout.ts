@@ -3,24 +3,30 @@
 // headless render (svg-render-picker), so an export stands where the canvas does.
 
 export type PickerLayout = {
-  // The payline name's size in px, grown with the card up to a limit.
+  // A short card: one row, the payline beside a round Spin, no header. Nothing sits under the corner
+  // menu at any height: the header row clears it on a taller card, the row's right gutter here.
+  compact: boolean;
+  // The payline name's size in px, grown with the card up to a limit and shrunk until the longest name
+  // fits whole in the lines the payline has.
   nameSize: number;
+  // How many lines the payline name may take (a written question wraps; a name stays on one).
+  lines: number;
   // One reel row's height, in px.
   rowH: number;
-  // Half a row above and below the payline, fading out like a real reel (gone on a short card, so
-  // the name keeps the room).
-  neighbours: boolean;
-  // The kicker and count (gone on a very short card).
+  // How much of the rows above and below the payline shows, in px, fading out like a real reel: half a
+  // row on a default card, a whole one on a big card, none when the name needs the room.
+  peek: number;
+  // The kicker and count, pinned to the top (gone on a compact card).
   header: boolean;
   // The struck-through names already drawn (only on a card tall enough to list them).
   drawnList: boolean;
+  // The all-drawn line under the reel (only where the payline keeps a row beside it).
+  caption: boolean;
   avatarSize: number;
 };
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
-// A long written option (an icebreaker question) is set smaller than a name, so two lines of it fit.
-const LONG_LABEL = 28;
 // The fixed parts of the column, each with the face's 6px gap: padding, header, buttons, drawn list,
 // and the all-drawn line.
 export const PICKER_PAD = 16;
@@ -30,38 +36,120 @@ const DRAWN = 30;
 const CAPTION = 22;
 const MIN_ROW = 26;
 const MAX_ROW = 84;
+// A payline taking the whole window for a long written option may grow taller than a name's row.
+const MAX_LONG_ROW = 168;
+// Under this much room for the reel a card is compact: one row, no header.
+const MIN_COMPACT_ROW = 30;
+// A compact card's round buttons (28px and the gap), and the corner menu's gutter (the `…` is 20px
+// at 4px in).
+export const PICKER_ROUND_BUTTON = 34;
+export const PICKER_MENU_GUTTER = 28;
+// A row's own side padding: clear of the payline's notches.
+const ROW_INSET = 48;
+const COMPACT_ROW_INSET = 32;
+// How wide a semibold character runs, as a share of its size, and the line height: generous, so a
+// name the layout says fits does fit.
+const CHAR_EM = 0.58;
+const LEADING = 1.25;
+const MIN_NAME = 11;
+const MAX_NAME = 40;
+
+const linesAt = (rowH: number, size: number) => Math.max(1, Math.floor(rowH / (size * LEADING)));
+const perLine = (textW: number, size: number) => Math.max(1, Math.floor(textW / (size * CHAR_EM)));
+// Whether `longest` characters fit at `size`: wrapped lines lose some width to whole words.
+const fitsAt = (longest: number, textW: number, rowH: number, size: number) => {
+  const lines = linesAt(rowH, size);
+  return longest <= perLine(textW, size) * lines * (lines > 1 ? 0.85 : 1);
+};
+// The biggest size up to `cap` at which the longest name fits whole.
+function fitName(longest: number, textW: number, rowH: number, cap: number): number {
+  for (let size = cap; size > MIN_NAME; size--) {
+    if (fitsAt(longest, textW, rowH, size)) return size;
+  }
+  return MIN_NAME;
+}
+
+export type PickerLayoutInput = {
+  // The longest name on the reel, in characters.
+  longest?: number;
+  // A Spin (or Reset) button under the reel, or beside it on a compact card.
+  controls?: boolean;
+  // A second round button beside Spin (Reset mid-round), which only a compact card makes room for.
+  reset?: boolean;
+  // Names already drawn to list, and the all-drawn line.
+  drawn?: boolean;
+  caption?: boolean;
+  // Avatars beside the names (a people picker).
+  avatars?: boolean;
+  // The element's corner menu (`…`) is on this card, so a compact row keeps its gutter clear.
+  menu?: boolean;
+};
 
 export function pickerLayout(
   width: number,
   height: number,
-  // What else the column holds: the longest name on the reel, the buttons, names already drawn, and
-  // the all-drawn line.
-  { longest = 0, controls = true, drawn = false, caption = false } = {},
+  {
+    longest = 0,
+    controls = true,
+    reset = false,
+    drawn = false,
+    caption = false,
+    avatars = false,
+    menu = false,
+  }: PickerLayoutInput = {},
 ): PickerLayout {
-  const header = height >= 84;
-  let avail =
-    height -
-    PICKER_PAD -
-    (header ? PICKER_HEADER : 0) -
-    (controls ? PICKER_CONTROLS : 0) -
-    (caption ? CAPTION : 0);
-  const drawnList = drawn && header && width >= 200 && avail - DRAWN >= 2 * 36;
-  if (drawnList) avail -= DRAWN;
-  // Two rows of height: the payline and a half row either side of it.
-  const neighbours = avail / 2 >= MIN_ROW;
-  const rowH = Math.round(clamp(neighbours ? avail / 2 : avail, 20, MAX_ROW));
-  const long = longest > LONG_LABEL;
-  const nameSize = Math.round(
-    clamp(Math.min(rowH / (long ? 2.7 : 1.7), width * (long ? 0.07 : 0.11)), 12, 40),
-  );
-  return {
-    nameSize,
-    rowH,
-    neighbours,
-    header,
-    drawnList,
-    avatarSize: clamp(Math.round(nameSize * 1.3), 16, 44),
+  const cap = (rowH: number) => Math.round(clamp(Math.min(rowH / 1.7, width * 0.11), 12, MAX_NAME));
+  const avatarRoom = (size: number) => (avatars ? clamp(Math.round(size * 1.3), 16, 44) + 8 : 0);
+  const finish = (
+    rowH: number,
+    peek: number,
+    textW: number,
+    rest: Pick<PickerLayout, 'compact' | 'header' | 'drawnList' | 'caption'>,
+  ): PickerLayout => {
+    const nameSize = fitName(longest, textW - avatarRoom(cap(rowH)), rowH, cap(rowH));
+    return {
+      ...rest,
+      nameSize,
+      lines: linesAt(rowH, nameSize),
+      rowH,
+      peek,
+      avatarSize: clamp(Math.round(nameSize * 1.3), 16, Math.min(44, rowH - 6)),
+    };
   };
+
+  let avail = height - PICKER_PAD - PICKER_HEADER - (controls ? PICKER_CONTROLS : 0);
+  // Too short for a header, a payline and a button stacked: one row.
+  if (avail < MIN_COMPACT_ROW) {
+    const buttons = controls ? PICKER_ROUND_BUTTON * (reset ? 2 : 1) : 0;
+    const textW =
+      width - PICKER_PAD - COMPACT_ROW_INSET - buttons - (menu ? PICKER_MENU_GUTTER : 0);
+    const rowH = Math.round(clamp(height - PICKER_PAD, 20, MAX_ROW));
+    return finish(rowH, 0, textW, {
+      compact: true,
+      header: false,
+      drawnList: false,
+      caption: false,
+    });
+  }
+  // The all-drawn line and the drawn list only where the payline keeps a row.
+  const captionShown = caption && avail - CAPTION >= MIN_ROW;
+  if (captionShown) avail -= CAPTION;
+  const drawnList = drawn && width >= 200 && avail - DRAWN >= 2 * 36;
+  if (drawnList) avail -= DRAWN;
+  const textW = width - PICKER_PAD - ROW_INSET;
+  const rest = { compact: false, header: true, drawnList, caption: captionShown };
+  // Room either side: the payline in the middle, and up to a whole row showing above and below.
+  if (avail / 2 >= MIN_ROW) {
+    const rowH = Math.round(clamp(avail / 2, MIN_ROW, MAX_ROW));
+    const size = cap(rowH);
+    // A name that fits on one line keeps the reel's depth; a long written option takes the whole
+    // window for the payline instead, so it reads whole.
+    if (longest <= perLine(textW - avatarRoom(size), size)) {
+      return finish(rowH, Math.min(rowH, Math.floor((avail - rowH) / 2)), textW, rest);
+    }
+    return finish(Math.round(clamp(avail, 20, MAX_LONG_ROW)), 0, textW, rest);
+  }
+  return finish(Math.round(clamp(avail, 20, MAX_ROW)), 0, textW, rest);
 }
 
 // The corner count: how big the pool is, or with Remove Once Drawn how much of it is left.

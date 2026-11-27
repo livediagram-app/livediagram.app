@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 
 // The Picker's face (docs/specs/012-collaboration/picker.md). Rendered rather than tested as pure helpers
-// because the behaviour under test (a result arriving from the room replays the spin here, our own
-// does not replay twice, a Reset puts the names back) lives in effect and ref lifecycle.
+// because the behaviour under test (a press arriving from the room replays the spin here, our own
+// does not replay twice, a Reset puts the names back) lives in render and effect lifecycle.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { ComponentProps } from 'react';
+import { Profiler, type ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PICKER_SPIN_MS, type PickerCandidate } from '../../../lib/picker';
@@ -55,6 +55,52 @@ describe('PickerFace', () => {
     land();
     expect(state()).toBe('landed');
     expect(shown()).toBe('Sam');
+  });
+
+  it('never paints the winner standing still before a peer’s spin', () => {
+    // Every commit's face, read as React commits it: a landed frame showing the new name before
+    // the reel turns is the flash the room would see.
+    const frames: string[] = [];
+    const onRender = () => frames.push(`${state()}:${shown()}`);
+    const face = (result: string | undefined, rolledAt?: number) => (
+      <Profiler id="picker" onRender={onRender}>
+        <PickerFace {...BASE} shared result={result} rolledAt={rolledAt} />
+      </Profiler>
+    );
+    const view = render(face('Alex', 1));
+    frames.length = 0;
+    view.rerender(face('Sam', 2));
+    expect(frames[0]).toBe('spinning:');
+    expect(frames).not.toContain('landed:Sam');
+    land();
+    expect(frames.at(-1)).toBe('landed:Sam');
+  });
+
+  it('replays the same name landing twice in a row, told apart by the press’s stamp', () => {
+    const view = render(<PickerFace {...BASE} shared result="Sam" rolledAt={1} />);
+    view.rerender(<PickerFace {...BASE} shared result="Sam" rolledAt={2} />);
+    expect(spinning()).toBe(true);
+    land();
+    expect(shown()).toBe('Sam');
+    // A re-render with nothing new (somebody joining, the list changing) does not.
+    view.rerender(
+      <PickerFace {...BASE} shared result="Sam" rolledAt={2} candidates={CANDIDATES} />,
+    );
+    expect(spinning()).toBe(false);
+  });
+
+  it('does not replay our own roll of the same name again', () => {
+    const view = render(
+      <PickerFace {...BASE} shared result="Alex" rolledAt={1} onRoll={() => ({ label: 'Alex' })} />,
+    );
+    spin();
+    advance(PICKER_SPIN_MS - 100);
+    view.rerender(
+      <PickerFace {...BASE} shared result="Alex" rolledAt={2} onRoll={() => ({ label: 'Alex' })} />,
+    );
+    advance(200);
+    expect(spinning()).toBe(false);
+    expect(shown()).toBe('Alex');
   });
 
   it('does not replay our own roll a second time', () => {
@@ -193,6 +239,8 @@ describe('PickerFace', () => {
       // The name on the payline is not repeated in the drawn list.
       const list = screen.getByRole('list', { name: 'Already drawn' });
       expect(list.textContent).toBe('Alex');
+      // A chip cut short shows the whole name on hover.
+      expect(list.querySelector('li span.pointer-events-auto')?.textContent).toBe('Alex');
     });
 
     it('folds a long drawn list into "+N more"', () => {
@@ -222,6 +270,12 @@ describe('PickerFace', () => {
       expect(screen.getByText('Every option is drawn')).toBeTruthy();
       expect(screen.queryByRole('button', { name: 'Pick at random' })).toBeNull();
       expect(screen.getByText('Reset')).toBeTruthy();
+    });
+
+    it('puts the all-drawn line on the payline when there is no room under it', () => {
+      render(round({ drawn: ['Alex', 'Sam', 'Priya'], result: 'Priya', height: 116 }));
+      expect(document.querySelector('[data-picker-layout="compact"]')).toBeNull();
+      expect(screen.getByText('Every option is drawn').closest('.picker-window')).toBeTruthy();
     });
 
     it('tells the room the people have all had a turn, and a viewer to wait', () => {
@@ -277,12 +331,96 @@ describe('PickerFace', () => {
     expect(shown()).toBe('Sam');
   });
 
-  it('keeps the payline alone on a short card, and drops the header on a tiny one', () => {
-    const view = render(<PickerFace {...BASE} height={100} result="Sam" onRoll={() => null} />);
-    expect(document.querySelector('.picker-window-single')).toBeTruthy();
+  it('sets the names either side small and whole at rest, and none on a short card', () => {
+    const view = render(<PickerFace {...BASE} result="Sam" onRoll={() => null} />);
+    // Sam is on the payline; Alex and Priya stand either side, muted.
+    expect(screen.getByText('Alex').closest('[style*="opacity"]')).toBeTruthy();
+    expect(screen.getByText('Priya')).toBeTruthy();
+    view.rerender(<PickerFace {...BASE} height={120} result="Sam" onRoll={() => null} />);
+    expect(screen.queryByText('Alex')).toBeNull();
     expect(screen.getByText('Who demos?')).toBeTruthy();
-    view.rerender(<PickerFace {...BASE} height={70} result="Sam" />);
+  });
+
+  it('gives a near name its avatar only where the peek holds it', () => {
+    const people = ['Ada', 'Grace', 'Linus'].map((n, i) => ({
+      label: n,
+      participant: { id: `p${i}`, name: n },
+    }));
+    const renderAvatar = (p: { name: string }) => <i data-avatar={p.name} />;
+    const face = (height: number) => (
+      <PickerFace
+        {...BASE}
+        candidates={people}
+        result="Grace"
+        height={height}
+        renderAvatar={renderAvatar}
+      />
+    );
+    const view = render(face(132));
+    expect(screen.getByText('Ada')).toBeTruthy();
+    expect(document.querySelector('[data-avatar="Ada"]')).toBeNull();
+    view.rerender(face(360));
+    expect(document.querySelector('[data-avatar="Ada"]')).toBeTruthy();
+  });
+
+  it('lays a compact card out as one row: the payline beside a round Spin', () => {
+    const onRoll = vi.fn(() => ({ label: 'Alex' }));
+    render(<PickerFace {...BASE} height={50} result="Sam" cornerMenu onRoll={onRoll} />);
+    const root = document.querySelector('[data-picker-layout="compact"]')!;
+    expect(root).toBeTruthy();
+    // The corner menu's gutter stays clear.
+    expect(root.className).toContain('pr-7');
     expect(screen.queryByText('Who demos?')).toBeNull();
+    expect(screen.queryByText('Spin Again')).toBeNull();
+    spin();
+    expect(onRoll).toHaveBeenCalledTimes(1);
+  });
+
+  it('says All drawn on a compact payline, with a round Reset', () => {
+    const onReset = vi.fn();
+    render(
+      <PickerFace
+        {...BASE}
+        height={50}
+        source="options"
+        removeDrawn
+        drawn={['Alex', 'Sam', 'Priya']}
+        result="Priya"
+        onRoll={() => null}
+        onReset={onReset}
+      />,
+    );
+    expect(screen.getByText('All drawn')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset the draw' }));
+    expect(onReset).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('[data-picker-layout="compact"]')!.className).toContain('pr-2');
+  });
+
+  it('clears the corner menu only when the card has one', () => {
+    const view = render(<PickerFace {...BASE} result="Sam" cornerMenu />);
+    const header = () => screen.getByText('Who demos?').parentElement!;
+    expect(header().className).toContain('pr-7');
+    view.rerender(<PickerFace {...BASE} result="Sam" />);
+    expect(header().className).not.toContain('pr-7');
+  });
+
+  it('wraps a long written option on the payline so it reads whole', () => {
+    const question = 'If you could have dinner with anyone from history, who would it be and why?';
+    render(
+      <PickerFace
+        {...BASE}
+        width={300}
+        height={200}
+        source="options"
+        candidates={[{ label: question }, { label: 'Short' }]}
+        result={question}
+      />,
+    );
+    const name = screen
+      .getAllByText(question)
+      .find((el) => el.tagName === 'SPAN' && el.style.fontSize)!;
+    expect(Number(name.style.webkitLineClamp)).toBeGreaterThan(1);
+    expect(name.className).not.toContain('truncate');
   });
 
   it('takes the accent from the element’s stroke', () => {

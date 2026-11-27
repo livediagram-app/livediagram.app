@@ -203,6 +203,7 @@ export function ElementFaceRouter({
           label={label}
           textColor={textColor}
           picker={pickerOffer(onRollPicker?.(element), readOnly)}
+          cornerMenu={!!settingsButton}
         />
       ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
         /* The collaboration panels (docs/specs/012-collaboration/temperature-check.md, decision-record.md): a

@@ -54,6 +54,8 @@ describe('the picker draw', () => {
     expect(offer.roll()?.label).toBe('B');
     expect(el().pickerResult).toBe('B');
     expect(el().pickerDrawn).toEqual(['A', 'B']);
+    // Stamped with the press, in the same write, so the room replays even a repeat landing.
+    expect(el().pickerRolledAt).toBeGreaterThan(0);
   });
 
   it('puts every name back on Reset', () => {
@@ -63,6 +65,7 @@ describe('the picker draw', () => {
     offer.reset();
     expect(el().pickerResult).toBeUndefined();
     expect(el().pickerDrawn).toBeUndefined();
+    expect(el().pickerRolledAt).toBeUndefined();
     expect(el().pickerRemoveDrawn).toBe(true);
   });
 

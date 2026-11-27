@@ -184,6 +184,7 @@ export function behaviourFace({
         label={label}
         textColor={textColor}
         picker={pickerOffer(onRollPicker?.(element), readOnly)}
+        cornerMenu={!!settingsButton}
       />
     ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
       /* The collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): an estimate card,

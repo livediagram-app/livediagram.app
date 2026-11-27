@@ -70,4 +70,22 @@ describe('livediagram PickerFace', () => {
     render(<PickerFace element={picker()} label="Who demos?" textColor="#0f172a" />);
     expect(screen.queryByRole('button')).toBeNull();
   });
+
+  it('keeps clear of the corner menu, and replays the same name pressed again', () => {
+    const face = (pickerRolledAt: number) => (
+      <PickerFace
+        element={picker({ pickerResult: 'A', pickerRolledAt })}
+        label="Who demos?"
+        textColor="#0f172a"
+        picker={{ candidates: [{ label: 'A' }, { label: 'B' }], shared: true }}
+        cornerMenu
+      />
+    );
+    const view = render(face(1));
+    expect(screen.getByText('Who demos?').parentElement!.className).toContain('pr-7');
+    view.rerender(face(2));
+    expect(document.querySelector('[data-picker-state]')!.getAttribute('data-picker-state')).toBe(
+      'spinning',
+    );
+  });
 });

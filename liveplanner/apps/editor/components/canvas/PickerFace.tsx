@@ -15,10 +15,13 @@ export function PickerFace({
   label,
   textColor,
   picker,
+  cornerMenu = false,
 }: {
   element: ShapeElement;
   label: string;
   textColor: string;
+  // The element's `…` settings button is in the card's corner (ElementFaceRouter's settingsButton).
+  cornerMenu?: boolean;
   // What the canvas offers this viewer (pickerOffer); absent on a surface with no session behind it.
   picker?: PickerOffer<PickerCandidate>;
 }) {
@@ -26,6 +29,7 @@ export function PickerFace({
     <SharedPickerFace
       label={label}
       result={element.pickerResult}
+      rolledAt={element.pickerRolledAt}
       candidates={picker?.candidates ?? []}
       source={element.pickerSource ?? 'participants'}
       removeDrawn={element.pickerRemoveDrawn === true}
@@ -35,6 +39,7 @@ export function PickerFace({
       width={element.width}
       height={element.height}
       shared={picker?.shared ?? false}
+      cornerMenu={cornerMenu}
       onRoll={picker?.roll}
       onReset={picker?.reset}
       renderAvatar={(participant, size) => (

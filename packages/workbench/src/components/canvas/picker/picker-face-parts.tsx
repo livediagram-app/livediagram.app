@@ -48,26 +48,30 @@ function ResetGlyph() {
 }
 
 // The one big control: an accent pill. "Spin", "Spin Again" once there is a result, "Spinning…"
-// while it turns. Disabled with nothing left to pick from.
+// while it turns. Disabled with nothing left to pick from. On a compact card it is a round accent
+// button with the glyph alone, named by its tooltip.
 export function SpinButton({
   spinning,
   hasResult,
   disabled,
+  round = false,
   onSpin,
 }: {
   spinning: boolean;
   hasResult: boolean;
   disabled: boolean;
+  round?: boolean;
   onSpin: () => void;
 }) {
   const press = usePressWithoutDrag(onSpin);
-  return (
+  const name = spinning ? 'Spinning' : 'Pick at random';
+  const button = (
     <button
       type="button"
       {...press}
       disabled={disabled || spinning}
-      aria-label={spinning ? 'Spinning' : 'Pick at random'}
-      className="picker-spin pointer-events-auto inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[12px] font-semibold shadow-sm transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 disabled:cursor-default disabled:opacity-60 disabled:hover:brightness-100 disabled:active:scale-100"
+      aria-label={name}
+      className={`picker-spin pointer-events-auto inline-flex h-7 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full text-[12px] font-semibold shadow-sm transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 disabled:cursor-default disabled:opacity-60 disabled:hover:brightness-100 disabled:active:scale-100 ${round ? 'w-7' : 'px-3.5'}`}
       style={{
         backgroundColor: 'var(--picker-accent)',
         color: 'var(--picker-on-accent)',
@@ -75,11 +79,14 @@ export function SpinButton({
       }}
     >
       <ShuffleGlyph />
-      <span className="text-optical-line">
-        {spinning ? 'Spinning…' : hasResult ? 'Spin Again' : 'Spin'}
-      </span>
+      {round ? null : (
+        <span className="text-optical-line">
+          {spinning ? 'Spinning…' : hasResult ? 'Spin Again' : 'Spin'}
+        </span>
+      )}
     </button>
   );
+  return round ? <Tooltip label={name}>{button}</Tooltip> : button;
 }
 
 // Puts every drawn name back. As a pill when the round is over (it is the only thing to do), as a
@@ -124,7 +131,8 @@ export function ResetButton({ onReset, prominent }: { onReset: () => void; promi
 }
 
 // Names already drawn this round, struck through, so the room can see who has had a turn. A long
-// list folds into "+N more" rather than wrapping off the card.
+// list folds into "+N more" rather than wrapping off the card, and a chip too long for its pill
+// shows the whole name in its tooltip.
 const DRAWN_SHOWN = 6;
 export function DrawnNames({ names }: { names: readonly string[] }) {
   const shown = names.slice(-DRAWN_SHOWN);
@@ -146,10 +154,12 @@ export function DrawnNames({ names }: { names: readonly string[] }) {
       {shown.map((name) => (
         <li
           key={name}
-          className="max-w-[9rem] truncate rounded-full px-2 py-0.5 text-[10px] font-medium line-through"
+          className="flex max-w-[9rem] rounded-full px-2 py-0.5 text-[10px] font-medium line-through"
           style={{ color: 'var(--picker-muted)', backgroundColor: 'var(--picker-wash)' }}
         >
-          {name}
+          <Tooltip label={name}>
+            <span className="pointer-events-auto min-w-0 truncate">{name}</span>
+          </Tooltip>
         </li>
       ))}
     </ul>
