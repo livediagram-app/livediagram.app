@@ -34,6 +34,12 @@ function StopSquare() {
   );
 }
 
+/** A microphone on the page is listening: its Escape stops listening, so a panel around it (Tools, a drawer) whose
+ *  own Escape listener runs first passes that press on rather than stepping back or closing. */
+export const voiceInputListening = () =>
+  typeof document !== 'undefined' &&
+  !!document.querySelector('[data-voice-input][aria-pressed="true"]');
+
 export function VoiceInputButton({ voice }: { voice: VoiceInput }) {
   if (!voice.supported) return null;
   const label = voice.listening ? VOICE_STOP_LABEL : VOICE_START_LABEL;

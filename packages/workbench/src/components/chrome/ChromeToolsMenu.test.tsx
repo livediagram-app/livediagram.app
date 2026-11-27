@@ -215,6 +215,29 @@ describe('a tool inside Tools', () => {
     expect(popover()!.getAttribute('aria-label')).toBe('Tools, Keeps');
   });
 
+  it('leaves Escape to a listening microphone in the tool (voice-input.md "Stopping")', async () => {
+    const listening: ChromeToolsItem = {
+      id: 'ask',
+      group: 'find',
+      label: 'Ask',
+      description: 'x',
+      icon: glyph,
+      view: () => (
+        <button type="button" data-voice-input="" aria-pressed="true" aria-label="Stop Speaking" />
+      ),
+      onSelect: vi.fn(),
+    };
+    render(<ChromeToolsMenu items={[listening]} />);
+    fireEvent.click(tools());
+    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="ask"]')!);
+    const mic = await screen.findByRole('button', { name: 'Stop Speaking' });
+    fireEvent.keyDown(mic, { key: 'Escape' });
+    expect(popover()!.getAttribute('aria-label')).toBe('Tools, Ask');
+    mic.setAttribute('aria-pressed', 'false');
+    fireEvent.keyDown(mic, { key: 'Escape' });
+    await waitFor(() => expect(popover()!.getAttribute('aria-label')).toBe('Tools'));
+  });
+
   it('closes Tools from any level with its close', async () => {
     render(<DialogTool />);
     await openNotes();

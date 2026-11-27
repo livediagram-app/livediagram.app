@@ -5,5 +5,6 @@ export {
   VoiceInputNote,
   VOICE_START_LABEL,
   VOICE_STOP_LABEL,
+  voiceInputListening,
 } from './VoiceInputButton';
 export { VOICE_NOTE_WORDS, type VoiceNote } from './speech-recognition';
