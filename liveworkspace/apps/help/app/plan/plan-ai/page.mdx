@@ -1,0 +1,55 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'AI on a Tab',
+  description:
+    'Ask about the open board, sheet, form or dashboard, or tell AI what to change on it, and undo what it did.',
+  path: '/help/plan/plan-ai/',
+});
+
+<ArticleLayout
+  path="plan/plan-ai"
+  title="AI on a Tab"
+  description="Ask about the open board, sheet, form or dashboard, or tell AI what to change on it."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+On a Board, Sheet, Form or Dashboard tab, the **AI** button sits in the bottom-right corner, just left of the Trash and **Card Types**. It opens the same question box as **Ask AI** in [Tools](/help/user-interface/quick-controls/), working on the tab you have open. Ask it something ("Which cards have no assignee?"), or tell it what to change ("Add a total under each column of numbers"), and it does it for you.
+
+## Ask or Tell AI
+
+1. Open the tab and press **AI** (the sparkle).
+2. Type a question or an instruction, or press one of the suggestions under **Try**. Press Enter to send; Shift and Enter make a new line.
+3. The answer appears under your words. When AI changed the tab, a **Changes** box lists each change with a tick. If one couldn't be made, it is the last line, with a warning and why; the changes before it are kept.
+
+Follow up in the same box: AI remembers the last few turns. **New Chat** starts again. Your conversation stays with the tab while the plan is open.
+
+## What It Can Change
+
+- **A board**: add cards (with their type, column and fields), change a card's fields, move cards between columns, and put cards in the Trash. Name a card by its number, such as #12.
+- **A sheet**: fill or change cells, rows and columns, write formulas from a description, add totals, sort, filter, freeze, tidy and format, draw a chart from the data, start a sheet from scratch, and explain or fix a formula.
+- **A form**: add, reword, reorder or remove questions and sections, make questions required, and change the form's heading and description. Where responses go stays in Form Settings.
+- **A dashboard**: add and remove rows and slots, make a slot wider or narrower, change a row's height, move a slot, and put a note or a Board or Sheet tab in a slot.
+
+AI can only do what you could do by hand on the tab, and every change syncs to everyone on the plan straight away.
+
+## Undo
+
+Each answer that changed the tab has an **Undo** button under it, while it is the newest answer. It takes back everything that turn changed. You can also use the editor's own Undo, a step at a time.
+
+## Who Can Use It
+
+- **Editors** can ask, and AI makes any of the changes above.
+- **Participants** can ask, and AI can add, change and move cards and fill in cells, as they can by hand.
+- **Viewers** can ask questions, and AI changes nothing.
+- You need to be signed in. Without an account, the panel asks you to sign in.
+
+## Which AI Answers
+
+The pill in the box says which AI answers, and it is the same choice as Ask AI's: your own or your team's [AI key](/help/account-and-data/ai-keys/), or built-in AI. On built-in AI each turn counts as one of your 30 built-in questions a day, shared with Ask AI. On your own key there is no daily limit.
+
+Only the open tab and your words are sent to the AI, and they aren't kept.
+
+</ArticleLayout>

@@ -159,6 +159,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 17.5h1.5" />
     </Glyph>
   ),
+  // A card on a board with a sparkle over its corner and a tick on it: AI asked to change the open tab, and done.
+  'plan-ai': (
+    <Glyph>
+      <rect x="3" y="7" width="14" height="13" rx="2" />
+      <path d="M6 11.5h6M6 15h4" />
+      <path d="M12 16.5l1.5 1.5 2.5-3" />
+      <path d="M18.5 2l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" />
+    </Glyph>
+  ),
   // A pull request's branch, two commits joined into a third, over a card's corner: code linked to a card.
   'connect-github': (
     <Glyph>
