@@ -49,6 +49,7 @@ import { handleLibrary } from './routes/library';
 import { handlePageDesigns } from './routes/page-designs';
 import { handleTrash } from './routes/trash';
 import { handleAsk } from './routes/ask';
+import { handlePageDrafts } from './routes/page-drafts';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
@@ -328,6 +329,9 @@ async function routeApiRequest(
     // Ask AI (liveworkspace/docs/specs/020-ask/ask.md): a question answered from the open item's own words.
     case 'ask':
       return await handleAsk(ctx);
+    // Describe a Page (docs/specs/007-editor/describe-a-page.md): the next page made from the person's words.
+    case 'page-drafts':
+      return await handlePageDrafts(ctx);
     case 'preferences':
       return await handlePreferences(ctx);
     case 'participants':

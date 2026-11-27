@@ -231,6 +231,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 17.5v-4M12 17.5v-6.5M15 17.5v-2.5" />
     </Glyph>
   ),
+  // A page with a sparkle at its corner: a page AI makes from your words.
+  'describe-a-page': (
+    <Glyph>
+      <rect x="3.5" y="5.5" width="13" height="16" rx="1.5" />
+      <path d="M6.5 9.5h7M6.5 13h5M6.5 16.5h6" />
+      <path d="M19 2.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" />
+    </Glyph>
+  ),
   // A page split into ready-made blocks: a layout to start from.
   'infographic-layouts': (
     <Glyph>
