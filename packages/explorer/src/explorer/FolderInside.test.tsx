@@ -256,6 +256,35 @@ describe('on the Explorer and its panel', () => {
     ).toBeTruthy();
   });
 
+  // The badges follow the folder's name in its own cell, never pushed to the cell's far edge, where they read as the
+  // next column's (the List view's Visibility).
+  for (const mode of ['list', 'details'] as const)
+    it(`sits the badges just after the name on a ${mode} row`, async () => {
+      localStorage.setItem('liveworkspace:explorer-view-mode', mode);
+      const index = data();
+      render(
+        <Explorer
+          app="liveplanner"
+          client={index.client}
+          view={{ kind: 'all' }}
+          onNavigate={vi.fn()}
+          itemHref={(i) => `/p/${i.id}`}
+          onCreate={vi.fn()}
+        />,
+      );
+      const badges = await waitFor(() => {
+        const el = document.querySelector('[data-folder-row="f1"] [data-folder-apps]');
+        expect(el).toBeTruthy();
+        return el!;
+      });
+      const wrapper = badges.parentElement!;
+      expect(wrapper.className).not.toContain('ml-auto');
+      // In the same cell as the name, after it.
+      const cell = wrapper.parentElement!;
+      const name = within(cell).getByText('f1');
+      expect(name.compareDocumentPosition(wrapper) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
   it("and on the editor panel's folder cards, Empty said on the empty one", async () => {
     const index = data();
     render(

@@ -316,7 +316,7 @@ export const FolderRow = memo(function FolderRow({
         elsewhere={elsewhere}
         className="ml-1"
       />
-      <FolderAppBadges inside={inside} size="row" className="ml-auto shrink-0 pl-2" />
+      <FolderAppBadges inside={inside} size="row" className="ml-1 shrink-0" />
     </>
   );
   return (

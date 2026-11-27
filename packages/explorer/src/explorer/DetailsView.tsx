@@ -319,7 +319,7 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
           </button>
         )}
         {renaming ? null : <DefaultFolderMarker folderId={f.id} />}
-        <FolderAppBadges inside={inside} size="row" className="ml-auto shrink-0 pl-2" />
+        <FolderAppBadges inside={inside} size="row" className="ml-1 shrink-0" />
       </span>
       <span role="cell" className={CELLS.type}>
         <FolderTypeCell />

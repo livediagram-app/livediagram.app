@@ -423,7 +423,7 @@ and in the editors' Explorer panel, all drawn by one shared part (`explorer/Fold
   whatever app the Explorer is filtered to. The host app's logo comes first, then the others by how many items they
   have. Up to three logos, then a "+N" chip. Each logo is the app's prism in its accent on a white (dark: slate)
   disc with a thin ring the colour of the card behind it, 20 px on a card, 16 px on the panel's cards, and 16 px
-  at the right end of a list or Details row, before its menu.
+  just after the name (and its count) in a list or Details row, never pushed off into the next column.
 - **Subfolders change the icon.** A folder holding other folders wears a stacked folder glyph (two sheets, one behind
   the other) wherever its folder glyph shows: the list and Details rows, the card's name line, the panel's card
   and a subfolder's tile in a parent's mosaic.
