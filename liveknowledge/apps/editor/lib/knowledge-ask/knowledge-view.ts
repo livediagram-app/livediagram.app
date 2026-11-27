@@ -70,12 +70,22 @@ export function knowledgeViewOf(search: string): KnowledgeView {
   return Object.hasOwn(FORMER, named) ? FORMER[named]! : 'pages';
 }
 
-/** The address of a view: `href` with its `view` set, or taken out for Pages. The path, the rest of the query and
- *  the hash are kept. */
-export function knowledgeViewHref(href: string, view: KnowledgeView): string {
+/** The query a view keeps of its own (Insights' topic and Needs Attention's filter, insights.md "A topic's page"):
+ *  dropped whenever an address is made for a view, so another view's address never carries them. */
+const VIEW_QUERY_PARAMS = ['topic', 'show'] as const;
+
+/** The address of a view: `href` with its `view` set, or taken out for Pages, and `query` (the view's own pairs)
+ *  set after the view's old ones are dropped. The path, the rest of the query and the hash are kept. */
+export function knowledgeViewHref(
+  href: string,
+  view: KnowledgeView,
+  query: Readonly<Record<string, string>> = {},
+): string {
   const url = new URL(href, 'https://liveknowledge.invalid');
+  for (const name of VIEW_QUERY_PARAMS) url.searchParams.delete(name);
   if (view === 'pages') url.searchParams.delete(KNOWLEDGE_VIEW_PARAM);
   else url.searchParams.set(KNOWLEDGE_VIEW_PARAM, view);
+  for (const [name, value] of Object.entries(query)) url.searchParams.set(name, value);
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
@@ -110,11 +120,14 @@ export function previousKnowledgeView(): KnowledgeView {
 }
 
 /** Back from a view's header: the browser's Back when the entry before is a view of this knowledgebase (so the view is
- *  as it was left, the open page and the address with it), else Pages as a new entry (a view opened by its link). */
-export function backFromKnowledgeView(): void {
+ *  as it was left, the open page and the address with it), else Pages as a new entry (a view opened by its link).
+ *  `extra` is how many of the view's own entries stand on top of its first (an Insights topic opened from its
+ *  dashboard), stepped over too. */
+export function backFromKnowledgeView(extra = 0): void {
   const top = trail.at(-1);
   if (top && top.path === window.location.pathname) {
-    window.history.back();
+    if (extra === 0) window.history.back();
+    else window.history.go(-(1 + extra));
     return;
   }
   // Another knowledgebase's steps are no way back from this one.
@@ -133,11 +146,26 @@ export function currentKnowledgeView(): KnowledgeView {
   return typeof window === 'undefined' ? 'pages' : knowledgeViewOf(window.location.search);
 }
 
-/** Show a view: a new history entry (so Back returns to the view before), or `replace` to stay on this one. */
-export function showKnowledgeView(view: KnowledgeView, opts: { replace?: boolean } = {}): void {
-  if (typeof window === 'undefined' || view === currentKnowledgeView()) return;
-  if (!opts.replace) trail.push(here());
-  const href = knowledgeViewHref(window.location.href, view);
+const address = () => `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+/** Show a view: a new history entry (so Back returns to the view before), or `replace` to stay on this one. `query`
+ *  is the view's own place in it (an Insights topic); moving within a view adds no step to the way back. */
+export function showKnowledgeView(
+  view: KnowledgeView,
+  opts: { replace?: boolean; query?: Readonly<Record<string, string>> } = {},
+): void {
+  if (typeof window === 'undefined') return;
+  const href = knowledgeViewHref(window.location.href, view, opts.query);
+  const within = view === currentKnowledgeView();
+  // The same view: nothing to do unless its own place changes (a topic opened, or left for its dashboard).
+  if (within && href === address()) return;
+  if (
+    within &&
+    !opts.query &&
+    !VIEW_QUERY_PARAMS.some((name) => new URLSearchParams(window.location.search).has(name))
+  )
+    return;
+  if (!opts.replace && !within) trail.push(here());
   // Null, never history.state: Next skips its own state handed back (so useSearchParams keeps the old address),
   // and given null it copies that state across itself, so its Back and Forward still know the page
   // (packages/next-config history-state.test.js).

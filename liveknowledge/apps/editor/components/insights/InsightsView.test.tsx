@@ -58,6 +58,11 @@ import { track } from '@/lib/telemetry';
 import { goToBlock } from '@/lib/knowledge/go-to-block';
 import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
 import { ROLES, chromeValue, renderInEditor, type Role } from '@/components/ask/test-chrome';
+import {
+  resetInsightsTopic,
+  showInsightsTopic,
+  type InsightsTopic,
+} from '@/lib/knowledge-ask/insights-topic';
 import { InsightsView } from './InsightsView';
 
 const VERIFIED_AT = new Date(2026, 10, 8).getTime();
@@ -173,6 +178,7 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(TODAY);
   offline.value = false;
+  window.history.replaceState(null, '', '/document/d1?view=insights&topic=attention');
   api.apiKnowledgeOverview.mockResolvedValue(full());
   for (const fn of [
     api.apiDismissKnowledgeConflict,
@@ -187,17 +193,26 @@ afterEach(() => {
   cleanup();
   act(() => closeAiSettings());
   window.history.replaceState(null, '', '/document/d1');
+  resetInsightsTopic();
   vi.clearAllMocks();
   vi.useRealTimers();
 });
 
-async function open(role: Role = 'edit', over: Record<string, unknown> = {}) {
+// Each card is on its topic's page (insights.md "The topics"): a test opens Insights at the topic it looks at, as a
+// link or a reload would, and `go` moves to another topic in the same view.
+async function open(
+  role: Role = 'edit',
+  over: Record<string, unknown> = {},
+  topic: InsightsTopic = 'attention',
+) {
+  window.history.replaceState(null, '', `/document/d1?view=insights&topic=${topic}`);
   const utils = renderInEditor(<InsightsView />, chromeValue(role, over));
   await waitFor(() =>
     expect(screen.queryByRole('status', { name: 'Loading Insights' })).toBeNull(),
   );
   return utils;
 }
+const go = (topic: InsightsTopic | null) => act(() => showInsightsTopic(topic, { replace: true }));
 const section = (name: string): BoundFunctions<typeof queries> =>
   within(screen.getByRole('region', { name }));
 const WHO = { ownerId: 'me', shareCode: null };
@@ -222,15 +237,16 @@ describe('reading it', () => {
   it('gives every card a proper empty state, and each Needs Attention filter its own', async () => {
     api.apiKnowledgeOverview.mockResolvedValue(empty());
     await open();
-    for (const title of [
-      'Nothing Needs Attention',
-      'No Agents Yet',
-      'No Pages Yet',
-      'No Pages in Context Yet',
-      'No Reads Yet',
-    ])
-      expect(screen.getByText(title)).toBeTruthy();
-    expect(document.querySelectorAll('[data-empty-state]')).toHaveLength(5);
+    for (const [topic, titles] of [
+      ['agents', ['No Agents Yet', 'No Pages in Context Yet']],
+      ['health', ['No Pages Yet']],
+      ['reads', ['No Reads Yet']],
+      ['attention', ['Nothing Needs Attention']],
+    ] as const) {
+      go(topic);
+      for (const title of titles) expect(screen.getByText(title)).toBeTruthy();
+      expect(document.querySelectorAll('[data-empty-state]')).toHaveLength(titles.length);
+    }
     const filters = within(section('Needs Attention').getByRole('group', { name: 'Show' }));
     for (const [filter, title] of [
       ['Questions', 'No Unanswered Questions Yet'],
@@ -241,6 +257,7 @@ describe('reading it', () => {
       expect(section('Needs Attention').getByText(title)).toBeTruthy();
     }
     // A static sample still shows what an agent sees.
+    go('agents');
     expect(
       section('What an Agent Sees').getByLabelText('A sample search result').textContent,
     ).toContain('search_knowledge("release process")');
@@ -252,7 +269,16 @@ describe('reading it', () => {
     const alert = screen.getByRole('alert');
     expect(alert.textContent).toContain('Insights Could Not Be Read');
     fireEvent.click(within(alert).getByRole('button', { name: 'Try Again' }));
-    await screen.findByRole('region', { name: 'Connected Agents' });
+    await screen.findByRole('region', { name: 'Needs Attention' });
+  });
+
+  it('keeps a topic’s way back over the loading placeholders', async () => {
+    api.apiKnowledgeOverview.mockReturnValue(new Promise(() => {}));
+    window.history.replaceState(null, '', '/document/d1?view=insights&topic=health');
+    renderInEditor(<InsightsView />);
+    expect(screen.getByRole('status', { name: 'Loading Insights' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^Insights/ }));
+    expect(window.location.search).toBe('?view=insights');
   });
 
   it('reads nothing for a knowledgebase kept Offline', async () => {
@@ -265,7 +291,7 @@ describe('reading it', () => {
 
 describe('what it shows', () => {
   it('an agent card: its name, how it connects, what it does, its reads and top pages', async () => {
-    await open();
+    await open('edit', {}, 'agents');
     const card = within(document.querySelector<HTMLElement>('[data-agent="Coding Agent"]')!);
     expect(card.getByText('Connected')).toBeTruthy();
     expect(card.getByText('Through the MCP server')).toBeTruthy();
@@ -278,6 +304,7 @@ describe('what it shows', () => {
     expect(card.getByText('12 pages read this week')).toBeTruthy();
     fireEvent.click(card.getByRole('button', { name: 'Hotfixes' }));
     expect(vi.mocked(goToBlock).mock.calls[0]!.slice(1)).toEqual(['p2', '']);
+    go('agents');
     const cli = within(document.querySelector<HTMLElement>('[data-agent="CLI"]')!);
     expect(cli.getByText('Through the command line')).toBeTruthy();
     expect(cli.getByText('1 page read this week')).toBeTruthy();
@@ -291,7 +318,7 @@ describe('what it shows', () => {
     api.apiKnowledgeOverview.mockResolvedValue(
       full({ agents: [{ ...agents[0]!, scopes: ['read', 'suggest', 'write'] }] }),
     );
-    await open('view');
+    await open('view', {}, 'agents');
     const card = within(document.querySelector<HTMLElement>('[data-agent="Coding Agent"]')!);
     expect(
       within(card.getByRole('list', { name: 'What it may do' }))
@@ -331,7 +358,7 @@ describe('what it shows', () => {
   });
 
   it('Knowledge Health as one labelled bar, its parts sized by their pages, with a legend', async () => {
-    await open();
+    await open('edit', {}, 'health');
     const bar = section('Knowledge Health').getByRole('img');
     expect(bar.getAttribute('aria-label')).toBe(
       'Of 64 pages: 59 verified, 3 review due, 2 never verified.',
@@ -350,7 +377,7 @@ describe('what it shows', () => {
   });
 
   it('Always in Context: each page with its size, against the budget', async () => {
-    await open();
+    await open('edit', {}, 'agents');
     const context = section('Always in Context');
     expect(context.getByText('4,410 of 8,000 tokens')).toBeTruthy();
     expect(context.getByText('4,410 tokens')).toBeTruthy();
@@ -358,7 +385,7 @@ describe('what it shows', () => {
   });
 
   it('What an Agent Sees, from a real passage when there is one', async () => {
-    await open();
+    await open('edit', {}, 'agents');
     const sample =
       section('What an Agent Sees').getByLabelText('A sample search result').textContent;
     expect(sample).toContain('1. Release Process');
@@ -415,7 +442,6 @@ describe.each(ROLES)('as %s', (role) => {
     expect(has(conflicts, 'Hotfixes Is Right')).toBe(writer);
     expect(has(conflicts, 'Not a Conflict')).toBe(writer);
     expect(has(conflicts, 'Ask Both Owners')).toBe(writer);
-    expect(has(section('Knowledge Health'), 'Remind the Owners')).toBe(writer);
     const questions = section('Needs Attention');
     expect(has(questions, 'Draft a Page')).toBe(writer);
     expect(has(questions, 'Dismiss: Who approves a release?')).toBe(writer);
@@ -424,6 +450,9 @@ describe.each(ROLES)('as %s', (role) => {
     expect(has(suggestions, 'Accept')).toBe(editor);
     expect(has(suggestions, 'Dismiss')).toBe(editor);
     expect(has(suggestions, 'Open the Page')).toBe(true);
+    go('health');
+    expect(has(section('Knowledge Health'), 'Remind the Owners')).toBe(writer);
+    go('agents');
     const context = section('Always in Context');
     expect(has(context, 'Add a Page')).toBe(writer);
     expect(has(context, /Remove .* from Always in Context/)).toBe(writer);
@@ -455,7 +484,10 @@ describe('an Editor’s actions', () => {
     fireEvent.click(conflicts.getByRole('button', { name: 'Release Process Is Right' }));
     // The other page, at the passage that disagrees (it opened the page alone before, at its top).
     expect(vi.mocked(goToBlock).mock.calls[0]!.slice(1)).toEqual(['p2', 'b3']);
-    fireEvent.click(conflicts.getByRole('button', { name: 'Hotfixes Is Right' }));
+    // Pages shows, as a new entry; back on the topic's page, the other side.
+    expect(window.location.search).toBe('');
+    go('attention');
+    fireEvent.click(section('Needs Attention').getByRole('button', { name: 'Hotfixes Is Right' }));
     expect(vi.mocked(goToBlock).mock.calls[1]!.slice(1)).toEqual(['p1', 'b7']);
   });
 
@@ -513,7 +545,7 @@ describe('an Editor’s actions', () => {
   });
 
   it('adds a page to Always in Context from the page picker, and takes one out', async () => {
-    await open();
+    await open('edit', {}, 'agents');
     fireEvent.click(section('Always in Context').getByRole('button', { name: 'Add a Page' }));
     const dialog = within(
       await screen.findByRole('dialog', { name: 'Add a Page to Always in Context' }),
@@ -540,7 +572,7 @@ describe('an Editor’s actions', () => {
     api.apiSetPageKnowledge.mockRejectedValue(
       new ContextBudgetError('set knowledge', { tokens: 4000, used: 4410, budget: 8000 }),
     );
-    await open();
+    await open('edit', {}, 'agents');
     fireEvent.click(section('Always in Context').getByRole('button', { name: 'Add a Page' }));
     const dialog = within(
       await screen.findByRole('dialog', { name: 'Add a Page to Always in Context' }),
@@ -575,7 +607,7 @@ describe('allowing an agent to write', () => {
   };
 
   it('asks first, in plain words, and does nothing on Cancel', async () => {
-    await open();
+    await open('edit', {}, 'agents');
     choose('Allow Writing');
     const dialog = within(screen.getByRole('dialog', { name: 'Allow Coding Agent to Write?' }));
     expect(dialog.getByText(/replace a page’s writing and move pages/)).toBeTruthy();
@@ -589,7 +621,7 @@ describe('allowing an agent to write', () => {
   it('shows Writes at once, sends the scopes, then reads again', async () => {
     let land: (scopes: string[]) => void = () => {};
     agentsApi.apiSetAgentScopes.mockReturnValue(new Promise((resolve) => (land = resolve)));
-    await open();
+    await open('edit', {}, 'agents');
     choose('Allow Writing');
     fireEvent.click(screen.getByRole('button', { name: 'Allow Writing' }));
     expect(chips()).toBe('ReadsSuggests EditsWrites');
@@ -621,7 +653,7 @@ describe('allowing an agent to write', () => {
     agentsApi.apiSetAgentScopes.mockRejectedValue(
       new ApiError('set agent scopes', 403, 'forbidden'),
     );
-    await open();
+    await open('edit', {}, 'agents');
     choose('Allow Writing');
     fireEvent.click(screen.getByRole('button', { name: 'Allow Writing' }));
     await waitFor(() =>
@@ -638,7 +670,7 @@ describe('allowing an agent to write', () => {
     api.apiKnowledgeOverview.mockResolvedValue(
       full({ agents: [{ ...agents[0]!, scopes: ['read'], canHoldWrite: false }] }),
     );
-    await open();
+    await open('edit', {}, 'agents');
     expect(card().getByText(/Its token is read-only/)).toBeTruthy();
     expect(card().queryByRole('button', { name: 'More for Coding Agent' })).toBeNull();
   });
@@ -672,7 +704,7 @@ describe('emailing the owners', () => {
       sentAt: new Date(2026, 10, 18).getTime(),
       nextAt: new Date(2026, 10, 25).getTime(),
     });
-    await open();
+    await open('edit', {}, 'health');
     fireEvent.click(health().getByRole('button', { name: 'Remind the Owners' }));
     await waitFor(() =>
       expect(toast.info).toHaveBeenCalledWith(
@@ -690,14 +722,14 @@ describe('emailing the owners', () => {
     api.apiKnowledgeOverview.mockResolvedValue(
       full({ reviewEmails: { available: true, remindedAt: Date.now() - 86_400_000 } }),
     );
-    await open();
+    await open('edit', {}, 'health');
     expect(health().queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
     expect(health().getByText(/^Owners reminded /)).toBeTruthy();
   });
 
   it('says a refusal above the sections', async () => {
     emailsApi.apiRemindOwners.mockRejectedValue(new ApiError('remind owners', 403, 'forbidden'));
-    await open();
+    await open('edit', {}, 'health');
     fireEvent.click(health().getByRole('button', { name: 'Remind the Owners' }));
     expect((await screen.findByRole('alert')).textContent).toContain(
       'Only a signed-in Editor can email the owners.',
@@ -707,20 +739,28 @@ describe('emailing the owners', () => {
 
   it('draws neither button where no email is sent, for a guest, or with every page verified', async () => {
     api.apiKnowledgeOverview.mockResolvedValue(full({ reviewEmails: { available: false } }));
+    // Ask Both Owners is on Needs Attention's page, Remind the Owners on Page Health's.
+    const neither = () => {
+      go('attention');
+      expect(screen.getByText('Which day do we release?')).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Ask Both Owners' })).toBeNull();
+      go('health');
+      expect(screen.getByRole('region', { name: 'Knowledge Health' })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
+    };
     const first = await open();
-    expect(screen.queryByRole('button', { name: 'Ask Both Owners' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
+    neither();
     first.unmount();
     api.apiKnowledgeOverview.mockResolvedValue(full());
     const guest = await open('edit', { accountUserId: null });
-    expect(screen.queryByRole('button', { name: 'Ask Both Owners' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
+    neither();
     guest.unmount();
     api.apiKnowledgeOverview.mockResolvedValue(
       full({ health: { verified: 64, reviewDue: 0, neverVerified: 0, total: 64 } }),
     );
-    await open();
+    await open('edit', {}, 'health');
     expect(screen.queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
+    go('attention');
     expect(screen.getByRole('button', { name: 'Ask Both Owners' })).toBeTruthy();
   });
 });

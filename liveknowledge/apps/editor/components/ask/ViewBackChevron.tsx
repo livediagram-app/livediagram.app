@@ -6,6 +6,7 @@
 // view was opened by its link. Navigation only: every role has it.
 import { useSyncExternalStore } from 'react';
 import { BackChevron, HoverCard } from '@liveknowledge/ui';
+import { insightsStepsBack } from '@/lib/knowledge-ask/insights-topic';
 import {
   backFromKnowledgeView,
   KNOWLEDGE_VIEWS,
@@ -32,7 +33,7 @@ export function ViewBackChevron() {
       description="Returns to where you were, as you left it."
       className="mr-2.5 shrink-0 phone:mr-2"
     >
-      <BackChevron label={label} onClick={backFromKnowledgeView} />
+      <BackChevron label={label} onClick={() => backFromKnowledgeView(insightsStepsBack())} />
     </HoverCard>
   );
 }

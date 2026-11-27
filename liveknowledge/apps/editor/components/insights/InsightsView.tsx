@@ -6,7 +6,9 @@
 // dismissing a suggestion and Always in Context are an Editor's.
 import { useState } from 'react';
 import type { KnowledgeEmailResult, KnowledgeLikelySource } from '@liveknowledge/api-schema';
-import { Button, EmptyState } from '@liveknowledge/ui';
+import { BackBar, Button, EmptyState } from '@liveknowledge/ui';
+import { backToInsightsDashboard, insightsTopicLabel } from '@/lib/knowledge-ask/insights-topic';
+import { useInsightsTopic } from '@/lib/knowledge-ask/useInsightsTopic';
 import { Callout } from '@liveworkspace/ui/callout';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
@@ -58,6 +60,7 @@ function Insights({ session }: { session: AskSession }) {
   const toast = useToast();
   const now = useRelativeNow();
   const offline = rights.askOff === 'offline';
+  const { topic } = useInsightsTopic();
   // Connect on an unanswered question's likely item (insights.md "Likely answered elsewhere"): an Editor's.
   const likely = useConnectLikely(rights.manageAi && !offline);
   const pages = useEditorChrome((s) => s.tabs, sameTabsForBar);
@@ -143,7 +146,18 @@ function Insights({ session }: { session: AskSession }) {
               description="This knowledgebase is kept in this browser, where no agent can reach it and nothing is counted. Its pages and search work as they are."
             />
           ) : state.status === 'loading' ? (
-            <DashboardLoading />
+            <>
+              {/* A topic's page keeps its way back while the read is out. */}
+              {topic ? (
+                <BackBar
+                  label="Insights"
+                  current={insightsTopicLabel(topic)}
+                  onClick={backToInsightsDashboard}
+                  gap="none"
+                />
+              ) : null}
+              <DashboardLoading />
+            </>
           ) : !overview ? (
             <Callout
               tone="error"

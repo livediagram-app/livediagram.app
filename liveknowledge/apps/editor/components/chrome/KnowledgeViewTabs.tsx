@@ -35,6 +35,7 @@ import {
   type KnowledgeView,
 } from '@/lib/knowledge-ask/knowledge-view';
 import { useKnowledgeView, useKnowledgeViewHref } from '@/lib/knowledge-ask/useKnowledgeView';
+import { backToInsightsDashboard } from '@/lib/knowledge-ask/insights-topic';
 import { track } from '@/lib/telemetry';
 
 const ICONS: Record<KnowledgeView, ReactNode> = {
@@ -62,7 +63,11 @@ function pressed(
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
     return;
   event.preventDefault();
-  if (view === current) return;
+  if (view === current) {
+    // Insights' own tab, pressed on a topic's page, goes back to its dashboard (insights.md "A topic's page").
+    if (view === 'insights') backToInsightsDashboard();
+    return;
+  }
   // Ask this session cannot use opens its gate over the knowledgebase, not a view to leave for (AskGate).
   if (view === 'ask' && session) {
     void askGateFor(session).then((gate) => {

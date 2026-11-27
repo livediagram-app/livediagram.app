@@ -1,24 +1,14 @@
 'use client';
 
-// Insights' figures band (docs/specs/030-knowledgebase/insights.md "The view, as built"): six tiles, each
-// a button named by its words and its figure. Three filter Needs Attention; the others bring their card into view.
-// A figure that asks for someone carries a small amber mark.
+// Needs Attention's figure tiles (docs/specs/030-knowledgebase/insights.md "The figure tiles"): three, each a
+// button named by its words and its figure, that filter the card under them. A figure that asks for someone carries
+// a small amber mark.
 import { useId, useState, type ReactNode } from 'react';
 import type { KnowledgeOverviewResponse } from '@liveknowledge/api-schema';
 import { HoverCard } from '@liveknowledge/ui';
-import type { AttentionFilter, DashboardFigures } from '@/lib/knowledge-ask/dashboard-figures';
+import type { AttentionFilter } from '@/lib/knowledge-ask/dashboard-figures';
+import { ConflictIcon, QuestionIcon, SuggestionIcon } from './insights-icons';
 import {
-  AgentIcon,
-  ConflictIcon,
-  HealthIcon,
-  QuestionIcon,
-  ReadsIcon,
-  SuggestionIcon,
-} from './insights-icons';
-import { readsSparkLabel } from '@/lib/knowledge-ask/dashboard-figures';
-import {
-  agentShares,
-  agentsCaption,
   conflictsLine,
   conflictsSpoken,
   oldestConflict,
@@ -27,21 +17,9 @@ import {
   questionsSpoken,
   suggestionsLine,
   suggestionsSpoken,
-  verifiedCaption,
-  verifiedParts,
   waitingDots,
 } from '@/lib/knowledge-ask/tile-visuals';
-import { AGENT_BG, PEOPLE_BG, ReadsSparkline } from './ReadsSparkline';
-import {
-  AgentShareBar,
-  ConflictPair,
-  QuestionBars,
-  VerifiedBar,
-  WaitingTrack,
-} from './TileVisuals';
-
-/** Where a tile leads: a card brought into view, or a Needs Attention filter. */
-export type TileTarget = { card: 'reads' | 'agents' | 'health' } | { filter: AttentionFilter };
+import { ConflictPair, QuestionBars, WaitingTrack } from './TileVisuals';
 
 const TILE =
   'group relative flex min-h-[112px] w-full min-w-0 cursor-pointer flex-col rounded-2xl border bg-white p-3.5 text-left transition-[border-color,box-shadow] duration-micro hover:border-slate-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-slate-900 dark:hover:border-slate-600';
@@ -117,85 +95,38 @@ function Tile({
   );
 }
 
-export function FigureTiles({
-  figures,
+export function AttentionTiles({
   overview,
   filter,
-  onGo,
+  onFilter,
 }: {
-  figures: DashboardFigures;
   overview: KnowledgeOverviewResponse;
   filter: AttentionFilter;
-  onGo: (target: TileTarget) => void;
+  // The filter to show: the tile's own, or All when it is on already.
+  onFilter: (filter: AttentionFilter) => void;
 }) {
-  const toggle = (to: AttentionFilter) => onGo({ filter: filter === to ? 'all' : to });
-  const { readsWeek } = figures;
-  const days = overview.reads.days;
+  const toggle = (to: AttentionFilter) => onFilter(filter === to ? 'all' : to);
   // Read once when the band first draws: the waits and ages are in whole days, so a re-render needs no new clock.
   const [now] = useState(() => Date.now());
-  const shares = agentShares(overview.agents);
   const bars = questionBars(overview.questions);
   const oldest = oldestConflict(overview.conflicts);
   const dots = waitingDots(overview.suggestions, now);
-  const parts = verifiedParts(overview.health);
-  const agentsWords = agentsCaption(overview.agents, shares);
-  const partsWords = verifiedCaption(parts);
+  const { questions, conflicts, suggestions } = overview;
   return (
     <div
       role="group"
-      aria-label="Insights at a glance"
-      className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
+      aria-label="Needs Attention at a glance"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-3"
     >
-      <Tile
-        icon={<ReadsIcon />}
-        label="Reads This Week"
-        figure={count(readsWeek.total)}
-        hint="Pages opened by people and read by agents in the last 7 days. Shows Most Read."
-        onPress={() => onGo({ card: 'reads' })}
-        spoken={readsSparkLabel(days)}
-        line={
-          <span className="flex min-w-0 flex-wrap items-center gap-x-2.5">
-            <span className="flex items-center gap-1 whitespace-nowrap">
-              <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${PEOPLE_BG}`} />
-              {count(readsWeek.people)} by people
-            </span>
-            <span className="flex items-center gap-1 whitespace-nowrap">
-              <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${AGENT_BG}`} />
-              {count(readsWeek.agents)} by agents
-            </span>
-          </span>
-        }
-      >
-        <span aria-hidden className="mt-2 block">
-          <ReadsSparkline days={days} />
-        </span>
-      </Tile>
-      <Tile
-        icon={<AgentIcon />}
-        label="Connected Agents"
-        figure={count(figures.agents)}
-        hint="Agents that read or wrote here in the last 30 days. Shows their cards."
-        onPress={() => onGo({ card: 'agents' })}
-        line={
-          figures.agents === 0
-            ? 'None connected yet'
-            : figures.writers === 0
-              ? 'All read and suggest'
-              : `${count(figures.writers)} may write`
-        }
-        spoken={`${agentsWords}.`}
-      >
-        <AgentShareBar shares={shares} caption={agentsWords} />
-      </Tile>
       <Tile
         icon={<QuestionIcon />}
         label="Open Questions"
-        figure={count(figures.questions)}
-        hint="Questions no page could answer. Shows them under Needs Attention."
-        attention={figures.questions > 0}
+        figure={count(questions.length)}
+        hint="Questions no page could answer. Shows only those below."
+        attention={questions.length > 0}
         pressed={filter === 'questions'}
         onPress={() => toggle('questions')}
-        line={questionsLine(overview.questions)}
+        line={questionsLine(questions)}
         spoken={questionsSpoken(bars)}
       >
         <QuestionBars bars={bars} />
@@ -203,66 +134,29 @@ export function FigureTiles({
       <Tile
         icon={<ConflictIcon />}
         label="Pages That Disagree"
-        figure={count(figures.conflicts)}
-        hint="Pairs of pages that state opposite facts. Shows them under Needs Attention."
-        attention={figures.conflicts > 0}
+        figure={count(conflicts.length)}
+        hint="Pairs of pages that state opposite facts. Shows only those below."
+        attention={conflicts.length > 0}
         pressed={filter === 'conflicts'}
         onPress={() => toggle('conflicts')}
-        line={conflictsLine(overview.conflicts, now)}
-        spoken={conflictsSpoken(overview.conflicts)}
+        line={conflictsLine(conflicts, now)}
+        spoken={conflictsSpoken(conflicts)}
       >
         <ConflictPair oldest={oldest} />
       </Tile>
       <Tile
         icon={<SuggestionIcon />}
         label="Suggested Edits"
-        figure={count(figures.suggestions)}
-        hint="Agents' edits waiting to be accepted or dismissed. Shows them under Needs Attention."
-        attention={figures.suggestions > 0}
+        figure={count(suggestions.length)}
+        hint="Agents' edits waiting to be accepted or dismissed. Shows only those below."
+        attention={suggestions.length > 0}
         pressed={filter === 'suggestions'}
         onPress={() => toggle('suggestions')}
-        line={suggestionsLine(overview.suggestions, now)}
+        line={suggestionsLine(suggestions, now)}
         spoken={suggestionsSpoken(dots)}
       >
         <WaitingTrack dots={dots} />
       </Tile>
-      {figures.verificationOn ? (
-        <Tile
-          icon={<HealthIcon />}
-          label="Verified"
-          figure={figures.verifiedShare === null ? 'None' : `${figures.verifiedShare}%`}
-          hint="The share of pages someone vouches for. The bar: verified, due for review, never verified. Shows Knowledge Health."
-          attention={figures.reviewDue > 0}
-          onPress={() => onGo({ card: 'health' })}
-          line={
-            // The average Health Score under the verified share (insights.md "Every tile draws a picture").
-            figures.verifiedShare === null
-              ? 'No pages to verify'
-              : figures.averageHealth === undefined
-                ? figures.reviewDue > 0
-                  ? `${count(figures.reviewDue)} due for review`
-                  : 'Every page verified'
-                : `Average health ${figures.averageHealth}`
-          }
-          spoken={`${partsWords}.`}
-        >
-          <VerifiedBar parts={parts} />
-        </Tile>
-      ) : (
-        // Verification off (a Review Period of Never): the average Health Score in Verified's place.
-        <Tile
-          icon={<HealthIcon />}
-          label="Average Health"
-          figure={figures.averageHealth === undefined ? 'None' : String(figures.averageHealth)}
-          hint="The average Health Score of every page. Shows Knowledge Health."
-          onPress={() => onGo({ card: 'health' })}
-          line={
-            figures.pages === 0
-              ? 'No pages yet'
-              : `Across ${count(figures.pages)} ${figures.pages === 1 ? 'page' : 'pages'}`
-          }
-        />
-      )}
     </div>
   );
 }
