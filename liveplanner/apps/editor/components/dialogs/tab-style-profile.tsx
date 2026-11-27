@@ -4,7 +4,8 @@
 // profile"; liveworkspace/docs/specs/011-workbench/tab-style.md "The profile"): the parts only this editor knows (its
 // looks, themes, finishes, patterns, typefaces, Text Size control and help) and what each surface shows. A diagram tab
 // shows everything; a Board, Sheet, Form or Dashboard tab only what changes how it draws (static patterns, calm looks,
-// the size of new text where it reaches), a board as its preview, and links to the settings that style it. The
+// the size of new text where it reaches), a board as its preview, and links to the settings that style it (a board's
+// Configure has its own button, so a board has no link). The
 // dialog wears ClusterPanel, the frame it shares with a board's Configure, and
 // has no Show Me; its typefaces are the faces liveplanner offers (docs/specs/004-interface-design/fonts.md).
 // Imported only by CanvasThemeDialog, so it loads with the dialog.
@@ -35,7 +36,6 @@ import { rollMashup } from '@/lib/look-mashup';
 import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
 import { TAB_LOOKS, activeLookId, lookMatches, type TabLook } from '@/lib/tab-looks';
 import {
-  BOARD_CONFIGURE_LINK,
   DASHBOARD_SETTINGS_LINK,
   FORM_SETTINGS_LINK,
   SHEET_SETTINGS_LINK,
@@ -145,7 +145,6 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
     // A board is see-through: the canvas under it shows, and its cards take the size of new text.
     board: planTab({
       hiddenControls: ['animationSpeed'],
-      links: [BOARD_CONFIGURE_LINK],
       copy: {
         viewLines: {
           looks: 'Pick a look for the board, then fine-tune any part of it.',
