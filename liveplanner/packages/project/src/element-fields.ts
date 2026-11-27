@@ -77,6 +77,7 @@ export const ELEMENT_FIELD_NAMES = {
     'pickerResult',
     'pickerRemoveDrawn',
     'pickerDrawn',
+    'pickerRolledAt',
     'responses',
     'collabRound',
     'decisionStatus',

@@ -266,6 +266,9 @@ export type ShapeElement = {
   // order, written in the same update as the result so the pick and the pool never disagree.
   pickerRemoveDrawn?: boolean;
   pickerDrawn?: string[];
+  // When the last roll was pressed (epoch ms), written with the result. Every press writes a new one, so the
+  // room replays the spin even when the same name lands twice in a row (picker.md "The room watches").
+  pickerRolledAt?: number;
   // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md, decision-record.md) ---------------------
   // One value per participant (docs/specs/012-collaboration/participant-responses.md), the temperature check's
   // readings. At most one entry per participant: re-casting REPLACES,

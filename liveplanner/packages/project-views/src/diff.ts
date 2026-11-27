@@ -53,6 +53,7 @@ const ATTRIBUTE_SOURCES = [
   'decisionStatus',
   'pickerResult',
   'pickerDrawn',
+  'pickerRolledAt',
   'stats',
   'processSteps',
   'navLinks',

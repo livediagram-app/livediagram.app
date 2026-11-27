@@ -132,6 +132,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   dataArray('pickerOptions'),
   flag('pickerRemoveDrawn'),
   dataArray('pickerDrawn'),
+  finite('pickerRolledAt'),
   ...CODE_CHECKS,
   ...MIND_FLOW_CHECKS,
   ...CHART_LOOK_CHECKS,

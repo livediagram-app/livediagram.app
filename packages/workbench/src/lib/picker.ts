@@ -138,13 +138,26 @@ export function pickerOffer<C extends PickerCandidate>(
 }
 
 // The picker fields a draw and a Reset write (docs/specs/012-collaboration/picker.md "Remove once drawn").
-type PickerRound = { pickerRemoveDrawn?: boolean; pickerResult?: string; pickerDrawn?: string[] };
+type PickerRound = {
+  pickerRemoveDrawn?: boolean;
+  pickerResult?: string;
+  pickerDrawn?: string[];
+  pickerRolledAt?: number;
+};
 
 // A roll landing on `label`, applied to the element as it is NOW (not as it was when the face rendered),
-// so the result and the drawn list go out in one write and never disagree.
-export function withDraw<E extends PickerRound>(el: E, label: string): E {
-  if (!el.pickerRemoveDrawn) return { ...el, pickerResult: label };
-  return { ...el, pickerResult: label, pickerDrawn: drawnAfter(el.pickerDrawn, label) };
+// so the result, the drawn list and the press's stamp go out in one write and never disagree. The stamp
+// always moves on, even past a clock behind the last presser's, so the room replays a name landing twice
+// in a row ("The room watches the same spin").
+export function withDraw<E extends PickerRound>(el: E, label: string, now = Date.now()): E {
+  const pickerRolledAt = Math.max(now, (el.pickerRolledAt ?? 0) + 1);
+  if (!el.pickerRemoveDrawn) return { ...el, pickerResult: label, pickerRolledAt };
+  return {
+    ...el,
+    pickerResult: label,
+    pickerDrawn: drawnAfter(el.pickerDrawn, label),
+    pickerRolledAt,
+  };
 }
 
 // Reset: every name back in the pool and no result, the fields dropped rather than left undefined.
@@ -152,5 +165,6 @@ export function withRoundCleared<E extends PickerRound>(el: E): E {
   const next = { ...el };
   delete next.pickerResult;
   delete next.pickerDrawn;
+  delete next.pickerRolledAt;
   return next;
 }

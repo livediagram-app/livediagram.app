@@ -168,18 +168,29 @@ describe('Remove Once Drawn', () => {
 
 describe('the draw and the reset', () => {
   it('writes only the result while Remove Once Drawn is off', () => {
-    expect(withDraw({ pickerDrawn: ['Ada'] }, 'Grace')).toEqual({
+    expect(withDraw({ pickerDrawn: ['Ada'] }, 'Grace', 500)).toEqual({
       pickerDrawn: ['Ada'],
       pickerResult: 'Grace',
+      pickerRolledAt: 500,
     });
   });
 
   it('writes the result and the drawn list together while it is on', () => {
-    expect(withDraw({ pickerRemoveDrawn: true, pickerDrawn: ['Ada'] }, 'Grace')).toEqual({
+    expect(withDraw({ pickerRemoveDrawn: true, pickerDrawn: ['Ada'] }, 'Grace', 500)).toEqual({
       pickerRemoveDrawn: true,
       pickerResult: 'Grace',
       pickerDrawn: ['Ada', 'Grace'],
+      pickerRolledAt: 500,
     });
+  });
+
+  it('stamps every press anew, even the same name again from a clock running behind', () => {
+    const blank: { pickerResult?: string; pickerRolledAt?: number } = {};
+    const first = withDraw(blank, 'Ada', 900);
+    const again = withDraw(first, 'Ada', 400);
+    expect(again.pickerResult).toBe('Ada');
+    expect(again.pickerRolledAt).toBe(901);
+    expect(withDraw(blank, 'Ada').pickerRolledAt).toBeGreaterThan(0);
   });
 
   it('drops the result and the drawn list on a reset, keeping the setting', () => {
@@ -187,6 +198,7 @@ describe('the draw and the reset', () => {
       pickerRemoveDrawn: true,
       pickerResult: 'Grace',
       pickerDrawn: ['Ada', 'Grace'],
+      pickerRolledAt: 5,
     });
     expect(cleared).toEqual({ pickerRemoveDrawn: true });
     expect('pickerResult' in cleared).toBe(false);

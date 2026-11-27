@@ -14167,6 +14167,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pickerResult": {
         "type": "string"
       },
+      "pickerRolledAt": {
+        "type": "number"
+      },
       "pickerSource": {
         "$ref": "#/components/schemas/PickerSource"
       },
