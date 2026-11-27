@@ -223,6 +223,7 @@ it. The menu is icon-left verb rows under the knowledgebase's name:
 | Publish to the Web    | Opens [Publish to the Web](publishing.md): the knowledgebase, or a section, as a public site | Editor, signed in, not kept Offline |
 | AI Settings           | Opens AI Settings ([Search and Ask](search-and-ask.md))                                      | Editor, not kept Offline            |
 | AI Editing            | Opens [AI Editing](ai-editing.md): how far agents may change pages themselves                | Editor, not kept Offline            |
+| Slack and Teams       | Opens [Slack and Teams](chat-apps.md): connect a Slack workspace or a Teams tenant           | Editor, signed in, not kept Offline |
 | Delete                | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator    | Editor                              |
 
 - Knowledgebase Style is not a row: it opens from the footer's Style ([Knowledgebase Style](page-surface.md#knowledgebase-style)).
