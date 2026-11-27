@@ -5,7 +5,7 @@
 // of where to tap on this device, worded for this browser (home-screen-guide.ts). Always three steps, so the dialog
 // keeps its height.
 import { useId, type ReactNode } from 'react';
-import { Button, Dialog, DialogFooter } from '@liveworkspace/ui';
+import { Button, Dialog, DialogFooter, GlyphDisc } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { homeScreenHeroArt } from '@liveworkspace/ui/dialog-hero-art/home-screen';
 import type { HomeScreenGuide as Guide, HomeScreenStep, SharePlace } from './home-screen-guide';
@@ -180,12 +180,13 @@ export function HomeScreenGuide({
             <StepDrawing step={step} guide={guide} />
             <div className="min-w-0 flex-1 pt-1">
               <p className="flex items-baseline gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
-                <span
+                <GlyphDisc
+                  size={20}
                   aria-hidden
-                  className="inline-flex size-5 shrink-0 items-center justify-center self-center rounded-full bg-brand-600 text-[11px] font-semibold text-white dark:bg-brand-500"
+                  className="self-center bg-brand-600 text-[11px] font-semibold text-white dark:bg-brand-500"
                 >
                   {i + 1}
-                </span>
+                </GlyphDisc>
                 {step.title}
               </p>
               <p className="mt-1 text-[13px] leading-[18px] text-slate-600 dark:text-slate-300">
