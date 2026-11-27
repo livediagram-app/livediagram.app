@@ -9,6 +9,7 @@
 // deutan vision (OKLab ΔE ×100, Machado 2009 at full severity) and at least 15 apart under normal vision. Every theme's
 // palette is held to them by chart-categorical.test.ts.
 
+import { chartMarkInk } from './chart-mark-ink';
 import { hexToRgb, normaliseHex, rgbToHex } from './colour-math';
 
 export type ChartMode = 'light' | 'dark';
@@ -146,21 +147,32 @@ const memory = new Map<string, string[]>();
 
 /**
  * The categorical colours for `seeds` (the theme's hues, its lead first) on a `mode` surface: each seed stepped into
- * the band, then the reference hues. The lead is always first, so a one-series chart wears the theme's own colour;
+ * the band, then the reference hues. On a `ground` (a filled page, chartPageGrounds), every candidate is first taken
+ * as it will be drawn there (chartMarkInk's 3:1 step) and the gates judge that, so what is drawn is what passes: the
+ * step darkened Brand's aqua on a pale slide into a near twin of its blue. The lead is always first, so a one-series chart wears the theme's own colour;
  * after it, the longest run (up to eight) the pool allows where each colour clears the gates against the one before it
  * and is no near twin (normal ΔE 9) of any one before, earlier pool hues preferred. Remembered per input, as
  * every chart on a page asks for the same theme's.
  */
-export function chartCategorical(seeds: readonly string[], mode: ChartMode): string[] {
-  const key = `${mode}|${seeds.join(',')}`;
+export function chartCategorical(
+  seeds: readonly string[],
+  mode: ChartMode,
+  ground?: readonly string[],
+): string[] {
+  const key = `${mode}|${seeds.join(',')}|${ground?.join(',') ?? ''}`;
   const hit = memory.get(key);
   if (hit) return [...hit];
   const pool: string[] = [];
-  for (const seed of seeds) {
-    const c = intoBand(seed, mode);
-    if (c && !pool.includes(c)) pool.push(c);
-  }
-  for (const c of BASE[mode]) if (!pool.includes(c)) pool.push(c);
+  const add = (c: string | null) => {
+    if (!c) return;
+    const drawn = chartMarkInk(c, ground);
+    // A colour the step pushed out of the band or under the chroma floor is no longer a categorical colour.
+    if (drawn !== c && chartPaletteFailures([drawn], mode).length > 0) return;
+    if (!pool.includes(drawn)) pool.push(drawn);
+  };
+  for (const seed of seeds) add(intoBand(seed, mode));
+  for (const c of BASE[mode]) add(c);
+  if (pool.length === 0) pool.push(chartMarkInk(BASE[mode][0]!, ground));
   const lead = pool.shift()!;
   let best: string[] = [lead];
   let steps = 0;

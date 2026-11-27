@@ -7,7 +7,9 @@
 // layout is what lets the two draw the same chart rather than two charts that
 // happen to agree.
 
+import { chartCategorical } from './chart-categorical';
 import { chartMarkInk } from './chart-mark-ink';
+import { canvasSurface } from './colour-math';
 import { chartRamp } from './chart-palettes';
 import { chartTextScale } from './chart-style';
 import { PIE_DEFAULT_SLICES, type PieSlice } from './data-shapes';
@@ -29,7 +31,13 @@ export function chartFrame(
   // Three rungs, narrowest first (docs/specs/009-elements/pie-chart.md): the chart's own palette if it has
   // been given one, then the tab theme's, then the built-in ramp. A per-datum
   // colour beats all three, in `colorAt` below.
-  const colors = chartRamp(element.chartPalette, palette);
+  // On a filled page the theme's colours are picked again as they will be drawn there (chartCategorical's ground), so
+  // the contrast step never makes two of them near twins. A chart's own named palette is drawn as it is.
+  const onGround =
+    !element.chartPalette && palette && palette.length > 0 && ground && ground.length > 0;
+  const colors = onGround
+    ? chartCategorical(palette, canvasSurface(ground[0]), ground)
+    : chartRamp(element.chartPalette, palette);
   const w = Math.max(1, element.width);
   const h = Math.max(1, element.height);
   const data: readonly PieSlice[] =
