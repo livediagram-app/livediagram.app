@@ -441,6 +441,15 @@ The counts ride on the previews the cards already ask for (`GET /folders/preview
 one per folder), as `apps`: each app's live items in the folder and every folder under it, the walk stopping at
 1000 items per folder so a deep tree costs what one of a thousand does.
 
+#### Cards on a phone
+
+The Cards layout puts **two cards a row on a phone** (Work Tracker 1519), three from `lg`, as it did two from `sm`:
+one a row left most of a 390 px screen to empty picture and showed two folders a screen. Each card's picture is
+144 px tall below `sm` (192 px from it) and the gap 12 px (16 px from `sm`). Compared on a 390 and a 320 px phone with
+real folders: two across keeps the mosaic's tiles, the app badges and the names legible (a name cut to "Architect…"
+at worst); three across cut names to a letter and its badges covered the mosaic, so it was left out. A folder card
+with app badges keeps its mosaic's tiles above them (40 px at the picture's foot), so the badges never cover a tile.
+
 #### The sidebar
 
 Three groups, the same in every app's Explorer and on liveworkspace.app (`explorer/Sidebar.tsx`). A row with a tone wears its glyph at 16 px in its 24 px tile, so the glyph fills it (owner, 2026-11-24):

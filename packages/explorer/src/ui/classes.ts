@@ -6,15 +6,16 @@
 export const LIST_CARD =
   'overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800';
 
-/** One column on a phone, two from `sm:`, three from `lg:`. */
-export const CARD_GRID = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3';
+/** Two across on a phone (Work Tracker 1519: one a row wasted the width; three cut names to a letter), three from
+ *  `lg:`, with a little less air between them on a phone. */
+export const CARD_GRID = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3';
 
 export const CARD_SHELL =
   'group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-brand-300 hover:shadow dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/50';
 
 /** A fixed-height letterbox, so every card is the same height whatever its picture. */
 export const CARD_PREVIEW =
-  'flex h-48 w-full items-center justify-center overflow-hidden border-b border-slate-100 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30';
+  'flex h-36 w-full items-center sm:h-48 justify-center overflow-hidden border-b border-slate-100 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30';
 
 // A solid brand control's dark-mode fill is the design system's (it hovers a step deeper, never lighter, so white
 // text keeps its contrast).
