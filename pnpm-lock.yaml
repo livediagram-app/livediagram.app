@@ -5817,6 +5817,9 @@ importers:
 
   liveplanner/apps/editor:
     dependencies:
+      '@liveplanner/agent-verbs':
+        specifier: workspace:*
+        version: link:../../packages/agent-verbs
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema

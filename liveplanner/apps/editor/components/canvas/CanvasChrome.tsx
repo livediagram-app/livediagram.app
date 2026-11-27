@@ -31,6 +31,7 @@ const BoardConfigureDialog = dynamic(
 import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
+import { PlanAiButton } from '@/components/plan-ai/PlanAiButton';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import {
   SessionClusterStrip,
@@ -248,6 +249,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     collaborateEl,
     cardTypesPopoverEl,
     trashPopoverEl,
+    planAiPopoverEl,
     sessionPopoverEl,
   } = useCanvasChromePanels({
     props,
@@ -362,6 +364,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : collaborateEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
+      {zenMode ? null : planAiPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
 
@@ -446,6 +449,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
                 />
               </div>
+            ) : null}
+            {/* The AI button (docs/specs/026-plan/plan-ai.md "The button"): left of the Plan strip, on a Board,
+              Sheet, Form or Dashboard tab. */}
+            {!zenMode && tabPlanKind ? (
+              <PlanAiButton
+                open={activeDockPanel === 'plan-ai'}
+                onToggle={(button) => handleDockButtonClick('plan-ai', button, true)}
+              />
             ) : null}
             {/* Card Types and the Trash (docs/specs/026-plan/item-types.md): one strip,
               while the tab has something that shows cards ("The Plan strip"). */}
