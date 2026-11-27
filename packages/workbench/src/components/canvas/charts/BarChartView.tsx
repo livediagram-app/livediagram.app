@@ -9,10 +9,14 @@
 import { BarChartAxis } from '../ChartAxis';
 import { chartFrame } from '@liveworkspace/element-model/chart-frame';
 import { barMarks } from '@liveworkspace/element-model/chart-marks';
-import { CHART_BASELINE_OPACITY, chartTickPx } from '@liveworkspace/element-model/chart-style';
+import {
+  CHART_BASELINE_OPACITY,
+  chartLegendPx,
+  chartTickPx,
+  chartValuePx,
+} from '@liveworkspace/element-model/chart-style';
 import { chartTypeOf } from '@liveworkspace/element-model/chart-types';
-import { barValueLabels, chartValueFontPx } from '@liveworkspace/element-model/chart-values';
-import { legendFontPx } from '@liveworkspace/model-core/label-font';
+import { barCategoryLabels, barValueLabels } from '@liveworkspace/element-model/chart-values';
 import { useChartHover } from '../../../hooks/canvas/useChartHover';
 import { ChartReadout } from '../../primitives/ChartReadout';
 import { ChartSurface } from '../../primitives/ChartSurface';
@@ -33,7 +37,7 @@ export function BarChartView({
   const tickPx = chartTickPx(element);
   const marks = barMarks(area, data, horizontal, 0, 0, element.chartAxis === true, tickPx);
   const { baseline, bars, origin } = marks;
-  const valuePx = chartValueFontPx(element.textSize);
+  const valuePx = chartValuePx(element);
   const group = anim(`${origin.x}px ${origin.y}px`);
 
   return (
@@ -45,7 +49,7 @@ export function BarChartView({
       legend={legend}
       textColor={textColor}
       fontFamily={fontFamily}
-      fontPx={legendFontPx(element.textSize)}
+      fontPx={chartLegendPx(element)}
       readout={
         hover !== null && data[hover] && bars[hover] ? (
           <ChartReadout
@@ -78,6 +82,14 @@ export function BarChartView({
           <path key={i} d={bar.d} fill={colorAt(i, data[i]!)} {...markProps(i)} />
         ))}
       </g>
+      {/* Each bar named on its axis: under a column, left of a bar (a one-hue chart's key). */}
+      <ChartValues
+        labels={barCategoryLabels(marks, data, horizontal, tickPx)}
+        textColor={textColor}
+        fillOf={(i) => colorAt(i, data[i]!)}
+        fontPx={tickPx}
+        fontFamily={fontFamily}
+      />
       {element.chartValues ? (
         <ChartValues
           labels={barValueLabels(marks, data, horizontal, valuePx)}

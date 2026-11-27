@@ -115,7 +115,8 @@ describe('chart marks (docs/specs/009-elements/pie-chart.md "Chart types")', () 
   it('draws a chart with no negatives exactly as before, its baseline at the foot', () => {
     const cols = barMarks(area, slices, false);
     expect(cols.floor).toBeCloseTo(cols.baseline.y1);
-    expect(cols.baseline.y1).toBeCloseTo(88);
+    // The foot keeps a row under it for the columns' names.
+    expect(cols.baseline.y1).toBeCloseTo(81);
   });
 
   it('covers the negatives with Show Axis, zero a tick on the baseline', () => {

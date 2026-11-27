@@ -6,6 +6,7 @@
 import { AXIS_TICK_FONT_PX } from './chart-axis';
 import { chartValueFontPx } from './chart-values';
 import type { ShapeElement } from './element';
+import { legendFontPx } from '@liveworkspace/model-core/label-font';
 
 // The chrome is the chart's own text colour, faded, so it is recessive on every theme and every page, light or dark,
 // where fixed slate greys glared on a dark page and vanished on a grey one. The baseline the marks grow from is a
@@ -18,15 +19,35 @@ export const CHART_GRID_OPACITY = 0.12;
 export const AREA_FILL_TOP_OPACITY = 0.32;
 export const AREA_FILL_FOOT_OPACITY = 0.03;
 
-// A chart's axis and category text grows with the chart, as a slide's chart is read from across a room: a twentieth
-// of the box's short side, never under the 9px floor and never over the chart's value size (its Text Size), so the
-// key and the numbers keep the lead.
-const TICK_SHARE = 1 / 20;
-export function chartTickPx(element: Pick<ShapeElement, 'textSize' | 'width' | 'height'>): number {
+type Sized = Pick<ShapeElement, 'textSize' | 'width' | 'height'>;
+
+// A chart's text grows with the chart, as a slide's chart is read from across a room (pie-chart.md "How a chart is
+// drawn"). Its Text Size is the size at the board default (a short side of CHART_TEXT_BASE_SIDE px); a bigger chart
+// scales all of its text, the key, the numbers and the axis, by its short side over that, eased (to the power
+// CHART_TEXT_GROWTH) so a slide-filling chart's text reads like a slide's body, not a poster's. Never under 1: a chart
+// smaller than the default keeps its Text Size.
+export const CHART_TEXT_BASE_SIDE = 240;
+export const CHART_TEXT_GROWTH = 0.6;
+export function chartTextScale(element: Pick<ShapeElement, 'width' | 'height'>): number {
   const short = Math.min(element.width, element.height);
+  return Math.max(1, (short / CHART_TEXT_BASE_SIDE) ** CHART_TEXT_GROWTH);
+}
+
+// The key's row size: its Text Size (legendFontPx), grown with the chart.
+export function chartLegendPx(element: Sized): number {
+  return Math.round(legendFontPx(element.textSize) * chartTextScale(element));
+}
+
+// A mark's number (Show Values): a step under the key, grown with the chart.
+export function chartValuePx(element: Sized): number {
+  return Math.round(chartValueFontPx(element.textSize) * chartTextScale(element));
+}
+
+// The axis and category labels: a fifth under the key, never under the 9px floor, grown with the chart.
+export function chartTickPx(element: Sized): number {
   return Math.max(
     AXIS_TICK_FONT_PX,
-    Math.min(chartValueFontPx(element.textSize), Math.round(short * TICK_SHARE)),
+    Math.round(legendFontPx(element.textSize) * 0.8 * chartTextScale(element)),
   );
 }
 
@@ -81,11 +102,13 @@ export function smoothPath(pts: readonly Pt[]): string {
 export type BarEnd = 'top' | 'bottom' | 'left' | 'right';
 
 // A bar's outline, its value end rounded and its baseline end square, so every bar reads as growing from the one
-// baseline. The radius is a share of its thickness, at most half its length, so a short bar is never a pill.
+// baseline. The radius is a share of its thickness (2px at least), so a wide slide bar is as round as a slim one, and
+// at most half its length, so a short bar is never a pill.
+const BAR_ROUNDING = 0.14;
 export function barPath(x: number, y: number, w: number, h: number, end: BarEnd): string {
   const thick = end === 'top' || end === 'bottom' ? w : h;
   const long = end === 'top' || end === 'bottom' ? h : w;
-  const r = Math.max(0, Math.min(Math.max(2, thick * 0.14), 8, thick / 2, long));
+  const r = Math.max(0, Math.min(Math.max(2, thick * BAR_ROUNDING), thick / 2, long));
   const x1 = x + w;
   const y1 = y + h;
   const arc = (tx: number, ty: number) => `A ${q(r)} ${q(r)} 0 0 1 ${q(tx)} ${q(ty)}`;

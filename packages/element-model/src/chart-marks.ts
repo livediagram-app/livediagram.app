@@ -132,7 +132,14 @@ export type BarMarks = {
   // Show Axis (pie-chart.md): each tick at its place along the value axis (a y on a column chart, an x on a bar
   // chart), its gridline running across the plot from `span` to its end. Empty without.
   axis: { ticks: { at: number; text: string }[]; span: [number, number] };
+  // The room each bar's category name has: a column's slot across, or the column left of a bar chart's plot.
+  nameRoom: number;
 };
+
+// The gap between a bar chart's names and its plot, and a column chart's names and its foot.
+const NAME_GAP = 6;
+// The share of a bar chart's width its names may take at most.
+const NAME_COLUMN_SHARE = 0.3;
 
 // Upright columns from a zero baseline, or (horizontal) bars to the right of one; a value below zero hangs below it
 // (runs left of it), as standard charts draw them (docs/specs/009-elements/pie-chart.md "Below zero on a column or
@@ -172,7 +179,10 @@ export function barMarks(
     // The bottom keeps a row for the tick labels.
     const padY = Math.min(20, area.h * 0.08);
     const tickRow = scale ? tickPx + AXIS_TICK_GAP : 0;
-    const leftX = ox + area.x + area.w * 0.06;
+    // The names sit left of the plot, in a column as wide as the widest needs (up to 30% of the chart).
+    const widest = Math.max(0, ...data.map((d) => glyphWidth(d.label, tickPx)));
+    const nameCol = Math.min(area.w * NAME_COLUMN_SHARE, widest + NAME_GAP + 4);
+    const leftX = ox + area.x + Math.max(area.w * 0.06, nameCol);
     const fullW = Math.max(1, ox + area.x + area.w * 0.94 - leftX);
     const xOf = (v: number) => leftX + at(v) * fullW;
     const zeroX = xOf(0);
@@ -199,6 +209,7 @@ export function barMarks(
       }),
       origin: { x: zeroX, y: y0 + innerH / 2 },
       floor: leftX,
+      nameRoom: Math.max(0, leftX - (ox + area.x) - NAME_GAP),
       axis: {
         ticks: scale?.ticks.map((t) => ({ at: xOf(t.value), text: t.text })) ?? [],
         span: [y0, y0 + innerH],
@@ -209,7 +220,9 @@ export function barMarks(
   // The left keeps a column for the tick labels.
   const tickCol = scale ? axisLabelRoom(scale, tickPx) : 0;
   const topPad = oy + area.y + area.h * 0.1;
-  const footY = oy + area.y + area.h * 0.88;
+  // The foot keeps a row under it for the columns' names, and a second for a hanging column's number.
+  const nameRows = NAME_GAP + tickPx + 4 + (lo < 0 ? NAME_GAP + tickPx * 1.2 : 0);
+  const footY = oy + area.y + area.h - Math.max(area.h * 0.12, nameRows);
   const innerW = Math.max(1, area.w - padX * 2 - tickCol);
   const slot = innerW / n;
   const thick = Math.min(slot * 0.66, maxThick);
@@ -236,6 +249,7 @@ export function barMarks(
     }),
     origin: { x: ox + area.x + area.w / 2, y: zeroY },
     floor: footY,
+    nameRoom: slot,
     axis: {
       ticks: scale?.ticks.map((t) => ({ at: yOf(t.value), text: t.text })) ?? [],
       span: [x0, x0 + innerW],
@@ -331,7 +345,8 @@ export function lineMarks(
   const padR = right?.scale
     ? axisLabelRoom(right.scale, tickPx)
     : Math.max(8, halfName(categories[n - 1]));
-  const padTop = 12;
+  // Room over the plot for the top point's number.
+  const padTop = Math.max(12, Math.round(tickPx * 1.4));
   const padBottom = Math.max(22, tickPx + 12);
   const plotX0 = ox + area.x + padL;
   const plotW = Math.max(1, area.w - padL - padR);
@@ -363,7 +378,7 @@ export function lineMarks(
       return { x: scale(v), text: tickText(v) };
     });
   } else {
-    labels = categories.map((c, i) => ({ x: evenX(i), text: chartAxisLabel(c, plotW, n) }));
+    labels = categories.map((c, i) => ({ x: evenX(i), text: chartAxisLabel(c, plotW, n, tickPx) }));
   }
 
   const points = series.map((s, si) =>

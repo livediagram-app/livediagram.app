@@ -14,15 +14,16 @@ import {
   AREA_FILL_TOP_OPACITY,
   areaFadeId,
   CHART_BASELINE_OPACITY,
+  chartLegendPx,
   chartTickPx,
+  chartValuePx,
 } from '@liveworkspace/element-model/chart-style';
 import { lineVariantOf } from '@liveworkspace/element-model/chart-types';
-import { chartValueFontPx, lineValueLabels } from '@liveworkspace/element-model/chart-values';
+import { lineValueLabels } from '@liveworkspace/element-model/chart-values';
 import {
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
 } from '@liveworkspace/element-model/data-shapes';
-import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import { useChartHover } from '../../../hooks/canvas/useChartHover';
 import { ChartReadout } from '../../primitives/ChartReadout';
 import { ChartSurface } from '../../primitives/ChartSurface';
@@ -82,7 +83,7 @@ export function LineChartView({
       legend={legend}
       textColor={textColor}
       fontFamily={fontFamily}
-      fontPx={legendFontPx(element.textSize)}
+      fontPx={chartLegendPx(element)}
       readout={
         hover ? (
           <ChartReadout
@@ -182,10 +183,10 @@ export function LineChartView({
       ))}
       {element.chartValues ? (
         <ChartValues
-          labels={lineValueLabels(m, series)}
+          labels={lineValueLabels(m, series, chartValuePx(element))}
           textColor={textColor}
           fillOf={() => textColor}
-          fontPx={chartValueFontPx(element.textSize)}
+          fontPx={chartValuePx(element)}
           fontFamily={fontFamily}
         />
       ) : null}

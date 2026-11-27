@@ -8,8 +8,8 @@
 import { chartFrame } from '@liveworkspace/element-model/chart-frame';
 import { pieMarks } from '@liveworkspace/element-model/chart-marks';
 import { chartTypeOf } from '@liveworkspace/element-model/chart-types';
-import { chartValueFontPx, pieValueLabels } from '@liveworkspace/element-model/chart-values';
-import { legendFontPx } from '@liveworkspace/model-core/label-font';
+import { chartLegendPx, chartValuePx } from '@liveworkspace/element-model/chart-style';
+import { pieValueLabels } from '@liveworkspace/element-model/chart-values';
 import { useChartHover } from '../../../hooks/canvas/useChartHover';
 import { ChartReadout } from '../../primitives/ChartReadout';
 import { ChartSurface } from '../../primitives/ChartSurface';
@@ -29,7 +29,7 @@ export function PieChartView({
   const doughnut = chartTypeOf(element) === 'doughnut';
   const pie = pieMarks(area, slices, doughnut);
   const { cx, cy, rad, wedges } = pie;
-  const valuePx = chartValueFontPx(element.textSize);
+  const valuePx = chartValuePx(element);
   const group = anim(`${cx}px ${cy}px`);
 
   return (
@@ -41,7 +41,7 @@ export function PieChartView({
       legend={legend}
       textColor={textColor}
       fontFamily={fontFamily}
-      fontPx={legendFontPx(element.textSize)}
+      fontPx={chartLegendPx(element)}
       readout={
         hover !== null && wedges[hover] ? (
           <ChartReadout

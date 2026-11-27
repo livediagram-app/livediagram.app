@@ -21,11 +21,13 @@ import {
   areaFadeId,
   CHART_BASELINE_OPACITY,
   CHART_GRID_OPACITY,
+  chartLegendPx,
   chartTickPx,
+  chartValuePx,
 } from './chart-style';
 import {
+  barCategoryLabels,
   barValueLabels,
-  chartValueFontPx,
   lineValueLabels,
   pieValueLabels,
   type ChartValueLabel,
@@ -34,7 +36,6 @@ import { labelOn } from './readable-colour';
 import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement } from './element';
-import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import { textAdvanceEm } from '@liveworkspace/model-core/text-advance';
 import {
   SHEET_PENDING_CHIP,
@@ -82,7 +83,7 @@ function svgChartLegend(
   const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   // Text Size (docs/specs/009-elements/pie-chart.md), on the canvas's scale; the swatch and row pitch keep
   // their proportion to it, as ChartLegend's do.
-  const fontPx = legendFontPx(el.textSize);
+  const fontPx = chartLegendPx(el);
   const swatch = Math.round(fontPx * 0.8);
   const rowH = Math.round(fontPx * 1.3);
   const parts: string[] = [];
@@ -212,7 +213,7 @@ export function svgPieChart(
       return `<path d="${wedge.d}"${doughnut ? ' fill-rule="evenodd"' : ''} fill="${fill}"/>`;
     })
     .join('');
-  const px = chartValueFontPx(el.textSize);
+  const px = chartValuePx(el);
   const values = el.chartValues
     ? svgValueLabels(
         pieValueLabels(pie, data, px),
@@ -264,7 +265,7 @@ export function svgBarChart(
   const rects = bars
     .map((bar, i) => `<path d="${bar.d}" fill="${xmlEscape(colorAt(i, data[i]!))}"/>`)
     .join('');
-  const px = chartValueFontPx(el.textSize);
+  const px = chartValuePx(el);
   const values = el.chartValues
     ? svgValueLabels(
         barValueLabels(barM, data, horizontal, px),
@@ -274,11 +275,20 @@ export function svgBarChart(
         fontFamily,
       )
     : '';
+  // Each bar named on its axis (a one-hue chart's key).
+  const names = svgValueLabels(
+    barCategoryLabels(barM, data, horizontal, tickPx),
+    textColor,
+    (i) => colorAt(i, data[i]!),
+    tickPx,
+    fontFamily,
+  );
   return asLinkedOrNot(
     el,
     axis +
       baseline +
       rects +
+      names +
       values +
       svgChartLegend(el, data, colorAt, legend, textColor, fontFamily),
     fontFamily,
@@ -374,9 +384,9 @@ export function svgLineChart(
     )
     .join('');
   const legendItems = series.map((s) => ({ label: s.name, value: 0, color: s.color }));
-  const px = chartValueFontPx(el.textSize);
+  const px = chartValuePx(el);
   const values = el.chartValues
-    ? svgValueLabels(lineValueLabels(m, series), textColor, () => textColor, px, fontFamily)
+    ? svgValueLabels(lineValueLabels(m, series, px), textColor, () => textColor, px, fontFamily)
     : '';
   return asLinkedOrNot(
     el,

@@ -16,7 +16,7 @@ import {
   withVariantColours,
 } from '@livedocuments/document';
 import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import { buildDrawnBoxed, presetTextAt, slideAt } from '@/lib/draw-commit';
+import { buildDrawnBoxed, chartDropOn, presetTextAt, slideAt } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
@@ -266,6 +266,8 @@ export function useElementCreation(opts: {
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
   // drop point. Shapes / devices use createShape; an icon carries `iconId`,
   // a sticker `stickerId` (docs/specs/010-palette/stickers.md).
+  const sizeOf = (r: { width: number; height: number } | null) =>
+    r ? { width: r.width, height: r.height } : {};
   const dropPaletteItem = (
     kind: ShapeKind | 'sticky',
     canvasX: number,
@@ -329,6 +331,8 @@ export function useElementCreation(opts: {
           : {
               // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
               ...applyShapeVariant(createShape(kind, x, y), art?.choice),
+              // A chart dropped on a slide or infographic page is sized for the page, centred on the drop.
+              ...sizeOf(chartDropOn(activeTab, kind, canvasX, canvasY)),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, charts, ...). A preset's own colour (the Warning badge's

@@ -1,14 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { areaFadeId, barPath, chartLineWidth, chartTickPx, smoothPath } from './chart-style';
+import {
+  areaFadeId,
+  barPath,
+  chartLegendPx,
+  chartLineWidth,
+  chartTextScale,
+  chartTickPx,
+  chartValuePx,
+  smoothPath,
+} from './chart-style';
 
 // How a chart is drawn (docs/specs/009-elements/pie-chart.md "How a chart is drawn").
 describe('chart style', () => {
-  it('grows axis text with the chart, from the 9px floor to the chart’s value size', () => {
-    expect(chartTickPx({ width: 120, height: 100 })).toBe(9);
+  it('grows all of a chart’s text with its short side, its Text Size the base and never the cap', () => {
+    // At or under the board default the chart keeps its Text Size: Medium's 14px key, 12px numbers, 11px axis.
+    expect(chartTextScale({ width: 120, height: 100 })).toBe(1);
+    expect(chartLegendPx({ width: 260, height: 220 })).toBe(14);
+    expect(chartValuePx({ width: 260, height: 220 })).toBe(12);
     expect(chartTickPx({ width: 260, height: 220 })).toBe(11);
-    // Capped at the value size: 12px at Medium, more at a larger Text Size.
-    expect(chartTickPx({ width: 900, height: 600 })).toBe(12);
-    expect(chartTickPx({ width: 900, height: 600, textSize: 'lg' })).toBe(15);
+    expect(chartTickPx({ width: 120, height: 100, textSize: 'sm' })).toBe(9);
+    // A slide's 1600 x 880 chart reads from across the room, every size together.
+    const slide = { width: 1600, height: 880 };
+    expect(chartTextScale(slide)).toBeCloseTo((880 / 240) ** 0.6);
+    expect(chartLegendPx(slide)).toBe(31);
+    expect(chartValuePx(slide)).toBe(26);
+    expect(chartTickPx(slide)).toBe(24);
+    expect(chartLegendPx({ ...slide, textSize: 'lg' })).toBeGreaterThan(chartLegendPx(slide));
   });
 
   it('weights a line from 2px on a small plot to 3.5px on a slide-sized one', () => {
@@ -62,9 +79,10 @@ describe('chart style', () => {
     expect(barPath(0, 0, 40, 100, 'bottom')).toMatch(/^M 40 0 V 94.4 A /);
     expect(barPath(0, 0, 100, 40, 'right')).toMatch(/^M 0 0 H 94.4 A /);
     expect(barPath(0, 0, 100, 40, 'left')).toMatch(/^M 100 40 H 5.6 A /);
-    // Never a pill on a short bar, never over 8px, and a bar of no length is a plain rectangle.
+    // Never a pill on a short bar, as round as its thickness on a wide one, and a bar of no length is a plain
+    // rectangle.
     expect(barPath(0, 0, 40, 1, 'top')).toContain('A 1 1');
-    expect(barPath(0, 0, 200, 100, 'top')).toContain('A 8 8');
+    expect(barPath(0, 0, 200, 100, 'top')).toContain('A 28 28');
     expect(barPath(0, 0, 40, 0, 'top')).toBe('M 0 0 H 40 V 0 H 0 Z');
   });
 

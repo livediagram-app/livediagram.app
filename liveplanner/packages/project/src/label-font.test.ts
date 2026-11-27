@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { chartLegendPx } from '@liveworkspace/element-model/chart-style';
 import {
   LABEL_FONT_PX,
   LEGEND_FONT_PX,
@@ -33,7 +34,8 @@ describe('legendFontPx (docs/specs/009-elements/pie-chart.md)', () => {
       height: 400,
       textSize: 'lg' as const,
     };
-    expect(svgPieChart(pie, '#000')).toContain(`font-size="${LEGEND_FONT_PX.lg}"`);
+    // The key grows with the chart (pie-chart.md "How a chart is drawn"), on the canvas and in the export alike.
+    expect(svgPieChart(pie, '#000')).toContain(`font-size="${chartLegendPx(pie)}"`);
     const legend = { ...createShape('legend', 0, 0), textSize: 'sm' as const };
     expect(svgLegendShape(legend, '#fff', '#000', '#000')).toContain(
       `font-size="${LEGEND_FONT_PX.sm}"`,
