@@ -235,7 +235,8 @@ export function SessionPage({
           }
         />
       ) : null}
-      {triage ? (
+      {/* The close tray asks only its reason: the strip steps aside while it is open. */}
+      {triage && !closing ? (
         <TriageStrip
           item={shown}
           type={typeIn(plan.types, shown.type)}

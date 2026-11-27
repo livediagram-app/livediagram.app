@@ -26,6 +26,10 @@ const UndoIcon = lucideGlyph(lucideUndo2, 14);
 // Undo Last's chip: the latest decision named ("Closed BUG-33"), and what pressing it does.
 export type SessionUndoLast = { label: string; onUndo: () => void };
 
+// Close: the secondary button's shape in rose, apart from Skip and Flag so a closing decision reads as one.
+const closeButton =
+  'inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 text-[13px] font-medium text-rose-700 transition-colors hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:border-rose-900/70 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/40';
+
 const secondary =
   'inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
 
@@ -182,7 +186,7 @@ export function SessionActionBar({
       {closes ? (
         <button
           type="button"
-          className={`${secondary} text-rose-700 hover:bg-rose-50 hover:text-rose-800 dark:text-rose-300 dark:hover:bg-rose-950/40`}
+          className={closeButton}
           onClick={onCloseOpen}
           aria-keyshortcuts={closes.key.toUpperCase()}
           aria-haspopup="true"

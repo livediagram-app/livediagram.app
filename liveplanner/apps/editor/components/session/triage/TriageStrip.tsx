@@ -77,7 +77,7 @@ export function TriageStrip({
   if (!rows.length) return null;
   return (
     <div
-      className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-slate-200 bg-slate-50/70 px-4 py-2.5 sm:px-6 xl:pr-[20rem] dark:border-slate-800 dark:bg-slate-900/60"
+      className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t max-sm:flex-col max-sm:items-stretch max-sm:gap-y-1.5 border-slate-200 bg-slate-50/70 px-4 py-2.5 sm:px-6 xl:pr-[20rem] dark:border-slate-800 dark:bg-slate-900/60"
       data-triage-strip=""
     >
       {rows.map((row) =>
@@ -86,16 +86,17 @@ export function TriageStrip({
             key={row.field}
             role="group"
             aria-label={row.label}
-            className="flex flex-wrap items-center gap-1.5"
+            // A phone keeps each row on one line, scrolled sideways, so the strip never crowds out the card.
+            className="scrollbar-slim flex flex-wrap items-center gap-1.5 max-sm:flex-nowrap max-sm:overflow-x-auto"
           >
-            <span className={`${HEADING} mr-1`}>{row.label}</span>
+            <span className={`${HEADING} mr-1 shrink-0`}>{row.label}</span>
             {row.options.map((o) => (
               <button
                 key={o.value}
                 type="button"
                 aria-pressed={row.current === o.value}
                 onClick={() => onSet(row.field, o.value)}
-                className={`${chip} ${row.current === o.value ? on : off}`}
+                className={`${chip} shrink-0 ${row.current === o.value ? on : off}`}
               >
                 {o.colour ? (
                   <span
@@ -111,7 +112,7 @@ export function TriageStrip({
               type="button"
               aria-pressed={row.current === null}
               onClick={() => onSet(row.field, null)}
-              className={`${chip} ${row.current === null ? on : off}`}
+              className={`${chip} shrink-0 ${row.current === null ? on : off}`}
             >
               None
             </button>
