@@ -413,6 +413,34 @@ and someone might delete it thinking so. It never does:
 Deleting a folder never deletes what is in it (its folders and items move up a level), so this is about not
 misleading, not about loss.
 
+#### What a folder holds, at a glance
+
+A folder's tile says what is inside without opening it (Work Tracker 1517), the same in every app's Explorer pages
+and in the editors' Explorer panel, all drawn by one shared part (`explorer/FolderInside.tsx`):
+
+- **App badges.** At the bottom right of a folder card's picture, a small row of overlapping round app logos, like an
+  avatar stack: one for every app with at least one item anywhere inside the folder, its subfolders included, and
+  whatever app the Explorer is filtered to. The host app's logo comes first, then the others by how many items they
+  have. Up to three logos, then a "+N" chip. Each logo is the app's prism in its accent on a white (dark: slate)
+  disc with a thin ring the colour of the card behind it, 20 px on a card, 16 px on the panel's cards, and 16 px
+  at the right end of a list or Details row, before its menu.
+- **Subfolders change the icon.** A folder holding other folders wears a stacked folder glyph (two sheets, one behind
+  the other) wherever its folder glyph shows: the list and Details rows, the card's name line, the panel's card
+  and a subfolder's tile in a parent's mosaic.
+- **Empty means empty.** A folder with nothing in it at all (no item of any app, no subfolder) shows a muted,
+  outlined folder and a quiet "Empty" in place of its mosaic (the panel's card: the same, its count reading
+  "Empty"). A folder holding only other apps' items is never shown as empty (above).
+- **Detail on demand.** Hovering the badges (a hover card, as every hint), focusing them or a long press on a touch
+  screen names what is inside: "3 diagrams, 1 document and 2 folders" (each app's own kind; "at least" once the
+  count reaches the cap). The badges carry the same words as their accessible name, so a screen reader hears them.
+- **Access.** The counts come from the index for folders the person can reach (their own and their teams'), and only
+  the items in those folders' scope count, so nothing hints at what the viewer cannot open. An app acting for a
+  person (a token) sees its own app's count only.
+
+The counts ride on the previews the cards already ask for (`GET /folders/previews`, one request per 60 cards, never
+one per folder), as `apps`: each app's live items in the folder and every folder under it, the walk stopping at
+1000 items per folder so a deep tree costs what one of a thousand does.
+
 #### The sidebar
 
 Three groups, the same in every app's Explorer and on liveworkspace.app (`explorer/Sidebar.tsx`). A row with a tone wears its glyph at 16 px in its 24 px tile, so the glyph fills it (owner, 2026-11-24):
