@@ -63,7 +63,7 @@ export function ChartLegend({
         // widening its row past the chart, where the strip's overflow would clip its swatch and both ends.
         <div key={i} className="flex max-w-full items-center gap-1 leading-tight">
           <span
-            className="inline-block shrink-0 rounded-[2px]"
+            className="inline-block shrink-0 rounded-full"
             style={{ width: swatch, height: swatch, backgroundColor: colorAt(i, item) }}
           />
           <span className="truncate" style={{ fontSize: fontPx }}>

@@ -70,7 +70,8 @@ describe('renderElementsToSvg under Sketch', () => {
     const svg = renderElementsToSvg(tabOf([chart], 'sketch'));
     expect(svg).toContain(`<filter id="${SKETCH_FACE_FILTER.id}"`);
     const ink = inkLayer(svg);
-    expect(ink).toContain('<rect');
+    // Its bars, rounded at the value end (chart-style.ts barPath).
+    expect(ink).toMatch(/<path d="M [^"]* A [^"]*" fill=/);
     expect(ink).not.toContain('<text');
     expect(svg.slice(svg.indexOf(ink) + ink.length)).toContain('<text');
   });

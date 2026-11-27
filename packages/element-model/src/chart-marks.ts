@@ -12,6 +12,8 @@ import {
 } from './chart-axis';
 import type { ChartRect } from './chart-frame';
 import { chartAxisLabel } from './chart-frame';
+import { barPath, chartLineWidth, smoothPath } from './chart-style';
+import { glyphWidth } from './glyph-width';
 import type { LineSeries, PieSlice } from './data-shapes';
 
 export type ChartPoint = { x: number; y: number };
@@ -19,8 +21,8 @@ export type ChartPoint = { x: number; y: number };
 // Path text carries two decimals, as every exported coordinate does (svg-render-primitives `r2`).
 const q = (n: number) => Math.round(n * 100) / 100;
 
-// A doughnut's hole, as a share of its radius.
-export const DOUGHNUT_HOLE = 0.55;
+// A doughnut's hole, as a share of its radius: a ring slim enough to read as a ring, wide enough to hold its numbers.
+export const DOUGHNUT_HOLE = 0.6;
 
 export type PieWedge = {
   // The wedge's outline; for a whole-circle datum of a plain pie, empty (draw a circle of `rad`).
@@ -45,9 +47,11 @@ export function pieMarks(
   const hole = doughnut ? rad * DOUGHNUT_HOLE : 0;
   const cx = ox + area.x + area.w / 2;
   const cy = oy + area.y + area.h / 2;
-  const at = (r: number, a: number) => `${q(cx + r * Math.cos(a))} ${q(cy + r * Math.sin(a))}`;
   // The readout's radius: half way into the slice, or into the ring.
   const tipR = doughnut ? (rad + hole) / 2 : rad * 0.55;
+  // The clear gap between two wedges, a share of the radius (1 to 3.5px): the ground shows through it, light or
+  // dark, where a white outline glared on a dark page.
+  const gap = Math.max(1, Math.min(3.5, rad * 0.022));
   let angle = -Math.PI / 2;
   const wedges = data.map((s): PieWedge => {
     const frac = Math.max(0, s.value) / total;
@@ -66,16 +70,55 @@ export function pieMarks(
       return { d: `${ring(rad)} ${ring(hole)}`, full, tip };
     }
     if (frac <= 0) return { d: '', full: false, tip };
-    const large = frac > 0.5 ? 1 : 0;
-    const d = doughnut
-      ? `M ${at(rad, a0)} A ${q(rad)} ${q(rad)} 0 ${large} 1 ${at(rad, a1)} L ${at(hole, a1)} A ${q(hole)} ${q(hole)} 0 ${large} 0 ${at(hole, a0)} Z`
-      : `M ${q(cx)} ${q(cy)} L ${at(rad, a0)} A ${q(rad)} ${q(rad)} 0 ${large} 1 ${at(rad, a1)} Z`;
-    return { d, full: false, tip };
+    return { d: wedgePath(cx, cy, rad, hole, a0, a1, gap), full: false, tip };
   });
   return { cx, cy, rad, hole, wedges };
 }
 
-export type BarRect = { x: number; y: number; w: number; h: number; rx: number; tip: ChartPoint };
+// One wedge from angle `a0` to `a1`, each straight edge set in by half the gap so neighbours stand `gap` apart. A wedge
+// too thin to give up the gap keeps its full width (a sliver would vanish); a doughnut's inner edge too short for it
+// closes to a point.
+function wedgePath(
+  cx: number,
+  cy: number,
+  rad: number,
+  hole: number,
+  a0: number,
+  a1: number,
+  gap: number,
+): string {
+  const at = (r: number, a: number) => `${q(cx + r * Math.cos(a))} ${q(cy + r * Math.sin(a))}`;
+  const half = (a1 - a0) / 2;
+  const mid = a0 + half;
+  const padOut = gap / 2 / rad;
+  const pad = half > padOut * 1.5;
+  const o0 = pad ? a0 + padOut : a0;
+  const o1 = pad ? a1 - padOut : a1;
+  const large = o1 - o0 > Math.PI ? 1 : 0;
+  const outer = `A ${q(rad)} ${q(rad)} 0 ${large} 1 ${at(rad, o1)}`;
+  if (hole > 0) {
+    const padIn = gap / 2 / hole;
+    if (pad && half <= padIn * 1.2) return `M ${at(rad, o0)} ${outer} L ${at(hole, mid)} Z`;
+    const i0 = pad ? a0 + padIn : a0;
+    const i1 = pad ? a1 - padIn : a1;
+    const largeIn = i1 - i0 > Math.PI ? 1 : 0;
+    return `M ${at(rad, o0)} ${outer} L ${at(hole, i1)} A ${q(hole)} ${q(hole)} 0 ${largeIn} 0 ${at(hole, i0)} Z`;
+  }
+  // A pie's point: where its two set-in edges meet, along its middle; a wedge of half the pie or more keeps the centre.
+  const apex = pad && half < Math.PI / 2 ? Math.min(gap / 2 / Math.sin(half), rad * 0.3) : 0;
+  return `M ${at(apex, mid)} L ${at(rad, o0)} ${outer} Z`;
+}
+
+export type BarRect = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  rx: number;
+  tip: ChartPoint;
+  // Its outline: the value end rounded, the baseline end square (chart-style.ts barPath).
+  d: string;
+};
 
 export type BarMarks = {
   // The zero line the bars grow from: up the plot when a value is below zero, else at its foot (or left edge).
@@ -93,7 +136,8 @@ export type BarMarks = {
 
 // Upright columns from a zero baseline, or (horizontal) bars to the right of one; a value below zero hangs below it
 // (runs left of it), as standard charts draw them (docs/specs/009-elements/pie-chart.md "Below zero on a column or
-// bar chart"). Evenly spaced with a gap, each at most 48 px thick so a two-bar chart is not two slabs.
+// bar chart"). Evenly spaced with a gap, each at most 48 px thick (a sixth of a slide-sized chart's short side) so a
+// two-bar chart is not two slabs; each one's value end rounded, its baseline end square.
 export function barMarks(
   area: ChartRect,
   data: readonly PieSlice[],
@@ -102,6 +146,8 @@ export function barMarks(
   oy = 0,
   // Show Axis: tick labels and gridlines, the plot drawn in from the side they take.
   showAxis = false,
+  // The tick labels' size (chart-style.ts chartTickPx).
+  tickPx = AXIS_TICK_FONT_PX,
 ): BarMarks {
   // The range always holds zero; one pass, as a chart may hold many data. A value that is not a number draws as
   // zero.
@@ -121,30 +167,34 @@ export function barMarks(
   // A value's place along the value axis, as a share of the plot from its low end.
   const at = (v: number) => (v - minVal) / span;
   const n = Math.max(1, data.length);
+  const maxThick = Math.max(48, Math.min(area.w, area.h) / 6);
   if (horizontal) {
     // The bottom keeps a row for the tick labels.
     const padY = Math.min(20, area.h * 0.08);
-    const tickRow = scale ? AXIS_TICK_FONT_PX + AXIS_TICK_GAP : 0;
+    const tickRow = scale ? tickPx + AXIS_TICK_GAP : 0;
     const leftX = ox + area.x + area.w * 0.06;
     const fullW = Math.max(1, ox + area.x + area.w * 0.94 - leftX);
     const xOf = (v: number) => leftX + at(v) * fullW;
     const zeroX = xOf(0);
     const innerH = Math.max(1, area.h - padY * 2 - tickRow);
     const slot = innerH / n;
-    const thick = Math.min(slot * 0.7, 48);
+    const thick = Math.min(slot * 0.66, maxThick);
     const y0 = oy + area.y + padY;
     return {
       baseline: { x1: zeroX, y1: y0, x2: zeroX, y2: y0 + innerH },
       bars: data.map((d, i) => {
         const end = xOf(value(d));
         const cy = y0 + slot * (i + 0.5);
+        const x = Math.min(zeroX, end);
+        const w = Math.abs(end - zeroX);
         return {
-          x: Math.min(zeroX, end),
+          x,
           y: cy - thick / 2,
-          w: Math.abs(end - zeroX),
+          w,
           h: thick,
           rx: Math.min(3, thick / 4),
           tip: { x: end, y: cy },
+          d: barPath(x, cy - thick / 2, w, thick, end < zeroX ? 'left' : 'right'),
         };
       }),
       origin: { x: zeroX, y: y0 + innerH / 2 },
@@ -157,12 +207,12 @@ export function barMarks(
   }
   const padX = Math.min(20, area.w * 0.08);
   // The left keeps a column for the tick labels.
-  const tickCol = scale ? axisLabelRoom(scale) : 0;
+  const tickCol = scale ? axisLabelRoom(scale, tickPx) : 0;
   const topPad = oy + area.y + area.h * 0.1;
   const footY = oy + area.y + area.h * 0.88;
   const innerW = Math.max(1, area.w - padX * 2 - tickCol);
   const slot = innerW / n;
-  const thick = Math.min(slot * 0.7, 48);
+  const thick = Math.min(slot * 0.66, maxThick);
   const fullH = Math.max(1, footY - topPad);
   const yOf = (v: number) => footY - at(v) * fullH;
   const zeroY = yOf(0);
@@ -172,13 +222,16 @@ export function barMarks(
     bars: data.map((d, i) => {
       const end = yOf(value(d));
       const cx = x0 + slot * (i + 0.5);
+      const y = Math.min(zeroY, end);
+      const h = Math.abs(zeroY - end);
       return {
         x: cx - thick / 2,
-        y: Math.min(zeroY, end),
+        y,
         w: thick,
-        h: Math.abs(zeroY - end),
+        h,
         rx: Math.min(3, thick / 4),
         tip: { x: cx, y: end },
+        d: barPath(cx - thick / 2, y, thick, h, end > zeroY ? 'bottom' : 'top'),
       };
     }),
     origin: { x: ox + area.x + area.w / 2, y: zeroY },
@@ -196,13 +249,17 @@ export type LineMarks = {
   plot: { x: number; y: number; w: number; h: number };
   // Per series, a point per category.
   points: ChartPoint[][];
-  // Per series, its line as an SVG `points` list (empty for scatter), and its filled area's outline (area only).
+  // Per series, its line as a smooth SVG path (chart-style.ts smoothPath; empty for scatter), and its filled area's
+  // outline under that line (area only).
   lines: string[];
   areas: string[];
-  // The x-axis labels.
+  // The x-axis labels, and the baseline of their row under the plot.
   labels: { x: number; text: string }[];
-  // The point marker's radius.
+  labelY: number;
+  // The line's weight, a point marker's radius, and the last point's (the line's end, where its latest value is).
+  width: number;
   dot: number;
+  endDot: number;
   // The value axes with Show Axis (pie-chart.md): the left one's ticks at their y (its gridlines too), and the right
   // one's when a series is on it. Empty without.
   axis: { left: AxisTick[]; right: AxisTick[] };
@@ -239,6 +296,8 @@ export function lineMarks(
   oy = 0,
   // Show Axis: tick labels and gridlines, the plot drawn in from the sides they take.
   showAxis = false,
+  // The axis and category labels' size (chart-style.ts chartTickPx).
+  tickPx = AXIS_TICK_FONT_PX,
 ): LineMarks {
   const n = categories.length;
   // A series on the second axis, when another is on the first (chart-axis.ts).
@@ -262,10 +321,18 @@ export function lineMarks(
   };
   const left = range(false);
   const right = onRight.some(Boolean) ? range(true) : null;
-  const padL = left.scale ? axisLabelRoom(left.scale) : 10;
-  const padR = right?.scale ? axisLabelRoom(right.scale) : 8;
+  // With no axis beside it, a side keeps room for half its end category's name, which centres on the plot's edge, so
+  // "Jan" is never cut by the chart's own edge (at most an eighth of the chart).
+  const halfName = (c: string | undefined) =>
+    Math.min(area.w / 8, glyphWidth(c ?? '', tickPx) / 2 + 2);
+  const padL = left.scale
+    ? axisLabelRoom(left.scale, tickPx)
+    : Math.max(10, halfName(categories[0]));
+  const padR = right?.scale
+    ? axisLabelRoom(right.scale, tickPx)
+    : Math.max(8, halfName(categories[n - 1]));
   const padTop = 12;
-  const padBottom = 22;
+  const padBottom = Math.max(22, tickPx + 12);
   const plotX0 = ox + area.x + padL;
   const plotW = Math.max(1, area.w - padL - padR);
   const plotY0 = oy + area.y + padTop;
@@ -302,32 +369,32 @@ export function lineMarks(
   const points = series.map((s, si) =>
     categories.map((_, i) => ({ x: xAt(i), y: (onRight[si] ? yRight : yAt)(s.values[i] ?? 0) })),
   );
-  const lines = points.map((pts) =>
-    variant === 'scatter' ? '' : pts.map((p) => `${q(p.x)},${q(p.y)}`).join(' '),
-  );
+  const lines = points.map((pts) => (variant === 'scatter' ? '' : smoothPath(pts)));
   const areas =
     variant === 'area'
       ? points.map((pts, si) => {
-          // Down to its own axis's zero.
+          // Down to its own axis's zero, under the same smooth line.
           const zeroY = (onRight[si] ? yRight : yAt)(0);
           return pts.length === 0
             ? ''
-            : `M ${q(pts[0]!.x)} ${q(zeroY)} ${pts.map((p) => `L ${q(p.x)} ${q(p.y)}`).join(' ')} L ${q(pts[pts.length - 1]!.x)} ${q(zeroY)} Z`;
+            : `M ${q(pts[0]!.x)} ${q(zeroY)} L${lines[si]!.slice(1)} L ${q(pts[pts.length - 1]!.x)} ${q(zeroY)} Z`;
         })
       : [];
+  const width = chartLineWidth(plotW, plotH);
   return {
     plot: { x: plotX0, y: plotY0, w: plotW, h: plotH },
     points,
     lines,
     areas,
     labels,
-    dot: variant === 'scatter' ? 4 : 3,
+    labelY: plotY0 + plotH + tickPx + 4,
+    width,
+    // A scatter's points are the marks, at least 8px across; a line's are small beads on it, its end a full dot.
+    dot: variant === 'scatter' ? Math.max(4, width * 1.6) : Math.max(2.5, width * 1.15),
+    endDot: variant === 'scatter' ? Math.max(4, width * 1.6) : Math.max(4, width * 1.9),
     axis: {
       left: left.scale?.ticks.map((t) => ({ y: yAt(t.value), text: t.text })) ?? [],
       right: right?.scale?.ticks.map((t) => ({ y: yRight(t.value), text: t.text })) ?? [],
     },
   };
 }
-
-// The fill opacity of an area chart's areas: overlapping, so each series stays readable through the others.
-export const AREA_FILL_OPACITY = 0.25;

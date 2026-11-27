@@ -12,13 +12,15 @@ const slices = [
 ];
 
 describe('chart marks (docs/specs/009-elements/pie-chart.md "Chart types")', () => {
-  it('cuts a doughnut’s hole out of each wedge, at 55% of its radius', () => {
+  it('cuts a doughnut’s hole out of each wedge, at 60% of its radius', () => {
     const pie = pieMarks(area, slices, false);
     const ring = pieMarks(area, slices, true);
     expect(pie.hole).toBe(0);
     expect(ring.hole).toBeCloseTo(ring.rad * DOUGHNUT_HOLE);
-    // A pie wedge starts at the centre; a ring segment does not.
+    // A pie wedge of half the pie or more starts at the centre; a ring segment does not.
     expect(pie.wedges[0]!.d.startsWith(`M ${pie.cx} ${pie.cy}`)).toBe(true);
+    // A smaller wedge's point stands off the centre along its middle, so the gap runs right in.
+    expect(pie.wedges[1]!.d.startsWith(`M ${pie.cx} ${pie.cy}`)).toBe(false);
     expect(ring.wedges[0]!.d.startsWith(`M ${ring.cx} ${ring.cy}`)).toBe(false);
     // Readouts sit in the ring, not at the hole.
     const tip = ring.wedges[0]!.tip;
@@ -33,6 +35,38 @@ describe('chart marks (docs/specs/009-elements/pie-chart.md "Chart types")', () 
     const ring = pieMarks(area, one, true).wedges[0]!;
     expect(ring.full).toBe(true);
     expect(ring.d.match(/M /g)).toHaveLength(2);
+  });
+
+  it('sets neighbouring wedges a clear gap apart, and keeps a sliver whole', () => {
+    // Two quarters meeting at three o'clock: the first's outer edge ends above the centre's level.
+    const quarters = [
+      { label: 'A', value: 1 },
+      { label: 'B', value: 1 },
+      { label: 'C', value: 2 },
+    ];
+    const m = pieMarks({ x: 0, y: 0, w: 200, h: 200 }, quarters, false);
+    const arcEnd = m.wedges[0]!.d.split(' A ')[1]!.split(' ');
+    expect(Number(arcEnd[6])).toBeLessThan(m.cy);
+    // A sliver too thin to give up the gap keeps its width.
+    const sliver = pieMarks(
+      area,
+      [
+        { label: 'big', value: 10000 },
+        { label: 's', value: 1 },
+      ],
+      true,
+    );
+    expect(sliver.wedges[1]!.d).not.toBe('');
+    // A doughnut wedge whose inner edge is too short for the gap closes to a point.
+    const thin = pieMarks(
+      { x: 0, y: 0, w: 200, h: 200 },
+      [
+        { label: 'big', value: 200 },
+        { label: 't', value: 1.2 },
+      ],
+      true,
+    );
+    expect(thin.wedges[1]!.d.match(/ A /g)).toHaveLength(1);
   });
 
   it('skips an empty slice', () => {
@@ -215,10 +249,12 @@ describe('chart types in the export', () => {
 
   it('fills an area chart and draws a scatter without lines', () => {
     const area = svgLineChart(shape('line-chart', { chartVariant: 'area' }), '#000');
-    expect(area).toContain('fill-opacity="0.25"');
-    expect(area).toContain('<polyline');
+    // Each area fades from its line to the baseline, under a smooth line.
+    expect(area.match(/<linearGradient /g)).toHaveLength(2);
+    expect(area).toContain('fill="url(#chart-fade-');
+    expect(area).toMatch(/<path d="M [^"]* C [^"]*" fill="none"/);
     const scatter = svgLineChart(shape('line-chart', { chartVariant: 'scatter' }), '#000');
-    expect(scatter).not.toContain('<polyline');
+    expect(scatter).not.toContain('fill="none"');
     expect(scatter).toContain('r="4"');
   });
 });

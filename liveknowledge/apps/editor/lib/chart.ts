@@ -32,3 +32,11 @@ export function chartAnim(
       : undefined,
   };
 }
+
+// chartAnim bound to a chart, for the shared views (@liveworkspace/workbench/components/canvas/charts): each view
+// passes the transform origin only it knows.
+export function chartAnimOf(
+  element: ShapeElement,
+): (transformOrigin: string) => ReturnType<typeof chartAnim> {
+  return (transformOrigin) => chartAnim(element, transformOrigin);
+}
