@@ -727,7 +727,8 @@ In Plan mode:
         a light haptic tick where the device has one, and the sheet slides away. The pill eases to the new colour
         and name (at once with reduced motion), and a toast says "Moved to In Progress" with **Undo** for its few
         seconds, putting the card back in the column it left. Picking the current column only closes the sheet. A
-        swipe down, a press outside it or Escape closes it without a change; Escape never closes the card.
+        swipe down, a press outside it or Escape closes it without a change; neither the press nor Escape closes the
+        card (a clear scrim over the screen takes the press, so the panel's backdrop never sees it).
       - **Share roles**: an Editor and a Participant (who edit cards) move a card from it; a Viewer sees the pill
         without the chevron, and it does not open.
       - A desktop keeps its header as it is: the status is the first row of Details beside the main column.
@@ -757,7 +758,9 @@ In Plan mode:
     apart than their lines; a long URL or word breaks rather than running past the row. The box and the × sit
     centred against the whole step however many lines it takes, and the × keeps its narrow column on a phone (always
     shown there, as there is no hover). Editing a step is the same wrapped text, growing as it is typed into; Enter
-    saves it, and a line break pasted in becomes a space.
+    saves it, and a line break pasted in becomes a space. **Escape** while editing a step cancels that edit (the step
+    as it was saved) and leaves the field; in Add a step it leaves the field, the text kept. Either way Escape goes no
+    further: the card stays open, and a second Escape closes it.
   - **Main column**: the title, large, then the type's tabs (see [Item types](item-types.md)) and the fields
     of the chosen tab. The **Description** is rich text: bold, italic, underline, strikethrough, size, colour,
     headings and links, and **bullet** and **numbered lists** from their own toolbar buttons, from a toolbar over

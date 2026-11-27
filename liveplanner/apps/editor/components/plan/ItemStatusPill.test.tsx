@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item, type ItemTypeDef, type StatusPhase } from '@liveplanner/items';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { ItemStatusPill } from './ItemStatusPill';
 
 // docs/specs/026-plan/plan-board.md "status pill": on a phone the card panel's header shows the card's column as a
@@ -165,7 +166,7 @@ describe('the status pill', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     fireEvent.click(button);
     await screen.findByRole('dialog');
-    fireEvent.pointerDown(document.body);
+    fireEvent.pointerDown(document.querySelector('[data-status-sheet-scrim]')!);
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(onSave).not.toHaveBeenCalled();
     expect(toast.action).not.toHaveBeenCalled();
@@ -205,6 +206,31 @@ describe('the status pill', () => {
     await screen.findByRole('dialog');
     expect(screen.queryByRole('radiogroup', { name: 'Done Columns' })).toBeNull();
     expect(screen.getAllByRole('radio')).toHaveLength(4);
+  });
+});
+
+describe('the status sheet over the card panel', () => {
+  it('closes on a press outside it, leaving the card panel open', async () => {
+    const onClose = vi.fn();
+    render(
+      <Dialog open onClose={onClose} ariaLabel="Card" phoneSheet>
+        <ItemStatusPill
+          item={card('doing')}
+          type={TASK}
+          statuses={STATUSES}
+          canEdit
+          onSave={vi.fn()}
+        />
+      </Dialog>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Status: In Progress' }));
+    await screen.findByRole('dialog', { name: 'Move Card' });
+    const scrim = document.querySelector('[data-status-sheet-scrim]')!;
+    fireEvent.pointerDown(scrim);
+    fireEvent.click(scrim);
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Move Card' })).toBeNull());
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Card' })).toBeTruthy();
   });
 });
 

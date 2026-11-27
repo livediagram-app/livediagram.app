@@ -396,8 +396,10 @@ ItemStatusPill.tsx       the phone header's status pill (plan-board.md "status p
                          StatusFromHeader
 ItemStatusSheet.tsx      the workbench BottomSheet (z-[var(--z-popover)], over the panel's z-modal): the title (12px
                          slate-500 truncate), a role="radiogroup" of open rows, an hr, the done rows; each row
-                         role="radio" min-h-12, dot, name, CheckIcon when current; useClickOutside + useEscape
-                         (capture, stopPropagation) close it; focus lands on the current row
+                         role="radio" min-h-12, dot, name, CheckIcon when current; a clear Portal scrim (fixed
+                         inset-0, same layer, before the sheet) takes an outside press (stopPropagation, so the
+                         panel backdrop never closes the card) and closes it, as useEscape (capture,
+                         stopPropagation) does; focus lands on the current row
 field-heading-slot.tsx   FieldHeadingSlot context: { el, mode } a heading line's end, 'touch' (ItemPanelSection:
                          shown max-sm and hover:none) or 'phone' (ItemDetailsRow: max-sm only, beside its label);
                          useFieldHeadingSlot() for a field to portal its heading action into
@@ -443,7 +445,8 @@ OptionChip.tsx           an option's chip: TINT_CHIP (label-colour.ts) on --chip
 item-field-editors.tsx   editors for text (debounced), priority, number, date; re-exports ChecklistEditor
 ChecklistEditor.tsx      the checklist: progress bar, rows (items-center, gap-y between rows > leading), each step's
                          text a ChecklistStepText textarea (rows 1, useAutoHeight lines CHECKLIST_STEP_LINES,
-                         leading-snug, [overflow-wrap:anywhere], Enter blurs, pasted line breaks become spaces), a
+                         leading-[1.45], [overflow-wrap:anywhere], Enter blurs, Escape cancels and stops propagation,
+                         pasted line breaks become spaces; Add a step: Escape blurs, stops propagation), a
                          read-only step a span with the same wrapping; the × h-6 w-6 shrink-0, centred
 PersonPicker.tsx         the Assignee picker: No one, the plan's people, then + Custom Assignee (editable only), whose
                          CustomAssigneePopover (AnchoredPopover, a Name TextInput of CUSTOM_ASSIGNEE_NAME_MAX, Cancel,

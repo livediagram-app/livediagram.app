@@ -126,6 +126,13 @@ export function ChecklistEditor({
             className="min-w-0 flex-1 bg-transparent px-1 py-0.5 text-[13px] text-slate-800 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400"
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
+              // Escape leaves the new step's field, its text kept, and goes no further (never closing the card).
+              if (e.key === 'Escape' && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.blur();
+                return;
+              }
               if (e.key === 'Enter' && draft.trim()) {
                 e.preventDefault();
                 void save([...rows, { text: draft.trim().slice(0, STEP_MAX), done: false }]);
@@ -141,7 +148,8 @@ export function ChecklistEditor({
 
 // One step's text, edited in place: a textarea of one line that grows as the text wraps (never a row that scrolls
 // sideways). Enter saves it, as leaving it does; a line break pasted in becomes a space, so a step stays one line of
-// text. Keyed by the saved text, so a change from elsewhere starts it afresh.
+// text. Escape cancels the edit (the step back as saved) and goes no further, so it never closes the card; a second
+// Escape, focus now on the panel, does. Keyed by the saved text, so a change from elsewhere starts it afresh.
 function ChecklistStepText({
   index,
   text,
@@ -155,6 +163,8 @@ function ChecklistStepText({
 }) {
   const [draft, setDraft] = useState(text);
   const ref = useRef<HTMLTextAreaElement>(null);
+  // Set by Escape: the blur it causes saves nothing.
+  const cancelled = useRef(false);
   useAutoHeight(ref, draft, { lines: CHECKLIST_STEP_LINES });
   return (
     <textarea
@@ -168,12 +178,25 @@ function ChecklistStepText({
       }`}
       onChange={(e) => setDraft(e.target.value.replace(/\r?\n/g, ' '))}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+        if (e.nativeEvent.isComposing) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          cancelled.current = true;
+          setDraft(text);
+          e.currentTarget.blur();
+        } else if (e.key === 'Enter') {
           e.preventDefault();
           e.currentTarget.blur();
         }
       }}
-      onBlur={() => onCommit(draft.trim())}
+      onBlur={() => {
+        if (cancelled.current) {
+          cancelled.current = false;
+          return;
+        }
+        onCommit(draft.trim());
+      }}
     />
   );
 }

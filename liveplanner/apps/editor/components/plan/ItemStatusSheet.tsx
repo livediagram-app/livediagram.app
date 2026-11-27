@@ -3,13 +3,15 @@
 // The status pill's sheet (docs/specs/026-plan/plan-board.md "status pill"): over the card panel on a phone, the
 // grab handle, the card's title small and muted, then its columns as large rows in board order, the current one
 // ticked, and the done columns in a group of their own below a hairline. A pick, a swipe down, a press outside or
-// Escape slides it away; Escape never reaches the card panel.
+// Escape slides it away; neither the press nor Escape reaches the card panel. A press outside lands on a clear scrim
+// over the whole screen, so the panel's backdrop under it never sees it and the card stays open.
 import { useEffect, useRef, useState } from 'react';
-import { CheckIcon, useClickOutside, useEscape } from '@liveplanner/ui';
+import { CheckIcon, useEscape } from '@liveplanner/ui';
+import { Portal } from '@liveworkspace/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import type { StatusOption } from './status-options';
 
-// Marks the pill, so a press on it is not an outside one (it toggles the sheet itself).
+// Marks the pill that opens the sheet.
 export const STATUS_PILL_ATTR = 'data-status-pill';
 
 export function ItemStatusSheet({
@@ -33,7 +35,6 @@ export function ItemStatusSheet({
   const sheet = useRef<HTMLDivElement>(null);
   const [closing, setClosing] = useState(false);
   const leave = () => setClosing(true);
-  useClickOutside(sheet, leave, !closing, `[${STATUS_PILL_ATTR}]`);
   useEscape(leave, { capture: true, stopPropagation: true });
   // Focus lands on the current column (else the first), so a keyboard or a screen reader starts where the card is.
   useEffect(() => {
@@ -77,29 +78,44 @@ export function ItemStatusSheet({
     );
   };
   return (
-    <BottomSheet
-      ref={sheet}
-      role="dialog"
-      aria-label="Move Card"
-      onClose={onClose}
-      closing={closing}
-      zClassName="z-[var(--z-popover)]"
-      onPointerDown={(e) => e.stopPropagation()}
-    >
-      <p className="truncate px-4 pb-2 pt-0.5 text-[12px] text-slate-500 dark:text-slate-400">
-        {title}
-      </p>
-      <div role="radiogroup" aria-label="Columns">
-        {open.map(row)}
-      </div>
-      {done.length > 0 ? (
-        <>
-          <hr className="mx-4 my-1.5 border-slate-200 dark:border-slate-700" />
-          <div role="radiogroup" aria-label="Done Columns">
-            {done.map(row)}
-          </div>
-        </>
-      ) : null}
-    </BottomSheet>
+    <>
+      {/* The scrim: clear, under the sheet (same layer, earlier in the page), over the card panel and its backdrop. */}
+      <Portal>
+        <div
+          data-status-sheet-scrim=""
+          aria-hidden
+          className="fixed inset-0 z-[var(--z-popover)]"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            leave();
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </Portal>
+      <BottomSheet
+        ref={sheet}
+        role="dialog"
+        aria-label="Move Card"
+        onClose={onClose}
+        closing={closing}
+        zClassName="z-[var(--z-popover)]"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <p className="truncate px-4 pb-2 pt-0.5 text-[12px] text-slate-500 dark:text-slate-400">
+          {title}
+        </p>
+        <div role="radiogroup" aria-label="Columns">
+          {open.map(row)}
+        </div>
+        {done.length > 0 ? (
+          <>
+            <hr className="mx-4 my-1.5 border-slate-200 dark:border-slate-700" />
+            <div role="radiogroup" aria-label="Done Columns">
+              {done.map(row)}
+            </div>
+          </>
+        ) : null}
+      </BottomSheet>
+    </>
   );
 }

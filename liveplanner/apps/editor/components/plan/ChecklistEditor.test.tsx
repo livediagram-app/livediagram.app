@@ -56,6 +56,39 @@ describe('a checklist step', () => {
     expect(ok).toBe(true);
   });
 
+  it('cancels a step edit on Escape and keeps the key from the card panel', () => {
+    const onSave = list();
+    const behind = vi.fn();
+    document.addEventListener('keydown', behind);
+    const step = screen.getByRole('textbox', { name: 'Step 1' });
+    step.focus();
+    fireEvent.change(step, { target: { value: 'Half typed' } });
+    fireEvent.keyDown(step, { key: 'Escape' });
+    document.removeEventListener('keydown', behind);
+    expect(behind).not.toHaveBeenCalled();
+    expect(document.activeElement).not.toBe(step);
+    expect((step as HTMLTextAreaElement).value).toBe('Short step');
+    expect(onSave).not.toHaveBeenCalled();
+    // A later edit saves as ever.
+    fireEvent.change(step, { target: { value: 'Edited' } });
+    fireEvent.blur(step);
+    expect(onSave).toHaveBeenCalledWith([{ text: 'Edited', done: false }, rows[1]]);
+  });
+
+  it('leaves Add a step on Escape, its text kept, the key going no further', () => {
+    list();
+    const behind = vi.fn();
+    document.addEventListener('keydown', behind);
+    const add = screen.getByRole('textbox', { name: 'Add a step' });
+    add.focus();
+    fireEvent.change(add, { target: { value: 'Draft' } });
+    fireEvent.keyDown(add, { key: 'Escape' });
+    document.removeEventListener('keydown', behind);
+    expect(behind).not.toHaveBeenCalled();
+    expect(document.activeElement).not.toBe(add);
+    expect((add as HTMLInputElement).value).toBe('Draft');
+  });
+
   it('takes a step off when its text is emptied, and saves nothing when unchanged', () => {
     const onSave = list();
     const step = screen.getByRole('textbox', { name: 'Step 1' });
