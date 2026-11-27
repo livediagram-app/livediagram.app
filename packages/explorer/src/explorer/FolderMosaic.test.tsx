@@ -171,6 +171,39 @@ describe("a folder with only other apps' items", () => {
     );
   });
 
+  it('still shows them when the across-every-app answer arrives after the first one has rendered', async () => {
+    const folders = [folder('f1')];
+    const items = [1, 2].map((i) =>
+      makeItem(i, { folderId: 'f1', app: 'liveplanner', kind: 'plan' }),
+    );
+    const index = createFakeIndex({ items, folders });
+    index.hold.add('folderPreviews');
+    render(
+      <Explorer
+        app="livediagram"
+        client={index.client}
+        view={{ kind: 'all' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/p/${i.id}`}
+        onCreate={vi.fn()}
+      />,
+    );
+    await waitFor(() => expect(index.count('folderPreviews')).toBe(1));
+    // Answer the app's own request, then hold the follow-up across every app until the page has re-rendered:
+    // storing the first answer on its own once re-ran the effect and aborted the follow-up mid-flight.
+    index.release();
+    index.hold.add('folderPreviews');
+    await waitFor(() => expect(index.count('folderPreviews')).toBe(2));
+    await new Promise((r) => setTimeout(r, 20));
+    index.release();
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-folder-card="f1"] [data-folder-elsewhere="2"]'),
+      ).toBeTruthy(),
+    );
+    expect(document.querySelector('[data-folder-card="f1"] [data-folder-empty]')).toBeNull();
+  });
+
   it('opens on what other apps keep there, not "This folder is empty", and Show All Apps shows them', async () => {
     const folders = [folder('f1')];
     const items = [

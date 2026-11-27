@@ -60,7 +60,25 @@ export function useFolderPreviews({
       const ids = missing.slice(i, i + FOLDER_PREVIEW_IDS_MAX);
       client
         .folderPreviews(ids, app ? { app } : {}, { signal: controller.signal })
-        .then(({ previews }) => {
+        .then(async ({ previews }) => {
+          // Filtered to the app, the folders with none of its items are asked again across every app, in one
+          // request, so their cards can show they are not empty; not those whose `apps` already says they hold
+          // nothing of any app's at any depth. Both answers land in one update: storing the first alone marks
+          // these ids answered, which re-runs this effect and aborts the second request mid-flight.
+          const bare = app
+            ? ids.filter((id) => {
+                const own = previews.find((p) => p.folderId === id);
+                if (own && own.itemCount > 0) return false;
+                return !own?.apps || Object.values(own.apps).some((n) => (n ?? 0) > 0);
+              })
+            : [];
+          const found = bare.length
+            ? await client
+                .folderPreviews(bare, {}, { signal: controller.signal })
+                .then(({ previews: all }) => all.filter((p) => p.itemCount > 0))
+                .catch(() => [] as FolderPreview[])
+            : [];
+          if (controller.signal.aborted) return;
           setAnswered((prev) => {
             const keep = prev.scope === scope;
             const map = new Map(keep ? prev.map : []);
@@ -71,38 +89,16 @@ export function useFolderPreviews({
               fresh.set(id, placedEpoch);
             }
             for (const p of previews) map.set(p.folderId, p);
+            for (const p of found) {
+              const own = map.get(p.folderId);
+              if (own && own.itemCount === 0)
+                map.set(p.folderId, {
+                  ...own,
+                  elsewhere: { itemCount: p.itemCount, items: p.items },
+                });
+            }
             return { scope, map, fresh };
           });
-          // Filtered to the app, the folders with none of its items are asked again across every app, in one
-          // request, so their cards can show they are not empty; not those whose `apps` already says they hold
-          // nothing of any app's at any depth.
-          const bare = app
-            ? ids.filter((id) => {
-                const own = previews.find((p) => p.folderId === id);
-                if (own && own.itemCount > 0) return false;
-                return !own?.apps || Object.values(own.apps).some((n) => (n ?? 0) > 0);
-              })
-            : [];
-          if (!bare.length) return;
-          return client
-            .folderPreviews(bare, {}, { signal: controller.signal })
-            .then(({ previews: all }) => {
-              const found = all.filter((p) => p.itemCount > 0);
-              if (!found.length) return;
-              setAnswered((prev) => {
-                if (prev.scope !== scope) return prev;
-                const map = new Map(prev.map);
-                for (const p of found) {
-                  const own = map.get(p.folderId);
-                  if (own && own.itemCount === 0)
-                    map.set(p.folderId, {
-                      ...own,
-                      elsewhere: { itemCount: p.itemCount, items: p.items },
-                    });
-                }
-                return { ...prev, map };
-              });
-            });
         })
         .catch(() => {
           // Aborted, or refused: the cards keep what they show.
