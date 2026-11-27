@@ -185,7 +185,7 @@ describe('a hovered layout stays cheap on a long tab', () => {
       id: `p${i}`,
       orientation: 'portrait',
     }));
-    const laid = layOutPages(pagesOf({ pages } as unknown as Tab));
+    const laid = layOutPages(pagesOf({ pages }));
     const elements = laid.flatMap((p) =>
       Array.from({ length: PER_PAGE }, (_, j) => box(`${p.id}-${j}`, p.rect.x + 40 + j * 15)),
     );
