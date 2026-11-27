@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { IMAGE_ACCEPT_ATTR } from '@liveworkspace/api-schema/image-limits';
 import { Button, Chip, ConfirmDialog, EmptyState, HoverCard } from '@liveworkspace/ui';
 import { MadeByAiChip } from '../explorer/badges';
+import { FILE_WORDS } from '../words';
 import { SearchIcon, TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
@@ -43,10 +44,13 @@ export function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// "3 canvases" when every use is the host's kind; "3 items" once another app's item is among them.
+// "3 canvases" when every use is the host's kind; "3 files", the Explorer's word for a mix of apps (words.ts), once
+// another app's is among them. In no app the host's word is "file" already, so one grid never mixes two nouns.
 function countOf(usage: GalleryUse[], kindMany: { one: string; many: string }): string {
   const n = usage.length;
-  const words = usage.some((u) => u.app) ? { one: 'item', many: 'items' } : kindMany;
+  const words = usage.some((u) => u.app)
+    ? { one: FILE_WORDS.lowerOne, many: FILE_WORDS.lowerMany }
+    : kindMany;
   return `${n} ${n === 1 ? words.one : words.many}`;
 }
 
@@ -91,7 +95,7 @@ export function GalleryPane({
   compact = false,
 }: {
   host: GalleryHost;
-  // The items that place images ("canvases", or "items" across apps), for "Used in 3 canvases".
+  // The items that place images ("canvases", or "files" across apps), for "Used in 3 canvases".
   kindMany: { one: string; many: string };
   compact?: boolean;
 }) {
@@ -247,7 +251,7 @@ export function GalleryContent({
             description={
               anyUnchecked
                 ? 'Where some images are used couldn’t be checked just now, so none of them are listed here. Open the gallery again to retry.'
-                : `Every image here is placed in a ${kindMany.one} or another app’s item, so there is nothing to clear.`
+                : `Every image here is placed in a ${kindMany.one} or another app’s file, so there is nothing to clear.`
             }
           >
             {onShowAll ? (

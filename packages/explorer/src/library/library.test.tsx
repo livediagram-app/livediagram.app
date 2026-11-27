@@ -96,12 +96,38 @@ describe('the Image Gallery', () => {
       })),
     });
     page({ kind: 'gallery' }, { gallery: host });
-    fireEvent.click(await screen.findByRole('button', { name: 'Used in 1 item' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Used in 1 file' }));
     expect(screen.queryByText('Not used')).toBeNull();
     expect(screen.getByRole('link', { name: 'Brief' }).getAttribute('href')).toBe(
       'https://livedocuments.app/document/doc-1',
     );
     expect(screen.getByText('in livedocuments')).toBeTruthy();
+  });
+
+  it('says files for every count in no app, its own uses and other apps’ alike', async () => {
+    const host = galleryHost([image(1), image(2)], {
+      usage: vi.fn(async () => ({
+        uses: {
+          'img-1': [{ id: 'd1', title: 'Flow', href: '/d/d1' }],
+          'img-2': [
+            {
+              id: 'doc-1',
+              title: 'Brief',
+              href: 'https://livedocuments.app/document/doc-1',
+              app: 'livedocuments',
+            },
+          ],
+        },
+        unchecked: new Set<string>(),
+      })),
+    });
+    page(
+      { kind: 'gallery' },
+      { gallery: host, filter: 'all', newApps: ['livediagram', 'livedocuments'] },
+    );
+    await screen.findByText('photo-1.png');
+    expect(await screen.findAllByRole('button', { name: 'Used in 1 file' })).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: /Used in 1 (item|canvas)/ })).toBeNull();
   });
 
   it('deletes after asking, saying where it is still used', async () => {
