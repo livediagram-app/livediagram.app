@@ -168,9 +168,9 @@ describe('PickerFace', () => {
       />,
     );
     expect(screen.getByText('Nothing to pick from')).toBeTruthy();
-    expect(
-      screen.getByRole<HTMLButtonElement>('button', { name: 'Pick at random' }).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Pick at random' }).disabled).toBe(
+      true,
+    );
   });
 
   describe('Remove Once Drawn', () => {
