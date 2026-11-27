@@ -10,6 +10,7 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import { buildPageLayoutOver } from '@livedocuments/templates';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { pageEdits } from './page-edits';
 import {
   layoutPlacedTab,
@@ -169,5 +170,30 @@ describe('useShownLayoutElements', () => {
     expect(other.result.current).toBeNull();
     act(() => showLayout(null));
     expect(mine.result.current).toBeNull();
+  });
+});
+
+// A hover places the layout on every tile it crosses: it must stay cheap on a long tab (60 pages, 2,400 elements).
+// Measured 2.5 ms a placement (2026-11-27).
+describe('a hovered layout stays cheap on a long tab', () => {
+  const PAGES = 60;
+  const PER_PAGE = 40;
+  const PLACE_BUDGET_MS = 25;
+
+  it(`places a layout on a ${PAGES}-page tab within budget`, () => {
+    const pages = Array.from({ length: PAGES }, (_, i) => ({
+      id: `p${i}`,
+      orientation: 'portrait',
+    }));
+    const laid = layOutPages(pagesOf({ pages } as unknown as Tab));
+    const elements = laid.flatMap((p) =>
+      Array.from({ length: PER_PAGE }, (_, j) => box(`${p.id}-${j}`, p.rect.x + 40 + j * 15)),
+    );
+    const big = { id: 't', name: 'T', theme: 'ocean', elements, pages } as unknown as Tab;
+    layoutPlacedTab(big, 'p30', 'key-stats', buildPageLayoutOver);
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 10; i++) layoutPlacedTab(big, 'p30', 'key-stats', buildPageLayoutOver);
+    });
+    expect(ms / 10).toBeLessThan(cpuBudgetMs(PLACE_BUDGET_MS));
   });
 });
