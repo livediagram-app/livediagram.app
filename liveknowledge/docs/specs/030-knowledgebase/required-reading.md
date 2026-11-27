@@ -47,7 +47,7 @@ Status: **built, not yet verified on a deployed Worker** ([blueprint](blueprints
     have read it" (a count, never who), and their own state: "You read it 3 Nov" with a tick, or "You haven't
     confirmed yet" with **I've Read This**.
   - Required, for an Editor and for the page's owner: the people too, in two groups, **Not Yet** first, then **Read**,
-    each a disc, a name and, for Read, the date; and **Remind** (below). An Editor also sees **Change**, which opens
+    each a disc in their presence colour, a name and, for Read, the date; and **Remind** (below). An Editor also sees **Change**, which opens
     the setup panel.
 - **The setup panel** (a popover under its button, a sheet on a phone): **Required Reading** with "Who should read
   this page?", two choices, **Everyone** ("Every member of the team") and **Chosen People** (a checklist of the
