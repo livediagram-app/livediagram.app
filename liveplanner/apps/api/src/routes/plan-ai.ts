@@ -172,6 +172,7 @@ async function askPlanAi(ctx: RouteContext): Promise<Response> {
     instruction,
     role,
     turns: turnsOf(body['turns']),
+    ...(keyed ? {} : { builtIn: true }),
   };
   const defer = (p: Promise<unknown>) => ctx.waitUntil?.(p);
   const asked = await askForDraft({
@@ -203,6 +204,7 @@ async function askPlanAi(ctx: RouteContext): Promise<Response> {
     const answer: PlanAiResponse = {
       reply,
       changes,
+      dropped,
       provider: keyed ? keyed.provider : 'built-in',
       role,
     };

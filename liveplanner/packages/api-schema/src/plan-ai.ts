@@ -21,6 +21,8 @@ export interface PlanAiRequest {
 export interface PlanAiResponse {
   reply: string;
   changes: PlanAiChange[];
+  // How many changes the reply held that the role may not make (or past a turn's 40): left out, and said in the panel.
+  dropped: number;
   // Which AI answered: `built-in`, or the key's provider.
   provider: string;
   // The role the changes were read for, as the plan's grant says it.

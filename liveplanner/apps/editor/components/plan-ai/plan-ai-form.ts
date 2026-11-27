@@ -12,7 +12,7 @@ import {
 import { newFormPartId, type FormDefinition } from '@liveplanner/forms';
 import type { ItemTypeDef, PlanAiChange } from '@liveplanner/items';
 import type { Tab } from '@liveplanner/project';
-import { forPeople, type PlanAiLine } from './plan-ai-lines';
+import { forPeople, unreadableChange, type PlanAiLine } from './plan-ai-lines';
 
 const formChange = changeFormShape.changes.element;
 
@@ -30,20 +30,10 @@ export function applyFormTurn(input: {
   newId?: (prefix: 'q' | 's') => string;
 }): { form: FormDefinition | null; lines: PlanAiLine[] } {
   const parsed: FormChange[] = [];
-  for (const [i, raw] of input.changes.entries()) {
+  for (const raw of input.changes) {
     const read = formChange.safeParse(raw);
-    if (!read.success) {
-      const issue = read.error.issues[0];
-      return {
-        form: null,
-        lines: [
-          {
-            text: `Change ${i + 1} (${raw.op}) couldn’t be read: ${issue?.message ?? 'not a change'}. Nothing was changed.`,
-            ok: false,
-          },
-        ],
-      };
-    }
+    if (!read.success)
+      return { form: null, lines: [{ text: unreadableChange(raw.op), ok: false }] };
     parsed.push(read.data);
   }
   const world: FormWorld = {

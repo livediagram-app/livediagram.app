@@ -17,7 +17,7 @@ import { DraftRefusal } from '@/components/describe/draft-client';
 import { track } from '@/lib/telemetry';
 import { askPlanAi } from './plan-ai-client';
 import type { PlanAiTab } from './plan-ai-host';
-import { NOTHING_APPLIED, type PlanAiApplied } from './plan-ai-lines';
+import { droppedLine, NOTHING_APPLIED, replyShown, type PlanAiApplied } from './plan-ai-lines';
 import {
   clearPlanAiThread,
   planAiThread,
@@ -103,10 +103,16 @@ export function usePlanAiRun(opts: {
               : { lines: [{ text: PLAN_AI_MOVED_ON, ok: false }], steps: 0 };
           if (applied.steps > 0) track('Plan', 'Changed', 'PlanAiChange');
         }
+        // The changes the role may not make: the api's count, and any a Viewer's answer still held.
+        const dropped = answer.dropped + (viewer ? answer.changes.length : 0);
+        const lines = dropped
+          ? [...applied.lines, droppedLine(host.kind, viewer ? 'view' : answer.role, dropped)]
+          : applied.lines;
         updatePlanAiTurn(tabId, turnId, {
           status: 'done',
-          reply: answer.reply,
-          lines: applied.lines,
+          // Never words that claim a change that wasn't made.
+          reply: replyShown(answer.reply, lines),
+          lines,
           steps: applied.steps,
           provider: answer.provider,
         });

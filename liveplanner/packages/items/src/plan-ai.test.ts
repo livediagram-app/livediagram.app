@@ -2,7 +2,9 @@
 // and the instruction as data, and the reader keeps only the changes the kind takes and the role may make.
 import { describe, expect, it } from 'vitest';
 import {
+  PLAN_AI_BUILT_IN_MAX_TOKENS,
   PLAN_AI_CHANGES_MAX,
+  PLAN_AI_MAX_TOKENS,
   PLAN_AI_CHANGE_CHARS_MAX,
   PLAN_AI_KINDS,
   PLAN_AI_TAB_MAX,
@@ -58,6 +60,25 @@ describe('planAiRequest', () => {
     expect(planAiRequest({ ...ASK, role: 'participate' }).messages[0]!.content).toContain(
       'only an Editor can',
     );
+  });
+
+  it('keeps sorts off header and total rows, forms free of repeated questions, dashboards out of twelfths', () => {
+    const say = (kind: PlanAiAsk['kind']) => planAiRequest({ ...ASK, kind }).messages[0]!.content;
+    expect(say('sheet')).toContain(
+      'leaves out the header row above them and any total or summary row',
+    );
+    expect(say('form')).toContain('Never add a question that asks what one already there asks');
+    expect(say('dashboard')).toContain('never in twelfths');
+  });
+
+  it('asks built-in AI for a shorter reply, so its longest turn ends inside its 20 seconds', () => {
+    const keyed = planAiRequest(ASK);
+    const builtIn = planAiRequest({ ...ASK, builtIn: true });
+    expect(keyed.max_tokens).toBe(PLAN_AI_MAX_TOKENS);
+    expect(builtIn.max_tokens).toBe(PLAN_AI_BUILT_IN_MAX_TOKENS);
+    expect(PLAN_AI_BUILT_IN_MAX_TOKENS).toBeLessThan(PLAN_AI_MAX_TOKENS);
+    expect(builtIn.messages[0]!.content).toContain('at most 15 rows');
+    expect(keyed.messages[0]!.content).not.toContain('at most 15 rows');
   });
 
   it('keeps the last turns, cut, and the tab within its bound', () => {

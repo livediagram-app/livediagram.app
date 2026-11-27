@@ -21,7 +21,7 @@ import {
   type GridRange,
   type SheetWrite,
 } from '@liveplanner/sheets';
-import { forPeople, type PlanAiApplied, type PlanAiLine } from './plan-ai-lines';
+import { forPeople, unreadableChange, type PlanAiApplied, type PlanAiLine } from './plan-ai-lines';
 
 type Frame = { x: number; y: number; width: number; height: number };
 
@@ -31,13 +31,17 @@ export type SheetSink = {
   commitElements: (map: (els: Element[]) => Element[]) => void;
 };
 
-const firstIssue = (error: {
-  issues: readonly { message: string; path: readonly PropertyKey[] }[];
-}) => {
-  const issue = error.issues[0];
-  const at = issue?.path.length ? ` (${issue.path.map(String).join('.')})` : '';
-  return `${issue?.message ?? 'That change couldn’t be read'}${at}.`;
-};
+/** A set as the AI may write one cell ("Put 250 in C4"): rows as one row's values ([250]) or one value (250, or
+ *  `value`), read as the rows of values change_sheet takes ([[250]]). Any other change as written. */
+export function asSheetChange(raw: PlanAiChange): PlanAiChange {
+  if (raw.op !== 'set') return raw;
+  const rows = raw['rows'] === undefined ? raw['value'] : raw['rows'];
+  if (rows === undefined) return raw;
+  if (!Array.isArray(rows)) return { ...raw, rows: [[rows]] };
+  const list: readonly unknown[] = rows;
+  if (list.length && list.every((r) => !Array.isArray(r))) return { ...raw, rows: [list] };
+  return { ...raw, rows: list.map((r): unknown => (Array.isArray(r) ? (r as unknown[]) : [r])) };
+}
 
 /** Builds `changes` against `live` (the tab's workbook as it stands) and makes them through `sink`. */
 export function applySheetChanges(input: {
@@ -60,9 +64,9 @@ export function applySheetChanges(input: {
   const cleared: (GridRange | null)[] = [];
   const lines: PlanAiLine[] = [];
   for (const raw of input.changes) {
-    const parsed = sheetChange.safeParse(raw);
+    const parsed = sheetChange.safeParse(asSheetChange(raw));
     if (!parsed.success) {
-      lines.push({ text: firstIssue(parsed.error), ok: false });
+      lines.push({ text: unreadableChange(raw.op), ok: false });
       break;
     }
     const others = wb

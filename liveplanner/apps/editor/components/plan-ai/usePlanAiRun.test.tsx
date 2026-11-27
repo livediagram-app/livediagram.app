@@ -6,6 +6,7 @@ import type { PlanAiRole } from '@liveplanner/items';
 import { DraftRefusal } from '@/components/describe/draft-client';
 import { planAiRoleOf } from './usePlanAiHost';
 import { PLAN_AI_LOADING, PLAN_AI_MOVED_ON, usePlanAiRun } from './usePlanAiRun';
+import { PLAN_AI_NONE_MADE, PLAN_AI_SOME_MADE } from './plan-ai-lines';
 import type { PlanAiTab } from './plan-ai-host';
 import {
   planAiThread,
@@ -44,6 +45,7 @@ function host(over: Partial<PlanAiTab> = {}): PlanAiTab {
 const answer = (over: Partial<PlanAiResponse> = {}): PlanAiResponse => ({
   reply: 'Done.',
   changes: [{ op: 'move', item: '#1', status: 'Done' }],
+  dropped: 0,
   provider: 'built-in',
   role: 'edit',
   ...over,
@@ -125,12 +127,54 @@ describe('usePlanAiRun', () => {
     act(() => void run.current.ask('Move it'));
     await waitFor(() => expect(last().status).toBe('done'));
     expect(tab.apply).not.toHaveBeenCalled();
-    expect(last()).toMatchObject({ reply: 'Done.', steps: 0, lines: [] });
+    // The answer's change was left out, so its words, which claim it, are not shown.
+    expect(last()).toMatchObject({
+      reply: PLAN_AI_NONE_MADE,
+      steps: 0,
+      lines: [{ text: 'You can view this tab, not change it.', ok: false }],
+    });
     asked.fn.mockResolvedValue(answer({ role: 'view' }));
     const editor = setup('edit');
     act(() => void editor.run.current.ask('Move it again'));
     await waitFor(() => expect(planAiThread('t1').at(-1)!.status).toBe('done'));
     expect(editor.tab.apply).not.toHaveBeenCalled();
+  });
+
+  it('says a change the role may not make, and never claims it', async () => {
+    asked.fn.mockResolvedValue(
+      answer({
+        reply: 'I have removed the first row.',
+        changes: [],
+        dropped: 1,
+        role: 'participate',
+      }),
+    );
+    const { run, tab } = setup('participate', host({ kind: 'dashboard' }));
+    act(() => void run.current.ask('Remove the first row'));
+    await waitFor(() => expect(last().status).toBe('done'));
+    expect(tab.apply).not.toHaveBeenCalled();
+    expect(last()).toMatchObject({
+      reply: PLAN_AI_NONE_MADE,
+      lines: [{ text: 'Only an Editor can change the layout.', ok: false }],
+    });
+  });
+
+  it('never claims a change that failed: none made, or only some', async () => {
+    const failed = { text: 'That change (set) couldn’t be read, so it wasn’t made.', ok: false };
+    asked.fn.mockResolvedValue(answer({ reply: 'Put 250 in C4.' }));
+    const none = setup('edit', host({ apply: vi.fn(async () => ({ lines: [failed], steps: 0 })) }));
+    act(() => void none.run.current.ask('Put 250 in C4'));
+    await waitFor(() => expect(last().status).toBe('done'));
+    expect(last()).toMatchObject({ reply: PLAN_AI_NONE_MADE, lines: [failed] });
+    resetPlanAiThreads();
+    const made = { text: 'Set A1', ok: true };
+    const some = setup(
+      'edit',
+      host({ apply: vi.fn(async () => ({ lines: [made, failed], steps: 1 })) }),
+    );
+    act(() => void some.run.current.ask('Two things'));
+    await waitFor(() => expect(last().status).toBe('done'));
+    expect(last()).toMatchObject({ reply: PLAN_AI_SOME_MADE, lines: [made, failed], steps: 1 });
   });
 
   it('says a refusal in the api’s words, and a failure in its own', async () => {

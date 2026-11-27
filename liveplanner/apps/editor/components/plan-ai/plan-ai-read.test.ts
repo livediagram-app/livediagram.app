@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { FormDefinition } from '@liveplanner/forms';
 import { PLAN_AI_TAB_MAX, type ItemTypeDef } from '@liveplanner/items';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { forPeople } from './plan-ai-lines';
+import {
+  droppedLine,
+  forPeople,
+  PLAN_AI_NONE_MADE,
+  PLAN_AI_SOME_MADE,
+  replyShown,
+} from './plan-ai-lines';
 import { readBoard, readDashboard, readFormTab, valueText, withinBound } from './plan-ai-read';
 import { ITEMS, SETUP, TYPES, card } from './plan-ai-fixtures';
 
@@ -188,6 +194,31 @@ describe('reading a big board', () => {
     expect(text).toMatch(/left out: too many to send/);
     // Linear: measured about 15 ms of CPU locally; a quadratic scan of 5,000 cards would pass the budget.
     expect(took).toBeLessThan(cpuBudgetMs(200));
+  });
+});
+
+describe('droppedLine and replyShown', () => {
+  it('says what a role may not change, or the turn’s most, and keeps words only when every change was made', () => {
+    expect(droppedLine('dashboard', 'participate', 1).text).toBe(
+      'Only an Editor can change the layout.',
+    );
+    expect(droppedLine('form', 'participate', 2).text).toBe('Only an Editor can change the form.');
+    expect(droppedLine('board', 'participate', 1).text).toBe('Only an Editor can delete cards.');
+    expect(droppedLine('sheet', 'participate', 1).text).toMatch(/^Only an Editor/);
+    expect(droppedLine('sheet', 'view', 3)).toEqual({
+      text: 'You can view this tab, not change it.',
+      ok: false,
+    });
+    expect(droppedLine('board', 'edit', 1).text).toBe(
+      '1 more change was left out: a turn makes at most 40.',
+    );
+    expect(droppedLine('board', 'edit', 2).text).toMatch(/^2 more changes were left out/);
+    const made = { text: 'Set A1', ok: true };
+    const failed = { text: 'No', ok: false };
+    expect(replyShown('Done.', [])).toBe('Done.');
+    expect(replyShown('Done.', [made])).toBe('Done.');
+    expect(replyShown('Done.', [failed])).toBe(PLAN_AI_NONE_MADE);
+    expect(replyShown('Done.', [made, failed])).toBe(PLAN_AI_SOME_MADE);
   });
 });
 

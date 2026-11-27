@@ -27,8 +27,10 @@ export const PLAN_AI_CHANGE_CHARS_MAX = 20_000;
 /** The earlier turns sent with an instruction, and each one's reply cut to this. */
 export const PLAN_AI_TURNS_MAX = 4;
 export const PLAN_AI_TURN_REPLY_MAX = 1000;
-/** What one reply may write. */
+/** What one reply may write on a key; built-in AI's model writes slower, so its replies are shorter, and its longest
+ *  turn (a starter sheet) ends well inside its 20 seconds. */
 export const PLAN_AI_MAX_TOKENS = 3000;
+export const PLAN_AI_BUILT_IN_MAX_TOKENS = 1200;
 /** The most of a request's body the api reads: the tab, the turns and the instruction at their bounds, with room. */
 export const PLAN_AI_BODY_MAX = 64 * 1024;
 
@@ -116,6 +118,8 @@ export interface PlanAiAsk {
   instruction: string;
   role: PlanAiRole;
   turns?: readonly PlanAiTurn[];
+  /** Built-in AI answers: a shorter reply, and the instructions say so. */
+  builtIn?: boolean;
 }
 
 /** The reply read: the words, and the changes the role may make (`dropped`: how many it answered that it may not). */
@@ -164,7 +168,8 @@ const KIND_TASK: Readonly<Record<PlanAiKind, string>> = {
     '"accounting"|"date"|"time"|"datetime"|"duration"|"text","decimals":2,"currency":"USD"}}; ' +
     '{"op":"insert_rows","at":3,"count":1,"side":"before"|"after"}; {"op":"insert_cols","at":"C","count":1,' +
     '"side":"before"|"after"}; {"op":"delete_rows","rows":"3:5"}; {"op":"delete_cols","cols":"C:D"}; ' +
-    '{"op":"sort","by":"B","range":"A1:C20","descending":true,"header":true}; {"op":"freeze","rows":1,"cols":0}; ' +
+    '{"op":"sort","by":"B","range":"A2:C20","descending":true} sorts the data rows alone: its range leaves out ' +
+    'the header row above them and any total or summary row under them; {"op":"freeze","rows":1,"cols":0}; ' +
     '{"op":"filter","range":"A1:C20"} (null turns it off); {"op":"resize","cols":"A:C","fit":true} or ' +
     '{"op":"resize","rows":"1","px":40}; {"op":"merge","range":"A1:C1"}; {"op":"border","range":"A1:C9",' +
     '"sides":"all"|"outer"|"none"}; {"op":"chart","type":"column"|"bar"|"line"|"area"|"pie"|"doughnut"|"scatter",' +
@@ -183,7 +188,8 @@ const KIND_TASK: Readonly<Record<PlanAiKind, string>> = {
     '{"op":"move_question","question":"...","after":"..."}; {"op":"add_section","title":"...","after":"<question>"}; ' +
     '{"op":"set_section","section":1,"title":"..."}; {"op":"delete_section","section":2}; ' +
     '{"op":"set_form","heading":"...","description":"..."}; {"op":"settings","confirmation":"...","limit":100}. ' +
-    'Use only the question kinds the tab lists.',
+    'Use only the question kinds the tab lists. Never add a question that asks what one already there asks ' +
+    '("Email address" beside "Your email address"): change that one, or say in "reply" that the form asks it.',
   dashboard:
     'The tab is a dashboard: rows top to bottom, each of slots left to right, each slot a span of twelfths (the ' +
     'spans of a row add up to 12). Rows and slots are numbered from 1. Changes, each one object: ' +
@@ -195,7 +201,8 @@ const KIND_TASK: Readonly<Record<PlanAiKind, string>> = {
     '"text":"..."} shows a note; {"op":"show_tab","row":1,"slot":2,"tab":"<Board or Sheet tab name>"}; ' +
     '{"op":"clear_slot","row":1,"slot":1}. A dashboard has at most 12 rows of 4 slots, each at least 2 twelfths. ' +
     'Number rows and slots as they are before your first change, and list changes from the last row up when you ' +
-    'remove more than one.',
+    'remove more than one. In "reply", name slots as people do ("the first slot in row 1") and widths as parts of ' +
+    'the row ("two thirds", "half"), never in twelfths.',
 };
 
 const ROLE_RULE: Readonly<Record<PlanAiRole, string>> = {
@@ -216,9 +223,15 @@ const REPLY_RULE =
   'conversation so far, for context. When "previous" is given, your last reply was refused for that reason: answer ' +
   'the same instruction again, fixed.';
 
-const system = (kind: PlanAiKind, role: PlanAiRole): string =>
+// Built-in AI writes slower than a key's model: a short reply ends inside its 20 seconds.
+const BUILT_IN_RULE =
+  'Keep the reply short: start a sheet with one "set" of at most 15 rows and a few formats, and say in "reply" ' +
+  'that the person can ask for more.';
+
+const system = (kind: PlanAiKind, role: PlanAiRole, builtIn: boolean): string =>
   'You help a person with one tab of their plan in a project planner: you answer questions about it and make the ' +
-  `changes they ask for. ${DATA_RULE} ${KIND_TASK[kind]} ${ROLE_RULE[role]} ${REPLY_RULE}`;
+  `changes they ask for. ${DATA_RULE} ${KIND_TASK[kind]} ${ROLE_RULE[role]} ${REPLY_RULE}` +
+  (builtIn ? ` ${BUILT_IN_RULE}` : '');
 
 const SCHEMA: Obj = {
   type: 'object',
@@ -260,14 +273,14 @@ export function planAiRequest(
   };
   return {
     messages: [
-      { role: 'system', content: system(ask.kind, ask.role) },
+      { role: 'system', content: system(ask.kind, ask.role, !!ask.builtIn) },
       { role: 'user', content: JSON.stringify(data) },
     ],
     response_format: {
       type: 'json_schema',
       json_schema: { name: 'plan_ai', schema: SCHEMA, strict: true },
     },
-    max_tokens: PLAN_AI_MAX_TOKENS,
+    max_tokens: ask.builtIn ? PLAN_AI_BUILT_IN_MAX_TOKENS : PLAN_AI_MAX_TOKENS,
     temperature: 0,
   };
 }

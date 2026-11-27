@@ -11,12 +11,16 @@ like the person's: undoable, synced live, held by their role and the tab's lock.
 - Caps: `PLAN_AI_INSTRUCTION_MAX = 1000` (Ask's question cap), `PLAN_AI_TAB_MAX = 24000` characters of tab text,
   `PLAN_AI_TAB_NAME_MAX = 120`, `PLAN_AI_REPLY_MAX = 2000`, `PLAN_AI_CHANGES_MAX = 40`,
   `PLAN_AI_CHANGE_CHARS_MAX = 20000` (one change's JSON), `PLAN_AI_TURNS_MAX = 4` earlier turns,
-  `PLAN_AI_TURN_REPLY_MAX = 1000`, `PLAN_AI_MAX_TOKENS = 3000`, `PLAN_AI_BODY_MAX = 64 KiB`.
+  `PLAN_AI_TURN_REPLY_MAX = 1000`, `PLAN_AI_MAX_TOKENS = 3000` (on a key), `PLAN_AI_BUILT_IN_MAX_TOKENS = 1200`
+  (built-in AI, whose model writes slower), `PLAN_AI_BODY_MAX = 64 KiB`.
 - `PLAN_AI_OPS[kind]`: the ops a kind takes (a board `change_items`'s four, a sheet `change_sheet`'s 22, a form
   `change_form`'s nine that change the form itself, a dashboard's ten layout ops); `PLAN_AI_PARTICIPANT_OPS` (a
   board's add, set and move; a sheet's set, clear and format); `planAiOpsFor(kind, role)` (none for a Viewer).
 - `planAiRequest(ask, previous?)`: the fixed system message (the data rule, the kind's task with every op's JSON
-  shape, the role's rule, the reply rule) and `JSON.stringify({ tabName, kind, tab, turns?, instruction, previous? })`
+  shape and its guidance: a sort's range is the data rows alone, never a header or total row; a form never gains a
+  question that repeats one; a dashboard's reply names slots and widths as people do, never twelfths; the role's rule,
+  the reply rule, and on built-in AI (`ask.builtIn`) a short-reply rule: a starter sheet one set of at most 15 rows)
+  and `JSON.stringify({ tabName, kind, tab, turns?, instruction, previous? })`
   as the user message; the schema `{ reply, changes }`.
 - `readPlanAi(reply, ask)`: `{ draft: { reply, changes, dropped } }` or `{ refused: { path, message } }`. Words are
   cleaned with `draftText`; a change that is not an object or names an op the kind lacks is refused; one the role may
@@ -27,7 +31,7 @@ like the person's: undoable, synced live, held by their role and the tab's lock.
 ## The api (apps/api/src/routes/plan-ai.ts)
 
 `POST /api/plan-ai`, body `PlanAiRequest` (`@liveplanner/api-schema` plan-ai.ts), answer `PlanAiResponse` `{ reply,
-changes, provider, role }`. In order: a signed-in account (a guest `403 plan_ai_needs_account`, nobody
+changes, dropped, provider, role }` (`dropped`: the changes `readPlanAi` left out). In order: a signed-in account (a guest `403 plan_ai_needs_account`, nobody
 `sign_in_required`); the body within `PLAN_AI_BODY_MAX` and its fields within their caps (`400 plan_ai_invalid`);
 `resolvePlanGrant` on `projectId` (none or trashed `403 plan_ai_no_access`), whose level is the role; the AI by Ask's
 rule (`body.ai === 'built-in'`, else `ownKeyOf(personAiKey(..., teamId))`, a refused key `keyFailedResponse`); on

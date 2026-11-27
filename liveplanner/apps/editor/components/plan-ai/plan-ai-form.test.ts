@@ -61,7 +61,9 @@ describe('applyFormTurn', () => {
   it('refuses a change that does not read, naming it', () => {
     const out = run([{ op: 'add_question', question: { type: 'telepathy' } }]);
     expect(out.form).toBeNull();
-    expect(out.lines[0]!.text).toMatch(/^Change 1 \(add_question\) couldn’t be read/);
+    expect(out.lines[0]!.text).toBe(
+      'That change (add question) couldn’t be read, so it wasn’t made. Try saying it another way.',
+    );
   });
 
   it('leaves where responses go to Form Settings', () => {

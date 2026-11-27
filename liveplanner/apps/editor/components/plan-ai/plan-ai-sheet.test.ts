@@ -11,7 +11,7 @@ import {
   type Sheet,
 } from '@liveplanner/sheets';
 import type { Element } from '@liveplanner/project';
-import { applySheetChanges, type SheetSink } from './plan-ai-sheet';
+import { applySheetChanges, asSheetChange, type SheetSink } from './plan-ai-sheet';
 import { readSheet } from './plan-ai-read';
 
 // Plan AI on a sheet (docs/specs/026-plan/plan-ai.md "On a sheet").
@@ -103,6 +103,37 @@ describe('applySheetChanges', () => {
     expect(out.lines.map((l) => l.ok)).toEqual([true, false]);
     expect(s.writeAll.mock.calls[0]![0]).toHaveLength(1);
     expect(run([{ op: 'paint' }]).lines[0]!.ok).toBe(false);
+  });
+
+  it('reads one cell’s set as the AI writes it: a flat row, a lone value, or `value`', () => {
+    for (const change of [
+      { op: 'set', at: 'C4', rows: [250] },
+      { op: 'set', at: 'C4', rows: 250 },
+      { op: 'set', at: 'C4', value: 250 },
+    ]) {
+      const s = sink();
+      const out = run([change], s);
+      expect(out.lines).toEqual([{ text: expect.stringMatching(/C4/), ok: true }]);
+      expect(s.writeAll).toHaveBeenCalledTimes(1);
+    }
+    expect(asSheetChange({ op: 'set', at: 'A1', rows: [['a'], 'b'] })).toEqual({
+      op: 'set',
+      at: 'A1',
+      rows: [['a'], ['b']],
+    });
+    expect(asSheetChange({ op: 'set', at: 'A1' })).toEqual({ op: 'set', at: 'A1' });
+    const sort = { op: 'sort', by: 'B' };
+    expect(asSheetChange(sort)).toBe(sort);
+  });
+
+  it('says a change that does not read in plain words, never the check’s', () => {
+    const out = run([{ op: 'set', at: 'C4', rows: [{ v: 1 }] }]);
+    expect(out.lines).toEqual([
+      {
+        text: 'That change (set) couldn’t be read, so it wasn’t made. Try saying it another way.',
+        ok: false,
+      },
+    ]);
   });
 
   it('says why when the store refuses the writes, and counts no step', () => {

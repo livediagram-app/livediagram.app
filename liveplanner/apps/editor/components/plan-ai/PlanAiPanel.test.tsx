@@ -154,6 +154,7 @@ describe('PlanAiPanel', () => {
       reply: 'Moved it.',
       changes: [{ op: 'move', item: '#1', status: 'Done' }],
       provider: 'built-in',
+      dropped: 0,
       role: 'edit',
     });
     const { undo, moveItems } = open(boardTab);
@@ -176,13 +177,16 @@ describe('PlanAiPanel', () => {
     asked.fn.mockResolvedValue({
       reply: 'Two cards.',
       changes: [{ op: 'move', item: '#1', status: 'Done' }],
+      dropped: 0,
       provider: 'built-in',
       role: 'view',
     });
     const { moveItems } = open(boardTab, { isReadOnly: true }, { canEditCards: false });
     expect(screen.getByText('You Can View This Plan')).toBeTruthy();
     fireEvent.click(screen.getByText('Ask about this board'));
-    await screen.findByText('Two cards.');
+    // A change came back for a Viewer: left out, said so, and the words that claim it not shown.
+    await screen.findByText('Nothing was changed.');
+    expect(screen.getByText('You can view this tab, not change it.')).toBeTruthy();
     expect(moveItems).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
   });
@@ -194,7 +198,13 @@ describe('PlanAiPanel', () => {
     open(boardTab);
     fireEvent.click(screen.getByText('Ask or tell AI about this board'));
     await screen.findByText('Used up for today.');
-    asked.fn.mockResolvedValue({ reply: 'Fine.', changes: [], provider: 'built-in', role: 'edit' });
+    asked.fn.mockResolvedValue({
+      reply: 'Fine.',
+      changes: [],
+      dropped: 0,
+      provider: 'built-in',
+      role: 'edit',
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     await waitFor(() => expect(screen.getByText('Fine.')).toBeTruthy());
   });

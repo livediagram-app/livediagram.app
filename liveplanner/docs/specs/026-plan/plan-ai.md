@@ -47,9 +47,16 @@ panel wears: the sparkle over a board, a sheet and a form, titled **AI**. Under 
 - **The thread**: each turn the person's words in a bubble on the right; under them the AI's reply with the sparkle,
   "Working on it…" while it is asked, then the reply's words. When the turn's changes were tried, a **Changes** box
   follows the words, headed "1 Change" or "3 Changes": one line a change, as the change says it ("Added “Fix login”",
-  "Moved #3 Write brief to Done", "Set A4:B4", "Added the question "Phone number"", "Made slot 1 of row 1 8 twelfths
-  wide"), each with a tick. A change that could not be made is the last line, with a warning mark and why ("No column
-  “Archive”. Columns: To Do, Doing, Done."); the changes before it are kept (a form's are all or none). Under it, who
+  "Moved #3 Write brief to Done", "Set A4:B4", "Added the question "Phone number"", "Made the first slot in row 1 two
+  thirds of the row wide"), each with a tick. A change that could not be made is the last line, with a warning mark and why ("No column
+  “Archive”. Columns: To Do, Doing, Done.", or for a change whose shape doesn't read, "That change (set) couldn't be
+  read, so it wasn't made. Try saying it another way.", never a check's own words); the changes before it are kept (a
+  form's are all or none). A change the api left out is said the same way: for a Participant "Only an Editor can
+  change the layout." (a dashboard; "the form", "delete cards", "change more than the cells: their values and
+  formats" for the others), for a Viewer "You can view this tab, not change it.", past a turn's 40 "2 more changes
+  were left out: a turn makes at most 40.". **The words never claim a change that was not made**: when any change was
+  left out or could not be made, the AI's words give way to "Nothing was changed." or, when some were made, "Only part
+  of that was made: the changes below are what was." Under it, who
   answered and, on the newest turn while its changes stand, **Undo**: it presses the editor's Undo once for each step
   the turn's changes took (one a turn on a form or a dashboard; on a board one each for new, moved, changed and
   trashed cards; on a sheet one for the cells and one for its charts), and the box then reads **Undone** with its
@@ -84,7 +91,8 @@ one, changes as one; a turn's undo takes them all back.
 
 The sheet's title and size, and its cells from A1 to the last one used, as A1 text: each value,
 and a formula as written (`=SUM(B2:B6)`), up to the bound below. Changes are `change_sheet`'s ([Sheets for
-agents](../029-sheets/sheet-store.md#agents)): set cells and formulas, clear, format (bold, colours, number formats,
+agents](../029-sheets/sheet-store.md#agents)): set cells and formulas (one cell's set read as the AI may write it, `[250]` or `250`, as
+the one row `[[250]]`), clear, format (bold, colours, number formats,
 currency, dates), insert and delete rows and columns, sort, freeze, the filter, merges and borders, validation and
 format rules, a design, and a chart over cells. That is how it fills in a starter sheet, writes a total or an average
 from words, adds a summary row, tidies and formats data, and fixes a formula: the reply explains the formula, the
@@ -107,7 +115,7 @@ when the heading changes, since the heading is the tab's name and is renamed thr
 Its rows top to bottom, each its height and its slots left to right, each slot's span in twelfths and what it shows
 (a Board or Sheet tab by name, a view, a chart, a note's title and text, or empty). Changes are the dashboard's own
 layout edits, the ones its handles and Slot Settings make ([Plan tabs](plan-tabs.md#dashboard-tab)), named by row
-and slot number from 1: **add_row** (where, how many slots, its height), **remove_row**, **add_slot** (in a row, at a
+and slot number from 1 (and said back as people say them: "the first slot in row 1", "two thirds of the row"): **add_row** (where, how many slots, its height), **remove_row**, **add_slot** (in a row, at a
 place), **remove_slot**, **resize_slot** (a slot's span, its neighbour taking the difference), **row_height**,
 **move_slot**, **note** (a slot shows a note, its title and text), **show_tab** (a slot shows a Board or Sheet tab by
 name) and **clear_slot**. Every limit of the layout holds (12 rows, 4 slots a row, a span of 2 to 12). One undo step.
@@ -173,7 +181,9 @@ Each in fixed words:
 ## Limits and cost
 
 - An ask has **20 seconds** on built-in AI (a key's thinking model the keyed wait) and answers at most **3,000
-  tokens** (`PLAN_AI_MAX_TOKENS`). The ask is about 4,000 characters of instructions and the tab's at most 24,000, so
+  tokens** on a key (`PLAN_AI_MAX_TOKENS`) and **1,200** on built-in AI (`PLAN_AI_BUILT_IN_MAX_TOKENS`), whose model
+  writes slower: its instructions ask for a short reply (a starter sheet one set of at most 15 rows, the person asking
+  for more), so its longest turn ends well inside the 20 seconds (a full starter sheet took 18.1 s). The ask is about 4,000 characters of instructions and the tab's at most 24,000, so
   about **7,000 tokens** in at most, and **1,500** for a small board; a reply is typically 200 to 600 tokens.
 - One person's 30 built-in questions a day are shared with Ask, so Plan AI adds no new allowance.
 - The tab is read by the editor when a turn is sent, never on load: the button costs nothing until it is pressed, and

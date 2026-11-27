@@ -31,6 +31,25 @@ const num = (v: unknown): number | null =>
 const text = (v: unknown, max: number): string =>
   typeof v === 'string' ? v.trim().slice(0, max) : '';
 
+// A slot and a width as people say them: "the first slot in row 1", "two thirds of the row" (never twelfths, which
+// only the layout counts in). A row holds at most four slots.
+const ORDINALS = ['first', 'second', 'third', 'fourth'];
+const slotWords = (c: PlanAiChange): string =>
+  `the ${ORDINALS[Number(c['slot']) - 1] ?? String(c['slot'])} slot in row ${String(c['row'])}`;
+const PARTS: Readonly<Record<number, string>> = {
+  2: 'a sixth',
+  3: 'a quarter',
+  4: 'a third',
+  6: 'half',
+  8: 'two thirds',
+  9: 'three quarters',
+  10: 'five sixths',
+  12: 'all',
+};
+/** "two thirds of the row wide"; a span with no plain fraction in twelfths. */
+export const widthWords = (span: number): string =>
+  `${PARTS[span] ?? `${span} twelfths`} of the row wide`;
+
 /** Makes `changes` on `layout`: the layout after them, and a line for each (the last one refused when one was). */
 export function applyDashboardChanges(
   layout: DashboardLayout,
@@ -117,7 +136,7 @@ export function applyDashboardChanges(
         slotNow(l, r, s);
         return {
           layout: removeDashboardSlot(l, r, s),
-          line: `Removed slot ${String(c['slot'])} of row ${String(c['row'])}`,
+          line: `Removed ${slotWords(c)}`,
         };
       }
       case 'resize_slot': {
@@ -142,7 +161,7 @@ export function applyDashboardChanges(
         const now = rowNow(made, r).row.slots.find((x) => x.id === s)!.span;
         return {
           layout: made,
-          line: `Made slot ${String(c['slot'])} of row ${String(c['row'])} ${now} twelfths wide`,
+          line: `Made ${slotWords(c)} ${widthWords(now)}`,
         };
       }
       case 'row_height': {
@@ -171,7 +190,7 @@ export function applyDashboardChanges(
           l,
           'That slot can’t go there: the row is full.',
         );
-        return { layout: next, line: `Moved slot ${String(c['slot'])} of row ${String(c['row'])}` };
+        return { layout: next, line: `Moved ${slotWords(c)}` };
       }
       case 'note': {
         const [r, s] = slotIds(c);
@@ -217,7 +236,7 @@ export function applyDashboardChanges(
         slotNow(l, r, s);
         return {
           layout: setDashboardContent(l, s, undefined),
-          line: `Emptied slot ${String(c['slot'])} of row ${String(c['row'])}`,
+          line: `Emptied ${slotWords(c)}`,
         };
       }
       default:

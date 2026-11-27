@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DashboardLayout } from '@liveplanner/project';
-import { applyDashboardChanges } from './plan-ai-dashboard';
+import { applyDashboardChanges, widthWords } from './plan-ai-dashboard';
 
 // Plan AI on a Dashboard (docs/specs/026-plan/plan-ai.md "On a dashboard").
 
@@ -63,8 +63,12 @@ describe('applyDashboardChanges', () => {
     expect(out.layout.rows[1]!.slots).toHaveLength(2);
     expect(out.layout.rows[1]!.height).toBe(500);
     expect(run([{ op: 'resize_slot', row: 1, slot: 1, span: 12 }]).lines[0]!.text).toBe(
-      'Made slot 1 of row 1 10 twelfths wide',
+      'Made the first slot in row 1 five sixths of the row wide',
     );
+    expect(out.lines[0]!.text).toBe('Made the first slot in row 1 two thirds of the row wide');
+    expect(out.lines[3]!.text).toBe('Moved the second slot in row 1');
+    expect(widthWords(6)).toBe('half of the row wide');
+    expect(widthWords(5)).toBe('5 twelfths of the row wide');
     const last = run([{ op: 'resize_slot', row: 1, slot: 2, span: 4 }]);
     expect(last.layout.rows[0]!.slots.map((s) => s.span)).toEqual([8, 4]);
     const right = run([{ op: 'move_slot', row: 1, slot: 1, toSlot: 2 }]);
@@ -81,6 +85,10 @@ describe('applyDashboardChanges', () => {
       { op: 'remove_slot', row: 1, slot: 1 },
     ]);
     expect(out.lines.every((l) => l.ok)).toBe(true);
+    expect(out.lines.slice(2).map((l) => l.text)).toEqual([
+      'Emptied the first slot in row 1',
+      'Removed the first slot in row 1',
+    ]);
     expect(out.layout.rows[0]!.slots).toEqual([
       { id: 's2', span: 12, content: { type: 'note', title: 'Week', text: 'Ship it' } },
     ]);

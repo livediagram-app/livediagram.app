@@ -3,7 +3,11 @@ import type { KeyAnswer } from '@liveworkspace/ai';
 import { ASK_BUILT_IN_PER_PERSON_PER_DAY } from '@liveworkspace/ask';
 import { askCountName, spendAskIn } from '@liveworkspace/ask/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PLAN_AI_INSTRUCTION_MAX, PLAN_AI_WORDS } from '@liveplanner/items';
+import {
+  PLAN_AI_BUILT_IN_MAX_TOKENS,
+  PLAN_AI_INSTRUCTION_MAX,
+  PLAN_AI_WORDS,
+} from '@liveplanner/items';
 import type { PlanAiResponse } from '@liveplanner/api-schema';
 import type { PlanGrant } from '../index-service';
 import type { AutomationsAi, Env } from '../types';
@@ -175,9 +179,13 @@ describe('a turn', () => {
     expect(await res.json<PlanAiResponse>()).toEqual({
       reply: 'Moved #1 to Done.',
       changes: MOVE.changes,
+      dropped: 0,
       provider: 'built-in',
       role: 'edit',
     });
+    // Built-in AI writes a shorter reply, so its longest turn ends inside its 20 seconds.
+    expect(calls[0]!.inputs['max_tokens']).toBe(PLAN_AI_BUILT_IN_MAX_TOKENS);
+    expect(messages()[0]!.content).toContain('at most 15 rows');
     expect(JSON.parse(messages()[1]!.content)).toEqual({
       tabName: 'Sprint',
       kind: 'board',
@@ -201,10 +209,15 @@ describe('a turn', () => {
     const participant = await ask(BODY, { grant: grantOf('participate') });
     expect(await participant.json<PlanAiResponse>()).toMatchObject({
       changes: [{ op: 'move' }],
+      dropped: 1,
       role: 'participate',
     });
     const viewer = await ask(BODY, { grant: grantOf('view') });
-    expect(await viewer.json<PlanAiResponse>()).toMatchObject({ changes: [], role: 'view' });
+    expect(await viewer.json<PlanAiResponse>()).toMatchObject({
+      changes: [],
+      dropped: 2,
+      role: 'view',
+    });
     expect(messages(1)[0]!.content).toContain('never answer changes');
   });
 
