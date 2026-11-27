@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FormDefinition } from '@liveplanner/forms';
 import { PLAN_AI_TAB_MAX, type ItemTypeDef } from '@liveplanner/items';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { forPeople } from './plan-ai-lines';
 import { readBoard, readDashboard, readFormTab, valueText, withinBound } from './plan-ai-read';
 import { ITEMS, SETUP, TYPES, card } from './plan-ai-fixtures';
@@ -179,13 +180,14 @@ describe('reading a big board', () => {
         return [c.id, c] as const;
       }),
     );
-    const started = performance.now();
-    const text = readBoard({ setup: SETUP, items, types: TYPES });
-    const took = performance.now() - started;
+    let text = '';
+    const took = cpuMsOf(() => {
+      text = readBoard({ setup: SETUP, items, types: TYPES });
+    });
     expect(text.length).toBeLessThanOrEqual(PLAN_AI_TAB_MAX);
     expect(text).toMatch(/left out: too many to send/);
-    // Linear: measured about 15 ms locally; the budget leaves room for a slow runner.
-    expect(took).toBeLessThan(500);
+    // Linear: measured about 15 ms of CPU locally; a quadratic scan of 5,000 cards would pass the budget.
+    expect(took).toBeLessThan(cpuBudgetMs(200));
   });
 });
 
