@@ -49,7 +49,7 @@ export function PageContentsPanel({
       mobile={mobile}
       onClose={onClose}
       onDock={onDock}
-      footer={<ContentsAddPage contents={contents} />}
+      footer={<ContentsAddPage contents={contents} view={view} />}
       badges={contentsBadges}
       summary={contents.summary}
       frame={(body, headerActions, titleAdornment) => (

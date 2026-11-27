@@ -282,6 +282,8 @@ export function usePageContents<
     actionsFor,
     add,
     addLike,
+    // A page about to be added from elsewhere (an AI-made page, as Add Page's): once it is in the list it is here.
+    expectAdded: () => setAdded(pages.map((p) => p.id)),
     lastPage,
     full,
   };
