@@ -12,7 +12,8 @@ import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
 import type { TeamDetails, TeamMember } from '../../data/teams';
 import { DEFAULT_TEAM_TAB, TEAM_TABS, type TeamTab } from '../../views';
 import { MUTED } from '../../ui/classes';
-import { CloseIcon, LinkIcon, PencilIcon, PlusIcon, SearchIcon, TrashIcon } from '../../ui/icons';
+import { LinkIcon, PencilIcon, PlusIcon, TrashIcon } from '../../ui/icons';
+import { FindField } from '../../ui/FindField';
 import { useToast } from '../../ui/Toasts';
 import { LogOutIcon } from '../../ui/icons';
 import { memberName } from '../rules';
@@ -394,29 +395,12 @@ function PeopleTab({
                 ),
               )}
             </div>
-            <label className="relative flex h-8 min-w-0 flex-[0_1_14rem] items-center max-sm:flex-1">
-              <span className="pointer-events-none absolute left-2.5 text-slate-400" aria-hidden>
-                <SearchIcon size={14} />
-              </span>
-              <span className="sr-only">Find a Person</span>
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Find a person"
-                className="h-8 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-7 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
-              />
-              {query ? (
-                <button
-                  type="button"
-                  aria-label="Clear search"
-                  onClick={() => setQuery('')}
-                  className="absolute right-1.5 inline-flex size-5 cursor-pointer items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                >
-                  <CloseIcon size={10} />
-                </button>
-              ) : null}
-            </label>
+            <FindField
+              label="Find a person"
+              value={query}
+              onChange={setQuery}
+              className="flex-[0_1_14rem] max-sm:flex-1"
+            />
           </div>
           {nothing ? (
             <p className={`m-0 px-4 py-8 text-center text-sm ${MUTED}`} data-team-no-people="">

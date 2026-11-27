@@ -215,6 +215,66 @@ describe('expansion', () => {
     expect([...createExpansion('test-key-spaces').get()]).toEqual(['my-work']);
   });
 
+  // Work Tracker 1495: two Explorers on one origin (two tabs, an editor's workbench frame) each held a copy, and a
+  // change in one wrote back the spaces its stale copy still held open, so a space folded in the other came back open.
+  it('never reopens a space another Explorer folded when it opens a row of its own', () => {
+    localStorage.setItem('test-key-two', JSON.stringify(['my-work']));
+    const page = createExpansion('test-key-two');
+    const frame = createExpansion('test-key-two');
+    expect([...frame.get()]).toEqual(['my-work']);
+    page.toggle('my-work');
+    // The frame opens the Library for a page of it: My Work stays folded.
+    frame.expand('library');
+    expect([...frame.get()]).toEqual(['library']);
+    expect(JSON.parse(localStorage.getItem('test-key-two')!)).toEqual(['library']);
+    // And a toggle there starts from what is kept too.
+    frame.toggle('team:A');
+    expect(new Set(JSON.parse(localStorage.getItem('test-key-two')!))).toEqual(
+      new Set(['library', 'team:A']),
+    );
+  });
+
+  it('draws another tab’s fold at once, and stops listening once nobody reads it', () => {
+    localStorage.setItem('test-key-tab', JSON.stringify(['my-work', 'library']));
+    const store = createExpansion('test-key-tab');
+    const seen = vi.fn();
+    const stop = store.subscribe(seen);
+    expect([...store.get()]).toEqual(['my-work', 'library']);
+    localStorage.setItem('test-key-tab', JSON.stringify(['library']));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'test-key-tab' }));
+    expect([...store.get()]).toEqual(['library']);
+    expect(seen).toHaveBeenCalledTimes(1);
+    // Another key, or the same value again, changes nothing.
+    window.dispatchEvent(new StorageEvent('storage', { key: 'other' }));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'test-key-tab' }));
+    expect(seen).toHaveBeenCalledTimes(1);
+    // Opening a row that another page already opened draws what is kept, with no write.
+    localStorage.setItem('test-key-tab', JSON.stringify(['library', 'f1']));
+    store.expand('f1');
+    expect([...store.get()]).toEqual(['library', 'f1']);
+    expect(seen).toHaveBeenCalledTimes(2);
+    stop();
+    localStorage.setItem('test-key-tab', JSON.stringify([]));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'test-key-tab' }));
+    expect(seen).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps its own copy once a write fails, rather than reading back an older kept one', () => {
+    localStorage.setItem('test-key-full', JSON.stringify(['my-work']));
+    const store = createExpansion('test-key-full');
+    const set = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('full');
+    });
+    try {
+      store.toggle('my-work');
+      expect([...store.get()]).toEqual([]);
+      store.expand('library');
+      expect([...store.get()]).toEqual(['library']);
+    } finally {
+      set.mockRestore();
+    }
+  });
+
   it('starts folded, without an error, when storage is blocked or holds nonsense', () => {
     localStorage.setItem('test-key-bad', '{not json');
     expect([...createExpansion('test-key-bad').get()]).toEqual([]);

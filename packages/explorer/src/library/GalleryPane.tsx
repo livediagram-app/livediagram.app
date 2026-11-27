@@ -3,24 +3,27 @@
 // The Image Gallery (livediagram's GalleryPane): every image the person has added, from the host's media source,
 // each with its size, a "Used in" chip naming the items that place it (so orphaned bytes are easy to spot), and
 // Delete. Upload by dropping, pasting or choosing a file, where the host takes uploads. Two reads on arrival (the
-// list and the usage), each tile's picture only as it nears the screen (./blobs). The page's Show switch (All or
-// Unused, ./gallery-filter) filters what those reads brought, never reading again.
+// list and the usage), each tile's picture only as it nears the screen (./blobs). The page's name field and Show chips
+// (All, Unused or an app, ./gallery-filter) filter what those reads brought, never reading again.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { IMAGE_ACCEPT_ATTR } from '@liveworkspace/api-schema/image-limits';
 import { Button, Chip, ConfirmDialog, EmptyState, HoverCard } from '@liveworkspace/ui';
 import { MadeByAiChip } from '../explorer/badges';
-import { TrashIcon } from '../ui/icons';
+import { FILE_WORDS } from '../words';
+import { SearchIcon, TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { useBlobUrl } from './blobs';
 import {
   filterGallery,
+  imageName,
   isLibraryHeld,
   isUnchecked,
   UNKNOWN_USAGE,
   type GalleryFilter,
 } from './gallery-filter';
+import { siteOfApp, type AppName } from '@liveworkspace/sites';
 import type { GalleryHost, GalleryImage, GalleryUsage, GalleryUse } from './types';
 import { UploadLimitError } from './upload-limit-error';
 import { quoted } from '../quoted';
@@ -41,12 +44,13 @@ export function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const imageName = (image: GalleryImage) => image.name || 'Untitled image';
-
-// "3 canvases" when every use is the host's kind; "3 items" once another app's item is among them.
+// "3 canvases" when every use is the host's kind; "3 files", the Explorer's word for a mix of apps (words.ts), once
+// another app's is among them. In no app the host's word is "file" already, so one grid never mixes two nouns.
 function countOf(usage: GalleryUse[], kindMany: { one: string; many: string }): string {
   const n = usage.length;
-  const words = usage.some((u) => u.app) ? { one: 'item', many: 'items' } : kindMany;
+  const words = usage.some((u) => u.app)
+    ? { one: FILE_WORDS.lowerOne, many: FILE_WORDS.lowerMany }
+    : kindMany;
   return `${n} ${n === 1 ? words.one : words.many}`;
 }
 
@@ -84,13 +88,6 @@ export function useGallery(host: GalleryHost | undefined) {
 
 export type GalleryState = ReturnType<typeof useGallery>;
 
-/** How many of the loaded images were checked and found placed nowhere, or null before the gallery (and its
- *  usage) is ready. */
-export function unusedCount(host: GalleryHost, loaded: GalleryState['loaded']): number | null {
-  if (!host.usage || loaded.status !== 'ready' || loaded.images.length === 0) return null;
-  return filterGallery(loaded.images, loaded.usage, 'unused').length;
-}
-
 /** The Gallery on its own, reading its images itself (the editor panel's compact Gallery). */
 export function GalleryPane({
   host,
@@ -98,7 +95,7 @@ export function GalleryPane({
   compact = false,
 }: {
   host: GalleryHost;
-  // The items that place images ("canvases", or "items" across apps), for "Used in 3 canvases".
+  // The items that place images ("canvases", or "files" across apps), for "Used in 3 canvases".
   kindMany: { one: string; many: string };
   compact?: boolean;
 }) {
@@ -113,16 +110,25 @@ export function GalleryContent({
   kindMany,
   compact = false,
   filter = 'all',
+  query = '',
+  app = 'livediagram',
   onShowAll,
+  onClearQuery,
 }: {
   host: GalleryHost;
   gallery: GalleryState;
   kindMany: { one: string; many: string };
   compact?: boolean;
-  // The Show switch's choice: Unused keeps only the images nothing places.
+  // The Show chips' choice: Unused keeps only the images nothing places, an app the images its items place.
   filter?: GalleryFilter;
+  // The name field's words: only images whose name holds every one.
+  query?: string;
+  // Whose Gallery this is, for uses an older api names no app for.
+  app?: AppName;
   // Back to All, from the empty state when every image is in use.
   onShowAll?: () => void;
+  // Empties the name field, from the empty state when no name matches.
+  onClearQuery?: () => void;
 }) {
   const { loaded, reload, drop } = gallery;
   const [error, setError] = useState<string | null>(null);
@@ -133,16 +139,21 @@ export function GalleryContent({
   const usageOf = (id: string) => (loaded.status === 'ready' ? (loaded.usage.uses[id] ?? []) : []);
   const uncheckedOf = (id: string) => loaded.status === 'ready' && isUnchecked(loaded.usage, id);
   const heldOf = (id: string) => loaded.status === 'ready' && isLibraryHeld(loaded.usage, id);
-  // One pass over at most the gallery's cap, again only when the list, its usage or the switch changes.
+  // One pass over at most the gallery's cap, again only when the list, its usage or a filter changes.
   const shown = useMemo(
-    () => (loaded.status === 'ready' ? filterGallery(loaded.images, loaded.usage, filter) : []),
-    [loaded, filter],
+    () =>
+      loaded.status === 'ready'
+        ? filterGallery(loaded.images, loaded.usage, filter, { query, host: app })
+        : [],
+    [loaded, filter, query, app],
   );
+  const searching = query.trim() !== '';
   // Only worked out when the Unused list comes up empty.
   const anyUnchecked =
     shown.length === 0 &&
     loaded.status === 'ready' &&
     loaded.images.some((image) => isUnchecked(loaded.usage, image.id));
+  const appName = filter !== 'all' && filter !== 'unused' ? siteOfApp(filter).name : null;
 
   const remove = (image: GalleryImage) => {
     setDeleting(null);
@@ -197,6 +208,41 @@ export function GalleryContent({
             title="No images yet"
             description={`Every image you add to a ${kindMany.one} collects here, ready to reuse in any of them.`}
           />
+        ) : shown.length === 0 && searching ? (
+          <EmptyState
+            compact={compact}
+            icon={<SearchIcon size={28} />}
+            title={`No images match ${quoted(query.trim())}`}
+            description={
+              filter === 'all'
+                ? 'Search looks at each image’s name. Try another word from it.'
+                : `Search looks at the names of the ${filter === 'unused' ? 'unused images' : `images in ${appName}`}. Try another word, or show every image.`
+            }
+          >
+            {onClearQuery ? (
+              <Button size="sm" variant="secondary" onClick={onClearQuery}>
+                Clear Search
+              </Button>
+            ) : null}
+            {filter !== 'all' && onShowAll ? (
+              <Button size="sm" variant="secondary" onClick={onShowAll}>
+                Show All Images
+              </Button>
+            ) : null}
+          </EmptyState>
+        ) : shown.length === 0 && appName ? (
+          <EmptyState
+            compact={compact}
+            icon={<ImageIcon size={28} />}
+            title={`No images in ${appName}`}
+            description={`None of these images is placed in a ${appName} item any more.`}
+          >
+            {onShowAll ? (
+              <Button size="sm" variant="secondary" onClick={onShowAll}>
+                Show All Images
+              </Button>
+            ) : null}
+          </EmptyState>
         ) : shown.length === 0 ? (
           <EmptyState
             compact={compact}
@@ -205,7 +251,7 @@ export function GalleryContent({
             description={
               anyUnchecked
                 ? 'Where some images are used couldn’t be checked just now, so none of them are listed here. Open the gallery again to retry.'
-                : `Every image here is placed in a ${kindMany.one} or another app’s item, so there is nothing to clear.`
+                : `Every image here is placed in a ${kindMany.one} or another app’s file, so there is nothing to clear.`
             }
           >
             {onShowAll ? (
@@ -215,7 +261,12 @@ export function GalleryContent({
             ) : null}
           </EmptyState>
         ) : (
-          <ul className={grid} aria-label={filter === 'unused' ? 'Unused images' : 'Images'}>
+          <ul
+            className={grid}
+            aria-label={
+              filter === 'unused' ? 'Unused images' : appName ? `Images in ${appName}` : 'Images'
+            }
+          >
             {shown.map((image) => (
               <GalleryCard
                 key={image.id}

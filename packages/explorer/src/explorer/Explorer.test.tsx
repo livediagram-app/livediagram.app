@@ -299,13 +299,51 @@ describe('<Explorer>', () => {
     });
     renderExplorer(index, { kind: 'trash' });
     expect(await screen.findByRole('heading', { name: 'Your plans' })).toBeTruthy();
-    expect(screen.getByText(/Deleted .* · 30 days left/)).toBeTruthy();
+    expect(screen.getByText(/^Deleted (\d|[A-Z][a-z]{2} \d)/)).toBeTruthy();
+    // Its days left as a meter and words, slate while it has time; the band counts it.
+    const meter = document.querySelector<HTMLElement>('[data-days-left]')!;
+    expect(meter.textContent).toBe('30 days left');
+    expect(meter.hasAttribute('data-days-soon')).toBe(false);
+    expect(document.querySelector('[data-trash-intro]')?.textContent).toContain('1 plan');
+    expect(document.querySelector('[data-trash-intro]')?.textContent).not.toContain('this week');
     // The menu's words, and the name after them (the accessible name starts with what the button shows).
     expect(screen.getByRole('button', { name: 'Delete Forever: Item 1' }).textContent).toBe(
       'Delete Forever',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Restore Item 1' }));
     await waitFor(() => expect(index.count('restoreItem')).toBe(1));
+  });
+
+  // Work Tracker 1492: the Trash says what leaves soon, in amber, and counts it in its band.
+  it('marks what leaves within the week, and counts it', async () => {
+    const day = 24 * 60 * 60 * 1000;
+    const index = createFakeIndex({
+      items: [
+        makeItem(1, { trashedAt: Date.now() - 25 * day, trashReason: 'deleted' }),
+        makeItem(2, { trashedAt: Date.now() - 31 * day, trashReason: 'empty' }),
+        makeItem(3, { trashedAt: Date.now(), trashReason: 'deleted' }),
+      ],
+    });
+    renderExplorer(index, { kind: 'trash' });
+    await screen.findByRole('heading', { name: 'Your plans' });
+    const meters = [...document.querySelectorAll<HTMLElement>('[data-days-left]')];
+    const of = (n: string) => meters.find((m) => m.closest(`[data-trash-row="item-${n}"]`))!;
+    expect(of('1').textContent).toBe('5 days left');
+    expect(of('1').hasAttribute('data-days-soon')).toBe(true);
+    expect(of('2').textContent).toBe('Removed at the next clean-up');
+    expect(screen.getByText(/because it was empty/)).toBeTruthy();
+    expect(of('3').hasAttribute('data-days-soon')).toBe(false);
+    const intro = document.querySelector('[data-trash-intro]')!;
+    expect(intro.textContent).toContain('3 plans');
+    expect(intro.textContent).toContain('2 leaving this week');
+    expect(
+      within(document.querySelector<HTMLElement>('[data-trash-group="mine"]')!).getByText('3'),
+    ).toBeTruthy();
+    // Delete Forever asks first, then deletes for good.
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Forever: Item 3' }));
+    const confirm = await screen.findByRole('dialog');
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Delete permanently' }));
+    await waitFor(() => expect(index.count('deleteItem')).toBe(1));
   });
 
   it('empties one Trash group of this app’s items only, the team’s too', async () => {

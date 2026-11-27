@@ -134,22 +134,39 @@ export function WalkthroughsContent({
             ),
         ),
       );
-      if (!signal?.aborted) setItems(new Map(found.flat().map((item) => [item.id, item])));
+      // Merged into what is named already: a list in parts names each part as it arrives.
+      if (!signal?.aborted)
+        setItems(
+          (was) => new Map([...was, ...found.flat().map((item) => [item.id, item] as const)]),
+        );
     },
     [client],
   );
   const read = useCallback(
     (signal?: AbortSignal) => {
-      host.list(signal).then(
-        (entries) => {
-          if (signal?.aborted) return;
-          setLoad({ state: 'ready', entries });
-          void nameItems(entries, signal);
-        },
-        () => {
-          if (!signal?.aborted) setLoad({ state: 'failed' });
-        },
-      );
+      const failed = () => {
+        if (!signal?.aborted) setLoad({ state: 'failed' });
+      };
+      // Several apps' lists: each app's cards show as it answers, never waiting on a slow one; the empty state only
+      // once every app has answered with nothing (Work Tracker 1493).
+      if (host.listParts) {
+        const named = new Set<string>();
+        host
+          .listParts(signal, (entries, done) => {
+            if (signal?.aborted || (entries.length === 0 && !done)) return;
+            setLoad({ state: 'ready', entries });
+            const fresh = entries.filter((e) => !named.has(e.id));
+            for (const e of fresh) named.add(e.id);
+            if (fresh.length > 0) void nameItems(fresh, signal);
+          })
+          .catch(failed);
+        return;
+      }
+      host.list(signal).then((entries) => {
+        if (signal?.aborted) return;
+        setLoad({ state: 'ready', entries });
+        void nameItems(entries, signal);
+      }, failed);
     },
     [host, nameItems],
   );

@@ -283,7 +283,7 @@ liveplanner releases a picture a card no longer holds after a 15-minute grace, s
 
 An image is **used** when any app's document places it, as the apps last reported. The Explorer's Image
 Gallery lists the owner's images from every app, so its "Used in" badge counts every app's documents too:
-an image uploaded in livediagram and placed only in a livedocuments document reads "Used in 1 item" in any
+an image uploaded in livediagram and placed only in a livedocuments document reads "Used in 1 file" (the Explorer's word for a mix of apps; in no app every count says "file") in any
 app's Gallery, never "Not used". A picture a Library item holds is used too (libraries.md "Pictures"): `GET /usage`
 answers those apart, as `library`, and the Gallery shows them **In Library**, never "Not used" or Unused.
 `GET /usage` answers every app's references; each app's
