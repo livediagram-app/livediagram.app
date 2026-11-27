@@ -1,6 +1,6 @@
 # Session tabs
 
-Status: **implemented** (Refinement, Sprint Planning). Stand-up, Bug Triage and Sprint Review are designed for here
+Status: **implemented** (Refinement, Sprint Planning, Bug Triage). Stand-up and Sprint Review are designed for here
 and come later.
 
 A **Session tab** turns a filtered, ordered slice of the plan's cards into a **queue** the team works through one
@@ -13,26 +13,30 @@ Teams refine by staring at one big board. Everything on it competes for attentio
 next, and "is this one ready?" is decided by whoever drags first. A session tab shows one card, fully, with the
 queue beside it and one clear way to say "done, next". A second kind, **Sprint Planning**, walks the top of the backlog the same way and
 **commits** cards into the sprint, tallying their estimates against the team's capacity
-([Sprint Planning](#sprint-planning)). It is a **view over the real cards**, never a copy: every
+([Sprint Planning](#sprint-planning)), and a third, **Bug Triage**, walks every new bug and gets a decision on each:
+accepted, closed with a reason, skipped or flagged ([Bug Triage](#bug-triage)). It is a **view over the real cards**, never a copy: every
 edit, comment and move lands on the card itself, on every board it shows on.
 
 ## Domain language
 
-| Term             | Meaning                                                                                                                                | Not                              |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **Session tab**  | A tab of kind `session`: one queue of cards worked through together                                                                    | meeting tab, ceremony            |
-| **session kind** | What the session is for: `refinement`, `planning` (later `standup`, `triage`, `review`), stored as `session.sessionKind`               | type (a card's), template        |
-| **queue**        | The cards the session works through, in order: those its set-up picks, and every card it has already decided                           | list, backlog                    |
-| **set-up**       | What a session picks and how: its card types, its stages, its order, its target stages and its timebox                                 | config, filter                   |
-| **stage**        | A status (a board column) the session takes cards from                                                                                 | column (a board's), state        |
-| **target stage** | Where the kind's completing outcome (Refined, Committed) moves a card: the next stage in its type's order, or the one the set-up names | destination (a form's)           |
-| **outcome**      | What the session decided for a card: **Refined**, **Skipped**, **Flagged** or **Committed** (each kind offers its own)                 | result, verdict                  |
-| **capacity**     | Sprint Planning's optional figure, in estimate points, that the committed cards are tallied against                                    | budget, velocity                 |
-| **tally**        | The committed cards' estimates added up, beside the capacity; cards with no estimate are counted apart, never as zero                  | total, burn                      |
-| **current card** | The card the session is on, shown on the right for everyone                                                                            | selected card                    |
-| **facilitator**  | The one person who runs the session: moves it from card to card and decides outcomes                                                   | host, owner, driver              |
-| **timebox**      | An optional length of time per card                                                                                                    | timer (that is a session tool's) |
-| **fill button**  | The action button that fills with the theme's accent as it confirms (`FillActionButton`), shared by every session kind                 | progress button                  |
+| Term             | Meaning                                                                                                                                          | Not                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| **Session tab**  | A tab of kind `session`: one queue of cards worked through together                                                                              | meeting tab, ceremony            |
+| **session kind** | What the session is for: `refinement`, `planning`, `triage` (later `standup`, `review`), stored as `session.sessionKind`                         | type (a card's), template        |
+| **queue**        | The cards the session works through, in order: those its set-up picks, and every card it has already decided                                     | list, backlog                    |
+| **set-up**       | What a session picks and how: its card types, its stages, its order, its target stages and its timebox                                           | config, filter                   |
+| **stage**        | A status (a board column) the session takes cards from                                                                                           | column (a board's), state        |
+| **target stage** | Where the kind's completing outcome (Refined, Committed, Accepted) moves a card: the next stage in its type's order, or the one the set-up names | destination (a form's)           |
+| **close stage**  | Where Bug Triage's Closed moves a card: the type's first closing stage (Won't Fix, Cancelled), or the one the set-up names                       | done column                      |
+| **reason**       | The short words a Close is given ("Can't reproduce"), kept with the outcome and in the card's history                                            | comment, note                    |
+| **duplicate**    | The card a closed bug repeats, linked on Close                                                                                                   | copy (Duplicate makes one)       |
+| **outcome**      | What the session decided for a card: **Refined**, **Skipped**, **Flagged**, **Committed**, **Accepted** or **Closed** (each kind offers its own) | result, verdict                  |
+| **capacity**     | Sprint Planning's optional figure, in estimate points, that the committed cards are tallied against                                              | budget, velocity                 |
+| **tally**        | The committed cards' estimates added up, beside the capacity; cards with no estimate are counted apart, never as zero                            | total, burn                      |
+| **current card** | The card the session is on, shown on the right for everyone                                                                                      | selected card                    |
+| **facilitator**  | The one person who runs the session: moves it from card to card and decides outcomes                                                             | host, owner, driver              |
+| **timebox**      | An optional length of time per card                                                                                                              | timer (that is a session tool's) |
+| **fill button**  | The action button that fills with the theme's accent as it confirms (`FillActionButton`), shared by every session kind                           | progress button                  |
 
 **Naming beside the session tools.** A tab already carries **session tools**, the timer and the dot vote
 ([Session tools](../012-collaboration/session-tools.md), `session.ts`, `Tab.timer`, `Tab.vote`). A Session tab is a
@@ -127,10 +131,15 @@ Under the card, for the facilitator:
 - **Skip** and **Flag** grey the card in the sidebar, record their outcome in the card's history, and move on the
   same way. Flag also flags the card ([Flags](items.md#flags)).
 - A decided card shown again reads its outcome over the action bar ("Refined by Sam · Undo Outcome"); **Undo
-  Outcome** (the facilitator's) clears the outcome so it can be decided again. The card's move is undone with the
-  editor's Undo as any move is.
+  Outcome** (the facilitator's) takes the decision back: the card returns to the stage the outcome moved it from
+  (when it is still where the outcome put it; a card someone has moved since stays put), a flag the outcome set comes
+  off, a duplicate link it made is removed, the card's history records the undo, and the outcome clears so the card
+  can be decided again, the room staying on it.
+- **Undo Last**: once anything is decided, the facilitator's action bar starts with a small chip naming the latest
+  decision ("Closed BUG-33 · Undo"), so the last decision is one press from undone without finding its card. It
+  undoes as Undo Outcome does and takes the room back to that card.
 - Keyboard, for the facilitator, when focus is not in a field: **R** Refined, **S** Skip, **F** Flag, **J** and **K**
-  the next and previous card.
+  the next and previous card, **U** Undo Last.
 - Everyone else sees the bar's place hold who is facilitating ("Sam is running this session") and, for an Editor, the
   facilitator choices below.
 
@@ -201,7 +210,69 @@ is below.
   Commit. Committed cards with no estimate are counted apart under it ("1 committed card has no estimate, not
   counted"), never as zero.
 - **Session Complete** shows Committed and Skipped, and the tally ("21 of 30 points committed").
-- Undo Outcome on a committed card clears its outcome (the tally drops it); its move is undone with the editor's Undo.
+- Undo Outcome on a committed card takes the card back to its stage and clears its outcome (the tally drops it).
+
+## Bug Triage
+
+A Bug Triage session walks every new bug one at a time and gets a decision on each, so none piles up untriaged. It
+is the same tab, queue, sidebar, card, progress bar, timebox, facilitator and fill button as Refinement; what it
+brings is below.
+
+### Making one
+
+- Start Planning's **Sessions** holds **Bug Triage Session** ("Walk every new bug one at a time and decide: accept
+  it, close it with a reason, skip or flag it") beside Refinement and Sprint Planning, named apart from the Bug Triage
+  board Start Planning's Boards offer. Choosing it opens **Set Up Bug Triage**:
+  1. **Card Types** as Refinement's. It picks first the bug-like types (named Bug, Defect, Issue, Incident or
+     Problem, or drawn with the bug glyph) among those with cards in an intake stage; else every type with cards in
+     one; else as Refinement does.
+  2. **Intake Stages** (the Stages part, named for triage): the intake-like stages (New, Under Review, Triage, Needs
+     Triage, Untriaged, Inbox, Reported, Submitted, Open) picked first; else each picked type's first stage.
+  3. **Order**: **Created, Oldest First** by default, so the bug that has waited longest comes first; any of a
+     board's Sort Cards choices otherwise.
+  4. **When Accepted**: one row per picked type, "Moves to" a stage picker starting on **Next Stage**, overridable
+     with any stage of the type's, as When Refined is. Triage's Next Stage also steps past a waiting stage (Needs
+     Info, Needs Detail, Waiting, On Hold, Blocked), so a New bug accepts into **Confirmed** on the Bug Tracker's
+     Triage board rather than into Needs Info.
+  5. **When Closed**: one row per picked type, "Moves to" a stage picker starting on **Close Stage**: the type's
+     first closing stage (Won't Fix, Won't Do, Cancelled, Canceled, Declined, Rejected, Not a Bug, Invalid, Closed,
+     Dropped, Abandoned, in that preference); with none, the card stays where it is. Any stage of the type's may be
+     named instead.
+  6. **Timebox** as Refinement's.
+- Start Session names the tab **Bug Triage** while it keeps its default name.
+
+### Running it
+
+- **Priority** and the type's **severity-style fields** sit in the **triage strip** above the action bar: Priority's
+  four levels as chips in their colours (Urgent, High, Medium, Low) and **None**, then one row of chips for each
+  Choice field of the type named like a severity (Severity, Impact, Urgency, Criticality), its options and None. The
+  card's own values read pressed. A press writes the field at once, as the field does on the card. It is there for
+  whoever may edit cards (an Editor or a Participant), whether or not they facilitate; a Viewer reads the values. A
+  type with neither Priority nor such a field shows no strip.
+- Each sidebar row shows the card's priority as a small pill in its colour on the right; a card with none shows a
+  dashed **?** pill, so an unprioritised bug shows before it is accepted.
+- The **action bar** holds **Skip** and **Flag** on the left (after **Undo Last** once there is one), where Accept
+  takes the card ("Moves to **Confirmed**"), the timebox's time left when on, then **Close** and the **Accept** fill
+  button (the shared fill animation) on the right. Keys: **A** Accept, **C** Close, **S** Skip, **F** Flag, **U**
+  Undo Last, **J** and **K**.
+- **Accept** moves the real card to its target stage (the end of that column), records **Accepted** in its history
+  and on the tab, and moves the room on.
+- **Close** opens the **close tray** in the action bar's place: a short **reason** (a text field of up to 200
+  characters, with Won't Fix, Can't Reproduce, Duplicate, Works as Intended and Not a Bug as chips that fill it in),
+  an optional **Duplicate Of** (**Link Duplicate** opens the plan's card picker; the picked card shows as a chip with
+  a remove button, and fills an empty reason with "Duplicate of BUG-12"), a line saying where the card goes ("Moves
+  to **Won't Fix**"), **Cancel** and **Close Bug**. Close Bug needs a reason; Enter in the reason presses it and
+  Escape cancels. Closing moves the card to its close stage (with a duplicate linked and no close stage named in the
+  set-up, to a stage of its type named Duplicate when it has one), records **Closed** with the reason and the
+  duplicate in its history and on the tab, and moves the room on.
+- **The duplicate link**: when the card's type has a Card field named like a duplicate (Duplicate Of, Duplicates,
+  Duplicate) that links to the duplicate's type, Close writes the duplicate into it (adding to the list when the
+  field holds several), so it shows in Linked Cards as any link does. With no such field the link is kept in the
+  outcome and the card's history alone ("Closed this as a duplicate of BUG-12").
+- **Skip** and **Flag** work as Refinement's.
+- A decided card shown again reads its outcome and, for a Closed one, its duplicate and reason ("Closed by Sam ·
+  Duplicate of BUG-12 · Can't reproduce", then Undo Outcome).
+- **Session Complete** shows Accepted, Closed, Skipped and Flagged.
 
 ## Real time
 
@@ -218,19 +289,25 @@ is below.
 A card's history ([Items](items.md#history)) records each outcome as an entry of its own, tagged **session**:
 "Sam refined this in a Refinement session", "Sam skipped this in a Refinement session", "Sam flagged this in a
 Refinement session". Sprint Planning's read "Sam committed this in a Sprint Planning session" and "Sam skipped this in a
-Sprint Planning session". Refined, Committed and Flagged also record the move or the flag itself, as any write does.
-The outcome is written by `POST /items/:itemId/session` (`{ session: 'refinement' | 'planning', outcome }`, the outcome
-one the kind offers), which writes nothing on the card, so a skip changes no Last Edited.
+Sprint Planning session". Bug Triage's read "Sam accepted this in a Bug Triage session", "Sam closed this in a Bug
+Triage session: Can't reproduce", or "Sam closed this as a duplicate of BUG-12 in a Bug Triage session: Same root
+cause". An undo reads "Sam undid Closed in a Bug Triage session"; an outcome undone by the same person within the
+history's grouping minute cancels out, as a flag and an unflag do. Refined, Committed, Accepted, Closed and Flagged
+also record the move, the flag or the duplicate link itself, as any write does. The outcome is written by
+`POST /items/:itemId/session` (`{ session: 'refinement' | 'planning' | 'triage', outcome, reason?, duplicateOf?,
+undone? }`, the outcome one the kind offers; a reason and a duplicate only with Closed), which writes nothing on the
+card, so a skip changes no Last Edited.
 
 ## Share roles
 
-| Role            | May                                                                                                                                    |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Make a Session tab and change its set-up; hold the facilitator baton (take it, hand it over, step down, take it over); run the session |
-| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board (Sprint Planning's Estimate strip included)   |
-| **Viewer**      | Watch it live; peek at any card; read it (the Estimate strip reads its value, with no chips)                                           |
+| Role            | May                                                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Editor**      | Make a Session tab and change its set-up; hold the facilitator baton (take it, hand it over, step down, take it over); run the session                             |
+| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board (Sprint Planning's Estimate strip and Bug Triage's triage strip included) |
+| **Viewer**      | Watch it live; peek at any card; read it (the Estimate strip and the triage strip read their values, with no chips)                                                |
 
-The outcome route asks edit access. A locked tab reads as a Viewer's.
+The outcome route asks edit access; deciding and undoing are the facilitator's alone. A locked tab reads as a
+Viewer's.
 
 ## Designed to grow
 
@@ -238,16 +315,20 @@ Every session kind shares the tab, the queue, the sidebar, the card, the progres
 and the fill button. A kind brings only:
 
 - its **set-up parts** (Refinement's: card types, stages, order, When Refined, timebox; Sprint Planning's add
-  Capacity),
-- its **actions** (Refinement's: Refined, Skip, Flag; Sprint Planning's: Commit, Skip), each an outcome with a label,
-  glyph, key and history wording; the completing one is the fill button and moves the card to its target stage,
+  Capacity; Bug Triage's add When Closed and start on oldest first),
+- its **actions** (Refinement's: Refined, Skip, Flag; Sprint Planning's: Commit, Skip; Bug Triage's: Accept, Close,
+  Skip, Flag), each an outcome with a label, glyph, key and history wording; the completing one is the fill button and
+  moves the card to its target stage; a **closing** one (Bug Triage's Close) asks its reason in the close tray and
+  moves the card to its close stage,
+- its **field strip** above the action bar (Sprint Planning's Estimate strip, Bug Triage's triage strip) and the
+  sidebar rows' pill (the estimate, the priority),
 - its **grouping** of the sidebar (Refinement's: none; Stand-up's will be by person),
-- its **tally** (Sprint Planning's: estimates against capacity; none for Refinement), which brings the tally meter, the
-  Estimate strip, the rows' estimate pills and the capacity set-up part.
+- its **tally** (Sprint Planning's: estimates against capacity; none for Refinement or Bug Triage), which brings the
+  tally meter and the capacity set-up part.
 
 `SESSION_KINDS` (in `@liveplanner/project`) names each kind's label, outcomes, completing outcome, grouping and tally,
-and the editor's `session-kinds.tsx` its wording and set-up defaults; a tally's parts live in their own folder
-(`components/session/planning/`) and the page draws them only for a kind with that tally.
+and the editor's `session-kinds.tsx` its wording and set-up defaults; a kind's own parts live in their own folder
+(`components/session/planning/`, `components/session/triage/`) and the page draws them only for that kind.
 
 ## Agents and export
 
@@ -259,11 +340,11 @@ and the editor's `session-kinds.tsx` its wording and set-up defaults; a tally's 
 ## Telemetry
 
 In the `Plan` category (the `Session` category is a visit's): `Plan · Created · SessionTab` on Start Session,
-`Plan · Changed · SessionSetup` on a set-up change, and `Plan · Used · SessionRefined | SessionSkipped |
-SessionFlagged | SessionCommitted` on each outcome (the one chart of session outcomes, Sprint Planning's Commit
-included).
+`Plan · Changed · SessionSetup` on a set-up change, `Plan · Used · SessionRefined | SessionSkipped |
+SessionFlagged | SessionCommitted | SessionAccepted | SessionClosed` on each outcome and `Plan · Used · SessionUndone`
+on an undo (the one chart of session outcomes, every kind's included).
 
 ## Limits
 
 - 500 cards in a queue; 50 card types and 100 stages in a set-up; a timebox of 1 to 30 minutes; a capacity of 1 to
-  9 999 points.
+  9 999 points; a Close reason of 200 characters.
