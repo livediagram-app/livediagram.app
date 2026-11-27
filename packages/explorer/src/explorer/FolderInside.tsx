@@ -81,16 +81,23 @@ export function insidePhrase(inside: FolderInsideCounts): string {
   return inside.capped ? `At least ${list}` : list;
 }
 
-// The disc sizes: a card's, the panel card's, a row's.
+// The disc sizes: a card's, the panel card's, a row's. The glyph fills most of its disc, so it reads at a glance.
 const DISC = {
-  card: 'size-5 [&_svg]:size-3',
-  pane: 'size-4 [&_svg]:size-2.5',
-  row: 'size-4 [&_svg]:size-2.5',
+  card: 'size-[22px] [&_svg]:size-3.5',
+  pane: 'size-[18px] [&_svg]:size-3',
+  row: 'size-[18px] [&_svg]:size-3',
 } as const;
 const MORE = {
-  card: 'h-5 min-w-5 px-1 text-[10px]',
-  pane: 'h-4 min-w-4 px-0.5 text-[9px]',
-  row: 'h-4 min-w-4 px-0.5 text-[9px]',
+  card: 'h-[22px] min-w-[26px] pl-2 pr-1.5 text-[10px]',
+  pane: 'h-[18px] min-w-[22px] pl-1.5 pr-1 text-[9px]',
+  row: 'h-[18px] min-w-[22px] pl-1.5 pr-1 text-[9px]',
+} as const;
+// On a card or the panel's card the stack sits over the picture, so it rides on a small pill of the card's own colour;
+// in a row it sits on the row itself.
+const TRAY = {
+  card: 'rounded-full bg-white/95 p-[3px] shadow-sm ring-1 ring-slate-200/80 dark:bg-slate-800/95 dark:ring-slate-600/70',
+  pane: 'rounded-full bg-white/95 p-0.5 shadow-sm ring-1 ring-slate-200/80 dark:bg-slate-800/95 dark:ring-slate-600/70',
+  row: '',
 } as const;
 // A thin ring the colour of the card behind, so overlapping discs read as separate coins.
 const RING = 'ring-[1.5px] ring-white dark:ring-slate-800';
@@ -122,14 +129,14 @@ export function FolderAppBadges({
         role="img"
         aria-label={phrase}
         data-folder-apps={inside.apps.map(([app]) => app).join(' ')}
-        className="flex items-center"
+        className={`flex items-center ${TRAY[size]}`}
       >
         {shown.map(([app], i) => (
           <span
             key={app}
             data-folder-app={app}
             style={{ color: siteOf(app).accent, zIndex: SHOWN - i } as CSSProperties}
-            className={`relative flex shrink-0 items-center justify-center rounded-full bg-white shadow-sm dark:bg-slate-900 ${RING} ${DISC[size]} ${i ? '-ml-1.5' : ''}`}
+            className={`relative flex shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-900 ${RING} ${DISC[size]} ${i ? '-ml-1.5' : ''}`}
           >
             <BrandGlyph />
           </span>
@@ -137,7 +144,7 @@ export function FolderAppBadges({
         {more > 0 ? (
           <span
             data-folder-apps-more={more}
-            className={`relative -ml-1.5 flex shrink-0 items-center justify-center rounded-full bg-slate-100 font-semibold tabular-nums leading-none text-slate-600 shadow-sm dark:bg-slate-700 dark:text-slate-200 ${RING} ${MORE[size]}`}
+            className={`relative -ml-1.5 flex shrink-0 items-center justify-center rounded-full bg-slate-100 font-semibold tabular-nums leading-none text-slate-700 dark:bg-slate-700 dark:text-slate-200 ${RING} ${MORE[size]}`}
           >
             {`+${more}`}
           </span>

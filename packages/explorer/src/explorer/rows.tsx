@@ -495,6 +495,7 @@ export const FolderCard = memo(function FolderCard({
           <FolderMosaic
             preview={preview}
             subfolders={folders.childrenOf(folder.id, folder.teamId)}
+            reserve={inside.apps.length > 0}
           />
         ) : (
           <span className="text-amber-400 [&_svg]:h-14 [&_svg]:w-14">

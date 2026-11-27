@@ -53,10 +53,14 @@ const TILE =
 export function FolderMosaic({
   preview,
   subfolders,
+  reserve = false,
 }: {
   preview: ShownFolderPreview;
   subfolders: readonly Folder[];
+  // The card's app badges sit at its bottom right: the tiles keep clear of them.
+  reserve?: boolean;
 }) {
+  const pad = reserve ? 'px-3 pt-3 pb-10' : 'p-3';
   const { renderThumbnail, folders } = useExplorer();
   const { tiles, hidden } = folderTiles(preview, subfolders);
   const elsewhere = preview.elsewhere;
@@ -67,7 +71,9 @@ export function FolderMosaic({
         data-folder-elsewhere={elsewhere.itemCount}
         className="relative flex h-full w-full items-center justify-center"
       >
-        <span className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3 opacity-45 grayscale-[35%]">
+        <span
+          className={`flex h-full w-full flex-wrap content-center items-center justify-center gap-2 ${pad} opacity-45 grayscale-[35%]`}
+        >
           {shown.tiles.map((tile) =>
             tile.kind === 'item' ? (
               <span key={tile.item.id} className={TILE}>
@@ -90,7 +96,7 @@ export function FolderMosaic({
   return (
     <span
       data-folder-mosaic=""
-      className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3"
+      className={`flex h-full w-full flex-wrap content-center items-center justify-center gap-2 ${pad}`}
     >
       {tiles.map((tile) =>
         tile.kind === 'item' ? (

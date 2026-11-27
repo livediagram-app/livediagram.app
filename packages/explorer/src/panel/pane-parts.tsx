@@ -359,9 +359,7 @@ export function FolderPreview({
         {count}
       </Chip>
       {badges ? (
-        <span className="absolute bottom-1.5 right-2 flex [&_svg]:!h-2.5 [&_svg]:!w-2.5">
-          {badges}
-        </span>
+        <span className="absolute bottom-1.5 right-2 flex [&_svg]:!h-3 [&_svg]:!w-3">{badges}</span>
       ) : null}
     </span>
   );
