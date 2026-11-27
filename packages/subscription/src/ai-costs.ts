@@ -23,6 +23,10 @@ export const AI_CREDIT_COSTS = {
   /** Send to Knowledge Base: one summary of the selected items (1,500 tokens written at most), paid as Ask's are and
    *  spent only once the model has answered (004-index send-to-knowledge.md "The summary"). */
   knowledgeSummary: 1,
+  /** livedocuments: Describe a Page, a slide's layout picked then written or an article written (2,000 tokens written
+   *  an ask at most, two asks at most), paid as Ask's are and spent only once the page's words are in hand
+   *  (livedocuments/docs/specs/007-editor/describe-a-page.md). */
+  pageDraft: 1,
 } as const;
 
 /** livediagram: notes read from a photo for one credit. A photo's notes are read six to a request, so 24 is four
