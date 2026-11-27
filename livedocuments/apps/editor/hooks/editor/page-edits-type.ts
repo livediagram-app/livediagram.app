@@ -52,6 +52,9 @@ export type PageEdits = BackgroundCopyEdits & {
   // anything to replace).
   // Resolves once the layout is placed (its builders load on the first apply).
   applyLayout: (pageId: string, layout: PageLayoutId) => Promise<void>;
+  // A layout tile hovered: the page drawn with the layout placed, exactly as applyLayout lands it (the canvas draws
+  // it in place of the tab's elements, writing nothing); null puts it back.
+  previewLayout: (pageId: string, layout: PageLayoutId | null) => void;
   // How many elements are on the page.
   contentCount: (pageId: string) => number;
   // A fill hovered in the panel: what is on the page drawn re-inked as the press would re-ink it

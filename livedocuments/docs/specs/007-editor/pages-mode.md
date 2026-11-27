@@ -1338,18 +1338,17 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   Participant or Viewer never sees it. (This replaces the earlier rule that an empty page offered
   nothing on itself, after the retired Start From a Layout card of Work Tracker #172: the owner asked
   for a simple invite back, 2026-11-04; the card's size and its search stay retired.)
-- **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
-  that layout as it would land, drawn over the whole sheet in the page's background, and the
-  page's own content is hidden meanwhile (left out of the page clip), so the two never mix. The
-  preview already holds the carried content (the page's words and pictures in their new places),
-  so it shows exactly what a press lands. It is a picture only: nothing is placed and nothing
-  enters the history; leaving the tiles (or closing the panel) takes it away.
-- **It eases, never jumps**: the first layout fades in over the sheet; moving to another tile, the
-  sheet stays and the next layout settles in over the last (a fade and a slight lift into place,
-  `LAYOUT_PREVIEW_IN_MS`, 220 ms, ease-out) while the one before fades out under it
-  (`LAYOUT_PREVIEW_OUT_MS`, 160 ms); at most those two are drawn, so a quick sweep across the tiles
-  never stacks pictures up. Leaving the tiles fades the preview away over the same 160 ms. Reduced
-  motion swaps at once (`LayoutPreviewHost`, `components/canvas/InfographicLayoutPreview.tsx`).
+- **Hover previews the layout on the page, exactly as it lands** (Work Tracker 1502): while a tile is hovered (or
+  focused) the canvas draws the page with that layout placed, through the one path a press takes (`layoutPlacedTab`,
+  `apps/editor/hooks/editor/page-layout-place.ts`: built for the page, the page's words and pictures carried in,
+  coloured from the tab's theme for the page's half, in place of everything on the page), and draws it as it draws
+  any element, on the page's own background and design, in the viewer's half, in the tab's font and finish. So the
+  preview and the placed page cannot differ: a press on the layout being shown commits the very elements shown. It
+  is a preview only (the canvas's local preview, as Tidy Up's hover is): nothing is written and nothing enters the
+  history; leaving the tiles (or closing the panel) puts the page back.
+- **It swaps in place**: moving from tile to tile redraws the page with the next layout at once, as Tidy Up's hover
+  does. (The earlier crossfade drew a separate picture over the sheet, which hid the page's design and missed the
+  tab's theme, so the preview and the placed page differed; exactness won over the fade.)
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and
   orientation and rendered as it lands, as the viewer sees it: placed in the tab's theme as a
   press places it, drawn in the viewer's half on the page's own background, and on a plain page

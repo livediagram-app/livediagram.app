@@ -70,7 +70,7 @@ function problemsOn(id: string, page: LaidOutPage, els: Element[]): string[] {
             sitsOn(el, b),
         );
       if (!box?.fillColor || !/^#[0-9a-f]{6}$/i.test(box.fillColor)) return;
-      const ink = el.textColor ?? defaultTextColor(el as never, surface);
+      const ink = el.textColor ?? defaultTextColor(el, surface);
       if (!/^#[0-9a-f]{6}$/i.test(ink)) return;
       const drawn = contrastRatio(ink, mixHex(box.fillColor, tone, SOFT_BOX_OPACITY));
       const solid = contrastRatio(ink, box.fillColor);

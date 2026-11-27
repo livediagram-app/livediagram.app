@@ -39,9 +39,7 @@ describe('softenLayoutBoxes', () => {
     expect(soft(box()).opacity).toBe(SOFT_BOX_OPACITY);
     expect(soft(box({ label: '  ' })).opacity).toBe(SOFT_BOX_OPACITY);
     expect(soft(box({ label: 'Now' })).opacity).toBeUndefined();
-    expect(
-      soft(box({ richText: [{ text: 'Now' }] } as Partial<ShapeElement>)).opacity,
-    ).toBeUndefined();
+    expect(soft(box({ richText: [{ text: 'Now' }] })).opacity).toBeUndefined();
   });
 
   it('turns a see-through box solid once it carries an icon, a sticker or words, and leaves the rest', () => {
@@ -53,7 +51,7 @@ describe('softenLayoutBoxes', () => {
       { label: 'Moved in' },
       { richText: [] },
     ]) {
-      const out = solidWhenCarrying({ ...see, ...extra } as ShapeElement);
+      const out = solidWhenCarrying({ ...see, ...extra });
       expect(out.opacity, JSON.stringify(extra)).toBeUndefined();
       expect(out.colorPreset).toBe(SOFT_BOX_PRESET);
     }

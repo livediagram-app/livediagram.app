@@ -328,8 +328,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         <PageClip
           // A stack shows the page in front alone, so only its elements show (shownPagesOf).
           pages={props.pagesMode ? shownPagesOf(props.pagesMode) : null}
-          // A page under a layout preview shows only the preview.
-          hiddenPageId={props.pagesMode?.layoutPreview?.pageId ?? null}
           elements={elements}
           layers={tabLayers}
         >
