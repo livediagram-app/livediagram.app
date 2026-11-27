@@ -38,6 +38,15 @@ describe('planAiRequest', () => {
       instruction: 'Move #1 to Done',
     });
     expect(request.response_format.json_schema.name).toBe('plan_ai');
+    // Strict decoding keeps only what the schema names: a change must be free to carry its title, cells and fields
+    // beside its op, or every card is added as "New task" (PR 2349 verifier).
+    const change = (
+      request.response_format.json_schema.schema as {
+        properties: { changes: { items: Record<string, unknown> } };
+      }
+    ).properties.changes.items;
+    expect(change['required']).toEqual(['op']);
+    expect(change['additionalProperties']).toBe(true);
   });
 
   it('has instructions for every kind, and says what a Participant and a Viewer may do', () => {

@@ -13,7 +13,7 @@ import { makeTestRouteContext } from './test-route-context';
 // Plan AI (docs/specs/026-plan/plan-ai.md), Workers AI a stand-in binding and PLAN_ROOM a stand-in of rooms by name:
 // who may ask, what the model is sent, the role the changes are read for, Ask's count, the second ask, and that
 // nothing of the instruction, the tab or the reply is logged. No network.
-const keyFor = vi.hoisted(() => vi.fn(async (): Promise<unknown> => null));
+const keyFor = vi.hoisted(() => vi.fn(async (..._args: unknown[]): Promise<unknown> => null));
 vi.mock('@liveworkspace/auth-client/ai-key', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@liveworkspace/auth-client/ai-key')>()),
   personAiKey: keyFor,

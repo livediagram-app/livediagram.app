@@ -154,6 +154,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // Automations: Test on a Card ('Tested', type AutomationRule).
   'Plan·Tested',
   'Plan·Toggled',
+  'Plan·Undone',
   'Plan·Unlinked',
   'Plan·Used',
   'Participant·Created',

@@ -148,7 +148,7 @@ const KIND_TASK: Readonly<Record<PlanAiKind, string>> = {
   board:
     'The tab is a board of cards in columns. Changes, each one object: ' +
     '{"op":"add","title":"...","type":"<card type name>","status":"<column name>","fields":{"<field name>":value}} ' +
-    'makes a card (type and status optional; fields by the names the tab lists: Description, Assignee (a person\'s ' +
+    "makes a card (type and status optional; fields by the names the tab lists: Description, Assignee (a person's " +
     'name), Priority (low, medium, high, urgent), Due and Start (YYYY-MM-DD), Labels (a list), and each custom ' +
     'field); {"op":"set","item":"#12","fields":{...},"clear":["<field name>"]} changes a card; ' +
     '{"op":"move","item":"#12","status":"<column name>"} moves one; {"op":"delete","item":"#12"} puts one in the ' +
@@ -227,7 +227,12 @@ const SCHEMA: Obj = {
     changes: {
       type: 'array',
       maxItems: PLAN_AI_CHANGES_MAX,
-      items: { type: 'object', properties: { op: { type: 'string' } }, required: ['op'] },
+      items: {
+        type: 'object',
+        properties: { op: { type: 'string' } },
+        required: ['op'],
+        additionalProperties: true,
+      },
     },
   },
   required: ['reply', 'changes'],
@@ -235,7 +240,10 @@ const SCHEMA: Obj = {
 
 /** The ask: the kind's fixed instructions, then the tab, the turns and the instruction as one JSON object (and, on the
  *  second ask, the check's words for what the first reply got wrong, never the model's own earlier text). */
-export function planAiRequest(ask: PlanAiAsk, previous?: { path: string; message: string }): AiRequest {
+export function planAiRequest(
+  ask: PlanAiAsk,
+  previous?: { path: string; message: string },
+): AiRequest {
   const turns = (ask.turns ?? []).slice(-PLAN_AI_TURNS_MAX).map((t) => ({
     instruction: cutText(t.instruction, PLAN_AI_INSTRUCTION_MAX),
     reply: cutText(t.reply, PLAN_AI_TURN_REPLY_MAX),
@@ -289,7 +297,9 @@ export function readPlanAi(
   let dropped = 0;
   for (const [i, change] of raw.entries()) {
     if (!isObj(change) || typeof change['op'] !== 'string')
-      return { refused: { path: `changes.${i}`, message: 'each change is an object with its "op"' } };
+      return {
+        refused: { path: `changes.${i}`, message: 'each change is an object with its "op"' },
+      };
     if (!known.includes(change['op']))
       return {
         refused: {
@@ -302,7 +312,9 @@ export function readPlanAi(
       continue;
     }
     if (JSON.stringify(change).length > PLAN_AI_CHANGE_CHARS_MAX)
-      return { refused: { path: `changes.${i}`, message: 'a change is too large: split it in two' } };
+      return {
+        refused: { path: `changes.${i}`, message: 'a change is too large: split it in two' },
+      };
     changes.push(change as PlanAiChange);
   }
   if (!words && changes.length === 0)

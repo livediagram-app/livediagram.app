@@ -200,7 +200,7 @@ function PlanAiThread() {
     <div
       data-plan-ai=""
       data-plan-ai-kind={kind}
-      className="flex max-h-[min(70vh,40rem)] min-h-0 flex-col"
+      className="flex max-h-[min(40rem,calc(100dvh-20rem))] min-h-0 flex-col"
     >
       <div
         ref={thread}

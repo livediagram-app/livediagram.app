@@ -34,6 +34,8 @@ import type { RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
 
 const ID_MAX = 200;
+// How long one ask may take on built-in AI (spec "Bounds": 20 seconds; a key's thinking model gets the keyed wait).
+const PLAN_AI_BUILT_IN_TIMEOUT_MS = 20_000;
 
 const refuse = (
   status: number,
@@ -175,7 +177,7 @@ async function askPlanAi(ctx: RouteContext): Promise<Response> {
   const asked = await askForDraft({
     client,
     gateway: keyed ? undefined : env.AI_GATEWAY,
-    ...(keyed ? { timeoutMs: AUTOMATION_KEYED_TIMEOUT_MS } : {}),
+    timeoutMs: keyed ? AUTOMATION_KEYED_TIMEOUT_MS : PLAN_AI_BUILT_IN_TIMEOUT_MS,
     request: (refused) => planAiRequest(ask, refused),
     read: (reply) => readPlanAi(reply, ask),
     onAsk: () => defer(reportServerEvent(env, 'Plan', 'Ran', 'PlanAi')),
