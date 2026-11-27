@@ -1,12 +1,13 @@
-// What makes liveknowledge a knowledgebase (docs/specs/030-knowledgebase): Ask, Insights (./insights), verification,
-// search and getting around the pages, Describe to Set Up and the team's AI key, and the pages made from them.
-// Every event here is a count with a preset type, never a question, an answer, a page or a key. Part of the metric
-// catalogue: import from ../metric-catalogue.
+// What makes liveknowledge a knowledgebase (docs/specs/030-knowledgebase): Ask, Insights (./insights), Slack and
+// Teams (./chat), verification, search and getting around the pages, Describe to Set Up and the team's AI key, and
+// the pages made from them. Every event here is a count with a preset type, never a question, an answer, a page or
+// a key. Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { openedChart } from './opened';
 
+export * from './chat';
 export * from './insights';
 
 // ---- Ask (search-and-ask.md "Ask") ----------------------------------------------------------------------------
@@ -642,39 +643,6 @@ export const SITE_PUBLISHING: MetricStack = {
   blurb: 'Knowledgebases put on the web as public help centres, and taken down again.',
   members: [SITES_PUBLISHED, SITES_UNPUBLISHED],
   headline: [SITES_PUBLISHED],
-};
-
-export const CHAT_WORKSPACES_CONNECTED = chart(
-  'UI',
-  'Used',
-  'Chat Workspaces Connected',
-  'An Editor started connecting a knowledgebase to Slack or to Microsoft Teams, from Slack and Teams.',
-  { types: ['ChatConnectSlack', 'ChatConnectTeams'] },
-);
-
-export const CHAT_WORKSPACES_DISCONNECTED = chart(
-  'UI',
-  'Used',
-  'Chat Workspaces Disconnected',
-  'An Editor disconnected a knowledgebase from a Slack workspace or a Teams organisation.',
-  { types: ['ChatDisconnect'], rising: 'neutral' },
-);
-
-export const CHAT_ACCOUNTS_LINKED = chart(
-  'UI',
-  'Used',
-  'Chat Accounts Connected',
-  'Someone connected their liveknowledge account to Slack or Teams, so their answers there use the pages they can open.',
-  { types: ['ChatAccountLinked'] },
-);
-
-export const CHAT_APPS: MetricStack = {
-  stack: true,
-  title: 'Slack and Teams',
-  blurb:
-    'Knowledgebases connected to chat, and the people who connected their own accounts to ask from there.',
-  members: [CHAT_WORKSPACES_CONNECTED, CHAT_WORKSPACES_DISCONNECTED, CHAT_ACCOUNTS_LINKED],
-  headline: [CHAT_WORKSPACES_CONNECTED],
 };
 
 // ---- Agents' access, for Connections (insights.md "Agents") -------------------------------------------------
