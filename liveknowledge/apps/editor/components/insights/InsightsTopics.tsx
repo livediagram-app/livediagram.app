@@ -182,7 +182,7 @@ export function InsightsTopics({
           onOpen={() => onOpen('health')}
         >
           <VerifiedBar parts={parts} />
-          <HealthPreview lowest={lowest} notRead={notRead} />
+          <HealthPreview lowest={lowest} notRead={notRead} pages={figures.pages} />
         </TopicTile>
       ) : (
         // Verification off (a Review Period of Never): the average Health Score leads, with no share or bar.
@@ -198,7 +198,7 @@ export function InsightsTopics({
           }
           onOpen={() => onOpen('health')}
         >
-          <HealthPreview lowest={lowest} notRead={notRead} />
+          <HealthPreview lowest={lowest} notRead={notRead} pages={figures.pages} />
         </TopicTile>
       )}
 
@@ -284,13 +284,16 @@ export function InsightsTopics({
   );
 }
 
-/** Page Health's rows to look at: the lowest-health pages, then how many nobody read. */
+/** Page Health's rows to look at: the lowest-health pages, then how many nobody read. With no pages, no line says
+ *  they are all healthy: the figure's "No pages yet" says it all. */
 function HealthPreview({
   lowest,
   notRead,
+  pages,
 }: {
   lowest: KnowledgeOverviewResponse['lowHealth'];
   notRead: string | null;
+  pages: number;
 }) {
   return (
     <>
@@ -304,7 +307,7 @@ function HealthPreview({
             />
           ))}
         </TopicPreview>
-      ) : lowest ? (
+      ) : lowest && pages > 0 ? (
         <PreviewNote>Every page scores {HEALTH_HEALTHY_MIN} or more.</PreviewNote>
       ) : null}
       {notRead ? <PreviewNote>{notRead}</PreviewNote> : null}

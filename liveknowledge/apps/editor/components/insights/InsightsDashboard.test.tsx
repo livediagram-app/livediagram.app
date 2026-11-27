@@ -210,9 +210,16 @@ describe('the dashboard', () => {
     draw(overview({ lowHealth: [] }));
     expect(within(topicTile('health')).getByText('Every page scores 75 or more.')).toBeTruthy();
     cleanup();
-    draw(overview({ health: { verified: 0, reviewDue: 0, neverVerified: 0, total: 0 } }));
+    draw(
+      overview({
+        lowHealth: [],
+        health: { verified: 0, reviewDue: 0, neverVerified: 0, total: 0 },
+      }),
+    );
     expect(within(topicTile('health')).getByText('None')).toBeTruthy();
     expect(within(topicTile('health')).getByText('No pages yet')).toBeTruthy();
+    // No pages: none to call healthy.
+    expect(within(topicTile('health')).queryByText('Every page scores 75 or more.')).toBeNull();
   });
 
   it('Page Health under a Review Period of Never leads with the average, and no bar', () => {
