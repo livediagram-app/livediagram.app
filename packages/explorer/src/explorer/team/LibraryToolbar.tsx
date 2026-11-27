@@ -2,7 +2,8 @@
 
 // A team's Library tab toolbar, left side (liveworkspace/docs/specs/004-index/one-explorer.md "A team's page"): All
 // and a chip for each kind the library holds, with how many, writing the lens's Opens in (`opens-in:plan`) so the
-// address, the Filter field and the list agree; and Sort (Last Changed or Name), kept on this device.
+// address, the Filter field and the list agree; and Sort (Last Changed or Name), kept on this device. On a phone Sort is
+// an icon button opening a sheet, with an accent dot while an order other than the default is on (Work Tracker 1516).
 
 import { useState } from 'react';
 import type { Kind } from '@liveworkspace/index-client';
@@ -11,6 +12,8 @@ import { appOfKind } from '../../lens/dimensions';
 import { AppMark } from '../badges';
 import { FilterChip, FilterChipRow } from '../FilterChips';
 import { PortalMenu } from '../../ui/Menu';
+import { ChoiceSheet } from '../../ui/ChoiceSheet';
+import { TOOLBAR_CONTROL } from '../../ui/classes';
 import { CaretDownIcon, CheckIcon, SortIcon } from '../../ui/icons';
 import { siteOf } from '../../words';
 import { LIBRARY_SORTS, type LibrarySort } from './library';
@@ -62,12 +65,16 @@ export function KindChips({
 export function SortMenu({
   sort,
   onSort,
+  compact = false,
 }: {
   sort: LibrarySort;
   onSort: (sort: LibrarySort) => void;
+  /** A phone's one-row toolbar: the icon alone, opening a sheet. */
+  compact?: boolean;
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const label = LIBRARY_SORTS.find((s) => s.id === sort)!.label;
+  if (compact) return <SortSheetButton sort={sort} label={label} onSort={onSort} />;
   return (
     <>
       <button
@@ -105,6 +112,53 @@ export function SortMenu({
           ))}
         </PortalMenu>
       ) : null}
+    </>
+  );
+}
+
+const SORT_CHOICES = LIBRARY_SORTS.map((s) => ({ value: s.id, label: s.label }));
+
+function SortSheetButton({
+  sort,
+  label,
+  onSort,
+}: {
+  sort: LibrarySort;
+  label: string;
+  onSort: (sort: LibrarySort) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  // The first order is the default: any other wears the dot, so a list out of its usual order says so.
+  const changed = sort !== LIBRARY_SORTS[0]!.id;
+  return (
+    <>
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`Sort: ${label}`}
+        title={`Sort: ${label}`}
+        data-sort-button={sort}
+        onClick={() => setOpen(true)}
+        className={`${TOOLBAR_CONTROL} w-9 shrink-0`}
+      >
+        <SortIcon />
+        {changed ? (
+          <span
+            aria-hidden
+            data-sort-dot=""
+            className="absolute right-1 top-1 size-2 rounded-full bg-brand-600 ring-2 ring-white dark:bg-brand-400 dark:ring-slate-800"
+          />
+        ) : null}
+      </button>
+      <ChoiceSheet
+        open={open}
+        title="Sort by"
+        choices={SORT_CHOICES}
+        value={sort}
+        onPick={onSort}
+        onClose={() => setOpen(false)}
+      />
     </>
   );
 }

@@ -29,6 +29,10 @@ export const FOCUS_RING_INSET =
 
 export const MUTED = 'text-slate-500 dark:text-slate-400';
 
+/** A phone toolbar's quiet control (a team's Library: the scope chip, Sort): 36px tall (44px to a thumb), bordered,
+ *  the radius (Button's) and height New wears beside it (Work Tracker 1516). */
+export const TOOLBAR_CONTROL = `relative touch-target-y inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white ${FOCUS_RING}`;
+
 /** The Explorer's body under its header: the sidebar and the pane side by side (and its skeleton's, so nothing jumps). */
 export const EXPLORER_MAIN = 'mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6';
 

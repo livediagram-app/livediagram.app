@@ -1,9 +1,9 @@
 // A team's Library tab chips (liveworkspace/docs/specs/004-index/one-explorer.md "A team's page"): each app's logo
 // and name with its count, one row that never wraps, and a pick writes the lens's Opens in.
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseLens, type LensContext } from '../../lens';
-import { KindChips } from './LibraryToolbar';
+import { KindChips, SortMenu } from './LibraryToolbar';
 
 const context: LensContext = { view: 'scoped', teams: [], templates: [], modes: [] };
 
@@ -65,5 +65,40 @@ describe('the Library kind chips', () => {
     expect(group.style.maskImage).toBe('');
     widths.mockRestore();
     client.mockRestore();
+  });
+});
+
+describe('Sort on a phone (Work Tracker 1516)', () => {
+  it('is the icon alone, with a dot only while an order other than the default is on', () => {
+    const onSort = vi.fn();
+    const { rerender } = render(<SortMenu compact sort="updated" onSort={onSort} />);
+    const button = screen.getByRole('button', { name: 'Sort: Last Changed' });
+    expect(button.textContent).toBe('');
+    expect(button.querySelector('[data-sort-dot]')).toBeNull();
+    rerender(<SortMenu compact sort="name" onSort={onSort} />);
+    expect(
+      screen.getByRole('button', { name: 'Sort: Name' }).querySelector('[data-sort-dot]'),
+    ).not.toBeNull();
+  });
+
+  it('opens a sheet of the orders, the current one ticked, and a pick sorts', async () => {
+    const onSort = vi.fn();
+    render(<SortMenu compact sort="updated" onSort={onSort} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sort: Last Changed' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Sort by' });
+    const last = within(sheet).getByRole('radio', { name: 'Last Changed' });
+    expect(last.getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(within(sheet).getByRole('radio', { name: 'Name' }));
+    expect(onSort).toHaveBeenCalledWith('name');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('picking the order already on closes the sheet and changes nothing', async () => {
+    const onSort = vi.fn();
+    render(<SortMenu compact sort="name" onSort={onSort} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sort: Name' }));
+    fireEvent.click(await screen.findByRole('radio', { name: 'Name' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(onSort).not.toHaveBeenCalled();
   });
 });
