@@ -11,6 +11,7 @@ vi.mock('../offline/offline-store', () => ({ isOfflineId: vi.fn(async () => fals
 import { apiFetch, expectOk } from './core';
 import { isOfflineId } from '../offline/offline-store';
 import { fetchItemHistory, recordSessionOutcome } from './item-history';
+import { onHistoryWritten } from './history-written';
 
 // A card's history on the api (docs/specs/026-plan/items.md "History"): one card's route, a tab-scoped session's tab,
 // and an offline plan, which keeps none and is never asked.
@@ -65,5 +66,28 @@ describe('recordSessionOutcome', () => {
     vi.mocked(isOfflineId).mockResolvedValue(true);
     await recordSessionOutcome(SCOPE, 'c1', body);
     expect(apiFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('onHistoryWritten', () => {
+  const body = { session: 'refinement', outcome: 'skipped' } as const;
+
+  it('hears a recorded outcome, never a refused one, and stops when unsubscribed', async () => {
+    const heard = vi.fn();
+    const stop = onHistoryWritten(heard);
+    vi.mocked(apiFetch).mockImplementation(async () => new Response(null, { status: 204 }));
+    await recordSessionOutcome(SCOPE, 'c1', body);
+    expect(heard).toHaveBeenCalledWith('c1');
+    heard.mockClear();
+    vi.mocked(apiFetch).mockImplementation(async () =>
+      Response.json({ error: 'x' }, { status: 403 }),
+    );
+    vi.mocked(expectOk).mockRejectedValueOnce(new Error('refused'));
+    await expect(recordSessionOutcome(SCOPE, 'c1', body)).rejects.toThrow('refused');
+    expect(heard).not.toHaveBeenCalled();
+    stop();
+    vi.mocked(apiFetch).mockImplementation(async () => new Response(null, { status: 204 }));
+    await recordSessionOutcome(SCOPE, 'c1', body);
+    expect(heard).not.toHaveBeenCalled();
   });
 });

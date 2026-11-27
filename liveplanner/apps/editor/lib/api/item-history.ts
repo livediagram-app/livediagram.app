@@ -6,6 +6,7 @@ import type { ItemHistoryResponse, ItemSessionRequest } from '@liveplanner/api-s
 import type { ItemHistoryEntry } from '@liveplanner/items';
 import { isOfflineId } from '../offline/offline-store';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
+import { historyWritten } from './history-written';
 import type { ItemsScope } from './items';
 
 export async function fetchItemHistory(
@@ -41,4 +42,5 @@ export async function recordSessionOutcome(
     },
   );
   if (!res.ok) await expectOk<unknown>(res, 'session outcome');
+  historyWritten(itemId);
 }
