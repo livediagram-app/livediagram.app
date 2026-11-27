@@ -368,26 +368,49 @@ export function appLibraryHosts(
 }
 
 /** Walkthroughs from several apps' doors as one list, newest first: each entry's media, delete and share go back to
- *  the door it came from. A door that fails leaves its entries out; only all of them failing fails the list. The
- *  usage is the person's own tier, the same from every door, so the first that answered says it. */
+ *  the door it came from. Each door's answer joins the list as it arrives (`listParts`), so a slow or failing app
+ *  never holds back the others; a door that fails leaves its entries out, and only all of them failing fails the
+ *  list. The usage is the person's own tier, the same from every door, so the first that answered says it. */
 export function mergedWalkthroughsHost(hosts: readonly WalkthroughsHost[]): WalkthroughsHost {
   const doorOf = new Map<string, WalkthroughsHost>();
   const door = (entry: WalkthroughEntry) => doorOf.get(entry.id) ?? hosts[0]!;
-  return {
-    list: async (signal) => {
-      const answers = await Promise.allSettled(hosts.map((host) => host.list(signal)));
-      if (answers.every((a) => a.status === 'rejected'))
-        throw (answers[0] as PromiseRejectedResult).reason;
-      const entries: WalkthroughEntry[] = [];
-      answers.forEach((answer, i) => {
-        if (answer.status !== 'fulfilled') return;
-        for (const entry of answer.value) {
-          doorOf.set(entry.id, hosts[i]!);
-          entries.push(entry);
-        }
+  // Deleted while a slower door was still answering: never put back by its answer.
+  const removed = new Set<string>();
+  const listParts: NonNullable<WalkthroughsHost['listParts']> = (signal, onPart) =>
+    new Promise((resolve, reject) => {
+      let entries: WalkthroughEntry[] = [];
+      let settled = 0;
+      let failed = 0;
+      let firstError: unknown = null;
+      const settle = () => {
+        settled += 1;
+        if (settled < hosts.length) return;
+        if (failed === hosts.length) reject(firstError);
+        else resolve(entries);
+      };
+      hosts.forEach((host) => {
+        host.list(signal).then(
+          (answer) => {
+            for (const entry of answer) doorOf.set(entry.id, host);
+            entries = [...entries, ...answer]
+              .filter((e) => !removed.has(e.id))
+              .sort((a, b) => b.createdAt - a.createdAt);
+            onPart?.(entries, settled + 1 === hosts.length);
+            settle();
+          },
+          (e: unknown) => {
+            failed += 1;
+            if (failed === 1) firstError = e;
+            // The last door failing still ends the list for whoever answered.
+            if (settled + 1 === hosts.length && failed < hosts.length) onPart?.(entries, true);
+            settle();
+          },
+        );
       });
-      return entries.sort((a, b) => b.createdAt - a.createdAt);
-    },
+    });
+  return {
+    list: (signal) => listParts(signal),
+    listParts,
     usage: () => {
       for (const host of hosts) {
         const usage = host.usage?.() ?? null;
@@ -396,7 +419,10 @@ export function mergedWalkthroughsHost(hosts: readonly WalkthroughsHost[]): Walk
       return null;
     },
     media: (entry, signal) => door(entry).media(entry, signal),
-    remove: (entry) => door(entry).remove(entry),
+    remove: async (entry) => {
+      await door(entry).remove(entry);
+      removed.add(entry.id);
+    },
     share: async (entry, on) => (await door(entry).share?.(entry, on)) ?? null,
   };
 }

@@ -299,4 +299,39 @@ describe('every app’s Library, in no app', () => {
     expect(await noShare.share!(entry('p1', 1), true)).toBeNull();
     expect(noShare.usage!()).toBeNull();
   });
+
+  it('hears each door’s part as it arrives, a slow door holding back no other', async () => {
+    let answerSlow!: (entries: WalkthroughEntry[]) => void;
+    const slow: WalkthroughsHost = {
+      ...door([]),
+      list: () => new Promise((resolve) => (answerSlow = resolve)),
+    };
+    const merged = mergedWalkthroughsHost([slow, door([entry('a1', 1)]), door(new Error('down'))]);
+    const parts: [string[], boolean][] = [];
+    const done = merged.listParts!(undefined, (entries, last) =>
+      parts.push([entries.map((e) => e.id), last]),
+    );
+    await new Promise((r) => setTimeout(r, 0));
+    expect(parts).toEqual([[['a1'], false]]);
+    // Deleted while the slow door is still answering: no later part puts it back.
+    await merged.remove(entry('a1', 1));
+    answerSlow([entry('s1', 5), entry('a1', 1)]);
+    expect((await done).map((e) => e.id)).toEqual(['s1']);
+    expect(parts.at(-1)).toEqual([['s1'], true]);
+  });
+
+  it('ends the parts when the last door to answer fails', async () => {
+    let failLast!: (e: unknown) => void;
+    const last: WalkthroughsHost = {
+      ...door([]),
+      list: () => new Promise((_, rej) => (failLast = rej)),
+    };
+    const merged = mergedWalkthroughsHost([door([entry('a1', 1)]), last]);
+    const parts: boolean[] = [];
+    const done = merged.listParts!(undefined, (_, end) => parts.push(end));
+    await new Promise((r) => setTimeout(r, 0));
+    failLast(new Error('late'));
+    expect((await done).map((e) => e.id)).toEqual(['a1']);
+    expect(parts).toEqual([false, true]);
+  });
 });

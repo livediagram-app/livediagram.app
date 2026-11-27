@@ -603,7 +603,8 @@ built once here. It is shown here and, through each switched-on app's router, at
   Library was only the last app's, so someone last in liveplanner had no Image Gallery): the **Image Gallery** (one
   for every app, since the media service lists the person's images from every app; read through the last app's API
   where it keeps one, else the first app's that does), **Shape Libraries** through the app that keeps them, and
-  **Walkthroughs** from every app's door in one list, newest first, each played, shared and deleted through its own
+  **Walkthroughs** from every app's door in one list, newest first, each app's cards showing as it answers (a slow
+  or failing app holds back no other; the empty state waits for every app), each played, shared and deleted through its own
   app (`everyAppLibraryHosts` in `@liveworkspace/explorer`, `lib/explorer/library.ts`). Offline stays the apps' own:
   liveworkspace.app can't read an app's browser storage.
   The current view's rows open themselves (its space and folders, or the Library), and a drag resting on the folded
