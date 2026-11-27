@@ -30,13 +30,14 @@ import {
   ThisBrowserPane,
   InvitesPane,
   preloadExplorerPanesWhenIdle,
+  SectionsDrawer,
   ShapeLibrariesView,
   WalkthroughsView,
 } from './lazy-panes';
 import { ItemsPane } from './ItemsPane';
 import { SearchField } from './SearchField';
 import { Sidebar } from './Sidebar';
-import { SectionsBar, SectionsDrawer } from './PhoneSections';
+import { SectionsBar } from './PhoneSections';
 import { useHeroPresence } from './useHeroPresence';
 import { ArrivedItemContext, useArrivedItem } from './arrived-item';
 import { HostExtrasProvider } from './host';
@@ -161,7 +162,10 @@ function ExplorerInner({
     },
     [onNavigate],
   );
-  const openNav = useCallback(() => setNavOpenAt(viewKey), [viewKey]);
+  const openNav = useCallback(() => {
+    void SectionsDrawer.preload();
+    setNavOpenAt(viewKey);
+  }, [viewKey]);
   const closeNav = useCallback(() => setNavOpenAt(null), []);
   const driveMarks = useDriveMarks(drive);
   // An item's link pointed at or focused: the host fetches ahead what opening it needs (use-intent-prefetch.ts).

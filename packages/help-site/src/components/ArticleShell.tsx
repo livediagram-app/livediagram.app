@@ -14,13 +14,13 @@ import { AppMark } from './AppMarks';
 import { useSiteHref } from './SiteLink';
 import { HELP_APPLIES_ATTR } from './AppSwitch';
 import { AppliesTo } from './ScopeWords';
-import { JsonLd, GlyphDisc } from '@liveworkspace/ui';
+import { DialogCloseButton, JsonLd, GlyphDisc } from '@liveworkspace/ui';
 import { useHelpClient } from '../client';
 import { articleCrumbs, routeHref } from '../lib/article-route';
 import { articleJsonLd } from '../lib/structured-data';
 import { useArticleVote } from '../lib/use-article-vote';
 import type { ArticleLink } from '../types';
-import { ClockIcon, CloseIcon, ContentsIcon } from './chrome-icons';
+import { ClockIcon, ContentsIcon } from './chrome-icons';
 import { HelpHero } from './HelpHero';
 import { ArticlePager, StillNeedHelp } from './ArticlePager';
 
@@ -253,14 +253,10 @@ export function ArticleShell({
               <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 Article Navigation
               </h2>
-              <button
-                type="button"
+              <DialogCloseButton
+                label="Close navigation"
                 onClick={() => setMobileSidebarOpen(false)}
-                className="p-1 text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                aria-label="Close navigation"
-              >
-                <CloseIcon size={20} className="h-5 w-5" />
-              </button>
+              />
             </div>
             <SidebarCard subArticles={subArticles} readIn={readIn} />
           </div>

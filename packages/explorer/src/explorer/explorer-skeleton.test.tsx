@@ -16,7 +16,7 @@ describe('ExplorerSkeleton', () => {
     for (const part of main.querySelectorAll(':scope > div')) {
       expect(part.getAttribute('aria-hidden')).toBe('true');
     }
-    expect(main.querySelectorAll('.h-48')).toHaveLength(6);
+    expect(main.querySelectorAll('.h-36')).toHaveLength(6);
   });
 });
 

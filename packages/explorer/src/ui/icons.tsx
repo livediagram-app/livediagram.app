@@ -94,6 +94,20 @@ export function FolderSolidIcon({ open = false, size = 13 }: { open?: boolean; s
 
 export const FolderOutlineIcon = lucide(<path d={FOLDER_PATH} />, 12);
 
+/** A folder that holds folders: the solid folder before a second one, behind it and up to the right, at half strength
+ *  (one-explorer.md "What a folder holds, at a glance"). */
+export function FolderLayersIcon({ size = 13 }: { size?: number }) {
+  return (
+    <Glyph size={size} units={16} filled>
+      <path
+        opacity={0.5}
+        d="M4.5 2.6A1.1 1.1 0 0 1 5.6 1.5h2.3a.7.7 0 0 1 .54.26l.72.9a.7.7 0 0 0 .54.26h3.7a1.1 1.1 0 0 1 1.1 1.1v5.4a1.1 1.1 0 0 1-1.1 1.1H5.6a1.1 1.1 0 0 1-1.1-1.1V2.6z"
+      />
+      <path d="M1 6.3A1.2 1.2 0 0 1 2.2 5.1h2.6a.7.7 0 0 1 .54.26l.82 1.02a.7.7 0 0 0 .54.26h3.9a1.2 1.2 0 0 1 1.2 1.2v5.06a1.2 1.2 0 0 1-1.2 1.2H2.2A1.2 1.2 0 0 1 1 12.9V6.3z" />
+    </Glyph>
+  );
+}
+
 // ---------- Sections ----------
 
 export function ItemIcon({ size = 13 }: IconProps) {

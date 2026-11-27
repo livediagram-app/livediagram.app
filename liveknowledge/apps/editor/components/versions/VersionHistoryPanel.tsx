@@ -7,7 +7,7 @@
 // a copy of it as a new tab. Loaded when first opened.
 import { useId, useMemo, useRef, useState } from 'react';
 import { versionChanges, type Tab } from '@liveknowledge/document';
-import { Button, CloseIcon, Select, useEscape, useFocusTrap } from '@liveknowledge/ui';
+import { Button, DialogCloseButton, Select, useEscape, useFocusTrap } from '@liveknowledge/ui';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
@@ -156,10 +156,8 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
       aria-labelledby={titleId}
       className="fixed inset-0 z-[var(--z-modal)] flex flex-col bg-slate-100 dark:bg-slate-950"
     >
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-2 dark:border-slate-800 dark:bg-slate-900 sm:px-3">
-        <Button variant="ghost" size="sm" aria-label="Close Version History" onClick={onClose}>
-          <CloseIcon />
-        </Button>
+      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-2 dark:border-slate-800 dark:bg-slate-900 sm:px-3">
+        <DialogCloseButton label="Close Version History" onClick={onClose} />
         <h2
           id={titleId}
           className="shrink-0 text-sm font-semibold text-slate-900 dark:text-slate-100"

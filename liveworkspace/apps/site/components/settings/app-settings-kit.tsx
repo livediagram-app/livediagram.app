@@ -10,7 +10,7 @@ import { HoverCard } from '@liveworkspace/ui';
 export const APP_SETTINGS_KIT: SettingsUiKit = {
   Glyph,
   SearchInput,
-  CloseButton: ({ onClick }) => <DialogCloseButton compact onClick={onClick} />,
+  CloseButton: ({ onClick }) => <DialogCloseButton onClick={onClick} />,
   NoMatches,
 };
 

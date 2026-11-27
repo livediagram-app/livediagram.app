@@ -5,8 +5,6 @@
 // of the app's items kept only in this browser, from the snapshot the app keeps in this origin's localStorage
 // (`localInboxHost`); liveworkspace.app, on its own origin, can't read it, so there they stay in the app's Explorer.
 
-import { Glyph } from '@livediagram/ui';
-import { ITEM_TYPES, planGlyphPath } from '@liveplanner/items';
 import type { InboxActions, InboxHost } from '@liveworkspace/explorer';
 import { createInboxActions } from '@liveworkspace/explorer/inbox-actions';
 import { inboxSnapshotRows, subscribeInboxSnapshot } from '@liveworkspace/explorer/this-browser';
@@ -19,6 +17,7 @@ import {
   type WorkspaceTokenSource,
 } from '@liveworkspace/explorer/inbox-cross-app';
 import { ACCOUNT_ROUTE } from '@liveworkspace/sites/workspace-proxy';
+import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
 
 let traded: WorkspaceTokenSource | null = null;
 // One source per page: the app's bearer (this page's token) traded at the accounts' bearer door through the app's router.
@@ -28,14 +27,11 @@ const crossAppToken = (): WorkspaceTokenSource =>
     bearer: workspaceToken,
   }));
 
-/** A Plan card type's glyph, by its type id: the type's own, or the plain card glyph for one not built in. */
-export function CardGlyph({ type }: { type: string }) {
-  return (
-    <Glyph size={16} data-card-glyph={type}>
-      <path d={planGlyphPath(ITEM_TYPES.find((t) => t.id === type)?.glyph)} />
-    </Glyph>
-  );
-}
+// A Plan card type's glyph (card-glyph.tsx), from its own chunk: the glyph set is 13 KB the Explorer's first load never
+// needs, since only an Inbox row draws one and the Inbox is itself a chunk. A 16px blank holds the place while it lands.
+const CardGlyph = lazyPanel('card-glyph', () => import('./card-glyph').then((m) => m.CardGlyph), {
+  fallback: () => <span aria-hidden className="inline-block size-4 shrink-0" />,
+});
 
 export const inboxHost: InboxHost = {
   cardGlyph: (type) => <CardGlyph type={type} />,

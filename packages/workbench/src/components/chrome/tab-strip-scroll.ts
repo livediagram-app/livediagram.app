@@ -68,14 +68,23 @@ export function pageScrollLeft(
   return Math.min(max, Math.max(0, to));
 }
 
+// On a touch screen, where no scroll button shows, the fade is this short and runs to the very edge: a clear band
+// with no button over it read as the row stopping short of the footer's controls (Work Tracker 1508).
+export const TAB_TOUCH_FADE = 16;
+
 // The strip's mask: each edge with tabs beyond it fades out under its scroll button; an edge with nothing beyond
-// stays sharp, and a row that fits has no mask at all. Driven by scrollEdges, so it costs one style change when an
-// edge turns, and works in every browser (the CSS scroll-edge-fade needs scroll-driven animations).
-export function edgeMask(edges: { left: boolean; right: boolean }): string | undefined {
+// stays sharp, and a row that fits has no mask at all. `touch` (a coarse pointer, no buttons) fades over the last
+// TAB_TOUCH_FADE px instead, so the tabs run the strip's full width. Driven by scrollEdges, so it costs one style
+// change when an edge turns, and works in every browser (the CSS scroll-edge-fade needs scroll-driven animations).
+export function edgeMask(
+  edges: { left: boolean; right: boolean },
+  touch = false,
+): string | undefined {
   if (!edges.left && !edges.right) return undefined;
-  const start = edges.left ? `transparent ${TAB_FADE_CLEAR}px, #000 ${TAB_FADE_FULL}px` : '#000 0';
+  const [clear, full] = touch ? [0, TAB_TOUCH_FADE] : [TAB_FADE_CLEAR, TAB_FADE_FULL];
+  const start = edges.left ? `transparent ${clear}px, #000 ${full}px` : '#000 0';
   const end = edges.right
-    ? `#000 calc(100% - ${TAB_FADE_FULL}px), transparent calc(100% - ${TAB_FADE_CLEAR}px)`
+    ? `#000 calc(100% - ${full}px), transparent ${clear ? `calc(100% - ${clear}px)` : '100%'}`
     : '#000 100%';
   return `linear-gradient(to right, ${start}, ${end})`;
 }

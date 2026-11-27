@@ -4,6 +4,7 @@ import { ToastBell } from '@liveworkspace/ui/toast';
 import {
   CHROME_BTN,
   CHROME_BTN_LABELLED,
+  CHROME_PHONE_HIDDEN_PAIR,
   ChromeLabel,
 } from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
@@ -30,11 +31,7 @@ export function ChromeControls({
   labelled = false,
   github = true,
   appearance = true,
-  parts = 'all',
 }: {
-  // A phone's footer keeps the notification list in its row and puts the rest behind More
-  // (docs/specs/030-knowledgebase/page-surface.md "The footer"): 'bell' draws the list alone, 'rest' all but it.
-  parts?: 'all' | 'bell' | 'rest';
   onOpenSearch?: () => void;
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the editor passes it on a
   // document stored on the server; the Explorer's bar never does.
@@ -70,7 +67,6 @@ export function ChromeControls({
   // Automations, in the Automate group (docs/specs/013-workspace/automations.md "Where it is"): there inside the
   // editor's Automations host for whoever may use it, or must sign in or sync first; nowhere else.
   const automations = useAutomationsToolsItem();
-  if (parts === 'bell') return <ToastBell className={CHROME_BTN} />;
   return (
     <>
       {/* The Get Started button, first in the cluster and left of Tools: the one way into a tour,
@@ -120,11 +116,10 @@ export function ChromeControls({
         </button>
       ) : null}
       {/* The notification list (liveworkspace/docs/specs/016-notifications/toasts.md): an icon alone, right of
-          Settings; toasts collapse into it as they leave. */}
-      {/* The bell and the light / dark switch sit as a pair, 4px apart rather than the bar's 12px (the owner,
-          2026-11-20). */}
-      <span className="inline-flex shrink-0 items-center">
-        {parts === 'all' ? <ToastBell className={CHROME_BTN} /> : null}
+          Settings; toasts collapse into it as they leave, and fade where they are on a phone, which has none. */}
+      {/* The bell and the light / dark switch, a pair; a phone's bar leaves both out (CHROME_PHONE_HIDDEN_PAIR). */}
+      <span className={CHROME_PHONE_HIDDEN_PAIR}>
+        <ToastBell className={CHROME_BTN} />
         {appearance ? <AppearanceToggle /> : null}
       </span>
     </>

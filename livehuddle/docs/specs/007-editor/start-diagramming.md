@@ -11,8 +11,8 @@ One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`, t
 draws them.
 
 - **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start a Space"), one line under it ("Walk into an office, a hall, a bar or a garden.
-  Close this to start from a blank space."), the search box, and in the top right corner the
-  **Help** link and (where the start can be closed) **Close** (×). On a phone the search takes its own row under the
+  Close this to start from a blank space."), the search box, and at its right, centred down the band, the
+  **Help** link and (where the start can be closed) **Close** (the circled X every modal wears, [close-button.md](../../../../liveworkspace/docs/specs/022-interface-design/close-button.md)). On a phone the search takes its own row under the
   title, the help and × staying beside the title.
 - **Rail:** **Recommended** first, then the other groups (Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation, Venues), each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
   count sits on a pill tinted with the accent, in the panel's ink: the accent on its own tint fell to 4.2:1 in dark

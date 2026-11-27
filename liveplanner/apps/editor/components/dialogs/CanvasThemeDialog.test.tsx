@@ -299,7 +299,7 @@ describe('CanvasThemeDialog per tab kind', () => {
     expect(document.querySelector('[data-tab-style-link]')).toBeNull();
   });
 
-  it('offers a board the static patterns with their size and colour, a board preview and Board Configure', () => {
+  it('offers a board the static patterns with their size and colour, a board preview and no Board Configure', () => {
     open('board', { backgroundPattern: 'aurora' });
     expect(carousel('Static')).not.toBeNull();
     expect(carousel('Animated')).toBeNull();
@@ -312,11 +312,11 @@ describe('CanvasThemeDialog per tab kind', () => {
     expect(screen.getByRole('img', { name: /sample board/ })).toBeTruthy();
     expect(screen.getByText('Size of New Text')).toBeTruthy();
     cleanup();
-    const onClose = vi.fn();
-    open('board', { tab: 'looks', onClose });
+    open('board', { tab: 'looks' });
     expect(screen.queryByRole('button', { name: /^Northern Lights/ })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /^Board Configure:/ }));
-    expect(onClose).toHaveBeenCalled();
+    // Configure Board's own button is the one way in, so Fine-tune lists no settings row on a board.
+    expect(screen.queryByRole('button', { name: /^Board Configure:/ })).toBeNull();
+    expect(document.querySelector('[data-tab-style-link]')).toBeNull();
   });
 
   it('leaves a sheet only the canvas colour and strength, no size of new text, and links Sheet Settings', () => {

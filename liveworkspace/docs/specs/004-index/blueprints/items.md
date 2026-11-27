@@ -137,14 +137,14 @@ each once; ids missing or out of reach are left out.
 
 ### Folders
 
-| Route                               | Effect                                                                                                                                                                  |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /folders?team=&limit=&cursor=` | the scopes' folders by `created_at, id` ascending, `limit` default 200                                                                                                  |
-| `POST /folders`                     | `name` trimmed 1 to 500 (`invalid_name`); `id` optional (`409 folder_exists`); `teamId` joined; `parentId` in the same scope (`404 folder_not_found`); `201 { folder }` |
-| `PATCH /folders/:id`                | the whole body checked first; a move's cycle check is inside its `UPDATE` (a recursive walk up), `409 cycle`; then the name                                             |
-| `DELETE /folders/:id`               | its folders and items move up to its parent, then it goes; `204`                                                                                                        |
-| `GET /folders/previews?ids=&app=`   | ≤ 60 ids of the person's folders; per folder its 4 newest live items and a count capped at 1000; one batch                                                              |
-| `GET /spaces/previews?app=`         | the person's own space then each team in the token (≤ 50); per space its 4 newest live items and a count capped at 1000; one batch over `json_each` of the scopes       |
+| Route                               | Effect                                                                                                                                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /folders?team=&limit=&cursor=` | the scopes' folders by `created_at, id` ascending, `limit` default 200                                                                                                   |
+| `POST /folders`                     | `name` trimmed 1 to 500 (`invalid_name`); `id` optional (`409 folder_exists`); `teamId` joined; `parentId` in the same scope (`404 folder_not_found`); `201 { folder }`  |
+| `PATCH /folders/:id`                | the whole body checked first; a move's cycle check is inside its `UPDATE` (a recursive walk up), `409 cycle`; then the name                                              |
+| `DELETE /folders/:id`               | its folders and items move up to its parent, then it goes; `204`                                                                                                         |
+| `GET /folders/previews?ids=&app=`   | ≤ 60 ids of the person's folders; per folder its 4 newest live items, a count capped at 1000 and `apps` (every app's count, subfolders included, 1000 in all); one batch |
+| `GET /spaces/previews?app=`         | the person's own space then each team in the token (≤ 50); per space its 4 newest live items and a count capped at 1000; one batch over `json_each` of the scopes        |
 
 Every folder route needs a folder the person can file into (their own scope or a joined team's), else `404`.
 
@@ -242,7 +242,7 @@ A folder preview is two statements for up to 60 folders; a lookup is one read an
 | `liveworkspace/apps/index/src/newest.test.ts` (5)                  | Home's New: newest made first, the app filter, team items, reach (left team, Trash, Archived, links), the bound and its plan        |
 | `liveworkspace/apps/index/src/most-used.test.ts` (8)               | recording use days; Most Used beside Recent; the bound; Hide from Recent                                                            |
 | `liveworkspace/apps/index/src/personal.test.ts` (9)                | folders, tags, Hide from Recent, placement defaults                                                                                 |
-| `liveworkspace/apps/index/src/folder-previews.test.ts` (4)         | `GET /folders/previews`                                                                                                             |
+| `liveworkspace/apps/index/src/folder-previews.test.ts` (6)         | `GET /folders/previews`: per folder, the app filter, reach, every app's count through subfolders, the query plan, the bound         |
 | `liveworkspace/apps/index/src/space-previews.test.ts` (4)          | `GET /spaces/previews`: per space, the app filter, the query plan, 51 spaces of 1,200 items within budget                           |
 | `liveworkspace/apps/index/src/lookup.test.ts` (6)                  | `POST /items/lookup`: the access rule per item, its bound, one decoration                                                           |
 | `liveworkspace/apps/index/src/visitors.test.ts` (2)                | visitors in History, the owner's alone                                                                                              |

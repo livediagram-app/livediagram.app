@@ -468,7 +468,11 @@ Folders are not per app: one tree per person, and one per team, holding items fr
 updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and items) up a level.
 - `GET /folders/previews?ids=a,b,…&app=`: what folder cards show of their insides: for each of up to 60 folders
   the person reaches, `{folderId, itemCount, items}` with its 4 newest live items (of `app`, when given) and a count
-  that stops at 1000. One batch however many folders; folders out of reach are left out.
+  that stops at 1000. One batch however many folders; folders out of reach are left out. Each also carries `apps`,
+  `{[app]: n}`: how many live items each app keeps in the folder and every folder under it, whatever `app` asks
+  (an app acting for a person: its own only), counting at most 1000 items per folder in all; an app with none is left
+  out, so `{}` is a folder with no items at any depth (the folder badges, one-explorer.md "What a folder holds, at a
+  glance").
 - `GET /spaces/previews?app=`: what Home's Spaces tiles show of each space the person is in
   ([one-explorer.md "Spaces, on Home"](one-explorer.md#spaces-on-home)): `{spaces: [{teamId, itemCount, items}]}`,
   their own (`teamId: null`) first, then each team their token names (at most 50) in its order, each with its 4
