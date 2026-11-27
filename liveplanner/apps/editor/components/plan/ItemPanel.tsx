@@ -90,7 +90,7 @@ import { TAKES_HISTORY_ATTR } from '@/hooks/canvas/panel-history';
 const NO_GROUPS: readonly LinkedGroup[] = [];
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();
 
-type ItemPanelProps = {
+export type ItemPanelProps = {
   item: Item;
   // The project's item types (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
@@ -216,6 +216,24 @@ export function ItemPanel(props: ItemPanelProps) {
   );
 }
 
+// A card's panel set in a page rather than floating over it (a Session tab's card, docs/specs/026-plan/session-tabs.md
+// "The card"): the same content, with no close and no maximise, and the title never taking focus as the card changes
+// under someone's keys. The page around it sizes it.
+export function ItemPanelEmbedded(
+  props: Omit<ItemPanelProps, 'onClose' | 'maximised' | 'onMaximise'> & { onClose?: () => void },
+) {
+  const { item } = props;
+  useEffect(() => markResponseOpened(item), [item]);
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <span hidden {...{ [TAKES_HISTORY_ATTR]: '' }} />
+      <ItemPanelContent key={item.id} {...props} onClose={props.onClose ?? noClose} embedded />
+    </div>
+  );
+}
+
+const noClose = () => {};
+
 function ItemPanelContent({
   item,
   types,
@@ -245,12 +263,13 @@ function ItemPanelContent({
   maximised = false,
   onMaximise,
   statusTypes = NO_STATUS_TYPES,
-}: ItemPanelProps) {
+  embedded = false,
+}: ItemPanelProps & { embedded?: boolean }) {
   const linkedPlace = linkedActions?.placeOf(item) ?? null;
   // A practice card of the Boards tour (plan-tour.md "Practice cards"): saved nowhere, so no menu and no comments.
   const practice = item.key === PRACTICE_KEY;
   const mobile = useIsMobileViewport();
-  useTitleFocus(fieldId(item, 'title'), !mobile && canEdit, fresh);
+  useTitleFocus(fieldId(item, 'title'), !mobile && canEdit && !embedded, fresh);
   // When the panel opened: the meta line says how long ago the last change was from here.
   const [now] = useState(() => Date.now());
   const type = typeIn(types, item.type);
@@ -422,7 +441,7 @@ function ItemPanelContent({
       {onMaximise && !mobile ? (
         <ItemMaximiseButton maximised={maximised} onToggle={onMaximise} />
       ) : null}
-      <DialogCloseButton onClick={onClose} />
+      {embedded ? null : <DialogCloseButton onClick={onClose} />}
     </div>
   );
 

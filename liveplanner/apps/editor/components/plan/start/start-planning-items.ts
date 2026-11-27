@@ -5,10 +5,12 @@ import {
   ITEM_TYPES,
   PLAN_BOARD_PRESETS,
   PLAN_PALETTE_VISUALISATIONS,
+  SESSION_KIND_IDS,
   READY_MADE_CARD_TYPES,
   boardAddTypes,
   type PlanVisualisation,
   type PlanBoardPresetId,
+  type SessionKindId,
 } from '@liveplanner/items';
 import { DASHBOARD_PRESETS, type DashboardPresetId } from '@liveplanner/project';
 import {
@@ -25,6 +27,20 @@ import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
 import { SHEET_TEMPLATES } from '@liveplanner/sheets';
 import { FORM_STARTERS, type StarterId } from '@liveplanner/forms';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
+import { SESSION_KIND_LOOKS } from '@/components/session/session-kinds';
+
+// What people look for a session by.
+const SESSION_KEYWORDS = [
+  'session',
+  'meeting',
+  'refine',
+  'refinement',
+  'grooming',
+  'backlog',
+  'one at a time',
+  'facilitate',
+  'ceremony',
+];
 
 export type StartKind =
   | 'board'
@@ -34,6 +50,7 @@ export type StartKind =
   | 'visualisation'
   | 'dashboard'
   | 'template'
+  | 'session'
   | 'describe'
   | 'import';
 
@@ -63,6 +80,8 @@ export type StartItem = {
   | { kind: 'dashboard'; suggestion: SuggestedDashboard; layout?: undefined }
   // One chart filling the tab (Visualisations).
   | { kind: 'visualisation'; view: PlanVisualisation }
+  // A Session tab of a session kind (docs/specs/026-plan/session-tabs.md "Making one"): set up first.
+  | { kind: 'session'; sessionKind: SessionKindId }
   // A Plan template: a way of working set up across tabs (Inspiration).
   | { kind: 'template'; template: PlanTemplateKind }
   // Opens the Describe a Plan dialog (describe-a-plan.md "Where it starts").
@@ -78,6 +97,7 @@ export type StartCategory =
   | 'forms'
   | 'visualisations'
   | 'dashboards'
+  | 'sessions'
   | 'inspiration'
   // Not categories: Describe a Plan and Import are the rail's own entries at its foot, each one card in a search's
   // results.
@@ -110,6 +130,11 @@ export const START_CATEGORIES: readonly {
     id: 'dashboards',
     name: 'Dashboards',
     line: 'Your boards, sheets and charts side by side, in rows of slots.',
+  },
+  {
+    id: 'sessions',
+    name: 'Sessions',
+    line: 'Work through cards together, one at a time, with everyone on the same card.',
   },
   {
     id: 'inspiration',
@@ -460,6 +485,14 @@ export function startItems({
     name: p.name,
     line: p.line,
   }));
+  const sessions: StartItem[] = SESSION_KIND_IDS.map((k) => ({
+    id: `session:${k}`,
+    kind: 'session',
+    sessionKind: k,
+    name: SESSION_KIND_LOOKS[k].name,
+    line: SESSION_KIND_LOOKS[k].line,
+    keywords: SESSION_KEYWORDS,
+  }));
   const templates: StartItem[] = INSPIRATION_TEMPLATES.flatMap((kind) => {
     const t = TEMPLATES.find((d) => d.kind === kind);
     return t
@@ -484,6 +517,7 @@ export function startItems({
     ...visualisations,
     ...suggested,
     ...dashboards,
+    ...sessions,
     ...templates,
     DESCRIBE_ITEM,
     IMPORT_ITEM,
@@ -496,6 +530,7 @@ const KIND_OF: Record<Exclude<StartCategory, 'recommended'>, StartKind> = {
   forms: 'form',
   visualisations: 'visualisation',
   dashboards: 'dashboard',
+  sessions: 'session',
   inspiration: 'template',
   describe: 'describe',
   import: 'import',
@@ -508,6 +543,7 @@ export const KIND_NAMES: Record<StartKind, string> = {
   visualisation: 'Chart',
   dashboard: 'Dashboard',
   template: 'Template',
+  session: 'Session',
   describe: 'Describe a Plan',
   'describe-form': 'Describe a Form',
   import: 'Import',
@@ -536,6 +572,7 @@ export const START_SEARCH_ORDER = [
   'forms',
   'visualisations',
   'dashboards',
+  'sessions',
   'inspiration',
   'describe',
   'import',
