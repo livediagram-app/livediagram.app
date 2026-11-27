@@ -16,6 +16,7 @@ import {
   knowledgebasePage,
   type Tab,
 } from '@liveknowledge/document';
+import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
 import {
   makePaintLastSeen,
   makeSeedFetchedDocument,
@@ -150,6 +151,23 @@ describe('the warm open', () => {
     expect(setLoadedTabIds).not.toHaveBeenCalled();
     expect(noteChangesetSeen).not.toHaveBeenCalled();
     expect(lastSavedTabsRef.current).toEqual([]);
+  });
+
+  // Work Tracker 1521 (page-surface.md "Themed from the first frame"): the warm paint sets no document id, so every
+  // reader without one (the chrome's tint, the canvas) reads the painted knowledgebase's style, never the default.
+  it("paints in the copy's style before the editor holds the knowledgebase's id", () => {
+    knowledgeStyleStore.clear();
+    const steel = {
+      ...copy,
+      item: { ...copy.item, knowledgeStyle: { ...fetched.knowledgeStyle, theme: 'steel' } },
+    };
+    makePaintLastSeen(deps(true))(steel);
+    expect(knowledgeStyleStore.styleOf(null).theme).toBe('steel');
+    expect(knowledgeStyleStore.styleOf('d1').theme).toBe('steel');
+    // The editor leaves: nothing is on screen by a paint alone.
+    knowledgeStyleStore.show(null);
+    expect(knowledgeStyleStore.styleOf(null).theme).toBe('brand');
+    knowledgeStyleStore.clear();
   });
 
   it('paints a tab-scoped copy on its one tab, and an empty first tab when it kept none', () => {

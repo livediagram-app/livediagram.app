@@ -12,6 +12,7 @@ import { useTakeOfflineInPlace } from '../useTakeOfflineInPlace';
 import { useAutosave } from '../useAutosave';
 import { createRemoteOpJournal, type RemoteOpJournal } from '../save-baseline';
 import { useIdentityBootstrap } from '../useIdentityBootstrap';
+import { useKnowledgeStyleCopyFollow } from './useKnowledgeStyleCopyFollow';
 import { createOwnElementWrites, type OwnElementWrites } from '../own-element-writes';
 import type { EditorDocument } from './useEditorDocument';
 import type { EditorSelection } from './useEditorSelection';
@@ -124,11 +125,20 @@ export function useEditorPersistence({
   // The last seen copy follows the open document (docs/specs/006-document/offline-mode.md "Warm open of a cloud document"):
   // its name and tab list as they change, its first tab as each save of it lands. Only a cloud document the open kept
   // a copy of is followed; never an embed, a workbench or an offline document.
+  const followingCopy = hydrated && realtime.documentServerStored && !embedMode && !workbenchMode;
+  // Its Knowledgebase Style too, so a warm open paints the style it has now (page-surface.md "Themed from the first
+  // frame").
+  useKnowledgeStyleCopyFollow({
+    follower: lastSeenCopies,
+    reader: selfParticipant.id,
+    documentId,
+    following: followingCopy,
+  });
   const lastSeen = useLastSeenFollow({
     follower: lastSeenCopies,
     reader: selfParticipant.id,
     itemId: documentId,
-    following: hydrated && realtime.documentServerStored && !embedMode && !workbenchMode,
+    following: followingCopy,
     serverStored: realtime.documentServerStored,
     hydrated,
     name: documentName,

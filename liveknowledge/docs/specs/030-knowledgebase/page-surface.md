@@ -500,14 +500,21 @@ per-page and no per-tab style.
 - **The chrome follows the theme**, as in every liveworkspace editor: the accent the sidebar, tabs, buttons and
   links use is the knowledgebase's theme accent, in the light and dark halves the theme defines. **Review Due** stays
   amber and errors stay red in every theme; the Verified tick takes the theme accent.
-  - **Themed from the first frame** (Work Tracker 1521). The opening screen holds until the knowledgebase's read has
-    put its style in the style store (a first load, a reload, a warm open from the last seen copy, another
-    knowledgebase), and the editor's tint and light ground are written in the same commit that first draws the
-    editor, before the browser paints (`useEditorAccent`, a layout effect). No frame shows the knowledgebase in the
-    product's own colours on its way to its theme, in light, dark or any theme. The read is the same one; nothing
-    more is waited for, so the load takes no longer.
-  - The top row and the footer follow it too (the formatting bar's active state, Share, the footer's tabs): unlike
-    the other editors' header and tab bar, they carry no opt-out. Only the logo keeps the product's own colours.
+  - **Themed from the first frame** (Work Tracker 1521). Whatever puts the knowledgebase on screen puts its style
+    in the style store first and names it the one shown (`knowledgeStyleStore.show`, in `showDocument`): a first
+    load, a reload, another knowledgebase, and a warm open, which paints the last seen copy before the editor holds
+    the knowledgebase's id. Until the id is held, every reader without one (the chrome's tint, the canvas) reads the
+    shown knowledgebase's style, never the default; leaving the editor clears it. The last seen copy keeps the style
+    as it is now: a change after the open (made here or through the room) is folded into the copy
+    (`useKnowledgeStyleCopyFollow`, the follower's `followItem`), and the style the open read is never written again.
+    The editor's tint and light ground are written in the same commit that first draws the editor, before the
+    browser paints (`useEditorAccent`, a layout effect). No frame shows the knowledgebase in the product's own
+    colours on its way to its theme, in light, dark or any theme; nothing more is waited for, so the load takes no
+    longer.
+  - The top row and the footer follow it too (the formatting bar's active state, the footer's tabs): unlike the
+    other editors' header and tab bar, they carry no opt-out. Only the logo keeps the product's own colours, and
+    Share's words, which wear the knowledgebase's visibility in every app (Private green, Shared blue, Team violet,
+    Public pink, Offline grey; [editor-app.md "Header actions"](../007-editor/editor-app.md#header-actions)), never its theme.
   - A theme whose accent is too pale to carry text (a pastel's rose, a yellow, a mid orange) is deepened, hue kept,
     until white reads on its solid fills and its deeper step reads on its wash at 4.5:1.
   - In the dark appearance the page's ground is the chrome's own dark surface, so under a theme that tints the dark
