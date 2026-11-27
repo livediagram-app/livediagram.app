@@ -118,7 +118,7 @@ export function SectionsDrawer({ id, onClose }: { id: string; onClose: () => voi
         <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
           {SECTIONS_COPY.sidebar}
         </span>
-        <DialogCloseButton onClick={onClose} compact />
+        <DialogCloseButton onClick={onClose} />
       </div>
       <div style={GUTTER} className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-3">
         <Sidebar />

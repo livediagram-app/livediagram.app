@@ -33,10 +33,9 @@ type HelpArticleLinkProps = {
    */
   variant?: 'icon' | 'text' | 'button' | 'labelled';
   /**
-   * Hit-box for the `icon` variant, mirroring DialogCloseButton's own two
-   * blessed shapes so the `?` and the `×` beside it are the same target:
-   * `sm` (default) for panel header chrome and inline control labels, `md`
-   * for a dialog header sitting next to a DialogCloseButton.
+   * Hit-box for the `icon` variant: `sm` (default) for panel header chrome
+   * and inline control labels, `md` for a dialog header sitting next to a
+   * DialogCloseButton (the 44px circled X), centred on it.
    */
   size?: 'sm' | 'md';
   /** Override the visible text for the `text` and `button` variants. */
@@ -129,9 +128,9 @@ export function HelpArticleLink({
   // `!important` overrides to cancel the ring and size up. Only the box
   // changes between the two sizes; the look does not.
   //
-  // `md` is 28px to match DialogCloseButton's h-7, and its glyph runs a point
-  // larger than that button's 14px `×` because a question mark carries less
-  // visual mass than an X at the same type size. `shrink-0` so an inline
+  // `md` is 28px, the old dialog close's size, and its glyph runs a point
+  // larger than a 14px `×` because a question mark carries less visual mass
+  // than an X at the same type size. `shrink-0` so an inline
   // placement beside a long control label never squashes it.
   // A 44px tap area on a touch screen either way (`touch-target`).
   if (variant === 'labelled') {

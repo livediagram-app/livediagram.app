@@ -53,7 +53,7 @@ export function GetStartedBody<Id extends string>({
         title="Get Started"
         subtitle="Quick tutorials to get you going."
         // The title and its line stop short of the art in the bottom right and the close above it.
-        className="sm:pr-[7.5rem]"
+        className="max-sm:pr-16 sm:pr-[7.5rem]"
         // A phone's drawer: the band runs up under its grab handle.
         underHandle={sheet}
       />
@@ -62,7 +62,7 @@ export function GetStartedBody<Id extends string>({
       </div>
       {/* Last in the DOM, so opening focuses the first lesson, not the close. */}
       <div className="absolute right-3 top-3">
-        <DialogCloseButton compact onClick={onClose} />
+        <DialogCloseButton onClick={onClose} />
       </div>
     </div>
   );

@@ -411,7 +411,7 @@ function ItemPanelContent({
       {onMaximise && !mobile ? (
         <ItemMaximiseButton maximised={maximised} onToggle={onMaximise} />
       ) : null}
-      <DialogCloseButton compact onClick={onClose} />
+      <DialogCloseButton onClick={onClose} />
     </div>
   );
 

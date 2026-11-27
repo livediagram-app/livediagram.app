@@ -142,7 +142,7 @@ export function UpgradeDialog({ target, onClose }: { target: UpgradeTarget; onCl
         titleId={titleId}
         title="One Upgrade, Every App"
         subtitle="Pro for you, or Pro for Teams for a shared library."
-        className="[--hero-centre-end:14rem]"
+        className="[--hero-centre-end:15.5rem]"
         actions={
           <TierPrice
             tier={tier}

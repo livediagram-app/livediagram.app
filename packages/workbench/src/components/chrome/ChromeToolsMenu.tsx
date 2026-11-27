@@ -550,7 +550,7 @@ export function ChromeToolsMenu({
               on a tool alike. Last in the DOM, so opening focuses the first tool (or the band's back button), not the
               close. */}
               <div className="absolute right-3 top-3">
-                <DialogCloseButton compact onClick={shut} />
+                <DialogCloseButton onClick={shut} />
               </div>
             </div>
           )}
