@@ -19,6 +19,7 @@ import { lucideGlyph, NoMatches } from '@livedesign/ui';
 import { FilterSearchBox } from '@liveworkspace/workbench/components/primitives/FilterSearchBox';
 import { CategoryChips } from '@liveworkspace/workbench/components/primitives/CategoryChips';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
 import { LayoutTile } from './LayoutTile';
@@ -48,7 +49,7 @@ export type LayoutGalleryProps = {
   page: LaidOutPage;
   onApply: (layout: PageLayoutId) => void;
   // Shows a layout on the page while its tile is hovered or focused; null takes it away.
-  onPreview: (layout: PageLayoutId | null) => void;
+  onPreview: (layout: PageLayoutId | null, how?: LayoutPreviewAsk) => void;
   // Surprise Me's pick; absent, it is placed as a press is. A host that closes on a press passes
   // one that places without closing, so the person can roll again and watch the page change.
   onSurprise?: (layout: PageLayoutId) => void;
@@ -104,7 +105,7 @@ export function LayoutGallery({
     [latestApply],
   );
   const preview = useCallback(
-    (id: PageLayoutId | null) => latestPreview.current(id),
+    (id: PageLayoutId | null, how?: LayoutPreviewAsk) => latestPreview.current(id, how),
     [latestPreview],
   );
   // A new choice of what to show starts at the top of it.

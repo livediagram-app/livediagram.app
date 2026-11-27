@@ -23,7 +23,6 @@ import {
   withContentOnAPage,
   tabWireframeFrameTheme,
   type WireframeFrameTheme,
-  type Element,
   type LaidOutPage,
   type Tab,
 } from '@livedesign/design';
@@ -40,7 +39,6 @@ import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
 import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
 import { pageEdits, type PageEdits } from './page-edits';
-import type { PageLayoutId } from '@livedesign/templates';
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
@@ -65,14 +63,6 @@ export type PagesModeView = {
   // The tab theme's colours a wireframe page's frame is drawn in (docs/specs/007-editor/
   // wireframe-pages.md "Choosing the device").
   frameTheme: WireframeFrameTheme;
-  // The tab's default face, for what the pages draw themselves (a layout preview).
-  tabFont?: string;
-  // The tab's elements, for the content a previewed layout carries over from its page.
-  elements?: Element[];
-  // A layout previewed on a page while its tile is hovered: the page's own content is hidden
-  // under it (the clip leaves the page out) so the preview never mixes with it.
-  layoutPreview: { pageId: string; layout: PageLayoutId } | null;
-  setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
   // A logo page's own tools, each person's (docs/specs/007-editor/logo-pages.md): composed in by
   // the editor.
   logo?: LogoToolsView;
@@ -282,7 +272,6 @@ export function usePagesMode(deps: {
     canEditNow.current = canEdit && activeTab.locked !== true;
   });
   const mayEdit = useCallback(() => canEditNow.current, []);
-  const [layoutPreview, setLayoutPreview] = useState<PagesModeView['layoutPreview']>(null);
   // A page just added or duplicated, or the one before a deleted page: framed once it is in the
   // row (a frame later, as its sheet mounts or the row closes up).
   const [goTo, setGoTo] = useState<string | null>(null);
@@ -308,7 +297,6 @@ export function usePagesMode(deps: {
   const theme = getTheme(activeTab.theme);
   const themeBackgrounds = themeBackgroundPresets(theme);
   const frameTheme = tabWireframeFrameTheme(activeTab);
-  const tabFont = activeTab.font;
   const fitPageInView = () => {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return;
@@ -330,10 +318,6 @@ export function usePagesMode(deps: {
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     frameTheme,
-    tabFont,
-    elements: activeTab.elements,
-    layoutPreview,
-    setLayoutPreview,
   };
   if (!canEdit || activeTab.locked === true) return shared;
   return {

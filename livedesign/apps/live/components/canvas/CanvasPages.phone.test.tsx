@@ -38,7 +38,6 @@ function view(editable: boolean): PagesModeView {
     pages,
     elements: [],
     focusPage: vi.fn(),
-    setLayoutPreview: vi.fn(),
     themeBackgrounds: [],
     ...(editable ? { edit } : {}),
   } as unknown as PagesModeView;
