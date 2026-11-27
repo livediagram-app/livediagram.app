@@ -45,7 +45,7 @@ Six shared causes; an element that loses a press shows one of these. Each is clo
   creates stickies, which is authoring.
 - **Undo re-grafts every live collaborative field** (cause 2). The fields a
   press writes (`responses`, `responsesRevealed`, `ideaCards`,
-  `ideasRevealed`, `rollCall`, `agendaCurrent`, `pickerResult`) join
+  `ideasRevealed`, `rollCall`, `agendaCurrent`, `pickerResult`, `pickerDrawn`) join
   `commentThread` and `action` in `LIVE_ELEMENT_FIELDS`, so restoring a
   snapshot keeps their present values.
 - **The save baseline follows remote ops** (causes 3 and 4). Every applied
