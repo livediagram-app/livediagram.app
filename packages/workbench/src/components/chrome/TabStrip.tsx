@@ -58,6 +58,7 @@ export type TabStripProps<T extends { id: string; folderColor?: string }> = {
 };
 
 const still = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+const coarse = () => window.matchMedia?.('(pointer: coarse)')?.matches === true;
 
 // A tab dragged over a scroll button pages the strip once per this long, so a held drag walks the row at a pace the
 // eye can follow (dragover fires every ~50ms).
@@ -182,6 +183,9 @@ export function TabStrip<T extends { id: string; folderColor?: string }>({
   // most) and whenever the strip or its row changes size (a tab added, removed, renamed, a folder opened), never on a
   // timer; it re-renders only when an edge changes.
   const [edges, setEdges] = useState({ left: false, right: false });
+  // A coarse pointer: no scroll buttons (TAB_SCROLL_BUTTON_CLASS's `pointer-coarse:hidden`), so the fade runs to the
+  // edge (edgeMask's touch form). Read once the strip mounts, with its edges, not on every scroll.
+  const [touch, setTouch] = useState(false);
   useEffect(() => {
     const strip = stripRef.current;
     const list = listRef.current;
@@ -199,6 +203,7 @@ export function TabStrip<T extends { id: string; folderColor?: string }>({
       if (!frame) frame = requestAnimationFrame(read);
     };
     read();
+    setTouch(coarse());
     strip.addEventListener('scroll', soon, { passive: true });
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(soon);
     observer?.observe(strip);
@@ -291,7 +296,7 @@ export function TabStrip<T extends { id: string; folderColor?: string }>({
     // landmark held (axe region) and a screen reader's landmark list had no way to the tabs.
     <nav aria-label="Tab bar" className={TAB_STRIP_FRAME_CLASS}>
       {scrollButton('left')}
-      <div ref={stripRef} className={TAB_STRIP_CLASS} style={{ maskImage: edgeMask(edges) }}>
+      <div ref={stripRef} className={TAB_STRIP_CLASS} style={{ maskImage: edgeMask(edges, touch) }}>
         <div
           ref={listRef}
           role="toolbar"

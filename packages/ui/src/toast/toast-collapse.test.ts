@@ -73,6 +73,14 @@ describe('collapseIntoBell', () => {
     expect(collapseIntoBell(card)).toBeNull();
   });
 
+  it('fades where it is when the bell is hidden, as on a phone’s tab bar (Work Tracker 1508)', () => {
+    // `phone:hidden` lays the bell out at no size: there is nowhere to fly to.
+    bellAt(rect(0, 0, 0, 0));
+    const { card, animate } = animated();
+    expect(collapseIntoBell(card)).toBeNull();
+    expect(animate).not.toHaveBeenCalled();
+  });
+
   it('runs over long towards the bell, then pulses the bell', async () => {
     const bell = bellAt(rect(10, 10, 28, 28));
     const pulse = vi.fn();
