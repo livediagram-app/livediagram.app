@@ -1,5 +1,5 @@
-// When a hovered layout is drawn on its page (docs/specs/007-editor/pages-mode.md "Hover previews the layout on the
-// page, exactly as it lands"; Work Tracker 1502): each preview places the layout and redraws the page, so a sweep
+// When a hovered layout is drawn on its page (liveworkspace/docs/specs/011-workbench/page-layout-preview.md "It draws
+// the tile the pointer settles on"; Work Tracker 1502, 1507): each preview places the layout and redraws the page, so a sweep
 // across the tiles must not pay that for every tile it crosses. A pointer's tile is drawn once the pointer settles on
 // it (LAYOUT_PREVIEW_SETTLE_MS without moving to another); a tile reached by keyboard at once; and either way at most
 // once an animation frame. A newer ask always replaces one still waiting, so a sweep draws only its last tile.

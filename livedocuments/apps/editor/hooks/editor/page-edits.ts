@@ -53,7 +53,7 @@ import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits } from './pages-background-copy-edits';
 import { pageSplitEdits } from './page-split-edits';
 import { pageTidyEdits } from './page-tidy-edits';
-import { pageLayoutEdits } from './page-layout-edits';
+import { pageLayoutEdits } from './page-layout-place';
 
 export type { CardSplitState } from './page-split-edits';
 import type { PageEdits } from './page-edits-type';
@@ -389,7 +389,7 @@ export function pageEdits({
     debugLog('[page] page removed', { tabId, pageId });
   };
 
-  // Placing a layout and previewing a hovered one (page-layout-edits.ts).
+  // Placing a layout and previewing a hovered one (page-layout-place.ts).
   const { applyLayout, previewLayout } = pageLayoutEdits({
     tabId,
     tab,

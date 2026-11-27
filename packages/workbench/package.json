@@ -599,6 +599,8 @@
     "./lib/live-editor-build": "./src/lib/live-editor-build.ts",
     "./lib/load-progress": "./src/lib/load-progress.ts",
     "./lib/listeners": "./src/lib/listeners.ts",
+    "./lib/layout-preview-settle": "./src/lib/layout-preview-settle.ts",
+    "./lib/page-layout-preview": "./src/lib/page-layout-preview.ts",
     "./lib/relative-now": "./src/lib/relative-now.ts",
     "./components/sheet-links/SheetLinkedCharts": "./src/components/sheet-links/SheetLinkedCharts.tsx",
     "./components/sheet-links/LinkSheetDialog": "./src/components/sheet-links/LinkSheetDialog.tsx",

@@ -16,7 +16,7 @@ import {
   type PageLayoutId,
 } from '@livedocuments/templates';
 import { lucideGlyph, NoMatches } from '@livedocuments/ui';
-import type { LayoutPreviewAsk } from '@/hooks/editor/layout-preview-settle';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { FilterSearchBox } from '@liveworkspace/workbench/components/primitives/FilterSearchBox';
 import { CategoryChips } from '@liveworkspace/workbench/components/primitives/CategoryChips';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
