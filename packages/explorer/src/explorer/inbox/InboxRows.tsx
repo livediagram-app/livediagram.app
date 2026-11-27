@@ -488,10 +488,13 @@ export const InboxRow = memo(function InboxRow({
             <span data-inbox-app="" className="shrink-0 text-slate-600 dark:text-slate-300">
               {appName}
             </span>
-            <span aria-hidden className="shrink-0 text-slate-300 dark:text-slate-600">
-              ›
+            {/* The chevron truncates with the item, so a tight row (a due tag, a phone) never ends on a lone "›". */}
+            <span className="min-w-0 truncate text-slate-500 dark:text-slate-400">
+              <span aria-hidden className="text-slate-300 dark:text-slate-600">
+                ›
+              </span>{' '}
+              {f.item}
             </span>
-            <span className="min-w-0 truncate text-slate-500 dark:text-slate-400">{f.item}</span>
           </span>
           {f.local ? <ThisBrowserPill inLink /> : null}
         </span>
