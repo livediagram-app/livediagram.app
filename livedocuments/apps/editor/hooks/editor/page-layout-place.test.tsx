@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   elementsOnPage,
@@ -10,7 +10,10 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import { buildPageLayoutOver } from '@livedocuments/templates';
+import { buildPageLayoutOver as builtOnHover } from '@livedocuments/templates/page-layout-build';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { PageLayoutsButton } from '@/components/canvas/PageLayoutsButton';
+import { LAYOUT_PREVIEW_SETTLE_MS } from './layout-preview-settle';
 import { pageEdits } from './page-edits';
 import {
   layoutPlacedTab,
@@ -21,6 +24,11 @@ import {
 } from './page-layout-place';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// The builder a hover and a press load, watched to count how many placements a sweep pays for.
+vi.mock('@livedocuments/templates/page-layout-build', async (actual) => {
+  const m = await actual<typeof import('@livedocuments/templates/page-layout-build')>();
+  return { ...m, buildPageLayoutOver: vi.fn(m.buildPageLayoutOver) };
+});
 
 // docs/specs/007-editor/pages-mode.md "Hover previews the layout on the page, exactly as it lands" (Work Tracker
 // 1502): a hover and a press take one path, and a press on the layout shown lands the very elements shown.
@@ -80,6 +88,7 @@ const withoutIds = (els: readonly Element[]) =>
   });
 
 afterEach(() => {
+  cleanup();
   showLayout(null);
 });
 
@@ -144,7 +153,60 @@ describe('a hovered layout is what a press lands', () => {
     h.edits().previewLayout('page-1', 'title');
     await vi.waitFor(() => expect(shownNow()).not.toBeNull());
     h.edits().previewLayout('page-1', null);
-    expect(shownNow()).toBeNull();
+    await vi.waitFor(() => expect(shownNow()).toBeNull());
+  });
+
+  it('builds one preview for a pointer sweep across the tiles: the tile it settles on', async () => {
+    const h = harness(tab());
+    // The builders in first, as after the gallery's first hover.
+    h.edits().previewLayout('page-1', 'title');
+    await vi.waitFor(() => expect(shownNow()).not.toBeNull());
+    vi.mocked(builtOnHover).mockClear();
+    const sweep = [
+      'poster',
+      'key-stats',
+      'top-tips',
+      'title',
+      'poster',
+      'key-stats',
+      'top-tips',
+      'title',
+    ] as const;
+    for (const layout of sweep) {
+      h.edits().previewLayout('page-1', layout, 'pointer');
+      await new Promise((r) => setTimeout(r, LAYOUT_PREVIEW_SETTLE_MS / 4));
+    }
+    expect(builtOnHover).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(builtOnHover).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(builtOnHover).mock.calls[0]![0]).toBe('title');
+    await new Promise((r) => setTimeout(r, LAYOUT_PREVIEW_SETTLE_MS * 2));
+    expect(builtOnHover).toHaveBeenCalledTimes(1);
+  });
+
+  it("a press through the Layout popover lands the hover's elements, ids and all", async () => {
+    const h = harness(tab());
+    const [page] = layOutPages(pagesOf(h.tab()));
+    render(
+      <PageLayoutsButton
+        page={page!}
+        labelled
+        onApply={(layout) => void h.edits().applyLayout('page-1', layout)}
+        onPreview={(layout, how) => h.edits().previewLayout('page-1', layout, how)}
+      />,
+    );
+    fireEvent.click(document.querySelector('button[aria-label="Layout"]')!);
+    const tile = await vi.waitFor(() => {
+      const el = document.querySelector('[data-layout-tile="key-stats"]');
+      if (!el) throw new Error('no tile yet');
+      return el;
+    });
+    fireEvent.pointerEnter(tile);
+    await vi.waitFor(() => expect(shownNow()).not.toBeNull());
+    const previewed = shownOver();
+    fireEvent.click(tile);
+    await vi.waitFor(() => expect(h.tab().elements).toEqual(previewed));
+    expect(document.querySelector('[data-page-layouts-popover]')).toBeNull();
+    await vi.waitFor(() => expect(shownNow()).toBeNull());
   });
 
   it('previews nothing on a locked page', async () => {

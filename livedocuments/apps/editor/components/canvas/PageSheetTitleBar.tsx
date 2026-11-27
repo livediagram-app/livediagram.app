@@ -151,7 +151,7 @@ function PageSheetTitleBarView({
                 openRequest={layoutsRequest}
                 onOpenChange={(isOpen) => act.layoutsOpenChange(id, isOpen)}
                 onApply={(layout) => act.applyLayout(id, layout)}
-                onPreview={(layout) => act.previewLayout(id, layout ?? null)}
+                onPreview={(layout, how) => act.previewLayout(id, layout ?? null, how)}
               />
             ) : null,
           ],

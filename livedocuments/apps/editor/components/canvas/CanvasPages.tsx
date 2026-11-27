@@ -169,9 +169,9 @@ export function CanvasPages({
     applyLayout: (id, layout) => void edit?.applyLayout(id, layout),
     // The hovered layout drawn on its page by the canvas, exactly as a press lands it (page-layout-place.ts); the view
     // keeps which page shows one, so the page's Use a Layout invite steps aside.
-    previewLayout: (id, layout) => {
-      view.setLayoutPreview(layout ? { pageId: id, layout } : null);
-      edit?.previewLayout(id, layout);
+    previewLayout: (id, layout, how) => {
+      view.setLayoutPreview(layout ? { pageId: id } : null);
+      edit?.previewLayout(id, layout, how);
     },
     setBackground: (id, patch) => edit?.setBackground(id, patch),
     setLocked: (id, locked) => edit?.setLocked(id, locked),
