@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ThisBrowserItem } from '../this-browser';
 import { Explorer } from './Explorer';
+import { homeLayout } from './HomePane';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -156,6 +157,49 @@ describe('Home leaves out an empty section', () => {
     expect(nothing()).toBeNull();
   });
 
+  // Work Tracker 1523: with nothing in the timeline its column is not kept empty (one-explorer.md "Home's layout").
+  const layout = () =>
+    document.querySelector('[data-home-layout]')?.getAttribute('data-home-layout');
+  const sharedUsed = makeItem(1, {
+    ownerId: 'user_other',
+    sharedVia: 'code1',
+    access: 'view',
+    lastOpenedAt: 5_000_000,
+    useDays: 3,
+    useOpens: 5,
+  });
+
+  it('lays Most Used and Shared With You Recently side by side, half and half, with no timeline', async () => {
+    renderHome(createFakeIndex({ items: [sharedUsed] }));
+    await waitFor(() => expect(section('shared-recently')).not.toBeNull());
+    await waitFor(() => expect(section('most-used')).not.toBeNull());
+    expect(section('recent')).toBeNull();
+    expect(layout()).toBe('split');
+  });
+
+  it('keeps the timeline and the rail when the timeline has rows', async () => {
+    renderHome(createFakeIndex({ items: [sharedUsed, makeItem(2)] }));
+    await waitFor(() => expect(madeRow()).not.toBeNull());
+    await waitFor(() => expect(section('most-used')).not.toBeNull());
+    expect(layout()).toBe('rail');
+  });
+});
+
+describe('homeLayout', () => {
+  it.each([
+    [{ timeline: true, mostUsed: true, rest: true }, 'rail'],
+    [{ timeline: true, mostUsed: false, rest: true }, 'rail'],
+    [{ timeline: true, mostUsed: true, rest: false }, 'rail'],
+    [{ timeline: true, mostUsed: false, rest: false }, 'single'],
+    [{ timeline: false, mostUsed: true, rest: true }, 'split'],
+    [{ timeline: false, mostUsed: true, rest: false }, 'single'],
+    [{ timeline: false, mostUsed: false, rest: true }, 'single'],
+  ] as const)('%o is %s', (shown, expected) => {
+    expect(homeLayout(shown)).toBe(expected);
+  });
+});
+
+describe('Home after a trash', () => {
   it('counts a card trashed here out of its space, asking Spaces again once the index takes it', async () => {
     const index = createFakeIndex({ items: [makeItem(1), makeItem(2)] });
     renderHome(index);
