@@ -210,6 +210,9 @@ export const LIVE_ELEMENT_FIELDS = [
   'agendaCurrent',
   'agendaTimerStartedAt',
   'pickerResult',
+  // The names a Remove Once Drawn picker has drawn (docs/specs/012-collaboration/picker.md): a round's
+  // state, written with the result, so an undo must not put a drawn name back.
+  'pickerDrawn',
   // A quiz round's state (docs/specs/012-collaboration/quiz.md): started, locked and revealed are room
   // presses, not edits, so an undo must not un-start somebody's round.
   'quizStartedAt',
@@ -236,6 +239,7 @@ type LiveFieldBag = {
   | 'agendaCurrent'
   | 'agendaTimerStartedAt'
   | 'pickerResult'
+  | 'pickerDrawn'
   | 'quizStartedAt'
   | 'quizLockedAt'
   | 'quizRevealed'

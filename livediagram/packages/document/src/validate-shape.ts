@@ -130,6 +130,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   flag('revealed'),
   { field: 'pickerSource', valid: isPickerSource, rule: 'a picker source' },
   dataArray('pickerOptions'),
+  flag('pickerRemoveDrawn'),
+  dataArray('pickerDrawn'),
   ...CODE_CHECKS,
   ...MIND_FLOW_CHECKS,
   ...CHART_LOOK_CHECKS,

@@ -56,6 +56,7 @@ type PeopleFields = {
   addedBy?: unknown;
   pickerSource?: unknown;
   pickerResult?: unknown;
+  pickerDrawn?: unknown;
   noticeNotes?: { author?: unknown; by?: unknown }[];
   arcadeScores?: { name?: unknown; by?: unknown }[];
   componentEditBy?: unknown;
@@ -78,7 +79,8 @@ function hasPeople(e: PeopleFields): boolean {
     Array.isArray(e.arcadeScores) ||
     e.addedBy !== undefined ||
     Boolean(e.componentEditBy) ||
-    (e.pickerResult !== undefined && e.pickerSource !== 'options') ||
+    ((e.pickerResult !== undefined || e.pickerDrawn !== undefined) &&
+      e.pickerSource !== 'options') ||
     e.chartSheetSource !== undefined ||
     e.liveItem !== undefined ||
     e.liveTab !== undefined,
@@ -115,7 +117,11 @@ export function redactElementsForCommunity<E extends object>(elements: E[]): E[]
       out.rollCall = e.rollCall.map((entry, i) => ({ ...entry, name: `Participant ${i + 1}` }));
     }
     // A result from written options is the author's words; one from the room is a person's name.
-    if (e.pickerResult !== undefined && e.pickerSource !== 'options') delete out.pickerResult;
+    // So are the names a Remove Once Drawn round has drawn (docs/specs/012-collaboration/picker.md).
+    if (e.pickerSource !== 'options') {
+      delete out.pickerResult;
+      delete out.pickerDrawn;
+    }
     if (e.componentEditBy) out.componentEditBy = 'someone';
     if (Array.isArray(e.noticeNotes)) {
       const ids = neutralIds(e.noticeNotes, 'n');

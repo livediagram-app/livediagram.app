@@ -42,6 +42,15 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('decision', { decisionStatus: undefined })).toBe('');
     expect(state('picker', { pickerResult: 'Sam Lee' })).toBe('picked="Sam Lee"');
     expect(state('picker', { pickerResult: undefined })).toBe('');
+    // Remove Once Drawn (picker.md): how many have had their turn.
+    expect(
+      state('picker', {
+        pickerResult: 'Sam',
+        pickerRemoveDrawn: true,
+        pickerDrawn: ['Ada', 'Sam'],
+      }),
+    ).toBe('picked=Sam drawn=2');
+    expect(state('picker', { pickerRemoveDrawn: true })).toBe('drawn=0');
     expect(state('reveal', { revealed: true })).toBe('revealed');
     expect(state('reveal', { revealed: false })).toBe('');
   });

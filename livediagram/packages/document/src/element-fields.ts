@@ -81,6 +81,8 @@ export const ELEMENT_FIELD_NAMES = {
     'pickerSource',
     'pickerOptions',
     'pickerResult',
+    'pickerRemoveDrawn',
+    'pickerDrawn',
     'chairFacing',
     'roomDoor',
     'responses',

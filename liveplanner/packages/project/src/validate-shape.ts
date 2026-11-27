@@ -118,6 +118,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'session', valid: isSession, rule: 'a session with a known tool' },
   { field: 'pickerSource', valid: isPickerSource, rule: 'a picker source' },
   dataArray('pickerOptions'),
+  flag('pickerRemoveDrawn'),
+  dataArray('pickerDrawn'),
   ...CODE_CHECKS,
   ...MIND_FLOW_CHECKS,
   ...CHART_LOOK_CHECKS,

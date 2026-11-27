@@ -280,6 +280,11 @@ export type ShapeElement = {
   pickerSource?: PickerSource;
   pickerOptions?: string[];
   pickerResult?: string;
+  // Remove Once Drawn (docs/specs/012-collaboration/picker.md "Remove once drawn"): when on, a drawn
+  // name leaves the pool until a Reset. `pickerDrawn` is the names drawn since the last Reset, in
+  // order, written in the same update as the result so the pick and the pool never disagree.
+  pickerRemoveDrawn?: boolean;
+  pickerDrawn?: string[];
   // A retired piece's stored fields (docs/specs/009-elements/retired-elements.md "Stored data"): which way a
   // chair, desk, sofa or other turning furniture faced, and the wall a Room's doorway was in. Kept and
   // validated so a save writes them back unchanged; livediagram reads neither.
