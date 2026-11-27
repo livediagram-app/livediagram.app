@@ -1,6 +1,7 @@
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
 import type { ChangesetResponse, ChangesetWritten, EditRejection } from '@liveplanner/api-schema';
 import { migrateIncomingTab, type Tab } from '@liveplanner/project';
+import { applyStyle } from './style';
 import {
   applyEditOperations,
   applyReplace,
@@ -221,6 +222,7 @@ function compile(
   }
   if (!stored)
     return { errors: [{ code: 'target_not_found', details: ['the tab does not exist'] }] };
+  if (body.kind === 'style') return applyStyle(stored.tab, body.style);
   return applyEditOperations(stored.tab, body.operations, options);
 }
 

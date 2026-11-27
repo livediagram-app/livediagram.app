@@ -40,6 +40,7 @@ import {
   type PageBackground,
   type PageKind,
 } from '@livedocuments/document';
+import type { LayoutPreviewAsk } from '@/hooks/editor/layout-preview-settle';
 import type { PageLayoutId } from '@livedocuments/templates';
 import type { PageDeckControls, PageEdits } from '@/hooks/editor/usePagesMode';
 import { pageSheetStyle } from '@/lib/page-paint';
@@ -63,7 +64,7 @@ export type PageSheetActions = {
   layoutsOpenChange: (pageId: string, open: boolean) => void;
   requestLayouts: (pageId: string) => void;
   applyLayout: (pageId: string, layout: PageLayoutId) => void;
-  previewLayout: (pageId: string, layout: PageLayoutId | null) => void;
+  previewLayout: (pageId: string, layout: PageLayoutId | null, how?: LayoutPreviewAsk) => void;
   setBackground: (pageId: string, patch: Partial<PageBackground>) => void;
   setLocked: (pageId: string, locked: boolean) => void;
   choosePageKind: (pageId: string, kind: PageKind) => void;
@@ -112,7 +113,6 @@ export type PageSheetProps = {
   styleRequest: number;
   textRequest: number;
   layoutsRequest: number;
-  backgroundRequest: number;
   empty: boolean;
   previewing: boolean;
   layoutsOpen: boolean;
@@ -151,7 +151,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   styleRequest,
   textRequest,
   layoutsRequest,
-  backgroundRequest,
   empty,
   previewing,
   layoutsOpen,
@@ -320,7 +319,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           styleRequest={styleRequest}
           textRequest={textRequest}
           layoutsRequest={layoutsRequest}
-          backgroundRequest={backgroundRequest}
           shownName={shownName}
           many={many}
           act={act}

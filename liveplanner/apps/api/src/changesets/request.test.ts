@@ -111,3 +111,47 @@ describe('parseChangesetRequest', () => {
     expect(rejectionStatus('target_not_found')).toBe(422);
   });
 });
+
+// docs/specs/024-agents/agent-changesets.md "Style".
+describe('a style body', () => {
+  const parsed = (style: unknown) => parseChangesetRequest({ style });
+  const error = (style: unknown) => {
+    const out = parsed(style);
+    return out.ok ? null : { status: out.refusal.status, error: out.refusal.body.error };
+  };
+
+  it('takes a theme, a finish and a font, each one the catalogues hold', () => {
+    const out = parsed({ theme: 'office', finish: 'sketch', font: 'inter' });
+    expect(out.ok && out.value.body).toEqual({
+      kind: 'style',
+      style: { theme: 'office', finish: 'sketch', font: 'inter' },
+    });
+    const one = parsed({ font: 'oswald' });
+    expect(one.ok && one.value.body).toEqual({ kind: 'style', style: { font: 'oswald' } });
+  });
+
+  it('refuses an empty style, a part that is no id and a key it does not take', () => {
+    expect(error({})).toEqual({ status: 400, error: 'invalid_body' });
+    expect(error('forest')).toEqual({ status: 400, error: 'invalid_body' });
+    expect(error({ theme: ' ' })).toEqual({ status: 400, error: 'invalid_body' });
+    expect(error({ theme: 7 })).toEqual({ status: 400, error: 'invalid_body' });
+    expect(error({ colour: 'red' })).toEqual({ status: 400, error: 'invalid_body' });
+  });
+
+  it('refuses an unknown id, naming the valid ones', () => {
+    for (const style of [{ theme: 'nope' }, { finish: 'crayon' }, { font: 'permanent-marker' }]) {
+      const out = parsed(style);
+      expect(out.ok).toBe(false);
+      if (out.ok) continue;
+      expect(out.refusal).toMatchObject({ status: 422, body: { error: 'invalid_value' } });
+      expect((out.refusal.body.valid as string[]).length).toBeGreaterThan(2);
+    }
+    const theme = parsed({ theme: 'nope' });
+    expect(theme.ok ? [] : theme.refusal.body.valid).toContain('forest');
+  });
+
+  it('is sent alone, never with operations or a replace', () => {
+    const out = parseChangesetRequest({ style: { theme: 'forest' }, operations: ops });
+    expect(out.ok ? null : out.refusal.body.error).toBe('invalid_body');
+  });
+});

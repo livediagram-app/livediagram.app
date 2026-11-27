@@ -152,6 +152,11 @@ export type {
   ShapeLibrariesHost,
   ShapeLibrary,
 } from './library/types';
-export { appLibraryHosts, uploadRefusal, type AppLibraryHosts } from './library/http';
+export {
+  appLibraryHosts,
+  everyAppLibraryHosts,
+  uploadRefusal,
+  type AppLibraryHosts,
+} from './library/http';
 export { ItemHistoryDialog } from './library/ItemHistoryDialog';
 export type { HistoryExtras, HistoryPin } from './library/HistoryDialog';

@@ -176,8 +176,13 @@ const ARGS = {
   imageIds: ['img-1'],
 };
 // view_edit's rename of the tab's one box: its own `edits`, which update_document reads as text edits.
+// style_document needs one of theme, finish and font to write anything.
 const argsOf = (tool: string) =>
-  tool === 'view_edit' ? { ...ARGS, edits: [{ elementId: 'e_1', label: 'Renamed' }] } : ARGS;
+  tool === 'view_edit'
+    ? { ...ARGS, edits: [{ elementId: 'e_1', label: 'Renamed' }] }
+    : tool === 'style_document'
+      ? { ...ARGS, finish: 'sketch' }
+      : ARGS;
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
 
@@ -191,7 +196,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-five documented tools, each with a description', () => {
+  it('registers the twenty-six documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -214,6 +219,7 @@ describe('registerTools', () => {
       'restore_document',
       'search_icons',
       'share_document',
+      'style_document',
       'unarchive_document',
       'update_document',
       'upload_image',
@@ -330,6 +336,7 @@ describe('tool annotations', () => {
     add_tab: 'write',
     share_document: 'destructive',
     rename_document: 'write',
+    style_document: 'write',
     change_tabs: 'write',
     list_trash: 'read',
     restore_document: 'write',

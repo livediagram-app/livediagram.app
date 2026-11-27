@@ -164,11 +164,22 @@ export type ChangesetReplaceBody = {
   name?: string;
 };
 
-// `operations` is the JSON form (an array) or the line form (a string), CS8; exactly one of it
-// and `replace`.
+// An existing tab restyled (docs/specs/024-agents/agent-changesets.md "Style"): at least one part, each an id the
+// catalogue holds.
+export type ChangesetStyleBody = {
+  // A theme id (THEMES, board themes included).
+  theme?: string;
+  finish?: Finish;
+  // A face liveplanner offers (PLANNER_FONTS).
+  font?: string;
+};
+
+// `operations` is the JSON form (an array) or the line form (a string), CS8; exactly one of it,
+// `replace` and `style`.
 export type ChangesetRequest = {
   operations?: unknown[] | string;
   replace?: ChangesetReplaceBody;
+  style?: ChangesetStyleBody;
   base?: ChangesetBase;
   strict?: boolean;
   summary?: string;

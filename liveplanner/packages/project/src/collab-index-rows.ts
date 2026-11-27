@@ -27,6 +27,7 @@ import {
   withMentionedBy,
   type ThreadMentioner,
 } from '@liveworkspace/element-model/thread-mentioners';
+import { threadAiState, type ThreadAiState } from '@liveworkspace/model-core/comment-ai';
 import type { Comment } from './comments';
 import {
   ACTION_CARD_MAX,
@@ -49,6 +50,8 @@ export type CollabActionRow = {
   assignerId: string;
   assignerName: string | null;
   teamId: string | null;
+  // Its due day ('2026-12-03'), which its Inbox row says; absent when it has none.
+  due?: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -76,6 +79,9 @@ export type CollabThreadRow = {
   // The latest comment's server-stamped author, for the Timeline's "Comment Added"; null before authorId existed.
   latestAuthorId: string | null;
   latestAuthorColor: string;
+  // The agent that wrote the latest comment, and whether only agents wrote or one asks (model-core comment-ai).
+  latestAgent?: string;
+  aiState?: ThreadAiState;
   firstAt: number;
   latestAt: number;
 };
@@ -135,6 +141,7 @@ function threadRow(
     agentIds: agents.filter((id) => !participants.includes(id)),
     mentionedIds: mentioned,
     ...withMentionedBy(mentionedByOf(comments, mentionIdsOf)),
+    ...threadAiState(comments),
     latestText: latest.text,
     latestAuthorName: latest.authorName,
     latestAuthorId: latest.authorId ?? null,
@@ -224,6 +231,7 @@ export function collabIndexRowsFromElements(
         assignerId: action.assignerId,
         assignerName: action.assignerName ?? null,
         teamId: action.teamId ?? null,
+        ...(action.due ? { due: action.due } : {}),
         createdAt: action.createdAt,
         updatedAt: action.updatedAt,
       });

@@ -1,7 +1,7 @@
 // The apps' old MCP addresses, now routes on this Worker (liveworkspace/docs/specs/021-mcp/mcp.md "The app MCPs fold
 // in"). A connection made to `mcp.<app>.app` before the fold is that app's own MCP, passed through as it was (its
-// tool names, descriptions and instructions), until its token ends; nobody signs in there any more, so every sign-in
-// endpoint answers, in words, where the connection lives now.
+// tool names, descriptions and instructions), until its token ends or the move-over window closes (bearer.ts); nobody
+// signs in there any more, so every sign-in endpoint answers, in words, where the connection lives now.
 import { bearerChallenge } from '@liveworkspace/mcp-kit/token-refusal';
 import { APPS, type AppId } from './apps';
 import type { Env } from './env';

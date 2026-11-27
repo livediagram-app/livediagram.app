@@ -93,16 +93,27 @@
                         "items": { "type": "string", "maxLength": 2000 }
                       },
                       "body": {
-                        "description": "Every other text with words, in the layout's order (top to bottom, then the next column); fewer keeps the rest's sample.",
+                        "description": "Every other text with words (a stat's caption, a step) in the layout's order (top to bottom, then the next column); fewer keeps the rest's sample.",
                         "maxItems": 60,
                         "type": "array",
                         "items": { "type": "string", "maxLength": 2000 }
                       },
                       "figures": {
-                        "description": "Each figure (a number, a time, a price, 73%), a stat's big number among them, in the layout's order.",
+                        "description": "Each figure (a number, a time, a price, 73%, a stat's value), in the layout's order.",
                         "maxItems": 60,
                         "type": "array",
                         "items": { "type": "string", "maxLength": 2000 }
+                      },
+                      "table": {
+                        "description": "The layout's table, every row, header first.",
+                        "minItems": 1,
+                        "maxItems": 60,
+                        "type": "array",
+                        "items": {
+                          "maxItems": 12,
+                          "type": "array",
+                          "items": { "type": "string", "maxLength": 2000 }
+                        }
                       }
                     },
                     "additionalProperties": false,
@@ -229,6 +240,16 @@
                         "maxItems": 60,
                         "type": "array",
                         "items": { "type": "string", "maxLength": 2000 }
+                      },
+                      "table": {
+                        "minItems": 1,
+                        "maxItems": 60,
+                        "type": "array",
+                        "items": {
+                          "maxItems": 12,
+                          "type": "array",
+                          "items": { "type": "string", "maxLength": 2000 }
+                        }
                       }
                     },
                     "additionalProperties": false
@@ -729,7 +750,7 @@
   {
     "name": "update_design",
     "title": "Update a design",
-    "description": "Edit an existing tab. mode \"replace\" swaps the whole tab’s elements (validated + auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); mode \"ops\" keeps the colours it is given, and applies an ordered list of add/update/remove against existing elements (by id, or the ref read_design prints) and PRESERVES positions (no auto-layout), or takes \"edits\": edit operations as text (insert between, wrap in a frame, connect, layout a selection, place beside another element), the form each lint finding’s fix is written in. Returns an inline PNG.",
+    "description": "Edit an existing tab. mode \"replace\" swaps the whole tab’s elements (validated + auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); mode \"ops\" keeps the colours it is given, and applies an ordered list of add/update/remove against existing elements (by id, or the ref read_design prints) and PRESERVES positions (no auto-layout), or takes \"edits\": edit operations as text (insert between, wrap in a frame, connect, layout a selection, place beside another element), the form each lint finding’s fix is written in. The tab keeps its theme (style_design changes it). Returns an inline PNG.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -798,6 +819,31 @@
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
+  },
+  {
+    "name": "style_design",
+    "title": "Restyle a design",
+    "description": "Change the theme, finish or font of existing tabs (one, or every tab), as the editor’s Tab Style does: colours still on the old theme move to the new one, colours someone chose stay. Everyone with it open sees it.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "designId": { "type": "string", "description": "The design to restyle." },
+        "tabId": { "description": "Restyle this tab only; omit for every tab.", "type": "string" },
+        "theme": { "description": "A theme id, as create_design takes.", "type": "string" },
+        "finish": {
+          "description": "How the tab is drawn.",
+          "type": "string",
+          "enum": ["flexible", "professional", "sketch", "marker"]
+        },
+        "font": {
+          "description": "The tab's font: inter, poppins, nunito, oswald, space-grotesk, lora, abril-fatface, roboto-slab, roboto-mono, caveat, permanent-marker.",
+          "type": "string"
+        }
+      },
+      "required": ["designId"],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "share_design",

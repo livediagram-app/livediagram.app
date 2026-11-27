@@ -158,7 +158,7 @@ All of it is in `apps/editor/components/page-tree/`.
 | its place in the canvas chrome          | `usePageTreeChrome.tsx`                                              |
 | the breadcrumb                          | `PageBreadcrumb.tsx` (mounted by `CanvasPageSheet`)                  |
 | a made page's caret in its Title        | `lib/page-title-focus.ts`, `hooks/editor/usePageTitleFocus.ts`       |
-| what is closed, kept in this browser    | `apps/editor/lib/page-tree-open.ts`                                  |
+| what is opened, kept in this browser    | `apps/editor/lib/page-tree-open.ts`                                  |
 
 - **Where it stands.** In the canvas chrome's docked-sidebar slot (`useCanvasChromePanels` calls
   `usePageTreeChrome` where the fork called `useContentsChrome`): an `aside` down the canvas's left that sets
@@ -168,9 +168,17 @@ All of it is in `apps/editor/components/page-tree/`.
   right edge, liveworkspace/docs/specs/011-workbench/blueprints/sidebar-width.md; `pageTreeClearancePx`) for the left
   corner stacks, the bottom-right cluster and the strip. Hidden in zen mode, behind the welcome flow and in an
   embed.
+- **One scroller.** The sidebar's list area (`data-page-tree-scroll`: `min-h-0 flex-1 overflow-y-auto
+overscroll-contain`) holds `PageTree` and the Trash row and is the only box that scrolls; `PageTree`'s own
+  `role="tree"` div is `flex flex-col gap-px` and never `overflow-*`. It once was `overflow-y-auto
+overscroll-contain` too, inside the area: never taller than its rows, it could not scroll, yet Chromium chained
+  every wheel and trackpad scroll to it first and its `overscroll-contain` stopped it there, so nothing scrolled
+  (Work Tracker 1459; a static page reproduced it, the outer box at `scrollTop` 0 after ten wheel steps, 400 without
+  the inner one). The phone sheet's area is the same box without `overscroll-contain`: the sheet's body already
+  holds a swipe at its end, and a box that cannot scroll must never carry it. `PageTree.test.tsx` holds both.
 - **Collapsed** (`readTreeCollapsed`, per browser): a rail `PAGE_TREE_RAIL_WIDTH` (48) wide under the menu box,
   which keeps its own card, with Show Pages and, for an Editor, New Page.
-- **Rows.** `visiblePageRows(tabs, closed, activeId)` once per change of the list, of what is closed or of the
+- **Rows.** `visiblePageRows(tabs, opened, activeId)` once per change of the list, of what is opened or of the
   current page; 20 px a level (`PAGE_TREE_INDENT`); 32 px tall, 44 px on a touch screen. A row is `role="treeitem"`
   with `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (a page with subpages) and `aria-current` (the
   current page, in `brand-100` with `brand-900` text: 10.1:1). One row is the Tab stop (roving tabindex): the last one
@@ -232,15 +240,29 @@ All of it is in `apps/editor/components/page-tree/`.
   line), its middle the row (it highlights, and opens on the drop). `dropMove` turns the row and zone into a
   `PageMove`; a move the tree refuses (`pageMoveRefusal`: its own subtree, too deep) or that changes nothing takes no
   drop and shows no mark. Worked out once per row and zone entered, not per pointer move.
-- **Closed pages** are kept per knowledgebase in `localStorage` (`liveknowledge:v2:page-tree-closed`, the 50 most
-  recent knowledgebases); a page with subpages is open until closed. The current page's ancestors are open whatever
-  is stored, which is how a page opened by its link (`#t=<page>`) shows where it is.
+- **Opened pages** are kept per knowledgebase in `localStorage` (`liveknowledge:v3:page-tree-opened`, the 50 most
+  recent knowledgebases); a page with subpages is closed until opened, so a knowledgebase loads with only its
+  top-level pages showing (Work Tracker 1486), but for the first page (`firstPageOf`: the first top-level page in
+  tree order, a connected row skipped), open by default so its subpages show (Work Tracker 1489). `useOpenedPages`
+  shows `openedWithFirst(stored, first)`; closing the first page stores `!<page id>` (`closedMark`, `withPageOpen`) in
+  the same list, so it stays closed for that reader, and opening it again drops the mark. The current page's ancestors are open whatever is stored, which is how
+  a page opened by its link (`#t=<page>`) shows where it is. The older `v2:page-tree-closed` record (open until
+  closed) is not read: its meaning was the reverse, and every tree simply starts closed once.
+- **What a person makes or moves shows where it went.** `openParentsOf(documentId, pages, ids)` (`lib/page-tree-open.ts`)
+  adds every page above `ids` to the stored set and tells the open tree (`subscribeOpenedPages`, heard by
+  `useOpenedPages`, which adds them to what it holds even where storage is refused). `useTabActions` calls it for
+  `addTab(parent)`, `addNamedSubpage` (a page link's Create Page: the new page is not opened, so only its parent
+  shows it) and every tree edit (`movePage`, `indentPage`, ...: an Indent puts a page under the sibling above, which
+  may be closed). An Import and a structure (`runImport`, `runSetup`) wrap their save layer in `revealingLayer`
+  (`lib/knowledge-import/save-layers.ts`), which opens each batch's parents as it goes in; a new knowledgebase's
+  set is written before it is opened, so it opens with its imported tree showing. Pages a collaborator adds open
+  nothing here.
 - **Phone:** no sidebar. `PageTreeSheet`'s Pages button stands under the menu box, for every role (the fork's strip,
   whose row it rode in on an Editor's phone, is not a page's bar any more:
   [page surface blueprint](page-surface.md) "The formatting bar"); it opens the same `PageTree` in the shared
   `BottomSheet`, which closes when a page is chosen or added.
 - **The bottom bar** (`components/chrome/BottomBar.tsx`, in place of `TabBar.tsx`) keeps Tools, Settings and the
-  appearance, and still draws the canvas right-click menu (`TabPortalMenu`), which keeps the current page's Import,
+  appearance, and still draws the canvas right-click menu (`TabMenu`), which keeps the current page's Import,
   Export, Lock, Clear and Add to Document. Its Rename asks the tree to rename the page in its row. The tab folder
   rows are not offered.
 - **Presence:** `TabPresenceStack` in the row of the page each person is on.
@@ -520,7 +542,7 @@ seen in a browser since.
 | `TOUCH_FOCUS_MS`                       | 1000   | `PageTree.tsx`            | A tap's focus arrives with its synthetic mouse events, well inside it  |
 | `PAGE_NAME_SETTLE_MS`                  | 50     | `usePageNameFromTitle.ts` | Well inside the autosave's pause, so the name saves with the Title     |
 | `BREADCRUMB_MIN`                       | 240    | `page-title-bar-room.ts`  | Two ancestors at a readable width before the buttons name themselves   |
-| `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose closed pages are kept                             |
+| `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose opened pages are kept                             |
 | `TYPE_AHEAD_RESET_MS`                  | 500    | `page-tree-view.ts`       | WAI-ARIA's type-ahead pause; a slower typist starts a new search       |
 | `LONG_PRESS_MS`                        | 500    | `useRowLongPress.ts`      | iOS and Android's own long press; shorter fights a scroll or drag      |
 | `LONG_PRESS_SLOP_PX`                   | 8      | `useRowLongPress.ts`      | A finger's tremble; past it the press is a scroll or a drag            |

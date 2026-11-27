@@ -15,6 +15,7 @@ import {
   AiCommentMark,
   EditedCommentMark,
 } from '@liveworkspace/workbench/components/comments/CommentMarks';
+import { AiCommentMarks } from '@liveworkspace/ui/ai-comment-marks';
 import { useReactionTray } from '@liveworkspace/workbench/components/comments/CommentReactions';
 import {
   ScopedAddReactionButton,
@@ -89,13 +90,13 @@ export function CommentRow({
             style={identityVars(comment.authorColor)}
             className={`text-[10px] font-semibold text-white ${IDENTITY_FILL} ${rail ? (resolved ? RAIL_RING_RESOLVED : RAIL_RING) : ''}`}
           >
-            {initialsOf(comment.authorName)}
+            {initialsOf(comment.agent ?? comment.authorName)}
           </GlyphDisc>
         )}
       </span>
       <div className="min-w-0 flex-1">
         <div
-          className={`flex items-baseline gap-1.5 ${comfortable ? 'text-[13px]' : 'text-[11px]'}`}
+          className={`flex items-baseline gap-1.5 ${comment.agent ? 'flex-wrap gap-y-0.5' : ''} ${comfortable ? 'text-[13px]' : 'text-[11px]'}`}
         >
           {automation ? (
             <AutomationAuthorName
@@ -104,9 +105,12 @@ export function CommentRow({
             />
           ) : (
             <span className="truncate font-medium text-slate-900 dark:text-slate-50">
-              {comment.authorName}
+              {comment.agent ?? comment.authorName}
             </span>
           )}
+          {comment.agent ? (
+            <AiCommentMarks forName={comment.authorName} needsResponse={comment.needsResponse} />
+          ) : null}
           <Tooltip label={when}>
             <time
               dateTime={new Date(comment.createdAt).toISOString()}
@@ -119,7 +123,7 @@ export function CommentRow({
           </Tooltip>
           {comment.editedAt ? <EditedCommentMark /> : null}
         </div>
-        {comment.ai ? <AiCommentMark /> : null}
+        {comment.ai && !comment.agent ? <AiCommentMark /> : null}
         {editing && onEdit ? (
           <CommentEditField
             initial={comment.text}

@@ -15,6 +15,8 @@ import { mcpListVersions, mcpRestoreVersion } from '../mcp/version-tools';
 import {
   changePagesOutput,
   changePagesShape,
+  styleDocumentOutput,
+  styleDocumentShape,
   writeArticleOutput,
   writeArticleShape,
 } from '../mcp/pages-schema';
@@ -142,9 +144,19 @@ export const mcpUpdateDocument = mcpTool('update_document', {
     'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
     'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
     'takes "edits": edit operations as text (insert between, connect, layout a selection, ' +
-    'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG.',
+    'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG. ' +
+    'The theme is style_document\u2019s.',
   inputSchema: updateDocumentShape,
   outputSchema: updateDocumentOutput,
+});
+
+export const mcpStyleDocument = mcpTool('style_document', {
+  behaviour: 'write',
+  title: 'Restyle a document',
+  description:
+    'Change a document’s theme, font, finish or style recipe at any time, on one tab or all.',
+  inputSchema: styleDocumentShape,
+  outputSchema: styleDocumentOutput,
 });
 
 export const mcpShareDocument = mcpTool('share_document', {
@@ -225,13 +237,14 @@ export const mcpChangePages = mcpTool('change_pages', {
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
     "other page of its kind, every slide say, takes that page's background), tab_design {design} (decoration " +
     'drawn behind every page in the theme\u2019s colours: an id such as "aurora", {"id", ...tuning}, "auto" or null; ' +
-    'set and add take a page\u2019s own "design", or "none" / "tab"). The answer gives every page with its rectangle in canvas ' +
+    'set and add take a page\u2019s own "design", or "none" / "tab"), tab_style {style, theme, font, finish} (restyle an ' +
+    'existing tab: a recipe such as "editorial" or "auto", or a theme, typeface or finish alone). The answer gives every page with its rectangle in canvas ' +
     'coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text; its "text" replaces it by slot in the same change ' +
     '({"op": "add", "kind": ..., "layout": ..., "text": {"title": ..., "bullets": [...], "figures": [...]}}), and each page a change ' +
     'lays out answers its texts, each with its ref (for update_document), slot and words. ' +
-    "A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
+    "A layout's colours are the tab's theme (create_document's and add_tab's theme, or tab_style's: " +
     'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
     'Everyone with the document open sees it at once.',
   inputSchema: changePagesShape,
@@ -254,6 +267,7 @@ export const mcpWriteArticle = mcpTool('write_article', {
 export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpChangePages,
   mcpWriteArticle,
+  mcpStyleDocument,
   mcpListImages,
   mcpUploadImage,
   mcpDeleteImage,

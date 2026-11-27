@@ -143,17 +143,22 @@ export function PageTreeSheet({
             <SearchField />
           </div>
           <LabelFilterHeading only={tree.only} touch inset="px-4" top="pt-2" />
-          <PageTree
-            {...tree}
-            actions={sheetActions}
-            connected={sheetConnected}
-            touch
-            className="px-2"
-          />
-          {/* The Trash, the list's last item, only while it holds pages; its dialog opens over the page, so the sheet
-              closes. */}
-          <div className="px-2 pb-2">
-            {trash ? <PageTrashRow touch onOpen={() => setOpen(false)} /> : null}
+          {/* The pages and the Trash scroll together, as in the sidebar; the list is never a scroller of its own
+              (PageTree), so a swipe that starts on it always moves this. No overscroll-contain here: the sheet's body
+              holds a swipe at its end, and on a box that cannot scroll it would stop one going anywhere. */}
+          <div data-page-tree-scroll="" className="min-h-0 flex-1 overflow-y-auto">
+            <PageTree
+              {...tree}
+              actions={sheetActions}
+              connected={sheetConnected}
+              touch
+              className="px-2"
+            />
+            {/* The Trash, the list's last item, only while it holds pages; its dialog opens over the page, so the
+                sheet closes. */}
+            <div className="px-2 pb-2">
+              {trash ? <PageTrashRow touch onOpen={() => setOpen(false)} /> : null}
+            </div>
           </div>
           {tree.canEdit ? (
             <div className="border-t border-slate-200 p-3 dark:border-slate-800">

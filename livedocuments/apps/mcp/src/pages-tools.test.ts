@@ -158,3 +158,65 @@ describe('the Pages tools', () => {
     expect(out).toMatchObject({ isError: true, content: [{ text: message }] });
   });
 });
+
+describe('style_document', () => {
+  const twoTabs = (refuseSecond = false) => {
+    const sent: { path: string; body: unknown }[] = [];
+    const handler = async (request: Request): Promise<Response> => {
+      const path = new URL(request.url).pathname.replace(/^\/api/, '');
+      if (path.endsWith('/events')) return new Response(null, { status: 204 });
+      if (path.endsWith('/pages')) {
+        const body = await request.json();
+        sent.push({ path, body });
+        if (refuseSecond && path.includes('/t2/'))
+          return Response.json(
+            { error: 'unknown_theme', message: '"theme": unknown' },
+            { status: 400 },
+          );
+        return done({ lines: ['Restyled the tab: theme forest.'] });
+      }
+      if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab: TAB });
+      return Response.json({
+        document: {
+          ...LIVE_DOC,
+          tabs: [
+            { id: 't1', name: 'Slides', orderIndex: 0 },
+            { id: 't2', name: 'Notes', orderIndex: 1 },
+          ],
+        },
+      });
+    };
+    return { handler, sent };
+  };
+
+  it('restyles every tab when none is named, each as one tab_style', async () => {
+    const { handler, sent } = twoTabs();
+    const out = await call(handler, 'style_document', { theme: 'forest' });
+    expect(out.isError).toBeFalsy();
+    expect(sent.map((s) => s.body)).toEqual([
+      { pages: [{ op: 'tab_style', theme: 'forest' }] },
+      { pages: [{ op: 'tab_style', theme: 'forest' }] },
+    ]);
+    expect(sent.map((s) => s.path.split('/')[4])).toEqual(['t1', 't2']);
+    expect(out.structuredContent!.lines).toEqual([
+      '"Slides": Restyled the tab: theme forest.',
+      '"Notes": Restyled the tab: theme forest.',
+    ]);
+  });
+
+  it('restyles only the tab named, and refuses a call with nothing to set', async () => {
+    const { handler, sent } = twoTabs();
+    await call(handler, 'style_document', { tabId: 't2', font: 'lora' });
+    expect(sent).toHaveLength(1);
+    const empty = await call(handler, 'style_document', {});
+    expect(empty.isError).toBe(true);
+    expect(empty.content[0]!.text).toContain('at least one of style, theme, font and finish');
+  });
+
+  it('says which tabs were restyled before a refusal', async () => {
+    const { handler } = twoTabs(true);
+    const out = await call(handler, 'style_document', { theme: 'forest' });
+    expect(out.isError).toBe(true);
+    expect(out.content[0]!.text).toContain('("Slides" restyled first)');
+  });
+});

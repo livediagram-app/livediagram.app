@@ -39,8 +39,18 @@ const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3602);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 9287);
 const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8319);
 // The accounts Worker stand-in the api's ACCOUNTS binding reaches for the AI key door (../../scripts/e2e-stack/
-// accounts-worker): one above the api, unless the environment names another.
-const ACCOUNTS_WORKER_PORT = Number(process.env.E2E_ACCOUNTS_WORKER_PORT ?? API_PORT + 1);
+// accounts-worker): the first port above the api that no other service of this stack uses (a 10-port block puts the
+// index at api + 1, which an unconditional api + 1 took), unless the environment names another.
+const TAKEN_PORTS = new Set([
+  EDITOR_PORT,
+  API_PORT,
+  INDEX_PORT,
+  Number(process.env.E2E_MARKETING_PORT ?? 3613),
+  Number(process.env.E2E_MEDIA_PORT ?? 0),
+]);
+let freeAbove = API_PORT + 1;
+while (TAKEN_PORTS.has(freeAbove)) freeAbove += 1;
+const ACCOUNTS_WORKER_PORT = Number(process.env.E2E_ACCOUNTS_WORKER_PORT ?? freeAbove);
 // No request of this stack reaches Anthropic: the api's door to the model opens on the stand-in instead
 // (e2e-claude-stand-in.mjs), on a free loopback port. Not started beside an api that is already up.
 const claude = process.env.E2E_EDITOR_ONLY === '1' ? null : await startClaudeStandIn();

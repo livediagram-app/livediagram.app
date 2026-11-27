@@ -70,6 +70,47 @@ describe('parseChangesetRequest', () => {
     expect(replace({ elements: [], finish: 'glossy' })).toBe('invalid_body');
   });
 
+  // agent-changesets.md "A style restyles an existing tab".
+  it('takes a style of at least one known theme, finish or font', () => {
+    const style = (s: unknown) => {
+      const out = parseChangesetRequest({ style: s });
+      return out.ok ? out.value.body : out.refusal;
+    };
+    expect(style({ theme: 'forest', finish: 'sketch', font: 'inter' })).toEqual({
+      kind: 'style',
+      style: { theme: 'forest', finish: 'sketch', font: 'inter' },
+    });
+    expect(style({ finish: 'marker' })).toEqual({ kind: 'style', style: { finish: 'marker' } });
+    for (const empty of [{}, 'forest', null]) {
+      expect(style(empty)).toMatchObject({ status: 400, body: { error: 'invalid_body' } });
+    }
+    expect(style({ theme: 3 })).toMatchObject({
+      body: { message: '"style.theme" must be a string' },
+    });
+    const unknown = style({ theme: 'forest', font: 'comic' }) as {
+      status: number;
+      body: Record<string, unknown>;
+    };
+    expect(unknown.status).toBe(422);
+    expect(unknown.body).toMatchObject({ error: 'invalid_value', field: 'font' });
+    expect(unknown.body.valid).toContain('inter');
+    expect(unknown.body.message).toMatch(/^"style.font" "comic" is not one of: inter, /);
+    expect(style({ theme: 'nope' })).toMatchObject({ body: { field: 'theme' } });
+    expect(style({ finish: 'glossy' })).toMatchObject({
+      body: { field: 'finish', valid: ['flexible', 'professional', 'sketch', 'marker'] },
+    });
+  });
+
+  it('takes exactly one of operations, replace and style', () => {
+    const error = (raw: Record<string, unknown>) => {
+      const out = parseChangesetRequest(raw);
+      return out.ok ? null : out.refusal.body.error;
+    };
+    expect(error({ operations: ops, style: { theme: 'forest' } })).toBe('invalid_body');
+    expect(error({ replace: { elements: [] }, style: { theme: 'forest' } })).toBe('invalid_body');
+    expect(error({})).toBe('invalid_body');
+  });
+
   it('reads the line form from a string, logging the parse', () => {
     const logged: string[] = [];
     const out = parseChangesetRequest(

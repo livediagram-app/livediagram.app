@@ -67,10 +67,20 @@ Web](publishing.md)): its "public site", never its "Public".
   is kept per browser), the shared rule in
   [Sidebar width](../../../../liveworkspace/docs/specs/011-workbench/sidebar-width.md). A title still cut off shows
   whole in a tooltip on hover and on keyboard focus. The knowledgebase's name at its head (its menu's
-  button, "The knowledgebase's menu"), then the pages. Rows indent 20 px a level, a page with subpages has a chevron, and open or closed is kept
-  per browser, per knowledgebase. The current page's ancestors are always open, so a page opened by its link shows
-  where it is. The current page wears the brand tint. A button at the sidebar's head collapses it to a narrow rail
+  button, "The knowledgebase's menu"), then the pages. Rows indent 20 px a level, and a page with subpages has a chevron.
+  Pages start closed but the first, so a knowledgebase loads showing its top-level pages and, when the first page has
+  subpages, those too, so a reader sees its categories at once (Work Tracker 1489). The first page stays open until the
+  reader closes it, and then stays closed for them; a page the reader opens stays open,
+  kept per browser, per knowledgebase (a viewer's own, never written to the knowledgebase, so one reader's tree never
+  changes another's). The current page's ancestors are always open, so a page opened by its link shows where it is.
+  A page the reader makes or moves under another opens the pages above it, and they stay open: Add Subpage, a page
+  link's Create Page, an Import, a structure from the start screen or Describe to Set Up, an Indent and a drop onto a
+  page all show the new or moved page where it went. The current page wears the brand tint. A button at the sidebar's head collapses it to a narrow rail
   and back, kept per browser.
+- **The list scrolls as any list does.** The wheel, a trackpad's two-finger scroll and a finger's swipe over the
+  pages scroll them, with the Trash row under them, in the sidebar and in the phone's Pages sheet; at either end the
+  scroll stops there rather than moving the page behind (owner 2026-11-25, Work Tracker 1459: a two-finger scroll
+  over the sidebar did nothing). Opening a page leaves the list scrolled where it was.
 - The bottom bar keeps what else stood in it (Tools, Settings, the appearance), where it stood.
 - The tree is a real tree for the keyboard (WAI-ARIA tree view), one Tab stop for the whole tree: Up and Down move
   through the rows, Home and End to the first and the last, Right opens a page or enters it, Left closes it or goes

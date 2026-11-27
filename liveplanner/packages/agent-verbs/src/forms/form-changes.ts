@@ -27,6 +27,7 @@ import {
   type FormQuestion,
   type SectionRule,
 } from '@liveplanner/forms';
+import { unknownThemeText } from '../theme-ids';
 import { parseColourBackground, type ColourBackground } from '@liveworkspace/page-background';
 import {
   setGoesTo,
@@ -320,8 +321,9 @@ function setForm(d: FormDraft, c: Extract<FormChange, { op: 'set_form' }>): Form
   }
   if (c.theme !== undefined) {
     const theme = c.theme.trim();
-    if (!theme || theme.length > 64)
-      return refuse('invalid_value', 'theme is a theme id (mocha, ocean, forest...).');
+    if (!theme) return refuse('invalid_value', 'theme is a theme id (mocha, ocean, forest...).');
+    const unknown = unknownThemeText(theme);
+    if (unknown) return refuse('invalid_value', unknown);
     // The form wears its tab's look: the tab's theme changes with it.
     d.formTab = { ...d.formTab, theme };
     d.themeChanged = true;

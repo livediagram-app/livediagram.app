@@ -2,39 +2,31 @@
 // on every page, kept apart from the list model (sections.ts, which re-exports these) so the Explorer's first load
 // does not carry the list, its filters and its words (site.md "Performance and limits").
 
-import type {
-  InboxAccessRequest,
-  InboxAction,
-  InboxAutomationNotice,
-  InboxCallInvite,
-  InboxForm,
-  InboxSuggestion,
-  InboxThread,
-  InboxUpdate,
+import {
+  actionKey,
+  callKey,
+  formKey,
+  noticeKey,
+  requestKey,
+  suggestionKey,
+  threadKey,
+  updateKey,
+  type InboxThread,
 } from '@liveworkspace/index-client';
 import type { InboxData } from '../../data/useInbox';
 import type { InboxEntry } from './sections';
 
-// Each row's key: unique per row and stable across reads.
-export const actionKey = (r: Pick<InboxAction, 'app' | 'itemId' | 'actionId'>) =>
-  `a:${r.app}:${r.itemId}:${r.actionId}`;
-export const threadKey = (r: Pick<InboxThread, 'app' | 'itemId' | 'tabId' | 'elementId'>) =>
-  `t:${r.app}:${r.itemId}:${r.tabId}:${r.elementId}`;
-export const formKey = (r: Pick<InboxForm, 'app' | 'itemId' | 'tabId'>) =>
-  `f:${r.app}:${r.itemId}:${r.tabId}`;
-/** An access request's: `r:<id>`, the key its notice and its email open the Inbox at (`?at=`). */
-export const requestKey = (r: Pick<InboxAccessRequest, 'id'>) => `r:${r.id}`;
-/** A suggested edit's: its app, item, page and id. */
-export const suggestionKey = (
-  r: Pick<InboxSuggestion, 'app' | 'itemId' | 'tabId' | 'suggestionId'>,
-) => `g:${r.app}:${r.itemId}:${r.tabId}:${r.suggestionId}`;
-/** A call invite's: its id, the key its notice opens the Inbox at. */
-export const callKey = (r: Pick<InboxCallInvite, 'id'>) => `k:${r.id}`;
-/** A rule's notice's: its id, the key its notice opens the Inbox at. */
-export const noticeKey = (r: Pick<InboxAutomationNotice, 'id'>) => `n:${r.id}`;
-/** An update's: its app, item and id, the key its notice opens the Inbox at. */
-export const updateKey = (r: Pick<InboxUpdate, 'app' | 'itemId' | 'id'>) =>
-  `u:${r.app}:${r.itemId}:${r.id}`;
+// Each row's key: unique per row and stable across reads, one copy with the index's read state (index-client).
+export {
+  actionKey,
+  callKey,
+  formKey,
+  noticeKey,
+  requestKey,
+  suggestionKey,
+  threadKey,
+  updateKey,
+} from '@liveworkspace/index-client';
 
 /** What holds a row done from the pane out of the Inbox (`useInbox`'s `settle`): its key, a card thread by its own id
  *  (whichever plan lists it, as the list shows it once), and its time then, so a row that changes after comes back. */
@@ -63,6 +55,15 @@ export function settledOf(e: InboxEntry): InboxSettled {
     case 'AutomationNotice':
       return { key: noticeKey(e.row), at: e.row.at };
   }
+}
+
+/** A row's read-state key and time (inbox-reading.md "Read and unread"): the index's own key for it, a card thread's
+ *  too, and the time it last changed, so a row read before a change reads unread again. */
+export function readOf(e: InboxEntry): InboxSettled {
+  const done = settledOf(e);
+  return e.kind === 'Thread' || e.kind === 'CardThread'
+    ? { key: threadKey(e.row), at: done.at }
+    : done;
 }
 
 /** The Inbox without the rows done from the pane while a read still lists them as they were. */

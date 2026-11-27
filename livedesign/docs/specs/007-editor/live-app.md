@@ -285,7 +285,7 @@ focus-zoom to do: `globals.css` already holds every field at 16px on a phone.
 
 **Menus are bottom sheets on a phone.** Every context menu (an element's, a selection's: the
 shared `ContextMenu`; and the tab menu, from a tab's `⋯` or a long-press on the canvas:
-`TabPortalMenu`) opens as a sheet (`BottomSheet`) docked to the bottom edge instead of a
+`TabMenu`) opens as a sheet (`BottomSheet`) docked to the bottom edge instead of a
 card hung off the long-press point, which covered the element it was about and ran under the tab
 bar. Full width (up to 32rem), at most 60% of the screen tall with its own scroll, clear of the
 home indicator, rising in (`animate-sheet-up`). A grab handle across its top moves it, the sheet

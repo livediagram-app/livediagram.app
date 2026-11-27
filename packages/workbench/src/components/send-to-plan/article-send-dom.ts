@@ -1,17 +1,16 @@
 // Send to Plan in an article's writing (livedocuments' and liveknowledge's docs/specs/013-workspace/send-to-plan.md
 // "What it sends", "The chip"): the pieces drawn outside React, since the writing is a ProseMirror view. A sent
-// block's chip at the end of its text (a decoration widget each app's article-sent-plugin places), and, for someone
-// who reads the writing but cannot write in it (a Viewer, a locked page), a Send to Plan pill over the words picked.
-// Both are plain buttons: never editable, never taking the caret, opening the card or the picker.
+// block's chip at the end of its text (a decoration widget each app's article-sent-plugin places): a plain button,
+// never editable, never taking the caret, opening the card. The sends from the words picked (the selection menu's,
+// the page toolbar's) go through sendArticleWords and sendArticleWordsToDiagram.
 import type { IconPrim } from '@liveworkspace/icons';
 import { lucideCircleCheck } from '@liveworkspace/icons/lucide';
 import { brandMarkSvg, type BrandApp } from '@liveworkspace/brand/svg';
 import type { PlanSend } from '@liveworkspace/index-client';
 import { parseInert } from '@liveworkspace/trusted-types';
-import { canSendHere, sendFromHere } from './send-to-plan-entry';
-import { canSendDiagramHere, sendWordsToDiagram } from '../send-to-diagram/send-to-diagram-entry';
+import { sendFromHere } from './send-to-plan-entry';
+import { sendWordsToDiagram } from '../send-to-diagram/send-to-diagram-entry';
 import { chipWords, openSentCard } from './SentChip';
-import { PRESS_HOLD_MS } from './press-hold';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -143,117 +142,4 @@ export function brandMarkDom(app: BrandApp, size: number): SVGSVGElement {
   node.setAttribute('height', String(size));
   node.setAttribute('aria-hidden', 'true');
   return node;
-}
-
-// The one pill on screen, over the words a reader picked, and Send to Diagram's beside it when the app drafts diagrams.
-let pill: HTMLButtonElement | null = null;
-let diagramPill: HTMLButtonElement | null = null;
-// When a press on a pill began (send-to-plan.md "On a touch screen"): a tap clears the words picked before its click
-// lands, and the pills, which go with the words, must stay for it. -Infinity while none is under way.
-let pressedAt = Number.NEGATIVE_INFINITY;
-let releaseTimer: ReturnType<typeof setTimeout> | null = null;
-
-/** Screen px between the words and the pills: past the selection's drag handle on a touch screen, close on a mouse. */
-export const READ_PILL_GAP_PX = { coarse: 24, fine: 8 } as const;
-// The pills' height on a coarse pointer (h-11), for the flip above the words at the screen's foot.
-const PILL_TALL_PX = 44;
-
-const coarsePointer = () =>
-  typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
-
-const PILL =
-  'fixed z-[var(--z-toolbar)] inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-lg shadow-slate-900/10 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 pointer-coarse:h-11';
-
-// A pill button: its logo and words. Pressing it keeps the words picked until it reads them (a mouse), and holds the
-// pills through a tap that clears them (a finger).
-function pillButton(app: BrandApp, words: string, label: string): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = PILL;
-  button.setAttribute('aria-label', label);
-  button.appendChild(brandMarkDom(app, 14));
-  button.appendChild(document.createTextNode(words));
-  button.addEventListener('mousedown', (e) => e.preventDefault());
-  button.addEventListener('pointerdown', () => {
-    pressedAt = Date.now();
-  });
-  document.body.appendChild(button);
-  return button;
-}
-
-/** Where the pills' top sits: under the words, clear of the touch handles, or above them at the screen's foot. */
-export function readPillTop(at: { top?: number; bottom: number }, coarse: boolean): number {
-  const gap = coarse ? READ_PILL_GAP_PX.coarse : READ_PILL_GAP_PX.fine;
-  const below = at.bottom + gap;
-  if (at.top === undefined || below + PILL_TALL_PX <= window.innerHeight - 8) return below;
-  return Math.max(8, at.top - gap - PILL_TALL_PX);
-}
-
-/**
- * Shows Send to Plan under the words a reader picked (a screen rect), or hides it (null, or a session that may not
- * send). One pill at a time; it sends what `pick` answers when pressed, then goes.
- */
-export function showReadSendPill(
-  at: { left: number; bottom: number; top?: number } | null,
-  pick: () => ArticlePick | null,
-): void {
-  if (!at || !canSendHere()) {
-    hideReadSendPill();
-    return;
-  }
-  clearRelease();
-  if (!pill) {
-    pill = pillButton('liveplanner', 'Send to Plan', 'Send the words to a plan');
-    pill.dataset.readSendPill = '';
-  }
-  pill.onclick = () => {
-    const picked = pick();
-    hideReadSendPill();
-    sendArticleWords(picked);
-  };
-  const top = `${readPillTop(at, coarsePointer())}px`;
-  pill.style.left = `${Math.max(8, at.left)}px`;
-  pill.style.top = top;
-  if (!canSendDiagramHere()) {
-    diagramPill?.remove();
-    diagramPill = null;
-    return;
-  }
-  if (!diagramPill) {
-    diagramPill = pillButton('livediagram', 'Send to Diagram', 'Send the words to a diagram');
-    diagramPill.dataset.readDiagramPill = '';
-  }
-  diagramPill.onclick = () => {
-    const picked = pick();
-    hideReadSendPill();
-    sendArticleWordsToDiagram(picked);
-  };
-  diagramPill.style.left = `${Math.max(8, at.left) + pill.offsetWidth + 6}px`;
-  diagramPill.style.top = top;
-}
-
-function clearRelease(): void {
-  if (releaseTimer !== null) clearTimeout(releaseTimer);
-  releaseTimer = null;
-}
-
-/** Takes the pills away. */
-export function hideReadSendPill(): void {
-  clearRelease();
-  pressedAt = Number.NEGATIVE_INFINITY;
-  pill?.remove();
-  pill = null;
-  diagramPill?.remove();
-  diagramPill = null;
-}
-
-/**
- * The words picked went: the pills go too, unless a press on one is under way (a tap clears the words before its click
- * lands). Then they stay until its click sends, or until the hold runs out (a press let go elsewhere).
- */
-export function releaseReadSendPill(): void {
-  const left = pressedAt + PRESS_HOLD_MS - Date.now();
-  if (!pill || left <= 0) return hideReadSendPill();
-  clearRelease();
-  releaseTimer = setTimeout(hideReadSendPill, left);
 }

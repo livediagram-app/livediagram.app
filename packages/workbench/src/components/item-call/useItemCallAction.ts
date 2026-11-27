@@ -3,7 +3,8 @@
 // The open item's call as one action (liveworkspace/docs/specs/004-index/item-calls.md "Starting", "Joining"): Join while
 // someone is in it, Start for an account that may start one, nothing otherwise. Shared by the corner card's Call
 // button (ItemCallButton) and the phone's Apps drawer's Call tile (phone-apps-drawer.md), so both say and do the same.
-import { useState } from 'react';
+// Start asks first (Work Tracker 1470): it opens the Start a Call popover, whose Start Call runs useStartCall.
+import { useCallback } from 'react';
 import {
   callFallbackWords,
   itemCallTabName,
@@ -16,6 +17,7 @@ import { focusOrOpen, isBlank, namedTab, sendTab } from '@liveworkspace/index-cl
 import { workbench } from '../../bindings';
 import { useToast } from '../../hooks/ui/useToast';
 import { indexClient } from '../../lib/index-client';
+import { openCallChooser, setCallStarting, useCallChooser } from './call-chooser-store';
 import { refreshItemCalls, useItemCalls, type CallSource } from './item-call-store';
 
 type Starter = Pick<typeof indexClient, 'startItemCall'>;
@@ -51,13 +53,20 @@ export const joinCall = (source: CallSource, call: Pick<ItemCall, 'link'>): bool
 
 export type ItemCallAction =
   | { kind: 'join'; source: CallSource; live: NonNullable<ItemCallsRead['live']>; run: () => void }
-  | { kind: 'start'; source: CallSource; starting: boolean; run: () => void };
+  // `run` opens the Start a Call popover under `anchor` (a phone sheet with none); it starts nothing.
+  | {
+      kind: 'start';
+      source: CallSource;
+      starting: boolean;
+      open: boolean;
+      run: (anchor?: HTMLElement | null) => void;
+    };
 
 /** The call's action for the open item, or null when there is none to offer. */
 export function useItemCallAction(): ItemCallAction | null {
   const { source, read } = useItemCalls();
+  const { starting, open } = useCallChooser();
   const toast = useToast();
-  const [starting, setStarting] = useState(false);
   if (!source) return null;
   const live = read?.live ?? null;
   if (live && live.people > 0) {
@@ -77,12 +86,21 @@ export function useItemCallAction(): ItemCallAction | null {
     kind: 'start',
     source,
     starting,
-    run: () => {
-      if (starting) return;
-      setStarting(true);
+    open,
+    run: (anchor) => openCallChooser(anchor ?? null),
+  };
+}
+
+/** Start Call: starts the item's call in `space` (null: A New Space), its tab opened before anything awaits, so it
+ *  must run inside the press. Says "Starting" on Call until the index answers, then toasts as the start went. */
+export function useStartCall(): (source: CallSource, space: string | null) => void {
+  const toast = useToast();
+  return useCallback(
+    (source, space) => {
+      setCallStarting(true);
       workbench.track('UI', 'Started', 'ItemCall');
-      void startCall(source).then((outcome) => {
-        setStarting(false);
+      void startCall(source, indexClient, space).then((outcome) => {
+        setCallStarting(false);
         if (outcome === 'blocked')
           toast.error('Your browser blocked the call’s tab. Allow pop-ups to start a call.');
         if (outcome === 'failed') {
@@ -93,5 +111,6 @@ export function useItemCallAction(): ItemCallAction | null {
         void refreshItemCalls();
       });
     },
-  };
+    [toast],
+  );
 }

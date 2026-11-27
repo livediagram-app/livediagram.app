@@ -12,11 +12,7 @@ function sectionDivider(k: Kit): Element[] {
   const top = (H - numberH - u * 40) / 2;
   return [
     k.title(0, top, W * 0.5, numberH, '01'),
-    k.shape('square', 0, top + numberH + u * 4, u * 14, u * 1.2, {
-      label: '',
-      borderRadius: 'full',
-    }),
-    k.title(0, top + numberH + u * 9, W, u * 14, 'Section title'),
+    k.title(0, top + numberH + u * 6, W, u * 14, 'Section title'),
     k.text(0, top + numberH + u * 26, W * 0.8, u * 14, 'A line on what this part covers.', {
       textSize: 'lg',
     }),

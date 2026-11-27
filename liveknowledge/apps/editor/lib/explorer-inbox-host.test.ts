@@ -63,6 +63,13 @@ describe('the Inbox host', () => {
       description: 'Soon',
       card: null,
     });
+    // An Offline action's due day reaches its row as the index's does (Work Tracker 1487); none, none.
+    expect('due' in rows.actions[0]!).toBe(false);
+    const dated = localInboxRows(
+      { ...local, actions: [{ ...local.actions[0]!, due: '2026-12-03' }] },
+      'user_me',
+    );
+    expect(dated.actions[0]!.due).toBe('2026-12-03');
     expect(rows.threads[0]).toMatchObject({
       elementId: 'e2',
       latestAuthorColor: '#123456',
@@ -95,11 +102,15 @@ describe('the Inbox pane’s verbs in the editor’s panel', () => {
     local: false,
   };
 
-  it('replies to and resolves this app’s threads only, and marks done an action on the open tab only', () => {
+  it('replies to and resolves this app’s threads, another app’s when signed in, and marks done an action on the open tab only', () => {
     const markDone = vi.fn();
     const actions = explorerInboxActions('user_me', { itemId: 'i1', tabId: 't1', markDone });
     expect(actions.offers(row)).toEqual(['reply', 'resolve']);
+    // Another app's thread: a guest has no workspace token to trade for, so only Open (inbox-reading.md).
     expect(actions.offers({ ...row, app: 'livedesign' })).toEqual([]);
+    // Signed in, by the workspace token traded for this app's bearer.
+    const signedIn = explorerInboxActions('user_me', null, true);
+    expect(signedIn.offers({ ...row, app: 'livedesign' })).toEqual(['reply', 'resolve']);
     expect(actions.offers({ ...row, local: true })).toEqual([]);
     const action = { ...row, kind: 'Action' as const, actionId: 'a1' };
     expect(actions.offers(action)).toEqual(['done']);

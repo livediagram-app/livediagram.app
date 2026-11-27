@@ -8,7 +8,7 @@
 import { labelFontPx, readTextSize } from '@liveworkspace/model-core/label-font';
 import { PADDING_PX, type Padding, type TextSize } from '@liveworkspace/model-core/basics';
 import { BOLD_EM, textAdvanceEm } from '@liveworkspace/model-core/text-advance';
-import { LABEL_ESTIMATE_CHAR_EM } from './svg-render-primitives';
+import { LABEL_ESTIMATE_CHAR_EM, LABEL_LINE_HEIGHT } from './svg-render-primitives';
 
 // The estimate's margin: a share on top of the advances, and px beside them.
 const TEXT_FIT_MARGIN = 1.1;
@@ -105,4 +105,49 @@ export function growTextToLabel<E extends FitText>(before: { type: string }, el:
   if (textWordsWidth(was) > was.width) return el;
   const need = Math.min(TEXT_GROW_MAX, textWordsWidth(el));
   return need > el.width ? atWidth(el, need) : el;
+}
+
+// The smallest share of its own size a text shrinks to so new words fit its box (shrinkTextToBox): below it the words
+// would read as small print, so they wrap past the box instead.
+export const TEXT_SHRINK_FLOOR = 0.6;
+
+/** How many lines a text's words wrap to across its box's width, estimated as textWordsWidth estimates a line. */
+export function textLinesAt(el: FitText, scale: number): number {
+  const px = labelFontPx(readTextSize(el.textSize)) * scale;
+  const bold = el.textBold === true || (el.fontWeight ?? 0) >= 600 ? BOLD_EM : 1;
+  const room = Math.max(1, el.width - TEXT_FIT_PAD - 2 * PADDING_PX[el.padding ?? 'none']);
+  const wordEm = (w: string) =>
+    Math.max(textAdvanceEm(w) * bold, [...w].length * LABEL_ESTIMATE_CHAR_EM);
+  const space = wordEm(' ');
+  let lines = 0;
+  for (const paragraph of (el.label ?? '').split('\n')) {
+    let used = 0;
+    lines += 1;
+    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
+      const w = wordEm(word) * px * TEXT_FIT_MARGIN;
+      if (used > 0 && used + space * px + w > room) {
+        lines += 1;
+        used = w;
+      } else used += (used > 0 ? space * px : 0) + w;
+    }
+  }
+  return lines;
+}
+
+/**
+ * A text in a fixed box (a layout's column heading, a card's line) given longer words: its type scaled down, in steps,
+ * until the wrapped words fit the box's height, never below TEXT_SHRINK_FLOOR of its size. A text whose words already
+ * fit, and anything the estimate can't size, as it is.
+ */
+export function shrinkTextToBox<E extends FitText & { height: number }>(el: E): E {
+  if (!fittable(el)) return el;
+  const start = el.textScale ?? 1;
+  const base = labelFontPx(readTextSize(el.textSize));
+  const fits = (scale: number) =>
+    textLinesAt(el, scale) * base * scale * LABEL_LINE_HEIGHT <= el.height + 1;
+  if (fits(start)) return el;
+  let scale = start;
+  while (scale > start * TEXT_SHRINK_FLOOR + 1e-6 && !fits(scale))
+    scale = Math.max(start * TEXT_SHRINK_FLOOR, scale * 0.92);
+  return { ...el, textScale: Math.round(scale * 100) / 100 };
 }

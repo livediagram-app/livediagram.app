@@ -298,6 +298,7 @@ export function EditorView() {
               call={spaceCall}
               spaceId={documentId}
               accountId={accountUserId ?? null}
+              mayInvite={ctx.can.level !== 'view'}
               tabs={tabs}
               activeTabId={activeId}
               onSent={rereadSpaceCall}

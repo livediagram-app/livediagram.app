@@ -9,7 +9,7 @@ import {
   type LayoutTextSlot,
   type SlotElement,
 } from '@liveworkspace/edit-operations/layout-slots';
-import { labelFontPx, type Element, type TextSize } from '@livedocuments/document';
+import { labelFontPx, shrinkTextToBox, type Element, type TextSize } from '@livedocuments/document';
 import { headlineTextScale } from '@livedocuments/templates';
 
 /** The px a text's words draw at: its size, scaled. */
@@ -19,7 +19,8 @@ export function textPxOf(el: SlotElement): number {
 }
 
 // A headline the layout kit fitted to its box (large type, scaled, centred down its box): refitted to its new words,
-// never grown past the layout's own size.
+// never grown past the layout's own size. Any other text keeps its box and shrinks its type to hold longer words (a
+// column's heading that would wrap onto the line under it), never below the floor shrinkTextToBox keeps.
 function relabel(el: Element, label: string, slot: string): Element {
   const fields = el as { textSize?: unknown; textScale?: unknown; textAlignY?: unknown };
   const headline =
@@ -28,7 +29,7 @@ function relabel(el: Element, label: string, slot: string): Element {
     fields.textSize === 'lg' &&
     typeof fields.textScale === 'number' &&
     fields.textAlignY === 'middle';
-  if (!headline) return { ...el, label };
+  if (!headline) return el.type === 'text' ? shrinkTextToBox({ ...el, label }) : { ...el, label };
   const fitted = headlineTextScale(el.width, el.height, label);
   return { ...el, label, textScale: Math.min(fields.textScale as number, fitted) };
 }

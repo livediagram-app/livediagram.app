@@ -152,6 +152,22 @@ describe('the outbox', () => {
     });
   });
 
+  it('pushes an action’s due day for its Inbox row, and none for one without (Work Tracker 1487)', async () => {
+    const db = document();
+    const dated = box('a', {
+      action: {
+        ...(actionOn('a') as { action: Record<string, unknown> }).action,
+        due: '2026-12-03',
+      },
+    });
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [dated, actionOn('b')] }, 0);
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    const [first, second] = index.collab[0]!.push.actions;
+    expect(first).toMatchObject({ elementId: 'a', due: '2026-12-03' });
+    expect('due' in second!).toBe(false);
+  });
+
   it('names who closed an action and who wrote the latest comment, and nobody among several savers', async () => {
     const db = document();
     const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);

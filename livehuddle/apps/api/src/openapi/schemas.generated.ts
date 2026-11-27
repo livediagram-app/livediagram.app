@@ -1512,6 +1512,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CommentThreadAnchor": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "detached": {
+            "const": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "detached"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "Where a thread on words sits: those words, or nowhere once they were deleted."
+  },
   "CommentsView": {
     "additionalProperties": false,
     "properties": {
@@ -2096,10 +2126,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "DocumentCommentThread": {
     "additionalProperties": false,
     "properties": {
+      "anchor": {
+        "$ref": "#/components/schemas/CommentThreadAnchor"
+      },
       "comments": {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "agent": {
+              "type": "string"
+            },
             "ai": {
               "const": true,
               "type": "boolean"
@@ -2127,6 +2163,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "$ref": "#/components/schemas/CommentMention"
               },
               "type": "array"
+            },
+            "needsResponse": {
+              "const": true,
+              "type": "boolean"
             },
             "reactions": {
               "items": {
@@ -2400,6 +2440,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "number"
       },
       "description": {
+        "type": "string"
+      },
+      "due": {
         "type": "string"
       },
       "id": {

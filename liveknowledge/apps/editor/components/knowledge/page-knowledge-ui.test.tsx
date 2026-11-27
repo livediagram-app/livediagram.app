@@ -2,6 +2,7 @@
 
 // The page's verification UI (docs/specs/030-knowledgebase/verification.md): the meta row, the Page Health card,
 // On This Page and the badge, each from plain props, a share role at a time.
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -405,7 +406,7 @@ describe('Page Health', () => {
 
   // verification.md "Created and Updated": a person's disc wears their own colour, as their avatar and Version
   // History's dot do; the name's tint only where the read brought none.
-  it("draws a person's disc in their own colour where the read brought it", () => {
+  it("draws a person's disc in their presence colour, their own where the read brought it", () => {
     const { container } = renderRail(
       <Rail
         {...props({
@@ -419,8 +420,11 @@ describe('Page Health', () => {
     ];
     expect(discs[0]!.style.getPropertyValue('--identity')).toBe('#ec4899');
     expect(discs[0]!.className).toContain('bg-(--identity)');
-    expect(discs[1]!.style.getPropertyValue('--identity')).toBe('');
-    expect(discs[1]!.className).not.toContain('bg-(--identity)');
+    // No colour came for Sam: the one Automatic picks from his name, as his avatar wears it (Work Tracker 1497).
+    expect(discs[1]!.style.getPropertyValue('--identity')).toBe(
+      automaticPresenceColour('Sam Lee').value,
+    );
+    expect(discs[1]!.className).toContain('bg-(--identity)');
   });
 });
 

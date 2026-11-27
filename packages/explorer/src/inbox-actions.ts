@@ -52,8 +52,26 @@ type ListedThread = {
     authorName: string;
     authorColor: string;
     authorId?: string;
+    ai?: true;
+    agent?: string;
+    needsResponse?: true;
   }[];
 };
+
+// A Plan card's thread as `GET /projects/:id/threads?item=` lists it.
+type ListedCardThread = { id: string; comments: ListedThread['comments'] };
+
+const commentOf = (c: ListedThread['comments'][number]): InboxComment => ({
+  id: c.id,
+  authorName: c.authorName || null,
+  authorColor: c.authorColor || undefined,
+  // The api names the author only on the caller's own comments (an agent's of theirs included).
+  mine: Boolean(c.authorId),
+  text: c.text,
+  at: c.createdAt,
+  ...(c.ai ? { ai: true, agent: c.agent || null } : {}),
+  ...(c.needsResponse ? { needsResponse: true } : {}),
+});
 
 const NONE: readonly InboxVerb[] = [];
 const THREAD_VERBS: readonly InboxVerb[] = ['reply', 'resolve'];
@@ -207,19 +225,21 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
     accept: (t) => answerSuggestion(t, 'accept'),
     dismiss: (t) => answerSuggestion(t, 'dismiss'),
     loadThread: async (t, signal) => {
-      // A card's comments come with the plan's whole card list: too much to read for one pane.
-      if (t.kind !== 'Thread' || !caller(t)) return null;
+      const c = caller(t);
+      if (!c) return null;
+      if (t.kind === 'CardThread') {
+        // A card's threads, read with that card's alone (never the plan's whole list).
+        if (!t.cardId) return null;
+        const res = await c
+          .call(`${c.base}/threads?item=${enc(t.cardId)}`, { method: 'GET', signal })
+          .then(ok);
+        const body = (await res.json()) as { threads?: ListedCardThread[] };
+        const thread = body.threads?.find((x) => x.id === t.elementId);
+        return thread ? thread.comments.map(commentOf) : null;
+      }
+      if (t.kind !== 'Thread') return null;
       const thread = await threadOf(t, signal);
-      if (!thread) return null;
-      return thread.comments.map((c): InboxComment => ({
-        id: c.id,
-        authorName: c.authorName || null,
-        authorColor: c.authorColor || undefined,
-        // The api names the author only on the caller's own comments.
-        mine: Boolean(c.authorId),
-        text: c.text,
-        at: c.createdAt,
-      }));
+      return thread ? thread.comments.map(commentOf) : null;
     },
   };
 }

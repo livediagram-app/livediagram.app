@@ -8,6 +8,7 @@ import {
   pageStepsOf,
   type Element,
   type Tab,
+  withHeldNotesKept,
   withoutDraft,
 } from '@liveknowledge/document';
 
@@ -67,7 +68,9 @@ export function restoredTab(stored: Tab, body: VersionBody): Tab {
   // The page's knowledge fields are the knowledge routes' alone (verification.md "The fields"): a restore keeps the
   // page's own owner, verification and approval, and never brings back a Verify the version was taken under.
   if (stored.knowledge !== undefined) next.knowledge = stored.knowledge;
-  return migrateIncomingTab(next) as Tab;
+  // A note made since the version, holding a comment or an action, is kept: detached unless the version's writing
+  // carries its mark (docs/specs/030-knowledgebase/page-comments.md "Versions").
+  return migrateIncomingTab(withHeldNotesKept(next, stored)) as Tab;
 }
 
 // Whether two tabs hold the same content: what a restore would change, apart from the tab's own fields.

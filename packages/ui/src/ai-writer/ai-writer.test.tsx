@@ -3,6 +3,27 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { AN_AGENT, agentForPerson } from './agent-for-person';
 import { AiWriterMark } from './AiWriterMark';
+import { AiChip, AiCommentMarks } from './AiCommentMarks';
+
+// liveworkspace's inbox-reading.md "AI comments": the marks beside an assistant's name, in the Inbox and every thread.
+describe('an assistant’s comment marks', () => {
+  it('show the AI chip, whom it wrote for and, only when flagged, its ask', () => {
+    const { container, rerender } = render(<AiCommentMarks forName="Priya Shah" needsResponse />);
+    expect(container.querySelector('[data-ai-chip]')!.textContent).toBe('AI');
+    expect(container.textContent).toContain('for Priya Shah');
+    expect(container.querySelector('[data-ai-asks]')!.textContent).toBe('Asks for a response');
+    rerender(<AiCommentMarks />);
+    expect(container.textContent).toBe('AI');
+    expect(container.querySelector('[data-ai-asks]')).toBeNull();
+  });
+
+  it('say "for you" on the Inbox chip and carry the data they are given', () => {
+    const { container } = render(<AiChip forYou data-inbox-ai="" />);
+    const chip = container.querySelector('[data-inbox-ai]')!;
+    expect(chip.textContent).toBe('AIfor you');
+    expect(chip.hasAttribute('title')).toBe(false);
+  });
+});
 
 // liveknowledge's verification.md "Made by a person or an agent", liveplanner's items.md "History".
 describe('agentForPerson', () => {

@@ -359,11 +359,24 @@ export const PAGE_COMMENTS_EDITED = chart(
   { types: ['EditPageComment'], rising: 'neutral' },
 );
 
+// Comments and actions put on a page's words while reading it, by the bar, the menu or the keys, and a note opened
+// from the Comments list (page-comments.md "Comments on the writing").
+export const WRITING_NOTES = chart(
+  'UI',
+  'Used',
+  'Comments on Words',
+  'A comment or an action put on words picked while reading a page, by its bar, the selection menu or the keys, and one opened from the Comments list.',
+  {
+    types: ['ReadingNoteBar', 'ReadingNoteMenu', 'ReadingNoteKey', 'OpenNoteFromComments'],
+    rising: 'good',
+  },
+);
+
 export const DISCUSSION: MetricStack = {
   stack: true,
   title: 'Discussion',
   blurb:
-    'Comments left on elements and at the foot of pages, opened to read or reply, resolved and edited.',
+    "Comments left on elements, on a page's words and at the foot of pages, opened to read or reply, resolved and edited.",
   members: [
     COMMENTS_ADDED,
     COMMENT_POPOVERS_OPENED,
@@ -372,6 +385,7 @@ export const DISCUSSION: MetricStack = {
     COMMENTS_REOPENED,
     COMMENTS_DELETED,
     PAGE_COMMENTS_EDITED,
+    WRITING_NOTES,
   ],
   headline: COMMENTS_ADDED,
 };

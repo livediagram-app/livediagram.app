@@ -4,6 +4,8 @@
 import { handleTabLink } from './tab-link-route';
 import { redactPageForCommunity } from '../community-redact';
 import { redactCommentAuthorIds } from '../comments';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
+import { seerFor, tabSeen } from '../knowledge/viewer-people';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { conflict, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { tabEtag } from '@liveknowledge/api-schema';
@@ -170,7 +172,18 @@ export async function handleDocumentSubresources(
           : grant.community
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactPageForCommunity(tab), connection: undefined }
-            : { ...tab, elements: redactCommentAuthorIds(tab.elements, caller) };
+            : // A Viewer reads names, not other people's ids (share-roles.md "Ids a Viewer sees"), the page's own
+              // people (its owner, verifier and approval) included.
+              knowledgeForReader(
+                peopleForReader(
+                  { ...tab, elements: redactCommentAuthorIds(tab.elements, caller) },
+                  grant.role,
+                  caller,
+                ),
+                grant.role,
+                caller,
+                id,
+              );
       // A view may read the caller's own selection, so it needs a caller.
       if (view) {
         return caller === null
@@ -280,3 +293,14 @@ export async function handleDocumentSubresources(
 // refused this tab because their link is scoped to another one
 // (docs/specs/013-workspace/tab-scoped-share-links.md): the tab reads as missing, 404, so its existence
 // doesn't leak. Anyone else gets the usual 403.
+
+// A tab with its knowledge fields' people as a reader at `role` is handed them (knowledge/viewer-people.ts).
+function knowledgeForReader<T>(
+  tab: T,
+  role: string | null | undefined,
+  caller: string | null,
+  documentId: string,
+): T {
+  const see = seerFor(role, caller, documentId);
+  return see ? tabSeen(tab, see) : tab;
+}

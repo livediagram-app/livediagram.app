@@ -99,6 +99,26 @@ describe('listedThread', () => {
       { emoji: '👍', name: 'Thumbs Up', count: 1, by: ['Bea'] },
     ]);
   });
+
+  it('marks an agent’s comment and one that needs a response', () => {
+    const listed = listedThread({
+      ...THREADS[0]!,
+      comments: [comment('c9', { agent: 'Claude', needsResponse: true })],
+    });
+    expect(listed.comments[0]).toMatchObject({ agent: 'Claude', needsResponse: true });
+  });
+});
+
+describe('a thread on some words', () => {
+  it('carries its anchor, the words or detached, and none otherwise', () => {
+    expect(listedThread({ ...THREADS[0]!, anchor: { text: 'release train' } }).anchor).toEqual({
+      text: 'release train',
+    });
+    expect(listedThread({ ...THREADS[0]!, anchor: { detached: true } }).anchor).toEqual({
+      detached: true,
+    });
+    expect('anchor' in listedThread(THREADS[0]!)).toBe(false);
+  });
 });
 
 describe('listThreads', () => {
@@ -152,6 +172,26 @@ describe('applyThreadChanges', () => {
       { method: 'POST', path: `${BASE}/tabs/t2/comments/c3/reopen`, body: undefined },
       { method: 'PUT', path: `${BASE}/tabs/t1/comments/c2bbbb`, body: { text: 'Done, tested' } },
       { method: 'DELETE', path: `${BASE}/tabs/t1/comments/c2bbbb`, body: undefined },
+    ]);
+  });
+
+  // inbox-reading.md "AI comments": only an asking start or reply sends the ask, so an old client's body is unchanged.
+  it('sends needsResponse on a start or a reply that asks, and nothing when it does not', async () => {
+    const a = api();
+    await applyThreadChanges(
+      a,
+      ID,
+      [
+        { op: 'start', ref: 'ship', text: 'Which date?', needsResponse: true },
+        { op: 'reply', ref: 'pay', tabId: 't1', text: 'Ok?', needsResponse: true },
+        { op: 'reply', ref: 'pay', tabId: 't1', text: 'Noted', needsResponse: false },
+      ],
+      noRefusal,
+    );
+    expect(a.sent.map((c) => c.body)).toEqual([
+      { elementId: 'ship-step', text: 'Which date?', needsResponse: true },
+      { text: 'Ok?', needsResponse: true },
+      { text: 'Noted' },
     ]);
   });
 

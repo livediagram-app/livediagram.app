@@ -8,6 +8,10 @@ Meetings are the platform's and livehuddle's; this file says only where they sit
 
 - **Call** is in the design's top-right corner card, first, after Prototype on a wireframe tab and before Copy and Share. On a phone, and once the card is compact, it is its glyph alone (a phone handset), named
   "Start a Call Here" for screen readers.
+- Pressing it opens the shared Start a Call popover under it (a sheet on a phone, from the Apps drawer's Call tile):
+  where to meet, preselected from Settings › Calls and changeable for this call alone, then **Start Call** or
+  **Cancel** ([The Start a Call popover](../../../../liveworkspace/docs/specs/004-index/item-calls.md#the-start-a-call-popover),
+  Work Tracker 1470). Join, while a call is live, opens it at once.
 - While a call about the design is live, the same place holds the pill: a pulsing green dot, "3 in Call" (the count
   alone on a phone) and **Join**.
 - **Meetings** is a row in the footer's Tools, under Collaborate.

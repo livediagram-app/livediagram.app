@@ -33,6 +33,7 @@ import { COMMUNITY_LISTED_QUERY } from '@liveworkspace/community/app';
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { MEDIA_REFS_PER_DOCUMENT_MAX } from '@liveworkspace/media';
 import { grantPlacedImages } from '../db/image-grants';
+import { withNoteQuotes } from './note-row-labels';
 import { documentImageIds } from '../db/image-refs';
 import { documentStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '@liveworkspace/index-app';
@@ -85,6 +86,10 @@ export function collabPushOf(
       participantIds: t.participantIds,
       mentionedIds: t.mentionedIds,
       ...(t.mentionedBy ? { mentionedBy: t.mentionedBy } : {}),
+      ...(t.agentIds?.length ? { agentIds: t.agentIds } : {}),
+      // An agent's latest comment, and a thread only agents wrote in or one asks in (inbox-reading.md "AI comments").
+      ...(t.latestAgent ? { latestAgent: t.latestAgent } : {}),
+      ...(t.aiState ? { aiState: t.aiState } : {}),
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
       latestAuthorColor: t.latestAuthorColor ?? '',
@@ -105,6 +110,7 @@ export function collabPushOf(
       assignerId: a.assignerId,
       assignerName: a.assignerName,
       teamId: a.teamId,
+      ...(a.due ? { due: a.due } : {}),
       doneById: a.status === 'done' ? by : null,
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
@@ -113,13 +119,18 @@ export function collabPushOf(
 }
 
 // A tab's elements and its page's owner (`knowledge.owner`, an account id), from one parse of its body.
-function parseTabBody(data: string): { elements: Element[]; owner: string | null } {
+function parseTabBody(data: string): {
+  elements: Element[];
+  owner: string | null;
+  body?: object;
+} {
   try {
     const body = JSON.parse(data) as { elements?: unknown; knowledge?: { owner?: unknown } };
     const owner = body.knowledge?.owner;
     return {
       elements: Array.isArray(body.elements) ? (body.elements as Element[]) : [],
       owner: typeof owner === 'string' && isAccountIdShape(owner) ? owner : null,
+      body: body && typeof body === 'object' ? body : undefined,
     };
   } catch {
     return { elements: [], owner: null };
@@ -298,7 +309,12 @@ export async function drainOutbox(
           .bind(documentId, tabId)
           .first<TabRow>();
         const body = tab ? parseTabBody(tab.data) : { elements: [], owner: null };
-        const found = collabIndexRowsFromElements(body.elements);
+        // A note on words is titled by its words in the Inbox (note-row-labels.ts).
+        const found = withNoteQuotes(
+          collabIndexRowsFromElements(body.elements),
+          body.elements,
+          body.body,
+        );
         // The comment and action triggers read the same rows (@liveworkspace/automations/room CollabWatch): nothing
         // but a Set lookup unless a rule that is on hears one. Here the only source, since an action's change rides
         // a tab save.

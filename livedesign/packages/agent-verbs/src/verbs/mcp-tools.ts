@@ -27,6 +27,7 @@ import {
   renameDesignOutput,
   restoreDesignOutput,
   shareDesignOutput,
+  styleDesignOutput,
   updateDesignOutput,
 } from '../mcp/output-schema';
 import {
@@ -40,6 +41,7 @@ import {
   restoreDesignShape,
   searchIconsShape,
   shareDesignShape,
+  styleDesignShape,
   updateDesignShape,
 } from '../mcp/schema';
 
@@ -136,9 +138,20 @@ export const mcpUpdateDesign = mcpTool('update_design', {
     'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
     'existing elements (by id, or the ref read_design prints) and PRESERVES positions (no auto-layout), or ' +
     'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
-    'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG.',
+    'place beside another element), the form each lint finding\u2019s fix is written in. The tab keeps its ' +
+    'theme (style_design changes it). Returns an inline PNG.',
   inputSchema: updateDesignShape,
   outputSchema: updateDesignOutput,
+});
+
+export const mcpStyleDesign = mcpTool('style_design', {
+  behaviour: 'write',
+  title: 'Restyle a design',
+  description:
+    'Change the theme, finish or font of existing tabs (one, or every tab), as the editor\u2019s Tab Style does: ' +
+    'colours still on the old theme move to the new one, colours someone chose stay. Everyone with it open sees it.',
+  inputSchema: styleDesignShape,
+  outputSchema: styleDesignOutput,
 });
 
 export const mcpShareDesign = mcpTool('share_design', {
@@ -258,6 +271,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpCreateDesign,
   mcpAddTab,
   mcpUpdateDesign,
+  mcpStyleDesign,
   mcpShareDesign,
   mcpRenameDesign,
   mcpChangeTabs,

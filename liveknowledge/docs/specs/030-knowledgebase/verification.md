@@ -35,8 +35,10 @@ the read also answers `names`, the profile name of each account the page names (
 editors, its owner and who verified it), from one profiles read, so a reader outside the team names them as a member
 does. It answers `colors` too, each of those accounts' profile colour, so Page Health's foot draws a person's disc in
 the colour their avatar and Version History's dot wear, never a tint picked from their name (owner 2026-11-23: the
-foot's disc was lavender while the avatar and the dot were pink); a person with no colour, and a guest, keep the
-name's tint.
+foot's disc was lavender while the avatar and the dot were pink). Every person's disc on the page wears their presence
+colour (Work Tracker 1497): Page Health's foot, the owner and verifier rows, the top row's makers and Required
+Reading's people; where no colour came, the one Automatic picks from the name (`presenceColourOf`), never a tint of
+the knowledgebase's own. A guest keeps the guest disc.
 
 **Made by a person or an agent** (owner, 2026-11-21: badges under the title, "AI Generated" or "Human Generated" and
 "AI Edited" or "Human Edited"). Each of the two stamps also says what kind of writer made it (schema step V18):
@@ -122,7 +124,8 @@ own.
   quiet figures under "Read This Week", reads not readers ("9 by People", "2 by Agents": no reader's identity is kept). The ring fills over 200 ms when it changes (the chrome motion budget), and not
   at all with reduced motion. (Redesigned 2026-11-21, "it's rubbish": the state, its line and Verify sit in a soft
   panel washed in the state's colour; a hairline under Score Breakdown (owner 2026-11-22); the facts below (Owner down to Approval) each have a glyph and fold under the state's panel as **Page Details**, closed by default like Score Breakdown (owner 2026-11-22); **Read This Week** (a panel on the theme's tint, a quiet open book drawn behind its two counts) and Created / Updated
-  are the rail's foot, held at its bottom while the rest scrolls, the Page Info card showing them last; Created /
+  are the rail's foot, held at its bottom while the rest scrolls (in a window under 720 px tall the foot follows on in
+  the rail's one scroll instead, so it never covers Page Health: at 560 px it cut Verify in half), the Page Info card showing them last; Created /
   Updated sit above Read This Week (owner 2026-11-21).) **Order** (owner 2026-11-21): Page Health first, On This Page
   under it. **AI
   Context** follows Page Health, before the foot, in the same quiet style ([Insights](insights.md) "AI

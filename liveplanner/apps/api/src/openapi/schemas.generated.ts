@@ -4954,6 +4954,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "strict": {
         "type": "boolean"
       },
+      "style": {
+        "$ref": "#/components/schemas/ChangesetStyleBody"
+      },
       "summary": {
         "type": "string"
       }
@@ -4999,6 +5002,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "text",
       "warnings"
     ],
+    "type": "object"
+  },
+  "ChangesetStyleBody": {
+    "additionalProperties": false,
+    "properties": {
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
+      "font": {
+        "type": "string"
+      },
+      "theme": {
+        "type": "string"
+      }
+    },
     "type": "object"
   },
   "ChangesetSummary": {
@@ -5221,6 +5239,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Comment": {
     "additionalProperties": false,
     "properties": {
+      "agent": {
+        "type": "string"
+      },
       "ai": {
         "const": true,
         "type": "boolean"
@@ -5264,6 +5285,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/CommentMention"
         },
         "type": "array"
+      },
+      "needsResponse": {
+        "const": true,
+        "type": "boolean"
       },
       "reactions": {
         "items": {
@@ -6655,6 +6680,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "number"
       },
       "description": {
+        "type": "string"
+      },
+      "due": {
         "type": "string"
       },
       "id": {
@@ -12734,6 +12762,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "agent": {
+              "type": "string"
+            },
             "ai": {
               "const": true,
               "type": "boolean"
@@ -12761,6 +12792,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "$ref": "#/components/schemas/CommentMention"
               },
               "type": "array"
+            },
+            "needsResponse": {
+              "const": true,
+              "type": "boolean"
             },
             "reactions": {
               "items": {
@@ -14114,14 +14149,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "penTextColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
+      "pickerDrawn": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "pickerOptions": {
         "items": {
           "type": "string"
         },
         "type": "array"
       },
+      "pickerRemoveDrawn": {
+        "type": "boolean"
+      },
       "pickerResult": {
         "type": "string"
+      },
+      "pickerRolledAt": {
+        "type": "number"
       },
       "pickerSource": {
         "$ref": "#/components/schemas/PickerSource"

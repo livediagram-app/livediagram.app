@@ -171,6 +171,8 @@ export type BoxedElementViewProps = {
     candidates: import('@/lib/picker').PickerCandidate[];
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
+    // Remove Once Drawn's Reset (docs/specs/012-collaboration/picker.md): every drawn name back.
+    reset: () => void;
   };
   // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): who the viewer is, who
   // else is in the room, and the writes they may make. One prop for all five

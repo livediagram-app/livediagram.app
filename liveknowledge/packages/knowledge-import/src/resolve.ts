@@ -119,7 +119,8 @@ export function resolvePage(page: KeyedDraft, context: ResolveContext): PlannedP
     return text;
   };
 
-  const picture = (alt: string, target: string): string | null => {
+  // A picture's index in `pictures`; else what stands in its place: its alt, or null to keep it as written.
+  const storedPicture = (alt: string, target: string): number | string | null => {
     if (/^https?:/i.test(target)) return null;
     const path = archivePathOf(draft, target);
     const file = path === null ? undefined : listing.files.get(keyOf(path));
@@ -144,7 +145,11 @@ export function resolvePage(page: KeyedDraft, context: ResolveContext): PlannedP
       pictureAt.set(fileKey, index);
       context.used.add(fileKey);
     }
-    return `![${alt}](${PICTURE_SCHEME}${index})`;
+    return index;
+  };
+  const picture = (alt: string, target: string): string | null => {
+    const stored = storedPicture(alt, target);
+    return typeof stored === 'number' ? `![${alt}](${PICTURE_SCHEME}${stored})` : stored;
   };
 
   const visit = (token: MarkdownToken): string | null => {
@@ -156,6 +161,11 @@ export function resolvePage(page: KeyedDraft, context: ResolveContext): PlannedP
   };
 
   planned.markdown = rewriteMarkdown(draft.markdown, visit);
+  if (draft.cover !== undefined) {
+    // The cover: a picture of the page that its writing need not show.
+    const cover = storedPicture('', draft.cover);
+    if (typeof cover === 'number') planned.coverPicture = cover;
+  }
   for (const target of draft.attached) {
     const path = archivePathOf(draft, target);
     const file = path === null ? undefined : listing.files.get(keyOf(path));

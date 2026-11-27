@@ -104,7 +104,13 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
     case 'quiz':
       return [quizState(el)];
     case 'picker':
-      return textState('picked', stringField(el, 'pickerResult'), attrValue);
+      return [
+        ...textState('picked', stringField(el, 'pickerResult'), attrValue),
+        // Remove Once Drawn (docs/specs/012-collaboration/picker.md): how many have had their turn.
+        ...(flagField(el, 'pickerRemoveDrawn')
+          ? [countAttribute('drawn', countOf(el, 'pickerDrawn'))]
+          : []),
+      ];
     case 'reveal':
       return flagField(el, 'revealed') ? [flagAttribute('revealed')] : [];
     case 'stat-row':

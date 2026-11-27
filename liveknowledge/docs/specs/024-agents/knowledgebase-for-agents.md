@@ -180,7 +180,7 @@ the [blueprint](blueprints/knowledgebase-for-agents.md).
   written here; `export --all --to <dir>` stays for a backup of every knowledgebase. `import` reads a Markdown
   folder and a Notion export. It refuses a Confluence export, which is HTML read through an inert DOM the CLI's
   runtime does not have, and leaves each picture as its caption, since the article Markdown the api takes has no
-  picture form: both are imported in the app. `export` writes pictures as files under `pictures/`.
+  picture form: both are imported in the app. `export` writes pictures as files under `pictures/`, and each page's file as the app's Markdown Folder does ([Knowledgebase export](../020-import-export/knowledgebase-export.md)): front matter, the title as a heading, then the writing.
 - **Not built**: scopes on the OAuth consent screen beyond read-only or full; a suggestion's diff as removed and added lines (the card has `before` and
   `after`); the pages view of `@liveknowledge/document-views` still prints a page link's stored text, where
   `read_page` and `GET pages/<page>` print the linked page's current title.

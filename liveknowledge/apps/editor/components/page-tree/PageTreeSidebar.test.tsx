@@ -77,7 +77,7 @@ function props(over: Partial<PageTreeSidebarProps> = {}): PageTreeSidebarProps {
   return {
     tabs: TABS,
     activeId: 'a',
-    closed: new Set(),
+    opened: new Set(TABS.map((t) => t.id)),
     onSetOpen: vi.fn(),
     canEdit: true,
     actions: actions(),
@@ -181,7 +181,7 @@ describe('PageTreeSidebar', () => {
       id: `t${i}`,
       name: `P${i}`,
     }));
-    render(<PageTreeSidebar {...props({ tabs: full, activeId: 't0', closed: new Set() })} />);
+    render(<PageTreeSidebar {...props({ tabs: full, activeId: 't0', opened: new Set() })} />);
     const button = screen.getByRole<HTMLButtonElement>('button', { name: 'New Page' });
     expect(button.disabled).toBe(true);
     expect(document.getElementById(button.getAttribute('aria-describedby')!)?.textContent).toBe(
@@ -347,5 +347,39 @@ describe('the current page’s tint', () => {
     expect(contrastRatio(colour(900), colour(100))).toBeGreaterThan(4.5);
     const row = readFileSync(resolve('components/page-tree/page-tree-row-styles.ts'), 'utf8');
     expect(row).toContain('bg-brand-100 font-medium text-brand-900');
+  });
+});
+
+// Work Tracker 1459: a wheel or two-finger scroll over the pages scrolls them. The list area is the one box that
+// scrolls; the tree inside is never a scroller of its own, whose overscroll-contain on a box that could not scroll
+// swallowed every scroll over the rows in Chromium.
+describe('the page list scrolls as one box', () => {
+  const scrollers = (root: HTMLElement) =>
+    [root, ...root.querySelectorAll<HTMLElement>('*')].filter((el) =>
+      /\boverflow-(y-)?(auto|scroll)\b/.test(el.className),
+    );
+
+  it('in the sidebar: the list area alone, holding the tree', () => {
+    render(<PageTreeSidebar {...props()} />);
+    const aside = screen.getByRole('complementary', { name: 'Pages' });
+    const tree = within(aside).getByRole('tree');
+    expect(tree.className).not.toMatch(/overflow|overscroll/);
+    const found = scrollers(aside);
+    expect(found).toHaveLength(1);
+    expect(found[0]!.hasAttribute('data-page-tree-scroll')).toBe(true);
+    expect(found[0]!.contains(tree)).toBe(true);
+    // At either end the scroll stops there, never moving the page behind.
+    expect(found[0]!.className).toMatch(/\boverscroll-contain\b/);
+  });
+
+  it('in the phone sheet: its own area holding the tree, with no overscroll-contain of its own', () => {
+    render(<PageTreeSheet {...props()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Pages' }));
+    const sheet = screen.getByRole('dialog', { name: 'Pages' });
+    const tree = within(sheet).getByRole('tree');
+    expect(tree.className).not.toMatch(/overflow|overscroll/);
+    const area = sheet.querySelector<HTMLElement>('[data-page-tree-scroll]')!;
+    expect(area.contains(tree)).toBe(true);
+    expect(area.className).not.toMatch(/overscroll/);
   });
 });

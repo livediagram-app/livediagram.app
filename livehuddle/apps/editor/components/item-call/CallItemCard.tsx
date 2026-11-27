@@ -1,8 +1,8 @@
 'use client';
 
 // The call's item in the corner card (docs/specs/012-collaboration/calls-from-items.md "In the call"): Open Item, the
-// item's logo and name, bringing back the tab it was started from (or opening it); Invite for an account who can open
-// the item; Wrap Up for the host. Drawn only in a Space that is a call, so every other Space shows nothing new.
+// item's logo and name, bringing back the tab it was started from (or opening it); Invite for an account at Participant
+// or above in the Space (a Viewer of it watches, Work Tracker 1458); Wrap Up for the host. Drawn only in a Space that is a call, so every other Space shows nothing new.
 // Invite and Wrap Up load on their first open.
 import { lazy, Suspense, useState } from 'react';
 import { itemTabName, type SpaceCall } from '@liveworkspace/index-client';
@@ -45,14 +45,17 @@ export function CallItemCard({
   call,
   spaceId,
   accountId,
+  mayInvite,
   tabs,
   activeTabId,
   onSent,
 }: {
   call: SpaceCall;
   spaceId: string;
-  // An account: may invite. A guest (null) joins only.
+  // An account (a guest, null, joins only).
   accountId: string | null;
+  // The session's role in the Space is Participant or above: a Viewer invites no one, as the index refuses it.
+  mayInvite: boolean;
   // The Space's floors, for Wrap Up's draft and its actions (the floor on show).
   tabs: readonly Tab[];
   activeTabId: string;
@@ -78,7 +81,7 @@ export function CallItemCard({
           </span>
         </button>
       </HoverCard>
-      {accountId ? (
+      {accountId && mayInvite ? (
         <HoverCard
           title="Invite"
           description="Ask people who can open the item to join. They get it in their Inbox."
@@ -109,7 +112,7 @@ export function CallItemCard({
         </HoverCard>
       ) : null}
       <Suspense fallback={null}>
-        {open === 'invite' && accountId ? (
+        {open === 'invite' && accountId && mayInvite ? (
           <InviteDialog
             call={call}
             spaceId={spaceId}

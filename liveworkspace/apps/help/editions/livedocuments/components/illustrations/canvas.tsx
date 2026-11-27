@@ -6,17 +6,7 @@
 import { lucideHand, lucideLink, lucidePaintbrush } from '@liveworkspace/icons/lucide';
 import { Label, Scene, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
 import { CLUSTER_W, CornerCluster, Icon, STRIP_W, Strip, stripSlot } from './editor-chrome';
-import {
-  BarChart,
-  Heading,
-  Lines,
-  Page,
-  Picture,
-  Pointer,
-  Rule,
-  SlideContent,
-  Stat,
-} from './doc-page';
+import { BarChart, Heading, Lines, Page, Picture, Pointer, SlideContent, Stat } from './doc-page';
 import { Flyout, FlyoutTile } from './palette-flyout';
 import { ShapeOutline } from './toolbar-layout';
 
@@ -188,7 +178,6 @@ export function MulticolourTheme() {
         <Heading x={210} y={56} size={13} anchor="middle">
           Our Year in Numbers
         </Heading>
-        <Rule x={201} y={66} />
         {hues.map(([box, ink, value, label], i) => {
           const x = 104 + (i % 2) * 108;
           const y = 82 + Math.floor(i / 2) * 58;
@@ -217,7 +206,6 @@ export function ElementLink() {
         <Heading x={40} y={72} size={12}>
           Launch Plan
         </Heading>
-        <Rule x={40} y={81} />
         <Shape x={40} y={100} w={76} h={24} accent />
         <Label x={78} y={112.5} size={9} weight={600} tone="onAccent" anchor="middle">
           See Detail

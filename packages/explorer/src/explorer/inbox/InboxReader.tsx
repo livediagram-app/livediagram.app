@@ -22,10 +22,20 @@ import {
   useRef,
   useState,
 } from 'react';
-import { APP_KINDS } from '@liveworkspace/index-client';
+import { APP_KINDS, levelAtLeast } from '@liveworkspace/index-client';
 import { BackBar, Button } from '@liveworkspace/ui';
+import { HeaderIconButton } from '../../ui/HeaderIconButton';
 import type { InboxComment, InboxVerb } from '../../types';
-import { CheckIcon, OpenIcon, ReplyIcon, SendIcon, TeamIcon } from '../../ui/icons';
+import {
+  CheckIcon,
+  EyeIcon,
+  MarkUnreadIcon,
+  OpenIcon,
+  ReplyIcon,
+  SendIcon,
+  TeamIcon,
+} from '../../ui/icons';
+import { kindWords } from '../../words';
 import { siteOf } from '../../words';
 import { AppMark } from '../badges';
 import { useExplorer } from '../context';
@@ -73,10 +83,16 @@ type Props = {
   /** The row's work was done here (resolved, marked done): it leaves the list. */
   onGone: (key: string) => void;
   announce: (message: string) => void;
+  /** The row is unread now: the pane offers Mark Read in place of Mark Unread. */
+  unread?: boolean;
+  /** Mark Unread or Mark Read (u). */
+  onToggleRead?: (entry: InboxEntry) => void;
+  /** A verb was done on the row (a reply, a resolve): it reads as read. */
+  onActed?: (entry: InboxEntry) => void;
 };
 
 export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
-  { entry, onBack, onGone, announce },
+  { entry, onBack, onGone, announce, unread = false, onToggleRead, onActed },
   ref,
 ) {
   const { client, Link, itemHref, inboxHost, renderThumbnail, viewerId, teamName } = useExplorer();
@@ -87,7 +103,23 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
     { id: entry.row.itemId, app: entry.row.app, kind: APP_KINDS[entry.row.app], sharedVia: null },
     entryPlace(entry),
   );
-  const verbs = offeredVerbs(entry, actions?.offers);
+  const isThread = entry.kind === 'Thread' || entry.kind === 'CardThread';
+  // The item, for its thumbnail where the host draws one, and for the reader's share role on a thread
+  // (inbox-reading.md "Share roles"): Reply and Resolve need Participant or more; a Viewer reads it and opens it.
+  // Offered while it reads and when the read fails (the app refuses what the role can't do). One read for both.
+  const wantsItem = Boolean(renderThumbnail) && !f.local;
+  const item = useSettledRead(
+    wantsItem || (isThread && !f.local) ? entry.row.itemId : null,
+    itemCache(client),
+    () =>
+      client.getItem(entry.row.itemId).then(
+        (r) => r.item,
+        () => null,
+      ),
+  );
+  const access = item?.access ?? null;
+  const viewOnly = isThread && access !== null && !levelAtLeast(access, 'participate');
+  const verbs = !viewOnly ? offeredVerbs(entry, actions?.offers) : [];
   const canReply = verbs.includes('reply') && Boolean(actions?.reply);
   const primaryVerb: 'resolve' | 'done' | null =
     verbs.includes('resolve') && actions?.resolve
@@ -122,16 +154,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
     setSent([]);
   }
 
-  // The item, for its thumbnail: only where the host draws one and the index holds the item.
-  const wantsItem = Boolean(renderThumbnail) && !f.local;
-  const item = useSettledRead(wantsItem ? entry.row.itemId : null, itemCache(client), () =>
-    client.getItem(entry.row.itemId).then(
-      (r) => r.item,
-      () => null,
-    ),
-  );
   // The thread's comments, where the host can read them; keyed by its latest comment, so a new one reads again.
-  const isThread = entry.kind === 'Thread' || entry.kind === 'CardThread';
   const loadThread = actions?.loadThread;
   const threadKey =
     isThread && loadThread && target ? `${entry.key}@${entry.at}:${threadBump}` : null;
@@ -142,7 +165,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
   );
 
   // An access request's verbs, the index's own (./AccessRequestPane).
-  const access = entry.kind === 'AccessRequest' ? entry : null;
+  const accessRequest = entry.kind === 'AccessRequest' ? entry : null;
   const answer = useAccessAnswer({
     entry,
     client,
@@ -165,6 +188,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
       try {
         await fn(target);
         inboxHost?.onTelemetry?.('Resolved', verb === 'resolve' ? 'Thread' : entry.kind);
+        onActed?.(entry);
         announce(verb === 'resolve' ? `Resolved ${f.title}` : `Marked ${f.title} done`);
         onGone(entry.key);
       } catch {
@@ -173,7 +197,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         setBusy(null);
       }
     },
-    [actions, target, busy, inboxHost, entry.kind, entry.key, f.title, announce, onGone],
+    [actions, target, busy, inboxHost, entry, f.title, announce, onGone, onActed],
   );
 
   const send = async () => {
@@ -185,6 +209,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
     try {
       await actions.reply(target, text);
       inboxHost?.onTelemetry?.('Added', 'Reply');
+      onActed?.(entry);
       announce('Reply sent');
       // Sent, but the choice has moved on: the row on show keeps its own draft and thread.
       if (entryKeyRef.current !== from) return;
@@ -212,7 +237,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         return true;
       },
       primary: () => {
-        if (access) {
+        if (accessRequest) {
           void answer.share();
           return true;
         }
@@ -227,7 +252,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
       open: () => openRef.current?.closest('a')?.click(),
       focusTitle: () => titleRef.current?.focus(),
     }),
-    [canReply, primaryVerb, run, access, answer, suggestionVerbs],
+    [canReply, primaryVerb, run, accessRequest, answer, suggestionVerbs],
   );
 
   // A rule's notice names no team; every other row names its item's.
@@ -266,6 +291,17 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           </span>
         ))}
         {f.local ? <ThisBrowserPill /> : null}
+        {onToggleRead ? (
+          <span className="ml-auto flex shrink-0 pl-2">
+            <HeaderIconButton
+              label={unread ? 'Mark Read' : 'Mark Unread'}
+              onClick={() => onToggleRead(entry)}
+              dataId={unread ? 'inbox-mark-read' : 'inbox-mark-unread'}
+            >
+              {unread ? <CheckIcon size={15} /> : <MarkUnreadIcon size={15} />}
+            </HeaderIconButton>
+          </span>
+        ) : null}
       </nav>
       <h2
         id={titleId}
@@ -319,7 +355,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
             </kbd>
           </Button>
         ) : null}
-        {access ? <AccessRequestVerbs entry={access} answer={answer} /> : null}
+        {accessRequest ? <AccessRequestVerbs entry={accessRequest} answer={answer} /> : null}
         {suggestion ? (
           <Suspense fallback={null}>
             <SuggestionActions
@@ -340,7 +376,9 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
             // The open item's own place: a page load, or only the address would move (./open-in-place).
             openInPlace(e, href);
           }}
-          className={canReply || primaryVerb || access || suggestionVerbs ? SECONDARY : PRIMARY}
+          className={
+            canReply || primaryVerb || accessRequest || suggestionVerbs ? SECONDARY : PRIMARY
+          }
         >
           <span ref={openRef} data-inbox-open="" className="inline-flex items-center gap-1.5">
             <OpenIcon size={14} />
@@ -351,7 +389,16 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           </span>
         </Link>
       </div>
-      {access ? <AccessRequestFailure entry={access} answer={answer} /> : null}
+      {viewOnly ? (
+        <p
+          data-inbox-view-only=""
+          className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"
+        >
+          <EyeIcon size={14} />
+          You can view this {kindWords(entry.row.app).lowerOne} but not reply or resolve.
+        </p>
+      ) : null}
+      {accessRequest ? <AccessRequestFailure entry={accessRequest} answer={answer} /> : null}
       {suggestion ? <div ref={setSuggestionFailureSlot} className="contents" /> : null}
       {failed && failed !== 'reply' ? (
         <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">

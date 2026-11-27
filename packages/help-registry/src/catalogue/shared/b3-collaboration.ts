@@ -75,7 +75,7 @@ export const articles: Article[] = [
     description:
       'Start a livehuddle video call about what you have open, then send its summary and actions on.',
     keywords:
-      'call video call meeting huddle talk join in call meetings invite wrap up summary minutes notes knowledgebase actions plan start a call here livehuddle zoom meet',
+      'call video call meeting huddle talk join in call meetings invite wrap up summary minutes notes knowledgebase actions plan start a call here livehuddle zoom meet choose space room where to meet',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: [

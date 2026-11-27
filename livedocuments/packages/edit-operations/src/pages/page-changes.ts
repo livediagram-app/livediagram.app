@@ -27,6 +27,9 @@ import {
   pageKindOf,
   pageLaidOut,
   themedForTab,
+  pickStyleRecipe,
+  STYLE_RECIPES,
+  tabWithTheme,
   pageIsDark,
   pageLockSet,
   pageMovedTo,
@@ -48,9 +51,12 @@ import {
   type PageEditRefusal,
   type Tab,
   plural,
+  withArticlesInFont,
+  withRecipeSlides,
+  slidesAreDark,
 } from '@livedocuments/document';
 import { buildPageLayout, layoutCatalogueFor } from '@livedocuments/templates';
-import { tabDesignFor } from './design-input';
+import { tabDesignFor, tabWords } from './design-input';
 import { enterPages, type PagesIds } from './enter';
 import { layoutTextOf } from './layout-text';
 import { pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';
@@ -345,6 +351,50 @@ export function applyPageChanges(
             d
               ? `Set the tab's page design: ${describeDesign(d)}${change.design === 'auto' ? ' (picked for the tab\u2019s words)' : ''}.`
               : "Cleared the tab's page design.",
+          );
+          return;
+        }
+        case 'tab_style': {
+          // A recipe ("auto": the one the tab's words suit) gives every part; a part named beside it wins.
+          const recipe = change.style
+            ? change.style === 'auto'
+              ? (pickStyleRecipe(tabWords(current)) ?? STYLE_RECIPES[0]!)
+              : STYLE_RECIPES.find((r) => r.id === change.style)!
+            : undefined;
+          const theme = change.theme ?? recipe?.theme;
+          const font = change.font ?? recipe?.font;
+          const finish = change.finish ?? recipe?.finish;
+          const said: string[] = [];
+          // The light half, as every agent's change paints: the editor shows each viewer their own half.
+          if (theme) {
+            current = tabWithTheme(current, theme, 'light');
+            said.push(`theme ${theme}`);
+          }
+          if (font) {
+            // Its articles too: their headings in it, their paragraphs when it is a face long text reads in.
+            current = withArticlesInFont({ ...current, font }, font);
+            said.push(`font ${font}`);
+          }
+          if (finish) {
+            current = { ...current, finish };
+            said.push(`finish ${finish}`);
+          }
+          if (recipe && recipe.design !== 'none') {
+            // A design named, never "auto", so there is one.
+            const d = tabDesignFor(current, { id: recipe.design })!;
+            current = withTabPageDesign(current, d);
+            said.push(`page design ${describeDesign(d)}`);
+          }
+          // A stage recipe's slides go dark, another's come back to Steel; a theme alone keeps them as they are, in
+          // the new theme's night.
+          if (recipe || theme) {
+            const dark = recipe ? !!recipe.darkSlides : slidesAreDark(current);
+            const before = current;
+            current = withRecipeSlides(current, dark);
+            if (current !== before) said.push(dark ? 'dark slides' : 'Steel slides');
+          }
+          lines.push(
+            `Restyled the tab${recipe ? ` as ${recipe.id}` : ''}: ${said.join(', ')}. A page with its own background or design keeps it.`,
           );
           return;
         }

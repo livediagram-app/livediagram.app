@@ -10,7 +10,8 @@ a second for Calls Spaces (`0033_item_calls_spaces.sql`, below) and a third for 
 ## Flow
 
 ```
-item's editor: Call ── window.open('', 'lw-call-<item>') (an empty tab, named) ──┐
+item's editor: Call ── the Start a Call popover (where: A New Space or a Space)
+   └─ Start Call ── window.open('', 'lw-call-<item>') (an empty tab, named) ──┐
    └─ POST /api/index/items/:item/calls {} ─▶ index (person, account)            │
         limiter `item-call:<person>`; loadItem(view) as the person (share code)  │
         a live call for the item? → answer it (started: false)                  │
@@ -131,11 +132,14 @@ existing row (no backfill: a Space made before it is left alone); the partial in
   `loadItem(view)` on the Space with the caller. `summaryDefault` only for the host: the knowledgebase connected to the
   item (`connections` either way, the target's app liveknowledge, not trashed), else the newest liveknowledge item in
   the item's team the host can edit.
+- `GET /items/:space/call/people`: an account at `participate` or above on the Space (as invite) who reaches the
+  item; `{teamId, people}` from `approvalCandidates`.
 - `POST /items/:space/call/summary`: the host alone (`host_id`), limiter; the knowledgebase `loadItem(edit)` as the
   host through the cross-app step (`takeTargetedStep` in automation-steps.ts, factored out of `pushAutomationStep`)
   with a `kb_page` step `{target, title, body}`, rule `{id: 'call-summary', name: 'Meeting Summary'}`, from `{title:
 <item title>, url: <the item's address>}`. On `ok`, the row keeps the page's link and title, and the item is told.
-- `POST /items/:space/call/invite`: an account in the call's Space (view on it) who reaches the item; limiter; each
+- `POST /items/:space/call/invite`: an account in the call's Space at `participate` or above (a Viewer of the Space
+  `403`, Work Tracker 1458) who reaches the item; limiter; each
   person must reach the whole item (`checkNameable` from approval-people.ts); one `item_call_invites` row each
   (`INSERT OR IGNORE`, so asking twice writes nothing new), `by_name` the inviter's token name.
 - `PUT /app/items/:space/call-people` (livehuddle's key only, the Space livehuddle's): `UPDATE … RETURNING item_id,
@@ -189,8 +193,22 @@ edit` and no `sharedVia` (`choosableSpaces`). Each preview is `GET /api/previews
 
 ## Every editor's Call
 
-- `startCall` sends `readCallSpaceSetting(workbench.readPreferences())`; `fallback` answers an info toast
-  (`callFallbackWords`), the call opening all the same.
+- Call opens the Start a Call popover (`StartCallPopover.tsx`, its own lazy chunk, preloaded when the pointer comes
+  over Call or it takes focus). Its open state, its anchor and `starting` live in `call-chooser-store.ts` (a
+  module-level store, as the calls' store is), so the corner card's Call and the phone's Apps drawer tile open the same
+  one, which `ItemCallHost` mounts. It is `ResponsivePopover` (`@liveworkspace/ui`: anchored under Call from `sm` up, a
+  phone sheet below) with the anchor, and the shared `Dialog` phone sheet with none (the Apps drawer's tile, a phone
+  held sideways); `HeroDialogHeader` with `meetingHeroArt`; `Button` secondary Cancel and primary Start Call in a
+  `<form>`, so Enter submits.
+- The rows are `listCallSpaces()` (the Settings host's read, `listItems({app: livehuddle, view: all, limit:
+CALL_SPACES_LISTED})`) kept with `choosableSpaces` and previewed with `useSpacePreviews`, both from
+  `@liveworkspace/settings-ui/call-spaces`. The last list is kept for the page and shown at once on the next open,
+  read again behind it. The chosen row starts as `readCallSpaceSetting(workbench.readPreferences())` (A New Space when
+  null or `isUnavailable`); a change is the popover's state alone, never a settings write.
+- Start Call calls `startCall(source, indexClient, chosen)` inside its submit handler, so `window.open` runs in the
+  press before any await (popup blockers); `chosen` is null for A New Space, which the index starts as the default
+  whatever the setting says. `fallback` answers an info toast (`callFallbackWords`), the call opening all the same.
+- Join (the pill, the drawer's Join Call) opens the live call at once, as before: nothing to choose.
 
 ## livehuddle
 
@@ -237,6 +255,9 @@ edit` and no `sharedVia` (`choosableSpaces`). Each preview is `GET /api/previews
   Inbox `calls`, purge.
 - index-client: each reader's caps and wrong types; `readSourceChange` with `calls`.
 - livehuddle: the room's push settles and pushes once, only for a call; the door.
-- workbench: the button's states (idle, live, guest, failure), Join and Start open the named tab, the Meetings list's
+- workbench: the button's states (idle, live, guest, failure); Call opens the popover and starts nothing; the popover
+  preselects the setting (unset, a Space, Unavailable), a pick for this call writes no setting, A New Space sends
+  null over a set Space, Cancel, Escape and a press outside start nothing, Enter starts, the Spaces' loading, empty
+  and error states, the phone tile opens it with no anchor; Join and Start open the named tab, the Meetings list's
   rows and empty state, the store re-reads on a `calls` signal and on nothing else.
 - Every app: its corner card holds the button (a render test).

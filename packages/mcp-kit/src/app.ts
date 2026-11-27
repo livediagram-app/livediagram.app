@@ -28,7 +28,7 @@ export const MCP_EXPOSED_HEADERS: readonly string[] = ['Mcp-Session-Id', 'WWW-Au
 // authorization spec forbids an access token there, so /mcp refuses a request naming one rather than ignoring it.
 export const URL_TOKEN_PARAMS: readonly string[] = ['access_token', 'token', 'api_key', 'apikey'];
 
-function urlCarriesToken(url: string): boolean {
+export function urlCarriesToken(url: string): boolean {
   const params = new URL(url).searchParams;
   for (const name of params.keys()) if (URL_TOKEN_PARAMS.includes(name.toLowerCase())) return true;
   return false;

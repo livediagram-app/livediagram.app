@@ -6,7 +6,7 @@
 // Being retired, element by element: the collab boards moved onto the Q&A
 // board's flat, accent-lit look, and their textures went with them. What is
 // left serves the elements that have not moved yet, in the editors that have them
-// (the Picker's reel window, the Mode button's keycap edge, the Timer's dial ticks).
+// (the Mode button's keycap edge, the Timer's dial ticks; the Picker moved to its own reel).
 //
 // Why this exists
 // ---------------
@@ -34,25 +34,6 @@
 //    thirteen moving textures is a canvas nobody can read.
 
 import { colorWash as tint } from '@liveworkspace/model-core/color-wash';
-
-/**
- * The shaded window a reel spins behind: dark at the lip, clear in the middle,
- * so the names read as passing THROUGH an opening.
- */
-export function ReelWindow({ textColor }: { textColor: string }) {
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute inset-0 rounded-[inherit]"
-      style={{
-        background: `linear-gradient(180deg, ${tint(textColor, 0.16)} 0%, transparent 26%, transparent 74%, ${tint(
-          textColor,
-          0.16,
-        )} 100%)`,
-      }}
-    />
-  );
-}
 
 /**
  * The moulded edge of a keycap: a lit top, a shaded skirt, and the drop that

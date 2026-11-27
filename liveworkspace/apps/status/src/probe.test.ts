@@ -110,20 +110,21 @@ describe('probeTargets', () => {
       testEnv(),
       async (r) => (viaFetch.push(r.url), new Response('{}')),
     );
-    expect(targets).toHaveLength(31);
+    expect(targets).toHaveLength(27);
     await probeAll(targets);
     expect(viaFetch).toContain('https://lw.example/robots.txt');
     expect(viaFetch).toContain('https://www.liveplanner.app/api/capabilities');
-    expect(viaFetch).toContain('https://mcp.livedesign.app/health');
+    // One MCP, checked once under liveworkspace; the apps' aliases are not probed.
+    expect(viaFetch).toContain('https://mcp.liveworkspace.app/health');
+    expect(viaFetch.filter((u) => u.includes('mcp.'))).toHaveLength(1);
     // livediagram on its own hosts, like the other apps.
     expect(viaFetch).toContain('https://www.livediagram.app/api/capabilities');
-    expect(viaFetch).toContain('https://mcp.livediagram.app/health');
   });
 
   it('checks staging’s addresses on staging, and this machine’s in development', async () => {
     const staging = probeTargets(testEnv({ ENVIRONMENT: 'staging' }), fetch);
     expect(staging.map((t) => t.url)).toContain('https://staging.liveplanner.app/api/capabilities');
-    // Staging has no public MCP host, so 4 fewer checks.
+    // Staging has no public MCP host, so 1 fewer check.
     expect(staging).toHaveLength(26);
     const seen: string[] = [];
     const dev = probeTargets(
@@ -136,5 +137,6 @@ describe('probeTargets', () => {
     await probeAll(dev);
     expect(seen).toContain('http://localhost:3000/robots.txt');
     expect(seen).toContain('http://localhost:3100/api/capabilities');
+    expect(seen).toContain('http://localhost:3013/health');
   });
 });

@@ -14,10 +14,13 @@ export function HeaderIconButton({
   onClick,
   children,
   dataId,
+  disabled = false,
 }: {
   label: string;
   onClick: () => void;
   children: ReactNode;
+  /** Nothing to do now (the Inbox's Mark All Read with nothing unread): dimmed, its tooltip still says what it does. */
+  disabled?: boolean;
   // A stable hook for tests and tours (`data-header-action`).
   dataId?: string;
 }) {
@@ -27,7 +30,8 @@ export function HeaderIconButton({
         type="button"
         aria-label={label}
         onClick={onClick}
-        className={HEADER_ICON_BUTTON}
+        aria-disabled={disabled || undefined}
+        className={`${HEADER_ICON_BUTTON} ${disabled ? 'cursor-default opacity-40 hover:bg-transparent hover:text-slate-500 dark:hover:bg-transparent dark:hover:text-slate-400' : ''}`}
         {...(dataId ? { 'data-header-action': dataId } : {})}
       >
         {children}

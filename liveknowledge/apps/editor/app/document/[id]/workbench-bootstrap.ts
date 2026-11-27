@@ -8,6 +8,7 @@
 // the link's code resolves the document and its role, the password gate asks when the link has one, and the code
 // rides every later request of the document.
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
+import type { ShareGate } from '@liveworkspace/workbench/lib/share-restriction';
 import { capWorkbenchRole, type LiveDoc, type ShareRole } from '@liveknowledge/api-schema';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import {
@@ -52,13 +53,13 @@ type WorkbenchBootstrapDeps = {
     setLoadingDocument: SetState<boolean>;
     setSessionShareCode: SetState<string | null>;
     setSessionTabScope: (scope: string | null) => void;
-    setSharePasswordGate: SetState<{ invalid: boolean; changed?: boolean } | null>;
+    setSharePasswordGate: SetState<ShareGate | null>;
   };
 };
 
 type Loaded = { document: LiveDoc; role: ShareRole; tabScope: string | null };
 // The link asks for its password; `invalid` when the one sent was wrong.
-type PasswordAsked = { password: { invalid: boolean } };
+type PasswordAsked = { password: ShareGate };
 
 export async function loadWorkbenchDocument({
   workbench,
@@ -147,6 +148,9 @@ async function loadByLink(
   const resolution = await apiLoadShared(shareCode, selfId, documentId);
   if (!resolution) return 'gone';
   if ('passwordRequired' in resolution) {
+    // The sign-in rule turned the visitor away, not the password: the remembered one still stands.
+    if (resolution.restricted)
+      return { password: { invalid: false, restricted: resolution.restricted } };
     if (cached) {
       writeCachedSharePassword(shareCode, null);
       setSessionSharePassword(null);

@@ -3,6 +3,7 @@ import {
   type ChangesetCounts,
   type ChangesetWritten,
   type ResultLine,
+  type RoomOp,
 } from '@liveplanner/api-schema';
 import {
   diffToElementOps,
@@ -22,7 +23,7 @@ import {
   type ChangesetRecord,
 } from '../db';
 import { TabTooLargeError } from '../limits';
-import { relayChangeset } from '../room-client';
+import { relayChangeset, relayRoomOps } from '../room-client';
 import type { PlanEnv } from '../types';
 import { mintChangesetId } from './changeset-id';
 import { agentKeyFor, changesetRoomOp } from './room-op';
@@ -71,7 +72,10 @@ export async function writeChangeset(env: PlanEnv, w: ChangesetWrite): Promise<W
   // as deltas"): relayed whole so open editors take it, and a write on its own even when no element changed (a layout
   // of notes and tabs has none).
   const dashboard = rebuiltDashboard(w.stored, w.next);
-  if (elementOps.length === 0 && !creates && !dashboard) return { kind: 'unchanged' };
+  // A restyled tab's own look (agent-changesets.md "Style"): a write even when no element changed (a theme picked
+  // again over hand-set colours, a font on an empty tab), relayed as the tab-meta an editor's own pick sends.
+  const look = restyledLook(w.stored, w.next);
+  if (elementOps.length === 0 && !creates && !dashboard && !look) return { kind: 'unchanged' };
   const inverse = invertElementOps(before, elementOps);
   const expected = w.stored?.rev ?? 0;
   const rev = expected + 1;
@@ -150,6 +154,14 @@ export async function writeChangeset(env: PlanEnv, w: ChangesetWrite): Promise<W
       revertOf: w.revertOf,
     }),
   );
+  // After the element ops, so an editor takes the new colours and the theme they belong to in the order they were made.
+  if (look)
+    await relayRoomOps(
+      env,
+      w.projectId,
+      [{ kind: 'tab-meta', tabId: w.tabId, ...look }],
+      '[changeset]',
+    );
   const written = writtenAs(record.id);
   return { kind: 'written', record, written, text: w.textFor(written) };
 }
@@ -194,6 +206,35 @@ function rebuiltDashboard(stored: StoredTab | null, next: Tab): Tab['dashboard']
   return JSON.stringify(stored.tab.dashboard) === JSON.stringify(next.dashboard)
     ? null
     : next.dashboard;
+}
+
+// The tab's own look fields: what a theme, a finish or a font pick sets beside the element colours.
+const LOOK_FIELDS = [
+  'theme',
+  'finish',
+  'font',
+  'backgroundColor',
+  'backgroundPattern',
+  'patternColor',
+  'backgroundOpacity',
+] as const;
+
+// The look an existing tab now has, as a tab-meta patch and the fields it cleared; null when it is as stored (a
+// created tab carries its fields whole in `tab`).
+function restyledLook(
+  stored: StoredTab | null,
+  next: Tab,
+): Pick<Extract<RoomOp, { kind: 'tab-meta' }>, 'patch' | 'clear'> | null {
+  if (!stored) return null;
+  const patch: Partial<Omit<Tab, 'elements'>> = {};
+  const clear: string[] = [];
+  for (const key of LOOK_FIELDS) {
+    if (stored.tab[key] === next[key]) continue;
+    if (next[key] === undefined) clear.push(key);
+    else Object.assign(patch, { [key]: next[key] });
+  }
+  if (Object.keys(patch).length === 0 && clear.length === 0) return null;
+  return { patch, ...(clear.length ? { clear } : {}) };
 }
 
 function tabFieldsOf(tab: Tab): Omit<Tab, 'elements'> {

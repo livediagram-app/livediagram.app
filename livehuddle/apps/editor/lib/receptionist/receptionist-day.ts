@@ -2,9 +2,22 @@
 // nothing sent. Time is cut into legs of RECEPTIONIST_LEG_MS; each leg's stop comes from his pad's id and the leg's number
 // through the office dog's seeded generator (pet-wander.ts), so any two clocks that agree to a second agree on the Receptionist.
 // Each leg he walks from the last leg's stop to this one, round the walls (the walk's own route finder), then does the
-// stop's thing for the rest of the leg. Pure: no React, no DOM, no clock of its own (the caller passes `now`).
+// stop's thing for the rest of the leg. A turned room's floor, or a Room Builder room's, is its floor as drawn
+// (docs/specs/009-elements/office.md "A Room turns", room-floor-polygon.ts in @livehuddle/document). Pure: no React, no DOM, no clock of its own (the caller passes `now`).
 
-import { hashId, seeded, type Element } from '@livehuddle/document';
+import {
+  drawInPolygon,
+  floorHasRoom,
+  hashId,
+  insidePolygonBy,
+  pointInPolygon,
+  polygonArea,
+  polygonBounds,
+  roomFloorPolygon,
+  seeded,
+  turnRoomPoint,
+  type Element,
+} from '@livehuddle/document';
 import { drinkFrom, roomInterior, type DrinkKind } from '@livehuddle/avatar/office-geometry';
 import { findWalkPath, type NavGrid } from '@livehuddle/avatar/pathing';
 import { fenceSegments, type FenceSegment } from '@livehuddle/avatar/collision';
@@ -22,6 +35,8 @@ export const RECEPTIONIST_SPEED = 120;
 export const RECEPTIONIST_RADIUS = 480;
 /** Every this many legs he goes back to stand by his pad (the last leg of each run). */
 export const RECEPTIONIST_HOME_EVERY = 4;
+/** How many draws one floor spot takes in a turned or drawn room's floor polygon before it counts as a miss. */
+const POLYGON_DRAWS = 6;
 /** How many floor spots a leg tries before he goes home instead. */
 export const RECEPTIONIST_TRIES = 12;
 /** How long a greeting keeps him by the pad once he gets there. */
@@ -64,7 +79,11 @@ export type ReceptionistWorld = {
   // Where he stands beside the pad on each side (a greeting takes the side nearest him), never on water: home is the
   // right one.
   beside: { left: Point; right: Point };
-  area: { kind: 'box'; box: Box } | { kind: 'circle'; at: Point; r: number };
+  area:
+    | { kind: 'box'; box: Box }
+    // A turned or drawn room's floor (room-floor-polygon.ts), its bounds, and how far in from its walls he keeps.
+    | { kind: 'polygon'; polygon: readonly Point[]; bounds: Box; inset: number }
+    | { kind: 'circle'; at: Point; r: number };
   stops: readonly ReceptionistStop[];
   // A spot just inside each other room's floor, by its front wall: where Rooms and Meetings walks you.
   rooms: readonly Point[];
@@ -83,7 +102,11 @@ const middle = (b: Box): Point => ({ x: b.x + b.width / 2, y: b.y + b.height / 2
 const holds = (b: Box, p: Point) =>
   p.x > b.x && p.x < b.x + b.width && p.y > b.y && p.y < b.y + b.height;
 const inArea = (area: ReceptionistWorld['area'], p: Point) =>
-  area.kind === 'box' ? holds(area.box, p) : Math.hypot(p.x - area.at.x, p.y - area.at.y) <= area.r;
+  area.kind === 'box'
+    ? holds(area.box, p)
+    : area.kind === 'polygon'
+      ? insidePolygonBy(p, area.polygon, area.inset)
+      : Math.hypot(p.x - area.at.x, p.y - area.at.y) <= area.r;
 
 /** The length of a walk through `route`, starting at `from`. */
 export function routeLength(from: Point, route: readonly Point[]): number {
@@ -151,24 +174,42 @@ export function receptionistWorld(
   if (!pad || pad.receptionistLeft === true) return null;
   const at = middle(pad);
   let room: Box | null = null;
+  let roomFloor: Point[] | null = null;
+  let roomSize = Infinity;
+  // Each room's floor as drawn, worked out once per world (room-floor-polygon.ts): null for an upright box room.
+  const floors = new Map<Element, Point[] | null>();
   for (const el of elements) {
     if (el.type !== 'shape' || el.shape !== 'room') continue;
-    if (!holds(roomInterior(el), at)) continue;
-    if (!room || el.width * el.height < room.width * room.height) room = el;
+    const polygon = roomFloorPolygon(el);
+    floors.set(el, polygon);
+    if (polygon ? !pointInPolygon(at, polygon) : !holds(roomInterior(el), at)) continue;
+    const size = polygon ? polygonArea(polygon) : el.width * el.height;
+    if (size < roomSize) {
+      room = el;
+      roomFloor = polygon;
+      roomSize = size;
+    }
   }
-  const floor = room ? roomInterior(room) : null;
+  const floor = room && !roomFloor ? roomInterior(room) : null;
   const area: ReceptionistWorld['area'] =
-    floor && floor.width > 2 * RECEPTIONIST_INSET && floor.height > 2 * RECEPTIONIST_INSET
+    roomFloor && floorHasRoom(roomFloor, RECEPTIONIST_INSET)
       ? {
-          kind: 'box',
-          box: {
-            x: floor.x + RECEPTIONIST_INSET,
-            y: floor.y + RECEPTIONIST_INSET,
-            width: floor.width - 2 * RECEPTIONIST_INSET,
-            height: floor.height - 2 * RECEPTIONIST_INSET,
-          },
+          kind: 'polygon',
+          polygon: roomFloor,
+          bounds: polygonBounds(roomFloor),
+          inset: RECEPTIONIST_INSET,
         }
-      : { kind: 'circle', at, r: RECEPTIONIST_RADIUS };
+      : floor && floor.width > 2 * RECEPTIONIST_INSET && floor.height > 2 * RECEPTIONIST_INSET
+        ? {
+            kind: 'box',
+            box: {
+              x: floor.x + RECEPTIONIST_INSET,
+              y: floor.y + RECEPTIONIST_INSET,
+              width: floor.width - 2 * RECEPTIONIST_INSET,
+              height: floor.height - 2 * RECEPTIONIST_INSET,
+            },
+          }
+        : { kind: 'circle', at, r: RECEPTIONIST_RADIUS };
   // He stands beside the pad's right edge, level with its middle, facing down the canvas toward whoever arrives;
   // never in a pool's or a pond's water or under it, where a person entering would not appear either (Work Tracker 800,
   // freeSpawnPoint at his size).
@@ -202,8 +243,10 @@ export function receptionistWorld(
   for (const el of elements) {
     if (el.type !== 'shape' || el.shape !== 'room' || el === room) continue;
     const f = roomInterior(el);
-    if (holds(f, at)) continue;
-    rooms.push({ x: f.x + f.width / 2, y: f.y + f.height - ROOM_FRONT });
+    const polygon = floors.get(el);
+    if (polygon ? pointInPolygon(at, polygon) : holds(f, at)) continue;
+    // Just inside its front wall, turned with the room.
+    rooms.push(turnRoomPoint(el, { x: f.x + f.width / 2, y: f.y + f.height - ROOM_FRONT }));
   }
   return { padId: pad.id, pad, home, beside, area, stops, rooms, grid };
 }
@@ -233,8 +276,10 @@ export function msToNextReceptionistLeg(now: number): number {
   );
 }
 
-/** One floor spot in his area from the generator's next two numbers. */
-function floorSpot(area: ReceptionistWorld['area'], next: () => number): Point {
+/** One floor spot in his area from the generator's next numbers, or null when a polygon's draws all miss it. */
+function floorSpot(area: ReceptionistWorld['area'], next: () => number): Point | null {
+  if (area.kind === 'polygon')
+    return drawInPolygon(area.polygon, area.bounds, area.inset, next, POLYGON_DRAWS);
   if (area.kind === 'box') {
     const { box } = area;
     return { x: box.x + next() * box.width, y: box.y + next() * box.height };
@@ -268,7 +313,7 @@ function stopOfLeg(world: ReceptionistWorld, n: number): ReceptionistStop {
     return world.stops[Math.floor(next() * world.stops.length)]!;
   for (let i = 0; i < RECEPTIONIST_TRIES; i += 1) {
     const at = floorSpot(world.area, next);
-    if (!reachable(world, at)) continue;
+    if (!at || !reachable(world, at)) continue;
     const flourish = FLOURISHES[Math.floor(next() * FLOURISHES.length)]!;
     return { at, activity: 'flourish', face: 'down', flourish };
   }

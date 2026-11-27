@@ -13,6 +13,10 @@ import {
   setSendHere,
   type SendRequest,
 } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
+import {
+  closeSelectionMenu,
+  currentSelectionMenu,
+} from '@liveworkspace/workbench/components/selection-menu/selection-menu-store';
 import { blocksToDoc } from './article-convert';
 import {
   articleSendPick,
@@ -30,7 +34,8 @@ const articleSentPlugin = (editable: () => boolean) =>
   );
 
 // Send to Plan in the writing (docs/specs/013-workspace/send-to-plan.md "What it sends", "The chip"): the words a send
-// takes and the block it names, a sent block's chip after its last word, and a reader's pill under the words picked.
+// takes and the block it names, a sent block's chip after its last word, and the selection menu on the words picked
+// (liveworkspace/docs/specs/004-index/send-to-plan.md "The selection menu").
 const BLOCKS = [
   { id: 'p1', type: 'paragraph', runs: [{ text: 'Ship the release notes' }] },
   { id: 'l1', type: 'list', list: 'bullet', runs: [{ text: 'Book the venue' }] },
@@ -109,6 +114,8 @@ describe('the writing as it shows sends', () => {
     setSendHere(null);
     document.getSelection()?.removeAllRanges();
     document.body.replaceChildren();
+    closeSelectionMenu();
+    vi.unstubAllGlobals();
   });
   const mount = (editable: boolean) => {
     const host = document.createElement('div');
@@ -123,7 +130,32 @@ describe('the writing as it shows sends', () => {
     views.push(view);
     return view;
   };
-  const pill = () => document.querySelector<HTMLButtonElement>('[data-read-send-pill]');
+  // Picks `to` characters of a node's words, as the browser would (jsdom has no layout: their box is stubbed).
+  const pick = (node: Node, to: number) => {
+    const range = document.createRange();
+    range.setStart(node, 0);
+    range.setEnd(node, to);
+    range.getClientRects = () => [{ left: 0, right: 80, top: 0, bottom: 20 }] as never;
+    range.getBoundingClientRect = () => ({ left: 0, bottom: 20 }) as DOMRect;
+    document.getSelection()!.removeAllRanges();
+    document.getSelection()!.addRange(range);
+    document.dispatchEvent(new Event('selectionchange'));
+  };
+  const rightClick = (view: EditorView): boolean => {
+    const e = new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      button: 2,
+      clientX: 10,
+      clientY: 10,
+    });
+    view.dom.querySelector('p')!.dispatchEvent(e);
+    return e.defaultPrevented;
+  };
+  const listWords = (view: EditorView): Node => {
+    const text = view.dom.querySelector('li')!.firstChild as Node;
+    return text.nodeType === Node.TEXT_NODE ? text : text.firstChild!;
+  };
 
   it('draws a sent block its chip after its last word, live, in a redraw that changes nothing', () => {
     const view = mount(true);
@@ -143,49 +175,71 @@ describe('the writing as it shows sends', () => {
     expect(view.state.doc.textContent).not.toContain('To Do');
   });
 
-  it("offers a reader Send to Plan under the words picked, sending them with their block's place", () => {
+  it("offers a reader Copy and Send to Plan on a right-click on the words picked, with their block's place", () => {
     const view = mount(false);
-    const text = view.dom.querySelector('[data-block-id="l1"], li')!.firstChild as Node;
-    const words = text.nodeType === Node.TEXT_NODE ? text : text.firstChild!;
-    const range = document.createRange();
-    range.setStart(words, 0);
-    range.setEnd(words, 4);
-    range.getBoundingClientRect = () => ({ left: 30, bottom: 50 }) as DOMRect;
-    document.getSelection()!.removeAllRanges();
-    document.getSelection()!.addRange(range);
-    document.dispatchEvent(new Event('selectionchange'));
-    expect(pill()!.style.top).toBe('58px');
-    pill()!.click();
+    pick(listWords(view), 4);
+    expect(rightClick(view)).toBe(true);
+    const { actions, anchor } = currentSelectionMenu()!;
+    expect(anchor).toBe(view.dom);
+    expect(actions.cut).toBeNull();
+    expect(actions.paste).toBeNull();
+    actions.sendToPlan!();
     expect(heard[0]!.places[0]).toMatchObject({ elementId: 'l1', text: 'Book' });
-    expect(pill()).toBeNull();
   });
 
-  it('shows no pill to someone writing, for nothing picked, or for words outside the writing', () => {
+  it('cuts and pastes through the writing itself while editing', async () => {
+    const view = mount(true);
+    pick(listWords(view), 4);
+    const from = startOf(view.state, 'l1');
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, from, from + 4)));
+    expect(rightClick(view)).toBe(true);
+    const { actions } = currentSelectionMenu()!;
+    // jsdom has no browser cut: the words go as plain text, then out of the writing.
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const readText = vi.fn().mockResolvedValue('Hire');
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText, readText } });
+    // jsdom has no paste events: the browser's, as the writing's paste reads them.
+    class Transfer {
+      data: Record<string, string> = {};
+      types: string[] = [];
+      setData(t: string, v: string) {
+        this.data[t] = v;
+        this.types.push(t);
+      }
+      getData(t: string) {
+        return this.data[t] ?? '';
+      }
+    }
+    class Paste extends Event {
+      clipboardData: Transfer;
+      constructor(type: string, init: EventInit & { clipboardData: Transfer }) {
+        super(type, init);
+        this.clipboardData = init.clipboardData;
+      }
+    }
+    vi.stubGlobal('DataTransfer', Transfer);
+    vi.stubGlobal('ClipboardEvent', Paste);
+    actions.cut!();
+    await vi.waitFor(() => expect(view.state.doc.textContent).not.toContain('Book the venue'));
+    expect(writeText).toHaveBeenCalledWith('Book');
+    expect(view.state.doc.textContent).toContain(' the venue');
+    // The paste scrolls its caret into view, which jsdom cannot measure.
+    view.coordsAtPos = () => ({ left: 0, right: 0, top: 0, bottom: 0 });
+    actions.paste!();
+    await vi.waitFor(() => expect(view.state.doc.textContent).toContain('Hire the venue'));
+  });
+
+  it('leaves the browser its menu with nothing picked, or for words outside the writing', () => {
     const outside = document.createElement('p');
     outside.textContent = 'Elsewhere';
     document.body.appendChild(outside);
-    const writing = mount(true);
-    const pick = (node: Node, to: number) => {
-      const range = document.createRange();
-      range.setStart(node, 0);
-      range.setEnd(node, to);
-      range.getBoundingClientRect = () => ({ left: 0, bottom: 0 }) as DOMRect;
-      document.getSelection()!.removeAllRanges();
-      document.getSelection()!.addRange(range);
-      document.dispatchEvent(new Event('selectionchange'));
-    };
-    pick(writing.dom.querySelector('p')!.firstChild!, 4);
-    expect(pill()).toBeNull();
-    writing.destroy();
-    views.splice(0);
     const reading = mount(false);
+    expect(rightClick(reading)).toBe(false);
     pick(outside.firstChild!, 4);
-    expect(pill()).toBeNull();
+    expect(rightClick(reading)).toBe(false);
     pick(reading.dom.querySelector('p')!.firstChild!, 0);
-    expect(pill()).toBeNull();
-    document.getSelection()!.removeAllRanges();
-    document.dispatchEvent(new Event('selectionchange'));
-    expect(pill()).toBeNull();
+    expect(rightClick(reading)).toBe(false);
+    expect(currentSelectionMenu()).toBeNull();
   });
 
   // A mouse picks a reader's words (send-to-plan.md "A mouse picks a reader's words"): prosemirror-view 1.43 prevents
@@ -211,19 +265,14 @@ describe('the writing as it shows sends', () => {
     expect(pressOn(plain)).toBe(true);
   });
 
-  it('takes its pill away with the writing', () => {
+  it('takes its menu away with the writing', () => {
     const view = mount(false);
-    const words = view.dom.querySelector('p')!.firstChild!;
-    const range = document.createRange();
-    range.setStart(words, 0);
-    range.setEnd(words, 4);
-    range.getBoundingClientRect = () => ({ left: 0, bottom: 0 }) as DOMRect;
-    document.getSelection()!.addRange(range);
-    document.dispatchEvent(new Event('selectionchange'));
-    expect(pill()).not.toBeNull();
+    pick(view.dom.querySelector('p')!.firstChild!, 4);
+    rightClick(view);
+    expect(currentSelectionMenu()).not.toBeNull();
     view.destroy();
     views.splice(0);
-    expect(pill()).toBeNull();
+    expect(currentSelectionMenu()).toBeNull();
     addSends([sent('b')]);
   });
 });

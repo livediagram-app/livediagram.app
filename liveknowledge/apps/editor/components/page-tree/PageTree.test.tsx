@@ -52,7 +52,7 @@ function mount(over: Partial<Parameters<typeof PageTree>[0]> = {}) {
     <PageTree
       tabs={TABS}
       activeId="b"
-      closed={new Set()}
+      opened={new Set(TABS.map((t) => t.id))}
       onSetOpen={onSetOpen}
       canEdit
       actions={act_}
@@ -85,7 +85,7 @@ afterEach(() => {
 
 describe('the tree', () => {
   it('is a tree of treeitems, each with its level, its place, and whether it is open', () => {
-    mount({ closed: new Set(['b']) });
+    mount({ opened: new Set(['a']) });
     expect(screen.getByRole('tree', { name: 'Pages' })).toBeTruthy();
     const items = screen.getAllByRole('treeitem');
     expect(items.map((el) => el.getAttribute('aria-label'))).toEqual([
@@ -96,11 +96,38 @@ describe('the tree', () => {
     ]);
     expect(items.map((el) => el.getAttribute('aria-level'))).toEqual(['1', '2', '2', '1']);
     expect(row('Handbook').getAttribute('aria-expanded')).toBe('true');
-    // The current page's ancestors are open whatever was closed; the current page itself is as it was left.
+    // The current page's ancestors are open whatever was opened; the current page itself is as it was left.
     expect(row('Release Process').getAttribute('aria-expanded')).toBe('false');
     expect(row('Notes').hasAttribute('aria-expanded')).toBe(false);
     expect(row('Onboarding').getAttribute('aria-posinset')).toBe('2');
     expect(row('Onboarding').getAttribute('aria-setsize')).toBe('2');
+  });
+
+  it('shows only the top-level pages when nothing is opened (Work Tracker 1486)', () => {
+    mount({ opened: new Set(), activeId: 'e' });
+    const items = screen.getAllByRole('treeitem');
+    expect(items.map((el) => el.getAttribute('aria-label'))).toEqual(['Handbook', 'Notes']);
+    expect(row('Handbook').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('opens the current page’s ancestors with nothing opened, so a deep link shows where it is', () => {
+    mount({ opened: new Set(), activeId: 'd' });
+    expect(screen.getAllByRole('treeitem').map((el) => el.getAttribute('aria-label'))).toEqual([
+      'Handbook',
+      'Release Process',
+      'Checklist',
+      'Onboarding',
+      'Notes',
+    ]);
+    expect(row('Handbook').getAttribute('aria-expanded')).toBe('true');
+    expect(row('Release Process').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('opens a closed page with Right, from a tree that starts closed', () => {
+    const { onSetOpen } = mount({ opened: new Set(), activeId: 'e' });
+    act(() => row('Handbook').focus());
+    fireEvent.keyDown(row('Handbook'), { key: 'ArrowRight' });
+    expect(onSetOpen).toHaveBeenCalledWith('a', true);
   });
 
   it('marks the current page, which is the one row the Tab key lands on', () => {
@@ -170,7 +197,7 @@ describe('the keyboard', () => {
   });
 
   it('opens and closes with Right and Left', () => {
-    const { onSetOpen } = mount({ closed: new Set(['a']), activeId: 'e' });
+    const { onSetOpen } = mount({ opened: new Set(['b']), activeId: 'e' });
     press('Handbook', 'ArrowRight');
     expect(onSetOpen).toHaveBeenCalledWith('a', true);
     cleanup();
@@ -261,7 +288,7 @@ describe('the row menu', () => {
   });
 
   it('opens the parent when a subpage is added, so the new page shows', () => {
-    const { onSetOpen } = mount({ closed: new Set(['a']), activeId: 'e' });
+    const { onSetOpen } = mount({ opened: new Set(['b']), activeId: 'e' });
     hover('Handbook');
     fireEvent.click(screen.getByRole('button', { name: 'Add Subpage to Handbook' }));
     expect(onSetOpen).toHaveBeenCalledWith('a', true);
@@ -374,7 +401,7 @@ describe('the drag', () => {
   });
 
   it('takes no drop where the page already is', () => {
-    mount({ closed: new Set(['b']), activeId: 'e' });
+    mount({ opened: new Set(['a']), activeId: 'e' });
     // Onboarding already sits just after Release Process.
     const { taken } = drag('Onboarding', 'Release Process', 'bottom');
     expect(taken).toBe(false);

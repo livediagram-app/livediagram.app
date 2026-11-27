@@ -7,6 +7,7 @@ import type { CommunityShareInfo, LiveDoc, ShareRole } from '@liveknowledge/api-
 import { DOCUMENT_FORMAT_HEADER, BUILD_ID_HEADER } from '@liveknowledge/api-schema';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import type { Tab } from '@liveknowledge/document';
+import type { ShareRestriction } from '@liveworkspace/workbench/lib/share-restriction';
 import { readGuestToken } from '../guest-token';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
@@ -197,7 +198,12 @@ export type SharedDocumentResolution =
       tabId: string | null;
       community: CommunityShareInfo | null;
     }
-  | { passwordRequired: true; invalid: boolean };
+  | {
+      passwordRequired: true;
+      invalid: boolean;
+      // The item's sign-in rule turned the visitor away: the gate shows the restricted page.
+      restricted?: ShareRestriction;
+    };
 
 // Strip fields that ride on the Tab type for the editor's convenience
 // but must never enter the persisted tab body (`tabs.data`):

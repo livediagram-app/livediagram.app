@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Send to Diagram's entries and host (liveworkspace/docs/specs/004-index/send-to-diagram.md): offered only while the
-// editor's host is up, may send and was given a drafter; the text toolbar's button, the reader's pill beside Send to
-// Plan's, and the host opening the picker on the shown page's name.
+// editor's host is up, may send and was given a drafter; the text toolbar's button, the words picked in an article's
+// writing (the selection menu's and the page toolbar's), and the host opening the picker on the shown page's name.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -13,11 +13,7 @@ vi.mock('../../hooks/ui/useToast', () => ({ useToast: () => ({ success: vi.fn() 
 import { setSendSource } from '../send-to-plan/send-store';
 import { setSendHere } from '../send-to-plan/send-to-plan-entry';
 import { SendToPlanHost } from '../send-to-plan/SendToPlanHost';
-import {
-  hideReadSendPill,
-  sendArticleWordsToDiagram,
-  showReadSendPill,
-} from '../send-to-plan/article-send-dom';
+import { brandMarkDom, sendArticleWordsToDiagram } from '../send-to-plan/article-send-dom';
 import {
   canSendDiagramHere,
   currentDrafter,
@@ -42,7 +38,6 @@ beforeAll(async () => {
 
 afterEach(() => {
   cleanup();
-  hideReadSendPill();
   setDiagramDrafter(null);
   setSendHere(null);
   setSendSource(null);
@@ -126,32 +121,26 @@ describe('the text toolbar button', () => {
   });
 });
 
-describe("the reader's pills", () => {
-  it('shows Send to Diagram beside Send to Plan with a drafter, and sends the picked words', () => {
-    setSendSource('K', null, { planSends: vi.fn().mockResolvedValue({ sends: [] }) });
-    setSendHere({ app: 'liveknowledge', tabId: 't1' });
-    document.documentElement.classList.add('dark');
-    showReadSendPill({ left: 40, bottom: 100 }, () => ({ blockId: 'b1', text: 'Words' }));
-    expect(document.querySelector('[data-read-send-pill] svg')).not.toBeNull();
-    expect(document.querySelector('[data-read-diagram-pill]')).toBeNull();
-    document.documentElement.classList.remove('dark');
-    setDiagramDrafter(drafter);
-    showReadSendPill({ left: 40, bottom: 100 }, () => ({ blockId: 'b1', text: 'Words' }));
-    showReadSendPill({ left: 50, bottom: 120 }, () => ({ blockId: 'b1', text: 'Words' }));
-    const pill = document.querySelector<HTMLButtonElement>('[data-read-diagram-pill]')!;
-    expect(pill.getAttribute('aria-label')).toBe('Send the words to a diagram');
-    expect(pill.style.top).toBe('128px');
+describe("an article's words", () => {
+  it('sends the words picked with their block, and nothing without words', () => {
+    up();
     const heard: DiagramSendRequest[] = [];
     const stop = onSendToDiagram((r) => heard.push(r));
-    fireEvent.mouseDown(pill);
-    pill.click();
-    expect(heard[0]).toMatchObject({ words: 'Words', elementId: 'b1' });
-    expect(document.querySelector('[data-read-diagram-pill]')).toBeNull();
-    showReadSendPill({ left: 40, bottom: 100 }, () => null);
-    setDiagramDrafter(null);
-    showReadSendPill({ left: 40, bottom: 100 }, () => null);
-    expect(document.querySelector('[data-read-diagram-pill]')).toBeNull();
+    sendArticleWordsToDiagram(null);
+    sendArticleWordsToDiagram({ blockId: 'b1', text: '  ' });
+    expect(heard).toEqual([]);
+    sendArticleWordsToDiagram({ blockId: 'b1', text: 'Words' }, 'Onboarding');
+    expect(heard[0]).toMatchObject({ words: 'Words', elementId: 'b1', label: 'Onboarding' });
     stop();
+  });
+
+  it("draws livediagram's logo in the scheme the app shows", () => {
+    document.documentElement.classList.add('dark');
+    const dark = brandMarkDom('livediagram', 14);
+    document.documentElement.classList.remove('dark');
+    expect(dark.getAttribute('width')).toBe('14');
+    expect(dark.getAttribute('aria-hidden')).toBe('true');
+    expect(dark.outerHTML).not.toBe(brandMarkDom('livediagram', 14).outerHTML);
   });
 });
 

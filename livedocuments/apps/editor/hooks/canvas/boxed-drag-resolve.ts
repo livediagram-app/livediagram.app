@@ -65,9 +65,15 @@ export function keepCentreOn(
   const inside = (x: number, y: number) =>
     x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height;
   if (!inside(cx, cy)) return { dx, dy };
-  const nx = Math.min(Math.max(cx + dx, rect.x), rect.x + rect.width);
-  const ny = Math.min(Math.max(cy + dy, rect.y), rect.y + rect.height);
-  return { dx: nx - cx, dy: ny - cy };
+  // Each axis given back as it came unless the edge holds it: `(cx + dx) - cx` is not always `dx` in floating
+  // point, and a caller tells a held move by `kept.dx !== dx`, so a re-derived delta read as held on every frame and
+  // turned snapping off for the whole stack (Work Tracker 1499).
+  const held = (c: number, d: number, lo: number, hi: number) =>
+    c + d < lo ? lo - c : c + d > hi ? hi - c : d;
+  return {
+    dx: held(cx, dx, rect.x, rect.x + rect.width),
+    dy: held(cy, dy, rect.y, rect.y + rect.height),
+  };
 }
 
 // Resolve one move frame: snap the primary's candidate bounds to align

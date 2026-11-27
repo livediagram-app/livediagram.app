@@ -36,7 +36,7 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Plan a launch',
     prompt:
-      'Create a livediagram Gantt chart for launching our new website, with bars for design, copy, build, testing and go-live, and share a link I can send the team.',
+      'Create a livediagram Gantt chart for launching our new website from the Gantt template: relabel its rows as design, copy, build, testing and go-live, drop what is left over, and share a link I can send the team.',
   },
   {
     title: 'Brainstorm an offsite',
@@ -46,7 +46,7 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Run a retro',
     prompt:
-      'Set up a livediagram retrospective for our sprint, with what went well, what to improve and actions, and share a participant link so the team can add their notes.',
+      'Set up a livediagram retrospective for our sprint from the retrospective template: keep its columns for what went well, what to improve and actions, clear the sample notes, and share a participant link so the team can add their notes.',
   },
   {
     title: 'Find and improve',

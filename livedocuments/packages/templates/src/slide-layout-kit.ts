@@ -1,5 +1,5 @@
 // The slide layouts' shared parts (docs/specs/007-editor/pages-mode.md "Slide layouts"):
-// type sized for reading across a room, the short accent rule, bullet points, cards, numbered
+// type sized for reading across a room, bullet points, cards, numbered
 // discs and icon discs. A slide's content box is landscape, so its height is 100 units (a unit
 // is its short side over 100) and its width 133 (4:3) to 178 (16:9): every builder lays out in
 // those terms, so both shapes fit.
@@ -16,11 +16,6 @@ export function slideType(k: Kit, units = BODY_UNITS): { textSize: 'lg'; textSca
     textSize: 'lg',
     textScale: Math.round(((k.u * units) / LABEL_FONT_PX.lg) * 100) / 100,
   };
-}
-
-/** A short accent rule: a filled bar in the theme's colour. */
-export function rule(k: Kit, x: number, y: number, units = 14): Element {
-  return k.shape('square', x, y, k.u * units, k.u * 1.2, { label: '', borderRadius: 'full' });
 }
 
 /** A small line over a title, naming what the slide is (an eyebrow). */

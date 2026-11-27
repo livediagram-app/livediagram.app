@@ -24,6 +24,7 @@ import {
   renameDocumentOutput,
   restoreDocumentOutput,
   shareDocumentOutput,
+  styleDocumentOutput,
   updateDocumentOutput,
 } from '../mcp/output-schema';
 import {
@@ -37,6 +38,7 @@ import {
   restoreDocumentShape,
   searchIconsShape,
   shareDocumentShape,
+  styleDocumentShape,
   updateDocumentShape,
 } from '../mcp/schema';
 
@@ -137,9 +139,20 @@ export const mcpUpdateDocument = mcpTool('update_document', {
     'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
     'place beside another element), the form each lint finding\u2019s fix is written in. On an event-storming tab, ' +
     'event-storming notes you add or move land on the board’s horizontal lanes (240px apart, ' +
-    'lane 0 centred at y=100). Returns an inline PNG.',
+    'lane 0 centred at y=100). The theme, finish and font are changed with style_document. Returns an inline PNG.',
   inputSchema: updateDocumentShape,
   outputSchema: updateDocumentOutput,
+});
+
+export const mcpStyleDocument = mcpTool('style_document', {
+  behaviour: 'write',
+  title: 'Restyle a tab',
+  description:
+    'Change a tab’s theme, finish or font, or every tab’s without tabId, as the editor’s Tab Style does: a ' +
+    'theme recolours what is on the old theme’s colours and keeps colours set by hand. Each tab is one ' +
+    'changeset, shown live and undoable.',
+  inputSchema: styleDocumentShape,
+  outputSchema: styleDocumentOutput,
 });
 
 export const mcpShareDocument = mcpTool('share_document', {
@@ -222,6 +235,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpCreateDocument,
   mcpAddTab,
   mcpUpdateDocument,
+  mcpStyleDocument,
   mcpShareDocument,
   mcpRenameDocument,
   mcpChangeTabs,

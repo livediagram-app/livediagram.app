@@ -698,6 +698,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Mcp|Used|FindProjects': "An AI tool connected over MCP searched for one of the user's projects.",
   'Mcp|Used|ReadProject': "An AI tool connected over MCP read a project's contents.",
   'Mcp|Used|RenameProject': 'An AI tool connected over MCP renamed a project.',
+  'Mcp|Used|StyleProject':
+    'An AI tool connected over MCP changed a project’s theme, font or finish.',
   'Mcp|Used|ShareProject': 'An AI tool connected over MCP generated a share link for a project.',
   'Mcp|Used|UpdateProject': "An AI tool connected over MCP updated a tab's content in a project.",
   'Note|Added|': 'A note was added to an element (first non-empty save).',
@@ -2948,6 +2950,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   SetFolder: 'moving a project into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',
   ShareProject: 'generating a share link, from an AI tool connected over MCP',
+  StyleProject: 'changing a project’s theme, font or finish, from an AI tool connected over MCP',
   UpdateCustomTheme: 'updating a saved custom theme, a since-removed feature',
   UpdateFolder: 'renaming or updating a folder',
   UpdateProject: 'updating a project, from an AI tool connected over MCP',

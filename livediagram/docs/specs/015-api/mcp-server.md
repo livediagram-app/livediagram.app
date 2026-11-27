@@ -274,7 +274,8 @@ touched element that changed is a conflict, an element a person has selected is
 refused as held. Both return the changeset's result lines, its [lint](../024-agents/diagram-lint.md) summary line
 (also as its own text block; `create_document` carries one per created tab) and
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
-tweak → `ops`.
+tweak → `ops`. Neither mode changes the tab's theme, finish or font: `style_document` does
+([§4.9f](#49f-restyle-a-tab-style_document)), and the tool's description says so.
 
 **Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
 form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
@@ -984,6 +985,19 @@ triggers, conditions, steps and values.
   saved only by a person (`automation_needs_a_person`), a rule that does not read (the engine's path and reason), the
   limits, and a rule or tab it cannot name. It never makes or reads an Incoming Webhook's secret.
 
+### 4.9f Restyle a tab: `style_document`
+
+`{ documentId, tabId?, theme?, finish?, font? }`. Write. Changes an existing tab's look as the
+[Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#agents) does: `theme` applies a theme exactly as picking it
+there does (in the light half, as agents paint), `finish` sets the tab's [finish](../008-canvas/finish.md) and `font`
+its [typeface](../004-interface-design/fonts.md), each clearing the elements' own. Without `tabId` every tab of the
+document is restyled. At least one of the three is required, and an unknown theme, finish or font is refused naming
+the valid ones, before anything is written. Each tab is one `style` [changeset](../024-agents/agent-changesets.md),
+so it is versioned, relayed to anyone with the tab open and undone like any other agent change. Answers
+`{ documentId, tabs[] of { tabId, name, rev }, lines[] }`, one line a tab (`Restyled tab "Flow": theme forest, finish
+sketch.`). `create_document` and `add_tab` set a new tab's theme and finish; `update_document` never changes them, and
+its description points here.
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts**: pre-canned templates a client surfaces as slash
@@ -1064,11 +1078,11 @@ which is how the gap was found.
 Three behaviours cover the fifteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                    |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`                                        |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `change_tabs`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `delete_image`, `share_document`                               |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                      |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`                                                          |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `change_tabs`, `rename_document`, `style_document`, `restore_document`, `unarchive_document`, `upload_image` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `delete_image`, `share_document`                                                 |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
 `mcpTool`) and `@liveworkspace/mcp-kit`'s `toolAnnotations`: `delete_image` is `idempotentHint: true` (removing
@@ -1166,6 +1180,7 @@ says why by its status (no such tab, view only, the last tab).
 | `update_document`    | `id` and `documentId` (the same), `tabId`, `url`                                                                                                  |
 | `share_document`     | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                                                           |
 | `rename_document`    | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab                                                    |
+| `style_document`     | `documentId`, `tabs[]` of `{ tabId, name, rev }`, `lines[]` (one a tab, saying what changed)                                                      |
 | `delete_document`    | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`                                                    |
 | `list_trash`         | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                 |
 | `restore_document`   | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                      |

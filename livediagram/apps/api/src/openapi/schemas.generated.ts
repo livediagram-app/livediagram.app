@@ -1691,6 +1691,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "strict": {
         "type": "boolean"
       },
+      "style": {
+        "$ref": "#/components/schemas/ChangesetStyleBody"
+      },
       "summary": {
         "type": "string"
       }
@@ -1747,6 +1750,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "warnings",
       "lint"
     ],
+    "type": "object"
+  },
+  "ChangesetStyleBody": {
+    "additionalProperties": false,
+    "properties": {
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
+      "font": {
+        "type": "string"
+      },
+      "theme": {
+        "type": "string"
+      }
+    },
     "type": "object"
   },
   "ChangesetSummary": {
@@ -2139,6 +2157,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Comment": {
     "additionalProperties": false,
     "properties": {
+      "agent": {
+        "type": "string"
+      },
       "ai": {
         "const": true,
         "type": "boolean"
@@ -2166,6 +2187,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/CommentMention"
         },
         "type": "array"
+      },
+      "needsResponse": {
+        "const": true,
+        "type": "boolean"
       },
       "reactions": {
         "items": {
@@ -2267,6 +2292,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "resolved"
     ],
     "type": "object"
+  },
+  "CommentThreadAnchor": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "detached": {
+            "const": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "detached"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "Where a thread on words sits: those words, or nowhere once they were deleted."
   },
   "CommentsView": {
     "additionalProperties": false,
@@ -3057,10 +3112,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "DocumentCommentThread": {
     "additionalProperties": false,
     "properties": {
+      "anchor": {
+        "$ref": "#/components/schemas/CommentThreadAnchor"
+      },
       "comments": {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "agent": {
+              "type": "string"
+            },
             "ai": {
               "const": true,
               "type": "boolean"
@@ -3088,6 +3149,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "$ref": "#/components/schemas/CommentMention"
               },
               "type": "array"
+            },
+            "needsResponse": {
+              "const": true,
+              "type": "boolean"
             },
             "reactions": {
               "items": {
@@ -3372,6 +3437,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "number"
       },
       "description": {
+        "type": "string"
+      },
+      "due": {
         "type": "string"
       },
       "id": {
@@ -7002,14 +7070,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "penTextColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
+      "pickerDrawn": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "pickerOptions": {
         "items": {
           "type": "string"
         },
         "type": "array"
       },
+      "pickerRemoveDrawn": {
+        "type": "boolean"
+      },
       "pickerResult": {
         "type": "string"
+      },
+      "pickerRolledAt": {
+        "type": "number"
       },
       "pickerSource": {
         "$ref": "#/components/schemas/PickerSource"

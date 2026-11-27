@@ -108,12 +108,13 @@ gutter. It takes no focus. While it shows it holds the notice slot, so a suggest
 Whatever way it goes, its rows are **seen** in this browser: they never notify again, in this tab or any other of the
 address, until they change (a new comment, a card handed over again). A notice dismissed in one tab closes in every
 other tab of the address at once. Seen rows are kept per person in `localStorage`, bounded, and let go once the Inbox
-no longer lists them. Another browser or device keeps its own: the index holds no read state (one-explorer.md "Open
-questions").
+no longer lists them. Another browser or device keeps its own: the Inbox's read state, which the index keeps
+([inbox-reading.md](inbox-reading.md)), is a row's, not a notice's.
 
 ## The count
 
-The editor's Explorer button carries the reader's Inbox count (the sidebar's rule, what waits on the reader,
+The editor's Explorer button carries the reader's Inbox count (the sidebar's rule, what waits on the reader and is
+unread, [inbox-reading.md](inbox-reading.md#read-and-unread-kept-by-the-index),
 [one-explorer-contracts.md "Inbox"](one-explorer-contracts.md#inbox), over every app's rows) as a small brand badge
 at its corner, `9+` past nine, nothing at 0; the button's name says it ("Explorer, 3 in Inbox"). It moves with each
 read. The Inbox lists every app's rows wherever it is shown (the owner, 2026-11-24, Work Tracker 1404, replacing the

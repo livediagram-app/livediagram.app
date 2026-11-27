@@ -1,14 +1,17 @@
 'use client';
 
 // Start a Call Here in the editor's corner card (liveworkspace/docs/specs/004-index/item-calls.md "Starting",
-// "Joining"): Call for an account while nobody is in one; "3 in Call" with Join for anyone who can read the item while
-// one is live. Either opens livehuddle's call in its own browser tab, never this one (owner, 2026-11-22). No call code
+// "Joining"): Call for an account while nobody is in one, which opens the Start a Call popover under it (where to
+// meet, then Start Call; Work Tracker 1470); "3 in Call" with Join for anyone who can read the item while one is live,
+// which opens the call at once. A call opens in its own browser tab, never this one (owner, 2026-11-22). No call code
 // here: the call is livehuddle's page, in its tab; this is a button and a pill over one small read.
 import { callInProgressWords, inCallWords } from '@liveworkspace/index-client';
-import { HoverCard, lucideGlyph } from '@liveworkspace/ui';
+import { HoverCard, Spinner, lucideGlyph } from '@liveworkspace/ui';
 import { lucideVideo } from '@liveworkspace/icons/lucide';
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { CORNER_BTN, CORNER_TONE } from '../chrome/EditorCornerActions';
+import { useRef } from 'react';
+import { preloadStartCallPopover } from './start-call-chunk';
 import { useItemCallAction } from './useItemCallAction';
 
 export { joinCall, startCall } from './useItemCallAction';
@@ -17,6 +20,7 @@ const VideoGlyph = lucideGlyph(lucideVideo, 14);
 
 export function ItemCallButton() {
   const action = useItemCallAction();
+  const ref = useRef<HTMLButtonElement>(null);
   if (!action) return null;
   const noun = APP_ITEMS[action.source.app].noun.toLowerCase();
 
@@ -48,20 +52,36 @@ export function ItemCallButton() {
     );
   }
 
-  const { starting } = action;
+  const { starting, open } = action;
   return (
     <HoverCard
       title="Start a Call Here"
-      description={`A video call about this ${noun}, in a new tab. Everyone who can open it sees the call and can join.`}
+      // Not over its own popover, nor while the start it made is on its way (focus comes back here then).
+      disabled={open || starting}
+      description={`Choose where to meet, then a video call about this ${noun} opens in a new tab. Everyone who can open it sees the call and can join.`}
     >
       <button
+        ref={ref}
         type="button"
-        onClick={action.run}
-        disabled={starting}
+        onClick={() => action.run(ref.current)}
+        onPointerEnter={preloadStartCallPopover}
+        onFocus={preloadStartCallPopover}
+        // aria-disabled, not disabled: focus comes back here when the popover closes on Start Call.
+        aria-disabled={starting || undefined}
+        aria-busy={starting || undefined}
+        aria-haspopup="dialog"
+        aria-expanded={open}
         data-item-call="start"
-        className={`${CORNER_BTN} ${CORNER_TONE}`}
+        className={`${CORNER_BTN} ${CORNER_TONE} aria-busy:cursor-progress`}
       >
-        <VideoGlyph />
+        {/* Busy where the label is hidden too (a phone, a compact card): the glyph turns. */}
+        {starting ? (
+          <span data-item-call-busy="" className="inline-flex">
+            <Spinner size={14} />
+          </span>
+        ) : (
+          <VideoGlyph />
+        )}
         <span className="phone:sr-only [[data-compact]_&]:sr-only">
           {starting ? 'Starting' : 'Call'}
         </span>

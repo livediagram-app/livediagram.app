@@ -19,6 +19,7 @@
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/migration": "workspace:*"
   },
   "devDependencies": {

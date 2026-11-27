@@ -3,9 +3,16 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { PageChange } from '@livedocuments/api-schema';
 import { slotsInWords } from '@liveworkspace/edit-operations/layout-slots';
-import type { PageKind, Tab } from '@livedocuments/document';
+import {
+  createShape,
+  createText,
+  type Element,
+  type PageKind,
+  type Tab,
+} from '@livedocuments/document';
 import { layoutCatalogueFor } from '@livedocuments/templates';
 import { applyPageChanges } from './page-changes';
+import { layoutTextOf } from './layout-text';
 import { pageSummaries, pagesTextsLeftOut } from './summary';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
@@ -52,7 +59,9 @@ describe('the layout slots table', () => {
     '',
     'The text slots of every slide and infographic layout, as [Pages for agents](pages-for-agents.md) "Text slots"',
     'reads them from the layout as built: `title`, `subtitle`, `bullets` and `body`, with how many items each list',
-    'holds; `figures` are its numbers, times and prices. This table is written by, and checked',
+    'holds; `figures` are its numbers, times and prices. A stat row, a process, a checklist and a timeline count their',
+    'own words in that order (a stat’s value a figure, its caption a body text), and `table` is the layout’s first',
+    'table, written row by row. This table is written by, and checked',
     'against the layouts by, `packages/edit-operations/src/pages/layout-text.test.ts` (`UPDATE_LAYOUT_SLOTS=1`',
     'rewrites it; prettier then lines up its columns).',
     '',
@@ -127,6 +136,19 @@ describe('a layout written by slot', () => {
     expect(
       out.lines.some((l) => l.startsWith("Page 1: 5 body texts keep the layout's sample")),
     ).toBe(true);
+  });
+
+  it('writes a labelled box’s words as they are, its box and type kept', () => {
+    const box = { ...createShape('square', 0, 200), id: 'b', label: 'Step one' } as Element;
+    const title = {
+      ...createText(0, 0),
+      id: 'h',
+      label: 'Plan the launch',
+      textSize: 'lg',
+    } as Element;
+    const out = layoutTextOf([title, box], { subtitle: 'Book the venue for the whole team' });
+    const written = out.elements.find((el) => el.id === 'b')!;
+    expect(written).toEqual({ ...box, label: 'Book the venue for the whole team' });
   });
 
   it('writes a stat slide’s big numbers by their own slot', () => {

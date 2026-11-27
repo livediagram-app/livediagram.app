@@ -70,8 +70,8 @@ Body `ConnectionInput { targetId, tabId, level?, both? }` (`readConnectionInput`
 1. A person, by their own token: none is `401 unauthorized`; an app acting for one (an API token's, the Drive
    mirror, the data export) is `403 forbidden`, since agents never make connections.
 2. `targetId === id`: `400 connection_self`.
-3. The host grant must verify, be for this item and the host's app, name this person, be at `edit`, and its tab (if
-   scoped) be `tabId`: else `403 forbidden`. The host must be live: else `404 not_found`.
+3. The host grant must verify, be for this item and the host's app, name this person, be at `edit`, and be for the
+   whole item (no tab: a link to one tab connects nothing, even into that tab): else `403 forbidden`. The host must be live: else `404 not_found`.
 4. The target must be live and managed by the person (`loadItem(edit, { manage })`, a link's access refused):
    `404 not_found` or `403 forbidden`, as for its Share.
 5. `level` defaults to `connectionDefaultLevel(target app)`; one not in `connectionLevels(target app)` is
@@ -248,7 +248,10 @@ tabId, level, both }, grant)`, then the app's `addTab(made)` (its whole-tab save
   `rate_limited`, `not_found`, else the network line).
 - **`components/connect/useRecentFiles.ts`**: one `listItems({ view: 'recent', limit: CONNECT_RECENT_LIMIT })`
   with no `app`, so every app's items come back, newest first; the host left out. States `loading`, `ready`,
-  `failed` with `retry`. An unmount aborts it.
+  `failed` with `retry`. An unmount aborts it. Read on mount (each opening mounts it) and again, quietly, on each
+  return to the page (`useReturnCount` from `@liveworkspace/explorer/return-to-tab`, `RETURN_REREAD_GAP_MS` apart):
+  the rows held stay while it reads and when it fails (Work Tracker 1460). The send-to and link pickers' lists
+  (`DiagramWhere`, `SendToPlanDialog`, `SendToKnowledgeDialog`, `LinkSheetDialog`) read again on the same count.
 - **`components/connect/ConnectPicker.tsx`**: the list in a start panel's content area, painted from `ink` (the
   start panel's palette: `text`, `muted`, `border`, `surface`, `column`, `accent`) through CSS variables, else the
   app's light or dark look. The role is a `radiogroup` of three (`ConnectRolePicker`, over `@liveworkspace/ui`

@@ -6,6 +6,8 @@
 // resolves each datum's swatch colour (explicit slice colour, else the
 // palette), matching how the chart body colours its slices / bars.
 
+import { chartLegendGaps } from '@liveworkspace/element-model/chart-style';
+
 // A datum and a legend side, as every product's chart elements store them (its PieSlice and
 // ChartLegendPosition).
 type PieSlice = { label: string; value: number; color?: string };
@@ -38,6 +40,9 @@ export function ChartLegend({
 }) {
   // The swatch keeps its proportion to the words beside it.
   const swatch = Math.round(fontPx * 0.8);
+  // The same air as the export's key (chart-style.ts chartLegendGaps): its row gap is the export's item gap less the
+  // 2px the strip's padding adds.
+  const gap = chartLegendGaps(fontPx);
   const vertical = legend.pos === 'left' || legend.pos === 'right';
   if (!legend.show || (vertical ? legend.w < 48 : legend.h < 18)) return null;
   return (
@@ -45,7 +50,7 @@ export function ChartLegend({
       className={`pointer-events-none absolute flex overflow-hidden ${
         vertical
           ? 'flex-col justify-center gap-0.5'
-          : 'flex-row flex-wrap content-center justify-center gap-x-2 gap-y-0.5'
+          : 'flex-row flex-wrap content-center justify-center gap-y-0.5'
       }`}
       style={{
         left: legend.x,
@@ -53,6 +58,7 @@ export function ChartLegend({
         width: legend.w,
         height: legend.h,
         padding: 2,
+        columnGap: vertical ? undefined : gap.item - 2,
         color: textColor,
         fontFamily,
       }}
@@ -61,9 +67,13 @@ export function ChartLegend({
       {items.map((item, i) => (
         // max-w-full: a name longer than the strip is cut with an ellipsis (its span's `truncate`) rather than
         // widening its row past the chart, where the strip's overflow would clip its swatch and both ends.
-        <div key={i} className="flex max-w-full items-center gap-1 leading-tight">
+        <div
+          key={i}
+          className="flex max-w-full items-center leading-tight"
+          style={{ gap: gap.swatch }}
+        >
           <span
-            className="inline-block shrink-0 rounded-[2px]"
+            className="inline-block shrink-0 rounded-full"
             style={{ width: swatch, height: swatch, backgroundColor: colorAt(i, item) }}
           />
           <span className="truncate" style={{ fontSize: fontPx }}>

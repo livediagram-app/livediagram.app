@@ -60,10 +60,10 @@ describe('LayoutCard', () => {
     const onPreview = vi.fn();
     render(card({ onPick, onPreview }));
     fireEvent.pointerEnter(tile());
-    expect(onPreview).toHaveBeenLastCalledWith('hero');
+    expect(onPreview).toHaveBeenLastCalledWith('hero', 'pointer');
     onPreview.mockClear();
     fireEvent.focus(tile());
-    expect(onPreview).toHaveBeenLastCalledWith('hero');
+    expect(onPreview).toHaveBeenLastCalledWith('hero', 'focus');
     fireEvent.click(tile());
     expect(onPick).toHaveBeenCalledWith('hero');
     expect(tile().getAttribute('aria-label')).toBe('Hero: A big headline over a picture');

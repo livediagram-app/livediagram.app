@@ -15,7 +15,7 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   the `E` key while reading). A Viewer, a link visitor and an agent never see it.
 - **Selecting and copying** (owner, 2026-11-22): every reader (Viewer, Participant, Editor, a link visitor) can
   select the page's writing as on any web page: drag across it, double-click a word, triple-click a paragraph,
-  long-press on a phone, and copy it with Cmd/Ctrl+C or the context menu. What is copied keeps its paragraph breaks
+  long-press on a phone, and copy it with Cmd/Ctrl+C or the selection menu (a right-click on the words picked, a long press on a phone: Copy, and Send to Plan and Send to Diagram; [the selection menu](../../../../liveworkspace/docs/specs/004-index/send-to-plan.md#the-selection-menu)). What is copied keeps its paragraph breaks
   and list items as plain text, and as rich text its lists stay lists (bullets, numbers and nesting) when pasted
   into another editor. Only the writing selects: the meta row, Linked From, the margins and the canvas round
   the page do not, so a drag there never starts a selection; a press there lets go of a selection, as on any page.

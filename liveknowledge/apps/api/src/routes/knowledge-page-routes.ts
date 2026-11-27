@@ -51,6 +51,7 @@ import { readStoredPages } from '../document-room/page-tree-store';
 import { conflict, json, notFound } from '../responses';
 import type { DocumentDTO } from '../types';
 import { readerOf } from '../knowledge/knowledge-caller';
+import { knowledgeSeen, seerFor, type SeePerson } from '../knowledge/viewer-people';
 import { countRead } from '../knowledge/knowledge-reads';
 import type { DocumentAccess, DocumentRouteContext } from './context';
 
@@ -83,7 +84,7 @@ export async function handlePageHealth(
   ctx: DocumentRouteContext,
   document: DocumentDTO,
   tab: string,
-  grant: Pick<DocumentAccess, 'tabScope'>,
+  grant: Pick<DocumentAccess, 'tabScope' | 'role'>,
 ): Promise<Response> {
   const now = Date.now();
   const page = await readPageKnowledge(ctx.env, document.id, tab);
@@ -122,13 +123,27 @@ export async function handlePageHealth(
   // "Bright Marlin (Guest)" (owner 2026-11-21), the way a guest's Verify is stored (guestVerifier). The accounts the
   // page names (who made and changed it, its owner, who verified it) go with their names, so a reader outside the
   // team (a Viewer through a link) sees people, never "Guest" (owner 2026-11-21). One profiles read for both.
+  // The approval's asker and decider ride the same read, so every reader sees them by their name now.
+  // A Viewer is handed each account as its stand-in (knowledge/viewer-people.ts, share-roles.md "Ids a Viewer sees"):
+  // the knowledge fields, the stamps and the keys of the names and colours alike, so every name still shows.
+  const caller = ctx.resolveOwner();
+  const see =
+    caller !== null && caller === document.ownerId
+      ? null
+      : seerFor(grant.role, caller, document.id);
   const { named, names, colors } = await stampsNamed(
     ctx,
     [...(authors ? [authors.created, authors.updated] : []), ...editors],
-    [knowledge.owner, knowledge.verifiedBy],
+    [
+      knowledge.owner,
+      knowledge.verifiedBy,
+      knowledge.approval?.requestedBy,
+      knowledge.approval?.decidedBy,
+    ],
+    see,
   );
   return json({
-    knowledge,
+    knowledge: see ? knowledgeSeen(knowledge, see) : knowledge,
     ...(Object.keys(names).length > 0 ? { names } : {}),
     ...(Object.keys(colors).length > 0 ? { colors } : {}),
     reads: use.week,
@@ -291,11 +306,13 @@ export async function handleKnowledgePatch(
   });
 }
 
-/** Swaps each guest's owner id on a stamp for its name (guestStampNamer), the names read from profiles in one call. */
+/** Swaps each guest's owner id on a stamp for its name (guestStampNamer), the names read from profiles in one call.
+ *  With `see` (a Viewer's), each account on a stamp and in the names and colours reads as its stand-in. */
 async function stampsNamed<T extends { by: string }>(
   ctx: DocumentRouteContext,
   stamps: readonly T[],
   also: readonly (string | undefined)[],
+  see: SeePerson | null = null,
 ): Promise<{
   named: (stamp: T) => T;
   names: Record<string, string>;
@@ -320,8 +337,19 @@ async function stampsNamed<T extends { by: string }>(
   for (const id of accounts) {
     const person = people.get(id);
     const name = person?.name.trim();
-    if (name) names[id] = name;
-    if (person?.color) colors[id] = person.color;
+    const key = see ? see(id) : id;
+    if (name) names[key] = name;
+    if (person?.color) colors[key] = person.color;
   }
-  return { named: guestStampNamer((id) => people.get(id)?.name), names, colors };
+  const namer = guestStampNamer((id) => people.get(id)?.name);
+  if (!see) return { named: namer, names, colors };
+  return {
+    named: (stamp) => {
+      const out = namer(stamp);
+      const by = see(out.by);
+      return by === out.by ? out : { ...out, by };
+    },
+    names,
+    colors,
+  };
 }

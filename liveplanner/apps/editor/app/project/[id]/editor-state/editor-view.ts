@@ -421,6 +421,7 @@ export function buildEditorView(slices: {
     setSessionConfigSelected: styleSlice.setSessionConfigSelected,
     setPickerSourceSelected: styleSlice.setPickerSourceSelected,
     setPickerOptionsSelected: styleSlice.setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected: styleSlice.setPickerRemoveDrawnSelected,
     pressSessionButton: tabToolsSlice.pressSessionButton,
     setSessionConfigFor: tabToolsSlice.setSessionConfigFor,
     pickerFor: tabToolsSlice.pickerFor,

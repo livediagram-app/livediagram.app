@@ -115,6 +115,13 @@ export const APP_SECTIONS: LegalSection[] = [
             YouTube, Vimeo or Loom, like any embedded video.
           </li>
           <li>
+            <strong>Calls from a document.</strong> A call started from a document in another app
+            runs in a Space made for it. When the call has ended, that Space goes to its
+            host&rsquo;s Trash, where it is removed after 30 days like anything else. The
+            document&rsquo;s own record of the call is described under{' '}
+            <a href="#what-the-apps-store">What the apps store</a>.
+          </li>
+          <li>
             <strong>Counting.</strong> The anonymous product events count that someone joined a
             call, muted, or turned on a camera or a screen share, never who, for how long, or
             anything said or shown.

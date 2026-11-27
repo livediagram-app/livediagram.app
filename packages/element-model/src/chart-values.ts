@@ -62,12 +62,6 @@ export function barValueLabels(
   fontPx: number,
 ): ChartValueLabel[] {
   const out: ChartValueLabel[] = [];
-  // Each column's share of the baseline, less a little air between neighbours' names.
-  const slot =
-    (marks.baseline.x2 - marks.baseline.x1) / Math.max(1, marks.bars.length) - CATEGORY_AIR;
-  // A column's name sits a row under the plot; when a column hangs to the foot, its value takes that row and the
-  // names go one row lower.
-  const nameY = marks.floor + GAP + fontPx + (data.some((d) => d.value < 0) ? GAP + fontPx : 0);
   marks.bars.forEach((bar, i) => {
     const d = data[i];
     if (!d) return;
@@ -89,17 +83,40 @@ export function barValueLabels(
             anchor: 'middle',
           },
     );
-    // A column names itself under the plot, so the legend can go; cut to its slot. Under the plot's foot, not the
-    // zero line, so a hanging column never runs through its name.
-    const name = horizontal ? null : fitCategory(d.label, slot, fontPx);
-    if (name !== null)
-      out.push({
-        x: bar.tip.x,
-        y: nameY,
-        text: name,
-        anchor: 'middle',
-        category: true,
-      });
+  });
+  return out;
+}
+
+/** Each bar's name on its axis (pie-chart.md "How a chart is drawn"), always, as a one-hue chart names its bars there
+ *  rather than in a key: under a column, below the plot's foot (a row lower when a column hangs to it, its number
+ *  taking the first), or left of a bar, right-aligned against the plot. Cut to its room with an ellipsis; dropped
+ *  when not one letter fits. */
+export function barCategoryLabels(
+  marks: BarMarks,
+  data: readonly PieSlice[],
+  horizontal: boolean,
+  fontPx: number,
+): ChartValueLabel[] {
+  const out: ChartValueLabel[] = [];
+  const hangs = data.some((d) => d.value < 0);
+  const nameY = marks.floor + GAP + fontPx + (hangs ? GAP + fontPx * 1.2 : 0);
+  const room = horizontal ? marks.nameRoom : marks.nameRoom - CATEGORY_AIR;
+  marks.bars.forEach((bar, i) => {
+    const d = data[i];
+    if (!d) return;
+    const name = fitCategory(d.label, room, fontPx);
+    if (name === null) return;
+    out.push(
+      horizontal
+        ? {
+            x: marks.floor - GAP,
+            y: bar.tip.y + fontPx * 0.35,
+            text: name,
+            anchor: 'end',
+            category: true,
+          }
+        : { x: bar.tip.x, y: nameY, text: name, anchor: 'middle', category: true },
+    );
   });
   return out;
 }
@@ -126,16 +143,44 @@ export function pieValueLabels(
   });
 }
 
+/** A line, area or scatter chart's numbers, thinned so none overprints another: each series' end first (its latest
+ *  value), then its highest and lowest, then every other point in order, each kept only where its box stays clear of
+ *  every box already kept. A slide's line of twelve months reads its story, not a wall of numbers. */
 export function lineValueLabels(
   marks: LineMarks,
   series: readonly LineSeries[],
+  fontPx = 12,
 ): ChartValueLabel[] {
-  return marks.points.flatMap((pts, s) =>
-    pts.flatMap((p, i) => {
-      const v = series[s]?.values[i];
-      return typeof v === 'number' && Number.isFinite(v)
-        ? [{ x: p.x, y: p.y - marks.dot - GAP, text: shortNumber(v), anchor: 'middle' as const }]
-        : [];
-    }),
-  );
+  type Box = { l: number; r: number; t: number; b: number };
+  const kept: Box[] = [];
+  const out: ChartValueLabel[] = [];
+  const order: { s: number; i: number }[] = [];
+  marks.points.forEach((pts, s) => {
+    const vals = series[s]?.values ?? [];
+    const finite = pts.map((_, i) => i).filter((i) => Number.isFinite(vals[i]));
+    if (finite.length === 0) return;
+    const by = (pick: (a: number, b: number) => boolean) =>
+      finite.reduce((best, i) => (pick(vals[i]!, vals[best]!) ? i : best));
+    const first = [finite[finite.length - 1]!, by((a, b) => a > b), by((a, b) => a < b)];
+    for (const i of [...first, ...finite]) order.push({ s, i });
+  });
+  // A number never hangs past the plot's first or last point, where it would run into the axis or the edge.
+  const xs = marks.points.flat().map((p) => p.x);
+  const [lo, hi] = [Math.min(...xs), Math.max(...xs)];
+  const seen = new Set<string>();
+  for (const { s, i } of order) {
+    const key = `${s}:${i}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const p = marks.points[s]![i]!;
+    const text = shortNumber(series[s]!.values[i]!);
+    const y = p.y - marks.dot - GAP;
+    const half = glyphWidth(text, fontPx) / 2 + 2;
+    const x = Math.max(Math.min(p.x, hi - half + 2), lo + half - 2);
+    const box = { l: x - half, r: x + half, t: y - fontPx, b: y + 2 };
+    if (kept.some((k) => box.l < k.r && box.r > k.l && box.t < k.b && box.b > k.t)) continue;
+    kept.push(box);
+    out.push({ x, y, text, anchor: 'middle' });
+  }
+  return out;
 }

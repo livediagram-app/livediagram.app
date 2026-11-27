@@ -53,7 +53,7 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
 function PersonRow({ person, now }: { person: PageReadingPerson; now: number }) {
   return (
     <li data-reading-person={person.id} className="flex min-h-8 items-center gap-2.5">
-      <Disc name={person.name} />
+      <Disc name={person.name} color={person.color} />
       <span className="min-w-0 flex-1 truncate text-[13px] text-slate-800 dark:text-slate-200">
         {person.name}
       </span>

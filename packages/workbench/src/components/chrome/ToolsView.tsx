@@ -1,13 +1,49 @@
 'use client';
 
 // A tool opened inside the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md "Opening a tool
-// inside Tools"; blueprint FM6): under Tools' illustrated band, the shared back bar as the breadcrumb ("Tools", the tool's
-// name in its chip), then the tool. The band's corner close is the popover's only close. A tool drawn by a dialog renders into the slot here (dialog-slot.ts, @liveworkspace/ui);
-// until it arrives (its code loading) skeleton rows hold its place. Focus moves in as it opens: to the back bar,
-// unless the tool has already taken it (a confirm's button).
+// inside Tools"; blueprint FM6): Tools' illustrated band heads it, naming the tool, its title mark a back button to the
+// list (as Tab Style's header is, Work Tracker 1476), then the tool. The band's corner close is the popover's only
+// close. A tool drawn by a dialog renders into the slot here (dialog-slot.ts, @liveworkspace/ui); until it arrives
+// (its code loading) skeleton rows hold its place. Focus moves in as it opens: to the band's back button, unless the
+// tool has already taken it (a confirm's button).
 import { useEffect, useRef, type ReactNode } from 'react';
-import { BackBar } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { toolsHeroArt } from '@liveworkspace/ui/dialog-hero-art/tools';
 import { ToolSkeleton } from '@liveworkspace/ui/tool-explainer';
+
+export const TOOLS_TITLE = 'Tools';
+export const TOOLS_LINE = 'Powerful tools to enhance your experience.';
+/** The band's back button's name and tooltip: where it goes. */
+export const TOOLS_BACK_LABEL = `Back to ${TOOLS_TITLE}`;
+
+/** Tools' band over every view (FM6): "Tools" and its line on the list; on a tool, the tool's name and its row's line,
+ *  the title mark's place holding the back button. The art stays Tools' pegboard, as Tab Style keeps its own. */
+export function ToolsHeader({
+  titleId,
+  tool,
+  onBack,
+  sheet,
+}: {
+  titleId: string;
+  /** The open tool, or null on the list. */
+  tool: { label: string; description: string } | null;
+  onBack: () => void;
+  sheet: boolean;
+}) {
+  return (
+    <HeroDialogHeader
+      art={toolsHeroArt}
+      titleId={titleId}
+      title={tool ? tool.label : TOOLS_TITLE}
+      subtitle={tool ? tool.description : TOOLS_LINE}
+      {...(tool ? { onBack, backLabel: TOOLS_BACK_LABEL } : {})}
+      // The title and its line stop short of the art in the bottom right (96px, 12px in) and the close above it.
+      className="sm:pr-[7.5rem]"
+      // A phone's drawer: the band runs up under its grab handle.
+      underHandle={sheet}
+    />
+  );
+}
 
 /** Tools' height in every app, list and tool alike: what liveplanner's list (the longest) stretches to, the 500 px
  *  floor plus three more 95 px rows. Never past the screen. */
@@ -16,7 +52,6 @@ export const TOOLS_HEIGHT_PX = 785;
 export function ToolsView({
   id,
   label,
-  onBack,
   tall,
   sheet,
   slotRef,
@@ -26,7 +61,6 @@ export function ToolsView({
 }: {
   id: string;
   label: string;
-  onBack: () => void;
   /** A whole screen of a tool (Automations): a fixed height, so its own lists lay out and scroll as they did. */
   tall: boolean;
   sheet: boolean;
@@ -45,7 +79,9 @@ export function ToolsView({
     const frame = requestAnimationFrame(() => {
       const at = root.current;
       if (!at || at.contains(document.activeElement)) return;
-      at.querySelector<HTMLElement>('[data-tools-back] button')?.focus({ preventScroll: true });
+      at.closest('[data-tools-popover]')
+        ?.querySelector<HTMLElement>('[data-dialog-hero-back]')
+        ?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
   }, []);
@@ -66,13 +102,9 @@ export function ToolsView({
         ...(sheet ? {} : { minHeight: `calc(min(${TOOLS_HEIGHT_PX}px, 100dvh - 2rem) - 104px)` }),
       }}
     >
-      <div data-tools-back="" className="flex shrink-0 items-center px-3 pb-2.5 pt-3">
-        <div className="min-w-0 flex-1">
-          <BackBar label="Tools" current={label} onClick={onBack} gap="none" />
-        </div>
-      </div>
+      {/* No breadcrumb row (the band is the way back, Work Tracker 1476): a short gap keeps the tool off its hairline. */}
       <div
-        className={`flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain ${
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-2 ${
           tall && !floorPx
             ? sheet
               ? 'h-[calc(75dvh-100px)]'

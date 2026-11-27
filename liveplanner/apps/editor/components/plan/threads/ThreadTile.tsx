@@ -163,7 +163,8 @@ export function ThreadTile({
   // Who started it (its first comment's author), at the rail's head; the latest comment, previewed while closed.
   const first = thread.comments[0];
   const starter = first
-    ? { name: first.authorName, color: first.authorColor }
+    ? // An assistant's comment is named by its assistant, as in the thread (inbox-reading.md "AI comments").
+      { name: first.agent ?? first.authorName, color: first.authorColor }
     : (threadParticipants(thread)[0] ?? { name: '?', color: '#64748b' });
   const latest = thread.comments.at(-1);
   const run = (fn: () => void) => () => {
@@ -285,7 +286,10 @@ export function ThreadTile({
                   className="mt-1 block truncate text-[12px] text-slate-500 dark:text-slate-400"
                 >
                   <span className="font-medium text-slate-600 dark:text-slate-300">
-                    {isAutomationAuthor(latest) ? 'Automation' : latest.authorName}:
+                    {isAutomationAuthor(latest)
+                      ? 'Automation'
+                      : (latest.agent ?? latest.authorName)}
+                    :
                   </span>{' '}
                   {latest.text}
                 </span>

@@ -7,8 +7,6 @@
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   elementIdsOnPage,
-  elementsOnPage,
-  pagesOf,
   layOutPages,
   MAX_PAGES,
   nextArticleFlowId,
@@ -28,9 +26,6 @@ import {
   pageInsertedLike,
   pageBackgroundSet,
   pageDuplicated,
-  pageLaidOut,
-  themedForTab,
-  pageIsDark,
   pageLockRefuses,
   pageLockSet,
   pageMovedTo,
@@ -47,7 +42,6 @@ import {
   type PageSizeId,
   type Tab,
 } from '@livedocuments/document';
-import type { PageLayoutId } from '@livedocuments/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -59,6 +53,7 @@ import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits } from './pages-background-copy-edits';
 import { pageSplitEdits } from './page-split-edits';
 import { pageTidyEdits } from './page-tidy-edits';
+import { pageLayoutEdits } from './page-layout-edits';
 
 export type { CardSplitState } from './page-split-edits';
 import type { PageEdits } from './page-edits-type';
@@ -394,34 +389,16 @@ export function pageEdits({
     debugLog('[page] page removed', { tabId, pageId });
   };
 
-  // Laid out in the page's content box (the page less its margins), the page's own words and
-  // pictures carried into it (docs/specs/007-editor/pages-mode.md "Content carries over"),
-  // one tab edit. The layout builders (every page layout set) load on the first apply rather than
-  // with the editor: the pickers that offer a layout load them already to draw their thumbnails,
-  // so by the time one is applied the module is in hand.
-  const applyLayout = async (pageId: string, layoutId: PageLayoutId): Promise<void> => {
-    if (refusedLocked(pageId, 'layout')) return;
-    const { buildPageLayoutOver } = await import('@livedocuments/templates/page-layout-build');
-    track('Tab', 'Changed', 'PageLayout');
-    commitTab((t) => {
-      const pages = layOutPages(pagesOf(t));
-      const page = pages.find((p) => p.id === pageId);
-      if (!page) return null;
-      const previous = elementsOnPage(t.elements, pages, pageId);
-      return edited(
-        t,
-        pageLaidOut(
-          t,
-          pageId,
-          themedForTab(buildPageLayoutOver(layoutId, page, previous), t.theme, {
-            dark: pageIsDark(page),
-          }),
-        ),
-      );
-    });
-    onLayoutPlaced();
-    debugLog('[page] layout placed', { tabId, pageId, layout: layoutId });
-  };
+  // Placing a layout and previewing a hovered one (page-layout-edits.ts).
+  const { applyLayout, previewLayout } = pageLayoutEdits({
+    tabId,
+    tab,
+    elements,
+    commitTab,
+    isLocked,
+    refusedLocked,
+    onLayoutPlaced,
+  });
   const laidOut = layOutPages(current);
   const contentCount = (pageId: string) => elementIdsOnPage(elements, laidOut, pageId).size;
 
@@ -502,6 +479,7 @@ export function pageEdits({
     splitCard,
     cardSplitState,
     applyLayout,
+    previewLayout,
     contentCount,
     isLocked,
     setLocked,

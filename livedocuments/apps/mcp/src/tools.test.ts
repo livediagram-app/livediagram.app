@@ -216,6 +216,7 @@ describe('registerTools', () => {
       'restore_version',
       'search_icons',
       'share_document',
+      'style_document',
       'unarchive_document',
       'update_document',
       'upload_image',
@@ -345,6 +346,8 @@ describe('tool annotations', () => {
     upload_image: 'write',
     delete_image: 'destructive',
     update_document: 'destructive',
+    // A new look over the old; colours set by hand stay, and list_versions keeps the one before.
+    style_document: 'write',
     delete_document: 'destructive',
     // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
     // content; write_article replaces an article's text.

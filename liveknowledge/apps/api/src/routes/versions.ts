@@ -8,6 +8,8 @@
 // Looking is every level's (gateRead: a tab link its own tab, never a Community pass); the rest is an Editor's.
 
 import { truncateName } from '@liveknowledge/document';
+import { peopleForReader } from '@liveworkspace/api-kit/hidden-people';
+import { seerFor, tabSeen } from '../knowledge/viewer-people';
 import { VERSION_NAMED_MAX, type VersionSummary } from '@liveknowledge/api-schema';
 import { redactCommentAuthorIds } from '../comments';
 import { VERSION_NAMED_EVENT } from '@liveknowledge/document/automations';
@@ -78,11 +80,22 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
     const body = parseVersionBody(version.data);
     if (!body) return notFound();
     const tab = { ...body, id: tabId, name: version.tabName };
-    // A visitor sees only their own comment author ids, as in a tab read.
+    // A visitor sees only their own comment author ids, and a Viewer no one else's account or guest id, as in a tab
+    // read (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees").
+    // The page's own people (its owner, verifier and approval) as the reader sees them too (viewer-people.ts).
+    const role = grantOn(ctx, document.id)?.role;
+    const see = owner === document.ownerId ? null : seerFor(role, owner, document.id);
     const safe =
       owner === document.ownerId
         ? tab
-        : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+        : peopleForReader(
+            {
+              ...(see ? tabSeen(tab, see) : tab),
+              elements: redactCommentAuthorIds(tab.elements, owner),
+            },
+            role,
+            owner,
+          );
     return json({ version: version.summary, tab: safe });
   }
   if (door === 'rename') return rename(ctx, document, tabId, version.summary);

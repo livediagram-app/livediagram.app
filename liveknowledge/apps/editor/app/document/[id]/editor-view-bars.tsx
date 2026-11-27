@@ -215,10 +215,6 @@ function EditorViewFooterBar(view: {
                     await chrome.get().linkActiveTabTo(target);
                     close();
                   },
-                  onToggleLock: () => {
-                    close();
-                    chrome.get().toggleActiveTabLock();
-                  },
                   onDelete: () => {
                     close();
                     void chrome.get().deleteTab(chrome.get().activeId);

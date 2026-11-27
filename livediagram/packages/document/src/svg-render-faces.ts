@@ -155,7 +155,7 @@ export function svgBehaviourFace(
     case 'reveal':
       return el.revealed === true ? '' : revealCover(el, cx, cy, title, color, stroke, surface);
     case 'picker':
-      return picker(el, cx, cy, title, color, surface);
+      return picker(el, title, color, surface);
     case 'reaction-pad':
       return reactionPad(el, cx, cy, title, color, resolveEmojiArt);
     case 'comment-pin':

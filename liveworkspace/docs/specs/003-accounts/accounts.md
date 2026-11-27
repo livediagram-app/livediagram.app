@@ -479,6 +479,15 @@ environment) for the Explorer's read of an item's tabs, `GET /api/<items>/<id>/t
 are liveworkspace's, [previews.md](../006-media/previews.md)) (`@liveworkspace/auth-client` `explorer-reads.ts`). The route still checks that the person may read
 the item. Every app's API answers any origin (CORS `*`), so the browser lets that read through.
 
+To answer another app's comment thread from its Inbox ([inbox-reading.md](../004-index/inbox-reading.md)), an
+app's page and its editors ask for the same workspace token with their own bearer: `GET
+/api/account/workspace-token` on the bearer door (reached as `/api/workspace/account/workspace-token` through the
+app's router), for an account's access token whose session is still live, answers `{ token, kind: 'account', sub,
+expiresAt }` with every app's API as its audiences, the account's teams, `azp` `liveworkspace.app`, and the same 15
+minutes, never past the bearer's own expiry. A guest's, a lapsed session's and an API token's are `401`. The owner
+accepted that a stolen access token reaches every app's API until it lapses, as it already reaches the account's
+settings ("Every account setting in every app").
+
 ## Signing in without a click
 
 Someone signed in to liveworkspace who opens an app they have no session in is signed in by the

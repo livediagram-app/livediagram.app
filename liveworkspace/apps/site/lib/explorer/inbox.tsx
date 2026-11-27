@@ -13,6 +13,20 @@ import { inboxSnapshotRows, subscribeInboxSnapshot } from '@liveworkspace/explor
 import { isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { appOrigin } from './page-app';
 import { workspaceToken } from './token';
+import {
+  createWorkspaceTokenSource,
+  crossAppInboxApi,
+  type WorkspaceTokenSource,
+} from '@liveworkspace/explorer/inbox-cross-app';
+import { ACCOUNT_ROUTE } from '@liveworkspace/sites/workspace-proxy';
+
+let traded: WorkspaceTokenSource | null = null;
+// One source per page: the app's bearer (this page's token) traded at the accounts' bearer door through the app's router.
+const crossAppToken = (): WorkspaceTokenSource =>
+  (traded ??= createWorkspaceTokenSource({
+    url: `${ACCOUNT_ROUTE.prefix}/workspace-token`,
+    bearer: workspaceToken,
+  }));
 
 /** A Plan card type's glyph, by its type id: the type's own, or the plain card glyph for one not built in. */
 export function CardGlyph({ type }: { type: string }) {
@@ -46,12 +60,22 @@ export function localInboxHost(
 
 /** The reading pane's verbs on this page (@liveworkspace/explorer/inbox-actions): Reply and Resolve on a thread,
  *  through the app's own comment routes. On liveworkspace.app every app's threads, as the workspace token's audience
- *  is every app's api; on an app's address that app's alone, as its token is only its own api's. Mark Done on a
+ *  is every app's api; on an app's address that app's by its own token, and every other app's by the workspace token
+ *  traded for it. Mark Done on a
  *  livediagram action goes through its action route; nothing here reaches Offline's items. */
-export function inboxActionsFor(host: AppName | null, doFetch: typeof fetch = fetch): InboxActions {
+export function inboxActionsFor(
+  host: AppName | null,
+  signedIn: boolean,
+  doFetch: typeof fetch = fetch,
+): InboxActions {
   return createInboxActions({
     api: (app) => {
-      if (!isAppName(app) || (host !== null && host !== app)) return null;
+      if (!isAppName(app)) return null;
+      // On an app's address its token reaches that app's api alone: another app's goes by the workspace token traded
+      // for it (inbox-reading.md "Cross-app verbs").
+      // A guest has no account to trade for one, so their Inbox offers no Reply or Resolve there (Open stays).
+      if (host !== null && host !== app)
+        return signedIn ? crossAppInboxApi(app, crossAppToken(), doFetch) : null;
       return async (path, init) => {
         const token = await workspaceToken();
         const headers = new Headers();

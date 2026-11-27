@@ -489,6 +489,7 @@ export function ElementDataSections({
               element={shapeTarget}
               onSetPickerSource={props.onSetPickerSource}
               onSetPickerOptions={props.onSetPickerOptions}
+              onSetPickerRemoveDrawn={props.onSetPickerRemoveDrawn}
               sectionProps={sectionProps('picker')}
             />
           ) : null}

@@ -17,6 +17,7 @@
     "./listing": "./src/listing.ts",
     "./oauth": "./src/oauth.ts",
     "./oauth-clients": "./src/oauth-clients.ts",
+    "./oauth-tokens": "./src/oauth-tokens.ts",
     "./preview-budget": "./src/preview-budget.ts",
     "./preview-fonts": "./src/preview-fonts.ts",
     "./prompts": "./src/prompts.ts",

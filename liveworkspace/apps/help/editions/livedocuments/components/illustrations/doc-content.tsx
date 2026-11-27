@@ -63,11 +63,6 @@ export function Heading({
   );
 }
 
-/** A short accent rule under a title, as the theme's slide layouts draw one. */
-export function Rule({ x, y, w = 18 }: { x: number; y: number; w?: number }) {
-  return <rect x={x} y={y} width={w} height={2.5} rx={1.25} className="fill-brand-500" />;
-}
-
 /** A bar chart: `values` (0 to 1) as bars in the theme's brand ramp, standing on a hairline, filling `w` by `h`. */
 export function BarChart({
   x,
@@ -182,7 +177,6 @@ export function SlideContent({
         <Heading x={x + pad} y={y + h * 0.42} size={size * 1.15}>
           {title}
         </Heading>
-        <Rule x={x + pad} y={y + h * 0.42 + size * 0.9} />
         <Lines x={x + pad} y={y + h * 0.42 + size * 0.9 + 9} w={w * 0.45} n={1} />
       </g>
     );

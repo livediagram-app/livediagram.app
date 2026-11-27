@@ -3,6 +3,7 @@
 import { DESIGN_TRASHED_CLOSE, SNAPSHOT_REVERTED_CLOSE } from '@livedesign/api-schema';
 import type { ServerMessage } from '../types';
 import { opForScope } from '../room-scope';
+import { frameForViewer, viewerOwnIds, type IsOwnId } from '@liveworkspace/api-kit/hidden-people';
 import {
   accessCloseCode,
   sessionMatchesAccessClose,
@@ -81,7 +82,8 @@ export function broadcast(room: DesignRoom, payload: ServerMessage, except?: Web
 
 // The frame one socket should receive for `payload`: as serialised for an
 // unscoped session, redacted or withheld (null) for a tab-scoped one
-// (docs/specs/013-workspace/tab-scoped-share-links.md). Only op frames carry tab content.
+// (docs/specs/013-workspace/tab-scoped-share-links.md), and with other people's ids hidden for a Viewer's
+// (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees"). Only op frames carry tab content.
 export function frameFor(
   room: DesignRoom,
   ws: WebSocket,
@@ -90,10 +92,21 @@ export function frameFor(
 ): string | null {
   if (payload.kind !== 'op') return serialized;
   const scope = scopeOf(room, ws);
-  if (scope === null) return serialized;
-  const op = opForScope(payload.op, scope);
+  const viewer = viewerOf(room, ws);
+  if (scope === null && viewer === null) return serialized;
+  const op = scope === null ? payload.op : opForScope(payload.op, scope);
   if (op === null) return null;
-  return op === payload.op ? serialized : JSON.stringify({ ...payload, op });
+  const frame = op === payload.op ? serialized : JSON.stringify({ ...payload, op });
+  return viewer === null ? frame : frameForViewer({ ...payload, op }, frame, viewer);
+}
+
+// A socket's own ids when it is a Viewer's, read once per socket and kept on the room (its `viewers`).
+export function viewerOf(room: DesignRoom, ws: WebSocket): IsOwnId | null {
+  if (room.viewers.has(ws)) return room.viewers.get(ws) ?? null;
+  const session = room.readSession(ws);
+  const own = viewerOwnIds(session);
+  if (session) room.viewers.set(ws, own);
+  return own;
 }
 
 export function scopeOf(room: DesignRoom, ws: WebSocket): string | null {

@@ -23,12 +23,6 @@ import {
 } from './core';
 import { designGrant, designGrantRefusal, designGrantRefusalDomains } from './design-grants';
 
-// A refusal the share gate answers: the password (none sent yet, 401, or a wrong one, 403), or the item's sign-in rule
-// (sign in first, or an account at a listed domain), which shows the restricted page.
-function gateRefusal(code: string | null, domains: unknown = null): SharedDesignResolution | null {
-  return shareGateOf(code, domains);
-}
-
 // Resolve a share code to the design it opens, the level it grants and its tab. With the design's id (the address
 // `/design/<id>?s=<code>` carries it) this is the grant, which the page asked for while its code loaded, and the
 // design's one read; without it, the index resolves the code first. Null for a code that opens nothing.
@@ -43,14 +37,14 @@ async function _apiLoadShared(
     try {
       designId = (await indexClient.resolveShare(code, password)).item.id;
     } catch (err) {
-      if (err instanceof IndexError) return gateRefusal(err.code, err.domains);
+      if (err instanceof IndexError) return shareGateOf(err.code, err.domains);
       throw err;
     }
   }
   const share = { code, password };
   const grant = await designGrant(designId, share, { fresh: true });
   if (!grant)
-    return gateRefusal(
+    return shareGateOf(
       designGrantRefusal(designId, share),
       designGrantRefusalDomains(designId, share),
     );

@@ -30,7 +30,11 @@ const stateOn = (from: number, to: number): PMState => {
       textBetween: (a: number, b: number) => 'Book the venue'.slice(a - 1, b - 1),
     },
     selection: { from, to, $from },
-    tr: { setMeta: () => ({}) as never, getMeta: () => undefined },
+    tr: {
+      setMeta: () => ({}) as never,
+      getMeta: () => undefined,
+      deleteSelection: () => ({}) as never,
+    },
   };
 };
 

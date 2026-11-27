@@ -104,11 +104,9 @@ function titlePage(k: Kit): Element[] {
   const head = [
     k.text(0, 0, W * 0.6, u * 5, 'ANNUAL REPORT 2026', { textBold: true }),
     k.title(0, u * 6, k.wide ? W * 0.5 : W, u * 16, 'Your big headline'),
-    // A short accent rule between the headline and the line under it.
-    k.shape('square', 0, u * 23, u * 14, u * 1.2, { label: '', borderRadius: 'full' }),
     k.text(
       0,
-      u * 27,
+      u * 25,
       k.wide ? W * 0.45 : W * 0.85,
       u * 12,
       'One line on what this page shows, and why it matters.',

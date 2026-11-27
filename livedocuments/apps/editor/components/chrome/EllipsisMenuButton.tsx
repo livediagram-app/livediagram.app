@@ -1,13 +1,13 @@
 import { useState } from 'react';
 
-import { PortalMenu } from './TabPortalMenu';
+import { TabMenu } from './TabMenu';
 import { EllipsisGlyph } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
 import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
 import type { TabFolderListProps } from '@liveworkspace/workbench/components/chrome/TabFolderList';
 
-// The tab-bar ⋯ button: toggles the unified tab / canvas PortalMenu anchored
+// The tab-bar ⋯ button: toggles the unified tab / canvas TabMenu anchored
 // to itself. Extracted from TabBar.tsx. Pure prop-based component.
 export function EllipsisMenuButton({
   open,
@@ -60,7 +60,7 @@ export function EllipsisMenuButton({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
-  // A connected tab: its own short menu (TabPortalMenu).
+  // A connected tab: its own short menu (TabMenu).
   connected?: ConnectedTabMenu | undefined;
 }) {
   // In state, so the menu anchors to the button on the render that opens it.
@@ -81,7 +81,7 @@ export function EllipsisMenuButton({
       </button>
       {open ? (
         <MenuErrorBoundary onError={onClose}>
-          <PortalMenu
+          <TabMenu
             anchor={button}
             onClose={onClose}
             canvas={canvas}

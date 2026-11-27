@@ -35,6 +35,8 @@ export async function apiNotifyActionAssigned(
     assigneeMemberId?: string;
     actionName: string;
     description?: string;
+    // Its due day ('2026-12-03'), which the email names.
+    due?: string;
     // False: the phone notification alone, no email (docs/specs/014-identity/phone-notifications.md).
     email?: boolean;
     // Where the action is, for the notification's link.

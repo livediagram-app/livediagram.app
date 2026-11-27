@@ -187,6 +187,20 @@ export const renameDocumentOutput = {
   url: url.optional().describe('Link that opens the document (document renames).'),
 };
 
+export const styleDocumentOutput = {
+  documentId,
+  tabs: z
+    .array(
+      z.object({
+        tabId,
+        name: z.string().describe('The tab name.'),
+        rev: z.number().describe('The tab revision after the restyle.'),
+      }),
+    )
+    .describe('Each tab restyled, in order.'),
+  lines: z.array(z.string()).describe('One line a tab, saying what changed.'),
+};
+
 export const deleteDocumentOutput = {
   deleted: z
     .enum(['document', 'tab'])

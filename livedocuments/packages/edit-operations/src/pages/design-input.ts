@@ -180,7 +180,7 @@ function read<T>(fn: () => T): T | { refused: DesignInputRefusal } {
 }
 
 // The tab's words, for an "auto" design: its name, its pages' names and its texts.
-function tabWords(tab: Tab): string {
+export function tabWords(tab: Tab): string {
   const words = [tab.name ?? ''];
   for (const p of pagesOf(tab)) if (p.name) words.push(p.name);
   for (const el of tab.elements) {

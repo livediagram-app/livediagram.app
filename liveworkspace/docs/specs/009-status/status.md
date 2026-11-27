@@ -115,17 +115,21 @@ From the Worker, liveworkspace's own services are fetched at `PLATFORM_ORIGIN`, 
 `staging.`), as a visitor's browser does. A Worker on a route can't fetch another Worker on the same zone unless it
 has the `global_fetch_strictly_public` compatibility flag, which sends the request out to the internet and back in
 through the zone's routes, so the status Worker has that flag. Each app is fetched at its live address
-(`https://www.<app>`, `https://mcp.<app>/health`), or its `staging.` one from staging, where the MCP servers aren't
+(`https://www.<app>`) and the one MCP at `https://mcp.liveworkspace.app/health`, or their `staging.` ones from staging, where the MCP server isn't
 checked. Every app, livediagram included, is on its own custom domains, so the Worker has no service bindings to
 any app. Locally (`ENVIRONMENT = "development"`) everything is fetched on this machine's ports: the site on 3000 and
 each app's router and the one MCP (3013).
 
-The MCP server is optional per app: an app is checked for one only when it ships one (it has an entry in `MCP_DEV_PORTS`: the one MCP's local port, 3013). The apps' own MCP Workers are gone: each app's `mcp.<app>` host is now a custom domain on liveworkspace's one MCP, which still answers `/health` there, so the row probes it (an app's MCP row is the one MCP seen through that app's old address). An app without one has no MCP row at all, rather than a row that is always down or
-skipped. Every app ships one except livehuddle, which removed its MCP server (owner, Work Tracker #562), and every
-listed app is on the page, in `APP_SITES`' order: liveknowledge's group is last, with its MCP row (`mcp.liveknowledge.app`, on 3013 locally). A held app
+There is one MCP server, so it is checked once, as a row under liveworkspace (`liveworkspace:mcp`, "MCP server"): it reads
+`GET https://mcp.liveworkspace.app/health`, or `http://localhost:3013/health` locally, and is skipped on staging, which has no
+public MCP host. No app group has an MCP row. The per-app hosts (`mcp.<app>`) are only custom domains on that same Worker, so
+five rows for them always moved together and none named the real endpoint; they are no longer probed. The old
+`<app>:mcp` services are retired: they are off the list, their open incidents are closed on the next run, and their history
+is left out of the page (the retired-service path in "Behaviour and state"). Every listed app is on the page, in `APP_SITES`'
+order, and a held app
 ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)) is not on the page
-until it launches; none is held today. One round probes 31 services in production (26 on staging, which has no
-public MCP host; 27 and 23 before liveknowledge), under a Worker's 50 subrequests.
+until it launches; none is held today. One round probes 27 services in production (26 on staging, which has no
+public MCP host), under a Worker's 50 subrequests.
 
 ## The database
 

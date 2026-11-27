@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { roomInterior } from '@livehuddle/avatar/office-geometry';
+import { rotatePoint } from '@liveworkspace/model-core/geometry-primitives';
+import { insidePolygonBy, roomFloorPolygon } from './room-floor-polygon';
 import {
   hashId,
   msToNextLeg,
@@ -165,5 +167,64 @@ describe('the office dog', () => {
         for (let n = 0; n < 10_000; n += 1) petLeg('bed-1', n, crowded);
       }),
     ).toBeLessThan(cpuBudgetMs(200));
+  });
+
+  // docs/specs/009-elements/office.md "A Room turns" (Work Tracker 1473): a turned room keeps its dog inside its walls.
+  describe('in a room turned 45 degrees', () => {
+    const turned = { x: 0, y: 0, width: 800, height: 400, rotation: 45 };
+    const middleBed = { x: 364, y: 176, width: 72, height: 48 };
+    const area = petArea(middleBed, [turned]);
+    const upright = roomInterior(turned);
+
+    it('wanders only inside the walls as drawn, inset from them', () => {
+      expect(area.kind).toBe('polygon');
+      const floor = roomFloorPolygon(turned)!;
+      let out = 0;
+      for (let n = 0; n < 400; n += 1) {
+        const spot = petLeg('bed-1', n, area);
+        if (!spot) continue;
+        out += 1;
+        expect(insidePolygonBy(spot, floor, PET_INSET)).toBe(true);
+        // Turned back upright, the spot is inside the room's interior, PET_INSET in.
+        const back = rotatePoint(spot, { x: 400, y: 200 }, -45);
+        expect(back.x).toBeGreaterThan(upright.x + PET_INSET - 1e-6);
+        expect(back.x).toBeLessThan(upright.x + upright.width - PET_INSET + 1e-6);
+        expect(back.y).toBeGreaterThan(upright.y + PET_INSET - 1e-6);
+        expect(back.y).toBeLessThan(upright.y + upright.height - PET_INSET + 1e-6);
+      }
+      // Nearly every walk finds a spot: the naps (one in PET_NAP_EVERY) stay in the bed.
+      expect(out).toBeGreaterThan(400 * 0.7);
+    });
+
+    it('picks the turned room only when the bed stands on its turned floor', () => {
+      // In the upright box's corner, off the turned floor: no room, so the circle.
+      expect(petArea({ x: 740, y: 10, width: 72, height: 48 }, [turned]).kind).toBe('circle');
+      // A turned room too small to inset its dog leaves the circle.
+      const tiny = { x: -20, y: -20, width: 70, height: 70, rotation: 30 };
+      expect(petArea({ x: 0, y: 0, width: 10, height: 10 }, [tiny]).kind).toBe('circle');
+    });
+
+    it('keeps out of another turned room by the box round its walls', () => {
+      const other = { x: 1000, y: 0, width: 400, height: 400, rotation: 45 };
+      const near = petArea({ x: 1000, y: 600, width: 72, height: 48 }, [other]);
+      expect(near.kind).toBe('circle');
+      const b = near.blocks![0]!;
+      expect(b.width).toBeCloseTo(800 / Math.SQRT2);
+      expect(b.x).toBeCloseTo(1200 - 400 / Math.SQRT2);
+      // The bed's own turned room is no block, nor is a turned room out of reach.
+      expect(area.blocks).toBeUndefined();
+      expect(petArea(bed, [{ ...other, x: 5000 }]).blocks).toBeUndefined();
+    });
+
+    it('works out ten thousand legs well inside a frame budget', () => {
+      const best = Math.min(
+        ...[0, 1, 2].map(() =>
+          cpuMsOf(() => {
+            for (let n = 0; n < 10_000; n += 1) petLeg('bed-1', n, area);
+          }),
+        ),
+      );
+      expect(best).toBeLessThan(cpuBudgetMs(60));
+    });
   });
 });

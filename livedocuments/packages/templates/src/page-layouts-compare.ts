@@ -220,13 +220,12 @@ function featureMatrix(k: Kit): Element[] {
         ...cells.map((has, c) => {
           const cx = colX(c) + colW / 2;
           const cy = y + rowH / 2;
-          // A tick where the option has the feature, a short dash where it does not.
+          // A tick where the option has the feature, a smaller cross where it does not (an icon, as the tick
+          // is, never a loose bar).
+          const no = mark * 0.6;
           return has
             ? k.shape('icon', cx - mark / 2, cy - mark / 2, mark, mark, { iconId: 'check' })
-            : k.shape('square', cx - mark * 0.3, cy - u * 0.6, mark * 0.6, u * 1.2, {
-                label: '',
-                borderRadius: 'full',
-              });
+            : k.shape('icon', cx - no / 2, cy - no / 2, no, no, { iconId: 'x' });
         }),
       ];
     }),

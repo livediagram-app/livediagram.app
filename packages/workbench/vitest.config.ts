@@ -24,6 +24,9 @@ const HELD_AT_100 = [
   'src/components/chrome/TabFolderDialog.tsx',
   'src/components/chrome/TabFolderList.tsx',
   'src/components/chrome/FolderColourButton.tsx',
+  // The one tab menu every editor binds (action-parity.md "The tab menu", Work Tracker 1442).
+  'src/components/chrome/TabMenu.tsx',
+  'src/components/chrome/tab-menu-rows.tsx',
   'src/components/chrome/folder-colour.ts',
   'src/components/dialogs/OrganiseDialogFrame.tsx',
   // Request Access, the requester's side (liveworkspace/docs/specs/004-index/request-access.md "On screen"; Work
@@ -51,6 +54,8 @@ const HELD_AT_100 = [
   'src/hooks/editor/useUnusedImagePrompt.ts',
   // Which side a menu flyout opens on (each product's 008-canvas canvas-and-palette.md, Work Tracker 961).
   'src/components/primitives/menu-flyout-side.ts',
+  // The Picker's one face, its reel and strip (each canvas product's 012-collaboration picker.md, Work Tracker 1506).
+  'src/components/canvas/picker/**',
   // A live embed's rules (liveworkspace/docs/specs/004-index/live-embeds.md, Work Tracker 930).
   'src/components/live-embed/live-embed-target.ts',
   'src/components/live-embed/live-embed-slots.ts',
@@ -228,6 +233,12 @@ const HELD_AT_100 = [
   'src/components/send-to-plan/send-store.ts',
   'src/components/send-to-plan/press-hold.ts',
   'src/components/send-to-plan/send-to-plan-entry.ts',
+  // The selection menu in an article's writing (liveworkspace/docs/specs/004-index/send-to-plan.md "The selection menu",
+  // Work Tracker 1462).
+  'src/components/selection-menu/article-selection-menu.ts',
+  'src/components/selection-menu/selection-clipboard.ts',
+  'src/components/selection-menu/selection-menu-store.ts',
+  'src/components/selection-menu/SelectionMenu.tsx',
   'src/components/send-to-plan/send-words.ts',
   // Send to Diagram (liveworkspace/docs/specs/004-index/send-to-diagram.md, Work Tracker 1393).
   'src/components/send-to-diagram/**',

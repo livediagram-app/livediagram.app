@@ -148,6 +148,7 @@ export * from './article-pages';
 export * from './flashcards';
 export * from './flashcard-guard';
 export * from './article-style';
+export * from './recipe-slides';
 export * from './article-zones';
 export * from './article-notes';
 export * from './article-intake';
@@ -158,6 +159,7 @@ export * from './article-markdown-export';
 export * from './page-paint';
 export * from './page-default-background';
 export * from './page-theme-fills';
+export * from './tab-theme-apply';
 export * from './pages-edits';
 export * from './pages-background-copy';
 export * from './tab-new-page-background';
@@ -239,6 +241,9 @@ export * from './chart-ink';
 export * from '@liveworkspace/element-model/chart-types';
 export * from './chart-sheet-source';
 export * from '@liveworkspace/element-model/chart-marks';
+// A chart dropped on a slide or infographic page, sized for the page (pie-chart.md "Behaviour").
+export * from '@liveworkspace/element-model/chart-drop-size';
+
 export * from '@liveworkspace/element-model/chart-axis';
 export * from '@liveworkspace/element-model/chart-values';
 export * from '@liveworkspace/element-model/shape-geometry';

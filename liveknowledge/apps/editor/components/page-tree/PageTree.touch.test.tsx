@@ -41,7 +41,7 @@ function mount(over: Partial<Parameters<typeof PageTree>[0]> = {}) {
     <PageTree
       tabs={TABS}
       activeId="e"
-      closed={new Set()}
+      opened={new Set(TABS.map((t) => t.id))}
       onSetOpen={onSetOpen}
       canEdit
       actions={act_}
@@ -183,7 +183,7 @@ describe('the touch rows', () => {
       const props: PageTreeSidebarProps = {
         tabs: TABS,
         activeId: 'a',
-        closed: new Set(),
+        opened: new Set(TABS.map((t) => t.id)),
         onSetOpen: vi.fn(),
         canEdit: true,
         actions: actions(),

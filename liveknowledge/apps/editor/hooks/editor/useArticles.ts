@@ -45,6 +45,8 @@ import {
   type ArticleFlow,
   type LaidOutPage,
   type Tab,
+  noteHoldsConversation,
+  withAbandonedNoteDropped,
 } from '@liveknowledge/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useArticleIntake } from './useArticleIntake';
@@ -100,6 +102,9 @@ export type ArticlesView = {
   embed: (flow: string, ids: readonly string[], wrap: ArticleZoneWrap) => void;
   // A comment or an action put on the selected text: a marker in the margin beside it, opened.
   addNote: (flow: string, kind: ArticleNoteKind) => void;
+  // The same on words picked while the page is read (page-comments.md "Comments on the writing"): written straight
+  // into the page as saved, for whoever may write it, though the read lens is locked. False when nothing was put on.
+  addReadingNote: (flow: string, kind: ArticleNoteKind) => boolean;
   // A margin note's thread, or its action, opened (a click on its text).
   openNote: (id: string, kind: ArticleNoteKind) => void;
   // A zone dragged to the block boundary nearest a canvas point, or stepped a block up or down
@@ -207,6 +212,9 @@ export function useArticles(deps: {
   clearSelection: () => void;
   // A margin note's marker opened as made: its comment thread, or the Assign Action dialog.
   openNote: (id: string, kind: ArticleNoteKind) => void;
+  // The note whose comment thread or Assign Action dialog is open, if any: a note put while reading that closes holding
+  // nothing goes (withAbandonedNoteDropped).
+  openNoteId?: string | null;
   // A canvas rect panned into sight, the least move that shows it (useEditorViewport scrollIntoView).
   reveal: (x: number, y: number, w: number, h: number) => void;
 }): ArticlesView | null {
@@ -218,6 +226,28 @@ export function useArticles(deps: {
   useEffect(() => {
     latest.current = deps;
   });
+  // A note put on words while reading (putNote), until its thread or Assign dialog has opened and closed again. Left
+  // holding nothing, it goes, mark and marker in one commit (docs/specs/030-knowledgebase/page-comments.md "Comments on
+  // the writing"), so an abandoned press never leaves a tint on the saved page.
+  const freshNote = useRef<{ id: string; seen: boolean } | null>(null);
+  const openNoteId = deps.openNoteId ?? null;
+  useEffect(() => {
+    const fresh = freshNote.current;
+    if (!fresh) return;
+    if (openNoteId === fresh.id) {
+      fresh.seen = true;
+      return;
+    }
+    if (!fresh.seen) return;
+    freshNote.current = null;
+    const d = latest.current;
+    const el = d.activeTab.elements.find((e) => e.id === fresh.id);
+    if (!el || noteHoldsConversation(el)) return;
+    d.commitTabs((ts) =>
+      ts.map((t) => (t.id === d.activeTab.id ? withAbandonedNoteDropped(t, fresh.id) : t)),
+    );
+    debugLog('[article] abandoned note dropped', { id: fresh.id });
+  }, [openNoteId]);
   const [focusRequest, setFocusRequest] = useState<FocusRequest>(null);
   const seq = useRef(0);
   const focusTaken = useCallback(
@@ -566,14 +596,19 @@ export function useArticles(deps: {
     [tabId],
   );
 
-  const addNote = useCallback(
-    (flow: string, kind: ArticleNoteKind) => {
+  // A note on the words picked: while editing, refused as any edit of a locked page is; while reading, the lens's own
+  // lock (read mode) is no refusal, a locked page still is.
+  const putNote = useCallback(
+    (flow: string, kind: ArticleNoteKind, reading: boolean): boolean => {
       const d = latest.current;
       const handle = articleHandleOf(flow);
-      if (!handle || articleEditRefused(d.canEdit, d.activeTab, flow)) return;
+      const refused = reading
+        ? !d.canEdit || articleLocked(d.activeTab, flow)
+        : articleEditRefused(d.canEdit, d.activeTab, flow);
+      if (!handle || refused) return false;
       const id = crypto.randomUUID();
       const res = handle.markNote(id, kind);
-      if (!res) return;
+      if (!res) return false;
       track('Element', 'Added', kind === 'action' ? 'ArticleAction' : 'ArticleComment');
       d.commitTabs((ts) =>
         ts.map((t) => {
@@ -590,10 +625,20 @@ export function useArticles(deps: {
           return { ...written, elements: [...written.elements, newArticleNote(id, kind, corner)] };
         }),
       );
+      if (reading) freshNote.current = { id, seen: false };
       d.openNote(id, kind);
-      debugLog('[article] margin note added', { tabId, flow, kind });
+      debugLog('[article] margin note added', { tabId, flow, kind, reading });
+      return true;
     },
     [tabId],
+  );
+  const addNote = useCallback(
+    (flow: string, kind: ArticleNoteKind) => void putNote(flow, kind, false),
+    [putNote],
+  );
+  const addReadingNote = useCallback(
+    (flow: string, kind: ArticleNoteKind) => putNote(flow, kind, true),
+    [putNote],
   );
 
   const openNote = useCallback(
@@ -664,6 +709,7 @@ export function useArticles(deps: {
     zoneAction,
     embed,
     addNote,
+    addReadingNote,
     openNote,
     moveZone,
     setStyle,

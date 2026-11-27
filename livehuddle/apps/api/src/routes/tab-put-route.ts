@@ -9,6 +9,7 @@ import {
   TAB_SAVE_CAS_ATTEMPTS,
   parseChangesetSeen,
 } from '@livehuddle/api-schema';
+import { restoreHiddenPeople } from '@liveworkspace/api-kit/hidden-people';
 import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
 import { isValidTab, migrateIncomingTab, type Tab } from '@livehuddle/document';
 import {
@@ -121,8 +122,10 @@ export async function writeTabSave(
     ]);
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
-    // A copy: each attempt starts again from the save as sent.
-    const body: Tab = { ...ledger.tab };
+    // A copy: each attempt starts again from the save as sent, with every id a Viewer's copy had hidden put back
+    // from the stored tab first, so no rule below reads a placeholder and no save wipes an id
+    // (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees").
+    const body: Tab = { ...restoreHiddenPeople(ledger.tab, existingTab) };
     // The name cap (docs/specs/006-document/name-length.md): a new or changed name is shortened;
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');

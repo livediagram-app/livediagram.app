@@ -125,6 +125,9 @@ export function parseMentionedBy(
   return out.length > 0 ? Object.fromEntries(out) : undefined;
 }
 
+// The longest assistant name a thread's row keeps (@liveworkspace/model-core COMMENT_AGENT_MAX).
+const AGENT_NAME_MAX = 80;
+
 export function parseThread(value: unknown): CollabThreadInput | null {
   const t = value as Record<string, unknown> | null;
   if (!t || typeof t !== 'object') return null;
@@ -137,6 +140,9 @@ export function parseThread(value: unknown): CollabThreadInput | null {
   const latestAuthorColor =
     t.latestAuthorColor === undefined ? '' : clip(t.latestAuthorColor, COLOR_MAX);
   const card = parseCard(t.card);
+  // An agent's mark (inbox-reading.md "AI comments"): the name cut, a state other than the two dropped, never refused.
+  const latestAgent = t.latestAgent === undefined ? null : clip(t.latestAgent, AGENT_NAME_MAX);
+  const aiState = t.aiState === 'quiet' || t.aiState === 'ask' ? t.aiState : undefined;
   if (
     !isPartId(t.elementId) ||
     elementLabel === null ||
@@ -164,6 +170,8 @@ export function parseThread(value: unknown): CollabThreadInput | null {
     mentionedIds,
     ...(agentIds.length > 0 ? { agentIds } : {}),
     ...(mentionedBy ? { mentionedBy } : {}),
+    ...(latestAgent ? { latestAgent } : {}),
+    ...(aiState ? { aiState } : {}),
     latestText,
     latestAuthorName,
     latestAuthorColor,
@@ -218,6 +226,8 @@ export function parseAction(value: unknown): CollabActionInput | null {
     assignerName,
     teamId: (a.teamId as string | null | undefined) ?? null,
     doneById: isId(a.doneById) ? a.doneById : null,
+    // Its due day: a malformed one is dropped, never the push refused (blueprints/inbox.md "The pushes").
+    ...(isDay(a.due) ? { due: a.due } : {}),
     createdAt: a.createdAt,
     updatedAt: a.updatedAt,
     card,

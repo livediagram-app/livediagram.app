@@ -1,4 +1,6 @@
 import { pageCount } from '@liveknowledge/document';
+import { restoreHiddenPeople } from '@liveworkspace/api-kit/hidden-people';
+import { restoreKnowledgePeople } from '../knowledge/viewer-people';
 import { countPages, knowledgePagesMax, workerTierOf } from '../knowledge/tier-limits';
 import { tierRefusal } from '@liveworkspace/subscription';
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
@@ -280,7 +282,12 @@ function rejected(
 
 // The rules every tab write meets (CS30): migrated elements, a created tab's name capped, new comments credited to the author whatever the body claimed.
 export function withServerRules(tab: Tab, stored: StoredTab | null, author: Author): Tab {
-  const migrated = migrateIncomingTab(tab) as Tab;
+  // Every id a Viewer's copy had hidden, put back from the stored tab (share-roles.md "Ids a Viewer sees"), the page's
+  // own people (its owner, verifier and approval) included.
+  const migrated = restoreKnowledgePeople(
+    restoreHiddenPeople(migrateIncomingTab(tab) as Tab, stored?.tab ?? null),
+    stored?.tab ?? null,
+  );
   const previous = stored?.tab.elements ?? [];
   const elements = rewriteCommentAuthors(migrated.elements, previous, {
     id: author.id,

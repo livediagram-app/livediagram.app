@@ -99,8 +99,9 @@ function ExplorerImpl({
         currentDocumentId && inboxOpenAction
           ? { itemId: currentDocumentId, ...inboxOpenAction }
           : null,
+        !!accountUserId,
       ),
-    [viewerId, currentDocumentId, inboxOpenAction],
+    [viewerId, currentDocumentId, inboxOpenAction, accountUserId],
   );
   const inboxHost = useMemo(
     () => ({ ...inboxBase, actions: inboxActions }),

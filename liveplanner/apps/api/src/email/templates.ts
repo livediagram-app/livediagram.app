@@ -8,6 +8,7 @@
 import { xmlEscape } from '@liveworkspace/icons';
 import {
   createEmailLayout,
+  dueDayWords,
   mentionQuote,
   notificationSettingsUrl,
   subjectText,
@@ -313,6 +314,8 @@ export function actionAssignedEmail(
   project: { id: string; name: string } | null,
   actionName: string,
   description: string | null,
+  // Its due day (`YYYY-MM-DD`), named in the intro; null for none.
+  due: string | null = null,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
@@ -328,9 +331,11 @@ export function actionAssignedEmail(
           : description.trim(),
       )
     : null;
+  const dueDay = dueDayWords(due);
+  const dueText = dueDay ? `, due <strong>${dueDay}</strong>` : '';
   const intro = project
-    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
-    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its plan yet, so ask them to share it with you.`;
+    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>${dueText}.`
+    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>${dueText}. You can’t open its plan yet, so ask them to share it with you.`;
   return {
     kind: 'ActionAssigned',
     subject: `${whoText} assigned you an action`,

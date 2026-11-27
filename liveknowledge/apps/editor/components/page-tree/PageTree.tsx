@@ -58,8 +58,8 @@ export type PageTreeActions = {
 export type PageTreeProps = {
   tabs: readonly TreeTab[];
   activeId: string;
-  // The pages a person has closed, and what a chevron does about it.
-  closed: ReadonlySet<string>;
+  // The pages a person has opened (every other page with subpages is closed), and what a chevron does about it.
+  opened: ReadonlySet<string>;
   onSetOpen: (id: string, open: boolean) => void;
   // May change the tree (an Editor): the verbs, the drag and the rename. Without it the tree is read and followed.
   canEdit: boolean;
@@ -125,7 +125,7 @@ const inField = (target: EventTarget | null) =>
 export function PageTree({
   tabs,
   activeId,
-  closed,
+  opened,
   onSetOpen,
   canEdit,
   touch = false,
@@ -138,10 +138,10 @@ export function PageTree({
   only = null,
   className = '',
 }: PageTreeProps) {
-  // Read once per change of the list, of what is closed or of the filter, never per row.
+  // Read once per change of the list, of what is opened or of the filter, never per row.
   const rows = useMemo(
-    () => visiblePageRows(tabs, closed, activeId, only),
-    [tabs, closed, activeId, only],
+    () => visiblePageRows(tabs, opened, activeId, only),
+    [tabs, opened, activeId, only],
   );
   const [ui] = useState(createPageTreeUi);
   const tree = useRef<HTMLDivElement>(null);
@@ -476,7 +476,10 @@ export function PageTree({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onDragEnd={endDrag}
-        className={`flex min-h-0 flex-col gap-px overflow-y-auto overscroll-contain ${className}`}
+        // Never a scroller of its own: its host scrolls it with the Trash under it (PageTreeSidebar, PageTreeSheet).
+        // A second, nested `overflow-y-auto overscroll-contain` box that could not scroll took the wheel and kept it
+        // (Work Tracker 1459).
+        className={`flex flex-col gap-px ${className}`}
       >
         {rows.map((row) =>
           row.connectionId && connected ? (

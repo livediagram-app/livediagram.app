@@ -701,7 +701,7 @@
   {
     "name": "update_document",
     "title": "Update a document",
-    "description": "Edit an existing tab. mode \"replace\" swaps the whole tab’s elements (validated + auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); mode \"ops\" keeps the colours it is given, and applies an ordered list of add/update/remove against existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or takes \"edits\": edit operations as text (insert between, wrap in a frame, connect, layout a selection, place beside another element), the form each lint finding’s fix is written in. On an event-storming tab, event-storming notes you add or move land on the board’s horizontal lanes (240px apart, lane 0 centred at y=100). Returns an inline PNG.",
+    "description": "Edit an existing tab. mode \"replace\" swaps the whole tab’s elements (validated + auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); mode \"ops\" keeps the colours it is given, and applies an ordered list of add/update/remove against existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or takes \"edits\": edit operations as text (insert between, wrap in a frame, connect, layout a selection, place beside another element), the form each lint finding’s fix is written in. On an event-storming tab, event-storming notes you add or move land on the board’s horizontal lanes (240px apart, lane 0 centred at y=100). The theme, finish and font are changed with style_document. Returns an inline PNG.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -948,6 +948,40 @@
       "additionalProperties": {}
     },
     "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
+  },
+  {
+    "name": "style_document",
+    "title": "Restyle a tab",
+    "description": "Change a tab’s theme, finish or font, or every tab’s without tabId, as the editor’s Tab Style does: a theme recolours what is on the old theme’s colours and keeps colours set by hand. Each tab is one changeset, shown live and undoable.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "description": "The document to restyle (from find_documents / read_document)."
+        },
+        "tabId": {
+          "description": "The tab to restyle; every tab of the document when left out.",
+          "type": "string"
+        },
+        "theme": {
+          "description": "A theme id, as create_document takes: recolours the tab, keeping colours set by hand.",
+          "type": "string"
+        },
+        "finish": {
+          "description": "How the tab is drawn (docs/specs/008-canvas/finish.md): \"flexible\" (the default), \"professional\" (crisp corners, thin lines, no shadows), \"sketch\" (hand-drawn pencil lines, hatched fills, a handwriting font) or \"marker\" (bold felt-tip lines, coloured-in fills, marker lettering). An element can carry its own \"finish\" too.",
+          "type": "string",
+          "enum": ["flexible", "professional", "sketch", "marker"]
+        },
+        "font": {
+          "description": "The tab's typeface, one of: inter, poppins, nunito, oswald, space-grotesk, lora, abril-fatface, roboto-slab, roboto-mono, caveat, permanent-marker.",
+          "type": "string"
+        }
+      },
+      "required": ["documentId"],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "share_document",

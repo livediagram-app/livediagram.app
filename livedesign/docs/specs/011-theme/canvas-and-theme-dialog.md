@@ -295,6 +295,16 @@ read-only person, and the setter refuses while edits are blocked, as every tab s
 `withLookApplied(tab, look, { keepElementColours })` carry it (`apps/live/lib/tab-theme-apply.ts`, `tab-looks.ts`).
 Import keeps an imported tab's choice.
 
+### Agents
+
+An agent changes a tab's theme, finish and font after the tab is made with `style_design`
+([MCP server](../015-api/mcp-server.md#49g-restyling-a-tab-style_design)), one tab or every tab of the design. Its theme
+lands exactly as a pick here does: one pure transform, `tabWithTheme(tab, id, appearance, options)` with
+`isTabThemeId(id)` (`packages/design/src/tab-theme-apply.ts`), which the editor's `withThemeApplied` runs in the
+viewer's appearance and the server runs in the light half, as every agent's change paints. The tab's Element Colours
+choice holds for it as for a pick. It reaches everyone with the design open as a `tab-meta` patch and the changeset of
+its recoloured elements ([Pages for agents](../024-agents/pages-for-agents.md#tab_style)).
+
 ### Formal themes / per-shape colours
 
 A **Formal** theme colours each shape **kind** by its conventional meaning, so a diagram reads as a standard notation at a glance. UML was the one Formal theme, and it is livediagram's alone: this product retired it (owner, 2026-11-12, Work Item 696; [Retired colour schemes](retired-schemes.md#uml)), so no theme picker, Mashup or agent schema here offers it, and a tab saved on it opens on Mono.

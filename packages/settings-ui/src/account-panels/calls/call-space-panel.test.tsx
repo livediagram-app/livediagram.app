@@ -91,6 +91,9 @@ describe('CallSpacePanel', () => {
     );
     expect(screen.getByText('Your Space')).toBeTruthy();
     expect(screen.getByText('Team Space')).toBeTruthy();
+    // Call asks first (Work Tracker 1470): the setting is the place it suggests, not where every call must go.
+    expect(screen.getByText(/asks where to meet/)).toBeTruthy();
+    expect(screen.getByText(/pick another\s+for any one call/)).toBeTruthy();
     fireEvent.click(within(group).getByRole('radio', { name: 'Guild' }));
     expect(onChange).toHaveBeenLastCalledWith('b');
   });

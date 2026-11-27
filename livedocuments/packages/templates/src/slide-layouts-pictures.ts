@@ -11,7 +11,6 @@ import {
   card,
   columns,
   eyebrow,
-  rule,
   slideHeading,
   slideType,
 } from './slide-layout-kit';
@@ -22,7 +21,7 @@ const SCRIM = '#0b1220';
 const SCRIM_OPACITY = 0.78;
 const ON_SCRIM = '#ffffff';
 
-/** An eyebrow, a two-line title, a rule, a lead and three points, down a column `w` wide. */
+/** An eyebrow, a two-line title, a lead and three points, down a column `w` wide. */
 function storyColumn(k: Kit, x: number, w: number): Element[] {
   const { height: H } = k.box;
   const { u } = k;
@@ -34,7 +33,6 @@ function storyColumn(k: Kit, x: number, w: number): Element[] {
       textBold: true,
       textAlignY: 'middle',
     }),
-    rule(k, x, top + u * 33),
     k.text(
       x,
       top + u * 37,
@@ -100,7 +98,7 @@ export function imageBandSlide(k: Kit): Element[] {
 }
 
 /** A picture filling the whole slide; a dark panel down its left, to the slide's edges, holding
- *  an eyebrow, a large title, a rule and a line in white. The picture's own middle stays clear, so
+ *  an eyebrow, a large title and a line in white. The picture's own middle stays clear, so
  *  an empty one still shows its Select Image under the panel's edge. */
 export function heroImageSlide(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
@@ -125,7 +123,6 @@ export function heroImageSlide(k: Kit): Element[] {
       textBold: true,
       textAlignY: 'middle',
     }),
-    rule(k, 0, top + u * 43),
     k.text(0, top + u * 48, w, u * 12, 'Everything your team needs, in one place.', {
       ...slideType(k, 4.2),
       ...white,
@@ -151,7 +148,6 @@ export function imageSideCardSlide(k: Kit): Element[] {
       textBold: true,
       textAlignY: 'middle',
     }),
-    rule(k, x + pad, pad + u * 30),
     ...bullets(
       k,
       x + pad,
@@ -220,7 +216,6 @@ export function imageMosaicSlide(k: Kit): Element[] {
       textBold: true,
       textAlignY: 'middle',
     }),
-    rule(k, 0, H * 0.2 + u * 37),
     k.text(0, H * 0.2 + u * 42, textW, u * 20, 'Workshops, demos and one very long lunch.', {
       ...slideType(k, 3.8),
     }),

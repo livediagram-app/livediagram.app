@@ -134,17 +134,58 @@ export function withPageRefsRemapped<T extends object>(
   return (out ?? tab) as T;
 }
 
+/** The writing with each ordinary link whose address is a page of this knowledgebase (`pageOfHref` answers its id)
+ *  made a page link to that page, for an export that writes page links as files. Code and footnotes are left alone. */
+export function withPageAddressesAsLinks<F extends Pick<ArticleFlow, 'blocks'>>(
+  flow: F,
+  pageOfHref: (href: string) => string | undefined,
+): F {
+  const blocks = mapRuns(flow.blocks, (run) => {
+    if (!run.href || run.code || run.fn !== undefined || pageOfRun(run)) return run;
+    const page = pageOfHref(run.href);
+    if (!page) return run;
+    const { href: _href, ...rest } = run;
+    void _href;
+    return { ...rest, page } as ArticlePageLinkRun;
+  });
+  return { ...flow, blocks };
+}
+
+/** The page a link's address names when it is a page of the knowledgebase `documentId`: its Copy Link
+ *  (`<origin>/<path naming the knowledgebase>#t=<page>`) or the bare fragment the editor writes (`#t=<page>`).
+ *  Undefined for any other address. */
+export function pageOfAddress(documentId: string): (href: string) => string | undefined {
+  return (href) => {
+    const at = href.indexOf('#');
+    if (at < 0) return undefined;
+    const page = new URLSearchParams(href.slice(at + 1)).get('t')?.trim();
+    if (!page) return undefined;
+    if (at === 0) return page;
+    let path: string;
+    try {
+      path = new URL(href).pathname;
+    } catch {
+      return undefined;
+    }
+    return path.split('/').some((part) => part === documentId) ? page : undefined;
+  };
+}
+
 /** The writing for a Markdown export to files: each page link becomes a link to that page's file
- *  (`[Title](relative/path.md)`), and a link to a page with no file becomes its plain text. */
+ *  (`[Title](relative/path.md)`), its words the page's current title when `titleOf` knows it, and a link to a page
+ *  with no file becomes its plain text. */
 export function withPageLinksAsFiles<F extends Pick<ArticleFlow, 'blocks'>>(
   flow: F,
   hrefOf: (tab: string) => string | undefined,
+  titleOf?: (tab: string) => string | undefined,
 ): F {
   const blocks = mapRuns(flow.blocks, (run) => {
     if (!pageOfRun(run)) return run;
     const { page, ...rest } = run as ArticlePageLinkRun;
     const href = hrefOf(page);
-    return href ? { ...rest, href } : rest;
+    if (!href) return rest;
+    const title = titleOf?.(page);
+    return { ...rest, href, ...(title ? { text: title } : {}) };
   });
   return { ...flow, blocks };
 }

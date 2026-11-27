@@ -215,8 +215,7 @@ export function CallBubbles(props: {
   const [crowd, setCrowd] = useState<ReadonlySet<string>>(NO_CROWD);
   const nextCrowd = crowdedIds(heads, crowd);
   if (nextCrowd !== crowd) setCrowd(nextCrowd);
-  const widthOf = (id: string) =>
-    nextCrowd.has(id) ? BUBBLE_COMPACT_WIDTH_PX : BUBBLE_WIDTH_PX;
+  const widthOf = (id: string) => (nextCrowd.has(id) ? BUBBLE_COMPACT_WIDTH_PX : BUBBLE_WIDTH_PX);
   const boxes: BubbleBox[] = [];
   const box = (id: string, at: Point, scale: number, streams: CallMediaStreams | undefined) => {
     const count = streams ? countOf(streams) : 0;

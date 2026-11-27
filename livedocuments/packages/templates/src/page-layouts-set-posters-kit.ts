@@ -1,6 +1,6 @@
 // The Posters layouts' own parts (docs/specs/007-editor/pages-mode.md "Layouts"): a column
 // that shares its height out between fixed and growing blocks, a letter-spaced eyebrow, a headline
-// set centred, accent rules and a thin divider. Pure, on the shared kit; no colours of their own.
+// set centred and a thin divider. Pure, on the shared kit; no colours of their own.
 import type { Element, TextElement } from '@livedocuments/document';
 import type { Kit } from './page-layout-kit';
 
@@ -112,11 +112,6 @@ export function fitTitle(k: Kit, x: number, y: number, w: number, h: number, lab
 // A headline fitted to its box and centred across it.
 export function centredTitle(k: Kit, x: number, y: number, w: number, h: number, label: string) {
   return { ...fitTitle(k, x, y, w, h, label), textAlignX: 'center' as const };
-}
-
-// A short accent rule, a rounded bar in the theme's emphasis.
-export function accentRule(k: Kit, x: number, y: number, w = k.u * 14) {
-  return k.shape('square', x, y, w, k.u * 1.2, { label: '', borderRadius: 'full' });
 }
 
 // A hairline across (or, given a height, down) a page: a divider between blocks of a grid.

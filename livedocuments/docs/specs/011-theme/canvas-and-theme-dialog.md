@@ -14,8 +14,9 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 - **Opening it.** Once a tab has pages, **Design** (a painter's palette, named "Design") sits at the foot of
   Contents, docked or as a popover, where Add Page was ([Pages mode](../007-editor/pages-mode.md) "Contents",
   2026-11-25), opening the dialog on its home as a centred modal (a bottom sheet on a phone); the bottom-right cluster then holds no Theme & canvas button. A page's
-  title bar no longer carries it on a desktop; a phone, which has no sidebar, keeps it as the first row of a page's
-  Appearance sheet ("Beside the cog"). An article page (or a card) already has a Style for its writing, so
+  title bar no longer carries it on a desktop; a phone, which has no sidebar, reaches it from a page's Appearance
+  sheet's **Design** row (on Page Design; its looks one Back away), the sheet's one door to it since its Style row
+  left (Work Tracker 1480, [Pages mode](../007-editor/pages-mode.md) "On a phone, three buttons at most"). An article page (or a card) already has a Style for its writing, so
   it never shows two: its Style popover **leads with a Tab Style row** (a brand icon tile, "Tab Style", "The tab's
   colours and the canvas around its pages", a chevron) above the article's own style, and the row opens the dialog.
   The line says only what reaches an article: the theme's accent colours its writing, and the dialog sets the page
@@ -312,10 +313,12 @@ again.
 
 **Quick Picks** are whole styles: each a random look (colours, text, finish) with a design and one of that look's
 theme gradients, 24 rolled fresh each time the dialog opens (kept while its screens come and go), six at a time over
-four pages, named for colours and design with the typeface and finish under; Shuffle rolls again. A small **Keep Theme** switch under them (off as the dialog opens) keeps the tab's theme: each
+four pages, named for colours and design with the typeface and finish under; Shuffle rolls again. A small **Keep Theme** switch sits in their header row, straight left of Shuffle and centred with it (off as the dialog
+opens; owner, 2026-11-25, Work Tracker 1477), and keeps the tab's theme: each
 pick its type, finish and design in the tab's colours. A pick puts the
 look on the tab, then the design and background. With **Affect All Pages** off, a pick dresses the page alone
-(design and a background in the tab's colours, drawn so), never the tab's look; Colours, Text and Finish are the
+(design and a background in the tab's colours, drawn so), never the tab's look, and Keep Theme is hidden (the pick keeps
+the theme already) while Shuffle keeps its place; Colours, Text and Finish are the
 tab's, so their cards are disabled while it is off (their tooltip says to turn it on). The switch keeps its setting for the opening while screens come and go.
 
 **Page Design is the dialog's home** (owner, 2026-11-25). livedocuments' Tab Style opens on it: no Looks carousel

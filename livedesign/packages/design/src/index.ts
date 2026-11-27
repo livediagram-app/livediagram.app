@@ -146,6 +146,8 @@ export * from './paginate';
 export * from './page-units';
 export * from './page-paint';
 export * from './page-default-background';
+export * from './page-theme-fills';
+export * from './page-theme-follow';
 export * from './pages-edits';
 export * from './photo-pages';
 export * from './pages-background-copy';
@@ -329,6 +331,8 @@ export * from '@liveworkspace/element-model/theme-halves';
 export * from './label-backdrop';
 export { paperMarkBackdrops, withPaperLabelInks, withPaperMarkInks } from './paper-label-ink';
 export * from '@liveworkspace/element-model/theme-presets';
+// One theme pick's transform, the editor's and the agents' (docs/specs/011-theme/canvas-and-theme-dialog.md "Agents").
+export * from './tab-theme-apply';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.

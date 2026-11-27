@@ -19,8 +19,8 @@ is never told a change worked when it shows on no page.
 
 ## The front doors
 
-- **MCP**: one tool, `change_pages` ([MCP server](../015-api/mcp-server.md#49d-the-pages-tools)), and the `pages`
-  view of `read_design`.
+- **MCP**: `change_pages` ([MCP server](../015-api/mcp-server.md#49d-the-pages-tools)), the `pages`
+  view of `read_design`, and `style_design`, whose restyle is a [`tab_style`](#tab_style) change on the same route.
 - **CLI**: `page ls` (the `pages` view) and `page set` (`change_pages`) ([CLI](../015-api/cli.md)).
 - Both go through one api route, `POST /api/designs/:id/tabs/:tabId/pages`, over one pure engine shared with
   the editor, so an agent's page edit is exactly the edit the page panel makes.
@@ -105,6 +105,16 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   - `body`: every other text with words, a button's and a field's label among them, in the order the layout builds
     them (top to bottom, then the next column);
   - `figures`: each figure (a time, a price), in the same order.
+  - a **compound element's own words** are slots too, each in its place in that order: a stat row's value (a
+    figure) then its caption (body), a process's steps, a checklist's rows, a concept graphic's or timeline's rows
+    and notes (a year a figure). The answer's texts name each by its element's ref and `part` (`stats[0].value`).
+    The Key Stats, Process and Timeline layouts used to keep their sample numbers whatever the call gave;
+  - `table`: the layout's first table, every row at once (header row first, any size), its cell styles and first
+    column's width kept where they still fit;
+  - a slot the change never named that still holds sample words is said in one line (`Still the layout's sample:
+body[0] "Presenter name · October 2026"`), so a page is not shared still reading its sample. A text given longer
+    words than its box holds shrinks its type to fit (to 60% at the least, `shrinkTextToBox`) rather than running
+    onto the line under it.
 
   A **figure**, a text with no letter or a number with a unit or two (`9:41`, `$49.00`, `73%`, `3.2M`, `01`), is
   one of `figures`. Slots are read from the layout's sample before any words go in, so words written into a
@@ -131,6 +141,21 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   150,000-character tool result: texts are listed page by page while they fit 60,000 characters; a page past it has
   none, and one line says which pages those are and that the `pages` view lists them.
 
+## `tab_style`
+
+`{ op: 'tab_style', theme?, finish?, font? }`: the tab's style, as the Tab Style dialog sets it
+([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#agents)). The route takes it in any batch; the MCP sends it
+alone, from `style_design` ([MCP server](../015-api/mcp-server.md#49g-restyling-a-tab-style_design)), and
+`change_pages` does not offer it.
+
+- At least one field. `theme` is a theme id the catalogue holds, `finish` one of `flexible`, `professional`, `sketch`,
+  `marker`, `font` a tab font id; anything else is refused `invalid_value`, naming the ids there are.
+- `theme` is applied as the editor's theme pick applies it, in the light half (`tabWithTheme`): a colour still on the
+  old theme's moves, one someone chose stays, the backdrop, the pages' theme fills and the New Page Background follow,
+  and the tab's Element Colours choice holds. `finish` and `font` set the tab's own value.
+- The line: `Restyled the tab: theme forest, finish sketch.`
+- A locked tab is refused (`tab_locked`), as every change here is.
+
 ## Reading: the `pages` view
 
 `read_design` with `view: "pages"` (the CLI's `page ls`, and `read --view pages`) answers, for a Pages tab:
@@ -152,7 +177,8 @@ The view keeps to the read budget. The outline's header names a Pages tab's page
   them in the same batch. A revision that moved meanwhile is read again and applied
   once more; a second move answers `409 tab_busy`.
 - Relays to the design's room what an editor's own edit sends: the changeset's element ops, a `tab-meta`
-  `{ pages }` patch, then a `photo` op for each photo page added, duplicated or deleted (a `tab-meta` never carries
+  patch of the tab fields that changed (`pages`, and a `tab_style`'s `theme`, backdrop, `newPageBackground`, `finish`
+  and `font`), then a `photo` op for each photo page added, duplicated or deleted (a `tab-meta` never carries
   photos, so an open editor would hold the page blank and its next save would write the photo away). The room
   relays without reading them, as it does an editor's.
 - **Known gap** (the tab rename's, [Agent changesets](agent-changesets.md#whole-tab-saves-and-tab-renames)): a

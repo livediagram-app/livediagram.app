@@ -80,6 +80,7 @@ import { registerTool } from './tool-annotations';
 import { fileAddedTab, registerTabFolderTools } from './tab-folder-tools';
 import { appendTemplateDeck, deckNote, slidesForTemplateTab } from './template-deck';
 import { registerArchiveTools } from './archive-tools';
+import { registerStyleTool } from './style-tool';
 import { registerThreadTools } from './thread-tools';
 import { registerRuleTools } from './rule-tools';
 import { registerViewTool, VIEW_TOOL_META } from './view-tab';
@@ -521,6 +522,9 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     VIEW_TOOL_META,
   );
+
+  // Restyle an existing tab (docs/specs/015-api/mcp-server.md §4.9f).
+  registerStyleTool(server, env);
 
   registerTool(server, env, mcpShareDocument, async (args, extra) => {
     const token = requireToken(extra);

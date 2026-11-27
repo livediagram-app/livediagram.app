@@ -4,8 +4,9 @@
 // (LIST_PAGE a page, the index's maximum), a superseded request cancelled rather than left to land late, and
 // the optimistic overlay laid over what came back. `belongs` says whether an item still belongs in the view
 // once patched (a folder's list drops an item moved out; the Trash drops one restored), so a change shows at
-// once and its rollback brings the row back. A read that raced a move (overlay.raced) reads again, quietly: its rows
-// stay on screen until the new read lands.
+// once and its rollback brings the row back. A read that raced a move (overlay.raced), or a `fresh` bump (the editors'
+// panel on a return to the page), reads again, quietly: its rows stay on screen until the new read lands, and stay when
+// it fails.
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Item } from '@liveworkspace/index-client';
@@ -40,6 +41,8 @@ type Loaded = {
   // When its first page's read started (overlay.stamp), for overlay.raced.
   startedAt: number;
   items: Item[];
+  // How many of `items` its first page gave: the rest came from later pages.
+  firstLen: number;
   cursor: string | null;
   error: boolean;
   missing: boolean;
@@ -54,6 +57,7 @@ export function useItemList({
   belongs,
   cap,
   epoch = 0,
+  fresh = 0,
   enabled = true,
 }: {
   // What the list is: a new key starts again from the first page.
@@ -65,6 +69,8 @@ export function useItemList({
   cap?: number;
   // Bumped to reload every list (after a copy, a restore, a folder delete).
   epoch?: number;
+  // Bumped to read the same list again quietly, its rows kept on screen (no loading state).
+  fresh?: number;
   enabled?: boolean;
 }): ItemListState {
   const [attempt, setAttempt] = useState(0);
@@ -91,32 +97,29 @@ export function useItemList({
       .then((page) => {
         // What the index says now retires the person's patches it already took.
         overlayRef.current.observe(page.items, startedAt);
-        setLoaded({
-          key: fullKey,
-          startedAt,
-          items: page.items,
-          cursor: page.nextCursor,
-          error: false,
-          missing: false,
-          done: page.nextCursor === null,
-          moreError: false,
-        });
+        setLoaded((had) => firstPageRead(had, fullKey, startedAt, page));
       })
       .catch((error: unknown) => {
         if (isAbort(error)) return;
-        setLoaded({
-          key: fullKey,
-          startedAt,
-          items: [],
-          cursor: null,
-          error: true,
-          missing: error instanceof IndexError && error.status === 404,
-          done: true,
-          moreError: false,
-        });
+        // A quiet read again that fails keeps the rows this list already shows.
+        setLoaded((had) =>
+          had && had.key === fullKey && !had.error
+            ? had
+            : {
+                key: fullKey,
+                startedAt,
+                items: [],
+                firstLen: 0,
+                cursor: null,
+                error: true,
+                missing: error instanceof IndexError && error.status === 404,
+                done: true,
+                moreError: false,
+              },
+        );
       });
     return () => controller.abort();
-  }, [fullKey, enabled, quiet]);
+  }, [fullKey, enabled, quiet, fresh]);
 
   useEffect(() => () => more.current?.abort(), []);
 
@@ -212,6 +215,35 @@ export function useItemList({
 }
 
 const EMPTY: ShownItem[] = [];
+
+/**
+ * The list once its first page is read. A quiet read again of the same list (a raced move, a return to the page)
+ * swaps in the new first page and keeps the later pages already loaded, less any row the new page now holds, with
+ * their cursor: rows the person scrolled to never drop, and the next scroll goes on from where the list was.
+ */
+function firstPageRead(had: Loaded | null, key: string, startedAt: number, page: ListPage): Loaded {
+  const first: Loaded = {
+    key,
+    startedAt,
+    items: page.items,
+    firstLen: page.items.length,
+    cursor: page.nextCursor,
+    error: false,
+    missing: false,
+    done: page.nextCursor === null,
+    moreError: false,
+  };
+  if (!had || had.key !== key || had.error || had.items.length <= had.firstLen) return first;
+  const fresh = new Set(page.items.map((i) => i.id));
+  const later = had.items.slice(had.firstLen).filter((i) => !fresh.has(i.id));
+  return {
+    ...first,
+    items: [...page.items, ...later],
+    cursor: had.cursor,
+    done: had.done,
+    moreError: had.moreError,
+  };
+}
 
 function appendNew(have: Item[], next: Item[]): Item[] {
   const seen = new Set(have.map((i) => i.id));

@@ -14,6 +14,7 @@ import type {
 } from '@liveworkspace/explorer';
 import { createInboxActions, type InboxApi } from '@liveworkspace/explorer/inbox-actions';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { explorerCrossAppApi } from '@liveworkspace/workbench/lib/explorer-cross-app';
 import { apiFetch, apiHeaders } from './api/core';
 import { helpArticleHref } from './help-articles';
 import { getGuestSelfId } from './local-identity';
@@ -66,6 +67,7 @@ export function localInboxRows(local: OfflineActivity, me: string): InboxLocalRo
     assignerName: a.assigner.name,
     teamId: a.teamId,
     card: null,
+    ...(a.due ? { due: a.due } : {}),
     createdAt: a.createdAt,
     updatedAt: a.updatedAt,
   });
@@ -132,13 +134,24 @@ export type InboxOpenAction = {
 
 /** The reading pane's verbs in the editor's panel (@liveworkspace/explorer/inbox-actions): Reply and Resolve on this
  *  app's threads through its comment routes, and Mark Done on an action on the open document's active tab, as the
- *  canvas marks it. Another app's rows, and Offline's, are opened in their place instead. */
+ *  canvas marks it. Another app's rows through that app's api by the workspace token; Offline's are opened in their place instead. */
 export function explorerInboxActions(
   ownerId: string | null,
   open: InboxOpenAction | null,
+  signedIn = false,
 ): InboxActions {
   return createInboxActions({
-    api: (app) => (app === 'liveknowledge' && ownerId ? inboxApi(ownerId) : null),
+    // This app's rows through its own api; another app's through that app's, by the person's workspace token
+    // (inbox-reading.md "Cross-app verbs"). Signed out, none.
+    api: (app) =>
+      !ownerId
+        ? null
+        : app === 'liveknowledge'
+          ? inboxApi(ownerId)
+          : // A guest has no account to trade for a workspace token: no Reply or Resolve on another app's rows.
+            signedIn
+            ? explorerCrossAppApi(app)
+            : null,
     openAction: open,
   });
 }

@@ -406,6 +406,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'updateProjectOutput',
     args: { projectId: 'd1', mode: 'replace', elements: [] },
   },
+  {
+    tool: 'style_project',
+    output: 'styleProjectOutput',
+    args: { projectId: 'd1', theme: 'forest', finish: 'sketch' },
+  },
   { tool: 'share_project', output: 'shareProjectOutput', args: { projectId: 'd1' } },
   {
     tool: 'rename_project',

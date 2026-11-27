@@ -180,6 +180,29 @@ export function FormatIcon({ kind }: { kind: Format }) {
           </text>
         </svg>
       );
+    case 'markdown-folder':
+      // A folder of Markdown files (docs/specs/020-import-export/knowledgebase-export.md).
+      return (
+        <svg width="34" height="26" viewBox="0 0 34 26" aria-hidden>
+          <path
+            d="M2 5a2 2 0 0 1 2-2h8l3 3h15a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"
+            fill="rgb(254 243 199)"
+            stroke="rgb(245 158 11)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="17"
+            y="19"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="700"
+            fill="rgb(146 64 14)"
+          >
+            md
+          </text>
+        </svg>
+      );
     case 'file':
       return (
         <svg width="34" height="20" viewBox="0 0 34 20" aria-hidden>

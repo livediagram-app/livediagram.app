@@ -55,6 +55,54 @@ Where an app adds to these, it adds the same way in each: liveknowledge's page t
 and Delete on a page's row (a page is its tab), and a tab's menu has Rename, Duplicate, Delete and Export in every
 editor.
 
+## The tab menu
+
+The tab's menu (from a tab's ⋯, a right-click on a tab or on the empty canvas, and liveknowledge's canvas right-click
+for its page) is one shared menu in every editor. An app hands it only its words (what one tab is called and what
+holds the tabs) and the rows only it has; the menu's frame, its order, its labels, its hover cards, where it opens,
+how it closes and its phone sheet are the menu's own. A new verb every app offers is added once, in the menu.
+
+**The words.** An app names its item (`tab`, or liveknowledge's `page`) and what holds it (`canvas`, `plan`,
+`document`, `design`, `space`, `knowledgebase`). From those come "Rename this tab.", "Create a copy of this tab in this
+canvas.", Remove Tab or Remove Page, and the menu's name for a screen reader (Tab menu or Page menu; Canvas menu when
+it opens from the canvas). Side by Side adds "Or drag its pill to the right edge." where the item is a tab (a page has
+no pill). Add to Another <Noun>'s label is the app's own, since each app has worded it for its own nouns.
+
+**The rows, top to bottom.** One toolbar of icon buttons, a hairline, then full-width rows in groups:
+
+| Part                    | Rows                                                                                                                                                         | Shown                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Toolbar, left           | Rename, Duplicate, Paste (opened from a tab's ⋯ only), Side by Side or Close Side by Side                                                                    | Paste greyed when nothing is copied; Side by Side where a split can open                                       |
+| Toolbar, right          | Lock Tab or Unlock Tab, Delete                                                                                                                               | Lock where the app locks tabs; Delete greyed for the last tab and for a locked one                             |
+| Paste row               | Paste, under its own hairline                                                                                                                                | opened from the empty canvas only, in place of the toolbar's Paste                                             |
+| Organise                | Organise in Tab Folder, then Add to Another <Noun>                                                                                                           | each where the app offers it; Add to Another greyed when there is nowhere to add the tab                       |
+| The app's own group     | the app's rows, under a hairline                                                                                                                             | when the app has any (livehuddle's Attendance)                                                                 |
+| File                    | Import (or Import…), Export, then the app's own rows, then Clear                                                                                             | Import greyed on a locked tab unless the app says its Import dialog has something to press; Clear greyed empty |
+| Connected tab (instead) | Rename (where the tab can keep a name of its own), Connect Again (when it opens nothing), Organise in Tab Folder, the app's own rows, a hairline, Remove Tab | a tab connected to another item ([Connected tabs](../004-index/connected-tabs.md))                             |
+| One row only (instead)  | the app's one row                                                                                                                                            | livehuddle's Participant with Attendance                                                                       |
+
+Delete acts at once (the Undo toast brings the tab back, [Undo, not confirm](undo-not-confirm.md)), unless the app
+says deleting does what an Undo cannot take back (liveplanner's tab that a form sends responses to): then a confirm
+anchored to the Delete button says why. Lock and Delete sit together at the toolbar's right edge; an app without a
+lock may spread its toolbar's buttons evenly across the row instead (livehuddle).
+
+**Each app's own.** What only one app has stays that app's, handed to the menu as rows:
+
+| App           | Item, holder        | Lock | Organise                                       | Own rows                                                   |
+| ------------- | ------------------- | ---- | ---------------------------------------------- | ---------------------------------------------------------- |
+| livediagram   | tab, canvas         | yes  | Tab Folder; Add to Another Canvas              | Make Plan Cards (file group)                               |
+| liveplanner   | tab, plan           | yes  | Tab Folder (no Add to Another Plan)            | View As Diagram (file group); Import… with its own dimming |
+| livedocuments | tab, document       | yes  | Tab Folder; Add to Document                    | none                                                       |
+| livedesign    | tab, design         | yes  | Tab Folder; Add to Design                      | none                                                       |
+| livehuddle    | tab, space          | no   | Tab Folder; Add to Another Space               | Attendance (own group); Send Stickies to Plan (file group) |
+| liveknowledge | page, knowledgebase | no   | Add to Knowledgebase (the page tree organises) | none                                                       |
+
+**Who sees it.** An Editor gets the whole menu. A Viewer gets none. A Participant gets none, and neither does a tab-scoped edit link
+(it edits its one tab's content, nothing around it), except in livehuddle, where either one who may see a tab's
+Attendance gets the menu with that one row. The menu itself never decides who sees it: the
+tab bar (or liveknowledge's bottom bar) opens it only for those, and each greys what the tab refuses (a locked tab,
+the last tab, an empty one).
+
 ### Shortcuts
 
 The keys the matrix names, and the two every editor shares with them, are the **In Every App** section of every
@@ -85,3 +133,6 @@ shared or hand-kept to match. What differed was where the hand-keeping could dri
   naming only its own Edit Your <Noun>.
 - **The command names.** Share <Noun>, Rename <Noun> and Delete <Noun> were typed out by hand in each editor's
   command list. Now each takes them from one helper over its noun, so a new app or a renamed noun cannot drift.
+- **The tab menu** (Work Tracker 1442). Each editor kept its own copy of the tab's menu, about 450 lines each, the
+  same but for a few words and each app's own rows, and each copy kept its own tests. Now every editor binds the
+  workbench's one menu with its words and its own rows, and the shared tests run once, against it.

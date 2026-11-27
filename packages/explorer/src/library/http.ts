@@ -21,7 +21,7 @@ import {
   imageUploadCeiling,
   type ImageStorage,
 } from '@liveworkspace/subscription-ui/images';
-import { APP_ITEMS, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { APP_ITEMS, APP_NAMES, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { ShapePreview } from './ShapePreview';
 import { UploadLimitError } from './upload-limit-error';
 import type {
@@ -364,5 +364,107 @@ export function appLibraryHosts(
     };
     byApp.set(key, hosts);
   }
+  return hosts;
+}
+
+/** Walkthroughs from several apps' doors as one list, newest first: each entry's media, delete and share go back to
+ *  the door it came from. Each door's answer joins the list as it arrives (`listParts`), so a slow or failing app
+ *  never holds back the others; a door that fails leaves its entries out, and only all of them failing fails the
+ *  list. The usage is the person's own tier, the same from every door, so the first that answered says it. */
+export function mergedWalkthroughsHost(hosts: readonly WalkthroughsHost[]): WalkthroughsHost {
+  const doorOf = new Map<string, WalkthroughsHost>();
+  const door = (entry: WalkthroughEntry) => doorOf.get(entry.id) ?? hosts[0]!;
+  // Deleted while a slower door was still answering: never put back by its answer.
+  const removed = new Set<string>();
+  const listParts: NonNullable<WalkthroughsHost['listParts']> = (signal, onPart) =>
+    new Promise((resolve, reject) => {
+      let entries: WalkthroughEntry[] = [];
+      let settled = 0;
+      let failed = 0;
+      let firstError: unknown = null;
+      const settle = () => {
+        settled += 1;
+        if (settled < hosts.length) return;
+        if (failed === hosts.length) reject(firstError);
+        else resolve(entries);
+      };
+      hosts.forEach((host) => {
+        host.list(signal).then(
+          (answer) => {
+            for (const entry of answer) doorOf.set(entry.id, host);
+            entries = [...entries, ...answer]
+              .filter((e) => !removed.has(e.id))
+              .sort((a, b) => b.createdAt - a.createdAt);
+            onPart?.(entries, settled + 1 === hosts.length);
+            settle();
+          },
+          (e: unknown) => {
+            failed += 1;
+            if (failed === 1) firstError = e;
+            // The last door failing still ends the list for whoever answered.
+            if (settled + 1 === hosts.length && failed < hosts.length) onPart?.(entries, true);
+            settle();
+          },
+        );
+      });
+    });
+  return {
+    list: (signal) => listParts(signal),
+    listParts,
+    usage: () => {
+      for (const host of hosts) {
+        const usage = host.usage?.() ?? null;
+        if (usage) return usage;
+      }
+      return null;
+    },
+    media: (entry, signal) => door(entry).media(entry, signal),
+    remove: async (entry) => {
+      await door(entry).remove(entry);
+      removed.add(entry.id);
+    },
+    share: async (entry, on) => (await door(entry).share?.(entry, on)) ?? null,
+  };
+}
+
+// One set per token and preferred app, for the page's life.
+const everyAppCache = new WeakMap<Token, Map<string, AppLibraryHosts>>();
+
+/**
+ * The Library of a page that is no one app's (liveworkspace.app reached from no app, Work Tracker 1493), where the
+ * Library used to be only the last app's, so a person last in liveplanner had no Image Gallery at all:
+ * - the Image Gallery, one for every app (the media service lists the person's images from every app, and each
+ *   app's usage names every app's items), read through `prefer` when it keeps one, else the first app that does;
+ * - Shape Libraries, through the app that keeps them (`prefer` first);
+ * - Walkthroughs, every app's in one list (mergedWalkthroughsHost).
+ * `originOf` is where each app's API answers (its site by default).
+ */
+export function everyAppLibraryHosts(
+  prefer: AppName,
+  {
+    token,
+    originOf = (app) => siteOfApp(app).url,
+    apps = APP_NAMES,
+  }: { token: Token; originOf?: (app: AppName) => string; apps?: readonly AppName[] },
+): AppLibraryHosts {
+  let byPrefer = everyAppCache.get(token);
+  if (!byPrefer) everyAppCache.set(token, (byPrefer = new Map()));
+  let hosts = byPrefer.get(prefer);
+  if (hosts) return hosts;
+  const order = [prefer, ...apps.filter((app) => app !== prefer)];
+  const each = order.map((app) => appLibraryHosts(app, { token, origin: originOf(app) }));
+  const gallery = each.find((h) => h.gallery)?.gallery;
+  const shapeLibraries = each.find((h) => h.shapeLibraries)?.shapeLibraries;
+  const doors = each.flatMap((h) => (h.walkthroughs ? [h.walkthroughs] : []));
+  hosts = {
+    ...(gallery ? { gallery } : {}),
+    ...(shapeLibraries ? { shapeLibraries } : {}),
+    ...(doors.length > 1
+      ? { walkthroughs: mergedWalkthroughsHost(doors) }
+      : doors.length === 1
+        ? { walkthroughs: doors[0]! }
+        : {}),
+  };
+  byPrefer.set(prefer, hosts);
   return hosts;
 }

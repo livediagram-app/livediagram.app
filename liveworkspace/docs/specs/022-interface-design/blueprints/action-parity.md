@@ -53,6 +53,42 @@ Derived from [Action parity](../action-parity.md). Paths start at the repo root.
   lines that renders it with `own` set to its own item's address and **Edit Your <Noun>** when the visitor is the
   post's author (`ownDocumentId`, or livedesign's `ownDesignId`). The bar's markup lives only in the package.
 
+## The tab menu
+
+- `packages/workbench/src/components/chrome/TabMenu.tsx` (`@liveworkspace/workbench/components/chrome/TabMenu`):
+  `TabMenu`, the shell. It places the menu (above-left of `anchor`, the tab's ⋯, or at `point`, growing up when
+  `point.openUp`), clamps it on screen (`clampToViewport`, re-run by a `ResizeObserver`), closes it on an outside
+  press, a wheel or a window blur (`useMenuDismiss`) and on Escape (`useControlMenu`), draws a phone's `BottomSheet`
+  in its place, swaps itself for the folder or copy-to picker (focus back to `anchor` when the picker closes), and
+  draws the Delete confirm (`ConfirmPopover`, "Delete this <item>?") when `deleteWarning` is set. The classes and
+  `data-tour-id="tab-menu"` are the copies' own, unchanged.
+- `packages/workbench/src/components/chrome/tab-menu-rows.tsx`: the rows (`TabMenuToolbar`, `TabMenuRows`,
+  `ConnectedTabMenuRows`), the menu's glyphs (the copies' sizes: pencil and bin 13 px, the lock 12 px, rows at
+  `MENU_ICON_PX`), `tabMenuWords(words)` (every string built from the words) and `sideBySideOf(split)`.
+- Props (`TabMenuProps`): `words: { item: 'tab' | 'page'; holder: string }`; the verbs `onRename`, `onDuplicate`,
+  `onClearContent`, `onImport`, `onExport`, `onDelete` with `canDelete`, `canClearContent`; `locked` and
+  `onToggleLock` (the lock button shows only with `onToggleLock`); `canImport` (default `!locked`) and `importLabel`
+  (default `Import`); `deleteWarning`; the folder props `folders`, `currentFolder`, `onMoveToFolder`,
+  `onRemoveFromFolder`, `onSetFolderColour` (the row shows only with `onMoveToFolder`, and opens the workbench's
+  `AddTabToFolderDialog`); `copyTo: { label, disabled, picker(close) }`; `connected` and `renameConnected` (default
+  true); `split` (the editor's split view, read structurally: `available`, `pair`, `activeId`, `canOpen`, `open`,
+  `close`); the app's rows `ownGroup`, `fileRows`, `connectedRows` and `only`; `toolbar: 'grouped' | 'spread'`.
+- Each editor's `components/chrome/TabMenu.tsx` (livediagram, liveplanner, livedocuments, livedesign's `apps/live`,
+  livehuddle, liveknowledge) is a binding: `TabMenu` with its words, its split view (`useSplitViewContext()`), its
+  copy-to picker (the app's `AddTabTo<Noun>Dialog`) and its own rows. It keeps the props its tab bar already passes, so
+  `EllipsisMenuButton` and `TabBar` (liveknowledge's `BottomBar`) only import it by its new name; `TabBar` still loads
+  it lazily (`next/dynamic`). The per-app `TabPortalMenu.tsx` copies are gone, and so is liveknowledge's own
+  `AddTabToFolderDialog`, which only its copy's unreachable folder row opened.
+- Guards:
+  - `TabMenu.test.tsx`, `TabMenu.delete.test.tsx`, `TabMenu.dismiss.test.tsx`, `TabMenu.folder.test.tsx`,
+    `TabMenu.paste.test.tsx` and `TabMenu.roles.test.tsx` in the workbench: the rows and their order for every part of
+    the table, the words, the pickers, Delete with and without its warning, the closing rules, Paste's two places, the
+    phone sheet, and what each role's menu holds. Held at 100% (`vitest.config.ts`).
+  - Each editor's `components/chrome/TabMenu.test.tsx` pins its menu's labels in order (the "unchanged on screen"
+    check) and its own rows (livediagram's Make Plan Cards, liveplanner's View As Diagram and Import…, livehuddle's
+    Attendance and Send Stickies to Plan); each editor's `TabPill.test.tsx` keeps its role checks (no menu for a
+    Viewer or a Participant; livehuddle's Attendance-only menu).
+
 ## Tests to run
 
 `vitest related` on the changed files in each touched package and app, each editor's `shortcut-sections.test.ts`,

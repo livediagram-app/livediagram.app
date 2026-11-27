@@ -236,7 +236,8 @@ describe('the row and the pane', () => {
     renderInbox(index, { inbox: { onTelemetry } });
     const row = await screen.findByRole('option', { name: /Expenses/ });
     expect(row.getAttribute('data-inbox-key')).toBe('u:liveknowledge:kb-1:up_1');
-    expect(within(row).getByText('Priya Shah').className).not.toContain('font-semibold');
+    // Bold while unread (inbox-reading.md), as every row is; it asks nothing, so it is never counted.
+    expect(row.hasAttribute('data-inbox-unread')).toBe(true);
     expect(within(row).getByText('Edited +1')).toBeTruthy();
     const pane = document.querySelector('[data-inbox-reader="Update"]') as HTMLElement;
     expect(within(pane).getByText('Priya and 2 others changed this page · 4 changes')).toBeTruthy();

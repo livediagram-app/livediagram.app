@@ -1,11 +1,16 @@
 // The one MCP end to end through its Worker entry (liveworkspace/docs/specs/021-mcp/mcp.md): each app's MCP package
 // is a stub answering JSON-RPC from its recorded tool list, so these pin the routing, the renames in answers, the
-// core verbs' mapping, per-app consent and a refused token.
+// core verbs' mapping, per-app consent and a refused token. A connection here holds this server's own access token
+// (`lwm_`), standing for the account token the stubs see; the apps' old addresses take the account tokens handed out
+// before (bearer.ts), so those tests run inside the move-over window.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { issueTokens } from '@liveworkspace/mcp-kit/oauth-tokens';
 import { APPS, type AppId, type Binding } from './apps';
 import { forgetCatalogues } from './app-client';
+import { LEGACY_TOKENS_UNTIL, forgetBearers } from './bearer';
+import { oldHostApp } from './old-hosts';
 import type { Env } from './env';
 import { oneMcp } from './one-mcp';
 
@@ -157,7 +162,15 @@ function appExtras(app: AppId, method: string, params: Record<string, unknown>):
         ],
       };
     case 'resources/list':
-      return { resources: [{ uri: `${app}://schema/elements`, name: `${app} elements` }] };
+      return {
+        resources: [
+          {
+            uri: `${app}://schema/elements`,
+            name: `${app} elements`,
+            description: 'Read before create_document / update_document.',
+          },
+        ],
+      };
     case 'resources/templates/list':
       return { resourceTemplates: [] };
     case 'resources/read':
@@ -177,6 +190,25 @@ const ctx = {
   props: {},
 } as unknown as ExecutionContext;
 
+// This server's access token for an account token, one per account token and host, as a sign-in would hand out.
+let issued: Map<string, string>;
+async function bearerFor(account: string, host: string): Promise<string> {
+  if (oldHostApp(host) || !account.startsWith('lwt_')) return account;
+  const key = `${host} ${account}`;
+  let token = issued.get(key);
+  if (!token) {
+    token = (
+      await issueTokens(env.OAUTH_KV, {
+        aud: `https://${host}/mcp`,
+        clientId: 'client',
+        upstream: account,
+      })
+    ).access_token;
+    issued.set(key, token);
+  }
+  return token;
+}
+
 async function rpc(
   method: string,
   params: Record<string, unknown> = {},
@@ -184,12 +216,13 @@ async function rpc(
 ) {
   const query = new URLSearchParams();
   if (opts.all) query.set('tools', 'all');
-  const url = `https://${opts.host ?? 'mcp.liveworkspace.test'}/mcp${query.size ? `?${query.toString()}` : ''}`;
+  const host = opts.host ?? 'mcp.liveworkspace.test';
+  const url = `https://${host}/mcp${query.size ? `?${query.toString()}` : ''}`;
   const response = await worker.fetch(
     new Request(url, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${opts.token ?? 'lwt_person'}`,
+        Authorization: `Bearer ${await bearerFor(opts.token ?? 'lwt_person', host)}`,
         'Content-Type': 'application/json',
         Accept: 'application/json, text/event-stream',
       },
@@ -228,6 +261,8 @@ async function listNames(
 
 beforeEach(() => {
   forgetCatalogues();
+  forgetBearers();
+  issued = new Map();
   calls = [];
   answers = {};
   refusing = null;
@@ -242,13 +277,14 @@ beforeEach(() => {
 });
 
 describe('tools/list', () => {
-  it('lists the ten core verbs by default', async () => {
+  it('lists the eleven core verbs by default', async () => {
     expect(await listNames()).toEqual([
       'find_items',
       'read_item',
       'create_item',
       'share_item',
       'rename_item',
+      'style_item',
       'trash_item',
       'restore_item',
       'list_app_tools',
@@ -271,7 +307,7 @@ describe('tools/list', () => {
     const tools = (
       await without.json<{ result: { tools: { name: string; description: string }[] } }>()
     ).result.tools;
-    expect(tools).toHaveLength(10);
+    expect(tools).toHaveLength(11);
     expect(tools.find((t) => t.name === 'list_app_tools')!.description).not.toContain('doc: reads');
   });
 
@@ -546,6 +582,79 @@ describe('core verbs', () => {
     expect(result.structuredContent!.ref).toBe('doc:L1');
   });
 
+  it('names a core verb in its refusal where the app named its own tool for it', async () => {
+    answers['livedocuments.read_document'] = () => ({
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: 'Document "restore_document" is in the Trash: restore it with restore_document, or find_documents lists the rest.',
+          },
+        ],
+        isError: true,
+      },
+    });
+    const refused = await tool('read_item', { ref: 'doc:L1' });
+    expect(refused.content[0]!.text).toBe(
+      'Document "restore_document" is in the Trash: restore it with restore_item, or find_items lists the rest.',
+    );
+  });
+
+  it('renames a text view’s footer and leaves its content as it is', async () => {
+    answers['livediagram.read_document'] = () => ({
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: 'text a1 read_document\n… 3 lines hidden: read_document {"budget":900}\ntext b2 x\n12 more left out: read_document with a bigger budget.\n',
+          },
+        ],
+      },
+    });
+    const read = await tool('read_with_app_tool', {
+      tool: 'read_diagram',
+      arguments: { documentId: 'D1' },
+    });
+    expect(read.content[0]!.text).toBe(
+      'text a1 read_document\n… 3 lines hidden: read_diagram {"budget":900}\ntext b2 x\n12 more left out: read_diagram with a bigger budget.\n',
+    );
+  });
+
+  it('create_item passes a doc’s style and font on, and no other kind’s', async () => {
+    await tool('create_item', {
+      kind: 'article',
+      name: 'Board report',
+      style: 'formal-report',
+      font: 'lora',
+    });
+    await tool('create_item', {
+      kind: 'plan',
+      name: 'Redesign',
+      style: 'formal-report',
+      font: 'lora',
+    });
+    expect(calls.filter((c) => c.method === 'tools/call').map((c) => c.args)).toEqual([
+      {
+        name: 'Board report',
+        tabs: [{ template: 'blank-article' }],
+        style: 'formal-report',
+        font: 'lora',
+      },
+      { name: 'Redesign', tabs: [{ template: 'kanban' }] },
+    ]);
+  });
+
+  it.each([
+    [{ ref: 'diagram:D1' }, /at least one of theme, font, finish and style/],
+    [{ ref: 'plan:P1', style: 'keynote' }, /a doc’s/],
+    [{ ref: 'knowledgebase:K1', finish: 'sketch' }, /no finish/],
+    [{ ref: 'knowledgebase:K1', theme: 'forest', tab: 'T1' }, /one look/],
+  ] as const)('style_item refuses %j without calling the app', async (args, refusal) => {
+    const result = await tool('style_item', args);
+    expect(JSON.stringify(result)).toMatch(refusal);
+    expect(calls.filter((c) => c.method === 'tools/call')).toEqual([]);
+  });
+
   it('create_item starts a plan from the kanban template and a diagram with a blank tab', async () => {
     await tool('create_item', { kind: 'plan', name: 'Redesign' });
     await tool('create_item', { kind: 'diagram', name: 'Signup' });
@@ -592,6 +701,34 @@ describe('core verbs', () => {
       { documentId: 'L1', name: 'New' },
     ],
     ['trash_item', { ref: 'diagram:D1' }, 'livediagram', 'delete_document', { documentId: 'D1' }],
+    [
+      'style_item',
+      { ref: 'diagram:D1', theme: 'forest', tab: 'T1' },
+      'livediagram',
+      'style_document',
+      { documentId: 'D1', tabId: 'T1', theme: 'forest' },
+    ],
+    [
+      'style_item',
+      { ref: 'doc:L1', style: 'keynote' },
+      'livedocuments',
+      'style_document',
+      { documentId: 'L1', style: 'keynote' },
+    ],
+    [
+      'style_item',
+      { ref: 'plan:P1', finish: 'sketch' },
+      'liveplanner',
+      'style_project',
+      { projectId: 'P1', finish: 'sketch' },
+    ],
+    [
+      'style_item',
+      { ref: 'knowledgebase:K1', font: 'lora' },
+      'liveknowledge',
+      'style_document',
+      { documentId: 'K1', font: 'lora' },
+    ],
     [
       'restore_item',
       { ref: 'diagram:D1' },
@@ -703,8 +840,13 @@ describe('everything an app’s MCP offers', () => {
   });
 
   it('lists every app’s resources and reads one through the app that owns it, names rewritten', async () => {
-    const { resources } = await result<{ resources: { uri: string }[] }>('resources/list');
+    const { resources } = await result<{ resources: { uri: string; description: string }[] }>(
+      'resources/list',
+    );
     expect(resources.map((r) => r.uri)).toContain('liveknowledge://schema/elements');
+    expect(resources.find((r) => r.uri === 'livedocuments://schema/elements')!.description).toBe(
+      'Read before create_doc / update_doc.',
+    );
     const read = await result<{ contents: { text: string }[] }>('resources/read', {
       uri: 'ui://livediagram/view.html',
     });
@@ -768,6 +910,31 @@ describe('per-app consent', () => {
     expect(calls).toEqual([]);
   });
 
+  it('answers 503 when only the grant can’t be read, the token itself read fine', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const token = await bearerFor(
+      await grant(['livediagram'], 'lwt_ticks'),
+      'mcp.liveworkspace.test',
+    );
+    const kv = env.OAUTH_KV;
+    env = {
+      ...env,
+      OAUTH_KV: {
+        ...kv,
+        get: async (key: string, type?: 'json') => {
+          if (key.startsWith('apps:')) throw new Error('KV GET failed: 503');
+          return kv.get(key, type as 'json');
+        },
+      } as KVNamespace,
+    };
+    const response = await rpc('tools/list', {}, { all: true, token });
+    expect(response.status).toBe(503);
+    expect(await response.text()).toContain('which apps this connection may use');
+    expect(calls).toEqual([]);
+    expect(error).toHaveBeenCalledWith('[mcp] grant unreadable', expect.any(Object));
+    error.mockRestore();
+  });
+
   it('keeps nothing when every app is ticked, or none is named', async () => {
     const all = (await listNames({ all: true })).length;
     expect(
@@ -785,6 +952,14 @@ describe('per-app consent', () => {
 
 describe('an app’s old address (mcp.<app>.app)', () => {
   const host = (app: AppId) => `mcp.${app}.app`;
+  // A connection there holds an account token from before, which works only inside the move-over window.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(LEGACY_TOKENS_UNTIL - 24 * 60 * 60 * 1000);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
   const own = (app: AppId) => recorded(app) as { name: string; description?: string }[];
 
   it.each(APPS.map((a) => a.app))(

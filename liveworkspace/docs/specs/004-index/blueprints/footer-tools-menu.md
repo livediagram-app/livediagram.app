@@ -3,18 +3,18 @@
 Derived from [footer-tools-menu.md](../footer-tools-menu.md). The spec decides; this file only adds engineering
 precision. Paths are relative to the repository root.
 
-| File                                                                        | Role                                                                                       |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `packages/workbench/src/components/chrome/ChromeToolsMenu.tsx`              | `ChromeToolsMenu` (the button and its menu), `ChromeToolsItem`, `toolsDescription`         |
-| `packages/snapshots/src/ui/history-snapshots.tsx`                           | `useHistorySnapshotsHost()`: Snapshots for History (FM9), null without a door              |
-| `packages/workbench/src/components/chrome/useItemToolsRows.tsx`             | the History row, History's modes (FM9)                                                     |
-| `liveplanner/apps/editor/components/automations/automations-tools-item.tsx` | `useAutomationsToolsItem()`: the Automations row, null without a door                      |
-| `livedocuments/apps/editor/components/versions/history-tools-item.tsx`      | `useVersionHistoryInTools(onOpen)`: Version History offered to History                     |
-| `packages/walkthrough/src/ui/WalkthroughsTools.tsx`                         | `WalkthroughsTools({ menu })`: the Walkthroughs row (door key `walkthroughs`) and its view |
-| `packages/workbench/src/components/chrome/ToolsView.tsx`                    | `ToolsView`: a tool's view inside Tools (the back bar, the slot, waiting, focus)           |
-| `packages/workbench/src/components/chrome/tools-door.ts`                    | `usePublishToolsItems`, `requestToolsView(id)`, `usePublishItemVersions`                   |
-| `packages/ui/src/dialog/dialog-slot.ts`                                     | the slot a tool's dialog renders into, in place of a modal                                 |
-| `<product>/apps/<editor>/components/chrome/ChromeControls.tsx`              | builds the rows in the spec's order and draws `ChromeToolsMenu` left of Search             |
+| File                                                                        | Role                                                                                           |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `packages/workbench/src/components/chrome/ChromeToolsMenu.tsx`              | `ChromeToolsMenu` (the button and its menu), `ChromeToolsItem`, `toolsDescription`             |
+| `packages/snapshots/src/ui/history-snapshots.tsx`                           | `useHistorySnapshotsHost()`: Snapshots for History (FM9), null without a door                  |
+| `packages/workbench/src/components/chrome/useItemToolsRows.tsx`             | the History row, History's modes (FM9)                                                         |
+| `liveplanner/apps/editor/components/automations/automations-tools-item.tsx` | `useAutomationsToolsItem()`: the Automations row, null without a door                          |
+| `livedocuments/apps/editor/components/versions/history-tools-item.tsx`      | `useVersionHistoryInTools(onOpen)`: Version History offered to History                         |
+| `packages/walkthrough/src/ui/WalkthroughsTools.tsx`                         | `WalkthroughsTools({ menu })`: the Walkthroughs row (door key `walkthroughs`) and its view     |
+| `packages/workbench/src/components/chrome/ToolsView.tsx`                    | `ToolsHeader` (the band, list or tool, FM6), `ToolsView`: a tool's view (slot, waiting, focus) |
+| `packages/workbench/src/components/chrome/tools-door.ts`                    | `usePublishToolsItems`, `requestToolsView(id)`, `usePublishItemVersions`                       |
+| `packages/ui/src/dialog/dialog-slot.ts`                                     | the slot a tool's dialog renders into, in place of a modal                                     |
+| `<product>/apps/<editor>/components/chrome/ChromeControls.tsx`              | builds the rows in the spec's order and draws `ChromeToolsMenu` left of Search                 |
 
 FM1. `ChromeToolsItem = { id, group, label, description, icon, onSelect(anchor), inPlace?, view?, aside?, attention?,
 attentionLabel? }`. `inPlace: true`: `onSelect` opens a dialog, which renders inside Tools (FM6). `view(ctx)`: the
@@ -44,10 +44,13 @@ attention. Its `view` draws `WalkthroughsPanel` (`bare`, no heading of its own) 
 The rows array is memoised on `available`, `canRecord` and the count, so a recording's ticks never republish it: the
 view reads the latest menu from a small store the row keeps (`useLatest`), not from the closure.
 
-FM6. The drill-in. `ChromeToolsMenu` holds `view: id | null`. With a view, the popover body is `ToolsView`: `BackBar`
-(`label="Tools"`, `current={label}`, `data-tools-back`) beside the compact close, then the tool. The popover's name reads
+FM6. The drill-in. `ChromeToolsMenu` holds `view: id | null` and draws `ToolsHeader` (ToolsView.tsx) over every view:
+`HeroDialogHeader` with `toolsHeroArt` throughout. On the list it is titled "Tools" with Tools' line and its title mark;
+with a view it is titled the tool's `label`, its line the tool's `description`, and `onBack` set, so the mark's place
+holds the header's back button (`data-dialog-hero-back`, `aria-label` and tooltip "Back to Tools"), the one Tab Style's
+modal uses. No breadcrumb row. With a view, the body is `ToolsView`, then the tool. The popover's name reads
 "Tools, <label>"; a polite live region (`data-tools-live`) says "<label>" on the way in and "Tools" on the way out.
-Focus goes to the back bar unless the tool took it; going back focuses `[data-tools-item={id}]`.
+Focus goes to the header's back button unless the tool took it; going back focuses `[data-tools-item={id}]`.
 
 - **Dialogs in place.** An `inPlace` press opens the dialog slot (`openDialogSlot()`, `@liveworkspace/ui`) before
   `onSelect`. The first `Dialog` that opens after it while it is unclaimed (it records the slot's `seq` the render it
@@ -55,7 +58,7 @@ Focus goes to the back bar unless the tool took it; going back focuses `[data-to
   listener or phone sheet of its own, its `className` and `size` dropped. Inside it, `useDialogInline()` is true, so
   `DialogHeader` and `HeroDialogHeader` draw their title `sr-only` and their line and actions in a slim row, and
   `DialogCloseButton` draws nothing. Dialogs opened inside it are modals as ever (the context resets). The claim
-  publishes `{ size, close(), escape() }`: the back bar and Escape go through the dialog's own dismissal (`beforeClose`,
+  publishes `{ size, close(), escape() }`: the header's back button and Escape go through the dialog's own dismissal (`beforeClose`,
   `closeOnEscape`, then its `onClose`), and the dialog closing itself releases the slot, which returns Tools to the list.
 - **Width.** `TOOLS_WIDTH_PX` (480), or the claimed dialog's own width (`lg` 544, `xl` 576, `2xl` 640, `3xl` 760), or a
   `view` row's `wide` (760). A `3xl` dialog's slot is `h-[min(44rem,calc(100dvh-6rem))]`.

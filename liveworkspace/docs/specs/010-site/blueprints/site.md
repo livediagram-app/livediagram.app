@@ -318,6 +318,15 @@ Measured with each build's own export: 391,192 to 384,884 bytes (382.0 to 375.9 
 unchanged. `panes-lazy-load.test.ts` keeps all three out of a static import anywhere in the package, and
 `app/first-load-lazy.test.ts` keeps the chips' import dynamic. The budget stays at 382 KiB.
 
+**The Trash's view and Archived's band leave the first load (2026-11-27, Work Tracker 1492).** The redrawn Trash
+(`packages/explorer/src/explorer/TrashPane.tsx`: its band, group headers and days-left meters) and Archived's band
+(`ShelfIntro.tsx`) came in as static imports of every list and took `/explorer` to 382.4 KiB gzipped, over its 382 KiB
+budget. Both now load from their own chunks (`lazy-panes.ts`), fetched by the idle preload with the other sections;
+the Trash's skeleton rows stand in while its code lands. Its plain helpers (`trash-days.ts`) stay shared with the
+editor panel's Trash, and the Trash's Offline group moved into `TrashPane.tsx`, so Offline's rows no longer pull the
+Trash in. Measured with each build's own export: 382.4 to 380.0 KiB, main's figure, 23 scripts. `panes-lazy-load.test.ts`
+keeps both out of a static import anywhere in the package.
+
 **Opening an item ahead loads with the first intent (2026-11-25, Work Tracker 1437).** The intent prefetch first
 came in whole: the prefetcher (`packages/explorer/src/explorer/intent-prefetch.ts`) and the site's warm with its
 `parseInert` took `/explorer` from 391,177 bytes (382.0 KiB) to 383.3 KiB gzipped (22 scripts), over its 382 KiB budget.

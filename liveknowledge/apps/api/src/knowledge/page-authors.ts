@@ -3,7 +3,11 @@
 // creator for good; every later write by a person moves "updated". A page that predates the table has no row until
 // its next write, and then that writer counts as both (the rail shows what it knows, nothing it guesses). Each stamp
 // also says whether a person or an agent made it (page-writer.ts, schema step V18).
-import { sameArticleValue, savedArticlesOf } from '@liveknowledge/document';
+import {
+  articlesWithoutNoteMarks,
+  sameArticleValue,
+  savedArticlesOf,
+} from '@liveknowledge/document';
 import type { DocumentEnv } from '../types';
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
 import { personWriter, stampOf, type PageWriter } from './page-writer';
@@ -45,7 +49,9 @@ export function pageAuthorStatement(
  * Whether a save changed the page a reader reads (docs/specs/030-knowledgebase/editing.md "Save"): a draft's
  * autosave is nobody's update until Save puts it in the saved writing, and an open editor's echo of what it
  * already holds (right after an agent's write, say) is nobody's either, or it would stamp the agent's edit as a
- * person's. Only a moved name, saved writing or objects counts; a page new to the knowledgebase always does.
+ * person's. Only a moved name, saved writing or objects counts; a page new to the knowledgebase always does. A
+ * comment or an action on some words is not an edit (page-comments.md "Comments on the writing"): the notes' marks in
+ * the writing and their markers beside it are left out of the comparison.
  */
 export function savedPageChanged(
   before: { name: string; elements: unknown; articles?: unknown; draft?: unknown } | null,
@@ -53,8 +59,21 @@ export function savedPageChanged(
 ): boolean {
   if (!before) return true;
   if (before.name !== after.name) return true;
-  if (!sameArticleValue(savedArticlesOf(before), savedArticlesOf(after))) return true;
-  return !sameArticleValue(before.elements, after.elements);
+  const was = savedArticlesOf(before);
+  const now = savedArticlesOf(after);
+  if (
+    !sameArticleValue(was, now) &&
+    !sameArticleValue(articlesWithoutNoteMarks(was), articlesWithoutNoteMarks(now))
+  )
+    return true;
+  if (sameArticleValue(before.elements, after.elements)) return false;
+  return !sameArticleValue(withoutNoteMarkers(before.elements), withoutNoteMarkers(after.elements));
+}
+
+// The page's objects less its margin notes' markers, which carry a conversation, not content.
+function withoutNoteMarkers(elements: unknown): unknown {
+  if (!Array.isArray(elements)) return elements;
+  return elements.filter((e) => (e as { type?: unknown } | null)?.type !== 'article-note');
 }
 
 /** Note a write; a failure is logged and never fails the write it follows. `also` rides the same batch (the tab PUT's

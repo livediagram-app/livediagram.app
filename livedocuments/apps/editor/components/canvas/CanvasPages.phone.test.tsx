@@ -67,7 +67,7 @@ describe("a page's title bar on a phone", () => {
     expect(label(container)?.className).toContain('hidden');
   });
 
-  it("lists the page's look controls; Background opens Tab Style on its Design", () => {
+  it("lists the page's look controls with no Style row; Design opens Tab Style on its Design", () => {
     act(() => undo());
     const open = vi.fn();
     undo = registerTabStyleOpen(open);
@@ -78,21 +78,32 @@ describe("a page's title bar on a phone", () => {
     const rows = [...sheet.querySelectorAll('[data-appearance-row]')].map((r) =>
       r.getAttribute('data-appearance-row'),
     );
-    expect(rows).toEqual(['style', 'layout', 'background']);
+    expect(rows).toEqual(['layout', 'background']);
+    expect(within(sheet).queryByText('Style')).toBeNull();
+    expect(within(sheet).getByText('Design')).toBeTruthy();
+    vi.mocked(track).mockClear();
     fireEvent.click(sheet.querySelector('[data-appearance-row="background"]')!);
     expect(screen.queryByRole('dialog', { name: 'Appearance' })).toBeNull();
+    // Once: Tab Style on its Design, counted once as Design's own opening.
+    expect(open).toHaveBeenCalledTimes(1);
     expect(open).toHaveBeenCalledWith('design');
-    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PageDesignButton');
+    expect(vi.mocked(track).mock.calls).toEqual([['UI', 'Opened', 'PageDesignButton']]);
   });
 
-  it("opens Tab Style from Appearance's Style row", () => {
+  it('offers a locked page Design alone, opening Tab Style', () => {
     act(() => undo());
     const open = vi.fn();
     undo = registerTabStyleOpen(open);
-    render(<CanvasPages view={view(true)} zoom={1} />);
+    const locked = layOutPages([{ ...newSlidePage('s1'), locked: true }]);
+    render(<CanvasPages view={{ ...view(true), pages: locked }} zoom={1} />);
     fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
-    fireEvent.click(document.querySelector('[data-appearance-row="style"]')!);
-    expect(open).toHaveBeenCalledTimes(1);
+    const sheet = screen.getByRole('dialog', { name: 'Appearance' });
+    const rows = [...sheet.querySelectorAll('[data-appearance-row]')].map((r) =>
+      r.getAttribute('data-appearance-row'),
+    );
+    expect(rows).toEqual(['background']);
+    fireEvent.click(sheet.querySelector('[data-appearance-row="background"]')!);
+    expect(open).toHaveBeenCalledWith('design');
   });
 
   it('names Appearance while the page on screen has room, and drops to its icon when it is too narrow', () => {
@@ -127,10 +138,12 @@ describe("a page's title bar on a desktop", () => {
 
 describe('appearanceRows', () => {
   it("lists a page's look controls in the bar's order", () => {
-    expect(appearanceRows({ style: true, page: true })).toEqual(['style', 'layout', 'background']);
-    expect(appearanceRows({ page: false, article: true })).toEqual(['style', 'text', 'background']);
-    // A locked page keeps the tab's Style alone; a page with no look controls has none, so no Appearance.
-    expect(appearanceRows({ style: true, page: false })).toEqual(['style']);
+    // No Style row: Design is the one door to Tab Style (Work Tracker 1480).
+    expect(appearanceRows({ style: true, page: true })).toEqual(['layout', 'background']);
+    expect(appearanceRows({ page: true })).toEqual(['layout', 'background']);
+    expect(appearanceRows({ page: false, article: true })).toEqual(['text', 'background']);
+    // A locked page keeps the tab's Design alone; a page with no look controls has none, so no Appearance.
+    expect(appearanceRows({ style: true, page: false })).toEqual(['background']);
     expect(appearanceRows({ page: false })).toEqual([]);
   });
 });

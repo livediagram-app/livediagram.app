@@ -5,15 +5,11 @@ import {
   hexToRgb,
   mixHex,
   rgbToHex,
-  PAGE_GRADIENT_ANGLE,
   pageIsDark,
   shade,
-  themeAccent,
-  themeSecondaries,
   tint,
-  type PageFill,
   type PageMotion,
-  type ThemeDefinition,
+  type PageMotionColouringId,
 } from '@livedesign/design';
 
 type PageMotionEntry = {
@@ -157,71 +153,15 @@ export const PAGE_MOTION_CATALOGUE: readonly PageMotionEntry[] = [
   },
 ];
 
-export type PageMotionColouringId = 'deep' | 'night' | 'bright' | 'vivid' | 'soft' | 'mist';
-
-export const PAGE_MOTION_COLOURINGS: readonly { id: PageMotionColouringId; label: string }[] = [
-  { id: 'deep', label: 'Theme Deep' },
-  { id: 'night', label: 'Theme Night' },
-  { id: 'vivid', label: 'Theme Vivid' },
-  { id: 'bright', label: 'Theme Bright' },
-  { id: 'soft', label: 'Theme Soft' },
-  { id: 'mist', label: 'Theme Mist' },
-];
-
-type ThemeColours = Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>;
-
-/** A colouring's two gradient stops, drawn from the theme's accent and its second colour. */
-export function motionColouring(
-  theme: ThemeColours,
-  id: PageMotionColouringId,
-): {
-  from: string;
-  to: string;
-} {
-  const a = themeAccent(theme);
-  const [b] = themeSecondaries(theme);
-  switch (id) {
-    case 'deep':
-      return { from: shade(a, 0.62), to: shade(b, 0.38) };
-    case 'night':
-      return { from: '#0b1020', to: shade(a, 0.72) };
-    case 'vivid':
-      return { from: a, to: shade(b, 0.25) };
-    case 'bright':
-      return { from: tint(a, 0.15), to: b };
-    case 'soft':
-      return { from: tint(a, 0.88), to: tint(b, 0.7) };
-    case 'mist':
-      return { from: tint(a, 0.95), to: tint(a, 0.72) };
-  }
-}
-
-/** The fill a motion makes in a colouring: a gradient (what exports and re-inking see) with its
- *  motion. */
-export function motionFill(
-  theme: ThemeColours,
-  motion: PageMotion,
-  colouring: PageMotionColouringId,
-): PageFill {
-  return {
-    kind: 'gradient',
-    ...motionColouring(theme, colouring),
-    angle: PAGE_GRADIENT_ANGLE,
-    motion,
-  };
-}
-
-/** The colouring a fill's stops match for this theme, if any (its swatch shows as chosen). */
-export function colouringOf(
-  theme: ThemeColours,
-  fill: PageFill | undefined,
-): PageMotionColouringId | undefined {
-  if (fill?.kind !== 'gradient') return undefined;
-  return PAGE_MOTION_COLOURINGS.find(({ id }) => {
-    const c = motionColouring(theme, id);
-    return c.from === fill.from && c.to === fill.to;
-  })?.id;
-}
+// The theme colourings a motion comes in are the design's, so a theme change made anywhere moves a page on one
+// (page-theme-follow).
+export {
+  colouringOf,
+  motionColouring,
+  motionFill,
+  PAGE_MOTION_COLOURINGS,
+  type PageMotionColouringId,
+} from '@livedesign/design';
 
 // What a motion's parts are painted with, and the seeds that place them: one copy for every product,
 // @liveworkspace/page-background/motion-paint. The paint is worked out here, from this product's colours.

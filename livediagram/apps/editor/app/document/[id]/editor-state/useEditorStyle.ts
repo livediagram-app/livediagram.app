@@ -230,6 +230,7 @@ export function useEditorStyle({
     setPickerSourceSelected,
     setReactionSelected,
     setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected,
   } = useBehaviourSetters({
     currentSelectionIds,
     contextTargetId: contextMenu?.mode === 'element' ? contextMenu.elementId : null,
@@ -455,6 +456,7 @@ export function useEditorStyle({
       setPickerSourceSelected,
       setReactionSelected,
       setPickerOptionsSelected,
+      setPickerRemoveDrawnSelected,
       setRatingSelected,
       setRatingAnimSelected,
       setRatingAnimSpeedSelected,

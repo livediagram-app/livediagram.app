@@ -32,6 +32,8 @@ import {
 import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { ExportPagePicker } from './ExportPagePicker';
 import { PrintPanel } from './PrintPanel';
+import { MarkdownFolderPanel } from './markdown-folder/MarkdownFolderPanel';
+import type { MarkdownFolderRun } from './markdown-folder/useMarkdownFolderExport';
 import { printDocumentHtml, printSheets, printTabCount, type PrintScope } from '@/lib/print-pages';
 import { printInFrame } from '@/lib/print-frame';
 import { currentPageIdNow } from '@/lib/current-page-kind';
@@ -67,6 +69,7 @@ const loadPreviewImages = async (tab: Tab, imageContext: ExportTabDialogProps['i
 const EXPORT_LABEL: Record<Exclude<Format, 'print'>, string> = {
   file: 'JSON',
   markdown: 'Markdown',
+  'markdown-folder': 'MarkdownFolder',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
@@ -96,6 +99,13 @@ const PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
 // (docs/specs/020-import-export/office-export.md "Performance").
 const OfficeExportPanel = lazy(() => import('./office/OfficeExportPanel'));
 
+/** The whole knowledgebase as a Markdown Folder (docs/specs/020-import-export/knowledgebase-export.md): what the panel
+ *  counts, and the making. Absent where it is not offered (a link confined to one page, a selection). */
+export type MarkdownFolderExport = {
+  counts: { pages: number; connected: number };
+  run: MarkdownFolderRun;
+};
+
 type ExportTabDialogProps = {
   tab: Tab;
   documentName: string;
@@ -119,6 +129,7 @@ type ExportTabDialogProps = {
   // The Slide Deck, for the PowerPoint export's speaker notes and hidden slides
   // (docs/specs/020-import-export/office-export.md).
   deck?: Deck;
+  markdownFolder?: MarkdownFolderExport;
 };
 
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
@@ -137,6 +148,7 @@ export function ExportTabDialog({
   pages,
   documentTabs,
   deck,
+  markdownFolder,
 }: ExportTabDialogProps) {
   const titleId = useId();
   // null = the format grid; otherwise the picked format's sub-panel.
@@ -158,13 +170,17 @@ export function ExportTabDialog({
         (kind) =>
           (!isOfficeFormat(kind) || kind === officeFormat) &&
           // Markdown is an article's writing (docs/specs/020-import-export/markdown-import.md "Markdown export").
-          (kind !== 'markdown' || officeFormat === 'docx'),
+          (kind !== 'markdown' || officeFormat === 'docx') &&
+          // The whole knowledgebase, only where the session reads all of it (knowledgebase-export.md).
+          (kind !== 'markdown-folder' || !!markdownFolder),
       ).map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // A selection has no pages, so no Print, PowerPoint or Word.
-      CARDS.filter((c) => c.kind !== 'print' && !isOfficeFormat(c.kind));
+    : // A selection has no pages, so no Print, PowerPoint, Word or Markdown Folder.
+      CARDS.filter(
+        (c) => c.kind !== 'print' && c.kind !== 'markdown-folder' && !isOfficeFormat(c.kind),
+      );
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -345,11 +361,13 @@ export function ExportTabDialog({
   const subtitle = activeCard
     ? active === 'print'
       ? 'Print the current page or the whole knowledgebase.'
-      : isOfficeFormat(active)
-        ? OFFICE_SUBTITLE[active]
-        : isTextFormat(active!)
-          ? `Copy this tab as ${activeCard.title}, or download a file.`
-          : `Set the image options for ${activeCard.title}, then download.`
+      : active === 'markdown-folder'
+        ? 'Download every page as a Markdown file, in one .zip.'
+        : isOfficeFormat(active)
+          ? OFFICE_SUBTITLE[active]
+          : isTextFormat(active!)
+            ? `Copy this tab as ${activeCard.title}, or download a file.`
+            : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -377,6 +395,20 @@ export function ExportTabDialog({
             trackTextExport(active);
           }}
           onCopied={() => trackTextExport(active)}
+          onBack={() => setActive(null)}
+        />
+      ) : active === 'markdown-folder' && markdownFolder ? (
+        <MarkdownFolderPanel
+          counts={markdownFolder.counts}
+          run={markdownFolder.run}
+          onDownload={(blob) => {
+            downloadBlob(
+              blob,
+              `${sanitizeFilename(documentName || 'knowledgebase', 'knowledgebase')}.zip`,
+            );
+            track('Document', 'Exported', EXPORT_LABEL['markdown-folder']);
+          }}
+          onDone={onClose}
           onBack={() => setActive(null)}
         />
       ) : isOfficeFormat(active) && pages && pages.length > 0 ? (

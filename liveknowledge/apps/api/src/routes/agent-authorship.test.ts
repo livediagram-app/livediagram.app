@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PageAuthorStamp, VersionSummary } from '@liveknowledge/api-schema';
 import { knowledgeKit, OWNER, page, type Kit, type Who } from './knowledge-test-kit';
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { personToken } from '../knowledge/viewer-people';
 
 vi.mock('../person/profiles', () => import('../test-profiles'));
 vi.mock('../index-service', async (original) => {
@@ -20,7 +21,7 @@ vi.mock('../index-service', async (original) => {
 
 type Health = { created?: PageAuthorStamp; updated?: PageAuthorStamp; editors?: PageAuthorStamp[] };
 
-const health = async (kit: Kit, tab: string, who: Who = 'viewer') =>
+const health = async (kit: Kit, tab: string, who: Who = 'participant') =>
   await (await kit.call(who, 'GET', `/api/documents/kb/pages/${tab}/health`)).json<Health>();
 const versions = async (kit: Kit, tab: string) =>
   (
@@ -59,8 +60,10 @@ describe('a page an agent made', () => {
     const ai = { by: OWNER, kind: 'ai', agent: AGENT, via: 'mcp' };
     for (const who of ['viewer', 'participant', 'editor'] as const) {
       const read = await health(kit, tab, who);
-      expect(read.created).toEqual({ ...ai, at: 1_000_000 });
-      expect(read.updated).toEqual({ ...ai, at: 1_000_000 });
+      // A Viewer reads the person as a stand-in (share-roles.md "Ids a Viewer sees").
+      const by = who === 'viewer' ? personToken('kb', OWNER) : OWNER;
+      expect(read.created).toEqual({ ...ai, by, at: 1_000_000 });
+      expect(read.updated).toEqual({ ...ai, by, at: 1_000_000 });
     }
 
     // The agent changes it: Updated stays the agent's; the save and the version before its burst name it.

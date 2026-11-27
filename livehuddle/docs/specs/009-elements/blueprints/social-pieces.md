@@ -109,8 +109,9 @@ Derived from [Social pieces](../social-pieces.md).
 - **The minute**: `useMinuteNow` is a `useSyncExternalStore` over one `setTimeout` to the next whole minute, armed while
   one clock is subscribed and cleared when the last unsubscribes.
 - **The jukebox**: `useSocialPieces` (in `useCanvasAvatar`) narrows the elements to jukeboxes, arcades and rooms once
-  per element change, then on each move of your feet works out the jukebox whose area holds you and the arcade you
-  stand at; an effect sets the one shared `HTMLAudioElement`'s source and plays or pauses it only when that answer,
+  per element change (each turned or Room Builder room with its floor polygon, `roomFloorPolygon`, so a step tests
+  that polygon and an upright room keeps its box test), then on each move of your feet works out the jukebox whose
+  area holds you and the arcade you stand at; an effect sets the one shared `HTMLAudioElement`'s source and plays or pauses it only when that answer,
   the source or your choice changes.
 
 ## Ping-pong (Work Tracker #528)

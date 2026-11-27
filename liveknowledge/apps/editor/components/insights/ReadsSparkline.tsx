@@ -67,3 +67,21 @@ export function ReadsSparkline({
     </svg>
   );
 }
+
+const count = (n: number) => n.toLocaleString('en');
+
+/** The reads said apart, each behind its tone's dot: "21 by people", "7 by agents". */
+export function ReadsSplit({ people, agents }: { people: number; agents: number }) {
+  return (
+    <span className="flex min-w-0 flex-wrap items-center gap-x-2.5">
+      <span className="flex items-center gap-1 whitespace-nowrap">
+        <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${PEOPLE_BG}`} />
+        {count(people)} by people
+      </span>
+      <span className="flex items-center gap-1 whitespace-nowrap">
+        <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${AGENT_BG}`} />
+        {count(agents)} by agents
+      </span>
+    </span>
+  );
+}

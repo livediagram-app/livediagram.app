@@ -174,6 +174,7 @@ function OpenEditorAnchoredPopovers() {
                 // The element's one action.
                 existing={target.action ?? null}
                 elementLabel={targetLabel || null}
+                onWords={target.type === 'article-note'}
                 teams={teams}
                 ownerId={accountUserId ?? null}
                 selfUserId={actionSelfId}

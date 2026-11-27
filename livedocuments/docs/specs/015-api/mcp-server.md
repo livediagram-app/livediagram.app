@@ -749,11 +749,11 @@ which is how the gap was found.
 Three behaviours cover the nineteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                       |
-| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_images`                            |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `change_tabs`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image`    |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `change_pages`, `write_article`, `delete_image`, `share_document` |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                      |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_images`                                           |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `change_tabs`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image`, `style_document` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `change_pages`, `write_article`, `delete_image`, `share_document`                |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
 `mcpTool`) and `@liveworkspace/mcp-kit`'s `toolAnnotations`: `delete_image` is `idempotentHint: true` (removing
@@ -949,7 +949,7 @@ as they can be without saying less.
   still matches) and none we know shows one to a model, so the nested detail was bytes every session paid for and
   nobody read: a form's whole question format, about 6.7 KB, was listed again under each of four tools.
 - **A byte budget.** `apps/mcp/src/tool-list-budget.test.ts` lists the tools through a real MCP client, compacts the
-  answer as `/mcp` does and holds it to `TOOL_LIST_BUDGET_BYTES` (105,000); a tool that grows past it fails CI,
+  answer as `/mcp` does and holds it to `TOOL_LIST_BUDGET_BYTES` (107,000; 105,000 until `style_document`); a tool that grows past it fails CI,
   where it can be trimmed or the budget raised on purpose. Measured on the compacted answer, in characters of its JSON: 136,821 before
   the element format moved and output schemas went shallow (2026-11-21), 96,528 after.
 - **A tab by its name.** Where a tool reads a tab (`read_document`, `update_document` and the tools that load a tab the same

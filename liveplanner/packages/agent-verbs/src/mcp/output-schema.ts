@@ -153,6 +153,23 @@ export const shareProjectOutput = {
   projectUrl: url,
 };
 
+export const styleProjectOutput = {
+  projectId,
+  tabs: z
+    .array(
+      z.object({
+        tabId,
+        name: z.string().describe('The tab name.'),
+        rev: z
+          .number()
+          .nullable()
+          .describe('The tab revision after; null when it already had that style.'),
+      }),
+    )
+    .describe('Each tab restyled, in order.'),
+  lines: z.array(z.string()).describe('One line a tab: what changed.'),
+};
+
 export const renameProjectOutput = {
   renamed: z.enum(['project', 'tab']).describe('Whether the plan or one of its tabs was renamed.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),

@@ -5,6 +5,7 @@
 // text only.
 import type { ArticleWrite, PagesRefusal } from '@livedocuments/api-schema';
 import {
+  articleFontsForTab,
   ARTICLE_LOOK_IDS,
   articleFromMarkdown,
   articleNoteIds,
@@ -202,7 +203,11 @@ export function applyArticleWrite(
       `That makes ${blocks.length.toLocaleString('en')} blocks; an article holds at most ${MAX_ARTICLE_BLOCKS.toLocaleString('en')}.`,
     );
   // The look.
-  const style: ArticleStyle = { ...doc.style };
+  // A new article takes the tab's typeface (a style recipe's), as Tab Style's font does; a look named here sets its own.
+  const style: ArticleStyle = {
+    ...(created && current.font && !write.look ? articleFontsForTab(current.font) : {}),
+    ...doc.style,
+  };
   if (write.look && ARTICLE_LOOK_IDS.includes(write.look)) style.look = write.look;
   if (write.accent) style.accent = write.accent;
   if (write.pageNumbers !== undefined) style.pageNumbers = write.pageNumbers;

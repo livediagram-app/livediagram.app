@@ -12,10 +12,8 @@
 // (in which case it goes into a sibling icon module).
 
 import { MODE_GLYPHS, type TextAlignX, type TextAlignY } from '@livehuddle/document';
-import { lucideArmchair, lucideFileDown, lucideFileUp } from '@liveworkspace/icons/lucide';
-import { Glyph, lucideGlyph, Prims } from '@livehuddle/ui';
-
-import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { lucideArmchair } from '@liveworkspace/icons/lucide';
+import { Glyph, Prims } from '@livehuddle/ui';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
@@ -27,10 +25,6 @@ export {
   StrikethroughIcon,
   UnderlineIcon,
 } from '@liveworkspace/workbench/components/palette/text-style-icons';
-
-// Import into / export out of a tab (the tab menu's Content rows).
-export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
-export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
 export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="select" size={size} />;

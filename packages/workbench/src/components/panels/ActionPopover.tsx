@@ -20,6 +20,7 @@ import { initialsOf } from '@liveworkspace/model-core/names';
 import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { useReposition } from '../../hooks/canvas/useReposition';
 import { useRelativeNow } from '../../lib/relative-now';
+import { actionDueWords } from '@liveworkspace/index-client/action-due';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '../../lib/clamp-to-viewport';
 import { elementSelector } from '../../lib/canvas-selectors';
 import { IDENTITY_FILL, identityVars } from '../../lib/identity-fill';
@@ -103,6 +104,8 @@ export function ActionPopover({
   const closed = done || wontDo;
   const assigneeName = action.assignee.name?.trim() || 'Teammate';
   const assignerName = action.assignerName?.trim() || null;
+  // Its due day, where the app sets one (liveknowledge's actions on words).
+  const due = actionDueWords(action.due, now);
   const mine = selfUserId !== null && action.assignee.userId === selfUserId;
 
   return (
@@ -179,6 +182,18 @@ export function ActionPopover({
               </span>
             </span>
           </div>
+          {due ? (
+            <p
+              data-action-due=""
+              className={`text-xs font-medium ${
+                due.tone === 'past' && !closed
+                  ? 'text-red-700 dark:text-red-300'
+                  : 'text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              {due.text}
+            </p>
+          ) : null}
           {onOpenBoard ? (
             <button
               type="button"

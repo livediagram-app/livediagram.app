@@ -1,4 +1,5 @@
-// The Texture family (docs/specs/011-theme/page-designs.md "The catalogue"): grain, noise, weave, print and drafting.
+// The Texture family (docs/specs/011-theme/page-designs.md "The catalogue"): grain, noise, weave, print, drafting and
+// stone chips (Risograph's variations are draw-riso.ts).
 // The grain and noise are SVG turbulence on static layers only (never a moving one), and the weave and dots are
 // patterns. Pure.
 import {
@@ -161,6 +162,48 @@ const blueprint: Drawer = (c) => {
   ];
 };
 
+// The most chips Terrazzo scatters: a small scale makes them smaller and more of them, up to this.
+const TERRAZZO_CHIPS_MAX = 420;
+
+// Terrazzo: chips of stone in the palette and the ink scattered over the page, more of them toward the edges, each a
+// small irregular polygon; one path per colour, so hundreds of chips are four nodes.
+const terrazzo: Drawer = (c) => {
+  const u = unit(c);
+  const count = Math.min(TERRAZZO_CHIPS_MAX, Math.round(170 / (c.t.scale * c.t.scale)));
+  const colours = [c.p.a, c.p.b, c.p.c, c.p.ink];
+  const paths = ['', '', '', ''];
+  let placed = 0;
+  // Rejection sampling: a chip in the middle is kept less often than one at an edge.
+  for (let tries = 0; placed < count && tries < count * 4; tries += 1) {
+    const x = c.rnd() * c.w;
+    const y = c.rnd() * c.h;
+    const edge = Math.max(Math.abs(x / c.w - 0.5), Math.abs(y / c.h - 0.5)) * 2;
+    if (c.rnd() > 0.25 + edge * 0.75) continue;
+    const size = u * between(c.rnd, 0.9, placed % 8 === 0 ? 4.2 : 2.2);
+    const corners = 4 + Math.floor(c.rnd() * 3);
+    const spin = c.rnd() * Math.PI * 2;
+    let d = '';
+    for (let k = 0; k < corners; k += 1) {
+      const a = spin + (k / corners) * Math.PI * 2;
+      const r = size * between(c.rnd, 0.55, 1);
+      d += `${k ? 'L' : 'M'}${n(x + Math.cos(a) * r)} ${n(y + Math.sin(a) * r)}`;
+    }
+    const slot = placed % 7 === 6 ? 3 : placed % 3;
+    paths[slot] += `${d}Z`;
+    placed += 1;
+  }
+  const opacity = [0.75, 0.7, 0.7, c.p.dark ? 0.35 : 0.25];
+  return [
+    {
+      svg: paths
+        .map((d, i) =>
+          d ? `<path d="${d}" fill="${colours[i]}" fill-opacity="${opacity[i]}"/>` : '',
+        )
+        .join(''),
+    },
+  ];
+};
+
 export const TEXTURE_DRAWERS = {
   'paper-grain': paperGrain,
   noise,
@@ -168,4 +211,5 @@ export const TEXTURE_DRAWERS = {
   risograph,
   halftone,
   blueprint,
+  terrazzo,
 } as const;

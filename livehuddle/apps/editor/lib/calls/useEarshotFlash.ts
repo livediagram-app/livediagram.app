@@ -18,7 +18,11 @@ export function useEarshotFlash(
 ): number {
   const near = useMemo(() => {
     if (!self) return null;
-    return { self, walkers, zoning: zoning(self, new Map(walkers.map((w) => [w.id, w.at])), zones) };
+    return {
+      self,
+      walkers,
+      zoning: zoning(self, new Map(walkers.map((w) => [w.id, w.at])), zones),
+    };
   }, [self, walkers, zones]);
   const prev = useRef<ReadonlySet<string> | null>(null);
   const [flash, setFlash] = useState(0);

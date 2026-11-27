@@ -14,6 +14,8 @@ import {
   FONTS,
   STYLE_RECIPES,
   pickStyleRecipe,
+  withArticlesInFont,
+  withRecipeSlides,
   type StyleRecipe,
 } from '@livedocuments/document';
 import { readTabDesign, tabDesignFor } from '@livedocuments/edit-operations';
@@ -238,8 +240,14 @@ export function registerTools(server: McpServer, env: Env): void {
       }
       // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
       if (docFinish) for (const t of tabs) t.finish = docFinish;
-      // The typeface asked for, or the style's, is every new tab's.
-      if (docFont) for (const t of tabs) t.font = docFont;
+      // The typeface asked for, or the style's, is every new tab's, its articles' too (their headings, and their
+      // paragraphs in a face long text reads in).
+      if (docFont)
+        for (const [i, t] of tabs.entries())
+          tabs[i] = withArticlesInFont({ ...t, font: docFont }, docFont);
+      // A stage recipe (keynote) puts its slides on the theme's night canvas.
+      if (recipe?.darkSlides)
+        for (const [i, t] of tabs.entries()) tabs[i] = withRecipeSlides(t, true);
       // The page design asked for (docs/specs/011-theme/page-designs.md "Agents") is every new tab's, "auto" picked
       // for each tab's own words.
       if (docDesign !== undefined) {

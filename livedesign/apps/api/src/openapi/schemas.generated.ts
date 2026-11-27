@@ -2128,6 +2128,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Comment": {
     "additionalProperties": false,
     "properties": {
+      "agent": {
+        "type": "string"
+      },
       "ai": {
         "const": true,
         "type": "boolean"
@@ -2155,6 +2158,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/CommentMention"
         },
         "type": "array"
+      },
+      "needsResponse": {
+        "const": true,
+        "type": "boolean"
       },
       "reactions": {
         "items": {
@@ -3330,6 +3337,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "number"
       },
       "description": {
+        "type": "string"
+      },
+      "due": {
         "type": "string"
       },
       "id": {
@@ -4891,6 +4901,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "subtitle": {
         "type": "string"
       },
+      "table": {
+        "items": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "type": "array"
+      },
       "title": {
         "type": "string"
       }
@@ -6031,6 +6050,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "page"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "finish": {
+            "$ref": "#/components/schemas/Finish"
+          },
+          "font": {
+            "type": "string"
+          },
+          "op": {
+            "const": "tab_style",
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -6390,8 +6431,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "PageText": {
     "additionalProperties": false,
-    "description": "One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's.",
+    "description": "One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's. A compound element's part names where in the element it is kept (`stats[0].value`), for an edit by ref.",
     "properties": {
+      "part": {
+        "type": "string"
+      },
       "ref": {
         "type": "string"
       },

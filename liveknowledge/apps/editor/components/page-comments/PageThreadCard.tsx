@@ -10,6 +10,7 @@ import {
   AiCommentMark,
   EditedCommentMark,
 } from '@liveworkspace/workbench/components/comments/CommentMarks';
+import { AiCommentMarks } from '@liveworkspace/ui/ai-comment-marks';
 import {
   Button,
   ConfirmPopover,
@@ -67,13 +68,16 @@ function CommentItem({
         style={identityVars(comment.authorColor)}
         className={`mt-0.5 shrink-0 text-[11px] font-semibold text-white ${IDENTITY_FILL}`}
       >
-        {initialsOf(comment.authorName)}
+        {initialsOf(comment.agent ?? comment.authorName)}
       </GlyphDisc>
       <div className="min-w-0 flex-1">
-        <div className="flex min-h-7 items-center gap-1.5 text-[13px]">
+        <div
+          className={`flex min-h-7 items-center gap-1.5 text-[13px] ${comment.agent ? 'flex-wrap gap-y-0.5' : ''}`}
+        >
           <span className="truncate font-medium text-slate-900 dark:text-slate-50">
-            {comment.authorName}
+            {comment.agent ?? comment.authorName}
           </span>
+          {comment.agent ? <AiCommentMarks forName={comment.authorName} /> : null}
           <Tooltip label={when}>
             <time
               dateTime={new Date(comment.createdAt).toISOString()}
@@ -115,7 +119,7 @@ function CommentItem({
             </span>
           ) : null}
         </div>
-        {comment.ai ? <AiCommentMark /> : null}
+        {comment.ai && !comment.agent ? <AiCommentMark /> : null}
         {editing ? (
           <div className="mt-1.5">
             <PageCommentComposer

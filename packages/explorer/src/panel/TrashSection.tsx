@@ -7,7 +7,7 @@ import type { ShownItem } from '../data/overlay';
 import { useExplorer } from '../explorer/context';
 import { emptyCopy } from '../explorer/EmptyPane';
 import { ConfirmDialog } from '@liveworkspace/ui';
-import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
+import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/trash-days';
 import { ItemIcon, RestoreIcon, TrashIcon } from '../ui/icons';
 import { useNow } from '../time';
 import { quoted } from '../quoted';
@@ -26,7 +26,8 @@ import {
 // ---- The Trash ------------------------------------------------------------------------------------------
 
 export function TrashSection() {
-  const { client, app, filter, overlay, epoch, actions, teamName, words, kind } = useExplorer();
+  const { client, app, filter, overlay, epoch, actions, teamName, words, kind, returns } =
+    useExplorer();
   const list = useMemo(
     () => viewList(client, { kind: 'trash' }, app, filter),
     [client, app, filter],
@@ -37,6 +38,7 @@ export function TrashSection() {
     overlay,
     belongs: list?.belongs,
     epoch,
+    fresh: returns,
   });
   const now = useNow();
   const [confirming, setConfirming] = useState<ShownItem | null>(null);

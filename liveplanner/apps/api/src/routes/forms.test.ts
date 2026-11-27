@@ -1046,6 +1046,16 @@ describe('an agent’s form write (docs/specs/030-forms/forms.md "Agents")', () 
     expect((await owner('POST', 'form', { body: { form: form(), theme: 7 } })).status).toBe(400);
   });
 
+  it('refuses a theme no catalogue names, listing the ones there are, and stores nothing', async () => {
+    const res = await owner<{ error?: string; valid?: string[] }>('POST', 'form', {
+      body: { form: form({ heading: 'Crash Report' }), theme: 'nope' },
+    });
+    expect(res.status).toBe(422);
+    expect(res.body.error).toBe('invalid_value');
+    expect(res.body.valid).toContain('forest');
+    expect(stored().name).toBe('Bug Report');
+  });
+
   it('refuses a form changed since it was read, naming the revision', async () => {
     const res = await write(form({ heading: 'X' }), { rev: stored().rev - 1 });
     expect(res.status).toBe(409);

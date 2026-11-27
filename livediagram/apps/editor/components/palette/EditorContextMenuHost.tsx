@@ -172,6 +172,7 @@ export function EditorContextMenuHost() {
     setPickerSourceSelected,
     setReactionSelected,
     setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected,
     commitShapeColorPreset,
     previewShapeColorPreset,
     resetShapeStyleSelected,
@@ -503,6 +504,7 @@ export function EditorContextMenuHost() {
       onSetPickerSource={setPickerSourceSelected}
       onSetReaction={setReactionSelected}
       onSetPickerOptions={setPickerOptionsSelected}
+      onSetPickerRemoveDrawn={setPickerRemoveDrawnSelected}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
       onApplyShapeColorPreset={commitShapeColorPreset}
       onPreviewShapeColorPreset={previewShapeColorPreset}

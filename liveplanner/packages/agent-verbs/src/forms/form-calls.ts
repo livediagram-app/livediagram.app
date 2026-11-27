@@ -31,6 +31,7 @@ import {
 } from './form-changes';
 import { draftOf, setRespondsTo, type FormDraft, type RespondsToInput } from './form-draft';
 import { addExtraColumn, setFieldValue, type ColumnInput, type SetFieldInput } from './form-fixed';
+import { unknownThemeText } from '../theme-ids';
 import { refuse, resolveFormTab, type FormRefusal } from './form-names';
 import type { QuestionInput } from './form-question';
 import { readFormOf, type FormReading } from './form-read';
@@ -278,6 +279,9 @@ export async function addForm(
         ? await readFormWorld(api, input.projectId)
         : { projectId: crypto.randomUUID(), ...NO_PROJECT };
       const tabId = crypto.randomUUID();
+      // A theme asked for must be one; the plan's own is taken as stored.
+      const unknown = input.theme === undefined ? null : unknownThemeText(input.theme);
+      if (unknown) return refuse('invalid_value', unknown);
       const theme = input.theme ?? world.tabs[0]?.theme;
       const formTab = { id: tabId, name: input.name ?? '', ...(theme ? { theme } : {}) };
       const d = input.starter

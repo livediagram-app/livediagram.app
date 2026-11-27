@@ -610,6 +610,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "An AI tool connected over MCP searched for one of the user's documents.",
   'Mcp|Used|ReadDocument': "An AI tool connected over MCP read a document's contents.",
   'Mcp|Used|RenameDocument': 'An AI tool connected over MCP renamed a document.',
+  'Mcp|Used|StyleDocument':
+    'An AI tool connected over MCP changed a document’s theme, font or finish.',
   'Mcp|Used|ShareDocument': 'An AI tool connected over MCP generated a share link for a document.',
   'Mcp|Used|UpdateDocument': "An AI tool connected over MCP updated a tab's content in a document.",
   'Note|Added|': 'A note was added to an element (first non-empty save).',
@@ -2052,6 +2054,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   SetFolder: 'moving a document into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',
   ShareDocument: 'generating a share link, from an AI tool connected over MCP',
+  StyleDocument: 'changing a document’s theme, font or finish, from an AI tool connected over MCP',
   UpdateCustomTheme: 'updating a saved custom theme',
   UpdateDocument: 'updating a document, from an AI tool connected over MCP',
   UpdateFolder: 'renaming or updating a folder',

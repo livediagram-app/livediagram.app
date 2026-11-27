@@ -6,7 +6,7 @@
 import { lucideInfo } from '@liveworkspace/icons/lucide';
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
 import { BAR_H, BottomBar, Card, CLUSTER_W, CornerCluster, Icon } from './editor-chrome';
-import { Heading, Lines, Page, Picture, Rule } from './doc-page';
+import { Heading, Lines, Page, Picture } from './doc-page';
 
 /** A keyboard shortcut on a small card, its action named under it. */
 function KeyCard({ x, y, keys, caption }: { x: number; y: number; keys: string; caption: string }) {
@@ -33,7 +33,6 @@ function HistorySlide({ picture }: { picture: 'on' | 'fading' }) {
       <Heading x={48} y={64} size={12}>
         Field Trip
       </Heading>
-      <Rule x={48} y={73} />
       <Lines x={48} y={88} w={80} n={4} gap={7} />
       <g opacity={picture === 'fading' ? 0.35 : 1}>
         <Picture x={146} y={58} w={108} h={100} />

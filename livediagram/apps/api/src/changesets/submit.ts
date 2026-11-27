@@ -10,11 +10,13 @@ import { migrateIncomingTab, preferNewerQaAll, type Tab } from '@livediagram/doc
 import {
   applyEditOperations,
   applyReplace,
+  applyTabStyle,
   formatResultFooter,
   formatResultLines,
   type ApplySuccess,
 } from '@livediagram/edit-operations';
 import { rewriteCommentAuthors } from '../comments';
+import { restoreHiddenPeople } from '@liveworkspace/api-kit/hidden-people';
 import { lastChangesetRev } from '../db';
 import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
@@ -231,6 +233,7 @@ function compile(
   }
   if (!stored)
     return { errors: [{ code: 'target_not_found', details: ['the tab does not exist'] }] };
+  if (body.kind === 'style') return applyTabStyle(stored.tab, body.style, { log: options.log });
   return applyEditOperations(stored.tab, body.operations, options);
 }
 
@@ -258,7 +261,8 @@ function rejected(
 // The rules every tab write meets (CS30): migrated elements, a created tab's name capped, Q&A
 // notes kept at their newest, new comments credited to the author whatever the body claimed.
 export function withServerRules(tab: Tab, stored: StoredTab | null, author: Author): Tab {
-  const migrated = migrateIncomingTab(tab) as Tab;
+  // Every id a Viewer's copy had hidden, put back from the stored tab (share-roles.md "Ids a Viewer sees").
+  const migrated = restoreHiddenPeople(migrateIncomingTab(tab) as Tab, stored?.tab ?? null);
   const previous = stored?.tab.elements ?? [];
   const elements = rewriteCommentAuthors(
     stored ? preferNewerQaAll(previous, migrated.elements) : migrated.elements,

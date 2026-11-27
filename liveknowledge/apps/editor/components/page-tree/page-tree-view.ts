@@ -60,17 +60,18 @@ export type PageRow = {
 };
 
 /**
- * The rows on screen, top to bottom: every page not under a closed one. A page with subpages is open unless it is in
- * `closed`; the current page's ancestors are always open, so the page you are on is never folded out of sight.
+ * The rows on screen, top to bottom: every page not under a closed one. A page with subpages is closed unless it is in
+ * `opened`, so a knowledgebase loads with only its top-level pages showing; the current page's ancestors are always
+ * open, so the page you are on is never folded out of sight.
  *
  * Under a label filter, `only` holds the pages that match (page-surface.md "The label filter"): the rows are those
- * pages and the pages they sit under, every one of those open whatever is closed, so no match is folded away. A row's
+ * pages and the pages they sit under, every one of those open whatever is opened, so no match is folded away. A row's
  * subpages then counts the matches under it, and its position and siblings the rows kept, so its chevron and what a
  * screen reader says fit what is shown. One pass to mark what is kept, one to draw: linear in the pages (times their depth).
  */
 export function visiblePageRows(
   tabs: readonly TreeTab[],
-  closed: ReadonlySet<string>,
+  opened: ReadonlySet<string>,
   activeId: string | null,
   only: ReadonlySet<string> | null = null,
 ): PageRow[] {
@@ -105,7 +106,7 @@ export function visiblePageRows(
     const { page } = row;
     const connection = connectionOf(page);
     const subpages = kept ? kept.get(page.id)! : row.subpages;
-    const open = subpages > 0 && (kept !== null || forced.has(page.id) || !closed.has(page.id));
+    const open = subpages > 0 && (kept !== null || forced.has(page.id) || opened.has(page.id));
     if (subpages > 0 && !open) foldedBelow = row.depth;
     out.push({
       id: page.id,

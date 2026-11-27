@@ -1,5 +1,5 @@
-// The Organic family (docs/specs/011-theme/page-designs.md "The catalogue"): blobs, waves, contour lines, ribbons and
-// marbling, drawn from smooth curves. The ones that flow are worked out along the strip, so they run on from page to
+// The Organic family (docs/specs/011-theme/page-designs.md "The catalogue"): blobs (with their echoes and a lava
+// lamp's), waves, contour lines, ribbons and marbling, drawn from smooth curves. The ones that flow are worked out along the strip, so they run on from page to
 // page. Pure.
 import {
   between,
@@ -60,6 +60,131 @@ const blobs: Drawer = (c) => {
         x: c.w * 0.025,
         y: c.h * 0.03,
         origin: [cx, bl.y],
+      },
+    };
+  });
+};
+
+// A blob's edge as radii, so the same shape can be drawn again larger (Blob Echo's rings).
+function blobRadii(rnd: () => number, points: number, wobble: number): number[] {
+  return Array.from({ length: points }, () => 1 - wobble / 2 + wobble * rnd());
+}
+
+function blobAt(cx: number, cy: number, r: number, radii: readonly number[]): string {
+  return smoothClosed(
+    radii.map((k, i) => {
+      const a = (i / radii.length) * Math.PI * 2;
+      return [cx + Math.cos(a) * r * k, cy + Math.sin(a) * r * k] as [number, number];
+    }),
+  );
+}
+
+// Blob Echo: a few solid blobs on the corners (or a big pair on opposite corners), each ringed by outlines that echo
+// its shape outward, the last one dashed.
+const blobEcho: Drawer = (c) => {
+  const max = Math.max(c.w, c.h) * c.t.scale;
+  const colours = trio(c);
+  const pair = c.t.variant === 'pair';
+  const spots: [number, number, number][] = pair
+    ? [
+        [0.98, 0.04, 0.26],
+        [0.02, 0.96, 0.3],
+      ]
+    : [
+        [0.96, 0.06, 0.2],
+        [0.04, 0.92, 0.24],
+        [0.9, 0.98, 0.12],
+      ];
+  const width = Math.max(1.2, unit(c) * 0.35);
+  return [
+    {
+      svg: spots
+        .map(([fx, fy, size], i) => {
+          const r = max * size * between(c.rnd, 0.9, 1.1);
+          const cx = fx * c.w;
+          const cy = fy * c.h;
+          const radii = blobRadii(c.rnd, 8, 0.38);
+          const colour = colours[i % 3]!;
+          const id = `${c.uid}-be${i}`;
+          const rings = [1.22, 1.44, 1.68]
+            .map(
+              (k, j) =>
+                `<path d="${blobAt(cx, cy, r * k, radii)}" fill="none" stroke="${colours[(i + 1) % 3]}" stroke-opacity="${n(0.6 - j * 0.15)}" stroke-width="${n(width)}"${j === 2 ? ` stroke-dasharray="${n(width * 3)} ${n(width * 2.5)}"` : ''}/>`,
+            )
+            .join('');
+          return (
+            `<defs>${linearDef(
+              id,
+              [
+                [0, colour, 0.9],
+                [1, colours[(i + 2) % 3]!, 0.6],
+              ],
+              150 + i * 50,
+            )}</defs>` +
+            rings +
+            `<path d="${blobAt(cx, cy, r, radii)}" fill="url(#${id})"/>`
+          );
+        })
+        .join(''),
+    },
+  ];
+};
+
+// One gooey shape of Lava Lamp: an ellipse taller than wide whose sides swell and pinch.
+function lavaPath(rnd: () => number, cx: number, cy: number, rx: number, ry: number): string {
+  const phase = between(rnd, 0, Math.PI * 2);
+  const pts: [number, number][] = [];
+  for (let i = 0; i < 10; i += 1) {
+    const a = (i / 10) * Math.PI * 2;
+    const swell = 1 + 0.22 * Math.sin(2 * a + phase) * between(rnd, 0.7, 1.1);
+    pts.push([cx + Math.cos(a) * rx * swell, cy + Math.sin(a) * ry * between(rnd, 0.92, 1.05)]);
+  }
+  return smoothClosed(pts);
+}
+
+// Lava Lamp: tall gooey blobs rising from the bottom and hanging from the top along the sides, with a couple of
+// bubbles broken free; each its own layer so each rises or sinks when it moves.
+const lavaLamp: Drawer = (c) => {
+  const colours = trio(c);
+  const max = Math.max(c.w, c.h) * c.t.scale;
+  const shapes = [
+    // [x, y as a share of the page, width, height as shares of the long side, rises]
+    [between(c.rnd, 0.04, 0.14), 1.02, 0.09, 0.3, true],
+    [between(c.rnd, 0.8, 0.92), 1.04, 0.11, 0.36, true],
+    [between(c.rnd, 0.22, 0.32), -0.04, 0.07, 0.22, false],
+    [between(c.rnd, 0.9, 1), -0.02, 0.08, 0.26, false],
+    [between(c.rnd, 0.06, 0.16), between(c.rnd, 0.32, 0.48), 0.045, 0.06, true],
+    [between(c.rnd, 0.7, 0.8), between(c.rnd, 0.62, 0.74), 0.035, 0.05, false],
+  ] as const;
+  return shapes.map(([fx, fy, sw, sh, rises], i): DesignLayer => {
+    const cx = fx * c.w;
+    const cy = fy * c.h;
+    const d = lavaPath(c.rnd, cx, cy, sw * max, sh * max);
+    const id = `${c.uid}-lv${i}`;
+    const halo =
+      c.t.blur > 0.05
+        ? `<path d="${d}" fill="${colours[i % 3]}" fill-opacity="${n(0.2 * c.t.blur)}" ` +
+          `transform="translate(${n(cx)} ${n(cy)}) scale(${n(1 + 0.16 * c.t.blur)}) translate(${n(-cx)} ${n(-cy)})"/>`
+        : '';
+    return {
+      svg:
+        `<defs>${linearDef(
+          id,
+          [
+            [0, colours[i % 3]!, 0.85],
+            [1, colours[(i + 1) % 3]!, 0.7],
+          ],
+          rises ? 0 : 180,
+        )}</defs>` +
+        halo +
+        `<path d="${d}" fill="url(#${id})"/>`,
+      motion: {
+        kind: i % 3 === 2 ? 'breathe' : 'drift',
+        seconds: 18 + i * 4,
+        scale: 1.05,
+        x: 0,
+        y: c.h * (rises ? -0.05 : 0.04),
+        origin: [cx, cy],
       },
     };
   });
@@ -226,6 +351,8 @@ const marbled: Drawer = (c) => {
 
 export const ORGANIC_DRAWERS = {
   blobs,
+  'blob-echo': blobEcho,
+  'lava-lamp': lavaLamp,
   waves,
   topographic,
   ribbons,

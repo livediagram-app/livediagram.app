@@ -7,8 +7,11 @@
 // layout is what lets the two draw the same chart rather than two charts that
 // happen to agree.
 
+import { chartCategorical } from './chart-categorical';
 import { chartMarkInk } from './chart-mark-ink';
+import { canvasSurface } from './colour-math';
 import { chartRamp } from './chart-palettes';
+import { chartTextScale } from './chart-style';
 import { PIE_DEFAULT_SLICES, type PieSlice } from './data-shapes';
 import type { ShapeElement } from './element';
 
@@ -28,14 +31,25 @@ export function chartFrame(
   // Three rungs, narrowest first (docs/specs/009-elements/pie-chart.md): the chart's own palette if it has
   // been given one, then the tab theme's, then the built-in ramp. A per-datum
   // colour beats all three, in `colorAt` below.
-  const colors = chartRamp(element.chartPalette, palette);
+  // On a filled page the theme's colours are picked again as they will be drawn there (chartCategorical's ground), so
+  // the contrast step never makes two of them near twins. A chart's own named palette is drawn as it is.
+  const onGround =
+    !element.chartPalette && palette && palette.length > 0 && ground && ground.length > 0;
+  const colors = onGround
+    ? chartCategorical(palette, canvasSurface(ground[0]), ground)
+    : chartRamp(element.chartPalette, palette);
   const w = Math.max(1, element.width);
   const h = Math.max(1, element.height);
   const data: readonly PieSlice[] =
     element.pieSlices && element.pieSlices.length > 0 ? element.pieSlices : PIE_DEFAULT_SLICES;
-  const showLegend = element.chartLegend !== false;
+  // A column or bar chart is one series: every bar in the palette's lead, each named on the axis, so its key (a
+  // second copy of the names) shows only when a bar wears a colour of its own (pie-chart.md "How a chart is drawn").
+  // Rainbow bars said "these differ" of bars that differ only in height.
+  const oneHue = element.shape === 'bar-chart';
+  const showLegend =
+    element.chartLegend !== false && (!oneHue || data.some((d) => d.color !== undefined));
   const colorAt = (i: number, d: { color?: string }) =>
-    chartMarkInk(d.color ?? colors[i % colors.length]!, ground);
+    chartMarkInk(d.color ?? colors[oneHue ? 0 : i % colors.length]!, ground);
   // Legend placement (docs/specs/009-elements/pie-chart.md). A left/right legend takes a vertical strip; a
   // top/bottom legend a horizontal band. `area` is the rect left for the chart
   // body (each renderer draws inside it); `legend` is the strip the key goes
@@ -47,8 +61,10 @@ export function chartFrame(
   // have more of to give.
   const pos = element.chartLegendPosition ?? 'bottom';
   const vertical = pos === 'left' || pos === 'right';
-  const legendW = showLegend && vertical ? Math.max(0, Math.min(w * 0.4, 130)) : 0;
-  const legendH = showLegend && !vertical ? Math.max(0, Math.min(h * 0.32, 72)) : 0;
+  // The strip grows with the key's text (chart-style.ts chartTextScale).
+  const scale = chartTextScale(element);
+  const legendW = showLegend && vertical ? Math.max(0, Math.min(w * 0.4, 130 * scale)) : 0;
+  const legendH = showLegend && !vertical ? Math.max(0, Math.min(h * 0.32, 72 * scale)) : 0;
   const area: ChartRect = {
     x: pos === 'left' ? legendW : 0,
     y: pos === 'top' ? legendH : 0,
@@ -71,8 +87,9 @@ export function chartFrame(
 // A 9px glyph averages about 5px; no label is cut below CHART_AXIS_LABEL_MIN_CHARS (the old fixed cut).
 const CHART_AXIS_GLYPH_PX = 5;
 const CHART_AXIS_LABEL_MIN_CHARS = 6;
-export function chartAxisLabel(label: string, plotW: number, count: number): string {
+export function chartAxisLabel(label: string, plotW: number, count: number, fontPx = 9): string {
   const slot = count <= 1 ? plotW : plotW / (count - 1);
-  const max = Math.max(CHART_AXIS_LABEL_MIN_CHARS, Math.floor(slot / CHART_AXIS_GLYPH_PX));
+  const glyph = (CHART_AXIS_GLYPH_PX * fontPx) / 9;
+  const max = Math.max(CHART_AXIS_LABEL_MIN_CHARS, Math.floor(slot / glyph));
   return label.length > max ? `${label.slice(0, max - 1)}…` : label;
 }

@@ -5,7 +5,10 @@
 // `title`, the line straight under it `subtitle`, each line set beside a bullet dot one of `bullets`, and every other
 // text one of `body`, in the order the layout builds them (top to bottom, then the next column). A figure (a text with
 // no letter, or a number with a unit or two: a time, "73%", "3.2M", a quote mark) is one of `figures`, in the same
-// order, so a stat slide's big numbers are written in the same change as its words.
+// order, so a stat slide's big numbers are written in the same change as its words. A compound element's own words (a
+// stat row's values and captions, a process's steps, a checklist's rows, a concept graphic's or timeline's rows and
+// notes) are slots too, each part in its place in that order (`<id>#<n>`), so a Key Stats or Process layout is
+// written in the one change rather than left holding its sample numbers.
 
 /** The fields of an element the slots are read from: any product's element has them. */
 export type SlotElement = {
@@ -21,7 +24,14 @@ export type SlotElement = {
   readonly textBold?: unknown;
 };
 
-export const LAYOUT_SLOT_NAMES = ['title', 'subtitle', 'bullets', 'body', 'figures'] as const;
+export const LAYOUT_SLOT_NAMES = [
+  'title',
+  'subtitle',
+  'bullets',
+  'body',
+  'figures',
+  'table',
+] as const;
 export type LayoutSlotName = (typeof LAYOUT_SLOT_NAMES)[number];
 
 /** What a change gives a layout's slots: a slot left out keeps the layout's sample. */
@@ -31,15 +41,127 @@ export type LayoutText = {
   bullets?: string[];
   body?: string[];
   figures?: string[];
+  // The layout's first table, every row at once (its header row first): a pricing or comparison slide's cells.
+  table?: string[][];
 };
 
 // The longest text one slot takes, and the most items a list slot takes (the fullest layout has 40 texts).
 export const LAYOUT_TEXT_MAX = 2000;
 export const LAYOUT_SLOT_ITEMS_MAX = 60;
+// The most columns a table slot takes.
+export const LAYOUT_TABLE_COLUMNS_MAX = 12;
 
 /** One text of a laid-out page: its element, its slot (`title`, `bullets[2]`, `figures[0]`), and `sample` when it
  *  still holds the layout's sample text. */
 export type LayoutTextSlot = { id: string; slot: string | null; sample?: true };
+
+// ---------- A compound element's parts
+
+// The content fields a part is read from, the same name on every product's element.
+type PartField =
+  | { field: 'stats'; key: 'value' | 'caption' }
+  | { field: 'processSteps' }
+  | { field: 'checklistItems'; key: 'text' }
+  | { field: 'conceptRows'; key: 'label' | 'note' };
+
+type PartAt = PartField & { index: number };
+
+/** Where one part of a compound element is kept: `stats[0].value`, `processSteps[2]`. */
+export function partPath(at: PartAt): string {
+  return 'key' in at ? `${at.field}[${at.index}].${at.key}` : `${at.field}[${at.index}]`;
+}
+
+const rowsOf = (el: SlotElement, field: string): unknown[] => {
+  const v = (el as Record<string, unknown>)[field];
+  return Array.isArray(v) ? v : [];
+};
+
+/** A compound element's words, in reading order, each with where it is kept. Empty for any other element. */
+export function partsOf(el: SlotElement): { at: PartAt; text: string }[] {
+  const out: { at: PartAt; text: string }[] = [];
+  const keyed = (field: 'stats' | 'checklistItems' | 'conceptRows', keys: readonly string[]) =>
+    rowsOf(el, field).forEach((row, index) => {
+      if (!row || typeof row !== 'object') return;
+      for (const key of keys) {
+        const text = (row as Record<string, unknown>)[key];
+        if (typeof text === 'string' && text.trim() !== '')
+          out.push({ at: { field, key, index } as PartAt, text });
+      }
+    });
+  keyed('stats', ['value', 'caption']);
+  rowsOf(el, 'processSteps').forEach((text, index) => {
+    if (typeof text === 'string' && text.trim() !== '')
+      out.push({ at: { field: 'processSteps', index }, text });
+  });
+  keyed('checklistItems', ['text']);
+  keyed('conceptRows', ['label', 'note']);
+  return out;
+}
+
+/** The element with the parts given written in, each by where it is kept. */
+function withParts<E extends SlotElement>(
+  el: E,
+  words: readonly { at: PartAt; text: string }[],
+): E {
+  const next = { ...el } as Record<string, unknown>;
+  for (const { at, text } of words) {
+    const rows = [...rowsOf(next as SlotElement, at.field)];
+    rows[at.index] = 'key' in at ? { ...(rows[at.index] as object), [at.key]: text } : text;
+    next[at.field] = rows;
+  }
+  return next as E;
+}
+
+/** A part's slot id: its element's id and its place among the element's parts. */
+export const partId = (id: string, n: number) => `${id}#${n}`;
+
+// A table's fields the table slot keeps in step with its cells: each product's table element has them.
+type TableLike = SlotElement & {
+  cells: string[][];
+  cellStyles?: unknown[][];
+  colWidths?: (number | null)[];
+  rowHeights?: (number | null)[];
+  highlightColumn?: number;
+};
+
+/** A table's words in a line, for the answer: its header row. */
+export function tableInWords(el: SlotElement): string | null {
+  const cells = (el as Partial<TableLike>).cells;
+  return Array.isArray(cells) && Array.isArray(cells[0]) ? cells[0].join(' | ') : null;
+}
+
+/**
+ * The table with the rows given as its cells, every row as long as the longest. A size it had stays where it still
+ * fits: a cell's own style and the first column's width are kept, the recommended column while it is still there, and
+ * rows' heights are left to the new words.
+ */
+function withTable<E extends SlotElement>(el: E, rows: readonly (readonly string[])[]): E {
+  const t = el as unknown as TableLike;
+  const cols = Math.max(1, ...rows.map((r) => r.length));
+  const cells = rows.map((r) => Array.from({ length: cols }, (_, c) => r[c] ?? ''));
+  const next: TableLike = { ...t, cells };
+  if (t.cellStyles)
+    next.cellStyles = cells.map((r, ri) =>
+      r.map((_, c) => t.cellStyles?.[Math.min(ri, t.cellStyles.length - 1)]?.[c] ?? null),
+    );
+  if (t.colWidths) {
+    const same = t.colWidths.length === cols;
+    next.colWidths = same
+      ? t.colWidths
+      : [t.colWidths[0] ?? null, ...Array.from({ length: cols - 1 }, () => null)];
+  }
+  if (t.rowHeights) delete next.rowHeights;
+  if (typeof t.highlightColumn === 'number' && t.highlightColumn >= cols)
+    delete next.highlightColumn;
+  return next as unknown as E;
+}
+
+/** A slot id's element and part, or the element alone. */
+export function splitPartId(id: string): { id: string; part: number | null } {
+  const at = id.lastIndexOf('#');
+  const n = at > 0 ? Number(id.slice(at + 1)) : NaN;
+  return Number.isInteger(n) && n >= 0 ? { id: id.slice(0, at), part: n } : { id, part: null };
+}
 
 // The element kinds whose label is words on the page: a shape's icon draws no label.
 const isTexty = (el: SlotElement): el is SlotElement & { label: string } =>
@@ -77,16 +199,29 @@ export function layoutSlots(
   elements: readonly SlotElement[],
   sizeOf: (el: SlotElement) => number,
 ): LayoutTextSlot[] {
-  const texts = elements
-    .map((el, i) => ({ el, bullet: isBulletDot(elements[i - 1], el) }))
-    .filter((t): t is { el: SlotElement & { label: string }; bullet: boolean } => isTexty(t.el));
-  const worded = texts.filter((t) => isWords(t.el.label));
+  type Text = { el: SlotElement & { label: string }; bullet: boolean; part: boolean };
+  const texts: Text[] = elements.flatMap((el, i): Text[] => {
+    const own: Text[] = isTexty(el)
+      ? [{ el, bullet: isBulletDot(elements[i - 1], el), part: false }]
+      : [];
+    return [
+      ...own,
+      ...partsOf(el).map((p, n) => ({
+        el: { id: partId(el.id, n), type: 'part', label: p.text },
+        bullet: false,
+        part: true,
+      })),
+    ];
+  });
+  // A part is never the headline or the line under it: those are a page's own texts.
+  const worded = texts.filter((t) => !t.part && isWords(t.el.label));
   let title: (typeof worded)[number] | undefined;
   for (const t of worded) if (!title || sizeOf(t.el) > sizeOf(title.el)) title = t;
   const next = title ? texts[texts.indexOf(title) + 1] : undefined;
   const subtitle =
     next &&
     !next.bullet &&
+    !next.part &&
     next.el.textBold !== true &&
     isWords(next.el.label) &&
     sizeOf(next.el) < sizeOf(title!.el)
@@ -95,18 +230,25 @@ export function layoutSlots(
   let bullets = 0;
   let body = 0;
   let figures = 0;
-  return texts.map((t) => {
-    const slot = !isWords(t.el.label)
-      ? `figures[${figures++}]`
-      : t === title
-        ? 'title'
-        : t === subtitle
-          ? 'subtitle'
-          : t.bullet
-            ? `bullets[${bullets++}]`
-            : `body[${body++}]`;
-    return { id: t.el.id, slot };
-  });
+  const table = elements.find(
+    (el) => el.type === 'table' && Array.isArray((el as TableLike).cells),
+  );
+  const tableSlot: LayoutTextSlot[] = table ? [{ id: table.id, slot: 'table' }] : [];
+  return [
+    ...tableSlot,
+    ...texts.map((t) => {
+      const slot = !isWords(t.el.label)
+        ? `figures[${figures++}]`
+        : t === title
+          ? 'title'
+          : t === subtitle
+            ? 'subtitle'
+            : t.bullet
+              ? `bullets[${bullets++}]`
+              : `body[${body++}]`;
+      return { id: t.el.id, slot };
+    }),
+  ];
 }
 
 /** The slots in words, for a refusal or a listing: `title, subtitle, bullets ×5, body ×2`. */
@@ -116,7 +258,7 @@ export function slotsInWords(slots: readonly LayoutTextSlot[]): string {
   return LAYOUT_SLOT_NAMES.flatMap((name) => {
     const n = count(name);
     if (n === 0) return [];
-    return name === 'title' || name === 'subtitle' ? [name] : [`${name} ×${n}`];
+    return name === 'title' || name === 'subtitle' || name === 'table' ? [name] : [`${name} ×${n}`];
   }).join(', ');
 }
 
@@ -176,6 +318,15 @@ export function fillLayoutSlots<E extends SlotElement>(
   list('bullets');
   list('body');
   list('figures');
+  let table: { id: string; rows: string[][] } | null = null;
+  if (text.table !== undefined) {
+    const id = idOf('table');
+    if (id) table = { id, rows: text.table };
+    else
+      lines.push(
+        `This layout has no table, so the ${plural(text.table.length, 'row given was', 'rows given were')} not placed.`,
+      );
+  }
   const out: E[] = [];
   elements.forEach((el, i) => {
     if (dropped.has(el.id)) return;
@@ -184,29 +335,72 @@ export function fillLayoutSlots<E extends SlotElement>(
     if (after && dropped.has(after.id) && isBulletDot(el, after)) return;
     const label = words.get(el.id);
     // Only a slot's element is given words, so the slot is there.
-    out.push(
-      label === undefined ? el : relabel(el, label, slots.find((s) => s.id === el.id)!.slot!),
-    );
+    const labelled =
+      label === undefined ? el : relabel(el, label, slots.find((s) => s.id === el.id)!.slot!);
+    const written = partsOf(el).flatMap((p, n) => {
+      const text = words.get(partId(el.id, n));
+      return text === undefined ? [] : [{ at: p.at, text }];
+    });
+    const parted = written.length > 0 ? withParts(labelled, written) : labelled;
+    out.push(table && table.id === el.id ? withTable(parted, table.rows) : parted);
   });
+  // Sample words in a slot the change never named: said, so a page isn't shared still reading "Presenter name".
+  const unnamed = slots.filter((s) => {
+    if (!s.slot || dropped.has(s.id) || words.has(s.id) || s.slot === 'table') return false;
+    const name = s.slot.replace(/\[\d+\]$/, '') as LayoutSlotName;
+    return text[name] === undefined;
+  });
+  if (unnamed.length > 0) {
+    const labelOf = (id: string) => {
+      const { id: base, part } = splitPartId(id);
+      // Every slot is a text of the layout or a part of one, so its element and words are there.
+      const el = (elements.find((e) => e.id === id) ?? elements.find((e) => e.id === base))!;
+      const t = (part !== null && el.id !== id ? partsOf(el)[part]!.text : el.label) as string;
+      return t.length > 40 ? `${t.slice(0, 39)}…` : t;
+    };
+    lines.push(
+      `Still the layout's sample: ${unnamed.map((s) => `${s.slot} "${labelOf(s.id)}"`).join(', ')}. Give ${unnamed.length === 1 ? 'it' : 'them'} in "text" by slot, or change ${unnamed.length === 1 ? 'it' : 'them'} by ref.`,
+    );
+  }
   return {
     elements: out,
     lines,
     slots: slots
       .filter((s) => !dropped.has(s.id))
-      .map((s) => (words.has(s.id) ? s : { ...s, sample: true as const })),
+      .map((s) =>
+        words.has(s.id) || (table && s.id === table.id) ? s : { ...s, sample: true as const },
+      ),
   };
 }
 
 /** A change's `text` read from the wire: the slots, or why not in words. */
 export function readLayoutText(v: unknown): LayoutText | { refused: string } {
   if (typeof v !== 'object' || v === null || Array.isArray(v))
-    return { refused: '"text" is an object of slots: title, subtitle, bullets, body, figures.' };
+    return { refused: `"text" is an object of slots: ${LAYOUT_SLOT_NAMES.join(', ')}.` };
   const out: LayoutText = {};
   for (const [key, value] of Object.entries(v)) {
     if (!(LAYOUT_SLOT_NAMES as readonly string[]).includes(key))
       return {
         refused: `"text" takes no "${key}" (it takes ${LAYOUT_SLOT_NAMES.join(', ')}).`,
       };
+    if (key === 'table') {
+      if (
+        !Array.isArray(value) ||
+        value.length === 0 ||
+        value.length > LAYOUT_SLOT_ITEMS_MAX ||
+        value.some(
+          (row) =>
+            !Array.isArray(row) ||
+            row.length > LAYOUT_TABLE_COLUMNS_MAX ||
+            row.some((cell) => typeof cell !== 'string' || cell.length > LAYOUT_TEXT_MAX),
+        )
+      )
+        return {
+          refused: `"text.table" is a list of rows (the header row first), at most ${LAYOUT_SLOT_ITEMS_MAX}, each a list of at most ${LAYOUT_TABLE_COLUMNS_MAX} cells of text.`,
+        };
+      out.table = value as string[][];
+      continue;
+    }
     if (key === 'title' || key === 'subtitle') {
       if (typeof value !== 'string' || value.length > LAYOUT_TEXT_MAX)
         return { refused: `"text.${key}" is text of at most ${LAYOUT_TEXT_MAX} characters.` };

@@ -18,7 +18,7 @@ import {
   nextArticleFlowId,
   offersPageKindChoice,
   withArticleFlow,
-  withNoteMarkersRemoved,
+  withEmptyNoteMarkersRemoved,
   withPageKindChosen,
   withZoneContentsRemoved,
   type ArticleBlock,
@@ -182,14 +182,15 @@ export function applyArticleWrite(
   const style: ArticleStyle = { ...doc.style };
   const next: ArticleFlow = Object.keys(style).length ? { blocks, style } : { blocks };
 
-  // Zones left out go with their elements; margin notes whose text is gone lose their markers.
+  // Zones left out go with their elements; margin notes whose text is gone lose their markers, but for those holding
+  // a comment or an action, which stay detached (page-comments.md "Comments on the writing").
   const notesBefore = articleNoteIds({ [flow!]: doc });
   if (gone.length) current = withZoneContentsRemoved(current, flow!, gone);
   current = withArticleFlow(current, flow!, next);
   const notesAfter = articleNoteIds({ [flow!]: next });
   const lostNotes = new Set([...notesBefore].filter((id) => !notesAfter.has(id)));
   const before = current.elements.length;
-  current = withNoteMarkersRemoved(current, lostNotes);
+  current = withEmptyNoteMarkersRemoved(current, lostNotes);
   const markersGone = before - current.elements.length;
   // The continuous page as tall as the writing is estimated to need, so it reads whole before an editor lays it out
   // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page").
@@ -203,6 +204,11 @@ export function applyArticleWrite(
   if (gone.length)
     lines.push(`Removed zones and what was in them: ${gone.map((z) => z.id).join(', ')}.`);
   if (markersGone) lines.push(`Removed margin notes whose text is gone (${markersGone}).`);
+  const detached = lostNotes.size - markersGone;
+  if (detached > 0)
+    lines.push(
+      `Kept ${detached} margin note${detached === 1 ? '' : 's'} whose text is gone, detached: each holds a comment or an action.`,
+    );
   // How many pages it takes is said by the caller, which estimates the layout (pages-summary.ts).
   return { tab: current, flow: flow!, created, lines };
 }

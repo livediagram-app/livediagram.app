@@ -4,8 +4,9 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { PageChange } from '@livedocuments/api-schema';
 import { changePages, writeArticle, type PagesDone } from '@livedocuments/agent-verbs';
-import { mcpChangePages, mcpWriteArticle } from '@livedocuments/agent-verbs/mcp';
-import { clientFor } from './api';
+import { mcpChangePages, mcpStyleDocument, mcpWriteArticle } from '@livedocuments/agent-verbs/mcp';
+import { apiJson, clientFor } from './api';
+import type { DocumentResponse } from '@livedocuments/api-schema';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
 import { VIEW_TOOL_META } from './view-tab';
@@ -63,4 +64,41 @@ export function registerPagesTools(server: McpServer, env: Env): void {
     },
     VIEW_TOOL_META,
   );
+  // style_document: tab_style on the tab named, or on every tab the caller may reach, one edit each, so a theme
+  // can change at any time (docs/specs/024-agents/pages-for-agents.md "Restyling a tab").
+  registerTool(server, env, mcpStyleDocument, async (args, extra) => {
+    const token = requireToken(extra);
+    const { documentId, tabId, ...look } = args;
+    const given = Object.fromEntries(Object.entries(look).filter(([, v]) => v !== undefined));
+    if (Object.keys(given).length === 0)
+      return errorResult('Give at least one of style, theme, font and finish.');
+    const api = clientFor(env, token);
+    const { document } = await apiJson<DocumentResponse>(
+      env,
+      token,
+      `/documents/${encodeURIComponent(documentId)}`,
+    );
+    const nameOf = (id: string) => document.tabs.find((t) => t.id === id)?.name ?? id;
+    const ids = tabId ? [tabId] : document.tabs.filter((t) => !t.outOfScope).map((t) => t.id);
+    const tabs: { tabId: string; name: string; rev: number }[] = [];
+    const lines: string[] = [];
+    for (const id of ids) {
+      const done = await changePages(
+        api,
+        documentId,
+        { tabId: id, changes: [{ op: 'tab_style', ...given }] },
+        'mcp',
+      );
+      if (!done.ok) {
+        const before = tabs.length
+          ? ` (${tabs.map((t) => `"${t.name}"`).join(', ')} restyled first)`
+          : '';
+        return errorResult(`${refusalText(done)}${before}`);
+      }
+      const name = nameOf(done.tabId);
+      tabs.push({ tabId: done.tabId, name, rev: done.tab.rev });
+      lines.push(...done.lines.map((l) => `"${name}": ${l}`));
+    }
+    return textResult({ documentId, tabs, lines, url: deepLink(env, documentId) });
+  });
 }

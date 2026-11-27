@@ -24,6 +24,7 @@ import {
   readItemCallAsk,
   type CallSpaceFallback,
   type ItemCallStart,
+  type Level,
   type SpaceCall,
 } from '@liveworkspace/index-client';
 import { loadItem } from './access';
@@ -261,15 +262,17 @@ export async function handleItemCalls(ctx: RouteContext, id: string): Promise<Re
   return notFound();
 }
 
-// The call whose Space this is, and the reader's view of the Space.
+// The call whose Space this is, and the reader's access to the Space at `level` (`view` to read it; `participate` to
+// invite, so a Viewer of the Space invites no one, item-calls.md "Invites", Work Tracker 1458).
 async function callOfSpace(
   ctx: RouteContext,
   spaceId: string,
+  level: Level = 'view',
 ): Promise<{ call: CallRow; item: ItemRow } | null | Response> {
   const { env } = ctx;
   const call = await newestCallOfSpace(env, spaceId);
   if (!call) return null;
-  const space = await loadItem(env, spaceId, ctx.caller, 'view');
+  const space = await loadItem(env, spaceId, ctx.caller, level);
   if (space instanceof Response) return space;
   const item = await getItemRow(env, call.item_id);
   if (!item || item.trashed_at !== null) return null;
@@ -307,7 +310,7 @@ async function readSpaceCall(ctx: RouteContext, spaceId: string): Promise<Respon
 async function readInvitePeople(ctx: RouteContext, spaceId: string): Promise<Response> {
   const person = account(ctx);
   if (person instanceof Response) return person;
-  const found = await callOfSpace(ctx, spaceId);
+  const found = await callOfSpace(ctx, spaceId, 'participate');
   if (found instanceof Response) return found;
   if (!found) return notFound();
   const reaches = await loadItem(ctx.env, found.item.id, { person, share: null }, 'view');
@@ -375,7 +378,7 @@ async function invite(ctx: RouteContext, spaceId: string): Promise<Response> {
   const { env } = ctx;
   const person = account(ctx);
   if (person instanceof Response) return person;
-  const found = await callOfSpace(ctx, spaceId);
+  const found = await callOfSpace(ctx, spaceId, 'participate');
   if (found instanceof Response) return found;
   if (!found) return notFound();
   const { call, item } = found;

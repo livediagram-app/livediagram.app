@@ -1,6 +1,7 @@
 // One inbound frame on a room socket (document-room.ts webSocketMessage) and what it asks of the room: hello, identity,
 // grant, sync (catch-up), the selection lock, a follow, and a relayed op. Each takes the room.
 import { DOCUMENT_FORMAT, isRoomOpRef, parseBuildId } from '@livedocuments/api-schema';
+import { hidePeople } from '@liveworkspace/api-kit/hidden-people';
 import { opForTheWire, stampCommentAuthor } from '@livedocuments/document';
 import { selectionFromOp } from '../room-selections';
 import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types';
@@ -11,7 +12,7 @@ import { gateClientOp } from '../room-op-gate';
 import { helloChangesRoster } from '@liveworkspace/api-kit/room-roster';
 import { type SessionAttachment } from '../room-session';
 import type { DocumentRoom } from './document-room';
-import { scopeOf, sequenceMutation, sendTo } from './document-room-sockets';
+import { scopeOf, sequenceMutation, sendTo, viewerOf } from './document-room-sockets';
 import { sendFollowers, noteMultiplayer } from './document-room-presence';
 import { answerArticleHold } from './document-room-holds';
 
@@ -230,14 +231,17 @@ export function sendCatchup(
     { epoch, lastSeq },
     { epoch: room.epoch, seq: room.seq, opLog: room.opLog },
   );
-  // A tab-scoped session replays its own tab only, like the live relay.
+  // A tab-scoped session replays its own tab only, and a Viewer's without other people's ids, like the live relay.
   const scope = scopeOf(room, ws);
+  const viewer = viewerOf(room, ws);
   const visible =
-    scope === null
+    scope === null && viewer === null
       ? ops
       : ops.flatMap((o) => {
-          const op = opForScope(o.op, scope);
-          return op === null ? [] : [{ ...o, op }];
+          const op = scope === null ? o.op : opForScope(o.op, scope);
+          if (op === null) return [];
+          const seen = viewer === null ? op : hidePeople(op, viewer);
+          return seen === o.op ? [o] : [{ ...o, op: seen }];
         });
   const payload: ServerMessage = {
     kind: 'catchup',

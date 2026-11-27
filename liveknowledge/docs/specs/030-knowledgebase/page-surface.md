@@ -49,7 +49,8 @@ replaces what the fork still shows around the writing.
   liveknowledge. The browser's own zoom is the zoom. A wide table or a wide drawing scrolls sideways inside its own
   box. On the page itself the canvas's bare-ground gestures do not exist: held Space scrolls the page, the middle
   button is the browser's, a drag on the ground draws no marquee (selecting text is the browser's own), the ground's
-  cursor is the plain one, and a letter typed outside the writing adds no shape. Nothing moves the page by itself
+  cursor is the plain one (its margins, its cover and the room round the page alike, read or edited: the canvas's
+  Select crosshair never shows on a page, Work Tracker 1490), and a letter typed outside the writing adds no shape. Nothing moves the page by itself
   once it is scrolled: a press anywhere leaves it where it stands, so a jump from On This Page, Search or an Ask
   source stays where it lands (WI-1372).
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
@@ -115,7 +116,9 @@ shows their name."
 
 - **Where.** The top row's left while the page is read (edit mode gives it to the formatting controls).
 - **What.** 28 px discs side by side, 4 px apart, never overlapping (owner 2026-11-22), the creator first, then everyone else who saved the page in the order they
-  first did: a person by their initials in a colour of their name (a person nobody here can name is "Guest"), an
+  first did: a person by their initials on their presence colour, the one their cursor and avatar wear in every app
+  (their own, else the one Automatic picks from their name; Work Tracker 1497; a person nobody here can name is
+  "Guest"), an
   agent as a sparkle. Six at most; past that the sixth is "+N". Hovering or focusing a disc names them: "Priya Shah,
   Created", "Claude for Priya Shah, Edited" (an agent names the person it acted for: [Verification](verification.md)
   "Made by a person or an agent").
@@ -340,9 +343,13 @@ Owner, 2026-11-20: "Pages, Ask and Insights should be represented like tabs in t
 - The footer is a bar across the bottom of the content area: the tabs at its left, then Get Started, Tools,
   Settings, notifications and the appearance at its right. It never floats over the writing; the reading column
   scrolls above it.
-- **The top row.** The content area starts with one row, the same height in the three views (48 px; 56 px on a
-  phone): a hairline under it, nothing floating. On Pages its left holds the formatting controls while a page is
-  being written; on Ask, Insights and Connect it holds the view's name and its own buttons. **Share** and the account
+- **The top row.** The content area starts with one row: a hairline under it, nothing floating. On Pages it is 48 px
+  beside the page tree, its left holding the formatting controls while a page is being written. On Ask, Insights and
+  Connect it is the view's header, as tall as the page tree's head on a desktop (the menu box's row, 75 px at the
+  toolbar's usual scale), its logo drawn at the head's scale and in the head's place, so moving between Pages and a
+  view leaves the logo where it was (owner 2026-11-25, Work Tracker 1467: the slimmer header "feels jarring and out
+  of place"). It holds a **back chevron**, the view's name and its own buttons ("The way back" in
+  [Search and Ask](search-and-ask.md)). On a phone every view's row is 56 px. **Share** and the account
   button stand at its right end, always; the floating corner card is gone. The page scrolls under the row, never
   behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
   Share, so nothing stands over the reading column at any width.
@@ -352,6 +359,33 @@ Owner, 2026-11-20: "Pages, Ask and Insights should be represented like tabs in t
   there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's
   writing bar takes the row and the row's own buttons step aside until the caret leaves.
 - With the page tree collapsed to its rail, the menu button leads the top row, which then runs the window's width.
+
+## Switching pages
+
+Owner, 2026-11-25 (Work Tracker 1465): "clicking a different page in the left sidebar feels jarring: it looks as
+though the whole page reloads, even though only the middle content really changes."
+
+- **Only the page changes.** Opening another page (a row of the page tree, the breadcrumb, a page link, Linked
+  From, a search result) is a switch in place, never a load: the page tree stays exactly as it is, scrolled where it
+  was, its rows not drawn again; the top row and the footer stay.
+- **The page area animates.** The page in view lifts a little and fades out (110 ms) as the next one rises 8 px and
+  fades in (220 ms, a beat after), in the page area alone. No blank frame shows between them, and no loader over the
+  window: a page not opened yet this session is fetched first while the page before stays on screen, and the switch
+  runs once its content is here (rework after the browser check: on a synced knowledgebase a first visit showed
+  "Loading tab…" over the whole window, tree and rails with it, for a few frames). A fetch still not back after 1.5
+  s switches anyway, onto the page's own loader: in the page area alone, under the tree and the rails, its spinner
+  only after 300 ms. A failed load shows the error card with Retry, as before.
+- **The right rail updates in place.** Page Health, On This Page and the rest of the rail keep their layout and
+  change once, to the new page's figures, when its content has loaded; never to an empty page's figures first (the
+  score dipping and coming back, On This Page emptying and refilling). Page Health's score also waits for the page's
+  own read (its reads, backlinks and open issues): until that is here it stays on the page before's, never a figure
+  worked out without them (rework after the browser check: 42, then 43 for two frames, then 42). A page whose load
+  never lands lets the rail go after a second.
+- **The address.** The open page is the address's fragment (`#t=<page>`), rewritten in place on every switch, so a
+  reload and a copied link open the same page; a page switch is not a history entry, and Back and Forward move
+  between the views and out of the knowledgebase as before.
+- **Reduced motion** (the system setting or the app's own): the page changes at once, with no animation; the rail
+  still changes once.
 
 ## The slash menu
 

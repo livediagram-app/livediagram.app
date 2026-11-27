@@ -6,7 +6,7 @@
 import { lucideInfo, lucideX } from '@liveworkspace/icons/lucide';
 import { Avatar, Cursor, Label, Lift, Scene } from '@liveworkspace/help-site/art/primitives';
 import { BAR_H, BottomBar, Card, Icon } from './editor-chrome';
-import { BarChart, Heading, Lines, Page, Pointer, Rule, Sheet, SlideContent } from './doc-page';
+import { BarChart, Heading, Lines, Page, Pointer, Sheet, SlideContent } from './doc-page';
 
 type Who = { initial: string; colour: 'brand' | 'emerald' | 'violet' | 'rose' };
 
@@ -79,7 +79,6 @@ export function PresenceSelection() {
         <Heading x={80} y={60} size={12}>
           Q3 Results
         </Heading>
-        <Rule x={80} y={70} />
         <Lines x={80} y={84} w={100} n={4} gap={7} />
         <BarChart x={216} y={56} w={120} h={98} />
       </Page>

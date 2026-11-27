@@ -74,6 +74,7 @@ export function entryTarget(e: InboxEntry): InboxTarget | null {
     elementId: r.elementId,
     actionId: e.kind === 'Action' || e.kind === 'Card' ? e.row.actionId : null,
     local: r.local === true,
+    ...(e.kind === 'CardThread' && r.card?.id ? { cardId: r.card.id } : {}),
   };
 }
 

@@ -172,6 +172,21 @@ export const renameDesignOutput = {
   url: url.optional().describe('Link that opens the design (design renames).'),
 };
 
+export const styleDesignOutput = {
+  designId,
+  tabs: z
+    .array(
+      z.object({
+        tabId,
+        name: z.string().describe('The tab name.'),
+        rev: z.number().describe('The tab revision after the restyle.'),
+      }),
+    )
+    .describe('Each tab restyled, in tab order.'),
+  lines: z.array(z.string()).describe('What changed, a line a tab.'),
+  url,
+};
+
 export const deleteDesignOutput = {
   deleted: z.enum(['design', 'tab']).describe('Whether the design or one of its tabs was deleted.'),
   designId,

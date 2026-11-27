@@ -7,7 +7,6 @@
 import {
   getBuiltInTheme,
   isDefaultSchemeBackdrop,
-  THEMES,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
   DEFAULT_SCHEME_ID,
@@ -15,7 +14,8 @@ import {
   deriveTextColorForBg,
   DEFAULT_SCHEME_LIGHT,
   themeColourMap,
-  themeHalf,
+  resolveThemeIn,
+  themeSourceOf,
   viewBackdropInTheme,
   type Appearance,
   type BackgroundPattern,
@@ -55,16 +55,7 @@ export function resolveTheme(
 ): ThemeDefinition | undefined {
   // Every scheme in the viewer's half (docs/specs/011-theme/light-and-dark.md): Default's hand-made halves, every
   // other built-in's native or derived half.
-  const source = themeSource(id);
-  return source ? themeHalf(source, appearance) : undefined;
-}
-
-/** The scheme as written (its native half, before tuning): what its light / dark halves and its colour map are built
- *  from. Undefined for an id that names nothing known. */
-function themeSource(id: string | undefined): ThemeDefinition | undefined {
-  if (!id) return undefined;
-  if (id === DEFAULT_SCHEME_ID) return DEFAULT_SCHEME_LIGHT;
-  return THEMES.find((t) => t.id === id);
+  return resolveThemeIn(id, appearance);
 }
 
 /** Every colour the tab's scheme paints, in either half, mapped to the viewer's half (themeColourMap): what the canvas
@@ -73,7 +64,7 @@ export function themeViewMap(
   id: string | undefined,
   appearance: Appearance = getResolvedAppearance(),
 ): ReadonlyMap<string, string> {
-  return themeColourMap(themeSource(id) ?? DEFAULT_SCHEME_LIGHT, appearance);
+  return themeColourMap(themeSourceOf(id) ?? DEFAULT_SCHEME_LIGHT, appearance);
 }
 
 // Resolves through the catalogue, and ultimately the default, so an id nobody
@@ -122,7 +113,7 @@ export function resolveTabBackdrop(
     backgroundOpacity: tab.backgroundOpacity,
   };
   // A canvas or pattern colour the scheme painted, in either half, follows the viewer; a picked colour stays.
-  const source = themeSource(tab.theme ?? DEFAULT_SCHEME_ID);
+  const source = themeSourceOf(tab.theme ?? DEFAULT_SCHEME_ID);
   if (!source) return stored;
   return { ...stored, ...viewBackdropInTheme(stored, source, appearance) };
 }

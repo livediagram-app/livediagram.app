@@ -27,14 +27,14 @@ Derived from [Workday pieces](../workday-pieces.md).
 
 ## Domain and naming
 
-| Term          | Identifier                                    | Meaning                                                                                                       |
-| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Piece status  | `pieceStatusOf(kind)`                         | The status a seat piece shows while you sit: `focus`, `break`, `busy`                                         |
-| Shown status  | `shownStatus(own, pickedOn, seatedOn, piece)` | The status peers and the panel see                                                                            |
-| Standing seat | `isStandingSeatShape`                         | Treadmill, standing desk: held like a seat, drawn standing                                                    |
-| Leg           | `petLeg(id, n, area)`                         | One 9 s step of the dog: a spot, or the bed (every fourth)                                                    |
-| Pet area      | `petArea(bed, rooms, pieces)`                 | The innermost room's interior holding the bed's middle, else the circle, and the boxes in it to keep clear of |
-| Earshot       | `hearsBell(desk, self, zones)`                | Your zone and the desk's room, for whether a ring reaches you                                                 |
+| Term          | Identifier                                    | Meaning                                                                                                                                                |
+| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Piece status  | `pieceStatusOf(kind)`                         | The status a seat piece shows while you sit: `focus`, `break`, `busy`                                                                                  |
+| Shown status  | `shownStatus(own, pickedOn, seatedOn, piece)` | The status peers and the panel see                                                                                                                     |
+| Standing seat | `isStandingSeatShape`                         | Treadmill, standing desk: held like a seat, drawn standing                                                                                             |
+| Leg           | `petLeg(id, n, area)`                         | One 9 s step of the dog: a spot, or the bed (every fourth)                                                                                             |
+| Pet area      | `petArea(bed, rooms, pieces)`                 | The innermost room's interior holding the bed's middle (a turned or drawn room's floor polygon), else the circle, and the boxes in it to keep clear of |
+| Earshot       | `hearsBell(desk, self, zones)`                | Your zone and the desk's room, for whether a ring reaches you                                                                                          |
 
 ## Behaviour and state
 
@@ -57,7 +57,11 @@ Derived from [Workday pieces](../workday-pieces.md).
   point from `seeded(hashId(id) ^ n * 0x9e3779b1)` inside the area (inset by `PET_INSET`): the first of `PET_TRIES` whose
   body box (`PET_BODY` round the feet) overlaps none of the area's `blocks` (`petClear`), else the bed. The blocks are
   the boxes of every shape on the board but the floors (`PET_FLOOR_KINDS`), and every room that does not hold the bed,
-  cut to the area's reach. `dogOffset` makes it relative to the bed. The areas are worked out per board change (`petAreasOf`) and published per bed. `PetDog` sets its spot with a timeout to
+  cut to the area's reach. A turned room or a Room Builder room (office.md "A Room turns") gives a `polygon` area
+  instead of a `box`: its floor polygon (`roomFloorPolygon`, the same one the room's call reads) and its bounds; a
+  spot is drawn in the bounds and kept when it is inside the polygon at least `PET_INSET` from every edge
+  (`insidePolygonBy`), with up to `PET_POLYGON_DRAWS` draws a try, so a 45 degree room needs no more tries. Another
+  turned room blocks by the bounds of its turned box. `dogOffset` makes it relative to the bed. The areas are worked out per board change (`petAreasOf`) and published per bed. `PetDog` sets its spot with a timeout to
   the next walk boundary (`msToNextWalk`, one per dog), and trots there round the pieces (`findWalkPath`) at `DOG_SPEED` as one
   Web Animation of its transform (`dogTrot`, `dog-trot.ts`: the route's points at offsets by length, linear, fill
   forwards). Setting off and each turn left or right write marks on the dog's node (`data-pet-trot`, `data-pet-left`,

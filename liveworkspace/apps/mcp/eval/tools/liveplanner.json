@@ -4411,7 +4411,7 @@
   {
     "name": "update_project",
     "title": "Update a plan",
-    "description": "Edit an existing tab’s elements. mode \"replace\" swaps the whole tab (its elements, or a Dashboard tab rebuilt from \"dashboard\") and paints every element in the tab’s theme; mode \"ops\" applies an ordered list of add/update/remove against existing elements (by id, or the ref read_project prints), keeping positions, or takes \"edits\": edit operations as text. Cards, boards, sheets and forms change through their own tools (change_items, change_board, change_sheet, change_form). Returns an inline PNG.",
+    "description": "Edit an existing tab’s elements. mode \"replace\" swaps the whole tab (its elements, or a Dashboard tab rebuilt from \"dashboard\") and paints every element in the tab’s theme; mode \"ops\" applies an ordered list of add/update/remove against existing elements (by id, or the ref read_project prints), keeping positions, or takes \"edits\": edit operations as text. Cards, boards, sheets and forms change through their own tools (change_items, change_board, change_sheet, change_form); its theme, finish and font through style_project. Returns an inline PNG.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4574,6 +4574,37 @@
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
+  },
+  {
+    "name": "style_project",
+    "title": "Restyle a plan",
+    "description": "Change the theme, finish or font of one tab of a plan, or every tab, of any kind. Live editors see it at once.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string", "description": "The plan to restyle." },
+        "tabId": {
+          "description": "One tab, by id or name; every tab when left out.",
+          "type": "string"
+        },
+        "theme": {
+          "description": "A theme id, as create_project takes. Colours still on the old theme follow; set ones stay.",
+          "type": "string"
+        },
+        "finish": {
+          "description": "How the tab is drawn (docs/specs/008-canvas/finish.md): \"flexible\" (the default), \"professional\" (crisp corners, thin lines, no shadows), \"sketch\" (hand-drawn pencil lines, hatched fills, a handwriting font) or \"marker\" (bold felt-tip lines, coloured-in fills, marker lettering). An element can carry its own \"finish\" too.",
+          "type": "string",
+          "enum": ["flexible", "professional", "sketch", "marker"]
+        },
+        "font": {
+          "description": "The tab's font: inter, poppins, nunito, oswald, space-grotesk, lora, abril-fatface, roboto-slab, roboto-mono, caveat.",
+          "type": "string"
+        }
+      },
+      "required": ["projectId"],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "share_project",

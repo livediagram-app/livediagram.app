@@ -4,10 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { KNOWLEDGEBASE_FLOW, pageTreeRows, type Tab } from '@liveknowledge/document';
 import type { KnowledgeSetupPage } from '@liveknowledge/api-schema';
+import { openParentsOf } from '@/lib/page-tree-open';
 import { landingDepth, runSetup, type SetupHost } from './run-setup';
 import { reviewPages, withTick, withTitle } from './setup-tree';
 
 vi.mock('@/lib/article/article-grow-store', () => ({ markArticleSettle: vi.fn() }));
+vi.mock('@/lib/page-tree-open', () => ({ openParentsOf: vi.fn() }));
 
 const start = (): Tab =>
   ({
@@ -79,6 +81,19 @@ const blocksOf = (tab: Tab) =>
   }[];
 
 describe('creating the pages', () => {
+  it("opens the pages each subpage lands under in this reader's tree (Work Tracker 1486)", async () => {
+    vi.mocked(openParentsOf).mockClear();
+    const to = host([start()]);
+    await run([page(1), page(2, 'p1', 2), page(3, 'p2', 3)], to, { replaceId: 'start' });
+    const [documentId, pages, asked] = vi.mocked(openParentsOf).mock.calls[0]!;
+    const ids = [...asked];
+    expect(documentId).toBe('d1');
+    expect(ids).toHaveLength(3);
+    // Each new page's parent is among the pages handed over, so the climb reaches the top.
+    const byId = new Map([...pages].map((p) => [p.id, p.parent]));
+    expect(ids.map((id) => byId.get(id))).toEqual([undefined, 'start', ids[1]]);
+  });
+
   it('makes 30 pages in tree order in two batches, each one edit', async () => {
     const tree = [
       page(1),

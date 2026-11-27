@@ -12,6 +12,7 @@
     "./visibility-tones": "./src/visibility-tones.ts",
     "./this-browser-record": "./src/this-browser-record.ts",
     "./inbox-actions": "./src/inbox-actions.ts",
+    "./inbox-cross-app": "./src/inbox-cross-app.ts",
     "./local-preview": "./src/explorer/LocalPreview.tsx",
     "./other-app-thumbnail": "./src/explorer/OtherAppThumbnail.tsx",
     "./conversion-handoff": "./src/conversion-handoff.ts",
@@ -25,6 +26,8 @@
     "./approvals": "./src/approvals/index.ts",
     "./move-current-request": "./src/panel/move-current-request.ts",
     "./new-team": "./src/teams/new-team-entry.ts",
+    "./return-to-tab": "./src/data/useReturnToTab.ts",
+    "./return-to-tab-testing": "./src/data/return-to-tab-testing.ts",
     "./explorer.css": "./explorer.css"
   },
   "scripts": {

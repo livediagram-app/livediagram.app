@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { knowledgeKit, OWNER, page, type Kit, type Who } from './knowledge-test-kit';
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { personToken } from '../knowledge/viewer-people';
 
 vi.mock('../person/profiles', () => import('../test-profiles'));
 
@@ -85,10 +86,11 @@ describe('POST pages/:tab/verify', () => {
     const res = await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify');
     const { knowledge } = await res.json<Health>();
     const after = await summaries();
+    // A Viewer's summaries hold stand-ins for the people (share-roles.md "Ids a Viewer sees").
     expect(after.find((tab) => tab.id === 'deploys')?.knowledge).toEqual({
-      owner: OWNER,
+      owner: personToken('kb', OWNER),
       verifiedAt: knowledge.verifiedAt,
-      verifiedBy: OWNER,
+      verifiedBy: personToken('kb', OWNER),
     });
     expect(after.filter((tab) => Object.hasOwn(tab, 'knowledge'))).toHaveLength(1);
   });
@@ -321,8 +323,12 @@ describe('GET pages/:tab/health names', () => {
     const kit = await knowledgeKit();
     await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify');
     const health = await read(kit, 'viewer');
-    expect(health.knowledge.verifiedBy).toBe(OWNER);
-    expect(health.names).toEqual({ [OWNER]: 'Alex Tester' });
+    // A Viewer is handed a stand-in for the id, and the name under it (share-roles.md "Ids a Viewer sees").
+    expect(health.knowledge.verifiedBy).toBe(personToken('kb', OWNER));
+    expect(health.names).toEqual({ [personToken('kb', OWNER)]: 'Alex Tester' });
+    const theirs = await read(kit, 'participant');
+    expect(theirs.knowledge.verifiedBy).toBe(OWNER);
+    expect(theirs.names).toEqual({ [OWNER]: 'Alex Tester' });
   });
 
   it('leaves names out when no account has one', async () => {
@@ -356,25 +362,26 @@ describe('Created and Updated (verification.md)', () => {
       kit.call('editor', 'PUT', `/api/documents/kb/tabs/${id}`, {
         ...page(id, 'Fresh', [{ id: 'p1', type: 'paragraph', runs: [{ text }] }]),
       });
-    // The knowledgebase's own pages, made with it by its creator.
-    const seeded = await read(kit);
+    // The knowledgebase's own pages, made with it by its creator. A Participant reads every id; a Viewer's stamps
+    // hold stand-ins (viewer-knowledge-ids.test.ts).
+    const seeded = await read(kit, 'participant');
     expect(seeded.created?.by).toBe(OWNER);
     expect(seeded.updated).toEqual(seeded.created);
     // A page from before the table: nothing guessed.
     kit.db.sql.prepare("DELETE FROM page_authors WHERE tab = 'deploys'").run();
-    expect((await read(kit)).created).toBeUndefined();
+    expect((await read(kit, 'participant')).created).toBeUndefined();
 
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(1_000_000);
     expect((await save('fresh', 'One')).status).toBeLessThan(300);
-    const made = await read(kit, 'viewer', 'fresh');
+    const made = await read(kit, 'participant', 'fresh');
     expect(made.knowledge.owner).toBe(OWNER);
     expect(made.created).toEqual({ by: OWNER, at: 1_000_000, kind: 'human' });
     expect(made.updated).toEqual({ by: OWNER, at: 1_000_000, kind: 'human' });
 
     vi.setSystemTime(2_000_000);
     expect((await save('fresh', 'One and two')).status).toBeLessThan(300);
-    const later = await read(kit, 'viewer', 'fresh');
+    const later = await read(kit, 'participant', 'fresh');
     expect(later.created).toEqual({ by: OWNER, at: 1_000_000, kind: 'human' });
     expect(later.updated).toEqual({ by: OWNER, at: 2_000_000, kind: 'human' });
     // Everyone who made or changed it, the first writer first, each person once (page-surface.md "Who made the page").
@@ -384,7 +391,7 @@ describe('Created and Updated (verification.md)', () => {
       ...page('fresh', 'Fresh', [{ id: 'p1', type: 'paragraph', runs: [{ text: 'Three' }] }]),
     });
     expect(byParticipant.status).toBeLessThan(300);
-    expect((await read(kit, 'viewer', 'fresh')).editors).toEqual([
+    expect((await read(kit, 'participant', 'fresh')).editors).toEqual([
       { by: OWNER, at: 1_000_000, kind: 'human' },
       { by: 'user_p', at: 3_000_000, kind: 'human' },
     ]);

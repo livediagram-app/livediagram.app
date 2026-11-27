@@ -101,6 +101,7 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 | { op: 'duplicate'; page: PageRef }
 | { op: 'delete'; page: PageRef }
 | { op: 'apply_background_to_all'; page: PageRef }
+| { op: 'tab_style'; theme?: string; finish?: Finish; font?: string }   // at least one
 PageBackgroundInput = { color?: string; gradient?: [string, string]; angle?: number;
                         pattern?: 'dots' | 'grid' | 'lines' | 'none'; paper?: true }
 LayoutText = { title?: string; subtitle?: string; bullets?: string[]; body?: string[] }  // each text <= 2,000, lists <= 60
@@ -132,6 +133,13 @@ Answer `200`:
 
 Refusals: `400 { error, message, change? }` for every engine code and `invalid_body`, `403` gate, `404` design or
 tab, `409 tab_busy`, `413 tab_too_large`.
+
+`tab_style` (spec "`tab_style`"): `theme` checked by `isTabThemeId`, `finish` by `isFinish`, `font` against `FONTS`
+ids (all `@livedesign/design`), each refusal `invalid_value` naming the ids. Applied in `applyPageChanges`:
+`tabWithTheme(tab, theme, 'light', { keepElementColours })` (`packages/design/src/tab-theme-apply.ts`), then
+`{ ...tab, font }`, then `{ ...tab, finish }`. The route's `pagesRoomOps` patches `pages`, `opensIn`, `pageOrientation`
+and the style fields (`theme`, `backgroundColor`, `backgroundPattern`, `patternColor`, `backgroundOpacity`,
+`newPageBackground`, `finish`, `font`) that changed, clearing one the change removed.
 
 `PagesRefusalCode`: `invalid_body`, `invalid_value`, `tab_locked`, `tab_kind`, `page_unknown`,
 `size_not_offered`, `no_orientation`, `pattern_not_offered`, `background_not_offered`, `no_other_pages`, `layout_unknown`, `page_locked`,

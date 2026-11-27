@@ -288,7 +288,7 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   Offline (`offlineCreateProject`, `offlineWriteItem`, one local write); a failure deletes it
   (`offlineDeleteProject`). Then it opens. Telemetry `Plan` · `Imported` · the source's name.
   Any failure: "Couldn’t import those cards. Try again."
-- Entry points: none of its own. The tab menu's `Import…` (`TabPortalMenu`, lit by `canImport`: TabBar's
+- Entry points: none of its own. The tab menu's `Import…` (`TabMenu`, lit by `canImport`: TabBar's
   `canImportFromTool || !intoTabOf(tab).blocked`) and the palette's `import` command open the one dialog; the tool
   section shows only when `canImport` (`!isStructureReadOnly`: an Editor's, so Participants and Viewers never see it).
   A locked tab does not dim the section: the import makes a new tab and leaves the locked one alone.

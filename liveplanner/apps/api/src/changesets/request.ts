@@ -13,7 +13,17 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@liveplanner/edit-operations';
-import { isFinish, isRecord, ELEMENT_FINGERPRINT_LENGTH, type Finish } from '@liveplanner/project';
+import {
+  FINISHES,
+  PLANNER_FONTS,
+  THEMES,
+  isFinish,
+  isRecord,
+  isTabThemeId,
+  ELEMENT_FINGERPRINT_LENGTH,
+  type Finish,
+  type TabStyle,
+} from '@liveplanner/project';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.
@@ -28,7 +38,9 @@ export type ChangesetBody =
       name?: string;
       // A new tab of elements made a Board or Sheet tab (docs/specs/030-forms/forms.md "Agents").
       tabKind?: 'board' | 'sheet';
-    };
+    }
+  // An existing tab of any kind restyled (agent-changesets.md "Style"): its theme, finish and font.
+  | { kind: 'style'; style: TabStyle };
 
 export type ParsedChangeset = {
   body: ChangesetBody;
@@ -72,10 +84,11 @@ export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): Pa
     return refuse(400, { error: 'invalid_body', message: 'expected a JSON object' });
   const hasOps = raw.operations !== undefined;
   const hasReplace = raw.replace !== undefined;
-  if (hasOps === hasReplace) {
+  const hasStyle = raw.style !== undefined;
+  if (Number(hasOps) + Number(hasReplace) + Number(hasStyle) !== 1) {
     return refuse(400, {
       error: 'invalid_body',
-      message: 'send exactly one of "operations" or "replace"',
+      message: 'send exactly one of "operations", "replace" or "style"',
     });
   }
   const strict = raw.strict === true;
@@ -100,7 +113,11 @@ export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): Pa
         '"base" is { rev: a non-negative integer, elements?: { <element id>: <16 hex fingerprint> } }',
     });
   }
-  const body = hasOps ? parseOperations(raw.operations, log) : parseReplace(raw.replace);
+  const body = hasOps
+    ? parseOperations(raw.operations, log)
+    : hasReplace
+      ? parseReplace(raw.replace)
+      : parseStyle(raw.style);
   if ('refusal' in body) return { ok: false, refusal: body.refusal };
   return { ok: true, value: { body, ...(base ? { base } : {}), strict, summary: summary.text } };
 }
@@ -172,6 +189,52 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     ...(typeof raw.name === 'string' ? { name: raw.name } : {}),
     ...(kind ? { tabKind: kind } : {}),
   };
+}
+
+const THEME_IDS = THEMES.map((t) => t.id);
+// The faces liveplanner offers (planner-fonts.ts): one it leaves out is not one a tab takes.
+const FONT_IDS = PLANNER_FONTS.map((f) => f.id);
+const STYLE_KEYS: ReadonlySet<string> = new Set(['theme', 'finish', 'font']);
+
+// A style names only what it changes, each part one the catalogues hold: an unknown id is refused naming the valid
+// ones, never stored (a theme nobody can resolve would hard-reset the tab on its next pick).
+function parseStyle(raw: unknown): ChangesetBody | { refusal: Refusal } {
+  const bad = (message: string) => ({
+    refusal: { status: 400, body: { error: 'invalid_body', message } },
+  });
+  const unknown = (key: string, value: string, valid: readonly string[]) => ({
+    refusal: {
+      status: 422,
+      body: {
+        error: 'invalid_value',
+        message: `"style.${key}" "${value}" is not one; use one of: ${valid.join(', ')}`,
+        valid,
+      },
+    },
+  });
+  if (!isRecord(raw)) return bad('"style" must be an object');
+  const extra = Object.keys(raw).find((k) => !STYLE_KEYS.has(k));
+  if (extra) return bad(`"style" takes theme, finish and font, not "${extra}"`);
+  const style: TabStyle = {};
+  for (const key of ['theme', 'finish', 'font'] as const) {
+    const value = raw[key];
+    if (value === undefined) continue;
+    if (typeof value !== 'string' || !value.trim()) return bad(`"style.${key}" must be an id`);
+  }
+  if (typeof raw.theme === 'string') {
+    if (!isTabThemeId(raw.theme)) return unknown('theme', raw.theme, THEME_IDS);
+    style.theme = raw.theme;
+  }
+  if (typeof raw.finish === 'string') {
+    if (!isFinish(raw.finish)) return unknown('finish', raw.finish, FINISHES);
+    style.finish = raw.finish;
+  }
+  if (typeof raw.font === 'string') {
+    if (!FONT_IDS.includes(raw.font)) return unknown('font', raw.font, FONT_IDS);
+    style.font = raw.font;
+  }
+  if (Object.keys(style).length === 0) return bad('"style" needs a theme, a finish or a font');
+  return { kind: 'style', style };
 }
 
 function replaceBodyOf(

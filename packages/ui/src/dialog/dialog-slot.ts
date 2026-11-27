@@ -125,8 +125,8 @@ export function resetDialogSlot(): void {
   set(null);
 }
 
-// Whether this subtree is a dialog drawn inside Tools: its header draws no title band and no close (the back bar names
-// the tool and closes it). A dialog opened inside it resets this for its own subtree.
+// Whether this subtree is a dialog drawn inside Tools: its header draws no title band and no close (Tools' band names
+// the tool and its back button closes it). A dialog opened inside it resets this for its own subtree.
 export const DialogInlineContext = createContext(false);
 
 // Whether the dialog a header sits in rises as a sheet on a phone, so a hero header runs its band up under the

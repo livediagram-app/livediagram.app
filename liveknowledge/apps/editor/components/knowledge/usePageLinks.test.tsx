@@ -87,6 +87,8 @@ function mount(level: AccessLevel, blocks: ArticleBlock[] = [para('p', [])]) {
     isStructureReadOnly: level !== 'edit',
     addNamedSubpage: vi.fn(() => 'made'),
     setActiveId: vi.fn(),
+    // Every page is here already, so opening one switches at once (select-page.ts fetches an unopened page first).
+    loadAllTabs: undefined,
   };
   const value = new Proxy(fields, {
     get: (target, key: string) => (key in target ? target[key] : vi.fn()),

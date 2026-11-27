@@ -242,9 +242,20 @@ describe('the Archived view', () => {
     expect(await screen.findByText('“⁨Item 2⁩” is archived')).toBeTruthy();
   });
 
+  // Work Tracker 1492: Archived says what it is for, the way out, and how many it holds, over its list.
+  it('heads its list with a band saying what Archived keeps, the way out and how many', async () => {
+    page(createFakeIndex({ items: [makeItem(1), makeItem(2, { archivedAt: 5_000 })] }), {
+      kind: 'archived',
+    });
+    const band = await screen.findByRole('region', { name: 'Out of the way, kept safe' });
+    expect(band.textContent).toContain('Change Folder');
+    expect(band.textContent).toContain('1 archived');
+  });
+
   it('says Nothing Archived when it holds nothing', async () => {
     page(createFakeIndex({ items: [makeItem(1)] }), { kind: 'archived' });
     expect(await screen.findByText('Nothing Archived')).toBeTruthy();
+    expect(document.querySelector('[data-archived-intro]')).toBeNull();
   });
 
   it('opens Change Folder on the one its address names, once, and drops the ask', async () => {

@@ -10,6 +10,7 @@ describe('the MCP tool verbs', () => {
     expect(MCP_TOOL_VERBS.map((v) => v.mcp.tool)).toEqual([
       'change_pages',
       'write_article',
+      'style_document',
       'list_images',
       'upload_image',
       'delete_image',

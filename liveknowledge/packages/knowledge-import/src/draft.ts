@@ -18,6 +18,8 @@ export type DraftPage = {
   markdown: string;
   /** Addresses of files the source lists as the page's attachments, outside its writing. */
   attached: string[];
+  /** The address of the page's cover picture, relative to `path` (a liveknowledge export's front matter). */
+  cover?: string;
   warnings: PageWarning[];
 };
 

@@ -153,7 +153,10 @@ Home is laid out as a week at a glance (owner, 2026-11-24, option B "This Week" 
 - **A rail panel** is a bordered panel (`HomeSection` with `panel`): its heading smaller than a section's, its rows
   flat (no frame of their own, the sidebar's hover wash), each at least 56 px tall so a finger finds it.
 - **Rows** are Home's own (`HomeRow`): the item's thumbnail, its name (the app's mark before it under All Apps),
-  its line, and the card's ⋯ menu, right-click, rename and drag, so a row does all a card did.
+  its line, and the card's ⋯ menu, right-click, rename and drag, so a row does all a card did. In the rail's Most
+  Used and Shared With You Recently, where room is tight, an AI tool's item wears **Made by AI** as its sparkle alone
+  (the same violet disc, `MadeByAiBadge` with `iconOnly`), named "Made by AI" to a screen reader and in its tooltip
+  (owner, Work Tracker 1494); Recent's timeline and every list keep the worded badge.
 
 #### What you can make, on Home's hero
 
@@ -435,7 +438,11 @@ sidebar, a breadcrumb, an address or Back, never opens or folds a space, and ope
 (this replaces "One space open at a time", owner 2026-11-15). Each space keeps its own state in this browser
 (`liveworkspace:explorer-expanded`, in each app's own storage, so each app's Explorer remembers its own), restored on
 the next visit; a space with no state kept starts folded, My Work too, and a team the person has left is simply
-not drawn, its state ignored. If storage is blocked or empty the spaces start folded, without an error. Inside an
+not drawn, its state ignored. Every open or fold is made to what this browser keeps at that moment, never to the
+page's own older copy: another Explorer on the same origin (another tab, an editor's workbench frame) opens and folds
+rows too, and a change written over a stale copy put back every space that copy still held open, so a space the
+person had folded came back open on its own (owner, Work Tracker 1495). Another tab's change is heard (the `storage`
+event) and drawn at once. Where storage can't be read or written, the page goes on from its own copy. If storage is blocked or empty the spaces start folded, without an error. Inside an
 open space the folders down to the current folder open, so its row shows (that folder too, so its subfolders show),
 and the Library opens for any of its pages (Recent, the Gallery, Shape Libraries, Archived, the Trash); this only
 ever adds, once per change of the rows a view needs, so a folder the person folds stays folded until the view (or
@@ -535,6 +542,25 @@ and the editor's "This Browser" to "Offline" on 2026-11-19. "Browser Storage" re
   editors' panel and the Explorer on each app's address read the store and follow the rule. The panel's pane
   lists every live item, whichever folder holds it (its rows are compact; the folders are the page's).
 
+#### The Trash
+
+Deleted items wait in the **Trash** for 30 days (the index's daily sweep removes them after that), the same in every
+app's Explorer and on liveworkspace.app (owner, Work Tracker 1492: it looked basic, so it was redrawn):
+
+- **The band** (`ShelfIntro`): the bin in a slate tile (never red: a delete is undoable), "Kept for 30 days", the
+  line "Deleted items wait here for 30 days, then they are removed for good. Restoring one puts it back where it
+  was.", and on the right how many it holds ("12+" while more pages wait) and, in amber, how many leave within the
+  week. Empty, the Trash shows only its empty state.
+- **Groups**, one card each, as before: yours, then each team's by name, then Offline's. Each header has the space's
+  disc (My Work's sky, a team's indigo, Offline's teal), its name, how many (once the list is loaded whole) and, for
+  yours and a team's, **Empty Trash** (quiet, rose on hover) at its right.
+- **Rows**: the item's picture (dimmed until the row is pointed at; the item glyph without one), the app's mark under
+  All, the name, "Deleted 3 Oct" (or why an empty one was tidied away) and **a meter of the days it has left**, a
+  short bar with its words ("24 days left", "Removed at the next clean-up"), slate while it has time and amber in its
+  last week (7 days). Then **Restore** (with its icon) and **Delete Forever** (the bin and its words; the bin alone on
+  a phone, named in full and in its tooltip), which asks first. Every action, its words and who may take it are
+  unchanged: the index decides, as before.
+
 #### Archived
 
 A document its owner has finished with but wants to keep goes to **Archived**: out of the way everywhere, and
@@ -547,7 +573,9 @@ liveworkspace.app.
   subfolders and takes no drops: a drag over it shows no target. Its address is `/explorer/archived`.
 - **The view.** The person's archived documents, every app's or the app's alone as the switch says, newest change
   first, as cards or rows with their previews (an archived item keeps its preview: the index still answers the
-  preview service for its owner). It takes no lens: typing opens Search. Empty, it says **Nothing Archived** and
+  preview service for its owner). Over them a **band** (`ShelfIntro`, owner, Work Tracker 1492: the page read as a
+  bare list): the archive box in an amber tile, "Out of the way, kept safe", a line on what Archived keeps and the
+  way out (Change Folder, or a drag onto a space), and how many it holds ("12+ archived" while more pages wait). It takes no lens: typing opens Search. Empty, it says **Nothing Archived** and
   "Documents you move to Archived rest here, out of every other list. Move one back with Change Folder to open it
   again."
 - **Moving one there.** **Move to Archived** (the archive-box icon) in an item's ⋯ and right-click menus, beside
@@ -751,15 +779,23 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
 - **The Library and Settings.** The Image Gallery and Shape Libraries are read from the app's own API on the same
   origin (`imagesPath`, `shapeLibrariesPath`). The Gallery lists the person's images from every app, and its "Used
   in" badge counts every app's items that place one: another app's item is named with its app and opens there
-  ([media.md](../006-media/media.md#usage)). Its header has a **Show** switch, **All** or **Unused**, just left of
-  Help: Unused keeps only the images checked and found placed nowhere ("Not used"), read from the usage the Gallery
-  already loads, so it costs no request. An image whose usage could not be checked reads "Couldn't check" and is
+  ([media.md](../006-media/media.md#usage)). Over its grid, a **toolbar** (owner, Work Tracker 1491: two filters made
+  one picture hard to find): **Find an image**, a field that keeps the images whose name holds every word typed, in
+  any order and case ("logo dark" finds "Dark Logo v2.png"; an unnamed one is "Untitled image"), cleared by its ×
+  or Escape; and the **Show** chips, one row that scrolls sideways on a phone: **All**, **Unused** and one chip per
+  app whose items place an image (its logo and name, in the Explorer's order of apps), each with how many. An app's
+  chip keeps the images that app's items place, the Trash's too (another app's use names its app; an older api's
+  unnamed use is the host's). Pressing the chip that is on goes back to All; the field and a chip narrow together.
+  Unused keeps only the images checked and found placed nowhere ("Not used"). All of it reads the list and usage the
+  Gallery already loads, so it costs no request, and the counts are worked out once per read or delete, never per
+  keystroke. With nothing left the grid says why: no name matches (with Clear Search, and Show All Images under a
+  chip), no image left in that app (after a delete), or no unused image (below). An image whose usage could not be checked reads "Couldn't check" and is
   never counted or shown as Unused ([media.md](../006-media/media.md#usage)); nor is one a Library item holds,
   which reads "In Library". It starts on All each visit, applies to the grid as it stands (a delete takes the
   card out at once), and when every image is in use it says so with an empty state that offers All again (when some
   could not be checked, the empty state says that instead of calling them all in use). The
-  switch shows only once the gallery has images and the host reads usage; the editor panel's compact Gallery has
-  no header and stays on All. An upload is checked against the media service's types and 10 MB cap
+  field shows once the gallery has images, the chips once it has images and the host reads usage; the editor
+  panel's compact Gallery has no toolbar and stays on All. An upload is checked against the media service's types and 10 MB cap
   (`@liveworkspace/api-schema/image-limits`) before the file is read or decoded, so an oversized file is refused
   at once rather than after it is sent. Signed in, the bottom bar has a Settings button beside Appearance,
   opening the Settings panel in place, filtered to the app with All beside it ([site.md](../010-site/site.md#settings)), as the
@@ -796,6 +832,9 @@ The panel's Home lists Offline's opened items among its Recent by the page's rul
 first, among the index's), each a card with Offline's picture (`LocalPreview`), the **Offline** pill on its
 picture's top-left corner (so the line below has the card's width for when it was opened), when it was opened and Offline's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
 open item is left out there, as the index's is.
+The pane's lists (Home, a place, Trash) are read again, quietly, when the page comes back into view while the panel
+shows, as the Current card is: a rename made in another tab shows on its row with no reopening, the rows on screen
+staying while the read is on its way and when it fails (Work Tracker 1461).
 
 **The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **56rem** (896 px) wide, kept 1rem
 inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the
@@ -1035,7 +1074,8 @@ are as on every view.
   the joined members' discs (four, then "+N"), **Copy Link**, **Invite People** (admins: opens People and puts the
   keyboard in Invite by Email) and the ⋯ menu. On a phone the buttons fill the width under the name and the discs
   are left out.
-- **Tabs**, in this order: Library (how many items, once the list is loaded whole), People (how many rows) and Audit
+- **Tabs**, in this order: Library (how many items and folders its root lists, once the list is loaded whole, so a
+  library of folders alone never reads 0; owner, Work Tracker 1504), People (how many rows) and Audit
   Log (admins). A `tablist`; the arrow keys move between them.
 - **People**: Invite by Email (admins), then one card: the chips **Everyone**, **Admins**, **Members** and
   **Pending** (shown while any invitation waits), each with its count, and **Find a person** (name or address);
@@ -1189,7 +1229,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   glyphs a module each, `/explorer/*` on liveworkspace.app went from 408 to 380 KiB gzipped (measured
   2026-11-09). `panes-lazy-load.test.ts` and `settings-panel-preload.test.ts` keep them out.
 - **What only some lists draw loads with them.** The lens's chip row and the filtered list's empty card, Offline's own
-  view and the Details layout are each their own chunk too, fetched with the sections once the page is idle. The
+  view, the Trash's view, Archived's band and the Details layout are each their own chunk too, fetched with the sections once the page is idle. The
   field, the lens's parsing and the filtering stay in the first load, so a lens in the address filters the list as it
   loads; until the chips' code is in, their row keeps its place (the same height, empty and hidden from assistive
   tech), and a list that opens in Details fetches it while its items load, its skeleton rows standing in. Together
@@ -1248,8 +1288,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 ## Open questions
 
 - The CLI and MCP server across apps.
-- Proposed, not built: the Inbox remembering what a person has seen, put off till later or marked done (Seen, Later,
-  Done, snooze). It would need read state per person and row, which the index doesn't keep; the Inbox has
-  none, and a row leaves only when its work is done in its app.
+- Proposed, not built: the Inbox putting a row off till later or marking it done (Later, Done, snooze). Read and
+  unread are kept ([inbox-reading.md](inbox-reading.md)); a row leaves only when its work is done in its app.
 - Proposed, not built: Mark Done on a Plan card from the Inbox. Done is the board's done column, which the Inbox
   doesn't know; the card opens on its board instead.

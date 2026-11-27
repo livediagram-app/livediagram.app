@@ -72,7 +72,16 @@ export const DESIGN_GUIDE: Readonly<Record<PageDesignId, StyleNote>> = {
   triangles: n(['bold', 'friendly'], 'Energetic marketing and sport: angular triangles.'),
   'concentric-rings': n(['neutral', 'bold'], 'Focus, targets and radio or audio themes: rings.'),
   'diagonal-stripes': n(['bold', 'playful'], 'Sales, promotions and sport: bold stripes.'),
+  moire: n(['bold', 'neutral'], 'Science, sound and optical themes: shimmering moiré rings.'),
   blobs: n(['friendly', 'playful'], 'Friendly onboarding, education and wellbeing: soft blobs.'),
+  'blob-echo': n(
+    ['playful', 'friendly'],
+    'Youth, clubs and playful welcomes: blobs ringed by echoes.',
+  ),
+  'lava-lamp': n(
+    ['playful', 'bold'],
+    'Lounges, music nights and retro fun: gooey lava lamp blobs.',
+  ),
   waves: n(['friendly', 'neutral'], 'Ocean, travel, health and calm pieces: flowing waves.'),
   topographic: n('neutral', 'Outdoors, geography and strategy maps: contour lines.'),
   ribbons: n(['friendly', 'bold'], 'Brand stories and creative decks: flowing ribbons.'),
@@ -81,13 +90,31 @@ export const DESIGN_GUIDE: Readonly<Record<PageDesignId, StyleNote>> = {
   noise: n(['neutral', 'formal'], 'Subtle depth behind any content: fine grain.'),
   linen: n(['formal', 'neutral'], 'Invitations, menus and classic documents: woven linen.'),
   risograph: n(['playful', 'bold'], 'Zines, posters and indie creative work: risograph print.'),
+  'riso-overprint': n(
+    ['bold', 'playful'],
+    'Art studios and print fairs: flat riso inks overprinted.',
+  ),
+  'riso-fade': n(
+    ['bold', 'playful'],
+    'Album, band and creative covers: two riso dot screens fading across.',
+  ),
+  'riso-lines': n(
+    ['playful', 'friendly'],
+    'Bookshops, presses and illustration: riso line screens.',
+  ),
   halftone: n(['bold', 'playful'], 'Pop, comics and retro marketing: halftone dots.'),
   blueprint: n('neutral', 'Engineering, architecture and plans: blueprint lines.'),
+  terrazzo: n(['friendly', 'neutral'], 'Interiors, cafes and property: terrazzo stone chips.'),
   'glass-panels': n(['neutral', 'bold'], 'Modern tech and product decks: frosted glass.'),
   spotlight: n('bold', 'Reveals, awards and hero slides: a spotlight.'),
   bokeh: n(['friendly', 'bold'], 'Celebrations, evenings and photography: soft bokeh lights.'),
   'soft-shadows': n(['formal', 'neutral'], 'Calm professional pages: soft shadow shapes.'),
   'layered-cards': n('neutral', 'Product features and portfolios: layered cards.'),
+  'card-cascade': n(
+    ['neutral', 'friendly'],
+    'Steps, options and pricing tiers: a cascade of cards.',
+  ),
+  polaroids: n(['friendly', 'playful'], 'Trips, memories and moodboards: pinned instant photos.'),
   'corner-accents': n(
     ['formal', 'neutral'],
     'Formal decks and reports: small accents in the corners, plenty of room.',
@@ -101,6 +128,12 @@ export const DESIGN_GUIDE: Readonly<Record<PageDesignId, StyleNote>> = {
   'swiss-grid': n(['bold', 'formal'], 'Design-led reports and editorial: Swiss grid blocks.'),
   'split-fields': n(['bold', 'neutral'], 'Comparisons and two-part stories: split colour fields.'),
   'type-watermark': n(['bold', 'neutral'], 'Section and title slides: a large letter watermark.'),
+  bauhaus: n(['bold', 'neutral'], 'Design, architecture and modernist posters: Bauhaus tiles.'),
+  'brush-strokes': n(
+    ['bold', 'friendly'],
+    'Art, charity and handmade work: painterly brush strokes.',
+  ),
+  sunburst: n(['bold', 'playful'], 'Celebrations, summer and vintage announcements: a sunburst.'),
   circuit: n('bold', 'Hardware, engineering and AI talks: circuit traces.'),
   starfield: n('bold', 'Space, vision and night themes: a starfield.'),
   constellations: n(['bold', 'friendly'], 'Networks, connections and inspiration: constellations.'),
@@ -156,6 +189,8 @@ export type StyleRecipe = {
   design: PageDesignId | 'none';
   font: string;
   finish: Finish;
+  // Slides on the theme's night canvas (withRecipeSlides), for a recipe made for the stage.
+  darkSlides?: true;
 };
 
 export const STYLE_RECIPES: readonly StyleRecipe[] = [
@@ -265,6 +300,7 @@ export const STYLE_RECIPES: readonly StyleRecipe[] = [
     design: 'aurora',
     font: 'space-grotesk',
     finish: 'flexible',
+    darkSlides: true,
   },
   {
     id: 'technical',
@@ -449,10 +485,10 @@ export function styleGuideMarkdown(labels: {
     'tab’s and reaches every page; a page may wear its own design. Designs draw in the theme’s colours, behind',
     'everything, and keep text readable.',
     '',
-    '## Recipes (theme, design, typeface, finish)',
+    '## Recipes (the id create_document’s style takes: theme, design, typeface, finish)',
     ...STYLE_RECIPES.map(
       (r) =>
-        `- **${r.occasion}**: theme \`${r.theme}\`, design \`${r.design}\`, font \`${r.font}\`, finish \`${r.finish}\``,
+        `- \`${r.id}\` **${r.occasion}**: theme \`${r.theme}\`, design \`${r.design}\`, font \`${r.font}\`, finish \`${r.finish}\``,
     ),
     '',
     '## Finishes',

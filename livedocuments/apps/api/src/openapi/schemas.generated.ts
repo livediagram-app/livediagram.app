@@ -2682,6 +2682,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Comment": {
     "additionalProperties": false,
     "properties": {
+      "agent": {
+        "type": "string"
+      },
       "ai": {
         "const": true,
         "type": "boolean"
@@ -2709,6 +2712,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/CommentMention"
         },
         "type": "array"
+      },
+      "needsResponse": {
+        "const": true,
+        "type": "boolean"
       },
       "reactions": {
         "items": {
@@ -2810,6 +2817,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "resolved"
     ],
     "type": "object"
+  },
+  "CommentThreadAnchor": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "detached": {
+            "const": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "detached"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "Where a thread on words sits: those words, or nowhere once they were deleted."
   },
   "CommentsView": {
     "additionalProperties": false,
@@ -3464,10 +3501,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "DocumentCommentThread": {
     "additionalProperties": false,
     "properties": {
+      "anchor": {
+        "$ref": "#/components/schemas/CommentThreadAnchor"
+      },
       "comments": {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "agent": {
+              "type": "string"
+            },
             "ai": {
               "const": true,
               "type": "boolean"
@@ -3495,6 +3538,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "$ref": "#/components/schemas/CommentMention"
               },
               "type": "array"
+            },
+            "needsResponse": {
+              "const": true,
+              "type": "boolean"
             },
             "reactions": {
               "items": {
@@ -5026,6 +5073,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "subtitle": {
         "type": "string"
       },
+      "table": {
+        "items": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "type": "array"
+      },
       "title": {
         "type": "string"
       }
@@ -6195,6 +6251,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "design"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "finish": {
+            "$ref": "#/components/schemas/Finish"
+          },
+          "font": {
+            "type": "string"
+          },
+          "op": {
+            "const": "tab_style",
+            "type": "string"
+          },
+          "style": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -6350,7 +6431,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "triangles",
       "concentric-rings",
       "diagonal-stripes",
+      "moire",
       "blobs",
+      "blob-echo",
+      "lava-lamp",
       "waves",
       "topographic",
       "ribbons",
@@ -6359,13 +6443,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "noise",
       "linen",
       "risograph",
+      "riso-overprint",
+      "riso-fade",
+      "riso-lines",
       "halftone",
       "blueprint",
+      "terrazzo",
       "glass-panels",
       "spotlight",
       "bokeh",
       "soft-shadows",
       "layered-cards",
+      "card-cascade",
+      "polaroids",
       "corner-accents",
       "edge-bands",
       "side-rail",
@@ -6376,6 +6466,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "swiss-grid",
       "split-fields",
       "type-watermark",
+      "bauhaus",
+      "brush-strokes",
+      "sunburst",
       "circuit",
       "starfield",
       "constellations",
@@ -6680,8 +6773,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "PageText": {
     "additionalProperties": false,
-    "description": "One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's.",
+    "description": "One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's. A compound element's part names where in the element it is kept (`stats[0].value`), for an edit by ref.",
     "properties": {
+      "part": {
+        "type": "string"
+      },
       "ref": {
         "type": "string"
       },

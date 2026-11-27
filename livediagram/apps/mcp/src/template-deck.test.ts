@@ -9,6 +9,7 @@ vi.mock('./image-result', () => ({
   imageResult: (data: unknown) => ({ content: [], structuredContent: data }),
 }));
 
+import { deckNote } from './template-deck';
 import { registerTools } from './tools';
 
 // A presented template seeds the deck (docs/specs/015-api/mcp-server.md §4.3 and §4.3a,
@@ -84,7 +85,9 @@ describe('create_document from a presented template', () => {
     const [tab] = create.body.tabs as { id: string }[];
     const deck = parseStoredPresentation(create.body.presentation)!.decks[0]!;
     expect(deck.slides.every((s) => s.tabId === tab!.id)).toBe(true);
-    expect(result.structuredContent?.notes).toEqual([expect.stringContaining('5 slides added')]);
+    expect(result.structuredContent?.notes).toEqual([
+      expect.stringContaining('5 Presentation mode slides added'),
+    ]);
   });
 
   it('runs two presented tabs one after the other, and sends no deck for the others', async () => {
@@ -116,7 +119,9 @@ describe('add_tab from a presented template', () => {
     expect(puts[0]!.body).not.toHaveProperty('presentation');
     const slides = puts[0]!.body.appendSlides as { name: string }[];
     expect(slides.map((s) => s.name)).toEqual(ROADMAP_SLIDES);
-    expect(result.structuredContent?.notes).toEqual([expect.stringContaining('added to the deck')]);
+    expect(result.structuredContent?.notes).toEqual([
+      expect.stringContaining('Presentation mode slides added to the document'),
+    ]);
   });
 
   it("falls back to writing the deck whole, after the deck's own, against an api from before", async () => {
@@ -128,7 +133,9 @@ describe('add_tab from a presented template', () => {
     const slides = parseStoredPresentation(whole[0]!.body.presentation)!.decks[0]!.slides;
     expect(slides[0]!.id).toBe('mine');
     expect(slides.slice(1).map((s) => s.name)).toEqual(ROADMAP_SLIDES);
-    expect(result.structuredContent?.notes).toEqual([expect.stringContaining('added to the deck')]);
+    expect(result.structuredContent?.notes).toEqual([
+      expect.stringContaining('Presentation mode slides added to the document'),
+    ]);
   });
 
   it('leaves the deck alone for a template that is not presented', async () => {
@@ -144,7 +151,16 @@ describe('add_tab from a presented template', () => {
     const result = await call('add_tab', { documentId: 'd', template: 'roadmap' });
     expect(result.isError).toBeFalsy();
     expect(result.structuredContent?.notes).toEqual([
-      expect.stringContaining('could not be added to the deck'),
+      expect.stringContaining('could not be added to the document'),
     ]);
+  });
+});
+
+describe('the note for a presented diagram template', () => {
+  it('says the diagram itself is unchanged and the slides went to Presentation mode', () => {
+    expect(deckNote(4, 'Gantt Chart')).toBe(
+      'Tab "Gantt Chart": the diagram is unchanged; 4 Presentation mode slides added to the document\'s slide deck, in the order the template is presented.',
+    );
+    expect(deckNote(1, 'T')).toContain('1 Presentation mode slide added');
   });
 });

@@ -108,10 +108,10 @@ describe('an Inbox row', () => {
     // Where: the app's mark (the All filter) and the item; the whole path on hover and in the name.
     expect(row.querySelector('[data-app-mark="livediagram"]')).toBeTruthy();
     expect(row.querySelector('[title*="›"]')!.getAttribute('title')).toBe(
-      'Payments architecture › Overview › Billing service',
+      'livediagram › Payments architecture › Overview › Billing service',
     );
     expect(row.getAttribute('aria-label')).toBe(
-      'Split the ledger out. To do. A teammate. In Payments architecture, Overview, Billing service',
+      'Unread. Split the ledger out. To do. A teammate. In livediagram, Payments architecture, Overview, Billing service',
     );
     vi.restoreAllMocks();
   });
@@ -166,7 +166,7 @@ describe('an Inbox row', () => {
     );
     const row = await screen.findByRole('option', { name: /Ledger/ });
     expect(row.getAttribute('aria-label')).toBe(
-      'Ledger. On your canvas. A teammate. In Offline canvas, Overview, Offline',
+      'Unread. Ledger. On your canvas. A teammate. In livediagram, Offline canvas, Overview, Offline',
     );
     expect(row.querySelector('[data-this-browser]')!.textContent).toMatch(/^Offline/);
     // No author name: a teammate wrote it.

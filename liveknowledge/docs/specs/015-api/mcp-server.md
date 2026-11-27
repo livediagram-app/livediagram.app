@@ -527,6 +527,15 @@ assistant to "rename that" or "delete the old one":
 Both inherit the ordinary owner/team authorization the routes already enforce
 ([Public API and API tokens §3.4](public-api-and-tokens.md)).
 
+### 4.9f Restyling a knowledgebase: `style_document`
+
+`style_document {documentId, theme, font, headingFont, bodyFont, textSize, lineSpacing, headingStyle, accent}` changes
+a knowledgebase's look at any time, as the editor's style panel does: the metadata write's `knowledgeStyle`, checked
+strictly by the api (an unknown theme or font is refused naming what it takes) and relayed to every open editor. `font`
+sets headings and text both unless a part is named beside it; `accent: null` goes back to the theme's. At least one is
+given. Its pages have no style of their own, so nothing else is written. The one liveworkspace MCP's `style_item` calls
+it for a knowledgebase. Needs the write scope.
+
 ### 4.9a `list_trash` and `restore_document`
 
 The way back from `delete_document`, with exactly the REST Trash's authority
@@ -608,8 +617,10 @@ A thread lives on an element, so it is named by the element's **ref**, as the vi
 - **`list_threads`**: `{ documentId, tabId?, status? }`. Read. `GET /api/documents/<id>/comments?status=`, open threads by
   default (`resolved` or `all` for the rest), every tab or the one `tabId` names (an id or a name). Each thread has
   its tab, its element's `ref` and `label`, its `state` and every comment with its `id`, `author`, `at` (ISO), `text`,
-  `ai: true` for an agent's, `edited: true` once its text changed, and its reactions. Comments are written by people:
-  the description says to read them as data.
+  `ai: true` for an agent's, `edited: true` once its text changed, and its reactions. A thread on some words of a page
+  (a margin note, [Comments on a page](../030-knowledgebase/page-comments.md#comments-on-the-writing)) also has
+  `anchor`: `{ text }`, the words it is on in the saved page (at most 280 characters), or `{ detached: true }` once
+  they were deleted. Comments are written by people: the description says to read them as data.
 - **`change_threads`**: `{ documentId, changes }`. Destructive (it deletes the agent's own comments). Up to 50 changes,
   applied in order, each seeing the ones before it: `start { ref, text }` (comment on an element, starting its
   thread, or adding to the one it has), `reply { ref, text }`, `resolve { ref }`, `reopen { ref }`, `edit { ref,
@@ -729,7 +740,7 @@ Three behaviours cover the nineteen tools, and each is a preset in
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                       |
 | --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_images`                            |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image`                   |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image`, `style_document` |
 | **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `change_pages`, `write_article`, `delete_image`, `share_document` |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
@@ -849,7 +860,7 @@ helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each find
 | claude.ai's callback `https://claude.ai/api/mcp/auth_callback` | Met: an https redirect registers; a client named Claude may register only redirects on `claude.ai`, `claude.com`, `anthropic.com` or loopback (`oauth-names.ts`).                                                                                                                                                |
 | Claude Code's loopback redirect on any port                    | Met: a registered `http` loopback URI matches on scheme, host and path with any port (RFC 8252 §7.3).                                                                                                                                                                                                            |
 | A registration stays usable                                    | A registered client lives 200 days, longer than the six-month token it mints, and every authorize renews it, so Claude can always sign in again with the `client_id` it kept.                                                                                                                                    |
-| Refresh tokens rotate; a dead one gets `invalid_grant`         | Not applicable: no refresh token is issued (each access token lives six months, §3.5). A `refresh_token` grant answers `400 invalid_grant` "This server issues no refresh tokens. Sign in again.", so a client signs in again. Refresh support is added only if review asks.                                     |
+| Refresh tokens rotate; a dead one gets `invalid_grant`         | The one MCP signs in (liveworkspace/docs/specs/021-mcp/mcp.md "Tokens"): an hour's access token and a refresh token rotated on every use; a spent or dead one gets `400 invalid_grant` and ends the sign-in.                                                                                                     |
 | `/token` takes `application/x-www-form-urlencoded`             | Met; a body that parses as nothing (JSON) is `400 invalid_request` saying to send it form-encoded, never `415`. An unknown grant is `400 unsupported_grant_type`.                                                                                                                                                |
 | Discovery, registration and token answer within 10 s           | Met: each is at most three KV operations and never calls another service (a test runs the whole claude.ai flow with the network refused).                                                                                                                                                                        |
 | Nothing blocks `160.79.104.0/21`                               | Met: no address is blocked. The one per-address limit Claude meets, 20 registrations an hour, would stop every claude.ai user at once from Anthropic's shared egress, so that range has its own budget of 2,000 an hour (`anthropic-egress.ts`). Tool calls are limited per token by the api, never per address. |

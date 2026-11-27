@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IndexError } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { requestMoveCurrent, useMoveCurrentRequest } from './move-current-request';
@@ -16,6 +16,7 @@ import { PANE_CARD_PICTURE } from './pane-parts';
 import { panelSectionStorageKey } from './sections';
 import type { ThisBrowserHost } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
+import { comeBackToPage, leaveReturnClock } from '../data/return-to-tab-testing';
 
 const itemHref: ExplorerPanelProps['itemHref'] = (item) => `/project/${item.id}`;
 
@@ -1096,5 +1097,38 @@ describe('<ExplorerPanel> Inbox filter', () => {
     fireEvent.click(rows[0]!);
     const pane = await screen.findByRole('navigation', { name: 'Where it is' });
     expect(pane.querySelector('[data-app-mark]')).toBeTruthy();
+  });
+});
+
+// Work Tracker 1461 (a follow-up of #2297): renamed in another tab, the pane's rows show the new name on coming back,
+// as the Current card does, with no reopening; a read that fails then keeps the rows; a closed panel asks nothing.
+describe('<ExplorerPanel> lists on a return to the page', () => {
+  afterEach(leaveReturnClock);
+
+  it('reads Home again while the panel shows, keeping its rows when that read fails', async () => {
+    const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
+    const index = createFakeIndex({ items });
+    renderPanel(index, { open: true });
+    const grid = await screen.findByRole('list', { name: 'Recent' });
+    expect(within(grid).getByText(items[0]!.title)).toBeTruthy();
+    index.items[0]!.title = 'Renamed in another tab';
+    act(() => comeBackToPage());
+    expect(await screen.findByText('Renamed in another tab')).toBeTruthy();
+    expect(index.count('listItems')).toBe(2);
+    index.fail.set('listItems', new IndexError(503, 'unavailable'));
+    act(() => comeBackToPage());
+    await waitFor(() => expect(index.count('listItems')).toBe(3));
+    await act(async () => {});
+    expect(screen.getByText('Renamed in another tab')).toBeTruthy();
+    expect(screen.queryByText('Home could not load.')).toBeNull();
+  });
+
+  it('asks nothing on a return while the panel is closed', async () => {
+    const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 5_000_000 })] });
+    renderPanel(index, { open: false });
+    await screen.findByRole('list', { name: 'Recent' });
+    act(() => comeBackToPage());
+    await act(async () => {});
+    expect(index.count('listItems')).toBe(1);
   });
 });

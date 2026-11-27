@@ -61,6 +61,10 @@ export function collabPushOf(
       participantIds: t.participantIds,
       mentionedIds: t.mentionedIds,
       ...(t.mentionedBy ? { mentionedBy: t.mentionedBy } : {}),
+      ...(t.agentIds?.length ? { agentIds: t.agentIds } : {}),
+      // An agent's latest comment, and a thread only agents wrote in or one asks in (inbox-reading.md "AI comments").
+      ...(t.latestAgent ? { latestAgent: t.latestAgent } : {}),
+      ...(t.aiState ? { aiState: t.aiState } : {}),
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
       latestAuthorId: t.latestAuthorId ?? null,
@@ -80,6 +84,7 @@ export function collabPushOf(
       assignerId: a.assignerId,
       assignerName: a.assignerName,
       teamId: a.teamId,
+      ...(a.due ? { due: a.due } : {}),
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
     })),

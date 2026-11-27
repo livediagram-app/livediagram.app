@@ -36,6 +36,11 @@ socket) are not derived here.
 | `apps/editor/hooks/editor/useArticles.ts`                                                                                                                       | `canWrite` (a Participant's writing) beside `canEdit`; `reshape` for an Editor                                                              |
 | [`ShareComposer.tsx`](../../../../../packages/explorer/src/dialogs/share/ShareComposer.tsx), `parts.tsx` (the shared Share dialog in `@liveworkspace/explorer`) | Three cards                                                                                                                                 |
 | `apps/editor/lib/collaborator-roster.ts`                                                                                                                        | Participant badge; Participate chip                                                                                                         |
+| `../packages/api-kit/src/hidden-people.ts` (new)                                                                                                                | Ids a Viewer sees: `peopleForReader`, `hidePeople`, `copyDataWithoutPeople`, `frameForViewer`, `viewerOwnIds`, `restoreHiddenPeople`        |
+| `apps/api/src/routes/document-subresource-routes.ts`, `routes/versions.ts`, `routes/comment-routes.ts`                                                          | A Viewer's reads go through `peopleForReader`                                                                                               |
+| `apps/api/src/document-room/document-content.ts`                                                                                                                | A non-owner's copy through `copyDataWithoutPeople`                                                                                          |
+| `apps/api/src/document-room/document-room-sockets.ts`, `document-room/document-room-frames.ts`, `document-room/document-room.ts`                                | `viewerOf` (cached per socket on `viewers`); Viewer frames and catch-ups hide ids                                                           |
+| `apps/api/src/routes/tab-put-route.ts`, `changesets/submit.ts`                                                                                                  | Saves put hidden ids back with `restoreHiddenPeople`                                                                                        |
 
 ## Domain and naming
 
@@ -378,6 +383,46 @@ Image grants (`db/image-grants.ts`) come from edit collaborators only: a Partici
 - A Participant cannot place a picture, so it never mints an image grant: a document serves an image its owner does
   not own only through an edit collaborator's grant.
 - Rate: room frames ride `OP_RATE_CAP`; each drain of a tab's waiting changes is one read of the document's store and one compare-and-swap.
+
+### Ids a Viewer sees (Work Tracker 1451)
+
+The spec's "Ids a Viewer sees". One rule, `@liveworkspace/api-kit/hidden-people`, for every product.
+
+- Who: a session whose level is below Participant (`view`, or no level), never the owner. `peopleForReader(value,
+role, caller)` passes a Participant's and an Editor's value through untouched.
+- What: the person fields (`userId`, `memberId`, `assignerId`) always,
+  and the key fields (`participantId`, `startedBy`, `voter`, `voters`, `votes`) only when they hold an account or guest
+  id (`user_` or `guest_`). A hidden field reads `hidden`; a hidden list entry `hidden-<n>`. Names stay.
+- Own id: kept, so For You and "mine" still work. On a read the caller's id; in the room, an id whose collab key is the
+  session's (`ownIdsOfCollabKey`, a bounded cache of `sha256HexSync`).
+- Where: the tab read (and the views and MCP reads built on it), the comment list, versions, a non-owner's
+  copy (every id but the copier's cleared, `someone-<n>` in a list), and the room's op frames and catch-up for a Viewer
+  socket (`frameFor`, `viewerOf`).
+- Restore: every save (`tab-put-route.ts`, so the delta save too, and `withServerRules` in `changesets/submit.ts`)
+  runs `restoreHiddenPeople(incoming, stored)` first: a hidden value takes the stored one back by element id (or
+  index), a hidden value with nothing stored is cleared, and a list keeps its stored ids. A save never stores a
+  placeholder and never wipes an id.
+- A page's people (Work Tracker 1479): `apps/api/src/knowledge/viewer-people.ts`. `seerFor(role, caller,
+documentId)` answers null for a Participant and an Editor, else a function from an id to its stand-in
+  (`personToken`: `hidden-p` + the first 16 hex of `sha256HexSync("liveknowledge:person:v1:<document>:<id>")`, a
+  bounded cache of 512), keeping the caller's own id and anything not id-shaped (a guest's `guest:<name>`).
+  `knowledgeSeen` maps `owner`, `verifiedBy`, `approval.requestedBy` and `approval.decidedBy`; `tabSeen`,
+  `documentSeen` and `opSeen` (`tab` and `tab-meta` only, O(1) on every other op) apply it. Doors: `routes/documents.ts`
+  (the knowledgebase read), `document-subresource-routes.ts` (tab read), `versions.ts`, `knowledge-page-routes.ts`
+  (Page Health: knowledge, stamps, `names` and `colors` keys; the approval's people join the one profiles read),
+  `knowledge-agent-routes.ts` (the page list's owners and `names`), and `document-room-sockets.ts` (`frameFor`,
+  `replayForSocket`, with `room.documentId`). Restore: `restoreKnowledgePeople(incoming, stored)` in
+  `withServerRules` puts each stand-in back from the stored page's field, or drops it (and an approval left without
+  its asker); `keepStoredKnowledge` already keeps the stored fields on every whole-tab save. Tests:
+  `knowledge/viewer-people.test.ts` and `routes/viewer-knowledge-ids.test.ts`.
+- Fails closed: an unknown level hides; the regex pre-scan (`mayNamePeople`) can only say "maybe", never skip a field
+  that names someone.
+- Tests: `apps/api/src/routes/viewer-ids.test.ts` (each level's read, the comment list, the Viewer-copy save) and
+  `apps/api/src/document-room-viewer-ids.test.ts` (frames and catch-up by level, own id kept); the rule in
+  `packages/api-kit/src/hidden-people.test.ts`, with CPU budgets.
+- Cost, measured: hiding a 2,000-element tab (541 KB) 1.9 ms CPU, 5,000 (1.4 MB) 4.6 ms, on Viewer reads only. Restore
+  on every save: 0.26 ms at 2,000 and 0.71 ms at 5,000 when nothing was hidden, 1.9 ms and 4.9 ms when it was. A
+  Viewer's frame with no id in it: one regex test, cached per frame (1,000 frames 0.1 ms).
 
 ## Performance and limits
 

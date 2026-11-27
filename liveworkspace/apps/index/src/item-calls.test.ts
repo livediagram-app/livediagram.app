@@ -53,6 +53,21 @@ const people = (spaceId: string, payload: unknown, app = 'livehuddle', key = 'lh
     body: payload,
   });
 
+// A Viewer link to a livehuddle Space: made at Participant (the least a new one offers), then held at view, as a link
+// made before livehuddle stopped offering Viewer links is.
+async function viewLink(owner: string, spaceId: string, visitor: string) {
+  const { link } = await body<{ link: { code: string } }>(
+    await call(`/items/${spaceId}/share`, {
+      method: 'POST',
+      auth: owner,
+      body: { level: 'participate' },
+    }),
+  );
+  h.db.sql.prepare("UPDATE share_links SET level = 'view' WHERE code = ?").run(link.code);
+  expect((await call(`/share/${link.code}`, { auth: visitor })).status).toBe(200);
+  return link.code;
+}
+
 async function visit(owner: string, itemId: string, visitor: string, level = 'view') {
   const res = await call(`/items/${itemId}/share`, {
     method: 'POST',
@@ -338,6 +353,55 @@ describe('invites', () => {
       live: true,
     });
     expect((await body<InboxResponse>(await call('/inbox', { auth: ada.auth }))).calls).toEqual([]);
+  });
+
+  it("come from a Participant or Editor of the call's Space, never a Viewer of it (Work Tracker 1458)", async () => {
+    const { ada, ben, doc } = await world();
+    const space = await spaceFor(ada.auth);
+    const { call: made } = await body<ItemCallStart>(await start(ada.auth, doc.id));
+    const cy = await person('user_cy');
+    const dee = await person('user_dee');
+    // Ben, Cy and Dee all reach the item, so only their role in the Space tells them apart.
+    for (const p of [ben, cy, dee]) await visit(ada.auth, doc.id, p.auth);
+    const deeInvites = async () =>
+      (await body<InboxResponse>(await call('/inbox', { auth: dee.auth }))).calls;
+    const asks = async (auth: string, code: string) => {
+      const as = { auth, headers: { 'X-Share-Code': code } };
+      const invite = await call(`/items/${space.id}/call/invite`, {
+        method: 'POST',
+        body: { people: ['user_dee'] },
+        ...as,
+      });
+      const listed = await call(`/items/${space.id}/call/people`, as);
+      const read = await call(`/items/${space.id}/call`, as);
+      return { invite, listed, read };
+    };
+    // Ben holds a Viewer link to the Space (livehuddle offers none now, but one made before still works): he may read
+    // the call but invites no one and lists no one to invite.
+    const viewCode = await viewLink(ada.auth, space.id, ben.auth);
+    const asBen = await asks(ben.auth, viewCode);
+    expect(asBen.invite.status).toBe(403);
+    expect(asBen.listed.status).toBe(403);
+    expect(asBen.read.status).toBe(200);
+    expect(await deeInvites()).toEqual([]);
+    // Cy came in by the call's own Participant link: he invites.
+    const joinCode = new URL(made.link).searchParams.get('s')!;
+    expect((await call(`/share/${joinCode}`, { auth: cy.auth })).status).toBe(200);
+    const asCy = await asks(cy.auth, joinCode);
+    expect(await body(asCy.invite)).toEqual({ invited: 1 });
+    expect(asCy.listed.status).toBe(200);
+    expect(await deeInvites()).toHaveLength(1);
+    // An Editor link to the Space may invite too (Dee names only herself, so nothing new), and the host always may.
+    const editCode = await visit(ada.auth, space.id, dee.auth, 'edit');
+    const asDee = await asks(dee.auth, editCode);
+    expect(await body(asDee.invite)).toEqual({ invited: 0 });
+    expect(asDee.listed.status).toBe(200);
+    const host = await call(`/items/${space.id}/call/invite`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: { people: ['user_ben'] },
+    });
+    expect(await body(host)).toEqual({ invited: 1 });
   });
 });
 

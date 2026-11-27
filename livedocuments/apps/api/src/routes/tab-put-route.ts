@@ -4,6 +4,7 @@
 // seen and with the room's collaboration ledger, then written at the revision it read.
 
 import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
+import { restoreHiddenPeople } from '@liveworkspace/api-kit/hidden-people';
 import {
   CHANGESET_MERGE_WINDOW_MS,
   CHANGESET_SEEN_HEADER,
@@ -140,11 +141,12 @@ export async function writeTabSave(
     ]);
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
-    // A copy: each attempt starts again from the save as sent, merged over the tab as this attempt read it.
+    // A copy: each attempt starts again from the save as sent, merged over the tab as this attempt read it, with
+    // every id a Viewer's copy had hidden put back from the stored tab first, so no rule below reads a placeholder
+    // and no save wipes an id (docs/specs/013-workspace/share-roles.md "Ids a Viewer sees").
+    const sent = restoreHiddenPeople(ledger.tab, existingTab);
     const body: Tab =
-      existingTab && changes
-        ? mergeSaveOverStored(existingTab, ledger.tab, changes)
-        : { ...ledger.tab };
+      existingTab && changes ? mergeSaveOverStored(existingTab, sent, changes) : { ...sent };
     // The name cap (docs/specs/006-document/name-length.md): a new or changed name is shortened;
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');

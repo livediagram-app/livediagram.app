@@ -580,7 +580,12 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
   writing's order, 6 px apart, rather than covering each other.
 - **Deleting the marker** takes the tint off its text. **Deleting the text** (all of it the note
   was on) deletes the marker, and with it the comment thread or action, in the same edit (undo
-  brings both back).
+  brings both back), while the note holds nothing yet. A note holding a comment or an action is
+  kept, **detached**: its marker leaves the margin and it is listed under the page's Comments
+  ([Comments on a page](../030-knowledgebase/page-comments.md#comments-on-the-writing), Work Tracker 1484);
+  undo attaches it again.
+- **Resolved, the tint goes**: a resolved thread's words, and a done or Won't Do action's, read as plain
+  writing; the marker keeps its resolved glyph and still opens it.
 - **Never printed or presented**: exports (PDF, PNG, SVG) leave the markers out and the text
   untinted, and while a deck is presented the markers hide and the tint goes.
 - A tint is never taken from a paste.

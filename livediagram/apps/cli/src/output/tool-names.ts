@@ -13,6 +13,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   update_document: 'changeset apply',
   share_document: 'document share',
   rename_document: 'document rename',
+  style_document: 'api POST /documents/<id>/tabs/<tabId>/changesets',
   delete_document: 'document rm',
   list_trash: 'api GET /trash',
   restore_document: 'document restore',

@@ -12,6 +12,7 @@ import { EmptyPage, isEmptyPage } from './EmptyPage';
 import { LinkedFrom } from './LinkedFrom';
 import { PageMetaRow } from './PageMetaRow';
 import { PageComments } from '@/components/page-comments/PageComments';
+import { PageNotesLook } from '@/components/page-notes/PageNotesLook';
 import { PageIconHead } from '@/components/page-icon/PageIconHead';
 import { RequiredReadingAsk } from '@/components/required-reading/RequiredReadingAsk';
 import { RequiredReadingBanner } from '@/components/required-reading/RequiredReadingBanner';
@@ -21,6 +22,8 @@ export function PageKnowledgeSlots({ slots }: { slots: PageSlots }) {
   if (!store) return null;
   return (
     <>
+      {/* Comments on the writing: closed notes' words plain, detached markers out, the reading selection bar. */}
+      <PageNotesLook />
       {createPortal(<PageIconHead />, slots.head)}
       {createPortal(
         <>

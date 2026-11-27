@@ -135,7 +135,8 @@ describe('the row and the pane', () => {
     renderInbox(itemCalls);
     const row = await screen.findByRole('option', { name: /Call in progress/ });
     expect(row.getAttribute('data-inbox-key')).toBe('k:iv_1');
-    expect(within(row).getByText('Priya Shah').className).not.toContain('font-semibold');
+    // Bold while unread (inbox-reading.md), as every row is; it asks nothing, so it is never counted.
+    expect(row.hasAttribute('data-inbox-unread')).toBe(true);
     expect(row.querySelector('[data-inbox-glyph="call"]')).toBeTruthy();
     const pane = document.querySelector('[data-inbox-reader="CallInvite"]') as HTMLElement;
     expect(

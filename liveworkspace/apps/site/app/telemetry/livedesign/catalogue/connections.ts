@@ -60,6 +60,7 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('UpdateDesign', 'Update Design', 'Editing a design’s elements.'),
   mcpTool('ShareDesign', 'Share Design', 'Creating a share link for a design.'),
   mcpTool('RenameDesign', 'Rename Design', 'Renaming a design.'),
+  mcpTool('StyleDesign', 'Style Design', 'Changing a design’s theme, font or finish.'),
   mcpTool(
     'ChangeTabs',
     'Change Tabs',

@@ -4,6 +4,7 @@
 // page many people open in a minute reads it once.
 import { isAccountId } from '@liveworkspace/auth-client';
 import type { TeamPerson } from '@liveworkspace/auth-client';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { getParticipants } from '../person/profiles';
 import { teamPeople } from '../person/notify';
 import type { DocumentDTO, DocumentEnv } from '../types';
@@ -35,6 +36,8 @@ export type Audience = {
   ids: string[];
   /** The names the team gave, by id. */
   names: Map<string, string>;
+  /** Each named team member's presence colour (their own, else the one Automatic picks from the name), by id. */
+  colors: Map<string, string>;
 };
 
 /** The page's audience list. `confirmers` count for Everyone; for Chosen People only the chosen count. */
@@ -46,7 +49,8 @@ export async function audienceOf(
   now: number,
 ): Promise<Audience> {
   const names = new Map<string, string>();
-  if (requirement.audience === 'people') return { ids: [...requirement.people], names };
+  const colors = new Map<string, string>();
+  if (requirement.audience === 'people') return { ids: [...requirement.people], names, colors };
   const seen = new Set<string>();
   const ids: string[] = [];
   const add = (id: string | null | undefined) => {
@@ -58,26 +62,33 @@ export async function audienceOf(
   for (const person of team ?? []) {
     if (person.status !== 'joined' || !person.userId) continue;
     add(person.userId);
-    if (person.name) names.set(person.userId, person.name);
+    if (person.name) {
+      names.set(person.userId, person.name);
+      colors.set(person.userId, presenceColourOf(person.name, person.color));
+    }
   }
   add(document.ownerId);
   for (const id of confirmers) add(id);
-  return { ids, names };
+  return { ids, names, colors };
 }
 
-/** Each id's name: the team's, else its profile's from one read, else "Someone". */
+/** Each id's name and presence colour: the team's, else its profile's from one read, else "Someone" with no colour
+ *  (the editor draws the name's Automatic one). */
 export async function namesOf(
   env: DocumentEnv,
   ids: readonly string[],
-  known: ReadonlyMap<string, string>,
-): Promise<Map<string, string>> {
-  const missing = ids.filter((id) => !known.has(id));
-  const profiles: ReadonlyMap<string, { name?: string | null }> =
+  known: Pick<Audience, 'names' | 'colors'>,
+): Promise<Map<string, { name: string; color?: string }>> {
+  const missing = ids.filter((id) => !known.names.has(id));
+  const profiles: ReadonlyMap<string, { name?: string | null; color?: string }> =
     missing.length > 0 ? await getParticipants(env, missing) : new Map();
-  const out = new Map<string, string>();
+  const out = new Map<string, { name: string; color?: string }>();
   for (const id of ids) {
-    const name = known.get(id) ?? profiles.get(id)?.name;
-    out.set(id, typeof name === 'string' && name.trim() ? name.trim() : 'Someone');
+    const profile = profiles.get(id);
+    const name = known.names.get(id) ?? profile?.name;
+    const color = known.colors.get(id) ?? profile?.color;
+    const named = typeof name === 'string' && name.trim() ? name.trim() : 'Someone';
+    out.set(id, color ? { name: named, color } : { name: named });
   }
   return out;
 }

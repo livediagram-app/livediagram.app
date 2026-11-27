@@ -24,7 +24,7 @@ import { imageBackingInsetAttribute } from '@liveknowledge/document';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
 import { AnimatedCanvasBackground } from '@liveworkspace/workbench/components/canvas/AnimatedCanvasBackground';
-import { canvasCursorClass } from '@/lib/canvas-chrome';
+import { canvasCursorClass, pageGroundCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
@@ -57,6 +57,7 @@ import { useCanvasDrawTools } from './useCanvasDrawTools';
 import { useCanvasSelectionInput } from './useCanvasSelectionInput';
 
 import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
+import { PageLoadVeil } from '@/components/page-surface/PageLoadVeil';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
@@ -65,6 +66,7 @@ import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/u
 // (lib/editor-deferred-code.ts fetches it as the editor mounts, and before a warm paint).
 import { ArticleFlows, CanvasPages } from '@/lib/editor-deferred-code';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from '@liveworkspace/workbench/components/canvas/slide-transition';
+import { PAGE_SWITCH_VIEW_TRANSITION_UPDATE } from '@/components/page-surface/page-switch-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
@@ -245,6 +247,8 @@ function CanvasView(props: CanvasProps) {
     spaceHeld,
     isPaintMode,
   });
+  // The page's ground (its margins, its cover, the room round it) wears the plain cursor outside a drawing being edited.
+  const groundCursor = pageGroundCursorClass(cursorClass, { drawingZone, canvasTool });
 
   // Stable selection-routing wrappers for the memo'd element / arrow
   // views — see useCanvasSelectHandlers.
@@ -364,7 +368,7 @@ function CanvasView(props: CanvasProps) {
             // bottom-right cluster, the Map) rode up the screen by every scroll and stayed there. A
             // clipped box clips the same and can never scroll (docs/specs/008-canvas/canvas-and-palette.md).
             className={`relative flex-1 select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
-              pendingDraw ? '' : cursorClass
+              pendingDraw ? '' : groundCursor
             }`}
             style={canvasMainStyle({
               tabBackgroundPattern,
@@ -398,111 +402,115 @@ function CanvasView(props: CanvasProps) {
             {/* The page's scroll container (docs/specs/030-knowledgebase/page-surface.md "A reading column"): the
                 world is laid in it at the lock, so the wheel, the scrollbar, Page Up and Down, Home and End and the
                 browser's find move the page as they move any web page, and a pinch or Ctrl/Cmd-wheel is the
-                browser's own zoom. The chrome stays over it, outside what scrolls. */}
-            <div
-              ref={scrollerRef}
-              data-page-scroller=""
-              // A press off the writing lets go of a reader's selection in it (lib/page-surface/read-selection.ts).
-              onPointerDownCapture={(e) => releaseReadSelection(e.target)}
-              // A page is shown at 100% and re-wraps to a narrow window (the narrow view), so nothing scrolls sideways.
-              className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
-            >
+                browser's own zoom. The chrome stays over it, outside what scrolls. A page switch animates it, and it
+                alone, as a View Transition (page-switch-transition.ts). */}
+            <ViewTransition default="none" update={PAGE_SWITCH_VIEW_TRANSITION_UPDATE}>
               <div
-                ref={wrapperRef}
-                // The pages and elements, as against the chrome over them.
-                data-canvas-content=""
-                onPointerDown={surface.onWrapperPointerDown}
-                onDoubleClick={(e) => {
-                  // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
-                  // add-text double-click while the intent is armed.
-                  if (handlePolygonDoubleClick()) return;
-                  // Off a page nothing is made, but a finger's double-tap still zooms there.
-                  if (offPage(e) && !surface.pressedByFinger()) return;
-                  surface.onWrapperDoubleClick(e);
-                }}
-                // Its box ends PAGE_TOP_ROOM short of the scroll container's foot (worldHeight, page-lock.ts), so the
-                // box itself is never something to scroll to. The ground's cursor is the plain one outside a drawing
-                // being edited: the page has no marquee to promise.
-                className={`absolute inset-x-0 top-0 origin-center ${
-                  pendingDraw ? '' : drawingZone ? cursorClass : 'cursor-default'
-                }`}
-                // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The
-                // white under a picture"): an attribute the stylesheet reads for the pictures alone, so no picture
-                // re-renders on zoom and nothing else restyles; it changes only below 50%.
-                {...imageBackingInsetAttribute(viewportZoom)}
-                style={{
-                  ...canvasWorldStyle(viewportZoom, viewportOffset, pendingDraw),
-                  height: WORLD_HEIGHT_CSS,
-                }}
+                ref={scrollerRef}
+                data-page-scroller=""
+                // A press off the writing lets go of a reader's selection in it (lib/page-surface/read-selection.ts);
+                // a press in a portal (the reading selection bar) bubbles here through React and keeps it.
+                onPointerDownCapture={(e) => releaseReadSelection(e.target, e.currentTarget)}
+                // A page is shown at 100% and re-wraps to a narrow window (the narrow view), so nothing scrolls sideways.
+                className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
               >
-                {/* Pages mode's A4 pages, under every element (CanvasPages). */}
-                {staged && leadPage && isContinuousPage(leadPage) ? (
-                  // A knowledgebase page paints no sheet (PageSurfaceSheet): its box, its breadcrumb, its foot room.
-                  <PageSurfaceSheet
-                    key={leadPage.id}
-                    // As tall as its writing here, however short it last stored (continuous-page.md "The drawn height").
-                    page={withDrawnHeight(leadPage, props.pagesMode?.articles?.measured)}
-                    zoom={viewportZoom}
-                    margin={pageMargin}
-                    topMargin={articleTopMarginPx(leadStyle)}
-                    bare={props.zenMode === true}
-                    mobile={phone}
-                  />
-                ) : staged ? (
-                  // An article kept in a paper size (an imported livedocuments tab) still draws the fork's sheets.
-                  <CanvasPages
-                    // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
-                    // tab's own: page ids repeat across tabs.
-                    key={props.activeTabId}
-                    view={staged}
-                    zoom={viewportZoom}
-                    // Zen and presenting show the sheets alone: no labels, cogs, or add
-                    // button.
-                    bare={props.zenMode === true}
-                    placing={!!pendingDraw}
-                  />
-                ) : null}
-                {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
-            zone's elements sit in the room the writing leaves them. */}
-                {staged?.articles ? (
-                  <ArticleFlows
-                    view={staged}
-                    zoom={viewportZoom}
-                    interactive={!pendingDraw && canvasTool !== 'spotlight'}
-                    elements={elements}
-                  />
-                ) : null}
-                <CanvasArrivalProvider
-                  tabId={props.activeTabId ?? ''}
-                  loaded={props.activeTabLoaded ?? true}
-                  count={elements.length}
+                <div
+                  ref={wrapperRef}
+                  // The pages and elements, as against the chrome over them.
+                  data-canvas-content=""
+                  onPointerDown={surface.onWrapperPointerDown}
+                  onDoubleClick={(e) => {
+                    // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
+                    // add-text double-click while the intent is armed.
+                    if (handlePolygonDoubleClick()) return;
+                    // Off a page nothing is made, but a finger's double-tap still zooms there.
+                    if (offPage(e) && !surface.pressedByFinger()) return;
+                    surface.onWrapperDoubleClick(e);
+                  }}
+                  // Its box ends PAGE_TOP_ROOM short of the scroll container's foot (worldHeight, page-lock.ts), so the
+                  // box itself is never something to scroll to. The ground's cursor is the plain one outside a drawing
+                  // being edited: the page has no marquee to promise.
+                  className={`absolute inset-x-0 top-0 origin-center ${
+                    pendingDraw ? '' : groundCursor
+                  }`}
+                  // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The
+                  // white under a picture"): an attribute the stylesheet reads for the pictures alone, so no picture
+                  // re-renders on zoom and nothing else restyles; it changes only below 50%.
+                  {...imageBackingInsetAttribute(viewportZoom)}
+                  style={{
+                    ...canvasWorldStyle(viewportZoom, viewportOffset, pendingDraw),
+                    height: WORLD_HEIGHT_CSS,
+                  }}
                 >
-                  {/* The zoom reaches only the counter-scaled parts of each element
+                  {/* Pages mode's A4 pages, under every element (CanvasPages). */}
+                  {staged && leadPage && isContinuousPage(leadPage) ? (
+                    // A knowledgebase page paints no sheet (PageSurfaceSheet): its box, its breadcrumb, its foot room.
+                    <PageSurfaceSheet
+                      key={leadPage.id}
+                      // As tall as its writing here, however short it last stored (continuous-page.md "The drawn height").
+                      page={withDrawnHeight(leadPage, props.pagesMode?.articles?.measured)}
+                      zoom={viewportZoom}
+                      margin={pageMargin}
+                      topMargin={articleTopMarginPx(leadStyle)}
+                      bare={props.zenMode === true}
+                      mobile={phone}
+                    />
+                  ) : staged ? (
+                    // An article kept in a paper size (an imported livedocuments tab) still draws the fork's sheets.
+                    <CanvasPages
+                      // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
+                      // tab's own: page ids repeat across tabs.
+                      key={props.activeTabId}
+                      view={staged}
+                      zoom={viewportZoom}
+                      // Zen and presenting show the sheets alone: no labels, cogs, or add
+                      // button.
+                      bare={props.zenMode === true}
+                      placing={!!pendingDraw}
+                    />
+                  ) : null}
+                  {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
+            zone's elements sit in the room the writing leaves them. */}
+                  {staged?.articles ? (
+                    <ArticleFlows
+                      view={staged}
+                      zoom={viewportZoom}
+                      interactive={!pendingDraw && canvasTool !== 'spotlight'}
+                      elements={elements}
+                    />
+                  ) : null}
+                  <CanvasArrivalProvider
+                    tabId={props.activeTabId ?? ''}
+                    loaded={props.activeTabLoaded ?? true}
+                    count={elements.length}
+                  >
+                    {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
-                  <CanvasZoomProvider zoom={viewportZoom}>
-                    <ElementIndicatorStyleProvider
-                      style={readElementIndicatorStyle(props.settings)}
-                    >
-                      <CanvasElementsLayer
-                        {...props}
-                        hasArrows={hasArrows}
-                        arrowLabels={arrowLabels}
-                        selectionInput={selectionInput}
-                        isPaintMode={isPaintMode}
-                        handleArrowSelect={handleArrowSelect}
-                        handleElementClick={handleElementClick}
-                        handleElementContextSelect={handleElementContextSelect}
-                        quickRingOpen={quickRingOpen}
-                        setQuickRingOpen={setQuickRingOpen}
-                        drawDrag={drawDrag}
-                      />
-                    </ElementIndicatorStyleProvider>
-                  </CanvasZoomProvider>
-                </CanvasArrivalProvider>
+                    <CanvasZoomProvider zoom={viewportZoom}>
+                      <ElementIndicatorStyleProvider
+                        style={readElementIndicatorStyle(props.settings)}
+                      >
+                        <CanvasElementsLayer
+                          {...props}
+                          hasArrows={hasArrows}
+                          arrowLabels={arrowLabels}
+                          selectionInput={selectionInput}
+                          isPaintMode={isPaintMode}
+                          handleArrowSelect={handleArrowSelect}
+                          handleElementClick={handleElementClick}
+                          handleElementContextSelect={handleElementContextSelect}
+                          quickRingOpen={quickRingOpen}
+                          setQuickRingOpen={setQuickRingOpen}
+                          drawDrag={drawDrag}
+                        />
+                      </ElementIndicatorStyleProvider>
+                    </CanvasZoomProvider>
+                  </CanvasArrivalProvider>
+                </div>
+                {/* Over the world's top room, so it scrolls with the page and takes its own presses. */}
+                {hasCover ? <PageCoverBand /> : null}
               </div>
-              {/* Over the world's top room, so it scrolls with the page and takes its own presses. */}
-              {hasCover ? <PageCoverBand /> : null}
-            </div>
+            </ViewTransition>
 
             {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
           transformed wrapper so the light stays fixed on screen while the
@@ -559,7 +567,10 @@ function CanvasView(props: CanvasProps) {
             {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
-            {tabLoadState && tabLoadState !== 'ready' ? (
+            {/* A page on its way holds the page area alone, under the chrome, its loader after a moment
+                (PageLoadVeil); a failed load covers the surface with the error card and its Retry. */}
+            {tabLoadState === 'loading' ? <PageLoadVeil /> : null}
+            {tabLoadState === 'error' ? (
               <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
             ) : null}
             {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape

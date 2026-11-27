@@ -4,7 +4,7 @@
 // slide's height.
 import type { Element } from '@livedocuments/document';
 import type { Kit } from './page-layout-kit';
-import { card, columns, numberDisc, over, rule, slideHeading, slideType } from './slide-layout-kit';
+import { card, columns, numberDisc, over, slideHeading, slideType } from './slide-layout-kit';
 
 // The source line's height at the slide's foot, and the gap above it.
 const SOURCE = 6;
@@ -38,7 +38,6 @@ export function threeStatsSlide(k: Kit): Element[] {
       const fitted = k.title(at, top, size, figH, longest);
       return [
         { ...fitted, label: figure },
-        rule(k, at, top + figH + u * 3, 10),
         k.text(at, top + figH + u * 7, size, u * 8, caption, {
           ...slideType(k, 4.6),
           textBold: true,

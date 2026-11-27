@@ -70,7 +70,8 @@ behind. livediagram, liveplanner, livedocuments and livedesign offer it (Work Tr
 
 Who may connect:
 
-- To add the tab, Editor on the host (its grant at `edit`).
+- To add the tab, Editor on the whole host (its grant at `edit`, for every tab). A link limited to one tab never
+  connects a file, not even into its own tab (owner, Work Tracker 1457), as the hidden entry above says.
 - To make the pass, the right to manage the target's share links: its owner, or a joined member of its team. Items
   the person may not share are listed but cannot be picked, saying why ("Only its owner can share it").
 - Both ways also needs the right to manage the host's share links, and Editor on the target (which managing gives).
@@ -96,7 +97,7 @@ Tracker 1281). An offer is only ever a choice: nothing is made in another app un
   person's own in their My Work, else at the top of their My Work. It then connects that item to the host as
   Connecting does, at the role chosen above and both ways when the switch is on. The host's tab goes in and becomes
   the open tab, as for any connection. The row shows "Making" while it runs, and the rest of the list waits.
-- **Who may.** As for connecting (Editor on the host, both ways only for who manages it), signed in: a guest cannot
+- **Who may.** As for connecting (Editor on the whole host, never a tab-scoped link, both ways only for who manages it), signed in: a guest cannot
   keep the file it would make. The person owns the new item, so they may always make its pass.
 - **When it fails.** Nothing is made when the template door fails, and the row says "The plan could not be made just
   now. Try again." When the connection is refused (the host's or the plan's limits), the plan just made is deleted
@@ -246,6 +247,15 @@ and the rest wait; a row already connected says Connected and goes to its tab; a
 and says why; a failure says why on the row, in words ("This file has too many links already."), and leaves the list
 as it was. Loading shows quiet placeholder rows; nothing recent says so with a way to the Explorer; a failed load says
 so with Try Again.
+
+**Always the newest names** (Work Tracker 1460). The list is never one read at page load: each opening (the start
+screen's Connect File, the tab bar's Connect a File, liveknowledge's sidebar Connect File) reads Recent from the index
+afresh, and so does the page coming back into view while the list shows (a file renamed in another tab, then back
+here). The rows on screen stay while that read is on its way and when it fails; only an opening shows the placeholder
+rows. Every other list that picks a file does the same: Embed File's Recent and Find a File
+([live-embeds.md](live-embeds.md)), a link's files in Element Resources, Send to Diagram, Send to Plan, Send to
+Knowledgebase and Link a Sheet. So a rename made anywhere shows the next time the list opens or is looked at again,
+with no reload.
 
 ## A tab's own name
 

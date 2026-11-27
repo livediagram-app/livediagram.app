@@ -3,11 +3,14 @@
 // Who made the page, in the top row's left while it is read (docs/specs/030-knowledgebase/page-surface.md "Who made
 // the page"; owner, 2026-11-21: "the avatars of everybody who has created or edited that page, creator first, then all
 // the editors, hovering the avatar shows their name"): discs side by side in Page Health's order (owner 2026-11-22: not stacked) (the first writer
-// first), an agent as a sparkle, a person by their initials in a colour of their name. Hovering or focusing one
+// first), an agent as a sparkle, a person by their initials on their presence colour, as their cursor and avatar wear
+// it in every app (Work Tracker 1497: their own where Page Health's read brought it, else the one Automatic picks from
+// their name). Hovering or focusing one
 // names them. Edit mode gives the row to the formatting controls, so it shows only while reading.
 import { GUEST_DISC_TINT, GUEST_NAME, isGuestName } from './guest-disc';
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
-import { Tooltip } from '@liveknowledge/ui';
+import { IDENTITY_FILL, Tooltip, identityVars } from '@liveknowledge/ui';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { agentForPerson } from '@liveworkspace/ui/agent-for-person';
 import { initialsOf } from '@/lib/identity';
 import { AgentsIcon, MakerPersonIcon } from './knowledge-icons';
@@ -16,26 +19,21 @@ import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 /** How many discs stand in the row; the rest are counted in a last "+N" disc. */
 export const STACK_MAX = 6;
 
-const TINTS = [
-  'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-100',
-  'bg-violet-100 text-violet-800 dark:bg-violet-900/60 dark:text-violet-100',
-  'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-100',
-  'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-100',
-  'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-100',
-  'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-100',
-];
-const tintOf = (name: string): string => {
-  let h = 0;
-  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) | 0;
-  return TINTS[Math.abs(h) % TINTS.length]!;
+export type Maker = {
+  key: string;
+  name: string;
+  ai: boolean;
+  role: string;
+  /** A person's presence colour; absent for an agent and a guest. */
+  color?: string;
 };
 
-export type Maker = { key: string; name: string; ai: boolean; role: string };
-
-/** The discs' people, named: the first is the creator, the rest edited it. A person nobody here can name is a Guest. */
+/** The discs' people, named and coloured: the first is the creator, the rest edited it. A person nobody here can name
+ *  is a Guest. `colors` holds each person's own colour by id, as Page Health's read brings them. */
 export function makersOf(
   editors: readonly PageAuthorStamp[],
   nameOf: (id: string | undefined) => string | undefined,
+  colors: Readonly<Record<string, string>> = {},
 ): Maker[] {
   return editors.map((s, i) => {
     const ai = s.kind === 'ai';
@@ -48,6 +46,7 @@ export function makersOf(
       name,
       ai,
       role: i === 0 ? 'Created' : 'Edited',
+      ...(ai || isGuestName(name) ? {} : { color: presenceColourOf(name, colors[s.by]) }),
     };
   });
 }
@@ -72,14 +71,15 @@ export function PageMakersStackView({ makers }: { makers: readonly Maker[] }) {
               tabIndex={0}
               role="img"
               aria-label={`${m.name}, ${m.role}`}
-              className={`${DISC} ${m.ai ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : isGuestName(m.name) ? GUEST_DISC_TINT : tintOf(m.name)}`}
+              style={m.color ? identityVars(m.color) : undefined}
+              className={`${DISC} ${m.color ? IDENTITY_FILL : m.ai ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : GUEST_DISC_TINT}`}
             >
-              {m.ai ? (
-                <AgentsIcon />
-              ) : isGuestName(m.name) ? (
-                <MakerPersonIcon />
-              ) : (
+              {m.color ? (
                 <span className="text-optical-centre">{initialsOf(m.name)}</span>
+              ) : m.ai ? (
+                <AgentsIcon />
+              ) : (
+                <MakerPersonIcon />
               )}
             </span>
           </Tooltip>
@@ -114,5 +114,5 @@ export function PageMakersStack() {
   const { nameOf } = useKnowledgePeople();
   const editors = page.health?.editors;
   if (!editors) return null;
-  return <PageMakersStackView makers={makersOf(editors, nameOf)} />;
+  return <PageMakersStackView makers={makersOf(editors, nameOf, page.health?.colors)} />;
 }

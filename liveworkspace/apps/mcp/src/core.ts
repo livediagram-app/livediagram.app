@@ -1,7 +1,7 @@
 // The core verbs, always listed (liveworkspace/docs/specs/021-mcp/mcp.md "Three layers"): nine tools that work on
 // any item by its ref, each mapped onto the app's own tools, plus the two that reach an app's editing tools.
 import { APPS, CREATE_KINDS, KINDS, appOfKind, parseRef, refOf, type AppSpec } from './apps';
-import type { AppCatalogue, ListedTool } from './catalogue';
+import { nameRewriter, rewriteUnquoted, type AppCatalogue, type ListedTool } from './catalogue';
 import { TokenRefused, type ToolResult } from './app-client';
 
 // What a core verb needs from the request: the apps this connection may reach, each one's catalogue, and a call
@@ -115,6 +115,18 @@ export const CORE_TOOLS: readonly ListedTool[] = [
           description: 'Start from this template kind instead (not for a knowledgebase page tree).',
         },
         theme: { type: 'string', description: 'A preset theme id (not for a knowledgebase).' },
+        style: {
+          type: 'string',
+          description:
+            'A deck, article or infographic only: its whole look (theme, page design, typeface, finish) in one choice, ' +
+            '"auto" to suit its name, or a recipe such as formal-report, product-pitch, keynote, technical, workshop ' +
+            '(the resource livedocuments://guide/styles says when to use each). A theme given wins over the recipe’s.',
+        },
+        font: {
+          type: 'string',
+          description:
+            'A deck, article or infographic only: its typeface, such as inter, lora, poppins.',
+        },
       },
       required: ['kind', 'name'],
       additionalProperties: false,
@@ -156,6 +168,39 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       type: 'object',
       properties: { ref: REF, name: { type: 'string', description: 'The new name.' } },
       required: ['ref', 'name'],
+      additionalProperties: false,
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    name: 'style_item',
+    title: 'Restyle an item',
+    description:
+      'Change an item’s theme (and font, finish) at any time, on one tab or all; colours set by hand stay. ' +
+      'A doc also takes a whole style recipe.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ref: REF,
+        tab: { type: 'string', description: 'One tab’s id; every tab when left out.' },
+        theme: { type: 'string', description: 'A preset theme id.' },
+        font: { type: 'string', description: 'A font id.' },
+        finish: {
+          type: 'string',
+          enum: ['flexible', 'professional', 'sketch', 'marker'],
+          description: 'How shapes are drawn (not a knowledgebase).',
+        },
+        style: {
+          type: 'string',
+          description: 'A doc only: a style recipe, as create_item’s, or "auto".',
+        },
+      },
+      required: ['ref'],
       additionalProperties: false,
     },
     annotations: {
@@ -357,6 +402,14 @@ async function createItem(ctx: CoreContext, args: Record<string, unknown>): Prom
   const template =
     typeof args.template === 'string' && args.template ? args.template : made.template;
   const theme = typeof args.theme === 'string' && args.theme ? args.theme : undefined;
+  // A doc's look, as livedocuments' create tool takes it; no other app has one.
+  const look =
+    spec.kind === 'doc'
+      ? {
+          ...(typeof args.style === 'string' && args.style ? { style: args.style } : {}),
+          ...(typeof args.font === 'string' && args.font ? { font: args.font } : {}),
+        }
+      : {};
   const appArgs: Record<string, unknown> =
     spec.kind === 'knowledgebase'
       ? { name: args.name, ...(template ? { template } : {}) }
@@ -365,9 +418,10 @@ async function createItem(ctx: CoreContext, args: Record<string, unknown>): Prom
           // An app makes nothing without a tab: a blank one when no template is named.
           tabs: [template ? { template } : { elements: [] }],
           ...(theme ? { theme } : {}),
+          ...look,
         };
   const result = await ctx.call(spec, spec.core.create, appArgs);
-  if (result.isError) return result;
+  if (result.isError) return inCoreWords(ctx, spec, result);
   return withRef(spec, result);
 }
 
@@ -539,6 +593,50 @@ async function callEditingTool(
   return ctx.call(found.spec, found.appTool, withAppId(found.spec, found.tool, toolArgs, args.ref));
 }
 
+/**
+ * A core verb's refusal in this server's words: the app's tools it names for what a core verb does (`restore_doc`,
+ * `find_docs`) become that verb, so an assistant is pointed at the tool it just used the family of. Quoted words
+ * (a name someone gave) stay; an answer that is not a refusal is as the app gave it.
+ */
+async function inCoreWords(
+  ctx: CoreContext,
+  spec: AppSpec,
+  result: ToolResult,
+): Promise<ToolResult> {
+  if (!result.isError) return result;
+  const catalogue = await ctx.catalogue(spec).catch((err: unknown) => {
+    if (err instanceof TokenRefused) throw err;
+    return null;
+  });
+  if (!catalogue) return result;
+  const here = new Map([...catalogue.toApp].map(([name, own]) => [own, name]));
+  const core: [string, string][] = [
+    [spec.core.find, 'find_items'],
+    [spec.core.listTrash, 'find_items'],
+    [spec.core.create, 'create_item'],
+    [spec.core.share, 'share_item'],
+    [spec.core.rename, 'rename_item'],
+    [spec.core.trash, 'trash_item'],
+    [spec.core.restore, 'restore_item'],
+    [spec.core.style, 'style_item'],
+  ];
+  const renames = new Map<string, string>();
+  for (const [own, verb] of core) {
+    renames.set(own, verb);
+    const name = here.get(own);
+    if (name) renames.set(name, verb);
+  }
+  const rewrite = nameRewriter(renames);
+  return {
+    ...result,
+    content: result.content.map((part) =>
+      part.type === 'text' && typeof part.text === 'string'
+        ? { ...part, text: rewriteUnquoted(part.text, rewrite) }
+        : part,
+    ),
+  };
+}
+
 /** Runs a core verb; null when the name is not one. */
 export async function runCore(
   ctx: CoreContext,
@@ -559,32 +657,74 @@ export async function runCore(
     case 'share_item':
     case 'rename_item':
     case 'trash_item':
+    case 'style_item':
     case 'restore_item': {
       const target = byRef(ctx, args);
       if ('error' in target) return target.error!;
       const { spec, id } = target as { spec: AppSpec; id: string };
-      const idArg = { [spec.idParam]: id };
-      if (name === 'read_item')
-        return ctx.call(spec, spec.core.read, {
-          ...idArg,
-          ...(typeof args.tabId === 'string' && spec.kind !== 'knowledgebase'
-            ? { tabId: args.tabId }
-            : {}),
-        });
-      if (name === 'share_item')
-        return ctx.call(spec, spec.core.share, {
-          ...idArg,
-          ...(typeof args.role === 'string' ? { role: args.role } : {}),
-          ...(typeof args.expiry === 'string' ? { expiry: args.expiry } : {}),
-        });
-      if (name === 'rename_item')
-        return ctx.call(spec, spec.core.rename, { ...idArg, name: args.name });
-      if (name === 'trash_item') return ctx.call(spec, spec.core.trash, idArg);
-      return ctx.call(spec, spec.core.restore, idArg);
+      return inCoreWords(ctx, spec, await coreCall(ctx, name, spec, id, args));
     }
     default:
       return null;
   }
+}
+
+const STYLE_FIELDS = ['theme', 'font', 'finish', 'style'] as const;
+
+// style_item as the app's own style tool: a knowledgebase has one look and no finish, only a doc takes a recipe.
+function styleCall(
+  ctx: CoreContext,
+  spec: AppSpec,
+  idArg: Record<string, string>,
+  args: Record<string, unknown>,
+): Promise<ToolResult> {
+  const given = Object.fromEntries(
+    STYLE_FIELDS.filter((k) => typeof args[k] === 'string').map((k) => [k, args[k]]),
+  );
+  const refuse = (text: string) =>
+    Promise.resolve({ content: [{ type: 'text' as const, text }], isError: true });
+  if (Object.keys(given).length === 0)
+    return refuse('Give at least one of theme, font, finish and style.');
+  if (given.style !== undefined && spec.kind !== 'doc')
+    return refuse('"style" (a recipe) is a doc’s: give a theme, font or finish instead.');
+  if (spec.kind === 'knowledgebase' && (given.finish !== undefined || typeof args.tab === 'string'))
+    return refuse(
+      'A knowledgebase has one look and no finish: give its theme or font (style_knowledgebase, by list_app_tools, takes its sizes too).',
+    );
+  return ctx.call(spec, spec.core.style, {
+    ...idArg,
+    ...(typeof args.tab === 'string' ? { tabId: args.tab } : {}),
+    ...given,
+  });
+}
+
+// One of the verbs on a single item, as its app's own tool.
+function coreCall(
+  ctx: CoreContext,
+  name: string,
+  spec: AppSpec,
+  id: string,
+  args: Record<string, unknown>,
+): Promise<ToolResult> {
+  const idArg = { [spec.idParam]: id };
+  if (name === 'read_item')
+    return ctx.call(spec, spec.core.read, {
+      ...idArg,
+      ...(typeof args.tabId === 'string' && spec.kind !== 'knowledgebase'
+        ? { tabId: args.tabId }
+        : {}),
+    });
+  if (name === 'share_item')
+    return ctx.call(spec, spec.core.share, {
+      ...idArg,
+      ...(typeof args.role === 'string' ? { role: args.role } : {}),
+      ...(typeof args.expiry === 'string' ? { expiry: args.expiry } : {}),
+    });
+  if (name === 'rename_item')
+    return ctx.call(spec, spec.core.rename, { ...idArg, name: args.name });
+  if (name === 'trash_item') return ctx.call(spec, spec.core.trash, idArg);
+  if (name === 'style_item') return styleCall(ctx, spec, idArg, args);
+  return ctx.call(spec, spec.core.restore, idArg);
 }
 
 export { APPS };

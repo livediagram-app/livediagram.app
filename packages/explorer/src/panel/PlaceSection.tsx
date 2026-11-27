@@ -33,8 +33,18 @@ export function PlaceSection({
   rootLabel: string;
   pendingRename: React.MutableRefObject<((id: string) => void) | null>;
 }) {
-  const { client, app, filter, overlay, epoch, placedEpoch, folders, words, setRenamingId } =
-    useExplorer();
+  const {
+    client,
+    app,
+    filter,
+    overlay,
+    epoch,
+    placedEpoch,
+    folders,
+    words,
+    setRenamingId,
+    returns,
+  } = useExplorer();
   const sharedMeta = useRef(new Map());
   const view = paneView(section, folderId);
   const list = useMemo(
@@ -48,6 +58,7 @@ export function PlaceSection({
     belongs: list?.belongs,
     cap: list?.cap,
     epoch,
+    fresh: returns,
     enabled: Boolean(list?.enabled),
   });
   // A folder just made opens renaming.

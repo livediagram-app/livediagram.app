@@ -12,6 +12,10 @@
 // the pane where the pane stands in for the list), r replies and e resolves or marks done where the page can.
 // Rows are in ./inbox/InboxRows, the pane in ./inbox/InboxReader, the model in ./inbox/sections.
 //
+// Each row is read or unread, kept by the index for every app (inbox-reading.md "Read and unread"): a row shown in
+// the pane for READ_AFTER_MS, or acted on, is read; u marks the chosen row unread (or read), and the header's Mark All
+// Read reads every row.
+//
 // Arriving from an editor's notice (`?at=<row key>`, inbox-notices.md) chooses that row once it is listed, and while
 // the list is on screen its rows count as read for the notices (./inbox/useInboxArrival).
 
@@ -42,6 +46,9 @@ import {
 import { useInboxAt, useListedSeen } from './inbox/useInboxArrival';
 import { PaneHeader } from './PaneHeader';
 import { HeaderIconButton } from '../ui/HeaderIconButton';
+import { CheckAllIcon } from '../ui/icons';
+import { isInboxRowUnread, type InboxReadState } from '@liveworkspace/index-client';
+import { readOf } from './inbox/inbox-keys';
 import { useNow } from '../time';
 
 export const INBOX_FILTER_KEY = 'liveworkspace:explorer-inbox-filter';
@@ -49,6 +56,22 @@ const filterKey = (viewerId: string | null) => `${INBOX_FILTER_KEY}:${viewerId ?
 
 /** Below this the page shows the list alone and the pane in its place (Tailwind's `md`). */
 export const INBOX_STACKED_QUERY = '(max-width: 767px)';
+
+/** How long a row is shown in the pane before it reads as read (inbox-reading.md): a glance on the way past isn't. */
+export const READ_AFTER_MS = 1_000;
+
+const isUnread = (e: InboxEntry, read: InboxReadState | undefined, viewerId: string | null) => {
+  // A thread whose latest comment is the reader's own (a reply sent from here or from its app) has nothing new for them.
+  if (
+    (e.kind === 'Thread' || e.kind === 'CardThread') &&
+    viewerId &&
+    e.row.latestAuthorId === viewerId &&
+    !e.row.latestAgent
+  )
+    return false;
+  const { key, at } = readOf(e);
+  return isInboxRowUnread(key, at, read);
+};
 
 function readFilter(viewerId: string | null): InboxFilter {
   const saved = readStored(filterKey(viewerId));
@@ -74,6 +97,8 @@ export function InboxPane({
 }) {
   const { inbox, inboxHost, viewerId, words } = useExplorer();
   const settle = inbox.settle;
+  const { markRead, markUnread, markAllRead } = inbox;
+  const read = inbox.data?.read;
   const onTelemetry = inboxHost?.onTelemetry;
   // `Activity / Opened` once per visit, through the host's hook as it is when the Inbox opens: not per read
   // (returning to the tab re-reads, which is not a visit), nor when the filter or the host's props change.
@@ -109,6 +134,11 @@ export function InboxPane({
   const selected = picked ?? (stacked ? undefined : visible[0]);
   const selectedIndex = selected ? visible.indexOf(selected) : -1;
   const showPane = stacked ? paneOpen && Boolean(picked) : Boolean(selected);
+  const shownUnread = showPane && selected ? isUnread(selected, read, viewerId) : false;
+  const anyUnread = useMemo(
+    () => entries.some((e) => isUnread(e, read, viewerId)),
+    [entries, read, viewerId],
+  );
 
   const [message, setMessage] = useState('');
   const announce = useCallback((m: string) => setMessage(m), []);
@@ -180,6 +210,56 @@ export function InboxPane({
     reader.current?.focusTitle();
     return () => window.removeEventListener('popstate', onPop);
   }, [paneStands]);
+
+  // The row on show reads as read after a moment in the pane; moving on before then leaves it unread.
+  const shownRead = showPane && picked ? readOf(picked) : null;
+  // Only a row the person chose reads as read: the first row shown on its own as the page opens is not.
+  const pickedUnread = showPane && picked ? isUnread(picked, read, viewerId) : false;
+  const readKey = pickedUnread && shownRead ? `${shownRead.key}@${shownRead.at}` : null;
+  // A row marked unread by hand stays unread while it is on show: the timer reads it only once it is chosen again.
+  const [keptUnread, setKeptUnread] = useState<string | null>(null);
+  const pickedKey = picked?.key ?? null;
+  useEffect(() => setKeptUnread(null), [pickedKey]);
+  const toRead = useRef(shownRead);
+  toRead.current = shownRead;
+  useEffect(() => {
+    if (!readKey || readKey === keptUnread) return;
+    const timer = setTimeout(() => {
+      const row = toRead.current;
+      if (row) markRead([row]);
+    }, READ_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [readKey, keptUnread, markRead]);
+
+  const toggleRead = useCallback(
+    (entry: InboxEntry) => {
+      const row = readOf(entry);
+      if (isUnread(entry, read, viewerId)) {
+        markRead([row]);
+        onTelemetry?.('Changed', 'Read');
+        announce('Marked read');
+      } else {
+        markUnread(row.key);
+        setKeptUnread(`${row.key}@${row.at}`);
+        onTelemetry?.('Changed', 'Unread');
+        announce('Marked unread');
+      }
+    },
+    [read, viewerId, markRead, markUnread, onTelemetry, announce],
+  );
+  const readAll = useCallback(() => {
+    if (!anyUnread) return;
+    markAllRead();
+    onTelemetry?.('Changed', 'ReadAll');
+    announce('Marked everything read');
+  }, [anyUnread, markAllRead, onTelemetry, announce]);
+  // A verb done on the row reads it, whatever the clock says.
+  const onActed = useCallback(
+    (entry: InboxEntry) => {
+      if (isUnread(entry, read, viewerId)) markRead([readOf(entry)]);
+    },
+    [read, viewerId, markRead],
+  );
 
   const onPick = useCallback(
     (key: string) => {
@@ -253,6 +333,11 @@ export function InboxPane({
       return;
     }
     if (!showPane) return;
+    if (e.key === 'u' && selected) {
+      e.preventDefault();
+      toggleRead(selected);
+      return;
+    }
     if (e.key === 'r' && reader.current?.reply()) e.preventDefault();
     else if (e.key === 'e' && reader.current?.primary()) e.preventDefault();
   };
@@ -319,6 +404,7 @@ export function InboxPane({
           counts={counts}
           onChange={setFilter}
           slot={compact ? filterSlot : headerSlot}
+          markAll={<MarkAllRead disabled={!anyUnread} onClick={readAll} />}
         />
         {visible.length === 0 ? (
           <div className="px-4 py-10 text-center">
@@ -346,6 +432,7 @@ export function InboxPane({
             rowId={rowId}
             density={density}
             viewerId={viewerId}
+            read={read}
             onPick={onPick}
           />
         </ul>
@@ -359,6 +446,9 @@ export function InboxPane({
         onBack={stacked ? closePane : undefined}
         onGone={onGone}
         announce={announce}
+        unread={shownUnread}
+        onToggleRead={toggleRead}
+        onActed={onActed}
       />
     ) : null;
     if (stacked) {
@@ -431,6 +521,7 @@ function Rows({
   rowId,
   density,
   viewerId,
+  read,
   onPick,
 }: {
   visible: readonly InboxEntry[];
@@ -438,6 +529,7 @@ function Rows({
   rowId: (i: number) => string;
   density: InboxDensity;
   viewerId: string | null;
+  read: InboxReadState | undefined;
   onPick: (key: string) => void;
 }) {
   const now = useNow();
@@ -465,6 +557,7 @@ function Rows({
         entry={e}
         id={rowId(i)}
         selected={e.key === selectedKey}
+        unread={isUnread(e, read, viewerId)}
         density={density}
         viewerId={viewerId}
         onPick={onPick}
@@ -483,11 +576,14 @@ function FilterDropdown({
   counts,
   onChange,
   slot,
+  markAll,
 }: {
   filter: InboxFilter;
   counts: Record<InboxFilter, number>;
   onChange: (f: InboxFilter) => void;
   slot: HTMLElement | null | undefined;
+  /** Mark All Read, drawn before the filter wherever it goes. */
+  markAll?: React.ReactNode;
 }) {
   const select = (
     <Select
@@ -508,8 +604,28 @@ function FilterDropdown({
       ))}
     </Select>
   );
+  const tools = (
+    <span className="flex min-w-0 items-center gap-1">
+      {markAll}
+      {select}
+    </span>
+  );
   if (slot === undefined) {
-    return <div className="flex justify-end px-3 pb-1 pt-2">{select}</div>;
+    return <div className="flex justify-end px-3 pb-1 pt-2">{tools}</div>;
   }
-  return slot ? createPortal(select, slot) : null;
+  return slot ? createPortal(tools, slot) : null;
+}
+
+/** Mark All Read: every row read, in every app; dimmed with nothing unread. */
+function MarkAllRead({ disabled, onClick }: { disabled: boolean; onClick: () => void }) {
+  return (
+    <HeaderIconButton
+      label={disabled ? 'Everything is read' : 'Mark All Read'}
+      onClick={onClick}
+      dataId="inbox-mark-all-read"
+      disabled={disabled}
+    >
+      <CheckAllIcon />
+    </HeaderIconButton>
+  );
 }

@@ -224,7 +224,7 @@ token required; an API token is refused):
 
 ```
 POST /api/documents/<documentId>/notify-action
-body: { teamId, assigneeUserId?, assigneeMemberId?, actionName, description? }
+body: { teamId, assigneeUserId?, assigneeMemberId?, actionName, description?, due? }
 answer: 202, the email worked out in the background
 ```
 
@@ -261,8 +261,9 @@ The server, not the client, establishes every fact that matters:
 Then it sends the **action-assigned** email (template in
 `email/templates.ts`, dispatcher in `email/notifications.ts`, best-effort in `ctx.waitUntil`): "{assigner}
 assigned you an action on _{document name}_", the action name, the first
-~200 characters of the description, and a CTA linking to the document (when
-the assignee can open it, see above). All
+~200 characters of the description, the due day when the action has one ("Due 3 December 2026": the calendar day
+itself, so it reads the same in every zone; a `due` that is not a calendar day answers 400), and a CTA linking to
+the document (when the assignee can open it, see above). All
 user-influenced strings (action name, description, document name, assigner
 name) are HTML-escaped. The content stays within [Transactional email](../014-identity/transactional-email.md) §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
@@ -421,7 +422,14 @@ enum-ish tokens, not user content.
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
   a projection the document pushes to liveworkspace's index from its outbox after a tab save,
   with the per-element blob still the source of truth.
-- Due dates, priorities, more than one action on an element, and multiple
+- ~~Due dates~~: an action may carry a **due day** (`ElementAction.due`, a calendar day such as `2026-12-03`, no
+  time or zone), set in the Assign Action dialog's optional "Due date" field and cleared by emptying it, shown in the
+  action's popover ("Due today", "Due tomorrow", "Due Thu 3 Dec", red once past while open) and in the page's
+  Comments list (Work Tracker 1484). Its Inbox row says it the same way, beside the row's reason ("To do · Due Thu 3
+  Dec"), red once past, from the `due` the page's push carries; and the assign email names it ("Due 3 December
+  2026"), from the `due` the dialog sends to `notify-action` (Work Tracker 1487). An action with no due day shows
+  neither.
+- Priorities, more than one action on an element, and multiple
   assignees.
 - Auto-sharing the document with the assignee on assign (§4 caveat).
 - View-role mutation endpoints (complete-without-edit-access).

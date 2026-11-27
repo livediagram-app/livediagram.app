@@ -153,8 +153,9 @@ export type PageKnowledgeResponse = { knowledge: PageKnowledge };
 export type PageHealthResponse = PageKnowledgeResponse & {
   reads: { people: number; agents: number };
   /** The names of the accounts this page names (its creator, its last writer, its editors, its owner, who verified
-   *  it), by account id, so every reader can name them (verification.md "Created and Updated"); absent when none has
-   *  a name. */
+   *  it, who asked for and decided its approval), by account id, so every reader can name them (verification.md
+   *  "Created and Updated"); a Viewer's by the stand-ins its read holds in place of the ids (share-roles.md "Ids a
+   *  Viewer sees"). Absent when none has a name. */
   names?: Record<string, string>;
   /** Each of those accounts' colour (their avatar's, Version History's dot), by account id, so Page Health's foot draws
    *  a person's disc in it; absent when none has one. */
@@ -542,6 +543,8 @@ export type KnowledgePageRow = KnowledgePageRef & {
   trust: KnowledgePageTrust;
   /** The page's labels by name (page-surface.md "Page labels"); absent for none. */
   labels?: string[];
+  /** When the page was last saved, ms since the epoch (knowledgebase-export.md "What the zip holds"). */
+  updatedAt?: number;
 };
 /** A connected file in the tree (links-and-embeds.md "Connected files in the sidebar"): another app's file placed
  *  among the pages, which is no page. It holds no subpages and no trust, and `read_page` does not read it. */
@@ -563,6 +566,9 @@ export const isKnowledgePageRow = (row: KnowledgeTreeRow): row is KnowledgePageR
 export type KnowledgePagesResponse = {
   reviewEvery: KnowledgeReviewEvery;
   pages: KnowledgeTreeRow[];
+  /** With `?names=1`: each page owner's name, by account id, so an export names them (knowledgebase-export.md);
+   *  an owner with no name is absent. */
+  names?: Record<string, string>;
 };
 /** `GET .../pages/<tab>`: one page as Markdown, its page links by their current titles. `heading` and `maxChars`
  *  narrow it; `leftOut` counts the characters not sent and `headings` lists the page's sections. */

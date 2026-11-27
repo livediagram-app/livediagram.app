@@ -80,7 +80,6 @@ livedocuments/apps/api/src/document-room/automations/kit-outline.ts	liveknowledg
 livedocuments/apps/api/src/routes/automation-hook-route.ts	liveknowledge/apps/api/src/routes/automation-hook-route.ts
 livedocuments/apps/api/src/routes/document-shared-tabs-route.ts	liveknowledge/apps/api/src/routes/document-shared-tabs-route.ts
 livedocuments/apps/api/src/routes/email-optout-route.ts	liveknowledge/apps/api/src/routes/email-optout-route.ts
-livedocuments/apps/api/src/routes/notify-action-route.ts	liveknowledge/apps/api/src/routes/notify-action-route.ts
 livedocuments/apps/api/src/routes/preferences.ts	liveknowledge/apps/api/src/routes/preferences.ts
 livedocuments/apps/api/src/routes/share.ts	liveknowledge/apps/api/src/routes/share.ts
 livedocuments/apps/api/src/routes/tab-link-route.ts	liveknowledge/apps/api/src/routes/tab-link-route.ts
@@ -153,7 +152,6 @@ livedocuments/apps/editor/lib/article/article-schema-table.ts	liveknowledge/apps
 livedocuments/apps/editor/lib/article/article-table-editor.ts	liveknowledge/apps/editor/lib/article/article-table-editor.ts
 livedocuments/apps/editor/lib/article/article-table-repeat.ts	liveknowledge/apps/editor/lib/article/article-table-repeat.ts
 livedocuments/apps/editor/lib/article/article-telemetry.ts	liveknowledge/apps/editor/lib/article/article-telemetry.ts
-livedocuments/apps/editor/lib/canvas-chrome.ts	liveknowledge/apps/editor/lib/canvas-chrome.ts
 livedocuments/apps/editor/lib/editor-path.ts	liveknowledge/apps/editor/lib/editor-path.ts
 livedocuments/apps/editor/lib/explorer-landing.ts	liveknowledge/apps/editor/lib/explorer-landing.ts
 livedocuments/apps/editor/lib/find/find-highlight-store.ts	liveknowledge/apps/editor/lib/find/find-highlight-store.ts
@@ -188,11 +186,9 @@ livedocuments/packages/document/src/auto-layout-sweep.ts	liveknowledge/packages/
 livedocuments/packages/document/src/auto-layout-tree.ts	liveknowledge/packages/document/src/auto-layout-tree.ts
 livedocuments/packages/document/src/build-types.ts	liveknowledge/packages/document/src/build-types.ts
 livedocuments/packages/document/src/chart-ink.ts	liveknowledge/packages/document/src/chart-ink.ts
-livedocuments/packages/document/src/collab-index-rows.ts	liveknowledge/packages/document/src/collab-index-rows.ts
 livedocuments/packages/document/src/collab-ledger.ts	liveknowledge/packages/document/src/collab-ledger.ts
 livedocuments/packages/document/src/component-factories.ts	liveknowledge/packages/document/src/component-factories.ts
 livedocuments/packages/document/src/duplicate.ts	liveknowledge/packages/document/src/duplicate.ts
-livedocuments/packages/document/src/element-action.ts	liveknowledge/packages/document/src/element-action.ts
 livedocuments/packages/document/src/element-deltas.ts	liveknowledge/packages/document/src/element-deltas.ts
 livedocuments/packages/document/src/element-fields.ts	liveknowledge/packages/document/src/element-fields.ts
 livedocuments/packages/document/src/element-images.ts	liveknowledge/packages/document/src/element-images.ts

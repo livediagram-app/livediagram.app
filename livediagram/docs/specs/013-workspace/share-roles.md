@@ -40,7 +40,7 @@ A Participant changes the board's **content**, never its **shape**.
 
 | May                                                                                                                                                                        | Never                                                                                                                                                                                                                                                                                                            |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Take part in session tools: cast and withdraw dots, answer estimate cards, temperature checks, the Done check and quizzes, drop ideas in the idea box                      | Start, end, reveal, clear or configure a session tool; take the roll; spin a Picker; press Bring Focus; hold the baton                                                                                                                                                                                           |
+| Take part in session tools: cast and withdraw dots, answer estimate cards, temperature checks, the Done check and quizzes, drop ideas in the idea box                      | Start, end, reveal, clear or configure a session tool; take the roll; spin or reset a Picker; press Bring Focus; hold the baton                                                                                                                                                                                  |
 | Add a sticky, a text element or an image; grow a mind map (a node as a branch of one already there, with the connector joining them)                                       | Add any other element: shapes, free connectors, frames, templates, kits; a mind node with no branch to grow from                                                                                                                                                                                                 |
 | Write on any element: change its text (a sticky's, a shape's label, a table's cells)                                                                                       | Change any other field of an element it did not add: size, style, rotation, layer, lock; write on a Behaviour (a poll's question, a timer's or mode button's caption); change an entity's fields, its keys or its relationships' cardinality (a data model's structure, [The entity](../009-elements/entity.md)) |
 | Move and resize any sticky or image; recolour any sticky; move any mind node, and turn a mind connector's faces, so a growing map re-lays itself; swap any image's picture | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                                                                                                                                                                                            |
@@ -242,6 +242,37 @@ browser never chooses it.
 - **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions
   with the server's key, so peers see them as its person's, but drops its dots and responses until it reloads, which
   the new-version prompt offers.
+
+### Ids a Viewer sees
+
+A Viewer reads names, never other people's account or guest ids (owner, 2026-11-25, Work Tracker 1451). An id ties a
+person to every liveworkspace item they touch, and a guest's id is the one their api calls carry, so it is no more a
+reader's than the owner id is ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
+
+- **Hidden.** Every person field reads `hidden` unless it is the Viewer's own id: an assigned action's assignee
+  (`assignee.userId`, `assignee.memberId`) and assigner (`assignerId`), a comment mention's person (`userId`,
+  `memberId`). Names, colours and pictures stay, so the screen reads as it did. A comment's author id was
+  already left out for everyone but its author.
+- **Keys stay.** A collab key ([The collab key](#the-collab-key)), an adder key and a Q&A voter id are one-way and
+  give no id away, so answers, dots, votes, reactions and added stickies count and show as before. Only an entry from
+  before those keys that holds an account or guest id (`user_…`, `guest_…`) in an answer, a dot, a dot vote's
+  starter or a Q&A vote reads `hidden-<n>`, numbered so a count stays right.
+- **For You still works.** The Viewer's own id is never hidden, so a signed-in Viewer's own actions still read as
+  theirs. The realtime room holds no id, only each session's collab key: an id is the session's own when it derives
+  that key.
+- **Where.** The tab read and everything built on it (document views, the MCP's and the CLI's reads), the comment
+  list, and every op frame the realtime room sends a Viewer's socket, its catch-up included. A Viewer is a grant
+  below Participant, or a room session below Participant (one from before the role stamp included), that is not the
+  owner. Participants and Editors read every id, as they always did.
+- **Restore on save.** A whole-tab write (the tab save, its delta save, a changeset and its revert) puts every hidden
+  value back from the stored tab before anything else reads the write: objects match by field, list entries by `id`,
+  and a hidden answer, dot or vote is swapped for the stored one it stood for. So a save made from a Viewer's copy (a
+  link raised to Editor while the editor was open) never wipes an id. A hidden value with nothing stored behind it is
+  cleared (an assignee's id null, an assigner blank, anything else gone), so the placeholder is never stored.
+- **A copy.** A copy made by anyone but the owner keeps no one's id but the copier's, as it already keeps no one's
+  comment author id: an assignee's id is cleared, an assigner blank, and an id-shaped key reads `someone-<n>`.
+- **One rule.** `@liveworkspace/api-kit/hidden-people` (`hidePeople`, `restoreHiddenPeople`, `copyWithoutPeople`,
+  `frameForViewer`) is every product's; this product's api calls it at each of the doors above.
 
 ## Moving to three levels
 

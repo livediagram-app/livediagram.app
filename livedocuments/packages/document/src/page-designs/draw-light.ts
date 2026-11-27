@@ -1,6 +1,6 @@
 // The Light family (docs/specs/011-theme/page-designs.md "The catalogue"): frosted glass, a spotlight,
-// out-of-focus lights and soft shadows. Shadows are stacked translucent shapes and soft lights radial gradients, never
-// blur filters, so nothing here needs a filter to draw. Pure.
+// out-of-focus lights, soft shadows and things lifted off the page (cards and instant photos). Shadows are stacked
+// translucent shapes and soft lights radial gradients, never blur filters, so nothing here needs a filter to draw. Pure.
 import {
   between,
   glowDef,
@@ -9,6 +9,7 @@ import {
   trio,
   unit,
   type DesignLayer,
+  type DesignPlate,
   type DrawCtx,
   type Drawer,
 } from './draw-kit';
@@ -209,10 +210,116 @@ const layeredCards: Drawer = (c) => {
   return [{ svg: cards.join('') }];
 };
 
+// Card Cascade: a diagonal run of small cards dealt out of the focus's corner toward the middle, each smaller and
+// paler than the one before it, the largest (in the corner) on top.
+const cardCascade: Drawer = (c) => {
+  const u = unit(c) * 1.2;
+  const [fx, fy] = c.t.focus;
+  const sx = fx * c.w;
+  const sy = fy * c.h;
+  const toward = Math.atan2(c.h / 2 - sy, c.w / 2 - sx);
+  const step = u * 10;
+  const colours = trio(c);
+  const cards: string[] = [];
+  for (let i = 4; i >= 0; i -= 1) {
+    const k = 0.86 ** i;
+    const w = u * 34 * k;
+    const h = u * 22 * k;
+    const cx = sx + Math.cos(toward) * step * i;
+    const cy = sy + Math.sin(toward) * step * i;
+    const x = cx - w / 2;
+    const y = cy - h / 2;
+    const turn = -8 + i * 3 + between(c.rnd, -2, 2);
+    cards.push(
+      `<g transform="rotate(${n(turn)} ${n(cx)} ${n(cy)})">` +
+        softShadow(x, y, w, h, u * 1.8 * k, u * 0.5, u * 1.3, c.p.dark ? 0.28 : 0.1) +
+        `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${n(u * 1.8 * k)}" fill="${colours[i % 3]}" fill-opacity="${n(0.85 - i * 0.12)}"/>` +
+        `<rect x="${n(x + w * 0.1)}" y="${n(y + h * 0.16)}" width="${n(w * 0.42)}" height="${n(u * 1.2 * k)}" rx="${n(u * 0.6 * k)}" fill="#ffffff" fill-opacity="0.5"/>` +
+        `<rect x="${n(x + w * 0.1)}" y="${n(y + h * 0.16 + u * 2.4 * k)}" width="${n(w * 0.28)}" height="${n(u * 0.9 * k)}" rx="${n(u * 0.45 * k)}" fill="#ffffff" fill-opacity="0.32"/></g>`,
+    );
+  }
+  return [{ svg: cards.join('') }];
+};
+
+// How far a Polaroid reaches into the page from its corner, in units (a hundredth of the short side): about 7% of
+// the short side down, under an article's header band (72 px from the top on an A4 page of 794 px), and 9% across.
+const POLAROID_REACH_X = 9;
+const POLAROID_REACH_Y = 7;
+
+// Polaroids: small instant photos tucked into the page's four corners, each hanging well off its edges so only a
+// margin's worth shows (owner's verifier, 2026-11-25: a full photo covered the layouts' titles and author lines): a
+// frame (white, a little see-through on a dark page) with a soft picture in the palette (a sky, a sun and a hill), a
+// strip of tape and a tilt of its own. Each frame is a plate, so the guard sees it under any text that still meets it.
+const polaroids: Drawer = (c) => {
+  const u = unit(c);
+  const colours = trio(c);
+  const frame = c.p.dark ? '#e2e8f0' : '#ffffff';
+  const frameOpacity = c.p.dark ? 0.82 : 0.95;
+  const w = u * 17;
+  const h = u * 20;
+  const plates: DesignPlate[] = [];
+  // Each corner, and which way is into the page across and down.
+  const corners: [number, number, number, number][] = [
+    [0, 0, 1, 1],
+    [1, 0, -1, 1],
+    [1, 1, -1, -1],
+    [0, 1, 1, -1],
+  ];
+  const photos = corners.map(([fx, fy, sx, sy], i) => {
+    // The turned frame's box (its tape and shadow too), so it can be placed by how far it reaches in.
+    const turn = between(c.rnd, -14, 14);
+    const r = (Math.abs(turn) * Math.PI) / 180;
+    const hx = (w * Math.cos(r) + h * Math.sin(r)) / 2 + u * 1.5;
+    const hy = (w * Math.sin(r) + h * Math.cos(r)) / 2 + u * 1.5;
+    // A corner of a photo, reaching POLAROID_REACH_X across and POLAROID_REACH_Y down into the page: clear of a
+    // slide's margins and of an article's header and footer bands (verifier, 2026-11-25).
+    const cx = fx * c.w + sx * (u * POLAROID_REACH_X - hx);
+    const cy = fy * c.h + sy * (u * POLAROID_REACH_Y - hy);
+    const x = cx - w / 2;
+    const y = cy - h / 2;
+    const pad = u * 1.1;
+    const pw = w - pad * 2;
+    const ph = pw;
+    const sky = `${c.uid}-po${i}`;
+    const a = colours[i % 3]!;
+    const b = colours[(i + 1) % 3]!;
+    const land = colours[(i + 2) % 3]!;
+    const hill = `M${n(x + pad)} ${n(y + pad + ph * 0.72)}Q${n(x + pad + pw * 0.35)} ${n(y + pad + ph * between(c.rnd, 0.45, 0.6))} ${n(x + pad + pw * 0.65)} ${n(y + pad + ph * 0.68)}T${n(x + pad + pw)} ${n(y + pad + ph * 0.62)}V${n(y + pad + ph)}H${n(x + pad)}Z`;
+    plates.push({
+      x: cx - hx,
+      y: cy - hy,
+      w: hx * 2,
+      h: hy * 2,
+      colours: [frame, a, b, land],
+      opacity: frameOpacity,
+    });
+    return (
+      `<g transform="rotate(${n(turn)} ${n(cx)} ${n(cy)})">` +
+      softShadow(x, y, w, h, u * 0.4, u * 0.4, u * 1.2, c.p.dark ? 0.3 : 0.1) +
+      `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${n(u * 0.4)}" fill="${frame}" fill-opacity="${frameOpacity}"/>` +
+      `<defs>${linearDef(
+        sky,
+        [
+          [0, a, 0.75],
+          [1, b, 0.45],
+        ],
+        170,
+      )}</defs>` +
+      `<rect x="${n(x + pad)}" y="${n(y + pad)}" width="${n(pw)}" height="${n(ph)}" fill="url(#${sky})"/>` +
+      `<circle cx="${n(x + pad + pw * between(c.rnd, 0.6, 0.8))}" cy="${n(y + pad + ph * 0.32)}" r="${n(pw * 0.1)}" fill="#ffffff" fill-opacity="0.75"/>` +
+      `<path d="${hill}" fill="${land}" fill-opacity="0.8"/>` +
+      `<rect x="${n(cx - u * 3)}" y="${n(y - u * 1)}" width="${n(u * 6)}" height="${n(u * 2)}" fill="${frame}" fill-opacity="0.55" stroke="${c.p.ink}" stroke-opacity="0.08" transform="rotate(${n(between(c.rnd, -8, 8))} ${n(cx)} ${n(y)})"/></g>`
+    );
+  });
+  return [{ svg: photos.join(''), plates }];
+};
+
 export const LIGHT_DRAWERS = {
   'glass-panels': glassPanels,
   spotlight,
   bokeh,
   'soft-shadows': softShadows,
   'layered-cards': layeredCards,
+  'card-cascade': cardCascade,
+  polaroids,
 } as const;

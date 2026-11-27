@@ -120,13 +120,13 @@ export const sharedEvent = (
     when: { sql: 'EXISTS (SELECT 1 FROM connections WHERE id = ?)', args: [connectionId] },
   });
 
-// The host a connection goes in, by the person's own grant on it at `edit` for the tab (`tabId`): live, or why not.
-// Shared with a file made beside it (beside.ts).
+// The host a connection goes in, by the person's own grant on it at `edit` for the whole item: live, or why not. A
+// link limited to one tab connects nothing, not even into its own tab (connected-tabs.md "Who may connect", Work
+// Tracker 1457). Shared with a file made beside it (beside.ts).
 export async function hostForConnect(
   ctx: RouteContext,
   person: Person,
   hostId: string,
-  tabId: string,
 ): Promise<ItemRow | Response> {
   const { request, env } = ctx;
   const [grant, host] = await Promise.all([
@@ -138,7 +138,7 @@ export async function hostForConnect(
     grant.item !== hostId ||
     grant.sub !== person.id ||
     !levelAtLeast(grant.level, 'edit') ||
-    (grant.tab !== null && grant.tab !== tabId) ||
+    grant.tab !== null ||
     (host && grant.app !== host.app)
   ) {
     return forbidden();
@@ -158,7 +158,7 @@ export async function makeConnection(ctx: RouteContext, hostId: string): Promise
   if (!input) return badRequest();
   if (input.targetId === hostId) return badRequest('connection_self');
 
-  const host = await hostForConnect(ctx, person, hostId, input.tabId);
+  const host = await hostForConnect(ctx, person, hostId);
   if (host instanceof Response) return host;
 
   // The target: live, and the person may share it (its owner or a joined member of its team).

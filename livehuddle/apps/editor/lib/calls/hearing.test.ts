@@ -10,6 +10,7 @@ import {
   inEarshot,
   MAX_PAN,
   nextHeard,
+  nextNear,
   panAt,
   placeFor,
   reachOf,
@@ -31,8 +32,8 @@ describe('nextHeard', () => {
       new Set(),
       at(0),
       peers([
-        ['near', 200],
-        ['far', 280],
+        ['near', 300],
+        ['far', 430],
       ]),
     );
     expect([...heard]).toEqual(['near']);
@@ -40,7 +41,7 @@ describe('nextHeard', () => {
 
   it('keeps a heard speaker until the release radius, so the edge never flickers', () => {
     const prev = new Set(['sam']);
-    expect(nextHeard(prev, at(0), peers([['sam', 290]]))).toBe(prev);
+    expect(nextHeard(prev, at(0), peers([['sam', 430]]))).toBe(prev);
     expect([...nextHeard(prev, at(0), peers([['sam', RELEASE_RADIUS_PX + 1]]))]).toEqual([]);
   });
 
@@ -54,8 +55,8 @@ describe('nextHeard', () => {
 describe('gainAt and panAt', () => {
   it('is full close by, fades with equal power, and is silent at the release radius', () => {
     expect(gainAt(0)).toBe(1);
-    expect(gainAt(90)).toBe(1);
-    expect(gainAt(195)).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(gainAt(FULL_VOLUME_RADIUS_PX)).toBe(1);
+    expect(gainAt((FULL_VOLUME_RADIUS_PX + RELEASE_RADIUS_PX) / 2)).toBeCloseTo(Math.SQRT1_2, 5);
     expect(gainAt(RELEASE_RADIUS_PX)).toBe(0);
     expect(gainAt(1000)).toBe(0);
   });
@@ -73,7 +74,7 @@ describe('barsOpacity', () => {
   it('is full while heard, then fades with distance to a floor', () => {
     expect(barsOpacity(5000, true)).toBe(1);
     expect(barsOpacity(100, false)).toBe(BARS_FAR_OPACITY_NEAR);
-    expect(barsOpacity(900, false)).toBeCloseTo(0.6);
+    expect(barsOpacity((RELEASE_RADIUS_PX + 1500) / 2, false)).toBeCloseTo(0.6);
     expect(barsOpacity(1500, false)).toBe(BARS_FAR_OPACITY_MIN);
   });
 });
@@ -116,7 +117,7 @@ describe('rooms keep their walls', () => {
     ).toEqual(['near']);
     const z = zoning(self, new Map([['near', beside]]), zones);
     expect(togetherWith('near', z)).toBe('open');
-    expect(placeFor(self, { x: 215, y: 50 }, 'open').gain).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(placeFor(self, { x: 320, y: 50 }, 'open').gain).toBeCloseTo(Math.SQRT1_2, 5);
     expect(placeFor(self, beside, 'open').pan).toBeGreaterThan(0);
     expect(inEarshot(self, beside, 'open')).toBe(true);
     expect(inEarshot(self, corner, 'open')).toBe(false);
@@ -141,16 +142,16 @@ describe('rooms keep their walls', () => {
 
   it('hears by distance in the corridor, exactly as in the open', () => {
     const heard = hear(corridor(0), [
-      ['near', corridor(200)],
-      ['far', corridor(280)],
+      ['near', corridor(300)],
+      ['far', corridor(430)],
     ]);
     expect(heard).toEqual(['near']);
     expect(
-      togetherWith('near', zoning(corridor(0), new Map([['near', corridor(200)]]), zones)),
+      togetherWith('near', zoning(corridor(0), new Map([['near', corridor(300)]]), zones)),
     ).toBe('open');
-    expect(placeFor(corridor(0), corridor(195), 'open').gain).toBeCloseTo(Math.SQRT1_2, 5);
-    expect(inEarshot(corridor(0), corridor(200), 'open')).toBe(true);
-    expect(inEarshot(corridor(0), corridor(280), 'open')).toBe(false);
+    expect(placeFor(corridor(0), corridor(300), 'open').gain).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(inEarshot(corridor(0), corridor(300), 'open')).toBe(true);
+    expect(inEarshot(corridor(0), corridor(430), 'open')).toBe(false);
   });
 
   it('lets go of a room’s voices the moment you step out, with no release radius', () => {
@@ -169,7 +170,11 @@ describe('rooms keep their walls', () => {
   it('zones and hears 100 walkers among 50 rooms within a frame’s budget', () => {
     const many = roomZones(Array.from({ length: 50 }, (_, i) => room(`r${i}`, i * 600)));
     const walkers = new Map(
-      Array.from({ length: 100 }, (_, i) => [`p${i}`, { x: i * 300 + 50, y: 200 }] as const),
+      // Two to a room, at its far ends: beyond the release radius of each other.
+      Array.from(
+        { length: 100 },
+        (_, i) => [`p${i}`, { x: Math.floor(i / 2) * 600 + (i % 2 ? 550 : 50), y: 200 }] as const,
+      ),
     );
     const self = { x: 60, y: 200 };
     let heard: ReadonlySet<string> = new Set();
@@ -253,8 +258,8 @@ describe('a voice from the podium', () => {
     // From the speaker's side: the listener outside never hears them.
     const back = zoning(speaker, new Map([['outside', outside]]), zones);
     expect(inEarshot(speaker, outside, togetherWith('outside', back))).toBe(false);
-    // Inside the hall, at twice the hearing radius, they are heard.
-    const inside = { x: 600 - 2 * HEARING_RADIUS_PX, y: 560 };
+    // Inside the hall, well past one hearing radius, they are heard.
+    const inside = { x: 600 - 1.4 * HEARING_RADIUS_PX, y: 560 };
     expect([...nextHeard(new Set(), inside, walkers, zoning(inside, walkers, zones))]).toEqual([
       'speaker',
     ]);
@@ -266,5 +271,42 @@ describe('a voice from the podium', () => {
     expect(reachOf(away)).toBe(1);
     expect([...nextHeard(prev, at(0), new Map([['speaker', away]]))]).toEqual([]);
     expect(placeFor(at(0), away, 'open').gain).toBe(0);
+  });
+});
+
+// proximity-audio.md "Your hearing ring": the ring flashes when someone comes within earshot.
+describe('nextNear', () => {
+  const walkers = (entries: [string, number][]) => entries.map(([id, x]) => ({ id, at: at(x) }));
+  const open = zoning(at(0), new Map(), []);
+
+  it('takes in whoever stands inside the hearing radius, microphone or not', () => {
+    const near = nextNear(
+      new Set(),
+      at(0),
+      walkers([
+        ['in', 300],
+        ['out', 430],
+      ]),
+      open,
+    );
+    expect([...near]).toEqual(['in']);
+  });
+
+  it('lets go only past the release radius, and returns the same set when nothing changed', () => {
+    const prev = new Set(['edge']);
+    expect(nextNear(prev, at(0), walkers([['edge', 430]]), open)).toBe(prev);
+    expect([...nextNear(prev, at(0), walkers([['edge', RELEASE_RADIUS_PX + 1]]), open)]).toEqual(
+      [],
+    );
+  });
+
+  it('never counts someone behind a wall, however close', () => {
+    const zones = roomZones([
+      { id: 'a', type: 'shape', shape: 'room', x: 0, y: 0, width: 600, height: 400 },
+    ] as never);
+    const self = { x: 590, y: 200 };
+    const next = [{ id: 'next door', at: { x: 610, y: 200 } }];
+    const z = zoning(self, new Map(next.map((w) => [w.id, w.at])), zones);
+    expect([...nextNear(new Set(), self, next, z)]).toEqual([]);
   });
 });

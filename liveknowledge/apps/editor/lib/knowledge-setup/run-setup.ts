@@ -6,7 +6,7 @@
 import { pageDepth, type Tab } from '@liveknowledge/document';
 import { whenTabSaved } from '@liveworkspace/workbench/lib/tab-saved';
 import { markArticleSettle } from '@/lib/article/article-grow-store';
-import { openKnowledgebaseLayer } from '@/lib/knowledge-import/save-layers';
+import { openKnowledgebaseLayer, revealingLayer } from '@/lib/knowledge-import/save-layers';
 import {
   writeImportPlan,
   type ImportProgress,
@@ -57,9 +57,12 @@ export async function runSetup(args: RunSetupArgs): Promise<ImportWriteResult> {
     ...(replaceId !== undefined ? { replaceId } : {}),
   });
   // Each page gets room to write under its headings before it is stored.
-  const save: ImportSaveLayer = {
-    writeBatch: (pages, flow) => layer.writeBatch(pages.map(withRoomUnderHeadings), flow),
-  };
+  // Its pages show in the tree where they went (revealingLayer).
+  const save: ImportSaveLayer = revealingLayer(
+    host.documentId,
+    { writeBatch: (pages, flow) => layer.writeBatch(pages.map(withRoomUnderHeadings), flow) },
+    host.getTabs,
+  );
   // The first page takes the untouched page's id, so the write path makes it in that page's place.
   let takeFirst = replaceId;
   const fresh = args.newId ?? (() => crypto.randomUUID());

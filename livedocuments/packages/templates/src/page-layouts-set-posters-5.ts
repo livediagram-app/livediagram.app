@@ -5,7 +5,6 @@ import type { Element } from '@livedocuments/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconDisc, iconRow } from './page-layout-parts';
 import {
-  accentRule,
   centredTitle,
   column,
   eyebrow,
@@ -240,7 +239,6 @@ function motivational(k: Kit): Element[] {
   const iw = W - pad * 2;
   const frame = k.shape('square', 0, 0, W, H, { label: '', borderRadius: 'none' });
   const sign: Block[] = [
-    { h: u * 1.2, gap: u * 6, draw: (y) => [accentRule(k, (W - u * 14) / 2, y)] },
     { h: u * 6, gap: u * 4, draw: (y) => [eyebrow(k, pad, y, iw, 'ARTHUR ASHE', centre)] },
   ];
   if (k.wide) {

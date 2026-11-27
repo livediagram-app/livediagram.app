@@ -92,6 +92,8 @@ describe('routerEnv', () => {
     });
     expect(await answer.json()).toEqual({ app: 'livedesign', path: '/mcp', base: null });
     expect(routed.OAUTH_KV).toBe(KV);
+    // Account tokens are checked with liveworkspace on an app api (bearer.ts): livediagram's.
+    expect(routed.TOKEN_API).toBe(env.LIVEDIAGRAM_API);
   });
 
   it('turns a URL and init into the package’s request', async () => {

@@ -283,32 +283,32 @@ token. The editor logs through `debugLog('calls', …)`.
 
 ## Constants and configuration
 
-| Constant                 | Value     | Why                                                |
-| ------------------------ | --------- | -------------------------------------------------- |
-| `HEARING_RADIUS_PX`      | 400       | Owner, 2026-11-25: presence reaches further        |
-| `RELEASE_RADIUS_PX`      | 460       | About 15% more, so the edge does not flicker       |
-| `FULL_VOLUME_RADIUS_PX`  | 140       | Two or three characters side by side               |
-| `MAX_PAN`                | 0.8       | Never hard left or right                           |
-| `LECTERN_VOICE_REACH`    | 3         | Owner, 2026-11-10: a Podium carries 3x as far      |
-| `GLIDE_S`                | 0.12      | Gain and pan changes are never heard as steps      |
-| `PLACE_EPSILON`          | 0.005     | Half a percent of volume or side: never heard      |
-| `BARS_FADE_END_PX`       | 1500      | About a screen away at 100%                        |
-| `BARS_FAR_OPACITY_NEAR`  | 0.9       | Out of earshot reads quieter than in earshot (1)   |
-| `BARS_FAR_OPACITY_MIN`   | 0.3       | Still findable far away                            |
-| `VOICE_SAMPLE_MS`        | 50        | 20 reads a second, cheap                           |
-| `VOICE_THRESHOLD_RMS`    | 0.02      | About −34 dBFS, above room noise                   |
-| `VOICE_HANGOVER_MS`      | 600       | Pauses between words                               |
-| `VOICE_MIN_INTERVAL_MS`  | 250       | At most about 4 a second                           |
-| `VOICE_REFRESH_MS`       | 5000      | Proves a long speech is still on                   |
-| `VOICE_STALE_MS`         | 8000      | A lost stop clears                                 |
-| `VOICE_DB_FLOOR/CEIL`    | −34 / −10 | The level's range                                  |
-| `MIC_IDLE_CLOSE_MS`      | 15000     | Alone on a tab                                     |
-| `RENEW_MAX`              | 3         | Renewals of a gone session before the call fails   |
-| `RENEW_WINDOW_MS`        | 60000     | The window those renewals are counted in           |
-| `LOCATOR_RESEND_MS`      | 1000      | Late joiners learn the locator                     |
-| `WALK_TO_TALKER_STOP_PX` | 60        | Stop short of shoving                              |
-| `TURN_TTL_S`             | 14400     | 4 hours, a long session                            |
-| `MAX_SUBSCRIBE_BATCH`    | 16        | One request a step even in a crowd                 |
+| Constant                 | Value     | Why                                              |
+| ------------------------ | --------- | ------------------------------------------------ |
+| `HEARING_RADIUS_PX`      | 400       | Owner, 2026-11-25: presence reaches further      |
+| `RELEASE_RADIUS_PX`      | 460       | About 15% more, so the edge does not flicker     |
+| `FULL_VOLUME_RADIUS_PX`  | 140       | Two or three characters side by side             |
+| `MAX_PAN`                | 0.8       | Never hard left or right                         |
+| `LECTERN_VOICE_REACH`    | 3         | Owner, 2026-11-10: a Podium carries 3x as far    |
+| `GLIDE_S`                | 0.12      | Gain and pan changes are never heard as steps    |
+| `PLACE_EPSILON`          | 0.005     | Half a percent of volume or side: never heard    |
+| `BARS_FADE_END_PX`       | 1500      | About a screen away at 100%                      |
+| `BARS_FAR_OPACITY_NEAR`  | 0.9       | Out of earshot reads quieter than in earshot (1) |
+| `BARS_FAR_OPACITY_MIN`   | 0.3       | Still findable far away                          |
+| `VOICE_SAMPLE_MS`        | 50        | 20 reads a second, cheap                         |
+| `VOICE_THRESHOLD_RMS`    | 0.02      | About −34 dBFS, above room noise                 |
+| `VOICE_HANGOVER_MS`      | 600       | Pauses between words                             |
+| `VOICE_MIN_INTERVAL_MS`  | 250       | At most about 4 a second                         |
+| `VOICE_REFRESH_MS`       | 5000      | Proves a long speech is still on                 |
+| `VOICE_STALE_MS`         | 8000      | A lost stop clears                               |
+| `VOICE_DB_FLOOR/CEIL`    | −34 / −10 | The level's range                                |
+| `MIC_IDLE_CLOSE_MS`      | 15000     | Alone on a tab                                   |
+| `RENEW_MAX`              | 3         | Renewals of a gone session before the call fails |
+| `RENEW_WINDOW_MS`        | 60000     | The window those renewals are counted in         |
+| `LOCATOR_RESEND_MS`      | 1000      | Late joiners learn the locator                   |
+| `WALK_TO_TALKER_STOP_PX` | 60        | Stop short of shoving                            |
+| `TURN_TTL_S`             | 14400     | 4 hours, a long session                          |
+| `MAX_SUBSCRIBE_BATCH`    | 16        | One request a step even in a crowd               |
 
 Env (`apps/api/src/types.ts`, `.env.example`): `REALTIME_APP_ID`, `REALTIME_APP_TOKEN`, `TURN_KEY_ID`,
 `TURN_KEY_API_TOKEN`, all secrets, all unset by default.

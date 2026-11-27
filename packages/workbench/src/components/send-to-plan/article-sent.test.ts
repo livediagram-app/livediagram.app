@@ -11,6 +11,7 @@ import { articleSendPick, articleSentSpec, onlySent, type PMState } from './arti
 import { addSends, setSendSource } from './send-store';
 import { addDiagramSend, setDiagramSendSource } from '../send-to-diagram/diagram-send-store';
 import { onSendToPlan, setSendHere, type SendRequest } from './send-to-plan-entry';
+import { closeSelectionMenu, currentSelectionMenu } from '../selection-menu/selection-menu-store';
 
 type Block = { id: unknown; text: string; isTextblock?: boolean };
 const node = (b: Block) => ({
@@ -29,7 +30,12 @@ function stateOf(
     node: () => nodes[sel.block ?? 0]!,
     parent: nodes[sel.block ?? 0]!,
   };
-  const tr = { meta: {} as Record<string, unknown>, setMeta: vi.fn(), getMeta: vi.fn() };
+  const tr = {
+    meta: {} as Record<string, unknown>,
+    setMeta: vi.fn(),
+    getMeta: vi.fn(),
+    deleteSelection: vi.fn(),
+  };
   tr.setMeta.mockImplementation((k: string, v: unknown) => ((tr.meta[k] = v), tr));
   tr.getMeta.mockImplementation((k: string) => tr.meta[k]);
   return {
@@ -75,7 +81,11 @@ afterEach(() => {
   setSendHere(null);
   document.getSelection()?.removeAllRanges();
   document.body.replaceChildren();
+  closeSelectionMenu();
 });
+
+// The view's paste and focus, which only the selection menu's rows use.
+const pasting = () => ({ focus: vi.fn(), pasteHTML: vi.fn(), pasteText: vi.fn() });
 
 describe('the words a send from the writing takes', () => {
   it('takes the words picked or the caret block’s, naming the block, and nothing else', () => {
@@ -167,6 +177,7 @@ describe('the chips and the pill', () => {
       isDestroyed: false,
       dispatch: vi.fn<(tr: PMState['tr']) => void>(),
       posAtDOM: () => 1,
+      ...pasting(),
     };
     const shown = articleSentSpec(() => true, draw).view(view);
     addSends([sent('a')]);
@@ -180,55 +191,45 @@ describe('the chips and the pill', () => {
     expect(view.dispatch).toHaveBeenCalledTimes(1);
   });
 
-  it('shows a reader Send to Plan under words picked in the writing, and no one else', () => {
+  it('opens the selection menu on a right-click on the words picked, reading or editing, until the writing goes', () => {
     const dom = document.createElement('div');
     dom.textContent = 'Book the venue';
-    const outside = document.createElement('p');
-    outside.textContent = 'Elsewhere';
-    document.body.append(dom, outside);
+    document.body.append(dom);
     let editable = false;
-    let blockId: unknown = 'b2';
     const view = {
-      get state() {
-        return stateOf([{ id: blockId, text: 'Book the venue' }], { from: 1 });
-      },
+      state: stateOf([{ id: 'b2', text: 'Book the venue' }], { from: 1 }),
       dom,
       isDestroyed: false,
       dispatch: vi.fn(),
-      posAtDOM: () => 200,
+      posAtDOM: () => 1,
+      ...pasting(),
     };
     const shown = articleSentSpec(() => editable, draw).view(view);
-    const pill = () => document.querySelector<HTMLButtonElement>('[data-read-send-pill]');
-    const pick = (el: Element, to: number) => {
-      const range = document.createRange();
-      range.setStart(el.firstChild!, 0);
-      range.setEnd(el.firstChild!, to);
-      range.getBoundingClientRect = () => ({ left: 20, bottom: 40 }) as DOMRect;
-      document.getSelection()!.removeAllRanges();
-      document.getSelection()!.addRange(range);
-      document.dispatchEvent(new Event('selectionchange'));
+    const range = document.createRange();
+    range.setStart(dom.firstChild!, 0);
+    range.setEnd(dom.firstChild!, 4);
+    range.getClientRects = () => [{ left: 0, right: 40, top: 0, bottom: 20 }] as never;
+    range.getBoundingClientRect = () => ({ left: 0, bottom: 20 }) as DOMRect;
+    document.getSelection()!.addRange(range);
+    const menu = () => {
+      const e = new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        button: 2,
+        clientX: 10,
+        clientY: 10,
+      });
+      dom.dispatchEvent(e);
+      return e.defaultPrevented;
     };
-    document.dispatchEvent(new Event('selectionchange'));
-    expect(pill()).toBeNull();
-    pick(outside, 4);
-    expect(pill()).toBeNull();
-    pick(dom, 0);
-    expect(pill()).toBeNull();
-    blockId = '';
-    pick(dom, 4);
-    expect(pill()).toBeNull();
-    blockId = 'b2';
+    expect(menu()).toBe(true);
+    expect(currentSelectionMenu()!.actions.cut).toBeNull();
     editable = true;
-    pick(dom, 4);
-    expect(pill()).toBeNull();
-    editable = false;
-    pick(dom, 4);
-    expect(pill()!.style.top).toBe('48px');
-    pill()!.click();
-    expect(heard[0]!.places[0]).toMatchObject({ elementId: 'b2', text: 'Book' });
-    pick(dom, 4);
+    expect(menu()).toBe(true);
+    expect(currentSelectionMenu()!.actions.cut).not.toBeNull();
     shown.destroy();
-    expect(pill()).toBeNull();
+    expect(currentSelectionMenu()).toBeNull();
+    expect(menu()).toBe(false);
   });
 
   it('reads a block at depth 0 as no block', () => {
@@ -241,14 +242,16 @@ describe('the chips and the pill', () => {
       isDestroyed: false,
       dispatch: vi.fn(),
       posAtDOM: () => 0,
+      ...pasting(),
     };
     const shown = articleSentSpec(() => false, draw).view(view);
     const range = document.createRange();
     range.setStart(dom.firstChild!, 0);
     range.setEnd(dom.firstChild!, 3);
     document.getSelection()!.addRange(range);
-    document.dispatchEvent(new Event('selectionchange'));
-    expect(document.querySelector('[data-read-send-pill]')).toBeNull();
+    range.getClientRects = () => [{ left: 0, right: 40, top: 0, bottom: 20 }] as never;
+    dom.dispatchEvent(new MouseEvent('contextmenu', { button: 2, clientX: 10, clientY: 10 }));
+    expect(currentSelectionMenu()).toBeNull();
     shown.destroy();
   });
 });

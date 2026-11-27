@@ -21,6 +21,20 @@ design (paper, corner accents, side rail); bold designs suit title and section p
   formal-report, when none match). It sets every new tab's theme, design, typeface and finish; `theme`, `finish`,
   `design` and `font` given beside it win.
 - `create_document` takes `font`: every new tab's typeface, one of the catalogue's.
+- `change_pages` takes `tab_style {style, theme, font, finish}` to restyle a tab that exists, as Tab Style does: a
+  recipe (or `"auto"`, for the tab's words) sets the theme, typeface, finish and page design together, and a part named
+  beside it wins; one part alone changes only that. The theme lands as picking it in Tab Style does (`tabWithTheme`,
+  shared with the editor, in the light half): colours still on the old theme's take the new one's, colours set by hand
+  stay, arrows always take the new stroke, and pages on the old theme's own fill take the new one's. Content on a page
+  with a fill of its own takes the theme in that page's half, so a keynote deck's dark slides keep the new theme's
+  light words and the page design lays no plate under them ([Light and dark halves](light-and-dark.md#what-a-viewer-sees),
+  "A page's own paper"). Asked to "make it
+  look like X", an agent had no way to change an existing document's look.
+- A tab's typeface reaches its articles: `create_document`'s font (or its style's), a new article written into a tab
+  with one, and `tab_style`'s font set each article's headings in it, and its paragraphs too when it is a face long
+  text reads in (Inter, Poppins, Nunito, Space Grotesk, Lora, Roboto Slab); a display, condensed, handwritten or
+  monospace face leaves them in the look's body font. A look named in `write_article` sets its own fonts.
+- The one liveworkspace MCP's `create_item` passes a doc's `style` and `font` on to `create_document`.
 
 ## Templates
 

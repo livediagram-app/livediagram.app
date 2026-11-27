@@ -47,7 +47,7 @@ export function HomeSection({
   currentId: string | null;
   onOpenExplorer?: (view: ExplorerView) => void;
 }) {
-  const { client, app, filter, overlay, epoch, words } = useExplorer();
+  const { client, app, filter, overlay, epoch, words, returns } = useExplorer();
   // Most used then recent (one request): enough recent ones to fill Recent alone, plus one, so a person with no most
   // used yet, or leaving out the open item, still sees two full rows.
   const load = useMemo(
@@ -60,6 +60,7 @@ export function HomeSection({
     overlay,
     belongs: notHidden,
     epoch,
+    fresh: returns,
   });
   // What this browser keeps of the app's, opened here: Recent's by the page's rule.
   const { live: local } = useThisBrowserItems();

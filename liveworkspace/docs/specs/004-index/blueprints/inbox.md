@@ -22,6 +22,11 @@ Scope, by file:
 | `packages/index-client/src/app-client.ts`                       | `createIndexAppClient`: `pushSummary`, `pushCollab`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen`, `pushEvents`, `pushPersonEvents`, `pushUpdates`      |
 | `packages/index-client/src/updates.ts`                          | `UPDATE_KINDS`, `isUpdateKind`, `UpdatePush`, `UpdateActor`, `InboxUpdate` and the updates' caps                                                                |
 | `liveworkspace/apps/index/src/updates.ts`                       | `parseUpdate`, `parseUpdates`, `pushUpdates`, `updatesQuery`, `inboxUpdateOf`, `sweepUpdates`: updates on watched pages                                         |
+| `liveworkspace/apps/index/src/inbox-reads.ts`                   | `handleInboxRead` (`PUT /inbox/read`), `readStateStatements`, `inboxReadOf`: read and unread per person                                                         |
+| `packages/index-client/src/inbox-keys.ts`                       | `inboxRowKey` and each kind's key (`threadKey`, `actionKey`, ...): one row key for the index's read state and the Explorer                                      |
+| `packages/model-core/src/comment-ai.ts`                         | `threadAiState`: a thread's `latestAgent` and `aiState` from its comments, for every app's push                                                                 |
+| `packages/explorer/src/inbox-cross-app.ts`                      | `createWorkspaceTokenSource`, `crossAppInboxApi`: an app page's token for every app's api, and the Inbox's calls with it                                        |
+| `packages/explorer/src/data/inbox-read-state.ts`                | `isUnread`, `useInboxReadState`: read and unread as the index said, with this page's changes on top until it agrees                                             |
 
 ## Domain and naming
 
@@ -61,7 +66,8 @@ malformed, is dropped, never the push refused), `card` (whose optional `id`, 1 t
 `elementId` is a card thread's own id, and whose optional `column` is `{ name ≤ 200, color? #rrggbb, done boolean }`
 or null; a malformed `column` is dropped from the card, never the push refused). An action needs `elementId`, `actionId`,
 `elementLabel`, `name`, `status` (`open`, `done`, `wont-do`), `assignerId`, `createdAt`, `updatedAt`, and may carry
-`description`, `assigneeId`, `assigneeName`, `assignerName`, `teamId`, `doneById`, `card`. A repeated key keeps its
+`description`, `assigneeId`, `assigneeName`, `assignerName`, `teamId`, `doneById`, `due` (a calendar day, `YYYY-MM-DD`,
+kept in `collab_actions.due`, migration 0038; a malformed one is dropped, never the push refused), `card`. A repeated key keeps its
 last entry. A form's `code` is `^[A-Za-z0-9_-]{1,64}$`; `responses` at most 10,000,000. A suggested edit
 (`parseSuggestion`) needs `id` (1 to 128 characters), `agent`, `kind` (`replace`, `append`), `after`, `createdAt`, and may
 carry `ownerId` (an id or null, null meaning the item's owner), `reason` and `before` (`''` when absent); `before` and
@@ -115,6 +121,10 @@ threads, threadsKept, actions, actionsKept }` (with `suggestions, suggestionsKep
    reachable by `reachable('u', false)` (the card clause left out: an update has no `card` column); newest first, at
    most `limit`. A row's corrupt `kinds` or `actors` JSON reads as none (`inboxUpdateOf`), never failing the read.
 
+Threads whose `ai_state` is `quiet` are left out of the read (`AND t.ai_state <> 'quiet'`): only AIs wrote in them and
+nothing was asked ([inbox-reading.md "AI comments"](../inbox-reading.md#ai-comments)). A row answers `latestAgent`
+(`latest_agent`, null for a person's comment) and `asks` (`ai_state = 'ask'`).
+
 Reachable: owner of a personal item, one of their scopes, or a live link they opened whose tab is the row's tab (or
 every tab), or for a card the tab of its board (`json_extract(card, '$.board.tabId')`).
 
@@ -152,7 +162,9 @@ row before the filter's slot (`panel/Pane.tsx`) and in the page's `PaneHeader` a
 (`InboxPane.tsx`), whatever the list's state.
 
 A Plan card's row (an action or thread with `card`) draws `CardStatusChip` (`packages/explorer/src/explorer/badges.tsx`)
-from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. `inboxCount`
+from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. An action with a
+`due` (or a card with `card.due`) says it after the row's reason (`DueTag` in `InboxRows.tsx`, worded by
+`actionDueWords` from `@liveworkspace/index-client/action-due`, in the reader's zone), red once past. `inboxCount`
 (`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`, and the sidebar and the
 rail draw no badge at 0. It counts every app's rows, as the Inbox lists them, on the page's sidebar, the panel's rail
 (`panel/Rail.tsx`) and the editor's button alike. `useInbox` reads `GET /inbox` with no `app` whatever the Explorer's
@@ -196,6 +208,32 @@ ORDER BY a.updated_at DESC LIMIT 1000
 (`cardId` the action's `elementId`). A row whose card JSON does not parse is skipped. The reach is the Inbox's
 `reachable` without its link clause: a plan reached only through a share link never lists.
 
+### Read state
+
+`inbox_reads (person_id, row_key, at, read_at)` and `inbox_read_marks (person_id, before)`
+(`0037_inbox_ai_reads.sql`). `GET /inbox`, for an account, reads the person's mark and their newest
+`INBOX_READS_MAX` (1,000) entries in the same batch (`inbox_reads_person (person_id, read_at DESC)`), then answers
+`read: { before, at }` with `at` holding only the listed rows' keys (`inboxRowKey` of each row), so the answer stays
+the size of the list. `PUT /inbox/read` (`handleInboxRead`) is one batch: `all` deletes the person's entries and
+upserts the mark at now; each `read` upserts `(key, max(at, held))`, each `unread` upserts `at` 0 (a newer read
+wins over a held unread); then one delete keeps the newest `INBOX_READS_MAX` by `read_at`. Keys are 1 to 300
+characters, at most 200 of each a call (`400 invalid_read`). An account's purge deletes both tables' rows for it.
+
+The Explorer (`data/inbox-read-state.ts`): `isUnread(key, at, read)` is `at[key] !== undefined ? at[key] < rowAt :
+before < rowAt`. `useInbox` holds the page's own changes (`marks`: per key read at a time, or unread; `allAt`) over
+the answer until a read agrees with each, sends them through `client.markInbox`, and keeps a failed send for the next
+one. A row is read once the pane has shown it for `READ_AFTER_MS` (1 s) or a verb ran on it. `inboxCount` counts
+the rows that wait on the reader and are unread.
+
+### Cross-app verbs
+
+`createInboxActions` takes `api(app)` from every host for every app: the app's own api as before, and any other
+app's through `crossAppInboxApi(app, tokens)`, whose token is `createWorkspaceTokenSource(bearer)`'s: one `GET
+/api/workspace/account/workspace-token` with the page's own bearer, kept until a minute before `expiresAt`, shared by
+every app's calls and by concurrent callers. liveworkspace.app's site keeps its own workspace token. The pane offers
+Reply and Resolve only when `item.access` (the index's item read, cached as the thumbnail's) is at least
+`participate`; `loadThread` reads a card thread from `GET /projects/:id/threads?item=<card id>`.
+
 ## Data and persistence
 
 | Table                  | Key                                             | Indexes                                                                                                                | Written by                    | Read by             |
@@ -209,6 +247,8 @@ ORDER BY a.updated_at DESC LIMIT 1000
 | `collab_suggestions`   | `(app, item_id, tab_id, suggestion_id)`         | `collab_suggestions_owner (owner_id, created_at DESC)`; `collab_suggestions_item (item_id, owner_id, created_at DESC)` | collab push; merge; purge     | Inbox               |
 | `item_updates`         | `(item_id, update_id)`                          | `item_updates_latest (latest_at)` (0028)                                                                               | updates push; sweep; purge    | Inbox               |
 | `item_update_people`   | `(person_id, item_id, update_id)`               | `item_update_people_latest (person_id, latest_at DESC)`; `item_update_people_update (item_id, update_id)` (0028)       | updates push; sweep; purge    | Inbox               |
+| `inbox_reads`          | `(person_id, row_key)`                          | `inbox_reads_person (person_id, read_at DESC)` (0037)                                                                  | `PUT /inbox/read`; purge      | Inbox               |
+| `inbox_read_marks`     | `(person_id)`                                   | (0037)                                                                                                                 | `PUT /inbox/read`; purge      | Inbox               |
 
 `0028_item_updates.sql`: `item_updates` holds `app`, `tab_id`, `tab_name`, `kinds` and `actors` (JSON), `actor_count`,
 `count`, `first_at`, `latest_at`, cascading from `items`; `item_update_people` cascades from `item_updates` by
@@ -219,6 +259,12 @@ ORDER BY a.updated_at DESC LIMIT 1000
 `collab_threads` also holds `latest_author_id` (null when the app did not say) and `mentioned_by` (`'{}'`), added by
 `0020_thread_mentioned_by.sql`. The purge anonymises them with the rest: `latest_author_id` becomes the anonymised id,
 and `mentioned_by` drops the entries keyed by the person or naming them.
+
+`collab_threads` also holds `latest_agent` (null: a person's comment) and `ai_state` (`''`, `quiet` or `ask`, CHECK),
+added by `0037_inbox_ai_reads.sql`; a push from an app before them leaves both as their defaults.
+
+`collab_actions` also holds `due` (null: no due day), the action's due day as pushed, added by `0038_action_due.sql`;
+a push from an app before it, and every card (whose due day rides in `card`), leaves it null.
 
 `collab_suggestions` (`0027_collab_suggestions.sql`, Work Tracker 1362) holds `tab_name`, `owner_id` (null: the item's
 owner), `agent`, `reason`, `kind` (CHECK `replace`, `append`), `before_text`, `after_text`, `created_at`. Archiving
@@ -268,6 +314,10 @@ on production with `--remote`.
 | `packages/explorer/src/inbox-apps.test.tsx`                     | no Inbox for livehuddle; the other four keep it                                             |
 | `packages/explorer/src/data/inbox-settled.test.ts`              | the hold across a reload, its cap and hour, broken storage, other tabs                      |
 | `packages/explorer/src/data/useInbox.test.tsx`                  | a row done from the pane stays out after a reload, back once it changes                     |
+| `liveworkspace/apps/index/src/inbox-reads.test.ts`              | read, unread, read all, the cap, refusals, the answer's `read`, quiet and asking threads    |
+| `packages/model-core/src/comment-ai.test.ts`                    | `threadAiState`: quiet, ask, a person's reply ending an ask, the latest agent               |
+| `packages/explorer/src/explorer/inbox/inbox-reading.test.tsx`   | unread dots, read after a second, Mark Unread, Mark All Read, the count, AI rows, roles     |
+| `packages/explorer/src/inbox-cross-app.test.ts`                 | the token asked once and renewed, another app's api called with it, refusals                |
 | `liveworkspace/apps/index/src/livehuddle-inbox-cleanup.test.ts` | the cleanup deletes livehuddle's thread, people and action rows only, twice safely          |
 
 ## Constants and configuration
@@ -277,7 +327,9 @@ on production with `--remote`.
 `COLLAB_SUGGESTION_REASON_MAX` 500, `COLLAB_SUGGESTION_AGENT_MAX` 200, `INBOX_SUGGESTIONS_MAX` 100, `INDEX_BODY_MAX_BYTES` 512 KiB (the index's `MAX_BODY_BYTES`, and the most a collab push
 `capCollabPush` sends), `COLLAB_TEXT_MAX` 500, `COLLAB_PEOPLE_MAX` 100 (`packages/index-client`); `LABEL_MAX` 200,
 `TEXT_MAX` 500 (`COLLAB_TEXT_MAX`), `UPDATES_PUSH_MAX` 50, `UPDATE_ACTORS_MAX` 5, `UPDATE_PEOPLE_MAX` 200,
-`UPDATE_TAB_NAME_MAX` 200, `UPDATE_ACTOR_NAME_MAX` 80, `INBOX_UPDATES_MS` 14 days (`packages/index-client` `updates.ts`),
+`UPDATE_TAB_NAME_MAX` 200, `UPDATE_ACTOR_NAME_MAX` 80, `INBOX_UPDATES_MS` 14 days (`packages/index-client` `updates.ts`), `INBOX_READS_MAX` 1,000,
+`INBOX_READ_BATCH_MAX` 200, `INBOX_ROW_KEY_MAX` 300 (`packages/index-client` `inbox-keys.ts`), `READ_AFTER_MS` 1 s
+(`packages/explorer`),
 `COLOR_MAX` 32, `CALENDAR_CARDS_MAX` 1,000 (`calendar-feeds.ts`), `PEOPLE_MAX` 100 (`COLLAB_PEOPLE_MAX`),
 `RESPONSES_MAX` 10,000,000 (`collab-push.ts`); `INBOX_LIMIT_DEFAULT` 100 (`config.ts`); `FUTURE_SLACK_MS` 5 min
 (`events.ts`); `FLUSH_IDLE_MS` 2 s, `FLUSH_MIN_GAP_MS` 60 s, `FLUSH_RETRY_MS` 60 s (a key's first wait after a

@@ -60,6 +60,7 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('UpdateDocument', 'Update Document', 'Editing a document’s elements.'),
   mcpTool('ShareDocument', 'Share Document', 'Creating a share link for a document.'),
   mcpTool('RenameDocument', 'Rename Document', 'Renaming a document.'),
+  mcpTool('StyleDocument', 'Style Document', 'Changing a document’s theme, font or finish.'),
   mcpTool(
     'ChangeTabs',
     'Change Tabs',

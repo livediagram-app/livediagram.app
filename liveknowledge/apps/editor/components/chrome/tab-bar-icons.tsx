@@ -1,31 +1,17 @@
 // Icons of the tab bar, the tab / folder context menus and the chrome controls
 // (docs/specs/004-interface-design/iconography.md). Menu glyphs render at the menu size step.
 
-import { Glyph, LockIcon, lucideGlyph, SearchIcon } from '@liveknowledge/ui';
-import {
-  lucideBrushCleaning,
-  lucideEyeOff,
-  lucideFileInput,
-  lucideFolder,
-  lucideScale,
-} from '@liveworkspace/icons/lucide';
+import { Glyph, lucideGlyph, SearchIcon } from '@liveknowledge/ui';
+import { lucideEyeOff, lucideFileInput, lucideScale } from '@liveworkspace/icons/lucide';
 
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
-
-// A locked tab (the pill badge; the menu toolbar sizes its own buttons).
-export function TabLockIcon() {
-  return <LockIcon size={12} />;
-}
 
 // A tab that isn't shared with this visitor (docs/specs/013-workspace/tab-scoped-share-links.md).
 // Deliberately not the padlock, which marks a tab its editors have locked.
 export const TabNotSharedIcon = lucideGlyph(lucideEyeOff, 12);
 
-export const FolderMenuIcon = lucideGlyph(lucideFolder, MENU_ICON_PX);
 // Add the tab to another document.
 export const MoveIcon = lucideGlyph(lucideFileInput, MENU_ICON_PX);
-// Clear the tab's contents.
-export const ClearIcon = lucideGlyph(lucideBrushCleaning, MENU_ICON_PX);
 
 // Magnifier - the global-search button on the right edge of the bar, at the bar's 14px.
 export function SearchGlyph() {

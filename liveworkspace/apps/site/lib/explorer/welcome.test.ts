@@ -33,5 +33,4 @@ describe("Home's first run on liveworkspace.app", () => {
       expect(m?.popular.length).toBeLessThanOrEqual(8);
     }
   });
-
 });

@@ -25,6 +25,7 @@ import {
 } from '../send-to-knowledge/send-to-knowledge-entry';
 import { setKnowledgeSendSource } from '../send-to-knowledge/knowledge-send-store';
 import { setKnowledgeReceivedSource } from '../send-to-knowledge/knowledge-received-store';
+import { SelectionMenuHost } from '../selection-menu/SelectionMenu';
 
 const SendToKnowledgeDialog = lazy(() =>
   import('../send-to-knowledge/SendToKnowledgeDialog').then((m) => ({
@@ -42,17 +43,7 @@ const SendToPlanDialog = lazy(() =>
   import('./SendToPlanDialog').then((m) => ({ default: m.SendToPlanDialog })),
 );
 
-export function SendToPlanHost({
-  app,
-  itemId,
-  tabId = null,
-  title,
-  share = null,
-  enabled,
-  diagram = null,
-  tabTitle = '',
-  knowledge = null,
-}: {
+type SendToPlanHostProps = {
   // The app this editor is, and the open item, the source of every send from here.
   app: App;
   itemId: string | null;
@@ -69,7 +60,29 @@ export function SendToPlanHost({
   tabTitle?: string;
   // Send to Knowledge Base's summary on the app's own AI (send-to-knowledge.md); without it no entry offers it.
   knowledge?: KnowledgeSummariser | null;
-}) {
+};
+
+export function SendToPlanHost(props: SendToPlanHostProps) {
+  // The selection menu, beside whichever picker is open: only while this session may send (its entries are sends).
+  return (
+    <>
+      {props.enabled && props.itemId ? <SelectionMenuHost /> : null}
+      <SendPickers {...props} />
+    </>
+  );
+}
+
+function SendPickers({
+  app,
+  itemId,
+  tabId = null,
+  title,
+  share = null,
+  enabled,
+  diagram = null,
+  tabTitle = '',
+  knowledge = null,
+}: SendToPlanHostProps) {
   const [request, setRequest] = useState<SendRequest | null>(null);
   const [diagramRequest, setDiagramRequest] = useState<DiagramSendRequest | null>(null);
   const [knowledgeRequest, setKnowledgeRequest] = useState<KnowledgeCapture | null>(null);

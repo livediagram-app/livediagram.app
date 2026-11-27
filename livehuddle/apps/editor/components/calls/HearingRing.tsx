@@ -119,7 +119,9 @@ export function HearingRing(props: {
           cy={ring.cy}
           r={ring.r}
           fill={color}
-          fillOpacity={FILL_OPACITY_BASE + FILL_OPACITY_PER_LEVEL * Math.max(call.level, flashing ? 2 : 0)}
+          fillOpacity={
+            FILL_OPACITY_BASE + FILL_OPACITY_PER_LEVEL * Math.max(call.level, flashing ? 2 : 0)
+          }
         />
         {/* The pulse: a ripple running out from your feet to the edge, only while you talk. */}
         {speaking ? (

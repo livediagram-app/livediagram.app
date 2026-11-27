@@ -15,6 +15,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   update_design: 'changeset apply',
   share_design: 'design share',
   rename_design: 'design rename',
+  style_design: 'page set',
   delete_design: 'design rm',
   list_trash: 'api GET /trash',
   restore_design: 'design restore',

@@ -11,7 +11,8 @@ import { CommentIcon } from '../../ui/icons';
 import { kindWords, siteOf } from '../../words';
 import { CardStatusChip } from '../badges';
 import { CallInviteBody } from './CallInvitePane';
-import { CardGlyph, Lead, reasonIcon, reasonTone, type EntryFacts } from './InboxRows';
+import { AiChip, CardGlyph, Lead, reasonIcon, reasonTone, type EntryFacts } from './InboxRows';
+import { AsksForResponse } from '@liveworkspace/ui/ai-comment-marks';
 import { firstName, type InboxEntry } from './sections';
 
 // A suggested edit's body loads only when one is opened, off the Explorer's first load.
@@ -36,15 +37,19 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
     case 'Thread':
     case 'CardThread':
       sentence =
-        f.reason?.kind === 'mention'
-          ? `${who} mentioned you`
-          : f.reason?.kind === 'yours'
-            ? `${who} commented on your ${siteKindLower(entry)}`
-            : f.reason?.kind === 'agent'
-              ? 'Your agent wrote'
-              : who === 'You'
-                ? 'You replied'
-                : `${who} replied`;
+        f.reason?.kind === 'ask'
+          ? `${f.who} asked for your response`
+          : f.reason?.kind === 'mention'
+            ? `${who} mentioned you`
+            : f.reason?.kind === 'yours'
+              ? `${who} commented on your ${siteKindLower(entry)}`
+              : f.reason?.kind === 'agent'
+                ? f.ai
+                  ? `${f.who} wrote for you`
+                  : 'Your agent wrote'
+                : who === 'You'
+                  ? 'You replied'
+                  : `${who} replied`;
       break;
     case 'FormResponses':
       sentence = f.reason?.label ?? 'New responses';
@@ -76,6 +81,7 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
         </span>
       ) : null}
       <span className="font-medium text-slate-800 dark:text-slate-100">{sentence}</span>
+      {f.ai ? <AiChip forYou={f.ai.forYou} /> : null}
       {when ? <span aria-hidden>·</span> : null}
       {when ? <span>{when}</span> : null}
       {f.cardType ? (
@@ -158,6 +164,7 @@ export function Body({
       const shown: InboxComment[] = read ?? [
         {
           id: 'latest',
+          ...(f.ai ? { ai: true, agent: f.ai.agent } : {}),
           authorName: latest?.mine ? null : (latest?.person.name ?? null),
           authorColor: r.latestAuthorColor || undefined,
           authorId: latest?.mine ? null : (latest?.person.id ?? null),
@@ -310,25 +317,34 @@ export function sentMissingFrom(
 
 function Comment({ c }: { c: InboxComment }) {
   const now = useNow();
-  const name = c.mine ? 'You' : (c.authorName ?? 'A teammate');
+  // An agent's comment is its assistant's, marked AI, never its person's (inbox-reading.md "AI comments").
+  const name = c.ai ? c.agent || 'AI' : c.mine ? 'You' : (c.authorName ?? 'A teammate');
   return (
-    <li className="flex gap-3">
+    <li className="flex gap-3" data-inbox-comment={c.ai ? 'ai' : 'person'}>
       <Lead
-        person={{
-          id: c.mine ? null : c.authorId,
-          name: c.mine ? null : c.authorName,
-          color: c.authorColor,
-          picture: c.mine ? null : c.authorPicture,
-        }}
+        person={
+          c.ai
+            ? null
+            : {
+                id: c.mine ? null : c.authorId,
+                name: c.mine ? null : c.authorName,
+                color: c.authorColor,
+                picture: c.mine ? null : c.authorPicture,
+              }
+        }
+        agent={c.ai}
         compact
       />
       <div className="min-w-0 flex-1">
-        <p className="text-[13px]">
+        <p className="flex flex-wrap items-center gap-x-1.5 text-[13px]">
           <span className="font-semibold text-slate-900 dark:text-slate-50">{name}</span>
+          {c.ai ? <AiChip forYou={Boolean(c.mine)} /> : null}
+          {c.ai && !c.mine && c.authorName ? (
+            <span className="text-slate-500 dark:text-slate-400">for {c.authorName}</span>
+          ) : null}
+          {c.needsResponse ? <AsksForResponse data-inbox-asks="" /> : null}
           {now && c.at ? (
-            <span className="ml-1.5 text-slate-500 dark:text-slate-400">
-              {relativeSince(c.at, now)}
-            </span>
+            <span className="text-slate-500 dark:text-slate-400">{relativeSince(c.at, now)}</span>
           ) : null}
         </p>
         <p className="whitespace-pre-line break-words text-sm leading-6 text-slate-700 dark:text-slate-200">

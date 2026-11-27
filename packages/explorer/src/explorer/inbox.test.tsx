@@ -201,7 +201,7 @@ describe('the Inbox list', () => {
     expect(first.querySelector('[data-inbox-reason="assigned"]')!.textContent).toBe('To do');
     expect(first.textContent).toContain('Launch');
     expect(first.getAttribute('aria-label')).toBe(
-      '#12 Login fails. To do. Sam Lee. In Launch, Board, Sprint',
+      'Unread. #12 Login fails. To do. Sam Lee. In liveplanner, Launch, Board, Sprint',
     );
     // Work I handed out waits on its assignee, by first name.
     const chase = options()[5]!;
@@ -370,7 +370,12 @@ describe('choosing a row', () => {
     go(4);
     expect(open().getAttribute('href')).toBe('https://liveplanner.app/open/plan-2?tabId=board-tab');
     // No verbs without a host: Open alone.
-    expect(within(pane()).queryAllByRole('button')).toHaveLength(0);
+    // (Mark Read and Mark Unread are the Inbox's own, on every row.)
+    expect(
+      within(pane())
+        .queryAllByRole('button')
+        .filter((b) => !b.getAttribute('data-header-action')?.startsWith('inbox-mark')),
+    ).toHaveLength(0);
   });
 
   it('reports the row a person opens in its app', async () => {
@@ -568,6 +573,7 @@ describe('the verbs', () => {
     const verbs = () =>
       within(pane())
         .queryAllByRole('button')
+        .filter((b) => !b.getAttribute('data-header-action')?.startsWith('inbox-mark'))
         .map((b) => b.textContent);
     // The card: Open only.
     expect(verbs()).toEqual([]);
@@ -693,7 +699,7 @@ describe('the verbs', () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread());
     renderInbox(index, { inbox: { actions: host(['reply'], { loadThread, reply }) } });
-    await screen.findByText('Can we halve it?');
+    await waitFor(() => expect(pane().textContent).toContain('Can we halve it?'));
     await waitFor(() => expect(loadThread).toHaveBeenCalledTimes(1));
     const field = screen.getByRole('textbox', { name: 'Reply' });
     fireEvent.change(field, { target: { value: 'Halve it.' } });

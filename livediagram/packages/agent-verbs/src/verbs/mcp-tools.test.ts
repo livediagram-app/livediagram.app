@@ -18,6 +18,7 @@ describe('the MCP tool verbs', () => {
       'create_document',
       'add_tab',
       'update_document',
+      'style_document',
       'share_document',
       'rename_document',
       'change_tabs',

@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import {
   LAYOUT_SLOT_ITEMS_MAX,
+  LAYOUT_TABLE_COLUMNS_MAX,
   LAYOUT_TEXT_MAX,
   PAGE_CHANGES_MAX,
   PAGE_TEXT_SAMPLE_MAX,
@@ -87,13 +88,19 @@ const text = z
     body: slotList
       .optional()
       .describe(
-        "Every other text with words, in the layout's order (top to bottom, then the next column); fewer keeps the rest's sample.",
+        "Every other text with words (a stat's caption, a step) in the layout's order (top to bottom, then the next column); fewer keeps the rest's sample.",
       ),
     figures: slotList
       .optional()
       .describe(
-        "Each figure (a number, a time, a price, 73%), a stat's big number among them, in the layout's order.",
+        "Each figure (a number, a time, a price, 73%, a stat's value), in the layout's order.",
       ),
+    table: z
+      .array(z.array(slotText).max(LAYOUT_TABLE_COLUMNS_MAX))
+      .min(1)
+      .max(LAYOUT_SLOT_ITEMS_MAX)
+      .optional()
+      .describe("The layout's table, every row, header first."),
   })
   .strict()
   .describe(
@@ -255,6 +262,22 @@ const pageChange = z
         'The tab’s page design: decoration drawn behind every element of every page in the theme’s colours (a page with its own keeps it). Text stays readable: a soft plate goes under any text it would make hard to read.',
       ),
     z
+      .object({
+        op: z.literal('tab_style').describe('Restyle the tab.'),
+        style: z
+          .string()
+          .optional()
+          .describe(
+            'A recipe ("auto" or an id, as create_document’s style): theme, font, finish, design.',
+          ),
+        theme: z.string().optional(),
+        font: z.string().optional(),
+        finish: z.enum(['flexible', 'professional', 'sketch', 'marker']).optional(),
+      })
+      .describe(
+        'An existing tab’s look, as Tab Style: a recipe, or a theme, font or finish alone (each over the recipe’s).',
+      ),
+    z
       .object({ op: z.literal('delete').describe('Delete a page.'), page: pageRef })
       .describe(
         'Delete a page and what is on it (an article page: the whole article). Never the last.',
@@ -366,6 +389,31 @@ const answerOut = {
 };
 
 export const changePagesOutput = answerOut;
+
+// style_document (docs/specs/024-agents/pages-for-agents.md "Restyling a tab"): tab_style over one tab or every tab.
+export const styleDocumentShape = {
+  documentId,
+  tabId: z.string().optional().describe('One tab; else all.'),
+  style: z.string().optional().describe('A recipe, as create_document’s.'),
+  theme: z.string().optional().describe('A theme id.'),
+  font: z.string().optional().describe('A font id.'),
+  finish: z.enum(['flexible', 'professional', 'sketch', 'marker']).optional().describe('A finish.'),
+};
+
+const restyled = z
+  .object({
+    tabId: z.string().describe('Its id.'),
+    name: z.string().describe('Its name.'),
+    rev: z.number().describe('Its revision.'),
+  })
+  .describe('A tab restyled.');
+
+export const styleDocumentOutput = {
+  documentId: z.string().describe('The document id.'),
+  tabs: z.array(restyled).describe('Each tab restyled.'),
+  lines: z.array(z.string()).describe('What was done.'),
+  url,
+};
 
 export const writeArticleShape = {
   documentId,

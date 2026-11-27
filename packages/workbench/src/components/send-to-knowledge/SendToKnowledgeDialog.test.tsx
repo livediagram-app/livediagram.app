@@ -3,9 +3,10 @@
 // knowledgebases the person can edit, an existing page (at the end or under a heading) or a new page, the summary
 // previewed with Insert, Edit and Cancel before anything is written, Add Without Summary, and the credits notice's way
 // on when the month is used.
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { IndexError, type KnowledgeSend } from '@liveworkspace/index-client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { comeBackToPage, leaveReturnClock } from '@liveworkspace/explorer/return-to-tab-testing';
 
 const toast = vi.hoisted(() => ({ success: vi.fn(), info: vi.fn(), warning: vi.fn() }));
 vi.mock('../../hooks/ui/useToast', () => ({ useToast: () => toast }));
@@ -325,5 +326,25 @@ describe('SendToKnowledgeDialog with words', () => {
     });
     expect(c.linkedTabs).not.toHaveBeenCalled();
     expect(c.linkTabs).not.toHaveBeenCalled();
+  });
+});
+
+describe('SendToKnowledgeDialog, back on the page (Work Tracker 1460)', () => {
+  afterEach(leaveReturnClock);
+
+  it('reads the knowledgebases again, showing a rename, and keeps them when that read fails', async () => {
+    const c = client();
+    c.listItems
+      .mockResolvedValueOnce({ items: [kb('K', 'Team Wiki')] })
+      .mockResolvedValueOnce({ items: [kb('K', 'Company Wiki')] })
+      .mockRejectedValueOnce(new Error('offline'));
+    open(c);
+    await screen.findByRole('button', { name: /Team Wiki/ });
+    act(() => comeBackToPage());
+    expect(await screen.findByRole('button', { name: /Company Wiki/ })).toBeTruthy();
+    act(() => comeBackToPage());
+    await waitFor(() => expect(c.listItems).toHaveBeenCalledTimes(3));
+    await act(async () => {});
+    expect(screen.getByRole('button', { name: /Company Wiki/ })).toBeTruthy();
   });
 });
