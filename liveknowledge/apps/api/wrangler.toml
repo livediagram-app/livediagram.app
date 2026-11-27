@@ -96,6 +96,18 @@ new_sqlite_classes = ["DocumentRoom", "WorkbenchStore"]
 tag = "v2"
 deleted_classes = ["WorkbenchStore"]
 
+# Slack and Teams (docs/specs/030-knowledgebase/blueprints/chat-apps.md "The ChatWorkspace"): one SQLite-backed
+# instance per connected Slack workspace or Teams tenant, per Teams connect code and per knowledgebase's list of
+# connections. Its settings are Worker secrets (CHAT_KEY, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_SIGNING_SECRET,
+# TEAMS_APP_ID, TEAMS_APP_PASSWORD; TEAMS_APP_TENANT and TEAMS_APP_LINK optional): unset, chat is not offered.
+[[durable_objects.bindings]]
+name = "CHAT_WORKSPACE"
+class_name = "ChatWorkspace"
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["ChatWorkspace"]
+
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
 # exempt from the write limiter, so without this an attacker holding a
@@ -365,6 +377,14 @@ new_sqlite_classes = ["DocumentRoom", "WorkbenchStore"]
 [[env.staging.migrations]]
 tag = "v2"
 deleted_classes = ["WorkbenchStore"]
+
+[[env.staging.durable_objects.bindings]]
+name = "CHAT_WORKSPACE"
+class_name = "ChatWorkspace"
+
+[[env.staging.migrations]]
+tag = "v3"
+new_sqlite_classes = ["ChatWorkspace"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY,
 # TELEMETRY_KEY and MEDIA_KEY are set once on the staging Worker with

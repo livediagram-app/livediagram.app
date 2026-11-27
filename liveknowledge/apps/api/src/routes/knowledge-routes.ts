@@ -26,8 +26,10 @@
 //                                                           knowledge-suggestion-routes.ts
 //   GET    pages, GET pages/<tab>, GET context, POST pages, POST pages/<tab>/move, PUT agents/<token>/scopes
 //                                                           knowledge-agent-routes.ts
+//   GET    chat, POST chat/<platform>, DELETE chat/<platform>  knowledge-chat-routes.ts
 // The gate is the caller's grant (routes/context.ts): reading is every role's, a share link's visitor included; a
 // write is an Editor's. A link confined to one page reaches that page's own routes and search, nothing else.
+import { handleChatRoutes } from './knowledge-chat-routes';
 import { handlePublishingRoutes } from '../publishing/publishing-routes';
 import { getDocument } from '../db';
 import { redactDocumentForScope } from '../redact-document';
@@ -204,7 +206,8 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       segments[3] === 'questions' ||
       segments[3] === 'pages' ||
       segments[3] === 'context' ||
-      segments[3] === 'suggestions'
+      segments[3] === 'suggestions' ||
+      segments[3] === 'chat'
     );
   if (segments.length === 5)
     return (
@@ -215,7 +218,8 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       segments[3] === 'labels' ||
       (segments[3] === 'setup' && segments[4] === 'suggest') ||
       segments[3] === 'questions' ||
-      segments[3] === 'pages'
+      segments[3] === 'pages' ||
+      (segments[3] === 'chat' && (segments[4] === 'slack' || segments[4] === 'teams'))
     );
   if (segments.length === 6)
     return (
@@ -280,6 +284,7 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   if (segments[3] === 'setup')
     return request.method === 'POST' ? handleSetupSuggest(route) : methodNotAllowed();
   return (
+    (await handleChatRoutes(route)) ??
     (await handlePublishingRoutes(route)) ??
     (await handleSettingsRoutes(route)) ??
     (await handleLabelRoutes(route)) ??

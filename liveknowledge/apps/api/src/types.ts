@@ -24,6 +24,7 @@ export type {
 import type { SubscriptionFetcher } from '@liveworkspace/subscription';
 import type { ItemHost } from '@liveworkspace/automations/room';
 import type { DocumentRoom } from './document-room/document-room';
+import type { ChatWorkspace } from './chat/chat-workspace';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
@@ -168,6 +169,22 @@ export type Env = {
   // docs/specs/013-workspace/automations.md). AI_GATEWAY (unset by default) routes their calls through an AI Gateway
   // of that id.
   AI_GATEWAY?: string;
+  // Slack and Teams (docs/specs/030-knowledgebase/chat-apps.md, blueprints/chat-apps.md "Secrets and settings"):
+  // one ChatWorkspace a connected workspace, its install, linked people and queued work. CHAT_KEY (a secret, 32
+  // bytes of base64) seals bot tokens and signs install states and link codes. Slack is offered with SLACK_CLIENT_ID,
+  // SLACK_CLIENT_SECRET and SLACK_SIGNING_SECRET set; Teams with TEAMS_APP_ID and TEAMS_APP_PASSWORD. Unset, the
+  // chat routes answer 503 chat_unavailable.
+  CHAT_WORKSPACE?: DurableObjectNamespace<ChatWorkspace>;
+  CHAT_KEY?: string;
+  SLACK_CLIENT_ID?: string;
+  SLACK_CLIENT_SECRET?: string;
+  SLACK_SIGNING_SECRET?: string;
+  TEAMS_APP_ID?: string;
+  TEAMS_APP_PASSWORD?: string;
+  // The bot's tenant for its own token; unset is the Bot Framework's multi-tenant `botframework.com`.
+  TEAMS_APP_TENANT?: string;
+  // Where the connect dialog's Open Teams goes (the app's Teams deep link); unset, no link is shown.
+  TEAMS_APP_LINK?: string;
 };
 
 // The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the

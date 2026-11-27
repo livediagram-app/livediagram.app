@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { isSlackResponseUrl, postToResponseUrl, slackCall, slackOAuthAccess } from './slack-api';
+import { createBotFrameworkKeys } from './teams-auth';
 import { createBotTokens, personalConversation, sendToConversation } from './teams-connector';
 
 const answering = (body: unknown, status = 200) =>
@@ -150,5 +151,21 @@ describe('Bot Framework calls', () => {
         answering({ id: 'p' }),
       ),
     ).toBeNull();
+  });
+});
+
+describe('the default fetch', () => {
+  it('is the global one, read when a call is made', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fetcher = vi.fn(async () => Response.json({ access_token: 'g', expires_in: 60 }));
+    vi.stubGlobal('fetch', fetcher);
+    try {
+      expect(await createBotTokens()({ appId: 'a', password: 'p' }, 0)).toBe('g');
+      expect(await createBotFrameworkKeys().keyFor('k', 0)).toBeNull();
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.unstubAllGlobals();
+      warn.mockRestore();
+    }
   });
 });

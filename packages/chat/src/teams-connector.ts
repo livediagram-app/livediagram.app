@@ -10,7 +10,7 @@ const RENEW_BEFORE_MS = 300_000;
 const SCOPE = 'https://api.botframework.com/.default';
 
 /** The bot's tokens, kept per app id. */
-export function createBotTokens(fetcher: typeof fetch = fetch) {
+export function createBotTokens(fetcher: typeof fetch = (input, init) => fetch(input, init)) {
   const held = new Map<string, { token: string; until: number }>();
   return async function botToken(creds: BotCredentials, now = Date.now()): Promise<string | null> {
     const kept = held.get(creds.appId);

@@ -4461,6 +4461,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:*
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client

@@ -6129,6 +6129,118 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeChatApps": {
+    "additionalProperties": false,
+    "description": "`GET .../chat` (an Editor's): each platform, whether this server offers it, and what it is connected to.",
+    "properties": {
+      "slack": {
+        "additionalProperties": false,
+        "properties": {
+          "connection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KnowledgeChatConnection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "offered": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "offered",
+          "connection"
+        ],
+        "type": "object"
+      },
+      "teams": {
+        "additionalProperties": false,
+        "description": "`appLink`: where Open Teams goes (the app in Teams), or null when the server names none.",
+        "properties": {
+          "appLink": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "connection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KnowledgeChatConnection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "offered": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "offered",
+          "connection",
+          "appLink"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "slack",
+      "teams"
+    ],
+    "type": "object"
+  },
+  "KnowledgeChatConnection": {
+    "additionalProperties": false,
+    "description": "One connection: the workspace's (or tenant's) name and when an Editor made it.",
+    "properties": {
+      "connectedAt": {
+        "type": "number"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "connectedAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeChatSlackStart": {
+    "additionalProperties": false,
+    "description": "`POST .../chat/slack`: Slack's install page to send the Editor to.",
+    "properties": {
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "url"
+    ],
+    "type": "object"
+  },
+  "KnowledgeChatTeamsCode": {
+    "additionalProperties": false,
+    "description": "`POST .../chat/teams`: the code to send the bot (`connect ABCD-EFGH`), until `expiresAt` (ms).",
+    "properties": {
+      "code": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "code",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
   "KnowledgeConflict": {
     "additionalProperties": false,
     "properties": {

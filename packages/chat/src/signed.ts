@@ -17,7 +17,7 @@ export async function chatKeys(secret: string | undefined): Promise<ChatKeys | n
   const raw = sealKeyBytes(secret);
   if (!raw) return null;
   const base = await crypto.subtle.importKey('raw', raw, 'HKDF', false, ['deriveKey']);
-  const params = (info: string): HkdfParams => ({
+  const params = (info: string) => ({
     name: 'HKDF',
     hash: 'SHA-256',
     salt: new Uint8Array(0),

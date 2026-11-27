@@ -42,7 +42,9 @@ const onKeysHost = (url: unknown): url is string => {
 };
 
 /** The Bot Framework's keys, read through `fetcher` and kept per BOT_KEYS_KEEP_MS. */
-export function createBotFrameworkKeys(fetcher: typeof fetch = fetch): BotKeys {
+export function createBotFrameworkKeys(
+  fetcher: typeof fetch = (input, init) => fetch(input, init),
+): BotKeys {
   let keys = new Map<string, BotKey>();
   let readAt = -Infinity;
   async function refresh(now: number) {
