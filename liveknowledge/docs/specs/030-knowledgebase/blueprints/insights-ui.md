@@ -10,7 +10,9 @@ and AI Settings. The dashboard was seen in a browser on 2026-11-21; a conflict's
 | the read and the actions' runner          | `components/insights/useKnowledgeOverview.ts`                                                                       |
 | the view: its states, actions and dialogs | `components/insights/InsightsView.tsx`                                                                              |
 | the dashboard's layout and its loading    | `components/insights/InsightsDashboard.tsx`, `DashboardLoading.tsx`                                                 |
-| the figures band and its pictures         | `components/insights/FigureTiles.tsx`, `ReadsSparkline.tsx`, `TileVisuals.tsx`, `lib/knowledge-ask/tile-visuals.ts` |
+| the topics, their address and summaries   | `lib/knowledge-ask/insights-topic.ts`, `useInsightsTopic.ts`, `topic-summaries.ts`                                  |
+| the dashboard's tiles and a topic's page  | `components/insights/InsightsTopics.tsx`, `TopicTile.tsx`, `InsightsTopicPage.tsx`, `ReadsTrendCard.tsx`            |
+| the figure tiles and their pictures       | `components/insights/FigureTiles.tsx`, `ReadsSparkline.tsx`, `TileVisuals.tsx`, `lib/knowledge-ask/tile-visuals.ts` |
 | Needs Attention and its rows              | `NeedsAttention.tsx`, `ConflictRow.tsx`, `QuestionRow.tsx`, `SuggestionRow.tsx`                                     |
 | a card, its cap and Show All              | `components/insights/InsightsSection.tsx`, `useShowAll.tsx`                                                         |
 | the other cards                           | `AgentsSection.tsx`, `HealthAndContext.tsx`, `MostReadCard.tsx`                                                     |
@@ -40,12 +42,60 @@ ids running are `busy` (a button's busy look); a refusal becomes `failure`, said
 sections and cleared when the next action starts; a success calls `refresh()`. So an action costs its own request
 and one read.
 
+## The topics and their address
+
+`lib/knowledge-ask/insights-topic.ts` (pure but for `showInsightsTopic` and `backToInsightsDashboard`):
+
+- `INSIGHTS_TOPICS`: `{ topic, label, about }` for `attention` "Needs Attention", `health` "Page Health", `reads`
+  "Reading", `agents` "Agents", in the dashboard's order. `InsightsTopic` is the union of the four ids.
+- `INSIGHTS_TOPIC_PARAM` (`topic`) and `ATTENTION_SHOW_PARAM` (`show`). `insightsTopicOf(search)`: the topic the query
+  names, `null` for none or one it does not know. `attentionShowOf(search)`: `questions`, `conflicts` or
+  `suggestions`, else `all`.
+- `insightsTopicQuery(topic, show)`: the query pairs a topic's address adds (`{ topic }`, with `show` for Needs
+  Attention when not `all`); `{}` for the dashboard.
+- `showInsightsTopic(topic, { show, replace })`: `showKnowledgeView('insights', { query, replace })`. From the
+  dashboard without `replace` it pushes and notes `pushed` (module state), so `backToInsightsDashboard()` is the
+  browser's Back; a topic opened by its address (a reload, a link) has no dashboard entry behind it, so going back
+  replaces the entry with the dashboard's. `insightsStepsBack()`: 1 while a pushed topic shows, else 0; the
+  header chevron passes it to `backFromKnowledgeView(extra)`, which goes `history.go(-(1 + extra))`, past the topic
+  to the view before.
+- `knowledge-view.ts`: `knowledgeViewHref(href, view, query = {})` drops `VIEW_QUERY_PARAMS` (`topic`, `show`) before
+  it sets `view` and then `query`, so another view's address never carries a topic. `showKnowledgeView(view, { replace,
+  query })` does nothing only when the address it would make is the one shown; it adds a trail step only when the
+  view itself changes.
+- `useInsightsTopic()`: `{ topic, show }` from `useSyncExternalStore(subscribeKnowledgeView, () =>
+  location.search)`, so Back, Forward and a press re-render it.
+- The footer's Insights tab, pressed while a topic shows, calls `showInsightsTopic(null)`. The rail's Review All is
+  `showInsightsTopic('attention', { show: 'suggestions' })`, a Health Score's Show Conflicts the same at
+  `conflicts`, and Connect's way to the agents `showInsightsTopic('agents')`. `attention-filter-ask.ts` is gone. The
+  api's **Two Pages Disagree** email links `?view=insights&topic=attention&show=conflicts`.
+
 ## The dashboard
 
-`InsightsDashboard` lays the ready view out (insights.md "The view, as built"): the figures band, then the cards in CSS
-columns (`lg:columns-2`), each in a `break-inside-avoid` slot, in reading order: Needs Attention, Knowledge Health,
-Connected Agents, Always in Context, Most Read, What an Agent Sees. The browser balances the two columns by height.
-Below `lg` they are one column. The content is at most `max-w-7xl`, centred, `px-4 sm:px-6`.
+`InsightsDashboard` lays the ready view out (insights.md "The view, as built"): with no topic it draws
+`InsightsTopics`, else `InsightsTopicPage` for the topic. The content is at most `max-w-7xl`, centred, `px-4
+sm:px-6`. On a change of topic the scroll box (`[data-insights]`) goes to its top, and a topic's page focuses its
+region (`tabIndex={-1}`, named by the topic's label).
+
+- **`InsightsTopics`** (`components/insights/InsightsTopics.tsx`): a `grid gap-4 sm:gap-5 lg:grid-cols-2` of four
+  `TopicTile`s, from the pure `topicSummaries(overview)` (`lib/knowledge-ask/topic-summaries.ts`: the attention
+  counts and its first `TOPIC_PREVIEW_ROWS` (3) `attentionItems`, the 3 lowest-health pages and the not-read total,
+  the 3 most read pages and the required-reading count, the agents and writers, the context budget).
+- **`TopicTile`** (`components/insights/TopicTile.tsx`): a `section` (`aria-labelledby` its heading) with the card's
+  border and surface (`INSIGHTS_CARD`), `relative`, `group`, `p-4 sm:p-5`, `hover:border-slate-300
+  dark:hover:border-slate-600`, `hover:shadow-sm`. Its heading's `button` (`data-topic-open`, a pointer) holds the
+  topic's icon well and its label, and its `after:absolute after:inset-0 after:rounded-2xl` covers the tile, so the
+  whole tile is its target; its focus ring is drawn on that cover (`focus-visible:after:ring-2`). Its accessible
+  name is "Open <label>", its description the summary's words (`aria-describedby`). A chevron (`RowChevronIcon`)
+  at its top right moves 2px right on the group's hover (none under reduced motion). The figure (`text-3xl`
+  semibold tabular) and its line, then the picture, then the preview rows (`text-[13px]`, one line each,
+  truncated, a hairline above them), all under the cover. Any control of its own (Needs Attention's three counts)
+  is `relative z-10` above the cover. The amber mark is the figure tiles' dot.
+- **`InsightsTopicPage`** (`components/insights/InsightsTopicPage.tsx`): `BackBar label="Insights"
+  current={label} onClick={backToInsightsDashboard}` (sticky in the scroll box), then the topic's cards: Needs
+  Attention's `AttentionTiles` and `NeedsAttention` with `cap={ATTENTION_PAGE_CAP}` (10); the others two
+  `COLUMN` stacks in `lg:grid lg:grid-cols-2 lg:items-start`, one column below `lg`.
+- **Telemetry:** `UI·Opened·InsightsTopic` when a tile opens its topic (the topic's id is not sent).
 
 - **The figures** (`dashboardFigures(overview)`, pure, in `dashboard-figures.ts`): `readsWeek` (people, agents,
   total, from the last 7 of `reads.days`), `agents` and `writers` (agents whose scopes hold `write`), `questions`
@@ -56,10 +106,9 @@ Below `lg` they are one column. The content is at most `max-w-7xl`, centred, `px
   tile adds `ReadsSparkline`. The button's `aria-label` is its words and its figure ("Open Questions: 3", with ",
   needs attention" when it carries the amber dot); its line is its description (`aria-describedby`); its hover
   card (`HoverCard`, `block`) says what pressing it does. A filtering tile is `aria-pressed`.
-- **Pressing a tile:** a filter tile sets the Needs Attention filter (or back to `all` when it is on) and scrolls
-  Needs Attention into view (`scrollIntoView({ block: 'start', behavior })`, `auto` under reduced motion) and
-  focuses its heading's section; any other scrolls its card into view and focuses it (`tabIndex={-1}` on the
-  `section`).
+- **Pressing a figure tile** (`AttentionTiles`, Needs Attention's page): it sets the filter (or back to `all` when
+  it is on) with `showInsightsTopic('attention', { show, replace: true })`, scrolls Needs Attention into view
+  (`scrollIntoView({ block: 'start', behavior })`, `auto` under reduced motion) and focuses its section.
 - **The sparkline** (`ReadsSparkline`): an `svg` a bar a day, each day a people bar (`fill-brand-700`,
   `dark:fill-brand-300`) under an agents bar (`fill-brand-400`, `dark:fill-brand-600`), heights scaled to the busiest
   day, a 1px hairline for a day with none, `preserveAspectRatio="none"`, 28px high, the tile's width. Inside the
@@ -80,8 +129,11 @@ filter)` orders the rows: conflicts by `foundAt` newest first, suggestions by `c
   Disagree", "Suggested Edit", "Unanswered Question") over the row the kind draws (`ConflictRow`, `SuggestionRow`,
   `QuestionRow`), rows divided by a hairline.
 - **Caps** (`useShowAll(rows, cap)`): the rows past `cap` are not drawn until **Show All N** (a `ghost` `xs`
-  button, `aria-expanded`) is pressed; **Show Fewer** folds them. Caps: Needs Attention 4, Connected Agents 4,
-  Always in Context 5. Changing the Needs Attention filter folds it again.
+  button, `aria-expanded`) is pressed; **Show Fewer** folds them. Caps: Needs Attention 10 on its page
+  (`ATTENTION_PAGE_CAP`; `NEEDS_ATTENTION_CAP` 4 is the card's default), Connected Agents 4, Always in Context 5.
+  Changing the Needs Attention filter folds it again.
+- **Reads Over 14 Days** (`ReadsTrendCard`): an `InsightsSection` heading Reading's page, the week's reads
+  (`text-3xl`) with the two dots' counts, and `ReadsSparkline` with `tall`.
 - **Most Read** (`MostReadCard`): an `ol`, a row a page: its title (a button that opens the page, truncated), its
   figures ("12 people, 4 agents" in words for a screen reader, `12 · 4` with two swatches on screen) and a 6px bar
   whose length is the page's reads against the most read, split people and agents in the sparkline's tones.
@@ -152,8 +204,9 @@ kind, now))` and the overview read again; a thrown request is `emailFailureText`
 
 ## States
 
-Loading: the dashboard's shape in placeholders (six tiles, a wide and a narrow card) in a `status` named "Loading AI
-Knowledge". Failed: an error callout, **Try Again**. Offline: one `EmptyState` for the view. Ready: the dashboard.
+Loading: the dashboard's shape in placeholders (four topic tiles) in a `status` named "Loading Insights", on the
+dashboard and on a topic's page alike (a topic's page keeps its BackBar over them). Failed: an error callout, **Try
+Again**. Offline: one `EmptyState` for the view. Ready: the dashboard or the topic's page.
 
 ## Share roles
 
@@ -173,7 +226,7 @@ each handler checks it again. Tests, a role at a time: `components/insights/Insi
 
 ## Telemetry
 
-`UI·Opened·ConnectAgent`; `UI·Used·AgentWriteAllowed`, `AgentWriteStopped`, `OwnersAsked`, `OwnersReminded`, `ConflictDismissed`, `QuestionDismissed`, `SuggestionAccepted`,
+`UI·Opened·ConnectAgent`, `UI·Opened·InsightsTopic`; `UI·Used·AgentWriteAllowed`, `AgentWriteStopped`, `OwnersAsked`, `OwnersReminded`, `ConflictDismissed`, `QuestionDismissed`, `SuggestionAccepted`,
 `SuggestionDismissed`; `UI·Added·ContextPage`, `UI·Removed·ContextPage`. No words, names or ids.
 
 ## Tests
@@ -181,9 +234,12 @@ each handler checks it again. Tests, a role at a time: `components/insights/Insi
 `lib/knowledge-ask/overview-words.test.ts`, `lib/knowledge-ask/dashboard-figures.test.ts` and
 `components/insights/InsightsView.test.tsx`: one read on open and one after an action, every empty state, a
 failed read, Offline, each card's rows, the passages and lines as text, the health bar's label and parts, the
-over-budget refusal, each action's request, and the controls per role. `components/insights/InsightsDashboard.test.tsx`:
-each tile's figure and name, the amber mark, a filter tile pressing and unpressing, a tile scrolling to its card, the
-sparkline's label, the caps and Show All, Most Read's rows and empty state. The api's `knowledge-ask-routes.test.ts`
+over-budget refusal, each action's request, and the controls per role, each on its topic's page.
+`components/insights/InsightsDashboard.test.tsx`: the four topic tiles' figures, previews and marks, a tile opening
+its page (address, history entry, focus), Needs Attention's counts opening it filtered, the BackBar and Back, a
+reload at a topic and at a filter, an unknown topic, the figure tiles pressing and unpressing, the sparkline's
+label, the caps and Show All, Most Read's rows and empty state. `lib/knowledge-ask/insights-topic.test.ts` and
+`topic-summaries.test.ts`: the address both ways, the steps back, the summaries. The api's `knowledge-ask-routes.test.ts`
 "Insights" and `knowledge-overview-reads.test.ts`: the days filled with zeros, people and agents apart, the
 14-day window, Most Read's order, its cap and a deleted page left out.
 
@@ -269,7 +325,7 @@ Derived from [Insights](../insights.md#page-insights): `components/knowledge/Pag
 
 ## Not Read in 90 Days
 
-`components/insights/NotReadCard.tsx`, under `MostReadCard` in the left column, from
+`components/insights/NotReadCard.tsx`, on Page Health's page beside Knowledge Health (its right column), from
 `overview.notRead: { pages: { tab, title, touchedAt? }[]; total }` (absent from an older api: not drawn).
 
 - An `InsightsSection` "Not Read in 90 Days", `count` the total, about "Pages nobody opened and no agent read in 90 days:

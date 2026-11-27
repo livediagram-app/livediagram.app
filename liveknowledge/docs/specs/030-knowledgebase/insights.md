@@ -1,6 +1,7 @@
 # Insights
 
-Status: **the view is built as a dashboard and was seen in a browser on 2026-11-21** (every tile and card action
+Status: **the view is built as a dashboard of topics, each with a page of its own (Work Tracker 1464,
+2026-11-27); its cards were seen in a browser on 2026-11-21** (every tile and card action
 pressed, light and dark, 1440 to 390 wide; a conflict only through a stubbed read, since none can be found without a
 key) ([Build plan](../005-project-roadmap/build-plan.md)
 step 10). What is not built is under "Not built"; the [Insights UI blueprint](blueprints/insights-ui.md) has
@@ -121,7 +122,7 @@ On This Page. What follows is what the read carries:
   quoting the right one; **Ask Both Owners** emails them; **Not a Conflict** dismisses the pair for good.
 - **Ask Both Owners** sends each owner of the two pages one email, **Two Pages Disagree**: the question, both
   pages by name with a link each, each passage as a plain text excerpt of at most 280 characters, and a link to
-  this view. At most once a conflict (one person who owns both pages gets one email). It is a
+  this view's Needs Attention at its Disagreements (`?view=insights&topic=attention&show=conflicts`). At most once a conflict (one person who owns both pages gets one email). It is a
   [Knowledgebase Reviews](verification.md#reminders) email: the same setting, the same check that the owner can
   still open the knowledgebase, the same 50 a day. The answer says what happened: sent to how many owners, already
   asked and when, nobody owns either page, the owners cannot be reached, the day's emails are spent, or this
@@ -275,37 +276,93 @@ every page is verified when there is nothing to remind anyone of.
 ## The view, as built
 
 Owner, 2026-11-21: "Can you improve the UX of that page, its just a long page with stacked items, could be more of a
-dashboard". The view is a dashboard: a band of headline figures, then cards in a grid, each card holding its own
-rows and actions, long lists capped so the page never grows with the data.
+dashboard". Owner, 2026-11-26 (Work Tracker 1464): it still showed so much at once that it was hard to act on, so
+the view is a **dashboard of topics**, a summary tile each, and each topic opens a **focused page** of its own for
+working through it.
 
 - One read of `GET .../knowledge` each time the view opens and one after each action taken in it. Nothing is polled.
-  Every figure below comes from that one read.
-- **Header:** "Insights", one line, **Connect an Agent** and **AI Settings**.
-- **The figures band:** six tiles, each a button named by its words and its figure. Six across on a wide screen,
-  three across from a tablet's width, two across on a phone.
+  Every figure below comes from that one read; moving between the dashboard and a topic's page reads nothing more.
+- **Header:** "Insights", one line, **Connect an Agent** and **AI Settings**, the same on the dashboard and on every
+  topic's page.
 
-  | Tile                | Figure                                                                                               | Pressed                                  |
-  | ------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-  | Reads This Week     | page reads in the last 7 days; "9 by people, 2 by agents" (reads, not readers); a 14-day sparkline   | brings Most Read into view               |
-  | Connected Agents    | agents seen in 30 days; how many may write; a bar of who reads most                                  | brings Connected Agents into view        |
-  | Open Questions      | questions nobody could answer; how many asks in all; a bar per question                              | shows Needs Attention at Questions       |
-  | Pages That Disagree | open conflicts; the oldest conflict's two pages                                                      | shows Needs Attention at Disagreements   |
-  | Suggested Edits     | agents' edits waiting; a 14-day track of how long each has waited                                    | shows Needs Attention at Suggested Edits |
-  | Verified            | the verified share; a bar of verified, Review Due and never verified; the average Health Score       | brings Knowledge Health into view        |
-  | Average Health      | under a Review Period of Never, in Verified's place: the average Health Score; across how many pages | brings Knowledge Health into view        |
+### The topics
 
-  A tile whose figure asks for someone (an open question, a conflict, an edit waiting, a page Review Due) carries a
-  small amber mark; a tile that filters Needs Attention shows pressed while its filter is on, and pressing it again
-  shows All. The sparkline is the last 14 days' reads, a bar a day, people and agents stacked in two tones, with
-  its words said as the tile's description ("Reads by day over the last 14 days: 60 by people, 24 by agents.").
-  Every read count names reads, never readers: no reader's identity is kept, so one person opening nine pages is
-  9 reads by people, never "9 people" (owner 2026-11-22).
+Every card the view has belongs to one of four topics, and is on its topic's page whole, with all its rows and
+actions: nothing that was on Insights is left out.
 
-  **Every tile draws a picture** (owner 2026-11-22: "the other 5 need to be more amazing, visualisations that are
-  useful to look at and help me understand"), in the same 28px strip at the tile's foot as the sparkline, so the six
-  line up. Each picture is from the same overview read, and its words are said as part of the tile's description.
+| Topic           | Address            | Its page                                                                                     |
+| --------------- | ------------------ | -------------------------------------------------------------------------------------------- |
+| Needs Attention | `&topic=attention` | the Open Questions, Pages That Disagree and Suggested Edits tiles; the Needs Attention card  |
+| Page Health     | `&topic=health`    | Knowledge Health (Pages With Low Health, Remind the Owners); Not Read in 90 Days             |
+| Reading         | `&topic=reads`     | Reads Over 14 Days; Most Read; Required Reading                                              |
+| Agents          | `&topic=agents`    | Connected Agents; Always in Context; What an Agent Sees                                      |
 
-  - **Connected Agents:** which agents lean on the knowledgebase. A bar split by each agent's share of this week's
+### The dashboard
+
+The view's first page (`?view=insights`, no topic): a tile a topic, in the table's order, two across from a laptop's
+width (1024px) and one column below it. A tile is the way into its topic: pressing anywhere on it opens the topic's
+page (its heading is its one button, stretched over the tile: a pointer, a border that darkens on hover, a focus
+ring round the whole tile, and a chevron at its top right that nudges on hover). Each tile says where to look, from
+the one read:
+
+- **Needs Attention:** how many things wait for someone ("6 waiting"), an amber mark while any do, and three counts,
+  **Questions**, **Disagreements** and **Suggested Edits**, each a button of its own that opens the page at that
+  filter. Under them the first three things waiting, most urgent first as the card orders them, one line each with
+  its kind's icon (a conflict's question, a suggestion's page and reason, a question's words), then "3 more" past
+  them. With none: "Nothing Needs Attention" and a line saying what lands here.
+- **Page Health:** the verified share as its figure ("66%" and "of 3 pages verified") with the three-part Verified
+  bar and its caption; under a Review Period of Never the average Health Score instead ("74", "average health
+  across 3 pages") and no bar. Then up to 3 of the lowest-health pages, each with its score chip, and how many pages
+  were not read in 90 days. An amber mark while a page is Review Due. With no pages: "No pages yet".
+- **Reading:** reads this week as its figure, by people and by agents apart, and the 14-day sparkline; then the 3
+  pages read most this week, each with its reads, and how many pages are asked to be read when any are.
+- **Agents:** how many agents connected in 30 days as its figure, how many may write, and the bar of who reads
+  most; then Always in Context's budget ("4,410 of 8,000 tokens in context").
+
+### A topic's page
+
+- **The way back** is the shared [BackBar](../../../liveworkspace/docs/specs/004-interface-design/back-bar.md) at the
+  top of the page, pinned as it scrolls: "Insights", with the topic's name as its chip. It returns to the dashboard
+  as the browser's Back does. The header's chevron still goes back to the view before Insights, past the topic.
+- **The address** names the topic (`?view=insights&topic=health`), so a topic can be linked to and survives a
+  reload. Needs Attention's filter is in it too (`&show=questions`, `conflicts` or `suggestions`; none is All), so
+  Review All on a page's Suggested Edits, a Health Score's Show Conflicts and the **Two Pages Disagree** email open
+  it at their filter. Changing the filter replaces the address, so it adds no history entry. An unknown topic or
+  filter reads as the dashboard, or as All. Moving to another view drops the topic, so the footer's Insights tab
+  always opens the dashboard, and pressed on a topic's page it goes back to the dashboard too. Connect's way to the
+  agents opens Agents.
+- **Opening a topic** from the dashboard is a new history entry, so the browser's Back returns to the dashboard.
+  A topic's page opens at its top with the focus on its region, so a screen reader says where they are.
+- **Needs Attention's page:** the three figure tiles, then the card. A tile filters the card and pressing it again
+  shows All. The card shows 10 rows before **Show All**, not 4: this page is for working through them.
+- **Reads Over 14 Days** heads Reading's page: reads this week as a large figure, by people and by agents apart,
+  and the 14 days' sparkline drawn 40px tall.
+- The other cards of a page sit in two equal columns from a laptop's width, each its own stack, in the table's
+  order (the first on the left), and in one column below it.
+
+### The figure tiles
+
+Needs Attention's page has three, each a button named by its words and its figure, three across from a tablet's
+width and one column on a phone.
+
+| Tile                | Figure                                                                  | Pressed                                  |
+| ------------------- | ----------------------------------------------------------------------- | ---------------------------------------- |
+| Open Questions      | questions nobody could answer; how many asks in all; a bar per question | shows Needs Attention at Questions       |
+| Pages That Disagree | open conflicts; the oldest conflict's two pages                         | shows Needs Attention at Disagreements   |
+| Suggested Edits     | agents' edits waiting; a 14-day track of how long each has waited       | shows Needs Attention at Suggested Edits |
+
+A tile whose figure asks for someone carries a small amber mark; a tile that filters shows pressed while its filter
+is on. Every read count names reads, never readers: no reader's identity is kept, so one person opening nine pages
+is 9 reads by people, never "9 people" (owner 2026-11-22). The sparkline is the last 14 days' reads, a bar a day,
+people and agents stacked in two tones, its words said as its description ("Reads by day over the last 14 days: 60
+by people, 24 by agents.").
+
+**Every tile draws a picture** (owner 2026-11-22: "the other 5 need to be more amazing, visualisations that are
+useful to look at and help me understand"), from the same overview read, its words said as part of the tile's
+description: the figure tiles in a 28px strip at their foot, and the dashboard's Page Health, Reading and Agents
+tiles the Verified bar, the sparkline and the agents' bar.
+
+  - **Connected Agents** (the Agents tile): which agents lean on the knowledgebase. A bar split by each agent's share of this week's
     agent reads (the 4 who read most, the rest as one "others" piece), in four tones of the brand, with its caption
     naming the agent who reads most and its share ("Claude Code, 72% of reads"). With no agent reads this week, a
     hairline and "No reads this week"; with no agents, "Connect one to start".
@@ -319,16 +376,17 @@ rows and actions, long lists capped so the page never grows with the data.
     for each waiting edit on the day it was suggested (stacked on a busy day); a dot 7 days or older is amber, and
     one older than the track sits at its left end. The line says the oldest wait ("Oldest waits 4 days"). None
     waiting: the bare track.
-  - **Verified:** how far the pages can be trusted. A bar of every page in three parts, verified (brand), Review Due
-    (amber) and never verified (grey), with each part's count beside its colour as its caption (the words are in
-    the tile's hover card and its spoken description). The line is the
-    average Health Score ("Average health 71"). No pages: a hairline.
+  - **Verified** (the Page Health tile): how far the pages can be trusted. A bar of every page in three parts,
+    verified (brand), Review Due (amber) and never verified (grey), with each part's count beside its colour as its
+    caption (its words also said as the tile's description). No pages: a hairline.
 
-- **Needs Attention** (the widest card, first): the work waiting for someone, in one list, most urgent first: pages
+### The cards
+
+- **Needs Attention:** the work waiting for someone, in one list, most urgent first: pages
   that disagree (a wrong answer is being given now), then edits agents suggested (an agent is waiting), then
   questions nobody could answer, the most asked first. A switch above it shows **All**, **Questions**,
   **Disagreements** or **Edits** (an agent's suggested edits). Each row says what kind it is with an icon and a word, and keeps its
-  actions as below. At most 4 rows show; **Show All 9** opens the rest in place and **Show Fewer** folds them.
+  actions as below. At most 10 rows show; **Show All 19** opens the rest in place and **Show Fewer** folds them.
 - **Knowledge Health:** the verified share as a large figure with the average Health Score beside it ("Average
   health 71"), the stacked bar and its legend, **Pages With Low Health** (at most 5 rows, under the legend), and
   **Remind the Owners**.
@@ -338,15 +396,14 @@ rows and actions, long lists capped so the page never grows with the data.
   and **Add a Page**.
 - **Most Read:** the 5 pages read most in the last 7 days, each with a bar of its reads, people and agents in the
   same two tones as the sparkline, and its figures. A row opens its page. A deleted page is left out.
-- **Not Read in 90 Days:** under Most Read, as [Not Read in 90 Days](#not-read-in-90-days) says: a row a page,
-  its title and when it was last edited, a chevron, opening the page.
-- **What an Agent Sees:** the dark sample card, last.
-- On a wide screen the cards fill two equal columns (owner 2026-11-21): Needs Attention, Connected Agents, Most
-  Read and Not Read in 90 Days on the left; Knowledge Health, Required Reading ([Required Reading](required-reading.md): each page asked to be read, least read first, with how many have), Always in Context and What an Agent Sees on the right, so neither column runs
-  long beside an empty one. Each column is its own stack, so a card's height in one never moves a card in the other,
-  and Knowledge Health heads its column on a whole pixel (CSS columns put it half a pixel off, and its glyph with it).
-  Below a laptop's width (1024px) they are one column, the left column's cards then the right's, the order focus
-  moves in. Nothing scrolls sideways at any width.
+- **Not Read in 90 Days:** beside Knowledge Health, as [Not Read in 90 Days](#not-read-in-90-days) says: a row a
+  page, its title and when it was last edited, a chevron, opening the page.
+- **Required Reading** ([Required Reading](required-reading.md)): each page asked to be read, least read first, with
+  how many have.
+- **What an Agent Sees:** the dark sample card, under Always in Context.
+- Each column is its own stack, so a card's height in one never moves a card in the other, and the first card heads
+  its column on a whole pixel (CSS columns put it half a pixel off, and its glyph with it). Nothing scrolls sideways
+  at any width.
 - **Empty states** teach how each card fills:
   - Needs Attention with nothing waiting: "Nothing Needs Attention", saying what lands here and how (an
     unanswered Ask, an agent's empty search or `report_gap`, a page that disagrees with another, an agent's
