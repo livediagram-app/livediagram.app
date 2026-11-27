@@ -1229,7 +1229,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   glyphs a module each, `/explorer/*` on liveworkspace.app went from 408 to 380 KiB gzipped (measured
   2026-11-09). `panes-lazy-load.test.ts` and `settings-panel-preload.test.ts` keep them out.
 - **What only some lists draw loads with them.** The lens's chip row and the filtered list's empty card, Offline's own
-  view and the Details layout are each their own chunk too, fetched with the sections once the page is idle. The
+  view, the Trash's view, Archived's band and the Details layout are each their own chunk too, fetched with the sections once the page is idle. The
   field, the lens's parsing and the filtering stay in the first load, so a lens in the address filters the list as it
   loads; until the chips' code is in, their row keeps its place (the same height, empty and hidden from assistive
   tech), and a list that opens in Details fetches it while its items load, its skeleton rows standing in. Together
