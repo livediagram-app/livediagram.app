@@ -211,7 +211,7 @@ describe('a turn', () => {
   it('sends the last turns back', async () => {
     const turns = [{ instruction: 'Add a card', reply: 'Added #3.' }, { bad: true }];
     await ask({ ...BODY, turns });
-    expect(JSON.parse(messages()[1]!.content).turns).toEqual([
+    expect((JSON.parse(messages()[1]!.content) as { turns: unknown }).turns).toEqual([
       { instruction: 'Add a card', reply: 'Added #3.' },
     ]);
   });
@@ -242,7 +242,9 @@ describe('a turn', () => {
     const res = await ask();
     expect(res.status).toBe(200);
     expect(calls).toHaveLength(2);
-    expect(JSON.parse(messages(1)[1]!.content).previous.refused).toMatch(/^changes\.0\.op:/);
+    expect(
+      (JSON.parse(messages(1)[1]!.content) as { previous: { refused: string } }).previous.refused,
+    ).toMatch(/^changes\.0\.op:/);
   });
 
   it('says the answer couldn’t be read after two that don’t', async () => {

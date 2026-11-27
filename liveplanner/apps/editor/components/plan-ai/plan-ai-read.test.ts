@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { PLAN_AI_TAB_MAX } from '@liveplanner/items';
 import { forPeople } from './plan-ai-lines';
-import { readDashboard, valueText, withinBound } from './plan-ai-read';
-import { ITEMS } from './plan-ai-fixtures';
+import { readBoard, readDashboard, valueText, withinBound } from './plan-ai-read';
+import { ITEMS, SETUP, TYPES, card } from './plan-ai-fixtures';
 
 // What Plan AI is sent of a tab (docs/specs/026-plan/plan-ai.md "What it may change").
 
@@ -58,6 +58,29 @@ describe('readDashboard', () => {
     expect(text).toContain('a title "Q3"');
     expect(text).toContain('shows status');
     expect(readDashboard({ rows: [] }, [])).toContain('(No rows yet.)');
+  });
+});
+
+describe('reading a big board', () => {
+  it('reads 5,000 cards within the bound, in well under a frame budget per thousand', () => {
+    const items = new Map(
+      Array.from({ length: 5000 }, (_, i) => {
+        const c = card(`c${i}`, i + 1, {
+          title: `Card ${i} ${'words '.repeat(10)}`,
+          status: i % 2 ? 'todo' : 'done',
+          description: 'x'.repeat(2000),
+          'f-size': i,
+        });
+        return [c.id, c] as const;
+      }),
+    );
+    const started = performance.now();
+    const text = readBoard({ setup: SETUP, items, types: TYPES });
+    const took = performance.now() - started;
+    expect(text.length).toBeLessThanOrEqual(PLAN_AI_TAB_MAX);
+    expect(text).toMatch(/left out: too many to send/);
+    // Linear: measured about 15 ms locally; the budget leaves room for a slow runner.
+    expect(took).toBeLessThan(500);
   });
 });
 
