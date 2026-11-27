@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   areaFadeId,
   barPath,
+  chartLegendGaps,
   chartLegendPx,
   chartLineWidth,
   chartTextScale,
@@ -90,5 +91,10 @@ describe('chart style', () => {
     expect(areaFadeId('abc', 0)).toBe('chart-fade-abc-3-0');
     expect(areaFadeId('a b"<', 1)).toBe('chart-fade-ab-5-1');
     expect(areaFadeId('a b', 0)).not.toBe(areaFadeId('ab', 0));
+  });
+
+  it("keeps the key's old spacing at the board default and grows it with a slide-sized key", () => {
+    expect(chartLegendGaps(14)).toEqual({ swatch: 4, item: 10 });
+    expect(chartLegendGaps(31)).toEqual({ swatch: 9, item: 22 });
   });
 });

@@ -51,6 +51,15 @@ export function chartTickPx(element: Sized): number {
   );
 }
 
+// The key's spacing grows with its text, so a slide-sized key keeps air between a dot and its name and between two
+// names (fixed 4 and 10 px read as "●Revenue●Costs" at 30px text). At the board default these are the old 4 and 10.
+export function chartLegendGaps(fontPx: number): { swatch: number; item: number } {
+  return {
+    swatch: Math.max(4, Math.round(fontPx * 0.3)),
+    item: Math.max(10, Math.round(fontPx * 0.7)),
+  };
+}
+
 // A line's weight grows with its plot, from 2px on a small chart to 3.5px on a slide-sized one.
 export function chartLineWidth(w: number, h: number): number {
   return Math.round(Math.max(2, Math.min(3.5, Math.min(w, h) / 110)) * 100) / 100;
