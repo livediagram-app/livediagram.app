@@ -172,7 +172,6 @@ const base = {
   appChrome: true,
   zenMode: false,
   embedMode: false,
-  anyWelcomeOpen: false,
   hydrated: true,
   documentId: 'd1',
   documentName: 'Talk',
@@ -332,6 +331,27 @@ describe('the chrome store', () => {
       rerender(<Page value={base} />);
     });
     expect(screen.queryByTestId('opened')).toBeNull();
+  });
+});
+
+// Work Tracker 1522 (docs/specs/007-editor/new-document-route.md): a guest's Change Name opens the name card over
+// the canvas and nothing more. The header, the footer and the page tree stay up while it shows and after it closes.
+describe("a guest's name card", () => {
+  it('leaves the header, the footer and the page tree as they are, open and closed', () => {
+    const guest = { ...base, isOwner: false, canShareDocument: false } as EditorContextValue;
+    const chromeUp = () => {
+      expect(screen.getByRole('heading').textContent).toBe('Corner');
+      expect(screen.getByRole('contentinfo')).toBeTruthy();
+      expect(screen.getByRole('navigation')).toBeTruthy();
+    };
+    const { rerender } = render(<Page value={{ ...guest, identityTrayOpen: true }} />);
+    chromeUp();
+    // Change Name: the tray gives way to the card.
+    rerender(<Page value={{ ...guest, identityOnlyScreenOpen: true }} />);
+    chromeUp();
+    // Join or Cancel: the card closes, the name confirmed.
+    rerender(<Page value={guest} />);
+    chromeUp();
   });
 });
 

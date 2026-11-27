@@ -153,7 +153,6 @@ export function editorView({
     addTab: tabsSlice.addTab,
     addNamedSubpage: tabsSlice.addNamedSubpage,
     addText: elementsSlice.addText,
-    anyWelcomeOpen: commentsSlice.anyWelcomeOpen,
     applyImageToElement: elementsSlice.applyImageToElement,
     autoAlignTab: tabsSlice.autoAlignTab,
     autoLayoutTab: tabsSlice.autoLayoutTab,

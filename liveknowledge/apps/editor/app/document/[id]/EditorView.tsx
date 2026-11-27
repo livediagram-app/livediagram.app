@@ -242,7 +242,6 @@ export function EditorView() {
     slideDeck,
     activeId,
     activeTab,
-    anyWelcomeOpen,
     embedMode,
     // The app's surroundings, and the workbench session (docs/specs/013-workspace/blueprints/
     // workbench-embeds.md, Surface table).
@@ -413,7 +412,7 @@ export function EditorView() {
       />
     );
   const footer =
-    anyWelcomeOpen || zenMode || embedMode ? null : (
+    zenMode || embedMode ? null : (
       <EditorViewFooter
         isOffline={isOffline}
         landscapeShown={landscapeBars.shown}
@@ -422,8 +421,7 @@ export function EditorView() {
     );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in zen, an embed, the workbench frame, the welcome flow or a
-  // running presentation).
+  // where there are bars to fold (not in zen, an embed, the workbench frame or a running presentation).
   const landscapeBarsHandle =
     header && footer && slideDeck.presentingAt === null ? (
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
@@ -568,7 +566,7 @@ export function EditorView() {
                                     >
                                       {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
                                       {/* A connected file is never the open page (links-and-embeds.md): for the moment a load lands on one, before the editor moves to the nearest page, nothing is drawn or edited. */}
-                                      {ctx.activeTabConnected && !anyWelcomeOpen ? (
+                                      {ctx.activeTabConnected ? (
                                         <div className="min-h-0 flex-1 bg-slate-50 dark:bg-slate-950" />
                                       ) : (
                                         <SuppressElementIndicators when={embedMode}>

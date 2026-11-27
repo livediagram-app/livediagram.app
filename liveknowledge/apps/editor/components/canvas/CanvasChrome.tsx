@@ -119,7 +119,6 @@ function CanvasChromeView(props: CanvasChromeProps) {
     showIdentityTray = false,
     tabThemeId,
     identityLockedName,
-    welcomeOpen,
     wrapperRef,
     zenMode,
     onToggleZen,
@@ -128,10 +127,10 @@ function CanvasChromeView(props: CanvasChromeProps) {
   // zoom renders them and not this chrome or its panels (docs/specs/008-canvas/blueprints/viewport-store.md).
   const viewport = useViewportStore();
   const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
-  // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
-  // folds it in next to the welcome-flow gate that already suppresses
-  // the same panels, so each panel stays hidden in either state.
-  const chromeHidden = welcomeOpen || zenMode === true;
+  // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. A visitor's
+  // name card hides none of it: it is a modal over the canvas, and the page tree and contents sidebar stay up
+  // (docs/specs/007-editor/new-document-route.md, Work Tracker 1522).
+  const chromeHidden = zenMode === true;
   // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
@@ -473,75 +472,71 @@ function CanvasChromeView(props: CanvasChromeProps) {
         // pushed off the screen.
         className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${clusterLeft === null ? '' : 'flex-wrap-reverse justify-end'} ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
       >
-        {welcomeOpen ? null : (
-          <>
-            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own writing too
+        {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own writing too
                 (docs/specs/013-workspace/share-roles.md); a Viewer has nothing to undo. */}
-            {/* An Editor's Undo and Redo are in the formatting bar; here for a Participant, never on a phone, where the
+        {/* An Editor's Undo and Redo are in the formatting bar; here for a Participant, never on a phone, where the
                 edit bar stands over them (owner 2026-11-21). */}
-            {!zenMode && !isMobile && readOnly && !!props.takePart ? (
-              <UndoRedoClusterStrip
-                onUndo={onUndo}
-                onRedo={onRedo}
-                canUndo={canUndo}
-                canRedo={canRedo}
-              />
-            ) : null}
-            {/* The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): right of Undo /
+        {!zenMode && !isMobile && readOnly && !!props.takePart ? (
+          <UndoRedoClusterStrip
+            onUndo={onUndo}
+            onRedo={onRedo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+          />
+        ) : null}
+        {/* The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): right of Undo /
                 Redo, for every role, while the tab has two pages or more and Contents is minimised (the docked
                 sidebar already shows every page); not on a phone, whose row has no room for it (a swipe moves
                 between pages there). */}
-            {!zenMode &&
-            !isMobile &&
-            !contentsDocked &&
-            props.pagesMode &&
-            // A stack flips from the page in front's own Previous and Next (StackNav).
-            !props.pagesMode.cardStage &&
-            props.pagesMode.pages.length > 1 ? (
-              <PageNavigatorClusterStrip
-                pageIds={props.pagesMode.pages.map((p) => p.id)}
-                onGo={props.pagesMode.focusPage}
-              />
-            ) : null}
-            {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode,
+        {!zenMode &&
+        !isMobile &&
+        !contentsDocked &&
+        props.pagesMode &&
+        // A stack flips from the page in front's own Previous and Next (StackNav).
+        !props.pagesMode.cardStage &&
+        props.pagesMode.pages.length > 1 ? (
+          <PageNavigatorClusterStrip
+            pageIds={props.pagesMode.pages.map((p) => p.id)}
+            onGo={props.pagesMode.focusPage}
+          />
+        ) : null}
+        {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode,
                 for every role and on a phone too. The deck is built from its rows' menus ("Slides"). */}
-            {CUT_FROM_FORK && !zenMode && props.pagesMode ? (
-              <PagesClusterStrip
-                contents={
-                  // Docked as the sidebar, Contents has no button (useContentsChrome).
-                  contentsDocked ? null : (
-                    <ContentsClusterSegment
-                      popoverOpen={activeDockPanel === 'contents'}
-                      onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
-                    />
-                  )
-                }
-              />
-            ) : null}
-            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before the brush, only while
+        {CUT_FROM_FORK && !zenMode && props.pagesMode ? (
+          <PagesClusterStrip
+            contents={
+              // Docked as the sidebar, Contents has no button (useContentsChrome).
+              contentsDocked ? null : (
+                <ContentsClusterSegment
+                  popoverOpen={activeDockPanel === 'contents'}
+                  onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
+                />
+              )
+            }
+          />
+        ) : null}
+        {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before the brush, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
-            {/* Not on the pages (docs/specs/030-knowledgebase/page-comments.md "Listed with the page's comments"):
+        {/* Not on the pages (docs/specs/030-knowledgebase/page-comments.md "Listed with the page's comments"):
                 the page's own Comments list holds every thread and action, and this corner is the Edit button's. */}
-            {!zenMode &&
-            !props.pagesMode &&
-            panelsOn.collaborate &&
-            (commentRows.length > 0 || actionRows.length > 0) ? (
-              <CollaborateClusterButton
-                openCount={kindCounts('open', commentRows, actionRows).all}
-                popoverOpen={activeDockPanel === 'collaborate'}
-                onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
-              />
-            ) : null}
-            {/* No zoom cluster (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"). Zen keeps
+        {!zenMode &&
+        !props.pagesMode &&
+        panelsOn.collaborate &&
+        (commentRows.length > 0 || actionRows.length > 0) ? (
+          <CollaborateClusterButton
+            openCount={kindCounts('open', commentRows, actionRows).all}
+            popoverOpen={activeDockPanel === 'collaborate'}
+            onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
+          />
+        ) : null}
+        {/* No zoom cluster (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"). Zen keeps
                 its way out here, and a session with no formatting bar its way in. */}
-            {/* A Viewer's reactions, left of Zen (docs/specs/030-knowledgebase/page-reactions.md "Where they show"). */}
-            {!zenMode && readOnly ? <PageReactionsBesideZen /> : null}
-            {onToggleZen && (zenMode || readOnly) ? (
-              <ZenControl active={zenMode === true} onToggle={onToggleZen} />
-            ) : null}
-          </>
-        )}
+        {/* A Viewer's reactions, left of Zen (docs/specs/030-knowledgebase/page-reactions.md "Where they show"). */}
+        {!zenMode && readOnly ? <PageReactionsBesideZen /> : null}
+        {onToggleZen && (zenMode || readOnly) ? (
+          <ZenControl active={zenMode === true} onToggle={onToggleZen} />
+        ) : null}
       </div>
     </>
   );
