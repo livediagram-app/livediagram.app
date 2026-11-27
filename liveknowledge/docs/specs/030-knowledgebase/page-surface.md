@@ -49,7 +49,8 @@ replaces what the fork still shows around the writing.
   liveknowledge. The browser's own zoom is the zoom. A wide table or a wide drawing scrolls sideways inside its own
   box. On the page itself the canvas's bare-ground gestures do not exist: held Space scrolls the page, the middle
   button is the browser's, a drag on the ground draws no marquee (selecting text is the browser's own), the ground's
-  cursor is the plain one, and a letter typed outside the writing adds no shape. Nothing moves the page by itself
+  cursor is the plain one (its margins, its cover and the room round the page alike, read or edited: the canvas's
+  Select crosshair never shows on a page, Work Tracker 1490), and a letter typed outside the writing adds no shape. Nothing moves the page by itself
   once it is scrolled: a press anywhere leaves it where it stands, so a jump from On This Page, Search or an Ask
   source stays where it lands (WI-1372).
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
@@ -115,7 +116,9 @@ shows their name."
 
 - **Where.** The top row's left while the page is read (edit mode gives it to the formatting controls).
 - **What.** 28 px discs side by side, 4 px apart, never overlapping (owner 2026-11-22), the creator first, then everyone else who saved the page in the order they
-  first did: a person by their initials in a colour of their name (a person nobody here can name is "Guest"), an
+  first did: a person by their initials on their presence colour, the one their cursor and avatar wear in every app
+  (their own, else the one Automatic picks from their name; Work Tracker 1497; a person nobody here can name is
+  "Guest"), an
   agent as a sparkle. Six at most; past that the sixth is "+N". Hovering or focusing a disc names them: "Priya Shah,
   Created", "Claude for Priya Shah, Edited" (an agent names the person it acted for: [Verification](verification.md)
   "Made by a person or an agent").
