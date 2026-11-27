@@ -151,7 +151,6 @@ export function EditorView() {
   const {
     activeId,
     activeTab,
-    anyWelcomeOpen,
     embedMode,
     // The app's surroundings, and the workbench session (docs/specs/013-workspace/blueprints/
     // workbench-embeds.md, Surface table).
@@ -271,7 +270,7 @@ export function EditorView() {
   });
   const footer = renderEditorTabBar(ctx, { selectTab, barsShown: landscapeBars.shown });
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
+  // where there are bars to fold (not in zen, an embed or the workbench frame).
   const landscapeBarsHandle =
     header && footer ? (
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
@@ -488,9 +487,9 @@ export function EditorView() {
                                                         }
                                                       >
                                                         {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                                        {/* A connected tab's page stands in the board's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
+                                                        {/* A connected tab's page stands in the board's place (connected-tabs.md). */}
                                                         {ctx.activeTabConnected &&
-                                                        !anyWelcomeOpen ? (
+                                                        !ctx.identityOnlyScreenOpen ? (
                                                           <ConnectedTabHost />
                                                         ) : (
                                                           <SuppressElementIndicators

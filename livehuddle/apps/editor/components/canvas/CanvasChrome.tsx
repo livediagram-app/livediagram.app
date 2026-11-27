@@ -191,7 +191,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     showIdentityTray = false,
     tabThemeId,
     identityLockedName,
-    welcomeOpen,
     wrapperRef,
     chromeAway,
   } = props;
@@ -200,9 +199,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const viewport = useViewportStore();
   const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
   // An embed hides all floating chrome. `chromeHidden`
-  // folds it in next to the welcome-flow gate that already suppresses
-  // the same panels, so each panel stays hidden in either state.
-  const chromeHidden = welcomeOpen || chromeAway === true;
+  // A visitor's name card hides none of it: it is a modal over the canvas (Work Tracker 1522).
+  const chromeHidden = chromeAway === true;
 
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
@@ -467,7 +465,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
       {buildMounted ? (
         <ToolbarPalette
-          // Hidden, not unmounted, while the chrome is away (an embed, welcome) or the avatar palette stands in
+          // Hidden, not unmounted, while the chrome is away (an embed) or the avatar palette stands in
           // for it, so the chosen category lasts the page load.
           hidden={chromeHidden || strip !== 'build'}
           canvasTool={canvasTool}
@@ -532,32 +530,28 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {/* The buttons: the row's right column beside the dock, or, with no dock in the row, laid out by the row
             itself (`contents`). */}
         <div data-cluster-buttons="" className={clusterRow.buttons}>
-          {welcomeOpen ? null : (
-            <>
-              {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-              {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. */}
-              {!chromeAway && !readOnly && !walking ? (
-                <UndoRedoClusterStrip
-                  onUndo={onUndo}
-                  onRedo={onRedo}
-                  canUndo={canUndo}
-                  canRedo={canRedo}
-                />
-              ) : null}
-              {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
+          {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
+          {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. */}
+          {!chromeAway && !readOnly && !walking ? (
+            <UndoRedoClusterStrip
+              onUndo={onUndo}
+              onRedo={onRedo}
+              canUndo={canUndo}
+              canRedo={canRedo}
+            />
+          ) : null}
+          {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
                 read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
-              {!chromeAway && !walking ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
-              {/* The 3D View switch (docs/specs/008-canvas/3d-view.md "Turning it on and off"): while walking. */}
-              {walking ? <Space3DButton turning={props.settings?.rotateIn3D === true} /> : null}
-              <ViewZoomControls
-                onZoomIn={handleZoomIn}
-                onZoomOut={handleZoomOut}
-                onSetZoom={handleSetZoom}
-                onFitToScreen={onFitToScreen}
-                pinchOnly={isMobile}
-              />
-            </>
-          )}
+          {!chromeAway && !walking ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
+          {/* The 3D View switch (docs/specs/008-canvas/3d-view.md "Turning it on and off"): while walking. */}
+          {walking ? <Space3DButton turning={props.settings?.rotateIn3D === true} /> : null}
+          <ViewZoomControls
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onSetZoom={handleSetZoom}
+            onFitToScreen={onFitToScreen}
+            pinchOnly={isMobile}
+          />
         </div>
       </div>
     </>

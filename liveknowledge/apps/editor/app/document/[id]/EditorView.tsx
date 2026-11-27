@@ -566,7 +566,7 @@ export function EditorView() {
                                     >
                                       {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
                                       {/* A connected file is never the open page (links-and-embeds.md): for the moment a load lands on one, before the editor moves to the nearest page, nothing is drawn or edited. */}
-                                      {ctx.activeTabConnected ? (
+                                      {ctx.activeTabConnected && !ctx.identityOnlyScreenOpen ? (
                                         <div className="min-h-0 flex-1 bg-slate-50 dark:bg-slate-950" />
                                       ) : (
                                         <SuppressElementIndicators when={embedMode}>

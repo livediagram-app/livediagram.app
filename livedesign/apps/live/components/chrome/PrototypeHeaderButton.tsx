@@ -14,13 +14,13 @@ import type { EditorCapabilities } from '@/lib/editor-capabilities';
 import { openPrototype } from '@/lib/prototype-player-store';
 import { wireframeTabPages } from '@/lib/screen-link-choices';
 
-/** Whether the header offers Prototype: a wireframe tab, a role that plays (every role), no welcome open. */
+/** Whether the header offers Prototype: a wireframe tab, a role that plays (every role). A visitor's name card
+ *  leaves it in place (Work Tracker 1522). */
 export function offersPrototype(
   can: Pick<EditorCapabilities, 'playPrototype'>,
   tab: Pick<Tab, 'pages'>,
-  welcomeOpen: boolean,
 ): boolean {
-  return can.playPrototype && !welcomeOpen && wireframeTabPages(pagesOf(tab));
+  return can.playPrototype && wireframeTabPages(pagesOf(tab));
 }
 
 export function PrototypeHeaderButton() {
