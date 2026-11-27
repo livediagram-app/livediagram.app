@@ -3,7 +3,6 @@ import { expect, expectNoPageErrors, test } from '../fixtures';
 import { nameOpenPage, pageRow, titleOf, writeLines } from '../knowledgebase';
 import {
   openInsightsTopic,
-  openView,
   person,
   secondPerson,
   shareCode,
