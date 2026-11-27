@@ -1444,6 +1444,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/projects/{id}/items/{itemId}/session',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      "Record a Session tab's outcome for a card (refined, skipped or flagged in a Refinement session) in the card's history, as an entry tagged session. Nothing on the card is written: the move or flag an outcome makes is its own write. Needs edit access.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemSessionRequest',
+    statuses: [204, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
     path: '/projects/{id}/items/{itemId}/time',
     segment: 'projects',
     tag: 'Items',

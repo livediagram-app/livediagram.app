@@ -4,16 +4,16 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 
 ## Domain language
 
-| Term              | Meaning                                                                                       | Not                    |
-| ----------------- | --------------------------------------------------------------------------------------------- | ---------------------- |
-| **Board tab**     | A tab of kind `board`: one board, filling the tab                                             | board page, board mode |
-| **Sheet tab**     | A tab of kind `sheet`: one Sheet, filling the tab                                             | spreadsheet tab        |
-| **Dashboard tab** | A tab of kind `dashboard`: rows of slots                                                      | overview, report       |
+| Term              | Meaning                                                                                             | Not                    |
+| ----------------- | --------------------------------------------------------------------------------------------------- | ---------------------- |
+| **Board tab**     | A tab of kind `board`: one board, filling the tab                                                   | board page, board mode |
+| **Sheet tab**     | A tab of kind `sheet`: one Sheet, filling the tab                                                   | spreadsheet tab        |
+| **Dashboard tab** | A tab of kind `dashboard`: rows of slots                                                            | overview, report       |
 | **Session tab**   | A tab of kind `session`: a queue of cards worked through together ([Session tabs](session-tabs.md)) | meeting tab            |
-| **row**           | One band of a dashboard, its slots side by side                                               | section                |
-| **slot**          | One place in a row, holding one thing or empty                                                | cell, widget, panel    |
-| **span**          | A slot's width, in twelfths of the row                                                        | weight, columns        |
-| **slot content**  | What a slot holds: a Board or Sheet tab, a plan view, a chart from a Sheet, a note or a Title | item, block            |
+| **row**           | One band of a dashboard, its slots side by side                                                     | section                |
+| **slot**          | One place in a row, holding one thing or empty                                                      | cell, widget, panel    |
+| **span**          | A slot's width, in twelfths of the row                                                              | weight, columns        |
+| **slot content**  | What a slot holds: a Board or Sheet tab, a plan view, a chart from a Sheet, a note or a Title       | item, block            |
 
 ## The kinds
 
@@ -28,7 +28,7 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   stays.
 - Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather
   than Plan's mark (a general tab's): a kanban for a Board tab, a grid for a Sheet tab, a layout of tiles for a
-  Dashboard, a clipboard for a Form, a list with a play mark for a Session. The footer tab leads with it too, before its name, but only while the plan holds
+  Dashboard, a clipboard for a Form, a checklist for a Session. The footer tab leads with it too, before its name, but only while the plan holds
   tabs of more than one kind (a Board and a Form, say): there it tells them apart, and in a plan of one kind it would
   only repeat itself, so the tab shows its name alone ([Editor app](../007-editor/editor-app.md#how-a-tab-looks)). The
   open tab's glyph is full strength, the others' 70%.

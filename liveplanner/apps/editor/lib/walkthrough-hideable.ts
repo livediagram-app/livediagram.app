@@ -49,6 +49,8 @@ export function tabHasHideable(
       return (tab.dashboard?.rows ?? []).some((row) => row.slots.some((slot) => !!slot.content));
     case 'sheet':
     case 'form':
+    // A Session tab's cards are the plan's, shown in its own page, never picked to hide.
+    case 'session':
       return false;
   }
 }

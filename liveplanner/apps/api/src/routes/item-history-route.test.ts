@@ -282,3 +282,49 @@ describe('who may read it', () => {
     expect((await call('POST', `/items/${bug.id}/history`, {})).status).toBe(405);
   });
 });
+
+// A Session tab's outcome (docs/specs/026-plan/session-tabs.md "History"): its own entry, tagged `session`, written
+// by POST /items/:itemId/session, an Editor's alone, nothing on the card changed.
+describe('a session outcome', () => {
+  const outcome = (itemId: string, body: unknown, who: Who = {}) =>
+    call('POST', `/items/${itemId}/session`, body, who);
+
+  it('keeps each outcome as a session entry, writing nothing on the card', async () => {
+    const card = await make({ title: 'Login', status: 'todo' });
+    tick();
+    const skipped = await outcome(card.id, { session: 'refinement', outcome: 'skipped' });
+    expect(skipped.status).toBe(204);
+    tick();
+    await outcome(card.id, { session: 'refinement', outcome: 'refined' });
+    const entries = (await history(card.id)).body.entries;
+    expect(entries.map((e) => [e.tag ?? '', e.changes])).toEqual([
+      ['session', [{ kind: 'session', session: 'refinement', outcome: 'refined' }]],
+      ['session', [{ kind: 'session', session: 'refinement', outcome: 'skipped' }]],
+      ['', [{ kind: 'created', status: 'todo' }]],
+    ]);
+    const list = await call<ItemsResponse>('GET', '/items');
+    expect(list.body.items.find((i) => i.id === card.id)?.rev).toBe(card.rev);
+  });
+
+  it('refuses an unknown session kind or outcome, a missing card and anyone below Editor', async () => {
+    const card = await make({ title: 'Login' });
+    expect((await outcome(card.id, { session: 'standup', outcome: 'refined' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'session',
+    });
+    expect((await outcome(card.id, { session: 'refinement', outcome: 'done' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    const gone = await outcome('nope', { session: 'refinement', outcome: 'refined' });
+    expect(gone.status).toBe(404);
+    const part = await outcome(
+      card.id,
+      { session: 'refinement', outcome: 'refined' },
+      { owner: 'visitor', code: 'PART' },
+    );
+    expect(part.status).toBe(403);
+    expect((await call('GET', `/items/${card.id}/session`)).status).toBe(405);
+    expect(await kinds(card.id)).toEqual([['', ['created']]]);
+  });
+});

@@ -7,15 +7,15 @@
 
 // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
 // Board, Sheet and Dashboard are the Plan tab kinds (docs/specs/026-plan/plan-tabs.md), and Form
-// (docs/specs/030-forms/forms.md).
-export type TabKind = 'diagram' | 'board' | 'sheet' | 'dashboard' | 'form';
+// (docs/specs/030-forms/forms.md), and Session (docs/specs/026-plan/session-tabs.md).
+export type TabKind = 'diagram' | 'board' | 'sheet' | 'dashboard' | 'form' | 'session';
 
-export const PLAN_TAB_KINDS = ['board', 'sheet', 'dashboard', 'form'] as const;
+export const PLAN_TAB_KINDS = ['board', 'sheet', 'dashboard', 'form', 'session'] as const;
 export type PlanTabKind = (typeof PLAN_TAB_KINDS)[number];
 
-// The tab is a Board, Sheet, Dashboard or Form tab: always in Plan mode.
+// The tab is a Board, Sheet, Dashboard, Form or Session tab: always in Plan mode.
 export function isPlanTabKind(kind: string | undefined): kind is PlanTabKind {
-  return kind === 'board' || kind === 'sheet' || kind === 'dashboard' || kind === 'form';
+  return (PLAN_TAB_KINDS as readonly (string | undefined)[]).includes(kind);
 }
 
 export const DEFAULT_TAB_KIND: TabKind = 'diagram';
@@ -32,6 +32,7 @@ export function tabKindOf(tab: { kind?: string } | undefined): TabKind {
     case 'sheet':
     case 'dashboard':
     case 'form':
+    case 'session':
       return tab.kind;
     default:
       return DEFAULT_TAB_KIND;

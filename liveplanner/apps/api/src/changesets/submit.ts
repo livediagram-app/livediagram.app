@@ -1,6 +1,6 @@
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
 import type { ChangesetResponse, ChangesetWritten, EditRejection } from '@liveplanner/api-schema';
-import { migrateIncomingTab, type Tab } from '@liveplanner/project';
+import { migrateIncomingTab, tabKindOf, type Tab } from '@liveplanner/project';
 import { applyStyle } from './style';
 import {
   applyEditOperations,
@@ -68,6 +68,16 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     // cannot bring it back under a name of the caller's choosing (docs/specs/013-workspace/tab-scoped-share-links.md).
     if (!stored && (request.body.kind !== 'replace' || args.scope)) {
       return { status: 404, body: { error: 'not_found' } };
+    }
+    // A Session tab is run in the editor (docs/specs/026-plan/session-tabs.md "Agents and export"): its queue is the
+    // plan's cards, changed through the card tools, and nothing an agent draws on it would show.
+    if (stored && tabKindOf(stored.tab) === 'session') {
+      changesetLog('info', '[changeset] session-tab', where);
+      return refusal(
+        422,
+        'invalid_value',
+        'A Session tab is run in the editor: change its cards with the card tools instead.',
+      );
     }
     const compiled = compile(args, stored, selections);
     if ('errors' in compiled) return rejected(args, stored, compiled.errors, where);

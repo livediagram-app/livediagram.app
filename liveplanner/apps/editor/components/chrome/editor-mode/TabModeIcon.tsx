@@ -3,6 +3,7 @@ import {
   lucideClipboardList,
   lucideGrid3x3,
   lucideLayoutGrid,
+  lucideListChecks,
   lucideSquareKanban,
 } from '@liveworkspace/icons/lucide';
 import { isPlanTabKind, type PlanTabKind, type Tab } from '@liveplanner/project';
@@ -15,6 +16,8 @@ const KIND_ICONS: Record<PlanTabKind, ReturnType<typeof lucideGlyph>> = {
   dashboard: lucideGlyph(lucideLayoutGrid, 12),
   // A Form tab (docs/specs/030-forms/forms.md "The Form tab").
   form: lucideGlyph(lucideClipboardList, 12),
+  // A Session tab (docs/specs/026-plan/session-tabs.md).
+  session: lucideGlyph(lucideListChecks, 12),
 };
 
 // The tab pill's leading icon (docs/specs/026-plan/plan-tabs.md "Tab kinds"): a Board, Sheet, Dashboard or Form tab

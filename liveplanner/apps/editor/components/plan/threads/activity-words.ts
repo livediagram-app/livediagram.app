@@ -42,7 +42,9 @@ export type ActivityGlyph =
   | 'archive'
   | 'trash'
   | 'restore'
-  | 'type';
+  | 'type'
+  // A Session tab's outcome (docs/specs/026-plan/session-tabs.md "History").
+  | 'session';
 
 export type ActivityLine = { glyph: ActivityGlyph; parts: ActivityPart[] };
 
@@ -233,6 +235,8 @@ export function changeLine(
       };
     case 'set':
       return setLine(ctx, change.field, change.value, previous);
+    case 'session':
+      return { glyph: 'session', parts: [t(sessionOutcomeLine(change.outcome))] };
     case 'cleared': {
       const name = s(fieldName(ctx, change.field));
       return {
@@ -250,6 +254,12 @@ export function changeLine(
       };
     }
   }
+}
+
+// A Session tab's outcome, in words: "Refined this in a Refinement session". One session kind so far.
+function sessionOutcomeLine(outcome: 'refined' | 'skipped' | 'flagged'): string {
+  const verb = outcome === 'refined' ? 'Refined' : outcome === 'skipped' ? 'Skipped' : 'Flagged';
+  return `${verb} this in a Refinement session`;
 }
 
 // A line's plain words, as a test reads it.
