@@ -4,7 +4,9 @@
 // is (CanvasCover), the queue on the left (a fold-down list on a phone) and the room's card on the right with its
 // action bar. Its state is the tab's `session`, so every screen shows the same card; the cards are the plan's own. A
 // kind with a tally (Sprint Planning) adds its parts from ./planning: the tally under the progress bar, the Estimate
-// strip above the action bar, an estimate pill on each row and its line on Session Complete.
+// strip above the action bar, an estimate pill on each row and its line on Session Complete. Bug Triage adds its parts
+// from ./triage: the triage strip above the action bar, a priority pill on each row, and the close tray, which takes
+// the action bar's place while a Close is asked its reason.
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { estimateOf, itemStatus, sessionTally, typeIn, type Item } from '@liveplanner/items';
@@ -41,8 +43,12 @@ import { OUTCOME_LOOKS } from './session-kinds';
 import { EstimatePill, EstimateStrip } from './planning/EstimateStrip';
 import { PlanningSummary, PlanningTally } from './planning/PlanningTally';
 import { commitMakes } from './planning/planning-words';
+import { CloseTray } from './triage/CloseTray';
+import { PriorityPill, TriageStrip } from './triage/TriageStrip';
+import { decisionNote, undoLabel } from './session-words';
 
 const estimatePill = (item: Item) => <EstimatePill item={item} />;
+const priorityPill = (item: Item) => <PriorityPill item={item} />;
 
 const SettingsIcon = lucideGlyph(lucideSettings, 16);
 
@@ -94,15 +100,26 @@ export function SessionPage({
   });
   const timebox = useSessionTimebox(session);
   const completeRef = useRef<HTMLButtonElement>(null);
-  // Each of the kind's outcomes by its key; the completing one presses the fill button so its fill plays.
-  const outcomeKeys = Object.fromEntries(
+  // The card the close tray is open for (Bug Triage's Close asking its reason), or none.
+  const [closingId, setClosingId] = useState<string | null>(null);
+  const triage = session.sessionKind === 'triage';
+  const last = room.last;
+  const undoLast = runs && last ? () => room.undo(last.itemId) : undefined;
+  // Each of the kind's outcomes by its key; the completing one presses the fill button so its fill plays, the closing
+  // one opens the close tray. U is Undo Last.
+  const outcomeKeys: Record<string, () => void> = Object.fromEntries(
     kind.outcomes.map((o) => [
       OUTCOME_LOOKS[o].key,
-      o === kind.completes ? () => completeRef.current?.click() : () => room.decide(o),
+      o === kind.completes
+        ? () => completeRef.current?.click()
+        : o === kind.closes
+          ? () => setClosingId(room.current?.id ?? null)
+          : () => room.decide(o),
     ]),
   );
+  if (undoLast) outcomeKeys['u'] = undoLast;
   useSessionKeys({
-    on: runs && !settingsOpen && !!room.current,
+    on: runs && !settingsOpen && !closingId && !!room.current,
     outcomes: outcomeKeys,
     next: room.next,
     previous: room.previous,
@@ -176,10 +193,12 @@ export function SessionPage({
       currentId={room.current?.id ?? null}
       shownId={shown?.id ?? null}
       onOpen={open}
-      aside={tallies ? estimatePill : undefined}
+      aside={tallies ? estimatePill : triage ? priorityPill : undefined}
     />
   );
   const statusName = (id: string) => plan.statusNames.get(id) ?? id;
+  const shownDecision = shown ? decided?.[shown.id] : undefined;
+  const closing = !!shown && closingId === shown.id && !shownDecision && !room.peeking && runs;
   const detail = shown ? (
     <>
       {room.peeking ? (
@@ -216,11 +235,51 @@ export function SessionPage({
           }
         />
       ) : null}
-      {room.peeking ? null : (
+      {triage ? (
+        <TriageStrip
+          item={shown}
+          type={typeIn(plan.types, shown.type)}
+          canEdit={plan.canEditCards}
+          onSet={(field, value) =>
+            void plan.patchItem(
+              shown.id,
+              value === null ? { clear: [field] } : { set: { [field]: value } },
+            )
+          }
+        />
+      ) : null}
+      {room.peeking ? null : closing ? (
+        <CloseTray
+          key={shown.id}
+          item={shown}
+          items={plan.items}
+          types={plan.types}
+          targetName={(duplicate) => {
+            const to = room.closeTarget(shown, duplicate);
+            return to ? statusName(to) : null;
+          }}
+          statusName={statusName(itemStatus(shown)!)}
+          onCancel={() => setClosingId(null)}
+          onConfirm={(input) => {
+            setClosingId(null);
+            room.decide('closed', input);
+          }}
+        />
+      ) : (
         <SessionActionBar
           sessionKind={session.sessionKind}
           item={shown}
-          decision={decided?.[shown.id]}
+          decision={shownDecision}
+          note={shownDecision ? decisionNote(shownDecision, plan.items, plan.types) : null}
+          last={
+            undoLast && last
+              ? {
+                  label: undoLabel(last.itemId, last.decision, plan.items, plan.types),
+                  onUndo: undoLast,
+                }
+              : null
+          }
+          onCloseOpen={kind.closes ? () => setClosingId(shown.id) : undefined}
           runs={runs}
           holderName={holderName}
           targetName={(() => {

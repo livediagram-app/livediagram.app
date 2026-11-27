@@ -1,9 +1,10 @@
 'use client';
 
-// Set Up Refinement and Set Up Sprint Planning (docs/specs/026-plan/session-tabs.md "Making one", "Sprint Planning"):
-// a centred dialog with an illustrated header in parts: Card Types, Stages (with each one's cards counted), Order (a
-// board's Sort Cards choices), When Refined or When Committed (per type: Next Stage or one of its stages), a kind with
-// a tally's Capacity (planning/CapacityPart) and Timebox. It previews the queue as it fills. Start Session makes the tab a
+// Set Up Refinement, Sprint Planning and Bug Triage (docs/specs/026-plan/session-tabs.md "Making one", "Sprint
+// Planning", "Bug Triage"): a centred dialog with an illustrated header in parts: Card Types, Stages (Bug Triage's
+// Intake Stages, with each one's cards counted), Order (a board's Sort Cards choices), When Refined, Committed or
+// Accepted (per type: Next Stage or one of its stages), a kind with a closing outcome's When Closed (per type: Close
+// Stage or one of its stages), a kind with a tally's Capacity (planning/CapacityPart) and Timebox. It previews the queue as it fills. Start Session makes the tab a
 // Session tab; opened from Session Settings it saves the set-up in place.
 import { useId, useMemo, useState } from 'react';
 import {
@@ -58,6 +59,7 @@ export function SessionSetupDialog({
   const titleId = useId();
   const look = SESSION_KIND_LOOKS[sessionKind];
   const tallies = SESSION_KINDS[sessionKind].tally === 'estimate';
+  const closes = !!SESSION_KINDS[sessionKind].closes;
   const { items, types, statusNames } = plan;
   const planStatuses = useMemo(() => [...statusNames.keys()], [statusNames]);
   const [setup, setSetup] = useState<SessionSetup>(initial);
@@ -129,7 +131,7 @@ export function SessionSetupDialog({
         </section>
         <section className="flex flex-col gap-2" aria-labelledby={`${titleId}-stages`}>
           <h3 id={`${titleId}-stages`} className={HEADING}>
-            Stages
+            {look.stagesHeading}
           </h3>
           {stages.length ? (
             <ChoicePills
@@ -194,6 +196,28 @@ export function SessionSetupDialog({
             </div>
           </section>
         ) : null}
+        {picked.length && closes ? (
+          <section className="flex flex-col gap-2" aria-labelledby={`${titleId}-close`}>
+            <h3 id={`${titleId}-close`} className={HEADING}>
+              {look.closeHeading}
+            </h3>
+            <div className="grid grid-cols-[minmax(0,auto)_auto_1fr] items-center gap-x-3 gap-y-2">
+              {picked.map((t) => (
+                <TargetRow
+                  key={t.id}
+                  label={t.label}
+                  colour={t.color}
+                  stages={typeStatusesOf(t, planStatuses)}
+                  nameOf={nameOf}
+                  value={setup.closeTargets?.[t.id] ?? NEXT}
+                  first="Close Stage"
+                  closing
+                  onPick={(stage) => setSetup((s) => withTarget(s, t.id, stage, 'closeTargets'))}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
         {tallies ? (
           <CapacityPart
             id={titleId}
@@ -250,11 +274,18 @@ function withSort(s: SessionSetup, sortBy: BoardSortLevel[]): SessionSetup {
   return sortBy.length ? { ...rest, sortBy } : rest;
 }
 
-function withTarget(s: SessionSetup, typeId: string, stage: string): SessionSetup {
-  const { [typeId]: _was, ...others } = s.targets ?? {};
+// One type's target named (or back to its default) in `key`: where the completing outcome, or the closing one, moves
+// its cards.
+function withTarget(
+  s: SessionSetup,
+  typeId: string,
+  stage: string,
+  key: 'targets' | 'closeTargets' = 'targets',
+): SessionSetup {
+  const { [typeId]: _was, ...others } = s[key] ?? {};
   const targets = stage === NEXT ? others : { ...others, [typeId]: stage };
-  const { targets: _t, ...rest } = s;
-  return Object.keys(targets).length ? { ...rest, targets } : rest;
+  const { [key]: _t, ...rest } = s;
+  return Object.keys(targets).length ? { ...rest, [key]: targets } : rest;
 }
 
 function withCapacity(s: SessionSetup, capacity: number | undefined): SessionSetup {
@@ -327,6 +358,8 @@ function TargetRow({
   stages,
   nameOf,
   value,
+  first = 'Next Stage',
+  closing = false,
   onPick,
 }: {
   label: string;
@@ -334,6 +367,10 @@ function TargetRow({
   stages: readonly string[];
   nameOf: (s: string) => string;
   value: string;
+  // The default choice's name: Next Stage, or a closing outcome's Close Stage.
+  first?: string;
+  // Where a closing outcome moves the type's cards, so its picker is named apart.
+  closing?: boolean;
   onPick: (stage: string) => void;
 }) {
   return (
@@ -344,12 +381,12 @@ function TargetRow({
       </span>
       <span className="text-[13px] text-slate-500 dark:text-slate-400">Moves to</span>
       <Select
-        aria-label={`${label} cards move to`}
+        aria-label={`${label} cards move to${closing ? ' when closed' : ''}`}
         value={value}
         onChange={(e) => onPick(e.target.value)}
         selectClassName="text-[13px]"
       >
-        <option value={NEXT}>Next Stage</option>
+        <option value={NEXT}>{first}</option>
         {stages.map((s) => (
           <option key={s} value={s}>
             {nameOf(s)}

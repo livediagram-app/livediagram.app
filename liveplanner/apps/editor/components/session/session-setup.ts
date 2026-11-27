@@ -46,8 +46,10 @@ export function stageCounts(
 }
 
 // What a set-up starts on: the types with cards in a stage the kind starts from (Refinement's Backlog-like stages,
-// Sprint Planning's Reviewed-like ones; else every type with cards, else the first type), and those types' stages
-// the kind starts from (else each one's first stage).
+// Sprint Planning's Reviewed-like ones, Bug Triage's intake ones; else every type with cards, else the first type),
+// narrowed to the kind's preferred types when any of them is among those (Bug Triage's bug-like ones), and those
+// types' stages the kind starts from (else each one's first stage), in the kind's starting order (Bug Triage's oldest
+// first).
 export function defaultSessionSetup(input: {
   sessionKind: SessionKindId;
   items: Iterable<Item>;
@@ -56,7 +58,8 @@ export function defaultSessionSetup(input: {
   statusNames: ReadonlyMap<string, string>;
 }): SessionSetup {
   const { types, planStatuses, statusNames } = input;
-  const starts = SESSION_KIND_LOOKS[input.sessionKind].startStages;
+  const look = SESSION_KIND_LOOKS[input.sessionKind];
+  const starts = look.startStages;
   const isStartLike = (name: string | undefined) =>
     !!name && starts.includes(name.trim().toLowerCase());
   const items = [...input.items].filter(live);
@@ -65,16 +68,25 @@ export function defaultSessionSetup(input: {
     items.some((i) => i.type === t.id && isStartLike(nameOf(itemStatus(i) ?? ''))),
   );
   const withCards = types.filter((t) => items.some((i) => i.type === t.id));
-  const picked = (
-    refining.length ? refining : withCards.length ? withCards : types.slice(0, 1)
-  ).map((t) => t.id);
+  const pool = refining.length ? refining : withCards.length ? withCards : types.slice(0, 1);
+  const preferred = pool.filter(
+    (t) =>
+      !!look.startTypes &&
+      (look.startTypes.includes(t.label.trim().toLowerCase()) ||
+        (!!t.glyph && look.startTypes.includes(t.glyph))),
+  );
+  const picked = (preferred.length ? preferred : pool).map((t) => t.id);
   const stages = stagesFor(picked, types, planStatuses);
   const firsts = picked.flatMap((id) => {
     const t = types.find((x) => x.id === id)!;
     return typeStatusesOf(t, planStatuses).slice(0, 1);
   });
   const statuses = stages.filter((s) => isStartLike(nameOf(s)));
-  return { typeIds: picked, statuses: statuses.length ? statuses : [...new Set(firsts)] };
+  return {
+    typeIds: picked,
+    statuses: statuses.length ? statuses : [...new Set(firsts)],
+    ...(look.startSort ? { sortBy: look.startSort.map((l) => ({ ...l })) } : {}),
+  };
 }
 
 // The set-up in words, for the sidebar's header: its stages, then its order.

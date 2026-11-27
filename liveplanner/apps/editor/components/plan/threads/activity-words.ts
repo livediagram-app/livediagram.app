@@ -7,6 +7,7 @@
 import {
   CARD_FIELD_LABELS,
   PRIORITY_LABELS,
+  cardRefOrKey,
   customFieldText,
   dayLabel,
   isPriority,
@@ -16,7 +17,6 @@ import {
   type ItemHistoryEntry,
   type ItemHistoryValue,
   type ItemTypeDef,
-  type SessionKindId,
   type SessionOutcome,
   type StatusPhase,
 } from '@liveplanner/items';
@@ -238,7 +238,7 @@ export function changeLine(
     case 'set':
       return setLine(ctx, change.field, change.value, previous);
     case 'session':
-      return { glyph: 'session', parts: [t(sessionOutcomeLine(change.session, change.outcome))] };
+      return { glyph: 'session', parts: [t(sessionOutcomeLine(ctx, change))] };
     case 'cleared': {
       const name = s(fieldName(ctx, change.field));
       return {
@@ -259,15 +259,28 @@ export function changeLine(
 }
 
 // A Session tab's outcome, in words: "Refined this in a Refinement session", "Committed this in a Sprint Planning
-// session".
+// session", "Closed this as a duplicate of BUG-12 in a Bug Triage session: Same root cause", "Undid Closed in a Bug
+// Triage session".
 const OUTCOME_VERBS: Record<SessionOutcome, string> = {
   refined: 'Refined',
   skipped: 'Skipped',
   flagged: 'Flagged',
   committed: 'Committed',
+  accepted: 'Accepted',
+  closed: 'Closed',
 };
-function sessionOutcomeLine(session: SessionKindId, outcome: SessionOutcome): string {
-  return `${OUTCOME_VERBS[outcome]} this in a ${SESSION_KINDS[session].label} session`;
+function sessionOutcomeLine(
+  ctx: ActivityContext,
+  change: Extract<ItemHistoryChange, { kind: 'session' }>,
+): string {
+  const where = `in a ${SESSION_KINDS[change.session].label} session`;
+  const verb = OUTCOME_VERBS[change.outcome];
+  if (change.undone) return `Undid ${verb} ${where}`;
+  const dup = change.duplicateOf ? ctx.items.get(change.duplicateOf) : undefined;
+  const as = change.duplicateOf
+    ? ` as a duplicate of ${dup ? cardRefOrKey(dup, ctx.types) : 'a card since deleted'}`
+    : '';
+  return `${verb} this${as} ${where}${change.reason ? `: ${change.reason}` : ''}`;
 }
 
 // A line's plain words, as a test reads it.
