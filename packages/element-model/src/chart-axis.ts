@@ -42,10 +42,11 @@ export function axisScale(lo: number, hi: number): AxisScale {
   return { min, max, ticks };
 }
 
-// The width the widest of an axis's labels takes beside the plot, its gap included.
-export function axisLabelRoom(scale: AxisScale): number {
+// The width the widest of an axis's labels takes beside the plot at `fontPx` (chart-style.ts chartTickPx), its gap
+// included.
+export function axisLabelRoom(scale: AxisScale, fontPx = AXIS_TICK_FONT_PX): number {
   const widest = Math.max(0, ...scale.ticks.map((t) => t.text.length));
-  return Math.ceil(widest * AXIS_CHAR_PX) + AXIS_TICK_GAP;
+  return Math.ceil((widest * AXIS_CHAR_PX * fontPx) / AXIS_TICK_FONT_PX) + AXIS_TICK_GAP;
 }
 
 // Whether a series is drawn against the second, right-hand axis: only when another is on the left, else the

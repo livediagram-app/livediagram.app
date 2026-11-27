@@ -57,7 +57,7 @@ describe('chart grounds on the canvas', () => {
     const { container } = render(
       <LineChartView element={chart} textColor="#e2e8f0" ground={[DARK]} />,
     );
-    const stroke = container.querySelector('polyline')!.getAttribute('stroke')!;
+    const stroke = container.querySelector('path[fill="none"]')!.getAttribute('stroke')!;
     expect(stroke).not.toBe('#334155');
     expect(contrastRatio(stroke, DARK)).toBeGreaterThanOrEqual(CHART_MARK_CONTRAST);
   });

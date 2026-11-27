@@ -11,13 +11,23 @@
 // differ. Hover, readouts and the looping animations are the canvas's alone
 // and have no meaning in a still image.
 
-import { AXIS_TICK_FONT_PX, AXIS_TICK_GAP } from './chart-axis';
+import { AXIS_TICK_GAP } from './chart-axis';
 import { chartFrame, type ChartLegendRect } from './chart-frame';
 import { chartTextInk } from './chart-mark-ink';
-import { AREA_FILL_OPACITY, barMarks, lineMarks, pieMarks } from './chart-marks';
+import { barMarks, lineMarks, pieMarks } from './chart-marks';
 import {
+  AREA_FILL_FOOT_OPACITY,
+  AREA_FILL_TOP_OPACITY,
+  areaFadeId,
+  CHART_BASELINE_OPACITY,
+  CHART_GRID_OPACITY,
+  chartLegendPx,
+  chartTickPx,
+  chartValuePx,
+} from './chart-style';
+import {
+  barCategoryLabels,
   barValueLabels,
-  chartValueFontPx,
   lineValueLabels,
   pieValueLabels,
   type ChartValueLabel,
@@ -26,7 +36,6 @@ import { labelOn } from './readable-colour';
 import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement } from './element';
-import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import { textAdvanceEm } from '@liveworkspace/model-core/text-advance';
 import {
   SHEET_PENDING_CHIP,
@@ -39,8 +48,9 @@ import { r2, xmlEscape } from './svg-render-primitives';
 
 type Chart = BoxedElement & { type: 'shape' };
 
-const AXIS = '#cbd5e1';
-const AXIS_FAINT = '#e2e8f0';
+// The chart's chrome in its own text colour, faded (chart-style.ts): a baseline, and a gridline.
+const rule = (d: string, ink: string, opacity: number) =>
+  `<path d="${d}" stroke="${xmlEscape(ink)}" stroke-opacity="${opacity}" stroke-width="1"/>`;
 
 // A key name cut to `room` px with an ellipsis, as the canvas key's `truncate` cuts it, so a long name never runs
 // past the chart. One pass over the characters, each measured once (text-advance.ts).
@@ -73,7 +83,7 @@ function svgChartLegend(
   const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   // Text Size (docs/specs/009-elements/pie-chart.md), on the canvas's scale; the swatch and row pitch keep
   // their proportion to it, as ChartLegend's do.
-  const fontPx = legendFontPx(el.textSize);
+  const fontPx = chartLegendPx(el);
   const swatch = Math.round(fontPx * 0.8);
   const rowH = Math.round(fontPx * 1.3);
   const parts: string[] = [];
@@ -88,7 +98,7 @@ function svgChartLegend(
       const x = el.x + legend.x + 6;
       const label = name(item, legend.w - 6 - swatch - 4 - 2);
       parts.push(
-        `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="2" fill="${xmlEscape(colorAt(i, item))}"/>`,
+        `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="${swatch / 2}" fill="${xmlEscape(colorAt(i, item))}"/>`,
         `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(label)}</text>`,
       );
     });
@@ -118,7 +128,7 @@ function svgChartLegend(
     const y = top + ri * rowH + rowH / 2;
     for (const item of row) {
       parts.push(
-        `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="2" fill="${xmlEscape(colorAt(index, item))}"/>`,
+        `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="${swatch / 2}" fill="${xmlEscape(colorAt(index, item))}"/>`,
         `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(rowName(item))}</text>`,
       );
       x += itemW(item);
@@ -203,7 +213,7 @@ export function svgPieChart(
       return `<path d="${wedge.d}"${doughnut ? ' fill-rule="evenodd"' : ''} fill="${fill}"/>`;
     })
     .join('');
-  const px = chartValueFontPx(el.textSize);
+  const px = chartValuePx(el);
   const values = el.chartValues
     ? svgValueLabels(
         pieValueLabels(pie, data, px),
@@ -232,7 +242,8 @@ export function svgBarChart(
   const textColor = chartTextInk(labelColor, ground);
   const { data, colorAt, area, legend } = chartFrame(el, palette, ground);
   const horizontal = chartTypeOf(el) === 'bar';
-  const barM = barMarks(area, data, horizontal, el.x, el.y, el.chartAxis === true);
+  const tickPx = chartTickPx(el);
+  const barM = barMarks(area, data, horizontal, el.x, el.y, el.chartAxis === true, tickPx);
   const { baseline: b, bars } = barM;
   const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   // Show Axis: a faint gridline at each tick and its label, under a column chart's left side or a bar chart's bottom.
@@ -240,20 +251,21 @@ export function svgBarChart(
   const axis = barM.axis.ticks
     .map((t) =>
       horizontal
-        ? `<path d="M ${r2(t.at)} ${r2(s0)} L ${r2(t.at)} ${r2(s1)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
-          `<text x="${r2(t.at)}" y="${r2(s1 + AXIS_TICK_GAP + AXIS_TICK_FONT_PX)}" text-anchor="middle"${font} font-size="${AXIS_TICK_FONT_PX}" fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`
-        : `<path d="M ${r2(s0)} ${r2(t.at)} L ${r2(s1)} ${r2(t.at)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
-          `<text x="${r2(s0 - AXIS_TICK_GAP)}" y="${r2(t.at + AXIS_TICK_FONT_PX / 3)}" text-anchor="end"${font} font-size="${AXIS_TICK_FONT_PX}" fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
+        ? rule(`M ${r2(t.at)} ${r2(s0)} L ${r2(t.at)} ${r2(s1)}`, textColor, CHART_GRID_OPACITY) +
+          `<text x="${r2(t.at)}" y="${r2(s1 + AXIS_TICK_GAP + tickPx)}" text-anchor="middle"${font} font-size="${tickPx}" fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`
+        : rule(`M ${r2(s0)} ${r2(t.at)} L ${r2(s1)} ${r2(t.at)}`, textColor, CHART_GRID_OPACITY) +
+          `<text x="${r2(s0 - AXIS_TICK_GAP)}" y="${r2(t.at + tickPx / 3)}" text-anchor="end"${font} font-size="${tickPx}" fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
     )
     .join('');
-  const baseline = `<path d="M ${r2(b.x1)} ${r2(b.y1)} L ${r2(b.x2)} ${r2(b.y2)}" stroke="${AXIS}" stroke-width="1"/>`;
+  const baseline = rule(
+    `M ${r2(b.x1)} ${r2(b.y1)} L ${r2(b.x2)} ${r2(b.y2)}`,
+    textColor,
+    CHART_BASELINE_OPACITY,
+  );
   const rects = bars
-    .map(
-      (bar, i) =>
-        `<rect x="${r2(bar.x)}" y="${r2(bar.y)}" width="${r2(bar.w)}" height="${r2(bar.h)}" rx="${r2(bar.rx)}" fill="${xmlEscape(colorAt(i, data[i]!))}"/>`,
-    )
+    .map((bar, i) => `<path d="${bar.d}" fill="${xmlEscape(colorAt(i, data[i]!))}"/>`)
     .join('');
-  const px = chartValueFontPx(el.textSize);
+  const px = chartValuePx(el);
   const values = el.chartValues
     ? svgValueLabels(
         barValueLabels(barM, data, horizontal, px),
@@ -263,11 +275,20 @@ export function svgBarChart(
         fontFamily,
       )
     : '';
+  // Each bar named on its axis (a one-hue chart's key).
+  const names = svgValueLabels(
+    barCategoryLabels(barM, data, horizontal, tickPx),
+    textColor,
+    (i) => colorAt(i, data[i]!),
+    tickPx,
+    fontFamily,
+  );
   return asLinkedOrNot(
     el,
     axis +
       baseline +
       rects +
+      names +
       values +
       svgChartLegend(el, data, colorAt, legend, textColor, fontFamily),
     fontFamily,
@@ -285,6 +306,7 @@ export function svgLineChart(
 ): string {
   const textColor = chartTextInk(labelColor, ground);
   const { colorAt, area, legend } = chartFrame(el, palette, ground);
+  const tickPx = chartTickPx(el);
   const categories =
     el.lineCategories && el.lineCategories.length > 0 ? el.lineCategories : LINE_DEFAULT_CATEGORIES;
   const series = el.lineSeries && el.lineSeries.length > 0 ? el.lineSeries : LINE_DEFAULT_SERIES;
@@ -296,9 +318,10 @@ export function svgLineChart(
     el.x,
     el.y,
     el.chartAxis === true,
+    tickPx,
   );
   const { x, y, w, h } = m.plot;
-  const tickFont = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}" font-size="${AXIS_TICK_FONT_PX}"`;
+  const tickFont = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}" font-size="${tickPx}"`;
   // Show Axis: a faint gridline and a label at each left tick, the right axis's labels in its first series' colour.
   const rightInk = xmlEscape(
     colorAt(
@@ -313,14 +336,14 @@ export function svgLineChart(
     m.axis.left
       .map(
         (t) =>
-          `<path d="M ${r2(x)} ${r2(t.y)} L ${r2(x + w)} ${r2(t.y)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
-          `<text x="${r2(x - AXIS_TICK_GAP)}" y="${r2(t.y + AXIS_TICK_FONT_PX / 3)}" text-anchor="end"${tickFont} fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
+          rule(`M ${r2(x)} ${r2(t.y)} L ${r2(x + w)} ${r2(t.y)}`, textColor, CHART_GRID_OPACITY) +
+          `<text x="${r2(x - AXIS_TICK_GAP)}" y="${r2(t.y + tickPx / 3)}" text-anchor="end"${tickFont} fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
       )
       .join('') +
     m.axis.right
       .map(
         (t) =>
-          `<text x="${r2(x + w + AXIS_TICK_GAP)}" y="${r2(t.y + AXIS_TICK_FONT_PX / 3)}" text-anchor="start"${tickFont} fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
+          `<text x="${r2(x + w + AXIS_TICK_GAP)}" y="${r2(t.y + tickPx / 3)}" text-anchor="start"${tickFont} fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
       )
       .join('') +
     (m.axis.right.length
@@ -328,20 +351,28 @@ export function svgLineChart(
       : '');
   const axes =
     ticks +
-    `<path d="M ${r2(x)} ${r2(y)} L ${r2(x)} ${r2(y + h)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
-    `<path d="M ${r2(x)} ${r2(y + h)} L ${r2(x + w)} ${r2(y + h)}" stroke="${AXIS}" stroke-width="1"/>`;
+    rule(`M ${r2(x)} ${r2(y + h)} L ${r2(x + w)} ${r2(y + h)}`, textColor, CHART_BASELINE_OPACITY);
   const marks = series
     .map((s, si) => {
       const color = xmlEscape(colorAt(si, s));
+      // An area fades from its line down to the baseline (chart-style.ts).
+      const fadeId = areaFadeId(el.id, si);
       const fill = m.areas[si]
-        ? `<path d="${m.areas[si]}" fill="${color}" fill-opacity="${AREA_FILL_OPACITY}"/>`
+        ? `<defs><linearGradient id="${fadeId}" x1="0" y1="0" x2="0" y2="1">` +
+          `<stop offset="0" stop-color="${color}" stop-opacity="${AREA_FILL_TOP_OPACITY}"/>` +
+          `<stop offset="1" stop-color="${color}" stop-opacity="${AREA_FILL_FOOT_OPACITY}"/>` +
+          `</linearGradient></defs><path d="${m.areas[si]}" fill="url(#${fadeId})"/>`
         : '';
       const line = m.lines[si]
-        ? `<polyline points="${m.lines[si]}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`
+        ? `<path d="${m.lines[si]}" fill="none" stroke="${color}" stroke-width="${m.width}" stroke-linejoin="round" stroke-linecap="round"/>`
         : '';
-      const dots = m.points[si]!.map(
-        (p) => `<circle cx="${r2(p.x)}" cy="${r2(p.y)}" r="${m.dot}" fill="${color}"/>`,
-      ).join('');
+      const pts = m.points[si]!;
+      const dots = pts
+        .map(
+          (p, i) =>
+            `<circle cx="${r2(p.x)}" cy="${r2(p.y)}" r="${r2(i === pts.length - 1 ? m.endDot : m.dot)}" fill="${color}"/>`,
+        )
+        .join('');
       return fill + line + dots;
     })
     .join('');
@@ -349,13 +380,13 @@ export function svgLineChart(
   const labels = m.labels
     .map(
       (l) =>
-        `<text x="${r2(l.x)}" y="${r2(y + h + 13)}" text-anchor="middle"${font} font-size="9" fill="${xmlEscape(textColor)}">${xmlEscape(l.text)}</text>`,
+        `<text x="${r2(l.x)}" y="${r2(m.labelY)}" text-anchor="middle"${font} font-size="${tickPx}" fill="${xmlEscape(textColor)}">${xmlEscape(l.text)}</text>`,
     )
     .join('');
   const legendItems = series.map((s) => ({ label: s.name, value: 0, color: s.color }));
-  const px = chartValueFontPx(el.textSize);
+  const px = chartValuePx(el);
   const values = el.chartValues
-    ? svgValueLabels(lineValueLabels(m, series), textColor, () => textColor, px, fontFamily)
+    ? svgValueLabels(lineValueLabels(m, series, px), textColor, () => textColor, px, fontFamily)
     : '';
   return asLinkedOrNot(
     el,

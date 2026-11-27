@@ -1,5 +1,6 @@
 import type { BorderStroke, BorderStyle } from '@liveworkspace/model-core/border-style';
 import { canvasSurface, isLightColor, shade, tint } from './colour-math';
+import { chartCategorical } from './chart-categorical';
 import { DARK_INK } from './element-colours';
 import { labelOn as readableLabelOn, reachContrast, THEME_TEXT_CONTRAST } from './readable-colour';
 import type { ThemeDefinition, ThemedElement } from './themes';
@@ -425,27 +426,16 @@ export function rederiveColorPresetForTheme<E extends ThemedElement>(
   };
 }
 
-// A categorical palette derived from the active theme, for charts (docs/specs/009-elements/pie-chart.md):
-// multi-colour themes contribute each branch hue (genuinely distinct slices);
-// single-accent themes contribute variants of the accent (lighter / darker
-// tints) so the slices still read as "shades of the theme". Deduped
-// (case-insensitive); always non-empty.
+// A categorical palette derived from the active theme, for charts (docs/specs/009-elements/pie-chart.md "Chart
+// palettes"): the theme's own hues (each branch's on a multi-colour theme, then its accent) lead, stepped into the band
+// a mark reads in on the theme's surface, then distinct hues each kept only where it stands plainly apart from its
+// neighbours for every reader (chart-categorical.ts). Tints and shades of one accent read as one colour. Always
+// non-empty, its first the theme's lead.
 export function themeChartPalette(theme: ThemeDefinition): string[] {
-  const { out, push } = colourCollector();
-  if (theme.palette && theme.palette.length > 0) {
-    for (const entry of theme.palette) push(entry.stroke);
-  }
-  const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
-  // Accent variants: appended so single-accent themes get a spread and
-  // palette themes pad out if they have few branches.
-  push(accent);
-  push(tint(accent, 0.4));
-  push(shade(accent, 0.3));
-  push(tint(accent, 0.7));
-  push(shade(accent, 0.55));
-  push(tint(accent, 0.2));
-  if (theme.elementText) push(theme.elementText);
-  return out;
+  const seeds: string[] = [];
+  for (const entry of theme.palette ?? []) seeds.push(entry.stroke);
+  seeds.push(theme.elementStroke ?? DEFAULT_SHAPE_STROKE);
+  return chartCategorical(seeds, canvasSurface(theme.backgroundColor));
 }
 
 // ── Sticky-note presets (docs/specs/010-palette/style-presets.md) ───────────────────────────────────────

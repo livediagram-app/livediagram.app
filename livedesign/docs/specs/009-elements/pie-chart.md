@@ -75,10 +75,16 @@ ChartAxis`); a series on the right shows "(right)" after its name in the Data su
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
   in place of the boxed-element animation set: a chart animates its marks, not
   the whole box. Grow / Pop play once (an entrance); Spin / Pulse loop.
-- Mark colours default to **variants of the active theme** (`themeChartPalette`:
-  each branch hue on multi-colour themes, accent tints/shades on single-accent
-  themes), overridable per datum. So a chart reads as part of the theme out of
-  the box.
+- Mark colours default to the **theme's categorical palette** (`themeChartPalette`, `chart-categorical.ts`): the
+  theme's own hues first, its lead always first, each stepped into the lightness band its surface reads in (OKLCH
+  0.43 to 0.78 on a light page, 0.48 to 0.70 on a dark one) with a chroma of at least 0.10, then the reference
+  categorical hues to fill out, kept only where neighbours stand at least 8 apart (ΔE) for a reader with protan or
+  deutan colour vision and 15 for normal vision, and any two at least 14 apart on a light page, 9 on a dark one. Five
+  to eight colours a theme; a test keeps every theme passing the dataviz validator's gates. Overridable per datum.
+  A column or bar chart takes the lead alone (How a chart is drawn).
+- A chart drops at its own default (260 x 220; a line chart 300 x 240), which fits this canvas. (The products with slide and
+  infographic pages size a chart dropped on one for the page,
+  `../packages/element-model/src/chart-drop-size.ts`.)
 - It's a normal boxed element otherwise (move / resize / select / lock),
   but the **Colours / Border** context-menu categories are hidden: a
   chart styles per-datum via its Data category, not as one filled box. Its
@@ -93,15 +99,15 @@ A chart is **named by its type** wherever the editor names an element: the selec
 Chart" and a screen reader hears "Column chart", as the palette's tile says, never the kind's "Bar Chart"
 (`elementKindLabel`, `kindLabel`).
 
-| Chart type | Kind (`shape`) | `chartVariant` | Draws                                                                                            |
-| ---------- | -------------- | -------------- | ------------------------------------------------------------------------------------------------ |
-| Column     | `bar-chart`    | (none)         | Upright bars from a zero baseline, one per datum; a negative one hangs below it                  |
-| Bar        | `bar-chart`    | `horizontal`   | Bars to the right from a zero baseline, one per datum, top to bottom; a negative one to its left |
-| Line       | `line-chart`   | (none)         | A line with point markers per series                                                             |
-| Area       | `line-chart`   | `area`         | Line's lines, each with the area between it and zero filled in its colour at 25%, overlapping    |
-| Scatter    | `line-chart`   | `scatter`      | A point per category per series, no lines, at x = the category read as a number (below)          |
-| Pie        | `pie-chart`    | (none)         | Wedges clockwise from twelve o'clock                                                             |
-| Doughnut   | `pie-chart`    | `doughnut`     | Pie's wedges with the middle open: a ring whose hole is 55% of its radius                        |
+| Chart type | Kind (`shape`) | `chartVariant` | Draws                                                                                              |
+| ---------- | -------------- | -------------- | -------------------------------------------------------------------------------------------------- |
+| Column     | `bar-chart`    | (none)         | Upright bars from a zero baseline, one per datum; a negative one hangs below it                    |
+| Bar        | `bar-chart`    | `horizontal`   | Bars to the right from a zero baseline, one per datum, top to bottom; a negative one to its left   |
+| Line       | `line-chart`   | (none)         | A line with point markers per series                                                               |
+| Area       | `line-chart`   | `area`         | Line's lines, each with the area between it and zero filled in its colour fading down, overlapping |
+| Scatter    | `line-chart`   | `scatter`      | A point per category per series, no lines, at x = the category read as a number (below)            |
+| Pie        | `pie-chart`    | (none)         | Wedges clockwise from twelve o'clock                                                               |
+| Doughnut   | `pie-chart`    | `doughnut`     | Pie's wedges with the middle open: a ring whose hole is 60% of its radius                          |
 
 - A chart with no `chartVariant`, or one its kind does not take, draws as its kind's first type, so every chart
   made before chart types draws as it did.
@@ -127,6 +133,50 @@ Chart" and a screen reader hears "Column chart", as the palette's tile says, nev
   series becomes the slices over its categories (below zero read as zero on a pie).
 - Who may: as every other chart change, someone who may edit the canvas (an Editor); a Participant and a Viewer get
   no Chart Type section.
+
+## How a chart is drawn
+
+Every chart looks finished the moment it lands, on a slide, an infographic or a board, with no setting changed
+(Work Tracker 1500). The look is a rendering rule, not stored data, so every chart, old or new, draws this way, on the
+canvas and in every export alike (`../packages/element-model/src/chart-style.ts`, one copy for every product, as are
+the views in `../packages/workbench/src/components/canvas/charts/`):
+
+- **Chrome in the chart's own ink.** The baseline the marks grow from and Show Axis's gridlines are the chart's text
+  colour, faded (35% and 12%), so they stay quiet on every theme and on a dark page, where fixed slate greys glared.
+  A line, area or scatter chart has no vertical axis line; its baseline and gridlines carry it.
+- **Text that grows with the chart.** Its Text Size is the size at the board default (a short side of 240 px), never
+  a cap: a bigger chart scales the key, its numbers and its axis together by its short side over 240, eased (to the
+  power 0.6), so a 1600 x 880 chart on a 1920 x 1080 slide draws a 31 px key, 26 px numbers and 24 px axis text at
+  Medium, where it drew 14, 12 and 12. Axis and category text is a fifth under the key, never under 9 px. The key's
+  strip and the axis's room grow with it (`chartTextScale`, `chartLegendPx`, `chartValuePx`, `chartTickPx`). A line
+  chart keeps room at each end for half its end category's name, so "Jan" is never cut by the chart's edge.
+- **Columns and bars** round their value end (a radius of 14% of the bar's thickness, at least 2 px, so a slide's
+  wide bar is as round as a slim one, and never more than half its length) and keep their baseline end square, so
+  every bar grows from the one baseline; a value below zero rounds its own end. Each is at most 48 px thick, or a
+  sixth of the chart's short side on a larger chart, and two thirds of its slot.
+- **A column or bar chart is one hue.** Its bars are one series, so they all wear the palette's lead colour and each
+  is named on its axis, always, Show Axis or not: under a column, or left of a bar, right-aligned against the plot in
+  a column up to 30% of the chart wide; a name cut to its room with an ellipsis. Its key, a second copy of those
+  names, shows only when a bar wears a colour of its own (set per datum in Data), and then those colours lead.
+  Rainbow bars said "these differ" of bars that differ only in height.
+- **Lines** are smooth (a monotone curve, so a peak stays the peak and a flat run stays flat: the line never claims a
+  value the data does not hold), from 2 px thick on a small chart to 3.5 px on a slide-sized one, with small beads at
+  their points and a full dot at the end, where the latest value is. Hovering anywhere near a point reads it.
+  **Show Values** on a line, area or scatter chart is thinned so no number overprints another: each series' end
+  first, then its highest and lowest, then every other point that still fits, each kept inside the plot's ends.
+- **Areas** fade from their line (32%) down to the baseline (3%), so the line leads and overlapping areas stay
+  readable through each other.
+- **Pies and doughnuts** set their wedges a clear gap apart (2% of the radius, 1 to 3.5 px) that the page shows
+  through, light or dark, where a white outline glared on a dark page; a sliver too thin to give up the gap keeps its
+  width. A doughnut's hole is 60% of its radius.
+- **The key** marks each name with a round dot, as the Legend element does.
+- **Colours that tell apart.** A pie, a doughnut and a chart of several series take a categorical palette made for
+  the theme's surface (`../packages/element-model/src/chart-categorical.ts`, see Chart palettes), where the theme's
+  near-twin tints sat about 5 apart (ΔE) and could not be told apart.
+
+**Existing charts change look.** None of this is stored: a chart made before it draws this way too, the first time it
+is opened or exported. A column chart that never set a colour turns one hue and shows its names on the axis instead
+of a key; its Data and its settings are untouched, and a colour set per datum still wins.
 
 ## Model
 
