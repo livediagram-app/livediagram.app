@@ -2,7 +2,7 @@
 // (docs/specs/012-collaboration/assigned-actions.md "The email"). Answered inside the document's Durable Object, which
 // keeps the email's once-only claim. The assignment itself is already in the document (the tab save); this only says so.
 //
-//   body: { teamId, assigneeUserId? | assigneeMemberId?, actionName, description?, email?, tabId?, elementId? }
+//   body: { teamId, assigneeUserId? | assigneeMemberId?, actionName, description?, due?, email?, tabId?, elementId? }
 //
 // `email: false` (the dialog's Email box unticked) sends no email; the phone notification goes either way, to an
 // assignee with an account who can open the document, linking `tabId` and `elementId` when given
@@ -30,6 +30,8 @@ import { gateEdit, gateRead, readBody, requireOwner, type DocumentRouteContext }
 export const ACTION_NAME_MAX = 200;
 export const ACTION_DESCRIPTION_MAX = 2000;
 const ID_MAX = 200;
+// The action's due day: a calendar day, as the action holds it.
+const DUE_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 const optionalId = (value: unknown): string | null | false =>
   value === undefined || value === null || value === ''
@@ -80,6 +82,7 @@ export async function handleNotifyAction(ctx: DocumentRouteContext, id: string):
   const actionName = typeof body.actionName === 'string' ? body.actionName.trim() : '';
   const description =
     typeof body.description === 'string' && body.description.trim() ? body.description : null;
+  const due = body.due === undefined || body.due === null || body.due === '' ? null : body.due;
   const email = body.email !== false;
   const tabId = optionalId(body.tabId);
   const elementId = optionalId(body.elementId);
@@ -90,6 +93,7 @@ export async function handleNotifyAction(ctx: DocumentRouteContext, id: string):
     return badRequest('missing assigneeUserId/actionName');
   }
   if (tabId === false || elementId === false) return badRequest('bad tabId/elementId');
+  if (due !== null && (typeof due !== 'string' || !DUE_DAY.test(due))) return badRequest('bad due');
   if (actionName.length > ACTION_NAME_MAX) return badRequest('actionName too long');
   if (description && description.length > ACTION_DESCRIPTION_MAX) {
     return badRequest('description too long');
@@ -140,6 +144,7 @@ export async function handleNotifyAction(ctx: DocumentRouteContext, id: string):
       assigneeCanOpen: canOpen,
       actionName,
       description,
+      due,
     }).catch(() => {}),
   );
   return json({ ok: true }, { status: 202 });

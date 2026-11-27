@@ -18,6 +18,7 @@
 import { AiChip as SharedAiChip } from '@liveworkspace/ui/ai-comment-marks';
 import { memo, type ReactNode } from 'react';
 import { cardNumber, type CardColumn, type InboxThread } from '@liveworkspace/index-client';
+import { actionDueWords } from '@liveworkspace/index-client/action-due';
 import { PictureDisc } from '@liveworkspace/ui';
 import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../../data/usePeople';
@@ -84,6 +85,8 @@ export type EntryFacts = {
   cardType: { type: string; label: string } | null;
   /** A Plan card's column now (its status chip); null off a card or when no column holds it. */
   column: CardColumn | null;
+  /** An action's or card's due day ('2026-12-03'); absent off one, or when it has none. */
+  due?: string | null;
   local: boolean;
   /** A thread's latest comment: who wrote it, the reader (`mine`) or someone else; null off a thread. */
   latest: { person: Person; mine: boolean } | null;
@@ -123,6 +126,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
           : [r.tabName, r.elementLabel].filter(Boolean),
         cardType: card ? { type: card.type, label: card.typeLabel || 'Card' } : null,
         column: card?.column ?? null,
+        due: (card ? card.due : r.due) ?? null,
         local,
         latest: null,
       };
@@ -398,6 +402,7 @@ export const InboxRow = memo(function InboxRow({
     fullTitle,
     f.column ? `Status: ${f.column.name}` : null,
     f.reason?.label,
+    f.due ? actionDueWords(f.due, Date.now())?.text : null,
     f.ai ? `${f.who}, AI${f.ai.forYou ? ', for you' : ''}` : f.who,
     `In ${appName}, ${[f.item, ...f.where].join(', ')}${f.local ? `, ${SIDEBAR_LABELS.thisBrowser}` : ''}`,
   ]
@@ -476,6 +481,7 @@ export const InboxRow = memo(function InboxRow({
               ·
             </span>
           ) : null}
+          {f.due ? <DueTag due={f.due} /> : null}
           <span title={`${appName} › ${path}`} className="flex min-w-0 items-center gap-1">
             <AppMark app={entry.row.app} size={13} />
             {/* The app's name, then the item (inbox-reading.md "A row says ... where"): which app, at a glance. */}
@@ -498,6 +504,30 @@ export const InboxRow = memo(function InboxRow({
 /** The AI chip, the one every app's thread draws too (@liveworkspace/ui's AiCommentMarks). */
 export function AiChip({ forYou }: { forYou: boolean }) {
   return <SharedAiChip forYou={forYou} data-inbox-ai="" />;
+}
+
+/** An action's or card's due day, as its editor says it ("Due today", "Due Thu 3 Dec"), in the reader's zone: red
+ *  once past, and the word "Due" carries it, so it never rests on colour alone. Nothing until the clock is read. */
+export function DueTag({ due }: { due: string }) {
+  const now = useNow();
+  const words = now ? actionDueWords(due, now) : null;
+  if (!words) return null;
+  const past = words.tone === 'past';
+  return (
+    <>
+      <span
+        data-inbox-due={words.tone}
+        className={`shrink-0 font-medium ${
+          past ? 'text-red-700 dark:text-red-300' : 'text-slate-600 dark:text-slate-300'
+        }`}
+      >
+        {words.text}
+      </span>
+      <span aria-hidden className="shrink-0 text-slate-300 dark:text-slate-600">
+        ·
+      </span>
+    </>
+  );
 }
 
 /** Why the row is here: an icon and its words, so it never rests on colour alone. */

@@ -63,6 +63,13 @@ describe('the Inbox host', () => {
       description: 'Soon',
       card: null,
     });
+    // An Offline action's due day reaches its row as the index's does (Work Tracker 1487); none, none.
+    expect('due' in rows.actions[0]!).toBe(false);
+    const dated = localInboxRows(
+      { ...local, actions: [{ ...local.actions[0]!, due: '2026-12-03' }] },
+      'user_me',
+    );
+    expect(dated.actions[0]!.due).toBe('2026-12-03');
     expect(rows.threads[0]).toMatchObject({
       elementId: 'e2',
       latestAuthorColor: '#123456',

@@ -783,7 +783,9 @@ minute, with retries ([When a push fails](#when-a-push-fails)):
 latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, mentionedBy?,
 latestAgent?, aiState?, card?, firstAt, latestAt}],
 actions: [{elementId, actionId, elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId,
-assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the event log's
+assignerName?, teamId, doneById?, due?, card?, createdAt, updatedAt}]}`. `due` is an action's due day (`YYYY-MM-DD`, a calendar
+  day with no zone; absent when it has none, a malformed one dropped, never the push refused): its Inbox row says it
+  (inbox-reading.md). The same push makes the event log's
   collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
   is cut to length rather than refused. `participantIds` are the people who wrote in the thread themselves;

@@ -226,6 +226,8 @@ export function parseAction(value: unknown): CollabActionInput | null {
     assignerName,
     teamId: (a.teamId as string | null | undefined) ?? null,
     doneById: isId(a.doneById) ? a.doneById : null,
+    // Its due day: a malformed one is dropped, never the push refused (blueprints/inbox.md "The pushes").
+    ...(isDay(a.due) ? { due: a.due } : {}),
     createdAt: a.createdAt,
     updatedAt: a.updatedAt,
     card,

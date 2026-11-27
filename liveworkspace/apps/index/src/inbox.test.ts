@@ -277,6 +277,51 @@ describe('Inbox threads', () => {
   });
 });
 
+// An action's due day rides with its row (Work Tracker 1487): kept when it is a calendar day, changed by the next push,
+// dropped (never the push refused) when malformed, and absent on an action with none.
+describe('Inbox action due days', () => {
+  it('carry a due day, change it, and leave an undated or malformed one without', async () => {
+    const ada = await person('user_a');
+    const bob = await person('user_b');
+    const item = await makeItem(ada.auth, { title: 'Plan' });
+    const { link } = await body<{ link: { code: string } }>(
+      await call(`/items/${item.id}/share`, {
+        method: 'POST',
+        auth: ada.auth,
+        body: { level: 'edit' },
+      }),
+    );
+    await call(`/share/${link.code}`, { auth: bob.auth });
+    const push = (actions: unknown[]) =>
+      asApp(`/app/items/${item.id}/collab/tab-1`, { threads: [], actions });
+    const dues = async () =>
+      Object.fromEntries((await inbox(bob.auth)).actions.map((a) => [a.actionId, a.due ?? null]));
+    expect(
+      (
+        await push([
+          action({ actionId: 'due', due: '2026-12-03' }),
+          action({ actionId: 'overdue', due: '2026-11-20' }),
+          action({ actionId: 'undated' }),
+          { ...action({ actionId: 'bad' }), due: '3 Dec' },
+        ])
+      ).status,
+    ).toBe(204);
+    expect(await dues()).toEqual({
+      due: '2026-12-03',
+      overdue: '2026-11-20',
+      undated: null,
+      bad: null,
+    });
+    // A changed and a cleared due day reach the row on the next push.
+    await push([
+      action({ actionId: 'due', due: '2026-12-10' }),
+      action({ actionId: 'overdue' }),
+      action({ actionId: 'undated' }),
+    ]);
+    expect(await dues()).toEqual({ due: '2026-12-10', overdue: null, undated: null });
+  });
+});
+
 describe('Inbox cards', () => {
   it('list cards assigned to me and card threads, pushed under the cards tab, apart from the tabs’', async () => {
     const ada = await person('user_a');

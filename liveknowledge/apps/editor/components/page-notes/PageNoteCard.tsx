@@ -6,7 +6,7 @@
 // card is one button: it brings the words into view and opens the thread or the action.
 import { Chip, GlyphDisc, IDENTITY_FILL, identityVars, lucideGlyph } from '@liveknowledge/ui';
 import { lucideCircleCheck, lucideMessageSquare } from '@liveworkspace/icons/lucide';
-import { actionDueWords } from '@liveworkspace/workbench/lib/action-due';
+import { actionDueWords } from '@liveworkspace/index-client/action-due';
 import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { ACTION_STATUS_LABELS } from '@liveknowledge/document';
 import { initialsOf } from '@/lib/identity';

@@ -87,6 +87,15 @@ describe('collabIndexRowsFromElements', () => {
     ]);
   });
 
+  it('carries an action’s due day for its Inbox row, and none when it has none', () => {
+    const { actions } = collabIndexRowsFromElements([
+      shape('s1', 'x', { action: action({ due: '2026-12-03' }) }),
+      shape('s2', 'y', { action: action({ id: 'a2' }) }),
+    ]);
+    expect(actions.map((a) => a.due)).toEqual(['2026-12-03', undefined]);
+    expect('due' in actions[1]!).toBe(false);
+  });
+
   it('keeps done actions (the read filters on status)', () => {
     const { actions } = collabIndexRowsFromElements([
       shape('s1', 'x', { action: action({ status: 'done' }) }),

@@ -79,6 +79,9 @@ describe('useEditorActions on an element', () => {
   });
 });
 
+// What the last notify asked for.
+const sent = (notify: ReturnType<typeof vi.fn>) => notify.mock.lastCall![0] as { due?: string };
+
 describe('useEditorActions telling a teammate', () => {
   it('asks for the notification on every new team assignee, the email only when the box is ticked', () => {
     const box = createShape('square', 0, 0);
@@ -113,5 +116,30 @@ describe('useEditorActions telling a teammate', () => {
     // A self-assignment has no team, and asks nothing.
     act(() => result.current.saveAction(box.id, input('Mine'), list(box.id)[0]!.id));
     expect(notify).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends the due day for the email: the dialog’s, else the one the action keeps, else none (Work Tracker 1487)', () => {
+    const box = createShape('square', 0, 0);
+    const { result, list, notify } = setup([box]);
+    const team = (userId: string) => ({
+      ...input('Ship it'),
+      assignee: { userId, name: userId },
+      teamId: 'team1',
+    });
+    act(() => result.current.saveAction(box.id, { ...team('u-bea'), due: '2026-12-03' }));
+    expect(sent(notify).due).toBe('2026-12-03');
+    // Reassigned without touching the date: the action's own goes with it.
+    act(() => result.current.saveAction(box.id, team('u-cy'), list(box.id)[0]!.id));
+    expect(sent(notify).due).toBe('2026-12-03');
+    // Reassigned with the date cleared: none.
+    act(() =>
+      result.current.saveAction(box.id, { ...team('u-di'), due: null }, list(box.id)[0]!.id),
+    );
+    expect('due' in sent(notify)).toBe(false);
+    // A new action with no date: none.
+    const other = createShape('square', 0, 0);
+    const second = setup([other]);
+    act(() => second.result.current.saveAction(other.id, team('u-bea')));
+    expect('due' in sent(second.notify)).toBe(false);
   });
 });

@@ -202,6 +202,9 @@ export type CollabActionInput = {
   teamId: string | null;
   // Who closed it, when the app knows (the event log's `action_done`); unknown, its assignee.
   doneById?: string | null;
+  // The action's due day (`YYYY-MM-DD`, a calendar day with no zone), which its Inbox row says; absent when it has
+  // none. A card's due day rides in `card.due`.
+  due?: string;
   createdAt: number;
   updatedAt: number;
   // An open card assigned to someone rather than an element's action (pushed under COLLAB_CARDS_TAB, `elementId`

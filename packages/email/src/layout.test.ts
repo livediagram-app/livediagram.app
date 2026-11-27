@@ -3,6 +3,7 @@ import {
   createEmailLayout,
   EMAIL_HEAD,
   MENTION_QUOTE_CHARS,
+  dueDayWords,
   mentionQuote,
   notificationSettingsUrl,
   subjectText,
@@ -85,5 +86,14 @@ describe('the shared email layout', () => {
     expect(words.length).toBeLessThanOrEqual(MENTION_QUOTE_CHARS + 1);
     expect(mentionQuote('x'.repeat(400))).toBe(`${'x'.repeat(MENTION_QUOTE_CHARS)}…`);
     expect(mentionQuote(`x${'😀'.repeat(200)}`)).toBe(`x${'😀'.repeat(139)}…`);
+  });
+
+  it('says a due day as the calendar day it names, and nothing for none', () => {
+    expect(dueDayWords('2026-12-03')).toBe('3 December 2026');
+    expect(dueDayWords('2027-01-05')).toBe('5 January 2027');
+    expect(dueDayWords('2026-02-30')).toBeNull();
+    expect(dueDayWords('3 Dec')).toBeNull();
+    expect(dueDayWords(null)).toBeNull();
+    expect(dueDayWords(undefined)).toBeNull();
   });
 });

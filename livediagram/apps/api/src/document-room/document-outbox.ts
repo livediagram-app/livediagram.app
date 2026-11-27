@@ -93,6 +93,7 @@ export function collabPushOf(
       assignerId: a.assignerId,
       assignerName: a.assignerName,
       teamId: a.teamId,
+      ...(a.due ? { due: a.due } : {}),
       doneById: a.status === 'done' ? by : null,
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
