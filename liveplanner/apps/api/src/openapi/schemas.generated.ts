@@ -9631,17 +9631,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "properties": {
       "outcome": {
-        "description": "What the session decided: `refined`, `skipped` or `flagged`.",
+        "description": "What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning).",
         "enum": [
           "refined",
           "skipped",
-          "flagged"
+          "flagged",
+          "committed"
         ],
         "type": "string"
       },
       "session": {
-        "const": "refinement",
-        "description": "The session kind: `refinement`.",
+        "description": "The session kind: `refinement` or `planning` (Sprint Planning).",
+        "enum": [
+          "refinement",
+          "planning"
+        ],
         "type": "string"
       }
     },
@@ -13950,20 +13954,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "SessionKindId": {
-    "const": "refinement",
+    "enum": [
+      "refinement",
+      "planning"
+    ],
     "type": "string"
   },
   "SessionOutcome": {
     "enum": [
       "refined",
       "skipped",
-      "flagged"
+      "flagged",
+      "committed"
     ],
     "type": "string"
   },
   "SessionSetup": {
     "additionalProperties": false,
     "properties": {
+      "capacity": {
+        "type": "number"
+      },
       "sortBy": {
         "items": {
           "$ref": "#/components/schemas/BoardSortLevel"

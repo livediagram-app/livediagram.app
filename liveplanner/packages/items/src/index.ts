@@ -80,6 +80,7 @@ export * from './views';
 export * from './person';
 export * from './item-history';
 export * from './session-queue';
+export * from './session-tally';
 export * from './flow-counts';
 export * from './flow-metrics';
 export * from './repeat';

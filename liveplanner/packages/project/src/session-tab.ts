@@ -3,6 +3,7 @@
 // the tab's sync, persistence and late-joiner replay. Written only by the facilitator (an Editor). Pure: the caller
 // passes `now`. Not the session TOOLS (timer, dot vote: ./session.ts), which every tab keeps, a Session tab's too.
 import {
+  SESSION_KIND_OUTCOMES,
   SESSION_QUEUE_MAX,
   isSessionKindId,
   isSessionOutcome,
@@ -16,6 +17,8 @@ export const SESSION_TYPES_MAX = 50;
 export const SESSION_STAGES_MAX = 100;
 export const SESSION_TIMEBOX_MIN_MS = 60_000;
 export const SESSION_TIMEBOX_MAX_MS = 30 * 60_000;
+// The most estimate points a Sprint Planning capacity holds.
+export const SESSION_CAPACITY_MAX = 9_999;
 // How long this screen must not see the facilitator in the room before Take Over shows: a refresh comes back sooner.
 export const FACILITATOR_GRACE_MS = 10_000;
 
@@ -24,10 +27,13 @@ export type SessionSetup = {
   statuses: string[];
   // As a board's Sort Cards; absent keeps the hand order (rank).
   sortBy?: BoardSortLevel[];
-  // A card type id -> the stage Refined moves its cards to; absent: the next stage in the type's order.
+  // A card type id -> the stage the kind's completing outcome (Refined, Committed) moves its cards to; absent: the
+  // next stage in the type's order.
   targets?: Record<string, string>;
   // Per card; absent: no timebox.
   timeboxMs?: number;
+  // A kind with a tally (Sprint Planning): the estimate points the committed cards are tallied against; absent: none.
+  capacity?: number;
 };
 
 export type SessionFacilitator = { id: string; name: string; color: string };
@@ -48,21 +54,31 @@ export type SessionTabState = {
 };
 
 // What each session kind is (docs/specs/026-plan/session-tabs.md "Designed to grow"): its name, the outcomes its
-// action bar offers, its completing outcome, and how its sidebar groups. The editor's session-kinds.tsx adds its
-// set-up parts and wording.
+// action bar offers, its completing outcome (the fill button, which moves the card to its target stage), how its
+// sidebar groups, and what it tallies (Sprint Planning: the committed estimates against a capacity). The editor's
+// session-kinds.tsx adds its wording and set-up defaults.
 export type SessionKindInfo = {
   label: string;
   outcomes: readonly SessionOutcome[];
   completes: SessionOutcome;
   grouping: 'none';
+  tally: 'none' | 'estimate';
 };
 
 export const SESSION_KINDS: Readonly<Record<SessionKindId, SessionKindInfo>> = {
   refinement: {
     label: 'Refinement',
-    outcomes: ['refined', 'skipped', 'flagged'],
+    outcomes: SESSION_KIND_OUTCOMES.refinement,
     completes: 'refined',
     grouping: 'none',
+    tally: 'none',
+  },
+  planning: {
+    label: 'Sprint Planning',
+    outcomes: SESSION_KIND_OUTCOMES.planning,
+    completes: 'committed',
+    grouping: 'none',
+    tally: 'estimate',
   },
 };
 
@@ -97,7 +113,16 @@ function readSetup(raw: unknown): SessionSetup {
   const box = r['timeboxMs'];
   if (typeof box === 'number' && Number.isFinite(box) && box > 0)
     setup.timeboxMs = Math.min(SESSION_TIMEBOX_MAX_MS, Math.max(SESSION_TIMEBOX_MIN_MS, box));
+  const capacity = sessionCapacity(r['capacity']);
+  if (capacity) setup.capacity = capacity;
   return setup;
+}
+
+// A capacity as kept: a positive number rounded to a whole point, at most SESSION_CAPACITY_MAX; else none.
+export function sessionCapacity(raw: unknown): number | undefined {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return undefined;
+  const points = Math.min(SESSION_CAPACITY_MAX, Math.round(raw));
+  return points > 0 ? points : undefined;
 }
 
 function readFacilitator(raw: unknown): SessionFacilitator | undefined {

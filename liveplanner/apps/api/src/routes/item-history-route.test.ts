@@ -306,6 +306,26 @@ describe('a session outcome', () => {
     expect(list.body.items.find((i) => i.id === card.id)?.rev).toBe(card.rev);
   });
 
+  it('keeps a Sprint Planning commit, and refuses an outcome its kind does not offer', async () => {
+    const card = await make({ title: 'Export', status: 'todo' });
+    tick();
+    expect((await outcome(card.id, { session: 'planning', outcome: 'committed' })).status).toBe(
+      204,
+    );
+    expect((await outcome(card.id, { session: 'planning', outcome: 'refined' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    expect((await outcome(card.id, { session: 'refinement', outcome: 'committed' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    const entries = (await history(card.id)).body.entries;
+    expect(entries[0]?.changes).toEqual([
+      { kind: 'session', session: 'planning', outcome: 'committed' },
+    ]);
+  });
+
   it('refuses an unknown session kind or outcome, a missing card and anyone below Editor', async () => {
     const card = await make({ title: 'Login' });
     expect((await outcome(card.id, { session: 'standup', outcome: 'refined' })).body).toEqual({

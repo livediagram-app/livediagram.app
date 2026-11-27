@@ -9,19 +9,28 @@ import type { ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
 import { typeStatusesOf } from './type-statuses';
 
-// What a session is run for. Stand-up, Sprint Planning, Bug Triage and Sprint Review come later (Work Tracker 1526 to
-// 1529) and join this list with their own outcomes.
-export const SESSION_KIND_IDS = ['refinement'] as const;
+// What a session is run for. Stand-up, Bug Triage and Sprint Review come later and join this list with their own
+// outcomes.
+export const SESSION_KIND_IDS = ['refinement', 'planning'] as const;
 export type SessionKindId = (typeof SESSION_KIND_IDS)[number];
 
-// What a session decided for a card.
-export const SESSION_OUTCOMES = ['refined', 'skipped', 'flagged'] as const;
+// What a session decided for a card: each kind offers some of these (SESSION_KIND_OUTCOMES).
+export const SESSION_OUTCOMES = ['refined', 'skipped', 'flagged', 'committed'] as const;
 export type SessionOutcome = (typeof SESSION_OUTCOMES)[number];
+
+// The outcomes each kind's action bar offers, its completing one (the fill button) first.
+export const SESSION_KIND_OUTCOMES: Readonly<Record<SessionKindId, readonly SessionOutcome[]>> = {
+  refinement: ['refined', 'skipped', 'flagged'],
+  planning: ['committed', 'skipped'],
+};
 
 export const isSessionKindId = (v: unknown): v is SessionKindId =>
   (SESSION_KIND_IDS as readonly unknown[]).includes(v);
 export const isSessionOutcome = (v: unknown): v is SessionOutcome =>
   (SESSION_OUTCOMES as readonly unknown[]).includes(v);
+// Whether `outcome` is one a session of `kind` decides (Committed is Sprint Planning's alone, Refined Refinement's).
+export const outcomeFits = (kind: SessionKindId, outcome: SessionOutcome): boolean =>
+  SESSION_KIND_OUTCOMES[kind].includes(outcome);
 
 // The most cards one queue holds.
 export const SESSION_QUEUE_MAX = 500;
@@ -73,7 +82,7 @@ export function sessionQueue(input: {
   };
 }
 
-// Where Refined takes a card: the stage the set-up names for its type (when the type uses it), else the stage after
+// Where a kind's completing outcome (Refined, Committed) takes a card: the stage the set-up names for its type (when the type uses it), else the stage after
 // the card's own in its type's order, else null (its type has no later stage, so the card stays).
 export function sessionTarget(
   item: Item,

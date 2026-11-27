@@ -6,6 +6,7 @@ import {
   isSessionKindId,
   isSessionOutcome,
   nextToGo,
+  outcomeFits,
   sessionQueue,
   sessionTarget,
 } from './session-queue';
@@ -152,4 +153,15 @@ it('knows its session kinds and outcomes', () => {
   expect(isSessionKindId('standup')).toBe(false);
   expect(isSessionOutcome('skipped')).toBe(true);
   expect(isSessionOutcome('done')).toBe(false);
+  expect(isSessionKindId('planning')).toBe(true);
+  expect(isSessionOutcome('committed')).toBe(true);
+});
+
+it('offers each kind its own outcomes', () => {
+  expect(outcomeFits('planning', 'committed')).toBe(true);
+  expect(outcomeFits('planning', 'skipped')).toBe(true);
+  expect(outcomeFits('planning', 'refined')).toBe(false);
+  expect(outcomeFits('planning', 'flagged')).toBe(false);
+  expect(outcomeFits('refinement', 'committed')).toBe(false);
+  expect(outcomeFits('refinement', 'flagged')).toBe(true);
 });
