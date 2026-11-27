@@ -19,8 +19,6 @@ import {
   linkTypesOf,
   requiredFieldEmptied,
   richFieldOf,
-  typeAllowsStatus,
-  typeStatusesOf,
   type Item,
   type ItemFieldId,
   type ItemFieldValue,
@@ -57,6 +55,7 @@ import { ColourSelect } from './ColourSwatches';
 import { PHASE_COLOURS } from './views/view-frame';
 import { track } from '@/lib/telemetry';
 import { ItemDescription } from './ItemDescription';
+import { statusOptionsOf } from './status-options';
 import { CardThreads } from './threads/CardThreads';
 import type { ItemOpenVia } from './item-trail';
 
@@ -239,25 +238,9 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       // names"), never as its raw id; the card keeps it until another is picked.
       const raw = typeof value === 'string' ? value : '';
       const status = ctx.statuses.some((s) => s.status === raw) ? raw : '';
-      const known = ctx.statuses;
       // Only the statuses this card type uses, in its order (docs/specs/026-plan/item-types.md "The statuses a type
-      // uses"), the same on every tab; a card already in one it leaves out shows it last, marked, and can move out of
-      // it but never back in.
-      const byId = new Map(known.map((s) => [s.status, s]));
-      const options: { status: string; name: string; excluded?: true }[] = typeStatusesOf(
-        type,
-        byId.keys(),
-      ).flatMap((id) => {
-        const s = byId.get(id);
-        return s ? [s] : [];
-      });
-      const current = byId.get(status);
-      if (current && !typeAllowsStatus(type, status))
-        options.push({
-          ...current,
-          name: `${current.name} (not used by ${type.label})`,
-          excluded: true,
-        });
+      // uses"); a card already in one it leaves out shows it last, marked (status-options.ts).
+      const options = statusOptionsOf(type, ctx.statuses, status);
       // The status reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name.
       const phase = status ? (plan?.statusPhases?.get(status) ?? 'todo') : null;
       return (
