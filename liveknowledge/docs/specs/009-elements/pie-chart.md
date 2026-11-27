@@ -79,8 +79,8 @@ ChartAxis`); a series on the right shows "(right)" after its name in the Data su
   0.43 to 0.78 on a light page, 0.48 to 0.70 on a dark one) with a chroma of at least 0.10, then the reference
   categorical hues to fill out, kept only where neighbours stand at least 8 apart (ΔE) for a reader with protan or
   deutan colour vision and 15 for normal vision, and any two at least 14 apart on a light page, 9 on a dark one. Five
-  to eight colours a theme; a test keeps every theme passing the dataviz validator's gates. Overridable per datum.
-  A column or bar chart takes the lead alone (How a chart is drawn).
+  to eight colours a theme; a test keeps every theme passing the dataviz validator's gates. On a filled page the colours are picked as they will be drawn there, after the 3:1 contrast step
+  (`chartMarkInk`), so what is drawn is what passes. Overridable per datum. A column or bar chart takes the lead alone (How a chart is drawn).
 - Dropped on a **slide or infographic page** (a tap or a palette drop, not a drag, which keeps the dragged box), a
   chart is sized for the page: 60% of the page's content box across, as much down but never taller than three
   quarters of its width, centred on the drop and kept inside the content box

@@ -24,6 +24,7 @@ import {
   chartLegendPx,
   chartTickPx,
   chartValuePx,
+  chartLegendGaps,
 } from './chart-style';
 import {
   barCategoryLabels,
@@ -85,6 +86,7 @@ function svgChartLegend(
   // their proportion to it, as ChartLegend's do.
   const fontPx = chartLegendPx(el);
   const swatch = Math.round(fontPx * 0.8);
+  const gap = chartLegendGaps(fontPx);
   const rowH = Math.round(fontPx * 1.3);
   const parts: string[] = [];
   // Each name cut to the room its strip leaves beside the swatch (vertical) or in a row of its own (row).
@@ -96,19 +98,19 @@ function svgChartLegend(
     items.forEach((item, i) => {
       const y = top + i * rowH + rowH / 2;
       const x = el.x + legend.x + 6;
-      const label = name(item, legend.w - 6 - swatch - 4 - 2);
+      const label = name(item, legend.w - 6 - swatch - gap.swatch - 2);
       parts.push(
         `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="${swatch / 2}" fill="${xmlEscape(colorAt(i, item))}"/>`,
-        `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(label)}</text>`,
+        `<text x="${r2(x + swatch + gap.swatch)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(label)}</text>`,
       );
     });
     return parts.join('');
   }
   // A row, wrapped and centred: each name's width estimated per character (text-advance.ts), since there is no DOM
   // to ask; a flat average ran short on wide letters and drew one name into the next swatch.
-  const rowName = (item: PieSlice) => name(item, legend.w - 4 - (swatch + 4) - 10);
+  const rowName = (item: PieSlice) => name(item, legend.w - 4 - (swatch + gap.swatch) - gap.item);
   const itemW = (item: PieSlice) =>
-    swatch + 4 + Math.max(8, textAdvanceEm(rowName(item)) * fontPx) + 10;
+    swatch + gap.swatch + Math.max(8, textAdvanceEm(rowName(item)) * fontPx) + gap.item;
   const rows: PieSlice[][] = [[]];
   let used = 0;
   for (const item of items) {
@@ -129,7 +131,7 @@ function svgChartLegend(
     for (const item of row) {
       parts.push(
         `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="${swatch / 2}" fill="${xmlEscape(colorAt(index, item))}"/>`,
-        `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(rowName(item))}</text>`,
+        `<text x="${r2(x + swatch + gap.swatch)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(rowName(item))}</text>`,
       );
       x += itemW(item);
       index += 1;

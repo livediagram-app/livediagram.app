@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { chartCategorical, chartDeltaE, chartPaletteFailures } from './chart-categorical';
+import { chartFrame } from './chart-frame';
+import { chartMarkInk } from './chart-mark-ink';
 import { canvasSurface } from './colour-math';
+import type { ShapeElement } from './element';
+import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
 import { BOARD_THEMES, THEMES } from './themes-data';
 
@@ -36,4 +40,36 @@ describe('chart categorical colours', () => {
     );
     expect(chartDeltaE('nope', '#000000')).toBe(0);
   });
+
+  // What is drawn is what passes: on a filled page chartMarkInk's 3:1 step can move a colour, so the palette is picked
+  // after the step (chart-frame.ts) and the gates judge the drawn colours, on each theme's light and dark halves and on
+  // a white and a near-black page.
+  const pie = (n: number): ShapeElement => ({
+    id: 'p',
+    type: 'shape',
+    shape: 'pie-chart',
+    x: 0,
+    y: 0,
+    width: 300,
+    height: 300,
+    pieSlices: Array.from({ length: n }, (_, i) => ({ label: `S${i}`, value: 1 })),
+  });
+  for (const base of [...THEMES, ...BOARD_THEMES]) {
+    for (const half of ['light', 'dark'] as const) {
+      const theme = THEMES.includes(base) ? getBuiltInTheme(base.id, half) : base;
+      if (half === 'dark' && theme === base) continue;
+      for (const ground of [theme.backgroundColor ?? '#ffffff', '#ffffff', '#0b0f17']) {
+        it(`${base.id} (${half}) on ${ground}: the drawn colours pass every gate`, () => {
+          const palette = themeChartPalette(theme);
+          const f = chartFrame(pie(8), palette, [ground]);
+          const drawn = [...new Set(f.data.map((d, i) => f.colorAt(i, d)))];
+          const n = chartCategorical(palette, canvasSurface(ground), [ground]).length;
+          const run = drawn.slice(0, n);
+          expect(run.length).toBeGreaterThanOrEqual(4);
+          expect(chartPaletteFailures(run, canvasSurface(ground))).toEqual([]);
+          for (const c of run) expect(chartMarkInk(c, [ground])).toBe(c);
+        });
+      }
+    }
+  }
 });
