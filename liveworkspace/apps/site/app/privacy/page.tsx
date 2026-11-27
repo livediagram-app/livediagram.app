@@ -151,7 +151,11 @@ const SECTIONS: LegalSection[] = [
           and a small summary for its card (such as how many elements it has). For the Timeline it
           keeps what happened to each document (created, renamed, shared, commented on) and who did
           it, and for the Inbox it keeps, for each comment thread and action, who is in it, whether
-          it is resolved or done, and the start of the latest comment (up to 500 characters).
+          it is resolved or done, and the start of the latest comment (up to 500 characters). For a
+          call started from a document, the document keeps a record of it for its Meetings: when it
+          started and ended, the names of the people who were in it (up to 50), and the page its
+          summary was written to and the plan its actions were sent to. An invitation to a call
+          waits in the Inbox for a day.
         </li>
         <li>
           <strong>Images you upload</strong> are kept in Cloudflare object storage. Before a JPEG is
@@ -183,11 +187,16 @@ const SECTIONS: LegalSection[] = [
         <li>
           <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through our
           MCP server (mcp.liveworkspace.app), we store the tool&rsquo;s registration (its name and
-          redirect address, for 200 days after it last signs in), the ids of the last few tokens it
-          was given (never the tokens), which apps you let it reach and the name the tool gives
-          itself (each kept against a one-way hash of its token, never the token, for as long as the
-          token lasts), short-lived sign-in codes that expire within minutes, and for an hour a
-          count of registrations from your network address, to stop abuse.
+          redirect address, for 200 days after it last signs in), or, if it describes itself with a
+          page on its own website, we fetch that page and keep a copy for 24 hours. The tool is
+          given tokens of its own, never your account&rsquo;s: we keep the account token you
+          approved it with, sealed so that only the tool&rsquo;s own tokens open it, with a record
+          of each sign-in and of its live tokens, for as long as they last (an access token lasts an
+          hour, a refresh token 90 days). We also keep the ids of the last few tokens it was given
+          (never the tokens), which apps you let it reach and the name the tool gives itself (each
+          against a one-way hash of its token, never the token, for as long as the token lasts),
+          short-lived sign-in codes that expire within minutes, and for an hour a count of
+          registrations from your network address, to stop abuse.
         </li>
         <li>
           <strong>Form responses.</strong> Each response to a form you publish is stored in your
@@ -287,12 +296,14 @@ const SECTIONS: LegalSection[] = [
             us. Where an app has Automations, <strong>Summarise with AI</strong> sends the
             item&rsquo;s text, and <strong>Describe a Rule</strong> only the item&rsquo;s tab names
             and the kinds of trigger and step. liveplanner&rsquo;s <strong>Describe a Plan</strong>{' '}
-            sends the words you write, and its card AI steps the card. liveknowledge&rsquo;s{' '}
-            <strong>Ask</strong>, Draft a Page, Describe to Set Up and the background check for
-            pages that disagree send the pages&rsquo; passages; a knowledgebase can also have a key
-            of its own, kept encrypted in its own room and never sent back to a browser. We log how
-            many passages were sent and which model answered, never the question, the passages, the
-            answer or a key. An automation&rsquo;s own AI steps always run on built-in AI.
+            sends the words you write, and its card AI steps the card. livehuddle&rsquo;s{' '}
+            <strong>Write With AI</strong>, when you wrap up a call started from a document, sends
+            the notes on the Space&rsquo;s boards. liveknowledge&rsquo;s <strong>Ask</strong>, Draft
+            a Page, Describe to Set Up and the background check for pages that disagree send the
+            pages&rsquo; passages; a knowledgebase can also have a key of its own, kept encrypted in
+            its own room and never sent back to a browser. We log how many passages were sent and
+            which model answered, never the question, the passages, the answer or a key. An
+            automation&rsquo;s own AI steps always run on built-in AI.
           </li>
           <li>
             <strong>The Community Forum.</strong> Every post, reply and edit is read, with its
