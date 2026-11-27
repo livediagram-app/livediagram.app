@@ -11,6 +11,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useId, useState, type ReactNode } from 'react';
 import { reviewDays, type ReviewEvery } from '@liveknowledge/knowledge';
 import { Button, IDENTITY_FILL, Select, Tooltip, identityVars } from '@liveknowledge/ui';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { reviewPeriodLabel } from '@/lib/knowledge-settings/review-period-words';
 import { shortDate, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
@@ -50,6 +51,8 @@ export type PageHealthCardProps = {
   now: number;
   people: readonly KnowledgePerson[];
   nameOf: (id: string | undefined) => string | undefined;
+  /** A person's own colour by id, where Page Health's read brought it (`colors`): the owner's and verifier's discs. */
+  colorOf?: ((id: string | undefined) => string | undefined) | undefined;
   // Absent for anyone who may not change the fields: the rows read as text.
   onSetOwner: ((owner: string | null) => void) | undefined;
   onVerify: (() => void) | undefined;
@@ -230,44 +233,30 @@ function initials(name: string): string {
   ).toUpperCase();
 }
 
-// A person's disc, tinted by their name so the same person reads the same everywhere in the rail.
-const DISC_TINTS = [
-  'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200',
-  'bg-violet-100 text-violet-800 dark:bg-violet-900/60 dark:text-violet-200',
-  'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200',
-  'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200',
-  'bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-200',
-  'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200',
-];
 const NO_TINT = 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200';
 
-function tintOf(name: string | undefined): string {
-  if (!name) return NO_TINT;
-  let h = 0;
-  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) | 0;
-  return DISC_TINTS[Math.abs(h) % DISC_TINTS.length]!;
-}
-
-/** A person's initials on their own colour where it is known, else their name's tint (a guest's figure), for Page
- *  Health's stamps and Required Reading's people. */
+/** A person's initials on their presence colour (their own where it is known, else the one Automatic picks from their
+ *  name, as their cursor and avatar wear it in every app), a guest's figure on the guest disc, for Page Health's stamps,
+ *  owner and verifier and Required Reading's people (Work Tracker 1497). */
 export function Disc({
   name,
   color,
   size = 'size-6',
 }: {
   name: string | undefined;
-  /** The person's own colour, as their avatar draws it; the name's tint without one. */
+  /** The person's own colour, as their avatar draws it; the Automatic one from their name without one. */
   color?: string | undefined;
   size?: string;
 }) {
-  const own = color && !isGuestName(name);
+  const guest = isGuestName(name);
+  const own = name && !guest ? presenceColourOf(name, color) : undefined;
   return (
     <span
       aria-hidden
-      style={own ? identityVars(color) : undefined}
-      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${own ? `text-white ${IDENTITY_FILL}` : isGuestName(name) ? GUEST_DISC_TINT : tintOf(name)}`}
+      style={own ? identityVars(own) : undefined}
+      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${own ? IDENTITY_FILL : guest ? GUEST_DISC_TINT : NO_TINT}`}
     >
-      {isGuestName(name) ? (
+      {guest ? (
         <MakerPersonIcon />
       ) : (
         <span className="text-optical-centre">{name ? initials(name) : '?'}</span>
@@ -461,6 +450,7 @@ export function PageHealthCard({
   now,
   people,
   nameOf,
+  colorOf,
   onSetOwner,
   onVerify,
   periodControl,
@@ -574,7 +564,7 @@ export function PageHealthCard({
               </Select>
             ) : (
               <span className="inline-flex max-w-full items-center gap-2">
-                {owner ? <Disc name={ownerName} size="size-5" /> : null}
+                {owner ? <Disc name={ownerName} color={colorOf?.(owner)} size="size-5" /> : null}
                 <span className="truncate">{ownerName ?? (owner ? 'Someone Else' : 'Nobody')}</span>
               </span>
             )}
@@ -596,7 +586,7 @@ export function PageHealthCard({
                         aria-label={`Verified by ${verifier}`}
                         className="inline-flex cursor-default rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
                       >
-                        <Disc name={verifier} size="size-5" />
+                        <Disc name={verifier} color={colorOf?.(verifiedBy)} size="size-5" />
                       </span>
                     </Tooltip>
                   ) : null}

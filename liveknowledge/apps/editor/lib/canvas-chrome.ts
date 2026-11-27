@@ -71,3 +71,16 @@ export function canvasCursorClass(input: {
   if (isPaintMode) return 'cursor-copy';
   return 'cursor-grab';
 }
+
+/**
+ * The cursor over the page's ground (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"): the plain
+ * one, read or edited, since the page has no marquee to promise; the canvas's own cursor only while a drawing is being
+ * edited, or while a tool other than Select is in hand (its cursor says what a press does). Before Work Tracker 1490 the
+ * resting Select tool's crosshair showed over the margins and the cover of a page being read.
+ */
+export function pageGroundCursorClass(
+  cursorClass: string,
+  { drawingZone, canvasTool }: { drawingZone: boolean; canvasTool: string },
+): string {
+  return drawingZone || canvasTool !== 'select' ? cursorClass : 'cursor-default';
+}

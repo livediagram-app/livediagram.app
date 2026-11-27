@@ -4,8 +4,8 @@ import {
   boundaryLayout,
   boundaryStyleOf,
   BOUNDARY_TINT,
-  BOUNDARY_TITLE_PX,
   colorWash,
+  labelFontPx,
   labelOn,
   type ShapeElement,
 } from '@livediagram/document';
@@ -15,14 +15,20 @@ import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/Inlin
 import { LabelRegion } from '@liveworkspace/workbench/components/canvas/web/LabelRegion';
 import { rectStyle } from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 
 // The title's text without its markdown marks (bold, italic, code), as it reads.
 const plainLabel = (label: string) => label.replace(/[*_`~]/g, '');
 
 let measureCtx: CanvasRenderingContext2D | null | undefined;
-/** The title's width in px, bold at the tab's size in the tab's font; null where no canvas can measure (tests). */
-function measureBoldTitle(text: string, fontFamily: string | undefined): number | null {
+/** The title's width in px, in the weight, size and font its label draws in; null where no canvas can measure. */
+function measureTitle(
+  text: string,
+  fontFamily: string | undefined,
+  px: number,
+  bold: boolean,
+): number | null {
   if (measureCtx === undefined) {
     try {
       measureCtx = document.createElement('canvas').getContext('2d');
@@ -31,7 +37,7 @@ function measureBoldTitle(text: string, fontFamily: string | undefined): number 
     }
   }
   if (!measureCtx) return null;
-  measureCtx.font = `700 ${BOUNDARY_TITLE_PX}px ${fontFamily ?? 'system-ui, sans-serif'}`;
+  measureCtx.font = `${bold ? 700 : 400} ${px}px ${fontFamily ?? 'system-ui, sans-serif'}`;
   return measureCtx.measureText(text).width;
 }
 
@@ -62,7 +68,19 @@ export function BoundaryFace({
   // until the edit commits.
   const [draft, setDraft] = useState<string | null>(null);
   const title = draft ?? plainLabel(element.label ?? '');
-  const titleWidth = useMemo(() => measureBoldTitle(title, fontFamily), [title, fontFamily]);
+  // Measured in the face the label draws in: a finish's own font (Marker's Shantell Sans) lands after first paint,
+  // and a width taken from the fallback face meanwhile wrapped the word in the real one, so each landing webfont
+  // measures again (useFontEpoch). Its size and weight are the label's own, not an assumed bold 14.
+  const fontEpoch = useFontEpoch();
+  const titlePx = labelFontPx(element.textSize);
+  // Bold unless the label was set regular: a little wide is a looser tab, a little narrow is a broken word.
+  const titleBold = element.textBold !== false;
+  const titleWidth = useMemo(
+    () => measureTitle(title, fontFamily, titlePx, titleBold),
+    // The same text in the same stack measures wider once its face has landed.
+    // oxlint-disable-next-line react/exhaustive-deps -- fontEpoch is a re-measure key, not a value read
+    [title, fontFamily, titlePx, titleBold, fontEpoch],
+  );
   const l = boundaryLayout(element.width, element.height, {
     style,
     icon: !!icon,

@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
 import { nameOpenPage, pageRow, titleOf, writeLines } from '../knowledgebase';
 import {
-  openView,
+  openInsightsTopic,
   person,
   secondPerson,
   shareCode,
@@ -115,8 +115,8 @@ test('Required Reading: required, confirmed, seen by the owner, asked again, lis
   await pageRow(viewer, 'Expenses Policy').click();
   await expect(banner(viewer)).toContainText('This page changed on');
 
-  // Insights lists it with its counts.
-  await openView(page, 'Insights');
+  // Insights' Reading page lists it with its counts.
+  await openInsightsTopic(page, 'Reading');
   const card = page.locator('[data-ai-section="ai-required-reading"]');
   await expect(card.locator('[data-required-reading]')).toHaveCount(1);
   // Without a team, Everyone counts the owner and those who confirmed this round: Alan counts again once he confirms.

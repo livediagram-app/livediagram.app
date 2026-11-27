@@ -179,6 +179,12 @@ function PageRailSections({ docked }: { docked: boolean }) {
         };
   // The pencil beside the Review Period: an Editor of the whole knowledgebase's alone.
   const changesPeriod = useSettingsOffered();
+  // Each person's own colour where Page Health's read brought it, for the owner's and verifier's discs.
+  const colors = page.health?.colors;
+  const colorOf = useCallback(
+    (id: string | undefined) => (id ? colors?.[id] : undefined),
+    [colors],
+  );
   const activity = (
     <PageActivity
       now={page.now}
@@ -209,6 +215,7 @@ function PageRailSections({ docked }: { docked: boolean }) {
         now={page.now}
         people={people}
         nameOf={nameOf}
+        colorOf={colorOf}
         onSetOwner={
           rights.editFields ? (owner) => page.setFields(pageId, { owner }, 'owner') : undefined
         }

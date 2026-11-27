@@ -11,6 +11,7 @@ import {
   type ShapeElement,
   type TextElement,
 } from '@livedocuments/document';
+import { solidWhenCarrying } from './layout-soft-boxes';
 import { PAGE_LAYOUTS } from './page-layouts';
 import { SLIDE_LAYOUTS } from './slide-layouts';
 
@@ -155,7 +156,7 @@ export function carryPageContent(
       delete content.label;
       delete content.richText;
     }
-    put({ ...slot, ...content });
+    put(solidWhenCarrying({ ...slot, ...content }));
   }
   return out;
 }

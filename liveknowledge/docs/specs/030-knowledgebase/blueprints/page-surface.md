@@ -155,7 +155,7 @@ browser's.
 | Held Space as a pan                | `useCanvasPanAndMarquee({ spacePan })`: false outside a drawing zone being edited       |
 | The middle button's drag           | `middleMousePan` is the drawing zone's alone; `Canvas` drops any other pan              |
 | The marquee on bare ground         | `Canvas` `pressGround`: a press deselects and starts no marquee                         |
-| The ground's crosshair cursor      | `cursor-default` on the world outside a drawing zone being edited                       |
+| The ground's crosshair cursor      | `cursor-default` round the page, Select in hand (`pageGroundCursorClass`, WI-1490)      |
 | Letters that add shapes            | `useEditorKeyboardShortcuts`: the element keys return unless `drawingZoneEditing()`     |
 | Select, Laser, Spotlight           | `useCanvasTool` reads every tool but Format as Select; no key, command or dropdown      |
 

@@ -66,7 +66,8 @@ const FIXTURES: Record<string, unknown[][]> = {
 };
 
 const EXPECTED: Record<string, string> = {
-  pagesDisagreeEmail: '15ff36f024e3a93a9ba65580cc2796a7ff990c7a4d4c7847d14b2e7ecdfd150c',
+  // Work Tracker 1464: its link opens Needs Attention at its Disagreements (&topic=attention&show=conflicts).
+  pagesDisagreeEmail: 'edd29d2fd7da943d12599a295eda8c5e84c007fdc663676fa3ef17cfa7511efa',
   pageRejectedEmail: 'f2ef4d239dd286b76d189e8f6b015b5eef830c6e684ff8632f30da908498e8f4',
   remindOwnersEmail: '2543a86f52503a6df8ab3cc79b72185c99e349bc00a221b0f6c872042071affe',
   reviewDueEmail: '77e3d091b74e39c42447e8cd13a64455d902b5dc5e6aee3a76b6aadb0b832c69',

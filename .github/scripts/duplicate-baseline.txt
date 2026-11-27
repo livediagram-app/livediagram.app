@@ -153,7 +153,6 @@ livedocuments/apps/editor/lib/article/article-schema-table.ts	liveknowledge/apps
 livedocuments/apps/editor/lib/article/article-table-editor.ts	liveknowledge/apps/editor/lib/article/article-table-editor.ts
 livedocuments/apps/editor/lib/article/article-table-repeat.ts	liveknowledge/apps/editor/lib/article/article-table-repeat.ts
 livedocuments/apps/editor/lib/article/article-telemetry.ts	liveknowledge/apps/editor/lib/article/article-telemetry.ts
-livedocuments/apps/editor/lib/canvas-chrome.ts	liveknowledge/apps/editor/lib/canvas-chrome.ts
 livedocuments/apps/editor/lib/editor-path.ts	liveknowledge/apps/editor/lib/editor-path.ts
 livedocuments/apps/editor/lib/explorer-landing.ts	liveknowledge/apps/editor/lib/explorer-landing.ts
 livedocuments/apps/editor/lib/find/find-highlight-store.ts	liveknowledge/apps/editor/lib/find/find-highlight-store.ts

@@ -24,7 +24,8 @@ Knowledgebase Reviews switch and the shared daily ceiling.
 
 - `PageReadingResponse { required: { audience, askedAt, round } | null, mine: { asked: boolean, readAt?: number },
 progress: { done, total } | null, sees: boolean, manages: boolean, people?: PageReadingPerson[], chosen?: string[],
-remindedAt?: number, email: boolean }`. `people` (each `{ id, name, readAt?, remindedAt? }`, not yet read first,
+remindedAt?: number, email: boolean }`. `people` (each `{ id, name, color?, readAt?, remindedAt? }`, `color` the person's presence colour from the team or
+  their profile, `presenceColourOf`, absent for one with no name; not yet read first,
   then read, newest first, at most `READING_LIST_MAX`) and `remindedAt` only when `sees`; `chosen` only when
   `manages` and the audience is `people`. `email`: whether Remind can send at all (`emailEnabled`).
 - `PageReadingChange { audience: ReadingAudience | null, people?: string[] }`.

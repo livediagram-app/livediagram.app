@@ -159,11 +159,11 @@ const SECTIONS: LegalSection[] = [
         <p>
           You can create API tokens on liveworkspace.app to use the apps programmatically, from the
           command line, a script or an AI tool. A token acts as your account in every app&rsquo;s
-          API, and in the MCP server of every app that has one (all but livehuddle), or only reads,
-          if you make it read-only, so keep it secret and revoke any that might have been exposed.
-          You are responsible for what is done with your tokens. We may apply rate limits to keep
-          the Service healthy. If you connect a third-party or AI tool, you authorise it to act for
-          you with that access, until you revoke its token, and what it does is done by you. The
+          API, and in our MCP server, which reaches every app but livehuddle, or only reads, if you
+          make it read-only, so keep it secret and revoke any that might have been exposed. You are
+          responsible for what is done with your tokens. We may apply rate limits to keep the
+          Service healthy. If you connect a third-party or AI tool, you authorise it to act for you
+          with that access, until you revoke its token, and what it does is done by you. The
           tool&rsquo;s own terms and privacy policy govern what it does with what it reads.
         </p>
         <p>

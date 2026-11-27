@@ -12,6 +12,7 @@ import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
+import { firstPageOf } from '@/lib/page-tree-open';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 import { useKnowledgeActions } from '@/components/knowledge/usePageKnowledge';
@@ -71,8 +72,10 @@ export function usePageTreeModel(): PageTreeModel {
   const followingId = useEditorChrome((s) => s.followMe.followingId);
   const followerCount = useEditorChrome((s) => s.followMe.followerCount);
 
-  // What this reader has opened, per knowledgebase, in this browser: every page starts closed.
-  const { opened, onSetOpen } = useOpenedPages(documentId);
+  // What this reader has opened, per knowledgebase, in this browser: every page starts closed but the first, so its
+  // subpages (the knowledgebase's categories) show until the reader closes it (Work Tracker 1489).
+  const first = useMemo(() => firstPageOf(tabs), [tabs]);
+  const { opened, onSetOpen } = useOpenedPages(documentId, first);
 
   // The handlers read the newest view-model when they run, so the object keeps its identity and the rows stay put.
   const actions = useMemo<PageTreeActions>(

@@ -3,6 +3,7 @@ import { expect, expectNoPageErrors, test } from '../fixtures';
 import { addPage, nameOpenPage, pageRow, paragraphs, writeLines } from '../knowledgebase';
 import {
   asPerson,
+  openInsightsTopic,
   openView,
   saveKey,
   savedWith,
@@ -148,9 +149,9 @@ test('what the pages do not cover shows as a Knowledge Gap and is listed under I
   const gap = ask(page).getByRole('region', { name: 'Knowledge Gap' });
   await expect(gap).toContainText(question);
 
-  await openView(page, 'Insights');
+  await openInsightsTopic(page, 'Needs Attention');
   // Needs Attention, at Questions: the questions nobody could answer (insights.md "The view, as built").
-  const questions = page.getByRole('region', { name: 'Needs Attention' });
+  const questions = page.getByRole('region', { name: 'Needs Attention', exact: true });
   const show = questions
     .getByRole('group', { name: 'Show' })
     .getByRole('button', { name: 'Questions', exact: true });

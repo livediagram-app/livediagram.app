@@ -244,7 +244,7 @@ ambient motion (the current along the lines, drifting cursors and characters, a 
 One privacy policy and one set of terms for liveworkspace and every app in it, linked from the
 footer. They were built from the apps' own policies, which said the same things app by app; a
 feature only some apps have (livediagram's sticky-note reader, liveplanner's live sessions, livehuddle's calls,
-the MCP servers every app but livehuddle has) says which; Google Drive sync and Offline Mode are every app's. The
+the one MCP server, which reaches every app but livehuddle) says which; Google Drive sync and Offline Mode are every app's. The
 privacy policy covers each platform feature that keeps or sends personal data: the account and its Google picture
 ([accounts.md "Profile pictures"](../003-accounts/accounts.md#profile-pictures)), teams and their invitations' 28-day
 expiry, phone notifications ([push.md](../003-accounts/push.md)), connections
@@ -254,7 +254,12 @@ AI works: built-in AI on Cloudflare Workers AI, the person's or team's own Anthr
 returned, deleted with the account; [ai-keys.md](../003-accounts/ai-keys.md)), what Ask AI, Summarise with AI,
 Describe a Rule, Describe a Plan and liveknowledge's AI send ([ask.md](../020-ask/ask.md)), the Forum's safety check,
 and connected AI tools and the CLI; and how connected tabs, live embeds and Send to Plan link items across apps
-([connected-tabs.md](../004-index/connected-tabs.md)). Every claim cites a spec the code keeps: never a promise of
+([connected-tabs.md](../004-index/connected-tabs.md)). Work Tracker 1496 (audited against main on 2026-11-27) added what had changed since: the one MCP server's storage
+([mcp.md "Tokens"](../021-mcp/mcp.md#tokens): the account token sealed in its store, a record per sign-in and per live
+access token for as long as each lasts, an access token an hour and a refresh token 90 days, and a client's metadata
+document fetched and kept 24 hours), the meetings an item keeps for calls started from it
+([item-calls.md](../004-index/item-calls.md): when, who was in it by name, the summary page and the plan; an invite stays
+in the Inbox a day) with Write With AI's notes under AI features. Every claim cites a spec the code keeps: never a promise of
 deletion within a number of days the code does not keep, and never a claim about what an AI provider does with what it
 is sent beyond "its own terms govern". Pro stays out of both pages while it is off: the terms' availability sentence and
 the Stripe line in Service providers read `proOn()`. The products' landing-page privacy promises are one shared builder,
