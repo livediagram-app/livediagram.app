@@ -22,11 +22,24 @@ it everywhere the feature shows:
   panel's Layouts offer, and its words go in through the same slots an agent's `change_pages` fills
   ([pages-for-agents.md](../024-agents/pages-for-agents.md) "Text slots"): the headline, the line under it, the
   bullets, the body texts, the figures (a stat's "73%"), a table's rows and a compound element's parts (a process's
-  steps, a stat row's values). A slot the words do not reach keeps the layout's sample text, to be written over by
-  hand, as a layout picked in the panel starts. A picture frame starts empty, as the panel's does.
+  steps, a stat row's values). A slot the content does not need is taken off the page, never left holding the
+  layout's sample or a stand-in ("N/A"): its text, its bullet dot, its stat in a stat row, and the card it sat in
+  once that card holds no other words (with the icon inside it). Four figures on a layout of six leave four. A
+  picture frame starts empty, as the panel's does.
+- **Never a placeholder.** Words that only hold a place ("[Insert number here]", "N/A", "TBD", "Lorem ipsum", "XX%")
+  are never laid on a page or written into an article: a reply with any is asked for once more, told so, and the
+  better of the two replies is kept with its placeholders' slots (or lines) dropped. Where the person asks for
+  examples or figures without giving them, AI writes fitting, plausible ones, never presented as facts about a real
+  person, company or event.
+- **Named by its heading.** A laid-out page is named in Contents by the words AI wrote for its heading, not by
+  whichever text is largest (a card's big figure).
 - **AI picks the layout.** First from the whole catalogue of the kind (each layout's name, its description and its
-  slots), then it writes the words for that one layout, seeing each slot's sample so it knows what goes where. It
-  never invents a layout and never writes outside a slot.
+  slots), preferring a layout whose lists hold as many items as the request gives (four figures, five steps), then
+  it writes the words for that one layout, seeing each slot's role and sample so it knows what goes where. A slot's
+  role is told by its place, not its name: the page's heading and the line under it, a card's big text or its
+  smaller line, a stat's figure or caption, a step, a text at a part of the page. The page's title goes in the
+  heading whatever that slot is called (on a facts grid the largest words are a card's). It never invents a layout
+  and never writes outside a slot.
 - **An article or a card** is written as `write_article` writes one ([pages-for-agents.md](../024-agents/pages-for-agents.md)
   "write_article"): Markdown read into the writing, the editor flowing it onto as many pages as it takes; a card
   keeps its text only.
@@ -44,7 +57,8 @@ it everywhere the feature shows:
 
 ## The dialog
 
-A centred modal (a bottom sheet on a phone) of a steady height, in the Describe with AI family (Describe a Rule,
+A centred modal (a bottom sheet on a phone) of one fixed height, room kept under the box for the longest thing it
+says (a two-line refusal, or the slow line) so it never grows or moves, in the Describe with AI family (Describe a Rule,
 Describe a Plan): the illustrated header (its own art: the person's words in a speech bubble with the sparkle,
 turning by a dashed arrow into a slide with a headline and lines of text), the title ("Describe a Slide"), and the
 line "Say what it is about and what it should say. AI picks a layout and writes it in."
@@ -72,7 +86,8 @@ line "Say what it is about and what it should say. AI picks a layout and writes 
 
 Ask AI's rules ([ask.md](../../../../liveworkspace/docs/specs/020-ask/ask.md) "Which AI answers"): the item's team's key
 or the person's own when one applies, else built-in AI. On built-in AI a page is one of the day's built-in questions
-(Ask's count, `ASK_BUILT_IN_PER_PERSON_PER_DAY`), however many times the model is asked for it, and with Pro on it
+(Ask's count, `ASK_BUILT_IN_PER_PERSON_PER_DAY`), however many times the model is asked for it (two asks for a
+laid-out page, one for a written one, and one more when a reply held placeholders), and with Pro on it
 costs **1 AI credit** (`AI_CREDIT_COSTS.pageDraft`), spent only once the page's words are in hand, so a failure, a
 refusal or a cancel costs nothing ([subscription.md](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)
 "What an AI operation costs"). A key spends neither.

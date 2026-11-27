@@ -105,8 +105,9 @@ export function DescribePageDialog({
         onClose={cancel}
         underHandle
       />
-      {/* One height whatever is said under the box (a refusal, the slow line), so the centred dialog stays put. */}
-      <div className="min-h-[352px] max-sm:min-h-0">
+      {/* One fixed height, room kept for the longest thing said under the box (a two-line refusal, or the slow line),
+          so the centred dialog never moves; a phone's sheet takes its own height. */}
+      <div data-describe-page-body="" className="h-[396px] overflow-y-auto max-sm:h-auto">
         <DescribePrompt
           ref={box}
           dataAttr="data-describe-page"

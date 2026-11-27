@@ -11,6 +11,7 @@ import {
   readLayoutFill,
   readWriting,
   SLOT_TEXT_MAX,
+  withPlaceholderNote,
   writePageRequest,
   type CatalogueEntry,
 } from './page-draft-asks';
@@ -95,7 +96,7 @@ describe('ask 2: the words', () => {
   it('lists the chosen layout’s slots with their samples, and the shape to answer in', () => {
     const r = fillLayoutRequest('slide', agenda(), 'Offsite agenda');
     const text = userText(r);
-    for (const s of agenda().samples) expect(text).toContain(`${s.slot}: "`);
+    for (const s of agenda().samples) expect(text).toContain(`${s.slot}`);
     expect(r.system).toContain(`"${agenda().label}"`);
     expect(text).toContain('"title": "..."');
   });
@@ -121,7 +122,7 @@ describe('ask 2: the words', () => {
       table: [['a']],
       extra: 'dropped',
     });
-    const out = readLayoutFill(layout, reply, 'Use https://ok.example')!;
+    const out = readLayoutFill(layout, reply, 'Use https://ok.example')!.text;
     expect(out.title!.startsWith('The Offsite x')).toBe(true);
     expect(out.title!.length).toBe(HEADING_MAX);
     expect(out.title!.endsWith('…')).toBe(true);
@@ -145,7 +146,7 @@ describe('ask 2: the words', () => {
         ],
       }),
       'p',
-    )!;
+    )!.text;
     expect(out.table![0]).toEqual(['Plan', 'Price']);
     expect(out.table![1]![1]!.length).toBe(SLOT_TEXT_MAX);
   });
@@ -177,16 +178,114 @@ describe('a written page', () => {
         '---\nIntro with https://evil.example\r\n\n![pic](https://x.example/a.png)\n<div>raw</div>\n[zone z1]\n## Tips\n- One',
     });
     expect(readWriting(reply, 'remote work')).toEqual({
+      placeholders: 0,
       markdown:
         '---\ntitle: Working Remotely\nsubtitle: A guide\n---\n\nIntro with\n\n## Tips\n- One',
     });
   });
 
   it('takes a title alone or a body alone, and says off topic or unreadable', () => {
-    expect(readWriting('{"title":"Only"}', 'p')).toEqual({ markdown: '---\ntitle: Only\n---' });
-    expect(readWriting('{"markdown":"Just text"}', 'p')).toEqual({ markdown: 'Just text' });
+    expect(readWriting('{"title":"Only"}', 'p')).toEqual({
+      placeholders: 0,
+      markdown: '---\ntitle: Only\n---',
+    });
+    expect(readWriting('{"markdown":"Just text"}', 'p')).toEqual({
+      placeholders: 0,
+      markdown: 'Just text',
+    });
     expect(readWriting('{"title":null}', 'p')).toEqual({ offTopic: true });
     expect(readWriting('{"title":" ","markdown":"![x](y)"}', 'p')).toEqual({ unreadable: true });
     expect(readWriting('nothing', 'p')).toEqual({ unreadable: true });
+  });
+});
+
+describe('slots told by their role, and placeholders never kept', () => {
+  const facts = () => entry('infographic', 'facts-grid');
+  const keyStats = () => entry('slide', 'key-stats');
+
+  it('names the page’s heading by its place, whatever its slot, and each card’s texts as that card’s', () => {
+    const grid = facts();
+    // The largest words on a facts grid are a card's ("4 min"), so the heading is a body slot.
+    expect(grid.heading).toBe('body[0]');
+    expect(grid.roles.get('body[0]')).toMatch(/^the page's heading/);
+    expect(grid.roles.get('body[1]')).toMatch(/^the line under the page's heading/);
+    expect(grid.roles.get('title')).toMatch(/^card \d+ of 6: its big text/);
+    expect(grid.roles.get('subtitle')).toMatch(/^card \d+ of 6: its smaller line/);
+    const request = fillLayoutRequest('infographic', grid, 'Bees');
+    expect(userText(request)).toContain("body[0] (the page's heading, at the top");
+    expect(request.system).toContain('whatever its name');
+    // A stat row's parts by their stat.
+    expect(keyStats().roles.get('figures[0]')).toBe('stat 1 in group 1: its figure');
+    expect(keyStats().roles.get('body[0]')).toBe('stat 1 in group 1: its caption');
+    expect(keyStats().heading).toBe('title');
+  });
+
+  it('a heading slot gets the title and names the page', () => {
+    const out = readLayoutFill(
+      facts(),
+      JSON.stringify({ body: ['Honey Bees', 'Small, busy, vital'], figures: ['50k'] }),
+      'bees',
+    )!;
+    expect(out.text.body!.slice(0, 2)).toEqual(['Honey Bees', 'Small, busy, vital']);
+    expect(out.name).toBe('Honey Bees');
+    // No heading written: the title, else no name.
+    const plain = readLayoutFill(keyStats(), JSON.stringify({ title: 'Our Year' }), 'p')!;
+    expect(plain.name).toBe('Our Year');
+    expect(readLayoutFill(keyStats(), JSON.stringify({ figures: ['4'] }), 'p')!.name).toBeNull();
+  });
+
+  it('a list shorter than its slots leaves the rest empty, for the page to drop, never the sample', () => {
+    const layout = keyStats();
+    const figures = layout.slots.filter((s) => s.slot?.startsWith('figures[')).length;
+    expect(figures).toBe(6);
+    const out = readLayoutFill(
+      layout,
+      JSON.stringify({ title: 'Our Year', figures: ['1.2M', '99.9%', '40', '4.8'] }),
+      'p',
+    )!.text;
+    expect(out.figures).toEqual(['1.2M', '99.9%', '40', '4.8', '', '']);
+    expect(out.subtitle).toBe('');
+    expect(out.body!.every((b) => b === '')).toBe(true);
+  });
+
+  it('drops bracket placeholders, N/A and TBD in a list, and counts them for the ask again', () => {
+    const out = readLayoutFill(
+      keyStats(),
+      JSON.stringify({
+        title: 'Key Metric: [Insert number here]',
+        figures: ['12k', 'N/A', 'TBD', 'n/a', '\u2014', 'XX%'],
+        body: ['Customers', 'Lorem ipsum dolor', '[caption]', 'Real words'],
+      }),
+      'p',
+    )!;
+    expect(out.text.title).toBe('');
+    expect(out.text.figures).toEqual(['12k', '', '', '', '\u2014', '']);
+    expect(out.text.body!.slice(0, 4)).toEqual(['Customers', '', '', 'Real words']);
+    expect(out.placeholders).toBe(7);
+  });
+
+  it('a written page drops its placeholder lines and keeps links and tasks', () => {
+    const read = readWriting(
+      JSON.stringify({
+        title: 'Key Point',
+        subtitle: '[Insert subtitle]',
+        markdown:
+          '- Example 1: [Insert first example here]\n- Small teams ship faster\n- See [the guide](https://ok.example)\n- [x] Done\n- TBD',
+      }),
+      'small teams https://ok.example',
+    );
+    expect(read).toEqual({
+      placeholders: 3,
+      markdown:
+        '---\ntitle: Key Point\n---\n\n- Small teams ship faster\n- See [the guide](https://ok.example)\n- [x] Done',
+    });
+  });
+
+  it('asks for illustrative examples when asked, never placeholders, and to count the items', () => {
+    expect(writePageRequest('flashcard', 'x').system).toContain('plausible ones');
+    expect(fillLayoutRequest('slide', keyStats(), 'x').system).toContain('""');
+    expect(chooseLayoutRequest('slide', 'x').system).toContain('Count the items');
+    const again = withPlaceholderNote(writePageRequest('flashcard', 'x'));
+    expect(userText(again)).toContain('Your last reply held placeholders');
   });
 });

@@ -17,10 +17,13 @@ agents use, and the same apply path as the MCP `change_pages` `layout` op and `w
 - **The asks** (`apps/api/src/page-drafts/page-draft-asks.ts`):
   - A slide or an infographic page takes two. `chooseLayoutRequest` lists the kind's catalogue (`draftCatalogue`, each
     layout's name, slots and sample words, built once per isolate from `layoutCatalogueFor` and `buildPageLayout` on a
-    reference page) and asks for one name; `readLayoutChoice` reads it through `layoutNamed`, `{"layout":null}` as off
+    reference page, with each slot's role from `page-draft-slots.ts`: the page's heading, a card's texts, a
+    stat's parts, by place) and asks for one name, a list's length fitting the content; `readLayoutChoice` reads it through `layoutNamed`, `{"layout":null}` as off
     topic. `fillLayoutRequest` then names that layout's slots with their samples and asks for the words;
-    `readLayoutFill` keeps the layout's own slots only, trims lists to the slots' counts, cuts each text (400
-    characters, 160 for a heading) and drops links to other sites.
+    `readLayoutFill` keeps the layout's own slots only, every list as long as its slots, a slot not written or
+    holding a placeholder (`isPlaceholder`) as "" for the page to drop, cuts each text (400 characters, 160 for a
+    heading), drops links to other sites, and answers the heading's words as the page's `name`. A reply with
+    placeholders is asked once more (`withPlaceholderNote`), the one with fewer kept.
   - An article or a flashcard takes one: `writePageRequest` asks for `{title, subtitle, markdown}`; `readWriting`
     writes the front matter and body, dropping pictures, HTML, zones and rules, cut at 12,000 characters.
 - **Answer**: `{draft, provider, model}`, `draft` a `{kind:'layout', layout, label, text}` or a

@@ -28,6 +28,7 @@ import {
   isLaidKind,
   readLayoutChoice,
   readLayoutFill,
+  withPlaceholderNote,
   readWriting,
   writePageRequest,
 } from '../page-drafts/page-draft-asks';
@@ -156,16 +157,48 @@ export async function handlePageDrafts(ctx: RouteContext): Promise<Response> {
     if ('offTopic' in choice) return offTopic();
     if ('unreadable' in choice) return unreadable();
     const { layout } = choice;
-    const filled = await ask(fillLayoutRequest(kind, layout, prompt));
+    const request = fillLayoutRequest(kind, layout, prompt);
+    let filled = await ask(request);
     if ('refused' in filled) return done('failed', filled.refused, layout.id);
-    const text = readLayoutFill(layout, filled.text, prompt);
-    if (!text) return unreadable();
-    draft = { kind: 'layout', layout: layout.id, label: layout.label, text };
+    let fill = readLayoutFill(layout, filled.text, prompt);
+    // Placeholders ("[Insert number here]", "N/A") are never laid on a page: asked once more, told so; a second
+    // reply that still has some keeps its real words, the placeholders' slots dropped.
+    if (fill && fill.placeholders > 0) {
+      const again = await ask(withPlaceholderNote(request));
+      const reread = 'refused' in again ? null : readLayoutFill(layout, again.text, prompt);
+      if (reread && reread.placeholders <= fill.placeholders && !('refused' in again)) {
+        fill = reread;
+        filled = again;
+      }
+    }
+    if (!fill) return unreadable();
+    draft = {
+      kind: 'layout',
+      layout: layout.id,
+      label: layout.label,
+      text: fill.text,
+      ...(fill.name ? { name: fill.name } : {}),
+    };
     model = filled.model;
   } else {
-    const wrote = await ask(writePageRequest(kind, prompt));
+    const request = writePageRequest(kind, prompt);
+    let wrote = await ask(request);
     if ('refused' in wrote) return done('failed', wrote.refused);
-    const writing = readWriting(wrote.text, prompt);
+    let writing = readWriting(wrote.text, prompt);
+    // As a fill: once more on placeholders, keeping whichever reply has fewer; their lines are dropped either way.
+    if ('placeholders' in writing && writing.placeholders > 0) {
+      const again = await ask(withPlaceholderNote(request));
+      const reread = 'refused' in again ? null : readWriting(again.text, prompt);
+      if (
+        reread &&
+        'placeholders' in reread &&
+        reread.placeholders <= writing.placeholders &&
+        !('refused' in again)
+      ) {
+        writing = reread;
+        wrote = again;
+      }
+    }
     if ('offTopic' in writing) return offTopic();
     if ('unreadable' in writing) return unreadable();
     draft = { kind: 'writing', markdown: writing.markdown };

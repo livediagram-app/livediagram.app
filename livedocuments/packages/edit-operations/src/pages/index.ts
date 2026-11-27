@@ -4,7 +4,8 @@ export { parsePagesRequest } from './parse';
 export { readPageDesign, readTabDesign, tabDesignFor } from './design-input';
 export { applyPageChanges, backgroundPatch, type PageChangesOutcome } from './page-changes';
 export { applyArticleWrite } from './article-write';
-export { layoutTextOf } from './layout-text';
+export { layoutTextOf, textPxOf } from './layout-text';
+export { DROPPED_SLOT, markDropped, withoutDroppedSlots } from './dropped-slots';
 export { enterPages, type PagesIds } from './enter';
 export {
   articleSummaries,

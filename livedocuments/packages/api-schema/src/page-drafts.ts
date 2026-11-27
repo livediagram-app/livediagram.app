@@ -25,8 +25,9 @@ export type PageDraftRequest = {
 };
 
 export type PageDraft =
-  // A slide or an infographic page: a layout of the kind's catalogue, its name, and the words for its slots.
-  | { kind: 'layout'; layout: string; label: string; text: LayoutText }
+  // A slide or an infographic page: a layout of the kind's catalogue, its name, and the words for its slots (an empty
+  // text a slot the page drops, with its box). `name` is the page's heading, for Contents.
+  | { kind: 'layout'; layout: string; label: string; text: LayoutText; name?: string }
   // An article or a card: its writing as Markdown.
   | { kind: 'writing'; markdown: string };
 

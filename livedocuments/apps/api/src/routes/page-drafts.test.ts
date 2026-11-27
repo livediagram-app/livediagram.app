@@ -127,6 +127,53 @@ describe('POST /api/page-drafts', () => {
     expect(asked).toHaveLength(2);
   });
 
+  it('asks once more when a reply holds placeholders, keeping the better reply, the day spent once', async () => {
+    replies = [
+      '{"layout":"key-stats"}',
+      '{"title":"Our Year","figures":["12k","N/A","TBD","[Insert]","4","5"]}',
+      '{"title":"Our Year","figures":["12k","40","4.8","99%","",""]}',
+    ];
+    const res = await draft();
+    const answer = await res.json<PageDraftResponse>();
+    expect(asked).toHaveLength(3);
+    expect(asked[2]!.messages.at(-1)!.content).toContain('Your last reply held placeholders');
+    expect(answer.draft).toMatchObject({
+      kind: 'layout',
+      name: 'Our Year',
+      text: { figures: ['12k', '40', '4.8', '99%', '', ''] },
+    });
+    expect(stores.get(askCountName('user_a'))!.get('ask-ai')).toMatchObject({ count: 1 });
+    // A worse second reply, or a failed one: the first is kept, its placeholders dropped.
+    asked = [];
+    replies = [
+      '{"layout":"key-stats"}',
+      '{"title":"Our Year","figures":["12k","N/A"]}',
+      'nonsense',
+    ];
+    expect((await (await draft()).json<PageDraftResponse>()).draft).toMatchObject({
+      text: { figures: ['12k', '', '', '', '', ''] },
+    });
+    replies = ['{"layout":"key-stats"}', '{"title":"Our Year","figures":["12k","N/A"]}'];
+    expect((await draft()).status).toBe(200);
+  });
+
+  it('writes a card again when it holds placeholders, and drops their lines either way', async () => {
+    replies = [
+      '{"title":"Key Point","markdown":"- Example 1: [Insert first example here]"}',
+      '{"title":"Key Point","markdown":"- Small teams ship faster"}',
+    ];
+    const res = await draft({ kind: 'flashcard' });
+    expect((await res.json<PageDraftResponse>()).draft).toEqual({
+      kind: 'writing',
+      markdown: '---\ntitle: Key Point\n---\n\n- Small teams ship faster',
+    });
+    replies = ['{"title":"Key Point","markdown":"- [Insert here]\\n- Real"}'];
+    expect((await (await draft({ kind: 'flashcard' })).json<PageDraftResponse>()).draft).toEqual({
+      kind: 'writing',
+      markdown: '---\ntitle: Key Point\n---\n\n- Real',
+    });
+  });
+
   it('says off topic, or a reply it cannot read, in its own words', async () => {
     replies = ['{"layout":null}'];
     const off = await draft();

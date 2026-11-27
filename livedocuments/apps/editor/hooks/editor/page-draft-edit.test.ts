@@ -60,6 +60,25 @@ describe('withDraftedPage', () => {
     expect(labels(made.tab, made.pageId)).toContain('Team Offsite');
   });
 
+  it('names the page by its heading, and takes off the slots the words leave empty', () => {
+    const made = withDraftedPage(
+      deck(),
+      {
+        kind: 'layout',
+        layout: 'key-stats',
+        label: 'Key Stats',
+        name: 'Our Year in Numbers',
+        text: { title: 'Our Year', figures: ['1.2M', '', '', '', '', ''] },
+      },
+      engine,
+      {},
+    )!;
+    expect(pagesOf(made.tab).find((p) => p.id === made.pageId)!.name).toBe('Our Year in Numbers');
+    expect(labels(made.tab, made.pageId).join(' ')).not.toContain('⁣');
+    const unnamed = withDraftedPage(deck(), slide, engine, {})!;
+    expect(pagesOf(unnamed.tab).find((p) => p.id === unnamed.pageId)!.name).toBeUndefined();
+  });
+
   it('after the last page by default, dressed by the editor’s new-page look', () => {
     const themed = vi.fn((t: Tab) => t);
     const made = withDraftedPage(deck(), slide, engine, { themed })!;

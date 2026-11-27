@@ -13,12 +13,22 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import type { PageDraft } from '@livedocuments/api-schema';
-import type { applyArticleWrite, applyPageChanges } from '@livedocuments/edit-operations/pages';
+import type {
+  applyArticleWrite,
+  applyPageChanges,
+  markDropped,
+  withoutDroppedSlots,
+} from '@livedocuments/edit-operations/pages';
 
-/** The engine's two edits the page is made through. */
+// The longest a page's name is kept, from its heading.
+const NAME_MAX = 80;
+
+/** The engine's edits the page is made through, and its marking of the slots the words leave empty. */
 export type DraftEngine = {
   applyPageChanges: typeof applyPageChanges;
   applyArticleWrite: typeof applyArticleWrite;
+  markDropped: typeof markDropped;
+  withoutDroppedSlots: typeof withoutDroppedSlots;
 };
 
 /** The page made: the tab with it, its id, and its writing's flow for an article or a card. */
@@ -45,10 +55,19 @@ export function withDraftedPage(
   if (!('tab' in added)) return null;
   const next = opts.themed ? opts.themed(added.tab, pageId) : added.tab;
   if (draft.kind === 'layout') {
+    // Slots the words leave empty are marked, written in, then taken off with their boxes (the engine's
+    // dropped-slots.ts).
     const out = engine.applyPageChanges(next, [
-      { op: 'layout', page: pageId, layout: draft.layout, text: draft.text },
+      { op: 'layout', page: pageId, layout: draft.layout, text: engine.markDropped(draft.text) },
     ]);
-    return 'refusal' in out ? null : { tab: out.tab, pageId, flow: null };
+    if ('refusal' in out) return null;
+    const tidied = engine.withoutDroppedSlots(out.tab);
+    // Contents names the page by its heading, not by whichever text is largest (a card's big figure).
+    const name = draft.name?.trim().slice(0, NAME_MAX);
+    const named = name
+      ? { ...tidied, pages: pagesOf(tidied).map((p) => (p.id === pageId ? { ...p, name } : p)) }
+      : tidied;
+    return { tab: named, pageId, flow: null };
   }
   const out = engine.applyArticleWrite(next, {
     article: flow,
