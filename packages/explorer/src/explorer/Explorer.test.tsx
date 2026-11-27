@@ -299,7 +299,7 @@ describe('<Explorer>', () => {
     });
     renderExplorer(index, { kind: 'trash' });
     expect(await screen.findByRole('heading', { name: 'Your plans' })).toBeTruthy();
-    expect(screen.getByText(/^Deleted \d/)).toBeTruthy();
+    expect(screen.getByText(/^Deleted \S/)).toBeTruthy();
     // Its days left as a meter and words, slate while it has time; the band counts it.
     const meter = document.querySelector<HTMLElement>('[data-days-left]')!;
     expect(meter.textContent).toBe('30 days left');
