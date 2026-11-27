@@ -34,9 +34,7 @@ export const phoneCopy = {
       case 'needs-install':
         return {
           description:
-            'On iPhone and iPad, add this app to your Home Screen first: tap Share, then Add to Home Screen, and open it from there to turn these on.',
-          status: 'Add to Home Screen',
-          warn: true,
+            'On iPhone and iPad, notifications come only from apps on your Home Screen. Add this app there, open it from its icon, and turn these on.',
         };
       case 'blocked':
         return {

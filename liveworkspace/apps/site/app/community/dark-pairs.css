@@ -39,7 +39,6 @@
 @source inline("dark:border-slate-700/60");
 @source inline("dark:border-transparent");
 @source inline("dark:fill-amber-300/70");
-@source inline("dark:fill-brand-500/15");
 @source inline("dark:fill-brand-700");
 @source inline("dark:fill-brand-700/60");
 @source inline("dark:fill-brand-800");
@@ -53,7 +52,6 @@
 @source inline("dark:fill-sky-800");
 @source inline("dark:fill-slate-100");
 @source inline("dark:fill-slate-400");
-@source inline("dark:fill-slate-700");
 @source inline("dark:fill-slate-950");
 @source inline("dark:focus-visible:outline-slate-400");
 @source inline("dark:focus-visible:ring-brand-400");

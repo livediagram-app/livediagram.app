@@ -19,6 +19,8 @@ import {
   type PhoneSupport,
 } from './browser-push';
 import { DeviceAppLogo } from './DeviceAppLogo';
+import { thisBrowserGuide, type HomeScreenGuide as Guide } from './home-screen-guide';
+import { HomeScreenGuide } from './HomeScreenGuide';
 import { phoneCopy, PHONE_ROW_DESCRIPTION, PHONE_ROW_LABEL, type PhoneState } from './phone-copy';
 import type { PhoneHost, PushDeviceView } from './phone-host';
 
@@ -38,11 +40,13 @@ export function PhoneNotificationsRow({
   phone,
   support: givenSupport,
   now: givenNow,
+  guide: givenGuide,
 }: {
   phone: PhoneHost;
-  // Test seams: what the browser can do, and the clock.
+  // Test seams: what the browser can do, the clock, and the device the Home Screen steps are worded for.
   support?: PhoneSupport;
   now?: number;
+  guide?: Guide;
 }) {
   const [support, setSupport] = useState<PhoneSupport>(() => givenSupport ?? phoneSupport());
   const [answer, setAnswer] = useState<DevicesAnswer | null>(null);
@@ -51,6 +55,13 @@ export function PhoneNotificationsRow({
   const [problem, setProblem] = useState<string | null>(null);
   const [thisDevice, setThisDevice] = useState<string | null>(null);
   const [removing, setRemoving] = useState<PushDeviceView | null>(null);
+  // The Add to Home Screen steps, read from this browser when first opened (an iPhone or iPad only gets here).
+  const [guide, setGuide] = useState<Guide | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const openGuide = () => {
+    setGuide((g) => g ?? givenGuide ?? thisBrowserGuide());
+    setGuideOpen(true);
+  };
   // Set again on every mount: React's development double mount (and a remount) runs the cleanup first, and a flag
   // only ever cleared would drop every answer after it, leaving the row loading for good.
   const live = useRef(true);
@@ -162,6 +173,10 @@ export function PhoneNotificationsRow({
             <Button size="xs" onClick={() => void turnOn()} busy={busy}>
               {busy ? 'Turning On…' : 'Turn On'}
             </Button>
+          ) : state === 'needs-install' ? (
+            <Button size="xs" onClick={openGuide} aria-haspopup="dialog">
+              Add to Home Screen
+            </Button>
           ) : state === 'unreachable' ? (
             <Button size="xs" variant="secondary" onClick={() => void load()}>
               Try Again
@@ -237,6 +252,9 @@ export function PhoneNotificationsRow({
         onConfirm={() => removing && void remove(removing)}
         onCancel={() => setRemoving(null)}
       />
+      {guide ? (
+        <HomeScreenGuide open={guideOpen} guide={guide} onClose={() => setGuideOpen(false)} />
+      ) : null}
     </div>
   );
 }
