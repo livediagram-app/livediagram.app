@@ -68,4 +68,22 @@ describe('useOpenedPages', () => {
       setItem.mockRestore();
     }
   });
+
+  it('opens the first page by default; a reader who closes it keeps it closed across a reload (Work Tracker 1489)', () => {
+    const first = renderHook(() => useOpenedPages('k1', 'a'));
+    expect([...first.result.current.opened]).toEqual(['a']);
+    const before = first.result.current.opened;
+    act(() => first.result.current.onSetOpen('a', true));
+    expect(first.result.current.opened).toBe(before);
+    act(() => first.result.current.onSetOpen('a', false));
+    expect(first.result.current.opened.has('a')).toBe(false);
+    first.unmount();
+
+    const reloaded = renderHook(() => useOpenedPages('k1', 'a'));
+    expect(reloaded.result.current.opened.has('a')).toBe(false);
+    act(() => reloaded.result.current.onSetOpen('a', true));
+    expect(reloaded.result.current.opened.has('a')).toBe(true);
+    reloaded.unmount();
+    expect(renderHook(() => useOpenedPages('k1', 'a')).result.current.opened.has('a')).toBe(true);
+  });
 });

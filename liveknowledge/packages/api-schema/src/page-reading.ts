@@ -10,6 +10,8 @@ export type ReadingAudience = 'everyone' | 'people';
 export type PageReadingPerson = {
   id: string;
   name: string;
+  /** Their presence colour, as their avatar and cursor wear it; absent when no name is known. */
+  color?: string;
   /** When they confirmed this round; absent: not yet. */
   readAt?: number;
   /** When they were last reminded of this page. */

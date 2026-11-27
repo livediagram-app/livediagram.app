@@ -35,8 +35,10 @@ the read also answers `names`, the profile name of each account the page names (
 editors, its owner and who verified it), from one profiles read, so a reader outside the team names them as a member
 does. It answers `colors` too, each of those accounts' profile colour, so Page Health's foot draws a person's disc in
 the colour their avatar and Version History's dot wear, never a tint picked from their name (owner 2026-11-23: the
-foot's disc was lavender while the avatar and the dot were pink); a person with no colour, and a guest, keep the
-name's tint.
+foot's disc was lavender while the avatar and the dot were pink). Every person's disc on the page wears their presence
+colour (Work Tracker 1497): Page Health's foot, the owner and verifier rows, the top row's makers and Required
+Reading's people; where no colour came, the one Automatic picks from the name (`presenceColourOf`), never a tint of
+the knowledgebase's own. A guest keeps the guest disc.
 
 **Made by a person or an agent** (owner, 2026-11-21: badges under the title, "AI Generated" or "Human Generated" and
 "AI Edited" or "Human Edited"). Each of the two stamps also says what kind of writer made it (schema step V18):

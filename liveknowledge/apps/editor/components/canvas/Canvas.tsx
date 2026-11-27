@@ -24,7 +24,7 @@ import { imageBackingInsetAttribute } from '@liveknowledge/document';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
 import { AnimatedCanvasBackground } from '@liveworkspace/workbench/components/canvas/AnimatedCanvasBackground';
-import { canvasCursorClass } from '@/lib/canvas-chrome';
+import { canvasCursorClass, pageGroundCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
@@ -247,6 +247,8 @@ function CanvasView(props: CanvasProps) {
     spaceHeld,
     isPaintMode,
   });
+  // The page's ground (its margins, its cover, the room round it) wears the plain cursor outside a drawing being edited.
+  const groundCursor = pageGroundCursorClass(cursorClass, { drawingZone, canvasTool });
 
   // Stable selection-routing wrappers for the memo'd element / arrow
   // views — see useCanvasSelectHandlers.
@@ -366,7 +368,7 @@ function CanvasView(props: CanvasProps) {
             // bottom-right cluster, the Map) rode up the screen by every scroll and stayed there. A
             // clipped box clips the same and can never scroll (docs/specs/008-canvas/canvas-and-palette.md).
             className={`relative flex-1 select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
-              pendingDraw ? '' : cursorClass
+              pendingDraw ? '' : groundCursor
             }`}
             style={canvasMainStyle({
               tabBackgroundPattern,
@@ -429,7 +431,7 @@ function CanvasView(props: CanvasProps) {
                   // box itself is never something to scroll to. The ground's cursor is the plain one outside a drawing
                   // being edited: the page has no marquee to promise.
                   className={`absolute inset-x-0 top-0 origin-center ${
-                    pendingDraw ? '' : drawingZone ? cursorClass : 'cursor-default'
+                    pendingDraw ? '' : groundCursor
                   }`}
                   // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The
                   // white under a picture"): an attribute the stylesheet reads for the pictures alone, so no picture

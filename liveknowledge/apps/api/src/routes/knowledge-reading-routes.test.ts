@@ -14,6 +14,7 @@ vi.mock('../email/client', async (original) => ({
 }));
 
 import type { TeamPerson } from '@liveworkspace/auth-client';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
 import {
   READING_CHANGES_PER_MINUTE,
   READING_PEOPLE_MAX,
@@ -41,14 +42,18 @@ const EMAIL_ON = {
   EMAIL: { send: vi.fn(async () => ({ messageId: 'm' })) } as unknown as SendEmail,
   APP_BASE_URL: 'https://app.test',
 };
-const member = (userId: string, name: string): TeamPerson => ({
+const member = (userId: string, name: string, color: string | null = null): TeamPerson => ({
   id: `m-${userId}`,
   userId,
   email: `${userId}@x.test`,
   name,
+  color,
   role: 'member',
   status: 'joined',
 });
+// Priya chose pink; Olu and Vic are on Automatic, so they wear the colour their name picks.
+const PINK = '#ec4899';
+const auto = (name: string) => automaticPresenceColour(name).value;
 
 let kit: Kit;
 let fake: FakeAccounts;
@@ -82,9 +87,13 @@ async function start(env: object = EMAIL_ON) {
   fake = stubAccounts();
   kit = await knowledgeKit(env);
   kit.db.sql.prepare(`UPDATE document SET team_id = ? WHERE id = 'kb'`).run(TEAM);
-  fake.teams.set(TEAM, [member(OWNER, 'Olu'), member('user_p', 'Priya'), member('user_v', 'Vic')]);
+  fake.teams.set(TEAM, [
+    member(OWNER, 'Olu'),
+    member('user_p', 'Priya', PINK),
+    member('user_v', 'Vic'),
+  ]);
   for (const id of [OWNER, 'user_p', 'user_v']) fake.emails.set(id, `${id}@x.test`);
-  fake.profiles.set('user_p', profileOf('user_p', 'Priya', null));
+  fake.profiles.set('user_p', profileOf('user_p', 'Priya', PINK));
   vi.mocked(sendEmail).mockClear();
 }
 
@@ -195,9 +204,9 @@ describe('pages/:tab/reading', () => {
     await act('viewer', 'confirm');
     const editor = await read('editor');
     expect(editor.people).toEqual([
-      { id: OWNER, name: 'Olu' },
-      { id: 'user_p', name: 'Priya' },
-      { id: 'user_v', name: 'Vic', readAt: T0 },
+      { id: OWNER, name: 'Olu', color: auto('Olu') },
+      { id: 'user_p', name: 'Priya', color: PINK },
+      { id: 'user_v', name: 'Vic', color: auto('Vic'), readAt: T0 },
     ]);
     for (const who of ['participant', 'viewer', 'link', 'agent'] as const) {
       const body = await read(who);
@@ -217,7 +226,8 @@ describe('pages/:tab/reading', () => {
     expect(await res.json<PageReadingResponse>()).toMatchObject({
       progress: { done: 0, total: 1 },
       chosen: ['user_p'],
-      people: [{ id: 'user_p', name: 'Priya' }],
+      // Chosen people are named and coloured from their profile.
+      people: [{ id: 'user_p', name: 'Priya', color: PINK }],
     });
     expect((await read('viewer')).mine).toEqual({ asked: false });
     const refused = await act('viewer', 'confirm');
@@ -232,6 +242,8 @@ describe('pages/:tab/reading', () => {
     fake.profiles.set('user_z', profileOf('user_z', 'Zed', null));
     await require('editor', { audience: 'people', people: ['user_z', 'user_q'] });
     expect((await read('editor')).people?.map((p) => p.name)).toEqual(['Zed', 'Someone']);
+    // Zed wears his profile's colour (Automatic, from his name); nobody named has none, and the editor picks one.
+    expect((await read('editor')).people?.map((p) => p.color)).toEqual([auto('Zed'), undefined]);
   });
 
   it.each(['link', 'edit-link', 'page-edit-link', 'agent', 'viewer-agent'] as const)(

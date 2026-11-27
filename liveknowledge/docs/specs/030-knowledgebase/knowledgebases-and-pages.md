@@ -68,7 +68,9 @@ Web](publishing.md)): its "public site", never its "Public".
   [Sidebar width](../../../../liveworkspace/docs/specs/011-workbench/sidebar-width.md). A title still cut off shows
   whole in a tooltip on hover and on keyboard focus. The knowledgebase's name at its head (its menu's
   button, "The knowledgebase's menu"), then the pages. Rows indent 20 px a level, and a page with subpages has a chevron.
-  Pages start closed, so a knowledgebase loads showing only its top-level pages; a page the reader opens stays open,
+  Pages start closed but the first, so a knowledgebase loads showing its top-level pages and, when the first page has
+  subpages, those too, so a reader sees its categories at once (Work Tracker 1489). The first page stays open until the
+  reader closes it, and then stays closed for them; a page the reader opens stays open,
   kept per browser, per knowledgebase (a viewer's own, never written to the knowledgebase, so one reader's tree never
   changes another's). The current page's ancestors are always open, so a page opened by its link shows where it is.
   A page the reader makes or moves under another opens the pages above it, and they stay open: Add Subpage, a page
