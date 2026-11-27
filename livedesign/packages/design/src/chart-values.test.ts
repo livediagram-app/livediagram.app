@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { glyphWidth } from './label-box';
 import { barMarks, lineMarks, pieMarks } from '@liveworkspace/element-model/chart-marks';
 import {
+  barCategoryLabels,
   barValueLabels,
   chartValueFontPx,
   lineValueLabels,
@@ -47,7 +48,8 @@ describe('value labels', () => {
     const values = labels.filter((l) => !l.category);
     expect(values.map((l) => l.text)).toEqual(['120k', '135k', '160k']);
     values.forEach((l, i) => expect(l.y).toBeLessThan(marks.bars[i]!.y));
-    const names = labels.filter((l) => l.category);
+    expect(labels.some((l) => l.category)).toBe(false);
+    const names = barCategoryLabels(marks, months, false, 11);
     expect(names.map((l) => l.text)).toEqual(['Jul', 'Aug', 'Sep']);
     names.forEach((l) => expect(l.y).toBeGreaterThan(marks.baseline.y1));
   });
@@ -58,7 +60,8 @@ describe('value labels', () => {
       value: 10 + i,
     }));
     const marks = barMarks({ x: 0, y: 0, w: 300, h: 200 }, regions, false);
-    const names = barValueLabels(marks, regions, false, 12).filter((l) => l.category);
+    const names = barCategoryLabels(marks, regions, false, 12);
+    expect(names).toHaveLength(regions.length);
     const slot = (marks.baseline.x2 - marks.baseline.x1) / regions.length;
     for (const n of names) {
       expect(glyphWidth(n.text, 12)).toBeLessThanOrEqual(slot);
@@ -76,17 +79,25 @@ describe('value labels', () => {
     const [up, down] = labels.filter((l) => !l.category);
     expect(up!.y).toBeLessThan(marks.bars[0]!.y);
     expect(down!.y).toBeGreaterThan(marks.bars[1]!.y + marks.bars[1]!.h);
-    for (const name of labels.filter((l) => l.category)) expect(name.y).toBeGreaterThan(down!.y);
+    for (const name of barCategoryLabels(marks, mixed, false, 12))
+      expect(name.y).toBeGreaterThan(down!.y);
 
     const across = barValueLabels(barMarks(area, mixed, true), mixed, true, 12);
     expect(across[1]!.anchor).toBe('end');
   });
 
-  it('puts a bar value after each bar, and no names', () => {
-    const marks = barMarks(area, months, true);
+  it('puts a bar value after each bar, and its name left of the plot, beside the bar', () => {
+    const marks = barMarks(area, months, true, 0, 0, false, 11);
     const labels = barValueLabels(marks, months, true, 12);
     expect(labels.every((l) => !l.category && l.anchor === 'start')).toBe(true);
     labels.forEach((l, i) => expect(l.x).toBeGreaterThan(marks.bars[i]!.tip.x));
+    const names = barCategoryLabels(marks, months, true, 11);
+    expect(names.map((l) => l.text)).toEqual(['Jul', 'Aug', 'Sep']);
+    names.forEach((n, i) => {
+      expect(n.anchor).toBe('end');
+      expect(n.x).toBeLessThan(marks.floor);
+      expect(Math.abs(n.y - marks.bars[i]!.tip.y)).toBeLessThan(11);
+    });
   });
 
   it('reads a pie as percentages when it adds up to 100, and skips empty wedges', () => {
@@ -115,9 +126,32 @@ describe('value labels', () => {
       { name: 'Paid', values: [100, 130] },
     ];
     const marks = lineMarks(area, ['W1', 'W2'], series, 'line');
-    const labels = lineValueLabels(marks, series);
-    expect(labels.map((l) => l.text)).toEqual(['1,000', '1,200', '100', '130']);
-    expect(labels[0]!.y).toBeLessThan(marks.points[0]![0]!.y);
+    const labels = lineValueLabels(marks, series, 12);
+    expect(labels.map((l) => l.text).sort()).toEqual(['1,000', '1,200', '100', '130']);
+    expect(labels.find((l) => l.text === '1,000')!.y).toBeLessThan(marks.points[0]![0]!.y);
+  });
+
+  it('thins a long line’s numbers to its end, its extremes and what fits without overprinting', () => {
+    const values = Array.from({ length: 40 }, (_, i) => 100 + i * 5);
+    const series = [{ name: 'Daily', values }];
+    const cats = values.map((_, i) => `D${i}`);
+    const marks = lineMarks(area, cats, series, 'line');
+    const labels = lineValueLabels(marks, series, 12);
+    expect(labels.length).toBeLessThan(values.length);
+    // The end first, then the highest and the lowest.
+    expect(labels[0]!.text).toBe('295');
+    expect(labels[0]!.x).toBeLessThanOrEqual(marks.points[0]![39]!.x);
+    const texts = labels.map((l) => l.text);
+    expect(texts).toContain('295');
+    expect(texts).toContain('100');
+    const half = (t: string) => glyphWidth(t, 12) / 2;
+    for (let a = 0; a < labels.length; a++)
+      for (let b = a + 1; b < labels.length; b++) {
+        const [p, q] = [labels[a]!, labels[b]!];
+        const apart =
+          Math.abs(p.x - q.x) >= half(p.text) + half(q.text) || Math.abs(p.y - q.y) >= 14;
+        expect(apart).toBe(true);
+      }
   });
 
   it('sizes the numbers a step under the key, never under 9px', () => {
@@ -145,10 +179,11 @@ describe('Show Values in an export', () => {
     ],
   });
 
-  it('prints the numbers and names only when asked', () => {
+  it('prints the numbers only when asked, and always names the columns', () => {
     const on = renderElementsToSvg(tab(true), {});
     expect(on).toContain('>120k<');
-    expect(on).toContain('>Jul<');
-    expect(renderElementsToSvg(tab(false), {})).not.toContain('>120k<');
+    const off = renderElementsToSvg(tab(false), {});
+    expect(off).not.toContain('>120k<');
+    expect(off).toContain('>Jul<');
   });
 });

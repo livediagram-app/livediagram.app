@@ -97,6 +97,7 @@ function collector(reader: OfflineReader) {
           description: a.description,
           assignee: { userId: a.assigneeUserId, name: a.assigneeName },
           assigner: { id: a.assignerId, name: a.assignerName },
+          ...(a.due ? { due: a.due } : {}),
           createdAt: a.createdAt,
           updatedAt: a.updatedAt,
           assignedToMe,

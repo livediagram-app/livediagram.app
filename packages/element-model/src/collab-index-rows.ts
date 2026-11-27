@@ -52,6 +52,8 @@ export type CollabActionRow = {
   assignerId: string;
   assignerName: string | null;
   teamId: string | null;
+  // Its due day ('2026-12-03'), which its Inbox row says; absent when it has none.
+  due?: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -133,6 +135,7 @@ function collabIndexRows<E extends { id: string }>(
         assignerId: action.assignerId,
         assignerName: action.assignerName ?? null,
         teamId: action.teamId ?? null,
+        ...(action.due ? { due: action.due } : {}),
         createdAt: action.createdAt,
         updatedAt: action.updatedAt,
       });

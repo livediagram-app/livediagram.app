@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canvasCursorClass, computeDockAnchor } from './canvas-chrome';
+import { canvasCursorClass, computeDockAnchor, pageGroundCursorClass } from './canvas-chrome';
 
 describe('computeDockAnchor', () => {
   const canvas = { left: 0, top: 0, width: 1000 };
@@ -129,5 +129,21 @@ describe('canvasCursorClass', () => {
   });
   it('falls back to grab', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'x' })).toBe('cursor-grab');
+  });
+});
+
+describe('pageGroundCursorClass (Work Tracker 1490)', () => {
+  it('is the plain cursor round a page with Select in hand, read or edited', () => {
+    expect(
+      pageGroundCursorClass('cursor-crosshair', { drawingZone: false, canvasTool: 'select' }),
+    ).toBe('cursor-default');
+  });
+  it("keeps the canvas's cursor in a drawing being edited, or with another tool in hand", () => {
+    expect(
+      pageGroundCursorClass('cursor-crosshair', { drawingZone: true, canvasTool: 'select' }),
+    ).toBe('cursor-crosshair');
+    expect(pageGroundCursorClass('cursor-grab', { drawingZone: false, canvasTool: 'pan' })).toBe(
+      'cursor-grab',
+    );
   });
 });

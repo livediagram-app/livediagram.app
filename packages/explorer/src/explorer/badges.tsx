@@ -7,7 +7,7 @@
 import { memo, type MouseEvent } from 'react';
 import { BrandGlyph } from '@liveworkspace/brand';
 import type { App, CardColumn, Item } from '@liveworkspace/index-client';
-import { Chip } from '@liveworkspace/ui';
+import { Chip, Tooltip } from '@liveworkspace/ui';
 import {
   FolderOutlineIcon,
   PrivateBadgeGlyph,
@@ -117,21 +117,48 @@ export const CardStatusChip = memo(function CardStatusChip({
   );
 });
 
-/** An item an AI tool made through MCP (its source is `ai`): what the Made by AI filter reads, shown. */
-export function MadeByAiBadge({ item }: { item: Pick<Item, 'source'> }) {
-  return item.source === 'ai' ? <MadeByAiChip /> : null;
+/** An item an AI tool made through MCP (its source is `ai`): what the Made by AI filter reads, shown. `iconOnly` where
+ *  room is tight (Home's Most Used and Shared With You Recently, Work Tracker 1494). */
+export function MadeByAiBadge({
+  item,
+  iconOnly = false,
+}: {
+  item: Pick<Item, 'source'>;
+  iconOnly?: boolean;
+}) {
+  return item.source === 'ai' ? <MadeByAiChip iconOnly={iconOnly} /> : null;
 }
 
-/** The Made by AI chip, wherever something an AI tool made is shown: an item, or a picture in the Image Gallery. */
-export function MadeByAiChip() {
+const MADE_BY_AI = 'Made by AI';
+const MADE_BY_AI_TONE =
+  'bg-violet-50 text-violet-700 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/30';
+
+/** The Made by AI chip, wherever something an AI tool made is shown: an item, or a picture in the Image Gallery.
+ *  Icon only, it is the sparkle in the same violet disc, named "Made by AI" for a screen reader and in its tooltip. */
+export function MadeByAiChip({ iconOnly = false }: { iconOnly?: boolean }) {
+  if (iconOnly) {
+    return (
+      <Tooltip label={MADE_BY_AI}>
+        <span
+          role="img"
+          aria-label={MADE_BY_AI}
+          data-made-by-ai=""
+          data-made-by-ai-icon=""
+          className={`inline-flex size-[18px] shrink-0 items-center justify-center rounded-full ${MADE_BY_AI_TONE}`}
+        >
+          <SparkleIcon size={10} />
+        </span>
+      </Tooltip>
+    );
+  }
   return (
     <Chip
       data-made-by-ai=""
       title="Made by AI: an AI tool made it."
       icon={<SparkleIcon size={10} />}
-      className="bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/30"
+      className={`px-2 py-0.5 text-[10px] font-semibold ${MADE_BY_AI_TONE}`}
     >
-      Made by AI
+      {MADE_BY_AI}
     </Chip>
   );
 }

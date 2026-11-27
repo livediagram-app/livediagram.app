@@ -39,6 +39,7 @@ import { useWorkbenchSession } from '@/components/providers/workbench-session-co
 import { useInsertCanvasProps } from './editor-canvas-host/useInsertCanvasProps';
 import { usePanelCanvasProps } from './editor-canvas-host/usePanelCanvasProps';
 import { useEditCanvasProps } from './editor-canvas-host/useEditCanvasProps';
+import { useShownLayoutElements } from '@/hooks/editor/page-layout-place';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -205,7 +206,9 @@ export function EditorCanvasHost() {
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
   // A presented slide less the builds still to come (presentation-mode.md "Builds"); the step's own elements play in.
-  const shownElements = presentedElements ?? activeTab.elements;
+  // A hovered layout (Work Tracker 1502) is drawn through this same path as the placed page it previews.
+  const layoutShown = useShownLayoutElements(activeTab.id);
+  const shownElements = presentedElements ?? layoutShown ?? activeTab.elements;
   useBuildEntrance(buildEntrance, canvasMainRef);
   // A presented slide shows nobody else's selection, as it shows nobody else's cursor.
   const remoteSelectionsShown = shownRemoteSelections(

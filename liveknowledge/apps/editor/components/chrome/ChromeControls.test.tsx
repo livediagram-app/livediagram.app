@@ -67,3 +67,13 @@ describe('ChromeControls History', () => {
     expect(controls()).toEqual(['Tools', 'Settings', 'Notifications']);
   });
 });
+
+describe('ChromeControls on a phone', () => {
+  // Work Tracker 1508 (editor-app.md "Tab bar"): a phone's bar gives the tabs the room of the bell and the light /
+  // dark switch, so the pair is hidden there; with no bell on screen a leaving toast fades where it is.
+  it('hides the bell and the appearance as one pair under the phone variant', () => {
+    render(<Bar />);
+    const bell = screen.getByRole('button', { name: /^Notifications/ });
+    expect(bell.closest('[class~="phone:hidden"]')).not.toBeNull();
+  });
+});

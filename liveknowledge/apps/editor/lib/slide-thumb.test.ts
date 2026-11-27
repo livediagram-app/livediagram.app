@@ -33,7 +33,7 @@ describe('slideThumbFor', () => {
     const chart = {
       id: 'c',
       type: 'shape',
-      shape: 'bar-chart',
+      shape: 'pie-chart',
       x: 0,
       y: 0,
       width: 300,

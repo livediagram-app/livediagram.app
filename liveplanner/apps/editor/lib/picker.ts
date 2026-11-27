@@ -6,9 +6,14 @@ import type { Participant } from './identity';
 export {
   PICKER_SPIN_MS,
   pickerCandidates,
+  pickerOffer,
   rollPicker,
   spinFrameDelays,
   spinReel,
+  undrawnCandidates,
+  withDraw,
+  withRoundCleared,
+  type PickerOffer,
 } from '@liveworkspace/workbench/lib/picker';
 
 export type PickerCandidate = Candidate<Participant>;

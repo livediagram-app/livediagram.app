@@ -30,7 +30,9 @@ Banned: "zone" in code, "group".
   washes, which is how depth reads; nothing is derived or stored. A stored `fillColor` paints instead.
 - **Layout** (`boundaryLayout(w, h, { style, icon, titleChars, meta })`), element-relative:
   - `tab`: a tab filled with the accent (title and icon in `labelOn(accent)`), of height 26 centred on the top edge (y = -13) from x = 14, its width the icon (16 + 6) plus the
-    title's estimated width (`ceil(chars * 14 * 0.66) + 6`) plus 10 a side, capped at `w - 28`; the meta line inside the
+    title's width plus 10 a side, capped at `w - 28`. On the canvas the width is `titleWidth`, measured bold at 14 px in
+    the tab's font on a 2D canvas (`ceil(width) + 2`), again on each `useFontEpoch` bump so a webfont that lands late
+    (Marker's) never leaves a fallback-face width behind; an export estimates it (`ceil(chars * 14 * 0.66) + 6`). The meta line inside the
     top-left corner below the tab (y = 20, height 18).
   - `inset`: icon and title at (12, 10), height 22, title px 13; meta after the title on the same line.
   - `c4`: title bold at (12, h - 46), height 22, meta below at (12, h - 26), height 18; no icon.

@@ -257,6 +257,7 @@ export type EditorContextMenuProps = {
   onSetRevealed?: (revealed: boolean) => void;
   onSetPickerSource: (source: import('@livediagram/document').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
+  onSetPickerRemoveDrawn: (on: boolean) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
   onSetReaction: (reaction: import('@livediagram/document').Reaction) => void;
   // The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130). The temperature

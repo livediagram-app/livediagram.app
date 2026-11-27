@@ -10,7 +10,7 @@ import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { ConnectViewIcon } from '@/components/ask/ask-icons';
 import { KnowledgeViewHeader } from '@/components/ask/KnowledgeViewFrame';
 import { useAskSession, type AskSession } from '@/components/ask/useAskSession';
-import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
+import { showInsightsTopic } from '@/lib/knowledge-ask/insights-topic';
 import {
   connectApps,
   keepConnectApp,
@@ -66,7 +66,7 @@ function ConnectSteps({ session }: { session: AskSession }) {
   const app = apps.find((a) => a.id === picked) ?? apps[0]!;
   const { status, agents, checkNow } = useConnectStatus(who, documentId, true);
   const role = connectRole(rights);
-  const openAgents = () => showKnowledgeView('insights');
+  const openAgents = () => showInsightsTopic('agents');
   const pick = (id: ConnectAppId) => {
     setPicked(id);
     keepConnectApp(id);

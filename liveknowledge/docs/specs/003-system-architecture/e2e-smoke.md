@@ -300,8 +300,9 @@ takes an earlier moment from `X-E2E-Verified-At` (`verifyMoment`), so a spec can
 A signed-in asker with no knowledgebase key asks accounts whose AI key applies, over the api's `ACCOUNTS` service
 binding only ([AI keys](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md)). With nothing behind that
 binding the answer is "unavailable", and Ask refuses rather than guess. So the stack runs a Worker under the
-accounts Worker's name (the root's `scripts/e2e-stack/accounts-worker`) in its own wrangler dev registry, one port
-above the api (`E2E_ACCOUNTS_WORKER_PORT`): it checks the api's client credentials and answers that no team or
+accounts Worker's name (the root's `scripts/e2e-stack/accounts-worker`) in its own wrangler dev registry, on the
+first port above the api that no other service of the stack uses, so the index never collides with it
+(`E2E_ACCOUNTS_WORKER_PORT` names another): it checks the api's client credentials and answers that no team or
 personal key applies, so Ask runs on built-in AI as it does deployed with none set.
 
 A new browser-risky feature adds one focused spec file here (or a case in the

@@ -9846,6 +9846,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "One person in a page's audience, as an Editor or the page's owner sees them.",
     "properties": {
+      "color": {
+        "description": "Their presence colour, as their avatar and cursor wear it; absent when no name is known.",
+        "type": "string"
+      },
       "id": {
         "type": "string"
       },

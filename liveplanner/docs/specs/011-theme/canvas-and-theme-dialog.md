@@ -347,7 +347,8 @@ The dialog is the one every editor shares ([Tab Style dialog](../../../../livewo
 `apps/editor/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
 (`apps/editor/components/dialogs/tab-style-profile.tsx`), and the profile decides what it shows. The editor names the
 **surface** as it opens the dialog, and the profile tailors the dialog to it: each kind of tab shows only the
-controls that change what it draws, says so in its header, and links to the settings that really style it.
+controls that change what it draws, says so in its header, and links to the settings that really style it (a
+Sheet's, a Form's and a Dashboard's; a board's Configure has its own button).
 
 - **Surfaces.** The active tab's kind: `board`, `sheet`, `form` or `dashboard`, and `canvas` for a diagram tab.
 - **A diagram tab** (`canvas`, the base): all four panels, every control, every look, the sample diagram as the
@@ -359,8 +360,9 @@ controls that change what it draws, says so in its header, and links to the sett
   Text, which reaches the board's cards ([Fonts](../004-interface-design/fonts.md)). The preview, on this and every
   plan kind below, is a small board (`apps/editor/lib/board-preview.ts`: three columns of alike cards under their
   names, each column's bar in the next of the theme's colours on a multi-colour theme as a real board's are,
-  [Columns in the theme's colours](../026-plan/plan-board.md)), drawn by the export renderer. Fine-tune ends with a **Board
-  Configure** row ("Columns, cards and density"), which closes the dialog and opens the board's Configure.
+  [Columns in the theme's colours](../026-plan/plan-board.md)), drawn by the export renderer. Fine-tune has no settings
+  row on a board: the bottom-right cluster's **Board** button (Configure Board) is the one way into the board's Configure, so a
+  second entry here would only repeat it.
 - **A Sheet tab** (`sheet`). The sheet fills the tab with an opaque surface, the canvas showing only in the narrow rim
   round it: the Canvas panel keeps the static patterns, the canvas colour and Opacity, without Size, Speed or the
   pattern colour; the looks are the calm ones; Size of New Text is not offered (cells are a fixed 13 px, and the tab

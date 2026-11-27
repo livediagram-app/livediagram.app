@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, TextInput, Switch } from '@liveknowledge/ui';
+import { Button, DialogCloseButton, TextInput, Switch } from '@liveknowledge/ui';
 import {
   ACTION_STATUSES,
   ACTION_STATUS_LABELS,
@@ -232,16 +232,10 @@ export function AssignActionDialog({
             >
               {editing ? 'Edit Action' : 'Assign an Action'}
             </h2>
-            <div className="-mr-1.5 -mt-0.5 flex items-center gap-0.5">
+            {/* Pulled 8px up and down: the 44px close centres on the title's 28px line. */}
+            <div className="-my-2 flex shrink-0 items-center gap-1">
               <HelpArticleLink article="assignedActions" variant="icon" />
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                <CloseIcon size={14} />
-              </button>
+              <DialogCloseButton onClick={onClose} />
             </div>
           </div>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">

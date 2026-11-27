@@ -227,6 +227,17 @@ describe('the view tabs', () => {
     expect(nav.querySelector('[data-open]')?.getAttribute('data-knowledge-view-tab')).toBe('ask');
   });
 
+  // insights.md "A topic's page": the tab always leads to the dashboard, and on a topic's page goes back to it.
+  it('leave an Insights topic out of every address, and take Insights back to its dashboard', () => {
+    window.history.replaceState(null, '', '/document/d1?view=insights&topic=health&show=x#t=p1');
+    renderInEditor(<KnowledgeViewTabs />);
+    expect(link('Insights').getAttribute('href')).toBe('/document/d1?view=insights#t=p1');
+    expect(link('Ask').getAttribute('href')).toBe('/document/d1?view=ask#t=p1');
+    fireEvent.click(link('Insights'));
+    expect(window.location.search).toBe('?view=insights');
+    expect(link('Insights').getAttribute('aria-current')).toBe('page');
+  });
+
   it('in a knowledgebase kept Offline, keep Ask, Insights and Connect but quiet, going nowhere, saying why with Sync', async () => {
     offline.on = true;
     window.history.replaceState(null, '', '/document/d1#t=p1');

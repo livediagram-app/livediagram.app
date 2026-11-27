@@ -2,7 +2,10 @@
 // folders, its newest few items and how many it holds, for the card's mosaic and its "N folders · N plans" line.
 // One D1 batch whatever the number of folders: the newest items come from each folder's own index walk (LIMIT 4),
 // and the count stops at FOLDER_COUNT_CAP, so a folder of 100,000 items costs what one of a thousand does. Subfolders
-// the client already holds (it lists every folder), so they are not counted here.
+// the client already holds (it lists every folder), so they are not counted here. A third statement counts each app's
+// items through the folder's whole subtree (the folder badges, liveworkspace/docs/specs/004-index/one-explorer.md
+// "What a folder holds, at a glance"): every app whatever the filter, in the folder's scope only, at most
+// FOLDER_COUNT_CAP items a folder, so a deep tree costs what one of a thousand items does.
 
 import {
   FOLDER_PREVIEW_COUNT_CAP,
@@ -23,12 +26,13 @@ const IN_JSON = 'IN (SELECT value FROM json_each(?))';
 
 export type BuiltQuery = { sql: string; args: unknown[] };
 
-/** The two statements of one previews read: the newest items per folder, and each folder's (capped) count. */
+/** The three statements of one previews read: the newest items per folder, each folder's (capped) count, and each
+ *  app's count through its subtree. */
 export function folderPreviewQueries(
   person: Person,
   folderIds: string[],
   app: App | null,
-): { items: BuiltQuery; counts: BuiltQuery } {
+): { items: BuiltQuery; counts: BuiltQuery; apps: BuiltQuery } {
   const ids = JSON.stringify(folderIds);
   const scopes = JSON.stringify(scopesOf(person));
   const appWhere = app ? 'AND x.app = ?' : '';
@@ -50,6 +54,20 @@ export function folderPreviewQueries(
         FROM (${folders}) f`,
       args: [...appArgs, ids, scopes],
     },
+    apps: {
+      // Each reached folder and every folder under it (folders_parent, a step per level; UNION drops a repeat), then
+      // per folder at most the cap of its subtree's live items in its scopes (items_folder), grouped by app. An app
+      // acting for a person counts its own app's alone.
+      sql: `WITH RECURSIVE roots(id) AS (${folders}),
+        tree(root, id) AS (SELECT id, id FROM roots
+          UNION SELECT t.root, c.id FROM folders c JOIN tree t ON c.parent_id = t.id)
+        SELECT r.id AS folder_id, i.app AS app, COUNT(*) AS n FROM roots r JOIN items i ON i.id IN (
+          SELECT x.id FROM tree t CROSS JOIN items x INDEXED BY items_folder ON x.folder_id = t.id
+          WHERE t.root = r.id AND x.trashed_at IS NULL AND x.scope ${IN_JSON} ${person.app ? 'AND x.app = ?' : ''}
+          LIMIT ${FOLDER_PREVIEW_COUNT_CAP})
+        GROUP BY r.id, i.app`,
+      args: [ids, scopes, scopes, ...(person.app ? [person.app] : [])],
+    },
   };
 }
 
@@ -62,14 +80,23 @@ export async function folderPreviews(
   if (folderIds.length === 0) return [];
   const q = folderPreviewQueries(person, folderIds, app);
   const db = env.INDEX_DB;
-  const [items, counts] = (await db.batch([
+  const [items, counts, apps] = (await db.batch([
     db.prepare(q.items.sql).bind(...q.items.args),
     db.prepare(q.counts.sql).bind(...q.counts.args),
-  ])) as [D1Result<ItemRow>, D1Result<{ folder_id: string; n: number }>];
+    db.prepare(q.apps.sql).bind(...q.apps.args),
+  ])) as [
+    D1Result<ItemRow>,
+    D1Result<{ folder_id: string; n: number }>,
+    D1Result<{ folder_id: string; app: App; n: number }>,
+  ];
   const decorated = await decorate(env, person, items.results);
   const byFolder = new Map<string, FolderPreview>();
   for (const row of counts.results) {
-    byFolder.set(row.folder_id, { folderId: row.folder_id, itemCount: row.n, items: [] });
+    byFolder.set(row.folder_id, { folderId: row.folder_id, itemCount: row.n, items: [], apps: {} });
+  }
+  for (const row of apps.results) {
+    const preview = byFolder.get(row.folder_id);
+    if (preview?.apps) preview.apps[row.app] = row.n;
   }
   for (const item of decorated) {
     if (item.folderId) byFolder.get(item.folderId)?.items.push(item);

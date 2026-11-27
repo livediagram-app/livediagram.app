@@ -1,5 +1,6 @@
 // What the page panel can do to a Pages tab's pages (docs/specs/007-editor/pages-mode.md), as pageEdits
 // (page-edits.ts) builds it. Split out of page-edits.ts, which re-exports it.
+import type { LayoutPreviewAsk } from './layout-preview-settle';
 import type {
   PageBackground,
   PageKind,
@@ -58,6 +59,9 @@ export type PageEdits = BackgroundCopyEdits & {
   // anything to replace).
   // Resolves once the layout is placed (its builders load on the first apply).
   applyLayout: (pageId: string, layout: PageLayoutId) => Promise<void>;
+  // A layout tile hovered: the page drawn with the layout placed, exactly as applyLayout lands it (the canvas draws
+  // it in place of the tab's elements, writing nothing); null puts it back.
+  previewLayout: (pageId: string, layout: PageLayoutId | null, how?: LayoutPreviewAsk) => void;
   // How many elements are on the page.
   contentCount: (pageId: string) => number;
   // A fill hovered in the panel: what is on the page drawn re-inked as the press would re-ink it

@@ -269,7 +269,7 @@ export function PickerCard() {
       <Label x={182} y={103} size={16} weight={700} tone="strong">
         Priya
       </Label>
-      <Button x={166} y={124} w={68} h={20} label="Again" variant="ghost" />
+      <Button x={166} y={124} w={68} h={20} label="Spin Again" variant="ghost" />
       <Label x={200} y={168} anchor="middle" size={11} tone="muted">
         It slows to a stop, and everyone sees the same answer.
       </Label>

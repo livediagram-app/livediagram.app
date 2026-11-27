@@ -22,7 +22,9 @@ follow each other.
     before it. The cloud-vendor look.
     The tab hugs its title: on the canvas its width is the title's measured width, as it is being typed, so it grows
     with each key instead of wrapping until the edit ends (owner, 2026-11-19); an export without a DOM estimates it
-    from the title's characters.
+    from the title's characters. It is measured in the face the title draws in, so it measures again as each webfont
+    lands: a finish's own font (Marker's Shantell Sans) arrives after first paint, and a title measured in the
+    fallback face while it loads would wrap a word in the real one ("Speaking" under Marker, 2026-11-27).
   - **Inset**: the title inside the top-left corner in the accent's colour, with the icon before it and the meta
     line after it. The look for a zone nested in another, so the titles do not stack up on the edges.
   - **C4**: no tab; the title bold in the bottom-left corner with the meta line under it in brackets

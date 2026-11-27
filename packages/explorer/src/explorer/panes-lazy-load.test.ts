@@ -64,12 +64,17 @@ describe('Offline, Details and the lens’s chips', () => {
     expect(importsOf('explorer/Lens')).toEqual([]);
     expect(importsOf('explorer/DetailsView')).toEqual([]);
     expect(importsOf('explorer/ThisBrowserPane')).toEqual([]);
+    // The Trash's view and Archived's band (Work Tracker 1492) pushed /explorer over its budget as static imports.
+    expect(importsOf('explorer/TrashPane')).toEqual([]);
+    expect(importsOf('explorer/ShelfIntro')).toEqual([join(src, 'explorer/TrashPane.tsx')]);
   });
 
   it('each loads from its own chunk', () => {
     expect(read('lazy-lens.tsx')).toContain("import('./Lens')");
     expect(read('lazy-panes.ts')).toContain("import('./DetailsView')");
     expect(read('lazy-panes.ts')).toContain("import('./ThisBrowserPane')");
+    expect(read('lazy-panes.ts')).toContain("import('./TrashPane')");
+    expect(read('lazy-panes.ts')).toContain("import('./ShelfIntro')");
   });
 
   it('the guard sees a static import', () => {

@@ -56,6 +56,7 @@
 @source inline("dark:focus:ring-brand-500/20");
 @source inline("dark:focus:ring-slate-500/30");
 @source inline("dark:from-brand-400");
+@source inline("dark:from-brand-500/20");
 @source inline("dark:from-emerald-500/15");
 @source inline("dark:from-emerald-500/20");
 @source inline("dark:from-emerald-950/50");
@@ -80,6 +81,7 @@
 @source inline("dark:ring-brand-400/50");
 @source inline("dark:ring-emerald-400/30");
 @source inline("dark:ring-emerald-500/40");
+@source inline("dark:ring-sky-400/25");
 @source inline("dark:ring-violet-500/40");
 @source inline("dark:shadow-black/20");
 @source inline("dark:stroke-brand-700");
@@ -95,3 +97,4 @@
 @source inline("dark:text-pink-950");
 @source inline("dark:text-violet-950");
 @source inline("dark:to-slate-800/60");
+@source inline("dark:via-slate-800");

@@ -155,7 +155,7 @@ browser's.
 | Held Space as a pan                | `useCanvasPanAndMarquee({ spacePan })`: false outside a drawing zone being edited       |
 | The middle button's drag           | `middleMousePan` is the drawing zone's alone; `Canvas` drops any other pan              |
 | The marquee on bare ground         | `Canvas` `pressGround`: a press deselects and starts no marquee                         |
-| The ground's crosshair cursor      | `cursor-default` on the world outside a drawing zone being edited                       |
+| The ground's crosshair cursor      | `cursor-default` round the page, Select in hand (`pageGroundCursorClass`, WI-1490)      |
 | Letters that add shapes            | `useEditorKeyboardShortcuts`: the element keys return unless `drawingZoneEditing()`     |
 | Select, Laser, Spotlight           | `useCanvasTool` reads every tool but Format as Select; no key, command or dropdown      |
 
@@ -182,8 +182,8 @@ browser's.
   editor's `isMobileViewport`) the tabs share the row at 44 px: the open tab with its short name
   (`KNOWLEDGE_VIEWS[].short`, `phone:px-3`, gone under 360 px) and Connect's X, every other tab its icon in a
   `min-w-11` square (`phone:px-0`, `KnowledgeViewTabs` `PHONE_TAB`/`PHONE_LINK`); each link keeps its full name as
-  `aria-label` and in its `HoverCard`. `ChromeControls parts="bell"` follows, and `FooterMore` holds
-  `ChromeControls parts="rest"`: a button with `aria-expanded` and a `group` named More that opens above it, kept
+  `aria-label` and in its `HoverCard`. `FooterMore` follows, holding
+  `ChromeControls` (its bell and appearance pair `phone:hidden`, CHROME_PHONE_HIDDEN_PAIR): a button with `aria-expanded` and a `group` named More that opens above it, kept
   mounted while closed (`hidden`), closed by Escape (the focus back on the button) or a press outside.
 - **The top row** is `KnowledgeTopRow`: `--knowledge-top-row` tall (`globals.css`: 3rem, 3.5rem under the `phone`
   query), white (`slate-900` dark) with a hairline under it, `leading`, its children, `trailing`, then the slot

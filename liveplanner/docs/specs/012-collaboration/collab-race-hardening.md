@@ -35,7 +35,7 @@ Six shared hazards, each answered below. Most element bugs would be one of these
   withdrawing a response, clearing and the picker's roll all go through the
   non-history `tickTabs`, as the vote does.
 - **Undo re-grafts every live collaborative field** (hazard 2). The fields a
-  press writes (`responses`, `pickerResult`) join
+  press writes (`responses`, `pickerResult`, `pickerDrawn`, `pickerRolledAt`) join
   `commentThread` and `action` in `LIVE_ELEMENT_FIELDS`, so restoring a
   snapshot keeps their present values.
 - **The save baseline follows remote ops** (hazards 3 and 4). Every applied

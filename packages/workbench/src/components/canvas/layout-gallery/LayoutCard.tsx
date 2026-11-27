@@ -86,7 +86,9 @@ export type LayoutCardProps<Id extends string> = {
   // The layout's preview, drawn once the tile comes near view.
   thumb: () => ReactNode;
   onPick: (id: Id) => void;
-  onPreview: (id: Id | null) => void;
+  // How the tile was reached travels with it: a pointer's hover, or focus (the keyboard, a press), so the host can
+  // wait for a sweeping pointer to settle and draw a focused tile at once.
+  onPreview: (id: Id | null, how?: 'pointer' | 'focus') => void;
 };
 
 /** One layout's tile; the product's own tile memoises it and draws its preview. */
@@ -120,8 +122,8 @@ export function LayoutCard<Id extends string>({
       aria-current={current ? 'true' : undefined}
       aria-label={`${label}: ${description}`}
       onClick={() => onPick(id)}
-      onPointerEnter={() => onPreview(id)}
-      onFocus={() => onPreview(id)}
+      onPointerEnter={() => onPreview(id, 'pointer')}
+      onFocus={() => onPreview(id, 'focus')}
       className={`${TILE} ${current ? TILE_PLACED : TILE_REST}`}
     >
       <span className={LIFT}>

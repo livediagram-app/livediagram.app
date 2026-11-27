@@ -58,6 +58,7 @@ import { LinkedActionBanner } from './LinkedActionBanner';
 import type { PlanContextValue } from './PlanContext';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
 import { ItemKeyTag, ItemMaximiseButton, ItemTypePill } from './ItemPanelHeaderParts';
+import { ItemStatusPill } from './ItemStatusPill';
 import { typeChoices } from './type-choices';
 import { PANEL_RESIZE_TRANSITION, panelSizeClass } from './item-panel-size';
 import { useAnimatedMaximise } from './useAnimatedMaximise';
@@ -365,7 +366,7 @@ function ItemPanelContent({
     ) : null;
 
   const header = (
-    <div className="flex min-h-12 items-center gap-2 px-4 py-2 sm:px-6">
+    <div className="flex min-h-12 min-w-0 items-center gap-2 px-4 py-2 sm:px-6">
       {/* The current card: its type picker and number, the trail's end (not a link). */}
       <ItemTypePill
         type={type}
@@ -381,6 +382,16 @@ function ItemPanelContent({
       ) : (
         <ItemKeyTag text={cardRefIn(types)(item)} />
       )}
+      {/* On a phone, the card's column, a tap from moving it (plan-board.md "status pill"). */}
+      {mobile ? (
+        <ItemStatusPill
+          item={item}
+          type={type}
+          statuses={statuses}
+          canEdit={canEdit}
+          onSave={onSave}
+        />
+      ) : null}
       {isFlagged(item) ? (
         <span
           className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
@@ -411,7 +422,7 @@ function ItemPanelContent({
       {onMaximise && !mobile ? (
         <ItemMaximiseButton maximised={maximised} onToggle={onMaximise} />
       ) : null}
-      <DialogCloseButton compact onClick={onClose} />
+      <DialogCloseButton onClick={onClose} />
     </div>
   );
 

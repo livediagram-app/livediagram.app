@@ -13,11 +13,10 @@ import { useDialogInline } from './dialog-slot';
 // ShareOfflineGate had drifted to `pt-5` and now sit 4px lower, matching the
 // rest — they are the same row and should not have been different.
 //
-// The actions are a CHILDREN SLOT rather than props because the close button
-// is not uniform: most dialogs mount the standard DialogCloseButton, but Code
-// and Chart Data use a larger round one. Which of those is right is a design
-// question, so this component carries neither opinion and renders whatever it
-// is handed.
+// The actions are a CHILDREN SLOT rather than props: a dialog hands its own
+// controls (Help, a primary button) before the one close, DialogCloseButton.
+// The slot pulls the 44px close up and down by 8px each, so its margin box is the
+// title's 28px line: it centres on the title without making the row taller.
 //
 // Headers that are a different shape keep their own markup on purpose: the
 // delete-account confirm has no close button, the password gate leads with a
@@ -48,7 +47,7 @@ export function DialogHeader({
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
         ) : null}
       </div>
-      {children ? <div className="-mt-1 flex shrink-0 items-center gap-0.5">{children}</div> : null}
+      {children ? <div className="-my-2 flex shrink-0 items-center gap-1">{children}</div> : null}
     </div>
   );
 }

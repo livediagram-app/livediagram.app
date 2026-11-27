@@ -30,6 +30,8 @@ const CANVAS_STYLESHEETS = [
   'styles/motion-media.css',
   'styles/motion-table.css',
   'styles/auth-motion.css',
+  // The Picker's reel: the spin is the element's whole moment (each product's 012-collaboration picker.md).
+  'styles/picker-face.css',
 ];
 
 describe('workbench style guards', () => {

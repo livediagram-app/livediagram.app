@@ -15,7 +15,6 @@ import {
   type LaidOutPage,
 } from '@livedocuments/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
-import { LayoutPreviewHost } from './InfographicLayoutPreview';
 import { useCurrentPageFollow } from '@/hooks/canvas/useCurrentPageFollow';
 import { usePageImageSources } from './page-image-access';
 import { PagePanel, type PagePanelTab } from './PagePanel';
@@ -152,10 +151,6 @@ export function CanvasPages({
   // The article toolbar's Style command opens the Style beside that page's cog (PageArticleButtons).
   const styleRequestFor = (pageId: string) =>
     styleRequest.pageId === pageId ? styleRequest.seq : 0;
-  // The page a layout is previewed on: its panel's, or its Layout popover's.
-  const previewed = view.layoutPreview
-    ? pages.find((p) => p.id === view.layoutPreview!.pageId)
-    : undefined;
   const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
   // What each page's sheet does, through handles that keep their identity, so a render of the row re-renders only
   // the sheets whose own props changed (canvas-performance.md "A render of the pages re-renders only the pages it
@@ -172,7 +167,12 @@ export function CanvasPages({
       setLayoutsOpenFor((was) => (isOpen ? id : was === id ? null : was)),
     requestLayouts: (id) => setLayoutsRequest((r) => ({ pageId: id, seq: (r?.seq ?? 0) + 1 })),
     applyLayout: (id, layout) => void edit?.applyLayout(id, layout),
-    previewLayout: (id, layout) => view.setLayoutPreview(layout ? { pageId: id, layout } : null),
+    // The hovered layout drawn on its page by the canvas, exactly as a press lands it (page-layout-place.ts); the view
+    // keeps which page shows one, so the page's Use a Layout invite steps aside.
+    previewLayout: (id, layout, how) => {
+      view.setLayoutPreview(layout ? { pageId: id } : null);
+      edit?.previewLayout(id, layout, how);
+    },
     setBackground: (id, patch) => edit?.setBackground(id, patch),
     setLocked: (id, locked) => edit?.setLocked(id, locked),
     choosePageKind: (id, kind) => edit?.choosePageKind(id, kind),
@@ -260,14 +260,6 @@ export function CanvasPages({
       {edit?.addPage && edit.addPageLike ? (
         <AddPageButton last={last} zoom={zoom} onAddLike={edit.addPageLike} />
       ) : null}
-      {/* The hovered layout on its page, crossfading between tiles and fading out after. */}
-      <LayoutPreviewHost
-        page={previewed}
-        layout={view.layoutPreview?.layout}
-        tabFont={view.tabFont}
-        elements={view.elements}
-        pages={view.pages}
-      />
       {open && opened && edit ? (
         <PagePanel
           // One panel per page: switching cogs starts the next page's panel afresh, its pending

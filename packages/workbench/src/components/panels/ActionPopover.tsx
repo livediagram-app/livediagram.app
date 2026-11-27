@@ -20,7 +20,7 @@ import { initialsOf } from '@liveworkspace/model-core/names';
 import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { useReposition } from '../../hooks/canvas/useReposition';
 import { useRelativeNow } from '../../lib/relative-now';
-import { actionDueWords } from '../../lib/action-due';
+import { actionDueWords } from '@liveworkspace/index-client/action-due';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '../../lib/clamp-to-viewport';
 import { elementSelector } from '../../lib/canvas-selectors';
 import { IDENTITY_FILL, identityVars } from '../../lib/identity-fill';

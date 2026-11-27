@@ -135,6 +135,7 @@ export function EditorContextMenuHost() {
     setSessionConfigSelected,
     setPickerSourceSelected,
     setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected,
     tabs,
     commitShapeColorPreset,
     previewShapeColorPreset,
@@ -358,6 +359,7 @@ export function EditorContextMenuHost() {
       onSetSession={setSessionConfigSelected}
       onSetPickerSource={setPickerSourceSelected}
       onSetPickerOptions={setPickerOptionsSelected}
+      onSetPickerRemoveDrawn={setPickerRemoveDrawnSelected}
       tabs={tabs}
       activeTabId={activeTab.id}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}

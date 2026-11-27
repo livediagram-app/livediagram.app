@@ -29,51 +29,100 @@ export type Expansion = {
 // With nothing kept: every space folded, My Work too, and the Library folded (Work Tracker 1420).
 const START: ReadonlySet<string> = new Set();
 
-function read(storageKey: string): ReadonlySet<string> {
+// What this browser keeps: the starting folds when nothing is kept or the value is garbled, and null when storage
+// can't be read at all (private mode, blocked), where the store goes on from what this page holds.
+function readKept(storageKey: string): ReadonlySet<string> | null {
+  let saved: string | null;
   try {
-    const saved = window.localStorage.getItem(storageKey);
-    if (!saved) return START;
+    saved = window.localStorage.getItem(storageKey);
+  } catch {
+    return null;
+  }
+  if (!saved) return START;
+  try {
     const keys: unknown = JSON.parse(saved);
     return Array.isArray(keys)
       ? new Set(keys.filter((k): k is string => typeof k === 'string'))
       : START;
   } catch {
-    // Private mode, no storage, or a garbled value: the starting folds.
     return START;
   }
 }
 
+const sameKeys = (a: ReadonlySet<string>, b: ReadonlySet<string>) =>
+  a.size === b.size && [...a].every((key) => b.has(key));
+
+/**
+ * The sidebar's open rows. Every change is made to what this browser keeps now, never to this page's older copy of it
+ * (Work Tracker 1495): another Explorer on the same origin (another tab, an editor's workbench frame) opens and folds
+ * rows too, and a change made over a stale copy wrote back every space that copy still held open, so a space the
+ * person had folded came back open on its own. Another tab's change is heard (the `storage` event) and drawn at once.
+ */
 export function createExpansion(storageKey = EXPANDED_KEY): Expansion {
   let current: ReadonlySet<string> | null = null;
+  // The last write failed (storage full or blocked): this page's copy is then the only true one.
+  let unsaved = false;
   const listeners = new Set<() => void>();
+  const notify = () => {
+    for (const listener of listeners) listener();
+  };
   const get = () => {
-    if (current === null) current = typeof window === 'undefined' ? START : read(storageKey);
+    if (current === null)
+      current = typeof window === 'undefined' ? START : (readKept(storageKey) ?? START);
     return current;
+  };
+  // What a change starts from: what this browser keeps now, unless it can't be read or the last write didn't take.
+  const latest = () => {
+    const kept = unsaved ? null : readKept(storageKey);
+    if (kept && !sameKeys(kept, get())) current = kept;
+    return get();
   };
   const set = (next: ReadonlySet<string>) => {
     current = next;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify([...next]));
+      unsaved = false;
     } catch {
-      // Ignored: expansion is a convenience.
+      // Kept for this page alone: expansion is a convenience.
+      unsaved = true;
     }
-    for (const listener of listeners) listener();
+    notify();
+  };
+  // Another tab changed the same key (or cleared storage).
+  const onStorage = (e: StorageEvent) => {
+    if (e.key !== null && e.key !== storageKey) return;
+    const kept = readKept(storageKey);
+    if (!kept || sameKeys(kept, get())) return;
+    current = kept;
+    unsaved = false;
+    notify();
   };
   return {
     subscribe(onChange) {
+      if (listeners.size === 0 && typeof window !== 'undefined')
+        window.addEventListener('storage', onStorage);
       listeners.add(onChange);
-      return () => listeners.delete(onChange);
+      return () => {
+        listeners.delete(onChange);
+        if (listeners.size === 0 && typeof window !== 'undefined')
+          window.removeEventListener('storage', onStorage);
+      };
     },
     get,
     toggle(key) {
-      const next = new Set(get());
+      const next = new Set(latest());
       if (next.has(key)) next.delete(key);
       else next.add(key);
       set(next);
     },
     expand(...keys) {
-      const now = get();
-      if (keys.every((key) => now.has(key))) return;
+      const before = get();
+      const now = latest();
+      if (keys.every((key) => now.has(key))) {
+        // Open already in what is kept; a change another page made is drawn all the same.
+        if (now !== before) notify();
+        return;
+      }
       set(new Set([...now, ...keys]));
     },
   };

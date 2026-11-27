@@ -95,6 +95,7 @@ export function collabPushOf(
       assignerId: a.assignerId,
       assignerName: a.assignerName,
       teamId: a.teamId,
+      ...(a.due ? { due: a.due } : {}),
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
     })),

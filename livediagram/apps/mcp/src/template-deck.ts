@@ -16,7 +16,7 @@ export const slidesForTemplateTab = (kind: TemplateKind, tab: Tab): Slide[] =>
 
 // The note a result carries for the slides it added, so the model can say the deck is ready.
 export const deckNote = (count: number, tabName: string) =>
-  `Tab "${tabName}": ${count} slide${count === 1 ? '' : 's'} added to the deck, in the order the template is presented.`;
+  `Tab "${tabName}": the diagram is unchanged; ${count} Presentation mode slide${count === 1 ? '' : 's'} added to the document's slide deck, in the order the template is presented.`;
 
 // Whether a stored deck holds every one of the slides, by id.
 function holdsSlides(presentation: string | null, slides: readonly Slide[]): boolean {
@@ -51,7 +51,7 @@ export async function appendTemplateDeck(
       await apiJson(env, token, path, { method: 'PUT', body: JSON.stringify({ presentation }) });
     }
   } catch {
-    return `Tab "${tab.name}": the tab was made, but its slides could not be added to the deck.`;
+    return `Tab "${tab.name}": the tab was made, but its Presentation mode slides could not be added to the document's slide deck.`;
   }
   return deckNote(slides.length, tab.name);
 }

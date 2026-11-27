@@ -40,9 +40,16 @@ export function useChartAnim(
   element: ShapeElement,
   transformOrigin: string,
 ): ReturnType<typeof chartAnim> {
+  return useChartAnimOf(element)(transformOrigin);
+}
+
+// useChartAnim bound to a chart, for the shared views (@liveworkspace/workbench/components/canvas/charts): each view
+// passes the transform origin only it knows.
+export function useChartAnimOf(
+  element: ShapeElement,
+): (transformOrigin: string) => ReturnType<typeof chartAnim> {
   const preview = useConceptTourPreview(element.id);
-  return chartAnim(
-    preview?.anim === 'grow' ? { ...element, pieAnim: 'grow', pieAnimRepeat: true } : element,
-    transformOrigin,
-  );
+  const shown: ShapeElement =
+    preview?.anim === 'grow' ? { ...element, pieAnim: 'grow', pieAnimRepeat: true } : element;
+  return (transformOrigin) => chartAnim(shown, transformOrigin);
 }

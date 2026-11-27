@@ -62,12 +62,15 @@ export function HomeRow({
   line,
   rank,
   peak,
+  iconMarks = false,
 }: {
   item: ShownItem | ThisBrowserItem;
   showApp: boolean;
   line: CardLine;
   rank?: number;
   peak?: number;
+  /** The rail's narrow panels (Most Used, Shared With You Recently): Made by AI as its icon alone. */
+  iconMarks?: boolean;
 }) {
   return 'app' in item ? (
     <JumpBackInCard
@@ -78,6 +81,7 @@ export function HomeRow({
       line={line}
       rank={rank}
       peak={peak}
+      iconMarks={iconMarks}
     />
   ) : (
     <LocalCard item={item} large={false} flat showApp={showApp} line={line} />
@@ -268,12 +272,14 @@ const JumpBackInCard = memo(function JumpBackInCard({
   flat = false,
   rank,
   peak = 0,
+  iconMarks = false,
 }: {
   item: ShownItem;
   large: boolean;
   showApp: boolean;
   line: CardLine;
   flat?: boolean;
+  iconMarks?: boolean;
   /** Most Used's place in the rail, drawn before the name. */
   rank?: number;
   /** The busiest day across Most Used, which its day charts measure against. */
@@ -328,8 +334,8 @@ const JumpBackInCard = memo(function JumpBackInCard({
             </span>
             {/* A row's picture is too small for the pill, so it follows the name. */}
             {flat && item.source === 'ai' ? (
-              <span className="shrink-0">
-                <MadeByAiBadge item={item} />
+              <span className="flex shrink-0">
+                <MadeByAiBadge item={item} iconOnly={iconMarks} />
               </span>
             ) : null}
           </>

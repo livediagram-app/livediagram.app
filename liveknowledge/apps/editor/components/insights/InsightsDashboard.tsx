@@ -1,11 +1,9 @@
 'use client';
 
-// The Insights dashboard (docs/specs/030-knowledgebase/insights.md "The view, as built"): the figures band,
-// then two stacks of cards, the wide one (Needs Attention, Connected Agents) and the narrow one (Knowledge Health,
-// Always in Context, Most Read, What an Agent Sees); one column below a laptop's width. Every figure is from the one
-// overview read. A tile filters Needs Attention or brings its card into view and focuses it.
-import { NOT_READ_DAYS } from '@liveknowledge/knowledge';
-import { useMemo, useState } from 'react';
+// Insights, ready (docs/specs/030-knowledgebase/insights.md "The view, as built"): the dashboard of topics, or the
+// page of the topic the address names. Every figure is from the one overview read, so moving between them reads
+// nothing. A change of topic starts the scroll at the top, and a topic's page takes the focus.
+import { useEffect, useMemo, useRef } from 'react';
 import type {
   KnowledgeAgent,
   KnowledgeLikelySource,
@@ -13,20 +11,15 @@ import type {
   KnowledgeQuestion,
   KnowledgeSuggestion,
 } from '@liveknowledge/api-schema';
-import { prefersReducedMotion } from '@liveknowledge/ui';
 import type { AskRights } from '@/lib/knowledge-ask/ask-rights';
-import { dashboardFigures, type AttentionFilter } from '@/lib/knowledge-ask/dashboard-figures';
-import { agentSample } from '@/lib/knowledge-ask/overview-words';
-import type { AgentWriteAsk } from './AgentCard';
-import { AgentsSection } from './AgentsSection';
-import { FigureTiles, type TileTarget } from './FigureTiles';
-import { AgentSampleCard, ContextSection, HealthSection } from './HealthAndContext';
-import { MostReadCard } from './MostReadCard';
-import { NotReadCard } from './NotReadCard';
-import { RequiredReadingCard } from './RequiredReadingCard';
-import { NeedsAttention } from './NeedsAttention';
+import type { AttentionFilter } from '@/lib/knowledge-ask/dashboard-figures';
+import { showInsightsTopic, type InsightsTopic } from '@/lib/knowledge-ask/insights-topic';
+import { useInsightsTopic } from '@/lib/knowledge-ask/useInsightsTopic';
+import { track } from '@/lib/telemetry';
 import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
-import { takeAskedAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
+import type { AgentWriteAsk } from './AgentCard';
+import { InsightsTopicPage } from './InsightsTopicPage';
+import { InsightsTopics } from './InsightsTopics';
 
 /** What the dashboard's controls do: InsightsView's handlers, each checking its right again. */
 export type DashboardActions = {
@@ -48,23 +41,6 @@ export type DashboardActions = {
   removeContext: (tab: string) => void;
   askWrite: (ask: AgentWriteAsk) => void;
 };
-
-// A card brought into view by its tile, then focused so a keyboard or a screen reader goes on from it.
-function goToCard(id: string): void {
-  const card = document.querySelector<HTMLElement>(`[data-ai-section="${id}"]`);
-  if (!card) return;
-  card.scrollIntoView?.({ block: 'start', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
-  card.focus({ preventScroll: true });
-}
-
-const CARD_OF: Record<'reads' | 'agents' | 'health', string> = {
-  reads: 'ai-reads',
-  agents: 'ai-agents',
-  health: 'ai-health',
-};
-
-// One column of cards: a stack of its own, spaced as the band above.
-const COLUMN = 'flex min-w-0 flex-col gap-4 sm:gap-5';
 
 export function InsightsDashboard({
   overview: read,
@@ -101,103 +77,46 @@ export function InsightsDashboard({
     () => (read.reviewEvery === reviewEvery ? read : { ...read, reviewEvery }),
     [read, reviewEvery],
   );
-  // A page's rail may ask for Suggested Edits as it opens this view (attention-filter-ask.ts).
-  const [filter, setFilter] = useState<AttentionFilter>(() => takeAskedAttentionFilter() ?? 'all');
-  const go = (target: TileTarget) => {
-    if ('filter' in target) {
-      setFilter(target.filter);
-      goToCard('ai-attention');
-    } else goToCard(CARD_OF[target.card]);
+  const { topic, show } = useInsightsTopic();
+  const root = useRef<HTMLDivElement>(null);
+  const topicPage = useRef<HTMLDivElement>(null);
+  const drawn = useRef<InsightsTopic | null | undefined>(undefined);
+  // On a change of topic (not the first draw, nor a read landing): the scroll box back to its top, and a topic's page
+  // focused, so a screen reader says where they are and Tab starts in it.
+  useEffect(() => {
+    const first = drawn.current === undefined;
+    drawn.current = topic;
+    if (first) return;
+    root.current?.closest('[data-insights]')?.scrollTo?.({ top: 0 });
+    topicPage.current?.focus({ preventScroll: true });
+  }, [topic]);
+  const open = (to: InsightsTopic, at?: AttentionFilter) => {
+    track('UI', 'Opened', 'InsightsTopic');
+    showInsightsTopic(to, at ? { show: at } : {});
   };
   return (
-    <div className="flex flex-col gap-4 sm:gap-5">
-      <FigureTiles
-        figures={dashboardFigures(overview)}
-        overview={overview}
-        filter={filter}
-        onGo={go}
-      />
-      {/* Two equal columns on a wide screen (owner 2026-11-21; insights.md "The view, as built"), each its own
-          stack, so Knowledge Health heads the right one on a whole pixel. One column below lg, in the same order as
-          the page reads and focus moves: the left column, then the right. */}
-      <div className="flex flex-col gap-4 sm:gap-5 lg:grid lg:grid-cols-2 lg:items-start">
-        <div className={COLUMN}>
-          <NeedsAttention
-            overview={overview}
-            filter={filter}
-            onFilter={setFilter}
-            canResolve={rights.resolve}
-            canAcceptSuggestions={rights.acceptSuggestions}
-            canDraft={rights.makePages}
-            canManageAi={rights.manageAi}
-            canAskOwners={canEmailOwners}
-            busy={busy}
-            drafting={drafting}
-            now={now}
-            onOpenPage={actions.openPage}
-            onDismissConflict={actions.dismissConflict}
-            onAskOwners={actions.askOwners}
-            onDraft={actions.draft}
-            onDismissQuestion={actions.dismissQuestion}
-            onConnectLikely={actions.connectLikely}
-            connectingLikely={connectingLikely}
-            onAccept={actions.accept}
-            onDismissSuggestion={actions.dismissSuggestion}
-            onOpenAiSettings={actions.openAiSettings}
-          />
-          <AgentsSection
-            agents={agents}
-            canGrant={rights.grantAgents}
-            busy={agentsBusy}
-            now={now}
-            onConnect={actions.connect}
-            onOpenPage={actions.openPage}
-            onAskWrite={actions.askWrite}
-          />
-          <MostReadCard
-            pages={overview.reads.mostRead}
-            onOpenPage={actions.openPage}
-            history={overview.history}
-            onPeriod={actions.setPeriod}
-          />
-          {/* Absent from an older api: not drawn. */}
-          {overview.notRead ? (
-            <NotReadCard
-              pages={overview.notRead.pages}
-              total={overview.notRead.total}
-              days={overview.notRead.days ?? NOT_READ_DAYS}
-              now={now}
-              onOpenPage={actions.openPage}
-            />
-          ) : null}
-        </div>
-        <div className={COLUMN}>
-          <HealthSection
-            health={overview.health}
-            lowHealth={overview.lowHealth}
-            onOpenPage={actions.openPage}
-            canRemind={canEmailOwners}
-            remindedAt={overview.reviewEmails.remindedAt}
-            reminding={busy.has('remind-owners')}
-            now={now}
-            onRemind={actions.remindOwners}
-            verificationOn={overview.reviewEvery !== 'never'}
-          />
-          {/* Under Knowledge Health (required-reading.md "Where it shows"); absent from an older api: not drawn. */}
-          {overview.requiredReading ? (
-            <RequiredReadingCard pages={overview.requiredReading} onOpenPage={actions.openPage} />
-          ) : null}
-          <ContextSection
-            context={overview.context}
-            canEdit={rights.context}
-            busy={busy}
-            onOpenPage={actions.openPage}
-            onAdd={actions.addContext}
-            onRemove={actions.removeContext}
-          />
-          <AgentSampleCard sample={agentSample(overview, now)} />
-        </div>
-      </div>
+    <div ref={root} className="flex flex-col gap-4 sm:gap-5">
+      {topic ? (
+        <InsightsTopicPage
+          ref={topicPage}
+          topic={topic}
+          show={show}
+          // The filter replaces the address: a press is no history entry.
+          onShow={(to) => showInsightsTopic('attention', { show: to, replace: true })}
+          overview={overview}
+          rights={rights}
+          agents={agents}
+          agentsBusy={agentsBusy}
+          busy={busy}
+          drafting={drafting}
+          canEmailOwners={canEmailOwners}
+          now={now}
+          actions={actions}
+          connectingLikely={connectingLikely}
+        />
+      ) : (
+        <InsightsTopics overview={overview} onOpen={open} />
+      )}
     </div>
   );
 }

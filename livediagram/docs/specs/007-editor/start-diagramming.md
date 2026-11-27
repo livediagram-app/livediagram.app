@@ -12,8 +12,8 @@ mode is chosen.
 One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`, this app's binding of the panel every editor shares, `../packages/workbench/src/components/start/StartPanel.tsx`), draws all three starts; each start says what its groups and cards are, the panel
 draws them.
 
-- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Diagramming"), one line under it, the search box, and in the top right corner the
-  **Help** link and (where the start can be closed) **Close** (×). On a phone the search takes its own row under the
+- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Diagramming"), one line under it, the search box, and at its right, centred down the band, the
+  **Help** link and (where the start can be closed) **Close** (the circled X every modal wears, [close-button.md](../../../../liveworkspace/docs/specs/022-interface-design/close-button.md)). On a phone the search takes its own row under the
   title, the help and × staying beside the title.
 - **Rail:** led by the mode switch over a hairline ([Changing mode](#changing-mode)), then **Recommended** and the
   mode's groups, each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's

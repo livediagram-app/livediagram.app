@@ -255,6 +255,8 @@ export * from './chart-ink';
 export * from '@liveworkspace/element-model/chart-types';
 export * from './chart-sheet-source';
 export * from '@liveworkspace/element-model/chart-marks';
+// A chart dropped on a slide or infographic page, sized for the page (pie-chart.md "Behaviour").
+export * from '@liveworkspace/element-model/chart-drop-size';
 export * from '@liveworkspace/element-model/chart-axis';
 export * from '@liveworkspace/element-model/chart-values';
 export * from '@liveworkspace/element-model/shape-geometry';

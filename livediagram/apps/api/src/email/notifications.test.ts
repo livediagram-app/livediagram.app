@@ -195,6 +195,20 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
     expect(e.html).not.toContain('/document/');
     expect(e.html).toContain('https://app.test/explorer');
   });
+
+  it('names the due day when there is one, and nothing for none (Work Tracker 1487)', () => {
+    const doc = { id: 'd1', name: 'Roadmap' };
+    expect(actionAssignedEmail(env, 'Sam', doc, 'Ship it', null, '2026-12-03').html).toContain(
+      '<strong>Ship it</strong>, due <strong>3 December 2026</strong>.',
+    );
+    expect(actionAssignedEmail(env, 'Sam', null, 'Ship it', null, '2026-11-20').html).toContain(
+      '<strong>Ship it</strong>, due <strong>20 November 2026</strong>. You can’t open',
+    );
+    expect(actionAssignedEmail(env, 'Sam', doc, 'Ship it', null).html).not.toContain(', due');
+    expect(actionAssignedEmail(env, 'Sam', doc, 'Ship it', null, '3 Dec').html).not.toContain(
+      ', due',
+    );
+  });
 });
 
 describe('notifyMilestone (docs/specs/014-identity/transactional-email.md #6)', () => {

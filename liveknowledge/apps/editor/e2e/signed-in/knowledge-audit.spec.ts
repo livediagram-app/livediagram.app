@@ -3,15 +3,24 @@ import { auditContrast } from '@liveworkspace/e2e-kit/contrast';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from '@liveworkspace/e2e-kit/optical';
 import { expect, test } from '../fixtures';
 import { expectNoSidewaysScroll, nameOpenPage, titleOf, writeLines } from '../knowledgebase';
-import { openView, savedWith, signedInKnowledgebase } from './knowledge-session';
+import { openInsightsTopic, openView, savedWith, signedInKnowledgebase } from './knowledge-session';
 
 // The contrast and optical alignment audits (docs/specs/004-interface-design/color-scheme.md "Accessibility",
 // optical-alignment.md; @liveworkspace/e2e-kit) over what liveknowledge adds: Pages, Ask, Insights and Home,
 // in light and in dark. Contrast: every visible text node meets WCAG AA against what is painted under it. Optical:
 // every glyph in a small painted shape sits within OPTICAL_TOLERANCE_PX of its centre. No allow-list in either.
 
-type Screen = 'Pages' | 'Ask' | 'Insights' | 'Home';
-const SCREENS: Screen[] = ['Pages', 'Ask', 'Insights', 'Home'];
+// Insights is its dashboard, then each topic's page (insights.md "The topics").
+type Topic = 'Needs Attention' | 'Page Health' | 'Reading' | 'Agents';
+type Screen = 'Pages' | 'Ask' | 'Insights' | `Insights, ${Topic}` | 'Home';
+const TOPICS: Topic[] = ['Needs Attention', 'Page Health', 'Reading', 'Agents'];
+const SCREENS: Screen[] = [
+  'Pages',
+  'Ask',
+  'Insights',
+  ...TOPICS.map((topic): Screen => `Insights, ${topic}`),
+  'Home',
+];
 
 // A knowledgebase with a verified page of writing, then the screen asked for.
 async function open(page: Page, screen: Screen): Promise<void> {
@@ -37,10 +46,15 @@ async function open(page: Page, screen: Screen): Promise<void> {
     await expect(page.locator('[data-home-knowledgebase]')).toContainText('1 page');
     return;
   }
-  if (screen !== 'Pages') await openView(page, screen);
+  const topic = TOPICS.find((t) => screen === `Insights, ${t}`);
+  if (topic) {
+    await openInsightsTopic(page, topic);
+    return;
+  }
+  if (screen === 'Ask' || screen === 'Insights') await openView(page, screen);
   if (screen === 'Ask') await expect(page.locator('[data-ask-ai]')).toContainText('Built-In AI');
   if (screen === 'Insights')
-    await expect(page.getByRole('region', { name: 'Knowledge Health' })).toBeVisible();
+    await expect(page.locator('[data-topic-tile]')).toHaveCount(TOPICS.length);
   if (screen === 'Pages') await expect(titleOf(page)).toHaveText('Runbook');
 }
 

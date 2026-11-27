@@ -153,15 +153,17 @@ async function answerOf(
       .sort((a, b) => confirmations.get(b)! - confirmations.get(a)!),
   ].slice(0, READING_LIST_MAX);
   const [names, reminded] = await Promise.all([
-    namesOf(ctx.env, listed, audience.names),
+    namesOf(ctx.env, listed, audience),
     remindedOf(ctx.env, tab),
   ]);
   answer.people = listed.map((id): PageReadingPerson => {
     const read = confirmations.get(id);
     const remind = reminded.get(id);
+    const named = names.get(id);
     return {
       id,
-      name: names.get(id) ?? 'Someone',
+      name: named?.name ?? 'Someone',
+      ...(named?.color ? { color: named.color } : {}),
       ...(read !== undefined ? { readAt: read } : {}),
       ...(remind !== undefined ? { remindedAt: remind } : {}),
     };

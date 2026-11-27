@@ -179,6 +179,9 @@ export function usePortalSetters({
     patchTarget({ pickerSource }, 'picker', 'Picker');
   const setPickerOptionsSelected = (pickerOptions: string[]) =>
     patchTarget({ pickerOptions }, 'picker', 'Picker');
+  // Remove Once Drawn (docs/specs/012-collaboration/picker.md): turning it on or off starts a fresh round.
+  const setPickerRemoveDrawnSelected = (pickerRemoveDrawn: boolean) =>
+    patchTarget({ pickerRemoveDrawn, pickerDrawn: undefined }, 'picker', 'Picker');
 
   return {
     setPortalTargetSelected,
@@ -187,5 +190,6 @@ export function usePortalSetters({
     setSessionConfigSelected,
     setPickerSourceSelected,
     setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected,
   };
 }

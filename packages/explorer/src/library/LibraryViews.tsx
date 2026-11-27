@@ -1,51 +1,76 @@
 'use client';
 
 // The Library's pages on the Explorer page: the Image Gallery and Shape Libraries, each under the pane header, drawn
-// from the host's source. A host without one (an app with no gallery) says so rather than showing an empty page. The
-// Gallery's header holds its Show switch (All or Unused) just left of Help, over the same state the grid draws.
+// from the host's source. A host without one (an app with no gallery) says so rather than showing an empty page. Over
+// the Gallery's grid, a toolbar: Find an image (by name) and the Show chips, All, Unused and one per app whose items
+// place an image (Work Tracker 1491), each with its count, over the same state the grid draws.
 
 import { useMemo, useState } from 'react';
-import { EmptyState, SegmentedToggle } from '@liveworkspace/ui';
+import { EmptyState, HoverCard } from '@liveworkspace/ui';
 import { ImageIcon, ShapesIcon } from '../ui/library-icons';
 import { SIDEBAR_LABELS } from '../views';
 import { useExplorer } from '../explorer/context';
 import { PaneHeader } from '../explorer/PaneHeader';
+import { AppMark } from '../explorer/badges';
+import { FilterChip, FilterChipRow } from '../explorer/FilterChips';
+import { FindField } from '../ui/FindField';
+import { siteOf } from '../words';
 import { useLibraryHost } from './context';
-import { GalleryContent, unusedCount, useGallery } from './GalleryPane';
-import type { GalleryFilter } from './gallery-filter';
+import { GalleryContent, useGallery } from './GalleryPane';
+import { galleryCounts, type GalleryFilter } from './gallery-filter';
 import { ShapeLibrariesPane } from './ShapeLibrariesPane';
 import { HelpButton } from '../explorer/HomeHero';
 import { ImportToolbar } from './ImportToolbar';
 
 export function GalleryView() {
-  const { kind } = useExplorer();
+  const { kind, app } = useExplorer();
   const { gallery } = useLibraryHost();
   const state = useGallery(gallery);
   const [filter, setFilter] = useState<GalleryFilter>('all');
-  // Counted once per read or delete, not on every switch.
+  const [query, setQuery] = useState('');
   const { loaded } = state;
-  const unused = useMemo(() => (gallery ? unusedCount(gallery, loaded) : null), [gallery, loaded]);
+  const images = loaded.status === 'ready' ? loaded.images.length : 0;
+  // Counted once per read or delete, never per keystroke or chip.
+  const counts = useMemo(
+    () =>
+      gallery?.usage && loaded.status === 'ready' && loaded.images.length > 0
+        ? galleryCounts(loaded.images, loaded.usage, app)
+        : null,
+    [gallery, loaded, app],
+  );
   return (
     <div data-explorer-view="gallery">
       <PaneHeader
         title={SIDEBAR_LABELS.gallery}
         showFilter={false}
-        actions={
-          <>
-            {unused !== null ? (
-              <GalleryFilterToggle value={filter} onChange={setFilter} unused={unused} />
-            ) : null}
-            {gallery?.helpHref ? <HelpButton href={gallery.helpHref} /> : null}
-          </>
-        }
+        actions={gallery?.helpHref ? <HelpButton href={gallery.helpHref} /> : null}
       />
+      {gallery && images > 0 ? (
+        <div
+          data-gallery-toolbar=""
+          className="mb-4 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3"
+        >
+          <FindField
+            label="Find an image"
+            value={query}
+            onChange={setQuery}
+            className="sm:w-64 sm:shrink-0"
+          />
+          {counts ? (
+            <GalleryChips value={filter} onChange={setFilter} total={images} counts={counts} />
+          ) : null}
+        </div>
+      ) : null}
       {gallery ? (
         <GalleryContent
           host={gallery}
           gallery={state}
           kindMany={{ one: kind.lowerOne, many: kind.lowerMany }}
           filter={filter}
+          query={query}
+          app={app}
           onShowAll={() => setFilter('all')}
+          onClearQuery={() => setQuery('')}
         />
       ) : (
         <EmptyState
@@ -58,33 +83,56 @@ export function GalleryView() {
   );
 }
 
-// The Gallery's Show switch: All, or Unused (the images nothing places), its hover card counting them.
-function GalleryFilterToggle({
+// The Gallery's Show chips: All, Unused (the images nothing places, usually safe to delete) and one per app whose
+// items place any, with its logo. Pressing the chip that is on goes back to All.
+function GalleryChips({
   value,
   onChange,
-  unused,
+  total,
+  counts,
 }: {
   value: GalleryFilter;
   onChange: (next: GalleryFilter) => void;
-  unused: number;
+  total: number;
+  counts: ReturnType<typeof galleryCounts>;
 }) {
+  const pick = (next: GalleryFilter) => onChange(value === next ? 'all' : next);
   return (
-    <SegmentedToggle
-      label="Show"
-      value={value}
-      onChange={onChange}
-      options={[
-        { value: 'all', label: 'All', description: 'Every image in your gallery.' },
-        {
-          value: 'unused',
-          label: 'Unused',
-          description:
-            unused === 0
-              ? 'Nothing to clear: every image is placed somewhere.'
-              : `${unused} ${unused === 1 ? 'image' : 'images'} nothing places, usually safe to delete.`,
-        },
-      ]}
-    />
+    <FilterChipRow label="Show" size={counts.apps.length + 2} data-gallery-chips="">
+      <FilterChip on={value === 'all'} onClick={() => onChange('all')} label="All" count={total} />
+      <HoverCard
+        title="Unused"
+        description={
+          counts.unused === 0
+            ? 'Nothing to clear: every image is placed somewhere.'
+            : `${counts.unused} ${counts.unused === 1 ? 'image' : 'images'} nothing places, usually safe to delete.`
+        }
+      >
+        <FilterChip
+          on={value === 'unused'}
+          onClick={() => pick('unused')}
+          label="Unused"
+          count={counts.unused}
+          data-gallery-chip="unused"
+        />
+      </HoverCard>
+      {counts.apps.map(({ app, count }) => (
+        <HoverCard
+          key={app}
+          title={`Used in ${siteOf(app).name}`}
+          description={`The images ${siteOf(app).name} items place, the Trash’s too.`}
+        >
+          <FilterChip
+            on={value === app}
+            onClick={() => pick(app)}
+            logo={<AppMark app={app} size={16} />}
+            label={siteOf(app).name}
+            count={count}
+            data-gallery-chip={app}
+          />
+        </HoverCard>
+      ))}
+    </FilterChipRow>
   );
 }
 

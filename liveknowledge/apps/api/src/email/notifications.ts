@@ -176,6 +176,8 @@ export function notifyActionAssigned(
     assigneeCanOpen: boolean;
     actionName: string;
     description: string | null;
+    // Its due day ('2026-12-03'), which the email names; null or absent for none.
+    due?: string | null;
   },
 ): Promise<void> {
   const { document, ...rest } = input;

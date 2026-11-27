@@ -151,6 +151,7 @@ export function useEditorComments({
         assigneeMemberId: input.assigneeMemberId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
+        ...(input.due ? { due: input.due } : {}),
         email: input.email,
         tabId: input.tabId,
         elementId: input.elementId,

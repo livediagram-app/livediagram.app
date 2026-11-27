@@ -242,7 +242,10 @@ overscroll-contain` too, inside the area: never taller than its rows, it could n
   drop and shows no mark. Worked out once per row and zone entered, not per pointer move.
 - **Opened pages** are kept per knowledgebase in `localStorage` (`liveknowledge:v3:page-tree-opened`, the 50 most
   recent knowledgebases); a page with subpages is closed until opened, so a knowledgebase loads with only its
-  top-level pages showing (Work Tracker 1486). The current page's ancestors are open whatever is stored, which is how
+  top-level pages showing (Work Tracker 1486), but for the first page (`firstPageOf`: the first top-level page in
+  tree order, a connected row skipped), open by default so its subpages show (Work Tracker 1489). `useOpenedPages`
+  shows `openedWithFirst(stored, first)`; closing the first page stores `!<page id>` (`closedMark`, `withPageOpen`) in
+  the same list, so it stays closed for that reader, and opening it again drops the mark. The current page's ancestors are open whatever is stored, which is how
   a page opened by its link (`#t=<page>`) shows where it is. The older `v2:page-tree-closed` record (open until
   closed) is not read: its meaning was the reverse, and every tree simply starts closed once.
 - **What a person makes or moves shows where it went.** `openParentsOf(documentId, pages, ids)` (`lib/page-tree-open.ts`)

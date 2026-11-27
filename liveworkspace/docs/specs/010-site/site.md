@@ -244,7 +244,7 @@ ambient motion (the current along the lines, drifting cursors and characters, a 
 One privacy policy and one set of terms for liveworkspace and every app in it, linked from the
 footer. They were built from the apps' own policies, which said the same things app by app; a
 feature only some apps have (livediagram's sticky-note reader, liveplanner's live sessions, livehuddle's calls,
-the MCP servers every app but livehuddle has) says which; Google Drive sync and Offline Mode are every app's. The
+the one MCP server, which reaches every app but livehuddle) says which; Google Drive sync and Offline Mode are every app's. The
 privacy policy covers each platform feature that keeps or sends personal data: the account and its Google picture
 ([accounts.md "Profile pictures"](../003-accounts/accounts.md#profile-pictures)), teams and their invitations' 28-day
 expiry, phone notifications ([push.md](../003-accounts/push.md)), connections
@@ -254,7 +254,12 @@ AI works: built-in AI on Cloudflare Workers AI, the person's or team's own Anthr
 returned, deleted with the account; [ai-keys.md](../003-accounts/ai-keys.md)), what Ask AI, Summarise with AI,
 Describe a Rule, Describe a Plan and liveknowledge's AI send ([ask.md](../020-ask/ask.md)), the Forum's safety check,
 and connected AI tools and the CLI; and how connected tabs, live embeds and Send to Plan link items across apps
-([connected-tabs.md](../004-index/connected-tabs.md)). Every claim cites a spec the code keeps: never a promise of
+([connected-tabs.md](../004-index/connected-tabs.md)). Work Tracker 1496 (audited against main on 2026-11-27) added what had changed since: the one MCP server's storage
+([mcp.md "Tokens"](../021-mcp/mcp.md#tokens): the account token sealed in its store, a record per sign-in and per live
+access token for as long as each lasts, an access token an hour and a refresh token 90 days, and a client's metadata
+document fetched and kept 24 hours), the meetings an item keeps for calls started from it
+([item-calls.md](../004-index/item-calls.md): when, who was in it by name, the summary page and the plan; an invite stays
+in the Inbox a day) with Write With AI's notes under AI features. Every claim cites a spec the code keeps: never a promise of
 deletion within a number of days the code does not keep, and never a claim about what an AI provider does with what it
 is sent beyond "its own terms govern". Pro stays out of both pages while it is off: the terms' availability sentence and
 the Stripe line in Service providers read `proOn()`. The products' landing-page privacy promises are one shared builder,
@@ -598,7 +603,15 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](../008-telemetry/telemetry.md#the-explorer-on-liveworkspaceapp)).
 - **The sidebar.** As [one-explorer.md "The sidebar"](../004-index/one-explorer.md#the-sidebar) has it: Overview
-  (Home, Inbox, Shared With Me), Spaces, and the Library holding Recent, Archived and the Trash.
+  (Home, Inbox, Shared With Me), Spaces, and the Library holding Recent, the Library's pages, Archived and the Trash.
+  From an app, the Library's pages are that app's. In no app they are every app's (owner, Work Tracker 1493: the
+  Library was only the last app's, so someone last in liveplanner had no Image Gallery): the **Image Gallery** (one
+  for every app, since the media service lists the person's images from every app; read through the last app's API
+  where it keeps one, else the first app's that does), **Shape Libraries** through the app that keeps them, and
+  **Walkthroughs** from every app's door in one list, newest first, each app's cards showing as it answers (a slow
+  or failing app holds back no other; the empty state waits for every app), each played, shared and deleted through its own
+  app (`everyAppLibraryHosts` in `@liveworkspace/explorer`, `lib/explorer/library.ts`). Offline stays the apps' own:
+  liveworkspace.app can't read an app's browser storage.
   The current view's rows open themselves (its space and folders, or the Library), and a drag resting on the folded
   Library opens it.
 - **Archived.** A row of the sidebar's Library, before the Trash, at `/explorer/archived`

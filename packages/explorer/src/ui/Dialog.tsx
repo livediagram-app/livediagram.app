@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react';
 import { Dialog as Shell, type DialogProps } from '@liveworkspace/ui';
-import { CloseIcon } from './icons';
 
 // @liveworkspace/ui's Dialog shell (packages/ui/src/dialog/Dialog.tsx), drawn while mounted: the Explorer's dialogs
 // mount only while open, so it is always open. The dim backdrop and centred panel, Escape and a press on the
@@ -15,18 +14,8 @@ export function Dialog(props: Omit<DialogProps, 'open'> & { ariaLabel: string })
   return <Shell open {...props} />;
 }
 
-export function DialogCloseButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Close"
-      className="relative -mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-    >
-      <CloseIcon />
-    </button>
-  );
-}
+// The one close every modal header wears (liveworkspace/docs/specs/022-interface-design/close-button.md).
+export { DialogCloseButton } from '@liveworkspace/ui';
 
 export function DialogHeader({
   title,
@@ -47,7 +36,8 @@ export function DialogHeader({
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
         ) : null}
       </div>
-      <div className="-mt-1 flex shrink-0 items-center gap-1">{children}</div>
+      {/* Pulled 10px up and down: the 44px close centres on the 24px title line without making the row taller. */}
+      <div className="-my-2.5 flex shrink-0 items-center gap-1">{children}</div>
     </div>
   );
 }
