@@ -107,7 +107,7 @@ export async function openInsightsTopic(
 ): Promise<void> {
   await openView(page, 'Insights');
   await page.getByRole('button', { name: `Open ${topic}`, exact: true }).click();
-  await expect(page.getByRole('region', { name: `Insights, ${topic}` })).toBeVisible();
+  await expect(page.getByRole('region', { name: `Insights, ${topic}`, exact: true })).toBeVisible();
 }
 
 /** The AI Settings dialog, opened from the Ask view's head, once its settings have loaded: an Editor's Which AI choice

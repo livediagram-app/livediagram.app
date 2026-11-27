@@ -17,7 +17,8 @@ test.use({ viewport: { width: 1440, height: 860 } });
 
 // Needs Attention holds the questions, disagreements and suggested edits in one list; its switch shows one kind
 // (insights.md "The view, as built").
-const attention = (page: Page): Locator => page.getByRole('region', { name: 'Needs Attention' });
+const attention = (page: Page): Locator =>
+  page.getByRole('region', { name: 'Needs Attention', exact: true });
 async function showAttention(page: Page, kind: string): Promise<void> {
   const option = attention(page)
     .getByRole('group', { name: 'Show' })
@@ -32,13 +33,13 @@ test('every section shows on its topic page, each with its empty state', async (
 }) => {
   await signedInKnowledgebase(page);
   await openInsightsTopic(page, 'Agents');
-  await expect(page.getByRole('region', { name: 'Connected Agents' })).toContainText(
+  await expect(page.getByRole('region', { name: 'Connected Agents', exact: true })).toContainText(
     'No Agents Yet',
   );
-  await expect(page.getByRole('region', { name: 'Always in Context' })).toContainText(
+  await expect(page.getByRole('region', { name: 'Always in Context', exact: true })).toContainText(
     'No Pages in Context Yet',
   );
-  await expect(page.getByRole('region', { name: 'What an Agent Sees' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'What an Agent Sees', exact: true })).toBeVisible();
 
   await openInsightsTopic(page, 'Needs Attention');
   await expect(attention(page)).toContainText('Nothing Needs Attention');
@@ -55,7 +56,7 @@ test('every section shows on its topic page, each with its empty state', async (
 
   await openInsightsTopic(page, 'Page Health');
   await expect(
-    page.getByRole('region', { name: 'Knowledge Health' }).getByRole('img'),
+    page.getByRole('region', { name: 'Knowledge Health', exact: true }).getByRole('img'),
   ).toHaveAccessibleName('Of 1 page: 0 verified, 0 review due, 1 never verified.');
   expectNoPageErrors(pageErrors);
 });
@@ -81,7 +82,7 @@ test("an agent's read of a page shows as its card under Connected Agents", async
   expect(await read.text()).toContain('blue lever');
 
   await openInsightsTopic(page, 'Agents');
-  const agents = page.getByRole('region', { name: 'Connected Agents' });
+  const agents = page.getByRole('region', { name: 'Connected Agents', exact: true });
   await expect(agents.locator('[data-agent="Coding Agent"]')).toBeVisible();
   await expect(agents.locator('[data-agent="Coding Agent"]')).toContainText('Runbook');
   await expect(agents).not.toContainText('No Agents Yet');
