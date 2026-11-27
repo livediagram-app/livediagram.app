@@ -119,10 +119,14 @@ describe('the Gallery’s name field and app chips', () => {
     expect(docs.map((i) => i.id)).toEqual(['img-2']);
     const diagram = filterGallery(images, usage, 'livediagram', { host: 'livediagram' });
     expect(diagram.map((i) => i.id)).toEqual(['img-1', 'img-2']);
-    expect(filterGallery(images, usage, 'livediagram', { host: 'livediagram', query: 'logo' }))
-      .toHaveLength(1);
+    expect(
+      filterGallery(images, usage, 'livediagram', { host: 'livediagram', query: 'logo' }),
+    ).toHaveLength(1);
     // With no host named, an unnamed use is livediagram's.
-    expect(filterGallery(images, usage, 'livediagram').map((i) => i.id)).toEqual(['img-1', 'img-2']);
+    expect(filterGallery(images, usage, 'livediagram').map((i) => i.id)).toEqual([
+      'img-1',
+      'img-2',
+    ]);
     expect(filterGallery(images, usage, 'unused', { query: 'photo' })).toEqual([]);
   });
 
