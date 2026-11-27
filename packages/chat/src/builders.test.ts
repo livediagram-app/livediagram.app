@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { dayMonth, sourceLine, trustWords, type ChatAnswer, type ChatPreview } from './answer';
 import { SLACK_BLOCKS_MAX, SLACK_SECTION_MAX, TEAMS_TEXT_MAX } from './limits';
@@ -258,10 +259,12 @@ describe('the builders on the largest answer', () => {
       open: { label: 'o', url: 'https://www.liveknowledge.app/' },
       share: { label: 's', value: 'v' },
     };
-    const started = performance.now();
-    const slack = slackAnswer(answer);
-    teamsAnswer(answer);
-    expect(performance.now() - started).toBeLessThan(250);
+    let slack = slackAnswer(answer);
+    const ms = cpuMsOf(() => {
+      slack = slackAnswer(answer);
+      teamsAnswer(answer);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
     expect(slack.blocks.length).toBeLessThanOrEqual(SLACK_BLOCKS_MAX);
   });
 });
