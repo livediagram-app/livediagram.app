@@ -1,7 +1,10 @@
+// @vitest-environment jsdom
+import { render } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, planGlyphPath } from '@liveplanner/items';
 import type { InboxTarget } from '@liveworkspace/explorer';
+import { CardGlyph } from './card-glyph';
 import { inboxActionsFor, inboxHost } from './inbox';
 
 vi.mock('./token', () => ({ workspaceToken: async () => 'tok' }));
@@ -9,13 +12,21 @@ vi.mock('./token', () => ({ workspaceToken: async () => 'tok' }));
 describe('the Inbox on liveworkspace.app', () => {
   it('draws a Plan card type by its own glyph', () => {
     const type = ITEM_TYPES[0];
-    const html = renderToStaticMarkup(<>{inboxHost.cardGlyph!(type.id)}</>);
+    const html = renderToStaticMarkup(<CardGlyph type={type.id} />);
     expect(html).toContain(`d="${planGlyphPath(type.glyph)}"`);
   });
 
   it('draws the plain card glyph for a type not built in', () => {
-    const html = renderToStaticMarkup(<>{inboxHost.cardGlyph!('made-up')}</>);
+    const html = renderToStaticMarkup(<CardGlyph type="made-up" />);
     expect(html).toContain(`d="${planGlyphPath(undefined)}"`);
+  });
+
+  it("holds the glyph's place while its chunk lands, then draws it", async () => {
+    const { container } = render(<>{inboxHost.cardGlyph!(ITEM_TYPES[0].id)}</>);
+    expect(container.querySelector('span.size-4')).not.toBeNull();
+    await vi.waitFor(() =>
+      expect(container.querySelector(`[data-card-glyph="${ITEM_TYPES[0].id}"]`)).not.toBeNull(),
+    );
   });
 
   it('points the actions help at liveplanner', () => {
