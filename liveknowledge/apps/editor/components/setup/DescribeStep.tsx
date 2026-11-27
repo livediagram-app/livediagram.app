@@ -2,9 +2,11 @@
 
 // Step 1 of Describe to Set Up (docs/specs/030-knowledgebase/describe-to-set-up.md "The flow"): what the
 // knowledgebase is for, in the person's own words: three chips that fill it, between the question and the field (owner, 2026-11-22: examples
-// above the textbox, as every Describe with AI screen has them), the example under it.
+// above the textbox, as every Describe with AI screen has them), the example under it with the microphone and the count
+// (voice input, liveworkspace/docs/specs/022-interface-design/voice-input.md).
 import { useEffect, useId, useRef } from 'react';
 import { TextArea } from '@liveknowledge/ui';
+import { VoiceInputButton, VoiceInputNote, useVoiceInput } from '@liveworkspace/ui/voice-input';
 import { SETUP_MAX_DESCRIPTION_CHARS } from '@liveknowledge/knowledge';
 import {
   DESCRIBE_CHIPS,
@@ -38,6 +40,7 @@ export function DescribeStep({
   const length = description.trim().length;
   const hint = describeHint(length);
   const over = length > SETUP_MAX_DESCRIPTION_CHARS;
+  const voice = useVoiceInput({ value: description, onText: onChange, field });
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3" data-setup-step="describe">
       <label htmlFor={fieldId} className="text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -67,7 +70,9 @@ export function DescribeStep({
         invalid={over}
         hintId={hintId}
         data-setup-description=""
-        placeholder={adding ? 'What is missing, in your own words.' : 'In your own words.'}
+        placeholder={voice.placeholder(
+          adding ? 'What is missing, in your own words.' : 'In your own words.',
+        )}
         className="min-h-36 flex-1 resize-none leading-relaxed"
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {
@@ -77,22 +82,26 @@ export function DescribeStep({
           }
         }}
       />
-      <div id={hintId} className="flex min-h-5 items-start justify-between gap-3 text-xs">
+      <div id={hintId} className="flex min-h-5 items-center justify-between gap-3 text-xs">
         <p
           className={over ? 'text-red-700 dark:text-red-300' : 'text-slate-600 dark:text-slate-400'}
         >
           {hint ?? `For example: "${DESCRIBE_EXAMPLE}"`}
         </p>
-        {length >= DESCRIBE_COUNT_FROM ? (
-          <p
-            aria-live="polite"
-            data-setup-count=""
-            className={`shrink-0 tabular-nums ${over ? 'font-semibold text-red-700 dark:text-red-300' : 'text-slate-600 dark:text-slate-400'}`}
-          >
-            {length.toLocaleString('en')} / {SETUP_MAX_DESCRIPTION_CHARS.toLocaleString('en')}
-          </p>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-2">
+          <VoiceInputButton voice={voice} />
+          {length >= DESCRIBE_COUNT_FROM ? (
+            <p
+              aria-live={voice.listening ? 'off' : 'polite'}
+              data-setup-count=""
+              className={`shrink-0 tabular-nums ${over ? 'font-semibold text-red-700 dark:text-red-300' : 'text-slate-600 dark:text-slate-400'}`}
+            >
+              {length.toLocaleString('en')} / {SETUP_MAX_DESCRIPTION_CHARS.toLocaleString('en')}
+            </p>
+          ) : null}
+        </div>
       </div>
+      <VoiceInputNote voice={voice} />
     </div>
   );
 }

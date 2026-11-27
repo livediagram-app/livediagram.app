@@ -1,8 +1,8 @@
 'use client';
 
 // The question box every Ask shares (liveworkspace/docs/specs/020-ask/ask.md "The tool"): the field on top, and under
-// it, in the same rounded box, the AI pill at the left, the count as the limit nears, New Chat and Send (Stop while an
-// answer streams) at the right. It knows no app and no item: the host hands it its words, its pill and what a
+// it, in the same rounded box, the AI pill at the left, the count as the limit nears, New Chat, the microphone
+// (liveworkspace/docs/specs/022-interface-design/voice-input.md) and Send (Stop while an answer streams) at the right. It knows no app and no item: the host hands it its words, its pill and what a
 // question does. Enter sends, Shift and Enter make a new line.
 import {
   useEffect,
@@ -14,6 +14,7 @@ import {
   type ReactNode,
 } from 'react';
 import { TextArea, Tooltip, isComposingKey } from '@liveworkspace/ui';
+import { VoiceInputButton, VoiceInputNote, useVoiceInput } from '@liveworkspace/ui/voice-input';
 import { ASK_MAX_QUESTION_CHARS } from '../limits';
 import { SendIcon, StopIcon } from './ask-icons';
 
@@ -66,6 +67,13 @@ export function AskComposer({
   const length = value.length;
   const ready = value.trim() !== '' && !streaming;
   const name = followUp ? followUpLabel : label;
+  const voice = useVoiceInput({
+    value,
+    onText: setValue,
+    max: ASK_MAX_QUESTION_CHARS,
+    field,
+    disabled: streaming,
+  });
 
   // As tall as its writing, up to the cap.
   useLayoutEffect(() => {
@@ -108,7 +116,7 @@ export function AskComposer({
         disabled={streaming}
         aria-label={name}
         aria-describedby={length >= ASK_COUNT_FROM ? countId : undefined}
-        placeholder={name}
+        placeholder={voice.placeholder(name)}
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={onKeyDown}
         className="min-h-[30px] w-full resize-none !border-0 !bg-transparent !px-0 !py-1 !shadow-none !outline-none !ring-0"
@@ -137,6 +145,7 @@ export function AskComposer({
             </button>
           </Tooltip>
         ) : null}
+        <VoiceInputButton voice={voice} />
         {streaming ? (
           <Tooltip label="Stop">
             <button
@@ -161,6 +170,7 @@ export function AskComposer({
           </Tooltip>
         )}
       </div>
+      <VoiceInputNote voice={voice} />
       {cost ? (
         <p data-ask-credits="" className="text-[12px] leading-4 text-slate-600 dark:text-slate-400">
           {cost}

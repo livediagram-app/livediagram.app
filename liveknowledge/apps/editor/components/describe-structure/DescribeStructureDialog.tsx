@@ -8,6 +8,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { savedFlowOf } from '@liveknowledge/document';
 import { STRUCTURE_MAX_PURPOSE_CHARS } from '@liveknowledge/knowledge';
 import { Button, DialogCloseButton, DialogFooter, DialogHeader, TextArea } from '@liveknowledge/ui';
+import { VoiceInputButton, VoiceInputNote, useVoiceInput } from '@liveworkspace/ui/voice-input';
 import { Callout } from '@liveworkspace/ui/callout';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useEditorChromeStore, type EditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -82,6 +83,8 @@ function DialogBody({
   const [failure, setFailure] = useState<Failure | null>(null);
   const request = useRef<AbortController | null>(null);
   const field = useRef<HTMLTextAreaElement>(null);
+  // Speaking the purpose (voice input, liveworkspace/docs/specs/022-interface-design/voice-input.md).
+  const voice = useVoiceInput({ value: purpose, onText: setPurpose, field, disabled: busy });
   useEffect(() => {
     void aiSettingsStore.load(who, documentId);
   }, [who, documentId]);
@@ -184,7 +187,7 @@ function DialogBody({
           hintId={hintId}
           disabled={busy}
           data-describe-structure-purpose=""
-          placeholder={structurePlaceholder(title)}
+          placeholder={voice.placeholder(structurePlaceholder(title))}
           className="min-h-28 resize-none leading-relaxed"
           onChange={(event) => setPurpose(event.target.value)}
           onKeyDown={(event) => {
@@ -194,7 +197,7 @@ function DialogBody({
             }
           }}
         />
-        <div id={hintId} className="flex min-h-5 items-start justify-between gap-3 text-xs">
+        <div id={hintId} className="flex min-h-5 items-center justify-between gap-3 text-xs">
           <p
             className={
               hint ? 'text-red-700 dark:text-red-300' : 'text-slate-600 dark:text-slate-400'
@@ -203,15 +206,19 @@ function DialogBody({
           >
             {hint ?? ''}
           </p>
-          {length > STRUCTURE_MAX_PURPOSE_CHARS - 100 ? (
-            <p
-              aria-live="polite"
-              className={`shrink-0 tabular-nums ${hint ? 'font-semibold text-red-700 dark:text-red-300' : 'text-slate-600 dark:text-slate-400'}`}
-            >
-              {length} / {STRUCTURE_MAX_PURPOSE_CHARS}
-            </p>
-          ) : null}
+          <div className="flex shrink-0 items-center gap-2">
+            <VoiceInputButton voice={voice} />
+            {length > STRUCTURE_MAX_PURPOSE_CHARS - 100 ? (
+              <p
+                aria-live={voice.listening ? 'off' : 'polite'}
+                className={`shrink-0 tabular-nums ${hint ? 'font-semibold text-red-700 dark:text-red-300' : 'text-slate-600 dark:text-slate-400'}`}
+              >
+                {length} / {STRUCTURE_MAX_PURPOSE_CHARS}
+              </p>
+            ) : null}
+          </div>
         </div>
+        <VoiceInputNote voice={voice} />
         <KnowledgeAiSource
           state={lineState}
           who={who}
