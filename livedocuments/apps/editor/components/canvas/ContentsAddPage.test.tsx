@@ -1,8 +1,18 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { PageContents } from '@/hooks/ui/usePageContents';
 import { ContentsAddPage } from './ContentsAddPage';
+
+// Describe a Page's button stands in as a mark of what it was handed.
+vi.mock('./describe-page/DescribePageButton', () => ({
+  DescribePageButton: ({ onMade }: { onMade?: () => void }) => (
+    <button type="button" data-describe={onMade ? 'closes' : 'stays'} onClick={onMade}>
+      Describe
+    </button>
+  ),
+}));
 
 // docs/specs/007-editor/pages-mode.md "Contents": the canvas's + after the last page, as a wide button.
 afterEach(cleanup);
@@ -46,5 +56,17 @@ describe('ContentsAddPage', () => {
     cleanup();
     const { container } = render(<ContentsAddPage contents={contents({ canAdd: false })} />);
     expect(container.innerHTML).toBe('');
+  });
+
+  // docs/specs/007-editor/describe-a-page.md "When it is made": the phone's sheet closes once the page lands.
+  it('puts Describe a Page beside it, handing on what closes the phone’s sheet', () => {
+    const view = {} as PagesModeView;
+    const closed = vi.fn();
+    render(<ContentsAddPage contents={contents()} view={view} onDescribed={closed} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Describe' }));
+    expect(closed).toHaveBeenCalled();
+    cleanup();
+    render(<ContentsAddPage contents={contents()} view={view} />);
+    expect(document.querySelector('[data-describe="stays"]')).toBeTruthy();
   });
 });

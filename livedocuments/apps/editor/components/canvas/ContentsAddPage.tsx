@@ -26,12 +26,15 @@ export function ContentsAddPage({
   contents,
   view,
   end,
+  onDescribed,
 }: {
   contents: PageContents;
   // The view whose page edits Describe a Page makes its page through; absent, no AI button.
   view?: PagesModeView;
   // Put to Add Page's right in its row: the docked sidebar's Minimise.
   end?: ReactNode;
+  // Once Describe a Page has made its page: the phone's sheet closes, so the new page is in view.
+  onDescribed?: () => void;
 }) {
   const { canAdd, add, addLike, lastPage, full } = contents;
   // A Viewer has no Add Page; the sidebar's Minimise (`end`) still sits at the foot's right.
@@ -64,7 +67,13 @@ export function ContentsAddPage({
           <span className="truncate">{short}</span>
         </button>
       </Tooltip>
-      {view ? <DescribePageButton view={view} contents={contents} /> : null}
+      {view ? (
+        <DescribePageButton
+          view={view}
+          contents={contents}
+          {...(onDescribed ? { onMade: onDescribed } : {})}
+        />
+      ) : null}
       {end}
     </div>
   );

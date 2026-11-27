@@ -161,6 +161,35 @@ describe('placeholders never kept in a written page', () => {
   });
 });
 
+describe('figures, never numbered parts', () => {
+  const plain =
+    'Our year in 4 key figures: 12k customers, 94% would recommend, 48 countries, 1.4M orders';
+
+  it('marks a layout of numbered parts, and says so in the list, not for figures', () => {
+    expect(entry('slide', 'slide-agenda-grid').numbered).toBe(true);
+    expect(entry('slide', 'key-stats').numbered).toBe(false);
+    expect(entry('infographic', 'facts-grid').numbered).toBe(false);
+    expect(userText(chooseLayoutRequest('slide', 'Offsite agenda in four parts'))).toContain(
+      'Numbered parts, not for figures.',
+    );
+    expect(chooseLayoutRequest('slide', 'x').system).toContain('never');
+    expect(chooseLayoutRequest('slide', 'x').system).toContain('numbered parts');
+  });
+
+  it('leaves them out for a request that gives figures, and reads none of them back', () => {
+    const offered = offeredCatalogue('slide', plain).map((l) => l.id);
+    expect(offered).not.toContain('slide-agenda-grid');
+    expect(offered).toContain('key-stats');
+    expect(userText(chooseLayoutRequest('slide', plain))).not.toContain('- slide-agenda-grid:');
+    expect(readLayoutChoice('slide', '{"layout":"slide-agenda-grid"}', plain)).not.toEqual({
+      layout: entry('slide', 'slide-agenda-grid'),
+    });
+    expect(offeredCatalogue('slide', 'Offsite agenda in four parts').map((l) => l.id)).toContain(
+      'slide-agenda-grid',
+    );
+  });
+});
+
 describe('charts and changes only for a trend', () => {
   const ids = (kind: 'slide' | 'infographic', prompt: string) =>
     offeredCatalogue(kind, prompt).map((l) => l.id);

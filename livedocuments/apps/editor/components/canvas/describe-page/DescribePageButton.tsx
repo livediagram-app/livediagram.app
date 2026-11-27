@@ -30,9 +30,12 @@ const OPEN =
 export function DescribePageButton({
   view,
   contents,
+  onMade,
 }: {
   view: PagesModeView;
   contents: PageContents;
+  // After the page is made (the phone's Contents sheet closes then).
+  onMade?: () => void;
 }) {
   const { signedIn } = useEditorAiScope();
   const [open, setOpen] = useState<PageKind | null>(null);
@@ -64,6 +67,7 @@ export function DescribePageButton({
           view={view}
           contents={contents}
           onClose={() => setOpen(null)}
+          {...(onMade ? { onMade } : {})}
         />
       ) : null}
     </>

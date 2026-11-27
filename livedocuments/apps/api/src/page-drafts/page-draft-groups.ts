@@ -5,6 +5,7 @@
 // back to the group's slots. A group is a card's texts (the plain box they sit in), a stat of a stat row, or a free
 // big figure with the lines set under it in its column. Pure: read from the layout as built.
 import { partsOf, type SlotElement } from '@liveworkspace/edit-operations/layout-slots';
+import { figureMaxFor } from './page-draft-trend';
 
 /** One text of a layout as page-draft-slots.ts reads it: its slot, element, part of a compound element, and card. */
 export type SlotRead = {
@@ -24,6 +25,8 @@ export type SlotGroup = {
   required: readonly string[];
   // The key holding the group's number: two groups never show the same.
   figure: string;
+  // The longest number the slot holds: a part's number ("01") takes a short ordinal, never "1.4M". Null: any.
+  figureMax: number | null;
   // The stat row a stat sits in, so a short list is spread over the rows (4 stats on two rows of 3: 2 and 2).
   row: string | null;
 };
@@ -59,7 +62,7 @@ const COLUMN_WIDTH_SCALE = 1.6;
  * value), the next `detail`, then `detail2`.
  */
 function groupOf(
-  big: { slot: string },
+  big: { slot: string; text: string },
   above: readonly { slot: string }[],
   below: readonly { slot: string; text: string }[],
   row: string | null,
@@ -86,7 +89,13 @@ function groupOf(
   // The big text and the line that says what it is: a label above it, else the caption under it. A labelled value's
   // change (its delta) may be left out.
   const first = label ? 'label' : 'caption';
-  return { members, required: [bigKey, first], figure: bigKey, row };
+  return {
+    members,
+    required: [bigKey, first],
+    figure: bigKey,
+    figureMax: figureMaxFor(big.text),
+    row,
+  };
 }
 
 /**
@@ -188,7 +197,11 @@ export function slotGroups(
       group: groupOf(word(anchor), [], sorted.slice(0, COLUMN_LINES_MAX).map(word), null),
     });
   }
-  return groups.sort((a, b) => a.at - b.at).map((g) => g.group);
+  const sorted = groups.sort((a, b) => a.at - b.at).map((g) => g.group);
+  // Numbered parts only when every group's number is one ("01", "02"): a facts grid's "7" is a figure like the rest.
+  return sorted.every((g) => g.figureMax !== null)
+    ? sorted
+    : sorted.map((g) => ({ ...g, figureMax: null }));
 }
 
 /** The slots every group holds: written through the groups, never listed alone. */
@@ -228,6 +241,8 @@ export function readGroups(
   const list = Array.isArray(items) ? items : [];
   const kept: Record<string, string>[] = [];
   const seen = new Set<string>();
+  // Every group's or none's (slotGroups): numbered parts hold a short ordinal each.
+  const fitMax = groups[0]?.figureMax ?? null;
   for (const item of list) {
     if (kept.length >= groups.length) break;
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
@@ -239,6 +254,8 @@ export function readGroups(
     read['value'] ||= read['figure'];
     const next = groups[kept.length]!;
     if (next.required.some((k) => !read[k])) continue;
+    // A number longer than a part's number slot holds ("1.4M" in an agenda's "01") never goes in one.
+    if (fitMax !== null && read[next.figure]!.length > fitMax) continue;
     const figure = figureKey(read[next.figure]!);
     if (seen.has(figure)) {
       duplicates += 1;

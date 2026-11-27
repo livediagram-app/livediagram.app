@@ -121,6 +121,7 @@ describe('reading the groups', () => {
     ],
     required: ['figure', 'caption'],
     figure: 'figure',
+    figureMax: null,
     row,
   });
   const words = (t: unknown) => (typeof t === 'string' ? t.trim() : '');
@@ -160,6 +161,24 @@ describe('reading the groups', () => {
       f2: '',
       c2: '',
     });
+  });
+
+  it('never puts a number longer than a part’s number slot holds into it', () => {
+    const [part] = groupsOf('slide', 'slide-agenda-grid');
+    expect(part!.figureMax).toBe(3);
+    expect(groupsOf('slide', 'key-stats')[0]!.figureMax).toBeNull();
+    // A facts grid's "7" is a figure like its other cards'.
+    expect(groupsOf('infographic', 'facts-grid').every((g) => g.figureMax === null)).toBe(true);
+    const read = readGroups(
+      [part!],
+      [
+        { label: 'Customers', value: '1.4M' },
+        { label: 'Welcome', value: '01' },
+      ],
+      words,
+    );
+    expect([...read.words.values()]).toContain('01');
+    expect([...read.words.values()]).not.toContain('1.4M');
   });
 
   it('spreads a short list evenly over stat rows, in reading order', () => {

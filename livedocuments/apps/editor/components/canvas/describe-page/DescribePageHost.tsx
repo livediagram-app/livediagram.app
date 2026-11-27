@@ -22,11 +22,14 @@ export function DescribePageHost({
   view,
   contents,
   onClose,
+  onMade,
 }: {
   kind: PageKind;
   view: PagesModeView;
   contents: PageContents;
   onClose: () => void;
+  // Once the page is made: the phone's Contents sheet, which holds this dialog, closes so the page is seen.
+  onMade?: () => void;
 }) {
   const chrome = useEditorChromeStore();
   const toast = useToast();
@@ -66,6 +69,7 @@ export function DescribePageHost({
     list.expectAdded();
     if (!add(draft, ops, list.current ?? undefined)) return false;
     toast.success(DESCRIBE_PAGE_WORDS[kind].made(draft.kind === 'layout' ? draft.label : null));
+    onMade?.();
     return true;
   };
 

@@ -46,6 +46,7 @@ describe('the ask', () => {
     expect(text).not.toContain('figures[0] (');
     expect(text).not.toContain('subtitle (');
     expect(r.system).toContain('Each card shows a different number');
+    expect(r.system).toContain('never invent a caption');
     // A KPI's card: its label, value and change.
     expect(userText(fillLayoutRequest('slide', kpi(), 'Q3 against Q2'))).toContain(
       '{&quot;label&quot;:&quot;Revenue&quot;,&quot;value&quot;:&quot;£2.4M&quot;,&quot;delta&quot;:&quot;+18%&quot;}',
@@ -60,7 +61,7 @@ describe('the reply', () => {
     const reply = JSON.stringify({
       title: `  The\nOffsite  ${'x'.repeat(HEADING_MAX)}`,
       subtitle: 'See https://evil.example/now and https://ok.example',
-      'body[0]': 'Welcome',
+      'body[0]': 'Hello all',
       bullets: ['not on this layout'],
       table: [['a']],
       extra: 'dropped',
@@ -71,7 +72,7 @@ describe('the reply', () => {
     expect(out.title!.endsWith('…')).toBe(true);
     expect(out.subtitle).toBe('See and https://ok.example');
     expect(out.body).toHaveLength(bodies);
-    expect(out.body![0]).toBe('Welcome');
+    expect(out.body![0]).toBe('Hello all');
     expect(out).not.toHaveProperty('bullets');
     expect(out).not.toHaveProperty('table');
     expect(out).not.toHaveProperty('extra');
@@ -114,6 +115,37 @@ describe('the reply', () => {
     expect(readLayoutFill(agenda(), '{"title": 4}', 'p')).toBeNull();
     expect(readLayoutFill(agenda(), '{"title": "  ", "body": [""]}', 'p')).toBeNull();
     expect(readLayoutFill(agenda(), '{"nothing": "here"}', 'p')).toBeNull();
+  });
+});
+
+describe('the sample copied back', () => {
+  it('drops a loose slot holding its sample’s own words, but keeps the heading', () => {
+    const read = readLayoutFill(
+      keyStats(),
+      JSON.stringify({ title: 'The year in numbers', subtitle: 'twelve months, six numbers.' }),
+      'p',
+    )!;
+    expect(read.text.title).toBe('The year in numbers');
+    expect(read.text.subtitle).toBe('');
+  });
+});
+
+describe('a part’s number slot', () => {
+  it('never takes a figure longer than it holds, left for the page to drop', () => {
+    const divider = entry('infographic', 'section-divider');
+    expect(divider.samples.find((s) => s.slot === 'figures[0]')!.text).toBe('01');
+    const long = readLayoutFill(
+      divider,
+      JSON.stringify({ title: 'Results', 'figures[0]': '1.4M' }),
+      'p',
+    )!;
+    expect(long.text.figures).toEqual(['']);
+    const fits = readLayoutFill(
+      divider,
+      JSON.stringify({ title: 'Results', 'figures[0]': '02' }),
+      'p',
+    )!;
+    expect(fits.text.figures).toEqual(['02']);
   });
 });
 

@@ -15,9 +15,9 @@ vi.mock('@/lib/telemetry', () => ({ track: tracked }));
 // The dialog's code loads once pressed; here at once.
 vi.mock('next/dynamic', () => ({
   default: () =>
-    function Host(props: { kind: string; onClose: () => void }) {
+    function Host(props: { kind: string; onClose: () => void; onMade?: () => void }) {
       return (
-        <div data-host={props.kind}>
+        <div data-host={props.kind} data-made={props.onMade ? 'yes' : 'no'}>
           <button type="button" onClick={props.onClose}>
             Close Host
           </button>
@@ -103,8 +103,20 @@ describe('DescribePageButton', () => {
     fireEvent.click(button);
     expect(tracked).toHaveBeenCalledWith('UI', 'Opened', 'DescribePage');
     expect(document.querySelector('[data-host="slide"]')).toBeTruthy();
+    // Docked or on a desktop, nothing closes once the page is made.
+    expect(document.querySelector('[data-made="no"]')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Close Host' }));
     expect(document.querySelector('[data-host]')).toBeNull();
+  });
+
+  it('hands the host what to do once the page is made (the phone sheet closing)', () => {
+    render(
+      <SignedIn on>
+        <DescribePageButton view={view()} contents={contents()} onMade={() => {}} />
+      </SignedIn>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Describe a Slide with AI' }));
+    expect(document.querySelector('[data-made="yes"]')).toBeTruthy();
   });
 
   it('names the other kinds, and is disabled at the page limit', () => {
@@ -162,6 +174,37 @@ describe('DescribePageHost', () => {
     expect(list.expectAdded).toHaveBeenCalled();
     expect(add).toHaveBeenCalledWith(draft, expect.objectContaining({}), 'p1');
     expect(toasts.success).toHaveBeenCalledWith('Added a slide from the Agenda layout');
+  });
+
+  it('closes the phone’s Contents sheet once the page lands, never when it does not', async () => {
+    drafted.mockResolvedValue({ draft, provider: 'built-in', model: 'm' });
+    const onMade = vi.fn();
+    render(
+      <DescribePageHost
+        kind="slide"
+        view={view()}
+        contents={contents()}
+        onClose={() => {}}
+        onMade={onMade}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Make It' }));
+    expect(await made.result).toBe(true);
+    expect(onMade).toHaveBeenCalledTimes(1);
+    cleanup();
+    const notMade = vi.fn();
+    render(
+      <DescribePageHost
+        kind="slide"
+        view={view(vi.fn(() => false))}
+        contents={contents()}
+        onClose={() => {}}
+        onMade={notMade}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Make It' }));
+    expect(await made.result).toBe(false);
+    expect(notMade).not.toHaveBeenCalled();
   });
 
   it('says an article by its kind, and makes nothing when the page cannot land', async () => {

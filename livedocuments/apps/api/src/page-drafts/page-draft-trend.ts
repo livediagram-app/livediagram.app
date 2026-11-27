@@ -1,8 +1,9 @@
 // Whether a request gives data over time (docs/specs/007-editor/describe-a-page.md "Every kind", "Charts and changes
 // only for trends"). A layout with a chart, or one whose figures each carry a change ("+18%" against last quarter),
 // keeps its sample chart and invents changes when the request has neither, so it is offered only when the request
-// speaks of a trend: a change, a comparison with before, a run of periods, or a chart asked for. Read word by word,
-// never with a pattern over the whole text.
+// speaks of a trend: a change, a comparison with before, a run of periods, or a chart asked for. And whether it gives
+// figures ("12k", "94%", "1.4M"), which a layout of numbered parts ("01", "02") cannot hold ("Figures not parts").
+// Read word by word, never with a pattern over the whole text.
 
 // Words that mean change over time, a comparison with before, or a chart.
 const TREND_WORDS = new Set([
@@ -136,4 +137,47 @@ export function hasTrendData(prompt: string): boolean {
   }
   // A run of periods: figures given for two quarters, months or years.
   return quarters.size > 1 || months.size > 1 || years.size > 1;
+}
+
+// ---------- Figures, not numbered parts
+
+// The longest a part's number is: "01", "12", "3.".
+const ORDINAL_MAX = 3;
+
+/** A part's number, as an agenda or a list of steps shows it: one digit, or two with a leading zero, maybe a full
+ *  stop ("1", "01", "2."). "48" is a figure. */
+export function isOrdinal(text: string): boolean {
+  const t = text.trim().replace(/\.$/, '');
+  return (t.length === 1 || (t.length === 2 && t[0] === '0')) && [...t].every(isDigit);
+}
+
+/** The longest words a number slot takes: a part's number slot ("01") a short ordinal, any other slot no limit. */
+export const figureMaxFor = (sample: string): number | null =>
+  isOrdinal(sample) ? ORDINAL_MAX : null;
+
+const TIME_ENDS = ['am', 'pm', 'min', 'mins'];
+
+// A part's number in a request ("4 parts", "step 2") is no figure: a small whole number.
+const SMALL_COUNT = 20;
+
+/**
+ * True when the request gives figures to show: two or more numbers, at least one more than a small count ("12k",
+ * "94%", "1.4M", "£2m", "48"). A time ("9:30") and a year are not figures, nor "4 parts, 10 minutes each".
+ */
+export function givesFigures(prompt: string): boolean {
+  let numbers = 0;
+  let big = false;
+  for (const raw of prompt.split(/[\s,;()]+/)) {
+    const w = raw.replace(/[.!?:]+$/, '');
+    // A time ("9:30", "9am", "10min") is when, not how many.
+    const lower = w.toLowerCase();
+    if (![...w].some(isDigit) || w.includes(':') || TIME_ENDS.some((e) => lower.endsWith(e)))
+      continue;
+    const digits = [...w].filter(isDigit).join('');
+    if (w.length === 4 && digits === w && (w.startsWith('19') || w.startsWith('20'))) continue;
+    numbers += 1;
+    // A unit, a decimal or a currency makes it a figure; else its size.
+    if (digits !== w || Number(digits) > SMALL_COUNT) big = true;
+  }
+  return numbers > 1 && big;
 }
