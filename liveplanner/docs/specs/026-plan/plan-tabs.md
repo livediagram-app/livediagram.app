@@ -1,6 +1,6 @@
 # Plan tabs
 
-Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the project's Board and Sheet tabs (a board simplified for working its cards: [A board in a slot is simplified](#dashboard-tab)), plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
+Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the project's Board and Sheet tabs (a board simplified for working its cards: [A board in a slot is simplified](#dashboard-tab)), plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md), and so does a fifth, the **Session tab** (a queue of the plan's cards worked through one at a time, as a refinement): [Session tabs](session-tabs.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
 
 ## Domain language
 
@@ -9,6 +9,7 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 | **Board tab**     | A tab of kind `board`: one board, filling the tab                                             | board page, board mode |
 | **Sheet tab**     | A tab of kind `sheet`: one Sheet, filling the tab                                             | spreadsheet tab        |
 | **Dashboard tab** | A tab of kind `dashboard`: rows of slots                                                      | overview, report       |
+| **Session tab**   | A tab of kind `session`: a queue of cards worked through together ([Session tabs](session-tabs.md)) | meeting tab            |
 | **row**           | One band of a dashboard, its slots side by side                                               | section                |
 | **slot**          | One place in a row, holding one thing or empty                                                | cell, widget, panel    |
 | **span**          | A slot's width, in twelfths of the row                                                        | weight, columns        |
@@ -27,7 +28,7 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   stays.
 - Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather
   than Plan's mark (a general tab's): a kanban for a Board tab, a grid for a Sheet tab, a layout of tiles for a
-  Dashboard, a clipboard for a Form. The footer tab leads with it too, before its name, but only while the plan holds
+  Dashboard, a clipboard for a Form, a list with a play mark for a Session. The footer tab leads with it too, before its name, but only while the plan holds
   tabs of more than one kind (a Board and a Form, say): there it tells them apart, and in a plan of one kind it would
   only repeat itself, so the tab shows its name alone ([Editor app](../007-editor/editor-app.md#how-a-tab-looks)). The
   open tab's glyph is full strength, the others' 70%.

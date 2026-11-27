@@ -31,10 +31,12 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 ### Kind
 
-- A **tab kind** is what a tab is: a **Board**, **Sheet**, **Dashboard** or **Form** tab
-  ([Plan tabs](../026-plan/plan-tabs.md), [Forms](../030-forms/forms.md)), each with its own content and rules.
+- A **tab kind** is what a tab is: a **Board**, **Sheet**, **Dashboard**, **Form** or **Session** tab
+  ([Plan tabs](../026-plan/plan-tabs.md), [Forms](../030-forms/forms.md), [Session tabs](../026-plan/session-tabs.md)),
+  each with its own content and rules. A Session tab's **session kind** (Refinement) says what it is run for; it is
+  never a tab kind of its own.
 - A fresh tab is the **general** kind (`DEFAULT_TAB_KIND`, stored as `'diagram'`) until Start Planning makes it
-  one of the four (`PLAN_TAB_KINDS`).
+  one of the five (`PLAN_TAB_KINDS`).
 - "Board type" means a kind. It never names a template or a mode.
 
 ### Template

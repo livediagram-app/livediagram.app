@@ -19,5 +19,6 @@ Follow the references below only as needed; never upfront.
 - ./calendar-feed.md - when implementing the calendar feed: the plan's feed table, the token, the access check, the .ics writer and the route, and the My Work feed through the index
 - ./public-roadmap.md - when implementing the public roadmap: the roadmaps table, the managing routes, the allowlisted public read and the vote, Votes as a sort field, the Publish Roadmap dialog and the public page
 - ./email-to-board.md - when implementing Email to Board: the addresses table and directory, the managing routes, the Worker's email door, the delivery and the card, the dialog
+- ./session-tabs.md - when implementing Session tabs: the `session` tab kind and `Tab.session`, the queue and target stage rules, the outcome route and history entry, the page, the fill button and the facilitator
 - ./DEFAULTS.md - when a Plan blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a Plan blueprint covers

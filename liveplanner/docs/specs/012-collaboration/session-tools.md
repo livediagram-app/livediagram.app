@@ -3,6 +3,8 @@
 Live **session tools** that make a shared board interactive: a per-tab **timer** and per-tab
 **dot-voting** (on a Plan board, cast on its cards), both synced to every participant in real time.
 
+A **Session tab** is something else: a tab kind that works through a queue of cards ([Session tabs](../026-plan/session-tabs.md)). Its state is `Tab.session` (`session-tab.ts`); these tools are `Tab.timer` and `Tab.vote` (`session.ts`), and they stay on every tab, a Session tab's included.
+
 ## Why they need no new infrastructure
 
 Both tools store their state as optional **`Tab` fields**: `tab.timer` and

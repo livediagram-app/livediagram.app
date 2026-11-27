@@ -855,6 +855,11 @@ Each entry is **tagged** by how it was made:
 - **An undo or redo** (the write's `undo`): drawn with **(Undo)** after it, so a card moving back reads as a person
   taking their change back, not a second decision.
 - **A form's response**: the card made from it reads "created this card from a form response".
+- **A session's outcome** ([Session tabs](session-tabs.md#history)): an entry of its own, tagged `session`, holding one
+  `session` change (`{ kind: 'session', session: 'refinement', outcome: 'refined' | 'skipped' | 'flagged' }`) and
+  nothing else: "Sam refined this in a Refinement session". Written by `POST /items/:itemId/session` (edit access),
+  which changes nothing on the card, so its Last Edited stays; the move or flag a Refined or Flagged outcome makes is
+  its own write and its own entry. It groups only with other session entries.
 
 ### Kept bounded, in the plan
 
