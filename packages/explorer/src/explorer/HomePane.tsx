@@ -167,6 +167,7 @@ export function HomePane({ hero }: { hero: boolean }) {
                                 line="used"
                                 rank={i + 1}
                                 peak={peak}
+                                iconMarks
                               />
                             </li>
                           ))}
@@ -221,7 +222,7 @@ export function HomePane({ hero }: { hero: boolean }) {
                       <ul>
                         {shared.items.map((item) => (
                           <li key={item.id} className="min-w-0">
-                            <HomeRow item={item} showApp={showApp} line="opened" />
+                            <HomeRow item={item} showApp={showApp} line="opened" iconMarks />
                           </li>
                         ))}
                       </ul>
