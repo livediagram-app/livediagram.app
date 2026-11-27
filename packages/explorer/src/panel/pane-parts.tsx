@@ -332,14 +332,37 @@ export function PaneCard({
   );
 }
 
-// A folder's picture for its card: the folder glyph large on its tone, and what it holds.
-export function FolderPreview({ icon, count }: { icon: ReactNode; count: string }) {
+// A folder's picture for its card: the folder glyph large on its tone, what it holds at the bottom left and the apps
+// inside at the bottom right (one-explorer.md "What a folder holds, at a glance"). An empty folder's tone is a quiet
+// grey, so it reads as empty before its words are read.
+export function FolderPreview({
+  icon,
+  count,
+  empty = false,
+  badges,
+}: {
+  icon: ReactNode;
+  count: string;
+  empty?: boolean;
+  badges?: ReactNode;
+}) {
   return (
-    <span className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 via-white to-sky-50 text-brand-700 dark:from-brand-500/20 dark:via-slate-900 dark:to-sky-500/10 dark:text-brand-300 [&_svg]:h-9 [&_svg]:w-9">
+    <span
+      className={`relative flex h-full w-full items-center justify-center bg-gradient-to-br [&_svg]:h-9 [&_svg]:w-9 ${
+        empty
+          ? 'from-slate-50 to-slate-100/70 dark:from-slate-900 dark:to-slate-800/60'
+          : 'from-brand-50 via-white to-sky-50 dark:from-brand-500/20 dark:via-slate-900 dark:to-sky-500/10'
+      }`}
+    >
       {icon}
       <Chip className="absolute bottom-1.5 left-2 bg-white/90 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 shadow-sm dark:bg-slate-800/90 dark:text-slate-300">
         {count}
       </Chip>
+      {badges ? (
+        <span className="absolute bottom-1.5 right-2 flex [&_svg]:!h-2.5 [&_svg]:!w-2.5">
+          {badges}
+        </span>
+      ) : null}
     </span>
   );
 }

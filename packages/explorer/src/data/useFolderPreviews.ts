@@ -74,9 +74,14 @@ export function useFolderPreviews({
             return { scope, map, fresh };
           });
           // Filtered to the app, the folders with none of its items are asked again across every app, in one
-          // request, so their cards can show they are not empty.
+          // request, so their cards can show they are not empty; not those whose `apps` already says they hold
+          // nothing of any app's at any depth.
           const bare = app
-            ? ids.filter((id) => !previews.some((p) => p.folderId === id && p.itemCount > 0))
+            ? ids.filter((id) => {
+                const own = previews.find((p) => p.folderId === id);
+                if (own && own.itemCount > 0) return false;
+                return !own?.apps || Object.values(own.apps).some((n) => (n ?? 0) > 0);
+              })
             : [];
           if (!bare.length) return;
           return client

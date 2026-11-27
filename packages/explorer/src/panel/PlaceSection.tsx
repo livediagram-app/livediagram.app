@@ -127,6 +127,7 @@ export function PlaceSection({
                 folder={f}
                 itemCount={previews.get(f.id)?.itemCount}
                 elsewhere={previews.get(f.id)?.elsewhere?.itemCount}
+                preview={previews.get(f.id)}
                 onOpen={() => onOpenFolder(f.id)}
               />
             ))}

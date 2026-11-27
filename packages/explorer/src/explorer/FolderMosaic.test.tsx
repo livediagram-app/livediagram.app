@@ -70,11 +70,10 @@ describe('folder cards on the Explorer page', () => {
       />,
     );
     await waitFor(() => expect(document.querySelectorAll('[data-folder-mosaic]')).toHaveLength(2));
-    // One for the app's items, then one across every app for the cards with none (f3).
-    await waitFor(() => expect(index.count('folderPreviews')).toBe(2));
+    // One for the app's items; f3, with none, holds nothing of any app's either (its `apps`), so it is not asked again.
+    await waitFor(() => expect(index.count('folderPreviews')).toBe(1));
     const asked = index.calls.filter((c) => c.method === 'folderPreviews');
     expect(asked[0]!.args[1]).toEqual({ app: 'liveplanner' });
-    expect(asked[1]!.args).toEqual([['f3'], {}]);
     const f1 = document.querySelector('[data-folder-card="f1"]')!;
     // Five items and a subfolder: three tiles and +3.
     expect(f1.querySelectorAll('[data-thumb]')).toHaveLength(3);
@@ -109,9 +108,15 @@ describe('rows and cards', () => {
     expect(
       document.querySelector('[data-folder-row="f1"] [data-folder-count]')!.getAttribute('title'),
     ).toBe('1 folder · 5 plans');
-    // An empty folder shows no pill; it is asked once more across every app, in one request.
+    // An empty folder shows no pill and its muted glyph; holding nothing of any app's, it is never asked again.
     expect(document.querySelector('[data-folder-row="f2"] [data-folder-count]')).toBeNull();
-    await waitFor(() => expect(index.count('folderPreviews')).toBe(2));
+    expect(
+      document.querySelector('[data-folder-row="f2"] [data-folder-glyph="empty"]'),
+    ).toBeTruthy();
+    expect(
+      document.querySelector('[data-folder-row="f1"] [data-folder-glyph="stack"]'),
+    ).toBeTruthy();
+    expect(index.count('folderPreviews')).toBe(1);
   });
 
   it("box the host's snapshot on a row, and fall back to the kind's icon when it draws none", async () => {
