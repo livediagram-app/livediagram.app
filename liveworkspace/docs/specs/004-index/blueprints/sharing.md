@@ -18,7 +18,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/notices.ts`          | `tellApp`, `firstVisitStatement`, `GET /app/people/:id/count`                               |
 | `liveworkspace/apps/index/src/community-states.ts` | `POST /app/community/states`: `communityStatesOf`, where each Community post's item stands  |
 | `liveworkspace/apps/index/src/codec.ts`            | `generateShareCode`, `isShareCode`                                                          |
-| `liveworkspace/apps/index/src/share-fallback.ts`   | `fallbackLinkOf`, `withFallbackLink`: the least live link a refused grant names            |
+| `liveworkspace/apps/index/src/share-fallback.ts`   | `fallbackLinkOf`, `withFallbackLink`: the least live link a refused grant names             |
 
 ## Domain and naming
 
@@ -178,13 +178,13 @@ counts the person's items in that app, Trash included, up to `OWNED_COUNT_MAX` (
 
 ## Testing
 
-| Test                                                 | Pins                                                                                                                                                                        |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/sharing.test.ts` (29)  | share links; share passwords; a password on links already opened; guesses; what a link opens, and Shared with me; a public link at its own level for its owner              |
-| `liveworkspace/apps/index/src/notices.test.ts` (6)   | notices; a person's count of items made                                                                                                                                     |
+| Test                                                  | Pins                                                                                                                                                                                                                                       |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `liveworkspace/apps/index/src/sharing.test.ts` (29)   | share links; share passwords; a password on links already opened; guesses; what a link opens, and Shared with me; a public link at its own level for its owner                                                                             |
+| `liveworkspace/apps/index/src/notices.test.ts` (6)    | notices; a person's count of items made                                                                                                                                                                                                    |
 | `liveworkspace/apps/index/src/share-fallback.test.ts` | the least live link named: none, one, several (level, tab, age), expired, public, trashed, archived; password and sign-in links still asked at the link; owner and team member granted edit; signed out, guests, delegates and a sent code |
-| `liveworkspace/apps/index/src/share-sign-in.test.ts` | the rule's route; Require Sign In and domains on open, grant, reopen and lookup for each level; unverified and other-domain emails; guests; public links; sessions reloaded |
-| `packages/index-client/src/share-domains.test.ts`    | parsing, normalising and refusing domains; a worst-case text inside a CPU budget                                                                                            |
+| `liveworkspace/apps/index/src/share-sign-in.test.ts`  | the rule's route; Require Sign In and domains on open, grant, reopen and lookup for each level; unverified and other-domain emails; guests; public links; sessions reloaded                                                                |
+| `packages/index-client/src/share-domains.test.ts`     | parsing, normalising and refusing domains; a worst-case text inside a CPU budget                                                                                                                                                           |
 
 ## Constants and configuration
 

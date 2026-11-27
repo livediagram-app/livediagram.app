@@ -124,12 +124,21 @@ describe('grant', () => {
     // A refusal naming no link, another refusal, a grant or a network failure: no link.
     index.grant.mockRejectedValueOnce(new IndexError(401, 'password_required'));
     expect(await grants.passwordLink('d2')).toBeNull();
-    index.grant.mockRejectedValueOnce(new IndexError(404, 'not_found', null, 'CODE'));
+    index.grant.mockRejectedValueOnce(new IndexError(403, 'forbidden', null, 'CODE'));
     expect(await grants.passwordLink('d3')).toBeNull();
     index.grant.mockResolvedValueOnce(grantOf('g'));
     expect(await grants.passwordLink('d4')).toBeNull();
     index.grant.mockRejectedValueOnce(new TypeError('offline'));
     expect(await grants.passwordLink('d5')).toBeNull();
+  });
+
+  // Work Tracker 1518: an editor address opened with no access, while the item has a live link, names its least link.
+  it('answers the link a not-found names for an item asked with no code, and none for a plain not-found', async () => {
+    index.grant.mockRejectedValueOnce(new IndexError(404, 'not_found', null, 'LEAST'));
+    expect(await grants.passwordLink('d1')).toBe('LEAST');
+    expect(grants.refusal('d1')).toBe('not_found');
+    index.grant.mockRejectedValueOnce(new IndexError(404, 'not_found'));
+    expect(await grants.passwordLink('d2')).toBeNull();
   });
 
   it('forgets the named link once the item is granted, and on a later refusal naming none', async () => {
