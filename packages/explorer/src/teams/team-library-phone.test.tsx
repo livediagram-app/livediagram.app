@@ -89,6 +89,8 @@ describe('a team’s Library toolbar', () => {
     await library({ renderAppLogo: (app) => <i data-logo={app} /> });
     const chip = screen.getByRole('button', { name: 'Show: liveplanner' });
     expect(chip.querySelector('[data-logo="liveplanner"]')).not.toBeNull();
+    fireEvent.focus(chip);
+    fireEvent.pointerDown(chip);
     fireEvent.click(chip);
     const sheet = await screen.findByRole('dialog', { name: 'Show' });
     expect(

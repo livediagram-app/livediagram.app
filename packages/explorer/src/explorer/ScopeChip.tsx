@@ -6,7 +6,8 @@
 
 import { useState } from 'react';
 import type { AppScope } from '@liveworkspace/ui';
-import { ChoiceSheet, type Choice } from '../ui/ChoiceSheet';
+import type { Choice } from '../ui/ChoiceSheet';
+import { LazyChoiceSheet, preloadChoiceSheet } from '../ui/lazy-choice-sheet';
 import { CaretDownIcon } from '../ui/icons';
 import { siteOf } from '../words';
 import { useExplorer } from './context';
@@ -31,6 +32,8 @@ export function ScopeChip() {
         aria-expanded={open}
         aria-label={`Show: ${current.label}`}
         data-scope-chip={current.value}
+        onPointerDown={() => void preloadChoiceSheet()}
+        onFocus={() => void preloadChoiceSheet()}
         onClick={() => setOpen(true)}
         className={`${TOOLBAR_CONTROL} min-w-0 gap-1.5 px-2.5 text-sm font-medium`}
       >
@@ -44,7 +47,7 @@ export function ScopeChip() {
           <CaretDownIcon />
         </span>
       </button>
-      <ChoiceSheet
+      <LazyChoiceSheet
         open={open}
         title="Show"
         choices={choices}

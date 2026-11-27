@@ -84,7 +84,11 @@ describe('Sort on a phone (Work Tracker 1516)', () => {
   it('opens a sheet of the orders, the current one ticked, and a pick sorts', async () => {
     const onSort = vi.fn();
     render(<SortMenu compact sort="updated" onSort={onSort} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sort: Last Changed' }));
+    const button = screen.getByRole('button', { name: 'Sort: Last Changed' });
+    // A press starting, or focus, fetches the sheet's code ahead of the click.
+    fireEvent.focus(button);
+    fireEvent.pointerDown(button);
+    fireEvent.click(button);
     const sheet = await screen.findByRole('dialog', { name: 'Sort by' });
     const last = within(sheet).getByRole('radio', { name: 'Last Changed' });
     expect(last.getAttribute('aria-checked')).toBe('true');

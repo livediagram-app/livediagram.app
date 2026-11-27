@@ -12,7 +12,7 @@ import { appOfKind } from '../../lens/dimensions';
 import { AppMark } from '../badges';
 import { FilterChip, FilterChipRow } from '../FilterChips';
 import { PortalMenu } from '../../ui/Menu';
-import { ChoiceSheet } from '../../ui/ChoiceSheet';
+import { LazyChoiceSheet, preloadChoiceSheet } from '../../ui/lazy-choice-sheet';
 import { TOOLBAR_CONTROL } from '../../ui/classes';
 import { CaretDownIcon, CheckIcon, SortIcon } from '../../ui/icons';
 import { siteOf } from '../../words';
@@ -139,6 +139,8 @@ function SortSheetButton({
         aria-label={`Sort: ${label}`}
         title={`Sort: ${label}`}
         data-sort-button={sort}
+        onPointerDown={() => void preloadChoiceSheet()}
+        onFocus={() => void preloadChoiceSheet()}
         onClick={() => setOpen(true)}
         className={`${TOOLBAR_CONTROL} w-9 shrink-0`}
       >
@@ -151,7 +153,7 @@ function SortSheetButton({
           />
         ) : null}
       </button>
-      <ChoiceSheet
+      <LazyChoiceSheet
         open={open}
         title="Sort by"
         choices={SORT_CHOICES}
