@@ -362,7 +362,7 @@ copy-card-link.ts        Copy Card Link: copyCardLink(link, notify) writes the c
 ../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel (a board maximised from a slot): PLAN_BOARD_SECTIONS (Board Setup, Columns,
                          Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
                          Cards / Archive), each Body given `open` so it can defer work while shut
-ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, Copy Card Link,
+ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, phone: ItemStatusPill, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, Copy Card Link,
                          ItemMaximiseButton (desktop only), close), main column
                          (title, tabs from tabsOf then Linked Cards and Activity (panelTabs), the tab's fields),
                          Details aside (w-80: detailFieldsOf rows,
@@ -382,7 +382,25 @@ ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG 
                          ItemPanelSection (13px semibold heading, mb-8), ItemDetailsRow (grid 6.5rem/1fr, min-h-9,
                          rounded hover), ItemMeta (11px slate-400 created/edited lines); the aside is m-3 rounded-xl
                          bg-slate-50 ring-1; title 22px semibold tracking-tight
-ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
+ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl); Status lists
+                         statusOptionsOf (status-options.ts)
+status-options.ts        pure: statusOptionsOf(type, statuses, status) the type's statuses in board order, the
+                         card's excluded one last (`excluded`); statusPillGroups(options, phases) splits open from
+                         done (phase 'done'); statusDotColour(status, boards, phase) the first board's column colour,
+                         else PHASE_COLOURS[phase]
+ItemStatusPill.tsx       the phone header's status pill (plan-board.md "status pill"): h-6 rounded-full, dot +
+                         name (max-w-[9rem] truncate, hidden max-[359px]) + chevron; aria-label "Status: <name>";
+                         a span with no chevron when !canEdit; pressed, ItemStatusSheet; a pick saves
+                         onSave('status', next), haptic('snap'), toast.action key `status-moved:<item id>` "Moved
+                         to <name>" with Undo (onSave back to the previous status), track Plan · Changed ·
+                         StatusFromHeader
+ItemStatusSheet.tsx      the workbench BottomSheet (z-[var(--z-popover)], over the panel's z-modal): the title (12px
+                         slate-500 truncate), a role="radiogroup" of open rows, an hr, the done rows; each row
+                         role="radio" min-h-12, dot, name, CheckIcon when current; useClickOutside + useEscape
+                         (capture, stopPropagation) close it; focus lands on the current row
+field-heading-slot.tsx   FieldHeadingSlot context: { el, mode } a heading line's end, 'touch' (ItemPanelSection:
+                         shown max-sm and hover:none) or 'phone' (ItemDetailsRow: max-sm only, beside its label);
+                         useFieldHeadingSlot() for a field to portal its heading action into
 LinkedCards.tsx          LinkedCardGroup (a Linked as {Field} section; `emptyNote` false drops its empty line) and
                          FilteredCards rows (glyph, #key, title, status, Archived chip)
 LinkedCardsTab.tsx       the Linked Cards tab: linkedCardCount, the "No linked cards yet" empty state, the groups
@@ -390,7 +408,9 @@ ItemPanelTabs.tsx        ACTIVITY_TAB, DETAILS_TAB, LINKED_TAB, panelTabs, named
 ItemTrailCrumbs.tsx      the breadcrumb: the shared BackBar to the card before (its "#key title"), this card's "#key"
                          as the chip, in a row above the header
 item-trail.ts            pure: stepTrail / liveTrail / childrenOf, ItemOpenVia, ITEM_TRAIL_MAX
-RichTextField.tsx        the panel's rich text (the description, every Long Text): reads until clicked, then
+RichTextField.tsx        the panel's rich text (the description, every Long Text): reads until clicked (its Edit
+                         button portalled to the FieldHeadingSlot where there is one, visible where the slot is,
+                         the in-text one hidden there and the text full width), then
                          NoteRichTextEditor (note=false) on a slate-50 surface; saved RICH_TEXT_SAVE_MS (800 ms) after
                          typing, on blur and on close; with maxLength, "n characters left" from 90% and "n characters
                          over, not saved" (amber) past it
@@ -420,7 +440,11 @@ choice-options.ts        pure: choiceColour(options, option) (LABEL_COLOURS by i
                          (case-insensitive contains)
 OptionChip.tsx           an option's chip: TINT_CHIP (label-colour.ts) on --chip, a dot of the colour, wraps with
                          [overflow-wrap:anywhere]; a stale value a slate chip with "No longer an option"
-item-field-editors.tsx   editors for text (debounced), priority, number, date, checklist
+item-field-editors.tsx   editors for text (debounced), priority, number, date; re-exports ChecklistEditor
+ChecklistEditor.tsx      the checklist: progress bar, rows (items-center, gap-y between rows > leading), each step's
+                         text a ChecklistStepText textarea (rows 1, useAutoHeight lines CHECKLIST_STEP_LINES,
+                         leading-snug, [overflow-wrap:anywhere], Enter blurs, pasted line breaks become spaces), a
+                         read-only step a span with the same wrapping; the × h-6 w-6 shrink-0, centred
 PersonPicker.tsx         the Assignee picker: No one, the plan's people, then + Custom Assignee (editable only), whose
                          CustomAssigneePopover (AnchoredPopover, a Name TextInput of CUSTOM_ASSIGNEE_NAME_MAX, Cancel,
                          Add) saves personNamed(name, people) and closes
