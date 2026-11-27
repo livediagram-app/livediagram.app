@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { MAX_IMAGE_BYTES } from '@liveworkspace/api-schema/image-limits';
-import { appLibraryHosts, uploadRefusal } from './http';
+import {
+  appLibraryHosts,
+  everyAppLibraryHosts,
+  mergedWalkthroughsHost,
+  uploadRefusal,
+} from './http';
+import type { WalkthroughEntry, WalkthroughsHost } from './types';
 
 const token = async () => 'tok';
 const libraryHosts = (app: Parameters<typeof appLibraryHosts>[0]) =>
@@ -216,5 +222,81 @@ describe("the Library's hosts over an app's API", () => {
     await local.gallery!.list();
     expect(fetch.mock.calls[0]![0]).toBe('http://localhost:3000/api/images');
     expect(local.gallery!.helpHref).toBe('http://localhost:3000/help/explorer/image-gallery/');
+  });
+});
+
+// Work Tracker 1493: a page that is no one app's offers every app's Library.
+describe('every app’s Library, in no app', () => {
+  const entry = (id: string, createdAt: number): WalkthroughEntry => ({
+    id,
+    item: 'i1',
+    title: id,
+    author: null,
+    durationMs: 1,
+    mediaType: 'video/webm',
+    mediaBytes: 1,
+    camera: false,
+    createdAt,
+  });
+  const door = (entries: WalkthroughEntry[] | Error, usage: unknown = null): WalkthroughsHost => ({
+    list: vi.fn(async () => {
+      if (entries instanceof Error) throw entries;
+      return entries;
+    }),
+    usage: () => usage as ReturnType<NonNullable<WalkthroughsHost['usage']>>,
+    media: vi.fn(async () => new Blob(['x'])),
+    remove: vi.fn(async () => {}),
+    share: vi.fn(async (e: WalkthroughEntry) => ({ ...e, shareCode: 'c' })),
+  });
+
+  it('lends the first gallery and shape libraries there are, the preferred app’s first', () => {
+    const hosts = everyAppLibraryHosts('liveplanner', { token });
+    expect(hosts.gallery).toBe(appLibraryHosts('livediagram', { token }).gallery);
+    expect(hosts.shapeLibraries).toBe(appLibraryHosts('livediagram', { token }).shapeLibraries);
+    expect(everyAppLibraryHosts('liveplanner', { token })).toBe(hosts);
+    expect(everyAppLibraryHosts('livedesign', { token }).gallery).toBe(
+      appLibraryHosts('livedesign', { token }).gallery,
+    );
+    // One app with walkthroughs lends its own door; none, no page.
+    const other = async () => 'other';
+    expect(everyAppLibraryHosts('liveplanner', { token: other, apps: ['liveplanner'] })).toEqual({
+      walkthroughs: appLibraryHosts('liveplanner', { token: other }).walkthroughs,
+    });
+    expect(everyAppLibraryHosts('livehuddle', { token: other, apps: ['livehuddle'] })).toEqual({
+      gallery: appLibraryHosts('livehuddle', { token: other }).gallery,
+    });
+  });
+
+  it('lists every door’s walkthroughs newest first, each going back to its own door', async () => {
+    const a = door([entry('a1', 1), entry('a2', 9)]);
+    const b = door([entry('b1', 5)], { stored: 3, storedLimit: 5, maxMs: 1, owner: null });
+    const merged = mergedWalkthroughsHost([a, b]);
+    expect((await merged.list()).map((e) => e.id)).toEqual(['a2', 'b1', 'a1']);
+    expect(merged.usage!()).toEqual({ stored: 3, storedLimit: 5, maxMs: 1, owner: null });
+    await merged.remove(entry('b1', 5));
+    expect(b.remove).toHaveBeenCalled();
+    expect(a.remove).not.toHaveBeenCalled();
+    await merged.media(entry('a1', 1));
+    expect(a.media).toHaveBeenCalled();
+    expect((await merged.share!(entry('b1', 5), true))?.shareCode).toBe('c');
+    // An entry the list never answered goes to the first door.
+    await merged.remove(entry('zz', 1));
+    expect(a.remove).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves a failed door’s entries out, and fails only when every door does', async () => {
+    const merged = mergedWalkthroughsHost([door(new Error('down')), door([entry('b1', 1)])]);
+    expect((await merged.list()).map((e) => e.id)).toEqual(['b1']);
+    expect(merged.usage!()).toBeNull();
+    const down = mergedWalkthroughsHost([door(new Error('one')), door(new Error('two'))]);
+    await expect(down.list()).rejects.toThrow('one');
+    // A door that can't share answers null.
+    const plain = door([entry('p1', 1)]);
+    delete plain.share;
+    delete plain.usage;
+    const noShare = mergedWalkthroughsHost([plain]);
+    await noShare.list();
+    expect(await noShare.share!(entry('p1', 1), true)).toBeNull();
+    expect(noShare.usage!()).toBeNull();
   });
 });

@@ -76,7 +76,7 @@ import {
   type WorkspaceIdentity,
 } from '@/lib/explorer/token';
 import { inboxActionsFor, inboxHost, localInboxHost } from '@/lib/explorer/inbox';
-import { libraryHosts } from '@/lib/explorer/library';
+import { everyAppLibrary, libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
 import { trackExplorerDailyReturn } from '@/lib/explorer/daily-return';
 import { renewIdentity } from '@/lib/explorer/new-team';
@@ -250,8 +250,9 @@ export function ExplorerShell() {
     () => (arrived.app ? helpHrefFor(arrived.app) : platformHelpHref),
     [arrived.app],
   );
-  // The app's Image Gallery and Shape Libraries, where it keeps them (stable per app).
-  const library = libraryHosts(app);
+  // The app's Image Gallery, Shape Libraries and Walkthroughs, where it keeps them; in no app, every app's (stable
+  // per app).
+  const library = arrived.app ? libraryHosts(app) : everyAppLibrary(app);
   // Its "Import from" sources, each opening the app's /import page (stable per app).
   const imports = importsHost(app);
 
