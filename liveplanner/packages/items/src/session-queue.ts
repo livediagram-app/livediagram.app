@@ -82,20 +82,56 @@ export function sessionQueue(input: {
   };
 }
 
-// Where a kind's completing outcome (Refined, Committed) takes a card: the stage the set-up names for its type (when the type uses it), else the stage after
-// the card's own in its type's order, else null (its type has no later stage, so the card stays).
+// Stage names, compared without case, that are never Next Stage: finished work, and the pile work waits in.
+const DONE_LIKE = [
+  'done',
+  'closed',
+  'complete',
+  'completed',
+  'shipped',
+  'released',
+  'cancelled',
+  'canceled',
+];
+const BACKLOG_LIKE = ['backlog', 'icebox', 'inbox', 'ideas', 'idea', 'someday'];
+
+// What a stage is, as Next Stage reads it: its name (the plan's, else its id) and its phase when the plan knows it.
+export type SessionStageInfo = {
+  names?: ReadonlyMap<string, string> | undefined;
+  phases?: ReadonlyMap<string, 'todo' | 'doing' | 'done'> | undefined;
+};
+
+// Where a kind's completing outcome (Refined, Committed) takes a card (docs/specs/026-plan/session-tabs.md "Making
+// one", D146): the stage the set-up names for its type (when the type uses it), else Next Stage, else null (the card
+// stays). Next Stage is the stage after the card's own in its type's order when that one is open work (neither
+// Done-like nor Backlog-like). A type that lists its waiting stages after Done (the Sprint Board's To Do, Doing, Done,
+// Backlog, Ready) wraps round: from a stage after a Done-like one with no open stage after it, Next Stage is the
+// type's first open stage (To Do).
 export function sessionTarget(
   item: Item,
   types: readonly ItemTypeDef[],
   planStatuses: readonly string[],
   targets?: Readonly<Record<string, string>>,
+  stages: SessionStageInfo = {},
 ): string | null {
   const order = typeStatusesOf(typeIn(types, item.type), planStatuses);
+  const own = itemStatus(item) ?? '';
   const named = targets?.[item.type];
-  if (named && order.includes(named)) return named === itemStatus(item) ? null : named;
-  const at = order.indexOf(itemStatus(item) ?? '');
+  if (named && order.includes(named)) return named === own ? null : named;
+  const at = order.indexOf(own);
   if (at < 0) return null;
-  return order[at + 1] ?? null;
+  const nameOf = (s: string) => (stages.names?.get(s) ?? s).trim().toLowerCase();
+  const isDone = (s: string) => stages.phases?.get(s) === 'done' || DONE_LIKE.includes(nameOf(s));
+  const isOpen = (s: string) => s !== own && !isDone(s) && !BACKLOG_LIKE.includes(nameOf(s));
+  // The first open stage after the card's own, past any Backlog-like one, before a Done-like one.
+  for (const s of order.slice(at + 1)) {
+    if (isDone(s)) break;
+    if (isOpen(s)) return s;
+  }
+  // None, and the card's stage sits after a Done-like one: the type lists its waiting stages after its finished ones,
+  // so the work starts at its first open stage. Else the card stays.
+  if (order.slice(0, at).some(isDone)) return order.find(isOpen) ?? null;
+  return null;
 }
 
 // The card after `currentId` among those still to go (the first when it is not among them), or null when none is

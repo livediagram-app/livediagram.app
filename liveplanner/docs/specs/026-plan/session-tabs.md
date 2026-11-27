@@ -52,9 +52,14 @@ never read `Tab.session`.
   3. **Order**: **Sort By** and **Then By**, the same choices and directions a board's Sort Cards offers
      ([Plan board](plan-board.md#the-board-set-up): `boardSortFieldsOf` over the picked types). None keeps the cards
      in their hand order (rank).
-  4. **When Refined**: one row per picked type, "Moves to" a stage picker. Each starts on **Next Stage**, the stage
-     after the card's own in its type's order ([Item types](item-types.md#the-statuses-a-type-uses)), and may name
-     one stage of the type's for every card of it instead.
+  4. **When Refined**: one row per picked type, "Moves to" a stage picker. Each starts on **Next Stage**, and may name
+     one stage of the type's for every card of it instead. **Next Stage** is the first **open** stage after the card's
+     own in its type's order ([Item types](item-types.md#the-statuses-a-type-uses)), stepping past a Backlog-like one
+     (Backlog, Icebox, Inbox, Ideas, Someday) and never into a Done-like one (Done, Closed, Complete, Shipped,
+     Released, Cancelled, or any stage in the Done phase): with none before Done, the card stays. A type that lists its
+     waiting stages after Done (the Sprint Board's To Do, Doing, Done, Backlog, Ready) wraps round: a card in such a
+     stage with no open stage after it goes to the type's first open stage (Ready to **To Do**). Refinement and Sprint
+     Planning share the rule.
   5. **Timebox**: off by default; on, a length per card from 1 to 30 minutes (2, 3, 5, 10 offered as chips).
 - The dialog previews the queue as it fills ("12 cards, highest priority first") and **Start Session** makes the tab
   a Session tab in one change and one undo step, named **Refinement** when it still has its default name.
@@ -112,7 +117,7 @@ A Session tab fills the tab, as a Board tab's board does, in two parts side by s
 Under the card, for the facilitator:
 
 - **Skip** (a skip arrow) and **Flag** (a flag, only when the card is not flagged already) on the left, then a line
-  saying where Refined takes the card ("Moves to **Ready**", or "Stays in **Done**: its type has no later stage"), then
+  saying where Refined takes the card ("Moves to **Ready**", or "Stays in **Review**: no open stage comes after it"), then
   the timebox's time left when on, then the **Refined** fill button on the right.
 - **Refined** is short and clear: the label and a tick. Pressed, the button **fills left to right** in the theme's
   accent (a lighter wash over the solid button), the label turns into a tick, then the fill **drains back out**: about
@@ -167,8 +172,8 @@ is below.
      Ready, Refined, Ready for Development, Groomed, Selected, Backlog), and those stages; else each type's first
      stage.
   2. **Order** as Refinement's; None keeps the backlog's hand order, the top first.
-  3. **When Committed**: one row per picked type, "Moves to" a stage picker, starting on **Next Stage** (the next
-     logical stage after the card's own) and overridable with any stage of the type's, as When Refined is.
+  3. **When Committed**: one row per picked type, "Moves to" a stage picker, starting on **Next Stage** (the same rule
+     as When Refined's: on the Sprint Board, Ready commits to To Do) and overridable with any stage of the type's, as When Refined is.
   4. **Capacity**: optional, a number of estimate points from 1 to 9 999, empty by default ("No capacity").
   5. **Timebox** as Refinement's.
 - A picked type with no **Estimate** field says so under Card Types ("Bug has no Estimate field: its cards count as

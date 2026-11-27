@@ -43,8 +43,11 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 - `sessionQueue({ items, types, planStatuses, setup, decided })` answers `{ decided: Item[], toGo: Item[], capped }`:
   decided cards (still present, not archived or trashed) by `at`; to-go cards whose type is in `typeIds` and status in
   `statuses`, not archived or trashed, not decided, `sortCards` by `sortBy` over rank order, capped at 500.
-- `sessionTarget(item, type, planStatuses, targets)`: `targets[type]` when it is a status the type uses, else the
-  status after the card's in `typeStatusesOf(type, planStatuses)`, else `null` (no later stage: Refined moves nothing).
+- `sessionTarget(item, types, planStatuses, targets, { names, phases })`: `targets[type]` when it is a status the type
+  uses, else Next Stage over `typeStatusesOf(type, planStatuses)`: the first open status after the card's (open: not
+  its own, not Done-like by phase `done` or name, not Backlog-like by name), stopping at a Done-like one; with none,
+  and a Done-like status before the card's, the type's first open status (the Sprint Board's Ready to To Do); else
+  `null` (the card stays: the outcome moves nothing). The editor passes the plan's status names and phases.
 - `outcomeFits(kind, outcome)`: the outcome is one `SESSION_KIND_OUTCOMES[kind]` offers (refinement: refined, skipped,
   flagged; planning: committed, skipped). The kind's `completes` outcome (`refined`, `committed`) is the fill button
   and moves the card to `sessionTarget`.
@@ -106,7 +109,8 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 ## Testing
 
 - `session-tab.test.ts`: reader bounds, decisions, facilitator rules, timebox.
-- `session-queue.test.ts`: filter, order, decided first, target defaults and overrides, no next stage, cap, outcomes
+- `session-queue.test.ts`: filter, order, decided first, target defaults and overrides, no next stage, never into Done, past Backlog, the Sprint Board's
+  wrap from Ready to To Do, cap, outcomes
   per kind; `session-tally.test.ts`: points, no estimate apart, capacity states at their edges.
 - `item-history.test.ts`: a session change kept, read back, grouped only with its tag.
 - api `item-history-route.test.ts` ("a session outcome"): records, refuses below edit, unknown outcome, tab scope;

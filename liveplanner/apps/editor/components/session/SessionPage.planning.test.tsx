@@ -81,18 +81,22 @@ function mount(opts: {
   canEditCards?: boolean;
   session?: Partial<SessionTabState>;
   items?: Item[];
+  types?: ItemTypeDef[];
+  statusNames?: Map<string, string>;
 }) {
   const items = new Map(
     (opts.items ?? [card('a', 5), card('b', 8), card('c')]).map((i) => [i.id, i]),
   );
   const plan = {
     items,
-    types: [feature],
-    statusNames: new Map([
-      ['reviewed', 'Reviewed'],
-      ['selected', 'Selected'],
-      ['done', 'Done'],
-    ]),
+    types: opts.types ?? [feature],
+    statusNames:
+      opts.statusNames ??
+      new Map([
+        ['reviewed', 'Reviewed'],
+        ['selected', 'Selected'],
+        ['done', 'Done'],
+      ]),
     canEditCards: opts.canEditCards ?? opts.mayEdit,
     moveItem: vi.fn(),
     patchItem: vi.fn(async () => true),
@@ -165,6 +169,35 @@ describe('SessionPage: Sprint Planning', () => {
       expect(f.state().decided?.b?.outcome).toBe('committed');
       expect(tallyState()).toBe('over');
       expect(screen.getAllByText('Over capacity by 3 points').length).toBeGreaterThan(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('on a Sprint Board, where Ready comes after Done, Commit moves a Ready card to To Do', () => {
+    vi.useFakeTimers();
+    try {
+      const story = { ...feature, statuses: ['todo', 'doing', 'done', 'backlog', 'ready'] };
+      const ready = { ...card('a', 3), fields: { title: 'Card A', status: 'ready', estimate: 3 } };
+      const f = mount({
+        mayEdit: true,
+        types: [story],
+        items: [ready],
+        statusNames: new Map([
+          ['todo', 'To Do'],
+          ['doing', 'Doing'],
+          ['done', 'Done'],
+          ['backlog', 'Backlog'],
+          ['ready', 'Ready'],
+        ]),
+        session: { setup: { typeIds: ['feature'], statuses: ['ready'] } },
+      });
+      expect(screen.getByText(/Moves to/).textContent).toBe('Moves to To Do');
+      fireEvent.keyDown(window, { key: 'c' });
+      act(() => {
+        vi.runAllTimers();
+      });
+      expect(f.plan.moveItem).toHaveBeenCalledWith('a', { status: 'todo', before: null });
     } finally {
       vi.useRealTimers();
     }

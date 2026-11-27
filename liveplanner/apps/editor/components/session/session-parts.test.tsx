@@ -75,7 +75,7 @@ describe('SessionActionBar', () => {
       />,
     );
     expect(screen.queryByRole('button', { name: /Flag/ })).toBeNull();
-    expect(screen.getByText(/its type has no later stage/).textContent).toContain(
+    expect(screen.getByText(/no open stage comes after it/).textContent).toContain(
       'Stays in Backlog',
     );
     expect(screen.getByLabelText('Time’s up')).toBeTruthy();

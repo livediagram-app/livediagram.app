@@ -121,7 +121,7 @@ export function SessionActionBar({
             <strong className="font-semibold text-slate-800 dark:text-slate-100">
               {statusName}
             </strong>
-            : its type has no later stage
+            : no open stage comes after it
           </>
         )}
       </span>

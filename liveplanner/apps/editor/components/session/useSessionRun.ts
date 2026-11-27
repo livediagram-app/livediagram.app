@@ -69,7 +69,11 @@ export function useSessionRun({
   const peek = peekId && peekId !== current?.id ? (items.get(peekId) ?? null) : null;
   const shown = peek ?? current;
   const planStatuses = useMemo(() => [...plan.statusNames.keys()], [plan.statusNames]);
-  const target = (item: Item) => sessionTarget(item, types, planStatuses, setup.targets);
+  const target = (item: Item) =>
+    sessionTarget(item, types, planStatuses, setup.targets, {
+      names: plan.statusNames,
+      phases: plan.statusPhases,
+    });
 
   // The facilitator's screen settles the room on a real card, its clock starting, when the tab names none still queued
   // (a fresh session, or the current card dragged out of the picked stages).
