@@ -12,7 +12,7 @@ const ORDERS = [
   {
     id: 'board',
     label: 'Board Order',
-    line: 'Whoever holds the card furthest along the board first.',
+    line: 'In the order their first card sits on the board.',
   },
   { id: 'alphabetical', label: 'Alphabetical', line: 'By name, the same every day.' },
   {
