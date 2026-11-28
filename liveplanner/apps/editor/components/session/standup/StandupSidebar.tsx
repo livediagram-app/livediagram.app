@@ -87,7 +87,7 @@ export function StandupSidebar({
                   aria-hidden
                   className="flex size-5 shrink-0 items-center justify-center rounded-full border border-dashed border-slate-400 text-[10px] font-semibold text-slate-500 dark:border-slate-500 dark:text-slate-400"
                 >
-                  ?
+                  <span className="text-optical-centre">?</span>
                 </span>
               )}
               <span
@@ -96,7 +96,7 @@ export function StandupSidebar({
                 {name}
               </span>
               {done ? (
-                <span className="shrink-0 text-brand-600 dark:text-brand-400" data-person-done="">
+                <span className="shrink-0 text-brand-700 dark:text-brand-400" data-person-done="">
                   <TickIcon aria-hidden />
                   <span className="sr-only">Done</span>
                 </span>
