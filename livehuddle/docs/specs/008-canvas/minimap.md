@@ -110,7 +110,7 @@ letterboxing handled for free.
 - `../packages/workbench/src/lib/fit-clear-of-panel.ts`: `fitClearOfPanel`, the fit moved beside or above the Map
   (above), used by `lib/tab-fit-view.ts`.
 
-- `components/canvas/Minimap.tsx`: the SVG overview inside a `MovablePanel`
+- `livediagram/apps/editor/components/canvas/Minimap.tsx`: the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is
   memoised on `elements` so panning only re-renders the viewport rectangle, and
   redrawn when a gesture ends rather than on each frame of it, a remote edit at most

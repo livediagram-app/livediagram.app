@@ -19,7 +19,7 @@ Scope, by file:
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`          | Inline layout for an icon or a marker, after the face branches             |
 | `apps/editor/components/palette/MultiSelectionContextMenu.tsx` | Multi-selection gate `markerSrc`                                           |
 | `apps/editor/lib/style-presets.ts`                             | `applyMarkerToEl`, `applyMarkerSizeToEl`                                   |
-| `apps/editor/hooks/canvas/useStylePreview.ts`                  | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
+| `livediagram/apps/editor/hooks/canvas/useStylePreview.ts`      | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
 | `apps/editor/hooks/canvas/useShapeStyleSetters.ts`             | `setMarkerSelected`, `setMarkerSizeSelected`                               |
 | `apps/editor/lib/editor-commands-selection.ts`                 | Command-palette "Add … Marker" / "Clear Marker" [QE12]                     |
 

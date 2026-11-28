@@ -19,7 +19,7 @@ livedesign/apps/live/lib/live-stroke-test-utils.ts	livediagram/apps/editor/lib/l
 livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench/tasks/index.d.mts	livedocuments/apps/mcp/eval/bench/tasks/index.d.mts	liveknowledge/apps/mcp/eval/bench/tasks/index.d.mts	liveplanner/apps/mcp/eval/bench/tasks/index.d.mts
 livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveknowledge/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
 livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/document/src/retired-patterns.ts	liveknowledge/packages/document/src/retired-patterns.ts	liveplanner/packages/project/src/retired-patterns.ts
-livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts	livehuddle/packages/help-registry/src/telemetry.ts
+livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts
 livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	liveknowledge/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
 livedesign/packages/template-previews/src/index.ts	livedocuments/packages/template-previews/src/index.ts	liveknowledge/packages/template-previews/src/index.ts
 livedesign/packages/ui/src/Brand.tsx	livediagram/packages/ui/src/Brand.tsx	livedocuments/packages/ui/src/Brand.tsx
@@ -58,7 +58,6 @@ livediagram/apps/editor/lib/add-to-document-targets.ts	livedocuments/apps/editor
 livediagram/apps/editor/lib/api/preferences.ts	livehuddle/apps/editor/lib/api/preferences.ts
 livediagram/apps/editor/lib/explorer-organise.ts	livedocuments/apps/editor/lib/explorer-organise.ts	liveknowledge/apps/editor/lib/explorer-organise.ts
 livediagram/apps/editor/lib/tour-tracks.ts	livehuddle/apps/editor/lib/tour-tracks.ts
-livediagram/apps/editor/lib/workbench-bindings.ts	livehuddle/apps/editor/lib/workbench-bindings.ts
 livediagram/apps/editor/test/no-document-grants.ts	livedocuments/apps/editor/test/no-document-grants.ts	livehuddle/apps/editor/test/no-document-grants.ts	liveknowledge/apps/editor/test/no-document-grants.ts
 livediagram/apps/marketing/components/art-tokens.ts	livehuddle/apps/marketing/components/art-tokens.ts
 livediagram/apps/mcp/eval/bench/score.mjs	livedocuments/apps/mcp/eval/bench/score.mjs	liveknowledge/apps/mcp/eval/bench/score.mjs

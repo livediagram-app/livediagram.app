@@ -215,7 +215,6 @@ export const ELEMENT_TOURS: MetricStack = {
 // only when its button is pressed. One stack for all of them: every start, the starts per surface, then how they end.
 const SHOW_ME_SURFACES = [
   { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
-  { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },
 ] as const;
 
 export const SHOW_ME_TOURS_STARTED = chart(

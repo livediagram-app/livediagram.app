@@ -16,8 +16,8 @@ import { createIdleScreens, type IdleScreens } from './idle-screens';
 import { idleScreen } from '@/lib/real-3d/idle-screen-logo';
 import { posterEntries, usePosterPictures, type PosterPictureSource } from './usePosterPictures';
 import { seatSurface } from '@/lib/real-3d/seat-surface';
-import { placingDrawn, placingPiece, usePlacingPiece } from '@/lib/real-3d/placing-piece';
-import { isWallPiece, mountsOnWall, pieceFacing } from '@livehuddle/document';
+import { placingPiece } from '@/lib/real-3d/placing-piece';
+import { pieceFacing } from '@livehuddle/document';
 import { setModelFootprints } from '@livehuddle/avatar/office-geometry';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { selectionMoving, useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
@@ -25,192 +25,59 @@ import * as THREE from 'three';
 import type { Element } from '@livehuddle/document';
 import { spaceWalls } from '@/lib/space-3d/space-3d-walls';
 import { spaceRoofs, roofOver } from '@/lib/space-3d/space-3d-roofs';
-import { acrossView, cutAwayIds, frontWallIds, spaceRooms } from '@/lib/space-3d/space-3d-cutaway';
+import { cutAwayIds, frontWallIds, spaceRooms } from '@/lib/space-3d/space-3d-cutaway';
 import { space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
 import { wallHeldPieces } from '@/lib/real-3d/wall-held-pieces';
-import { clipMatrix, DEPTH_K, scaleZ } from '@/lib/real-3d/projection';
-import { SPACE_3D_PERSPECTIVE_PX } from '@/lib/space-3d/space-3d-camera';
-import { createOutlinePass, type OutlinePass } from './outline-pass';
-import { laterMaterials, ShaderWarmup } from './shader-warmup';
-import { createLook, setEye, type Look } from './scene-look';
+import { clipMatrix, scaleZ } from '@/lib/real-3d/projection';
+import { setEye } from './scene-look';
 import { contactShadows } from './contact-shadows';
-import { createDoorMotion, NO_DOOR_MOTION, type DoorMotion } from './door-motion';
-import {
-  wallMesh,
-  roofMesh,
-  wallPalette,
-  WALL_CUT_HEIGHT,
-  type WallPalette,
-} from '@/lib/real-3d/scene-walls';
-import {
-  floorHeightAt,
-  modelled,
-  padTops,
-  piecesMesh,
-  type PadTop,
-} from '@/lib/real-3d/scene-pieces';
+import { floorHeightAt, modelled, padTops, piecesMesh } from '@/lib/real-3d/scene-pieces';
 import { AVATAR_PAD_HEIGHT } from '@/lib/real-3d/models/pad';
-import { RISE, WALL_RISE } from '@/lib/real-3d/models/kit';
-import { grassField, grassKey, onLawn } from '@/lib/real-3d/scene-grass';
-import { grassMesh, type GrassMesh } from './grass-field';
+import { RISE } from '@/lib/real-3d/models/kit';
+import { grassKey, onLawn } from '@/lib/real-3d/scene-grass';
 import { RoadTraffic } from './road-traffic-mesh';
 import { trafficRoads, type TrafficRoad } from '@/lib/real-3d/road-traffic';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { pickPiece } from '@/lib/real-3d/piece-pick';
-import { floorPieceAt } from '@/lib/real-3d/floor-pick';
-import {
-  setReal3DModels,
-  setReal3DPicker,
-  setReal3DProjector,
-  setReal3DWallAim,
-} from '@/lib/real-3d/real-3d-pick';
-import { wallHitAlong } from '@/lib/real-3d/wall-aim';
-import type { MeshBuilder } from '@/lib/real-3d/mesh-builder';
+import { setReal3DModels } from '@/lib/real-3d/real-3d-pick';
+import { installScenePicking } from './scene-picking';
 import { lookKey, type CharacterLook } from '@/lib/real-3d/character';
 import { CharacterKit, CharacterRig, type WalkerPose } from './character-rig';
 import { FigureMotion } from '@/lib/real-3d/figure-motion';
-import { FrameGovernor, startLevel, type DeviceHints } from '@/lib/real-3d/adaptive-quality';
+import { FrameGovernor, startLevel } from '@/lib/real-3d/adaptive-quality';
 import { MomentFx } from './moment-fx';
 import { OfficeDogs } from './office-dog';
-import { SelectionMarks } from './selection-marks';
 import { floorPointer } from '@/lib/space-3d/floor-pointer';
 import { useOptionalSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import { selectionIds } from '@liveworkspace/workbench/lib/selection-store';
 import type { PieceBounds, PiecesTriangles } from '@/lib/real-3d/piece-pick';
 import { hasMoment, latestMoments, subscribeMoments } from '@/lib/piece-moments';
 import { headRisePx, writeHeadRise } from '@/lib/real-3d/head-rise';
-
-/** Screen px per drawn px: the scene is drawn at a quarter of the pixels and scaled up with hard edges. */
-/** The scene draws at the screen's own resolution, so edges are as crisp as the flat drawings. */
-const MAX_RATIO = 2;
-/** The sprite's pixel, in canvas px at size 1 (walk.ts AVATAR_UNIT). */
-const SPRITE_UNIT = 60 / 24;
-
-/** Each sitter's last seat search, kept while nothing it depends on changes (the frame loop's seat lookup). */
-const seatMemo = new WeakMap<
-  object,
-  {
-    seats: object;
-    x: number;
-    y: number;
-    yaw: number;
-    scale: number;
-    seat: ReturnType<typeof seatSurface>;
-  }
->();
-
-/** What the device says of itself, for the quality to start at. */
-function deviceHints(renderer: THREE.WebGLRenderer | undefined): DeviceHints {
-  let gpu: string | null = null;
-  try {
-    const gl = renderer?.getContext();
-    const info = gl?.getExtension('WEBGL_debug_renderer_info');
-    if (gl && info) gpu = String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL));
-  } catch {
-    gpu = null;
-  }
-  const nav = navigator as Navigator & { deviceMemory?: number };
-  return {
-    gpu,
-    cores: nav.hardwareConcurrency,
-    memoryGb: nav.deviceMemory,
-    mobile: matchMedia('(pointer: coarse)').matches,
-  };
-}
-/** How long after the last movement the scene counts as calm and drops to 30 frames a second. */
-const CALM_AFTER_MS = 600;
-/** The walker's box: where its feet are inside it, per unit of scale (walk.ts avatarBox). */
-const FEET_X = 13 * SPRITE_UNIT;
-const FEET_Y = 56 + 80;
-const OUTLINE = 0x2b2438;
-/** How long a lawn's change must settle before its blades regrow. */
-const GRASS_SETTLE_MS = 250;
-/** How long a wall takes to be cut down, or to grow back (3d-view.md "Walls in front of you are cut away"). */
-/** Whether a piece goes into or onto a wall (a door, a window, a clock): placing it leaves the walls standing. */
-function standsInWall(el: Element): boolean {
-  if (el.type !== 'shape') return false;
-  return mountsOnWall(el.shape) || isWallPiece(el);
-}
-const CUT_MS = 320;
-
-/** The walls across the view at each quarter turn, worked out once per set of walls (not each frame). */
-const acrossCache = new WeakMap<
-  readonly { id: string; a: { x: number; y: number }; b: { x: number; y: number } }[],
-  Set<string>[]
->();
-function acrossFor(
-  walls: readonly { id: string; a: { x: number; y: number }; b: { x: number; y: number } }[],
-  turn: number,
-): Set<string> {
-  let byTurn = acrossCache.get(walls);
-  if (!byTurn) {
-    byTurn = [0, 1].map((t) => new Set(walls.filter((w) => acrossView(w, t)).map((w) => w.id)));
-    acrossCache.set(walls, byTurn);
-  }
-  return byTurn[((turn % 2) + 2) % 2]!;
-}
-
-/**
- * Fades a wall (or its cut-down copy) to `opacity`: its meshes get materials of their own the first time it fades
- * (kept on the group, disposed with it by disposeFades), so a wall fades on its own, never every wall sharing its
- * colour. Opaque again at 1, writing depth as before.
- */
-function fadeGroup(group: THREE.Group, opacity: number): void {
-  let mats = group.userData.fadeMats as THREE.Material[] | undefined;
-  if (!mats) {
-    if (opacity >= 1) return;
-    const own: THREE.Material[] = [];
-    const made = new Map<THREE.Material, THREE.Material>();
-    group.traverse((o) => {
-      if (!(o instanceof THREE.Mesh || o instanceof THREE.LineSegments)) return;
-      const m = o.material as THREE.Material;
-      let c = made.get(m);
-      if (!c) {
-        c = m.clone();
-        made.set(m, c);
-        own.push(c);
-      }
-      o.material = c;
-    });
-    group.userData.fadeMats = mats = own;
-  }
-  for (const m of mats) {
-    m.transparent = opacity < 1;
-    m.opacity = opacity;
-    m.depthWrite = opacity >= 1;
-  }
-}
-
-/** Disposes the materials fadeGroup gave a wall. */
-function disposeFades(group: THREE.Group): void {
-  for (const m of (group.userData.fadeMats as THREE.Material[] | undefined) ?? []) m.dispose();
-}
-/** Higher than this (canvas px, risen), a surface over a sitter is a chair's back or a desk, never their seat. */
-const SEAT_CAP = 70;
-/** How long a cut-down wall waits, out of your way, before it grows back (so a pan past it never flickers it). */
-const REGROW_DELAY_MS = 450;
-/** How long a roof takes to lift off and fade, or to settle back. */
-const ROOF_MS = 380;
-/** How high a roof rises as it lifts off. */
-const ROOF_LIFT = 60;
-
-type StaticScene = {
-  /** Each wall standing, and cut down: `cut` goes 0 (standing) to 1 (cut down) as it slides. */
-  walls: Map<
-    string,
-    {
-      group: THREE.Group;
-      low: THREE.Group;
-      height: number;
-      cut: number;
-      want: number;
-      /** When it last was in your way (ms), for the wait before it grows back. */
-      seen: number;
-    }
-  >;
-  /** Each roof: `lift` goes 0 (on) to 1 (lifted off and gone) as it eases, its own materials faded with it. */
-  roofs: Map<string, { group: THREE.Group; lift: number; mats: THREE.Material[] }>;
-};
+import {
+  acrossFor,
+  buildGroup,
+  CALM_AFTER_MS,
+  CUT_MS,
+  deviceHints,
+  emptySceneState,
+  FEET_X,
+  FEET_Y,
+  fadeGroup,
+  MAX_RATIO,
+  REGROW_DELAY_MS,
+  ROOF_LIFT,
+  ROOF_MS,
+  SEAT_CAP,
+  seatMemo,
+  SPRITE_UNIT,
+  standsInWall,
+  type Figure,
+  type SceneState,
+} from './real3d-scene-kit';
+import { useReal3DEngine } from './useReal3DEngine';
+import { useSceneWalls } from './useSceneWalls';
+import { useSceneClocks } from './useSceneClocks';
+import { usePlacingPreview } from './usePlacingPreview';
+import { useSceneGrass } from './useSceneGrass';
+import { useSceneSelection } from './useSceneSelection';
 
 type Props = {
   elements: readonly Element[];
@@ -222,65 +89,6 @@ type Props = {
   paletteKey: string;
   /** Whose pictures the Posters read (docs/specs/009-elements/poster.md); absent, they hang empty. */
   pictureSource?: PosterPictureSource;
-};
-
-function geometryOf(b: MeshBuilder, glass = false): THREE.BufferGeometry {
-  const g = new THREE.BufferGeometry();
-  g.setAttribute(
-    'position',
-    new THREE.Float32BufferAttribute(glass ? b.glassPositions : b.positions, 3),
-  );
-  g.setAttribute('color', new THREE.Float32BufferAttribute(glass ? b.glassColours : b.colours, 3));
-  g.setAttribute('normal', new THREE.Float32BufferAttribute(glass ? b.glassNormals : b.normals, 3));
-  return g;
-}
-
-function linesOf(b: MeshBuilder): THREE.BufferGeometry {
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(b.lines, 3));
-  return g;
-}
-
-type Built = { group: THREE.Group; dispose: () => void };
-
-function buildGroup(
-  b: MeshBuilder,
-  mats: { solid: THREE.Material; glass: THREE.Material; line: THREE.Material },
-): Built {
-  const group = new THREE.Group();
-  const geos: THREE.BufferGeometry[] = [];
-  if (b.positions.length) {
-    const g = geometryOf(b);
-    geos.push(g);
-    const solid = new THREE.Mesh(g, mats.solid);
-    solid.castShadow = true;
-    solid.receiveShadow = true;
-    group.add(solid);
-  }
-  if (b.glassPositions.length) {
-    const g = geometryOf(b, true);
-    geos.push(g);
-    const mesh = new THREE.Mesh(g, mats.glass);
-    mesh.renderOrder = 2;
-    group.add(mesh);
-  }
-  if (b.lines.length) {
-    const g = linesOf(b);
-    geos.push(g);
-    group.add(new THREE.LineSegments(g, mats.line));
-  }
-  for (const o of group.children) o.frustumCulled = false;
-  return { group, dispose: () => geos.forEach((g) => g.dispose()) };
-}
-
-type Figure = {
-  group: THREE.Group;
-  rig: CharacterRig;
-  shadow: THREE.Mesh;
-  /** How it really moves: its heading, speed and turn, from where its feet are each frame. */
-  motion: FigureMotion;
-  /** The head rise last written for its chips (head-rise.ts). */
-  chip: { rise: number | null };
 };
 
 export default function Real3DLayer({
@@ -298,24 +106,7 @@ export default function Real3DLayer({
     [board, preview],
   );
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const engine = useRef<{
-    renderer: THREE.WebGLRenderer;
-    scene: THREE.Scene;
-    camera: THREE.Camera;
-    outline: OutlinePass;
-    look: Look;
-    /** Holds a frame while the programs it needs compile off the main thread (shader-warmup.ts). */
-    warmup: ShaderWarmup;
-    /** Stand-ins for the materials the scene makes later, compiled with its first frame (shader-warmup.ts). */
-    later: THREE.Group;
-    mats: {
-      solid: THREE.MeshLambertMaterial;
-      glass: THREE.MeshLambertMaterial;
-      line: THREE.LineBasicMaterial;
-      shadow: THREE.MeshBasicMaterial;
-      figure: THREE.MeshLambertMaterial;
-    };
-  } | null>(null);
+  const engineRef = useReal3DEngine(canvasRef);
   const turnRef = useRef(turn);
   // While 3D draws, a turned piece blocks where its model stands (the owner walked into a bookcase on its side).
   useEffect(() => {
@@ -354,60 +145,13 @@ export default function Real3DLayer({
   const roomsKey = useMemo(() => JSON.stringify(spaceRooms(elements)), [elements]);
   const rooms = useMemo(() => JSON.parse(roomsKey) as ReturnType<typeof spaceRooms>, [roomsKey]);
 
-  // The renderer, once.
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    THREE.ColorManagement.enabled = false;
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
-    renderer.setClearColor(0x000000, 0);
-    renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-    const scene = new THREE.Scene();
-    const look = createLook(scene, renderer);
-    const camera = new THREE.Camera();
-    const mats = {
-      solid: look.mats.solid,
-      glass: look.mats.glass,
-      line: new THREE.LineBasicMaterial({ color: OUTLINE, transparent: true, opacity: 0.3 }),
-      shadow: new THREE.MeshBasicMaterial({
-        color: 0x0f172a,
-        transparent: true,
-        opacity: 0.18,
-        depthWrite: false,
-      }),
-      figure: look.mats.figure,
-    };
-    const outline = createOutlinePass({
-      k: DEPTH_K,
-      perspective: SPACE_3D_PERSPECTIVE_PX,
-      ink: OUTLINE,
-    });
-    const warmup = new ShaderWarmup(renderer);
-    const later = laterMaterials();
-    engine.current = { renderer, scene, camera, mats, outline, look, warmup, later: later.group };
-    return () => {
-      later.dispose();
-      outline.dispose();
-      look.dispose();
-      mats.line.dispose();
-      mats.shadow.dispose();
-      renderer.dispose();
-      engine.current = null;
-    };
-  }, []);
-
   // The Posters' pictures, quads of their own over their frames (poster-pictures.ts).
-  const posters = usePosterPictures(() => engine.current?.scene ?? null, pictureSource);
+  const posters = usePosterPictures(() => engineRef.current?.scene ?? null, pictureSource);
   // Idle Screens' logo, one mesh on one shared texture (idle-screens.ts).
   const idleRef = useRef<IdleScreens | null>(null);
   const idlePlaces = useRef<ReadonlyMap<string, readonly number[]>>(new Map());
   useEffect(() => {
-    const e = engine.current;
+    const e = engineRef.current;
     if (!e) return;
     const made = createIdleScreens();
     e.scene.add(made.object);
@@ -418,29 +162,10 @@ export default function Real3DLayer({
       made.dispose();
       if (idleRef.current === made) idleRef.current = null;
     };
-  }, []);
+  }, [engineRef]);
 
   // The static scene: walls (each its own, to cut down), roofs (each its own, to hide the one you stand under), pieces.
-  const staticRef = useRef<{
-    walls: StaticScene['walls'];
-    roofs: StaticScene['roofs'];
-    /** Hides a piece in the pieces' one geometry (while its moment moves it) and returns what puts it back. */
-    lift: (id: string) => () => void;
-    byId: Map<string, Element>;
-    boundsById: Map<string, PieceBounds>;
-    /** The Avatar Pads' tops, which a character on one stands on. */
-    pads: PadTop[];
-    /** The doors in the doorways, opening as characters come (door-motion.ts). */
-    doors: DoorMotion;
-  }>({
-    pads: [],
-    doors: NO_DOOR_MOTION,
-    walls: new Map(),
-    roofs: new Map(),
-    lift: () => () => {},
-    byId: new Map(),
-    boundsById: new Map(),
-  });
+  const staticRef = useRef<SceneState>(emptySceneState());
   const screensRef = useRef<DeskScreens | null>(null);
   // The pieces hung on each wall, which go with it when it is cut down (wall-held-pieces.ts), and those hidden now
   // with what puts each back.
@@ -459,98 +184,7 @@ export default function Real3DLayer({
   const selectionStore = useOptionalSelectionStore();
   /** Re-marks the selection when the pieces (and so their boxes) are rebuilt. */
   const markSelection = useRef<() => void>(() => {});
-  // The walls and roofs: rebuilt only when they change, not on every board change (each wall clones its materials).
-  useEffect(() => {
-    const e = engine.current;
-    const canvas = canvasRef.current;
-    if (!e || !canvas) return;
-    const tokens =
-      canvas.parentElement?.querySelector('[data-space-walls]') ?? canvas.parentElement;
-    const style = tokens ? getComputedStyle(tokens) : null;
-    const palette: WallPalette = wallPalette((n) => style?.getPropertyValue(n) ?? '');
-    const disposers: (() => void)[] = [];
-    const root = new THREE.Group();
-    const wallMap: StaticScene['walls'] = new Map();
-    for (const w of walls) {
-      // Each wall standing, and cut down (shown in its place while you stand in front of it).
-      const built = buildGroup(wallMesh(w, palette).rise(WALL_RISE), e.mats);
-      const low = buildGroup(wallMesh(w, palette, WALL_CUT_HEIGHT).rise(WALL_RISE), e.mats);
-      low.group.visible = false;
-      root.add(built.group, low.group);
-      wallMap.set(w.id, {
-        group: built.group,
-        low: low.group,
-        height: w.height,
-        cut: 0,
-        want: 0,
-        seen: 0,
-      });
-      disposers.push(built.dispose, low.dispose, () => {
-        disposeFades(built.group);
-        disposeFades(low.group);
-      });
-    }
-    const doorMotion = createDoorMotion(
-      walls,
-      palette,
-      (b) => buildGroup(b, e.mats),
-      (id) => {
-        const w = wallMap.get(id);
-        return w && [w.group, w.low];
-      },
-    );
-    disposers.push(doorMotion.dispose);
-    const roofMap: StaticScene['roofs'] = new Map();
-    for (const r of roofs) {
-      const built = buildGroup(roofMesh(r, palette).rise(WALL_RISE), e.mats);
-      // Its own materials (a roof is a handful of meshes), so it fades on its own as it lifts off.
-      const mats: THREE.Material[] = [];
-      built.group.traverse((o) => {
-        if (!(o instanceof THREE.Mesh || o instanceof THREE.LineSegments)) return;
-        const m = (o.material as THREE.Material).clone();
-        o.material = m;
-        mats.push(m);
-      });
-      root.add(built.group);
-      roofMap.set(r.id, { group: built.group, lift: 0, mats });
-      disposers.push(built.dispose, () => mats.forEach((m) => m.dispose()));
-    }
-    e.scene.add(root);
-    const st = staticRef.current;
-    st.walls = wallMap;
-    st.roofs = roofMap;
-    st.doors = doorMotion;
-    return () => {
-      e.scene.remove(root);
-      disposers.forEach((d) => d());
-      st.walls = new Map();
-      st.roofs = new Map();
-      st.doors = NO_DOOR_MOTION;
-    };
-  }, [walls, roofs, paletteKey]);
-  // A wall piece aims at the wall the pointer is over, not the floor behind it (wall-aim.ts): the sight line through a
-  // floor point, from the camera this frame drew with, against the walls as they stand now (a cut one is low).
-  useEffect(() => {
-    const e = engine.current;
-    if (!e) return;
-    const ndc = new THREE.Vector3();
-    const near = new THREE.Vector3();
-    const far = new THREE.Vector3();
-    const low = {
-      has: (id: string) => (staticRef.current?.walls.get(id)?.cut ?? 0) >= 0.5,
-    };
-    setReal3DWallAim(({ x, y }) => {
-      ndc.set(x, y, 0).applyMatrix4(e.camera.projectionMatrix);
-      if (!Number.isFinite(ndc.x) || !Number.isFinite(ndc.y)) return null;
-      near.set(ndc.x, ndc.y, -1).applyMatrix4(e.camera.projectionMatrixInverse);
-      far.set(ndc.x, ndc.y, 1).applyMatrix4(e.camera.projectionMatrixInverse);
-      // From the camera's side (the end higher above the floor), into the scene.
-      const [from, to] = far.z > near.z ? [far, near] : [near, far];
-      const dir = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
-      return wallHitAlong(walls, low, { x: from.x, y: from.y, z: from.z }, dir);
-    });
-    return () => setReal3DWallAim(null);
-  }, [walls]);
+  useSceneWalls(engineRef, canvasRef, staticRef, walls, roofs, paletteKey);
   // While a selection is dragged, resized or reshaped the pieces' one geometry stays as the gesture found it: the
   // pieces the gesture changes are lifted out of it and drawn on their own each tick (below), so a tick costs those
   // pieces, not the whole scene. It is rebuilt once when the gesture ends.
@@ -562,7 +196,7 @@ export default function Real3DLayer({
   // The pieces: one geometry, each piece's model kept between changes (scene-pieces.ts).
   useEffect(() => {
     const elements = pieceBase;
-    const e = engine.current;
+    const e = engineRef.current;
     const canvas = canvasRef.current;
     if (!e || !canvas) return;
     const disposers: (() => void)[] = [];
@@ -591,47 +225,7 @@ export default function Real3DLayer({
       lit.dispose();
       if (screensRef.current === lit) screensRef.current = null;
     });
-    // A press is traced from the screen into the scene through the camera this frame drew with.
-    const near = new THREE.Vector3();
-    const far = new THREE.Vector3();
-    const projected = new THREE.Vector3();
-    setReal3DProjector((x, y, z) => {
-      const r = canvas.getBoundingClientRect();
-      if (r.width <= 0 || r.height <= 0) return null;
-      const p = projected.set(x, y, z).applyMatrix4(e.camera.projectionMatrix);
-      return { x: r.left + ((p.x + 1) / 2) * r.width, y: r.top + ((1 - p.y) / 2) * r.height };
-    });
-    setReal3DPicker((clientX, clientY) => {
-      const r = canvas.getBoundingClientRect();
-      if (r.width <= 0 || r.height <= 0) return null;
-      const nx = ((clientX - r.left) / r.width) * 2 - 1;
-      const ny = 1 - ((clientY - r.top) / r.height) * 2;
-      near.set(nx, ny, -1).applyMatrix4(e.camera.projectionMatrixInverse);
-      far.set(nx, ny, 1).applyMatrix4(e.camera.projectionMatrixInverse);
-      const dir = { x: far.x - near.x, y: far.y - near.y, z: far.z - near.z };
-      // From the camera's side: the end of the ray higher above the floor.
-      const from = dir.z > 0 ? far : near;
-      const sign = dir.z > 0 ? -1 : 1;
-      const hit = pickPiece(
-        piecesBuilt.bounds,
-        { x: from.x, y: from.y, z: from.z },
-        { x: dir.x * sign, y: dir.y * sign, z: dir.z * sign },
-        piecesBuilt,
-      );
-      if (hit) return hit;
-      // No model met: a press on a Room's or a Corridor's floor picks it (floor-pick.ts).
-      const dz = dir.z * sign;
-      if (Math.abs(dz) < 1e-9) return null;
-      const t = -from.z / dz;
-      if (t < 0) return null;
-      const point = { x: from.x + dir.x * sign * t, y: from.y + dir.y * sign * t };
-      // Else the floor under it, through the very camera the scene drew with (the stage's own guess drifted from it).
-      return { id: floorPieceAt(elementsRef.current, point), point };
-    });
-    disposers.push(
-      () => setReal3DPicker(null),
-      () => setReal3DProjector(null),
-    );
+    disposers.push(installScenePicking(e.camera, canvas, piecesBuilt, () => elementsRef.current));
     setReal3DModels(new Map(piecesBuilt.bounds.map((b) => [b.id, b])));
     disposers.push(() => setReal3DModels(new Map()));
     const meshOf = (mat: THREE.Material) =>
@@ -690,12 +284,12 @@ export default function Real3DLayer({
       st.boundsById = new Map();
       st.lift = () => () => {};
     };
-  }, [pieceBase, paletteKey, posters]);
+  }, [engineRef, pieceBase, paletteKey, posters]);
 
   // The pieces a gesture is changing, drawn on their own over the frozen geometry they are lifted out of.
   const liftedRef = useRef(new Map<string, () => void>());
   useEffect(() => {
-    const e = engine.current;
+    const e = engineRef.current;
     if (!e || !frozen) return;
     const before = new Map(frozen.map((el) => [el.id, el] as const));
     const changed = elements.filter((el) => before.get(el.id) !== el && modelled(el));
@@ -738,116 +332,9 @@ export default function Real3DLayer({
       }
       idleRef.current?.move(back);
     };
-  }, [elements, frozen, posters]);
-  // Clocks tick once a minute (social-pieces.md "Clock"), at the viewer's own time: at each minute their models alone are built
-  // again over the frozen ones, so their hands move without rebuilding the board. Nothing runs between minutes.
-  useEffect(() => {
-    const e = engine.current;
-    if (!e) return;
-    const clocks = elements.filter((el) => el.type === 'shape' && el.shape === 'world-clock');
-    if (!clocks.length) return;
-    const st = staticRef.current;
-    let drawn: (() => void) | null = null;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const draw = () => {
-      drawn?.();
-      const restore = clocks.map((el) => st.lift(el.id));
-      const group = buildGroup(piecesMesh(clocks, elements), e.mats);
-      e.scene.add(group.group);
-      drawn = () => {
-        e.scene.remove(group.group);
-        group.dispose();
-        restore.forEach((f) => f());
-      };
-    };
-    const next = () => {
-      timer = setTimeout(
-        () => {
-          draw();
-          next();
-        },
-        60_000 - (Date.now() % 60_000) + 20,
-      );
-    };
-    next();
-    return () => {
-      clearTimeout(timer);
-      drawn?.();
-    };
-  }, [elements, pieceBase, paletteKey]);
-  // The piece being placed from the palette, drawn where it would land as it will stand once dropped (3d-view.md
-  // "Editing in 3D"): its model and its contact shadow, built on their own, so a pointer move costs that one piece.
-  const placing = usePlacingPiece();
-  useEffect(() => {
-    const e = engine.current;
-    if (!e || !placing || !modelled(placing)) {
-      placingDrawn.set(false);
-      return;
-    }
-    const built = piecesMesh([placing]);
-    const group = buildGroup(built, e.mats);
-    const kind = placing.shape;
-    const grounding = contactShadows(
-      built.bounds,
-      (x, y) => onLawn(elements, x, y),
-      () => kind,
-    );
-    group.group.add(grounding.object);
-    e.scene.add(group.group);
-    placingDrawn.set(true);
-    return () => {
-      e.scene.remove(group.group);
-      group.dispose();
-      grounding.dispose();
-    };
-  }, [placing, elements]);
-  // A door, a window or a fence being placed is part of the walls: the walls it changes are drawn as they will
-  // stand with it (the doorway cut, the window glazed, the fence run), in place of the ones standing now, so you see
-  // exactly where it lands (the owner, 2026-11-27).
-  useEffect(() => {
-    const e = engine.current;
-    const st = staticRef.current;
-    if (!e || !placing || modelled(placing)) return;
-    const now = new Set(walls.map((w) => JSON.stringify(w)));
-    const next = spaceWalls([...elements, placing]).filter((w) => w.kind !== 'grass');
-    const nextKeys = new Set(next.map((w) => JSON.stringify(w)));
-    const added = next.filter((w) => !now.has(JSON.stringify(w)));
-    if (added.length === 0) return;
-    const gone = walls.filter((w) => !nextKeys.has(JSON.stringify(w)));
-    const tokens =
-      canvasRef.current?.parentElement?.querySelector('[data-space-walls]') ??
-      canvasRef.current?.parentElement;
-    const style = tokens ? getComputedStyle(tokens) : null;
-    const palette: WallPalette = wallPalette((n) => style?.getPropertyValue(n) ?? '');
-    const root = new THREE.Group();
-    const built = added.map((w) => buildGroup(wallMesh(w, palette).rise(WALL_RISE), e.mats));
-    for (const b of built) root.add(b.group);
-    const hidden: THREE.Group[] = [];
-    for (const w of gone) {
-      const was = st.walls.get(w.id);
-      if (!was) continue;
-      for (const g of [was.group, was.low]) {
-        if (!g.visible) continue;
-        g.visible = false;
-        hidden.push(g);
-      }
-      // Kept out of sight while the new one stands in for it (the cut-away pass would show it again).
-      was.group.userData.placingHidden = true;
-    }
-    e.scene.add(root);
-    placingDrawn.set(true);
-    return () => {
-      e.scene.remove(root);
-      built.forEach((b) => b.dispose());
-      for (const w of gone) {
-        const was = st.walls.get(w.id);
-        if (was) delete was.group.userData.placingHidden;
-      }
-      for (const g of hidden) g.visible = true;
-      placingDrawn.set(false);
-    };
-  }, [placing, elements, walls]);
-  useEffect(() => () => placingDrawn.set(false), []);
+  }, [engineRef, elements, frozen, posters]);
+  useSceneClocks(engineRef, staticRef, elements, pieceBase, paletteKey);
+  usePlacingPreview(engineRef, canvasRef, staticRef, elements, walls);
   // The gesture over: what was lifted goes back (the geometry is rebuilt from the board as it now is).
   useEffect(() => {
     if (frozen) return;
@@ -855,69 +342,9 @@ export default function Real3DLayer({
     liftedRef.current.clear();
   }, [frozen]);
 
-  // The lawns' blades, regrown only when a lawn or what covers it changes: at once the first time, then once a change
-  // settles (growing a big lawn takes tens of ms; a lawn being dragged keeps its old blades until it is let go).
-  const grassRef = useRef<GrassMesh | null>(null);
-  useEffect(() => {
-    const e = engine.current;
-    if (!e) return;
-    const grow = () => {
-      const next = grassMesh(grassField(elementsRef.current, surfaceRef.current));
-      const old = grassRef.current;
-      if (old) {
-        e.scene.remove(old.object);
-        old.dispose();
-      }
-      grassRef.current = next;
-      if (next) e.scene.add(next.object);
-    };
-    if (!grassRef.current) {
-      grow();
-      return;
-    }
-    const t = window.setTimeout(grow, GRASS_SETTLE_MS);
-    return () => window.clearTimeout(t);
-  }, [lawnKey]);
-  useEffect(
-    () => () => {
-      const e = engine.current;
-      const g = grassRef.current;
-      if (g) {
-        e?.scene.remove(g.object);
-        g.dispose();
-      }
-      grassRef.current = null;
-    },
-    [],
-  );
+  const grassRef = useSceneGrass(engineRef, elementsRef, surfaceRef, lawnKey);
 
-  // The selection, marked in the scene while editing (3d-view.md "Editing in 3D").
-  useEffect(() => {
-    const e = engine.current;
-    if (!e || !selectionStore) return undefined;
-    const marks = new SelectionMarks();
-    e.scene.add(marks.group);
-    const mark = () => {
-      const s = staticRef.current;
-      const { selectedId, multiSelectedIds } = selectionStore.get();
-      const picked: PieceBounds[] = [];
-      if (s)
-        for (const id of selectionIds(selectedId, multiSelectedIds)) {
-          const b = s.boundsById.get(id);
-          if (b) picked.push(b);
-        }
-      marks.set(picked);
-    };
-    markSelection.current = mark;
-    mark();
-    const unsubscribe = selectionStore.subscribe(mark);
-    return () => {
-      unsubscribe();
-      markSelection.current = () => {};
-      e.scene.remove(marks.group);
-      marks.dispose();
-    };
-  }, [selectionStore]);
+  useSceneSelection(engineRef, staticRef, markSelection, selectionStore);
 
   // The frame loop: the camera from the stage, the characters from their walkers, the cut-away from your feet.
   useEffect(() => {
@@ -927,9 +354,10 @@ export default function Real3DLayer({
     if (!main) return;
     const figures = new Map<Element | HTMLElement, Figure>();
     const kit = new CharacterKit();
-    const fx = new MomentFx(engine.current!.scene, engine.current!.mats.solid);
+    const scene = engineRef.current!.scene;
+    const fx = new MomentFx(scene, engineRef.current!.mats.solid);
     // Each Pet Bed's dog, read from its hidden drawing (office-dog.ts).
-    const dogs = new OfficeDogs(engine.current!.scene, main);
+    const dogs = new OfficeDogs(scene, main);
     // The Roads' cars: built the first time the board has a road, then kept (road-traffic-mesh.ts).
     let traffic: RoadTraffic | null = null;
     let carsShown = -1;
@@ -966,11 +394,14 @@ export default function Real3DLayer({
     let shown = false;
     // What each frame draws: the scene, then the ink pass's screen quad.
     const passes = [
-      { scene: engine.current!.scene, camera: engine.current!.camera },
-      { scene: engine.current!.outline.quad.scene, camera: engine.current!.outline.quad.camera },
+      { scene: engineRef.current!.scene, camera: engineRef.current!.camera },
+      {
+        scene: engineRef.current!.outline.quad.scene,
+        camera: engineRef.current!.outline.quad.camera,
+      },
     ];
     // How sharp to draw, for this device and kept by its own frame rate (adaptive-quality.ts).
-    const governor = new FrameGovernor(startLevel(deviceHints(engine.current?.renderer)));
+    const governor = new FrameGovernor(startLevel(deviceHints(engineRef.current?.renderer)));
     const stir = () => {
       busyUntil = performance.now() + CALM_AFTER_MS;
     };
@@ -981,7 +412,7 @@ export default function Real3DLayer({
 
     const frame = () => {
       raf = requestAnimationFrame(frame);
-      const e = engine.current;
+      const e = engineRef.current;
       if (!e) return;
       const now = performance.now();
       const busy = now < busyUntil;
@@ -1308,9 +739,8 @@ export default function Real3DLayer({
       main.removeEventListener('pointerdown', stir);
       main.removeEventListener('wheel', stir);
       window.removeEventListener('keydown', stir);
-      const e = engine.current;
       for (const fig of figures.values()) {
-        e?.scene.remove(fig.group);
+        scene.remove(fig.group);
         fig.rig.dispose();
       }
       kit.dispose();
@@ -1320,7 +750,7 @@ export default function Real3DLayer({
       traffic?.dispose();
       shadowGeo.dispose();
     };
-  }, [walls, roofs, rooms, posters]);
+  }, [engineRef, grassRef, walls, roofs, rooms, posters]);
 
   return (
     <canvas

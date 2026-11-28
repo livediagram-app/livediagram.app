@@ -148,15 +148,7 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
       imageContext,
       onContextSelect: h.handleElementContextSelect,
     }),
-    [
-      h,
-      tabSummaries,
-      readOnly,
-      chairSitters,
-      canvasTool,
-      imageContext,
-      portalResolver,
-    ],
+    [h, tabSummaries, readOnly, chairSitters, canvasTool, imageContext, portalResolver],
   );
   // The elements actually drawn.
   const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);

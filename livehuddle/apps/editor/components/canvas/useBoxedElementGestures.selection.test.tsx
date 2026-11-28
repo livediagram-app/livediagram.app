@@ -143,7 +143,6 @@ describe.each(KINDS)('a plain press on a %s', (_name, make) => {
     expect(h.onShiftSelect).toHaveBeenCalledTimes(1);
     expect(h.onPlainClick).not.toHaveBeenCalled();
   });
-
 });
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table is a placeholder, so a

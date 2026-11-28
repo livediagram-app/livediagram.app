@@ -3,6 +3,7 @@ import { dropRetiredNoteElements, dropRetiredNotes, isRetiredNote } from './reti
 import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import { createShape, createSticky, createText } from './factories';
 import type { Tab } from './index';
+import { cpuBudgetMs, cpuLeastMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "The Write category": a stored text or sticky note is dropped
 // when its tab is read, and nothing brings one in.
@@ -66,15 +67,18 @@ describe('dropRetiredNotes', () => {
       i % 10 === 0 ? { ...sticky, id: `s${i}` } : { ...desk, id: `d${i}` },
     );
     const clean = elements.filter((el) => el.type !== 'sticky');
-    const t0 = performance.now();
-    const dropped = dropRetiredNotes({ elements });
-    const t1 = performance.now();
-    const same = dropRetiredNotes({ elements: clean });
-    const t2 = performance.now();
+    let dropped = { elements };
+    let same = { elements: clean };
+    const dropMs = cpuLeastMsOf(() => {
+      dropped = dropRetiredNotes({ elements });
+    });
+    const sameMs = cpuLeastMsOf(() => {
+      same = dropRetiredNotes({ elements: clean });
+    });
     expect(dropped.elements).toHaveLength(4500);
     expect(same.elements).toBe(clean);
-    // Measured about 0.1 ms each on an M-series laptop; the budget leaves room for a slow CI runner.
-    expect(t1 - t0).toBeLessThan(50);
-    expect(t2 - t1).toBeLessThan(50);
+    // Measured about 0.1 ms each on an M-series laptop; 50 ms of CPU time is a generous ceiling.
+    expect(dropMs).toBeLessThan(cpuBudgetMs(50));
+    expect(sameMs).toBeLessThan(cpuBudgetMs(50));
   });
 });

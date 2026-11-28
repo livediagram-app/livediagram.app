@@ -18,12 +18,12 @@ Scope, by file:
 | `packages/document/src/theme-graph.ts`                                        | The four theme walks call the re-derive last                                                                     |
 | `apps/editor/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
 | `apps/editor/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
-| `apps/editor/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
-| `apps/editor/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
+| `livediagram/apps/editor/lib/format-painter.ts`, `format-config.ts`           | The painter carries a binding only together with its colour                                                      |
+| `livediagram/apps/editor/lib/quick-style.ts`                                  | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
 | `apps/editor/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
 | `../packages/workbench/src/lib/quick-style-placement.ts`                      | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
 | `apps/editor/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
-| `apps/editor/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
+| `livediagram/apps/editor/hooks/canvas/useQuickStyle.ts`                       | Panel actions: one commit per choice, memory, telemetry                                                          |
 | `../packages/workbench/src/hooks/ui/useQuickStylePlacement.ts`                | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | apps/editor/components/canvas/QuickStylePanel.tsx                             | The panel: compact, a fixed width from `panelFrame()`                                                            |
 | apps/editor/components/canvas/quick-style-rows.tsx                            | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |

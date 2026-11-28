@@ -300,7 +300,6 @@ export const OFFICE_FOOTPRINT_BOXES: Partial<Record<string, FootprintBoxes>> = {
   },
 };
 
-/** Every box of a piece's footprint, as fractions of the drawing its facing shows: none for a piece that does not block. */
 let modelFacing: ((el: { shape: string; chairFacing?: SeatFacing }) => SeatFacing) | null = null;
 /**
  * Whether a turned piece blocks where its 3D model stands (livehuddle's 3d-engine.md "Block models"): the front
@@ -321,13 +320,13 @@ export function modelFootprintsOn(): boolean {
 }
 
 /** A front-drawing fraction turned a quarter turn at a time to `facing`, as the 3D model is (piece-frame.ts). */
-function turnFraction(f: GridFraction, facing: SeatFacing): GridFraction {
+function turnFraction(f: GridFraction, facing: Exclude<SeatFacing, 'n'>): GridFraction {
   if (facing === 'e') return { x0: 1 - f.y1, x1: 1 - f.y0, y0: f.x0, y1: f.x1 };
   if (facing === 's') return { x0: 1 - f.x1, x1: 1 - f.x0, y0: 1 - f.y1, y1: 1 - f.y0 };
-  if (facing === 'w') return { x0: f.y0, x1: f.y1, y0: 1 - f.x1, y1: 1 - f.x0 };
-  return f;
+  return { x0: f.y0, x1: f.y1, y0: 1 - f.x1, y1: 1 - f.x0 };
 }
 
+/** Every box of a piece's footprint, as fractions of the drawing its facing shows: none for a piece that does not block. */
 export function footprintFractions(
   shape: string,
   facing: SeatFacing = 'n',

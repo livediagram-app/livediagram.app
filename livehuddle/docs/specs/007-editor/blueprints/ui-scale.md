@@ -74,9 +74,9 @@ synchronously on its first render, before any scaled surface paints.
 Each scaled surface reads its part's scale with `useUiScale(part)`, spreads
 `uiScaleStyle(scale)` into its ROOT's `style`, and converts every JS-computed
 screen-px length it writes on that root or a descendant with `toSurfacePx`.
-`panels`: `MovablePanel`, `QuickStylePanel`, `useDockPopovers`.
+`panels`: `MovablePanel`, `useDockPopovers`.
 `toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`.
-`cornerButtons`: the cluster in `CanvasChrome`, `usePanelDock`.
+`cornerButtons`: the cluster in `CanvasChrome`.
 
 - **`MovablePanel`** (both branches):
   - Free `position` stays stored in screen px; render `left` / `top` as
@@ -117,11 +117,6 @@ the window rather than running off it.
 
 What makes room for a scaled surface:
 
-- `cornerBottomInset(corner, scale)` (`apps/editor/lib/panel-layout.ts`):
-  bottom-right is `16 + 44 × scale + 12` at the corner buttons' scale, the
-  cluster's height scaled and the inset and gap not.
-  `nearestSnapCorner(geom, extents, scale)` uses it, fed by `usePanelDock`'s
-  `useUiScale('cornerButtons')`, so snap detection matches the landing.
 - `toolbarTopClearancePx(scale)` in `CanvasChrome`: `12 + 46 × scale + 10` at
   the toolbar's scale, the top corners' offset while the strip spans them.
 - `useStripCrowdsCorners` takes a `scaleKey` (`"<toolbar>/<panels>"`) and
@@ -221,7 +216,6 @@ dashboard's `APPEARANCE_SETTINGS` stack.
 | A panel reads only the panels part   | `MovablePanel` test, provider with differing parts                 |
 | Nothing outside the provider scales  | `useUiScale(part)` is 1 with no provider                           |
 | Toolbar More popover stays unscaled  | `../packages/workbench/src/lib/ui-scale.test.ts` `uiUnscaleStyle`  |
-| Bottom-right clearance scales        | `apps/editor/lib/panel-layout.test.ts`                             |
 
 Verified in a real browser across the range: drag, corner snap, Toolbar More
 popover, cluster popovers, live preview, and one part scaled alone.

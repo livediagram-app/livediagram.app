@@ -60,6 +60,7 @@ const BRING_IN: Offer = {
   title: 'Bring In Your Diagrams and Docs',
   does: "a new knowledgebase offered the person's recent diagrams and documents.",
 };
+// livehuddle's, gone with its stickies (owner, 2026-11-27): its sentences stay for stored rows, and no stack charts it.
 const SEND_TO_PLAN: Offer = {
   type: 'SuggestSendToPlan',
   title: 'Send to a Plan',
@@ -74,7 +75,6 @@ export const SUGGEST_MAKE_PLAN = stack(MAKE_PLAN);
 export const SUGGEST_WRITE_UP = stack(WRITE_UP);
 export const SUGGEST_ADD_TO_KNOWLEDGEBASE = stack(ADD_TO_KB);
 export const SUGGEST_BRING_IN = stack(BRING_IN);
-export const SUGGEST_SEND_TO_PLAN = stack(SEND_TO_PLAN);
 
 // The sentences of one suggestion, in the `Category|Action|Type` shape each app's EXACT explanation table takes.
 function sentences({ type, title }: Offer): Record<string, string> {

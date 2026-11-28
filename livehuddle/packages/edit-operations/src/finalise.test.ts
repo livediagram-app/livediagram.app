@@ -24,4 +24,3 @@ describe('retired texts and sticky notes', () => {
     }
   });
 });
-

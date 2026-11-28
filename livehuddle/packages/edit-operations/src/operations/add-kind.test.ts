@@ -69,7 +69,9 @@ describe('add <kind>', () => {
       expect(refused(run(`add ${kind} label=Box`))).toEqual({
         code: 'invalid_value',
         operation: 1,
-        details: [`kind="${kind}": shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board`],
+        details: [
+          `kind="${kind}": shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board`,
+        ],
       });
     const unknown = refused(run('add banana label=Box'));
     expect(unknown.code).toBe('invalid_value');

@@ -12,6 +12,7 @@ import {
   trafficRoads,
 } from './road-traffic';
 import { CAR_LENGTH } from './models/road';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // The Road's traffic (docs/specs/009-elements/road.md "Traffic").
 const shape = (id: string, kind: string, x: number, y: number, width: number, height: number) =>
@@ -119,14 +120,16 @@ describe('laneCars', () => {
   it('works out ten long roads for a minute of frames well within a frame budget', () => {
     const roads = Array.from({ length: 10 }, (_, i) => roadSeed(`road-${i}`));
     const out = new Float32Array(96 * CAR_STRIDE);
-    const t0 = performance.now();
-    for (let f = 0; f < 60 * 30; f++)
-      for (const s of roads)
-        for (let lane = 0; lane < 2; lane++)
-          laneCars(s, lane, 1600, 1_700_000_000 + f / 30, out, 0, 96);
-    const perFrame = (performance.now() - t0) / (60 * 30);
-    // About a microsecond a frame measured; 0.2 ms is a generous ceiling for a slow CI runner.
-    expect(perFrame).toBeLessThan(0.2);
+    const perFrame =
+      cpuMsOf(() => {
+        for (let f = 0; f < 60 * 30; f++)
+          for (const s of roads)
+            for (let lane = 0; lane < 2; lane++)
+              laneCars(s, lane, 1600, 1_700_000_000 + f / 30, out, 0, 96);
+      }) /
+      (60 * 30);
+    // About a microsecond a frame measured; 0.2 ms of CPU time a frame is a generous ceiling.
+    expect(perFrame).toBeLessThan(cpuBudgetMs(0.2));
   });
 });
 

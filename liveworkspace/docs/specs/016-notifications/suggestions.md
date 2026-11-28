@@ -23,7 +23,10 @@ Each app's spec says its trigger in full (`<app>/docs/specs/013-workspace/sugges
 | **Write It Up**                     | liveplanner   | A card the person moves to a done column has a decision in its description, or a Milestone card is done | **Write Page**: a page in the team's knowledgebase, the card's title and description and a line back |
 | **Add to Knowledgebase**            | livedocuments | The article on show explains a process (numbered steps, Step headings, or a How To title with steps)    | **Add Page**: a page in the team's knowledgebase, the article as Markdown and a line back            |
 | **Bring In Your Diagrams and Docs** | liveknowledge | A new knowledgebase: nothing connected yet and at most 3 pages                                          | **Connect Them**: connects the person's 3 most recent diagrams and 3 most recent documents, for Ask  |
-| **Send to a Plan**                  | livehuddle    | The person's call in the Space ends and the tab they met on has stickies with words                     | **Send to Plan**: Send to Plan's picker on every sticky on that tab                                  |
+
+**Gone: livehuddle's Send to a Plan.** It offered a call's stickies to a plan when the call ended; stickies left a
+Space (owner, 2026-11-27, livehuddle's [Suggestions](../../../livehuddle/docs/specs/013-workspace/suggestions.md)), so
+livehuddle offers no suggestion.
 
 **Left out: a livedesign brand board offering to style decks.** There is no brand kit decks can use (livedocuments
 retired custom themes), so there is nothing one click could do. It comes when a deck can take a brand.

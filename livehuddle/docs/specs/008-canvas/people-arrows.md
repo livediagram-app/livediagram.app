@@ -13,11 +13,11 @@ pointer at the edge says "they are over there" without opening anything.
 
 ## Domain language
 
-| Term                 | Means                                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------------------------ |
-| **A people arrow**   | The marker at the canvas's edge for one person you cannot see                                          |
-| **In view**          | Their character stands in the canvas area, clear of every control laid over it                         |
-| **The rail**         | The line the arrows travel on: the canvas's edge, inset by the arrow's own size and a small gap        |
+| Term                 | Means                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| **A people arrow**   | The marker at the canvas's edge for one person you cannot see                                     |
+| **In view**          | Their character stands in the canvas area, clear of every control laid over it                    |
+| **The rail**         | The line the arrows travel on: the canvas's edge, inset by the arrow's own size and a small gap   |
 | **A control's rect** | The screen box of a control over the canvas (toolbar, Call dock, zoom cluster, a panel), measured |
 
 ## Who gets an arrow

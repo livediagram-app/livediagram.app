@@ -6,6 +6,7 @@ import { template3dFit, type FitRule } from './template-3d-fit';
 import { flushToWalls } from './template-flush';
 import { modelFloorBox } from './template-model-box';
 import type { TemplateKind } from './templates';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/templates-by-mode.md "Made for 3D": every tab of a template passes the layout check, judged
 // where the 3D view stands each piece.
@@ -108,9 +109,10 @@ describe.each(TABS)('the %s tab, made for 3D', (_name, build) => {
 it('checks a tab well inside a frame budget', () => {
   // CPU time on the largest tab, measured at 2 to 40 ms; 400 ms leaves room for a slow CI runner.
   const els = buildTemplate('company-campus', 0, 0);
-  const t0 = performance.now();
-  for (let i = 0; i < 3; i++) template3dFit(els);
-  expect((performance.now() - t0) / 3).toBeLessThan(400);
+  const ms = cpuMsOf(() => {
+    for (let i = 0; i < 3; i++) template3dFit(els);
+  });
+  expect(ms / 3).toBeLessThan(cpuBudgetMs(400));
 });
 
 it('flags an indoor chair out on the lawn, and passes a bench there and a chair in the room', () => {

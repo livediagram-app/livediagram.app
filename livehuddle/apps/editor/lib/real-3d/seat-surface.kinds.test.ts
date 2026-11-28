@@ -6,8 +6,22 @@ import { seatSurface } from './seat-surface';
 
 // 3d-engine.md "Sitting fits the figure": every seat's real model seats a Regular sitter (drawn at 1.9) on its
 // cushion, never on its back or an arm (a sofa's, a bench's), and finds even a small stool (a Phone Booth's).
-const YAW: Record<string, number> = { down: 0, up: Math.PI, left: Math.PI / 2, right: -Math.PI / 2 };
-const KINDS = ['chair', 'desk', 'meeting-table', 'sofa', 'bench', 'bar-stool', 'phone-booth', 'picnic-table'];
+const YAW: Record<string, number> = {
+  down: 0,
+  up: Math.PI,
+  left: Math.PI / 2,
+  right: -Math.PI / 2,
+};
+const KINDS = [
+  'chair',
+  'desk',
+  'meeting-table',
+  'sofa',
+  'bench',
+  'bar-stool',
+  'phone-booth',
+  'picnic-table',
+];
 
 describe('seatSurface on the real seats', () => {
   it.each(KINDS)('seats a Regular sitter on a %s at cushion height', (kind) => {

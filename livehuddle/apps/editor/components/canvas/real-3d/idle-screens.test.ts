@@ -75,7 +75,7 @@ describe('idle screens', () => {
   it('twenty Screens still cost one redraw per due frame, none while resting', () => {
     const { idle, redraws } = rig();
     idle.set(new Map(Array.from({ length: 20 }, (_, i) => [`s${i}`, corners(i * 200)] as const)));
-    const t0 = performance.now();
+    const t0 = performance.now(); // wall-clock: the idle loop counts from its own performance.now() epoch
     idle.tick(t0, seeing.projectionMatrix);
     expect(redraws()).toBe(1);
     // Its rest beat: nothing more to draw.
@@ -93,7 +93,7 @@ describe('idle screens', () => {
   it('skips the redraw while no idle Screen is in view', () => {
     const { idle, redraws } = rig();
     idle.set(new Map([['a', corners()]]));
-    const t0 = performance.now();
+    const t0 = performance.now(); // wall-clock: the idle loop counts from its own performance.now() epoch
     idle.tick(t0, away.projectionMatrix);
     expect(redraws()).toBe(1);
     for (let t = 0; t < 1000; t += 33) idle.tick(t0 + IDLE_LOGO_REST_MS + t, away.projectionMatrix);
@@ -104,7 +104,7 @@ describe('idle screens', () => {
   it('draws once and holds still under reduced motion', () => {
     const { idle, redraws } = rig(true);
     idle.set(new Map([['a', corners()]]));
-    const t0 = performance.now();
+    const t0 = performance.now(); // wall-clock: the idle loop counts from its own performance.now() epoch
     for (let t = 0; t < 10_000; t += 33) idle.tick(t0 + t, seeing.projectionMatrix);
     expect(redraws()).toBe(1);
     idle.dispose();

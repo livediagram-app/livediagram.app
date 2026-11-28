@@ -57,9 +57,9 @@ Every editor (livehuddle, liveplanner, livedocuments, livedesign) opens the same
 
 ## Implementation
 
-- `apps/editor/components/palette/ElementMenuClearStyles.tsx`: `ElementMenuQuickBar`, a `role="toolbar"` row with
+- `ElementMenuClearStyles` (in `apps/editor/components/palette/`, deleted with the bar): `ElementMenuQuickBar`, a `role="toolbar"` row with
   Clear Styles as a `PopoverButton`; rendered by `EditorContextMenu` first in the element menu. Only livehuddle's own menu files change; the shared menu primitives do not.
-- Clear Styles: `ClearStylesHost` (headless, `components/canvas/ClearStylesHost.tsx`) publishes the Quick Style view's targets and its `clearStyles` to
+- Clear Styles: `ClearStylesHost` (headless, deleted with the bar) publishes the Quick Style view's targets and its `clearStyles` to
   `../packages/workbench/src/lib/clear-styles-store.ts` (`publishClearStyles`, `useClearStyles`) whenever the targets change, the
   press running the latest; the row shows when the store's targets include the element. Its telemetry is
   `Element` / `Changed` / `QuickClearStyles`.

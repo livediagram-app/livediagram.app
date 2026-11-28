@@ -81,14 +81,7 @@ export function deriveCanvasSelection(input: {
   // owns the moment and the popover (with its pluses) stands down.
   elementMenuOpen?: boolean;
 }): CanvasSelection {
-  const {
-    elements,
-    selectedId,
-    multiSelectedIds,
-    editingId,
-    readOnly,
-    elementMenuOpen,
-  } = input;
+  const { elements, selectedId, multiSelectedIds, editingId, readOnly, elementMenuOpen } = input;
 
   // An element's selection extent: a retired arrow spans its line and its placeholder card
   // (elementBounds, docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
@@ -151,8 +144,7 @@ export function deriveCanvasSelection(input: {
     multiSelectedIds.size > 1
       ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))
       : null;
-  const showMultiToolbar =
-    !!multiToolbarBounds && multiSelectedIds.size > 1 && !readOnly;
+  const showMultiToolbar = !!multiToolbarBounds && multiSelectedIds.size > 1 && !readOnly;
 
   return {
     multiPrimaryId,

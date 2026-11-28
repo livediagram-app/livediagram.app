@@ -9,6 +9,7 @@ import {
   MAX_FLOWERS,
   onLawn,
 } from './scene-grass';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const lawn = (over: Record<string, unknown> = {}) =>
   ({
@@ -151,10 +152,9 @@ describe('grassField', () => {
   it('grows a huge lawn within a time budget', () => {
     const els = [lawn({ width: 9000, height: 6000 }), piece('garden-path', 1000, 0, 200, 6000)];
     grassField(els);
-    const t = performance.now();
-    grassField(els);
-    // About 40 ms on a laptop; generous for a loaded CI runner.
-    expect(performance.now() - t).toBeLessThan(600);
+    const ms = cpuMsOf(() => grassField(els));
+    // About 40 ms of CPU time on a laptop; 600 ms is generous.
+    expect(ms).toBeLessThan(cpuBudgetMs(600));
   });
 });
 

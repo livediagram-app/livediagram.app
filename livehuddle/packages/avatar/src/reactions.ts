@@ -148,6 +148,7 @@ const STANDING: ReactionPose = {
 const hop = (progress: number, height: number) => Math.sin(Math.PI * progress) * height;
 
 export function reactionPose(kind: AvatarReactionKind, elapsedMs: number): ReactionPose {
+  // A kind this build does not know (a newer client's) lasts no time (reactionDuration), so it stands, never an error.
   if (elapsedMs < 0 || elapsedMs >= reactionDuration(kind)) return STANDING;
   const base = { ...STANDING, done: false };
   switch (kind) {
@@ -194,8 +195,5 @@ export function reactionPose(kind: AvatarReactionKind, elapsedMs: number): React
       return { ...base, thumbsUp: true };
     case 'point':
       return { ...base, point: true };
-    default:
-      // A kind this build does not know (a newer client's): standing, never an error.
-      return STANDING;
   }
 }

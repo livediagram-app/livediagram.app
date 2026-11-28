@@ -150,7 +150,9 @@ describe('applyReplace on an existing tab', () => {
         refused(applyReplace(checkoutFlow(), { elements: [{ ...square, shape }] }, options)),
       ).toEqual({
         code: 'invalid_result',
-        details: ['sq shape: shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board'],
+        details: [
+          'sq shape: shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board',
+        ],
         hint: 'see the format: livehuddle schema shape',
       });
     expect(refused(applyReplace(null, { elements: [square] }, options)).code).toBe(
@@ -193,6 +195,22 @@ describe('applyReplace on an existing tab', () => {
     expect(refused(applyReplace(stored, { elements: turned }, options)).details).toEqual([
       'n3 shape: shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board',
     ]);
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Write category": a new text or sticky note is refused, and
+  // one the tab already holds rides through as stored.
+  it('refuses a new text or sticky note and keeps a stored one', () => {
+    const note = { id: 'memo', type: 'sticky', x: 0, y: 400, width: 160, height: 160, text: 'Hi' };
+    const sent = { elements: [...checkoutFlow().elements, note] } as unknown as ReplaceBody;
+    expect(refused(applyReplace(checkoutFlow(), sent, options)).details).toEqual([
+      'memo type: text and sticky notes are no longer supported in livehuddle: pin a note on a notice-board',
+    ]);
+    const stored = {
+      ...checkoutFlow(),
+      elements: [...checkoutFlow().elements, note as unknown as Element],
+    };
+    const { tab } = applied(applyReplace(stored, { elements: stored.elements }, options));
+    expect(tab.elements.some((el) => el.id === 'memo')).toBe(true);
   });
 
   // docs/specs/024-agents/edit-operations.md "No element notes" (Work Tracker 737): a kept element keeps the note it

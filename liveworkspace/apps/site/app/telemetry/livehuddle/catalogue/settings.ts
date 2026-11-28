@@ -55,13 +55,6 @@ export const EDITOR_SETTINGS = settingsStack(
       'Alignment Guides',
       'Snap guides while dragging.',
     ),
-    toggle(
-      'UI',
-      'RotateIn3DOn',
-      'RotateIn3DOff',
-      'Rotate in 3D View',
-      'Turn the camera in the 3D view.',
-    ),
     changed(
       'UnusedImages',
       'When I Delete an Unused Image',
@@ -79,7 +72,6 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     blurb: 'Light, Dark or System picked, from the header toggle or Settings.',
     rising: 'neutral',
   },
-  toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   toggle(
     'UI',
     'JoinLeaveSoundsOn',
@@ -161,17 +153,6 @@ export const KEYBOARD_SETTINGS = settingsStack(
     ),
   ],
 );
-
-export const PANELS_SETTINGS = settingsStack('Panels Settings', 'What the minimap shows.', [
-  toggle(
-    'UI',
-    'MapDimOn',
-    'MapDimOff',
-    'Dim Outside the View',
-    'The minimap dimming what is off screen.',
-  ),
-  changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
-]);
 
 export const COLLABORATE_SETTINGS = settingsStack(
   'Collaborate Settings',
@@ -286,7 +267,6 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   APPEARANCE_SETTINGS,
   CONTROLS_SETTINGS,
   KEYBOARD_SETTINGS,
-  PANELS_SETTINGS,
   COLLABORATE_SETTINGS,
   NOTIFICATION_SETTINGS,
   ACCESSIBILITY_SETTINGS,

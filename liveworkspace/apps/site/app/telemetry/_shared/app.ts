@@ -93,9 +93,9 @@ export type TelemetryAppConfig = {
     /** The canvas selection modes the app has (`Canvas·Used·<mode>`). */
     selection: readonly string[];
     selectionSubtitle: string;
-    /** `UI·Changed` types that are an option inside a mode. */
-    option: RegExp;
-    optionsSubtitle: string;
+    /** `UI·Changed` types that are an option inside a mode; an app whose modes have no options leaves both out. */
+    option?: RegExp;
+    optionsSubtitle?: string;
   };
   settings: MetricGroup[];
   /** Theme·Changed types the Themes ranking leaves out (its palette-types' isNonThemePick). */

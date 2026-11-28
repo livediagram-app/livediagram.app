@@ -291,7 +291,6 @@ in liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts.
 | Every option has a rule in its sheet, none orphaned, reduced motion | `apps/editor/app/animation-classes.test.ts`               |
 | Writes act on members only; None per section; Text clears legacy    | `apps/editor/lib/animation-set-writes.test.ts`            |
 | A motion plays on a photo, the Timeline                             | `apps/editor/components/canvas/animation-routing.test.ts` |
-| Painter copies within a set, a motion to its takers, Text to words  | `apps/editor/lib/format-painter.test.ts`                  |
 | Granularity, fallbacks, counting, determinism, aria, budget         | `apps/editor/components/canvas/animated-words.test.tsx`   |
 | New stylesheets kept out of the chrome motion budget                | `apps/editor/motion-budget.test.ts`                       |
 

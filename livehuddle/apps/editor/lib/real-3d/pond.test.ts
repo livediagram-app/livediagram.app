@@ -10,6 +10,7 @@ import { pieceFrame } from './piece-frame';
 import { pieceTones } from './piece-tones';
 import { modelled, piecesMesh } from './scene-pieces';
 import { SPACE_3D_TILT_DEG } from '@/lib/space-3d/space-3d-camera';
+import { cpuBudgetMs, cpuLeastMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 function pond(width = 240, height = 152): Element {
   return { ...createShape('pond', 0, 0), id: 'pond', width, height };
@@ -96,12 +97,13 @@ describe('the Pond in 3D', () => {
 
   it('builds a small pond without failing, and stays cheap at its largest', () => {
     expect(build(40, 30).m.positions.length).toBeGreaterThan(0);
-    const t0 = performance.now();
-    const big = piecesMesh([pond(1200, 800)]);
-    const ms = performance.now() - t0;
+    let big = piecesMesh([]);
+    const ms = cpuLeastMsOf(() => {
+      big = piecesMesh([pond(1200, 800)]);
+    });
     const tris = (big.positions.length + big.glassPositions.length) / 9;
     expect(tris).toBeLessThan(5000);
-    expect(ms).toBeLessThan(50);
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 
   it('keeps a pond without a fill of its own blue', () => {

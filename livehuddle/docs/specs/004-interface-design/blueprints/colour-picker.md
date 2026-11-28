@@ -181,7 +181,6 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | custom colours kept and listed                            | `../packages/element-model/src/custom-colours.test.ts`, `apps/editor/lib/document-colours.test.ts`      |
 | no new pickers: no colour well, editor only in the picker | `apps/editor/components/colour/one-picker.test.ts`                                                      |
 | element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                                   |
-| Quick Style rows, More colours, keys                      | components/canvas/QuickStylePanel.test.tsx, `hooks/canvas/useQuickStyle.test.tsx`                       |
 | Draw marker picker                                        | `livediagram/apps/editor/components/canvas/whiteboard/ColourPicker.test.tsx`, `WhiteboardDock.test.tsx` |
 | colour wells                                              | `components/palette/colour-wells.test.tsx`                                                              |
 | rows fit, e2e                                             | e2e/quick-style-swatch-rows.spec.ts, quick-style-panel.spec.ts, `quick-style-mixed.spec.ts`             |

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { smoothNormals } from './smooth-normals';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('smoothNormals', () => {
   it('blends a gentle bend, keeps a sharp edge, and leaves the positions alone', () => {
@@ -29,8 +30,6 @@ describe('smoothNormals', () => {
 
   it('smooths a 20k-triangle mesh fast', () => {
     const g = new THREE.SphereGeometry(1, 128, 80).toNonIndexed();
-    const t0 = performance.now();
-    smoothNormals(g);
-    expect(performance.now() - t0).toBeLessThan(400);
+    expect(cpuMsOf(() => smoothNormals(g))).toBeLessThan(cpuBudgetMs(400));
   });
 });

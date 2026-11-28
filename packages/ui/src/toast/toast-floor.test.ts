@@ -105,13 +105,23 @@ describe('toastPlacement', () => {
   it('stands centred above a cluster that leaves no room for a toast on its left', () => {
     const walkingRow = rect(16, 790, 1408, 46);
     expect(
-      toastPlacement({ viewportWidth: 1440, viewportHeight: 900, floors: [tabBar], sides: [walkingRow] }),
+      toastPlacement({
+        viewportWidth: 1440,
+        viewportHeight: 900,
+        floors: [tabBar],
+        sides: [walkingRow],
+      }),
     ).toEqual({ bottom: 900 - 790 + TOAST_FLOOR_GAP_PX, right: null });
   });
 
   it('still stands beside a cluster with just enough room on its left', () => {
     const narrow = rect(16 + TOAST_FLOOR_GAP_PX + 320, 790, 300, 46);
-    const placed = toastPlacement({ viewportWidth: 1440, viewportHeight: 900, floors: [], sides: [narrow] });
+    const placed = toastPlacement({
+      viewportWidth: 1440,
+      viewportHeight: 900,
+      floors: [],
+      sides: [narrow],
+    });
     expect(placed.right).not.toBeNull();
   });
 

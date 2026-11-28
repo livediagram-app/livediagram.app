@@ -240,7 +240,7 @@ const POINTER_TOOL_OPTION = /^(Laser|Spotlight)[A-Z]/;
 
 // The Eraser (left as a mode with the Selection Mode picker, owner 2026-11-06; livehuddle/docs/specs/
 // 002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes"): picking it up, its panel's options, what
-// it deleted, and the whiteboard eraser's stroke modes. The Format Painter carries on from a selection's popover.
+// it deleted, and the whiteboard eraser's stroke modes.
 const ERASER_OPTION = /^Eraser[A-Z]/;
 
 function isEraserEvent(category: string, action: string, type: string | null): boolean {
@@ -534,12 +534,49 @@ const UNSENT_OPEN_SET_LEFTOVERS = new Set([
   'UI|Opened|your-first-diagram',
 ]);
 
-// Sentences kept as history, not retired (docs/specs/017-telemetry/telemetry.md "Retired features"): nothing sends
-// these now, but their stored rows still read on a chart or in Search, so the dashboard keeps showing them. The bare
-// `MapSize` is what the Minimap Size row sent before it named the option picked (its counts stay under the bare token),
-// and `Activity` is the Inbox row's old name.
-export const KEPT_AS_HISTORY = new Set([
+// What left a Space on 2026-11-27 (owner; livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and
+// Clear Styles", "The Map", "Quick Style", "Tab style", "The Write category"): the Format Painter and its Format panel's
+// options, Quick Style's own swatches, the Map with its Settings rows and help article (its bare `MapSize` too, read by
+// no chart now), corner docking, Tab Style's popover, Looks filter and Show Me tour, the theme and canvas style pickers
+// and their help article, the 3D View switch and its camera rotation row (the 3D view is always on), a Door swung by
+// hand (doors open on their own) and the "call ended with stickies" suggestion.
+const UNSENT_SPACE_TRIMS = new Set([
+  'Canvas|Used|FormatPainter',
+  'Canvas|Used|Space3DView',
+  'Canvas|Used|Door',
   'UI|Changed|MapSize',
+  'UI|Changed|MapSizeShort',
+  'UI|Changed|MapSizeMedium',
+  'UI|Changed|MapSizeTall',
+  'UI|Changed|QuickSwatchCustom',
+  'UI|Changed|QuickSwatchReset',
+  'UI|Changed|LooksFinishFilter',
+  'UI|Changed|LooksSeasonal',
+  'UI|Started|TabStyleTour',
+  'UI|Ended|TabStyleTourCompleted',
+  'UI|Ended|TabStyleTourSkipped',
+  'UI|Moved|PanelDock',
+  'UI|Opened|CanvasStyle',
+  'UI|Opened|ThemePicker',
+  'UI|Opened|changing-theme',
+  'UI|Opened|minimap',
+  'UI|Toggled|MapDimOn',
+  'UI|Toggled|MapDimOff',
+  'UI|Toggled|MinimapOn',
+  'UI|Toggled|MinimapOff',
+  'UI|Toggled|RotateIn3DOn',
+  'UI|Toggled|RotateIn3DOff',
+  'UI|Opened|SuggestSendToPlan',
+  'UI|Used|SuggestSendToPlan',
+  'UI|Closed|SuggestSendToPlan',
+]);
+// The Format panel's options (`UI·Changed·Format<Option>`), which went with the painter.
+const FORMAT_PAINTER_OPTION = /^Format[A-Z]/;
+
+// Sentences kept as history, not retired (docs/specs/017-telemetry/telemetry.md "Retired features"): nothing sends
+// these now, but their stored rows still read on a chart or in Search, so the dashboard keeps showing them. `Activity`
+// is the Inbox row's old name.
+export const KEPT_AS_HISTORY = new Set([
   'UI|Selected|Sidebar.Activity',
   'UI|Selected|ExplorerPanel.Activity',
 ]);
@@ -551,11 +588,14 @@ const UNSENT_SETS = [
   UNSENT_HOME_PAGE,
   UNSENT_OTHER_UNSENT,
   UNSENT_OPEN_SET_LEFTOVERS,
+  UNSENT_SPACE_TRIMS,
 ];
 
 function isUnsentEvent(category: string, action: string, type: string | null): boolean {
   const key = `${category}|${action}|${type ?? ''}`;
   if (UNSENT_SETS.some((set) => set.has(key))) return true;
+  if (category === 'UI' && action === 'Changed' && FORMAT_PAINTER_OPTION.test(type ?? ''))
+    return true;
   return category === 'UI' && DIAGRAM_ELEMENT_TOUR.test(type ?? '');
 }
 

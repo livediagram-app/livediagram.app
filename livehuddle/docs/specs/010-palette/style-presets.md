@@ -152,14 +152,14 @@ multi-selection the preset applies to every selected arrow at once.
   (`applyFillColorToEl` / `applyStrokeColorToEl` / `applyTextColorToEl` /
   `applyBorderStrokeToEl` / `applyBorderStyleToEl` / `applyBorderRadiusToEl` /
   `applyRotationToEl`) and are shared by both the direct setters in
-  `useElementStyle.ts` and the preview/commit pairs in `useStylePreview.ts`, so
+  `useElementStyle.ts` and the preview/commit pairs in livediagram's `useStylePreview`, so
   the swatch/tile preview matches its commit exactly.
 - Direct (non-preview) commits go through the selection setters in
   `apps/editor/hooks/canvas/useElementStyle.ts` (`applyShapeColorPresetSelected` /
   `resetShapeStyleSelected` / `applyArrowPresetSelected` /
   `resetArrowStyleSelected`). Hand-editing a
   colour or resetting clears the `colorPreset` binding there.
-- Hover preview is owned by `apps/editor/hooks/canvas/useStylePreview.ts`: preview +
+- Hover preview is owned by `livediagram/apps/editor/hooks/canvas/useStylePreview.ts`: preview +
   revert go through `tickTabs` (present-only, no history); the click
   commit restores the originals into the present, then commits, so the undo
   snapshot is taken from the true pre-hover state. The

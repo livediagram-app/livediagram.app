@@ -436,9 +436,9 @@ look to copy or clear: a piece looks the way its kind, its Type and the tab's th
 - **Share roles**: unchanged. Both were an Editor's; a Participant and a Viewer had neither.
 - **Help**: the Format Painter article is no longer a livehuddle article, and its livehuddle address redirects to
   Context Menus. The toolbar and menu articles drop both.
-- **The code.** livehuddle's painter (`useFormatTool`, `lib/format-painter.ts`, the Format panel and its config, the
+- **The code.** livehuddle's painter (`useFormatTool`, `format-painter`, the Format panel and its config, the
   `'format'` canvas tool and every branch on it), the menu's quick bar (`ElementMenuClearStyles`), the headless
-  `ClearStylesHost` and its Quick Style view (`useQuickStyle`, `lib/quick-style.ts` where only it used them), and the
+  `ClearStylesHost` and its Quick Style view (`useQuickStyle`, `quick-style` where only it used them), and the
   style hover preview (`useStylePreview`) with the autosave's `previewingRef` that only it set, are deleted with
   their tests. The shared toolbar, the Clear Styles store and the placement hooks in `@liveworkspace/workbench` are
   livediagram's too and stay unchanged.

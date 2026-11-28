@@ -274,11 +274,7 @@ describe('elementGrips', () => {
     { selectedId: 'r', multi: [] },
     { selectedId: 'a', multi: ['a', 'b'] },
   ];
-  const contexts = [
-    base,
-    { ...base, editingId: 'a' },
-    { ...base, readOnly: true },
-  ];
+  const contexts = [base, { ...base, editingId: 'a' }, { ...base, readOnly: true }];
 
   it('agrees with deriveCanvasSelection for every element, selection and mode', () => {
     for (const sel of flagsSets)

@@ -2,8 +2,7 @@
 // it and its telemetry type, and the rules' numbers. Pure data; each app's trigger is its own
 // (<app>/docs/specs/013-workspace/suggestions.md).
 
-export type SuggestionId =
-  'make-plan' | 'write-up' | 'add-to-knowledgebase' | 'bring-in' | 'send-to-plan';
+export type SuggestionId = 'make-plan' | 'write-up' | 'add-to-knowledgebase' | 'bring-in';
 
 export type Suggestion = {
   // What it would do, the callout's title.
@@ -27,7 +26,6 @@ export const SUGGESTIONS: Readonly<Record<SuggestionId, Suggestion>> = {
     action: 'Connect Them',
     type: 'SuggestBringIn',
   },
-  'send-to-plan': { title: 'Send to a Plan', action: 'Send to Plan', type: 'SuggestSendToPlan' },
 };
 
 /** Quiet after a key, a pointer or a press before a suggestion may appear ("Never mid-gesture"). */

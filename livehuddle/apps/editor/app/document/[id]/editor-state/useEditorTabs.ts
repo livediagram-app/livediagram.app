@@ -69,13 +69,8 @@ export function useEditorTabs({
     toast,
   } = fromDocument;
   const { commitTabs, markCheckpoint, tabs, tickTabs } = fromHistory;
-  const {
-    activeId,
-    setActiveId,
-    setEditingId,
-    setIdentityPromptOpen,
-    setSelectedId,
-  } = fromSelection;
+  const { activeId, setActiveId, setEditingId, setIdentityPromptOpen, setSelectedId } =
+    fromSelection;
   const { copying, isStructureReadOnly, sessionShareCode, setCopying } = fromCollaboration;
   const { documentList, documentName, refreshDocumentList, setDocumentName, setImportError } =
     fromPersistence;

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import type { Element } from '@livehuddle/document';
 import { trafficRoads } from '@/lib/real-3d/road-traffic';
 import { MAX_CARS, RoadTraffic } from './road-traffic-mesh';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const reduced = vi.hoisted(() => ({ on: false }));
 vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
@@ -66,11 +67,13 @@ describe('RoadTraffic', () => {
     const roads = trafficRoads(Array.from({ length: 10 }, (_, i) => road(i)));
     const frames = 1800;
     let cars = 0;
-    const t0 = performance.now();
-    for (let f = 0; f < frames; f++) cars += traffic.update(roads, 1_700_000_000 + f / 30, view);
-    const perFrame = (performance.now() - t0) / frames;
-    // Measured about 0.005 ms a frame (2026-11-28) on an Apple laptop; 0.3 ms leaves room for a slow CI runner.
-    expect(perFrame).toBeLessThan(0.3);
+    const perFrame =
+      cpuMsOf(() => {
+        for (let f = 0; f < frames; f++)
+          cars += traffic.update(roads, 1_700_000_000 + f / 30, view);
+      }) / frames;
+    // Measured about 0.005 ms a frame (2026-11-28) on an Apple laptop; 0.3 ms of CPU time a frame.
+    expect(perFrame).toBeLessThan(cpuBudgetMs(0.3));
     expect(cars / frames).toBeGreaterThan(2);
     console.info(
       `road traffic: ${(perFrame * 1000).toFixed(1)} us/frame, ${(cars / frames).toFixed(1)} cars on average, ${traffic.mesh.geometry.getAttribute('position').count / 3} triangles a car`,

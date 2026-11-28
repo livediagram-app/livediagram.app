@@ -514,7 +514,6 @@ per command letter.
 | Professional new arrows angled; avoidance per finish         | `packages/workbench/src/hooks/canvas/arrow-avoidance-apply.test.ts`     |
 | which palette tiles take the finish                          | `packages/workbench/src/components/palette/palette-tile-finish.test.ts` |
 | applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                 |
-| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/room-preview.test.ts`                                  |
 | dialog tab sets, previews, Apply to All clears               | `apps/editor/hooks/canvas/useTabCanvas.test.ts`                         |
 | Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                |
 | which elements split their face                              | `packages/document/src/finish.test.ts`                                  |

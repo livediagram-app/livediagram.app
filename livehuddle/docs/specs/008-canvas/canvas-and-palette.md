@@ -1071,7 +1071,7 @@ The painter starts from the selection toolbar's **Format Painter** button: the s
 
 ### Properties copied
 
-The painted field lists live in `apps/editor/lib/format-painter.ts` (`paintableBoxedFields` / `paintableArrowFields`, unit-tested in `format-painter.test.ts`): one explicit, tested source of truth so a new `BoxedElement` / `ArrowElement` field is an opt-in decision, not a silent drag-along.
+The painted field lists live in `livediagram/apps/editor/lib/format-painter.ts` (`paintableBoxedFields` / `paintableArrowFields`, unit-tested in `format-painter.test.ts`): one explicit, tested source of truth so a new `BoxedElement` / `ArrowElement` field is an opt-in decision, not a silent drag-along.
 
 Between two **boxed** elements (shape, text, sticky, table, image, freehand, annotation, link-card):
 

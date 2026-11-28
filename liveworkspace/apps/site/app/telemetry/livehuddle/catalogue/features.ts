@@ -33,14 +33,6 @@ export const TABS_UNFILED = chart(
   { types: ['Folder'], rising: 'neutral' },
 );
 
-export const MODE_OPTIONS = chart(
-  'UI',
-  'Changed',
-  'Mode Options',
-  'Settings inside a canvas mode: format painter options.',
-  { typeIn: (t) => /^Format/.test(t ?? '') },
-);
-
 // ---- Editing tab -------------------------------------------------------------
 // Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
@@ -196,10 +188,9 @@ export const PALETTE_USE: MetricStack = {
   seeAlso: { tab: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 
-// The canvas selection modes, one chart per mode, and the options set inside
-// them (Canvas Modes tab has the rankings).
+// The canvas selection modes, one chart per mode (Canvas Modes tab has the rankings). The Format Painter left with its
+// options (owner, 2026-11-27; retired-events.ts), so no mode has options to chart.
 const MODE_TITLES: Record<string, string> = {
-  FormatPainter: 'Format Painter',
   AvatarMode: 'Avatar Mode',
 };
 
@@ -250,15 +241,6 @@ export const ARCADE_RUNS = chart(
   'Moon Mail Runs',
   'A run of Moon Mail played on an Arcade Machine in a Space, to Game Over or closed mid-run.',
   { types: ['Arcade'] },
-);
-
-// A Door swung open or shut (docs/specs/009-elements/room-builder.md).
-export const DOORS_SWUNG = chart(
-  'Canvas',
-  'Used',
-  'Doors Swung',
-  'A Door in a Space swung open or shut.',
-  { types: ['Door'] },
 );
 
 // A Screen opened large (docs/specs/009-elements/screen-and-room-sign.md).
@@ -317,15 +299,6 @@ export const SITS = chart(
   { types: ['Sit'] },
 );
 
-// The 3D view (livehuddle docs/specs/008-canvas/3d-view.md "Telemetry"): turned on from the 3D View switch or Shift+3.
-export const SPACE_3D_VIEW = chart(
-  'Canvas',
-  'Used',
-  '3D View',
-  'The 3D view turned on while walking: the Space tilted back with its walls standing up.',
-  { types: ['Space3DView'] },
-);
-
 // A quarter turn of the 3D view's camera (livehuddle docs/specs/008-canvas/3d-view.md "Turning the camera"): Turn Left
 // or Turn Right, or [ and ].
 export const SPACE_3D_TURN = chart(
@@ -347,13 +320,11 @@ export const IN_THE_SPACE: MetricStack = {
     AVATAR_ACTIONS,
     AVATAR_REACTIONS,
     SITS,
-    SPACE_3D_VIEW,
     SPACE_3D_TURN,
     OFFICE_DRINKS,
     WORKDAY_PIECES_USED,
     PING_PONG_GAMES,
     ARCADE_RUNS,
-    DOORS_SWUNG,
     SCREENS_OPENED,
   ],
 };
@@ -361,10 +332,8 @@ export const IN_THE_SPACE: MetricStack = {
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
-  blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, MODE_OPTIONS],
-  // Modes switched into; tweaking an option inside one is not another use.
-  headline: [...MODE_METRICS],
+  blurb: 'Ways of working on the canvas picked from the palette.',
+  members: [...MODE_METRICS],
   seeAlso: { tab: 'modes', label: 'See Each Mode on the Modes Tab' },
 };
 
@@ -384,14 +353,6 @@ export const LANDSCAPE_BARS = chart(
   { types: ['LandscapeBarsOn', 'LandscapeBarsOff'], rising: 'neutral' },
 );
 
-export const PANELS_DOCKED = chart(
-  'UI',
-  'Moved',
-  'Panels Docked',
-  'A panel dragged into a corner dock, or out of one.',
-  { types: ['PanelDock'], rising: 'neutral' },
-);
-
 export const EXPLORER_VIEW = chart(
   'UI',
   'Toggled',
@@ -404,8 +365,8 @@ export const EDITOR_CHROME: MetricStack = {
   stack: true,
   title: 'Editor Chrome',
   blurb:
-    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer view.',
-  members: [CANVAS_ZOOMS, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
+    'Getting around the workspace: zoom, zen mode, the bars on a phone held sideways, the Explorer view.',
+  members: [CANVAS_ZOOMS, LANDSCAPE_BARS, EXPLORER_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.
@@ -480,12 +441,6 @@ export const SHARE_OPENED = opened(
   'Share Opened',
   "The Share dialog, the collaborators list or a tab's Attendance opened.",
   (t) => t === 'Share' || t === 'Collaborators' || t === 'Attendance',
-);
-
-export const PICKERS_OPENED = opened(
-  'Theme & Canvas Pickers',
-  'The theme picker or the canvas style panel opened.',
-  (t) => t === 'ThemePicker' || t === 'CanvasStyle',
 );
 
 export const HELP_FROM_EDITOR = opened(
@@ -568,7 +523,6 @@ export const PANELS_OPENED: MetricStack = {
     ASK_AI_SWITCHED,
     SETTINGS_CATEGORIES_VISITED,
     SHARE_OPENED,
-    PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
     AUTOMATIONS_OPENED,
@@ -608,26 +562,6 @@ export const CANVAS_CONTROLS_TWEAKED = chart(
   { types: NON_PATTERN_CANVAS_TYPES, rising: 'neutral' },
 );
 
-// The quick style panel's own palette (docs/specs/008-canvas/quick-style-panel.md): a swatch replaced with
-// a colour of your own, or put back to the theme's.
-export const CUSTOM_SWATCHES = chart(
-  'UI',
-  'Changed',
-  'Custom Swatches',
-  'A quick style panel swatch replaced with a colour of your own, or put back to the theme colour.',
-  { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
-);
-
-// The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
-// canvas-and-theme-dialog.md).
-export const LOOKS_FILTERED = chart(
-  'UI',
-  'Changed',
-  'Looks Filtered',
-  "The Tab Style popover's Looks narrowed to one finish with its Finish filter, or switched to the seasonal looks with its Seasonal toggle.",
-  { types: ['LooksFinishFilter', 'LooksSeasonal'], rising: 'neutral' },
-);
-
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
 // Start a Call Here has its own stack too (_shared/item-call-metrics.ts).
 OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram');
@@ -639,15 +573,8 @@ export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles and their own swatches. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
-  members: [
-    TEMPLATES_USED,
-    THEMES_CHOSEN,
-    CANVAS_STYLES_PICKED,
-    CANVAS_CONTROLS_TWEAKED,
-    CUSTOM_SWATCHES,
-    LOOKS_FILTERED,
-  ],
+    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes and canvas styles. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
+  members: [TEMPLATES_USED, THEMES_CHOSEN, CANVAS_STYLES_PICKED, CANVAS_CONTROLS_TWEAKED],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { tab: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },
 };

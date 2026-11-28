@@ -189,25 +189,24 @@ export function useEditorEditing({
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
   // Selection + placement helpers. See useElementHelpers.
-  const { addBoxedAt, currentSelectionIds, selectionPrimary } =
-    useElementHelpers({
-      readSelection,
-      activeId,
-      activeTab,
-      // Creation-only helpers. Open to a Participant that may add content
-      // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
-      // addBoxedAt, and every commit it makes still passes participant.guardCommit.
-      editsBlocked: contentAddBlocked({
-        participating: participant.participating,
-        canAddContent: participant.can.addContent,
-        blocked: editsBlocked,
-        structureBlocked: structureCreateBlocked,
-      }),
-      getViewportCenter,
-      commitTabs,
-      setSelection: selectionStore.setSelection,
-      setEditingId,
-    });
+  const { addBoxedAt, currentSelectionIds, selectionPrimary } = useElementHelpers({
+    readSelection,
+    activeId,
+    activeTab,
+    // Creation-only helpers. Open to a Participant that may add content
+    // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
+    // addBoxedAt, and every commit it makes still passes participant.guardCommit.
+    editsBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: editsBlocked,
+      structureBlocked: structureCreateBlocked,
+    }),
+    getViewportCenter,
+    commitTabs,
+    setSelection: selectionStore.setSelection,
+    setEditingId,
+  });
   return {
     activeTheme,
     addBoxedAt,

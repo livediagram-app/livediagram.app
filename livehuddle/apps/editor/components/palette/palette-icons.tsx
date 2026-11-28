@@ -35,7 +35,6 @@ export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
 // the CanvasThemeDialog: it styles the whole tab.
 export { ThemeLookIcon } from '@livehuddle/ui';
 
-
 // Avatar mode (docs/specs/008-canvas/avatar-mode.md): footprints, so the picker entry reads as "a
 // character that walks" rather than a person / profile photo (which is what the
 // palette's Avatar ELEMENT tile means).

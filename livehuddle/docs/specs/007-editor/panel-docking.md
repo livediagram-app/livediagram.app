@@ -31,7 +31,7 @@ theirs without adding a settings screen.
 - **Participating panels:** Minimap, Poll, and the Format panel (the Avatar and Eraser panels are retired), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; the body-height
   measurement relies on that pin). They are not dockable, and the
-  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLUSTER_HEIGHT_PX` plus `ZOOM_CLUSTER_GAP_PX`, at the UI scale, `apps/editor/lib/panel-layout.ts`) so a panel
+  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLUSTER_HEIGHT_PX` plus `ZOOM_CLUSTER_GAP_PX`, at the UI scale, `livediagram/apps/editor/lib/panel-layout.ts`) so a panel
   docked there never overlaps the zoom bar: the snap anchor, the corner guide, and the
   dock container all use the raised inset.
 
@@ -154,12 +154,12 @@ later, or reading a layout written by a newer client, never strands the UI.
 
 ## Implementation
 
-- **`apps/editor/lib/panel-layout.ts`**: types, `DEFAULT_PANEL_CORNER` (which corner each
+- **`livediagram/apps/editor/lib/panel-layout.ts`**: types, `DEFAULT_PANEL_CORNER` (which corner each
   panel rests in out of the box) plus `defaultPanelLayout()` that builds a layout from it,
   `normalizePanelLayout()`, and `readPanelLayout()` / `writePanelLayout()` against
   `localStorage`. Pure, unit-tested (placement normalisation: a panel can't be in two
   corners; reflow ordering; default fallback).
-- **`apps/editor/hooks/ui/usePanelDock.ts`**: owns the layout state (hydrated synchronously
+- **`livediagram/apps/editor/hooks/ui/usePanelDock.ts`**: owns the layout state (hydrated synchronously
   from `localStorage` at mount, re-read on the change event), derives the per-corner
   ordered panel lists, tracks the active drag + nearest-corner snap candidate, and exposes
   `placementOf(panelId)`, `isDragging(panelId)`, `resetPanel(panelId)`, plus the drag lifecycle (`beginDrag`,

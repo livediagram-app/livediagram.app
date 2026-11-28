@@ -102,7 +102,9 @@ describe('applyEditOperations', () => {
     });
 
     it('mints ids with crypto.randomUUID when no makeId is given', () => {
-      const outcome = applyEditOperations(checkoutFlow(), [add({ type: 'shape', shape: 'desk', ...box })]);
+      const outcome = applyEditOperations(checkoutFlow(), [
+        add({ type: 'shape', shape: 'desk', ...box }),
+      ]);
       expect(applied(outcome).createdIds[0]).toMatch(/^[0-9a-f-]{36}$/);
     });
   });
@@ -215,13 +217,14 @@ describe('applyEditOperations', () => {
         name: 'Big',
         elements: Array.from({ length: MAX_ELEMENTS_PER_TAB }, (_, i) => ({
           id: `s${i}`,
-          type: 'shape', shape: 'desk' as const,
+          type: 'shape',
+          shape: 'desk' as const,
           ...box,
         })),
       };
-      expect(refused(run([add({ id: 'one-more', type: 'shape', shape: 'desk', ...box })], tab)).details).toEqual([
-        `the tab elements: at most ${MAX_ELEMENTS_PER_TAB} elements`,
-      ]);
+      expect(
+        refused(run([add({ id: 'one-more', type: 'shape', shape: 'desk', ...box })], tab)).details,
+      ).toEqual([`the tab elements: at most ${MAX_ELEMENTS_PER_TAB} elements`]);
     });
 
     it('refuses a tab without an id', () => {

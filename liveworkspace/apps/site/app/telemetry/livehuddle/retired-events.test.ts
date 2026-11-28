@@ -21,7 +21,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Element', 'Changed', 'Cardinality')).toBe(true);
     expect(isRetiredEvent('Canvas', 'Used', 'Sit')).toBe(false);
     expect(isRetiredEvent('Canvas', 'Used', 'PingPong')).toBe(false);
-    expect(isRetiredEvent('UI', 'Toggled', 'MapDimOn')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'JoinLeaveSoundsOn')).toBe(false);
     expect(isRetiredEvent('Element', 'Changed', 'Room')).toBe(false);
   });
 
@@ -36,15 +36,32 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'Helpful', 'activity-panel')).toBe(true);
   });
 
-  it('retires the Eraser, not the Format Painter', () => {
+  it('retires the Eraser', () => {
     expect(isRetiredEvent('Canvas', 'Used', 'Eraser')).toBe(true);
     expect(isRetiredEvent('Element', 'Deleted', 'Eraser')).toBe(true);
     expect(isRetiredEvent('UI', 'Changed', 'EraserSize')).toBe(true);
     expect(isRetiredEvent('Draw', 'Changed', 'EraserStroke')).toBe(true);
-    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
     expect(isRetiredEvent('Element', 'Deleted', 'Key')).toBe(false);
-    expect(isRetiredEvent('UI', 'Changed', 'FormatPainterCopy')).toBe(false);
     expect(isRetiredEvent('Draw', 'Changed', 'PenWidth')).toBe(true);
+  });
+
+  // Owner, 2026-11-27: the Format Painter, the Map, corner docking, Tab Style, the 3D View switch, swinging a Door and
+  // the Send to a Plan suggestion left a Space.
+  it('retires what left a Space on 2026-11-27, not what carries on', () => {
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatCopies')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatMode')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'MapDimOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'MapSize')).toBe(true);
+    expect(isRetiredEvent('UI', 'Moved', 'PanelDock')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'TabStyleTour')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Space3DView')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Door')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SuggestSendToPlan')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Space3DTurn')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'AvatarMode')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'ShareTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'SendToPlan')).toBe(false);
   });
 
   // Work Tracker #625: element and tab locking left livehuddle; the facilitator's unlock is another feature.
@@ -170,7 +187,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOff')).toBe(true);
   });
 
-  it('retires the Show Me tours of surfaces livehuddle lacks, not Share or Tab Style', () => {
+  it('retires the Show Me tours of surfaces livehuddle lacks, not Share', () => {
     for (const type of [
       'CardTypeTour',
       'DashboardTourOffer',
@@ -179,7 +196,8 @@ describe('isRetiredEvent', () => {
     ])
       expect(isRetiredEvent('UI', 'Started', type), type).toBe(true);
     expect(isRetiredEvent('UI', 'Started', 'ShareTour')).toBe(false);
-    expect(isRetiredEvent('UI', 'Ended', 'TabStyleTourCompleted')).toBe(false);
+    // Tab Style's tour went with its popover (owner, 2026-11-27).
+    expect(isRetiredEvent('UI', 'Ended', 'TabStyleTourCompleted')).toBe(true);
   });
 
   it('retires the Laser, Spotlight and Diagram or Draw opening modes, not the other tools', () => {
@@ -189,8 +207,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Changed', 'SpotlightDim')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'OpensInDiagram')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'OpensInDraw')).toBe(true);
-    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
-    expect(isRetiredEvent('UI', 'Changed', 'FormatPainterCopy')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'AvatarMode')).toBe(false);
     expect(isRetiredEvent('UI', 'Changed', 'Laser')).toBe(false);
     expect(isRetiredEvent('Tab', 'Changed', 'Renamed')).toBe(false);
     expect(isRetiredEvent('Draw', 'Toggled', 'BreakShapeChip')).toBe(true);
@@ -339,8 +356,6 @@ describe('dropRetiredEvents on a deployment with telemetry off', () => {
     expect(isRetiredEvent('Tab', 'Imported', 'Drawio')).toBe(true);
     expect(isRetiredEvent('Document', 'Duplicated', null)).toBe(true);
     expect(isRetiredEvent('Document', 'Duplicated', 'Copy')).toBe(false);
-    expect(isRetiredEvent('UI', 'Changed', 'MapSize')).toBe(false);
-    expect(isRetiredEvent('UI', 'Changed', 'MapSizeShort')).toBe(false);
     expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Activity')).toBe(false);
     expect(isRetiredEvent('Element', 'Used', 'BringFocus')).toBe(false);
   });

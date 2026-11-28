@@ -20,7 +20,7 @@ function setup(canUndo: boolean) {
       tickTabs: vi.fn(),
       undoHistory,
       redoHistory,
-      set: { setSelectedId: vi.fn(), setEditingId: vi.fn()},
+      set: { setSelectedId: vi.fn(), setEditingId: vi.fn() },
     }),
   );
   return { result, undoHistory, redoHistory };

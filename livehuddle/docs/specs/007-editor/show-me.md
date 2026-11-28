@@ -17,10 +17,10 @@ the Workshop tour offered itself once, and element tours from a small toolbar be
 
 ## Where it lives
 
-| Surface                                                             | Where the button sits                            | Who sees it                                 |
-| ------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------- |
-| [Share dialog](editor-app.md#share-dialog)                          | The dialog's title row (not on the offline gate) | The owner (only the owner can open it)      |
-| [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me) | (not in livehuddle: no way to open the dialog)   | Nobody |
+| Surface                                                             | Where the button sits                            | Who sees it                            |
+| ------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------- |
+| [Share dialog](editor-app.md#share-dialog)                          | The dialog's title row (not on the offline gate) | The owner (only the owner can open it) |
+| [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me) | (not in livehuddle: no way to open the dialog)   | Nobody                                 |
 
 A new Show Me surface is added to this table, and its own spec says its steps.
 

@@ -189,10 +189,10 @@ function BoxedElementViewImpl({
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
     : editLook.textCursor
-        ? 'cursor-text'
-        : !movable
-          ? 'cursor-default'
-          : 'cursor-move';
+      ? 'cursor-text'
+      : !movable
+        ? 'cursor-default'
+        : 'cursor-move';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's

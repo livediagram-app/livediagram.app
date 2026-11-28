@@ -20,10 +20,7 @@ import {
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre
 // stack and its non-overlap layout) with its own props.
-type TopCenterChromeProps = Pick<
-  CanvasProps,
-  'readOnly' | 'pendingDraw' | 'onCancelDraw'
-> & {
+type TopCenterChromeProps = Pick<CanvasProps, 'readOnly' | 'pendingDraw' | 'onCancelDraw'> & {
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.

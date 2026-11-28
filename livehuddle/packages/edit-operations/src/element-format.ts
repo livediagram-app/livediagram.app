@@ -5,7 +5,6 @@
 import {
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
-  STICKY_PRESETS,
   TEXT_PX_MAX,
   TEXT_PX_MIN,
   THEMES,
@@ -64,24 +63,23 @@ export function elementKindsText(): string {
   ].join('\n');
 }
 
-const fillValues = (el: Element) =>
-  el.type === 'sticky'
-    ? [...STICKY_PRESETS.map((p) => p.id.replace(/^sticky-/, '')), '#rrggbb']
-    : [...fillSlotNames(THEMES[0]!).keys(), '#rrggbb'];
+// Sticky notes are gone (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category"), so every kind `add`
+// makes fills from the theme's slots.
+const fillValues = () => [...fillSlotNames(THEMES[0]!).keys(), '#rrggbb'];
 
 type Alias = ReturnType<typeof aliasesOf>[number];
 // `line` is a stored arrow's alias, and a stored arrow is never a kind `add` makes (part 4 of the element engine).
 type MadeAlias = Exclude<Alias, 'line'>;
 const isMadeAlias = (alias: Alias): alias is MadeAlias => alias !== 'line';
 
-function aliasValue(el: Element, alias: MadeAlias): string {
+function aliasValue(alias: MadeAlias): string {
   switch (alias) {
     case 'label':
       return '<text>';
     case 'shape':
       return '<shape kind>';
     case 'fill':
-      return fillValues(el).join('|');
+      return fillValues().join('|');
     case 'stroke':
     case 'text-color':
       return '#rrggbb';
@@ -167,7 +165,7 @@ export function elementFormatText(kind: string): string | null {
   const size = [`Size: ${el.width}×${el.height} at first, grown to fit its label.`];
   const aliases = aliasesOf(el)
     .filter(isMadeAlias)
-    .map((a) => `${a}=${aliasValue(el, a)}`);
+    .map((a) => `${a}=${aliasValue(a)}`);
   const fields = storedFieldsOf(kind, el);
   return [
     head,
