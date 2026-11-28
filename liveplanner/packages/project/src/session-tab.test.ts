@@ -8,6 +8,7 @@ import {
   facilitatorAway,
   isFacilitator,
   lastDecided,
+  lastStandupStep,
   newSessionTab,
   presenterOf,
   readSessionTab,
@@ -17,8 +18,11 @@ import {
   withFacilitator,
   withFollowUp,
   withNoDecisions,
+  withOutcome,
+  withPersonDone,
   withPresenter,
   withoutDecision,
+  withoutPersonDone,
 } from './session-tab';
 import { isPlanTabKind, tabKindOf } from './tab-kind';
 import { SESSION_FOLLOW_UPS_MAX, SESSION_QUEUE_MAX, type ItemFields } from '@liveplanner/items';
@@ -45,7 +49,7 @@ describe('readSessionTab', () => {
   it('reads nothing from a missing, malformed or later-release session', () => {
     expect(readSessionTab(undefined)).toBeNull();
     expect(readSessionTab([])).toBeNull();
-    expect(readSessionTab({ sessionKind: 'standup', setup: {} })).toBeNull();
+    expect(readSessionTab({ sessionKind: 'retro', setup: {} })).toBeNull();
   });
 
   it('reads a whole session back', () => {
@@ -351,5 +355,109 @@ describe('Sprint Review', () => {
     expect(s.followUps).toEqual({ c1: ['n1', 'n2'] });
     for (let i = 0; i < SESSION_FOLLOW_UPS_MAX + 2; i += 1) s = withFollowUp(s, 'c2', `m${i}`);
     expect(s.followUps?.c2).toHaveLength(SESSION_FOLLOW_UPS_MAX);
+  });
+});
+
+describe('Stand-up', () => {
+  const up = newSessionTab('standup', { typeIds: ['work'], statuses: ['doing'] });
+
+  it('is a kind grouped by person whose Discussed stays', () => {
+    expect(SESSION_KINDS.standup).toMatchObject({
+      label: 'Stand-up',
+      outcomes: ['discussed', 'flagged'],
+      completes: 'discussed',
+      stays: true,
+      grouping: 'person',
+    });
+  });
+
+  it('reads the people order and people Done back, dropping anything malformed', () => {
+    const read = readSessionTab({
+      ...up,
+      setup: { ...up.setup, personOrder: 'shuffled' },
+      peopleDone: {
+        'p-a': { at: 5, by: 'Sam' },
+        'p-b': { at: 6 },
+        '': { at: 1 },
+        'p-c': { at: 'x' },
+      },
+    })!;
+    expect(read.setup.personOrder).toBe('shuffled');
+    expect(read.peopleDone).toEqual({ 'p-a': { at: 5, by: 'Sam' }, 'p-b': { at: 6, by: '' } });
+    expect(readSessionTab({ ...up, setup: { ...up.setup, personOrder: 'random' } })!.setup).toEqual(
+      up.setup,
+    );
+    expect(readSessionTab({ ...up, peopleDone: [] })!.peopleDone).toBeUndefined();
+    const many = Object.fromEntries(
+      Array.from({ length: SESSION_QUEUE_MAX + 3 }, (_, i) => [`p-${i}`, { at: i, by: '' }]),
+    );
+    expect(Object.keys(readSessionTab({ ...up, peopleDone: many })!.peopleDone!)).toHaveLength(
+      SESSION_QUEUE_MAX,
+    );
+  });
+
+  it('keeps the clock running between one person’s cards', () => {
+    const on = withCurrent(up, 'a', 100);
+    expect(withCurrent(on, 'b', 900, true)).toMatchObject({ currentId: 'b', cardStartedAt: 100 });
+    expect(withCurrent(on, 'b', 900)).toMatchObject({ currentId: 'b', cardStartedAt: 900 });
+    // No clock yet: it starts now.
+    expect(withCurrent(up, 'b', 900, true).cardStartedAt).toBe(900);
+  });
+
+  it('keeps an outcome with the room staying, merging a later move into an earlier one', () => {
+    const on = withCurrent(up, 'a', 1);
+    const moved = withOutcome(on, 'a', 'discussed', 'Sam', 5, {
+      from: 'doing',
+      to: 'review',
+      fromRank: 'r1',
+    });
+    expect(moved.currentId).toBe('a');
+    expect(moved.cardStartedAt).toBe(1);
+    const again = withOutcome(moved, 'a', 'discussed', 'Sam', 6, { from: 'review', to: 'done' });
+    expect(again.decided!['a']).toMatchObject({ from: 'doing', to: 'done', fromRank: 'r1' });
+    const flagged = withOutcome(again, 'a', 'flagged', 'Sam', 7, { flagSet: true, reason: 'Keys' });
+    expect(flagged.decided!['a']).toMatchObject({
+      outcome: 'flagged',
+      from: 'doing',
+      to: 'done',
+      flagSet: true,
+      reason: 'Keys',
+    });
+    // A later Discussed keeps the flag the Blocked set.
+    expect(withOutcome(flagged, 'a', 'discussed', 'Sam', 8).decided!['a']!.flagSet).toBe(true);
+  });
+
+  it('marks a person Done, recording Discussed on their undecided cards, and undoes it', () => {
+    const flagged = withOutcome(withCurrent(up, 'a', 1), 'b', 'flagged', 'Sam', 2, {
+      reason: 'Keys',
+    });
+    const moved = withOutcome(flagged, 'c', 'discussed', 'Sam', 3, { from: 'doing', to: 'review' });
+    const done = withPersonDone(moved, 'p-ana', 'Sam', 10, ['a', 'b', 'c'], 'd');
+    expect(done.peopleDone).toEqual({ 'p-ana': { at: 10, by: 'Sam' } });
+    expect(done.decided!['a']).toEqual({ outcome: 'discussed', at: 10, by: 'Sam' });
+    expect(done.decided!['b']!.outcome).toBe('flagged');
+    expect(done.decided!['c']!.at).toBe(3);
+    expect(done).toMatchObject({ currentId: 'd', cardStartedAt: 10 });
+    expect(lastStandupStep(done)).toMatchObject({ kind: 'person', key: 'p-ana' });
+    const back = withoutPersonDone(done, 'p-ana');
+    expect(back.cleared).toEqual(['a']);
+    expect(back.state.peopleDone).toBeUndefined();
+    expect(Object.keys(back.state.decided!)).toEqual(['b', 'c']);
+    expect(lastStandupStep(back.state)).toMatchObject({ kind: 'card', itemId: 'c' });
+    // Nothing to undo for someone not Done.
+    expect(withoutPersonDone(up, 'p-ana')).toEqual({ state: up, cleared: [] });
+    expect(lastStandupStep(up)).toBeNull();
+    // Done with no card decided keeps no empty map, and Start Again clears it.
+    const bare = withPersonDone(up, 'p-x', 'Sam', 4, [], null);
+    expect(bare.decided).toBeUndefined();
+    expect(lastStandupStep(bare)).toMatchObject({ kind: 'person', key: 'p-x' });
+    expect(withoutPersonDone(bare, 'p-x').state.decided).toBeUndefined();
+    expect(withNoDecisions(done).peopleDone).toBeUndefined();
+    // Two people Done: the later one is the last step; another person stays Done after an undo.
+    const both = withPersonDone(done, 'p-bo', 'Sam', 20, ['d'], null);
+    expect(lastStandupStep(both)).toMatchObject({ kind: 'person', key: 'p-bo' });
+    expect(withoutPersonDone(both, 'p-bo').state.peopleDone).toEqual({
+      'p-ana': { at: 10, by: 'Sam' },
+    });
   });
 });

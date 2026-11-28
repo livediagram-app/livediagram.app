@@ -9,6 +9,7 @@ import {
   isSessionOutcome,
   nextToGo,
   outcomeFits,
+  reasonFits,
   sessionQueue,
   sessionTarget,
 } from './session-queue';
@@ -218,7 +219,7 @@ describe('nextToGo', () => {
 
 it('knows its session kinds and outcomes', () => {
   expect(isSessionKindId('refinement')).toBe(true);
-  expect(isSessionKindId('standup')).toBe(false);
+  expect(isSessionKindId('retro')).toBe(false);
   expect(isSessionOutcome('skipped')).toBe(true);
   expect(isSessionOutcome('done')).toBe(false);
   expect(isSessionKindId('planning')).toBe(true);
@@ -285,6 +286,18 @@ describe('Sprint Review queue', () => {
     expect(isSessionOutcome('reviewed')).toBe(true);
     expect(outcomeFits('review', 'reviewed')).toBe(true);
     expect(outcomeFits('review', 'flagged')).toBe(false);
+  });
+
+  it('stand-up decides Discussed or Flagged, its Flagged taking a reason as a Close does', () => {
+    expect(isSessionKindId('standup')).toBe(true);
+    expect(isSessionOutcome('discussed')).toBe(true);
+    expect(outcomeFits('standup', 'discussed')).toBe(true);
+    expect(outcomeFits('standup', 'skipped')).toBe(false);
+    expect(outcomeFits('refinement', 'discussed')).toBe(false);
+    expect(reasonFits('standup', 'flagged')).toBe(true);
+    expect(reasonFits('triage', 'closed')).toBe(true);
+    expect(reasonFits('refinement', 'flagged')).toBe(false);
+    expect(reasonFits('standup', 'discussed')).toBe(false);
   });
 });
 

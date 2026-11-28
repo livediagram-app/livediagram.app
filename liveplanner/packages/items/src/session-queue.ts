@@ -10,8 +10,8 @@ import type { ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
 import { typeStatusesOf } from './type-statuses';
 
-// What a session is run for. Stand-up comes later and joins this list with its own outcomes.
-export const SESSION_KIND_IDS = ['refinement', 'planning', 'triage', 'review'] as const;
+// What a session is run for.
+export const SESSION_KIND_IDS = ['refinement', 'planning', 'triage', 'review', 'standup'] as const;
 export type SessionKindId = (typeof SESSION_KIND_IDS)[number];
 
 // What a session decided for a card: each kind offers some of these (SESSION_KIND_OUTCOMES).
@@ -23,6 +23,7 @@ export const SESSION_OUTCOMES = [
   'accepted',
   'closed',
   'reviewed',
+  'discussed',
 ] as const;
 export type SessionOutcome = (typeof SESSION_OUTCOMES)[number];
 
@@ -32,6 +33,8 @@ export const SESSION_KIND_OUTCOMES: Readonly<Record<SessionKindId, readonly Sess
   planning: ['committed', 'skipped'],
   triage: ['accepted', 'closed', 'skipped', 'flagged'],
   review: ['reviewed', 'skipped'],
+  // Stand-up's Done decides Discussed for each of a person's cards; Blocked flags one with a reason.
+  standup: ['discussed', 'flagged'],
 };
 
 export const isSessionKindId = (v: unknown): v is SessionKindId =>
@@ -41,6 +44,10 @@ export const isSessionOutcome = (v: unknown): v is SessionOutcome =>
 // Whether `outcome` is one a session of `kind` decides (Committed is Sprint Planning's alone, Refined Refinement's).
 export const outcomeFits = (kind: SessionKindId, outcome: SessionOutcome): boolean =>
   SESSION_KIND_OUTCOMES[kind].includes(outcome);
+
+// Whether an outcome of `kind` may carry a reason: a Close's, and a Stand-up's Flagged (its Blocked reason).
+export const reasonFits = (kind: SessionKindId, outcome: SessionOutcome): boolean =>
+  outcome === 'closed' || (kind === 'standup' && outcome === 'flagged');
 
 // The most cards one queue holds.
 export const SESSION_QUEUE_MAX = 500;

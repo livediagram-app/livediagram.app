@@ -359,6 +359,33 @@ describe('a session outcome', () => {
     ]);
   });
 
+  // docs/specs/026-plan/session-tabs.md "Stand-up": Discussed, and a Blocked's Flagged with its reason.
+  it('keeps a Stand-up’s Discussed and its Blocked reason, refusing a reason on anything else of it', async () => {
+    const card = await make({ title: 'Payments', status: 'todo' });
+    tick();
+    await outcome(card.id, { session: 'standup', outcome: 'discussed' });
+    tick();
+    const flagged = await outcome(card.id, {
+      session: 'standup',
+      outcome: 'flagged',
+      reason: ' Waiting on keys ',
+    });
+    expect(flagged.status).toBe(204);
+    const entries = (await history(card.id)).body.entries;
+    expect(entries.slice(0, 2).map((e) => e.changes)).toEqual([
+      [{ kind: 'session', session: 'standup', outcome: 'flagged', reason: 'Waiting on keys' }],
+      [{ kind: 'session', session: 'standup', outcome: 'discussed' }],
+    ]);
+    for (const body of [
+      { session: 'standup', outcome: 'discussed', reason: 'x' },
+      { session: 'refinement', outcome: 'flagged', reason: 'x' },
+    ])
+      expect((await outcome(card.id, body)).body).toEqual({
+        error: 'session_invalid',
+        field: 'reason',
+      });
+  });
+
   it('refuses a reason or duplicate that is not a Close’s, or not good, and an undone that is not true', async () => {
     const card = await make({ title: 'Login' });
     const bad = async (body: Record<string, unknown>, field: string) =>
@@ -379,7 +406,7 @@ describe('a session outcome', () => {
 
   it('refuses an unknown session kind or outcome, a missing card and anyone below Editor', async () => {
     const card = await make({ title: 'Login' });
-    expect((await outcome(card.id, { session: 'standup', outcome: 'refined' })).body).toEqual({
+    expect((await outcome(card.id, { session: 'retro', outcome: 'refined' })).body).toEqual({
       error: 'session_invalid',
       field: 'session',
     });
