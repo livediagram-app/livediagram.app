@@ -275,3 +275,30 @@ describe('Sprint Review set-up', () => {
     );
   });
 });
+
+describe('Stand-up set-up', () => {
+  it('starts from in-flight stages, a Doing-phase Ready column left out', () => {
+    const types = [type('task', ['ready', 'build', 'doing', 'done'])];
+    const names = new Map([
+      ['ready', 'Ready'],
+      ['build', 'Build'],
+      ['doing', 'Doing'],
+      ['done', 'Done'],
+    ]);
+    const phases = new Map([
+      ['ready', 'doing' as const],
+      ['build', 'doing' as const],
+    ]);
+    const items = [card('task', 'ready'), card('task', 'build'), card('task', 'doing')];
+    expect(
+      defaultSessionSetup({
+        sessionKind: 'standup',
+        items,
+        types,
+        planStatuses: ['ready', 'build', 'doing', 'done'],
+        statusNames: names,
+        statusPhases: phases,
+      }).statuses,
+    ).toEqual(['build', 'doing']);
+  });
+});

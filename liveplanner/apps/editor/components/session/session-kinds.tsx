@@ -5,10 +5,12 @@
 // set-up title. `SESSION_KINDS` (@liveplanner/project) holds what is not the editor's.
 import {
   REVIEW_DONE_STAGES,
+  STANDUP_INFLIGHT_STAGES,
   TRIAGE_WAITING_STAGES,
   type BoardSortLevel,
   type SessionKindId,
   type SessionOutcome,
+  type StatusPhase,
 } from '@liveplanner/items';
 import { FLAG_COLOUR } from '@liveplanner/project';
 import { Glyph, lucideGlyph, type IconProps } from '@liveworkspace/ui';
@@ -83,6 +85,14 @@ export const OUTCOME_LOOKS: Readonly<Record<SessionOutcome, OutcomeLook>> = {
     colour: 'var(--color-brand-600)',
     done: 'Reviewed',
   },
+  // Stand-up's: its fill button is a person's Done, which decides Discussed for each of their cards.
+  discussed: {
+    label: 'Done',
+    key: 'd',
+    Icon: CheckIcon,
+    colour: 'var(--color-brand-600)',
+    done: 'Discussed',
+  },
 };
 
 export type SessionKindLook = {
@@ -104,13 +114,28 @@ export type SessionKindLook = {
   startTypes?: readonly string[];
   // The order a new set-up starts on; absent: the hand order.
   startSort?: readonly BoardSortLevel[];
-  // A stage in the Done phase counts as one it starts from too (Sprint Review's finished work).
-  startDone?: true;
+  // A stage in this phase counts as one it starts from too (Sprint Review's Done, Stand-up's Doing), unless its name
+  // (lower case) is one of `notStartStages` (Stand-up leaves out a Ready column a board reads as Doing).
+  startPhase?: StatusPhase;
+  notStartStages?: readonly string[];
   // Stage names (lower case) the kind's Next Stage steps past (sessionTarget's `pass`).
   passStages?: readonly string[];
   // Words Start Planning's search finds it by, beyond every session's.
   keywords: readonly string[];
 };
+
+// Stage names (lower case) for work ready to start: Sprint Planning starts from them, and Stand-up never counts them
+// as in flight, whatever phase the board gives them.
+const READY_STAGES: readonly string[] = [
+  'reviewed',
+  'ready',
+  'refined',
+  'ready for development',
+  'ready for dev',
+  'groomed',
+  'selected',
+  'backlog',
+];
 
 export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>> = {
   refinement: {
@@ -131,16 +156,7 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
       'Pick the cards to plan from, their order, where committed cards go and the team’s capacity.',
     stagesHeading: 'Stages',
     targetHeading: 'When Committed',
-    startStages: [
-      'reviewed',
-      'ready',
-      'refined',
-      'ready for development',
-      'ready for dev',
-      'groomed',
-      'selected',
-      'backlog',
-    ],
+    startStages: READY_STAGES,
     keywords: [
       'sprint',
       'planning',
@@ -186,9 +202,31 @@ export const SESSION_KIND_LOOKS: Readonly<Record<SessionKindId, SessionKindLook>
     stagesHeading: 'Done Stages',
     targetHeading: '',
     startStages: REVIEW_DONE_STAGES,
-    startDone: true,
+    startPhase: 'done',
     startSort: [{ field: 'updatedAt', dir: 'asc' }],
     keywords: ['review', 'demo', 'sprint review', 'feedback', 'follow-up', 'showcase', 'done'],
+  },
+  standup: {
+    name: 'Stand-up',
+    line: 'Walk the team person by person through their in-flight cards: flag what’s blocked, move what moved.',
+    setupTitle: 'Set Up Stand-up',
+    setupLine: 'Pick the in-flight cards to walk through and the order people speak in.',
+    stagesHeading: 'In-flight Stages',
+    targetHeading: '',
+    startStages: STANDUP_INFLIGHT_STAGES,
+    startPhase: 'doing',
+    notStartStages: READY_STAGES,
+    keywords: [
+      'standup',
+      'stand-up',
+      'daily',
+      'scrum',
+      'blocked',
+      'blocker',
+      'in progress',
+      'team',
+      'people',
+    ],
   },
 };
 

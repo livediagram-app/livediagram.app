@@ -59,7 +59,7 @@ export function defaultSessionSetup(input: {
   types: readonly ItemTypeDef[];
   planStatuses: readonly string[];
   statusNames: ReadonlyMap<string, string>;
-  // Sprint Review: the plan's stage phases (a Done-phase stage is one it starts from), the newest decision of another
+  // The plan's stage phases (Sprint Review starts from a Done-phase stage, Stand-up a Doing one), the newest decision of another
   // review session (its Since Last Review) and the time now.
   statusPhases?: ReadonlyMap<string, StatusPhase> | undefined;
   lastReviewAt?: number | null | undefined;
@@ -69,10 +69,12 @@ export function defaultSessionSetup(input: {
   const look = SESSION_KIND_LOOKS[input.sessionKind];
   const starts = look.startStages;
   const isStartStage = (s: string) => {
-    const name = statusNames.get(s) ?? s;
+    const name = (statusNames.get(s) ?? s).trim().toLowerCase();
     return (
-      starts.includes(name.trim().toLowerCase()) ||
-      (!!look.startDone && input.statusPhases?.get(s) === 'done')
+      starts.includes(name) ||
+      (!!look.startPhase &&
+        input.statusPhases?.get(s) === look.startPhase &&
+        !look.notStartStages?.includes(name))
     );
   };
   // A finished-work kind reads archived cards too.
@@ -109,7 +111,10 @@ export function defaultSessionSetup(input: {
   };
 }
 
-// The set-up in words, for the sidebar's header: its stages, then its order.
+// Stand-up's people order in words; Board Order, the default, goes unsaid.
+const PERSON_ORDER_WORDS = { alphabetical: 'Alphabetical', shuffled: 'Shuffled daily' } as const;
+
+// The set-up in words, for the sidebar's header: its stages, then its order (a Stand-up's people order).
 export function setupWords(
   setup: SessionSetup,
   types: readonly ItemTypeDef[],
@@ -117,7 +122,9 @@ export function setupWords(
 ): string {
   const stages = setup.statuses.map((s) => statusNames.get(s) ?? s).join(', ');
   const range = rangeWords(setup);
-  const order = boardSortText(setup.sortBy, types);
+  const order = setup.personOrder
+    ? [PERSON_ORDER_WORDS[setup.personOrder]]
+    : boardSortText(setup.sortBy, types);
   const head = range ? `${stages} · ${range}` : stages;
   return order.length ? `${head} · ${order.join(', then ')}` : head;
 }

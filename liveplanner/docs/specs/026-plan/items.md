@@ -866,8 +866,8 @@ Each entry is **tagged** by how it was made:
   taking their change back, not a second decision.
 - **A form's response**: the card made from it reads "created this card from a form response".
 - **A session's outcome** ([Session tabs](session-tabs.md#history)): an entry of its own, tagged `session`, holding one
-  `session` change (`{ kind: 'session', session: 'refinement' | 'planning' | 'triage' | 'review', outcome: 'refined' |
-'skipped' | 'flagged' | 'committed' | 'accepted' | 'closed' | 'reviewed', reason?, duplicateOf?, undone? }`) and nothing else: "Sam refined
+  `session` change (`{ kind: 'session', session: 'refinement' | 'planning' | 'triage' | 'review' | 'standup', outcome: 'refined' |
+'skipped' | 'flagged' | 'committed' | 'accepted' | 'closed' | 'reviewed' | 'discussed', reason?, duplicateOf?, undone? }`) and nothing else: "Sam refined
   this in a Refinement session", "Sam committed this in a Sprint Planning session", "Sam closed this as a duplicate of
   BUG-12 in a Bug Triage session: Same root cause", "Sam undid Closed in a Bug Triage session". Written by
   `POST /items/:itemId/session` (edit access), which changes nothing on the card, so its Last Edited stays; the move,

@@ -2,13 +2,14 @@
 // and contracts"): a Session tab's outcome for a card, kept in the card's history as an entry of its own, tagged
 // `session`. It writes nothing on the card, so a skip leaves its Last Edited alone; the move a Refined, Committed,
 // Accepted or Closed makes, the flag a Flagged sets and a duplicate's link are their own writes. A Close may carry its
-// reason and the card it duplicates; `undone` records an outcome taken back. Edit access: running a session is an
+// reason and the card it duplicates, a Stand-up's Flagged its Blocked reason; `undone` records an outcome taken back. Edit access: running a session is an
 // Editor's.
 import {
   SESSION_REASON_MAX,
   isSessionKindId,
   isSessionOutcome,
   outcomeFits,
+  reasonFits,
   sessionReason,
   type ItemHistoryChange,
 } from '@liveplanner/items';
@@ -34,11 +35,13 @@ export async function recordSessionOutcome(
   // An outcome its kind does not offer (Committed in a Refinement) is as unknown as a made-up one.
   if (!isSessionOutcome(outcome) || !outcomeFits(session, outcome))
     return rejected('session_invalid', 'outcome');
-  // A reason and a duplicate are a Close's alone.
+  // A reason is a Close's or a Stand-up Flagged's; a duplicate a Close's alone.
   const closing = outcome === 'closed';
   if (
     reason !== undefined &&
-    (!closing || typeof reason !== 'string' || reason.length > SESSION_REASON_MAX)
+    (!reasonFits(session, outcome) ||
+      typeof reason !== 'string' ||
+      reason.length > SESSION_REASON_MAX)
   )
     return rejected('session_invalid', 'reason');
   if (

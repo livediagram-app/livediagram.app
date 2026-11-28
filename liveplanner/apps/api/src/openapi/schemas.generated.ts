@@ -9662,7 +9662,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "outcome": {
-        "description": "What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage); `reviewed` or `skipped` (Sprint Review).",
+        "description": "What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage); `reviewed` or `skipped` (Sprint Review); `discussed` or `flagged` (Stand-up).",
         "enum": [
           "refined",
           "skipped",
@@ -9670,21 +9670,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "committed",
           "accepted",
           "closed",
-          "reviewed"
+          "reviewed",
+          "discussed"
         ],
         "type": "string"
       },
       "reason": {
-        "description": "A Close's reason, at most 200 characters; only with `closed`.",
+        "description": "A reason, at most 200 characters: a Close's (with `closed`), or a Stand-up's Blocked reason (with its `flagged`).",
         "type": "string"
       },
       "session": {
-        "description": "The session kind: `refinement`, `planning` (Sprint Planning), `triage` (Bug Triage) or `review` (Sprint Review).",
+        "description": "The session kind: `refinement`, `planning` (Sprint Planning), `triage` (Bug Triage), `review` (Sprint Review) or `standup` (Stand-up).",
         "enum": [
           "refinement",
           "planning",
           "triage",
-          "review"
+          "review",
+          "standup"
         ],
         "type": "string"
       },
@@ -13986,6 +13988,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "outcome": {
         "$ref": "#/components/schemas/SessionOutcome"
       },
+      "prior": {
+        "$ref": "#/components/schemas/SessionDecision"
+      },
       "reason": {
         "type": "string"
       },
@@ -14025,7 +14030,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "refinement",
       "planning",
       "triage",
-      "review"
+      "review",
+      "standup"
     ],
     "type": "string"
   },
@@ -14037,9 +14043,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "committed",
       "accepted",
       "closed",
-      "reviewed"
+      "reviewed",
+      "discussed"
     ],
     "type": "string"
+  },
+  "SessionPersonDone": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "by": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "at",
+      "by"
+    ],
+    "type": "object"
   },
   "SessionSetup": {
     "additionalProperties": false,
@@ -14052,6 +14075,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "object"
+      },
+      "personOrder": {
+        "$ref": "#/components/schemas/StandupPersonOrder"
       },
       "presenter": {
         "const": "none",
@@ -14121,6 +14147,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "string"
           },
           "type": "array"
+        },
+        "type": "object"
+      },
+      "peopleDone": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/SessionPersonDone"
         },
         "type": "object"
       },
@@ -15697,6 +15729,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "row",
       "column",
       "grid"
+    ],
+    "type": "string"
+  },
+  "StandupPersonOrder": {
+    "enum": [
+      "alphabetical",
+      "shuffled"
     ],
     "type": "string"
   },

@@ -83,6 +83,7 @@ export * from './session-queue';
 export * from './session-tally';
 export * from './session-review';
 export * from './session-triage';
+export * from './session-standup';
 export * from './flow-counts';
 export * from './flow-metrics';
 export * from './repeat';

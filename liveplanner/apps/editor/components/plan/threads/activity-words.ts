@@ -269,6 +269,7 @@ const OUTCOME_VERBS: Record<SessionOutcome, string> = {
   accepted: 'Accepted',
   closed: 'Closed',
   reviewed: 'Reviewed',
+  discussed: 'Discussed',
 };
 function sessionOutcomeLine(
   ctx: ActivityContext,

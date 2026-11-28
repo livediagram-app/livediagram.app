@@ -8,6 +8,7 @@ import {
   SESSION_QUEUE_MAX,
   isItemPerson,
   isSessionKindId,
+  isStandupPersonOrder,
   itemAssignee,
   isSessionOutcome,
   normaliseBoardSort,
@@ -17,6 +18,7 @@ import {
   type ItemPerson,
   type SessionKindId,
   type SessionOutcome,
+  type StandupPersonOrder,
 } from '@liveplanner/items';
 
 export const SESSION_TYPES_MAX = 50;
@@ -49,6 +51,8 @@ export type SessionSetup = {
   until?: number;
   // Sprint Review's presenter: absent, each card's assignee (changeable per card); 'none', no presenter shown.
   presenter?: 'none';
+  // Stand-up's people order: absent, Board Order; else by name, or shuffled for the day.
+  personOrder?: StandupPersonOrder;
 };
 
 export type SessionFacilitator = { id: string; name: string; color: string };
@@ -68,10 +72,15 @@ export type SessionDecision = {
   reason?: string;
   duplicateOf?: string;
   linked?: string;
+  // Stand-up: the card's decision before this step (a Blocked, then a Stage move), so Undo takes back one step.
+  prior?: SessionDecision;
 };
 
 // What an outcome did beyond deciding, kept on its decision.
-export type SessionDecisionDetail = Omit<SessionDecision, 'outcome' | 'at' | 'by'>;
+export type SessionDecisionDetail = Omit<SessionDecision, 'outcome' | 'at' | 'by' | 'prior'>;
+
+// How many steps on one card a decision keeps for Undo.
+const PRIOR_MAX = 8;
 
 export type SessionTabState = {
   v: 1;
@@ -88,7 +97,12 @@ export type SessionTabState = {
   presenters?: Record<string, ItemPerson | null>;
   // Sprint Review: a reviewed card id -> the follow-up cards made from it, oldest first.
   followUps?: Record<string, string[]>;
+  // Stand-up: a person's key (their id, or Unassigned's) -> when they were marked Done and by whom.
+  peopleDone?: Record<string, SessionPersonDone>;
 };
+
+// A Stand-up person marked Done: when, and by whom (a name).
+export type SessionPersonDone = { at: number; by: string };
 
 // What each session kind is (docs/specs/026-plan/session-tabs.md "Designed to grow"): its name, the outcomes its
 // action bar offers, its completing outcome (the fill button, which moves the card to its target stage), how its
@@ -105,7 +119,8 @@ export type SessionKindInfo = {
   stays?: true;
   // Its queue reads archived cards too, and its set-up takes a done range (Sprint Review).
   archived?: true;
-  grouping: 'none';
+  // How the sidebar groups the queue: not at all, or by person (Stand-up's, whose unit is then the person).
+  grouping: 'none' | 'person';
   tally: 'none' | 'estimate';
 };
 
@@ -139,6 +154,14 @@ export const SESSION_KINDS: Readonly<Record<SessionKindId, SessionKindInfo>> = {
     stays: true,
     archived: true,
     grouping: 'none',
+    tally: 'none',
+  },
+  standup: {
+    label: 'Stand-up',
+    outcomes: SESSION_KIND_OUTCOMES.standup,
+    completes: 'discussed',
+    stays: true,
+    grouping: 'person',
     tally: 'none',
   },
 };
@@ -187,6 +210,7 @@ function readSetup(raw: unknown): SessionSetup {
   if (since !== undefined) setup.since = since;
   if (until !== undefined && (since === undefined || until >= since)) setup.until = until;
   if (r['presenter'] === 'none') setup.presenter = 'none';
+  if (isStandupPersonOrder(r['personOrder'])) setup.personOrder = r['personOrder'];
   return setup;
 }
 
@@ -228,8 +252,24 @@ function readDecided(raw: unknown): Record<string, SessionDecision> | undefined 
 const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
 // What a stored decision did beyond deciding, anything malformed left out.
-function readDetail(d: Record<string, unknown>): SessionDecisionDetail {
-  const out: SessionDecisionDetail = {};
+function readDetail(
+  d: Record<string, unknown>,
+  depth = 0,
+): Omit<SessionDecision, 'outcome' | 'at' | 'by'> {
+  const out: Omit<SessionDecision, 'outcome' | 'at' | 'by'> = {};
+  const prior = d['prior'];
+  if (
+    depth < PRIOR_MAX &&
+    isObj(prior) &&
+    isSessionOutcome(prior['outcome']) &&
+    typeof prior['at'] === 'number'
+  )
+    out.prior = {
+      outcome: prior['outcome'],
+      at: prior['at'],
+      by: typeof prior['by'] === 'string' ? prior['by'] : '',
+      ...readDetail(prior, depth + 1),
+    };
   const from = str(d['from']);
   const to = str(d['to']);
   if (from && to) {
@@ -274,6 +314,19 @@ function readFollowUps(raw: unknown): Record<string, string[]> | undefined {
   return n ? out : undefined;
 }
 
+// Stand-up's people Done as kept: a non-empty key with a numeric `at`, at most SESSION_QUEUE_MAX people.
+function readPeopleDone(raw: unknown): Record<string, SessionPersonDone> | undefined {
+  if (!isObj(raw)) return undefined;
+  const out: Record<string, SessionPersonDone> = {};
+  let n = 0;
+  for (const [key, d] of Object.entries(raw)) {
+    if (!key || !isObj(d) || typeof d['at'] !== 'number') continue;
+    out[key] = { at: d['at'], by: typeof d['by'] === 'string' ? d['by'] : '' };
+    if (++n === SESSION_QUEUE_MAX) break;
+  }
+  return n ? out : undefined;
+}
+
 // The tab's session as stored, or null when it holds none this build can run (absent, malformed, or a kind from a
 // later release).
 export function readSessionTab(raw: unknown): SessionTabState | null {
@@ -293,6 +346,8 @@ export function readSessionTab(raw: unknown): SessionTabState | null {
   if (presenters) out.presenters = presenters;
   const followUps = readFollowUps(raw['followUps']);
   if (followUps) out.followUps = followUps;
+  const peopleDone = readPeopleDone(raw['peopleDone']);
+  if (peopleDone) out.peopleDone = peopleDone;
   return out;
 }
 
@@ -322,14 +377,18 @@ export const facilitatorAway = (lastSeenAt: number, now: number): boolean =>
 
 // --- Moving through the queue ------------------------------------------------
 
-// The room moves to `itemId` (or to none), its clock starting again.
+// The room moves to `itemId` (or to none), its clock starting again; with `keepClock` (Stand-up moving between one
+// person's cards) the clock keeps running.
 export function withCurrent(
   s: SessionTabState,
   itemId: string | null,
   now: number,
+  keepClock = false,
 ): SessionTabState {
   const { currentId: _c, cardStartedAt: _t, ...rest } = s;
-  return itemId ? { ...rest, currentId: itemId, cardStartedAt: now } : rest;
+  if (!itemId) return rest;
+  const started = keepClock && s.cardStartedAt !== undefined ? s.cardStartedAt : now;
+  return { ...rest, currentId: itemId, cardStartedAt: started };
 }
 
 // An outcome decided for `itemId` by `by` (a name), the room moving on to `nextId`; `detail` what it did (its move,
@@ -345,6 +404,116 @@ export function withDecision(
 ): SessionTabState {
   const decided = { ...s.decided, [itemId]: { ...detail, outcome, at: now, by } };
   return withCurrent({ ...s, decided }, nextId, now);
+}
+
+// An outcome kept for `itemId` with the room staying where it is (Stand-up's Blocked and Stage): one step over the card's
+// decision, which it keeps as `prior` (at most PRIOR_MAX deep), so Undo takes back this step alone.
+export function withOutcome(
+  s: SessionTabState,
+  itemId: string,
+  outcome: SessionOutcome,
+  by: string,
+  now: number,
+  detail: SessionDecisionDetail = {},
+): SessionTabState {
+  const had = s.decided?.[itemId];
+  const next: SessionDecision = { ...had, ...detail, outcome, at: now, by };
+  delete next.prior;
+  // A move's rank is its own: none given, none kept from an earlier move.
+  if (detail.from && !detail.fromRank) delete next.fromRank;
+  if (had) next.prior = trimPrior(had, PRIOR_MAX - 1);
+  return { ...s, decided: { ...s.decided, [itemId]: next } };
+}
+
+// A decision with at most `left` earlier steps kept under it.
+function trimPrior(d: SessionDecision, left: number): SessionDecision {
+  if (!d.prior) return d;
+  if (left <= 0) {
+    const { prior: _p, ...rest } = d;
+    return rest;
+  }
+  return { ...d, prior: trimPrior(d.prior, left - 1) };
+}
+
+// What a decision's own step did, beside the step before it: moved the card (its from, to and rank) and set the
+// flag. A decision with no step before it did all it holds.
+export function sessionStep(d: SessionDecision): SessionDecision {
+  const p = d.prior;
+  if (!p) return d;
+  const { prior: _p, from, to, fromRank, flagSet, ...rest } = d;
+  const moved = !!from && !!to && (p.from !== from || p.to !== to || p.fromRank !== fromRank);
+  return {
+    ...rest,
+    ...(moved ? { from, to, ...(fromRank ? { fromRank } : {}) } : {}),
+    ...(flagSet && !p.flagSet ? { flagSet } : {}),
+  };
+}
+
+// Undo of the latest step on `itemId`: the decision before it back, else no decision.
+export function withoutStep(s: SessionTabState, itemId: string): SessionTabState {
+  const d = s.decided?.[itemId];
+  if (!d?.prior) return withoutDecision(s, itemId);
+  return { ...s, decided: { ...s.decided, [itemId]: d.prior } };
+}
+
+// Stand-up's Done: the person `key` marked Done, each of `cardIds` not decided yet recorded Discussed at the same
+// moment, and the room moving on to `nextId` with its clock starting again.
+export function withPersonDone(
+  s: SessionTabState,
+  key: string,
+  by: string,
+  now: number,
+  cardIds: readonly string[],
+  nextId: string | null,
+): SessionTabState {
+  const decided = { ...s.decided };
+  for (const id of cardIds) if (!decided[id]) decided[id] = { outcome: 'discussed', at: now, by };
+  const peopleDone = { ...s.peopleDone, [key]: { at: now, by } };
+  const out: SessionTabState = { ...s, peopleDone };
+  if (Object.keys(decided).length) out.decided = decided;
+  return withCurrent(out, nextId, now);
+}
+
+// Undo of a Done: the person no longer Done, and the Discussed decisions their Done recorded (those at its moment
+// with no move) cleared. Answers the state and the cards cleared.
+export function withoutPersonDone(
+  s: SessionTabState,
+  key: string,
+): { state: SessionTabState; cleared: string[] } {
+  const done = s.peopleDone?.[key];
+  if (!done) return { state: s, cleared: [] };
+  const { [key]: _gone, ...peopleDone } = s.peopleDone!;
+  const decided: Record<string, SessionDecision> = {};
+  const cleared: string[] = [];
+  for (const [id, d] of Object.entries(s.decided ?? {})) {
+    if (d.outcome === 'discussed' && d.at === done.at && !d.from) cleared.push(id);
+    else decided[id] = d;
+  }
+  const { peopleDone: _p, decided: _d, ...rest } = s;
+  return {
+    state: {
+      ...rest,
+      ...(Object.keys(peopleDone).length ? { peopleDone } : {}),
+      ...(Object.keys(decided).length ? { decided } : {}),
+    },
+    cleared,
+  };
+}
+
+// Stand-up's Undo Last: the newer of the latest person Done and the latest card decision (a Done wins a tie: its
+// Discussed decisions share its moment), or null with neither.
+export function lastStandupStep(
+  s: SessionTabState,
+):
+  | { kind: 'person'; key: string; done: SessionPersonDone }
+  | { kind: 'card'; itemId: string; decision: SessionDecision }
+  | null {
+  let person: { key: string; done: SessionPersonDone } | null = null;
+  for (const [key, done] of Object.entries(s.peopleDone ?? {}))
+    if (!person || done.at >= person.done.at) person = { key, done };
+  const card = lastDecided(s);
+  if (person && (!card || person.done.at >= card.decision.at)) return { kind: 'person', ...person };
+  return card ? { kind: 'card', ...card } : null;
 }
 
 // Undo Outcome: the card can be decided again; the room stays on it.
@@ -367,7 +536,7 @@ export function lastDecided(
 
 // Start Again: every outcome cleared, the room back at the start.
 export function withNoDecisions(s: SessionTabState): SessionTabState {
-  const { decided: _d, currentId: _c, cardStartedAt: _t, ...rest } = s;
+  const { decided: _d, currentId: _c, cardStartedAt: _t, peopleDone: _p, ...rest } = s;
   return rest;
 }
 

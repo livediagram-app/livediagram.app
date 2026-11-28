@@ -348,7 +348,7 @@ describe('readStoredHistory', () => {
   // docs/specs/026-plan/session-tabs.md "History": a session outcome reads back only as one this build knows.
   it('reads a session outcome back, and leaves out one from a later release', () => {
     const outcome = { kind: 'session', session: 'refinement', outcome: 'skipped' };
-    const later = { kind: 'session', session: 'standup', outcome: 'skipped' };
+    const later = { kind: 'session', session: 'retro', outcome: 'skipped' };
     expect(
       readStoredHistory({ ...row, tag: 'session', changes: JSON.stringify([outcome, later]) }),
     ).toEqual({ at: 5, by: SAM, tag: 'session', changes: [outcome] });
