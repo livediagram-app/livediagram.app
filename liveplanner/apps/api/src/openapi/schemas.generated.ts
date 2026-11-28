@@ -13988,6 +13988,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "outcome": {
         "$ref": "#/components/schemas/SessionOutcome"
       },
+      "prior": {
+        "$ref": "#/components/schemas/SessionDecision"
+      },
       "reason": {
         "type": "string"
       },
