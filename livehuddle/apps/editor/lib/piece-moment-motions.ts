@@ -62,6 +62,9 @@ const swingAll = (
 // An umbrella in its stand: a quicker, wider swing than a coat's.
 const QUICK_SWING = { '--swing': '6deg', '--dur': '0.9s' };
 
+const LAMP_FLICKER = (parts: readonly number[]): PartMotion[] =>
+  parts.map((part) => ({ part, motion: 'wink' }));
+
 export const PART_MOTIONS: Partial<Record<MomentKind, readonly PartMotion[]>> = {
   bookshelf: BOOKS.map(([part, x], i) => ({
     part,
@@ -118,6 +121,10 @@ export const PART_MOTIONS: Partial<Record<MomentKind, readonly PartMotion[]>> = 
     { part: 10, motion: 'hop', delay: 0.1, vars: { '--up': '-2px', '--tip': '0deg' } },
     { part: 11, motion: 'hop', delay: 0.1, vars: { '--up': '-2px', '--tip': '0deg' } },
   ],
+  // The lamps flicker (office-amenities.md "Lamps"): the shade's lit rims and its pool of light wink off and on.
+  'floor-lamp': LAMP_FLICKER([0, 1, 8, 12]),
+  'table-lamp': LAMP_FLICKER([0, 6, 10]),
+  'desk-lamp': LAMP_FLICKER([0, 1, 12]),
   // Each umbrella and its handle on its foot, in a wave.
   'umbrella-stand': [
     ...swingAll([1, 2], [15, 36], '6deg', { wave: 10, vars: QUICK_SWING }),
@@ -200,6 +207,9 @@ const MOVES_ONLY: ReadonlySet<string> = new Set([
   'bookshelf',
   'pool-table',
   'coat-rack',
+  'floor-lamp',
+  'table-lamp',
+  'desk-lamp',
   'kitchen-counter',
   'stage-curtains',
   'hammock',

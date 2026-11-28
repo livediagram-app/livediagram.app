@@ -15,10 +15,10 @@ desks has none.
 
 ## Where they live
 
-| Category   | Tiles, in palette order                                                 |
-| ---------- | ----------------------------------------------------------------------- |
-| **Meet**   | Calendar Wall, Suggestion Box and Team Photo Wall after the World Clock |
-| **Travel** | Signpost after the Directory                                            |
+| Category   | Tiles, in palette order                                                                         |
+| ---------- | ----------------------------------------------------------------------------------------------- |
+| **Meet**   | Calendar Wall, Suggestion Box and Team Photo Wall after the Clock, then the [Poster](poster.md) |
+| **Travel** | Signpost after the Directory                                                                    |
 
 Shape kinds: `calendar-wall`, `suggestion-box`, `signpost`, `photo-wall`.
 
@@ -41,7 +41,7 @@ A large wall planner: a red header band hung from two binder rings, a white shee
 - **The face shows this month** on the viewer's own clock: the month and year in the header, the weekday initials
   (Monday first), the day numbers, and today circled in the theme's red. A day holding notes shows a small note tab in
   its corner in the colour of its newest note, and a count when it holds more than one. The month turns over on its own
-  at midnight, the same minute clock the World Clock uses.
+  at midnight, the same minute clock the Clock uses.
 - **A note** is the [Notice Board](social-pieces.md#notice-board)'s note with a **day**: a short title (optional), a
   body, the author's name, the date it was pinned, an optional colour, and the day it is pinned to (`YYYY-MM-DD`). A
   note with no day (none is made, but one could be stored) counts on the day it was pinned. A calendar holds up to 50

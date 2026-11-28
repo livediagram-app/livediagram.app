@@ -138,7 +138,6 @@ export function KeyboardEssentials() {
   const keys: { label: string; caption: string }[] = [
     { label: 'E', caption: 'Edit' },
     { label: 'W', caption: 'Walk' },
-    { label: 'N', caption: 'Sticky note' },
   ];
   return (
     <Scene w={420} h={150} bg="plain">

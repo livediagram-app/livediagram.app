@@ -83,7 +83,7 @@ export function useAvatarWalkLoop({
   follow: (at: AvatarPoint, r: WalkRects) => void;
   show: (patch: Partial<AvatarPose>) => void;
   onPresence?: (snapshot: AvatarSnapshot | null) => void;
-  seatFields: () => { seatedOn: string | null; seat?: SeatClaim };
+  seatFields: () => { seatedOn: string | null; seat?: SeatClaim; handUp?: true };
   // Set to the loop's wake while the mode is on: the walk's actions (a click-walk, a new arrow, a hop, a reaction, a
   // shove) call it after setting what the loop reads, so a still character asks for no frames at all.
   wakeRef: RefObject<() => void>;

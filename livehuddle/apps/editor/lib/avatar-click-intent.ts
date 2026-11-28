@@ -35,7 +35,6 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'mode-button': U,
   'focus-button': U,
   'notice-board': U,
-  'world-clock': U,
   screen: U,
   'room-sign': U,
   // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md): Start or Pause from anywhere on them.
@@ -57,7 +56,9 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   rug: W,
   grass: W,
   'garden-path': W,
-  // Walk: a Door, swung instead when the character is next to it (the gesture adds that: lib/avatar-door-press).
+  // A Road is crossed where you click (docs/specs/009-elements/road.md).
+  road: W,
+  // Walk: a Door, walked up to like the floor; it opens on its own (room-builder.md "Opening on their own").
   door: W,
   // Walk: a Window is walked up to like the floor; it never swings.
   window: W,
@@ -88,6 +89,10 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'toilet-cubicle': W,
   washbasin: W,
   'hand-dryer': W,
+  // The lamps (office-amenities.md "Lamps"): the floor lamp is scenery, the table and desk lamps stand on a desk.
+  'floor-lamp': W,
+  'table-lamp': W,
+  'desk-lamp': W,
   // Walk: the venue pieces (docs/specs/009-elements/venue-pieces.md): scenery you stand by, the pool's deck, and the
   // stage curtains, walked between as a wall piece (the stage under them is what you walk to).
   pillar: W,
@@ -113,6 +118,8 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'suggestion-box': U,
   signpost: U,
   'photo-wall': W,
+  // The Poster (docs/specs/009-elements/poster.md) is walked to, like a picture.
+  poster: W,
   // Walk: arriving gives you a drink.
   'water-cooler': W,
   'coffee-machine': W,
@@ -136,8 +143,10 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'pool-table': W,
   'foosball-table': W,
   'vending-machine': W,
-  // Walk: a wall piece, walked past, never rung: a click is a click on the floor in front of it.
+  // Walk: a wall piece, walked past, never rung: a click is a click on the floor in front of it. The Clock too
+  // (social-pieces.md "Clock"): it has nothing to open.
   dartboard: W,
+  'world-clock': W,
   // Walk: areas drawn round other things, and lines and marks with nothing to read.
   arrow: W,
   freehand: W,

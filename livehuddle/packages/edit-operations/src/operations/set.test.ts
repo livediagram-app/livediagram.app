@@ -184,10 +184,13 @@ describe('set', () => {
 
   it('changes an element the changeset added, which stays a + line', () => {
     const outcome = run([
-      { op: 'add', element: { id: 'x', type: 'sticky', x: 400, y: 0, width: 200, height: 200 } },
+      {
+        op: 'add',
+        element: { id: 'x', type: 'shape', shape: 'desk', x: 400, y: 0, width: 200, height: 200 },
+      },
       set('x', { label: 'Later' }),
     ]);
-    expect(lines(outcome)).toEqual(['+ x  sticky "Later" @440,0 200×200']);
+    expect(lines(outcome)).toEqual(['+ x  desk "Later" @440,0 200×200']);
     expect(applied(outcome).targets).toEqual([]);
   });
 

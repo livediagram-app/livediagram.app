@@ -4,7 +4,7 @@ import type { AvatarConfig } from '@livehuddle/avatar/config';
 
 export const RECEPTIONIST_LOOK: AvatarConfig = {
   gender: 'male',
-  clothing: 'vest',
+  clothing: 'suit',
   hair: 'curly',
   size: 'regular',
   hairColour: 'dark-brown',

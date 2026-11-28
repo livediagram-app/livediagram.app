@@ -72,7 +72,8 @@ describe('seeded tabs compiled on create', () => {
     expect(agent.status).toBe(400);
     expect(await agent.json()).toEqual({
       error: 'invalid_body',
-      message: 'shape="square": shapes are no longer supported in livehuddle: add a sticky',
+      message:
+        'shape="square": shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board',
       tabId: 't1',
     });
     expect(await getDocument(db.env, 'd1')).toBeNull();

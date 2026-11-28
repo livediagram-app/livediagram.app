@@ -87,25 +87,24 @@ describe('useOffscreenContent', () => {
 });
 
 describe('useOffscreenContent in the 3D view', () => {
-  // Up ahead of a flat view of 800 x 600 at the origin: off its plan, on the tilted view's floor.
+  // Up ahead of a canvas of 800 x 600 at the origin: past the screen's rectangle, on the tilted view's floor.
   const ahead = { ...createSticky(350, -700), width: 100, height: 100 } as Element;
-  const run = (space: { tilted: boolean; turned: boolean }, els: Element[] = [ahead]) => {
+  const run = (turned: boolean, els: Element[] = [ahead]) => {
     const ref = main();
     const { wrapper } = viewAt();
-    return renderHook(() => useOffscreenContent(els, ref, undefined, space), { wrapper }).result
+    return renderHook(() => useOffscreenContent(els, ref, undefined, turned), { wrapper }).result
       .current;
   };
   it('counts what the camera sees far ahead as in view', () => {
-    expect(run({ tilted: false, turned: false })).toBe(true);
-    expect(run({ tilted: true, turned: false })).toBe(false);
+    expect(run(false)).toBe(false);
   });
   it('turned, reaches as far every way', () => {
     const behind = { ...createSticky(350, 1300), width: 100, height: 100 } as Element;
-    expect(run({ tilted: true, turned: false }, [behind])).toBe(true);
-    expect(run({ tilted: true, turned: true }, [behind])).toBe(false);
+    expect(run(false, [behind])).toBe(true);
+    expect(run(true, [behind])).toBe(false);
   });
   it('still finds content far off to the side', () => {
     const far = { ...createSticky(9000, 100), width: 100, height: 100 } as Element;
-    expect(run({ tilted: true, turned: false }, [far])).toBe(true);
+    expect(run(false, [far])).toBe(true);
   });
 });

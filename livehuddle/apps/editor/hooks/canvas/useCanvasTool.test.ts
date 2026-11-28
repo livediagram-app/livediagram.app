@@ -38,9 +38,9 @@ describe('useCanvasTool: changing tab', () => {
 
   it('leaves every other tool alone on a tab change', () => {
     const { result, rerender } = setup();
-    act(() => result.current.selectCanvasTool('format'));
+    act(() => result.current.selectCanvasTool('pan'));
     rerender({ tabId: 'tab-2' });
-    expect(result.current.canvasTool).toBe('format');
+    expect(result.current.canvasTool).toBe('pan');
   });
 
   // Travel (an Elevator ride, a Portal, the Directory's Go) keeps the mode; the next manual switch still ends it.
@@ -98,11 +98,11 @@ describe('useCanvasTool: openWalking', () => {
 
   it('does nothing while already walking', () => {
     const { result } = renderHook(() => useCanvasTool());
-    act(() => result.current.selectCanvasTool('format'));
+    act(() => result.current.selectCanvasTool('pan'));
     act(() => result.current.selectCanvasTool('avatar'));
     act(() => result.current.openWalking());
     expect(result.current.canvasTool).toBe('avatar');
-    expect(result.current.toolBeforeCurrent()).toBe('format');
+    expect(result.current.toolBeforeCurrent()).toBe('pan');
   });
 });
 

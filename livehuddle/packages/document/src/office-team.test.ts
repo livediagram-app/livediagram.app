@@ -27,7 +27,7 @@ import {
 describe('the team pieces’ art', () => {
   it('draws every kind in the office’s art, inside its grid', () => {
     expect(Object.keys(OFFICE_TEAM_ART).sort()).toEqual(
-      ['calendar-wall', 'photo-wall', 'signpost', 'suggestion-box'].sort(),
+      ['calendar-wall', 'photo-wall', 'poster', 'signpost', 'suggestion-box'].sort(),
     );
     for (const [kind, art] of Object.entries(OFFICE_TEAM_ART)) {
       expect(OFFICE_ART[kind as keyof typeof OFFICE_ART]).toBe(art);

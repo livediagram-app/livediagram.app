@@ -4,7 +4,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { AlignmentGuide, DistributionGuide, Element } from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
-import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
+import { paletteDragSnapAt, roomVariantSharesWalls } from '@/lib/palette-drag-snap';
 import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';
 import { placingSize, subscribePlacingFacing } from '@/lib/placing-facing';
 
@@ -66,16 +66,33 @@ export function usePaletteDragGuides({
       setPaletteDragSnap(null);
     };
     // The last move, so a turn (Space, with the pointer still) re-measures the turned piece where it is.
-    let last: { target: EventTarget | null; clientX: number; clientY: number } | null = null;
-    const onDragOver = (e: { target: EventTarget | null; clientX: number; clientY: number }) => {
-      last = { target: e.target, clientX: e.clientX, clientY: e.clientY };
+    type Over = {
+      target: EventTarget | null;
+      clientX: number;
+      clientY: number;
+      metaKey?: boolean;
+      ctrlKey?: boolean;
+    };
+    let last: Over | null = null;
+    // A shaped Room preset's walls are not on its box: it lines up by its edges only (office.md "Rooms line up").
+    const room = preview.kind === 'room' && roomVariantSharesWalls(preview.variant);
+    const onDragOver = (e: Over) => {
+      last = {
+        target: e.target,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        metaKey: e.metaKey,
+        ctrlKey: e.ctrlKey,
+      };
       const target = e.target as Element2 | null;
       // A drag back over a floating panel is a "changed my mind": no snap,
       // no guides — matching the ghost's own over-panel guard.
       const overPanel = !!target?.closest?.('[data-floating-panel]');
       const overCanvas = !!target?.closest?.('main');
       const rect = wrapperRef.current?.getBoundingClientRect();
-      if (!rect || overPanel || !overCanvas) {
+      // Cmd / Ctrl places freely, as every snap (docs/specs/008-canvas/snap-override.md): no snap, no guides, and
+      // the drop lands at the pointer.
+      if (!rect || overPanel || !overCanvas || e.metaKey || e.ctrlKey) {
         clear();
         return;
       }
@@ -89,7 +106,7 @@ export function usePaletteDragGuides({
         width,
         height,
         elements: board.current,
-        room: preview.kind === 'room',
+        room,
       });
       setPaletteDragSnap({ dx: snap.dx, dy: snap.dy });
       setGuides(snap.guides);

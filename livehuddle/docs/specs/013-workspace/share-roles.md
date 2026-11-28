@@ -42,36 +42,36 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 
 ## Feature by feature (v1)
 
-| Feature                                                   | Editor | Participant | Viewer | From                                                                                                      |
-| --------------------------------------------------------- | ------ | ----------- | ------ | --------------------------------------------------------------------------------------------------------- |
-| Walk, hop, Behaviours, Reactions, Status                  | Yes    | Yes         | Yes    | [Avatar mode](../008-canvas/avatar-mode.md): presence, any role                                           |
-| Speak in a speech bubble                                  | Yes    | Yes         | No     | [Who may speak](../008-canvas/avatar-mode.md#who-may-speak)                                               |
-| Push another character, sit, take a drink                 | Yes    | Yes         | Yes    | [Office](../009-elements/office.md#share-roles)                                                           |
-| Go through a portal, follow and be followed               | Yes    | Yes         | Yes    | [Portal element](../009-elements/portal-element.md)                                                       |
-| Place, move, rename or delete Space elements              | Yes    | No          | No     | [Office](../009-elements/office.md#share-roles)                                                           |
-| Make a space or a board from a template                   | Yes    | No          | No     | [Virtual Office](../012-collaboration/virtual-office-template.md#share-roles)                             |
-| Press Bring Focus                                         | Yes    | No          | No     | [Bring Focus](../../../../livediagram/docs/specs/012-collaboration/bring-focus.md)                        |
-| Start, end, reveal or configure a session tool            | Yes    | No          | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md#what-a-participant-changes) |
-| Take part in a session tool (answer, react)               | Yes    | Yes         | No     | as above                                                                                                  |
-| See a tab's Attendance (who was in, when)                 | Yes    | Yes         | No     | [Tab attendance](../012-collaboration/tab-attendance.md#who-sees-it)                                      |
-| Hold the facilitator baton                                | Yes    | No          | No     | [Facilitator](../../../../livediagram/docs/specs/012-collaboration/facilitator.md)                        |
-| Add, write, arrange or delete stickies and text           | Yes    | No          | No     | [A Participant walks](#a-participant-walks)                                                               |
-| Add an image: Write's Image tile, paste or drop           | Yes    | No          | No     | [Images](../009-elements/images.md#share-roles)                                                           |
-| A building palette, Undo / Redo, paste, duplicate, delete | Yes¹   | No          | No     | [A Participant walks](#a-participant-walks)                                                               |
-| The avatar palette while walking                          | Yes    | Yes         | Yes    | [Avatar mode](../008-canvas/avatar-mode.md#the-avatar-palette)                                            |
-| The Call dock (call controls) while walking               | Yes    | Yes         | Yes    | [The Call dock](../008-canvas/avatar-mode.md#the-call-dock)                                               |
-| Leave Avatar mode, the Edit \| Walk toggle                | Yes    | No          | No     | [Always walking](#always-walking)                                                                         |
-| Pin a note on a Notice Board, unpin your own              | Yes    | Yes         | No     | [Social pieces](../009-elements/social-pieces.md#notice-board)                                            |
-| Pin a note on a Calendar Wall, unpin your own             | Yes    | Yes         | No     | [Team pieces](../009-elements/team-pieces.md#calendar-wall)                                               |
-| Drop a note in a Suggestion Box                           | Yes    | Yes         | No     | [Team pieces](../009-elements/team-pieces.md#suggestion-box)                                              |
-| Read and remove a Suggestion Box's notes                  | Yes    | No          | No     | [Team pieces](../009-elements/team-pieces.md#suggestion-box)                                              |
-| Start, pause, reset or set a Timer or Stopwatch           | Yes    | Yes         | No     | [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)                                 |
-| Play the Arcade Machine, post your own score              | Yes    | Yes         | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                             |
-| See an Arcade Machine's High Scores                       | Yes    | Yes         | Yes    | [Social pieces](../009-elements/social-pieces.md#high-scores)                                             |
-| Clear an Arcade Machine's High Scores                     | Yes    | No          | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                             |
-| Open or close a Door                                      | Yes    | Yes         | No     | [Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)                              |
-| Pan, zoom, export                                         | Yes    | Yes         | Yes    | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                            |
-| Change tabs, the theme, anything on the board else        | Yes¹   | No          | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                            |
+| Feature                                                                                                                                               | Editor | Participant | Viewer | From                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ----------- | ------ | --------------------------------------------------------------------------------------------------------- |
+| Walk, hop, Behaviours, Reactions, Status                                                                                                              | Yes    | Yes         | Yes    | [Avatar mode](../008-canvas/avatar-mode.md): presence, any role                                           |
+| Speak in a speech bubble                                                                                                                              | Yes    | Yes         | No     | [Who may speak](../008-canvas/avatar-mode.md#who-may-speak)                                               |
+| Push another character, sit, take a drink                                                                                                             | Yes    | Yes         | Yes    | [Office](../009-elements/office.md#share-roles)                                                           |
+| Go through a portal, follow and be followed                                                                                                           | Yes    | Yes         | Yes    | [Portal element](../009-elements/portal-element.md)                                                       |
+| Place, move, rename or delete Space elements                                                                                                          | Yes    | No          | No     | [Office](../009-elements/office.md#share-roles)                                                           |
+| Make a space or a board from a template                                                                                                               | Yes    | No          | No     | [Virtual Office](../012-collaboration/virtual-office-template.md#share-roles)                             |
+| Press Bring Focus                                                                                                                                     | Yes    | No          | No     | [Bring Focus](../../../../livediagram/docs/specs/012-collaboration/bring-focus.md)                        |
+| Start, end, reveal or configure a session tool                                                                                                        | Yes    | No          | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md#what-a-participant-changes) |
+| Take part in a session tool (answer, react)                                                                                                           | Yes    | Yes         | No     | as above                                                                                                  |
+| See a tab's Attendance (who was in, when)                                                                                                             | Yes    | Yes         | No     | [Tab attendance](../012-collaboration/tab-attendance.md#who-sees-it)                                      |
+| Hold the facilitator baton                                                                                                                            | Yes    | No          | No     | [Facilitator](../../../../livediagram/docs/specs/012-collaboration/facilitator.md)                        |
+| Write on, arrange or delete stickies and text (no tile adds them, [The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)) | Yes    | No          | No     | [A Participant walks](#a-participant-walks)                                                               |
+| Add an image: paste or drop (no palette tile)                                                                                                         | Yes    | No          | No     | [Images](../009-elements/images.md#share-roles)                                                           |
+| A building palette, Undo / Redo, paste, duplicate, delete                                                                                             | Yes¹   | No          | No     | [A Participant walks](#a-participant-walks)                                                               |
+| The avatar palette while walking                                                                                                                      | Yes    | Yes         | Yes    | [Avatar mode](../008-canvas/avatar-mode.md#the-avatar-palette)                                            |
+| The Call dock (call controls) while walking                                                                                                           | Yes    | Yes         | Yes    | [The Call dock](../008-canvas/avatar-mode.md#the-call-dock)                                               |
+| Leave Avatar mode, the Edit \| Walk toggle                                                                                                            | Yes    | No          | No     | [Always walking](#always-walking)                                                                         |
+| Pin a note on a Notice Board, unpin your own                                                                                                          | Yes    | Yes         | No     | [Social pieces](../009-elements/social-pieces.md#notice-board)                                            |
+| Pin a note on a Calendar Wall, unpin your own                                                                                                         | Yes    | Yes         | No     | [Team pieces](../009-elements/team-pieces.md#calendar-wall)                                               |
+| Drop a note in a Suggestion Box                                                                                                                       | Yes    | Yes         | No     | [Team pieces](../009-elements/team-pieces.md#suggestion-box)                                              |
+| Read and remove a Suggestion Box's notes                                                                                                              | Yes    | No          | No     | [Team pieces](../009-elements/team-pieces.md#suggestion-box)                                              |
+| Start, pause, reset or set a Timer or Stopwatch                                                                                                       | Yes    | Yes         | No     | [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)                                 |
+| Play the Arcade Machine, post your own score                                                                                                          | Yes    | Yes         | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                             |
+| See an Arcade Machine's High Scores                                                                                                                   | Yes    | Yes         | Yes    | [Social pieces](../009-elements/social-pieces.md#high-scores)                                             |
+| Clear an Arcade Machine's High Scores                                                                                                                 | Yes    | No          | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                             |
+| Choose, change or remove a Poster's picture                                                                                                           | Yes    | No          | No     | [Poster](../009-elements/poster.md#share-roles)                                                           |
+| Pan, zoom, export                                                                                                                                     | Yes    | Yes         | Yes    | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                            |
+| Change tabs, the theme, anything on the board else                                                                                                    | Yes¹   | No          | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                            |
 
 ¹ Not while walking: an Editor in Avatar mode has no Undo, Redo or Tab Style, nor their shortcuts and commands
 ([Avatar mode](../008-canvas/avatar-mode.md#no-editing-chrome-while-walking)). A Participant always walks, so never has them.
@@ -115,8 +115,7 @@ room's pieces the way anyone in a room would. What a Space holds is the host's.
   they do while walking for anyone: the camera follows the character, the zoom controls stay.
 - **The pieces it keeps** are piece actions, not content edits: pinning a note on a Notice Board or a Calendar Wall and
   unpinning its own ([Social pieces](../009-elements/social-pieces.md#notice-board), [Team
-  pieces](../009-elements/team-pieces.md#calendar-wall)), dropping a note in a Suggestion Box, opening and closing a Door
-  ([Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)), a Timer or Stopwatch
+  pieces](../009-elements/team-pieces.md#calendar-wall)), dropping a note in a Suggestion Box, a Timer or Stopwatch
   ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)), playing the Arcade Machine and posting its
   own scores ([Social pieces](../009-elements/social-pieces.md#high-scores)), playing the Jukebox, knocking, sitting,
   drinks, reactions, speech bubbles and session-tool answers, as the table says. It no longer comments or reacts to
@@ -126,7 +125,8 @@ room's pieces the way anyone in a room would. What a Space holds is the host's.
   longer write on, move, recolour or remove them (nor anything else on the canvas); an Editor can.
 - **The room holds the same line.** The participant content rule (`packages/document/src/participant-content.ts`)
   refuses every add and every remove from a Participant, and on an update keeps every field as stored except a
-  Door's `doorClosed` and a Notice Board's or a Calendar Wall's notes it signs. A refused op comes back with the
+  Notice Board's or a Calendar Wall's notes it signs. Doors open on their own for every role and store no state
+  ([Room Builder and Door](../009-elements/room-builder.md#opening-on-their-own)). A refused op comes back with the
   correction that puts the sender's screen right, as before.
 - **A Viewer walks too** ([Always walking](#always-walking)).
 
@@ -269,6 +269,5 @@ palettes (`stripPaletteFor`: building and avatar) and the selection modes). A ro
   Bring Focus presses on `run`, a Selection Mode button on `!can.alwaysWalks`, a Timer on `takePart`, and otherwise
   nothing, never the reader.
 - **A Participant changes no element** but through a piece: a Notice Board's or a Calendar Wall's notes (it adds notes signed with its
-  own adder key and removes those, and the participant content rule keeps every other note as stored) and a Door's
-  open or closed state (`doorClosed`: it opens and closes any Door, and nothing else about it).
+  own adder key and removes those, and the participant content rule keeps every other note as stored).
   Every other field of every element, its own earlier stickies and text included, stays as stored.

@@ -3,7 +3,6 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSticky, type Element, type Tab } from '@livehuddle/document';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
-import { notifyMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
 import { useEditorViewport } from './useEditorViewport';
 
@@ -122,9 +121,9 @@ describe('useEditorViewport revealing above the on-screen keyboard', () => {
   });
 });
 
-// docs/specs/008-canvas/minimap.md "Fit leaves the Map clear": a Map that shows while a fit glides in (Walk to Edit as a
-// warm open's catch-up lands) sends the glide on to the fit clear of it.
-describe('useEditorViewport and the Map showing mid-glide', () => {
+// A fit that lands at once stops a glide still on its way, so a late frame of the glide never puts the older view back.
+// Nothing in a corner moves a fit (docs/specs/002-project-scope/not-in-livehuddle.md "The Map").
+describe('useEditorViewport fits', () => {
   function desktop() {
     window.innerWidth = 1400;
     const selection = createSelectionStore();
@@ -138,64 +137,14 @@ describe('useEditorViewport and the Map showing mid-glide', () => {
       useEditorViewport({ activeTab: tab, readSelection: selection.get }),
     );
     const main = document.createElement('main');
-    main.getBoundingClientRect = () =>
-      ({ left: 0, top: 0, right: 1400, bottom: 900, width: 1400, height: 900 }) as DOMRect;
+    const size = (width: number, height: number) => {
+      main.getBoundingClientRect = () =>
+        ({ left: 0, top: 0, right: width, bottom: height, width, height }) as DOMRect;
+    };
+    size(1400, 900);
     (view.result.current.canvasMainRef as { current: HTMLElement | null }).current = main;
-    return { view, main, tab };
+    return { view, main, tab, size };
   }
-  let map: HTMLElement | null = null;
-  afterEach(() => {
-    map?.remove();
-    map = null;
-  });
-  const showMap = () => {
-    map = document.createElement('div');
-    map.setAttribute('data-tour-id', 'minimap');
-    map.getBoundingClientRect = () =>
-      ({ left: 16, top: 640, right: 272, bottom: 880, width: 256, height: 240 }) as DOMRect;
-    document.body.append(map);
-  };
-
-  it('glides on to the fit clear of a Map that shows before the glide lands', () => {
-    const { view, main, tab } = desktop();
-    const plain = tabFitView(main, tab.elements)!;
-    act(() => view.result.current.glideToFit(300));
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-    showMap();
-    const clear = tabFitView(main, tab.elements)!;
-    expect(clear).not.toEqual(plain);
-    act(() => notifyMapShown());
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    const now = view.result.current.viewport.get();
-    expect(now.zoom).toBeCloseTo(clear.zoom);
-    expect(now.offset.x).toBeCloseTo(clear.offset.x);
-    expect(now.offset.y).toBeCloseTo(clear.offset.y);
-  });
-
-  // A busy machine's glide frames trail its clock, so the Map's refit can land at once while a frame of the older
-  // glide is still to come: that frame must not put back the fit made before the Map showed.
-  it('keeps a fit made while a glide to the older fit is still on its way', () => {
-    const { view, main, tab } = desktop();
-    act(() => view.result.current.glideToFit(300));
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-    showMap();
-    const clear = tabFitView(main, tab.elements)!;
-    act(() => view.result.current.fitToScreen());
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    const now = view.result.current.viewport.get();
-    expect(now.zoom).toBeCloseTo(clear.zoom);
-    expect(now.offset.x).toBeCloseTo(clear.offset.x);
-    expect(now.offset.y).toBeCloseTo(clear.offset.y);
-  });
-
   const expectView = (
     got: { zoom: number; offset: { x: number; y: number } },
     want: typeof got,
@@ -205,60 +154,30 @@ describe('useEditorViewport and the Map showing mid-glide', () => {
     expect(got.offset.y).toBeCloseTo(want.offset.y);
   };
 
-  // The open's fit settles before the Map has a box (Work Tracker 1125): once it shows, the view fits again, clear of
-  // it, and stays there.
-  it('fits clear of a Map that shows after the first fit has settled', () => {
-    const { view, main, tab } = desktop();
-    const plain = tabFitView(main, tab.elements)!;
-    act(() => view.result.current.fitToScreen());
-    expectView(view.result.current.viewport.get(), plain);
-    showMap();
-    const clear = tabFitView(main, tab.elements)!;
-    expect(clear).not.toEqual(plain);
-    act(() => notifyMapShown());
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    expectView(view.result.current.viewport.get(), clear);
-  });
-
-  // Work Tracker 1125: on a busy machine a glide's frames trail its clock. The Map can show when the glide's time is
-  // up but its last frame is still to come; the refit must land then, and that frame must not put back the older fit.
-  it('fits clear of a Map that shows when a glide is out of time but still has a frame to draw', () => {
-    const { view, main, tab } = desktop();
+  it('keeps a fit made while a glide to an older fit is still on its way', () => {
+    const { view, main, tab, size } = desktop();
     act(() => view.result.current.glideToFit(300));
     act(() => {
       vi.advanceTimersByTime(100);
     });
-    showMap();
-    const clear = tabFitView(main, tab.elements)!;
-    act(() => notifyMapShown());
-    // The Map's frame is read when the glide's clock says it has landed, though its frames have not caught up.
-    // wall-clock: only the glide's clock jumps ahead of its frames; advancing the fake timers would run the frames too.
-    const now = vi.spyOn(performance, 'now').mockReturnValue(performance.now() + 1000); // wall-clock: faked, not timed
-    act(() => {
-      vi.advanceTimersToNextFrame();
-    });
-    now.mockRestore();
-    expectView(view.result.current.viewport.get(), clear);
+    size(1000, 700);
+    const later = tabFitView(main, tab.elements)!;
+    act(() => view.result.current.fitToScreen());
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-    expectView(view.result.current.viewport.get(), clear);
+    expectView(view.result.current.viewport.get(), later);
   });
 
-  it('leaves a view the person moved off a landed fit', () => {
-    const { view } = desktop();
-    act(() => view.result.current.glideToFit());
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    act(() => view.result.current.setViewportOffset({ x: 999, y: 999 }));
-    showMap();
-    act(() => notifyMapShown());
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    expect(view.result.current.viewport.get().offset).toEqual({ x: 999, y: 999 });
+  it('fits over the whole canvas, whatever sits in its bottom-left corner', () => {
+    const { main, tab } = desktop();
+    const plain = tabFitView(main, tab.elements)!;
+    const corner = document.createElement('div');
+    corner.setAttribute('data-tour-id', 'minimap');
+    corner.getBoundingClientRect = () =>
+      ({ left: 16, top: 640, right: 272, bottom: 880, width: 256, height: 240 }) as DOMRect;
+    document.body.append(corner);
+    expectView(tabFitView(main, tab.elements)!, plain);
+    corner.remove();
   });
 });

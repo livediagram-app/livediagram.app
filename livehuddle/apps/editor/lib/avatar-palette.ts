@@ -45,6 +45,14 @@ export const AVATAR_PALETTE_CATEGORIES = [
   },
   { id: 'clothes', label: 'Clothes', description: 'What your character wears.', group: 0 },
   { id: 'hair', label: 'Hair', description: 'How your character wears its hair.', group: 0 },
+  // Owner, 2026-11-27: "a category in walk palette for size, like Skinny to Large etc, to make my character model more
+  // like me". How broad, never how tall (avatar-mode.md "Build").
+  {
+    id: 'build',
+    label: 'Build',
+    description: 'How broad your character is, from Skinny to Large.',
+    group: 0,
+  },
   {
     id: 'status',
     label: 'Status',
@@ -89,6 +97,11 @@ const STILL_AT_MS: Record<AvatarReactionKind, number> = {
   spin: 150,
   cheer: 0,
   dance: 0,
+  'raise-hand': 0,
+  // The hands together.
+  clap: 165,
+  'thumbs-up': 0,
+  point: 0,
 };
 
 /** The pose a Behaviour card draws: the performance at its telling moment, on the ground (a card has no headroom). */

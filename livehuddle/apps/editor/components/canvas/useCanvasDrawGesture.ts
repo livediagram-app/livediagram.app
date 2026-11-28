@@ -76,7 +76,10 @@ export function useCanvasDrawGesture({
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return false;
     const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    const start = snapDrawStart(sx, sy);
+    // An armed Room lands centred on the press, snapped as a whole room (wall to wall included) by the commit, exactly
+    // where its preview stood (docs/specs/009-elements/office.md "Rooms line up"): its centre is not a corner to latch.
+    const room = pendingDraw.type === 'shape' && pendingDraw.kind === 'room';
+    const start = room ? { x: sx, y: sy } : snapDrawStart(sx, sy);
     setDrawDrag({ startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });
     return true;
   };
@@ -89,7 +92,9 @@ export function useCanvasDrawGesture({
   // in CanvasChrome) appears exactly when the start would latch.
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
   // The corner-snap dot is for shapes drawn to size. Out of that state, the dot goes at once.
-  const hoverSnaps = !!pendingDraw && !drawDrag;
+  // An armed Room shows its own snap (the room itself and the wall guide, PlacementPreview), not a corner dot.
+  const hoverSnaps =
+    !!pendingDraw && !drawDrag && !(pendingDraw.type === 'shape' && pendingDraw.kind === 'room');
   if (!hoverSnaps && drawHover) setDrawHover(null);
   useEffect(() => {
     if (!hoverSnaps) return;
@@ -182,7 +187,8 @@ export function useCanvasDrawGesture({
     endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
     return { ...latest, currentX: endX, currentY: endY };
   });
-  const commitDrawDrag = useEffectEvent((snapshot: DrawDrag) => {
+  // `free`: Cmd / Ctrl held at the release, which places without the snap (docs/specs/008-canvas/snap-override.md).
+  const commitDrawDrag = useEffectEvent((snapshot: DrawDrag, free: boolean) => {
     if (!pendingDraw) return;
     onCommitDraw(
       pendingDraw,
@@ -190,6 +196,7 @@ export function useCanvasDrawGesture({
       snapshot.startY,
       snapshot.currentX,
       snapshot.currentY,
+      free,
     );
   });
   // The drag as the press left it: where the listeners start from.
@@ -213,11 +220,11 @@ export function useCanvasDrawGesture({
       latest = next;
       setDrawDrag(next);
     };
-    const onUp = () => {
+    const onUp = (e: PointerEvent) => {
       const snapshot = latest;
       latest = null;
       setDrawDrag(null);
-      if (snapshot) commitDrawDrag(snapshot);
+      if (snapshot) commitDrawDrag(snapshot, e.metaKey || e.ctrlKey);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);

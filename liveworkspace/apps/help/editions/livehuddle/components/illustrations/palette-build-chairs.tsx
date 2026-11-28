@@ -1,39 +1,8 @@
-// Scenes for the palette articles on Bring Focus and Chairs
-// (docs/specs/012-collaboration/bring-focus.md, docs/specs/009-elements/chair.md), drawn with the labels the
+// Scenes for the palette article on Chairs
+// (docs/specs/009-elements/chair.md), drawn with the labels the
 // editor prints.
 
-import {
-  Scene,
-  Label,
-  Dialog,
-  Button,
-  Avatar,
-  TextBar,
-} from '@liveworkspace/help-site/art/primitives';
-
-/** The invitation everyone else gets when somebody presses Bring Focus. */
-export function BringFocusInvite() {
-  return (
-    <Scene w={400} h={210}>
-      {/* The canvas behind, where the reader currently is. */}
-      <rect x={24} y={28} width={86} height={46} rx={8} className="fill-white stroke-slate-300" />
-      <rect x={290} y={130} width={90} height={50} rx={8} className="fill-white stroke-slate-300" />
-      <Dialog x={70} y={46} w={260} h={118} sceneW={400} sceneH={210}>
-        <Label x={88} y={64} size={9} weight={700} tone="accent">
-          BRING FOCUS
-        </Label>
-        <Label x={88} y={82} size={12} weight={700} tone="strong">
-          Sam wants you to look at something
-        </Label>
-        {/* The fixed sentence about moving your view, drawn as text lines. */}
-        <TextBar x={88} y={100} w={220} tone="faint" />
-        <TextBar x={88} y={111} w={150} tone="faint" />
-        <Button x={150} y={128} w={72} h={24} label="Not now" variant="ghost" />
-        <Button x={230} y={128} w={88} h={24} label="Take me there" variant="primary" />
-      </Dialog>
-    </Scene>
-  );
-}
+import { Scene, Label, Avatar } from '@liveworkspace/help-site/art/primitives';
 
 /** One chair drawn from above-front: a back, a seat and a shadow. `facing` is the way a sitter
  *  looks, as the Chair menu names it. */

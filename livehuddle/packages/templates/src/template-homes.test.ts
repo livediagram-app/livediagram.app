@@ -117,13 +117,13 @@ describe('what the new Spaces furnish', () => {
     expect(count(roof!, 'grass')).toBe(1);
   });
 
-  it('gives the Music Hall a curtained Stage, twenty chairs and a Foyer Bar, Green Room and Cloakroom', () => {
+  it('gives the Music Hall a curtained Stage, twenty chairs and a Foyer Bar, Green Room, Cloakroom and Foyer', () => {
     const [els] = floorsOf('music-hall');
     expect(count(els!, 'stage')).toBe(1);
     expect(count(els!, 'stage-curtains')).toBe(1);
     expect(count(els!, 'chair')).toBeGreaterThanOrEqual(20);
-    expect(count(els!, 'focus-button')).toBe(1);
+    expect(count(els!, 'focus-button')).toBe(0);
     const rooms = els!.filter((e) => e.shape === 'room').map((r) => r.label);
-    expect(rooms).toEqual(['Main Hall', 'Foyer Bar', 'Green Room', 'Cloakroom']);
+    expect(rooms).toEqual(['Main Hall', 'Foyer Bar', 'Green Room', 'Cloakroom', 'Foyer']);
   });
 });

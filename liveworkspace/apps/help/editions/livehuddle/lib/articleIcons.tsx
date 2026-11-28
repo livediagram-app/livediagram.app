@@ -167,12 +167,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M7 13h.01M11 13h.01M15 13h.01" />
     </Glyph>
   ),
-  'fast-theming': (
-    <Glyph>
-      <path d="M12 3.5l1.6 4.4L18 9.5l-4.4 1.6L12 15.5l-1.6-4.4L6 9.5l4.4-1.6z" />
-      <path d="M18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
-    </Glyph>
-  ),
 
   // ---- Account and Data ----
   'guest-identity': (

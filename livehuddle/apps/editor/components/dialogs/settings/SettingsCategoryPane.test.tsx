@@ -29,55 +29,42 @@ function show(onChange = vi.fn(), category = PANELS) {
   return onChange;
 }
 
-// A whole desktop-only row (the minimap's, docs/specs/008-canvas/minimap.md):
-// a phone never draws the minimap, so its rows are greyed and inert there,
-// with a note, rather than flipping to no visible effect.
-describe('SettingsCategoryPane desktop-only rows', () => {
-  // The Map's rows are Panels' Map section.
-  const MAP = PANELS;
-  const mapSwitch = () => screen.getByRole('switch', { name: /Enable Map/ });
+const EDITOR = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
 
-  it('greys out Enable Map on a phone, says why, and ignores a tap', () => {
+// A whole desktop-only row (Middle-Mouse Pan, docs/specs/007-editor/user-preferences.md): a phone has no middle
+// button, so the row is greyed and inert there, with a note, rather than flipping to no visible effect.
+describe('SettingsCategoryPane desktop-only rows', () => {
+  const panSwitch = () => screen.getByRole('switch', { name: /Middle-Mouse Pan/ });
+
+  it('greys out Middle-Mouse Pan on a phone, says why, and ignores a tap', () => {
     mobile.value = true;
-    const onChange = show(vi.fn(), MAP);
-    expect((mapSwitch() as HTMLButtonElement).disabled).toBe(true);
-    expect(mapSwitch().getAttribute('aria-checked')).toBe('true');
+    const onChange = show(vi.fn(), EDITOR);
+    expect((panSwitch() as HTMLButtonElement).disabled).toBe(true);
+    expect(panSwitch().getAttribute('aria-checked')).toBe('true');
     expect(
-      screen.getAllByRole('note').some((n) => /Map is desktop only/.test(n.textContent ?? '')),
+      screen.getAllByRole('note').some((n) => /A mouse setting/.test(n.textContent ?? '')),
     ).toBe(true);
-    fireEvent.click(mapSwitch());
+    fireEvent.click(panSwitch());
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('locks the other Map rows on a phone too', () => {
-    mobile.value = true;
-    render(<SettingsCategoryPane category={MAP} settings={{}} onChange={vi.fn()} />);
-    const dim = screen.getByRole<HTMLButtonElement>('switch', { name: /Dim Outside the View/ });
-    expect(dim.disabled).toBe(true);
-    const sizes = screen
-      .getByRole('radiogroup', { name: 'Map Size' })
-      .querySelectorAll<HTMLButtonElement>('[role="radio"]');
-    expect([...sizes].every((b) => b.disabled)).toBe(true);
-  });
-
-  it('leaves Enable Map working on desktop, with no note', () => {
-    const onChange = show(vi.fn(), MAP);
-    expect((mapSwitch() as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(mapSwitch());
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ showMinimap: false }));
+  it('leaves Middle-Mouse Pan working on desktop', () => {
+    const onChange = show(vi.fn(), EDITOR);
+    expect((panSwitch() as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(panSwitch());
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ middleMousePan: false }));
   });
 });
 
 describe('SettingsCategoryPane telemetry', () => {
   // A choice row names the option picked (docs/specs/017-telemetry/telemetry.md).
   it('tracks which option was picked, not just that it changed', () => {
-    const category = SETTINGS_CATEGORIES.find((c) => c.rows.some((r) => r.key === 'mapSize'))!;
-    show(vi.fn(), category);
-    const tall = screen
-      .getByRole('radiogroup', { name: 'Map Size' })
+    show(vi.fn(), EDITOR);
+    const keep = screen
+      .getByRole('radiogroup', { name: 'When I Delete an Unused Image' })
       .querySelector('[role="radio"]:nth-child(3)') as HTMLButtonElement;
-    fireEvent.click(tall);
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'MapSizeTall');
+    fireEvent.click(keep);
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'UnusedImagesKeep');
   });
 });
 

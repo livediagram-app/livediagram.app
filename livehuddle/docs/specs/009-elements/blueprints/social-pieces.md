@@ -12,20 +12,20 @@ Derived from [Social pieces](../social-pieces.md).
 | `packages/document/src/office.ts`                                | The kinds join `OfficeKind`; the pond is a sized kind                                                            |
 | `packages/document/src/participant-content.ts`                   | `mergeNoticeNotes`: a Participant adds and removes only its own notes                                            |
 | `packages/document/src/element-deltas.ts`                        | The `notice-pin` and `notice-unpin` deltas, applied on every screen and in the store                             |
-| `packages/document/src/validate-shape.ts`                        | `noticeNotes`, `clockZones`, `jukeboxSource` validation                                                          |
+| `packages/document/src/validate-shape.ts`                        | `noticeNotes`, `clockZones` (accepted, ignored), `jukeboxSource` validation                                      |
 | `packages/avatar/src/office-geometry.ts`                         | Footprints (`OFFICE_FOOTPRINT`), the fixed seats, `isWallPieceShape`                                             |
 | `packages/avatar/src/seats.ts`                                   | `PING_PONG_SEATS`, `BENCH_SEATS`, `PICNIC_TABLE_SEATS`, `HAMMOCK_SEATS`, `BEAN_BAG_SEATS`, `READING_NOOK_SEATS`  |
 | `packages/avatar/src/walk.ts`                                    | `elementUnderFeet` skips wall pieces                                                                             |
 | `apps/editor/components/canvas/collab/SocialArt.tsx`             | The live parts drawn over a piece's art: rally, fire, water, screen, jukebox lights, night glow                  |
-| `apps/editor/components/canvas/collab/SocialFaces.tsx`           | The Notice Board's cards and Notes button, the World Clock's dials, the Jukebox's button                         |
+| `apps/editor/components/canvas/collab/SocialFaces.tsx`           | The Notice Board's cards and Notes button, the Clock's face, the Jukebox's button                                |
 | `apps/editor/lib/piece-control.ts`                               | `pieceControlProps`, `isPieceControlPress`: a face's control keeps its press from the canvas                     |
 | `apps/editor/components/canvas/collab/NoticeBoardPopover.tsx`    | The note list and add box                                                                                        |
 | `apps/editor/components/canvas/collab/PondView.tsx`              | The pond at its own size                                                                                         |
 | `apps/editor/components/canvas/collab/useSocialPieces.ts`        | Which jukebox's area you stand in, the Insert Coin bubble, the audio element                                     |
-| `apps/editor/lib/minute-clock.ts`                                | The one shared minute timer (`useMinuteNow`)                                                                     |
-| `apps/editor/lib/zone-time.ts`                                   | `zoneTime` (a zone's wall time and day shift), `typedClockZone` (Add Zone's input as the browser's own name)     |
+| `apps/editor/lib/minute-clock.ts`                                | The one shared minute timer (`useMinuteNow`), `localClock` (the viewer's own hour and minute)                    |
+| `apps/editor/lib/real-3d/models/outdoor.ts`                      | The Clock's 3D model (`'world-clock'`): one round dial at `ModelContext.clock`                                   |
 | `apps/editor/lib/jukebox-listening.ts`                           | The viewer's off / on / muted choice (this device), the shared audio element                                     |
-| `apps/editor/components/palette/SocialMenuSections.tsx`          | `WorldClockMenuSection`, `JukeboxMenuSection`                                                                    |
+| `apps/editor/components/palette/SocialMenuSections.tsx`          | `JukeboxMenuSection`                                                                                             |
 | `apps/editor/app/social-motion.css`                              | The CSS loops, none under reduced motion                                                                         |
 | `packages/api-schema/src/table-game.ts`                          | The game wire: `GameInputOp`, `GameEventOp`, `parseGameInput`, `parseGameEvent`, `GAME_INPUT_MS`                 |
 | `apps/api/src/room-op-gate.ts`                                   | Drops a Viewer's `game-input` and `game-event`, and a malformed one from anyone                                  |
@@ -59,10 +59,10 @@ Derived from [Social pieces](../social-pieces.md).
 | Term       | Identifier                  | Meaning                                                                |
 | ---------- | --------------------------- | ---------------------------------------------------------------------- |
 | Note       | `NoticeNote`, `noticeNotes` | `{ id, title?, text, author, by, at, color? }`, oldest first           |
-| Zone       | `ClockZone`, `clockZones`   | `{ zone, label }`, up to six                                           |
+| Zone       | `ClockZone`, `clockZones`   | `{ zone, label }`, up to six: the old World Clock's, kept and ignored  |
 | Source     | `jukeboxSource`             | An `https` audio address                                               |
 | Listening  | `JukeboxListening`          | `'off' \| 'on' \| 'muted'`, per device                                 |
-| Wall piece | `isWallPieceShape`          | Notice board, world clock, dartboard: never blocks, never rung         |
+| Wall piece | `isWallPieceShape`          | Notice board, clock, dartboard: never blocks, never rung               |
 | Night glow | `NightGlow`, `NIGHT_GLOW`   | The light a lit piece throws on dark paper (vending window, nook lamp) |
 | Play area  | `PONG`, `paddleLine`        | The table top, 0 to 1 across (seat 0's end to seat 1's) and down       |
 | Match      | `PongMatch`                 | `{ match, seq, score, phase, ball, since }` as one screen keeps it     |
@@ -108,6 +108,16 @@ Derived from [Social pieces](../social-pieces.md).
   board and machine carry the sender's name. Stored notes and scores are never rewritten.
 - **The minute**: `useMinuteNow` is a `useSyncExternalStore` over one `setTimeout` to the next whole minute, armed while
   one clock is subscribed and cleared when the last unsubscribes.
+- **The Clock** (kind `world-clock`): `localClock(at)` (`apps/editor/lib/minute-clock.ts`) is the viewer's own
+  `{ hour, minute }` from `Date#getHours` / `getMinutes`, so the browser's zone and its daylight saving decide it and
+  nothing is stored. The 2D drawing (`WORLD_CLOCK_VIEW`, 64 × 64) is a rim and a face; `ClockFace` (SocialFaces.tsx)
+  draws the twelve marks and both hands on it from `useMinuteNow`, fitted to the box's smaller side and centred, as
+  every face is (`drawnRect`). In 3D, `OUTDOOR_MODELS['world-clock']` builds one round dial hung flat by `hungFrame`:
+  a dark rim ring, a cream face, twelve marks, the two hands and a brass pin, its diameter as seen the box's smaller
+  side less 8 px, between 16 and 48 px, its middle at `CLOCK_Z` (as built), its height in z built under `RISE` so it
+  reads round. `ModelContext.clock` (`ClockDial`, `{ hour, minute }`) carries the time; `Real3DLayer` rebuilds only
+  the clocks' models over the frozen board at each whole minute (one `setTimeout`, armed while the tab holds a
+  clock). `clockZones` is validated (`isClockZones`) and read by nothing.
 - **The jukebox**: `useSocialPieces` (in `useCanvasAvatar`) narrows the elements to jukeboxes, arcades and rooms once
   per element change (each turned or Room Builder room with its floor polygon, `roomFloorPolygon`, so a step tests
   that polygon and an upright room keeps its box test), then on each move of your feet works out the jukebox whose

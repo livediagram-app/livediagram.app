@@ -1,17 +1,12 @@
-import { useCallback, useMemo } from 'react';
-import {
-  canSendElements,
-  sendElements,
-} from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
-  elementHasText,
   elementKindLabel,
-  elementSupportsText,
   isBoxed,
+  isPoster,
   isRetiredElement,
-  turnsWithFacing,
+  posterPicture,
 } from '@livehuddle/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import {
@@ -27,6 +22,21 @@ import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useDuplicateOrigin } from '@/lib/duplicate-origin';
+import {
+  useSpace3DShowing,
+  useSpace3DTurn,
+  useSpace3DTilt,
+} from '@/components/canvas/space-3d/useSpace3DView';
+import { screenBoxOf, screenRectOf } from '@/lib/space-3d/space-3d-camera';
+import {
+  real3DCornersOf,
+  real3DModelsVersion,
+  subscribeReal3DModels,
+} from '@/lib/real-3d/real-3d-pick';
+
+type Rect = { x: number; y: number; width: number; height: number };
+const NO_OFFSET = { x: 0, y: 0 };
+const NO_SIZE = { width: 0, height: 0 };
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -41,9 +51,12 @@ const multiOf = (s: Selection) => s.multiSelectedIds;
 export function CanvasSelectionToolbars({
   props,
   selectionInput,
+  mainSize = NO_SIZE,
 }: {
   props: CanvasProps;
   selectionInput: CanvasSelectionInput;
+  /** The canvas's box, which the 3D view's camera projects into. */
+  mainSize?: { width: number; height: number };
 }) {
   const { selected, selectionBounds, showPopover, multiToolbarBounds, showMultiToolbar } =
     useCanvasSelectionView(selectionInput, props.activeTabId ?? '');
@@ -54,20 +67,43 @@ export function CanvasSelectionToolbars({
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(
     useCallback((v: View) => (showing ? v : RESTING_VIEW), [showing]),
   );
-  // The pieces of furniture in a multi-selection that turn (docs/specs/009-elements/furniture-facing.md "Several pieces
-  // at once"), read only while the multi-selection toolbar shows.
-  const turning = showMultiToolbar
-    ? props.elements.filter(
-        (el) => multiSelectedIds.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape),
-      )
-    : [];
   // Straight after a Duplicate, the toolbar over the copies keeps off what they were copied from
   // (canvas-and-palette.md "Selection popover", Work Tracker 849): null for every other selection.
   const selectedIds = useMemo(
     () => (showMultiToolbar ? [...multiSelectedIds] : selected ? [selected.id] : []),
     [showMultiToolbar, multiSelectedIds, selected],
   );
-  const avoid = useDuplicateOrigin(selectedIds, props.elements);
+  const flatAvoid = useDuplicateOrigin(selectedIds, props.elements);
+  // The 3D view (docs/specs/008-canvas/3d-view.md "Editing in 3D"): the toolbars ride the screen, over the piece as
+  // the tilted, turned camera draws it (its model's top included), rather than a flat transform that would put them
+  // over the piece's footprint as if the plan were flat, covering the piece and drifting off it as the view moves.
+  const in3D = useSpace3DShowing();
+  const turn = useSpace3DTurn();
+  const tilt = useSpace3DTilt();
+  // Re-placed when the scene rebuilds its models (a dropped piece lands in its new place a frame after the board).
+  useSyncExternalStore(subscribeReal3DModels, real3DModelsVersion, real3DModelsVersion);
+  const view = { zoom: viewportZoom, offset: viewportOffset };
+  // A modelled piece is boxed by its model as drawn; anything else (a note, a picture) by its footprint on the floor.
+  const onScreen = (r: Rect, ids: Iterable<string>) => {
+    const corners = real3DCornersOf(ids);
+    return corners.length
+      ? screenBoxOf(corners, mainSize, view, tilt, undefined, turn)
+      : screenRectOf(r, 0, mainSize, view, tilt, undefined, turn);
+  };
+  const avoid = in3D && flatAvoid ? onScreen(flatAvoid, []) : flatAvoid;
+  const anchorZoom = in3D ? 1 : viewportZoom;
+  const anchorOffset = in3D ? NO_OFFSET : viewportOffset;
+  const wrapperTransform = in3D
+    ? undefined
+    : `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`;
+  const popoverBounds =
+    in3D && selectionBounds && selected
+      ? onScreen(selectionBounds, [selected.id])
+      : selectionBounds;
+  const multiBounds =
+    in3D && multiToolbarBounds
+      ? onScreen(multiToolbarBounds, multiSelectedIds)
+      : multiToolbarBounds;
   // While a selection is moved, resized or reshaped the toolbars stand down and stop measuring
   // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
   const moving = selectionMoving(useCanvasGesture());
@@ -82,12 +118,10 @@ export function CanvasSelectionToolbars({
     onOpenMultiContextMenu,
   } = props;
   // An Editor's toolbar on a retired element's placeholder holds Delete alone (docs/specs/002-project-scope/
-  // not-in-livehuddle.md "What it does", Work Tracker 639): it takes no text, turn, copy, look or layer step there,
-  // and its menu's Arrange and Size stay a right-click away.
+  // not-in-livehuddle.md "What it does", Work Tracker 639): it takes no text, copy or look step there, and its menu's
+  // Size stays a right-click away. No element's toolbar turns or reorders it (not-in-livehuddle.md "Element looks,
+  // layers, opacity and rotation").
   const editable = !readOnly && !!selected && !isRetiredElement(selected);
-  // Send to Plan (docs/specs/013-workspace/send-to-plan.md "Who sees it"): read on the Space is enough, so a Participant
-  // or a Viewer gets the toolbar too, holding that button alone, on an element with words while they may send.
-  const sendable = !!selected && canSendElements([selected]);
   return (
     <>
       {/* SelectionPopover rides on a sibling wrapper that mirrors
@@ -103,14 +137,13 @@ export function CanvasSelectionToolbars({
           Canvas elements stay in the original wrapper at z-auto
           and continue to be visually covered by panels where they
           overlap. */}
-      {/* A Participant or a Viewer gets the selection toolbar only to Send to Plan: every other button on it is an
-          Editor's, and its one other read-only button, the comments, left livehuddle
-          (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"). */}
-      {showPopover && selectionBounds && (!readOnly || sendable) ? (
+      {/* A Participant or a Viewer gets no selection toolbar: every button on it is an Editor's. Its Send to Plan went
+          with the sticky notes (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category"). */}
+      {showPopover && popoverBounds && !readOnly ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
-            transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+            transform: wrapperTransform,
             opacity: toolbarsStale ? 0 : 1,
             // Transition visibility too so it stays interactive through the
             // fade-out then goes non-interactive (hidden) at the end.
@@ -120,48 +153,19 @@ export function CanvasSelectionToolbars({
           }}
         >
           <SelectionPopover
-            bounds={selectionBounds}
-            canvasOffset={viewportOffset}
-            zoom={viewportZoom}
+            bounds={popoverBounds}
+            canvasOffset={anchorOffset}
+            zoom={anchorZoom}
             suspended={moving}
             avoid={avoid}
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
-            // Edit text: on every text-CAPABLE element, even before it has
-            // a label — an empty shape's "Add Text" button teaches that
-            // text can be added. Enters inline edit mode (same path as
-            // double-click); kinds with no label carry no button.
-            onEditText={
-              editable && elementSupportsText(selected)
-                ? () => props.onBeginEdit(selected.id)
-                : undefined
-            }
-            hasText={selected ? elementHasText(selected) : false}
-            // A piece of furniture's quarter turns (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"),
-            // an Editor's, on a piece that turns.
-            onTurn={
-              editable &&
-              props.onTurnSelected &&
-              selected.type === 'shape' &&
-              turnsWithFacing(selected.shape)
-                ? props.onTurnSelected
-                : undefined
-            }
             onDuplicate={editable ? onDuplicateSelected : undefined}
-            // The Format painter's one way in (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): this
-            // element's look, painted onto the next ones pressed.
-            // Not from a retired element, which lends no look (useElementHelpers' paint guard).
-            onFormatPainter={
-              editable && props.onStartFormatPainter
-                ? () => props.onStartFormatPainter?.(selected.id)
+            onChoosePicture={
+              editable && isPoster(selected) && props.imageContext?.posterPicker
+                ? () => props.imageContext?.onOpenPicker?.(selected.id)
                 : undefined
             }
-            // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
-            // band. The element menu's Bring to Front moves LAYERS; these
-            // are the missing nudge for two things on the same one.
-            onBringToFront={editable ? props.onBringSelectedToFront : undefined}
-            // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a sticky's way in (livehuddle has no element menu row).
-            onSendToPlan={sendable && selected ? () => sendElements([selected]) : undefined}
-            onSendToBack={editable ? props.onSendSelectedToBack : undefined}
+            pictureLabel={posterPicture(selected) ? 'Change Picture' : 'Choose Picture'}
             onDelete={readOnly ? undefined : onDeleteSelected}
             onOpenContextMenu={
               !editable
@@ -197,11 +201,11 @@ export function CanvasSelectionToolbars({
           than the boxed-only resize box, so an arrow-only / mixed marquee still
           gets the toolbar — and its "More" entry into the Flow / animate menu.
           Gated on a true marquee multi-selection (2+), never in view-only. */}
-      {showMultiToolbar && multiToolbarBounds ? (
+      {showMultiToolbar && multiBounds ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
-            transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+            transform: wrapperTransform,
             opacity: multiStale ? 0 : 1,
             visibility: multiStale ? 'hidden' : 'visible',
             transition:
@@ -209,15 +213,14 @@ export function CanvasSelectionToolbars({
           }}
         >
           <FloatingToolbar
-            bounds={multiToolbarBounds}
-            canvasOffset={viewportOffset}
-            zoom={viewportZoom}
+            bounds={multiBounds}
+            canvasOffset={anchorOffset}
+            zoom={anchorZoom}
             suspended={moving}
             avoid={avoid}
             title={`Selected Elements (${multiSelectedIds.size})`}
           >
             <MultiSelectionToolbar
-              onTurn={readOnly || !turning.length ? undefined : props.onTurnSelected}
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
               onDelete={props.onDeleteMultiSelected}

@@ -5,6 +5,8 @@ import {
   BrandMark as SharedBrandMark,
   type BrandProps,
 } from '@liveworkspace/brand';
+// liveworkspace's own logo (the platform's prism and wordmark): an idle Screen shows it (screen-and-room-sign.md).
+export { WorkspaceMark, WorkspaceWordmark } from '@liveworkspace/brand';
 import type { ComponentProps } from 'react';
 import { BRAND_APP } from './brand-app';
 

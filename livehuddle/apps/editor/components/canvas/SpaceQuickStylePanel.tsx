@@ -10,10 +10,6 @@
 import { useCallback, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   ROOM_FLOOR_COLOURS,
-  ROOM_FLOOR_LABELS,
-  ROOM_FLOORS,
-  ROOM_WALLS,
-  ROOM_WALLS_LABELS,
   changesType,
   pieceTypeFits,
   pieceVariant,
@@ -35,8 +31,9 @@ import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-sca
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { FloorTypeSwatch } from '@/components/palette/palette-style-previews';
-import { FloorColourSwatch, WallsGlyph } from '@/components/palette/CollabMenuSections';
+import { FloorColourSwatch } from '@/components/palette/CollabMenuSections';
+import { RoomFloorTiles, RoomWallsTiles } from '@/components/palette/RoomLookTiles';
+import { RoomNameField, roomNameEditable } from '@/components/palette/RoomNameField';
 import { pieceTypeChoices } from '@/components/palette/piece-type-tiles';
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
@@ -65,19 +62,31 @@ export function spaceQuickStyleTarget(
 
 const stop = (e: ReactPointerEvent) => e.stopPropagation();
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+const TITLE =
+  'select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+
+// A titled group. `titled={false}` when its content draws the title itself (the floor carousel's heading row, beside
+// its arrows).
+function Section({
+  title,
+  titled = true,
+  children,
+}: {
+  title: string;
+  titled?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div
       role="group"
       aria-label={title}
       className="flex flex-col gap-0.5 [&+&]:border-t [&+&]:border-slate-200 [&+&]:pt-1.5 dark:[&+&]:border-slate-800"
     >
-      <span
-        aria-hidden
-        className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-      >
-        {title}
-      </span>
+      {titled ? (
+        <span aria-hidden className={TITLE}>
+          {title}
+        </span>
+      ) : null}
       {children}
     </div>
   );
@@ -93,6 +102,8 @@ export function SpaceQuickStylePanel({ editing }: { editing: boolean }) {
     setRoomFloorSelected,
     setRoomFloorColourSelected,
     setPieceTypeSelected,
+    commitLabel,
+    can,
   } = useEditorContext();
   const on = editing && !isReadOnly && !contextMenu;
   const idSet = useSelectionOf(
@@ -133,40 +144,32 @@ export function SpaceQuickStylePanel({ editing }: { editing: boolean }) {
           : // Measured before paint; hidden until then so it never flashes in the wrong spot.
             { left: 0, top: 0, visibility: 'hidden' as const }),
       }}
-      className="pointer-events-auto fixed z-[var(--z-panel)] flex w-[220px] flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2 shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+      className="pointer-events-auto fixed z-[var(--z-panel)] flex w-[264px] flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2 shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
     >
       {target.kind === 'room' ? (
         <>
+          {/* One room's name (office.md "Room name field"); several rooms share no one name. */}
+          {target.rooms.length === 1 && roomNameEditable(can, first) ? (
+            <Section title="Name" titled={false}>
+              <RoomNameField room={first} onRename={commitLabel} />
+            </Section>
+          ) : null}
           <Section title="Walls">
-            <MenuTileGrid cols={2}>
-              {ROOM_WALLS.map((w) => (
-                <MenuTile
-                  key={w}
-                  icon={<WallsGlyph walls={w} />}
-                  label={ROOM_WALLS_LABELS[w]}
-                  active={roomWallsOf(first) === w}
-                  onClick={() => setRoomWallsSelected(w)}
-                />
-              ))}
-            </MenuTileGrid>
+            <RoomWallsTiles
+              walls={roomWallsOf(first)}
+              fill={first.fillColor}
+              onSetWalls={setRoomWallsSelected}
+            />
           </Section>
-          <Section title="Floor">
-            <MenuTileGrid cols={3}>
-              {ROOM_FLOORS.map((f) => (
-                <MenuTile
-                  key={f}
-                  icon={
-                    <FloorTypeSwatch
-                      floor={f}
-                      fill={first.fillColor ?? ROOM_FLOOR_COLOURS[0]!.hex}
-                    />
-                  }
-                  label={ROOM_FLOOR_LABELS[f]}
-                  active={roomFloorOf(first) === f}
-                  onClick={() => setRoomFloorSelected(f)}
-                />
-              ))}
-            </MenuTileGrid>
+          <Section title="Floor" titled={false}>
+            <RoomFloorTiles
+              // A different room opens on its own type's page.
+              key={first.id}
+              floor={roomFloorOf(first)}
+              fill={first.fillColor}
+              heading={<span className={TITLE}>Floor</span>}
+              onSetFloor={setRoomFloorSelected}
+            />
           </Section>
           <Section title="Floor Colour">
             <MenuTileGrid cols={3}>

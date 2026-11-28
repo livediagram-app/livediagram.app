@@ -56,7 +56,6 @@ function setup(
     setSelectedId: () => {},
     setEditingId: () => {},
     setMultiSelectedIds: () => {},
-    setFormatSourceId: () => {},
     lockedByOther: () => false,
     ...(opts.onElementsRemoved ? { onElementsRemoved: opts.onElementsRemoved } : {}),
   });

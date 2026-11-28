@@ -25,6 +25,7 @@ import {
 } from './office-garden';
 import { POND_FILL, POND_FILL_DARK } from './office-social';
 import { POOL_FILL, POOL_FILL_DARK } from './office-venue';
+import { ROAD_FILL, ROAD_FILL_DARK } from './road-fill';
 import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
@@ -77,6 +78,7 @@ const FLOOR_FILLS: Record<
   | 'rug'
   | 'stage'
   | 'garden-path'
+  | 'road'
   | 'grass'
   | 'door'
   | 'window'
@@ -93,6 +95,8 @@ const FLOOR_FILLS: Record<
   // A window's frame is the wall's band in the room's floor (room-builder.md "Window").
   window: [ROOM_FLOOR, '#292524'],
   'garden-path': [GARDEN_PATH_FILL, GARDEN_PATH_FILL_DARK],
+  // A road's asphalt (docs/specs/009-elements/road.md).
+  road: [ROAD_FILL, ROAD_FILL_DARK],
   grass: [GRASS_FILL, GRASS_FILL_DARK],
   room: [ROOM_FLOOR, '#292524'],
   // A corridor's floor is a room's (docs/specs/009-elements/corridor.md).
@@ -123,6 +127,7 @@ function behaviourSkin(
     kind === 'rug' ||
     kind === 'stage' ||
     kind === 'garden-path' ||
+    kind === 'road' ||
     kind === 'grass' ||
     kind === 'door' ||
     kind === 'window' ||
@@ -405,6 +410,7 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'outdoor-plant',
   'tree',
   'garden-path',
+  'road',
   'grass',
   'garden-fence',
   // The social pieces (docs/specs/009-elements/social-pieces.md). Each draws itself.
@@ -440,6 +446,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  'floor-lamp',
+  'table-lamp',
+  'desk-lamp',
   'pillar',
   'column',
   'car-park',
@@ -461,6 +470,7 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'suggestion-box',
   'signpost',
   'photo-wall',
+  'poster',
   // The Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md) draw themselves.
   'directory',
   'elevator',

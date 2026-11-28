@@ -58,8 +58,9 @@ function setup() {
 
 describe('which pieces have a moment', () => {
   it('names every static piece, and the three that play at every facing', () => {
-    // 35 static pieces and the six interactive ones with a walk-up answer (Work Tracker 626).
-    expect(MOMENT_KINDS).toHaveLength(41);
+    // 38 static pieces (the three lamps among them) and the six interactive ones with a walk-up answer (Work
+    // Tracker 626).
+    expect(MOMENT_KINDS).toHaveLength(44);
     for (const k of [
       'hammock',
       'notice-board',

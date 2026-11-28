@@ -4,7 +4,6 @@ import {
   type TabMenuCopyToProps,
 } from '@liveworkspace/workbench/components/chrome/TabMenu';
 import { MenuActionRow } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { lucideCalendarClock } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livehuddle/ui';
 import { AddTabToDocumentDialog } from '@/components/dialogs/TabOrganiseDialogs';
@@ -14,22 +13,19 @@ import { useSplitViewContext } from '@/components/split/SplitViewContext';
 const AttendanceIcon = lucideGlyph(lucideCalendarClock, 16);
 
 // The tab menu (liveworkspace/docs/specs/022-interface-design/action-parity.md "The tab menu"): the workbench's one
-// menu with this app's words, its Add to Another Space picker and its own rows, Attendance and Send Stickies to Plan.
+// menu with this app's words, its Add to Another Space picker and its own row, Attendance (its Send
+// Stickies to Plan went with the sticky notes: docs/specs/002-project-scope/not-in-livehuddle.md "The Write category").
 // A space's tabs have no lock, so the toolbar spreads its buttons evenly, Delete last; a connected tab's name always
 // follows its file, so its menu has no Rename.
 export function TabMenu({
   selfId,
   otherDocuments,
   onCopyTo,
-  onSendStickies,
   onOpenAttendance,
   attendanceOnly = false,
   ...menu
 }: Omit<TabMenuBindingProps, 'locked' | 'onToggleLock'> &
   TabMenuCopyToProps & {
-    // Send to Plan's Send All (docs/specs/013-workspace/send-to-plan.md): absent when the tab has no sticky with words
-    // or this session cannot send.
-    onSendStickies?: (() => void) | null;
     // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"): absent for a session that
     // may not see it. `attendanceOnly` (a Participant, a tab-scoped link) makes it the menu's one row.
     onOpenAttendance?: (() => void) | undefined;
@@ -62,19 +58,6 @@ export function TabMenu({
       only={attendanceOnly ? attendanceRow : undefined}
       ownGroup={attendanceRow}
       connectedRows={attendanceRow}
-      fileRows={
-        onSendStickies ? (
-          <MenuActionRow
-            plain
-            icon={<SendToPlanMenuIcon />}
-            label="Send Stickies to Plan"
-            onClick={() => {
-              onSendStickies();
-              menu.onClose();
-            }}
-          />
-        ) : null
-      }
     />
   );
 }

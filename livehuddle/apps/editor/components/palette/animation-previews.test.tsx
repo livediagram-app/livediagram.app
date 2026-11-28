@@ -1,17 +1,7 @@
 // @vitest-environment jsdom
-import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { ICON_ANIMATIONS } from '@livehuddle/document';
-import { IconAnimationPreview } from './animation-previews-existing';
 import { useFrozenAnimations } from '@liveworkspace/workbench/components/palette/useFrozenAnimations';
 import { renderHook } from '@testing-library/react';
-
-describe('animation tile miniatures', () => {
-  it('render the icon set on its real renderer', () => {
-    for (const a of ICON_ANIMATIONS)
-      expect(renderToStaticMarkup(<IconAnimationPreview animation={a} />)).toContain('lvd-icon-');
-  });
-});
 
 describe('useFrozenAnimations', () => {
   it('pauses every animation on the frame, plays on hover and freezes again', () => {

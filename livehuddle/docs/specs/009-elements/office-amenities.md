@@ -3,7 +3,8 @@
 Status: **approved** (owner, 2026-11-06; Work Tracker #534, #531, #532, #536, #530). The everyday kit every real
 building has, so an office, a campus or a tower reads as a real place: a **Printer** and a **Copier**, a kitchenette
 (a **Kitchen Counter**, a **Kitchen Sink**, a **Fridge**, a **Microwave** and a **Kettle**), a bank of **Lockers**, a
-**Coat Rack** and an **Umbrella Stand** by the door, and a restroom (a **Toilet Cubicle**, a **Washbasin** with its
+**Coat Rack** and an **Umbrella Stand** by the door, lamps (a **Floor Lamp**, a **Table Lamp** and a **Desk Lamp**,
+owner 2026-11-27: "I need a lampshade and lamps element types"), and a restroom (a **Toilet Cubicle**, a **Washbasin** with its
 mirror, a **Hand Dryer** and a **Restroom** room preset with its door sign). They are [Office](office.md) pieces in
 every way not said here: drawn upright from the room's camera, placed at a fixed size, aspect locked, no settings `…`,
 no words on them, an Editor's to place, move and delete, and walked round by everyone in
@@ -20,32 +21,36 @@ a feature of its own: it is furniture, drawn well, that makes the rest believabl
 All in **Perks** (`collab-amenities`), which splits into three named groups in the flyout, each ending on a divider
 ([Category flyout](../010-palette/palette-top-level-categories.md#the-space-categories)):
 
-| Group        | Tiles, in order                                                                                         |
-| ------------ | ------------------------------------------------------------------------------------------------------- |
-| **Office**   | Plant, Bookshelf, Printer, Copier, Lockers, Coat Rack, Umbrella Stand                                   |
-| **Kitchen**  | Water Cooler, Coffee Machine, Vending Machine, Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle |
-| **Restroom** | Restroom (the room preset), Toilet Cubicle, Washbasin, Hand Dryer                                       |
+| Group        | Tiles, in order                                                                                          |
+| ------------ | -------------------------------------------------------------------------------------------------------- |
+| **Office**   | Plant, Bookshelf, Floor Lamp, Table Lamp, Desk Lamp, Printer, Copier, Lockers, Coat Rack, Umbrella Stand |
+| **Kitchen**  | Water Cooler, Coffee Machine, Vending Machine, Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle  |
+| **Restroom** | Restroom (the room preset), Toilet Cubicle, Washbasin, Hand Dryer                                        |
 
 Shape kinds: `printer`, `copier`, `kitchen-counter`, `kitchen-sink`, `fridge`, `microwave`, `kettle`, `lockers`,
-`coat-rack`, `umbrella-stand`, `toilet-cubicle`, `washbasin`, `hand-dryer`. The Restroom is not a kind: it is a Room.
+`coat-rack`, `umbrella-stand`, `toilet-cubicle`, `washbasin`, `hand-dryer`, `floor-lamp`, `table-lamp`, `desk-lamp`.
+The Restroom is not a kind: it is a Room.
 
 ## How each one walks
 
-| Piece           | Default size | Walking                                                                                  |
-| --------------- | ------------ | ---------------------------------------------------------------------------------------- |
-| Printer         | 72 × 80      | Scenery: its cabinet blocks                                                              |
-| Copier          | 104 × 128    | Scenery: its base (the paper trays' feet) blocks                                         |
-| Lockers         | 136 × 132    | Scenery: the bottom fifth, full width, blocks, so it stands against a wall               |
-| Coat Rack       | 56 × 128     | Scenery: its foot blocks; the coats above it never do                                    |
-| Umbrella Stand  | 40 × 64      | Scenery: the stand blocks                                                                |
-| Kitchen Counter | 112 × 88     | Scenery: the cabinets, the lower half full width, block; counters side by side join up   |
-| Kitchen Sink    | 112 × 88     | Scenery, exactly as the Kitchen Counter, so a run of units is one barrier                |
-| Fridge          | 72 × 136     | Scenery: its base blocks                                                                 |
-| Microwave       | 60 × 40      | Stands on a counter: never blocks, never a destination (the counter under it blocks)     |
-| Kettle          | 32 × 36      | Stands on a counter, as the Microwave                                                    |
-| Toilet Cubicle  | 96 × 152     | Scenery: its floor (the lower two fifths, full width) blocks; cubicles side by side join |
-| Washbasin       | 72 × 112     | Scenery: its pedestal blocks; the mirror above is on the wall                            |
-| Hand Dryer      | 36 × 44      | Hangs on a wall: never blocks, never a destination                                       |
+| Piece           | Default size | Walking                                                                                     |
+| --------------- | ------------ | ------------------------------------------------------------------------------------------- |
+| Printer         | 72 × 80      | Scenery: its cabinet blocks                                                                 |
+| Copier          | 104 × 128    | Scenery: its base (the paper trays' feet) blocks                                            |
+| Lockers         | 136 × 132    | Scenery: the bottom fifth, full width, blocks, so it stands against a wall                  |
+| Coat Rack       | 56 × 128     | Scenery: its foot blocks; the coats above it never do                                       |
+| Umbrella Stand  | 40 × 64      | Scenery: the stand blocks                                                                   |
+| Kitchen Counter | 112 × 88     | Scenery: the cabinets, the lower half full width, block; counters side by side join up      |
+| Kitchen Sink    | 112 × 88     | Scenery, exactly as the Kitchen Counter, so a run of units is one barrier                   |
+| Fridge          | 72 × 136     | Scenery: its base blocks                                                                    |
+| Microwave       | 60 × 40      | Stands on a counter: never blocks, never a destination (the counter under it blocks)        |
+| Kettle          | 32 × 36      | Stands on a counter, as the Microwave                                                       |
+| Toilet Cubicle  | 96 × 152     | Scenery: its floor (the lower two fifths, full width) blocks; cubicles side by side join    |
+| Washbasin       | 72 × 112     | Scenery: its pedestal blocks; the mirror above is on the wall                               |
+| Hand Dryer      | 36 × 44      | Hangs on a wall: never blocks, never a destination                                          |
+| Floor Lamp      | 48 × 136     | Scenery: its round base blocks; the pole and the shade above it never do                    |
+| Table Lamp      | 36 × 48      | Stands on a desk, a table or a counter, as the Microwave: never blocks, never a destination |
+| Desk Lamp       | 36 × 44      | Stands on a desk, as the Table Lamp                                                         |
 
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
   out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
@@ -60,6 +65,9 @@ Shape kinds: `printer`, `copier`, `kitchen-counter`, `kitchen-sink`, `fridge`, `
   is on the same line as from the front, and on its side its base is centred across the worktop (`counterSideX`),
   wherever it is placed along the run.
 - **Wall pieces** (the Hand Dryer) are walked past, not to.
+- **On a desk**: the Table Lamp and the Desk Lamp are drawn to stand on a Desk's, a table's or a counter's top when
+  placed over its top edge, exactly as the Microwave stands on a counter: no footprint, never what you stand on, and a
+  click on one walks you to the clicked point.
 - Nobody sits in any of them; none gives a drink.
 
 ## The pieces
@@ -91,6 +99,26 @@ Shape kinds: `printer`, `copier`, `kitchen-counter`, `kitchen-sink`, `fridge`, `
   tall plain end panel nearest you, the plinth at the foot, and the four doors (alternating blues, vents, number plates,
   handles) one above the other down the left. Faced right against a left wall, the doors face into the room. The Coat
   Rack and the Umbrella Stand read the same from every side and do not turn.
+
+### Lamps
+
+Warm light for a reading corner, a reception or a desk. Each shade is lit from within: a warm cream, brighter at its
+open rim, with the bulb's glow under it, and a soft warm pool of light falls round its foot (on the floor for the Floor
+Lamp, on the desk for the other two). The light is drawn, never a light in the scene, so a room of lamps costs no more
+than a room of plants.
+
+- **Floor Lamp**: a tall standing lamp: a domed brass base, a slim brass pole with a little switch, a drum shade
+  tapering to its top with a finial, lit from within. For a reading corner, a sofa's end or a reception.
+- **Table Lamp**: a small lamp for a desk or a side table: a round ceramic base and an empire shade, lit from within.
+- **Desk Lamp**: an angled task lamp: a round weighted base, two arms jointed at the elbow, and a cone head tipped down
+  at the desk with its lit rim, throwing its pool of light on the desk in front.
+- The shades and the light are always warm; the Floor Lamp's brass is its own; the Table Lamp's base and the Desk
+  Lamp's base, arms and head take the theme (the piece's own colour, else a wash of its stroke), as the machines do.
+- **Turned**: a lamp reads the same from every side and does not turn.
+- **In 3D** ([3D engine](../008-canvas/3d-engine.md#block-models)): turned shapes (the base and shade lathed, the pole
+  and arms round rods), the shade open at top and bottom with its inside lit brighter than its outside, a bulb in it,
+  and the pool a faint warm see-through disc on the floor or the desk (the glass material, no light of its own). The
+  Table Lamp and the Desk Lamp stand at a Desk's height, as the Microwave stands at the counter's.
 
 ### Kitchenette
 
@@ -171,7 +199,8 @@ Nothing here stores anything but the elements themselves: no state, no delta, no
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - Placing one: `Element · Added · <Kind>` (`Printer`, `Copier`, `Kitchen-counter`, `Kitchen-sink`, `Fridge`,
-  `Microwave`, `Kettle`, `Lockers`, `Coat-rack`, `Umbrella-stand`, `Toilet-cubicle`, `Washbasin`, `Hand-dryer`).
+  `Microwave`, `Kettle`, `Lockers`, `Coat-rack`, `Umbrella-stand`, `Toilet-cubicle`, `Washbasin`, `Hand-dryer`,
+  `Floor-lamp`, `Table-lamp`, `Desk-lamp`).
 - Placing the Restroom preset: `Element · Added · Room`, as any Room (the preset is a Room).
 
 ## Export
@@ -182,6 +211,7 @@ An export draws each piece's art exactly as the canvas does (the shared drawing 
 
 - Printing, copying or a print queue; a drink or a snack from the kitchen (a tea from the Kettle is a follow-up,
   with a new held drink).
+- Switching a lamp off and on, or a lamp that lights the scene (a real light per lamp): the light is drawn.
 - Opening a locker, hanging your own coat, or an occupied cubicle (who is in one is presence the Room Sign already
   shows for the whole restroom).
 - Room presets for other rooms (a Kitchen preset, a Meeting Room preset): the Restroom is the first.

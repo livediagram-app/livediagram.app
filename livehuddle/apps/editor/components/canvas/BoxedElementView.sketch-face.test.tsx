@@ -17,7 +17,6 @@ function draw(element: BoxedElement, fontFamily?: string) {
       fontFamily={fontFamily}
       isSelected={false}
       isEditing={false}
-      isPaintMode={false}
       showHandles={false}
       showAnchors={false}
       onBeginDrag={vi.fn()}

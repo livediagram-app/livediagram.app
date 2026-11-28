@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShapeDrawing } from './useShapeDrawing';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import { createShape, ROOM_WALL, type Element } from '@livehuddle/document';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
@@ -14,17 +15,16 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 
 type Commit = Parameters<typeof useShapeDrawing>[0]['commit'];
 
-function setup(commit = vi.fn<Commit>(), setCanvasTool = vi.fn()) {
+function setup(commit = vi.fn<Commit>()) {
   const selection = createSelectionStore();
   selection.setSelection({ selectedId: 'el-1', multiSelectedIds: new Set(['el-2']) });
   return renderHook(
-    ({ tool }: { tool: CanvasTool }) => {
+    // The tool is no input of the draw any more; a rerender with another one checks a tool change arms nothing.
+    (_props: { tool: CanvasTool }) => {
       const [editingId, setEditingId] = useState<string | null>('el-1');
       const drawing = useShapeDrawing({
         editsBlocked: false,
         readSelection: selection.get,
-        canvasTool: tool,
-        setCanvasTool,
         activeTab: { id: 't1', name: 'Tab', elements: [] },
         commit,
         setSelectedId: selection.setSelectedId,
@@ -53,8 +53,8 @@ describe('useShapeDrawing arming', () => {
   it('is replaced by the next tile picked, like any one-shot arm', () => {
     const { result } = setup();
     act(() => result.current.drawing.beginRoomWalls());
-    act(() => result.current.drawing.beginDraw({ type: 'sticky' }));
-    expect(result.current.drawing.pendingDraw).toEqual({ type: 'sticky' });
+    act(() => result.current.drawing.beginDraw({ type: 'link-card' }));
+    expect(result.current.drawing.pendingDraw).toEqual({ type: 'link-card' });
   });
 
   it('commits nothing for a room-walls intent reaching the draw commit', () => {
@@ -84,8 +84,6 @@ describe('useShapeDrawing Room Builder', () => {
       useShapeDrawing({
         editsBlocked,
         readSelection: selection.get,
-        canvasTool: 'select',
-        setCanvasTool: vi.fn(),
         activeTab: { id: 't1', name: 'Tab', elements: [] },
         commit,
         setSelectedId: selection.setSelectedId,
@@ -172,9 +170,9 @@ describe('useShapeDrawing Room Builder', () => {
     expect(selection.get()).toEqual({ selectedId: added[0]!.id, multiSelectedIds: new Set() });
   });
 
-  it('keeps a tapped sticky a single selection', () => {
+  it('keeps a tapped link card a single selection', () => {
     const { result, commit, selection } = roomSetup(false);
-    act(() => result.current.commitDraw({ type: 'sticky' }, 500, 400, 500, 400));
+    act(() => result.current.commitDraw({ type: 'link-card' }, 500, 400, 500, 400));
     const added = commit.mock.calls[0]![0]([]);
     expect(added).toHaveLength(1);
     expect(selection.get()).toEqual({ selectedId: added[0]!.id, multiSelectedIds: new Set() });
@@ -202,5 +200,62 @@ describe('useShapeDrawing Room Builder', () => {
     expect(result.current.pendingDraw).toBeNull();
     act(() => result.current.commitRoomWalls(L));
     expect(commit).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/009-elements/office.md "Rooms line up": a Room tapped down roughly beside another lands sharing its wall
+// (no double wall), at its preset's own size; Cmd / Ctrl places it where tapped.
+describe('useShapeDrawing placing a Room beside a room', () => {
+  const left = {
+    ...createShape('room', 0, 0),
+    id: 'left',
+    width: 480,
+    height: 320,
+    roomDoor: 'none',
+  } as Element;
+  function tap(variant: string | undefined, centreX: number, free = false) {
+    const commit = vi.fn<Commit>();
+    const selection = createSelectionStore();
+    const { result } = renderHook(() =>
+      useShapeDrawing({
+        editsBlocked: false,
+        readSelection: selection.get,
+        activeTab: { id: 't1', name: 'Tab', elements: [left] },
+        commit,
+        setSelectedId: selection.setSelectedId,
+        setMultiSelectedIds: selection.setMultiSelectedIds,
+        setSelection: selection.setSelection,
+        setEditingId: vi.fn(),
+        styleNewElement: (el) => el,
+      }),
+    );
+    act(() =>
+      result.current.commitDraw(
+        { type: 'shape', kind: 'room', variant },
+        centreX,
+        160,
+        centreX,
+        160,
+        free,
+      ),
+    );
+    return commit.mock.calls[0]![0]([left])[1] as Element & { x: number; width: number };
+  }
+
+  it('lands a plain Room tapped box edge to box edge on the shared wall line', () => {
+    // Its box would start at 480 (the other's box edge, a double wall); it lands overlapping by a wall.
+    const placed = tap(undefined, 480 + 240);
+    expect(placed.x).toBe(480 - ROOM_WALL);
+  });
+
+  it("snaps a preset at the preset's own size, not the plain Room's", () => {
+    // The 640-wide Room preset, tapped 12px off the shared wall.
+    const placed = tap('medium', 480 + 2 + 320);
+    expect(placed.width).toBe(640);
+    expect(placed.x).toBe(480 - ROOM_WALL);
+  });
+
+  it('places it freely with Cmd / Ctrl', () => {
+    expect(tap(undefined, 480 + 240, true).x).toBe(480);
   });
 });

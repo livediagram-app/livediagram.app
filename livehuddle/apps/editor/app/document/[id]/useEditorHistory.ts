@@ -6,8 +6,8 @@ type SetState<T> = (value: T) => void;
 
 // Undo / redo handlers plus the active-tab `tick`, lifted out of
 // editor-page.tsx. Undo and redo are pure snapshot moves on the
-// document history (useDocumentHistory); each also clears the editing,
-// selection and format-painter state so nothing points at an element
+// document history (useDocumentHistory); each also clears the editing
+// and selection state so nothing points at an element
 // the step just took away.
 export function useEditorHistory(opts: {
   activeId: string;
@@ -23,12 +23,11 @@ export function useEditorHistory(opts: {
   set: {
     setSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
-    setFormatSourceId: SetState<string | null>;
   };
 }) {
   const { activeId, editsBlocked, canUndo, canRedo, tickTabs, undoHistory, redoHistory, set } =
     opts;
-  const { setSelectedId, setEditingId, setFormatSourceId } = set;
+  const { setSelectedId, setEditingId } = set;
 
   const tick = (mapElements: (els: Element[]) => Element[]) => {
     if (editsBlocked) return;
@@ -40,7 +39,6 @@ export function useEditorHistory(opts: {
   const clearFocus = () => {
     setEditingId(null);
     setSelectedId(null);
-    setFormatSourceId(null);
   };
 
   const undo = () => {

@@ -103,15 +103,15 @@ A doorway with a door in it, placed on any wall.
 
 One Door tile, four types. On the Toolbar strip and in the Rooms flyout the tile is an opener (its glyph with a caret)
 whose side panel lists them, one card each; each places, drags and previews exactly as the Door tile did, and every
-type is the same `door` element with the same rules (it snaps onto walls, cuts its wall, rides its room, opens and
-closes, and a closed one blocks walking). Only its drawing and its width differ.
+type is the same `door` element with the same rules (it snaps onto walls, cuts its wall, rides its room and
+[opens on its own](#opening-on-their-own)). Its drawing, its 3D model and its width differ.
 
-| Type           | `variant`   | Width | Drawn                                                                                                          |
-| -------------- | ----------- | ----- | -------------------------------------------------------------------------------------------------------------- |
-| Door           | (none)      | 96    | One leaf on a hinge, standing open with its swing arc; shut, it lies across the gap                            |
-| Double Door    | `double`    | 144   | Two leaves hinged at the jambs, each with its arc; shut, they meet in the middle                               |
-| Sliding Door   | `sliding`   | 120   | Two glass panels on a track; open, they slide into the wall either side of the gap                             |
-| Revolving Door | `revolving` | 96    | A glass drum with four wings; open, the wings stand at 45 degrees; shut, they square up and seal the wall line |
+| Type           | `variant`   | Width | Drawn in the plan                                     | In 3D ([3D view](../008-canvas/3d-view.md) "Doorways")                                                                                      |
+| -------------- | ----------- | ----- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Door           | (none)      | 96    | One leaf on a hinge, standing open with its swing arc | A panelled wooden leaf with a brass handle (a glass leaf with a bar handle in a glass wall) that swings open on its hinge                   |
+| Double Door    | `double`    | 144   | Two leaves hinged at the jambs, each with its arc     | Two wooden leaves, each glazed above a raised panel, that swing apart from the middle                                                       |
+| Sliding Door   | `sliding`   | 120   | Two glass panels on a track                           | Two framed glass panels under a metal track that part from the middle and slide into the wall either side                                   |
+| Revolving Door | `revolving` | 96    | A glass drum with four wings, standing at 45 degrees  | A glass drum under a metal canopy, four glass wings on a post that turn while anyone passes and come to rest squared, sealing the wall line |
 
 - **The field** is `ShapeElement.variant?: string`, the type of a piece within its kind. It is general: a
   [Rug](office.md#rug-types) and a [Corridor](corridor.md) keep theirs in it too, and so will the windows and glass
@@ -122,39 +122,38 @@ closes, and a closed one blocks walking). Only its drawing and its width differ.
   characters.
 - **Its height stays 24** (the wall's band); a Revolving Door's drum is drawn past its box, across the wall, as its
   swing arc is. The box is what selects it, so a click on the drum's middle selects it.
-- **Opening and closing animate** as the leaf does: a sliding panel slides, a revolving door's wings turn, over 180 ms
-  with the canvas easing, and jump there under reduced motion.
-- **Export** draws each type as the canvas does, shut or open, in every format: an open door's leaf and dashed swing
-  arc reach past its box, and the PNG (and the PDF's raster fallback) takes them in as the SVG and PDF draw them.
+- **Export** draws each type as the canvas does, in every format: its leaf and dashed swing arc reach past its box, and the PNG (and the PDF's raster fallback) takes them in as the SVG and PDF draw them.
 
 ### Locked doors
 
 A Door no longer locks: livehuddle has no element lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)),
-so no door draws a padlock or darker leaves, and anyone who may swing a door swings any one. A door stored with
-`locked: true` loads as an ordinary door.
+so no door draws a padlock or darker leaves. A door stored with `locked: true` loads as an ordinary door.
 
-### Opening and closing
+### Opening on their own
 
-A Door is open or closed, and anyone taking part can swing it.
+A Door opens itself for whoever walks through it and closes behind them; nobody opens or shuts one by hand (the
+owner, 2026-11-27: "doors should automatically open and close as I go through them, not get me stuck, I also
+shouldn't be able to manually open and close them anymore").
 
-- **The state** is `ShapeElement.doorClosed?: boolean` on the door: absent (or false) is open, so every door placed
-  before this, and every new one, starts open and nobody is shut in. It is stored on the tab like any field, so
-  everyone in the room sees the same door, live, and it travels with copies, templates and exports.
-- **A closed door blocks walking** exactly like the wall it stands in: it no longer cuts its wall, so a character
-  slides along it. An open door lets characters through, as before. A closed door not on a wall blocks nothing (it
-  blocked nothing open either).
-- **In Avatar mode, click a door you are next to** to open or close it. Next to it means your feet within
-  `DOOR_REACH` (48 canvas px) of the door's opening, on either side (`isNextToDoor`). Clicking a door you are not
-  next to walks you to its near side; click again there to swing it. Nothing swings on its own when you arrive.
-- **It swings, drawn.** Open, the leaf stands at a right angle to the wall with its swing arc; closed, the leaf lies
-  across the opening, flush with the wall, and the arc is gone. The leaf turns between the two over 180 ms with the
-  canvas motion stylesheet's easing, and jumps straight there under reduced motion.
-- **Undo**: a swing is one change on the swinger's history, like any edit. Telemetry: `Canvas · Used · Door`.
-- **Share roles**: an Editor and a Participant open and close any door (a Participant changes
-  `doorClosed` and nothing else about a door, by the participant content rule); a Viewer walks through open doors
-  but cannot swing one.
-- For the click policy: `toggleDoor(doorId)` (the editor's, from `useDoorToggle`) swings a door and returns whether
-  it did; `isNextToDoor(feet, door)` (in `@livehuddle/document`) says whether a character can reach it.
+- **Always a way through.** A Door on a wall always cuts it: a character walks through any Door and is never stopped
+  by one, and a walk's route goes through a doorway as through any gap ([Avatar mode](../008-canvas/avatar-mode.md)
+  "Finding the way"). The door's ends keep the wall's reach, so the way through is the door's width less a
+  character's reach at each end, wide enough for every Size.
+- **Nothing is stored.** A door has no open or shut field. The `doorClosed` flag doors carried while they were swung
+  by hand is dropped when a tab loads or arrives (`dropRetiredDoorSwing`, run with the stored-tab migration as
+  `locked` is), so a door saved shut loads as an ordinary door and nobody is shut in. An op from an older client
+  that still carries it loses it the same way.
+- **It opens as someone comes near.** In the [3D view](../008-canvas/3d-view.md) a door stands shut and opens as
+  any character (yours, a peer's, the Receptionist's) comes within `DOOR_OPEN_REACH` (80 canvas px) of its opening,
+  on either side, and closes once nobody has been that near for `DOOR_CLOSE_DELAY_MS` (600 ms). It opens over 350 ms
+  and closes over 500 ms, eased, so a door is open before a walking character reaches it; under reduced motion it
+  jumps. Each type moves its own way (the table above). It is each viewer's own drawing, worked out every frame from
+  the characters that viewer sees: nothing is written to the tab or sent, so there is no undo step and no
+  telemetry.
+- **The board's own drawing** (an export, a thumbnail, the palette) draws a door as an architect's plan does, its leaf standing open with its swing arc (each type
+  as the table draws it), whoever is near.
+- **No hand control.** A click on a door in Avatar mode walks you there like a click on any floor piece; no role
+  opens or shuts a door, so the share roles have no door row.
 
 ### On a back wall
 
@@ -162,17 +161,14 @@ A rectangular Room (solid or glass) draws its back wall as a tall band: its top 
 floor, the room's name on it. A Door's own gap is only a wall's thickness, so on that wall it left most of the band
 standing across the doorway, and an open door did not look open (Work Tracker 1042). There:
 
-- **Open, the band breaks** from its top to the floor across the door's width, as an older room's own top doorway
-  does: you see through the doorway, with the leaf standing open into the room and its swing arc. A glass room's face
-  and pane break the same way.
-- **Shut, the door stands in the face**: a leaf between the door's jambs, from just under the wall's top to the
-  wall's foot, dyed in the room's stroke so it reads shut at a glance at any zoom, with a knob in the floor's colour.
-  On a glass room the leaf is a frosted pane, a little denser than the face.
+- **The band breaks** from its top to the floor across the door's width, as an older room's own top doorway does:
+  you see through the doorway, with the leaf standing open into the room and its swing arc. A glass room's face and
+  pane break the same way.
 - **The room draws the doorway** (`backWallDoors` in `@livehuddle/document`, worked out once per board: which Doors
   stand on each room's back wall line, and where), so the Door draws only its open leaf and swing there, no gap or
-  jambs of its own, and nothing while shut. The side and front walls, and a Room Builder room's walls (all one
+  jambs of its own. The side and front walls, and a Room Builder room's walls (all one
   thickness), are unchanged: the Door's own gap opens them. The canvas and the image export draw it the same; the
-  3D view already cut the standing wall at the doorway and stands a shut door's panel in it.
+  3D view cuts the standing wall at the doorway and stands the door's own model in it.
 
 ## Window
 

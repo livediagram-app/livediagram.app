@@ -18,13 +18,38 @@ import { isSceneShape, type AvatarSceneElement } from './scene';
 
 // How close a character's feet may come to a fence's line, in canvas px: about the feet's own
 // half-width, so a character stops AT a fence rather than standing in it. Measured on the Regular
-// character (its sprite scale, FENCE_REACH_SCALE); a Small or Tall one keeps its own feet's width.
+// character (its sprite scale, FENCE_REACH_SCALE); a Small or Tall one keeps its own feet's width. When Regular
+// was drawn larger (1.5 to 1.9, 2026-11-27) its reach stayed 12, so every aisle a template lays out stays walkable.
 export const FENCE_REACH = 12;
-const FENCE_REACH_SCALE = 1.5;
+const FENCE_REACH_SCALE = 1.9;
 
 /** The reach of a character drawn at `scale` (avatarScale of its Size). */
 export function fenceReachFor(scale: number): number {
-  return (FENCE_REACH * scale) / FENCE_REACH_SCALE;
+  return FENCE_REACH * (scale / FENCE_REACH_SCALE);
+}
+
+// A wall keeps the whole body out of it, not only the feet (fence.md "A wall keeps the whole body out of it"): the
+// walking figure is about 19 px either side at Regular (measured in the browser on the 3D figure walking, 2026-11-27,
+// against the feet's 12), so a wall's reach is the feet's grown by this share, plus the wall's own half-thickness
+// (its `pad`). A footprint's edges keep the plain reach.
+export const FENCE_BODY_SHARE = 19 / 12;
+// Each kind of wall's half-thickness in the 3D view (real-3d/scene-walls.ts WALL_THICKNESS: a room's wall 8 with a
+// 10 px skirting and coping, an Office Pod's glass 4 on a 6 px foot, a Fence 6, a Garden Fence's pickets 4).
+export const WALL_PAD = 5;
+export const POD_PAD = 3;
+export const FENCE_PAD = 3;
+export const PICKET_PAD = 2;
+/** The largest pad any wall has: how much further than the body's reach a search must look. */
+export const FENCE_PAD_MAX = WALL_PAD;
+
+/** How close feet with this `reach` may come to this fence's line: the body's reach plus the pad for a wall. */
+export function fenceReachOf(fence: FenceSegment, reach: number): number {
+  return fence.pad === undefined ? reach : reach * FENCE_BODY_SHARE + fence.pad;
+}
+
+/** The furthest any fence holds feet with this `reach` off its line: how far round a point to look for one. */
+export function fenceSearchReach(reach: number): number {
+  return reach * FENCE_BODY_SHARE + FENCE_PAD_MAX;
 }
 
 // Progress smaller than this share of the frame's own step is no progress: a click-walk pressed
@@ -42,7 +67,15 @@ export function fenceStalled(moved: number, step: number): boolean {
 // `solid`: the footprint a scenery edge outlines (office.md), which a character can be inside of, unlike a line.
 // `water`: that footprint is water (a Swimming Pool's, a Pond's), which a new character appears a body clear of
 // (spawn-point.ts).
-export type FenceSegment = { a: FencePoint; b: FencePoint; solid?: Rect; water?: true };
+// `pad`: a wall (a room's, a corridor's, a pod's, a fence's): its 3D half-thickness, which with the body's width grows
+// its reach (fenceReachOf).
+export type FenceSegment = {
+  a: FencePoint;
+  b: FencePoint;
+  solid?: Rect;
+  water?: true;
+  pad?: number;
+};
 
 /** The pieces whose footprint is water: a character drawn over its lower edge reads as standing in it. */
 export const WATER_KINDS: ReadonlySet<string> = new Set(['swimming-pool', 'pond']);
@@ -65,6 +98,7 @@ export function sameFences(p: readonly FenceSegment[], q: readonly FenceSegment[
     const s = p[i]!;
     const t = q[i]!;
     if (s.a.x !== t.a.x || s.a.y !== t.a.y || s.b.x !== t.b.x || s.b.y !== t.b.y) return false;
+    if (s.pad !== t.pad) return false;
     const r = s.solid;
     const u = t.solid;
     if (
@@ -80,23 +114,20 @@ export function fenceSegments(elements: readonly AvatarSceneElement[]): FenceSeg
   const out: FenceSegment[] = [];
   // Doors (docs/specs/009-elements/room-builder.md "Door") cut the room walls they stand on.
   const doors: FenceSegment[] = [];
-  // A closed one does not (room-builder.md "Opening and closing"): its wall stays whole.
-  for (const el of elements)
-    if (
-      isSceneShape(el) &&
-      el.shape === 'door' &&
-      (el as { doorClosed?: boolean }).doorClosed !== true
-    )
-      doors.push(doorLine(el));
+  // Every one, always: a door opens on its own for whoever walks through it (room-builder.md "Opening on their own").
+  for (const el of elements) if (isSceneShape(el) && el.shape === 'door') doors.push(doorLine(el));
   for (const el of elements) {
     if (!isSceneShape(el)) continue;
     // A garden fence (docs/specs/009-elements/office.md "Garden Fence") blocks as a fence does.
-    if (el.shape === 'fence' || el.shape === 'garden-fence') out.push(fenceLine(el));
-    else if (el.shape === 'room') out.push(...cutByDoors(roomWalls(el), doors));
+    // Every wall carries its pad (fence.md "A wall keeps the whole body out of it"); a doorway's jambs are its cut
+    // walls' ends, which the padded reach rounds.
+    if (el.shape === 'fence') out.push(padded(fenceLine(el), FENCE_PAD));
+    else if (el.shape === 'garden-fence') out.push(padded(fenceLine(el), PICKET_PAD));
+    else if (el.shape === 'room') padAll(out, cutByDoors(roomWalls(el), doors), WALL_PAD);
     // A Corridor (docs/specs/009-elements/corridor.md): the walls down its sides, cut by its doors.
-    else if (el.shape === 'corridor') out.push(...cutByDoors(corridorWalls(el), doors));
+    else if (el.shape === 'corridor') padAll(out, cutByDoors(corridorWalls(el), doors), WALL_PAD);
     // An Office Pod (office.md "Office Pod"): its walls, its doorway shut while both seats are held.
-    else if (el.shape === 'office-pod') out.push(...podWalls(el));
+    else if (el.shape === 'office-pod') padAll(out, podWalls(el), POD_PAD);
     else {
       // Each box of its footprint (a car park's cars and kerb, venue-pieces.md) is its own solid.
       const water = WATER_KINDS.has(el.shape);
@@ -108,17 +139,16 @@ export function fenceSegments(elements: readonly AvatarSceneElement[]): FenceSeg
   return out;
 }
 
-/** The lines of the tab's shut Doors (room-builder.md "Opening and closing"), for routing a walk to one's outside. */
-export function shutDoorLines(elements: readonly AvatarSceneElement[]): FenceSegment[] {
-  const out: FenceSegment[] = [];
-  for (const el of elements)
-    if (
-      isSceneShape(el) &&
-      el.shape === 'door' &&
-      (el as { doorClosed?: boolean }).doorClosed === true
-    )
-      out.push(doorLine(el));
-  return out;
+function padded(s: { a: FencePoint; b: FencePoint }, pad: number): FenceSegment {
+  return { a: s.a, b: s.b, pad };
+}
+
+function padAll(
+  out: FenceSegment[],
+  walls: readonly { a: FencePoint; b: FencePoint }[],
+  pad: number,
+): void {
+  for (const w of walls) out.push(padded(w, pad));
 }
 
 const cross = (o: FencePoint, a: FencePoint, b: FencePoint) =>
@@ -179,8 +209,9 @@ export function fenceRefuses(
     const depth = depthIn(from, fence.solid);
     if (depth > 0) return depthIn(to, fence.solid) > depth + FENCE_EPSILON;
   }
+  const own = fenceReachOf(fence, reach);
   const before = pointSegmentDistance(from, fence);
-  if (before >= reach) return segmentDistance({ a: from, b: to }, fence) < reach;
+  if (before >= own) return segmentDistance({ a: from, b: to }, fence) < own;
   if (before < FENCE_ON_LINE) return false;
   const crosses =
     cross(fence.a, fence.b, from) * cross(fence.a, fence.b, to) < 0 &&
@@ -312,7 +343,11 @@ export function fenceStep(
   // Every point this step tests (the step's end, a slide along a fence, the approach's halvings) lies within the
   // step's length of `from`, so only the fences near it can refuse any of them: test those, in the same order, rather
   // than every wall on the board up to nine times a frame.
-  const fences = fencesNear(from, Math.hypot(to.x - from.x, to.y - from.y) + reach, allFences);
+  const fences = fencesNear(
+    from,
+    Math.hypot(to.x - from.x, to.y - from.y) + fenceSearchReach(reach),
+    allFences,
+  );
   if (fences.length === 0) return { pos: to, blocked: false };
   const fence = firstRefusal(from, to, fences, reach);
   if (!fence) return { pos: to, blocked: false };
@@ -376,13 +411,17 @@ export function clearOfFences(
   p: FencePoint,
   fences: readonly FenceSegment[],
   reach = FENCE_REACH,
+  seat = false,
 ): FencePoint {
+  // A seat snap keeps the feet's plain reach (fence.md "A wall keeps the whole body out of it"): the pad would move a
+  // seat beside a wall off its seat.
+  const reachOf = (f: FenceSegment) => (seat ? reach : fenceReachOf(f, reach));
   let at = p;
   for (let round = 0; ; round++) {
     const fence = fences.find((f) => {
       if (f.solid && depthIn(at, f.solid) > 0) return false;
       const d = pointSegmentDistance(at, f);
-      return d >= FENCE_ON_LINE && d < reach;
+      return d >= FENCE_ON_LINE && d < reachOf(f);
     });
     if (!fence) return at;
     if (round === FENCE_CLEAR_ROUNDS) return p;
@@ -390,7 +429,7 @@ export function clearOfFences(
     const near = nearestOnSegment(at, fence);
     const dx = at.x - near.x;
     const dy = at.y - near.y;
-    const out = (reach + FENCE_CLEAR_MARGIN) / Math.hypot(dx, dy);
+    const out = (reachOf(fence) + FENCE_CLEAR_MARGIN) / Math.hypot(dx, dy);
     const next = { x: near.x + dx * out, y: near.y + dy * out };
     // Never nudged through another fence: out of a box too small to stand in is out of the box.
     if (fences.some((f) => f !== fence && segmentsIntersect({ a: at, b: next }, f))) return p;

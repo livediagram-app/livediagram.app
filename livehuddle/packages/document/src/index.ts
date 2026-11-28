@@ -248,17 +248,6 @@ export function isBoxed(element: Element): element is BoxedElement {
   );
 }
 
-// True when the element carries a non-empty text label — the plain-text
-// `label` every labelable kind mirrors (shape / text / sticky / link-card).
-// Drives the selection toolbar's "Edit Text" button,
-// which only appears once an element actually has text to edit. Images (`alt`) carry no
-// single `label`, so this reads false for them — matching the inline label
-// editor, which targets `label`-bearing elements only.
-export function elementHasText(element: Element): boolean {
-  const label = (element as { label?: string }).label;
-  return typeof label === 'string' && label.trim().length > 0;
-}
-
 // True when the element KIND can carry the plain-text `label` — whether or
 // not one is set yet. Shapes qualify except the self-drawing data shapes
 // (progress / rail / rating / charts), which the inline editor refuses;
@@ -266,9 +255,9 @@ export function elementHasText(element: Element): boolean {
 // deliberately OUT: its view renders link metadata, never `label`, and its
 // double-click opens the link picker (docs/specs/009-elements/link-cards.md) — an Add-text button there
 // entered an edit state with no editor on screen.
-// Drives the selection toolbar's "Edit Text" / "Add Text" button, which
-// shows on every text-capable element (an empty one included, so the
-// affordance teaches that text can be added).
+// Drives the read-only element menu's Edit Text row (an Editor's only); the
+// selection toolbar has no text button (docs/specs/002-project-scope/
+// not-in-livehuddle.md "Edit Text on the selection toolbar").
 export function elementSupportsText(element: Element): boolean {
   // A deleted shape kind takes no typed label (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
   if (element.type === 'shape')
@@ -341,9 +330,12 @@ export * from './furniture-facing';
 export * from './office';
 export * from './room-builder';
 export * from './wall-mounted';
+export * from './poster';
 export * from './room-snap';
 export * from './room-outline-field';
 export * from './office-garden';
+export * from './office-road';
+export * from './tree-species';
 export * from './garden-ground';
 export * from './focus-button-art';
 export * from './office-social';
@@ -351,6 +343,7 @@ export * from './office-recreation';
 export * from './office-workplace';
 export * from './office-kitchen';
 export * from './office-restroom';
+export * from './office-lamps';
 export * from './office-venue';
 // The workday pieces (docs/specs/009-elements/workday-pieces.md) and the office dog's legs.
 export * from './office-workday';
@@ -497,6 +490,10 @@ export { dropRetiredTimer } from './retired-timer';
 // The retired element and tab locks, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab
 // Locking").
 export { dropRetiredLocks } from './retired-locks';
+export { dropRetiredDoorSwing } from './retired-door-swing';
+// The retired texts and sticky notes, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "The Write
+// category").
+export { dropRetiredNoteElements, dropRetiredNotes, isRetiredNote } from './retired-notes';
 
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.

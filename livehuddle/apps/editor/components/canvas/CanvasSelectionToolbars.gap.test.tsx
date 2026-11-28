@@ -33,7 +33,6 @@ function compactFor(el: Element, readOnly = false): boolean | undefined {
           selectionInput={{
             elements: [el],
             editingId: null,
-            isPaintMode: false,
             readOnly,
           }}
         />

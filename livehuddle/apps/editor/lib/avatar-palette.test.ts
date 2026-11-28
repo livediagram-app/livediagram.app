@@ -40,6 +40,7 @@ describe('the avatar palette categories', () => {
       ['character', 0],
       ['clothes', 0],
       ['hair', 0],
+      ['build', 0],
       ['status', 0],
       ['behaviour', 1],
       ['reactions', 1],
@@ -72,6 +73,11 @@ describe('behaviourStill', () => {
     expect(behaviourStill('cheer').armsUp).toBe(true);
     expect(behaviourStill('spin').facing).toBeDefined();
     expect(behaviourStill('dance').leanX).not.toBe(0);
+    expect(behaviourStill('raise-hand').handUp).toBe(true);
+    // The clap's card shows the hands together.
+    expect(behaviourStill('clap').clap).toBeCloseTo(1, 2);
+    expect(behaviourStill('thumbs-up').thumbsUp).toBe(true);
+    expect(behaviourStill('point').point).toBe(true);
     for (const r of AVATAR_REACTIONS) expect(behaviourStill(r.id).lift).toBe(0);
   });
 });

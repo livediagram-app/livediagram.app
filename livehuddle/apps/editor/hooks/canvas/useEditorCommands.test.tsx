@@ -105,8 +105,8 @@ describe('useEditorCommands', () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
-  // docs/specs/002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes": the painter starts from the
-  // selection toolbar alone, so Search has no Format Painter entry, even on a tab with content to paint.
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and Clear Styles": Search has no Format Painter
+  // entry, even on a tab with content to paint.
   it('offers no format painter, even with content to paint', () => {
     const shape = {
       id: 's',

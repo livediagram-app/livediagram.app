@@ -19,7 +19,7 @@ import {
   type Element,
 } from '@livehuddle/document';
 import { drinkFrom, roomInterior, type DrinkKind } from '@livehuddle/avatar/office-geometry';
-import { findWalkPath, type NavGrid } from '@livehuddle/avatar/pathing';
+import { findWalkRoute, type NavGrid } from '@livehuddle/avatar/pathing';
 import { fenceSegments, type FenceSegment } from '@livehuddle/avatar/collision';
 import { avatarScale } from '@livehuddle/avatar/config';
 import { freeSpawnPoint, spawnBody, spawnHalfWidth } from '@livehuddle/avatar/spawn-point';
@@ -50,8 +50,6 @@ const ROOM_FRONT = 36;
 const RECEPTIONIST_INSET = 40;
 /** The share of legs spent at a piece rather than on the open floor, when his area has pieces to visit. */
 const PIECE_SHARE = 0.7;
-/** The flourishes he does on the open floor. */
-const FLOURISHES: readonly AvatarReactionKind[] = ['dance', 'spin', 'cheer', 'jumping-jacks'];
 
 type Box = { x: number; y: number; width: number; height: number };
 export type Point = { x: number; y: number };
@@ -132,16 +130,17 @@ function remember<K, V>(map: Map<K, V>, key: K, value: V): V {
   return value;
 }
 
-/** The route from `from` to `to` round the walls, or null when it cannot get there (the route ends elsewhere). */
+/**
+ * The route from `from` to `to` round the walls, or null when it cannot get there: `to` in a piece's footprint or a
+ * wall's reach, behind walls, or past the search's cap (findWalkRoute), never a straight line through them.
+ */
 export function receptionistRoute(grid: NavGrid | null, from: Point, to: Point): Point[] | null {
   const owner = grid ?? NO_GRID;
   let cache = routeCache.get(owner);
   if (!cache) routeCache.set(owner, (cache = new Map<string, Point[] | null>()));
   const key = `${from.x},${from.y}>${to.x},${to.y}`;
   if (cache.has(key)) return cache.get(key)!;
-  const route = findWalkPath(grid, from, to);
-  const end = route[route.length - 1]!;
-  return remember(cache, key, Math.hypot(end.x - to.x, end.y - to.y) < 1 ? route : null);
+  return remember(cache, key, findWalkRoute(grid, from, to));
 }
 
 /** Whether a stop is one he keeps to: inside his area, and within RECEPTIONIST_RADIUS of walking from his pad. */
@@ -314,8 +313,8 @@ function stopOfLeg(world: ReceptionistWorld, n: number): ReceptionistStop {
   for (let i = 0; i < RECEPTIONIST_TRIES; i += 1) {
     const at = floorSpot(world.area, next);
     if (!at || !reachable(world, at)) continue;
-    const flourish = FLOURISHES[Math.floor(next() * FLOURISHES.length)]!;
-    return { at, activity: 'flourish', face: 'down', flourish };
+    // He stands and looks round the room (receptionist.md "His stops"): the front desk plays no reaction.
+    return { at, activity: 'flourish', face: 'down' };
   }
   return world.home;
 }

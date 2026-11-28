@@ -13,12 +13,14 @@ import {
 // "Imported and pasted content"). The quick style panel's rows on such a selection (Marker colour and width, "6
 // elements") were a whiteboard's, and no board is a whiteboard since Draw mode went; the colours stay. Dark mode.
 
-// A synthesised board: a blue rectangle and a green label (both by name), a text box, a sticky and an image
-// placeholder. Only kinds livehuddle makes (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+// A synthesised board: a desk with a blue line and a green label (both by name), a desk with a violet label and an
+// image placeholder. Only kinds livehuddle makes (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+// engine", "The Write category").
 const BOARD = [
   {
     id: 'rect',
-    type: 'sticky',
+    type: 'shape',
+    shape: 'desk',
     x: 400,
     y: 120,
     width: 180,
@@ -29,27 +31,15 @@ const BOARD = [
   },
   {
     id: 'text',
-    type: 'text',
+    type: 'shape',
+    shape: 'desk',
     x: 120,
     y: 280,
     width: 200,
-    height: 30,
-    sizing: 'fit',
+    height: 100,
     label: 'Retro notes',
-    font: 'caveat',
     textSize: 'md',
     penTextColour: 'violet',
-  },
-  {
-    id: 'sticky',
-    type: 'sticky',
-    x: 620,
-    y: 240,
-    width: 140,
-    height: 140,
-    fillColor: '#bae6fd',
-    textColor: '#082f49',
-    label: 'Idea',
   },
   { id: 'image', type: 'image', x: 800, y: 240, width: 120, height: 90, imageId: null },
 ];

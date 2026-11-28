@@ -494,15 +494,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // someone presses, and the `behaviour` family glyph above already draws that.
   // So none of them draws a button being pressed: each draws what pressing it
   // DOES, which is the only thing that tells them apart.
-  // A reticle: the mark you put over the thing you want looked at. Distinct
-  // from the reveal's eye (about seeing) and the portal's arrow (about going).
-  'bring-focus': (
-    <Glyph>
-      <circle cx="12" cy="12" r="7" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-      <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
-    </Glyph>
-  ),
   'mode-buttons': (
     <Glyph>
       <Prims prims={lucideToggleRight} />
@@ -571,15 +562,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="12" r="9" />
       <path d="M12 11v5.5" />
       <path d="M12 7.8h.01" />
-    </Glyph>
-  ),
-  // The canvas, with its small map and the viewport box inside it.
-  minimap: (
-    <Glyph>
-      <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
-      <rect x="13" y="12" width="7" height="6.5" rx="1" />
-      <rect x="15" y="13.5" width="3" height="2.5" rx="0.5" />
-      <path d="M5.5 7h6M5.5 10h4" />
     </Glyph>
   ),
   // Toggles, because that is what the dialog is: a column of them.
@@ -733,13 +715,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="4" y="4" width="16" height="16" rx="2" />
       <path d="M8 8h5M8 8v5M8 8l5 5" />
       <path d="M16 16h-5M16 16v-5" />
-    </Glyph>
-  ),
-  rotation: (
-    <Glyph>
-      <rect x="6.5" y="9" width="11" height="11" rx="1.5" />
-      <path d="M6 6.5A7 7 0 0119 5" />
-      <path d="M19 1.5V5h-3.5" />
     </Glyph>
   ),
   // The element plus a real drop shadow: a FILLED offset copy behind an
@@ -958,12 +933,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <path d="M3 9h18M6 6.5h5" />
       <rect x="13" y="5.5" width="5" height="2" rx="1" />
-    </Glyph>
-  ),
-  'colours-borders-opacity': (
-    <Glyph>
-      <rect x="3.5" y="3.5" width="17" height="17" rx="4" strokeDasharray="3 2" />
-      <path d="M7 17L17 7v10z" fill="currentColor" stroke="none" opacity="0.35" />
     </Glyph>
   ),
   'formatting-label-text': (

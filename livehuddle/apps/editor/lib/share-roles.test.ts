@@ -15,6 +15,8 @@ import { SPACE_CATEGORIES } from '@/components/palette/space-categories';
 import { receptionistTopicsFor } from '@/lib/receptionist/receptionist-topics';
 import { stripPaletteFor } from '@/lib/avatar-palette';
 import { avatarPressOutcome } from '@/lib/avatar-click-intent';
+import { roomNameEditable } from '@/components/palette/RoomNameField';
+import { choosesPosterPicture } from '@/lib/poster-picture';
 
 // docs/specs/013-workspace/share-roles.md "Feature by feature (v1)", as the editor renders it: one block per row of
 // the table, one case per level. The room's half is apps/api/src/share-roles.test.ts. Each level's session is what
@@ -67,7 +69,10 @@ const expectPerLevel = (
   });
 
 // The Space categories' tiles (docs/specs/010-palette/palette-top-level-categories.md "The Space categories").
-const NAVIGATE_TILES = SPACE_CATEGORIES.flatMap((c) => tilesForCategory(c.id)).map((t) => t.id);
+// Bring Focus stays in the catalogue but no category offers it (not-in-livehuddle.md "Bring Focus").
+const NAVIGATE_TILES = SPACE_CATEGORIES.flatMap((c) => tilesForCategory(c.id))
+  .map((t) => t.id)
+  .filter((id) => id !== 'tools:focus-button');
 const NAVIGATE_ELEMENTS = [
   shape('portal', { label: 'Kitchen' }),
   shape('chair'),
@@ -78,6 +83,14 @@ const NAVIGATE_ELEMENTS = [
 ];
 
 describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', () => {
+  // A Poster's picture (docs/specs/009-elements/poster.md "Share roles"): its double click, toolbar button and menu
+  // section read choosesPosterPicture (useEditorCreation hands it `can` and the session's read-only).
+  expectPerLevel(
+    "Choose, change or remove a Poster's picture",
+    (level) => choosesPosterPicture(canFor(level), level !== 'edit'),
+    { edit: true, participate: false, view: false },
+  );
+
   // Walking writes nothing: the Avatar mode is in every role's selection modes, so a mode button and the Spaces
   // board's opening walk (useOpenWalking, which takes no role) take anyone into it.
   expectPerLevel(
@@ -207,6 +220,12 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
       },
       { edit: true, participate: false, view: false },
     );
+    // A Room's name field in its settings dialog and the Quick Style panel (office.md "Room name field").
+    expectPerLevel(
+      "a Room's name field",
+      (level) => roomNameEditable(canFor(level), shape('room', { label: 'Lounge' })),
+      { edit: true, participate: false, view: false },
+    );
   });
 
   // The template start shows only where `roleGates(...).shape` (EditorStartPanels).
@@ -260,9 +279,10 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
   // "A Participant walks"); the room refuses it too (apps/api/src/share-roles.test.ts).
   describe('Add, write, arrange or delete stickies and text', () => {
     expectPerLevel(
+      // No palette adds them (not-in-livehuddle.md "The Write category"), for any role.
       'the Sticky and Text tiles on the palette',
       (level) => ['tools:sticky', 'tools:text'].map((id) => paletteTileIdsFor(level).includes(id)),
-      { edit: [true, true], participate: [false, false], view: [false, false] },
+      { edit: [false, false], participate: [false, false], view: [false, false] },
     );
     expectPerLevel(
       'add, write on, move and recolour a sticky; remove its own; write on text',
@@ -287,14 +307,14 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
 
   // Images (docs/specs/009-elements/images.md "Share roles"): an Editor adds one from Write's Image tile (or a pasted
   // or dropped picture, useClipboard.drop.test.tsx), and alone changes one; everyone sees them.
-  describe("Add an image: Write's Image tile, paste or drop", () => {
+  describe('Add an image: paste or drop (no palette tile)', () => {
     expectPerLevel(
       "Write's Image tile on the palette",
       (level) =>
         paletteCategories()
           .filter(() => stripFor(level, false) === 'build')
           .some((c) => c.id === 'write' && (c.tiles ?? []).some((t) => t.id === 'tools:image')),
-      { edit: true, participate: false, view: false },
+      { edit: false, participate: false, view: false },
     );
     const image = { id: 'i', type: 'image', ...box, imageId: 'img-1' } as Element;
     expectPerLevel(
@@ -310,17 +330,6 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
       },
     );
   });
-
-  // The pieces a Participant keeps (share-roles.md "A Participant walks"): a Door's swing, one saved locked too.
-  // Pinning its own notes on a Notice Board goes through the board's popover (NoticeBoardPopover, its adder key).
-  expectPerLevel(
-    'Swing a door, one saved locked too',
-    (level) => {
-      const can = canFor(level);
-      return [can.swingDoor(shape('door')), can.swingDoor(shape('door', { locked: true }))];
-    },
-    { edit: [true, true], participate: [true, true], view: [false, false] },
-  );
 
   // The comment popover's `canComment` and the Comment panel's actions read `can.takePart` (EditorAnchoredPopovers,
   // EditorCanvasHost).

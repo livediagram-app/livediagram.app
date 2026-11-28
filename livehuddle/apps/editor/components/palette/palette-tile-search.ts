@@ -23,9 +23,6 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return shapeSig(a.kind, a.mode ?? a.variant);
     case 'component':
       return null;
-    case 'sticky':
-      return 'sticky';
-    case 'text':
     case 'image':
     case 'link-card':
       return a.type;
@@ -39,8 +36,6 @@ export function elementSignature(el: Element): string {
   switch (el.type) {
     case 'shape':
       return shapeSig(el.shape, el.mode);
-    case 'sticky':
-      return 'sticky';
     default:
       return el.type;
   }

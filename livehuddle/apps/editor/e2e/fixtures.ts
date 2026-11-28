@@ -78,14 +78,6 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
     } catch {
       // No storage: nothing to mark.
     }
-    // Walks open flat, as the specs' presses are aimed (the 3D view is on by default, 3d-view.md "Turning it on and
-    // off"); a spec of the 3D view turns it on itself.
-    try {
-      if (localStorage.getItem('livehuddle:v2:space-3d') === null)
-        localStorage.setItem('livehuddle:v2:space-3d', '0');
-    } catch {
-      // No storage: nothing to set.
-    }
   });
 }
 
@@ -426,7 +418,7 @@ export async function settledBox(
 /** A palette tile, from its category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The
  *  category bar"): opens the category (a press, so it stays open whatever the pointer does next) unless its flyout is
  *  already showing, and returns the tile. */
-export async function paletteTile(page: Page, name: string, category = 'Write'): Promise<Locator> {
+export async function paletteTile(page: Page, name: string, category = 'Seats'): Promise<Locator> {
   const flyout = page.locator('[data-category-flyout]');
   const button = page.locator(`[data-category-bar-button][aria-label="${category}"]`);
   if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();

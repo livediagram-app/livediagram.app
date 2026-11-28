@@ -1,5 +1,5 @@
 // The Avatar-mode character's customisation state (docs/specs/008-canvas/avatar-mode.md): gender,
-// clothing, hair, hair colour and size, loaded from and written back to per-browser
+// clothing, hair, hair colour, build and size, loaded from and written back to per-browser
 // storage so the character you built is the one waiting next time you enter
 // the mode.
 //
@@ -58,7 +58,9 @@ export function useAvatarConfig({ active }: { active: boolean }) {
               ? 'AvatarHair'
               : changed === 'hairColour'
                 ? 'AvatarHairColour'
-                : 'AvatarSize',
+                : changed === 'build'
+                  ? 'AvatarBuild'
+                  : 'AvatarSize',
       );
     }
   };
@@ -75,13 +77,13 @@ export function useAvatarConfig({ active }: { active: boolean }) {
     setField('gender', config.gender === 'male' ? 'female' : 'male');
   };
 
-  // The panel's dice button: roll a new character, but KEEP the chosen size —
+  // The panel's dice button: roll a new character, but KEEP the chosen size (and build):
   // size decides how much canvas the character covers, so re-rolling it would
   // resize someone's presentation out from under them. Same reasoning as the
   // first-use roll leaving size alone.
   const randomise = () => {
     const rolled = randomAvatarConfig();
-    setConfig({ ...rolled, size: config.size });
+    setConfig({ ...rolled, size: config.size, build: config.build ?? 'regular' });
     avatarBindings.track('UI', 'Changed', 'AvatarRandomised');
   };
 

@@ -2,16 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { buildTemplate } from '@livehuddle/templates';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { SpaceWall } from './space-3d-walls';
-import { spaceWalls } from './space-3d-walls';
+import { SPACE_POD_WALL_HEIGHT, SPACE_WALL_HEIGHT, spaceWalls } from './space-3d-walls';
+import { WALL_RISE } from '../real-3d/models/kit';
+import { SPACE_3D_TILT_DEG } from './space-3d-camera';
 import {
   SPACE_CUT_DEPTH,
   SPACE_CUT_HALF_WIDTH,
   SPACE_ROOM_NEAR,
   areaMovedFar,
   cutAwayIds,
+  cutDepth,
+  frontWallIds,
   spaceRooms,
   viewArea,
-  wallsInArea,
 } from './space-3d-cutaway';
 
 const wall = (id: string, ax: number, ay: number, bx: number, by: number): SpaceWall => ({
@@ -45,9 +48,10 @@ describe('the cut-away rule (docs/specs/008-canvas/3d-view.md "Walls in front of
     expect(cutAwayIds(walls, feet)).toEqual(new Set());
   });
 
-  it('fades a wall that only crosses the box, and an upright wall running through it', () => {
+  it('fades a wall that crosses the box, but never a side wall running towards the camera', () => {
+    // The owner, 2026-11-27: "why does the left wall of a room drop so often for no reason?"
     const walls = [wall('diagonal', 300, 500, 700, 320), wall('upright', 520, 200, 520, 700)];
-    expect(cutAwayIds(walls, feet)).toEqual(new Set(['diagonal', 'upright']));
+    expect(cutAwayIds(walls, feet)).toEqual(new Set(['diagonal']));
   });
 
   it('fades nothing without feet', () => {
@@ -63,16 +67,6 @@ describe('the drawn area', () => {
     expect(area.centre).toEqual({ x: 600, y: 400 });
     expect(area.centre.y - area.top).toBeGreaterThan(area.bottom - area.centre.y);
     expect(area.right - area.centre.x).toBe(area.centre.x - area.left);
-  });
-
-  it('keeps the walls that reach into it', () => {
-    const area = viewArea({ zoom: 1, offset: { x: 0, y: 0 } }, size);
-    const walls = [
-      wall('in', 0, 0, 100, 0),
-      wall('out', 99999, 0, 100000, 0),
-      wall('across', -99999, 400, 99999, 400),
-    ];
-    expect(wallsInArea(walls, area).map((w) => w.id)).toEqual(['in', 'across']);
   });
 
   it('is chosen again after a long walk, a zoom or a resize, not after a step', () => {
@@ -146,5 +140,107 @@ describe('rooms open up as you come near (3d-view.md "Walls in front of you are 
     ]);
     expect(rooms.map((r) => r.id)).toEqual(['a', 'b']);
     expect(rooms[0]).toEqual({ id: 'a', x: 1, y: 2, width: 3, height: 4 });
+  });
+});
+
+describe('a door or a window splits a side into separate walls', () => {
+  it("fades only the piece in your way, never the door's lintel or its other side", async () => {
+    const { cutAwayIds: cut } = await import('./space-3d-cutaway');
+    const wall = (id: string, ax: number, bx: number, kind = 'wall') =>
+      ({ id, a: { x: ax, y: 300 }, b: { x: bx, y: 300 }, kind, height: 100, shade: 0 }) as never;
+    const walls = [
+      wall('r:0', 0, 100),
+      wall('r:1', 100, 140, 'doorway'),
+      wall('r:2', 140, 600),
+      wall('other:0', 0, 600),
+      {
+        id: 'r:3',
+        a: { x: 0, y: 0 },
+        b: { x: 600, y: 0 },
+        kind: 'wall',
+        height: 100,
+        shade: 0,
+      } as never,
+    ];
+    // Feet just above the left piece: only it meets the cut box.
+    const out = cut(walls, { x: 20, y: 200 });
+    expect(out.has('r:0')).toBe(true);
+    expect(out.has('r:1')).toBe(false);
+    expect(out.has('r:2')).toBe(false);
+    expect(out.has('r:3')).toBe(false);
+  });
+});
+
+describe('acrossView', () => {
+  it('counts only walls running across the screen at each quarter turn', async () => {
+    const { acrossView } = await import('./space-3d-cutaway');
+    const level = { a: { x: 0, y: 0 }, b: { x: 200, y: 0 } };
+    const side = { a: { x: 0, y: 0 }, b: { x: 0, y: 200 } };
+    expect(acrossView(level, 0)).toBe(true);
+    expect(acrossView(side, 0)).toBe(false);
+    expect(acrossView(level, 1)).toBe(false);
+    expect(acrossView(side, 3)).toBe(true);
+    expect(acrossView(side, -1)).toBe(true);
+  });
+});
+
+describe('the cut-away is as deep as the floor a wall hides (3d-view.md "Walls in front of you are cut away")', () => {
+  const feet = { x: 500, y: 300 };
+  const tall = (id: string, y: number, height = SPACE_WALL_HEIGHT): SpaceWall => ({
+    ...wall(id, 400, y, 600, y),
+    height,
+  });
+
+  it("is the risen wall's height times tan(tilt): about 233 px for a Room wall at 52 degrees", () => {
+    const expected = SPACE_WALL_HEIGHT * WALL_RISE * Math.tan((SPACE_3D_TILT_DEG * Math.PI) / 180);
+    expect(cutDepth(SPACE_WALL_HEIGHT)).toBeCloseTo(expected, 6);
+    expect(SPACE_CUT_DEPTH).toBeCloseTo(233.5, 0);
+  });
+
+  it('cuts a Room wall 200 px in front of your feet (it hides them), not one 240 px off', () => {
+    expect(cutAwayIds([tall('near', feet.y + 200)], feet).has('near')).toBe(true);
+    expect(cutAwayIds([tall('far', feet.y + 240)], feet).has('far')).toBe(false);
+  });
+
+  it("follows the wall's own height: a Pod's lower wall hides less floor", () => {
+    const at = feet.y + cutDepth(SPACE_POD_WALL_HEIGHT) + 10;
+    expect(cutAwayIds([tall('pod', at, SPACE_POD_WALL_HEIGHT)], feet).size).toBe(0);
+    expect(cutAwayIds([tall('room', at)], feet).size).toBe(1);
+  });
+
+  it('follows the tilt: a camera low over the floor cuts deeper, one overhead shallower', () => {
+    const w = tall('w', feet.y + 300);
+    expect(cutAwayIds([w], feet, 0, [], 70).has('w')).toBe(true);
+    expect(cutAwayIds([w], feet, 0, [], 24).has('w')).toBe(false);
+  });
+});
+
+describe('editing cuts every room\'s front walls (3d-view.md "Editing in 3D")', () => {
+  const rooms = [
+    { id: 'a', x: 0, y: 0, width: 200, height: 160 },
+    { id: 'b', x: 1000, y: 1000, width: 200, height: 160 },
+  ];
+  const walls = [
+    wall('a:0', 0, 0, 200, 0),
+    wall('a:1', 200, 0, 200, 160),
+    wall('a:2', 0, 160, 200, 160),
+    wall('b:0', 1000, 1000, 1200, 1000),
+    wall('b:2', 1000, 1160, 1200, 1160),
+    { ...wall('door:0', 1080, 1160, 1120, 1160), kind: 'doorway' as const },
+    { ...wall('f:0', 0, 2000, 400, 2000), kind: 'fence' as const },
+  ];
+
+  it("takes each room's camera-side wall and its doorways, never a back wall, a side or a fence", () => {
+    expect([...frontWallIds(walls, rooms, 0)].sort()).toEqual(['a:2', 'b:2', 'door:0']);
+  });
+
+  it('follows the turn: from behind, the back walls', () => {
+    expect([...frontWallIds(walls, rooms, 2)].sort()).toEqual(['a:0', 'b:0']);
+  });
+
+  it("takes a window in a room's back wall, which stands in from the room's top, when it faces the camera", () => {
+    // A Room's back wall line is ROOM_BACK_FACE - ROOM_WALL / 2 (31) below its top.
+    const win = { ...wall('win:0', 60, 31, 120, 31), kind: 'window' as const };
+    expect(frontWallIds([...walls, win], rooms, 2).has('win:0')).toBe(true);
   });
 });

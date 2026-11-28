@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { Element } from '@livehuddle/document';
 
 // The recent-images read (docs/specs/009-elements/images.md).
 
@@ -78,5 +79,70 @@ describe('a picture swap', () => {
     const hook = mount('user_1', true);
     act(() => hook.result.current.openImagePickerFor('img-1'));
     expect(hook.result.current.imagePickerOpenFor).toBeNull();
+  });
+});
+
+// docs/specs/009-elements/poster.md "Choosing its picture": a Poster's picture is set, replaced and cleared through the
+// same picker and commit, an Editor's alone.
+describe("a Poster's picture", () => {
+  const poster = {
+    id: 'p',
+    type: 'shape',
+    shape: 'poster',
+    x: 0,
+    y: 0,
+    width: 56,
+    height: 76,
+    label: '',
+  } as const;
+  const credit = {
+    text: '"Hills" by A. Painter, CC BY 4.0',
+    sourceUrl: 'https://example.org/hills',
+  };
+  function posterHook(choosesPosterPicture: boolean) {
+    let els = [poster] as unknown as Element[];
+    const commit = vi.fn((map: (e: Element[]) => Element[]) => {
+      els = map(els);
+    });
+    const hook = renderHook(() =>
+      useEditorImages({
+        editsBlocked: false,
+        isReadOnly: false,
+        embedMode: false,
+        choosesPosterPicture,
+        commit,
+        documentId: 'doc-1',
+        ownerId: 'user_1',
+        sessionShareCode: null,
+      }),
+    );
+    return { hook, now: () => els[0] as unknown as Record<string, unknown> };
+  }
+
+  it('sets, replaces and clears it, keeping the frame', () => {
+    const { hook, now } = posterHook(true);
+    expect(hook.result.current.imageContext?.posterPicker).toBe(true);
+    act(() =>
+      hook.result.current.applyImageToElement('p', {
+        id: 'img_a',
+        width: 800,
+        height: 600,
+        credit,
+      }),
+    );
+    expect(now()).toMatchObject({ imageId: 'img_a', credit, width: 56, height: 76 });
+    act(() => hook.result.current.applyImageToElement('p', { id: 'img_b', width: 1, height: 1 }));
+    expect(now().imageId).toBe('img_b');
+    expect(now()).not.toHaveProperty('credit');
+    act(() => hook.result.current.removeImageFromElement('p'));
+    expect(now()).not.toHaveProperty('imageId');
+    expect(now()).toMatchObject({ shape: 'poster', width: 56, height: 76 });
+  });
+
+  it('leaves it alone for a session that may not choose it (a Participant)', () => {
+    const { hook, now } = posterHook(false);
+    expect(hook.result.current.imageContext?.posterPicker).toBe(false);
+    act(() => hook.result.current.applyImageToElement('p', { id: 'img_a', width: 1, height: 1 }));
+    expect(now()).not.toHaveProperty('imageId');
   });
 });

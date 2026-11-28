@@ -35,7 +35,9 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    // Not livehuddle: its element menus have no Appearance or Rotation (livehuddle docs/specs/002-project-scope/
+    // not-in-livehuddle.md "Element looks, layers, opacity and rotation").
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'element-indicators',
@@ -59,7 +61,7 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'follow-along',
@@ -168,7 +170,9 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    // Not livehuddle: its element menus have no Appearance or Rotation (livehuddle docs/specs/002-project-scope/
+    // not-in-livehuddle.md "Element looks, layers, opacity and rotation").
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'selecting-and-grouping',
@@ -297,7 +301,7 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas/the-canvas',
     parentSlug: 'the-canvas',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
     byApp: {
       livedocuments: {
         description: 'Set the background new pages start on, and the canvas around them.',
@@ -326,7 +330,7 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'changing-theme',
@@ -337,7 +341,7 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'multicolour-themes',
@@ -347,7 +351,7 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'undo',

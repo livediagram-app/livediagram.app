@@ -377,3 +377,15 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## road
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Errors and edge cases
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Testing
+- [x] Constants and configuration
+- [x] Defaults ledger

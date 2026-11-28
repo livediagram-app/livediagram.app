@@ -26,16 +26,17 @@ const sticky = (id: string, extra: Record<string, unknown> = {}) => ({
   label: 'x',
   ...extra,
 });
-// A Door: its swing is the one field a Participant writes (docs/specs/013-workspace/share-roles.md "A Participant
-// walks").
-const door = (closed: boolean) => ({
-  id: 'd1',
+// A Notice Board: pinning its own note is a piece a Participant writes (docs/specs/013-workspace/share-roles.md "A
+// Participant walks").
+const note = { id: 'n1', text: 'Hello', author: 'Sam', by: ME, at: 1 };
+const board = (pinned: boolean) => ({
+  id: 'b1',
   type: 'shape',
-  shape: 'door',
+  shape: 'notice-board',
   ...box,
-  doorClosed: closed,
+  ...(pinned ? { noticeNotes: [note] } : {}),
 });
-const swing = (closed: boolean) => ({ kind: 'update', element: door(closed) });
+const pin = () => ({ kind: 'update', element: board(true) });
 const req = (op: unknown) => ({ documentId: 'd1', tabId: 't1', op: op as never, adderKey: ME });
 
 // A stored row as the swap reads it: its body at a revision.
@@ -49,9 +50,9 @@ beforeEach(() => {
 
 describe('writeParticipantOp', () => {
   it('applies the rule to the stored tab and swaps against what it read', async () => {
-    const before = stored([sticky('s1'), door(true)], { theme: 'dusk' });
+    const before = stored([sticky('s1'), board(false)], { theme: 'dusk' });
     db.getTabRow.mockResolvedValue(row(before));
-    const out = await writeParticipantOp({} as never, req(swing(false)));
+    const out = await writeParticipantOp({} as never, req(pin()));
     expect(out).toMatchObject({ ok: true, outcome: { result: 'applied', changed: true } });
     const swap: unknown[] = db.swapTabData.mock.calls[0]!;
     const [, documentId, tabId, expected, next, body] = swap;
@@ -61,7 +62,7 @@ describe('writeParticipantOp', () => {
     expect(tabStatsOfData(next as string).stats).toMatchObject({ elementCount: 2 });
     // The row keeps everything else it held, and never gains an id or a name.
     expect(JSON.parse(next as string)).toEqual({
-      elements: [sticky('s1'), door(false)],
+      elements: [sticky('s1'), board(true)],
       theme: 'dusk',
     });
   });
@@ -87,9 +88,9 @@ describe('writeParticipantOp', () => {
   });
 
   it('re-reads after a lost swap, then gives up with 409', async () => {
-    db.getTabRow.mockResolvedValue(row(stored([door(true)])));
+    db.getTabRow.mockResolvedValue(row(stored([board(false)])));
     db.swapTabData.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
-    const op = req(swing(false));
+    const op = req(pin());
     expect((await writeParticipantOp({} as never, op)).ok).toBe(true);
     expect(db.getTabRow).toHaveBeenCalledTimes(2);
     db.swapTabData.mockReset();
@@ -100,9 +101,9 @@ describe('writeParticipantOp', () => {
 
   it('answers 404 for a missing tab and 413 for one over its cap', async () => {
     db.getTabRow.mockResolvedValue(row(null));
-    const op = req(swing(false));
+    const op = req(pin());
     expect(await writeParticipantOp({} as never, op)).toEqual({ ok: false, status: 404 });
-    db.getTabRow.mockResolvedValue(row(stored([door(true)])));
+    db.getTabRow.mockResolvedValue(row(stored([board(false)])));
     db.swapTabData.mockRejectedValue(new TabTooLargeError('t1', 3_000_000, 'swapTabData'));
     expect(await writeParticipantOp({} as never, op)).toEqual({ ok: false, status: 413 });
   });

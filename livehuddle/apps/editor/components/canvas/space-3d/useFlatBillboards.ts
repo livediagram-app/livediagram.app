@@ -11,7 +11,8 @@
 // and stop on the first pass that finds everything where it was.
 
 import { useEffect, type RefObject } from 'react';
-import { SPACE_3D_TILT_DEG, standingShift } from '@/lib/space-3d/space-3d-camera';
+import { standingShift } from '@/lib/space-3d/space-3d-camera';
+import { space3DTilt } from '@/lib/space-3d/space-3d-turn';
 
 type Placed = { el: HTMLElement; dx: number; dy: number; scale: number };
 
@@ -40,7 +41,10 @@ export function useFlatBillboards(world: RefObject<HTMLElement | null>, zoom: nu
       const turn = v && cos > 0.01 ? Math.atan2((v[1] ?? 0) / cos, v[0] ?? 1) : 0;
       const box = stage.getBoundingClientRect();
       const size = { width: box.width, height: box.height };
-      const cards = node.querySelectorAll<HTMLElement>('[data-space-billboard]');
+      const cards = node.querySelectorAll<HTMLElement>(
+        // A walker's stand is a card too in real 3D, whose figures are the scene's (3d-engine.md): its chips ride it.
+        '[data-space-billboard], [data-avatar-stand]',
+      );
       const next: Placed[] = [];
       // Reads first.
       for (const el of cards) {
@@ -62,7 +66,7 @@ export function useFlatBillboards(world: RefObject<HTMLElement | null>, zoom: nu
         const t = standingShift(turned, size, tilt);
         const s = { dx: turned.x - flat.x + t.dx, dy: turned.y - flat.y + t.dy, scale: t.scale };
         // Whole pixels once settled, so the words sit on the pixel grid; mid-turn, exact, so nothing steps.
-        const settled = Math.abs(tilt - SPACE_3D_TILT_DEG) < 0.01;
+        const settled = Math.abs(tilt - space3DTilt.get()) < 0.01;
         const px = (v: number) => (settled ? Math.round(v) : v);
         next.push({ el, dx: px(s.dx), dy: px(s.dy), scale: s.scale });
       }

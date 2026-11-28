@@ -14,13 +14,12 @@ export function NoticeBoardIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
-export function WorldClockIcon({ size = 14 }: IconSizeProps = {}) {
+// The Clock (social-pieces.md "Clock", kind `world-clock`): a round wall clock at ten past ten.
+export function ClockIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
-      <rect x="1.5" y="6" width="21" height="12" rx="4" />
-      <circle cx="8" cy="12" r="3.5" />
-      <circle cx="16" cy="12" r="3.5" />
-      <path d="M8 10.5V12h1.2M16 10.5V12l-1 1" />
+      <circle cx="12" cy="12" r="9.5" />
+      <path d="M12 7v5l-3.5-2M12 12l4-2.5" />
     </Glyph>
   );
 }

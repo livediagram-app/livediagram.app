@@ -85,10 +85,10 @@ describe('placingKind', () => {
     expect(placingKind(null, 'room', true)).toBe('room');
   });
 
-  it('leaves text, stickies and icons to the dashed footprint and the draw box', () => {
+  it('leaves images and icons to the dashed footprint and the draw box', () => {
     expect(placingKind({ type: 'shape', kind: 'icon' }, null)).toBeNull();
     expect(placingKind(null, 'icon')).toBeNull();
-    expect(placingKind({ type: 'text' }, null)).toBeNull();
+    expect(placingKind({ type: 'image' }, null)).toBeNull();
   });
 });
 

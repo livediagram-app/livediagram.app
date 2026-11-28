@@ -66,13 +66,21 @@ import {
   space3DStageStyle,
   space3DTurned,
   useSpace3DTurn,
+  useSpace3DTilt,
   useSpace3DView,
 } from './space-3d/useSpace3DView';
-import { useSpace3DZoom } from './space-3d/useSpace3DZoom';
-import { Space3DOverlayProvider, Space3DOverlayStage } from './space-3d/Space3DOverlay';
+import { useFloorPointer } from './space-3d/useFloorPointer';
+import { useScenePresses } from './real-3d/useScenePresses';
+import {
+  InSpace3DOverlay,
+  Space3DOverlayProvider,
+  Space3DOverlayStage,
+} from './space-3d/Space3DOverlay';
 
 // The 3D view's walls (docs/specs/008-canvas/3d-view.md "Performance"): loaded the first time a walk wants them.
 const Space3DWalls = dynamic(loadSpace3DWalls, { ssr: false });
+// Real 3D (docs/specs/008-canvas/3d-engine.md): the WebGL scene, fetched the first time it shows.
+const Real3DLayer = dynamic(() => import('./real-3d/Real3DLayer'), { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -110,7 +118,6 @@ function CanvasView(props: CanvasProps) {
     onElementContextMenu,
     onMultiContextMenu,
     onShiftSelect,
-    onCanvasDoubleClick,
     tabLoadState,
     onRetryTabLoad,
   } = props;
@@ -124,10 +131,6 @@ function CanvasView(props: CanvasProps) {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Paint mode is the Format canvas tool: it reads as paint mode from its
-  // first click (copy cursor, handles/label-drag/dblclick suppressed on
-  // elements), not only once a source is armed.
-  const isPaintMode = canvasTool === 'format';
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
@@ -245,11 +248,10 @@ function CanvasView(props: CanvasProps) {
     () => ({
       elements,
       editingId,
-      isPaintMode,
       readOnly,
       elementMenuOpen: props.elementMenuOpen === true,
     }),
-    [elements, editingId, isPaintMode, readOnly, props.elementMenuOpen],
+    [elements, editingId, readOnly, props.elementMenuOpen],
   );
 
   const { handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
@@ -292,14 +294,12 @@ function CanvasView(props: CanvasProps) {
     marquee: !!marquee,
     canvasTool,
     spaceHeld,
-    isPaintMode,
   });
 
   // Stable selection-routing wrappers for the memo'd element views, see useCanvasSelectHandlers.
   const { handleElementContextSelect, handleArrowSelect, handleElementClick } =
     useCanvasSelectHandlers({
       inertIds: NO_INERT_IDS,
-      isPaintMode,
       readSelection: selectionStore.get,
       onSelect,
       onDeselect,
@@ -333,23 +333,26 @@ function CanvasView(props: CanvasProps) {
   const stickyPeel = useStickyPeelVars();
   // A walking click on a reading piece opens it large (docs/specs/008-canvas/avatar-mode.md "The reader").
   const elementReader = useElementReader(elements, canvasTool === 'avatar');
-  // The 3D view (docs/specs/008-canvas/3d-view.md): while you walk with it on, the stage tilts the world back.
-  const space3D = useSpace3DView(canvasTool === 'avatar', props.settings?.rotateIn3D === true);
+  // The 3D view (docs/specs/008-canvas/3d-view.md), always: the stage tilts the world back, in Edit and Walk alike
+  // (3d-view.md "Editing in 3D"); `[` and `]` turn the camera.
+  useSpace3DView(true);
   const spaceTurn = useSpace3DTurn();
-  const offscreenContent = useOffscreenContent(elements, mainRef, undefined, {
-    tilted: space3D !== 'flat',
-    turned: space3DTurned(space3D, spaceTurn) !== undefined,
-  });
-  // 3D is closer than the flat plan: switching it on while walking zooms you in, off zooms you back out.
-  useSpace3DZoom(canvasTool === 'avatar', viewportZoom, setViewportZoom);
-  // The overlay's world layer, where what floats over a head is drawn while the view is 3D (Space3DOverlay).
+  const spaceTilt = useSpace3DTilt();
+  const spaceTurned = space3DTurned(spaceTurn);
+  // While editing, a press on a model goes to its piece (3d-view.md "Editing in 3D"; the scene is WebGL, 3d-engine.md).
+  useScenePresses(canvasTool !== 'avatar', mainRef);
+  const offscreenContent = useOffscreenContent(
+    elements,
+    mainRef,
+    undefined,
+    spaceTurned !== undefined,
+  );
+  useFloorPointer(mainRef, viewportZoom, readViewportOffset);
+  // The overlay's world layer, where what floats over a head is drawn (Space3DOverlay).
   const [space3DOverlayNode, setSpace3DOverlayNode] = useState<HTMLElement | null>(null);
   const space3DOverlay = useMemo(
-    () => ({
-      on: space3D !== 'flat',
-      node: space3D === 'flat' ? null : space3DOverlayNode,
-    }),
-    [space3D, space3DOverlayNode],
+    () => ({ on: true, node: space3DOverlayNode }),
+    [space3DOverlayNode],
   );
   const surface = useCanvasSurfaceGestures({
     canvasTool,
@@ -367,15 +370,15 @@ function CanvasView(props: CanvasProps) {
     readPeerAvatars: () => readPeerAvatarRows(props.peers),
     onPushPeer: props.onAvatarPush,
     elements,
-    onToggleDoor: props.onToggleDoor,
     onReadElement: elementReader.open,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     onCanvasContextMenu,
     onDeselect,
-    // On the bare board a finger's double-tap zooms in on the spot, a mouse's double-click drops text
-    // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
-    onCanvasDoubleClick: (x, y, byFinger) =>
-      byFinger ? doubleTap.onCanvas({ x, y }) : onCanvasDoubleClick(x, y),
+    // On the bare board a finger's double-tap zooms in on the spot; a mouse's double-click makes nothing, a Space
+    // holding no text (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom", "Quick text drop").
+    onCanvasDoubleClick: (x, y, byFinger) => {
+      if (byFinger) doubleTap.onCanvas({ x, y });
+    },
   });
 
   // Focus the canvas on mount, so a paste works before the first click (useFocusCanvasOnMount).
@@ -413,8 +416,9 @@ function CanvasView(props: CanvasProps) {
         // Space it eases this surface alone, the parts snapping (canvasIsBusy).
         data-canvas-root=""
         data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}
-        data-space-view={space3D === 'flat' ? undefined : space3D}
-        data-space-turned={space3DTurned(space3D, spaceTurn)}
+        data-space-view=""
+        data-space-turned={spaceTurned}
+        data-real-3d=""
         onContextMenuCapture={surface.onContextMenuCapture}
         onContextMenu={surface.onContextMenu}
         onPointerUp={surface.onContextMenuPointerUp}
@@ -452,11 +456,12 @@ function CanvasView(props: CanvasProps) {
           announcements land here. */}
         <CanvasLiveRegion />
         {/* The 3D view's stage (docs/specs/008-canvas/3d-view.md "The camera"): the camera's tilt about the canvas's
-          middle, round the world layer; flat, it is a plain box that takes no press of its own. */}
+          middle, round the world layer; a plain box that takes no press of its own. */}
         <div
           data-space-stage=""
           className="pointer-events-none absolute inset-0"
-          style={space3DStageStyle(space3D, spaceTurn)}
+          data-space-turn-target=""
+          style={space3DStageStyle(spaceTurn, spaceTilt)}
         >
           <div
             ref={wrapperRef}
@@ -485,7 +490,7 @@ function CanvasView(props: CanvasProps) {
               // on the wrapper so zooming keeps the viewport centre stable.
               transform: viewportTransform(view),
               // In 3D the zoom scales height too, so walls and characters grow with the floor (3d-view.md "The camera").
-              ...(space3D === 'flat' ? null : { scale: `1 1 ${viewportZoom}` }),
+              scale: `1 1 ${viewportZoom}`,
               // Draw-mode cursor: every intent gets a custom inline-SVG
               // cursor (crosshair at the pointer tip plus a small glyph
               // hinting at what's about to land). Without this, tool
@@ -522,7 +527,6 @@ function CanvasView(props: CanvasProps) {
                       onPressAvatarPad={pressAvatarPad}
                       onPressFocusButton={props.onPressFocusButton}
                       selectionInput={selectionInput}
-                      isPaintMode={isPaintMode}
                       handleArrowSelect={handleArrowSelect}
                       handleElementClick={handleElementClick}
                       handleElementContextSelect={handleElementContextSelect}
@@ -544,45 +548,54 @@ function CanvasView(props: CanvasProps) {
             {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters and what rides on them,
             INSIDE the transformed wrapper so they pan / zoom with the canvas, and after the element layer so
             they stand in front of the content they walk over. */}
-            {space3D === 'flat' ? null : (
-              <Space3DWalls
-                elements={elements}
-                poseStore={avatar.poseStore}
-                size={mainSize}
-                // The tab's background on the tilted floor (3d-view.md "What it shows"): in canvas px, unzoomed.
-                floor={spaceFloor}
-                // The tab's walls, in evening light on a dark canvas (3d-view.md "Themes").
-                wallColor={tabWallColor}
-                darkCanvas={isDarkCanvas(tabBackgroundColor)}
-              />
-            )}
+            {/* The 3D view's floor, under the scene's walls (Space3DWalls). */}
+            <Space3DWalls
+              elements={elements}
+              size={mainSize}
+              // The tab's background on the tilted floor (3d-view.md "What it shows"): in canvas px, unzoomed.
+              floor={spaceFloor}
+              // The tab's walls, in evening light on a dark canvas (3d-view.md "Themes").
+              wallColor={tabWallColor}
+              darkCanvas={isDarkCanvas(tabBackgroundColor)}
+            />
             <Space3DOverlayProvider value={space3DOverlay}>
-              <CanvasCharactersLayer
-                props={props}
-                canvasAvatar={canvasAvatar}
-                mainSize={mainSize}
-              />
+              {/* The figures are the scene's; their chips and bubbles stand over it, in the overlay. */}
+              <InSpace3DOverlay>
+                <CanvasCharactersLayer
+                  props={props}
+                  canvasAvatar={canvasAvatar}
+                  mainSize={mainSize}
+                />
+              </InSpace3DOverlay>
             </Space3DOverlayProvider>
           </div>
         </div>
+        <Real3DLayer
+          elements={elements}
+          tabId={props.activeTabId ?? ''}
+          turn={spaceTurn}
+          paletteKey={`${tabWallColor ?? ''}|${isDarkCanvas(tabBackgroundColor)}`}
+          pictureSource={props.imageContext}
+        />
         {/* The horizon the tilted floor fades into (docs/specs/008-canvas/3d-view.md "What it shows"). */}
-        {space3D === 'flat' ? null : (
-          <div
-            aria-hidden
-            data-space-fog=""
-            className="pointer-events-none absolute inset-x-0 top-0 h-[20%]"
-          />
-        )}
+        <div
+          aria-hidden
+          data-space-fog=""
+          className="pointer-events-none absolute inset-x-0 top-0 h-[20%]"
+        />
         {/* Over the world and its horizon: speech, cards, call bubbles and hands, never hidden by a wall. */}
-        {space3D === 'flat' ? null : (
-          <Space3DOverlayStage
-            style={space3DStageStyle(space3D, spaceTurn)}
-            zoom={viewportZoom}
-            onNode={setSpace3DOverlayNode}
-          />
-        )}
+        <Space3DOverlayStage
+          data-space-turn-target=""
+          style={space3DStageStyle(spaceTurn, spaceTilt)}
+          zoom={viewportZoom}
+          onNode={setSpace3DOverlayNode}
+        />
 
-        <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
+        <CanvasSelectionToolbars
+          props={props}
+          selectionInput={selectionInput}
+          mainSize={mainSize}
+        />
 
         {/* People arrows (docs/specs/008-canvas/people-arrows.md): the way to the people on the tab you cannot see,
           over the canvas and under its controls. */}
@@ -593,13 +606,6 @@ function CanvasView(props: CanvasProps) {
           mainSize={mainSize}
           avatarConfig={avatarLook.config}
           onChangeAvatarField={avatarLook.setField}
-          formatConfig={props.formatConfig}
-          onToggleFormatGroup={props.onToggleFormatGroup}
-          onSetFormatMode={props.onSetFormatMode}
-          formatBrushSource={props.formatBrushSource}
-          formatPanelPosition={props.formatPanelPosition}
-          onMoveFormatPanel={props.onMoveFormatPanel}
-          onResetFormatPanel={props.onResetFormatPanel}
           onRandomiseAvatar={avatarLook.randomise}
           avatarStatus={avatarStatus}
           onSetAvatarStatus={setAvatarStatus}
@@ -608,6 +614,7 @@ function CanvasView(props: CanvasProps) {
           }
           avatarSpeechCooling={speech.coolingDown}
           onAvatarReaction={avatar.playReaction}
+          avatarHandUp={avatar.handUp}
           onAvatarBurst={playAvatarBurst}
           offscreenContent={offscreenContent}
           marquee={marqueeStore}
@@ -634,8 +641,6 @@ function CanvasView(props: CanvasProps) {
         {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape
           will land, following the cursor over the canvas. */}
         <PaletteDragGhost zoom={viewportZoom} />
-        {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
-          (docs/specs/007-editor/panel-docking.md) so it snaps + stacks like the other floating panels. */}
         {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
             press-and-hold affordance that opens the context menu on touch. */}
         <LongPressRing point={surface.canvasLongPress.pressPoint} />

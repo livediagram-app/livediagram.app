@@ -221,8 +221,8 @@ square n2 "API"
 
 ```text
 tab tab-1 "Overview" · 2 elements: 2 boxes · rev 7
-sticky n1 "Agenda"
-sticky n2 "Actions"
+room n1 "Lobby"
+room n2 "Studio"
 ```
 
 </AppNote>
@@ -312,7 +312,7 @@ Add `budget=2000` to fit any view to about 2,000 tokens. The view then leaves ou
 
 <AppNote app="livehuddle">
 
-`POST /documents` creates a space. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Each element has a position and size; this creates one tab with two sticky notes. Ids are shared across all of livehuddle, not just your account, so use a fresh UUID for the space, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
+`POST /documents` creates a space. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Each element has a position and size; this creates one tab with two rooms. Ids are shared across all of livehuddle, not just your account, so use a fresh UUID for the space, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
 
 </AppNote>
 
@@ -384,8 +384,8 @@ curl -X POST https://www.livehuddle.app/api/documents \
         "id": "'"$TAB"'",
         "name": "Overview",
         "elements": [
-          { "id": "n1", "type": "sticky", "x": 0, "y": 0, "width": 200, "height": 200, "label": "Agenda" },
-          { "id": "n2", "type": "sticky", "x": 240, "y": 0, "width": 200, "height": 200, "label": "Actions" }
+          { "id": "n1", "type": "shape", "shape": "room", "x": 0, "y": 0, "width": 400, "height": 300, "label": "Lobby" },
+          { "id": "n2", "type": "shape", "shape": "room", "x": 440, "y": 0, "width": 400, "height": 300, "label": "Studio" }
         ]
       }
     ]
@@ -402,7 +402,7 @@ Arrows, text, images, and the rest of the element types follow the same pattern 
 
 <AppNote app="livehuddle">
 
-Text, images, the Space pieces and the rest of the element types follow the same pattern with their own fields. The OpenAPI document's `Tab` and `Element` schemas describe every one.
+Images, the Space pieces and the rest of the element types follow the same pattern with their own fields. The OpenAPI document's `Tab` and `Element` schemas describe every one.
 
 </AppNote>
 
@@ -453,10 +453,10 @@ curl -X POST https://www.livehuddle.app/api/documents/$DOC/tabs/$TAB/changesets 
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "summary": "rename the actions note, add a decisions note",
+    "summary": "rename the studio, add a library",
     "operations": [
-      { "op": "set", "target": "n2", "fields": { "label": "Next Steps" } },
-      { "op": "add", "element": { "id": "n3", "type": "sticky", "x": 480, "y": 0, "width": 200, "height": 200, "label": "Decisions" } },
+      { "op": "set", "target": "n2", "fields": { "label": "Workshop" } },
+      { "op": "add", "element": { "id": "n3", "type": "shape", "shape": "room", "x": 880, "y": 0, "width": 400, "height": 300, "label": "Library" } },
       { "op": "rm", "target": "n1" }
     ]
   }'
@@ -472,7 +472,7 @@ curl -X POST https://www.livehuddle.app/api/documents/$DOC/tabs/$TAB/changesets 
 
 <AppNote app="livehuddle">
 
-`set` changes only the fields you name, `add` takes a whole element, and `rm` removes an element (here the `Agenda` note). The answer lists what changed, the changeset's id and the tab's new revision. Add `?dryRun=1` to see the answer without changing anything.
+`set` changes only the fields you name, `add` takes a whole element, and `rm` removes an element (here the `Lobby` room). The answer lists what changed, the changeset's id and the tab's new revision. Add `?dryRun=1` to see the answer without changing anything.
 
 </AppNote>
 
@@ -511,7 +511,7 @@ curl -X POST https://www.livehuddle.app/api/documents/$DOC/tabs/$TAB/changesets 
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "operations": "set n2 label=\"Next Steps\"\nadd sticky id=risks label=\"Risks\" below:n2"
+    "operations": "set n2 label=\"Workshop\"\nadd room id=library label=\"Library\" below:n2"
   }'
 ```
 
@@ -531,11 +531,11 @@ Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or pic
 
 <AppNote app="livehuddle">
 
-Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Next Steps"` by label or `type:sticky`. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `order`, `layout` (tidy rows), and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
+Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Workshop"` by label or `type:room`. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `order`, `layout` (tidy rows), and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
 
 ```text
-~ n2  label "Actions"→"Next Steps"
-+ risks  sticky "Risks" @240,240 200×200
+~ n2  label "Studio"→"Workshop"
++ library  room "Library" @440,340 400×300
 ```
 
 </AppNote>

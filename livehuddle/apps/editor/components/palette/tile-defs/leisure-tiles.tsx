@@ -5,6 +5,7 @@ import {
   DrinksFridgeIcon,
   GardenFenceIcon,
   GardenPathIcon,
+  RoadIcon,
   GrassIcon,
   OutdoorPlantIcon,
   TreeIcon,
@@ -28,6 +29,7 @@ import {
   PoolTableIcon,
 } from '../palette-icons-social';
 import { TILE_GLYPH_PX, type PaletteTileDef } from './types';
+import { TREE_PRESET_TILES } from '../palette-tree-presets';
 
 // The Space recreation and garden pieces: one section of the palette tile catalogue,
 // joined into PALETTE_TILES by palette-tile-defs.tsx in catalogue order.
@@ -122,6 +124,9 @@ export const LEISURE_TILES: PaletteTileDef[] = [
       'A tree with a full canopy. Avatar-mode characters walk round its trunk and pass in front of its leaves.',
     filled: true,
     action: { type: 'shape', kind: 'tree' },
+    // Tree species (docs/specs/009-elements/office.md "Tree species"): seven trees.
+    variants: TREE_PRESET_TILES,
+    variantsHint: 'Pick a species to plant.',
     icon: <TreeIcon size={TILE_GLYPH_PX} />,
   },
   {
@@ -138,6 +143,21 @@ export const LEISURE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'garden-path' },
     icon: <GardenPathIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Road (docs/specs/009-elements/road.md).
+    id: 'tools:road',
+    tileGroup: 'garden',
+    blurb: 'A street with passing cars',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Road',
+    caption: 'Road',
+    description:
+      'A two-lane street for outside, with the odd car driving by. Stretch it to any length; characters cross it.',
+    filled: true,
+    action: { type: 'shape', kind: 'road' },
+    icon: <RoadIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Grass (docs/specs/009-elements/office.md).

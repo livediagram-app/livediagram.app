@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AVATAR_BUILDS,
+  avatarBuildScale,
   AVATAR_CLOTHING,
   AVATAR_HAIR,
   AVATAR_HAIR_COLOURS,
@@ -21,6 +23,7 @@ describe('parseAvatarConfig', () => {
     hair: 'ponytail',
     size: 'tall',
     hairColour: 'auburn',
+    build: 'broad',
   };
 
   it('round-trips a complete config, from an object or its JSON', () => {
@@ -52,6 +55,34 @@ describe('parseAvatarConfig', () => {
     expect(hairColourHex('brown')).toBe(AVATAR_PALETTE.hair);
   });
 
+  it('draws Regular, the build every character had before, for a config or packet without one', () => {
+    expect(DEFAULT_AVATAR_CONFIG.build).toBe('regular');
+    const { build: _, ...older } = full;
+    expect(parseAvatarConfig(older).build).toBe('regular');
+    expect(parseAvatarConfig({ ...full, build: 'huge' }).build).toBe('regular');
+    expect(parseAvatarConfig({ ...full, build: 7 }).build).toBe('regular');
+    for (const b of AVATAR_BUILDS)
+      expect(parseAvatarConfig({ ...full, build: b.id }).build).toBe(b.id);
+    expect(randomAvatarConfig().build).toBe('regular');
+  });
+
+  it('lists five builds, Skinny to Large, narrowest first, Regular at 1', () => {
+    expect(AVATAR_BUILDS.map((b) => b.label)).toEqual([
+      'Skinny',
+      'Slim',
+      'Regular',
+      'Broad',
+      'Large',
+    ]);
+    const scales = AVATAR_BUILDS.map((b) => b.scale);
+    expect(scales).toEqual([...scales].sort((x, y) => x - y));
+    expect(avatarBuildScale('regular')).toBe(1);
+    expect(avatarBuildScale(undefined)).toBe(1);
+    expect(avatarBuildScale('tartan')).toBe(1);
+    expect(avatarBuildScale('large')).toBe(1.22);
+    expect(avatarBuildScale('skinny')).toBe(0.82);
+  });
+
   it('defaults missing fields, so a config written by an older build still loads', () => {
     expect(parseAvatarConfig({ gender: 'female' })).toEqual({
       ...DEFAULT_AVATAR_CONFIG,
@@ -74,6 +105,9 @@ describe('peerAvatarConfig', () => {
     const a = peerAvatarConfig({ gender: 'male', hair: 'bun', hairColour: 'black' });
     expect(peerAvatarConfig({ gender: 'male', hair: 'bun', hairColour: 'black' })).toBe(a);
     expect(peerAvatarConfig({ gender: 'male', hair: 'bun', hairColour: 'ginger' })).not.toBe(a);
+    expect(
+      peerAvatarConfig({ gender: 'male', hair: 'bun', hairColour: 'black', build: 'large' }),
+    ).not.toBe(a);
     // A costume sent as stored JSON parses each time, and still lands on the shared config.
     expect(
       peerAvatarConfig(JSON.stringify({ gender: 'male', hair: 'bun', hairColour: 'black' })),

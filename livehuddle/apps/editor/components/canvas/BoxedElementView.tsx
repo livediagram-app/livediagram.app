@@ -73,10 +73,8 @@ function BoxedElementViewImpl({
   isSelected,
   isMultiSelected = false,
   onPlainClick,
-  onPressArmedAction,
   isEditing,
   editCursorAtEnd = false,
-  isPaintMode,
   showHandles,
   showAnchors,
   onBeginDrag,
@@ -177,10 +175,8 @@ function BoxedElementViewImpl({
       remotelyLocked,
       isMultiSelected,
       isSelected,
-      isPaintMode,
       onShiftSelect,
       onPlainClick,
-      onPressArmedAction,
       onBeginDrag,
       onBeginEdit,
       onEditLink,
@@ -192,13 +188,11 @@ function BoxedElementViewImpl({
   const editLook = editingLook(isEditing);
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
-    : isPaintMode
-      ? 'cursor-copy'
-      : editLook.textCursor
-        ? 'cursor-text'
-        : !movable
-          ? 'cursor-default'
-          : 'cursor-move';
+    : editLook.textCursor
+      ? 'cursor-text'
+      : !movable
+        ? 'cursor-default'
+        : 'cursor-move';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's
@@ -305,6 +299,14 @@ function BoxedElementViewImpl({
       data-space-faces={facesCameraFlat(element) ? '' : undefined}
       // A fence's flat drawing hides in 3D, where its run stands as a wall (3d-view.md "Fences stand as fences").
       data-space-walled={walledIn3D(element) ? '' : undefined}
+      // Real 3D models it (the Avatar Pad, a Stage's deck, the Pond, 3d-engine.md): its flat drawing hides under the
+      // model.
+      data-real-3d-modelled={
+        element.type === 'shape' &&
+        (element.shape === 'avatar-pad' || element.shape === 'stage' || element.shape === 'pond')
+          ? ''
+          : undefined
+      }
       // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
       data-ride-id={element.id}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,

@@ -13,7 +13,7 @@
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
-import { createShape, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
 import type { TemplateNote } from './template-notes';
 import {
@@ -80,9 +80,10 @@ const CV_ROOMS: CampusRoom[] = [
     name: 'Foyer Bar',
     x: 40,
     y: 40,
-    w: 400,
+    // A wall's width over the Main Hall's, so the two share one wall (office.md "Rooms line up").
+    w: 470,
     h: 640,
-    door: { side: 's', at: 200, sign: 1, reach: DOWN_TO_PROMENADE },
+    door: { side: 's', at: 235, sign: 1, reach: DOWN_TO_PROMENADE },
     windows: [
       { side: 'w', at: 200 },
       { side: 'w', at: 480 },
@@ -91,8 +92,8 @@ const CV_ROOMS: CampusRoom[] = [
       { kind: 'bar', x: 40, y: 40 },
       { kind: 'drinks-fridge', x: 300, y: 36 },
       ...stools([60, 120, 180, 240], 170),
-      { kind: 'jukebox', x: 20, y: 260 },
-      { kind: 'drinks-cabinet', x: 300, y: 250 },
+      { kind: 'jukebox', x: 12, y: 260, facing: 'w' },
+      { kind: 'drinks-cabinet', x: 380, y: 250, facing: 'e' },
       { kind: 'rug', x: 150, y: 380 },
       { kind: 'sofa', x: 174, y: 400, facing: 'n' },
       { kind: 'chair', x: 92, y: 400, facing: 'w' },
@@ -128,11 +129,11 @@ const CV_ROOMS: CampusRoom[] = [
   },
   {
     name: 'Green Room',
-    x: 1680,
+    x: 1610,
     y: 40,
-    w: 400,
+    w: 470,
     h: 360,
-    door: { side: 's', at: 200, sign: -1, reach: PROMENADE_Y - 400 },
+    door: { side: 's', at: 235, sign: -1, reach: PROMENADE_Y - 400 },
     windows: [{ side: 'e', at: 200 }],
     pieces: [
       // A sofa on its rug and a chair beside it, back from the door, and coffee for the speakers.
@@ -144,9 +145,10 @@ const CV_ROOMS: CampusRoom[] = [
       { kind: 'plant', x: 330, y: 44 },
     ],
   },
-  breakout('Breakout 1', 40, 440, 1),
+  // Breakouts 1 and 2 share a wall, as Breakout 3 and the Quiet Room do; the main path runs between the pairs.
+  breakout('Breakout 1', 40, 490, 1),
   breakout('Breakout 2', 520, 420, 1),
-  breakout('Breakout 3', 1180, 420, 1),
+  breakout('Breakout 3', 1180, 470, 1),
   {
     name: 'Quiet Room',
     x: 1640,
@@ -181,11 +183,11 @@ const CV_COURTYARD: OfficePiece[] = [
   ),
   plaza(CV_MID, CV_PLAZA_Y, CV_PLAZA),
   { kind: 'fountain', x: CV_MID - 68, y: CV_PLAZA_Y - 60 },
-  // The cafe terrace outside the foyer bar.
+  // The cafe terrace outside the foyer bar: garden benches under the umbrellas (an indoor chair never stands outside).
   { kind: 'garden-umbrella', x: 470, y: 696 },
-  { kind: 'chair', x: 596, y: 764, facing: 'w' },
+  { kind: 'bench', x: 596, y: 744, facing: 'w' },
   { kind: 'garden-umbrella', x: 700, y: 696 },
-  { kind: 'chair', x: 826, y: 764, facing: 'e' },
+  { kind: 'bench', x: 826, y: 744, facing: 'e' },
   // Trees and benches along the promenade's far side, and a tree by the green room.
   { kind: 'tree', x: 1240, y: 696, w: 112 },
   { kind: 'bench', x: 1400, y: 772 },
@@ -195,8 +197,8 @@ const CV_COURTYARD: OfficePiece[] = [
   // Between the breakouts: two ponds, benches and trees.
   { kind: 'tree', x: 140, y: 966, w: 64 },
   { kind: 'pond', x: 420, y: 966, w: 160, h: 70 },
-  { kind: 'bench', x: 770, y: 970 },
-  { kind: 'bench', x: 1214, y: 1000 },
+  { kind: 'bench', x: 770, y: 970, facing: 'e' },
+  { kind: 'bench', x: 1250, y: 970, facing: 'w' },
   { kind: 'pond', x: 1540, y: 966, w: 180, h: 70 },
   { kind: 'tree', x: 1990, y: 966, w: 64 },
   // The Directory just inside the gate.
@@ -209,21 +211,11 @@ export function buildConferenceVenue(cx: number, cy: number): Element[] {
     height: CV_H,
     rooms: CV_ROOMS,
     open: CV_COURTYARD,
-    title: {
-      text: 'Conference Venue',
-      width: 360,
-      sticker: 'emoji-megaphone',
-      subtitle:
-        'A day of talks: the keynote in the main hall, sessions in the breakouts, and the foyer bar and courtyard between.',
-    },
     // In the Main Hall, where the keynote is, in the aisle between its first two rows, facing the stage.
     arrival: {
       dx: 0,
       dy: -308,
-      hintW: 360,
-      hint: 'You arrive on the Avatar Pad in the Main Hall. The Directory by the gate walks you to any room.',
     },
-    extra: (left, top) => [createShape('focus-button', left + 500 + 820, top + 40 + 64)],
   });
 }
 
@@ -275,23 +267,24 @@ const HQ_ROOMS: CampusRoom[] = [
     name: 'Studio',
     x: 60,
     y: 60,
-    w: 680,
+    // The three buildings along the top share their walls (office.md "Rooms line up").
+    w: 770,
     h: 480,
-    door: { side: 's', at: 340, sign: 1, reach: HQ_PATH_Y - 540 },
+    door: { side: 's', at: 385, sign: 1, reach: HQ_PATH_Y - 540 },
     // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window").
     windows: [{ side: 'w', at: 240 }],
     pieces: [
       // Two islands of desks, 120 px apart, and the studio's shelf, coffee and team board along the front.
-      ...island(30, 60),
+      ...island(30, 100),
       // The second island's back row stands, at two Standing Desks level with the desks they back onto, and the
       // office dog's bed lies in the aisle between the islands (docs/specs/009-elements/workday-pieces.md).
-      { kind: 'standing-desk', x: 406, y: 68 },
-      { kind: 'standing-desk', x: 534, y: 68 },
-      { kind: 'desk', x: 406, y: 172, facing: 's' },
-      { kind: 'desk', x: 542, y: 172, facing: 's' },
-      { kind: 'pet-bed', x: 306, y: 260 },
-      { kind: 'bookshelf', x: 30, y: 330 },
-      { kind: 'coffee-machine', x: 180, y: 360 },
+      { kind: 'standing-desk', x: 446, y: 108, facing: 'n' },
+      { kind: 'standing-desk', x: 574, y: 108, facing: 'n' },
+      { kind: 'desk', x: 446, y: 212, facing: 's' },
+      { kind: 'desk', x: 582, y: 212, facing: 's' },
+      { kind: 'pet-bed', x: 340, y: 300 },
+      { kind: 'bookshelf', x: 30, y: 360 },
+      { kind: 'coffee-machine', x: 220, y: 380, facing: 's' },
       { kind: 'notice-board', x: 470, y: 330, notes: HQ_NOTES },
     ],
   },
@@ -315,11 +308,11 @@ const HQ_ROOMS: CampusRoom[] = [
   },
   {
     name: 'Kitchen Bar',
-    x: 1660,
+    x: 1570,
     y: 60,
-    w: 400,
+    w: 490,
     h: 560,
-    door: { side: 's', at: 200, sign: -1, reach: HQ_PATH_Y - 620 },
+    door: { side: 's', at: 245, sign: -1, reach: HQ_PATH_Y - 620 },
     windows: [
       { side: 'e', at: 200 },
       { side: 'e', at: 420 },
@@ -328,10 +321,10 @@ const HQ_ROOMS: CampusRoom[] = [
       { kind: 'bar', x: 40, y: 40 },
       { kind: 'drinks-fridge', x: 300, y: 36 },
       ...stools([60, 120, 180, 240], 170),
-      { kind: 'coffee-machine', x: 300, y: 180 },
+      { kind: 'coffee-machine', x: 420, y: 170, facing: 'e' },
       { kind: 'chair', x: 40, y: 360, facing: 'w' },
       { kind: 'chair', x: 124, y: 360, facing: 'e' },
-      { kind: 'water-cooler', x: 320, y: 340 },
+      { kind: 'water-cooler', x: 420, y: 320, facing: 'e' },
       // The Suggestion Box between the stools and the chairs, for an idea over a coffee
       // (docs/specs/009-elements/team-pieces.md "Suggestion Box").
       { kind: 'suggestion-box', x: 230, y: 250 },
@@ -350,14 +343,15 @@ const HQ_ROOMS: CampusRoom[] = [
       { side: 'e', at: 190 },
     ],
     pieces: [
-      // A Dartboard on the back wall, left of the way in (docs/specs/009-elements/social-pieces.md).
-      { kind: 'dartboard', x: 100, y: 36 },
-      { kind: 'ping-pong-table', x: 60, y: 160 },
-      // The machines stand forward of the back wall, so their Insert Coin bubbles rise clear of the Room Sign on its
-      // face beside the door (Work Tracker 615, template-bubbles.test.ts); the jukebox below them, by the side wall.
-      { kind: 'arcade-machine', x: 320, y: 100 },
-      { kind: 'arcade-machine', x: 400, y: 100 },
-      { kind: 'jukebox', x: 410, y: 250 },
+      // A Dartboard on the left wall (docs/specs/009-elements/social-pieces.md), the way in's Room Sign on the back
+      // wall left of the door.
+      { kind: 'dartboard', x: 12, y: 220 },
+      { kind: 'ping-pong-table', x: 90, y: 160 },
+      // The two arcade machines side by side against the back wall right of the door, facing the room, their full
+      // depth on the floor (3d-engine.md "Block models"); the jukebox on the front wall.
+      { kind: 'arcade-machine', x: 340, y: 40 },
+      { kind: 'arcade-machine', x: 416, y: 40 },
+      { kind: 'jukebox', x: 120, y: 300, facing: 's' },
       { kind: 'plant', x: 20, y: 50 },
     ],
   },
@@ -377,18 +371,18 @@ const HQ_GARDEN: OfficePiece[] = [
     HQ_H - HQ_JOIN_Y - HQ_JOIN_IN,
   ),
   plaza(HQ_GATE, HQ_JOIN_Y, JUNCTION),
-  // Trees between the buildings, a planter by the studio.
-  { kind: 'tree', x: 748, y: 220, w: 64 },
-  { kind: 'tree', x: 1588, y: 240, w: 64 },
+  // Trees in the garden's far corner, a planter by the studio.
+  { kind: 'tree', x: 1960, y: 1190, w: 64 },
+  { kind: 'tree', x: 1320, y: 1200, w: 64 },
   { kind: 'outdoor-plant', x: 640, y: 580 },
   // The garden to work in: a pond, trees, a campfire circle, two Office Pods for calls and a hammock.
   { kind: 'pond', x: 80, y: 860, w: 260, h: 150 },
   { kind: 'tree', x: 40, y: 1040 },
   { kind: 'tree', x: 370, y: 870 },
-  { kind: 'chair', x: 500, y: 914, facing: 'w' },
+  { kind: 'bench', x: 470, y: 914, facing: 'w' },
   { kind: 'campfire', x: 620, y: 920 },
-  { kind: 'chair', x: 744, y: 914, facing: 'e' },
-  { kind: 'chair', x: 622, y: 1004, facing: 's' },
+  { kind: 'bench', x: 744, y: 914, facing: 'e' },
+  { kind: 'bench', x: 590, y: 1070, facing: 's' },
   { kind: 'office-pod', x: 940, y: 870 },
   { kind: 'office-pod', x: 160, y: 1050 },
   { kind: 'hammock', x: 480, y: 1210 },
@@ -411,20 +405,10 @@ export function buildStartupHq(cx: number, cy: number): Element[] {
     height: HQ_H,
     rooms: HQ_ROOMS,
     open: HQ_GARDEN,
-    title: {
-      text: 'Startup HQ',
-      width: 260,
-      sticker: 'emoji-rocket',
-      subtitle:
-        'Build it together: desks in the studio, the Friday demo in the town hall, and a garden to take calls in.',
-    },
     // In the Town Hall, where the Friday demo is, in the aisle between its first two rows, facing the stage.
     arrival: {
       dx: 150,
       dy: -238,
-      hintW: 360,
-      hint: 'You arrive on the Avatar Pad in the Town Hall. Step into an Office Pod on the lawn for a call.',
     },
-    extra: (left, top) => [createShape('focus-button', left + 820 + 580, top + 60 + 60)],
   });
 }

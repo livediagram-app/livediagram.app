@@ -136,15 +136,15 @@ afterEach(() => {
 });
 
 // docs/specs/013-workspace/share-roles.md "A Participant walks": a Participant adds and writes nothing; it changes an
-// element only through a piece's own field, a Door's swing.
-const door = (extra: Record<string, unknown> = {}) => ({
-  ...shape('door'),
-  shape: 'door',
-  doorClosed: true,
+// element only through a piece's own field, a Notice Board's notes it signs.
+const note = { id: 'n1', text: 'Hello', author: 'Sam', by: ME, at: 1 };
+const board = (extra: Record<string, unknown> = {}) => ({
+  ...shape('board'),
+  shape: 'notice-board',
   ...extra,
 });
-const withDoor = () => {
-  store.data = JSON.stringify({ elements: [shape('col'), sticky('ed'), door()] });
+const withBoard = () => {
+  store.data = JSON.stringify({ elements: [shape('col'), sticky('ed'), board()] });
 };
 
 describe('DocumentRoom: a Participant changes only a piece', () => {
@@ -180,21 +180,21 @@ describe('DocumentRoom: a Participant changes only a piece', () => {
     expect(ops(editor)).toEqual([]);
   });
 
-  it("relays a door's swing only, from the Participant, and answers its cursor", async () => {
-    withDoor();
+  it("relays a board's pinned note only, from the Participant, and answers its cursor", async () => {
+    withBoard();
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
     const part = join('P', 'participate', ME);
-    const op = { kind: 'update', element: door({ doorClosed: false }) };
+    const op = { kind: 'update', element: board({ noticeNotes: [note] }) };
     await send(room, part, { kind: 'el', tabId: 't1', op }, 7);
-    expect(storedElements()[2]).toMatchObject({ doorClosed: false });
+    expect(storedElements()[2]).toMatchObject({ noticeNotes: [note] });
     expect(ops(editor)).toEqual([
       expect.objectContaining({
         from: 'P',
         op: {
           kind: 'el',
           tabId: 't1',
-          op: { kind: 'patch', id: 'door', set: { doorClosed: false } },
+          op: { kind: 'patch', id: 'board', set: { noticeNotes: [note] } },
         },
       }),
     ]);
@@ -202,20 +202,23 @@ describe('DocumentRoom: a Participant changes only a piece', () => {
     expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'cursor', ref: 7 }));
   });
 
-  // The review's case: an Editor resized the door a moment ago and has not saved yet. The Participant's swing must
+  // The review's case: an Editor resized the board a moment ago and has not saved yet. The Participant's note must
   // reach everyone without the stored (older) size coming back with it.
   it('never sends the stored copy over live state: forbidden fields are simply not in the patch', async () => {
-    withDoor();
+    withBoard();
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
     const part = join('P', 'participate', ME);
-    const op = { kind: 'update', element: door({ doorClosed: false, label: 'New', width: 999 }) };
+    const op = {
+      kind: 'update',
+      element: board({ noticeNotes: [note], label: 'New', width: 999 }),
+    };
     await send(room, part, { kind: 'el', tabId: 't1', op });
-    expect(storedElements()[2]).toMatchObject({ doorClosed: false, width: 100 });
+    expect(storedElements()[2]).toMatchObject({ noticeNotes: [note], width: 100 });
     expect(storedElements()[2]).not.toHaveProperty('label', 'New');
     expect(ops(editor)[0]).toMatchObject({
       from: 'P',
-      op: { op: { kind: 'patch', id: 'door', set: { doorClosed: false } } },
+      op: { op: { kind: 'patch', id: 'board', set: { noticeNotes: [note] } } },
     });
     expect(ops(part)).toEqual([]);
   });

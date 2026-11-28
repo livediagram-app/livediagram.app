@@ -56,20 +56,16 @@ export function doorPaintAttrs(p: DoorArtPart, floor: string, line: string): str
 }
 
 /**
- * A Door as the canvas draws it, in the pose it is in. On a room's back wall (back-wall-doors.ts) the room draws the
- * doorway, so the Door draws only its open leaf and swing, and nothing while shut.
+ * A Door as the canvas draws it, the plan's open pose (room-builder.md "Opening on their own"). On a room's back wall
+ * (back-wall-doors.ts) the room draws the doorway, so the Door draws only its leaf and swing.
  */
 export function doorSvg(el: Face, floor: string, stroke: string, onBackWall = false): string {
-  const closed = el.doorClosed === true;
   const f = xmlEscape(floor);
   const l = xmlEscape(stroke);
   const body = doorArt(el.width, el.height, el.variant)
-    .filter((p) => !(closed && p.openOnly))
-    .filter((p) => !onBackWall || (!closed && p.paint !== 'floor' && p.paint !== 'jamb'))
+    .filter((p) => !onBackWall || (p.paint !== 'floor' && p.paint !== 'jamb'))
     .map((p) => {
-      const pose = p.motion
-        ? doorPoseTransform(closed ? p.motion.shut : p.motion.open, p.motion.origin)
-        : '';
+      const pose = p.motion ? doorPoseTransform(p.motion.open, p.motion.origin) : '';
       const at = pose ? ` transform="${pose}"` : '';
       return `${geometry(p)}${at} ${doorPaintAttrs(p, f, l)}/>`;
     })
@@ -141,19 +137,11 @@ export function glassRoomSvg(
         `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="2" fill="${l}" fill-opacity="${GLASS_WALL.face}" stroke="${l}" stroke-opacity="${GLASS_WALL.pane}" stroke-width="1"/>`,
     )
     .join('');
-  // A shut Door's leaf in the face, a little more frosted than the pane.
-  const doors = art.doors
-    .map(
-      (b) =>
-        `<rect x="${r2(b.x)}" y="${r2(b.y)}" width="${r2(b.w)}" height="${r2(b.h)}" rx="1.5" fill="${l}" fill-opacity="${GLASS_WALL.face * 2}" stroke="${l}" stroke-opacity="${GLASS_WALL.pane}" stroke-width="${FURNITURE_PANEL_STROKE}"/>`,
-    )
-    .join('');
   return (
     `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
     `<path d="${art.floor}" fill="${f}"/>` +
     roomFloorSvg(el.id, roomFloorOf(el), art.floor) +
     faces +
-    doors +
     (art.glints
       ? `<path d="${art.glints}" fill="none" stroke="#ffffff" stroke-opacity="${glint}" stroke-width="2" stroke-linecap="round"/>`
       : '') +

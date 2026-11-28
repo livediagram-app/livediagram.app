@@ -123,18 +123,6 @@ export type CanvasProps = {
   // palette (any tile pick) and to a palette drag-drop, both of which are
   // edits the read-only mode would otherwise swallow.
   onExitAvatarMode?: () => void;
-  // The format painter's settings (docs/specs/008-canvas/format-panel.md) and what its brush holds. Owned
-  // in editor state, where the paint happens; Canvas forwards them.
-  formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (
-    group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
-  ) => void;
-  onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
-  formatBrushSource?:
-    import('@liveworkspace/workbench/components/panels/FormatPanel').FormatBrushSource | null;
-  formatPanelPosition?: { x: number; y: number } | null;
-  onMoveFormatPanel?: (x: number, y: number) => void;
-  onResetFormatPanel?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -153,9 +141,6 @@ export type CanvasProps = {
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
   onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
-  // Swing a Door open or shut (docs/specs/009-elements/room-builder.md "Opening and closing"): a walking click on one
-  // next to the character. True when it swung; false when the viewer may not (a Viewer), and the click walks instead.
-  onToggleDoor?: (doorId: string) => boolean;
   // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): sends one message to the room.
   // Optional: with no room the bubble is still drawn for you.
   onAvatarSay?: (say: { id: string; text: string; x: number; y: number }) => void;
@@ -192,7 +177,6 @@ export type CanvasProps = {
   // the editor places the caret at the end instead of select-all so the
   // seeded first character isn't replaced by the next keystroke.
   editCursorAtEnd?: boolean;
-  formatSourceId: string | null;
   canUndo: boolean;
   canRedo: boolean;
   onAddShape: (kind: ShapeKind) => void;
@@ -202,8 +186,6 @@ export type CanvasProps = {
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md), dropped at the viewport centre. Hero /
   // Header / Avatar carry an image and open the picker on drop.
   onAddAvatar: () => void;
-  onAddText: () => void;
-  onAddSticky: () => void;
   // Any other file dropped on the canvas, at its canvas point: told why it does not land (useClipboard
   // dropBoardFile). Absent in a read-only session.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
@@ -228,6 +210,8 @@ export type CanvasProps = {
     startY: number,
     endX: number,
     endY: number,
+    // Cmd / Ctrl held: the piece lands without its snap (docs/specs/008-canvas/snap-override.md).
+    free?: boolean,
   ) => void;
   // The Room Builder's commit (docs/specs/009-elements/room-builder.md): the corners placed, closed into a room.
   onCommitRoomWalls?: (corners: { x: number; y: number }[]) => void;
@@ -252,16 +236,9 @@ export type CanvasProps = {
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.
   activeTabLoaded?: boolean;
-  // Map panel (docs/specs/008-canvas/minimap.md) position + move/reset, shared with the other panels.
-  mapPosition: { x: number; y: number } | null;
-  onMoveMap: (x: number, y: number) => void;
-  onResetMap: () => void;
   // Per-user preferences (docs/specs/007-editor/user-preferences.md): where Contents sits, among others.
   userPreferences: UserPreferences;
 
-  // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
-  // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
-  onOpenCanvasTheme?: () => void;
   currentDocumentId: string | null;
   // The link this session came in on, so the Explorer panel reads the open document as the link allows.
   currentShareCode?: string | null;
@@ -294,9 +271,6 @@ export type CanvasProps = {
   // for the single-element ellipsis).
   onOpenMultiContextMenu?: (screenX: number, screenY: number) => void;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
-  // The armed action a press on an element takes instead of selecting it (the format painter): true when it took it. For a touch press that panned instead of dragging, whose tap
-  // must still paint (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
-  onPressArmedAction?: (id: string) => boolean;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
   // Inline label-editor (rich-text) alignment control, threaded through
@@ -307,11 +281,6 @@ export type CanvasProps = {
   // An Editor's alone: omitted in read-only.
   onDeleteRetired?: (elementId: string) => void;
   onShiftSelect: (id: string) => void;
-  // Wrap up the Format canvas tool (the palette tool): drops back to the
-  // tool active before it. Drives the format-tool mode banner's "Done" button.
-  onExitFormatTool: () => void;
-  // The selection toolbar's Format Painter: the painter on, `id` loaded as its brush. Absent where it may not paint.
-  onStartFormatPainter?: (id: string) => void;
   onFollowLink: (link: import('@livehuddle/document').ElementLink) => void;
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
@@ -325,6 +294,8 @@ export type CanvasProps = {
     documentId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
+    // Whether a Poster's picture opens the picker too: an Editor's alone (docs/specs/009-elements/poster.md).
+    posterPicker?: boolean;
   };
   // Touch-friendly fallback for right-click: a SelectionPopover
   // ellipsis button opens the same context menu under the cursor.
@@ -361,7 +332,7 @@ export type CanvasProps = {
   // for the two catalogue-driven kinds — `iconId` for an icon or brand mark,
   // `stickerId` for a sticker (docs/specs/010-palette/stickers.md).
   onDropPalette?: (
-    kind: ShapeKind | 'sticky',
+    kind: ShapeKind,
     canvasX: number,
     canvasY: number,
     // `choice` is the creation-time value a split tile carries (which session
@@ -376,14 +347,6 @@ export type CanvasProps = {
   // can stand down (one gesture, one answer).
   elementMenuOpen?: boolean;
   onDuplicateSelected: () => void;
-  // Intra-LAYER z-order from the selection popover (docs/specs/006-document/layers.md): stack the
-  // selection within its own band, never between layers.
-  onBringSelectedToFront: () => void;
-  onSendSelectedToBack: () => void;
-  // A quarter turn of every piece of furniture in the selection (docs/specs/009-elements/furniture-facing.md "Turning
-  // a placed piece"): +1 clockwise, -1 anticlockwise.
-  onTurnSelected?: (quarters: 1 | -1) => void;
-  onCanvasDoubleClick: (x: number, y: number) => void;
   // Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). While the active tab's content is being
   // fetched ('loading') or after that fetch failed ('error'), Canvas
   // renders a blocking TabLoadOverlay so the user never edits a blank

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement } from '@livehuddle/document';
+import { createShape, type Element, type ShapeElement } from '@livehuddle/document';
 import { serialiseElements } from '@/lib/clipboard-payload';
 import { useClipboard } from './useClipboard';
 
@@ -11,11 +11,11 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 // clipboard holds them as JSON text, so the label editor used to type that
 // JSON into the note. They belong on the canvas instead.
 
-const copied: StickyElement = {
+// A room: a labelled piece a Space still holds (a sticky note is dropped on paste, docs/specs/002-project-scope/
+// not-in-livehuddle.md "The Write category").
+const copied: ShapeElement = {
+  ...createShape('room', 0, 0),
   id: 'copied',
-  type: 'sticky',
-  x: 0,
-  y: 0,
   width: 200,
   height: 200,
   label: 'Activity cancelled',
@@ -109,7 +109,7 @@ describe('pasting copied elements into a note open for typing', () => {
     const event = paste(editor(true), serialiseElements([copied]));
     expect(event.defaultPrevented).toBe(true);
     expect(h.elements()).toHaveLength(2);
-    expect((h.elements()[1] as StickyElement).label).toBe('Activity cancelled');
+    expect((h.elements()[1] as ShapeElement).label).toBe('Activity cancelled');
   });
 
   it('stops typing in the note, so the pasted elements take the selection', () => {

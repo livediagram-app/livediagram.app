@@ -1,21 +1,18 @@
 // Feature art for running the room (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/012-collaboration/facilitator.md, bring-focus.md): the canvas tilted into 3D, the
-// facilitator's baton and Bring Focus. Split out of ./present (the deck cards) by subject; built
+// docs/specs/012-collaboration/facilitator.md): the canvas tilted into 3D, the
+// facilitator's baton. Split out of ./present (the deck cards) by subject; built
 // on ./page-kit so each reads in light and in dark.
 
 import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   AMBER,
   at,
-  Cursor,
   EMERALD,
   INK,
   INK_SOFT,
-  Lines,
   Panel,
   ROSE,
   SKY,
-  SKY_DEEP,
   VIOLET,
 } from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
@@ -219,115 +216,6 @@ export function FacilitatorArt() {
           stroke={SKY}
           strokeWidth="0.8"
         />
-      </svg>
-    </Frame>
-  );
-}
-
-/** Ask the room to look here: Bring Focus pressed, and each teammate offered the jump. */
-export function BringFocusArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
-        <g transform="translate(40 0)">
-          {/* The rings the invitation sends out. */}
-          <rect
-            className="fa-e-ring"
-            style={at(0)}
-            x="84"
-            y="38"
-            width="52"
-            height="16"
-            rx="8"
-            fill="none"
-            stroke={SKY}
-            strokeWidth="0.9"
-          />
-          <rect
-            className="fa-e-ring"
-            style={at(1.2)}
-            x="84"
-            y="38"
-            width="52"
-            height="16"
-            rx="8"
-            fill="none"
-            stroke={SKY}
-            strokeWidth="0.9"
-          />
-
-          {/* The Bring Focus element, pressed. */}
-          <rect x="84" y="38" width="52" height="16" rx="8" fill={SKY} />
-          <circle cx="94" cy="46" r="3.6" fill="none" stroke="#ffffff" strokeWidth="0.9" />
-          <circle cx="94" cy="46" r="1.1" fill="#ffffff" />
-          <path
-            d="M94 41.2v1.6M94 49.2v1.6M89.2 46h1.6M97.2 46h1.6"
-            stroke="#ffffff"
-            strokeWidth="0.8"
-            strokeLinecap="round"
-          />
-          <text x="101" y="47.8" fontSize="5" fontWeight="700" fill="#ffffff">
-            Look here
-          </text>
-          <Cursor x={113} y={52} color={SKY_DEEP} name="Maya" />
-        </g>
-        {/* Two teammates, each somewhere else on the canvas, asked rather than dragged. */}
-        {[
-          { x: 16, y: 14, who: 'SK', color: VIOLET, d: 0.7 },
-          { x: 224, y: 50, who: 'AN', color: EMERALD, d: 1.1 },
-        ].map((t) => (
-          <g key={t.who}>
-            <rect
-              className="stroke-slate-300 dark:stroke-slate-600"
-              x={t.x}
-              y={t.y}
-              width="60"
-              height="34"
-              rx="4"
-              fill="none"
-              stroke="#cbd5e1"
-              strokeWidth="0.7"
-              strokeDasharray="2 1.6"
-            />
-            <g className="fa-e-in" style={at(t.d)}>
-              <Panel x={t.x + 4} y={t.y + 6} w={52} h={22}>
-                <Avatar cx={t.x + 11} cy={t.y + 13.5} initials={t.who} color={t.color} r={3.6} />
-                <text
-                  x={t.x + 17}
-                  y={t.y + 15}
-                  fontSize="3.8"
-                  fontWeight="600"
-                  className={INK}
-                  fill="#1e293b"
-                >
-                  Maya asks you
-                </text>
-                <text
-                  x={t.x + 17}
-                  y={t.y + 19.5}
-                  fontSize="3.8"
-                  className={INK_SOFT}
-                  fill="#64748b"
-                >
-                  to look here
-                </text>
-                <rect x={t.x + 34} y={t.y + 21} width="19" height="5.4" rx="2.7" fill={SKY} />
-                <text
-                  x={t.x + 43.5}
-                  y={t.y + 24.8}
-                  textAnchor="middle"
-                  fontSize="3.4"
-                  fontWeight="700"
-                  fill="#ffffff"
-                >
-                  Go there
-                </text>
-              </Panel>
-            </g>
-          </g>
-        ))}
-        <Lines x={20} y={58} w={44} count={2} gap={4} />
-        <Lines x={232} y={20} w={44} count={2} gap={4} />
       </svg>
     </Frame>
   );

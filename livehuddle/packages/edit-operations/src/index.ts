@@ -20,6 +20,8 @@ export {
   EDIT_MAX_ERRORS,
   EDIT_OPERATION_NAMES,
   SHAPES_RETIRED,
+  NOTES_RETIRED,
+  isRetiredNoteType,
   type EditOperationName,
 } from './vocabulary';
 export type {

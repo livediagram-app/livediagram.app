@@ -4,7 +4,6 @@ import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { useImportUndoView } from '@liveworkspace/workbench/hooks/canvas/useImportUndoView';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { type Element, type Tab } from '@livehuddle/document';
-import { useDoorToggle } from '@/hooks/canvas/useDoorToggle';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { getTheme } from '@/lib/themes';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
@@ -16,7 +15,6 @@ import { activeElementsCommit } from '../active-elements-commit';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
 import type { EditorActiveTabSlice } from './useEditorActiveTab';
@@ -30,7 +28,6 @@ export function useEditorEditing({
   fromDocument,
   fromHistory,
   fromSelection,
-  fromTools,
   fromCollaboration,
   fromPersistence,
   fromActiveTab,
@@ -40,7 +37,6 @@ export function useEditorEditing({
   fromDocument: EditorDocumentSlice;
   fromHistory: EditorHistorySlice;
   fromSelection: EditorSelectionSlice;
-  fromTools: EditorToolsSlice;
   fromCollaboration: EditorCollaborationSlice;
   fromPersistence: EditorPersistenceSlice;
   fromActiveTab: EditorActiveTabSlice;
@@ -52,15 +48,12 @@ export function useEditorEditing({
     fromHistory;
   const {
     activeId,
-    formatSourceId,
     readSelection,
     selectionStore,
     setEditingId,
-    setFormatSourceId,
     setMultiSelectedIds,
     setSelectedId,
   } = fromSelection;
-  const { formatSettings } = fromTools;
   const { isReadOnly, participant } = fromCollaboration;
   const { tabsRef } = fromPersistence;
   const { activeTab } = fromActiveTab;
@@ -149,14 +142,6 @@ export function useEditorEditing({
     commitTabs(activeElementsCommit(activeId, mapElements));
   };
 
-  // A Door swung open or shut from Avatar mode (docs/specs/009-elements/room-builder.md "Opening and closing").
-  const { toggleDoor } = useDoorToggle({
-    elements: activeTab.elements,
-    canSwing: participant.can.swingDoor,
-    blocked: editsBlocked,
-    commit,
-  });
-
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): what the panel or the context menu last
   // chose per element kind, applied to the next element the user draws. The
   // style hooks below get `commit` / `tickTabs` wrapped to record into it.
@@ -196,41 +181,35 @@ export function useEditorEditing({
     undoHistory,
     redoHistory,
     beforeStep: importUndoView.beforeStep,
-    set: { setSelectedId, setEditingId, setFormatSourceId },
+    set: { setSelectedId, setEditingId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
-  // Selection + placement + format helpers. See useElementHelpers.
-  const { addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
-    useElementHelpers({
-      readSelection,
-      activeId,
-      activeTab,
-      // Creation-only helpers. Open to a Participant that may add content
-      // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
-      // addBoxedAt, and every commit it makes still passes participant.guardCommit.
-      editsBlocked: contentAddBlocked({
-        participating: participant.participating,
-        canAddContent: participant.can.addContent,
-        blocked: editsBlocked,
-        structureBlocked: structureCreateBlocked,
-      }),
-      formatSourceId,
-      formatConfig: formatSettings.config,
-      getViewportCenter,
-      commit,
-      commitTabs,
-      setSelection: selectionStore.setSelection,
-      setEditingId,
-      setFormatSourceId,
-    });
+  // Selection + placement helpers. See useElementHelpers.
+  const { addBoxedAt, currentSelectionIds, selectionPrimary } = useElementHelpers({
+    readSelection,
+    activeId,
+    activeTab,
+    // Creation-only helpers. Open to a Participant that may add content
+    // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
+    // addBoxedAt, and every commit it makes still passes participant.guardCommit.
+    editsBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: editsBlocked,
+      structureBlocked: structureCreateBlocked,
+    }),
+    getViewportCenter,
+    commitTabs,
+    setSelection: selectionStore.setSelection,
+    setEditingId,
+  });
   return {
     activeTheme,
     addBoxedAt,
-    applyFormatFromSource,
     commit,
     currentSelectionIds,
     editsBlocked,
@@ -249,7 +228,6 @@ export function useEditorEditing({
       activeTabConnected,
       // The whole creation gate: a view-only session or a tab still loading.
       createBlocked: editsBlocked,
-      toggleDoor,
       canRedo,
       canUndo,
       activeTabLoadState,

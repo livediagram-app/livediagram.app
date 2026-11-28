@@ -14,6 +14,8 @@ import { dropRetiredLayers } from './retired-layers';
 import { dropRetiredVote } from './retired-vote';
 import { dropRetiredTimer } from './retired-timer';
 import { dropRetiredLocks } from './retired-locks';
+import { dropRetiredDoorSwing } from './retired-door-swing';
+import { dropRetiredNoteElements, dropRetiredNotes } from './retired-notes';
 import { migrateStoredElements } from './stored-elements';
 import { settleTabFields } from '@liveworkspace/model-core/tab-fields';
 import type { Element, Tab } from './index';
@@ -27,8 +29,16 @@ export function migrateStoredTab<
   // A tab saved with layers (./retired-layers) loses them, so every element is visible and free to pick, and one
   // saved with a dot vote (./retired-vote), a Session strip timer (./retired-timer) or a lock on the tab or its
   // elements (./retired-locks) loses that.
-  const kept = dropRetiredLocks(
-    dropRetiredTimer(dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab))))),
+  // A door saved shut (./retired-door-swing) loses that too: doors open on their own.
+  // A text or a sticky note (./retired-notes) is dropped: a Space holds neither.
+  const kept = dropRetiredNotes(
+    dropRetiredDoorSwing(
+      dropRetiredLocks(
+        dropRetiredTimer(
+          dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab)))),
+        ),
+      ),
+    ),
   );
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
   // Its own fields that renderers read raw (the background colours) are settled before anything reads them.
@@ -59,10 +69,13 @@ export function migrateIncomingTab(tab: unknown): unknown {
   );
 }
 
-/** Untrusted elements (a paste, a file) through the stored-element migrations; non-objects dropped. */
+/** Untrusted elements (a paste, a file) through the stored-element migrations; non-objects, texts and sticky notes
+ *  (./retired-notes) dropped. */
 export function migrateIncomingElements(elements: readonly unknown[]): Element[] {
   const records = elements.filter(isRecord) as unknown as Element[];
-  return readableOr(records, records.length, () => migrateStoredElements(records));
+  return readableOr(records, records.length, () =>
+    migrateStoredElements(dropRetiredNoteElements(records)),
+  );
 }
 
 // The migrations run before validation and read an element's fields as their types (a chip's label as text): a

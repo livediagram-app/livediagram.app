@@ -1,7 +1,5 @@
 // The 3D View (docs/specs/008-canvas/3d-view.md, liveworkspace/docs/specs/017-help/help-centre.md): a room seen through the tilted
-// camera while you walk, and the bottom-right cluster's Turn Left, Turn Right (with the Rotate in 3D View setting on)
-// and 3D buttons
-// (apps/editor/components/canvas/space-3d/Space3DButton.tsx).
+// camera, and Turn Left and Turn Right (apps/editor/components/canvas/space-3d/Space3DTurnButtons.tsx).
 //
 // What it shows is lifted from the spec: the floor tilted back, the room's walls standing with its name on a sign over
 // the doorway, the wall on your side faded so the room is open to you, a usable piece glowing, and your character
@@ -35,7 +33,7 @@ function TurnGlyph({ dir }: { dir: -1 | 1 }) {
 
 /** A room in the 3D View: its floor tilted back, its back and side walls standing, the doorway in the back wall with
  *  the room's name over it, the near wall faded, a Notice Board glowing under the pointer, and your character. Below
- *  it, Turn Left and Turn Right (there with Rotate in 3D View on) and the lit 3D button. */
+ *  it, Turn Left and Turn Right. */
 export function Space3DScene() {
   // The floor: a trapezoid, its far edge (top) narrower than its near edge (bottom).
   const far = { y: 78, l: 118, r: 302 };
@@ -140,17 +138,15 @@ export function Space3DScene() {
         opacity={0.35}
       />
 
-      {/* The bottom-right cluster while 3D is on: Turn Left and Turn Right (only with Rotate in 3D View on in
-          Settings), then the lit 3D switch. */}
-      <Button x={260} y={210} w={30} h={28} />
-      <g transform="translate(275 225)">
+      {/* Turn Left and Turn Right, bottom right. */}
+      <Button x={320} y={210} w={30} h={28} />
+      <g transform="translate(335 225)">
         <TurnGlyph dir={-1} />
       </g>
-      <Button x={296} y={210} w={30} h={28} />
-      <g transform="translate(311 225)">
+      <Button x={356} y={210} w={30} h={28} />
+      <g transform="translate(371 225)">
         <TurnGlyph dir={1} />
       </g>
-      <Button x={332} y={210} w={54} h={28} label="3D" variant="primary" />
     </Scene>
   );
 }

@@ -30,7 +30,7 @@ Scope, by file:
 | `apps/editor/lib/export-as-seen.ts`                                    | `tabAsSeen`: an export draws stock colours for its canvas                                                                         |
 | `apps/editor/lib/draw-mode.ts`                                         | `PendingDraw` `{ type: 'path' }`, banner, cursor                                                                                  |
 | `livediagram/apps/editor/lib/whiteboard-tool.ts`                       | `WhiteboardTool` gains `path`                                                                                                     |
-| `apps/editor/lib/quick-style.ts`, `quick-style-tool.ts`                | A path is a quick-style target; "Next path" phantom                                                                               |
+| `livediagram/apps/editor/lib/quick-style.ts`, `quick-style-tool.ts`    | A path is a quick-style target; "Next path" phantom                                                                               |
 | `apps/editor/lib/style-memory.ts`                                      | Style kind `path` (`board:path` on a whiteboard)                                                                                  |
 | `apps/editor/lib/element-names.ts`                                     | "Path, N points" / "Closed path, N points"                                                                                        |
 | `../livediagram/apps/editor/lib/excalidraw-export.ts`                  | A path as a sampled `line`                                                                                                        |
@@ -507,7 +507,7 @@ numbers only).
 | Edit gesture: select, drag, keys, one commit                                                    | `livediagram/apps/editor/components/canvas/path/usePathEditGesture.test.tsx`                                        |
 | Commit: new, continued, edit, delete, telemetry                                                 | `livediagram/apps/editor/hooks/canvas/usePathCommits.test.tsx`                                                      |
 | Tool derivation                                                                                 | `livediagram/apps/editor/lib/whiteboard-tool.test.ts`                                                               |
-| Quick style and memory                                                                          | `apps/editor/lib/quick-style.test.ts`, `style-memory.test.ts`                                                       |
+| Quick style and memory                                                                          | `livediagram/apps/editor/lib/quick-style.test.ts`, `style-memory.test.ts`                                           |
 | Accessible name                                                                                 | `apps/editor/lib/element-names.test.ts`                                                                             |
 | Excalidraw line                                                                                 | `../livediagram/apps/editor/lib/excalidraw-export.test.ts`                                                          |
 | Telemetry vocabulary and sentences                                                              | `apps/editor/lib/telemetry-coverage.test.ts`, `apps/telemetry`                                                      |

@@ -81,10 +81,12 @@ describe('GET /api/icons', () => {
 describe('GET /api/schema', () => {
   it("lists the kinds, and one kind's format", async () => {
     expect(await get('/api/schema').text()).toContain('Element kinds');
-    const sticky = get('/api/schema/sticky');
-    expect(sticky.headers.get('Content-Type')).toContain('text/plain');
-    expect(sticky.headers.get('Cache-Control')).toBe(CATALOGUE_CACHE_CONTROL);
-    expect(await sticky.text()).toMatch(/^sticky: a sticky/);
+    const desk = get('/api/schema/desk');
+    expect(desk.headers.get('Content-Type')).toContain('text/plain');
+    expect(desk.headers.get('Cache-Control')).toBe(CATALOGUE_CACHE_CONTROL);
+    expect(await desk.text()).toMatch(/^desk: a shape/);
+    // No text and no sticky notes (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category").
+    expect(get('/api/schema/sticky').status).toBe(404);
   });
 
   it('refuses an unknown kind naming the kinds, and a deeper path', async () => {

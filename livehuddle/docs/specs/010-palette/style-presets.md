@@ -1,5 +1,9 @@
 # Style presets
 
+> **Gone from livehuddle** (owner, 2026-11-27): the element menus have no Appearance flyout, so no Presets
+> ([Element looks, layers, opacity and rotation](../002-project-scope/not-in-livehuddle.md#element-looks-layers-opacity-and-rotation)). An element keeps a preset it
+> already has. What follows is livediagram's.
+
 One-click style presets in the selected-element context menu, so a user can
 create variety and emphasis on key elements without dialling each field by
 hand. A **Presets** category sits at the top of the appearance group (above
@@ -118,7 +122,7 @@ multi-selection the preset applies to every selected arrow at once.
 - The category renders in both the single-element context menu and the
   multi-selection menu, for the matching element type (shape vs arrow). The
   `ShapePresetsSection` / `ArrowPresetsSection` components in
-  `apps/editor/components/palette/PresetSections.tsx` are shared by both menus so
+  `PresetSections` (deleted from livehuddle) are shared by both menus so
   there is one implementation; the multi menu surfaces a shape section when the
   selection holds any preset-eligible shape and an arrow section when it holds
   any arrow, and the apply / reset handlers are already selection-wide
@@ -138,7 +142,7 @@ multi-selection the preset applies to every selected arrow at once.
   override. The `colorPreset` binding lives on `ShapeElement` in
   `packages/document`.
 - Arrow presets are a static preset table in the presets component
-  (`apps/editor/components/palette/StylePresets.tsx`, its tile label, swatch outline and reset shared from
+  (`StylePresets`, deleted from livehuddle, its tile label, swatch outline and reset shared from
   `packages/workbench/src/components/palette/StylePresets.tsx`); shape style presets are theme-derived
   (`shapeColorPresets`), each carrying its border treatment.
 - The element transforms each preset performs live in `apps/editor/lib/style-presets.ts`
@@ -148,14 +152,14 @@ multi-selection the preset applies to every selected arrow at once.
   (`applyFillColorToEl` / `applyStrokeColorToEl` / `applyTextColorToEl` /
   `applyBorderStrokeToEl` / `applyBorderStyleToEl` / `applyBorderRadiusToEl` /
   `applyRotationToEl`) and are shared by both the direct setters in
-  `useElementStyle.ts` and the preview/commit pairs in `useStylePreview.ts`, so
+  `useElementStyle.ts` and the preview/commit pairs in livediagram's `useStylePreview`, so
   the swatch/tile preview matches its commit exactly.
 - Direct (non-preview) commits go through the selection setters in
   `apps/editor/hooks/canvas/useElementStyle.ts` (`applyShapeColorPresetSelected` /
   `resetShapeStyleSelected` / `applyArrowPresetSelected` /
   `resetArrowStyleSelected`). Hand-editing a
   colour or resetting clears the `colorPreset` binding there.
-- Hover preview is owned by `apps/editor/hooks/canvas/useStylePreview.ts`: preview +
+- Hover preview is owned by `livediagram/apps/editor/hooks/canvas/useStylePreview.ts`: preview +
   revert go through `tickTabs` (present-only, no history); the click
   commit restores the originals into the present, then commits, so the undo
   snapshot is taken from the true pre-hover state. The
@@ -193,7 +197,7 @@ chart back on the tab theme's palette. See [Data charts (pie + bar + line)](../0
 
 ## Which grid an element gets
 
-`TargetPresetsSection` (`components/palette/PresetSections.tsx`) is the one
+`TargetPresetsSection` (`PresetSections`, deleted from livehuddle) is the one
 place that answers it: chart palette, table look, shape look,
 sticky pad, code scheme, or arrow line. Elements with none render nothing, so the caller mounts
 it unconditionally.

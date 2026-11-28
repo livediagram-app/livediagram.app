@@ -29,7 +29,6 @@ type ElementLinksDeps = {
   setActiveId: (id: string) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
-  setFormatSourceId: (id: string | null) => void;
   // Full page-load navigation to another document (for document links).
   openDocument: (id: string) => void;
 };
@@ -42,7 +41,6 @@ export function useElementLinks(deps: ElementLinksDeps) {
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     openDocument,
   } = deps;
 
@@ -122,7 +120,6 @@ export function useElementLinks(deps: ElementLinksDeps) {
       setActiveId(link.tabId);
       setSelectedId(null);
       setEditingId(null);
-      setFormatSourceId(null);
       return;
     }
     if (link.kind === 'document') {

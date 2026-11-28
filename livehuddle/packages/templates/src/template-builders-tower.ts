@@ -5,13 +5,13 @@
 // - Ground Floor (the first tab, Wood): Hot Desks (three islands of four), a Meeting Room and a Cafe; the Avatar Pad at
 //   the entrance with the Directory beside it.
 // - Level 2 (Carpet Tiles), arrived at by lift or on the Avatar Pad between the lifts: Phone Booths (six Office Pods in two rows), a Quiet Room, two meeting rooms and a Restroom.
-// - Level 3 (Parquet): the Event Floor (a Stage, two Screens, Bring Focus and twenty chairs either side of a centre
+// - Level 3 (Parquet): the Event Floor (a Stage, two Screens and twenty chairs either side of a centre
 //   aisle), a Green Room and a Roof Bar.
 //
 // Indoors, every room's Door opens onto the floor's open space (campusPlan, IndoorRoom). Each builder is pure: it
 // takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
-import { createShape, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
 import { campusPlan, type IndoorRoom } from './template-campus-parts';
 
@@ -42,10 +42,10 @@ const seats = (xs: readonly number[], ys: readonly number[]): OfficePiece[] =>
 // An island of four hot desks, two rows back to back that face the same way, like a classroom's
 // (docs/specs/009-elements/workday-pieces.md).
 const hotDesks = (x: number, y: number): OfficePiece[] => [
-  { kind: 'hot-desk', x, y },
-  { kind: 'hot-desk', x: x + 136, y },
-  { kind: 'hot-desk', x, y: y + 112 },
-  { kind: 'hot-desk', x: x + 136, y: y + 112 },
+  { kind: 'hot-desk', x, y, facing: 'n' },
+  { kind: 'hot-desk', x: x + 136, y, facing: 'n' },
+  { kind: 'hot-desk', x, y: y + 112, facing: 's' },
+  { kind: 'hot-desk', x: x + 136, y: y + 112, facing: 's' },
 ];
 
 // An island of four desks, two facing two.
@@ -87,10 +87,11 @@ const GROUND_ROOMS: IndoorRoom[] = [
     name: 'Hot Desks',
     x: 300,
     y: 60,
-    w: 1100,
+    // A wall's width over the Meeting Room's, so the two share one wall (office.md "Rooms line up").
+    w: 1170,
     h: 540,
     indoor: true,
-    door: { side: 's', at: 550, sign: 1 },
+    door: { side: 's', at: 585, sign: 1 },
     // Windows in the building's outside walls (docs/specs/009-elements/room-builder.md "Window").
     windows: [
       { side: 'n', at: 300 },
@@ -98,18 +99,19 @@ const GROUND_ROOMS: IndoorRoom[] = [
       { side: 'n', at: 980 },
     ],
     pieces: [
-      // Three islands of four, 120 px apart, and a notice board, coffee and water along the front.
-      ...island(40, 80),
-      ...island(416, 80),
-      ...hotDesks(792, 80),
+      // Three islands of four, 120 px apart and off the back wall for a walk behind them, and a notice board, coffee
+      // and water against the front wall.
+      ...island(40, 100),
+      ...island(416, 100),
+      ...hotDesks(792, 100),
       { kind: 'notice-board', x: 40, y: 380 },
       // A print corner and a bank of lockers for the hot-deskers (docs/specs/009-elements/office-amenities.md), both
       // clear of the door's way in.
-      { kind: 'copier', x: 232, y: 384 },
-      { kind: 'printer', x: 352, y: 430 },
-      { kind: 'lockers', x: 640, y: 392 },
-      { kind: 'coffee-machine', x: 820, y: 420 },
-      { kind: 'water-cooler', x: 920, y: 410 },
+      { kind: 'copier', x: 232, y: 400, facing: 's' },
+      { kind: 'printer', x: 352, y: 430, facing: 's' },
+      { kind: 'lockers', x: 680, y: 400, facing: 's' },
+      { kind: 'coffee-machine', x: 860, y: 420, facing: 's' },
+      { kind: 'water-cooler', x: 960, y: 410, facing: 's' },
     ],
   },
   meetingRoom('Meeting Room', 1460, 60, 680),
@@ -158,18 +160,10 @@ export function buildTowerGround(cx: number, cy: number): Element[] {
     height: GROUND_H,
     rooms: GROUND_ROOMS,
     open: GROUND_FLOOR,
-    title: {
-      text: 'Co-working Tower',
-      width: 340,
-      sticker: 'emoji-laptop',
-      subtitle:
-        'Three floors to work on: hot desks and the cafe here, phone booths on Level 2, events on Level 3.',
-    },
     // In the lobby, between the Hot Desks' door and the Lifts.
     arrival: {
       dx: -254,
       dy: 350,
-      hint: 'You arrive on the Avatar Pad in the lobby. The North and South Lifts go to every floor.',
     },
   });
 }
@@ -183,10 +177,11 @@ const L2_ROOMS: IndoorRoom[] = [
     name: 'Phone Booths',
     x: 300,
     y: 60,
-    w: 800,
+    // The three rooms along the top share their walls (office.md "Rooms line up").
+    w: 890,
     h: 580,
     indoor: true,
-    door: { side: 's', at: 400, sign: 1 },
+    door: { side: 's', at: 445, sign: 1 },
     windows: [{ side: 'n', at: 650 }],
     pieces: [
       // Two rows of three Office Pods, an aisle between the rows.
@@ -200,10 +195,10 @@ const L2_ROOMS: IndoorRoom[] = [
     name: 'Quiet Room',
     x: 1180,
     y: 60,
-    w: 460,
+    w: 550,
     h: 400,
     indoor: true,
-    door: { side: 's', at: 230, sign: 1 },
+    door: { side: 's', at: 275, sign: 1 },
     windows: [{ side: 'n', at: 300 }],
     pieces: [
       ...[30, 160].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
@@ -226,7 +221,7 @@ const L2_ROOMS: IndoorRoom[] = [
     pieces: [
       { kind: 'toilet-cubicle', x: 16, y: 40 },
       { kind: 'toilet-cubicle', x: 112, y: 40 },
-      { kind: 'hand-dryer', x: 220, y: 64 },
+      { kind: 'hand-dryer', x: 220, y: 40 },
       { kind: 'washbasin', x: 264, y: 44 },
       { kind: 'washbasin', x: 344, y: 44 },
       { kind: 'plant', x: 420, y: 40 },
@@ -259,35 +254,31 @@ export function buildTowerLevel2(cx: number, cy: number): Element[] {
       LIFT_PAD,
       { kind: 'plant', x: 900, y: 860 },
       // A Vending Machine on the open floor, past the Phone Booths' way out (docs/specs/009-elements/piece-moments.md).
-      { kind: 'vending-machine', x: 800, y: 720 },
+      // Against the Restroom's left wall, facing the floor.
+      { kind: 'vending-machine', x: 900, y: 740, facing: 'e' },
     ],
-    title: {
-      text: 'Level 2',
-      width: 160,
-      sticker: 'emoji-phone',
-      subtitle: 'Phone booths for calls, a quiet room to focus, two meeting rooms and a restroom.',
-    },
   });
 }
 
 // --- Level 3 -----------------------------------------------------------------------------
 
 const L3_H = 1180;
-const EVENT = { x: 300, y: 60, w: 1120, h: 640 };
+// A wall's width over the Green Room's and the Roof Bar's, so it shares a wall with each (office.md "Rooms line up").
+const EVENT = { x: 300, y: 60, w: 1210, h: 640 };
 
 const L3_ROOMS: IndoorRoom[] = [
   {
     name: 'Event Floor',
     ...EVENT,
     indoor: true,
-    door: { side: 's', at: 560, sign: 1 },
+    door: { side: 's', at: EVENT.w / 2, sign: 1 },
     pieces: [
-      { kind: 'stage', x: 320, y: 48, w: 480, h: 150, stageCameras: true },
+      { kind: 'stage', x: EVENT.w / 2 - 240, y: 48, w: 480, h: 150, stageCameras: true },
       { kind: 'screen', x: 60, y: 44, w: 176 },
-      { kind: 'screen', x: 960, y: 44, w: 140 },
+      { kind: 'screen', x: EVENT.w - 200, y: 44, w: 140 },
       // Two rows of five either side of a 160 px aisle up from the door, 120 px between the rows.
-      ...seats([92, 170, 248, 326, 404], [290, 494]),
-      ...seats([640, 718, 796, 874, 952], [290, 494]),
+      ...seats([137, 215, 293, 371, 449], [290, 494]),
+      ...seats([685, 763, 841, 919, 997], [290, 494]),
     ],
   },
   {
@@ -332,8 +323,8 @@ const L3_ROOMS: IndoorRoom[] = [
       { kind: 'drinks-fridge', x: 460, y: 36 },
       ...stools([220, 280, 340, 400], 170),
       { kind: 'jukebox', x: 560, y: 60 },
-      { kind: 'rug', x: 360, y: 340 },
-      { kind: 'sofa', x: 384, y: 360, facing: 'n' },
+      { kind: 'rug', x: 360, y: 350 },
+      { kind: 'sofa', x: 384, y: 380, facing: 's' },
     ],
   },
 ];
@@ -353,13 +344,5 @@ export function buildTowerLevel3(cx: number, cy: number): Element[] {
       { kind: 'ping-pong-table', x: 420, y: 860 },
       { kind: 'foosball-table', x: 660, y: 1000 },
     ],
-    title: {
-      text: 'Level 3',
-      width: 160,
-      sticker: 'emoji-microphone',
-      subtitle:
-        'The event floor for talks and launches, a green room for speakers and the roof bar after.',
-    },
-    extra: (left, top) => [createShape('focus-button', left + EVENT.x + 820, top + EVENT.y + 64)],
   });
 }

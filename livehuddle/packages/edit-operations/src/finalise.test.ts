@@ -1,42 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livehuddle/document';
 import { applyEditOperations } from './apply';
 import { validateEditOperations } from './parse-json';
 
-describe('sticky border', () => {
-  const note = {
-    id: 'n',
-    type: 'sticky',
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 100,
-    label: 'Hi',
-    fillColor: '#fde68a',
-    textSize: 'md',
-  };
-  const after = (fields: Record<string, unknown>) => {
-    const parsed = validateEditOperations([{ op: 'set', target: 'n', fields }]);
+// docs/specs/002-project-scope/not-in-livehuddle.md "The Write category": a text or a sticky note is refused, made by
+// `add` or sent whole.
+describe('retired texts and sticky notes', () => {
+  const run = (operations: unknown[]) => {
+    const parsed = validateEditOperations(operations);
     if ('errors' in parsed) throw new Error('bad operations');
-    const out = applyEditOperations(
-      { id: 't', name: 'T', elements: [note as unknown as Element] },
-      parsed.operations,
-      {},
-    );
-    if ('errors' in out) throw new Error('rejected');
-    return { el: out.tab.elements[0] as Element & { strokeColor?: string }, out };
+    return applyEditOperations({ id: 't', name: 'T', elements: [] }, parsed.operations, {});
   };
 
-  it('keeps the border of a note whose fill the edit left alone, and reports only the label', () => {
-    const { el, out } = after({ label: 'Who helped?' });
-    expect(el.strokeColor).toBeUndefined();
-    const line = out.results[0]!;
-    expect('changes' in line && line.changes.map((c) => c.key)).toEqual(['label']);
-  });
-
-  it('gives a note a new fill the borderless look', () => {
-    expect(after({ fillColor: '#bae6fd' }).el.strokeColor).toBe('transparent');
-    // Named by its alias too.
-    expect(after({ fill: '#bae6fd' }).el.strokeColor).toBe('transparent');
+  it('refuses add text, add sticky and a raw note', () => {
+    for (const operations of [
+      [{ op: 'add', kind: 'text' }],
+      [{ op: 'add', kind: 'sticky' }],
+      [{ op: 'add', element: { id: 'n', type: 'sticky', x: 0, y: 0, width: 10, height: 10 } }],
+    ]) {
+      const out = run(operations);
+      expect('errors' in out && out.errors[0]!.details[0]).toContain(
+        'text and sticky notes are no longer supported in livehuddle',
+      );
+    }
   });
 });

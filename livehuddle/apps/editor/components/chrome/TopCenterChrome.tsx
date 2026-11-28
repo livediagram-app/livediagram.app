@@ -1,6 +1,6 @@
 import { lucidePencilLine } from '@liveworkspace/icons/lucide';
 import { drawBannerMessage } from '@/lib/draw-mode';
-import { FormatPainterIcon, lucideGlyph } from '@livehuddle/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@liveworkspace/workbench/components/chrome/ModeBanner';
@@ -20,10 +20,7 @@ import {
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre
 // stack and its non-overlap layout) with its own props.
-type TopCenterChromeProps = Pick<
-  CanvasProps,
-  'readOnly' | 'pendingDraw' | 'onCancelDraw' | 'onExitFormatTool' | 'canvasTool' | 'formatSourceId'
-> & {
+type TopCenterChromeProps = Pick<CanvasProps, 'readOnly' | 'pendingDraw' | 'onCancelDraw'> & {
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.
@@ -35,16 +32,13 @@ export function TopCenterChrome({
   readOnly,
   pendingDraw,
   onCancelDraw,
-  onExitFormatTool,
-  canvasTool,
-  formatSourceId,
   followingName,
   onStopFollowing,
 }: TopCenterChromeProps) {
   // The palette strip, when it is on screen: the mode banners hang from it as its tray
   // (docs/specs/007-editor/toolbar-layout.md "Layout details"), and the stack starts below the tray.
   const drawBanner = !!pendingDraw;
-  const modeBanner = canvasTool === 'format' || drawBanner;
+  const modeBanner = drawBanner;
   const strip = usePaletteStripBox(modeBanner);
   // Anything in the tray (a mode banner, the modifier hint, an empty tab's Show Templates, a template's example
   // content): the stack starts below it, or the tray covers the Offline banner (toolbar-layout.md "Layout details").
@@ -89,23 +83,6 @@ export function TopCenterChrome({
       {/* The multi-selection toolbar used to sit here; it now floats over the
           selection (Canvas + FloatingToolbar). */}
       <TopCenterRow className="flex-col sm:flex-row empty:hidden">
-        {/* The Format tool (the palette tool): a two-phase guided banner.
-            Phase 1 (no source armed) asks the user to pick a base; phase 2
-            (source armed) invites them to tap as many targets as they like. */}
-        {canvasTool === 'format' ? (
-          <ModeBanner
-            icon={<FormatPainterIcon />}
-            message={
-              formatSourceId
-                ? 'Tap elements to paint this style onto them'
-                : 'Select a base element to copy its style'
-            }
-            actionLabel="Done"
-            onAction={onExitFormatTool}
-            tray={tray}
-          />
-        ) : null}
-
         {/* The banner belongs to a one-shot ARM: "you picked a square, now
             drag one out", with a Cancel because the intent is transient. A
             held pen (a whiteboard pen, the Path tool) is excluded: a tool in

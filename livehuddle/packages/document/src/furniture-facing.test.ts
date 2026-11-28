@@ -39,8 +39,11 @@ describe('what turns', () => {
       expect(turnsWithFacing(kind)).toBe(false);
   });
 
+  // A Road is drawn to its size (docs/specs/009-elements/road.md): it turns as a box, with no drawings to pick.
+  const DRAWN_TO_SIZE = new Set(['road']);
   it('draws every piece that turns from three drawings', () => {
     for (const kind of TURNING_SHAPES) {
+      if (DRAWN_TO_SIZE.has(kind)) continue;
       const art = pieceArt(kind);
       expect(art, kind).not.toBeNull();
       expect(art!.front.parts.length, kind).toBeGreaterThan(0);
@@ -54,6 +57,7 @@ describe('what turns', () => {
   const SAME_BACK = new Set(['bar-stool', 'rug', 'hammock']);
   it('gives every piece that turns a back and a side of its own', () => {
     for (const kind of TURNING_SHAPES) {
+      if (DRAWN_TO_SIZE.has(kind)) continue;
       const art = pieceArt(kind)!;
       if (!SAME_BACK.has(kind)) expect(art.back, `${kind} back`).not.toEqual(art.front);
       if (!ONE_DRAWING.has(kind)) expect(art.side, `${kind} side`).not.toEqual(art.front);

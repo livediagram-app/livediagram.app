@@ -21,7 +21,6 @@ import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SEND_TO_PLAN } from '../_shared/send-to-plan-metrics';
 import { SEND_TO_KNOWLEDGE_PICKER } from '../_shared/send-to-knowledge-metrics';
 import { SEND_TO_DIAGRAM } from '../_shared/send-to-diagram-metrics';
-import { SUGGEST_SEND_TO_PLAN } from '../_shared/suggestion-metrics';
 import { CALLS_FROM_ITEMS } from '../_shared/item-call-metrics';
 import { SNAPSHOTS } from '../_shared/snapshot-walkthrough-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
@@ -300,7 +299,6 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
           SEND_TO_PLAN,
           SEND_TO_KNOWLEDGE_PICKER,
           SEND_TO_DIAGRAM,
-          SUGGEST_SEND_TO_PLAN,
           CALLS_FROM_ITEMS,
           EDITOR_SEARCH,
           EDITOR_CHROME,
@@ -370,9 +368,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   },
   modes: {
     selection: SELECTION_MODES,
-    selectionSubtitle: 'Format painter, avatar',
-    option: /^Format/,
-    optionsSubtitle: 'Settings inside a mode: what the format painter copies',
+    selectionSubtitle: 'Avatar mode',
   },
   settings: [
     { title: 'All categories', metrics: [SETTINGS_CHANGED] },

@@ -204,36 +204,17 @@ describe('participantTabChange', () => {
   });
 });
 
-// docs/specs/009-elements/room-builder.md "Opening and closing": a Participant swings any door, and only that.
+// docs/specs/009-elements/room-builder.md "Opening on their own": a door stores no open state, so a Participant
+// changes nothing about one.
 describe('a Participant and a Door', () => {
   const door = (extra: Record<string, unknown> = {}) =>
     shape('door', { shape: 'door', label: undefined, ...extra });
   const before = tabOf([door()]);
 
-  it('opens and closes it', () => {
-    const closed = participantTabChange(before, tabOf([door({ doorClosed: true })]), ME);
-    expect(closed?.elements[0]).toMatchObject({ doorClosed: true });
-    const open = participantTabChange(tabOf([door({ doorClosed: true })]), before, ME);
-    expect(open?.elements[0]).not.toHaveProperty('doorClosed');
-  });
-
   it('moves, resizes or deletes nothing about it', () => {
     expect(participantTabChange(before, tabOf([door({ x: 400 })]), ME)).toBeNull();
-    expect(
-      participantTabChange(before, tabOf([door({ doorClosed: true, width: 40 })]), ME),
-    ).toBeNull();
+    expect(participantTabChange(before, tabOf([door({ width: 40 })]), ME)).toBeNull();
     expect(participantTabChange(before, tabOf([]), ME)).toBeNull();
-  });
-
-  // docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab Locking": a lock saved before locking left
-  // holds nothing, on the door or on its tab.
-  it('swings a door saved locked, on a tab saved locked', () => {
-    const old = { ...tabOf([door({ locked: true })]), locked: true } as Tab;
-    const swung = { ...tabOf([door({ locked: true, doorClosed: true })]), locked: true } as Tab;
-    expect(participantTabChange(old, swung, ME)?.elements[0]).toMatchObject({ doorClosed: true });
-    expect(
-      applyParticipantOp(old, { kind: 'update', element: swung.elements[0]! }, ME),
-    ).toMatchObject({ result: 'applied', changed: true });
   });
 });
 

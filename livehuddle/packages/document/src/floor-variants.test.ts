@@ -280,11 +280,12 @@ describe('doorArt', () => {
       expect(parts[0]).toMatchObject({ paint: 'floor' });
       expect(parts.filter((p) => p.paint === 'jamb' && p.tag === 'rect')).toHaveLength(2);
     }
-    expect(moving(undefined)).toBe(1);
-    expect(moving('double')).toBe(2);
+    // The plan draws a door open: only the parts it slides or turns out of place carry a pose.
+    expect(moving(undefined)).toBe(0);
+    expect(moving('double')).toBe(0);
     expect(moving('sliding')).toBe(2);
     expect(moving('revolving')).toBe(1);
-    expect(doorArt(96, 24, 'double').filter((p) => p.openOnly)).toHaveLength(2);
+    expect(doorArt(96, 24, 'double').filter((p) => p.paint === 'swing')).toHaveLength(2);
   });
 
   it('writes a pose as a transform, nothing for the rest pose', () => {
@@ -300,11 +301,11 @@ describe('the export of doors and corridors', () => {
   const door = (extra: Partial<ShapeElement>) =>
     ({ ...createShape('door', 0, 0), ...extra }) as Parameters<typeof doorSvg>[0];
 
-  it('draws a door open with its arc, shut without it', () => {
-    expect(doorSvg(door({}), '#fff', '#000')).toContain('stroke-dasharray');
-    const shut = doorSvg(door({ doorClosed: true }), '#fff', '#000');
-    expect(shut).not.toContain('stroke-dasharray');
-    expect(shut).toContain('rotate(-90');
+  // room-builder.md "Opening on their own": the plan draws every door open, with its arc.
+  it('draws a door open with its arc', () => {
+    const svg = doorSvg(door({}), '#fff', '#000');
+    expect(svg).toContain('stroke-dasharray');
+    expect(svg).not.toContain('rotate(');
   });
 
   it('draws each type', () => {
@@ -319,8 +320,8 @@ describe('the export of doors and corridors', () => {
     );
     // A door saved locked before locking left draws as any other, no padlock and no shade
     // (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab Locking").
-    const old = { ...door({ doorClosed: true }), locked: true } as Parameters<typeof doorSvg>[0];
-    expect(doorSvg(old, '#fff', '#000')).toBe(doorSvg(door({ doorClosed: true }), '#fff', '#000'));
+    const old = { ...door({}), locked: true } as Parameters<typeof doorSvg>[0];
+    expect(doorSvg(old, '#fff', '#000')).toBe(doorSvg(door({}), '#fff', '#000'));
   });
 
   it('draws a corridor floor and walls, and routes both kinds through the face export', () => {

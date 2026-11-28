@@ -14,7 +14,6 @@ export function useCanvasWalkProps(
   | 'onAvatarPresence'
   | 'avatarPeers'
   | 'onAvatarPush'
-  | 'onToggleDoor'
   | 'onAvatarSay'
   | 'onCallSignal'
   | 'avatarShove'
@@ -33,7 +32,6 @@ export function useCanvasWalkProps(
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastAvatarSay,
-    toggleDoor,
     broadcastCallSignal,
     callsRoom,
     avatarShove,
@@ -58,8 +56,6 @@ export function useCanvasWalkProps(
     // Avatar mode (docs/specs/008-canvas/avatar-mode.md): clicking a peer's character walks over and
     // shoves it; their own client decides what to do with the request.
     onAvatarPush: broadcastAvatarPush,
-    // A walking click on a Door next to you swings it (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
-    onToggleDoor: toggleDoor,
     onAvatarSay: broadcastAvatarSay,
     // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): only with a room to talk in.
     onCallSignal: callsRoom ? broadcastCallSignal : undefined,

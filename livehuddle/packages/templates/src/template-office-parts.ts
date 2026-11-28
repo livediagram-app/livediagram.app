@@ -9,10 +9,13 @@ import {
   roomWithDoorPiece,
   type ChairFacing,
   type Element,
+  pieceFacing,
+  turnPiece,
+  turnsWithFacing,
   type RoomDoor,
+  type ShapeElement,
   type ShapeKind,
 } from '@livehuddle/document';
-import { heading } from './template-session-parts';
 import { pinnedNotes, type TemplateNote } from './template-notes';
 import { doorOnWall, type WallWindow } from './template-wall-pieces';
 
@@ -61,19 +64,26 @@ function sizeOf(
   return {};
 }
 
-/** One piece placed with its top left at (x, y): its facing, cameras and size applied. */
+/**
+ * One piece placed with its top left at (x, y): its facing, cameras and size applied. A piece that turns is turned to
+ * its facing as the editor turns one (furniture-facing.md "A turn": its box takes the turned drawing's proportions), so
+ * its 3D model stands at the size it is drawn at whichever way it faces; its top left stays at (x, y).
+ */
 function placePiece(p: OfficePiece, x: number, y: number): Element {
   const made = createShape(p.kind, x, y);
   const typed = p.variant ? PIECE_VARIANT_SIZES[p.kind]?.[p.variant] : undefined;
   const base = p.variant ? { ...made, ...typed, variant: p.variant } : made;
-  return {
+  const sized = {
     ...base,
-    ...(p.facing ? { chairFacing: p.facing } : {}),
     ...(p.stageCameras ? { stageCameras: true } : {}),
     ...(p.label ? { label: p.label } : {}),
     ...(p.notes ? { noticeNotes: pinnedNotes(p.notes) } : {}),
     ...sizeOf(p, base),
-  };
+  } as ShapeElement;
+  if (!p.facing) return sized;
+  if (!turnsWithFacing(p.kind) || p.facing === pieceFacing(sized) || p.kind === 'rug')
+    return { ...sized, chairFacing: p.facing };
+  return { ...turnPiece(sized, p.facing), x, y };
 }
 
 /**
@@ -125,50 +135,35 @@ export function furnishRooms(
 const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);
 
 /**
- * A space laid out: its rooms furnished `head` below `y0`, the floors (rooms, then rugs) first, then the heading, then
- * the furniture, then `extra`, so a title never lies under a floor. Split by kind, never by position, so a piece that
- * is a floor can never be dropped or doubled.
+ * A space laid out: its rooms furnished `head` below `y0`, the floors (rooms, then rugs) first, then the furniture,
+ * then `extra`. Split by kind, never by position, so a piece that is a floor can never be dropped or doubled. The
+ * `head` band above the rooms held the Space's heading until text left livehuddle
+ * (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category"); it stays, so every plan sits where it did.
  */
 export function officePlan(
   rooms: readonly OfficeRoom[],
   x0: number,
   y0: number,
   head: number,
-  headingEls: readonly Element[],
   extra: readonly Element[],
   open: readonly OfficePiece[] = [],
 ): Element[] {
   const placed = furnishRooms(rooms, x0, y0 + head, open);
-  return [
-    ...placed.filter(isFloor),
-    ...headingEls,
-    ...placed.filter((el) => !isFloor(el)),
-    ...extra,
-  ];
+  return [...placed.filter(isFloor), ...placed.filter((el) => !isFloor(el)), ...extra];
 }
 
-// A space's heading band above its plan, and the margin under it (where its Avatar Pad waited before it moved into
+// A space's band above its plan (where its heading stood), and the margin under it (where its Avatar Pad waited before it moved into
 // the plan: template-arrival.ts), which keeps every plan centred where it always was.
 export const SPACE_HEAD = 96;
 export const SPACE_BELOW = 120;
 
-/** A space's floor plan under its heading (officePlan: floors first, then the heading, then the rest). */
+/** A space's floor plan under its band (officePlan: floors first, then the rest). */
 export function spacePlan(
   x0: number,
   y0: number,
-  width: number,
   rooms: OfficeRoom[],
-  title: { text: string; width: number; sticker: string; subtitle: string },
   extra: Element[],
   open: readonly OfficePiece[] = [],
 ): Element[] {
-  return officePlan(
-    rooms,
-    x0,
-    y0,
-    SPACE_HEAD,
-    heading(x0, y0, width, title.text, title.width, title.sticker, title.subtitle),
-    extra,
-    open,
-  );
+  return officePlan(rooms, x0, y0, SPACE_HEAD, extra, open);
 }

@@ -8,19 +8,35 @@
 // - Games Night Den (wood): a Den round the fire, a Games Room of pool, foosball and darts, and a Kitchen.
 // - Sports Bar (wood): a Bar and a glass Screen Lounge across the top, the Games Floor of ping-pong, pool and foosball.
 //
+// Each is drawn at its final size for the 3D view (virtual-office-template.md "Laid out for the 3D view"): rooms side
+// by side share a wall, wall pieces stand flush on a wall facing in, seats face what they are for.
+//
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
 import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
 import type { TemplateNote } from './template-notes';
 import { campusPlan, type IndoorRoom } from './template-campus-parts';
+import { against, besideX, belowY, standAt, withSigns, sofaOnRug } from './template-3d-place';
 
+// A row of Bar Stools, their sitters facing up at the counter, models centred on `y`.
 const stools = (xs: readonly number[], y: number): OfficePiece[] =>
-  xs.map((x) => ({ kind: 'bar-stool' as const, x, y }));
+  xs.map((x) => standAt('bar-stool', x, y, 's'));
+
+// Three Bean Bags side by side along the bottom of a round rug, its top left at (x, y), facing up across it.
+const beanBags = (x: number, y: number): OfficePiece[] => [
+  { kind: 'rug', x, y, variant: 'round' },
+  ...[10, 80, 150].map((dx) => standAt('bean-bag', x + dx, y + 140, 's')),
+];
+
+// The arrival's offset from the plan's centre for a point (x, y) on a site `width` x `height` (campusPlan centres
+// the site under the band where its heading stood).
+const padAt = (width: number, height: number, x: number, y: number) => ({
+  dx: x - width / 2,
+  dy: 96 + y - (96 + height + 120) / 2,
+});
 
 // --- Arcade Lounge -----------------------------------------------------------------
-
-const ARCADE_W = 2000;
 
 // The arcade's board: what is on, and how the rooms work.
 const ARCADE_NOTES: readonly TemplateNote[] = [
@@ -40,326 +56,296 @@ const ARCADE_NOTES: readonly TemplateNote[] = [
     color: 'blue',
   },
 ];
-const ARCADE_H = 1240;
-// The two banks of machines, each two rows of five facing you, the players standing in the aisle in front of a row.
-const BANK_ROWS = [760, 980];
-const LEFT_BANK = [160, 240, 320, 400, 480];
-const RIGHT_BANK = [1420, 1500, 1580, 1660, 1740];
 
-const ARCADE_ROOMS: IndoorRoom[] = [
+const ROW_H = 620;
+const SNACK = { x: 75, y: 75, w: 830, h: ROW_H };
+const PARTY = { x: besideX(SNACK), y: 75, w: 650, h: ROW_H };
+const CHILL = { x: besideX(PARTY), y: 75, w: 700, h: ROW_H };
+// The arcade floor under them, a room of its own sharing their front wall, its entrance in its front wall.
+const FLOOR = { x: 75, y: belowY(SNACK), w: CHILL.x + CHILL.w - 75, h: 900 };
+const ARCADE_W = FLOOR.x + FLOOR.w + 75;
+const ARCADE_H = FLOOR.y + FLOOR.h + 75;
+// The two banks of machines, each an L of two rows of five against the floor's walls: five down a side wall and five
+// along the front wall, the players standing in front of them (models' middles along the wall).
+const SIDE_ROW = [220, 320, 420, 520, 620];
+const FRONT_ROW = [200, 280, 360, 440, 520];
+
+const ARCADE_ROOMS = (): IndoorRoom[] => [
   {
     name: 'Snack Bar',
-    x: 60,
-    y: 60,
-    w: 660,
-    h: 500,
+    ...SNACK,
     indoor: true,
-    door: { side: 's', at: 330, sign: 1 },
+    door: { side: 's', at: 415, sign: 1 },
     pieces: [
-      // The counter and its stools, coffee, the Vending Machine and the fridge along the back.
-      { kind: 'bar', x: 40, y: 40 },
-      ...stools([60, 120, 180, 240], 170),
-      { kind: 'coffee-machine', x: 300, y: 48 },
-      { kind: 'vending-machine', x: 392, y: 36 },
-      { kind: 'drinks-fridge', x: 484, y: 36 },
-      { kind: 'plant', x: 590, y: 44 },
-      // A table for two on the left and a table to share on the right, either side of the way in.
-      { kind: 'chair', x: 40, y: 360, facing: 'w' },
-      { kind: 'chair', x: 128, y: 360, facing: 'e' },
-      { kind: 'meeting-table', x: 410, y: 300 },
+      // The counter and its stools, then coffee, the Vending Machine and the fridge along the back wall.
+      against('bar', 'n', 200, SNACK),
+      ...stools([110, 170, 230, 290], 126),
+      against('coffee-machine', 'n', 420, SNACK),
+      against('vending-machine', 'n', 520, SNACK),
+      against('drinks-fridge', 'n', 620, SNACK),
+      against('plant', 'n', 770, SNACK),
+      // Two tables to share, either side of the way in.
+      { kind: 'meeting-table', x: 90, y: 330 },
+      { kind: 'meeting-table', x: 520, y: 330 },
     ],
   },
   {
     name: 'Party Room',
-    x: 780,
-    y: 60,
-    w: 520,
-    h: 500,
+    ...PARTY,
     indoor: true,
     // Glass, so the party is seen from the arcade floor, its door a sliding glass one.
     glass: true,
-    door: { side: 's', at: 260, sign: 1, variant: 'sliding' },
+    door: { side: 's', at: 325, sign: 1, variant: 'sliding' },
     pieces: [
-      { kind: 'screen', x: 24, y: 44, w: 110 },
-      { kind: 'meeting-table', x: 144, y: 150 },
-      { kind: 'drinks-fridge', x: 420, y: 36 },
-      { kind: 'plant', x: 30, y: 380 },
-      { kind: 'plant', x: 434, y: 380 },
+      against('screen', 'n', 325, PARTY),
+      { kind: 'meeting-table', x: 209, y: 230 },
+      against('drinks-fridge', 'e', 200, PARTY),
+      against('plant', 'w', 540, PARTY),
+      against('plant', 'e', 540, PARTY),
     ],
   },
   {
     name: 'Chill Lounge',
-    x: 1380,
-    y: 60,
-    w: 560,
-    h: 500,
+    ...CHILL,
     indoor: true,
-    door: { side: 's', at: 280, sign: -1 },
+    door: { side: 's', at: 350, sign: -1 },
     pieces: [
       // The high scores' wall of photos, and the Jukebox.
-      { kind: 'photo-wall', x: 40, y: 40 },
-      { kind: 'jukebox', x: 460, y: 40 },
-      // Three Bean Bags on a round rug, and a sofa on its own rug an aisle away.
-      { kind: 'rug', x: 60, y: 220, variant: 'round' },
-      { kind: 'bean-bag', x: 76, y: 246 },
-      { kind: 'bean-bag', x: 152, y: 246 },
-      { kind: 'bean-bag', x: 114, y: 302 },
-      { kind: 'rug', x: 340, y: 220 },
-      { kind: 'sofa', x: 364, y: 240, facing: 'n' },
-      { kind: 'plant', x: 30, y: 400 },
+      against('photo-wall', 'n', 200, CHILL),
+      against('jukebox', 'n', 560, CHILL),
+      // Three Bean Bags on a round rug, and a sofa against the right wall on its rug, an aisle between them.
+      ...beanBags(80, 230),
+      ...sofaOnRug('e', 330, CHILL, { w: 140, h: 200 }),
+      against('plant', 'w', 540, CHILL),
     ],
   },
-];
-
-const arcadeBank = (xs: readonly number[]): OfficePiece[] =>
-  BANK_ROWS.flatMap((y) => xs.map((x) => ({ kind: 'arcade-machine' as const, x, y })));
-
-// Three Bean Bags on a round rug, its top left at (x, y): somewhere to sit between games and watch a run.
-const beanBags = (x: number, y: number): OfficePiece[] => [
-  { kind: 'rug', x, y, variant: 'round' },
-  { kind: 'bean-bag', x: x + 16, y: y + 30 },
-  { kind: 'bean-bag', x: x + 92, y: y + 30 },
-  { kind: 'bean-bag', x: x + 54, y: y + 86 },
-];
-
-const ARCADE_FLOOR: OfficePiece[] = [
-  ...arcadeBank(LEFT_BANK),
-  ...arcadeBank(RIGHT_BANK),
-  // Bean Bags either side of the pad, between it and the banks.
-  ...beanBags(640, 760),
-  ...beanBags(1200, 760),
-  // The Prize Counter by the entrance, the Directory on the other side of the way in.
-  { kind: 'reception-desk', x: 640, y: 1060 },
-  { kind: 'directory', x: ARCADE_W / 2 + 80, y: 1080 },
-  // The arcade's Notice Board by the doors, its notes pinned already (template-notes.ts).
-  { kind: 'notice-board', x: 1200, y: 1060, notes: ARCADE_NOTES },
-  { kind: 'plant', x: 300, y: 1120 },
-  { kind: 'plant', x: 1640, y: 1120 },
+  {
+    name: 'Arcade Floor',
+    ...FLOOR,
+    indoor: true,
+    door: { side: 's', at: FLOOR.w / 2, sign: 1 },
+    pieces: [
+      ...SIDE_ROW.map((y) => against('arcade-machine', 'w', y, FLOOR)),
+      ...FRONT_ROW.map((x) => against('arcade-machine', 's', x, FLOOR)),
+      ...SIDE_ROW.map((y) => against('arcade-machine', 'e', y, FLOOR)),
+      ...FRONT_ROW.map((x) => against('arcade-machine', 's', FLOOR.w - x, FLOOR)),
+      // Bean Bags inside each bank, between it and the pad.
+      ...beanBags(280, 300),
+      ...beanBags(FLOOR.w - 440, 300),
+      // The Prize Counter by the entrance, facing it, the Directory on the other side of the way in.
+      standAt('reception-desk', FLOOR.w / 2 - 260, 700),
+      standAt('directory', FLOOR.w / 2 + 240, 740),
+      // The arcade's Notice Board on the back wall between the doors, its notes pinned already (template-notes.ts).
+      against('notice-board', 'n', 720, FLOOR, { notes: ARCADE_NOTES }),
+      against('plant', 'n', 60, FLOOR),
+      against('plant', 'n', FLOOR.w - 60, FLOOR),
+    ],
+  },
 ];
 
 export function buildArcadeLounge(cx: number, cy: number): Element[] {
   return campusPlan(cx, cy, {
     width: ARCADE_W,
     height: ARCADE_H,
-    rooms: ARCADE_ROOMS,
-    open: ARCADE_FLOOR,
-    title: {
-      text: 'Arcade Lounge',
-      width: 300,
-      sticker: 'emoji-game',
-      subtitle:
-        'Twenty machines of Moon Mail, a snack bar, a party room you can see into and a lounge to chill in.',
-    },
-    // On the arcade floor between the two banks of machines.
-    arrival: {
-      dx: 0,
-      dy: 188,
-      hint: 'You arrive on the Avatar Pad on the arcade floor. Walk up to a machine and press it to play Moon Mail.',
-    },
+    rooms: withSigns(ARCADE_ROOMS()),
+    // Each room's sign hangs inside it by its Door, as its Door opens onto the floor's own room.
+    signs: false,
+    open: [],
+    // On the arcade floor between the two Bean Bag islands.
+    arrival: padAt(ARCADE_W, ARCADE_H, FLOOR.x + FLOOR.w / 2, FLOOR.y + 450),
   });
 }
 
 // --- Games Night Den ---------------------------------------------------------------
 
-const DEN_W = 1800;
-const DEN_H = 1200;
+const DEN = { x: 75, y: 75, w: 1100, h: 700 };
+const GAMES = { x: besideX(DEN), y: 75, w: 700, h: 700 };
+const KITCHEN = { x: besideX(GAMES), y: 75, w: 560, h: 700 };
+// The hall along the front, sharing the three rooms' front wall, the front door in its own.
+const HALL = { x: 75, y: belowY(DEN), w: KITCHEN.x + KITCHEN.w - 75, h: 520 };
+const DEN_W = HALL.x + HALL.w + 75;
+const DEN_H = HALL.y + HALL.h + 75;
 
-const DEN_ROOMS: IndoorRoom[] = [
+const DEN_ROOMS = (): IndoorRoom[] => [
   {
     name: 'Den',
-    x: 60,
-    y: 60,
-    w: 1060,
-    h: 560,
+    ...DEN,
     indoor: true,
-    door: { side: 's', at: 530, sign: 1 },
+    door: { side: 's', at: 900, sign: 1 },
     windows: [
-      { side: 'n', at: 360 },
+      { side: 'n', at: 250 },
       { side: 'n', at: 700 },
     ],
     pieces: [
-      // Shelves of games, the fire in the middle of the back wall with the dog's bed beside it.
-      { kind: 'bookshelf', x: 40, y: 40 },
-      { kind: 'bookshelf', x: 168, y: 40 },
-      { kind: 'fireplace', x: 466, y: 40 },
-      { kind: 'pet-bed', x: 620, y: 112 },
-      { kind: 'bookshelf', x: 860, y: 40 },
-      { kind: 'plant', x: 990, y: 44 },
-      // A sofa on a bordered rug facing the fire, a chair either side of it.
-      { kind: 'rug', x: 410, y: 200, variant: 'bordered' },
-      { kind: 'chair', x: 370, y: 230, facing: 'e' },
-      { kind: 'sofa', x: 454, y: 230, facing: 'n' },
-      { kind: 'chair', x: 614, y: 230, facing: 'w' },
-      // Two games tables, either side of the way in.
-      { kind: 'meeting-table', x: 60, y: 330 },
-      { kind: 'meeting-table', x: 780, y: 330 },
+      // The fire on the back wall with the dog's bed beside it, shelves of games along the wall.
+      against('fireplace', 'n', 550, DEN),
+      standAt('pet-bed', 690, 120),
+      against('bookshelf', 'n', 840, DEN),
+      against('bookshelf', 'n', 970, DEN),
+      against('bookshelf', 'n', 110, DEN),
+      // A sofa against the front wall facing the fire across a bordered rug, a chair either side turned in to it.
+      ...sofaOnRug('s', 550, DEN, { w: 240, h: 180, variant: 'bordered' }),
+      standAt('chair', 380, 300, 'w'),
+      standAt('chair', 720, 300, 'e'),
+      // Two games tables, either side of the lounge.
+      { kind: 'meeting-table', x: 70, y: 420 },
+      { kind: 'meeting-table', x: 820, y: 350 },
     ],
   },
   {
     name: 'Games Room',
-    x: 1180,
-    y: 60,
-    w: 560,
-    h: 560,
+    ...GAMES,
     indoor: true,
-    door: { side: 's', at: 280, sign: 1 },
-    windows: [{ side: 'e', at: 300 }],
+    door: { side: 's', at: 350, sign: 1 },
     pieces: [
-      { kind: 'jukebox', x: 40, y: 40 },
-      { kind: 'pool-table', x: 180, y: 120 },
-      // The Dartboard on the back wall, clear of the pool cues.
-      { kind: 'dartboard', x: 440, y: 36 },
-      { kind: 'foosball-table', x: 196, y: 330 },
-      { kind: 'plant', x: 470, y: 440 },
+      against('jukebox', 'n', 90, GAMES),
+      // The Pool Table with room for the cues all round, the Foosball Table below it.
+      standAt('pool-table', 330, 260),
+      // The Dartboard on the back wall, its oche clear of the pool cues.
+      against('dartboard', 'n', 590, GAMES),
+      standAt('foosball-table', 330, 470),
+      against('plant', 'e', 620, GAMES),
     ],
   },
   {
     name: 'Kitchen',
-    x: 1180,
-    y: 800,
-    w: 560,
-    h: 340,
+    ...KITCHEN,
     indoor: true,
-    // Its door in its left wall, onto the hall.
-    door: { side: 'w', at: 170, sign: 1 },
+    door: { side: 's', at: 280, sign: 1 },
     windows: [
-      { side: 'e', at: 170 },
-      { side: 's', at: 400 },
+      { side: 'e', at: 350 },
+      { side: 'n', at: 470 },
     ],
     pieces: [
-      // Snacks and drinks: a counter run with the kettle and the microwave on it, the fridge and coffee.
-      { kind: 'coffee-machine', x: 440, y: 50 },
-      { kind: 'kitchen-counter', x: 120, y: 230 },
-      { kind: 'microwave', x: 146, y: 220 },
-      { kind: 'kitchen-sink', x: 232, y: 230 },
-      { kind: 'kettle', x: 262, y: 222 },
-      { kind: 'fridge', x: 360, y: 190 },
-      { kind: 'plant', x: 30, y: 240 },
+      // Snacks and drinks along the back wall: the fridge, a counter with the microwave on it, the sink with the
+      // kettle, and coffee; a table to eat at.
+      against('fridge', 'n', 80, KITCHEN),
+      against('kitchen-counter', 'n', 192, KITCHEN),
+      standAt('microwave', 192, 58),
+      against('kitchen-sink', 'n', 306, KITCHEN),
+      standAt('kettle', 320, 58),
+      against('coffee-machine', 'w', 300, KITCHEN),
+      { kind: 'meeting-table', x: 164, y: 330 },
+      against('plant', 'e', 620, KITCHEN),
     ],
   },
-];
-
-const DEN_HALL: OfficePiece[] = [
-  // A Reading Nook in the hall, and the front door's coat rack, umbrella stand and mat.
-  { kind: 'reading-nook', x: 120, y: 900 },
-  { kind: 'directory', x: 760, y: 1040 },
-  { kind: 'coat-rack', x: 860, y: 1040 },
-  { kind: 'umbrella-stand', x: 930, y: 1100 },
-  { kind: 'rug', x: 530, y: 1110, variant: 'doormat' },
-  { kind: 'plant', x: 300, y: 1080 },
+  {
+    name: 'Hall',
+    ...HALL,
+    indoor: true,
+    door: { side: 's', at: 1000, sign: 1 },
+    pieces: [
+      // A Reading Nook by the left wall looking over a rug, and by the front door a coat rack, an umbrella stand and
+      // the mat.
+      against('reading-nook', 'w', 280, HALL),
+      { kind: 'rug', x: 190, y: 220 },
+      standAt('coat-rack', 860, 440),
+      standAt('umbrella-stand', 920, 450),
+      { kind: 'rug', x: 940, y: 400, variant: 'doormat' },
+      standAt('directory', 1250, 300),
+      against('plant', 'n', 60, HALL),
+      against('plant', 'e', 420, HALL),
+    ],
+  },
 ];
 
 export function buildGamesNightDen(cx: number, cy: number): Element[] {
   return campusPlan(cx, cy, {
     width: DEN_W,
     height: DEN_H,
-    rooms: DEN_ROOMS,
-    open: DEN_HALL,
-    title: {
-      text: 'Games Night Den',
-      width: 320,
-      sticker: 'emoji-dice',
-      subtitle:
-        'Board games by the fire with the dog, pool and darts next door, and snacks in the kitchen.',
-    },
+    rooms: withSigns(DEN_ROOMS()),
+    // Each room's sign hangs inside it by its Door, as its Door opens onto the floor's own room.
+    signs: false,
+    open: [],
     // In the hall, in front of the Den's door.
-    arrival: {
-      dx: -310,
-      dy: 228,
-      hint: 'You arrive on the Avatar Pad in the hall. Pull up a chair at a games table, or pat the dog.',
-    },
+    arrival: padAt(DEN_W, DEN_H, DEN.x + 900, HALL.y + 260),
   });
 }
 
 // --- Sports Bar --------------------------------------------------------------------
 
-const SPORTS_W = 2100;
-const SPORTS_H = 1260;
+const BAR = { x: 75, y: 75, w: 1200, h: 775 };
+const LOUNGE = { x: besideX(BAR), y: 75, w: 1200, h: 775 };
+// The games floor across the front, sharing both rooms' front wall, its entrance in its front wall.
+const GAMES_FLOOR = { x: 75, y: belowY(BAR), w: LOUNGE.x + LOUNGE.w - 75, h: 800 };
+const SPORTS_W = GAMES_FLOOR.x + GAMES_FLOOR.w + 75;
+const SPORTS_H = GAMES_FLOOR.y + GAMES_FLOOR.h + 75;
 
-const SPORTS_ROOMS: IndoorRoom[] = [
+const SPORTS_ROOMS = (): IndoorRoom[] => [
   {
     name: 'Bar',
-    x: 60,
-    y: 60,
-    w: 960,
-    h: 620,
+    ...BAR,
     indoor: true,
-    door: { side: 's', at: 760, sign: -1 },
+    door: { side: 's', at: 950, sign: -1 },
     pieces: [
-      { kind: 'drinks-cabinet', x: 40, y: 40 },
-      { kind: 'bar', x: 150, y: 40 },
-      { kind: 'bar', x: 390, y: 40 },
-      { kind: 'drinks-fridge', x: 650, y: 36 },
+      // The back bar: the Drinks Cabinet, two counters and the Drinks Fridge along the back wall, the stools in front.
+      against('drinks-cabinet', 'n', 90, BAR),
+      against('bar', 'n', 290, BAR),
+      against('bar', 'n', 540, BAR),
+      against('drinks-fridge', 'n', 740, BAR),
       // The Dartboard on the back wall, the oche in front of it kept clear.
-      { kind: 'dartboard', x: 780, y: 36 },
-      { kind: 'plant', x: 880, y: 44 },
-      ...stools([170, 230, 290, 350, 410, 470, 530, 590], 170),
+      against('dartboard', 'n', 1000, BAR),
+      against('plant', 'n', 1150, BAR),
+      ...stools([200, 260, 320, 380, 440, 500, 560, 620], 126),
       // Two tables an aisle in front of the stools.
-      { kind: 'meeting-table', x: 60, y: 360 },
-      { kind: 'meeting-table', x: 420, y: 360 },
+      { kind: 'meeting-table', x: 150, y: 430 },
+      { kind: 'meeting-table', x: 560, y: 430 },
     ],
   },
   {
     name: 'Screen Lounge',
-    x: 1080,
-    y: 60,
-    w: 960,
-    h: 560,
+    ...LOUNGE,
     indoor: true,
     glass: true,
-    door: { side: 's', at: 480, sign: 1, variant: 'sliding' },
+    door: { side: 's', at: 600, sign: 1, variant: 'sliding' },
     pieces: [
-      // Two Screens for the match, the World Clock between them for the kick-offs round the world.
-      { kind: 'screen', x: 120, y: 40 },
-      { kind: 'world-clock', x: 396, y: 44 },
-      { kind: 'screen', x: 648, y: 40 },
-      { kind: 'plant', x: 880, y: 44 },
-      // Three sofas on rugs in the front row, two behind an aisle back, the way in clear between them.
-      ...[80, 380, 680].flatMap((x): OfficePiece[] => [
-        { kind: 'rug', x, y: 220 },
-        { kind: 'sofa', x: x + 24, y: 240, facing: 'n' },
+      // Two Screens for the match, the Clock between them for the kick-offs.
+      against('screen', 'n', 300, LOUNGE),
+      against('world-clock', 'n', 600, LOUNGE),
+      against('screen', 'n', 900, LOUNGE),
+      against('plant', 'n', 1130, LOUNGE),
+      // Three sofas on rugs in the front row facing the Screens, two against the front wall behind them either side
+      // of the way in.
+      ...[250, 600, 950].flatMap((x): OfficePiece[] => [
+        { kind: 'rug', x: x - 100, y: 420 },
+        standAt('sofa', x, 470, 's'),
       ]),
-      ...[80, 680].flatMap((x): OfficePiece[] => [
-        { kind: 'rug', x, y: 425 },
-        { kind: 'sofa', x: x + 24, y: 445, facing: 'n' },
-      ]),
+      ...sofaOnRug('s', 250, LOUNGE),
+      ...sofaOnRug('s', 950, LOUNGE),
     ],
   },
-];
-
-const GAMES_FLOOR: OfficePiece[] = [
-  // The fixtures on a Notice Board under the Bar's wall.
-  { kind: 'notice-board', x: 100, y: 700 },
-  // Two Ping-Pong Tables side by side, and pool and foosball across the floor.
-  { kind: 'ping-pong-table', x: 160, y: 860 },
-  { kind: 'ping-pong-table', x: 504, y: 860 },
-  { kind: 'pool-table', x: 1240, y: 840 },
-  { kind: 'foosball-table', x: 1640, y: 852 },
-  { kind: 'jukebox', x: 1900, y: 660 },
-  { kind: 'vending-machine', x: 1960, y: 1080 },
-  { kind: 'directory', x: SPORTS_W / 2 + 80, y: 1100 },
-  { kind: 'plant', x: 400, y: 1140 },
-  { kind: 'plant', x: 1600, y: 1140 },
+  {
+    name: 'Games Floor',
+    ...GAMES_FLOOR,
+    indoor: true,
+    door: { side: 's', at: GAMES_FLOOR.w / 2, sign: 1 },
+    pieces: [
+      // The fixtures on a Notice Board on the back wall.
+      against('notice-board', 'n', 300, GAMES_FLOOR),
+      // Two Ping-Pong Tables side by side, and pool and foosball across the floor.
+      standAt('ping-pong-table', 450, 400),
+      standAt('ping-pong-table', 850, 400),
+      standAt('pool-table', 1520, 420),
+      standAt('foosball-table', 1960, 420),
+      // The Jukebox and the Vending Machine against the right wall.
+      against('jukebox', 'e', 200, GAMES_FLOOR),
+      against('vending-machine', 'e', 320, GAMES_FLOOR),
+      standAt('directory', GAMES_FLOOR.w / 2 - 200, 700),
+      against('plant', 'w', 700, GAMES_FLOOR),
+      against('plant', 'e', 700, GAMES_FLOOR),
+    ],
+  },
 ];
 
 export function buildSportsBar(cx: number, cy: number): Element[] {
   return campusPlan(cx, cy, {
     width: SPORTS_W,
     height: SPORTS_H,
-    rooms: SPORTS_ROOMS,
-    open: GAMES_FLOOR,
-    title: {
-      text: 'Sports Bar',
-      width: 240,
-      sticker: 'emoji-trophy',
-      subtitle:
-        'The big game on the screens, a pint at the bar, and ping-pong, pool and foosball on the games floor.',
-    },
+    rooms: withSigns(SPORTS_ROOMS()),
+    // Each room's sign hangs inside it by its Door, as its Door opens onto the floor's own room.
+    signs: false,
+    open: [],
     // On the games floor, between the ping-pong and the pool, below the Bar's door.
-    arrival: {
-      dx: -50,
-      dy: 218,
-      hint: 'You arrive on the Avatar Pad on the games floor. Sit at a ping-pong table to play whoever sits opposite.',
-    },
+    arrival: padAt(SPORTS_W, SPORTS_H, GAMES_FLOOR.x + 1160, GAMES_FLOOR.y + 400),
   });
 }

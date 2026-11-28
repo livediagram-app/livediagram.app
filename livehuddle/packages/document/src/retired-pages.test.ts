@@ -15,7 +15,17 @@ const square = {
   width: 120,
   height: 80,
 };
-const text = { id: 'tx', type: 'text', x: 0, y: 200, width: 200, height: 40, label: 'Title' };
+// A labelled piece a Space still holds (a text is dropped: not-in-livehuddle.md "The Write category").
+const text = {
+  id: 'tx',
+  type: 'shape',
+  shape: 'desk',
+  x: 0,
+  y: 200,
+  width: 200,
+  height: 40,
+  label: 'Title',
+};
 const tabWindow = {
   id: 'tw',
   type: 'shape',

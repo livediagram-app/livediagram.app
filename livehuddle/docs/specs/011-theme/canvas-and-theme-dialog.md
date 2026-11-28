@@ -1,5 +1,9 @@
 # Tab Style dialog
 
+> **Leaving livehuddle** ([Tab style](../002-project-scope/not-in-livehuddle.md#tab-style), owner 2026-11-27): livehuddle no
+> longer opens this dialog: no dock button, no Open Theme or Open Canvas Options command. Stored styles still draw.
+> Read it for the other products; change nothing here for livehuddle.
+
 A focused modal for changing how the active tab looks (its **theme**, **finish**, **text** and **canvas**), reached from the Theme & canvas dock button. It opens on a home of ready-made **Looks** and a **Fine-tune** list of the four settings. The same controls live in the canvas's context menus too ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
 
 ## Why
@@ -121,14 +125,14 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 - Each look is a card: a **tiny Space** drawn in the look, its name, and a line on what it is made of. The scene is a
   slice of the look's floor ([Floors](floors.md)) with a small room on it (walls, a door, a desk with its chair, a
   plant) and a sticky note beside it, on the look's own canvas colour, in the viewer's half of its theme, drawn by the
-  same renderer as the image export (`apps/editor/lib/look-preview.ts`). The room and the furniture take the theme's
+  same renderer as the image export. The room and the furniture take the theme's
   colours exactly as picking the theme gives them (the sticky keeps its own yellow, as a sticky does), the room's name
   and the sticky's words carry the look's font, and the finish draws the lot (sketched, marker or crisp), so a card
   still shows all four ingredients. A multi-colour look colours each piece as its own branch, the room in the
   palette's first colour and the desk in its third, so its card shows the palette's run rather than the trunk neutral
   and one hue. The canvas colour and the floor run past the scene on every side, so a card wider or narrower than the
   scene still shows floor to its edges.
-- The cards are cheap: each card is built once per look and half and cached (`look-preview.ts`), so reopening the
+- The cards are cheap: each card is built once per look and half and cached, so reopening the
   dialog draws nothing again; its floor's pattern id is scoped to the look, so the cards on one page never share a
   definition.
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
@@ -374,8 +378,8 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 ## One dialog, this editor's profile
 
 The dialog is the one every editor shares ([Tab Style dialog](../../../../liveworkspace/docs/specs/011-workbench/tab-style.md), in `@liveworkspace/workbench`):
-`apps/editor/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
-(`apps/editor/components/dialogs/tab-style-profile.tsx`), and the profile decides what it shows. The editor names the
+`CanvasThemeDialog` (gone from livehuddle) hands it this editor's profile
+(its tab style profile), and the profile decides what it shows. The editor names the
 **surface** as it opens the dialog; every surface here takes the profile's base, so the dialog is as this page
 describes it on each.
 
@@ -384,12 +388,12 @@ describes it on each.
 - **Looks.** Every look in `apps/editor/lib/tab-looks.ts`, the seasonal ones from `apps/editor/lib/seasonal-looks.ts`.
 - **Canvas panel.** The Room panel (`CanvasStyleControls`): the floors drawn for real, the canvas colour, a seasonal
   motif's colour, Strength, Size and the Walls.
-- **Preview.** A small room (`TabStylePreview`, `apps/editor/lib/room-preview.ts`): a slice of the tab's floor,
+- **Preview.** A small room (`TabStylePreview`): a slice of the tab's floor,
   a room on it (its walls and door) and a desk with its chair and a sticky, in the Finish and Text panels, so the
   preview shows the Space the person is styling rather than a diagram.
 - **Copy.** The shared lines, but the Canvas panel is named Room, its line "The floor under the Space and the walls
   round its rooms.", and the home's "Pick a look for the Space, then fine-tune any part of it."
-- **Frame.** The shared modal, its Show Me bound in `apps/editor/components/tour/TabStyleTour.tsx`. Apply to All Tabs
+- **Frame.** The shared modal, its Show Me bound in the Tab Style tour. Apply to All Tabs
   names no locked tabs (livehuddle has no tab locks).
 
 ## Reuse notes

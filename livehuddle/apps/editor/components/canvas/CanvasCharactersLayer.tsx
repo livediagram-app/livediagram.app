@@ -43,6 +43,7 @@ import type { Element as CanvasElement } from '@livehuddle/document';
 import {
   builtIn3D,
   seatBehind,
+  ENCLOSING_KINDS,
   seatLift,
   standsIn3D,
   standsRaised,
@@ -147,8 +148,15 @@ export function CanvasCharactersLayer({
     seatedOn && at
       ? seatLift(seatBox(seatedOn, at), at, turn)
       : wallLiftAt(figureWalls, at, turn, scale);
-  const behindOf = (seatedOn: string | null | undefined, at: { x: number; y: number } | null) =>
-    !!seatedOn && !!at && seatBehind(seatBox(seatedOn, at), at, turn);
+  // Behind an enclosing piece (a Phone Booth seen from its back), the whole sitter is hidden, not just their legs.
+  const behindOf = (
+    seatedOn: string | null | undefined,
+    at: { x: number; y: number } | null,
+  ): boolean | 'whole' => {
+    if (!seatedOn || !at || !seatBehind(seatBox(seatedOn, at), at, turn)) return false;
+    const piece = piecesById.get(seatedOn);
+    return piece?.type === 'shape' && ENCLOSING_KINDS.has(piece.shape) ? 'whole' : true;
+  };
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
   // The coarse copy (blueprint: peer-motion-store.md "The coarse copy"): everyone's characters and your feet at most
   // 10 times a second while people walk, at once when someone appears, leaves, sits, stands or crosses a wall or a
@@ -281,7 +289,6 @@ export function CanvasCharactersLayer({
         const config = peerAvatarConfig(peer.avatar.config);
         return (
           <AvatarWalker
-            turn={turn}
             key={peer.id}
             pos={{ x: peer.avatar.x, y: peer.avatar.y }}
             facing={peer.avatar.facing}
@@ -293,6 +300,8 @@ export function CanvasCharactersLayer({
             seated={sitsDown(peer.avatar.seatedOn)}
             // Parsed, not trusted: anything but a known drink draws an empty hand.
             holding={isDrinkKind(peer.avatar.holding) ? peer.avatar.holding : null}
+            // Exactly `true` only: anything else is a hand down.
+            handUp={peer.avatar.handUp === true}
             status={parseAvatarStatus(peer.avatar.status)}
             // Replayed locally from the kind + elapsed time in their packet, by
             // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
@@ -346,11 +355,11 @@ export function CanvasCharactersLayer({
       ) : null}
       {/* Your character, subscribed to its whole pose: a hop or a wave in place renders it alone. */}
       <AvatarSelfWalker
-        turn={turn}
         poseStore={avatar.poseStore}
         config={avatarLook.config}
         seated={sitsDown(avatar.seatedOn)}
         holding={avatar.holding}
+        handUp={avatar.handUp}
         status={avatarStatus}
         shirt={props.selfParticipant.color}
         standingOn={avatarStandingOn}

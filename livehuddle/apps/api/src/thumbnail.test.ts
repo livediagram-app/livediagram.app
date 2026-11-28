@@ -235,7 +235,7 @@ describe('a drawing of a former Pages tab', () => {
   const PICTURE = 'b'.repeat(32);
   const ON_FIRST = 'c'.repeat(32);
   const ON_SECOND = 'd'.repeat(32);
-  // Two A4 pages side by side (the second starts past the first's 794px width), each with a labelled sticky and an
+  // Two A4 pages side by side (the second starts past the first's 794px width), each with a labelled chair and an
   // image; the first page has a picture background.
   const tabData = JSON.stringify({
     opensIn: 'pages',
@@ -250,7 +250,8 @@ describe('a drawing of a former Pages tab', () => {
     elements: [
       {
         id: 'a',
-        type: 'sticky',
+        type: 'shape',
+        shape: 'chair',
         x: 40,
         y: 40,
         width: 100,
@@ -260,7 +261,8 @@ describe('a drawing of a former Pages tab', () => {
       { id: 'ia', type: 'image', x: 40, y: 200, width: 100, height: 80, imageId: ON_FIRST },
       {
         id: 'b',
-        type: 'sticky',
+        type: 'shape',
+        shape: 'chair',
         x: 2000,
         y: 40,
         width: 100,
@@ -399,7 +401,8 @@ describe("a Community post's drawing", () => {
       },
       {
         id: 'e1',
-        type: 'sticky',
+        type: 'shape',
+        shape: 'chair',
         x: 300,
         y: 0,
         width: 100,

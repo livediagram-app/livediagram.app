@@ -7,7 +7,7 @@
 //
 // Pure: campusPlan takes the site's top left and returns a fresh Element[], floors first.
 
-import type { Element, ShapeElement } from '@livehuddle/document';
+import { PIECE_VARIANT_SIZES, type Element, type ShapeElement } from '@livehuddle/document';
 import { arrival, type Arrival } from './template-arrival';
 import {
   SPACE_BELOW,
@@ -102,13 +102,9 @@ export type CampusSite = {
   // Under no roof: the lawn and its fence, the walks, plazas, trees and the garden's furniture (site-relative), paths in
   // the order they lie: a path that ends on another comes before it, plazas last.
   open: readonly OfficePiece[];
-  title: { text: string; width: number; sticker: string; subtitle: string };
-  // Where everyone arrives (template-arrival.ts): the Avatar Pad's centre, relative to the plan's centre, and its
-  // how-to line. A building's upper floor has none here: it is arrived at by Elevator, and its pad stands by the
+  // Where everyone arrives (template-arrival.ts): the Avatar Pad's centre, relative to the plan's centre. A building's upper floor has none here: it is arrived at by Elevator, and its pad stands by the
   // Elevators, one of its `open` pieces (docs/specs/012-collaboration/virtual-office-template.md "Spaces with floors").
   arrival?: Omit<Arrival, 'x' | 'y'> & { dx: number; dy: number };
-  // Anything else placed absolutely (a stage's Bring Focus), given the site's top left.
-  extra?: (left: number, top: number) => Element[];
   // False for a home: its rooms have no Room Sign (docs/specs/012-collaboration/virtual-office-template.md "Homes").
   signs?: false;
 };
@@ -134,8 +130,11 @@ export function doorPath(r: CampusRoom): OfficePiece {
 /** The Room Sign beside a room's door path, on the lawn just off the wall (site-relative). */
 export function doorSign(r: CampusRoom): OfficePiece {
   const { side, at, sign } = r.door;
+  // Clear of the path and of the Door itself, whichever is wider (a sliding door is 120 px).
+  const doorW = (r.door.variant && PIECE_VARIANT_SIZES.door?.[r.door.variant]?.width) || 96;
+  const half = Math.max(PATH / 2, doorW / 2);
   const along = (mid: number, size: number) =>
-    sign < 0 ? mid - PATH / 2 - SIGN_BESIDE - size : mid + PATH / 2 + SIGN_BESIDE;
+    sign < 0 ? mid - half - SIGN_BESIDE - size : mid + half + SIGN_BESIDE;
   const pos = (() => {
     switch (side) {
       case 'e':
@@ -158,11 +157,10 @@ const GROUND = new Set(['grass', 'garden-fence']);
 /** A room inside a building: its Door opens onto the floor's open corridor, so it runs no Garden Path. */
 export type IndoorRoom = CampusRoom & { indoor: true };
 
-/** A campus laid out round `(cx, cy)`: its heading, the site, every room's Door, path and sign, and the Avatar Pad. */
+/** A campus laid out round `(cx, cy)`: the site, every room's Door, path and sign, and the Avatar Pad. */
 export function campusPlan(cx: number, cy: number, site: CampusSite): Element[] {
   const x0 = cx - site.width / 2;
   const y0 = cy - (SPACE_HEAD + site.height + SPACE_BELOW) / 2;
-  const top = y0 + SPACE_HEAD;
   // Each room's Door and windows are placed below, after the floors, so they paint over the walls they stand in.
   const rooms: OfficeRoom[] = site.rooms.map(({ door: _door, windows: _windows, ...room }) => ({
     ...room,
@@ -178,11 +176,8 @@ export function campusPlan(cx: number, cy: number, site: CampusSite): Element[] 
   const plan = spacePlan(
     x0,
     y0,
-    site.width,
     rooms,
-    site.title,
     [
-      ...(site.extra?.(x0, top) ?? []),
       ...(site.arrival === undefined
         ? []
         : arrival({ ...site.arrival, x: cx + site.arrival.dx, y: cy + site.arrival.dy })),

@@ -28,8 +28,8 @@ test.describe('Viewport on add', () => {
     const canvas = page.locator(CANVAS);
     const box = (await canvas.boundingBox())!;
     const drop = { x: 200, y: 260 };
-    await (await paletteTile(page, 'Add Sticky Note')).dragTo(canvas, { targetPosition: drop });
-    const square = canvas.getByRole('img', { name: 'Sticky note', exact: true });
+    await (await paletteTile(page, 'Add Chair')).dragTo(canvas, { targetPosition: drop });
+    const square = canvas.getByRole('img', { name: 'Chair', exact: true });
     await expect(square).toHaveCount(1);
     // Past the frame the entry fit used to land on.
     await page.waitForTimeout(300);
@@ -43,7 +43,9 @@ test.describe('Viewport on add', () => {
     await startBlankDocument(page);
     // A shape far from the origin and no way to walk (no pad, no Avatar button), so the tab opens on its entry fit
     // rather than walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"); seedTab reloads.
-    await seedTab(page, [{ id: 'far', type: 'sticky', x: 3000, y: 2000, width: 100, height: 100 }]);
+    await seedTab(page, [
+      { id: 'far', type: 'shape', shape: 'chair', x: 3000, y: 2000, width: 100, height: 100 },
+    ]);
     const square = page.locator('[data-element-id="far"]').first();
     await expect(async () => {
       const after = (await page.locator(CANVAS).boundingBox())!;

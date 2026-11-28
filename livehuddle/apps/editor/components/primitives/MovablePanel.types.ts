@@ -5,7 +5,6 @@ import type { MovablePanelProps as SharedMovablePanelProps } from '@liveworkspac
 import type { HelpArticleKey } from '@/lib/help-articles';
 
 export type {
-  MovablePanelDockProps,
   MovablePanelPlacementProps,
   MovablePanelPopoverProps,
 } from '@liveworkspace/workbench/components/primitives/MovablePanel.types';

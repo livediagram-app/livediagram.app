@@ -43,7 +43,7 @@ function Lucide({
 const MODE_GROUP: Partial<Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]>> = {};
 
 // The canvas cluster, bottom right, as CanvasChrome lays it out: undo / redo, the mode's own group,
-// the Tab Style brush, and the zoom readout.
+// and the zoom readout.
 export function CanvasCluster({ className, mode }: { className: string; mode: HeroMode }) {
   const group = MODE_GROUP[mode];
   return (

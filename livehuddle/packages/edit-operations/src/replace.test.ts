@@ -150,7 +150,9 @@ describe('applyReplace on an existing tab', () => {
         refused(applyReplace(checkoutFlow(), { elements: [{ ...square, shape }] }, options)),
       ).toEqual({
         code: 'invalid_result',
-        details: ['sq shape: shapes are no longer supported in livehuddle: add a sticky'],
+        details: [
+          'sq shape: shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board',
+        ],
         hint: 'see the format: livehuddle schema shape',
       });
     expect(refused(applyReplace(null, { elements: [square] }, options)).code).toBe(
@@ -191,8 +193,24 @@ describe('applyReplace on an existing tab', () => {
     // A live element sent back as a kind livehuddle lacks is refused, as a new one is.
     const turned = stored.elements.map((el) => (el.id === 'n3' ? { ...el, shape: 'square' } : el));
     expect(refused(applyReplace(stored, { elements: turned }, options)).details).toEqual([
-      'n3 shape: shapes are no longer supported in livehuddle: add a sticky',
+      'n3 shape: shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board',
     ]);
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Write category": a new text or sticky note is refused, and
+  // one the tab already holds rides through as stored.
+  it('refuses a new text or sticky note and keeps a stored one', () => {
+    const note = { id: 'memo', type: 'sticky', x: 0, y: 400, width: 160, height: 160, text: 'Hi' };
+    const sent = { elements: [...checkoutFlow().elements, note] } as unknown as ReplaceBody;
+    expect(refused(applyReplace(checkoutFlow(), sent, options)).details).toEqual([
+      'memo type: text and sticky notes are no longer supported in livehuddle: pin a note on a notice-board',
+    ]);
+    const stored = {
+      ...checkoutFlow(),
+      elements: [...checkoutFlow().elements, note as unknown as Element],
+    };
+    const { tab } = applied(applyReplace(stored, { elements: stored.elements }, options));
+    expect(tab.elements.some((el) => el.id === 'memo')).toBe(true);
   });
 
   // docs/specs/024-agents/edit-operations.md "No element notes" (Work Tracker 737): a kept element keeps the note it
@@ -304,7 +322,7 @@ describe('applyReplace refusals', () => {
 
   it('refuses elements that are not a list, or an element the format does not allow', () => {
     expect(refusal({ elements: 'x' }).details).toEqual(['elements: expected an array of elements']);
-    expect(refusal({ elements: [{ id: 'x', type: 'sticky' }] }).details).toEqual([
+    expect(refusal({ elements: [{ id: 'x', type: 'shape', shape: 'desk' }] }).details).toEqual([
       'x x: a finite number',
     ]);
     expect(refusal({ elements: [{ type: 'blob' }] }).details).toEqual([
@@ -316,7 +334,7 @@ describe('applyReplace refusals', () => {
   });
 
   it('refuses two elements with one id', () => {
-    const el = { id: 'x', type: 'sticky', x: 0, y: 0, width: 10, height: 10 };
+    const el = { id: 'x', type: 'shape', shape: 'desk', x: 0, y: 0, width: 10, height: 10 };
     expect(refusal({ elements: [el, el] }).details).toEqual(['the tab elements: every id once']);
   });
 

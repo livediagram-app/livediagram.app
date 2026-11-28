@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape } from '@livehuddle/document';
 import {
@@ -41,7 +41,6 @@ function renderToolbars(multi: boolean, over: Partial<CanvasProps> = {}) {
   const selectionInput = {
     elements,
     editingId: null,
-    isPaintMode: false,
     readOnly,
   };
   return render(
@@ -90,69 +89,73 @@ describe('selection chrome while a selection moves', () => {
   }
 });
 
-// docs/specs/008-canvas/canvas-and-palette.md "Format painter": the selection toolbar's Format Painter is its one way
-// in, loaded with the selected element, an Editor's alone.
-describe('the Format Painter button', () => {
-  it('starts the painter with the selected element', () => {
-    const onStartFormatPainter = vi.fn();
-    renderToolbars(false, { onStartFormatPainter });
-    fireEvent.click(screen.getByRole('button', { name: 'Format Painter' }));
-    expect(onStartFormatPainter).toHaveBeenCalledWith(shape.id);
-  });
-
-  it('is not offered read-only', () => {
-    renderToolbars(false, { readOnly: true, onStartFormatPainter: vi.fn() });
-    expect(screen.queryByRole('button', { name: 'Format Painter' })).toBeNull();
-  });
-
-  // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a retired element lends no look and takes
-  // no typed label, so neither the Format Painter nor Add Text is offered on one.
-  it('is not offered, nor Add Text, on a retired element', () => {
+// docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and Clear Styles": no Format Painter on the
+// toolbar, and a retired element takes no typed label.
+describe('no Format Painter', () => {
+  it('is not offered, nor Add Text on a retired element', () => {
     const qa = { ...shape, id: 'qa', shape: 'qa-board' } as unknown as typeof shape;
-    renderToolbars(false, { elements: [qa, other], onStartFormatPainter: vi.fn() });
+    renderToolbars(false, { elements: [qa, other] });
     expect(screen.queryByRole('button', { name: 'Format Painter' })).toBeNull();
     expect(screen.queryByRole('button', { name: /Add Text|Edit Text/ })).toBeNull();
   });
 });
 
-// docs/specs/009-elements/furniture-facing.md "Turning a placed piece".
-describe('the Rotate buttons', () => {
+// docs/specs/002-project-scope/not-in-livehuddle.md "Element looks, layers, opacity and rotation": neither toolbar
+// turns or restacks anything, on a piece that turns or not; a piece turns from its menu section and Search.
+describe('no turn or stacking buttons', () => {
   const sofa = createShape('sofa', 100, 100);
   const plant = createShape('plant', 400, 100);
+  const GONE = ['Rotate Left', 'Rotate Right', 'Bring to Front', 'Send to Back'];
 
-  it('turn a selected piece of furniture a quarter either way', () => {
-    const onTurnSelected = vi.fn();
-    renderToolbars(false, { elements: [sofa, plant], onTurnSelected });
-    fireEvent.click(screen.getByRole('button', { name: 'Rotate Left' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Rotate Right' }));
-    expect(onTurnSelected.mock.calls).toEqual([[-1], [1]]);
-  });
-
-  it('stay live on a piece saved locked before locking left', () => {
-    renderToolbars(false, {
-      elements: [{ ...sofa, locked: true } as typeof sofa, plant],
-      onTurnSelected: vi.fn(),
+  for (const multi of [false, true]) {
+    it(`on the ${multi ? 'multi-selection toolbar' : 'selection popover'} over a piece that turns`, () => {
+      renderToolbars(multi, { elements: [sofa, plant], onOpenElementContextMenu: vi.fn() });
+      for (const name of GONE) expect(screen.queryByRole('button', { name })).toBeNull();
+      // What stays is still there.
+      expect(screen.getAllByRole('button', { name: /Duplicate/ }).length).toBeGreaterThan(0);
     });
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Rotate Left' }).disabled).toBe(
-      false,
-    );
+  }
+
+  it('leaves the single toolbar with More, Duplicate and Delete', () => {
+    renderToolbars(false, { elements: [sofa, plant], onOpenElementContextMenu: vi.fn() });
+    const names = screen
+      .getAllByRole('button')
+      .map((b) => b.getAttribute('aria-label') ?? b.textContent);
+    expect(names).toEqual(['More actions', 'Duplicate', 'Delete']);
+  });
+});
+
+// docs/specs/009-elements/poster.md "Choosing its picture": a selected Poster's toolbar carries Choose Picture (Change
+// once it has one) for an Editor alone; it opens the image picker for that poster.
+describe("a Poster's picture button", () => {
+  const poster = { ...createShape('poster', 100, 100), id: 'p' };
+  const context = (posterPicker: boolean, onOpenPicker = vi.fn()) => ({
+    imageContext: { ownerId: 'u', documentId: 'd', shareCode: null, onOpenPicker, posterPicker },
   });
 
-  it('are not offered for a piece that does not turn, or read-only', () => {
-    renderToolbars(false, { elements: [plant, sofa], onTurnSelected: vi.fn() });
-    expect(screen.queryByRole('button', { name: 'Rotate Left' })).toBeNull();
-    cleanup();
-    renderToolbars(false, { elements: [sofa, plant], onTurnSelected: vi.fn(), readOnly: true });
-    expect(screen.queryByRole('button', { name: 'Rotate Left' })).toBeNull();
+  it('is offered to an Editor and opens the picker for the poster', () => {
+    const onOpenPicker = vi.fn();
+    renderToolbars(false, { elements: [poster], ...context(true, onOpenPicker) });
+    act(() => screen.getByRole('button', { name: 'Choose Picture' }).click());
+    expect(onOpenPicker).toHaveBeenCalledWith('p');
   });
 
-  it('turn a multi-selection holding a piece that turns', () => {
-    const onTurnSelected = vi.fn();
-    renderToolbars(true, { elements: [plant, sofa], onTurnSelected });
-    fireEvent.click(screen.getByRole('button', { name: 'Rotate Right' }));
-    expect(onTurnSelected).toHaveBeenCalledWith(1);
+  it('says Change once the poster has a picture', () => {
+    renderToolbars(false, {
+      elements: [{ ...poster, imageId: 'img_a' }],
+      ...context(true),
+    });
+    expect(screen.getByRole('button', { name: 'Change Picture' })).toBeTruthy();
+  });
+
+  it('is not offered to a Participant or a Viewer, nor on any other piece', () => {
+    renderToolbars(false, { elements: [poster], ...context(false) });
+    expect(screen.queryByRole('button', { name: 'Choose Picture' })).toBeNull();
     cleanup();
-    renderToolbars(true, { elements: [shape, plant], onTurnSelected });
-    expect(screen.queryByRole('button', { name: 'Rotate Right' })).toBeNull();
+    renderToolbars(false, { elements: [poster], readOnly: true, ...context(true) });
+    expect(screen.queryByRole('button', { name: 'Choose Picture' })).toBeNull();
+    cleanup();
+    renderToolbars(false, { elements: [shape], ...context(true) });
+    expect(screen.queryByRole('button', { name: 'Choose Picture' })).toBeNull();
   });
 });

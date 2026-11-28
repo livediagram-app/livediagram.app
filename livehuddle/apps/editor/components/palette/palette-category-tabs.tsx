@@ -14,11 +14,7 @@
 
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
-import {
-  PaletteCollaborateTab,
-  PaletteMediaTab,
-  PaletteWriteTab,
-} from '@/components/palette/palette-create-tabs';
+import { PaletteCollaborateTab, PaletteMediaTab } from '@/components/palette/palette-create-tabs';
 import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -71,8 +67,6 @@ export function paletteCategoryTabs(
             loading={loading}
           />
         );
-      case 'write':
-        return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'media':
         return <PaletteMediaTab {...tab} tiles={tiles} />;
       default:

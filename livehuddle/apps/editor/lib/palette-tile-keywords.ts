@@ -49,10 +49,10 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'outdoor-plant': 'outdoor plant shrub bush flowers planter garden scenery',
   tree: 'tree garden park outdoor shade scenery',
   'garden-path': 'garden path stepping stones gravel walkway outdoor floor',
+  road: 'road street traffic cars lanes asphalt tarmac highway drive outdoor',
   grass: 'grass lawn turf green garden park field outdoor floor',
   'notice-board': 'notice board cork board pin pinned notes announcements wall bulletin message',
-  'world-clock':
-    'world clock time zone timezone wall clock hours london new york tokyo remote team',
+  'world-clock': 'clock wall clock world clock time local time hours minutes watch analogue analog',
   timer:
     'timer countdown count down timebox time box minutes clock alarm chime meeting stand-up standup pomodoro',
   stopwatch: 'stopwatch stop watch count up elapsed time clock lap meeting how long',
@@ -78,6 +78,9 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   copier: 'copier photocopier copy machine printer scanner paper trays office',
   lockers: 'lockers locker bank storage gym changing room entrance hot desk',
   'coat-rack': 'coat rack stand hat stand hooks coats jacket scarf entrance hallway',
+  'floor-lamp': 'floor lamp standing lamp lampshade shade light lighting reading corner warm glow',
+  'table-lamp': 'table lamp bedside lamp side table lampshade shade light lighting warm glow',
+  'desk-lamp': 'desk lamp task lamp angled anglepoise reading light lighting study',
   'umbrella-stand': 'umbrella stand umbrellas rain entrance hallway',
   'kitchen-counter': 'kitchen counter worktop cupboard unit cabinet kitchenette',
   'kitchen-sink': 'kitchen sink tap wash up washing up worktop unit kitchenette',
@@ -107,6 +110,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'suggestion-box': 'suggestion box ideas feedback anonymous idea box comments survey drop note',
   signpost: 'signpost sign post arrows directions wayfinding finger post way walk rooms nearest',
   'photo-wall': 'team photo wall photos portraits pictures frames people faces who is here gallery',
+  poster: 'poster picture frame photo image print art painting wall hang gallery upload',
   screen:
     'screen tv television monitor display wall screen share presentation video youtube meeting room',
   'room-sign':

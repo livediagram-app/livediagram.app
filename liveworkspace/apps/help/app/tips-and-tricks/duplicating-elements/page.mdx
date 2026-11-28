@@ -32,9 +32,9 @@ export const metadata = helpMetadata({
 </AppNote>
 
 <AppNote app="livehuddle">
-  A board repeats itself: the same sticky three times, a row of identical notes, one styled note
-  that wants to become five. <AppName /> gives you several ways to duplicate, and the fastest one
-  places the copy in a single gesture.
+  A Space repeats itself: the same desk three times, a row of identical chairs, one styled room that
+  wants to become five. <AppName /> gives you several ways to duplicate, and the fastest one places
+  the copy in a single gesture.
 </AppNote>
 
 ## The Duplicate action
@@ -80,16 +80,23 @@ The quickest way to duplicate is to hold **Shift** and drag a selected element:
   right away.
 </Step>
 
-<Figure app="livediagram,livedocuments"
+<Figure
+  app="livediagram,livedocuments"
   caption="Hold Shift and drag: the original stays put while a ghost of the copy, connecting arrow included, follows the pointer."
 >
   <ShiftDragDuplicate />
 </Figure>
 
-<Figure app="livedesign" caption="Hold Shift and drag: the screen stays put while a ghost of its copy follows the pointer.">
+<Figure
+  app="livedesign"
+  caption="Hold Shift and drag: the screen stays put while a ghost of its copy follows the pointer."
+>
   <DesignShiftDragDuplicate />
 </Figure>
-<Figure app="livehuddle" caption="Hold Shift and drag a chair to leave it where it was and place a copy.">
+<Figure
+  app="livehuddle"
+  caption="Hold Shift and drag a chair to leave it where it was and place a copy."
+>
   <HuddleShiftDragDuplicate />
 </Figure>
 

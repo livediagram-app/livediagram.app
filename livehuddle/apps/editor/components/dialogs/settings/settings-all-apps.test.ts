@@ -11,7 +11,7 @@ describe('rowSharedByAllApps', () => {
     expect(rowSharedByAllApps('uiScale-panels')).toBe(true);
     expect(rowSharedByAllApps('uiScale-cornerButtons')).toBe(true);
     // A setting two or more apps have is one shared setting (liveworkspace/docs/specs/003-accounts/accounts.md "Common settings").
-    expect(rowSharedByAllApps('showMinimap')).toBe(true);
+    expect(rowSharedByAllApps('alignmentGuides')).toBe(true);
     // livehuddle's own.
     expect(rowSharedByAllApps('notifyDocumentJoin')).toBe(false);
     expect(rowSharedByAllApps('whiteboardDockPosition')).toBe(false);

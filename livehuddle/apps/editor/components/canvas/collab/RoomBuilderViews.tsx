@@ -118,11 +118,12 @@ function DoorPartView({ part, props }: { part: DoorArtPart; props: SVGProps<SVGE
 }
 
 // A Door (docs/specs/009-elements/room-builder.md "Door", "Door types"): the gap it paints over its wall in the floor's
-// colour, its jambs, and its type's leaves, panes or wings, open or shut. Turned onto its wall by the element's
-// rotation. A moving part eases between its open and shut poses (the 180 ms door transition in canvas-motion.css),
-// and a swing arc fades. On a rectangular room's back wall (room-builder.md "On a back wall") the room draws the
-// doorway, broken through its tall band while open and the shut leaf in its face, so the Door draws only its open
-// leaf and swing there, no gap or jambs of its own, and nothing while shut.
+// colour, its jambs, and its type's leaves, panes or wings, drawn open with its swing as an architect's plan draws a
+// door (it opens on its own, room-builder.md "Opening on their own"). Turned onto its wall by the element's rotation.
+// On a rectangular room's back wall (room-builder.md "On a back wall") the room draws the doorway, broken through its
+// tall band, so the Door draws only its leaf and swing there, no gap or jambs of its own. What stands in the doorway
+// (leaves, panes, a drum, its track) carries `lh-door-leaf` or `lh-door-swing`, which the 3D view hides under the
+// doorway's own model.
 export function DoorView({
   element,
   stroke,
@@ -135,10 +136,9 @@ export function DoorView({
   animClass?: string;
 }) {
   const { width, height } = element;
-  const closed = element.doorClosed === true;
   const onBackWall = useDoorOnBackWall(element.id);
   const parts = doorArt(width, height, element.variant).filter(
-    (p) => !onBackWall || (!closed && p.paint !== 'floor' && p.paint !== 'jamb'),
+    (p) => !onBackWall || (p.paint !== 'floor' && p.paint !== 'jamb'),
   );
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
@@ -147,14 +147,13 @@ export function DoorView({
         preserveAspectRatio="none"
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
-        aria-label={`${closed ? 'Closed' : 'Open'} door`}
+        aria-label="Door"
       >
         {parts.map((p, i) => {
-          const pose = p.motion ? (closed ? p.motion.shut : p.motion.open) : null;
-          const moving: SVGProps<SVGElement> & { 'data-door-closed'?: string } = p.motion
+          const pose = p.motion?.open;
+          const placed: SVGProps<SVGElement> = p.motion
             ? {
                 className: 'lh-door-leaf',
-                'data-door-closed': closed ? '' : undefined,
                 style: {
                   transformBox: 'view-box',
                   transformOrigin: `${p.motion.origin.x}px ${p.motion.origin.y}px`,
@@ -164,12 +163,18 @@ export function DoorView({
                       : 'none',
                 },
               }
-            : p.openOnly
-              ? { className: 'lh-door-swing', opacity: closed ? 0 : FURNITURE_RAIL_OPACITY }
-              : {};
+            : p.paint === 'leaf'
+              ? { className: 'lh-door-leaf' }
+              : p.paint === 'swing' ||
+                  p.paint === 'pane' ||
+                  p.paint === 'track' ||
+                  p.paint === 'ink' ||
+                  (p.paint === 'jamb' && p.tag === 'path')
+                ? { className: 'lh-door-swing' }
+                : {};
           return (
             <g key={i}>
-              <DoorPartView part={p} props={{ ...doorPaint(p, floor, stroke), ...moving }} />
+              <DoorPartView part={p} props={{ ...doorPaint(p, floor, stroke), ...placed }} />
             </g>
           );
         })}

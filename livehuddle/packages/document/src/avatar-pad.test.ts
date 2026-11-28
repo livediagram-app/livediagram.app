@@ -10,10 +10,7 @@ import {
   AVATAR_PAD_CORE_POINT,
   AVATAR_PAD_VIEW,
   avatarPadPaint,
-  isAvatarPadLight,
 } from './avatar-pad-art';
-import { AVATAR_PALETTE } from '@livehuddle/avatar/palette';
-import { tint } from './colors';
 import { createShape } from './shape-factory';
 import { isFloorShape } from './office';
 import { isBehaviourShape, carriesSharedSettingsMenu } from './behaviour-shapes';
@@ -23,10 +20,10 @@ import { svgBehaviourFace } from './svg-render-faces';
 
 // docs/specs/009-elements/avatar-pad.md
 describe('the Avatar Pad drawing', () => {
-  it('centres the drawn core, ring and well on avatarPadCore, at any box', () => {
+  it('centres the drawn top, rug and medallion on avatarPadCore, at any box', () => {
     const view = { x: 0, y: 0, ...AVATAR_PAD_VIEW };
     expect(AVATAR_PAD_CORE_POINT).toEqual(avatarPadCore(view));
-    for (const role of ['core', 'coreHot', 'ring', 'well', 'top'] as const) {
+    for (const role of ['core', 'hub', 'rug', 'rugBand', 'top'] as const) {
       const part = AVATAR_PAD_ART.find((p) => p.role === role);
       expect(part).toMatchObject({
         tag: 'ellipse',
@@ -61,27 +58,37 @@ describe('the Avatar Pad drawing', () => {
     expect(top.rx).toBeGreaterThan(foot.rx * 0.9);
   });
 
-  it('is a fixed, small number of vector nodes, lights flagged for the shimmer', () => {
-    expect(AVATAR_PAD_ART).toHaveLength(17);
-    expect(AVATAR_PAD_ART.filter((p) => isAvatarPadLight(p.role))).toHaveLength(8);
-    expect(AVATAR_PAD_ART.filter((p) => p.role === 'lamp')).toHaveLength(5);
+  it('is a fixed, small number of vector nodes, with no lights', () => {
+    expect(AVATAR_PAD_ART).toHaveLength(12);
+    const roles = AVATAR_PAD_ART.map((p) => p.role as string);
+    for (const gone of ['glow', 'ring', 'ringLit', 'lamp', 'well'])
+      expect(roles).not.toContain(gone);
   });
 
-  it('outlines in the theme stroke and lights in the fixed cyan', () => {
-    const paint = (role: Parameters<typeof avatarPadPaint>[0]) =>
-      avatarPadPaint(role, '#123456', '#abcdef', 'url(#g)');
-    expect(paint('top')).toMatchObject({ fill: '#abcdef', stroke: '#123456' });
-    expect(paint('side')).toMatchObject({ fill: '#abcdef', stroke: '#123456' });
-    expect(paint('ring').stroke).toBe(AVATAR_PAD_TONES.ring);
-    expect(paint('core').fill).toBe(AVATAR_PAD_TONES.core);
-    expect(paint('lamp').fill).toBe(AVATAR_PAD_TONES.lamp);
-    expect(paint('glow').fill).toBe('url(#g)');
-  });
-
-  it("writes out the shirt cyan's mixes exactly as tint makes them", () => {
-    expect(AVATAR_PAD_TONES.ringLit).toBe(tint(AVATAR_PALETTE.shirt, 0.45));
-    expect(AVATAR_PAD_TONES.core).toBe(tint(AVATAR_PALETTE.shirt, 0.72));
-    expect(AVATAR_PAD_TONES.lamp).toBe(tint(AVATAR_PALETTE.shirt, 0.3));
+  // The owner, 2026-11-27: "make it less scifi": oak, walnut, a rug and a compass rose, no cyan.
+  it('outlines in the theme stroke and paints its own fixed woods and rug, whatever the theme', () => {
+    const T = AVATAR_PAD_TONES;
+    const paint = (role: Parameters<typeof avatarPadPaint>[0], stroke = '#123456') =>
+      avatarPadPaint(role, stroke);
+    expect(paint('top')).toMatchObject({ fill: T.oakLight, stroke: '#123456' });
+    expect(paint('side')).toMatchObject({ fill: T.oak, stroke: '#123456' });
+    expect(paint('sideShade').fill).toBe('#123456');
+    expect(paint('band').fill).toBe(T.walnut);
+    expect(paint('rug')).toMatchObject({ fill: T.cream, stroke: T.terracotta });
+    expect(paint('core')).toMatchObject({ fill: T.walnut, stroke: T.ochre });
+    // On dark paper only the outline and the shade change.
+    for (const role of ['band', 'rug', 'rugBand', 'core', 'roseLight', 'roseDark', 'hub'] as const)
+      expect(paint(role, '#e2e8f0')).toEqual(paint(role));
+    // Nothing cyan or glowing is left in it.
+    const fills = AVATAR_PAD_ART.flatMap((p) => {
+      const q = paint(p.role);
+      return [q.fill, q.stroke ?? ''];
+    });
+    for (const c of fills) expect(c).not.toMatch(/url\(/);
+    for (const c of Object.values(T)) {
+      // Warm: red at least as strong as blue in every tone.
+      expect(parseInt(c.slice(1, 3), 16)).toBeGreaterThanOrEqual(parseInt(c.slice(5, 7), 16));
+    }
   });
 });
 
@@ -105,7 +112,7 @@ describe('the avatar-pad kind', () => {
     expect(svg).toContain(`viewBox="0 0 ${AVATAR_PAD_VIEW.width} ${AVATAR_PAD_VIEW.height}"`);
     expect((svg.match(/<(ellipse|path) /g) ?? []).length).toBe(AVATAR_PAD_ART.length);
     expect(svg).toContain('stroke="#475569"');
-    expect(svg).toContain(`stroke="${AVATAR_PAD_TONES.ring}"`);
-    expect(svg).toContain(`url(#avatar-pad-glow-${el.id})`);
+    expect(svg).toContain(`fill="${AVATAR_PAD_TONES.oak}"`);
+    expect(svg).not.toContain('radialGradient');
   });
 });

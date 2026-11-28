@@ -232,16 +232,14 @@ describe('a door in the walk', () => {
     expect(blocked.blocked).toBe(true);
   });
 
-  // room-builder.md "Opening and closing": a closed door is wall again.
-  it('stops a character at a closed door as at the wall, and lets it through once opened', () => {
+  // room-builder.md "Opening on their own": a door saved shut while doors were swung by hand is a way through.
+  it('lets a character through a door whatever its retired doorClosed says', () => {
     const reach = 12;
     const inside = { x: 280, y: 120 };
     const outside = { x: 320, y: 80 };
     const shut = { ...door, doorClosed: true };
-    expect(fenceSegments([room, shut])).toEqual(fenceSegments([room]));
-    expect(fenceStep(inside, outside, fenceSegments([room, shut]), reach).blocked).toBe(true);
-    const open = { ...door, doorClosed: false };
-    expect(fenceStep(inside, outside, fenceSegments([room, open]), reach).blocked).toBe(false);
+    expect(fenceSegments([room, shut])).toEqual(fenceSegments([room, door]));
+    expect(fenceStep(inside, outside, fenceSegments([room, shut]), reach).blocked).toBe(false);
   });
 
   it('keeps the wall thickness constant', () => {

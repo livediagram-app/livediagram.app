@@ -1,7 +1,7 @@
 // A placed piece's type changed in place (docs/specs/009-elements/office.md "A piece's type"): a Door into a Double
-// Door, an Oval rug into a Persian, a Straight corridor into a Corner, a Meeting Table into a Long Table. The piece
-// keeps everything but its type, its box (the new type's own size, turned to its facing, about the old centre) and its
-// aspect lock, which become what placing that type would give it. Pure: no React, no DOM.
+// Door, an Oval rug into a Persian, a Straight corridor into a Corner, a Meeting Table into a Long Table, an Oak into
+// a Pine. The piece keeps everything but its type, its box (the new type's own size, turned to its facing, about the
+// old centre) and its aspect lock, which become what placing that type would give it. Pure: no React, no DOM.
 
 import type { Element, ShapeElement } from './index';
 import { createShape } from './shape-factory';
@@ -9,9 +9,17 @@ import { applyShapeVariant } from './shape-variants';
 import { pieceVariant, variantsOf } from './piece-variants';
 import { pieceFacing, turnPiece, turnsWithFacing } from './furniture-facing';
 import { snapDoorToWall, wallUnder } from './room-builder';
+import { mountedFace } from './wall-mounted';
 
 /** The kinds whose type the element menu changes. A Room's `variant` is its walls, set from its own Walls section. */
-export const RETYPED_KINDS = ['door', 'rug', 'corridor', 'meeting-table'] as const;
+export const RETYPED_KINDS = [
+  'door',
+  'rug',
+  'corridor',
+  'meeting-table',
+  'tree',
+  'screen',
+] as const;
 
 const RETYPED = new Set<string>(RETYPED_KINDS);
 
@@ -77,8 +85,23 @@ export function retypePiece(
   elements: readonly Element[],
 ): ShapeElement {
   const next = withPieceType(el, type);
+  if (next !== el) {
+    // A wall piece (a Screen) keeps its back on its wall, its middle along it (screen-and-room-sign.md "Sizes").
+    const face = mountedFace(el, elements);
+    if (face) return keepOnWall(el, next, face);
+  }
   const length = next === el ? null : wallLengthUnder(el, elements);
   if (length === null) return next;
   if (next.width > length) return el;
   return snapDoorToWall(next, elements);
+}
+
+// `next` (`el` retyped about its centre) moved back so its side against the wall is where `el`'s was.
+function keepOnWall(
+  el: ShapeElement,
+  next: ShapeElement,
+  face: { vertical: boolean; dir: 1 | -1 },
+): ShapeElement {
+  if (face.vertical) return { ...next, x: face.dir === 1 ? el.x : el.x + el.width - next.width };
+  return { ...next, y: face.dir === 1 ? el.y : el.y + el.height - next.height };
 }

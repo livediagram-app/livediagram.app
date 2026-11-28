@@ -1,25 +1,43 @@
 // Wrap Up's first draft (docs/specs/012-collaboration/calls-from-items.md "Wrap Up"): the call's facts, then the notes
-// people left on the Space's floors, so the host edits a summary rather than writes one. Pure, linear in the elements.
+// people pinned on the Space's Notice Boards, so the host edits a summary rather than writes one. Pure, linear in the elements.
 import type { SpaceCall } from '@liveworkspace/index-client';
 
 /** The most note lines a draft carries. */
 export const WRAP_UP_NOTES_MAX = 200;
 
-export type NoteElement = { id: string; type: string; label?: unknown; x?: number; y?: number };
+export type NoteElement = {
+  id: string;
+  type: string;
+  shape?: unknown;
+  noticeNotes?: unknown;
+  x?: number;
+  y?: number;
+};
 export type NoteTab = { id: string; name: string; elements: readonly NoteElement[] };
 
-const NOTE_TYPES = new Set(['sticky', 'text']);
+// A pinned note's line: its title, else its words, first line (docs/specs/012-collaboration/calls-from-items.md).
+function noteLine(note: unknown): string {
+  if (!note || typeof note !== 'object') return '';
+  const { title, text } = note as { title?: unknown; text?: unknown };
+  const words =
+    typeof title === 'string' && title.trim() ? title : typeof text === 'string' ? text : '';
+  return words.trim().split('\n', 1)[0]!.trim();
+}
 
-/** Each floor's stickies and texts in reading order (top to bottom, then left to right), their first lines. */
+/** Each floor's Notice Board notes, the boards in reading order (top to bottom, then left to right), each board's
+ *  notes in its order, their first lines. A Space has no text or sticky notes (not-in-livehuddle.md "The Write
+ *  category"). */
 export function wrapUpNotes(tabs: readonly NoteTab[]): { tab: string; lines: string[] }[] {
   const out: { tab: string; lines: string[] }[] = [];
   let left = WRAP_UP_NOTES_MAX;
   for (const tab of tabs) {
     if (left <= 0) break;
     const lines = tab.elements
-      .filter((e) => NOTE_TYPES.has(e.type) && typeof e.label === 'string' && e.label.trim())
+      .filter(
+        (e) => e.type === 'shape' && e.shape === 'notice-board' && Array.isArray(e.noticeNotes),
+      )
       .sort((a, b) => (a.y ?? 0) - (b.y ?? 0) || (a.x ?? 0) - (b.x ?? 0))
-      .map((e) => (e.label as string).trim().split('\n', 1)[0]!.trim())
+      .flatMap((e) => (e.noticeNotes as unknown[]).map(noteLine))
       .filter(Boolean)
       .slice(0, left);
     left -= lines.length;

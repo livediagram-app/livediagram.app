@@ -6,11 +6,18 @@ import { buildStartupHq } from './template-builders-campus-more';
 import { buildTowerGround, buildTowerLevel2 } from './template-builders-tower';
 import { buildVirtualOffice } from './template-builders-office';
 
+import { modelFloorBox } from './template-model-box';
 type Shape = Extract<Element, { type: 'shape' }>;
 const shapesOf = (els: readonly Element[]) => els.filter((e): e is Shape => e.type === 'shape');
 const count = (els: Shape[], shape: string) => els.filter((e) => e.shape === shape).length;
-const inside = (p: Shape, r: Shape) =>
-  p.x >= r.x && p.y >= r.y && p.x + p.width <= r.x + r.width && p.y + p.height <= r.y + r.height;
+// In a room when the middle of where it stands in 3D is: a wall piece stands back on its wall, its drawn box poking over
+// the wall line (template-model-box.ts, docs/specs/007-editor/templates-by-mode.md "Made for 3D").
+const inside = (p: Shape, r: Shape) => {
+  const m = modelFloorBox(p);
+  const x = m.x + m.width / 2;
+  const y = m.y + m.height / 2;
+  return p !== r && x >= r.x && y >= r.y && x <= r.x + r.width && y <= r.y + r.height;
+};
 // The innermost room a piece stands in (a booth room lies inside the Coworking floor).
 const roomOf = (els: Shape[], p: Shape) =>
   els

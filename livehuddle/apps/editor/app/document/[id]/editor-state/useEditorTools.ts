@@ -1,15 +1,13 @@
 'use client';
 
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
-import { useFormatConfig } from '@liveworkspace/workbench/hooks/canvas/useFormatConfig';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
-import { useFormatTool } from '../useFormatTool';
 import { startPanelIsOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorSelectionSlice } from './useEditorSelection';
 
-// The canvas tool (Select, Hand, Avatar and the rest), the Format painter, the shortcuts switch, and the pickers
+// The canvas tool (Edit, Walk), the shortcuts switch, and the pickers
 // that guard a tool change. A slice of useEditorState (../useEditorState.ts): it takes the slices composed
 // before it and returns its own, with `view`, its part of the editor's view-model.
 export function useEditorTools({
@@ -20,13 +18,10 @@ export function useEditorTools({
   fromSelection: EditorSelectionSlice;
 }) {
   const { embedMode } = fromDocument;
-  const { activeId, setFormatSourceId, setMultiSelectedIds, setSelectedId } = fromSelection;
+  const { activeId, setMultiSelectedIds, setSelectedId } = fromSelection;
   // Canvas tool (Pan / Select / Avatar ...). See useCanvasTool: the raw
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
-  // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
-  // travel, read by the paint and edited from the Format Panel.
-  const formatSettings = useFormatConfig();
   const {
     canvasTool,
     setCanvasTool,
@@ -39,13 +34,6 @@ export function useEditorTools({
   } = useCanvasTool({
     defaultPan: embedMode,
     tabId: activeId,
-  });
-  // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
-  // the exit that restores the pre-Format tool. See useFormatTool.
-  const { formatToolActive, exitFormatTool, startFormatFrom } = useFormatTool({
-    canvasTool,
-    setCanvasTool,
-    setFormatSourceId,
   });
 
   // User-facing tool picker. Avatar mode is a non-editing mode, so entering it clears any selection. Wraps the tracked selectCanvasTool so every entry point (palette
@@ -71,13 +59,6 @@ export function useEditorTools({
   const pressModeButton = (mode: CanvasTool) => {
     pickCanvasTool(canvasTool === mode ? toolBeforeCurrent() : mode);
   };
-  // The selection toolbar's Format Painter (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): the
-  // painter on with the selected element loaded, the selection cleared so the toolbar steps out of the way.
-  const startFormatPainter = (id: string) => {
-    setSelectedId(null);
-    setMultiSelectedIds(new Set());
-    startFormatFrom(id, pickCanvasTool);
-  };
 
   // Keyboard-shortcut catalog modal + per-device disable toggle.
   // The toggle gates EVERY shortcut in useEditorKeyboardShortcuts
@@ -86,8 +67,6 @@ export function useEditorTools({
   return {
     canvasTool,
     enterWalking,
-    formatSettings,
-    formatToolActive,
     holdWalking,
     keepWalkingTo,
     pickCanvasTool,
@@ -96,12 +75,7 @@ export function useEditorTools({
     view: {
       canvasTool,
       exitAvatarTool,
-      exitFormatTool,
-      startFormatPainter,
       setCanvasTool: pickCanvasTool,
-      formatConfig: formatSettings.config,
-      onToggleFormatGroup: formatSettings.toggleGroup,
-      onSetFormatMode: formatSettings.setMode,
       pressModeButton,
       setShortcutsEnabled,
       shortcutsEnabled,

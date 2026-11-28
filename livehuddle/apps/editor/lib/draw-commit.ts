@@ -6,8 +6,6 @@ import {
   createLinkCard,
   applyShapeVariant,
   createShape,
-  createSticky,
-  createText,
   defaultIconAnimation,
   isBoxed,
   type ComponentKind,
@@ -31,7 +29,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 // same threshold so the two gestures can't disagree.
 const TAP_TRAVEL_PX = 16;
 
-const isDrawTap = (startX: number, startY: number, endX: number, endY: number): boolean =>
+export const isDrawTap = (startX: number, startY: number, endX: number, endY: number): boolean =>
   Math.abs(endX - startX) < TAP_TRAVEL_PX && Math.abs(endY - startY) < TAP_TRAVEL_PX;
 
 // The box a DRAG lands, in canvas coords: the drawn rectangle, at least a tap's travel each way. Exported so
@@ -74,12 +72,12 @@ export function buildDrawnComponent(
   };
 }
 
-// Boxed branch (shape / text / sticky / image / link card).
+// Boxed branch (shape / image / link card).
 // A tap drops the element centred on the tap at its inherited size (the
 // armed-time selection's size, else the factory default; circle/diamond stay
 // square); a real drag sizes it to the dragged box (16px floor).
 export function buildDrawnBoxed(
-  intent: Extract<PendingDraw, { type: 'shape' | 'text' | 'sticky' | 'image' | 'link-card' }>,
+  intent: Extract<PendingDraw, { type: 'shape' | 'image' | 'link-card' }>,
   startX: number,
   startY: number,
   endX: number,
@@ -94,13 +92,9 @@ export function buildDrawnBoxed(
   const base =
     intent.type === 'shape'
       ? applyShapeVariant(createShape(intent.kind, startX, startY), intent.variant)
-      : intent.type === 'text'
-        ? createText(startX, startY)
-        : intent.type === 'sticky'
-          ? createSticky(startX, startY)
-          : intent.type === 'link-card'
-            ? createLinkCard(startX, startY)
-            : createImage(startX, startY);
+      : intent.type === 'link-card'
+        ? createLinkCard(startX, startY)
+        : createImage(startX, startY);
   const tapSize = placed ? base : inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.

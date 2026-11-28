@@ -14,6 +14,17 @@ export const SPACE_NEAR_ATTR = 'data-space-near';
 
 /** A sitter whose feet are within this share of the piece's depth of its front edge is drawn in front of it (DEFAULTS.md D144). */
 export const SPACE_SEAT_LIFT_SHARE = 0.6;
+/**
+ * The pieces that close round their sitter (3d-view.md "Pieces stand up"): seen from behind, they hide the whole of
+ * them, and only the name and status show over the top (the owner, 2026-11-25: in a Phone Booth "my head pokes out").
+ */
+export const ENCLOSING_KINDS: ReadonlySet<string> = new Set([
+  'phone-booth',
+  'toilet-cubicle',
+  'nap-pod',
+]);
+/** The pieces whose sitter sits on them, never behind them (3d-view.md "Pieces stand up"). */
+const SAT_ON_KINDS: ReadonlySet<string> = new Set(['chair', 'bar-stool']);
 
 // The Space's shape kinds that lie on the floor (3d-view.md "Which pieces"): floor coverings, the pieces whose walls
 // stand instead, a wall's own parts, and the board's controls. Every other shape kind stands.
@@ -28,6 +39,7 @@ const FLAT_KINDS = new Set<ShapeKind>([
   'rug',
   'grass',
   'garden-path',
+  'road',
   'stage',
   'pond',
   'swimming-pool',
@@ -116,7 +128,8 @@ type Point = { x: number; y: number };
 export function seatLift(piece: Box | null | undefined, feet: Point, turn = 0): number {
   if (!piece) return 0;
   // Turned (3d-view.md "Turning the camera"): measured along the camera's way.
-  if (turnQuarter(turn) !== 0) return seatLift(boxToCamera(piece, turn), toCamera(feet, turn));
+  if (turnQuarter(turn) !== 0)
+    return seatLift(boxToCamera(piece, turn), toCamera(feet, Math.round(turn)));
   const depth = piece.y + piece.height - feet.y;
   return depth >= 0 && depth <= piece.height ? Math.ceil(depth) + 1 : 0;
 }
@@ -129,7 +142,11 @@ export function seatLift(piece: Box | null | undefined, feet: Point, turn = 0): 
 export function seatBehind(piece: Box | null | undefined, feet: Point, turn = 0): boolean {
   // A piece built row by row hides a sitter's legs itself, with its own rows (3d-view.md "Tables are built").
   if (!piece || (piece as { rows?: true }).rows) return false;
-  if (turnQuarter(turn) !== 0) return seatBehind(boxToCamera(piece, turn), toCamera(feet, turn));
+  // A seat that is the piece itself is sat on, never behind: a bar stool's seat lies on the 60% line, so turned away
+  // its sitter read as behind it and lost their body (the owner, 2026-11-25).
+  if (SAT_ON_KINDS.has((piece as { shape?: string }).shape ?? '')) return false;
+  if (turnQuarter(turn) !== 0)
+    return seatBehind(boxToCamera(piece, turn), toCamera(feet, Math.round(turn)));
   const depth = piece.y + piece.height - feet.y;
   return depth > piece.height * SPACE_SEAT_LIFT_SHARE && depth <= piece.height;
 }
@@ -188,19 +205,11 @@ const HUNG_KINDS: ReadonlySet<string> = new Set([
   'dartboard',
   'calendar-wall',
   'photo-wall',
+  'poster',
   'hand-dryer',
   'screen',
   'room-sign',
 ]);
-
-/** How far below a back wall's line a wall piece's top may sit and still hang on it, in canvas px (008-canvas DEFAULTS.md D147). */
-export const SPACE_HANG_REACH = 64;
-/** How far below a wall piece's foot a wall's line may run and the piece still hang on it, in canvas px. */
-export const SPACE_HANG_ACROSS = 24;
-/** How high up its wall a hung piece's foot sits, in canvas px (008-canvas DEFAULTS.md D147). */
-export const SPACE_HANG_LIFT = 10;
-
-type WallLine = { a: Point; b: Point; kind: string };
 
 /** Whether a piece of this kind hangs on a wall in the 3D view. */
 export function hangsOnWall(kind: string): boolean {
@@ -226,66 +235,6 @@ export function seenFromCamera(el: Element): boolean {
   // the camera sees it too (the owner, 2026-11-18: they looked "like they are floating in the air on one side").
   if (pieceQuarters(el) === null) return false;
   return standsIn3D(el) || builtIn3D(el);
-}
-
-/**
- * Where a wall piece hangs in the 3D view: the back wall (a level wall facing the camera) just above it in the plan,
- * across its middle, as how far its foot moves up the floor to that wall's line (canvas px, negative), or null for a
- * piece of another kind or with no such wall (it then stands where it is, as any piece does).
- */
-export function hangOnWall(el: Element, walls: readonly WallLine[]): number | null {
-  if (el.type !== 'shape' || !HUNG_KINDS.has(el.shape)) return null;
-  if (((el as { rotation?: number }).rotation ?? 0) % 360 !== 0) return null;
-  const mid = el.x + el.width / 2;
-  const foot = el.y + el.height;
-  let best: number | null = null;
-  // A piece placed over a wall's line, or just behind it (a Room Sign beside a door on the corridor side): it hangs on
-  // that wall's face too, never lying flat where the wall would clip it (the owner, 2026-11-18).
-  let across: number | null = null;
-  for (const w of walls) {
-    if (w.kind !== 'wall' && w.kind !== 'glass' && w.kind !== 'window' && w.kind !== 'doorway')
-      continue;
-    if (Math.abs(w.a.y - w.b.y) > 1) continue;
-    if (mid < Math.min(w.a.x, w.b.x) || mid > Math.max(w.a.x, w.b.x)) continue;
-    const y = (w.a.y + w.b.y) / 2;
-    if (y > el.y + el.height / 2) {
-      if (y - foot <= SPACE_HANG_ACROSS && (across === null || y < across)) across = y;
-      continue;
-    }
-    if (el.y - y > SPACE_HANG_REACH) continue;
-    // The nearest such wall above it; a hair in front of its face so the piece is never inside it.
-    if (best === null || y > best) best = y;
-  }
-  const at = best ?? across;
-  return at === null ? null : at + 1 - foot;
-}
-
-/** The gap a grown Screen keeps from each end of its wall, in canvas px. */
-export const SPACE_SCREEN_MARGIN = 16;
-
-/**
- * How wide a hung Screen may grow along its wall (the owner, 2026-11-18: "as large as possible on that wall to make
- * watching it easier"): twice the room from its middle to the nearer end of the run of wall it hangs on, less a
- * margin, so it grows about its middle and never over a corner, a window or a doorway. Null for any other piece or no
- * such wall. `dy` is hangOnWall's answer for it.
- */
-export function screenRoomOnWall(
-  el: Element,
-  walls: readonly WallLine[],
-  dy: number,
-): number | null {
-  if (el.type !== 'shape' || el.shape !== 'screen') return null;
-  const mid = el.x + el.width / 2;
-  const line = el.y + el.height + dy - 1;
-  for (const w of walls) {
-    if (w.kind !== 'wall' && w.kind !== 'glass') continue;
-    if (Math.abs(w.a.y - w.b.y) > 1 || Math.abs((w.a.y + w.b.y) / 2 - line) > 1) continue;
-    const lo = Math.min(w.a.x, w.b.x);
-    const hi = Math.max(w.a.x, w.b.x);
-    if (mid < lo || mid > hi) continue;
-    return Math.max(0, 2 * (Math.min(mid - lo, hi - mid) - SPACE_SCREEN_MARGIN));
-  }
-  return null;
 }
 
 /** Whether a facing shows a piece's side drawing: its back to the east or the west. */
@@ -321,6 +270,41 @@ export const SIDE_IS_ELEVATION: ReadonlySet<string> = new Set([
   'fridge',
   'hammock',
 ]);
+
+/** A front drawing less tall than this share of its width is long and low (a bench, a sofa, a bar). */
+export const SPACE_LONG_LOW_SHARE = 0.7;
+
+/**
+ * How tall a long, low piece stands seen side on, in canvas px at its drawing's own scale (3d-view.md "Turning the
+ * camera"): a height order under a character's 56 px (the owner, 2026-11-25: "there should be some visual height
+ * hierarchy"), counters and desks at the waist, tables a little lower, seats lower still.
+ */
+const LENGTH_HEIGHT: Readonly<Record<string, number>> = {
+  'reception-desk': 30,
+  bar: 30,
+  'kitchen-counter': 30,
+  'kitchen-sink': 30,
+  'pool-table': 26,
+  'foosball-table': 26,
+  'ping-pong-table': 24,
+  sofa: 20,
+  bench: 18,
+  'bike-rack': 16,
+};
+const LENGTH_HEIGHT_DEFAULT = 22;
+
+/** A long, low piece's standing height side on, in canvas px at its drawing's scale. */
+export function lengthHeight(kind: string): number {
+  return LENGTH_HEIGHT[kind] ?? LENGTH_HEIGHT_DEFAULT;
+}
+
+/**
+ * Whether a piece seen side on shows its whole length rather than its end (3d-view.md "Turning the camera"): a long,
+ * low piece, whose end alone read as a single chair (the owner, 2026-11-25).
+ */
+export function showsLength(front: { width: number; height: number }): boolean {
+  return front.height < front.width * SPACE_LONG_LOW_SHARE;
+}
 
 /**
  * The end of a piece's front drawing the 3D view shows when the camera sees its side (3d-view.md "Turning the

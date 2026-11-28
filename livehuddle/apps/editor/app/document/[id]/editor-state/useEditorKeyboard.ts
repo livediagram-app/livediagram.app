@@ -13,7 +13,6 @@ import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorViewportSlice } from './useEditorViewport';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorCreationSlice } from './useEditorCreation';
-import type { EditorStyleSlice } from './useEditorStyle';
 import type { EditorInteractionSlice } from './useEditorInteraction';
 
 // The global keyboard shortcuts. A slice of useEditorState (../useEditorState.ts): it takes the slices composed
@@ -28,7 +27,6 @@ export function useEditorKeyboard({
   fromViewport,
   fromEditing,
   fromCreation,
-  fromStyle,
   fromInteraction,
 }: {
   fromSelection: EditorSelectionSlice;
@@ -40,17 +38,9 @@ export function useEditorKeyboard({
   fromViewport: EditorViewportSlice;
   fromEditing: EditorEditingSlice;
   fromCreation: EditorCreationSlice;
-  fromStyle: EditorStyleSlice;
   fromInteraction: EditorInteractionSlice;
 }) {
-  const {
-    editingId,
-    formatSourceId,
-    readSelection,
-    setFormatSourceId,
-    setMultiSelectedIds,
-    setSelectedId,
-  } = fromSelection;
+  const { editingId, readSelection, setMultiSelectedIds, setSelectedId } = fromSelection;
   const { dialogs } = fromDialogs;
   const { canvasTool, pickCanvasTool, shortcutsEnabled } = fromTools;
   const { isReadOnly } = fromCollaboration;
@@ -59,8 +49,6 @@ export function useEditorKeyboard({
   const { fitToScreen, getViewportCenter, setViewportZoom } = fromViewport;
   const { redo, undo } = fromEditing;
   const {
-    addSticky,
-    addText,
     cancelDrawShape,
     commitDraw,
     deleteMultiSelected,
@@ -69,7 +57,6 @@ export function useEditorKeyboard({
     duplicateSelected,
     pendingDraw,
   } = fromCreation;
-  const { bringSelectedToFront, sendSelectedToBack } = fromStyle;
   const { beginEdit, copySelection, nudgeSelection, typeIntoSelected } = fromInteraction;
   // Global keyboard shortcuts (Escape cancels modes / deselects, Delete /
   // Backspace wipes selection, Cmd-Z / Cmd-Shift-Z undo / redo, Cmd-X / -C
@@ -77,8 +64,6 @@ export function useEditorKeyboard({
   // z-order + fit-to-screen). The full keymap + rationale lives in
   // useEditorKeyboardShortcuts and is catalogued in docs/specs/008-canvas/canvas-and-palette.md.
   useEditorKeyboardShortcuts({
-    formatSourceId,
-    setFormatSourceId,
     readSelection,
     editingId,
     isReadOnly,
@@ -89,8 +74,6 @@ export function useEditorKeyboard({
     copySelection,
     setCanvasTool: pickCanvasTool,
     canvasTool,
-    addText,
-    addSticky,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
     onTypeIntoSelected: typeIntoSelected,
@@ -125,8 +108,6 @@ export function useEditorKeyboard({
         deleteSelected();
       }
     },
-    onBringToFront: bringSelectedToFront,
-    onSendToBack: sendSelectedToBack,
     onFitToScreen: fitToScreen,
     onDeselect: () => {
       setSelectedId(null);

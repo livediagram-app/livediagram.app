@@ -64,7 +64,16 @@ test('a Viewer is always walking with no Edit | Walk toggle; an Editor walks in 
         id: crypto.randomUUID(),
         name: 'Board',
         elements: [
-          { id: 'note', type: 'sticky', x: 200, y: 160, width: 160, height: 160, label: 'Hello' },
+          {
+            id: 'note',
+            type: 'shape',
+            shape: 'desk',
+            x: 200,
+            y: 160,
+            width: 160,
+            height: 160,
+            label: 'Hello',
+          },
         ],
       },
     ],

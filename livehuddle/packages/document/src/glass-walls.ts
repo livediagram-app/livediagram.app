@@ -14,7 +14,7 @@ import {
 } from '@livehuddle/avatar/office-geometry';
 import { cutByDoors } from '@livehuddle/avatar/room-outline';
 import { pieceVariant, ROOM_WALL_VARIANTS } from './piece-variants';
-import { backWallDoorLeaf, backWallRuns, type BackWallDoor } from './back-wall-doors';
+import { backWallRuns, type BackWallDoor } from './back-wall-doors';
 
 /** The `variant` a glass-walled room stores (office.md "Glass walls"). */
 export const GLASS_ROOM_VARIANT = 'glass';
@@ -58,8 +58,6 @@ export type GlassRoomArt = {
   faces: { x: number; y: number; w: number; h: number }[];
   /** The glints on the faces. */
   glints: string;
-  /** The leaves of the shut Doors on a rectangle's back wall, standing in its face (back-wall-doors.ts). */
-  doors: { x: number; y: number; w: number; h: number }[];
 };
 
 const r2 = (v: number) => Math.round(v * 100) / 100;
@@ -100,13 +98,11 @@ export function glassRoomArt(
 ): GlassRoomArt {
   const { width, height } = el;
   const local = { x: 0, y: 0, width, height, roomDoor: el.roomDoor, roomOutline: el.roomOutline };
-  // An open Door on the back wall leaves no pane across its doorway: the Door draws only what moves there.
+  // A Door on the back wall leaves no pane across its doorway: the Door draws only what moves there.
   const backLine = ROOM_BACK_FACE - ROOM_WALL / 2;
   const segments = cutByDoors(
     roomWalls(local),
-    backDoors
-      .filter((d) => !d.closed)
-      .map((d) => ({ a: { x: d.from, y: backLine }, b: { x: d.to, y: backLine } })),
+    backDoors.map((d) => ({ a: { x: d.from, y: backLine }, b: { x: d.to, y: backLine } })),
   );
   const mullions = segments.map((s) => mullionsOn(s.a, s.b)).join('');
   if (el.roomOutline && el.roomOutline.length >= 3) {
@@ -114,7 +110,7 @@ export function glassRoomArt(
       el.roomOutline
         .map((p, i) => `${i === 0 ? 'M' : 'L'}${r2(p.x * width)} ${r2(p.y * height)}`)
         .join(' ') + ' Z';
-    return { floor: d, walls: d, mullions, faces: [], glints: '', doors: [] };
+    return { floor: d, walls: d, mullions, faces: [], glints: '' };
   }
   const W = ROOM_WALL;
   const F = ROOM_BACK_FACE;
@@ -135,6 +131,5 @@ export function glassRoomArt(
       return `M${r2(x)} 5L${r2(x - 12)} ${faceH - 5}M${r2(x + 9)} 5L${r2(x + 3)} ${r2(faceH / 2)}`;
     })
     .join('');
-  const doors = backDoors.filter((d) => d.closed).map((d) => backWallDoorLeaf(d).leaf);
-  return { floor, walls, mullions, faces, glints, doors };
+  return { floor, walls, mullions, faces, glints };
 }

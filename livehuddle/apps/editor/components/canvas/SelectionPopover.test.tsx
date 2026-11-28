@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { SelectionPopover } from './SelectionPopover';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
 // The selection toolbars (docs/specs/008-canvas/canvas-and-palette.md#selection-popover): More, the
@@ -67,35 +67,6 @@ describe('SelectionPopover', () => {
 });
 
 // docs/specs/008-canvas/canvas-and-palette.md "Format painter": its one way in, beside Duplicate.
-describe('SelectionPopover Format Painter', () => {
-  it('sits right after Duplicate and starts the painter', () => {
-    setTouch(false);
-    const onFormatPainter = vi.fn();
-    render(
-      <SelectionPopover
-        bounds={BOUNDS}
-        canvasOffset={{ x: 0, y: 0 }}
-        zoom={1}
-        title="Selected Square"
-        onDelete={() => {}}
-        onDuplicate={() => {}}
-        onFormatPainter={onFormatPainter}
-        onOpenContextMenu={() => {}}
-      />,
-    );
-    const names = screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'));
-    expect(names.indexOf('Format Painter')).toBe(names.indexOf('Duplicate') + 1);
-    fireEvent.click(screen.getByRole('button', { name: 'Format Painter' }));
-    expect(onFormatPainter).toHaveBeenCalledTimes(1);
-  });
-
-  it('shows no Format Painter without a handler (read-only)', () => {
-    setTouch(false);
-    renderSingle();
-    expect(screen.queryByRole('button', { name: 'Format Painter' })).toBeNull();
-  });
-});
-
 describe('MultiSelectionToolbar', () => {
   it.each([false, true])('shows More and the bin, touch %s', (touch) => {
     setTouch(touch);

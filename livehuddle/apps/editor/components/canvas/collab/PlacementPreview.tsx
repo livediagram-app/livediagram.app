@@ -1,5 +1,6 @@
 'use client';
 
+import { snapFenceToGrass } from '@/lib/space-3d/fence-snap';
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import {
   applyShapeVariant,
@@ -11,7 +12,6 @@ import {
   isWallPiece,
   snapDoorToWall,
   mountsOnWall,
-  snapToWallFace,
   turnPiece,
   turnsWithFacing,
   type ChairFacing,
@@ -28,6 +28,8 @@ import { PieceArt, hasPieceArt } from '@/components/canvas/PieceArt';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import { usePlacingFacing } from '@/lib/placing-facing';
 import { usePlacingTurnKeys } from '@/hooks/canvas/usePlacingTurnKeys';
+import { placingPiece, usePlacingDrawn } from '@/lib/real-3d/placing-piece';
+import { snapAimedWallPiece } from '@/lib/real-3d/wall-aim';
 
 // Where a placed piece would land with the pointer at canvas point `at`: at its own size (its preset's, `variant`),
 // centred on the point (as a click or a drop places one). A Door or a Window then snaps onto the nearest wall, as its
@@ -43,12 +45,17 @@ export function placementLanding(
 ): { piece: ShapeElement; onWall: boolean } {
   const base = placedPiece(kind, variant, facing);
   const free = { ...base, x: at.x - base.width / 2, y: at.y - base.height / 2 };
-  // A wall piece shows where it will land: against the nearest wall (wall-pieces.md "Only on a wall").
+  // A wall piece shows where it will land: against the nearest wall (wall-pieces.md "Only on a wall"), in 3D on the
+  // face of the wall the pointer is over (wall-pieces.md "Aimed at a wall in 3D").
   if (mountsOnWall(free.shape)) {
-    const mounted = snapToWallFace(free, elements);
+    const mounted = snapAimedWallPiece(free, elements);
     return { piece: mounted, onWall: mounted !== free };
   }
-  if (!isWallPiece(free)) return { piece: free, onWall: false };
+  if (!isWallPiece(free)) {
+    // A fence on a lawn's edge fences the whole side (fence.md "Placed on a lawn's edge").
+    const fenced = snapFenceToGrass(free, elements);
+    return { piece: fenced, onWall: fenced !== free };
+  }
   const snapped = snapDoorToWall(free, elements);
   return { piece: snapped, onWall: snapped !== free };
 }
@@ -88,6 +95,29 @@ export function placingKind(
 // or a drop would put it. Drawn inside the canvas's
 // transformed layer, so it pans, zooms and turns with the content; it listens to the pointer only while such a
 // piece is being added, and moves at most once a frame.
+/**
+ * Where the piece lands now: the armed Room's snap, a drag's alignment snap, else the pointer. `at.free` (Cmd / Ctrl
+ * held) places the armed Room without its snap (docs/specs/008-canvas/snap-override.md).
+ */
+function landingOf(
+  kind: string,
+  at: { x: number; y: number; free?: boolean },
+  elements: readonly Element[],
+  dragging: boolean,
+  snap: { dx: number; dy: number } | null,
+  variant: string | undefined,
+  facing: ChairFacing | undefined,
+) {
+  const roomSnap =
+    kind === 'room' && !dragging && !at.free ? armedRoomSnap(at, elements, variant) : null;
+  const point = roomSnap
+    ? { x: at.x + roomSnap.dx, y: at.y + roomSnap.dy }
+    : dragging && snap
+      ? { x: at.x + snap.dx, y: at.y + snap.dy }
+      : at;
+  return { ...placementLanding(kind, point, elements, variant, facing), roomSnap };
+}
+
 export function PlacementPreview({
   pendingDraw,
   elements,
@@ -118,7 +148,7 @@ export function PlacementPreview({
   // Space turns the piece while it is placed (usePlacingTurnKeys), and the preview draws it turned.
   usePlacingTurnKeys(kind);
   const facing = usePlacingFacing(kind);
-  const [at, setAt] = useState<{ x: number; y: number } | null>(null);
+  const [at, setAt] = useState<{ x: number; y: number; free?: boolean } | null>(null);
   if (!kind && at) setAt(null);
 
   // A palette drag carries the piece with the pointer; an armed tile's press-and-drag places it where the press began.
@@ -126,7 +156,7 @@ export function PlacementPreview({
   useEffect(() => {
     if (!kind) return;
     let frame: number | null = null;
-    let latest: { x: number; y: number } | null = null;
+    let latest: { x: number; y: number; free?: boolean } | null = null;
     const track = (e: PointerEvent | DragEvent) => {
       // Held down with an armed tile: the piece lands centred where the press began (palette-drag-ghost.md "No box to
       // draw"), so the preview stays there, set by the press itself, rather than following the pointer.
@@ -135,7 +165,7 @@ export function PlacementPreview({
       const overCanvas = !!(e.target as HTMLElement | null)?.closest?.('main');
       latest =
         rect && overCanvas && !overFloatingPanel(e.target)
-          ? pointerToCanvas(e.clientX, e.clientY, rect, zoom)
+          ? { ...pointerToCanvas(e.clientX, e.clientY, rect, zoom), free: e.metaKey || e.ctrlKey }
           : null;
       frame ??= requestAnimationFrame(() => {
         frame = null;
@@ -168,16 +198,19 @@ export function PlacementPreview({
     );
   }, [kind, onWalls, variant, surface, facing]);
 
-  if (!kind || !at) return null;
+  const landing =
+    kind && at ? landingOf(kind, at, elements, dragging, snap, variant, facing) : null;
+  // The 3D view draws the piece where it would land, as it will stand once dropped (3d-view.md "Editing in 3D").
+  const shown3D = usePlacingDrawn();
+  useEffect(() => {
+    placingPiece.set(landing ? landing.piece : null);
+  }, [landing]);
+  useEffect(() => () => placingPiece.set(null), []);
+
+  if (!kind || !at || !landing) return null;
   // An armed Room snaps to its neighbours as a dragged one does, wall to wall included (docs/specs/009-elements/
   // office.md "Rooms line up"); the tap commits through the same function, so it lands where it shows.
-  const roomSnap = kind === 'room' && !dragging ? armedRoomSnap(at, elements) : null;
-  const point = roomSnap
-    ? { x: at.x + roomSnap.dx, y: at.y + roomSnap.dy }
-    : dragging && snap
-      ? { x: at.x + snap.dx, y: at.y + snap.dy }
-      : at;
-  const { piece, onWall } = placementLanding(kind, point, elements, variant, facing);
+  const { piece, onWall, roomSnap } = landing;
   const drawn = onWalls ? (
     <PieceArt
       element={piece}
@@ -234,6 +267,7 @@ export function PlacementPreview({
       )}
     </div>
   );
+  if (shown3D) return guides?.length ? <>{guides}</> : null;
   return guides?.length ? (
     <>
       {guides}

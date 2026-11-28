@@ -1,30 +1,11 @@
 import { useState } from 'react';
-import { useFlyoutPath } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 
-import type { EditorContextMenuProps } from './EditorContextMenu.types';
-
-type ColorSetterProps = Pick<
-  EditorContextMenuProps,
-  | 'onSetTextColor'
-  | 'onPreviewTextColor'
-  | 'onCommitTextColor'
-  | 'onPreviewStyleEnd'
-  | 'onSetFillColor'
-  | 'onPreviewFillColor'
-  | 'onCommitFillColor'
-  | 'onSetStrokeColor'
-  | 'onPreviewStrokeColor'
-  | 'onCommitStrokeColor'
->;
-
-// Shared accordion + colour-row scaffolding for the editor context menu's
-// element and multi-selection branches: an at-most-one-open accordion
-// (sectionProps), an at-most-one-open colour palette (colorProps), and the
-// four hover-preview handler bundles spread into each ColourRow. Lives in a
-// hook so the two menu branches share one implementation instead of each
-// re-spelling it.
-export function useContextMenuScaffold(p: ColorSetterProps) {
-  // Which collapsible section is open — at most one at a time (null = all
+// Shared accordion scaffolding for the editor context menu's element and multi-selection branches: an
+// at-most-one-open accordion (sectionProps). The colour rows and side flyouts that once shared it left with the
+// Appearance flyout (docs/specs/002-project-scope/not-in-livehuddle.md
+// "Element looks, layers, opacity and rotation").
+export function useContextMenuScaffold() {
+  // Which collapsible section is open, at most one at a time (null = all
   // collapsed). Rows sit flush; the MenuGroupSeparator bands are the only rules.
   const [openSection, setOpenSection] = useState<string | null>(null);
   const sectionProps = (id: string) => ({
@@ -32,43 +13,5 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
     flush: true,
   });
-  // Which side-flyout rows (Style / Text / Tools) are open, one per level: the shared open path
-  // (useFlyoutPath), so a flyout nested in another keeps its parent open.
-  const flyoutProps = useFlyoutPath();
-  // Which colour row's inline palette is open — at most one, toggled by
-  // re-clicking the row so it never sticks open.
-  const [openColor, setOpenColor] = useState<string | null>(null);
-  const colorProps = (id: string) => ({
-    open: openColor === id,
-    onToggle: () => setOpenColor((c) => (c === id ? null : id)),
-  });
-  // Hover-preview bundles spread into each ColourRow so the swatches
-  // preview/commit like the style presets while the custom <input> keeps the
-  // debounced onChange. onPreviewEnd is the shared revert (clearStylePreview).
-  const textColorHandlers = {
-    onChange: p.onSetTextColor,
-    onPreview: p.onPreviewTextColor,
-    onCommit: p.onCommitTextColor,
-    onPreviewEnd: p.onPreviewStyleEnd,
-  };
-  const fillColorHandlers = {
-    onChange: p.onSetFillColor,
-    onPreview: p.onPreviewFillColor,
-    onCommit: p.onCommitFillColor,
-    onPreviewEnd: p.onPreviewStyleEnd,
-  };
-  const strokeColorHandlers = {
-    onChange: p.onSetStrokeColor,
-    onPreview: p.onPreviewStrokeColor,
-    onCommit: p.onCommitStrokeColor,
-    onPreviewEnd: p.onPreviewStyleEnd,
-  };
-  return {
-    sectionProps,
-    flyoutProps,
-    colorProps,
-    textColorHandlers,
-    fillColorHandlers,
-    strokeColorHandlers,
-  };
+  return { sectionProps };
 }

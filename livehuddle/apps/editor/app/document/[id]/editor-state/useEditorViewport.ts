@@ -1,7 +1,9 @@
 'use client';
 
 import { useKeyboardAvoidance } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { resetSpace3DTurn } from '@/lib/space-3d/space-3d-turn';
 import { type ShapeElement } from '@livehuddle/document';
 import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import { track } from '@/lib/telemetry';
@@ -9,6 +11,7 @@ import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useEditorViewport as useCanvasViewport } from '@/hooks/canvas/useEditorViewport';
 import { useAvatarCamera } from '@/hooks/canvas/useAvatarCamera';
 import { holdsOnlyPads } from '@/lib/pad-only-tab';
+import { tabFitView } from '@/lib/tab-fit-view';
 import { STRIP_MORPH_MS } from '@/lib/strip-morph';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import type { EditorDocumentSlice } from './useEditorDocument';
@@ -130,7 +133,25 @@ export function useEditorViewport({
       if (els.length === 0 || holdsOnlyPads(els)) return;
       glideToFit(STRIP_MORPH_MS);
     },
+    // An arrival starts from the whole tab, framed as Fit frames it, and zooms in (3d-view.md "Arriving").
+    overview: () => tabFitView(canvasMainRef.current, activeTab.elements),
   });
+  // A new Space or another tab opens on the default view (the owner, 2026-11-27: "when I change tab or enter a new
+  // space reset my zoom to default perspective"; 3d-view.md "Turning the camera"): the camera unturned, and in Edit the
+  // tab framed (walking, the camera above centres on your character at 180%).
+  const firstTab = useRef(true);
+  const walkingNow = useLatest(canvasTool === 'avatar');
+  const fitTabRef = useLatest(fitTabToScreen);
+  useEffect(() => {
+    resetSpace3DTurn();
+    if (firstTab.current) {
+      firstTab.current = false;
+      return;
+    }
+    if (walkingNow.current) return;
+    const frame = requestAnimationFrame(() => fitTabRef.current());
+    return () => cancelAnimationFrame(frame);
+  }, [activeId, walkingNow, fitTabRef]);
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
   useKeyboardAvoidance({ canvasMainRef, zoomRef, setViewportOffset });
 

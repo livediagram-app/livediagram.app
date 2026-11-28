@@ -18,6 +18,11 @@ export const OPEN_SETTINGS_EVENT = 'livehuddle:open-settings';
 /** The window event a floating panel sends as it arrives or leaves with no gesture of its own (docs/specs/008-canvas/quick-style-panel.md "Collisions"). */
 export const PANEL_PRESENCE_EVENT = 'livehuddle:panel-presence';
 
+/** The window event a corner panel layout write sends. livehuddle has no corner panels any more (the Map, the last, left:
+ *  docs/specs/002-project-scope/not-in-livehuddle.md "The Map"), so nothing here sends it; the workbench's Quick Style
+ *  placement still listens under this name. */
+export const PANEL_LAYOUT_CHANGED_EVENT = 'livehuddle:panel-layout-changed';
+
 /** The sessionStorage key of the search a `/new?q=` link hands the next start panel. */
 export const START_QUERY_KEY = 'livehuddle:v2:start-query';
 

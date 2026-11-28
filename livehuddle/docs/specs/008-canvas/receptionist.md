@@ -35,6 +35,8 @@ someone in it: a host people meet as they arrive, who answers what they ask, in 
 - **Seen while you walk.** The Receptionist is drawn on the canvas while you are in Avatar mode, inside the transformed layer
   with the characters, so he pans and zooms with them. In Edit he is not drawn: building the space is not a time to be
   walked past.
+- **Dressed for the desk** (the owner, 2026-11-27: "Receptionist should be wearing a suit"): he wears the Suit, with
+  his curly dark brown hair, in 2D and 3D.
 - **Never stored, never sent, never exported.** He is not an element, rides no presence, and an export has no the Receptionist.
   He never blocks a walk and is never a destination: people walk through him, as through the dog.
 - **Never on water** (Work Tracker 800): his place beside the pad, on either side, is taken as a person entering
@@ -66,8 +68,11 @@ that agree to a second agree on the Receptionist.
   | Bookshelf                                                   | Browses it, facing the shelves                         |
   | Pet Bed                                                     | Pats the dog: a wave over the bed                      |
   | Reception Desk                                              | Stands behind the counter                              |
-  | The open floor                                              | A flourish: a dance, a spin, a cheer or jumping jacks  |
+  | The open floor                                              | Stands and looks round the room, calmly                |
   | His pad                                                     | Waits beside it (every fourth leg, and when none fits) |
+
+  He is the front desk, not a guest: no dance, spin, cheer or jumping jacks (the owner, 2026-11-27: "Receptionist
+  shouldn't dance and act stupid").
 
 - **Each leg** he sets off from where the last one ended, walks the way round the walls
   ([Finding the way](avatar-mode.md#finding-the-way), the same route for everyone) at a stroll, 120 px a second, then
@@ -153,7 +158,13 @@ that agree to a second agree on the Receptionist.
 - **Somebody rings a Reception Desk's bell** on his tab ([Reception Desk](../009-elements/workday-pieces.md)): the
   Receptionist walks over to that desk to help, from wherever he is, and on every screen that is told of the ring (the
   ring reaches everyone on the tab, in earshot or not). He goes round behind the desk (a quarter in from its left, clear of its Welcome bubble) when he can get there, facing
-  whoever rang, else beside its front; a desk he cannot reach at all is left ringing. He waves on arrival and stays
+  whoever rang, else beside its front; a desk he cannot reach at all is left ringing. Behind is the side away from
+  the way its counter faces. A spot there that is in a piece's footprint, in a wall's reach, or on a wall's far side
+  (a desk backed onto the room's wall) is passed over for the next: the other quarter, its middle, nearer the desk,
+  then the floor inside the desk's box behind its counter (the owner, 2026-11-27: "Make sure the receptionist and dog
+  don't clash with other elements"). Every walk of his, his day's, a greeting's, a talk's and a bell's, keeps to the
+  walls and footprints the player's walk does (the 3D models' while the Real 3D view draws); a spot he cannot reach
+  has him walk as near as he can get, never through anything. He waves on arrival and stays
   for the greeting's few seconds, then carries on with his day.
 - **Behind the desk he is seen whole in the 3D view** (the coordinator, 2026-11-18; 3D is a phone's default view):
   every Space's desk leaves the floor behind it for him, in front of the room's back wall, never in the wall's band,
@@ -190,7 +201,7 @@ in `apps/editor/lib/receptionist/receptionist-topics.ts`.
 | Meet  | Rooms and Meetings        | Walks into a room             |                      |
 | Meet  | Knocking on a Room        | Nothing (a room's sign)       |                      |
 | Meet  | The Stage                 | Nothing                       |                      |
-| Move  | Getting Around            | The minimap                   |                      |
+| Move  | Getting Around            | The bottom-right zoom cluster |                      |
 | Move  | Floors, Lifts and Portals | The tab bar                   |                      |
 | Move  | Following Someone         | The presence stack            |                      |
 | You   | Looking Like Me           | The palette's look            |                      |
@@ -200,7 +211,7 @@ in `apps/editor/lib/receptionist/receptionist-topics.ts`.
 | Space | Building the Space        | The Edit / Walk toggle        | An Editor            |
 | Space | Tours and Help            | The footer's Ask Receptionist |                      |
 
-A topic whose control is not on screen (a phone's narrower palette, a closed minimap) answers without a ring.
+A topic whose control is not on screen (a phone's narrower palette) answers without a ring.
 
 ## Phone
 

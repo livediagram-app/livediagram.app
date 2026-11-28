@@ -23,8 +23,8 @@ a room, a fence or a portal to vanish from view without anyone meaning it to.
   another, or a round plaza where paths meet, covers what it should ([Garden Path](../009-elements/office.md#garden-path)).
   **Windows** paint last among the backdrops, in array order: over the room and rugs they sit on, under every piece of
   furniture, so a window's light lies on the floor ([Window](../009-elements/room-builder.md#window)).
-- **Bring to Front / Send to Back** move the selection to the end / start of the array (`bringManyToFront` /
-  `sendManyToBack`), in the element menu and the selection popover alike.
+- **No Bring to Front / Send to Back** in livehuddle (owner, 2026-11-27,
+  [Element looks, layers, opacity and rotation](../002-project-scope/not-in-livehuddle.md#element-looks-layers-opacity-and-rotation)): an element keeps its place in the array, and a new, pasted or duplicated one is appended.
 
 ## Documents saved with layers
 

@@ -3,7 +3,8 @@
 // Wrap Up, the host's after-call (docs/specs/012-collaboration/calls-from-items.md "Wrap Up"; the index's
 // item-calls.md "After the call"): a summary drafted from the call's facts and the floors' notes, rewritten by AI on
 // a press when the person has it, sent as a page to a chosen knowledgebase (the item's connected one, else its team's,
-// first); and the stickies of the floor on show sent to a plan through Send to Plan, each card linked back to the item.
+// first). Its Send Actions to Plan went with the sticky notes it sent (docs/specs/002-project-scope/not-in-livehuddle.md
+// "The Write category").
 // Loaded on its first open.
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { askSender, tabPassages } from '@liveworkspace/ask/ui';
@@ -14,7 +15,6 @@ import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { meetingHeroArt } from '@liveworkspace/ui/dialog-hero-art/meeting';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
-import { sendAllStickies } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import type { Tab } from '@livehuddle/document';
 import { useToast } from '@/hooks/ui/useToast';
@@ -31,7 +31,6 @@ export function WrapUpDialog({
   spaceId,
   accountId,
   tabs,
-  activeTabId,
   onClose,
   onSent,
 }: {
@@ -39,7 +38,6 @@ export function WrapUpDialog({
   spaceId: string;
   accountId: string;
   tabs: readonly Tab[];
-  activeTabId: string;
   onClose: () => void;
   onSent: () => void;
 }) {
@@ -86,9 +84,6 @@ export function WrapUpDialog({
       ? [{ id: d.id, title: d.title }, ...items]
       : items;
   }, [kbs, call.summaryDefault]);
-
-  const active = tabs.find((t) => t.id === activeTabId) ?? tabs[0];
-  const sendActions = active ? sendAllStickies(active.id, active.elements) : null;
 
   const writeWithAi = async () => {
     if (writing) return;
@@ -226,9 +221,6 @@ export function WrapUpDialog({
         ) : null}
       </div>
       <DialogFooter>
-        <Button variant="secondary" disabled={!sendActions} onClick={() => sendActions?.()}>
-          Send Actions to Plan
-        </Button>
         {sent ? (
           <Button variant="secondary" onClick={() => window.open(sent.link, '_blank', 'noopener')}>
             Open Page

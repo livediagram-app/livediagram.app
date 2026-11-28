@@ -32,7 +32,7 @@ to change.
 
 - **Spaces, avatars, rooms and calls**: Avatar mode, the Space elements (Travel, Seats, Rooms, Perks), the Selection Mode
   buttons, the four Spaces templates, proximity audio and calls.
-- **Light meeting tools**: [Bring Focus](../012-collaboration/bring-focus.md), the
+- **Light meeting tools**: the
   [facilitator baton](../012-collaboration/facilitator.md) it answers to, and Follow-me. The Session strip's Timer went
   later, for the [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md) pieces ([The Session strip's
   Timer](#the-session-strips-timer)), and so did the Vote ([Vote](#the-vote)). The laser, the spotlight and the Reaction Pads went later
@@ -65,7 +65,7 @@ reads it cites them.
 
 - **Gone from every door**, for every role:
   - the element menu has no quick bar and offers no **Assign Action**, **Add Comment**, **Add Link** or **Add Note**;
-    **Clear Styles** is a row under its Style row ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md));
+    **Clear Styles** went later too ([Format Painter and Clear Styles](#format-painter-and-clear-styles));
   - the Participant's and the Viewer's element menu has no comments, **Open Link** or **View Note** row; it keeps
     **Copy Text**;
   - the selection toolbar has no **Add Comment** or **Show Comments**, so a Participant and a Viewer, whose only
@@ -353,20 +353,113 @@ carry a **Gone from livehuddle** banner and record what livehuddle had.
 - **A stored `quickStylePanelEnabled`** is not read. The key is kept in the preferences blob, unread, like any key
   this version does not know, so no migration is needed. Stored custom swatches (`quickSwatchOverrides`) are kept the
   same way; nothing in livehuddle shows or edits them any more.
-- **What stays for styling**: the element menu (right-click, long-press or a toolbar's More) stays the complete home
-  of every element setting, as it always was: its **Appearance** flyout (colours, border, shadow, opacity, corners), the
-  Text category, the colour picker with Custom colours, and the **Clear Styles** row under Style
-  ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md)), which still puts the element's colours, width
-  and line style back to the theme's. The multi-selection menu restyles a whole selection. **Tab Style** themes the
-  tab. **Style memory** (the next element of a kind takes its last style) keeps working from the menu.
+- **What stays for styling**: **Tab Style** themes the tab. The element menu's **Appearance** flyout went later
+  ([Element looks, layers, opacity and rotation](#element-looks-layers-opacity-and-rotation)), and so did **Clear
+  Styles** and the **Format Painter** ([Format Painter and Clear Styles](#format-painter-and-clear-styles)).
 - **Telemetry**: the panel's `Element Changed` tokens (`QuickStroke`, `QuickBackground`, `QuickTextColour`,
   `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`), `UI Changed QuickSwatchCustom` and
-  `QuickSwatchReset`, and `QuickStylePanelOn` / `Off` are no longer sent. `QuickClearStyles` stays: the menu's
-  Clear Styles still sends it.
+  `QuickSwatchReset`, and `QuickStylePanelOn` / `Off` are no longer sent. `QuickClearStyles` went with Clear Styles.
 - **The code.** The panel's components (`QuickStylePanel`, its rows, More colours, the Marker and Highlighter rows,
-  the swatch override popover) are deleted with their tests. A headless `ClearStylesHost` keeps the Quick Style view
-  (`useQuickStyle`), which works out what Clear Styles resets, and publishes it to the menu's Clear Styles row. The panel's
-  placement hook and the Clear Styles store are `@liveworkspace/workbench`'s, shared with livediagram, and stay.
+  the swatch override popover) are deleted with their tests; the headless `ClearStylesHost` that kept the Quick Style
+  view for Clear Styles went with it ([Format Painter and Clear Styles](#format-painter-and-clear-styles)). The panel's placement hook and the Clear Styles store are
+  `@liveworkspace/workbench`'s, shared with livediagram, and stay.
+
+## Element looks, layers, opacity and rotation
+
+Status: **built** (owner, 2026-11-27): the selection toolbars, the element and multi-selection menus, the keyboard,
+Search and the help centre. Rotating Elements and Colours, Borders and Opacity are no longer livehuddle help articles;
+their livehuddle paths redirect to Turning Furniture and Context Menus.
+
+The owner (2026-11-27): "remove Appearance category from selected element toolbar in livehuddle, also remove
+rotation, and Layer options and opacity, simplify". A Space is furnished, not drawn: a piece looks the way its kind
+and its Type draw it, and a room the way its Walls and Floor make it. livediagram keeps all of this, and its specs
+there are the ones to read.
+
+- **Gone from the selection toolbar**: **Rotate Left** and **Rotate Right**, and **Bring to Front** and **Send to
+  Back**, on one element and on a multi-selection. The toolbar now holds **More**, **Duplicate**, **Send to Plan**
+  where it applies, and **Delete** (the Format Painter and Edit Text went later,
+  [Format Painter and Clear Styles](#format-painter-and-clear-styles), [Edit Text](#edit-text-on-the-selection-toolbar))
+  ([Selection popover](../008-canvas/canvas-and-palette.md#selection-popover)).
+- **Gone from the element menu**: the **Arrange** category (Bring to Front, Send to Back and the Opacity slider), the
+  **Rotation** category (the 45° tiles) and the **Appearance** flyout (Presets, Colours, Border, Shadow, Finish, the
+  Text flyout's Font, Size, Padding, Alignment and Markers, and an icon's Icon and Weight). The menu now holds
+  **Size** (a boxed element that has one) and the element's own section (Desk, Room, Portal and the rest), then an
+  image's or a link card's content section; its Clear Styles quick bar went later ([Format Painter and Clear Styles](#format-painter-and-clear-styles)). A menu with
+  none of these to show does not open.
+- **Gone from the multi-selection menu**: its Arrange, Rotation, Appearance and Text sections and its icon Icon and
+  Weight rows. It holds **Size** (Lock Aspect Ratio and, for shapes, Reset Aspect Ratio) and the right-clicked
+  piece's **Type**; with neither to show it opens nothing.
+- **Gone from the keyboard and Search**: **⌘⇧]** (Bring to Front) and **⌘⇧[** (Send to Back), their rows in the
+  Keyboard Shortcuts dialog, and the **Bring to Front**, **Send to Back**, **Rotate 90°**, **Rotate 180°**,
+  **Rotate 270°** and **Reset Rotation** commands. With no handler the chords are left to the browser.
+- **A piece still turns.** Furniture never rotated freely; it faces four ways
+  ([Turning furniture](../009-elements/furniture-facing.md)). The four facing tiles in its own menu section and the
+  **Rotate Left** / **Rotate Right** commands in Search turn it, and **Space** turns it while it is being placed.
+- **What a Space already holds is kept as it is.** An element keeps its stored colours, opacity, rotation and order:
+  they still draw, save and copy, and an undo still restores them. Nothing in livehuddle changes them any more, so no
+  migration is needed. A new element lands at the front, as before.
+- **Telemetry**: `Element · Changed · Rotation`, `Opacity`, the colour, border, shadow, finish, preset, font, size,
+  padding, alignment, marker and icon tokens the menu sent, and the layer moves are no longer sent from the menu or
+  the toolbar. A piece's turn still sends `Element · Changed · <Kind>`.
+- **Share roles**: unchanged. Each of these was an Editor's; a Participant and a Viewer had none of them
+  ([Share roles](../013-workspace/share-roles.md)).
+- **The code.** livehuddle's own menu sections for them (`ElementAppearanceSections`, `ElementColourBorderSections`,
+  `MultiStyleSections`, the Arrange and Rotation blocks of `EditorContextMenu` and `MultiPlacementSections`), the
+  helpers only they used (presets, typography, border, finish, the colour and marker rows, the animation tiles) and
+  the menu props and style setters that fed them are deleted with their tests; the toolbar's `TurnButtons` leaves
+  `@livehuddle/avatar`. The shared toolbar, menu and section primitives in
+  `@liveworkspace/workbench` are livediagram's too and stay unchanged.
+
+## Format Painter and Clear Styles
+
+Status: **built** (owner, 2026-11-27): "Format Painter and Clear Styles go too in livehuddle". With the element menus'
+looks gone ([Element looks, layers, opacity and rotation](#element-looks-layers-opacity-and-rotation)) there is no
+look to copy or clear: a piece looks the way its kind, its Type and the tab's theme draw it. livediagram keeps both.
+
+- **Gone from the selection toolbar**: the **Format Painter** button. The single-element toolbar holds **More**,
+  **Duplicate**, **Send to Plan** where it applies, and **Delete** (Edit Text went later,
+  [Edit Text](#edit-text-on-the-selection-toolbar)).
+- **Gone with the painter**: its held mode (the "Format Painter" pill at the top centre and its Done, the copy
+  cursor, a press painting instead of selecting, Escape leaving it), its **Format** panel
+  ([Format Panel](../008-canvas/format-panel.md)) and the panel's saved place. A stored panel position for it is
+  ignored.
+- **Gone from the element menu**: the quick bar and its **Clear Styles** eraser
+  ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md)).
+- **No empty menu**: a right-click, a long press or More on an element whose menu would have nothing in it (no Size,
+  no section of its own, no content section) opens nothing, as the multi-selection menu already does.
+- **Keyboard and Search**: neither had an entry for either (Search's Format Painter left on 2026-11-06), so nothing
+  changes there.
+- **What a Space already holds is kept as it is**: an element keeps any style it was given; nothing in livehuddle
+  changes or clears it. No migration.
+- **Telemetry**: `Element · Changed · FormatPainter`, `Canvas · Used · FormatPainter`, the Format panel's
+  `UI · Changed` tokens and `Element · Changed · QuickClearStyles` are no longer sent.
+- **Share roles**: unchanged. Both were an Editor's; a Participant and a Viewer had neither.
+- **Help**: the Format Painter article is no longer a livehuddle article, and its livehuddle address redirects to
+  Context Menus. The toolbar and menu articles drop both.
+- **The code.** livehuddle's painter (`useFormatTool`, `format-painter`, the Format panel and its config, the
+  `'format'` canvas tool and every branch on it), the menu's quick bar (`ElementMenuClearStyles`), the headless
+  `ClearStylesHost` and its Quick Style view (`useQuickStyle`, `quick-style` where only it used them), and the
+  style hover preview (`useStylePreview`) with the autosave's `previewingRef` that only it set, are deleted with
+  their tests. The shared toolbar, the Clear Styles store and the placement hooks in `@liveworkspace/workbench` are
+  livediagram's too and stay unchanged.
+
+## Edit Text on the selection toolbar
+
+Status: **built** (owner, 2026-11-27): "Remove the Text button from the selected element toolbar". A Space's pieces
+are named, not written on: a Room's name is set in its settings ([Office](../009-elements/office.md) "Room"), and a
+piece that takes a name is still renamed in place. livediagram keeps the button.
+
+- **Gone from the selection toolbar**: the **Edit Text** / **Add Text** button (the serif `T`), on every element. The
+  single-element toolbar holds **More**, **Duplicate**, **Send to Plan** where it applies, and **Delete**
+  ([Selection popover](../008-canvas/canvas-and-palette.md#selection-popover)).
+- **Still renamed in place**: a double-click, Enter or typing on a selected piece that takes a label opens its inline
+  editor as before; a Room's settings dialog and the Quick Style panel carry a **Room name** field.
+- **Share roles**: unchanged. The button was an Editor's; a Participant and a Viewer had no toolbar.
+- **Help**: the toolbar article and the Elevator article no longer name the button.
+- **The code.** The toolbar's `onEditText` / `hasText` props and their wiring in `CanvasSelectionToolbars`, and
+  `elementHasText` in `@livehuddle/document` (only the button read it), are deleted with their tests.
+  `elementSupportsText` stays: the read-only menu and the share-roles tests read it. The shared `TextIcon` in
+  `@liveworkspace/workbench` stays for the shared read-only menu.
 
 ## Icons
 
@@ -465,7 +558,7 @@ The owner (2026-11-07): "Let me add images to the space, via the Write category.
 are useful for adding branding and stuff. So I want them back". A logo on the reception wall or a team photo by the
 door makes a Space a place of its own. livehuddle's [Images](../009-elements/images.md) spec is the one to read again.
 
-- **The Image tile is in Write**, after Text and the Sticky note ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)),
+- **The Image tile was in Write** (gone with it, [The Write category](#the-write-category)), after Text and the Sticky note ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)),
   and so in the strip's Search and the search panel's Add to Canvas. It arms the draw-to-size gesture; the new image
   lands as its empty placeholder and its picker (Upload, Gallery, Search) fills it.
 - **A picture pasted or dropped on the canvas lands as an image element**, uploaded to the person's gallery through
@@ -480,6 +573,76 @@ door makes a Space a place of its own. livehuddle's [Images](../009-elements/ima
   upload, the placed element), and load the upload code (`lib/upload-image.ts`) only when a picture arrives.
 - **The help**: the Write Elements article names the Image; the Images article and its redirect are not restored
   (the Write article covers adding one).
+
+### The Write category
+
+The owner (2026-11-27): "Remove the Write category from the palette in livehuddle, don't keep it on existing spaces,
+just remove them". A Space is built from its pieces; words and notes are what livediagram is for.
+
+- **No Write category**, on any Space, new or old: the palette is one layout for every Space, so there is nothing to
+  keep it on. The strip opens on **Rooms**: `Rooms, Seats, Perks, Play, Garden, Meet | Travel`.
+- **Popular loses Sticky note and Text**: it held Room, Meeting Table, Chair, Bring Focus and Avatar Pad (Bring Focus went later, [Bring Focus](#bring-focus)).
+- **The T, 8 and N keys go too** (they added text and a note), with their rows in the keyboard reference.
+- **The Image tile goes with Write**, so the palette adds no image. A picture pasted or dropped on the canvas still
+  lands as an image ([Images are back](#images-are-back)): that is not the palette.
+- **The code.** The `write` entry leaves the meeting layout and `tools:text` and `tools:sticky` leave Popular
+  (`palette-layouts.ts`); the tiles' definitions stay in the catalogue, so a stored image still finds its name and
+  glyph, and the strip's Search finds none of them (it lists only what the palette offers).
+
+The owner (2026-11-27), later the same day: "why do I still see sticky notes and textboxes on the floor btw, I asked
+for them to be removed". Taking the tiles away left every text and note a Space already held, and the ones its
+template wrote. They go too:
+
+- **No text and no sticky note in any Space**, new or existing. A stored `text` or `sticky` element is **dropped when
+  its tab is read** (`dropRetiredNotes`, `packages/document/src/retired-notes.ts`), beside the other read-time drops in
+  `migrateStoredTab`: the api's tab read and thumbnail, the offline store, an import and a peer's whole tab all run it,
+  so there is no data migration; the tab is saved without them the next time it is saved. Nothing else in the tab
+  changes: a stored arrow pinned to a dropped note stays as stored and draws from its other end, as an arrow pinned to
+  any deleted element does ([The element engine](#the-element-engine), part 4), and a link to a dropped note leads
+  nowhere, as a link to any deleted element does.
+- **Nothing brings one in**: elements pasted from the clipboard, a shape library or a file pass through
+  `migrateIncomingElements`, which drops them the same way, and a peer's single added or updated text or note (an old
+  client) is ignored (`applyRoomOpToTabs`). An agent's or a script's changeset, MCP edit or seeded document that
+  adds one is refused (`invalid_value`, "text and sticky notes are no longer supported in livehuddle: pin a note on a
+  notice-board", [Edit operations](../024-agents/edit-operations.md)). Pasting plain text makes nothing, as
+  before.
+- **Nothing makes one**:
+  - **Double-clicking the empty canvas makes nothing** with a mouse, a trackpad or a pen (the [Quick text
+    drop](../008-canvas/canvas-and-palette.md#quick-text-drop) is gone); a finger's double-tap still zooms.
+  - **No template writes one**: the arrival is the Avatar Pad alone, with no how-to line under it
+    ([Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)); a Space opens with no heading
+    above its plan (no title, sticker or one-line description; the band it stood in stays, so every plan sits where it
+    did); and the Team Pod has no Team Board of four stickies (its Timer stays, by the pod's right wall). A Space's
+    words live on its Notice Boards, Room Signs and room names.
+  - **An automation's Post in a Space** pins a note on the tab's first Notice Board instead of adding a sticky
+    ([Automations](../013-workspace/automations.md)).
+- **Images stay**: a picture pasted or dropped on the canvas still lands as an image ([Images are
+  back](#images-are-back)).
+- **Send to Plan goes with them**: a Space's stickies were its action items and the one thing it sent, so the
+  selection toolbar's Send to Plan (one element or several), a walking reader's footer, the tab menu's Send Stickies
+  to Plan, Wrap Up's Send Actions to Plan and the "call ended with stickies" suggestion are removed; a Participant or a
+  Viewer gets no selection toolbar. The host stays, so a card sent before keeps its chip ([Send to
+  Plan](../013-workspace/send-to-plan.md)).
+- **Dormant, not removed**: the text and note renderers stay in the code with nothing to act on; the palette's
+  `addText` and `addSticky` actions, and the `text` and `sticky` draw intents they arm (`draw-mode.ts`,
+  `draw-commit.ts`), stay typed while the palette's tile code names them, with no tile or key that arms them.
+
+### Bring Focus
+
+The owner (2026-11-27): "remove bring focus element". Nothing offers it any more; livediagram keeps it.
+
+- **Not offered anywhere**: no tile in Popular or Travel, so none in Search (Travel opens on Portal and runs
+  `Portal, Avatar Pad, Directory, Signpost, Elevator, Stairs, Avatar Button`; Popular holds Room, Meeting Table, Chair
+  and Avatar Pad).
+- **No template places one**: the All-Hands Hall, Training Room, Classroom, Hackathon Hall, Wellness Studio and every
+  campus, venue, hotel, school, expo, festival and tower hall that carried one are built without it, and their
+  descriptions no longer name it.
+- **A stored one stays**: a Bring Focus button already on a Space still draws, can be selected, moved and deleted, and
+  still works for an Editor when walked to or clicked ([Bring Focus](../012-collaboration/bring-focus.md), kept as the
+  record of what a stored one does). Nothing new places one, so it ages out as Spaces are rebuilt.
+- **The code.** `tools:focus-button` leaves Popular and the Space categories (`palette-layouts.ts`, `NOT_OFFERED`); its
+  tile definition stays in the catalogue so a stored one finds its name and glyph, and the `focus-button` shape kind,
+  its face and its press stay.
 
 ## The diagram canvas patterns
 
@@ -556,7 +719,7 @@ deleted, any other shape kind livehuddle does not know, and an element of a reti
   (double-clicking it opens nothing), has no settings or context-menu section of its own, presses nothing and starts
   nothing. It offers no styling: no Colours, Border or Finish in its menu or a multi-selection's (`supportsColours`
   and `supportsFinish` answer false for it), since a placeholder draws none of them. Selected, its selection
-  toolbar holds **Delete** alone for an Editor (no Edit Text, Turn, Duplicate, Format Painter, Bring Forward, Send
+  toolbar holds **Delete** alone for an Editor (no Turn, Duplicate, Format Painter, Bring Forward, Send
   Backward or More); a Participant and a Viewer get no toolbar, as for any element (Work Tracker 639). Agents read it
   by its stored kind, and their edits leave it as stored: `set` on one is refused, and a replace keeps it as it was
   ([Edit operations](../024-agents/edit-operations.md)).
@@ -603,7 +766,7 @@ holds only what the engine keeps.
 **What the engine keeps** is what a Space is made of and what the meeting palette offers, plus the kinds earlier
 parts kept for stored content: the sticky note, text, the sticker, the Space pieces (every Travel, Seats, Rooms and
 Perks kind: the chair to the Arcade Machine, the Room, Door, Window and Stairs, the Directory and Elevator, the
-Screen and Room Sign, the Timer and Stopwatch), the Selection Mode button, the portal, Bring Focus and the Avatar
+Screen and Room Sign, the Timer and Stopwatch), the Selection Mode button, the portal and the Avatar
 Pad, and, kept for what a Space already holds ([Icons](#icons), [Media](#media-image-and-link-card)), the icon, the
 image and the link card.
 
@@ -773,14 +936,13 @@ at the start of the strip. livediagram keeps its modes.
   (the device's default, unchanged) pan. `H` does nothing; Search has no Hand Tool.
 - **Eraser** leaves livehuddle with its panel, brush ring, cursor, settings and the `E` and `0` keys
   ([Eraser Panel](../008-canvas/eraser-panel.md), retired): Delete removes a selection. `E` now means Edit.
-- **Format** stays as the painter, started from the selection toolbar's **Format Painter** button
-  ([Format painter](../008-canvas/canvas-and-palette.md#format-painter)); Search has no Format Painter entry.
+- **Format** stayed as the painter on the selection toolbar for a while, then left livehuddle too
+  ([Format Painter and Clear Styles](#format-painter-and-clear-styles)).
 - **Select** is **Edit**, the toggle's other side (`E`, `V`); Search's Select Tool and Avatar Mode are **Edit** and
   **Walk**.
 - **Stored boards** load as before: a Selection Mode button only ever hands out Avatar in livehuddle, and one that
   carried Select, Hand, Eraser or Format loads as an Avatar button (`legacy-mode-buttons`).
-- **Help**: the Hand and Eraser articles go and their addresses redirect; the Select and Format Painter articles say
-  where the two now live.
+- **Help**: the Hand and Eraser articles go and their addresses redirect; the Select article says where it now lives.
 
 ## The MCP server, the CLI and workbenches
 
@@ -817,6 +979,50 @@ livediagram's specs ([MCP server](../../../../livediagram/docs/specs/015-api/mcp
 - **The owner's steps after merging**: delete the `livehuddle-mcp` and `livehuddle-mcp-staging` Workers, their custom
   domains and DNS, their `livehuddle-mcp-oauth` KV namespaces and secrets, and deprecate `@livehuddle/cli` on npm.
   Deploys find Workers from the workspaces a change reaches, so a deleted app is never deployed.
+
+## Tab style
+
+The owner (2026-11-27): "remove tab style menu from livehuddle, don't let me change these options". Nothing in
+livehuddle opens or changes a tab's style any more: no **Style** button in the bottom-right cluster, no Open Theme or
+Open Canvas Options command in the palette, and so no Tab Style dialog ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md),
+**Leaving livehuddle**), its Show Me tour or its Looks. A Space looks as livehuddle's own defaults make it.
+
+- **Stored styles stay**: a tab that holds a theme, finish, font, floor or background draws it exactly as before, and
+  the file loads and saves it unchanged. No data migration.
+- **Shared code stays**: `@liveworkspace/workbench`'s Tab Style dialog and `ThemeStrip` are kept for the other
+  products; livehuddle just never mounts them (it passes no handler, as a read-only session does).
+- **Kept**: a room's walls, floor and floor colour in the element menu and the
+  [Quick Style](../008-canvas/space-quick-style.md) panel are a room's own settings, not the tab's style.
+- Test: `editor-commands.test.ts` pins that no command opens the theme or canvas options.
+
+## The Map
+
+The owner (2026-11-27): "remove the map from livehuddle". The **Map** panel (the bottom-left overview of the whole
+tab, once it held four elements, with its lit current-view window to tap, drag or scroll on) is gone from livehuddle.
+A Space is walked, and Walk, Fit to Screen and the view dial already get anyone anywhere. livediagram, livedocuments,
+livedesign and liveknowledge keep their Maps. The [spec](../008-canvas/minimap.md) and
+[Panel corner docking](../007-editor/panel-docking.md) in this tree carry a **Gone from livehuddle** banner and record
+what livehuddle had.
+
+- **Gone from every surface**: the panel, the **Settings › Panels › Map** rows (**Enable Map**, **Dim Outside the
+  View**, **Map Size**), the Receptionist's "The minimap" topic, and the help article (its old address lands on Panel
+  Layout). The Map had no keyboard shortcut or menu entry, so none goes.
+- **The corner docking went with it.** The Map was livehuddle's last corner panel, so the four corner stacks, their
+  drag-to-snap slot and the device-local `livehuddle:panel-layout:v1` layout are gone too. A stored layout stays in
+  old browsers' storage, unread.
+- **The freed space is used.** Fit to Screen and the fit a tab opens on fill the whole canvas again: nothing moves a
+  fit beside or above a panel in the bottom-left. While walking, the Call dock centres in the bottom row with nothing
+  to stand clear of on its left; it still stands on a line of its own above the bottom-right buttons when the row has
+  no room for both.
+- **Stored settings stay, unread**: `showMinimap`, `mapDimOutside` and `mapSize` are common settings the other apps
+  still read ([User preferences](../007-editor/user-preferences.md)), so livehuddle leaves them in the blob as they are.
+  No migration.
+- **Telemetry**: `MinimapOn` / `MinimapOff`, `MapDimOn` / `MapDimOff`, `MapSize*` and `UI Moved PanelDock` are no
+  longer sent from livehuddle.
+- **Shared code stays**: `@liveworkspace/workbench`'s `MinimapMap`, `fit-clear-of-panel`, panel layout and dock hook
+  serve the other products; livehuddle no longer imports them.
+- Tests: `settings-catalogue.test.ts` pins that no Map rows are offered; `call-dock-row.test.ts` that the Call dock's
+  row keeps no left clearance.
 
 ## Share roles
 
@@ -858,8 +1064,7 @@ comments on it; a Viewer sees it).
   gap over a box (`CanvasSelectionToolbars.gap.test.tsx`), Settings has no Quick-Add on Hover row
   (`settings-catalogue.test.ts`), and the router pins the old help address.
 - Quick Style: Settings has no Quick Style page (`settings-catalogue.test.ts`, `SettingsDialog.test.tsx`), the editor
-  loads no panel chunk (`document-lazy-load.test.ts`), the menu's Clear Styles still resets a selection
-  (`ElementMenuClearStyles.test.tsx`, `useQuickStyle.test.tsx`), and the router pins the old help address.
+  loads no panel chunk (`document-lazy-load.test.ts`), and the router pins the old help address.
 - Icons: the palette and the category bar offer no Icons category (`palette-layouts.test.ts`,
   `bar-categories.test.tsx`), the strip Search and the search panel list no icon (`palette-catalogue-search.test.ts`,
   `palette-search.test.ts`), a stored icon still draws and its menu still edits it, and the router pins the old help
@@ -902,7 +1107,7 @@ comments on it; a Viewer sees it).
   a stored square sent back by a `replace` stays as stored (`packages/edit-operations`); a changeset's `lint` is
   `null` and `view=lint` is refused (`apps/api`); the palette and Search offer no shape (`palette-search.test.ts`);
   every Space template still builds and validates (`packages/templates`).
-- Comments, actions, links and notes: the element menu has no quick bar and offers Clear Styles alone of the five (`ElementMenuClearStyles.test.tsx`), the
+- Comments, actions, links and notes: the element menu has no quick bar (`EditorContextMenu.retired.test.tsx`), the
   read-only menu offers no comments, link or note row (`ReadOnlyElementMenuHost.test.tsx`), the command palette has
   no note or comment command (`editor-commands.test.ts`), a copy drops the four (`duplicate.test.ts`,
   `clipboard-payload.test.ts`), the outbox pushes no collab (`document-outbox.test.ts`), the comment write routes and

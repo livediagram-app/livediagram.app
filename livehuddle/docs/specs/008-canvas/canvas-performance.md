@@ -97,7 +97,7 @@ large move rides as one layer").
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
   pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom
-  controls, the Map's view box) and nothing else: the editor root, the panels and the chrome do not
+  controls) and nothing else: the editor root, the panels and the chrome do not
   render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
   outrun the display, changes the view at most once a frame, and measures the canvas once, as it
   starts. A pan does not render the canvas either: the canvas renders for a zoom, and a change of the
@@ -121,7 +121,7 @@ large move rides as one layer").
   pose store per canvas, not as the canvas's render state, and peers' characters are read from the
   peer-motion store by the characters layer alone. A frame of anyone walking renders that layer (the
   characters, the hearing ring, the talking bars, raised hands, call bubbles, pad arrivals and speech
-  bubbles) and the sprites that changed; it renders neither the canvas nor the element layer. What
+  bubbles) and the walkers that changed; it renders neither the canvas nor the element layer. What
   follows a character as a fact (the element under your feet and its ring, the stage you speak from,
   who sits or stands on each piece, which pod is shut) subscribes by value and renders only when the
   fact changes. Who sits on each piece is read by that piece alone, from one source the canvas never replaces: a sit or
@@ -162,22 +162,8 @@ large move rides as one layer").
   never the rest of the page, and the toolbars do not measure themselves again while the canvas redraws. Only the
   elements whose colours the pick changes draw again: one the pick leaves as it was (a hand-picked colour, a sticky)
   keeps its view as it is.
-- **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
-  pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
-  redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture
-  follows in a later render.
-- **The Map is one image.** It draws the board as a picture, not as a second copy of the board's
-  elements in the page, which every style pass, layout, hit test and collection would otherwise
-  walk. The lit window and the dimmed surround sit on a layer of their own above the picture, so a
-  pan moves the window without repainting the picture: Safari draws an SVG picture again in full
-  each time anything over it repaints, and on a 100-room office that was about 45 ms of every frame
-  of a walk (a walk's frame went from about 56 ms to about 14 ms in WebKit at iPad size). The Map's
-  body is the one every editor shares (`MinimapMap`, `@liveworkspace/workbench`).
-- **The Map draws what changed.** The picture is rebuilt when the board settles, from parts carried
-  over from the last build: each box's markup by its element, and each stored arrow's by its element
-  and where its ends resolve. A drop draws the boxes it changed and the stored arrows whose ends it
-  moved, not the whole board again. A seeded test checks that the carried-over picture equals one
-  built afresh.
+- **No Map.** livehuddle draws no overview of the board: the Map, with its settled, one-image picture, left
+  ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map)). The other products keep those rules.
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,
@@ -255,7 +241,7 @@ large move rides as one layer").
   shows the selection: the element views whose selected state changed, the selection chrome
   (toolbars, popover, resize box, handles and anchors), and the panels that describe the selection
   (Quick Style, the slide deck, an open context menu). The editor root, the canvas, the element
-  layer and the Map do not re-render for it. Handlers read the selection from the store when they
+  layer do not re-render for it. Handlers read the selection from the store when they
   run; effects that follow it (presence, scrolling a selection into view, the screen-reader
   announcement, dropping hidden elements from it) subscribe to the store.
 - **Derived layouts are computed once per change.** Arrow labels, ink projection and theme
@@ -264,7 +250,7 @@ large move rides as one layer").
 - **A render that changes no element hands on the same board.** A pan, a zoom or a marquee frame
   re-renders the editor without touching an element; every display projection of the board (stock
   colours) then returns the same array it returned before, so nothing derived from
-  the board (the Map, the arrow frames, the endpoint spread) recomputes.
+  the board (the arrow frames, the endpoint spread) recomputes.
 - **An update that changes nothing renders nothing.** A tick of the tabs that changes none of them
   (a settle that finds everything where it was) hands the editor back the very history it had
   (`withPresent`, `@liveworkspace/workbench/lib/remote-op-log`), so React renders nothing for it. A
@@ -295,8 +281,7 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 
 - **Counts, not timings, pin the structural rules** deterministically. In the unit suite: an
   editor render that changes nothing renders no element view, a zoom renders only counter-scaled
-  parts, a one-element move renders only it and the arrows whose geometry it changed, and the Map
-  holds its drawing through a gesture, and two seconds of walking render the walk's host (the canvas)
+  parts, a one-element move renders only it and the arrows whose geometry it changed, and two seconds of walking render the walk's host (the canvas)
   no more often than the facts under the feet change. In a real browser, in the end-to-end suite: a still board
   with a selection showing asks for no animation frames.
 - **A large-selection bench** (`e2e/perf/large-selection-drag.perf.ts`) opens the large-selection

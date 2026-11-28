@@ -22,7 +22,7 @@ export const metadata = helpMetadata({
 
 Every element starts in your tab's [theme](/help/canvas/themes/) colours, so a new <Noun /> already looks coherent. When one element needs to stand apart (a warning in red, a dashed outline for something planned, a faded background note), its colours, border and opacity are all in its right-click menu. Open the menu by right-clicking the element (a long press on a touch screen). Colours and Border live under **Appearance**, which opens beside the menu; Opacity lives in the menu's first section.
 
-<AppNote app="livediagram,livedesign,livehuddle">
+<AppNote app="livediagram,livedesign">
   You can also open the menu with the **⋯** button on the element's selection toolbar.
 </AppNote>
 
@@ -30,8 +30,6 @@ Every element starts in your tab's [theme](/help/canvas/themes/) colours, so a n
   The first section is called **Layer**, and a pill-shaped button is one of the looks a border's
   corner radius gives you.
 </AppNote>
-
-<AppNote app="livehuddle">The first section is called **Arrange**.</AppNote>
 
 These controls are for Editors. Viewers and Participants can see your colours but can't change them.
 
@@ -54,10 +52,6 @@ These controls are for Editors. Viewers and Participants can see your colours bu
   most common colours and strokes without opening a menu.
 </AppNote>
 
-<AppNote app="livehuddle">
-  Their right-click opens only a short menu (such as **Copy Text**) with no style controls.
-</AppNote>
-
 ## Colours
 
 Open **Appearance**, then **Colours**. Each row names the surface it paints, shows the colour in force on its right, and opens the colour picker beside the menu:
@@ -74,11 +68,6 @@ Open **Appearance**, then **Colours**. Each row names the surface it paints, sho
   A [Technology](/help/palette/technology/) icon keeps its brand colours, so it has no Icon row. An
   arrow's Colours category has **Line** and **Pointer** instead, so the arrowheads can differ from
   the line ([Arrows](/help/palette/arrows/)).
-</AppNote>
-
-<AppNote app="livehuddle">
-  Only a line-art icon a Space already holds has an Icon row; a full-colour technology icon keeps
-  its brand colours, so it has none.
 </AppNote>
 
 Under the rows, **Reset to Theme** puts the element's colours back to the tab theme's, as one step you can undo. It only touches colours: borders, shadows and fonts stay as they are.
@@ -105,8 +94,6 @@ With a mouse, hovering a swatch previews it on the element; clicking commits it 
 
 </AppNote>
 
-<AppNote app="livehuddle">The same warning shows on a border row.</AppNote>
-
 ### Ink and Colours That Adapt
 
 **Ink** is the first strong standard colour: near-black on a light canvas, near-white on a dark one. A strong standard colour you pick for a shape's text or border, a text element or a sticky note's text is stored by its name, so it is drawn in its version for the canvas you see it on and stays readable when a tab or a reader switches between light and dark. Text with no colour of its own is drawn in Ink. Any other colour is kept exactly as picked.
@@ -131,13 +118,6 @@ Open **Appearance**, then **Border**. Grids of small preview tiles set the outli
 <Figure
   app="livediagram,livedesign,livedocuments"
   caption="The Border category's Strength, Pattern and Radius grids, with a thick dashed border and large corners on the selected shape."
->
-  <BorderSection />
-</Figure>
-
-<Figure
-  app="livehuddle"
-  caption="The Border category's Strength and Pattern grids, with a thick dashed border on the selected element."
 >
   <BorderSection />
 </Figure>
@@ -189,12 +169,6 @@ Open **Appearance**, then **Border**. Grids of small preview tiles set the outli
   components.
 </AppNote>
 
-<AppNote app="livehuddle">
-  The elements that draw their own faces are portals, chairs and the other Space pieces. **Elements
-  livehuddle no longer has** (anything a space saved before they were dropped) show as a placeholder
-  that keeps its look as it was saved, with no style controls; an Editor can delete it.
-</AppNote>
-
 A few elements skip Colours too: images and stickers keep their own colours.
 
 <AppNote app="livediagram,livedesign,livedocuments">
@@ -213,13 +187,6 @@ Open the first section of the menu and drag the **Opacity** slider from 100% (so
 
 <AppNote app="livediagram,livedesign,livedocuments">
   See [Layer Order](/help/canvas/layer-order/) for stacking.
-</AppNote>
-
-<AppNote app="livehuddle">
-  **Bring to Front** moves the element to the end of the tab's order so it paints above everything
-  else, and **Send to Back** moves it to the start so everything else paints over it
-  (**Cmd+Shift+]** and **Cmd+Shift+[** do the same from the keyboard; Ctrl in place of Cmd on
-  Windows and Linux). Newly added elements land on top.
 </AppNote>
 
 ## Styling Several Elements at Once

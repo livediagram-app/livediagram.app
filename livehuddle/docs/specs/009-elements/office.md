@@ -6,7 +6,7 @@ a **Stage**; an **Office Pod** for two; a bar (a **Bar**, a **Bar Stool**, a **D
 Fridge**); and a garden (an **Outdoor Plant**, a **Tree**, a **Garden Path**, **Grass** and a **Garden Fence**).
 With the [Chair, Desk and Sofa](chair.md), the [Fence](fence.md) and [speech bubbles](../008-canvas/avatar-mode.md#speech-bubbles),
 a team can lay out reception, desks, a meeting room, a kitchen and a lounge, then sit, talk and grab a coffee together.
-The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Play corner (Jukebox, Ping-Pong Table,
+The [Social pieces](social-pieces.md) add a Notice Board, a Clock, a Play corner (Jukebox, Ping-Pong Table,
 Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace), a Vending Machine, a Bean Bag and a Reading Nook,
 and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
 The [Office amenities](office-amenities.md) add a Printer, a Copier, Lockers, a Coat Rack and an Umbrella Stand, a
@@ -14,6 +14,7 @@ kitchenette (Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle) and a res
 Dryer, and a Restroom room preset).
 The [Venue pieces](venue-pieces.md) add Pillars and Columns, a Car Park and a Bike Rack, a Swimming Pool, and Stage
 Curtains and a Podium for the Stage.
+The [Road](road.md) adds a two-lane street for outside a site's gate, with the odd car driving by.
 A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meet** category), and a busy room
 or a closed pod can be [knocked on](../012-collaboration/knock.md).
 
@@ -61,7 +62,10 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   [Restroom](office-amenities.md#the-restroom-preset)) leaves all of them selected, as one multi-selection, so the
   very next drag moves the room and everything in it together, and one undo puts it back. Every way they land does
   this: a tap or a draw with the tile armed, and a drop from the palette. An insert of one element (a chair, a
-  plant, a Room Builder room) stays a single selection, with its element menu and, for a sticky, its caret. The room
+  plant, a Room Builder room) stays a single selection, with its element menu and, for a sticky, its caret. Only a
+  text-first element opens for typing as it lands; a placed piece (a chair or any seat, a desk, a plant, every piece
+  `isPlacedShape` names) never does (`opensForTypingOnPlace`), so a stray key after placing a Chair no longer becomes
+  its label (QA 2026-11-27: a Chair called "r"). The room
   still goes in behind everything; selecting its pieces changes no order. The owner asked for this (2026-11-07):
   "When I add a room, like the office, I often want to drag it to a new position, but only the room is selected once
   dropped, not all the items in it." It replaces "the room keeps the selection".
@@ -76,6 +80,16 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   doors are Door pieces.
 - **The name** is the element's label, on a plate at the left of the back wall: "Kitchen", "Meeting Room 2". A new
   room is called **Room**.
+  - **Room name field** (owner, 2026-11-27: "Add Room name to the Room Modal"): the room's settings dialog (its
+    element menu's **Room** row) opens on a **Name** section holding a **Room name** text field, and the Quick Style
+    panel ([Quick Style for a Space](../008-canvas/space-quick-style.md)) leads with the same field while one room is
+    selected. It shows the stored label; what is typed is kept as a draft and saved on blur or Enter (Escape puts
+    the stored name back), trimmed, as one undoable change, the same commit as renaming the room in place on the
+    canvas. An unchanged name saves nothing. Cleared, the room has no name and its plate is not drawn. At most
+    `ROOM_NAME_MAX` (80) characters.
+  - **Editors only** ([Share roles](../013-workspace/share-roles.md): "Place, move, rename or delete Space
+    elements"): the field renders only where `can.writeText(room)` holds; a Participant and a Viewer have no
+    settings dialog or Quick Style panel, and the server's participant content rule keeps a room's label as stored.
 - **The walls block** walking exactly as a [Fence](fence.md#blocking) does: same reach, same slide along them, from
   either side; a Door (or an older room's built-in doorway) does not. A character inside a room with no door stays
   inside until it takes a portal.
@@ -91,15 +105,27 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   pointer at its default size, and a click (or a press-and-drag, which places it where the press began) drops it
   there; there is no draw-to-size box (`dropsAtOwnSize`). Unlike a placed piece it keeps its resize handles, so it
   is sized after it lands. The [Room Builder](room-builder.md) keeps its own wall-by-wall gesture.
-- **Rooms line up.** Moving, resizing, dragging in from the palette or placing an armed Room snaps it to its
-  neighbours like any element (edges and centres, with the alignment guides), and also **wall to wall**: within the
-  same snap distance, a room beside another lands on the other's wall line, so the two **share one wall** instead of
-  standing two walls back to back (box edge to box edge leaves a double wall). Side by side the rooms overlap by a
-  wall's thickness; one below another stands its back wall face on the other's front wall line. The guide is drawn
-  along the shared wall line, spanning both rooms. A resize lands the moving wall the same way, its opposite wall
-  staying put. When a shared-wall snap and an edge snap are both in range on an axis, the nearer wins, the wall on a
-  tie. Custom rooms snap by their box only (their walls are not on it). Cmd / Ctrl places freely, as every snap
-  ([Snap override](../008-canvas/snap-override.md)). (`snapRoomWalls`, `snapRoomWallsResize` in `@livehuddle/document`.)
+- **Rooms line up.** Moving, resizing, dragging in from the palette or placing an armed Room (by click, or by Enter at
+  the middle of the view) snaps it to its neighbours like any element (edges and centres, with the alignment guides),
+  and also **wall to wall**: a room dropped roughly beside another lands on the other's wall line, so the two **share
+  one wall** instead of standing two walls back to back (box edge to box edge leaves a double wall). Side by side the
+  rooms overlap by a wall's thickness; one below another stands its back wall face on the other's front wall line. The
+  guide is drawn along the shared wall line, spanning both rooms. A resize lands the moving wall the same way, its
+  opposite wall staying put.
+  - **Generous reach** (the owner, 2026-11-27: "when I add new rooms via edit they also snap to another room and don't
+    have a double wall"): the shared wall reaches 80 canvas px, against the 6 px of an edge snap, so a room put down
+    box edge to box edge, a little apart or a little over another still shares its wall; at the 60 % or so a Space is
+    edited at in the 3D view that is about 50 screen px. It stays under a Corridor's width, so a gap left for one is
+    kept. Within that reach the shared wall wins its axis over any edge snap.
+  - **Only beside it**: a room shares a wall only with a room beside it on the other axis (their spans overlap), never
+    with one far above or below whose wall line merely passes near; that one lines up by its edges.
+  - **At its own size**: an armed Room preset snaps at the preset's size, as its preview stands and as it lands, not
+    the plain Room's; the click lands it where its preview stood (the press is not snapped as a drawn shape's corner).
+  - Custom rooms (a shaped preset, a Room Builder room) snap by their box only (their walls are not on it).
+  - Cmd / Ctrl places freely, as every snap ([Snap override](../008-canvas/snap-override.md)): a move, a resize, a drag
+    in from the palette and an armed Room's click alike.
+  - (`snapRoomWalls`, `snapRoomWallsResize`, `ROOM_WALL_SNAP_THRESHOLD` in `@livehuddle/document`; `armedRoomSnap` in
+    the editor's palette-drag-snap.ts.)
 - **A Room turns** (Work Tracker 1454). The element menu's Rotation turns any Room, a box or a Room Builder room,
   about its centre at any angle, as a [Corridor](corridor.md) turns, and everything its walls do turns with it:
   - **its walls block walking along their turned lines**: a character bumps into the wall where it is drawn, slides
@@ -167,7 +193,8 @@ Work Tracker #539.
   client reading a glass room sees a solid one, and a newer client reading an old room sees what it always did.
 - **Where it is set**: the Room tile's **Glass Room** preset arrives glass, and every room's element menu has a
   **Walls** section (its glyph a run of bricks, `WallsMenuGlyph`, its own beside the Room section's wrench) with two
-  tiles, **Solid** and **Glass** (a selection of several rooms sets them all; other kinds
+  large tiles, **Solid** and **Glass**, each a picture of that wall with its name under it, side by side
+  (a selection of several rooms sets them all; other kinds
   are left alone; one undoable change, `Element · Changed · Room`). Editors only: a Participant's short menu has no
   Walls section, and the participant content rule keeps a room's `variant` as stored.
 - **Drawn see-through**: the walls keep their place and thickness (ROOM_WALL along the same centre line), but are
@@ -199,7 +226,10 @@ styles of rooms, like Carpet, Tiles, Floorboards etc, like I can edit the walls 
 - **The floor's colour** is the room's fill, as before: the pattern is drawn over it in light and shade, so every
   type works in every colour, on light and dark paper.
 - **Where it is set**: every room's element menu has a **Floor** section after **Walls**, its glyph a square of
-  boards: a row of five tiles, one per type, each a small swatch of that floor, and under them a row of **floor
+  boards: five large tiles, one per type, each a picture of that floor in the room's colour with its name under it
+  (owner, 2026-11-27: "Make the floor type items larger so I can actually see them"), three to a page in a paged
+  carousel (the workbench's `PagedCarousel`, as livedocuments' Page Design picker pages its designs: arrows and page
+  dots, swipe on touch), opening on the page that holds the room's type; and under them the **floor
   colours** that suit floors: Oak, Walnut, Ash, Cream, Slate, Charcoal, Sage, Navy and Berry (each sets the room's
   fill, the one shown as chosen when it matches). A selection of several rooms sets them all; other kinds are left
   alone; one undoable change, `Element · Changed · Room`. Editors only, as Walls.
@@ -323,14 +353,17 @@ when moved, resized or recoloured; absent is the Oval, and a value a rug does no
 
 ### A piece's type
 
-A placed Door, Rug, Corridor or Meeting Table changes its type in place, from the element menu, without being
-replaced: a Door into a Double Door, an Oval rug into a Persian, a Straight corridor into a Corner, a Meeting Table into
-a Long Table and back (Work Tracker 628).
+A placed Door, Rug, Corridor, Meeting Table, Tree or Screen changes its type in place, from the element menu, without
+being replaced: a Door into a Double Door, an Oval rug into a Persian, a Straight corridor into a Corner, a Meeting
+Table into a Long Table and back (Work Tracker 628), an Oak into a Pine ([Tree species](#tree-species)), a Medium
+Screen into a Cinema ([Screen sizes](screen-and-room-sign.md#sizes)).
 
 - **Where**: the element menu's Tools has a **Type** section (its glyph two passing arrows, `TypeMenuGlyph`: one piece swapped for another of its kind) for a `door`, a
-  `rug`, a `corridor` and a `meeting-table`: one tile per type, in the palette's order, each with the glyph and name its
-  palette card has (Door, Double Door, Sliding Door, Revolving Door; Oval, Round, Bordered, Runner, Striped, Persian,
-  Kilim, Doormat; Straight, Corner, T-Junction, Crossroads; Meeting Table, Long Table). The piece's type is the pressed
+  `rug`, a `corridor`, a `meeting-table`, a `tree` and a `screen`: one tile per type, in the palette's order, each with
+  the glyph and name its palette card has (Door, Double Door, Sliding Door, Revolving Door; Oval, Round, Bordered,
+  Runner, Striped, Persian, Kilim, Doormat; Straight, Corner, T-Junction, Crossroads; Meeting Table, Long Table; Oak,
+  Pine, Birch, Palm, Cherry Blossom, Autumn Maple, Willow; Monitor, Small, Medium, Large, Cinema). A wall piece (a
+  Screen) keeps its back on its wall as it changes size. The piece's type is the pressed
   tile. Editors only: a Participant's and a Viewer's short menu has no Type section, and the participant content rule
   keeps a piece's `variant` as stored.
 - **What changes**: the type (`variant`; the kind's first type clears it, as its plain tile places it), the box, which
@@ -456,6 +489,31 @@ Garden scenery that **blocks** like the [Plant](#plant-bookshelf):
   base of the trunk) blocks, so a character walks round the trunk and passes in front of the canopy; the canopy
   never blocks.
 - Neither is a destination.
+
+### Tree species
+
+The owner (2026-11-27): "I want more different species of tree in a submenu on tree, like with rooms". The Tree tile
+opens seven trees, as the Room tile opens its presets and the Rug tile its rugs. A tree's species is stored in
+`variant` (as a [rug's type](#rug-types)), so it keeps its look when moved, resized or recoloured; absent is the Oak,
+the tree as it always was, and a value a tree does not take draws as the Oak. Every species is 120 × 160 with the same
+trunk footprint, so a character walks round each the same way, and changes species in place from the element menu's
+[Type](#a-pieces-type) section.
+
+| Species        | `variant` | Its drawing and its 3D model                                                               |
+| -------------- | --------- | ------------------------------------------------------------------------------------------ |
+| Oak            | (none)    | A flared trunk with two boughs under a big round crown of leaf clumps                      |
+| Pine           | `pine`    | A straight dark trunk under stacked cone tiers of deep blue-green needles, a pointed top   |
+| Birch          | `birch`   | A slim white trunk with dark bark marks, a light airy crown of small yellow-green clumps   |
+| Palm           | `palm`    | A tall ringed trunk leaning slightly, a crown of long drooping fronds, coconuts under them |
+| Cherry Blossom | `cherry`  | A dark spreading trunk and branches under a wide crown of pink blossom                     |
+| Autumn Maple   | `maple`   | A maple's round crown in orange, red and gold, a few leaves fallen round its foot          |
+| Willow         | `willow`  | A stout trunk under a domed crown whose curtains of long leaves weep almost to the ground  |
+
+- **3D**: each species is its own smooth model (3d-engine.md "Models"): turned trunks, bent branches, rounded leaf
+  clumps, cone tiers, fronds as curved blades; no stacked blocks. Only the trunk blocks a walk, never the crown.
+- **The flat drawing** (the palette preview, an export) draws each species in the Oak's style: a soft shadow, its
+  trunk, its crown in its own colours. The tile's glyph sketches its silhouette.
+- A tree's moment (piece-moments.md) plays for every species: it sways and drops five leaves.
 
 ## Garden Path
 

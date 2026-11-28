@@ -24,6 +24,10 @@ const NAMES = {
   'toilet-cubicle': 'Toilet cubicle',
   washbasin: 'Washbasin',
   'hand-dryer': 'Hand dryer',
+  // The lamps (office-amenities.md "Lamps").
+  'floor-lamp': 'Floor lamp',
+  'table-lamp': 'Table lamp',
+  'desk-lamp': 'Desk lamp',
 } as const;
 type Kind = keyof typeof NAMES;
 

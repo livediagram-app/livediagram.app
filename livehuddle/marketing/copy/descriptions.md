@@ -81,8 +81,8 @@ For longer listing bodies and "about this project" sections.
 > plants, a coffee machine and portals between rooms.
 >
 > Every Space is also a board. Sticky notes, text and stickers sit on the
-> walls, a Timer or a Stopwatch keeps the meeting to time, and Bring Focus and
-> Follow bring everyone to the same place. Comments with mentions and assigned
+> walls, a Timer or a Stopwatch keeps the meeting to time, and Follow brings
+> everyone to the same place. Comments with mentions and assigned
 > actions keep the follow-ups, and everyone can throw confetti round their
 > character when it goes well.
 >
@@ -129,8 +129,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > Every Space is also a board. Put a sticky note per person on the wall for the
 > stand-up, and start the Timer on the wall, or a Stopwatch. Whoever holds the
-> facilitator baton runs the clock. Bring Focus offers everyone a jump to the
-> thing you mean, and Follow takes you wherever a teammate goes. Comments with
+> facilitator baton runs the clock. Follow takes you wherever a teammate goes. Comments with
 > mentions and reactions, and actions assigned to a teammate, keep the
 > follow-ups with the Space. Everyone can throw confetti, hearts or fireworks
 > round their character when the news is good.

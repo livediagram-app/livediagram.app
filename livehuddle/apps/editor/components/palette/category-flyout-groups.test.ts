@@ -21,7 +21,7 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
   description: '',
   icon: null,
   section: 'tools',
-  action: { type: 'text' },
+  action: { type: 'image' },
   ...(dividerAfter ? { dividerAfter } : {}),
 });
 
@@ -93,7 +93,7 @@ describe('a flyout’s groups', () => {
     const groups = flyoutGroups('collab-garden', tiles('collab-garden'));
     expect(groups.map((g) => [g.title, g.tiles.map((t) => t.id)])).toEqual([
       ['Plants', ['tools:outdoor-plant', 'tools:tree', 'tools:grass']],
-      ['Paths and Fences', ['tools:garden-path', 'tools:garden-fence']],
+      ['Paths and Fences', ['tools:garden-path', 'tools:road', 'tools:garden-fence']],
       [
         'Furniture',
         ['tools:bench', 'tools:picnic-table', 'tools:hammock', 'tools:garden-umbrella'],
@@ -112,14 +112,14 @@ describe('a flyout’s groups', () => {
       'tools:water-cooler',
       'tools:restroom',
     ]);
-    expect(groups.map((g) => g.tiles.length)).toEqual([7, 8, 4]);
+    expect(groups.map((g) => g.tiles.length)).toEqual([10, 8, 4]);
   });
 
   it('shows one block, unheaded, when not every group has a name', () => {
-    const groups = flyoutGroups('write', tiles('write'));
+    const groups = flyoutGroups('popular', tiles('popular'));
     expect(groups).toHaveLength(1);
     expect(groups[0]!.title).toBeNull();
-    expect(groups[0]!.tiles).toHaveLength(tiles('write').length);
+    expect(groups[0]!.tiles).toHaveLength(tiles('popular').length);
     expect(flyoutGroups('x', [tile('a', true), tile('b')])).toEqual([
       {
         id: 'a',
@@ -131,8 +131,8 @@ describe('a flyout’s groups', () => {
 
   it('never splits Popular, and has nothing to show for no tiles', () => {
     expect(flyoutGroups('popular', tiles('popular'))).toHaveLength(1);
-    expect(flyoutGroups('write', [])).toEqual([]);
+    expect(flyoutGroups('collab-seating', [])).toEqual([]);
     // One group: no heading, whatever its first tile is called.
-    expect(flyoutGroups('write', [tile('tools:text')])[0]!.title).toBeNull();
+    expect(flyoutGroups('collab-seating', [tile('tools:chair')])[0]!.title).toBeNull();
   });
 });

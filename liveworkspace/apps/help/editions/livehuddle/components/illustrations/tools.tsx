@@ -1,7 +1,7 @@
 // Tools-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): light/dark mode, and Layout Cleanup's Auto-Align.
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Arrow, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Arrow, Label } from '@liveworkspace/help-site/art/primitives';
 import { BAR_H, BottomBar } from './editor-chrome';
 import { Desk, Room } from './space-furniture';
 
@@ -135,33 +135,25 @@ export function LightDarkToggle() {
 
 // --- Layout cleanup ---------------------------------------------------------
 
-/** Before/after for Auto-align: a scattered, mis-sized handful of sticky notes snapped into neat rows on the grid. */
+/** Before/after for Auto-align: a scattered handful of desks snapped into neat rows on the grid. */
 export function CleanupBeforeAfter() {
-  // [x, y, w, h, fill] before, then the same notes after: sizes rounded to the grid, edges shared.
-  const before: [number, number, number, number, string][] = [
-    [26, 40, 58, 52, 'fill-amber-100'],
-    [96, 34, 64, 56, 'fill-emerald-100'],
-    [30, 112, 62, 50, 'fill-rose-100'],
-    [104, 118, 56, 58, 'fill-violet-100'],
+  // Each desk's top-left before, then the same desks after: on the grid, edges shared.
+  const before: [number, number][] = [
+    [30, 46],
+    [104, 38],
+    [36, 120],
+    [112, 128],
   ];
-  const after: [number, number, number, number, string][] = [
-    [246, 44, 60, 56, 'fill-amber-100'],
-    [326, 44, 60, 56, 'fill-emerald-100'],
-    [246, 120, 60, 56, 'fill-rose-100'],
-    [326, 120, 60, 56, 'fill-violet-100'],
+  const after: [number, number][] = [
+    [250, 52],
+    [326, 52],
+    [250, 128],
+    [326, 128],
   ];
-  const note = ([x, y, w, h, fill]: [number, number, number, number, string], i: number) => (
-    <g key={i}>
-      {/* Square corners and no border, as a sticky draws by default. */}
-      <rect x={x} y={y} width={w} height={h} className={fill} />
-      <rect x={x} y={y} width={w} height={h} className="fill-slate-900/5" />
-      <TextBar x={x + 9} y={y + 16} w={w - 22} />
-      <TextBar x={x + 9} y={y + 28} w={w - 30} tone="faint" />
-    </g>
-  );
+  const desk = ([x, y]: [number, number], i: number) => <Desk key={i} x={x} y={y} />;
   return (
     <Scene w={420} h={220}>
-      {before.map(note)}
+      {before.map(desk)}
       {/* Divider */}
       <line
         x1={210}
@@ -172,7 +164,7 @@ export function CleanupBeforeAfter() {
         strokeWidth={1.5}
         strokeDasharray="4 4"
       />
-      {after.map(note)}
+      {after.map(desk)}
     </Scene>
   );
 }

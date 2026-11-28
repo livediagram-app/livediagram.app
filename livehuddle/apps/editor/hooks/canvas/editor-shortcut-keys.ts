@@ -11,8 +11,6 @@ import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-searc
 
 export type EditorKeyboardShortcutsDeps = {
   // Modal-interaction state. Escape clears whichever is active.
-  formatSourceId: string | null;
-  setFormatSourceId: (v: string | null) => void;
   // Pending draw-to-size intent, set when the palette was clicked
   // under the drawToAdd user preference. Escape clears it so a
   // user who accidentally entered draw mode (or changed their
@@ -51,11 +49,8 @@ export type EditorKeyboardShortcutsDeps = {
   // Active canvas tool. Read by the Escape handler so Escape exits the
   // persistent Format tool (back to Select) from either phase.
   canvasTool: CanvasTool;
-  // Element-add callbacks. T and N fire the dedicated handlers, each mirroring its palette counterpart so the
-  // keyboard route reaches the same code path as the click route. No `9`: livehuddle adds no image
-  // (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card").
-  addText: () => void;
-  addSticky: () => void;
+  // No key adds an element: T and N went with the text and sticky notes (docs/specs/002-project-scope/
+  // not-in-livehuddle.md "The Write category"), and livehuddle adds no image ("Media: Image and Link card").
   // Cmd/Ctrl+A: select every element on the active tab at once.
   onSelectAll: () => void;
   // Cmd/Ctrl+D: duplicate the current selection (single or multi). The
@@ -64,10 +59,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Cmd/Ctrl+X: cut, i.e. copy the selection to the clipboard then delete
   // it. The caller composes copy + the matching delete.
   onCut: () => void;
-  // Cmd/Ctrl+Shift+] / +[: raise / lower the selection in the z-order.
-  // Both operate on the whole current selection.
-  onBringToFront: () => void;
-  onSendToBack: () => void;
   // Shift+1: fit all content on the active tab to the viewport. A pure
   // view action (allowed for view-role).
   onFitToScreen: () => void;
@@ -140,14 +131,11 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   w: (l) => l.setCanvasTool('avatar'),
 };
 
-// The meeting palette's keys (docs/specs/012-collaboration/workshop-mode.md "The palette"): text and the sticky note.
+// The meeting palette's keys: none. T, 8 and N added text and the sticky note, and went with the Write category
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category"); a press of one does nothing.
 // No eraser: livehuddle has none (docs/specs/002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes"). The diagram tools' keys (R, O, D, C, G, A, P and 2 to 7) left with those tools (Work Tracker #423), and
 // F with the Frame (docs/specs/002-project-scope/not-in-livehuddle.md "The Frame"); a press of one does nothing.
-export const EDIT_KEYS: Record<string, ShortcutAction> = {
-  t: (l) => l.addText(),
-  '8': (l) => l.addText(),
-  n: (l) => l.addSticky(),
-};
+export const EDIT_KEYS: Record<string, ShortcutAction> = {};
 
 // Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.
 //
@@ -249,29 +237,14 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
     live.onSelectAll();
     return true;
   }
-  // Z-order: Cmd/Ctrl+Shift+] front, +[ back. Match on `code` so
-  // the shifted bracket characters (`}` / `{`) don't fool the key
-  // compare on non-US layouts.
-  if (e.shiftKey && (e.code === 'BracketRight' || key === ']' || key === '}')) {
-    e.preventDefault();
-    live.onBringToFront();
-    return true;
-  }
-  if (e.shiftKey && (e.code === 'BracketLeft' || key === '[' || key === '{')) {
-    e.preventDefault();
-    live.onSendToBack();
-    return true;
-  }
   return false;
 }
 
 // What a key does on a canvas that may not take it (a Viewer's or a Participant's, docs/specs/013-workspace/share-roles.md):
 // `run` leaves the canvas alone (undo, redo, search, the mode switch, Escape) and is handled as usual; `swallow`
-// is a canvas chord the browser would act on in its place (duplicate, select-all, z-order, zoom), so it is
+// is a canvas chord the browser would act on in its place (duplicate, select-all, zoom), so it is
 // prevented and does nothing; `ignore` is every other key, left to the browser.
 type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
-// A Set, not `'[]{}'.includes(key)`: an empty key (synthetic events, some IMEs) is a substring of every string.
-const BRACKET_KEYS = new Set(['[', ']', '{', '}']);
 export function coveredKeyRole(
   e: Pick<KeyboardEvent, 'key' | 'code' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>,
 ): CoveredKeyRole {
@@ -284,9 +257,7 @@ export function coveredKeyRole(
       e.key === '=' ||
       e.key === '+' ||
       e.key === '-' ||
-      e.key === '0' ||
-      (e.shiftKey &&
-        (e.code === 'BracketRight' || e.code === 'BracketLeft' || BRACKET_KEYS.has(e.key)))
+      e.key === '0'
     )
       return 'swallow';
     return 'ignore';

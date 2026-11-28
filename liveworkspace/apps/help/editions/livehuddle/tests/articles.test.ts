@@ -87,10 +87,10 @@ describe('searchArticles', () => {
   });
 
   it('finds articles by keyword synonym, not just title (the "opacity" report)', () => {
-    // "transparency" appears in no title or description; keywords carry it to
-    // both opacity articles.
+    // "transparency" appears in no title or description; keywords carry it to the panel opacity article. The
+    // element one left with the menus' Appearance (livehuddle docs/specs/002-project-scope/not-in-livehuddle.md).
     const slugs = searchArticles('transparency').map((a) => a.slug);
-    expect(slugs).toContain('colours-borders-opacity');
+    expect(slugs).not.toContain('colours-borders-opacity');
     expect(slugs).toContain('panel-opacity');
     // "hotkey" -> the keyboard-shortcuts article.
     expect(searchArticles('hotkey').map((a) => a.slug)).toContain('keyboard-shortcuts');

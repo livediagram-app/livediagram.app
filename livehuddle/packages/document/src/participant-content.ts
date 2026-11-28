@@ -32,20 +32,11 @@ function sameValue(a: unknown, b: unknown): boolean {
   return a === b || JSON.stringify(a) === JSON.stringify(b);
 }
 
-// Copy one field from incoming onto the merge, an absent incoming value removing it.
-function copyField(target: Bag, incoming: Bag, field: string): void {
-  if (incoming[field] !== undefined) target[field] = incoming[field];
-  else delete target[field];
-}
-
 // What a Participant's update turns an element into, whoever added it: the stored element with only a piece's field
 // copied from incoming. Its own earlier sticky or text is no different: a Participant no longer edits content.
 function mergePieces(stored: Element, incoming: Element, adderKey: string | null): Element {
   const inc = incoming as Bag;
   const next: Bag = { ...(stored as Bag) };
-  // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): a Participant opens and closes
-  // any door, and changes nothing else about it.
-  if (stored.type === 'shape' && stored.shape === 'door') copyField(next, inc, 'doorClosed');
   // A notice board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"), and a Calendar Wall's
   // (team-pieces.md): a Participant pins notes it signs and unpins those, never anyone else's.
   if (stored.type === 'shape' && holdsNotes(stored.shape)) {

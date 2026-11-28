@@ -173,8 +173,9 @@ export type AutosaveOptions<Tab, R, J, Writes, S> = {
   ownWrites?: Writes;
   // How many peer ops this render's `tabs` include: state, bumped in the same batch that applies each op.
   opsApplied: number;
-  // True while a hover-preview is on screen: previews mutate `tabs` but are never persisted.
-  previewingRef: MutableRefObject<boolean>;
+  // True while a hover-preview is on screen: previews mutate `tabs` but are never persisted. Absent in an editor
+  // with no hover previews (livehuddle).
+  previewingRef?: MutableRefObject<boolean>;
   roomRef: RefObject<R | null>;
   // `S` is the editor's whole status type: 'saving', 'saved' and every failure saveFailureStatus answers.
   setSaveStatus: Dispatch<SetStateAction<S>>;
@@ -364,7 +365,7 @@ export function useAutosaveCore<
     if (writesForbiddenRef.current) return;
     // A hover-preview is showing: its tick mutated `tabs`, but it's ephemeral and will revert (or be replaced by a
     // real commit), so don't persist it. The commit/revert flips this ref off and re-runs the effect.
-    if (previewingRef.current) return;
+    if (previewingRef?.current) return;
     // No "was that a remote update?" skip here: a peer's op is folded into the baseline as well as the screen, so
     // it simply isn't a difference.
     const handle = window.setTimeout(() => {

@@ -10,7 +10,8 @@ test.use({ viewport: { width: 1600, height: 1000 }, colorScheme: 'dark', ignoreH
 
 const box = (id: string, x: number, y: number, extra: Record<string, unknown> = {}) => ({
   id,
-  type: 'sticky',
+  type: 'shape',
+  shape: 'desk',
   x,
   y,
   width: 160,
@@ -25,9 +26,9 @@ const CASES = [
   { name: 'faded', target: { opacity: 0.6 } },
   { name: 'animated', target: { animation: 'bounce' } },
   {
-    name: 'under a note',
+    name: 'under another piece',
     target: { opacity: 0.8 },
-    cover: { type: 'sticky', width: 120, height: 120 },
+    cover: { type: 'shape', shape: 'desk', width: 120, height: 120 },
   },
 ] as const;
 
@@ -58,7 +59,7 @@ async function coveredGrips(page: Page): Promise<string[]> {
 }
 
 async function select(page: Page, label: string): Promise<void> {
-  const el = page.locator(`[aria-label='Sticky note "${label}"']`);
+  const el = page.locator(`[aria-label='Desk "${label}"']`);
   const r = (await el.boundingBox())!;
   await page.mouse.click(r.x + r.width * 0.35, r.y + r.height * 0.35);
 }

@@ -1,63 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AvatarSprite } from '@livehuddle/avatar/components/avatar-sprite';
 import { StatusDot } from '@livehuddle/avatar/components/AvatarWalker';
 import type { AvatarConfig } from '@livehuddle/avatar/config';
-import {
-  reactionDuration,
-  reactionPose,
-  type AvatarReactionKind,
-  type ReactionPose,
-} from '@livehuddle/avatar/reactions';
 import { avatarStatusLabel, type AvatarStatus } from '@livehuddle/avatar/status';
 import { prefersReducedMotion } from '@livehuddle/ui';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { behaviourStill } from '@/lib/avatar-palette';
 import { previewView, useAvatarPreview } from '@/lib/avatar-preview';
+import { FigurePortrait, PortraitPlayer } from './FigurePortrait';
 
 // The avatar palette's preview card (docs/specs/008-canvas/avatar-mode.md "The preview, beside the flyout"): your
 // character large, wearing whatever option the pointer or the focus is on, playing the move or throwing the burst
 // it names, and a caption saying what is shown. The card's surface and place are the host's (AvatarPalette); this is
 // its body. Hidden from assistive tech: every option already says what it is.
 
-// The figure's scale: the flyout's portrait made large, five CSS pixels to a sprite pixel so it stays crisp
-// (crispAvatarScale).
+// The sprite's scale, drawn only when the 3D character cannot be (no WebGL): the flyout's portrait made large.
 const SCALE = 2;
-// The pause between two plays of a Behaviour, so the loop reads as the move done again rather than one long dance.
-const LOOP_REST_MS = 500;
+// The 3D character's picture, CSS px: the card's stage less its margins, with headroom for raised arms and a hop.
+const FIGURE_W = 184;
+const FIGURE_H = 240;
 // The footprint a preview burst is scaled to. A burst flies out about twice its footprint each side (ReactionBurst's
 // overscan), so in a card this small a small footprint keeps the particles inside the stage.
 const BURST_PX = 56;
-
-/** A Behaviour's pose, played on a loop while it is previewed: its still pose under reduced motion. */
-function useLoopingPose(kind: AvatarReactionKind | null): ReactionPose | null {
-  const [pose, setPose] = useState<ReactionPose | null>(null);
-  useEffect(() => {
-    if (!kind) return;
-    // Read when the preview starts, outside render: the in-app setting or the system's. Reduced motion holds the
-    // still pose from the first frame on; otherwise the move plays on a loop.
-    const still = prefersReducedMotion();
-    const period = reactionDuration(kind) + LOOP_REST_MS;
-    const start = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      if (still) {
-        setPose(behaviourStill(kind));
-        return;
-      }
-      const p = reactionPose(kind, (now - start) % period);
-      setPose(p.done ? null : p);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf);
-      setPose(null);
-    };
-  }, [kind]);
-  return kind ? pose : null;
-}
 
 export function AvatarPalettePreview({
   config,
@@ -70,36 +36,54 @@ export function AvatarPalettePreview({
 }) {
   const preview = useAvatarPreview();
   const view = previewView(preview, config, status);
-  const pose = useLoopingPose(view.behaviour);
+  // Read once, as the card opens: the in-app setting or the system's. Reduced motion shows a
+  // Behaviour's still; otherwise it plays on a loop.
+  const [still] = useState(prefersReducedMotion);
   // A new seed when a burst ends, so it is thrown again for as long as it is previewed.
   const [seed, setSeed] = useState(1);
+  const look = { ...view.config, shirt };
+  const sprite = (
+    <AvatarSprite
+      facing={view.behaviour ? (behaviourStill(view.behaviour).facing ?? 'down') : 'down'}
+      config={view.config}
+      walking={false}
+      stepFrame={0}
+      lift={0}
+      wave={null}
+      shirt={shirt}
+      scale={SCALE}
+      pose={view.behaviour ? behaviourStill(view.behaviour) : null}
+      status={view.status}
+      portrait
+    />
+  );
   return (
     <div aria-hidden data-avatar-preview-body="" className="flex flex-col">
-      <div className="relative m-3 mb-0 flex h-56 items-end justify-center overflow-hidden rounded-xl bg-slate-50 pb-9 dark:bg-slate-800/60">
+      <div className="relative m-3 mb-0 flex h-[288px] items-end justify-center overflow-hidden rounded-xl bg-slate-50 pb-6 dark:bg-slate-800/60">
         {/* The ground the character stands on. */}
         <span className="absolute bottom-8 left-1/2 h-2.5 w-20 -translate-x-1/2 rounded-[50%] bg-slate-900/10 dark:bg-black/30" />
-        <span
-          className="relative flex items-end"
-          style={{
-            ...(pose?.lift ? { transform: `translateY(${-pose.lift * SCALE * 0.5}px)` } : {}),
-            // Away fades the character to half, as on the canvas (AvatarWalker).
-            ...(view.status === 'away' ? { opacity: 0.5 } : {}),
-          }}
-        >
-          <AvatarSprite
-            facing={pose?.facing ?? 'down'}
-            config={view.config}
-            walking={false}
-            stepFrame={0}
-            lift={0}
-            wave={null}
-            shirt={shirt}
-            scale={SCALE}
-            pose={pose}
-            headphones={view.status === 'focus'}
-            status={view.status}
-            portrait
-          />
+        <span className="relative flex items-end">
+          {/* The Space's own 3D character (docs/specs/008-canvas/3d-engine.md "Palette portraits"). */}
+          {view.behaviour && !still ? (
+            <PortraitPlayer
+              look={look}
+              move={view.behaviour}
+              status={view.status}
+              width={FIGURE_W}
+              height={FIGURE_H}
+              fallback={sprite}
+            />
+          ) : (
+            <FigurePortrait
+              look={look}
+              crop="stage"
+              move={view.behaviour}
+              status={view.status}
+              width={FIGURE_W}
+              height={FIGURE_H}
+              fallback={sprite}
+            />
+          )}
         </span>
         {view.status === 'away' ? (
           // Away's slow Zz over the head, as the canvas draws it (a CSS loop, still under reduced motion).

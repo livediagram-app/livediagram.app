@@ -8,7 +8,13 @@
 // sent to the nearest point it can reach instead. A query is A* over the grid with an expansion cap, then
 // string-pulled to straight legs. Everything here is pure; useAvatarWalk caches the grid.
 
-import { segmentDistance, segmentsIntersect, type FenceSegment } from './collision';
+import {
+  fenceReachOf,
+  fenceSearchReach,
+  segmentDistance,
+  segmentsIntersect,
+  type FenceSegment,
+} from './collision';
 import type { FencePoint } from './fence';
 
 /** The grid's cell, in canvas px: fine enough that a room's doorway keeps open cells for the Tall character. */
@@ -47,8 +53,6 @@ export type NavGrid = {
   stamp: number;
   fenceSeen: Uint32Array;
   fenceStamp: number;
-  // The shut Doors' lines (closed-door-lines in collision.ts): a click into the room behind one walks to its outside.
-  shutDoors: readonly FenceSegment[];
 };
 
 // The bucket a fence index is filed under, in canvas px.
@@ -66,11 +70,7 @@ const COST = [1, 1, 1, 1, Math.SQRT2, Math.SQRT2, Math.SQRT2, Math.SQRT2];
  * The grid for these fences and this reach, or null when nothing blocks (every walk is then a straight line).
  * Built once per change to the walls, never per frame.
  */
-export function buildNavGrid(
-  fences: readonly FenceSegment[],
-  reach: number,
-  shutDoors: readonly FenceSegment[] = [],
-): NavGrid | null {
+export function buildNavGrid(fences: readonly FenceSegment[], reach: number): NavGrid | null {
   if (fences.length === 0) return null;
   let x0 = Infinity;
   let y0 = Infinity;
@@ -82,7 +82,9 @@ export function buildNavGrid(
     x1 = Math.max(x1, s.a.x, s.b.x);
     y1 = Math.max(y1, s.a.y, s.b.y);
   }
-  const radius = reach + NAV_CLEARANCE;
+  // The widest any fence holds the feet off (a wall's reach grows by its pad: fence.md "A wall keeps the whole body out
+  // of it"); each fence blocks its own.
+  const radius = fenceSearchReach(reach) + NAV_CLEARANCE;
   // A free ring round everything, so a route can always go round the outside.
   const pad = radius + 3 * NAV_CELL;
   x0 -= pad;
@@ -95,15 +97,16 @@ export function buildNavGrid(
   const n = cols * rows;
   const blocked = new Uint8Array(n);
   for (const s of fences) {
-    const c0 = Math.max(0, Math.floor((Math.min(s.a.x, s.b.x) - radius - x0) / cell));
-    const c1 = Math.min(cols - 1, Math.floor((Math.max(s.a.x, s.b.x) + radius - x0) / cell));
-    const r0 = Math.max(0, Math.floor((Math.min(s.a.y, s.b.y) - radius - y0) / cell));
-    const r1 = Math.min(rows - 1, Math.floor((Math.max(s.a.y, s.b.y) + radius - y0) / cell));
+    const own = fenceReachOf(s, reach) + NAV_CLEARANCE;
+    const c0 = Math.max(0, Math.floor((Math.min(s.a.x, s.b.x) - own - x0) / cell));
+    const c1 = Math.min(cols - 1, Math.floor((Math.max(s.a.x, s.b.x) + own - x0) / cell));
+    const r0 = Math.max(0, Math.floor((Math.min(s.a.y, s.b.y) - own - y0) / cell));
+    const r1 = Math.min(rows - 1, Math.floor((Math.max(s.a.y, s.b.y) + own - y0) / cell));
     for (let r = r0; r <= r1; r++) {
       const cy = y0 + (r + 0.5) * cell;
       for (let c = c0; c <= c1; c++) {
         const i = r * cols + c;
-        if (!blocked[i] && distToSegment(x0 + (c + 0.5) * cell, cy, s) < radius) blocked[i] = 1;
+        if (!blocked[i] && distToSegment(x0 + (c + 0.5) * cell, cy, s) < own) blocked[i] = 1;
       }
     }
     // A footprint's inside is no place to stand either (its edges alone would leave it hollow).
@@ -149,7 +152,6 @@ export function buildNavGrid(
     stamp: 0,
     fenceSeen: new Uint32Array(fences.length),
     fenceStamp: 0,
-    shutDoors,
   };
 }
 
@@ -244,7 +246,7 @@ export function clearWalk(
   reach: number,
 ): boolean {
   const leg = { a, b };
-  for (const f of fences) if (segmentDistance(leg, f) < reach) return false;
+  for (const f of fences) if (segmentDistance(leg, f) < fenceReachOf(f, reach)) return false;
   return true;
 }
 
@@ -254,7 +256,9 @@ export function clearWalk(
  * that crosses it.
  */
 function legClear(grid: NavGrid, a: FencePoint, b: FencePoint): boolean {
-  const { fences, reach, bucketCols, bucketRows, bucketStart, bucketFences, fenceSeen } = grid;
+  const { fences, bucketCols, bucketRows, bucketStart, bucketFences, fenceSeen } = grid;
+  // The widest reach any fence keeps, for finding the buckets; each fence is then checked at its own.
+  const reach = fenceSearchReach(grid.reach);
   const stamp = ++grid.fenceStamp;
   const leg = { a, b };
   const half = NAV_BUCKET / 2;
@@ -284,8 +288,9 @@ function legClear(grid: NavGrid, a: FencePoint, b: FencePoint): boolean {
         if (fenceSeen[index] === stamp) continue;
         fenceSeen[index] = stamp;
         const fence = fences[index]!;
-        if (segmentDistance(leg, fence) >= reach) continue;
-        if (distToSegment(a.x, a.y, fence) < reach && !segmentsIntersect(leg, fence)) continue;
+        const own = fenceReachOf(fence, grid.reach);
+        if (segmentDistance(leg, fence) >= own) continue;
+        if (distToSegment(a.x, a.y, fence) < own && !segmentsIntersect(leg, fence)) continue;
         return false;
       }
     }
@@ -398,6 +403,29 @@ export const NAV_MAX_EXPANSIONS = 120_000;
  * no grid, or a search past its cap is just `[to]`, the straight line.
  */
 export function findWalkPath(grid: NavGrid | null, from: FencePoint, to: FencePoint): FencePoint[] {
+  return walkPath(grid, from, to, false) ?? [to];
+}
+
+/**
+ * The route from `from` to `to` round the walls, ending at `to`, or null when it cannot get there: `to` is in a wall's
+ * reach or a footprint, behind walls, the feet stand walled in, or the search passed its cap. findWalkPath's straight
+ * line in those cases is a walk through the walls, so a walker that is not following a click (the office dog, the
+ * Receptionist: docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog") asks this instead and goes elsewhere.
+ */
+export function findWalkRoute(
+  grid: NavGrid | null,
+  from: FencePoint,
+  to: FencePoint,
+): FencePoint[] | null {
+  return walkPath(grid, from, to, true);
+}
+
+function walkPath(
+  grid: NavGrid | null,
+  from: FencePoint,
+  to: FencePoint,
+  strict: boolean,
+): FencePoint[] | null {
   if (!grid || legClear(grid, from, to)) return [to];
   const start = clampIn(grid, from);
   const goalPoint = clampIn(grid, to);
@@ -411,21 +439,21 @@ export function findWalkPath(grid: NavGrid | null, from: FencePoint, to: FencePo
     },
     4,
   );
-  if (startCell === -1) return [to];
+  if (startCell === -1) return strict ? null : [to];
   const region = grid.region[startCell]!;
   const toCell = cellAt(grid, goalPoint);
   const reachable = toCell !== -1 && grid.region[toCell] === region;
+  if (strict && !reachable) return null;
   const goalCell = reachable
     ? toCell
-    : (shutDoorCell(grid, goalPoint, start, region) ??
-      nearestCell(
+    : nearestCell(
         grid,
         goalPoint,
         (i) => grid.region[i] === region,
         Math.max(grid.cols, grid.rows),
-      ));
+      );
   const cells = aStar(grid, startCell, goalCell);
-  if (!cells) return [to];
+  if (!cells) return strict ? null : [to];
   // The raw route: the feet, the cells' centres, the end; the string-pulling straightens it.
   const raw: FencePoint[] = [from];
   if (start.x !== from.x || start.y !== from.y) raw.push(start);
@@ -435,55 +463,6 @@ export function findWalkPath(grid: NavGrid | null, from: FencePoint, to: FencePo
     raw.push(to);
   }
   return smooth(grid, raw);
-}
-
-/**
- * Where a walk to a point it cannot reach goes when the area round that point has a shut Door the walker can get to
- * (avatar-mode.md "Finding the way"): the cell just outside the door nearest the walker, on the walker's side, so the
- * next click swings it open. Null when no shut door opens into that area (a pond, a doorless room): the nearest
- * reachable point then.
- */
-function shutDoorCell(
-  grid: NavGrid,
-  target: FencePoint,
-  feet: FencePoint,
-  region: number,
-): number | null {
-  if (grid.shutDoors.length === 0) return null;
-  // The area clicked into: the target's own open cell, else (a click on a wall or in scenery) the open cell nearest it.
-  const at = cellAt(grid, target);
-  const inside = at !== -1 && !grid.blocked[at] ? at : nearestCell(grid, target, () => true, 4);
-  if (inside === -1) return null;
-  const area = grid.region[inside]!;
-  const off = grid.reach + NAV_CLEARANCE + grid.cell / 2;
-  let best: number | null = null;
-  let bestD = Infinity;
-  for (const door of grid.shutDoors) {
-    const mx = (door.a.x + door.b.x) / 2;
-    const my = (door.a.y + door.b.y) / 2;
-    const dx = door.b.x - door.a.x;
-    const dy = door.b.y - door.a.y;
-    const len = Math.hypot(dx, dy) || 1;
-    const nx = -dy / len;
-    const ny = dx / len;
-    const sides = [1, -1].map((k) => {
-      const p = { x: mx + nx * off * k, y: my + ny * off * k };
-      const i = cellAt(grid, p);
-      return { p, region: i === -1 || grid.blocked[i] ? -1 : grid.region[i]! };
-    });
-    for (const [inner, outer] of [
-      [sides[0]!, sides[1]!],
-      [sides[1]!, sides[0]!],
-    ] as const) {
-      if (inner.region !== area || outer.region !== region) continue;
-      const d = Math.hypot(outer.p.x - feet.x, outer.p.y - feet.y);
-      if (d < bestD) {
-        bestD = d;
-        best = cellAt(grid, outer.p);
-      }
-    }
-  }
-  return best;
 }
 
 function aStar(grid: NavGrid, startCell: number, goalCell: number): number[] | null {

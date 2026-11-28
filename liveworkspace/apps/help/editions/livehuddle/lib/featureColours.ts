@@ -36,7 +36,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'connected-files': '#4f46e5',
   'auto-align': '#22c55e',
   about: '#0891b2',
-  minimap: '#94a3b8',
   settings: '#475569',
   // Canvas sub-article guides
   'adding-elements': '#22c55e',
@@ -91,7 +90,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   embeds: '#6366f1',
   'live-image': '#0ea5e9',
   // Palette → Behaviour elements
-  'bring-focus': '#0ea5e9',
   facilitator: '#a855f7',
   'mode-buttons': '#7c3aed',
   // Palette → Tools elements
@@ -100,7 +98,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   // Canvas guides
   'follow-along': '#06b6d4',
   size: '#0284c7',
-  rotation: '#7c3aed',
   shadows: '#475569',
   finish: '#0d9488',
   snapping: '#22c55e',
@@ -135,7 +132,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'the-search-panel': '#6366f1',
   'dark-mode': '#475569',
   'title-bar': '#6366f1',
-  'colours-borders-opacity': '#9333ea',
   'formatting-label-text': '#0e7490',
 };
 

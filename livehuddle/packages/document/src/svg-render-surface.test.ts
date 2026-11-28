@@ -5,12 +5,12 @@ import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import type { ShapeKind } from './index';
 
-// Surface fidelity (docs/specs/008-canvas/minimap.md "Fidelity"). The headless
-// renderer draws the Map, the layer thumbnails and the exports, and it has to
+// Surface fidelity (docs/specs/008-canvas/minimap.md "Fidelity", kept for the exports after the Map left). The headless
+// renderer draws the layer thumbnails and the exports, and it has to
 // paint an element on dark paper the way the canvas does. The canvas never
 // shows a light card on a dark canvas unless the element stores that colour
 // itself, so neither may the renderer: a hard-coded light base is how the
-// Reveal cover came out as a white panel on a dark canvas's map.
+// Reveal cover came out as a white panel on a dark canvas's Map.
 
 const KINDS = Object.keys(SHAPE_DEFAULT_SIZE) as ShapeKind[];
 

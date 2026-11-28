@@ -3,7 +3,6 @@ import { createShape, type Element } from '@livehuddle/document';
 import {
   roofOver,
   roofShape,
-  roofsInArea,
   spaceRoofs,
   SPACE_ROOF_MAX_RISE,
   SPACE_ROOF_PITCH,
@@ -32,30 +31,31 @@ describe('spaceRoofs', () => {
   it('runs a tall room’s ridge down the plan', () => {
     expect(spaceRoofs([lawn, shape('room', 100, 100, 200, 500)])[0]!.across).toBe(true);
   });
-  it('leaves a room off the lawn, a turned or drawn room, and anything else', () => {
+  it('leaves a room off the lawn, a turned room, and anything else', () => {
     const els = [
       lawn,
       shape('room', 3000, 3000, 400, 300),
       shape('room', 100, 100, 400, 300, { rotation: 15 }),
-      shape('room', 100, 100, 400, 300, {
-        roomOutline: [
-          { x: 0, y: 0 },
-          { x: 10, y: 0 },
-          { x: 0, y: 10 },
-        ],
-      }),
       shape('rug', 100, 100, 100, 100),
     ];
     expect(spaceRoofs(els)).toEqual([]);
   });
+  // 3d-view.md: "a room drawn with the Room Builder has a flat roof the shape of its outline".
+  it('gives a drawn room a flat roof the shape of its outline', () => {
+    const outline = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 0.5 },
+      { x: 0.5, y: 1 },
+      { x: 0, y: 1 },
+    ];
+    const [roof] = spaceRoofs([lawn, shape('room', 100, 100, 400, 300, { roomOutline: outline })]);
+    expect(roof).toMatchObject({ flat: true, outline });
+  });
 });
 
-describe('roofsInArea and roofOver', () => {
+describe('roofOver', () => {
   const roofs = spaceRoofs([lawn, shape('room', 100, 100, 400, 300)]);
-  it('keeps the roofs meeting the area', () => {
-    expect(roofsInArea(roofs, { left: 0, top: 0, right: 200, bottom: 200 })).toHaveLength(1);
-    expect(roofsInArea(roofs, { left: 600, top: 0, right: 900, bottom: 900 })).toHaveLength(0);
-  });
   it('finds the roof over your feet', () => {
     expect(roofOver(roofs, { x: 300, y: 200 })).toBe(roofs[0]!.id);
     expect(roofOver(roofs, { x: 50, y: 50 })).toBeNull();

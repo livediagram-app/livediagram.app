@@ -14,7 +14,7 @@ import { outlineWalls } from './room-outline';
 // in the ground, and a lawn.
 export function isFloorShape(
   kind: string,
-): kind is 'room' | 'corridor' | 'rug' | 'avatar-pad' | 'stage' | 'garden-path' | 'grass' {
+): kind is 'room' | 'corridor' | 'rug' | 'avatar-pad' | 'stage' | 'garden-path' | 'road' | 'grass' {
   return (
     kind === 'room' ||
     // livehuddle's Corridor (its docs/specs/009-elements/corridor.md): a passage of floor between rooms.
@@ -23,6 +23,8 @@ export function isFloorShape(
     kind === 'avatar-pad' ||
     kind === 'stage' ||
     kind === 'garden-path' ||
+    // livehuddle's Road (its docs/specs/009-elements/road.md): a street people cross; its cars are scenery.
+    kind === 'road' ||
     kind === 'grass'
   );
 }
@@ -98,9 +100,14 @@ const WALL_PIECE_KINDS: readonly string[] = [
   'hand-dryer',
   'microwave',
   'kettle',
+  // livehuddle's lamps (its office-amenities.md "Lamps"): the Table Lamp and the Desk Lamp stand on a desk, as the
+  // microwave on a counter.
+  'table-lamp',
+  'desk-lamp',
   // livehuddle's team pieces (its team-pieces.md "How each one walks"): the Calendar Wall and the Team Photo Wall.
   'calendar-wall',
   'photo-wall',
+  'poster',
 ];
 export function isWallPieceShape(kind: string): boolean {
   return WALL_PIECE_KINDS.includes(kind);
@@ -155,7 +162,9 @@ const OFFICE_FOOTPRINT: Partial<Record<string, GridFraction>> = {
   tree: { x0: 48 / 120, x1: 72 / 120, y0: 136 / 160, y1: 152 / 160 },
   // livehuddle's social pieces (its docs/specs/009-elements/social-pieces.md): a base, a hearth, a basin, the water.
   jukebox: { x0: 6 / 72, x1: 66 / 72, y0: 84 / 112, y1: 108 / 112 },
-  'arcade-machine': { x0: 6 / 64, x1: 58 / 64, y0: 88 / 112, y1: 108 / 112 },
+  // A cabinet as deep as it is wide and a little more, as a real one stands (the owner, 2026-11-27: "arcade machines
+  // need more depth to be realistic"): its 3D model stands on this.
+  'arcade-machine': { x0: 6 / 64, x1: 58 / 64, y0: 52 / 112, y1: 108 / 112 },
   fireplace: { x0: 4 / 128, x1: 124 / 128, y0: 96 / 120, y1: 116 / 120 },
   'garden-umbrella': { x0: 50 / 120, x1: 70 / 120, y0: 138 / 152, y1: 148 / 152 },
   fountain: { x0: 8 / 136, x1: 128 / 136, y0: 72 / 120, y1: 112 / 120 },
@@ -172,6 +181,8 @@ const OFFICE_FOOTPRINT: Partial<Record<string, GridFraction>> = {
   lockers: { x0: 0.03, x1: 0.97, y0: 0.8, y1: 0.96 },
   'coat-rack': { x0: 14 / 56, x1: 42 / 56, y0: 114 / 128, y1: 126 / 128 },
   'umbrella-stand': { x0: 6 / 40, x1: 34 / 40, y0: 50 / 64, y1: 62 / 64 },
+  // The Floor Lamp's round base (its office-amenities.md "Lamps"); the pole and shade above never block.
+  'floor-lamp': { x0: 14 / 48, x1: 34 / 48, y0: 124 / 136, y1: 134 / 136 },
   'kitchen-counter': { x0: 0, x1: 1, y0: 44 / 88, y1: 84 / 88 },
   'kitchen-sink': { x0: 0, x1: 1, y0: 44 / 88, y1: 84 / 88 },
   fridge: { x0: 4 / 72, x1: 68 / 72, y0: 108 / 136, y1: 132 / 136 },
@@ -289,11 +300,41 @@ export const OFFICE_FOOTPRINT_BOXES: Partial<Record<string, FootprintBoxes>> = {
   },
 };
 
+let modelFacing: ((el: { shape: string; chairFacing?: SeatFacing }) => SeatFacing) | null = null;
+/**
+ * Whether a turned piece blocks where its 3D model stands (livehuddle's 3d-engine.md "Block models"): the front
+ * drawing's footprint turned with the piece, rather than the 2D side or back drawing's own (the owner, 2026-11-27: "I
+ * seem to be able to walk into a bookcase": on its side the drawing's footprint was a third of the model's length).
+ * On while the 3D view draws, given the facing its models stand at (@livehuddle/document's pieceFacing); null turns
+ * it off.
+ */
+export function setModelFootprints(
+  facingOf: ((el: { shape: string; chairFacing?: SeatFacing }) => SeatFacing) | null,
+): void {
+  modelFacing = facingOf;
+}
+
+/** Whether turned pieces block where their 3D models stand (see setModelFootprints). */
+export function modelFootprintsOn(): boolean {
+  return modelFacing !== null;
+}
+
+/** A front-drawing fraction turned a quarter turn at a time to `facing`, as the 3D model is (piece-frame.ts). */
+function turnFraction(f: GridFraction, facing: Exclude<SeatFacing, 'n'>): GridFraction {
+  if (facing === 'e') return { x0: 1 - f.y1, x1: 1 - f.y0, y0: f.x0, y1: f.x1 };
+  if (facing === 's') return { x0: 1 - f.x1, x1: 1 - f.x0, y0: 1 - f.y1, y1: 1 - f.y0 };
+  return { x0: f.y0, x1: f.y1, y0: 1 - f.x1, y1: 1 - f.x0 };
+}
+
 /** Every box of a piece's footprint, as fractions of the drawing its facing shows: none for a piece that does not block. */
 export function footprintFractions(
   shape: string,
   facing: SeatFacing = 'n',
 ): readonly GridFraction[] {
+  if (modelFacing && facing !== 'n') {
+    const front = footprintFractions(shape, 'n');
+    return front.map((f) => turnFraction(f, facing));
+  }
   const boxes = OFFICE_FOOTPRINT_BOXES[shape];
   if (!boxes) {
     const one = footprintFraction(shape, facing);
@@ -342,7 +383,8 @@ export function officeFootprints(el: FootprintPiece): Rect[] {
       },
     ];
   }
-  return footprintFractions(el.shape, el.chairFacing).map((f) => ({
+  const facing = modelFacing ? modelFacing(el) : el.chairFacing;
+  return footprintFractions(el.shape, facing).map((f) => ({
     x: el.x + el.width * f.x0,
     y: el.y + el.height * f.y0,
     width: el.width * (f.x1 - f.x0),

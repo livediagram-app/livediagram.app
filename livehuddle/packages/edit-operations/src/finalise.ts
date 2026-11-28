@@ -21,8 +21,7 @@ import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { invalidResult, invalidValue } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';
-import { ALIAS_FIELDS } from './fields';
-import { SHAPES_RETIRED } from './vocabulary';
+import { isRetiredNoteType, NOTES_RETIRED, SHAPES_RETIRED } from './vocabulary';
 
 type Raw = Record<string, unknown>;
 
@@ -35,16 +34,11 @@ function normaliseTouched(state: EditState, log: EditLog): EditRejection | null 
     // nothing but where it is and how big.
     if (!el || (!!state.before.has(id) && written.every((key) => GEOMETRY.has(key)))) continue;
     const normalised = normaliseElement(el) as Raw;
-    // A sticky's borderless look comes with the fill it is given: an existing note whose fill this edit
-    // left alone keeps the border it had, so a relabelled note looks like its neighbours.
-    if (
-      normalised.type === 'sticky' &&
-      state.before.has(id) &&
-      (el as Raw).strokeColor === undefined &&
-      // The fill named by its stored key or by an alias that writes it (`fill`).
-      !written.some((k) => k === 'fillColor' || ALIAS_FIELDS[k]?.includes('fillColor'))
-    )
-      delete normalised.strokeColor;
+    // A text or a sticky note is refused, made by `add` or sent whole (not-in-livehuddle.md "The Write category").
+    if (isRetiredNoteType(normalised.type)) {
+      log('[edit-ops] rejected', { code: 'invalid_value', operation, field: 'type' });
+      return invalidValue(operation, 'type', String(normalised.type), NOTES_RETIRED);
+    }
     // A kind the edit did not write stays: a stored lane, a retired kind (docs/specs/002-project-scope/
     // not-in-livehuddle.md "The element engine", part 3), keeps its kind when an agent relabels it.
     const was = state.before.get(id);

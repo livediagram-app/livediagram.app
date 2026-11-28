@@ -18,6 +18,9 @@ import type { OfficePiece } from './template-office-parts';
 const SUITE_W = 1800;
 const SUITE_H = 1000;
 const SUITE_ROOM_H = 400;
+// Three rooms side by side, each a wall's width over the last so they share one wall (office.md "Rooms line up").
+const SUITE_ROOM_W = 570;
+const suiteRoomX = (i: number) => 60 + i * (SUITE_ROOM_W - 10);
 
 // An interview room: a table for the candidate and the panel, a Screen on the back wall for a portfolio or a coding
 // exercise (docs/specs/009-elements/screen-and-room-sign.md), and its walls keeping the call to the room
@@ -26,38 +29,39 @@ const interviewRoom = (name: string, x: number, windows: IndoorRoom['windows']):
   name,
   x,
   y: 60,
-  w: 520,
+  w: SUITE_ROOM_W,
   h: SUITE_ROOM_H,
   indoor: true,
-  door: { side: 's', at: 260, sign: 1 },
+  door: { side: 's', at: SUITE_ROOM_W / 2, sign: 1 },
   windows,
   pieces: [
-    { kind: 'screen', x: 200, y: 4, w: 120 },
-    { kind: 'meeting-table', x: 144, y: 110 },
+    { kind: 'screen', x: SUITE_ROOM_W / 2 - 60, y: 4, w: 120 },
+    { kind: 'meeting-table', x: SUITE_ROOM_W / 2 - 116, y: 110 },
     { kind: 'plant', x: 24, y: 52 },
-    { kind: 'plant', x: 440, y: 52 },
+    { kind: 'plant', x: SUITE_ROOM_W - 80, y: 52 },
   ],
 });
 
 const SUITE_ROOMS: IndoorRoom[] = [
-  interviewRoom('Interview 1', 60, [{ side: 'w', at: 230 }]),
-  interviewRoom('Interview 2', 640, [{ side: 'n', at: 400 }]),
+  interviewRoom('Interview 1', suiteRoomX(0), [{ side: 'w', at: 230 }]),
+  interviewRoom('Interview 2', suiteRoomX(1), [{ side: 'n', at: 400 }]),
   {
     // Where the panel meets after an interview, out of the candidates' way.
     name: 'Debrief Room',
-    x: 1220,
+    x: suiteRoomX(2),
     y: 60,
-    w: 520,
+    w: SUITE_ROOM_W,
     h: SUITE_ROOM_H,
     indoor: true,
-    door: { side: 's', at: 260, sign: 1 },
+    door: { side: 's', at: SUITE_ROOM_W / 2, sign: 1 },
     windows: [{ side: 'e', at: 230 }],
     pieces: [
-      { kind: 'screen', x: 200, y: 4, w: 120 },
-      { kind: 'meeting-table', x: 120, y: 110 },
+      { kind: 'screen', x: SUITE_ROOM_W / 2 - 60, y: 4, w: 120 },
+      { kind: 'meeting-table', x: SUITE_ROOM_W / 2 - 116, y: 120 },
       // A Timer to keep the debrief short (docs/specs/009-elements/timer-and-stopwatch.md).
-      { kind: 'timer', x: 384, y: 44 },
-      { kind: 'water-cooler', x: 24, y: 40 },
+      { kind: 'timer', x: 440, y: 44 },
+      // The water cooler on the left wall, clear of the table's chairs.
+      { kind: 'water-cooler', x: 12, y: 150, facing: 'w' },
     ],
   },
 ];
@@ -89,11 +93,13 @@ const SUITE_FLOOR: OfficePiece[] = [
   { kind: 'sofa', x: 284, y: 680, facing: 'n' },
   { kind: 'rug', x: 540, y: 660 },
   { kind: 'sofa', x: 564, y: 680, facing: 'n' },
-  // A World Clock over the waiting area, for a candidate joining from another time zone.
-  { kind: 'world-clock', x: 1240, y: 640 },
-  { kind: 'coffee-machine', x: 1440, y: 660 },
-  { kind: 'water-cooler', x: 1536, y: 644 },
-  { kind: 'phone-booth', x: 1660, y: 640 },
+  // A Clock on Interview 1's front wall over the waiting area.
+  { kind: 'world-clock', x: 532, y: 480 },
+  // Coffee and water against the Debrief Room's front wall, right of its door.
+  { kind: 'coffee-machine', x: 1580, y: 470 },
+  { kind: 'water-cooler', x: 1670, y: 470 },
+  // A Phone Booth against the Debrief Room's front wall, left of its door, facing the waiting area.
+  { kind: 'phone-booth', x: 1260, y: 470 },
   // The front desk by the entrance: whoever walks in is welcomed, and its bell calls the interviewer.
   { kind: 'reception-desk', x: 560, y: 860 },
   { kind: 'directory', x: SUITE_W / 2 + 80, y: 860 },
@@ -107,18 +113,10 @@ export function buildInterviewSuite(cx: number, cy: number): Element[] {
     height: SUITE_H,
     rooms: SUITE_ROOMS,
     open: SUITE_FLOOR,
-    title: {
-      text: 'Interview Suite',
-      width: 320,
-      sticker: 'emoji-clipboard',
-      subtitle:
-        'Candidates wait in comfort, each interview has a closed room of its own, and the panel debriefs next door.',
-    },
     // In the waiting area, the interview rooms' doors and signs ahead.
     arrival: {
       dx: 0,
       dy: 200,
-      hint: 'You arrive on the Avatar Pad in the waiting area. Ring the bell at the front desk, or knock on an interview room’s sign.',
     },
   });
 }
@@ -131,7 +129,7 @@ const LOUNGE_H = 1160;
 const LOUNGE_ROOMS: IndoorRoom[] = [
   {
     // A Long Table for the big meeting (docs/specs/009-elements/office.md "Long Table"), the Screen over its middle and a
-    // World Clock for clients joining from elsewhere.
+    // Clock.
     name: 'Boardroom',
     x: 60,
     y: 60,
@@ -145,7 +143,7 @@ const LOUNGE_ROOMS: IndoorRoom[] = [
     ],
     pieces: [
       { kind: 'screen', x: 284, y: 4 },
-      { kind: 'world-clock', x: 520, y: 44 },
+      { kind: 'world-clock', x: 572, y: 44 },
       { kind: 'meeting-table', x: 100, y: 160, variant: 'long' },
       { kind: 'plant', x: 24, y: 52 },
       { kind: 'plant', x: 700, y: 52 },
@@ -154,26 +152,27 @@ const LOUNGE_ROOMS: IndoorRoom[] = [
   {
     // Glass, so a client waiting in the lounge sees the pitch is on.
     name: 'Pitch Room',
-    x: 880,
+    // A wall's width over the Boardroom's, and the Quiet Room a wall's width over it: one wall between each.
+    x: 810,
     y: 60,
-    w: 480,
+    w: 560,
     h: 400,
     indoor: true,
     glass: true,
-    door: { side: 's', at: 240, sign: 1, variant: 'sliding' },
+    door: { side: 's', at: 280, sign: 1, variant: 'sliding' },
     pieces: [
-      { kind: 'screen', x: 160, y: 4, w: 160 },
-      { kind: 'meeting-table', x: 124, y: 120 },
+      { kind: 'screen', x: 200, y: 4, w: 160 },
+      { kind: 'meeting-table', x: 164, y: 120 },
       { kind: 'plant', x: 24, y: 52 },
-      { kind: 'plant', x: 400, y: 52 },
+      { kind: 'plant', x: 480, y: 52 },
     ],
   },
   {
     // Two Phone Booths and an Office Pod, each a call of its own, for a call the room should not hear.
     name: 'Quiet Room',
-    x: 1420,
+    x: 1360,
     y: 60,
-    w: 480,
+    w: 540,
     h: 400,
     indoor: true,
     door: { side: 's', at: 240, sign: 1 },
@@ -196,11 +195,12 @@ const LOUNGE_FLOOR: OfficePiece[] = [
   { kind: 'sofa', x: 124, y: 780, facing: 'n' },
   { kind: 'rug', x: 396, y: 760 },
   { kind: 'sofa', x: 420, y: 780, facing: 'n' },
-  // The coffee bar: a bar with stools, a coffee machine and a drinks fridge behind its end.
+  // The coffee bar: a bar with stools, and behind it a coffee machine and a drinks fridge against the Quiet Room's
+  // front wall, right of its door.
   { kind: 'bar', x: 1500, y: 700 },
   ...stools([1520, 1580, 1640, 1700], 830),
-  { kind: 'coffee-machine', x: 1770, y: 712 },
-  { kind: 'drinks-fridge', x: 1860, y: 700 },
+  { kind: 'coffee-machine', x: 1720, y: 470 },
+  { kind: 'drinks-fridge', x: 1810, y: 470 },
   // The front desk by the entrance, its Welcome and its bell for a client arriving.
   { kind: 'reception-desk', x: 800, y: 1000 },
   { kind: 'directory', x: LOUNGE_W / 2 + 80, y: 1020 },
@@ -214,18 +214,10 @@ export function buildClientLounge(cx: number, cy: number): Element[] {
     height: LOUNGE_H,
     rooms: LOUNGE_ROOMS,
     open: LOUNGE_FLOOR,
-    title: {
-      text: 'Client Lounge',
-      width: 300,
-      sticker: 'emoji-sparkles',
-      subtitle:
-        'Welcome clients at the front desk, pitch in the glass room, and seal it round the Long Table in the boardroom.',
-    },
     // In the lounge, the front desk behind and every room's door ahead.
     arrival: {
       dx: 0,
       dy: 240,
-      hint: 'You arrive on the Avatar Pad in the lounge. Grab a coffee at the bar, then knock on the Boardroom’s sign.',
     },
   });
 }

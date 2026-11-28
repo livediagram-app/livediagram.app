@@ -133,6 +133,7 @@ describe('scenery that blocks', () => {
 describe('the pod, the bar and the garden', () => {
   it('lays a garden path and grass on the floor', () => {
     expect(isFloorShape('garden-path')).toBe(true);
+    expect(isFloorShape('road')).toBe(true);
     expect(isFloorShape('grass')).toBe(true);
     expect(isFloorShape('garden-fence')).toBe(false);
   });

@@ -262,7 +262,8 @@ describe('a piece moment on screen', () => {
     ).toBe('translate(32 30)');
   });
 
-  it("ticks each world clock's minute hand round, dial by dial from your side", () => {
+  it("ticks the clock's one minute hand round, an old box's zones ignored", () => {
+    // social-pieces.md "Clock": a clock saved as a World Clock, at its old size and with zones, draws one dial.
     const clock = {
       ...piece('world-clock', 'c'),
       width: 168,
@@ -275,11 +276,9 @@ describe('a piece moment on screen', () => {
     const { container } = render(<PieceArt element={clock} stroke="#64748b" fill="#f8fafc" />);
     act(() => playMoment('c', -1));
     const hands = [...container.querySelectorAll<SVGGElement>('[data-moment-part="hand"]')];
-    expect(hands).toHaveLength(2);
-    expect(hands.every((g) => g.classList.contains('lh-moment-tick'))).toBe(true);
-    const delay = (g: SVGGElement) => parseFloat(g.style.getPropertyValue('--delay'));
-    expect(delay(hands[0]!)).toBeLessThan(delay(hands[1]!));
-    expect(hands[0]!.style.transformOrigin).toBe('46px 32px');
+    expect(hands).toHaveLength(1);
+    expect(hands[0]!.classList.contains('lh-moment-tick')).toBe(true);
+    expect(hands[0]!.style.transformOrigin).toBe('32px 32px');
   });
 
   it('lifts the calendar page at the bottom corner away from you, clear of your character', () => {

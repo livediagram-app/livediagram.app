@@ -1,9 +1,18 @@
 'use client';
 
 import { seatPillBottom, type Sitter } from '@livehuddle/avatar/chair-sitters';
-import { Fragment, useEffect, useId, useMemo, useRef, type CSSProperties } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { rowLayouts, type RowLayout } from '@livehuddle/avatar/furniture-rows';
-import { turnFacing } from '@livehuddle/avatar/facing';
+import { turnFacing, type SeatFacing } from '@livehuddle/avatar/facing';
+import { seatPoints, type SeatedBox } from '@livehuddle/avatar/seats';
 import {
   builtIn3D,
   endSlice,
@@ -12,6 +21,8 @@ import {
   seenFootShift,
   pieceQuarters,
   seenFromCamera,
+  showsLength,
+  lengthHeight,
 } from '@/lib/space-3d/space-3d-pieces';
 import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
 import { useSpace3DShowing, useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
@@ -42,6 +53,7 @@ import {
   type FurniturePart,
   isSeatingShape,
   OFFICE_ART,
+  treeArt,
   OFFICE_TONES,
   MACHINE_ANSWER_AT,
   POD_DOORS,
@@ -100,7 +112,7 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   stairs: 'Stairs',
   // The social pieces (docs/specs/009-elements/social-pieces.md).
   'notice-board': 'Notice board',
-  'world-clock': 'World clock',
+  'world-clock': 'Clock',
   jukebox: 'Jukebox',
   'ping-pong-table': 'Ping-pong table',
   'arcade-machine': 'Arcade machine',
@@ -130,6 +142,9 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'toilet-cubicle': 'Toilet cubicle',
   washbasin: 'Washbasin',
   'hand-dryer': 'Hand dryer',
+  'floor-lamp': 'Floor lamp',
+  'table-lamp': 'Table lamp',
+  'desk-lamp': 'Desk lamp',
   pillar: 'Pillar',
   column: 'Column',
   'car-park': 'Car park',
@@ -150,6 +165,7 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'suggestion-box': 'Suggestion box',
   signpost: 'Signpost',
   'photo-wall': 'Team photo wall',
+  poster: 'Poster',
 };
 
 /** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */
@@ -206,17 +222,23 @@ function FurnitureDrawingView({
     ? longTableArt(planW, planH, facing)
     : seating
       ? FURNITURE_ART[kind]
-      : OFFICE_ART[kind as GridOfficeKind];
+      : // A Tree draws its species (office.md "Tree species").
+        kind === 'tree'
+        ? treeArt(element.variant)
+        : OFFICE_ART[kind as GridOfficeKind];
   // Seen side on, a piece that stands up shows its end (3d-view.md "Turning the camera"), never its back squeezed to
   // its depth, which read as the piece facing the wrong way and shrinking (the owner, 2026-11-18).
   const sideOn = seen && !plan && isSideFacing(facing);
   // Side on, a piece whose side drawing is the plan seen from above shows the end of its front drawing instead, so it
   // stands upright rather than lying on its side (space-3d-pieces.ts endSlice; the owner, 2026-11-18: the printer and
   // the desks "lying on its side").
+  const planSide = sideOn && turnsWithFacing(kind) && !SIDE_IS_ELEVATION.has(kind);
+  // A long, low piece (a bench, a sofa) shows its whole length side on, built as a low box: its plan drawing as its
+  // top, raised to its own height, over an upright end face, so a two-seater does not read as one chair or a rug,
+  // and whoever stands at it is taller than it (the owner, 2026-11-25: a turned reception desk "hits my face").
+  const length = planSide && showsLength(art.front);
   const slice =
-    sideOn && turnsWithFacing(kind) && !SIDE_IS_ELEVATION.has(kind)
-      ? endSlice(art.front, art.side, facing === 'w' ? 'w' : 'e')
-      : null;
+    planSide && !length ? endSlice(art.front, art.side, facing === 'w' ? 'w' : 'e') : null;
   // The drawing its facing shows (docs/specs/009-elements/furniture-facing.md "The camera").
   const frame = furnitureFrame(art, slice ? 'n' : facing);
   // A piece that stands up is seen at the scale its own drawing has on the canvas, at the seen drawing's own size: a
@@ -228,7 +250,9 @@ function FurnitureDrawingView({
   const boxH = own ? frame.view.height * ownScale : planH;
   const drawing = facingView(slice ? 'n' : facing).view;
   // Its foot on the footprint's edge nearest the camera (see the stand's transform below).
-  const footShift = seenFootShift({ width: element.width, height: element.height }, quarter, boxH);
+  const footShift = length
+    ? 0
+    : seenFootShift({ width: element.width, height: element.height }, quarter, boxH);
   // Seating is upholstered in its own fabric (furniture-art-style.md "Materials"); the rest take the theme's wash.
   const seat =
     kind === 'rug'
@@ -238,6 +262,9 @@ function FurnitureDrawingView({
         : pieceMaterial(kind, element.fillColor);
   // Seating and the fixed seats (an Office Pod, a Bar Stool: docs/specs/009-elements/office.md) take sitters.
   const sits = seatsACharacter(kind);
+  // A one-seat piece seen turned (a Phone Booth, a Bar Stool) slides across so its drawn seat lands on its sitter,
+  // who sits where the plan's seat is: turned, the booth stood beside its sitter (the owner, 2026-11-25).
+  const seatShift = seen && sits ? turnedSeatShift(element, facing, quarter, boxW, boxH) : 0;
   const occupied = sits && sitters.length > 0;
   // The pill wears the first sitter's colour; a taken seat has no ring (chair.md "Occupied").
   const pillColor = sitters[0]?.color ?? stroke;
@@ -297,7 +324,7 @@ function FurnitureDrawingView({
       <svg
         viewBox={frame.viewBox}
         // Seen end on, the front drawing narrowed to the piece's depth, as a piece turned steeply away reads.
-        preserveAspectRatio={slice ? 'none' : undefined}
+        preserveAspectRatio={slice || length ? 'none' : undefined}
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
         aria-label={
@@ -351,18 +378,22 @@ function FurnitureDrawingView({
           light={light}
         />
       ) : null}
-      {pod ? (
+      {/* Each piece of the pod's furniture stands about its own foot, so the far bench stands on the floor at the
+          back instead of floating over it (the owner, 2026-11-25). */}
+      {pod?.groups.map((group, g) => (
         <div
+          key={g}
           aria-hidden
           data-pod-furniture=""
           className="absolute inset-0"
           style={{
-            ['--pod-foot' as string]: `${(pod.foot / Number(frame.viewBox.split(' ')[3])) * 100}%`,
+            ['--pod-foot' as string]: `${(group.foot / Number(frame.viewBox.split(' ')[3])) * 100}%`,
+            ['--pod-middle' as string]: `${(group.middle / Number(frame.viewBox.split(' ')[2])) * 100}%`,
           }}
         >
           <svg viewBox={frame.viewBox} className="absolute inset-0 h-full w-full overflow-visible">
             <g transform={frame.transform || undefined}>
-              {pod.indices.map((i) => (
+              {group.indices.map((i) => (
                 <FurniturePartView
                   key={i}
                   part={parts[i]!}
@@ -374,7 +405,7 @@ function FurnitureDrawingView({
             </g>
           </svg>
         </div>
-      ) : null}
+      ))}
       {/* A Hot Desk's raised name card is its pill (WorkdayFaces hotDeskCardY). */}
       {occupied && kind !== 'hot-desk' ? (
         <SeatPill
@@ -400,11 +431,19 @@ function FurnitureDrawingView({
             top: (element.height - boxH) / 2,
             // Its foot on the footprint's edge nearest the camera, as an unturned piece stands on its front edge, so
             // the drawing covers the ground that stops you (the owner, 2026-11-18: turned, "I can stand in a fountain").
-            transform: `rotate(${-quarter * 90}deg) translateY(${footShift}px)`,
+            transform: `rotate(${-quarter * 90}deg) translate(${seatShift}px, ${footShift}px)`,
           }}
         >
           {rows ? (
             body
+          ) : length ? (
+            <LengthBox
+              height={lengthHeight(kind) * ownScale}
+              strip={{ width: frame.view.width, height: frame.view.height, scale: ownScale }}
+              face={drawingOf(null)}
+            >
+              {body}
+            </LengthBox>
           ) : (
             <div data-space-seen-stand="" className="absolute inset-0">
               {body}
@@ -601,4 +640,80 @@ function MachineAnswer({
       ))}
     </g>
   );
+}
+
+/**
+ * A long, low piece seen side on (3d-view.md "Turning the camera"): its plan drawing as a top raised `height` canvas px
+ * on an upright face, the drawing's own bottom strip stretched to that height, so it stands as a box shorter than a
+ * character rather than a rug or a wall. The raise is the built tables' (`--row-lift`, app/space-3d.css).
+ */
+function LengthBox({
+  height,
+  strip,
+  face,
+  children,
+}: {
+  height: number;
+  strip: { width: number; height: number; scale: number };
+  face: ReactNode;
+  children: ReactNode;
+}) {
+  // The face shows the drawing's lowest band, about as deep as the piece is high.
+  const band = Math.min(strip.height / 3, height / strip.scale);
+  return (
+    <>
+      <div
+        data-space-length-face=""
+        className="absolute inset-x-0 bottom-0"
+        style={{ height, transformOrigin: '50% 100%' }}
+      >
+        <svg
+          viewBox={`0 ${strip.height - band} ${strip.width} ${band}`}
+          preserveAspectRatio="none"
+          className="absolute inset-0 h-full w-full"
+          aria-hidden
+        >
+          {face}
+        </svg>
+      </div>
+      <div
+        data-space-length-top=""
+        className="absolute inset-x-0 h-full"
+        style={{ top: -height, ['--row-lift' as string]: `${height}px` }}
+      >
+        {children}
+      </div>
+    </>
+  );
+}
+
+/**
+ * How far across a one-seat piece's turned drawing moves so its drawn seat is over the plan's seat, in the turned
+ * box's own px (3d-view.md "Turning the camera"); 0 for a piece with more seats or none.
+ */
+function turnedSeatShift(
+  element: ShapeElement,
+  facing: SeatFacing,
+  quarter: number,
+  boxW: number,
+  boxH: number,
+): number {
+  const placed = seatPoints(element as unknown as SeatedBox);
+  if (placed.length !== 1) return 0;
+  const seat = placed[0]!;
+  const rx = seat.x - (element.x + element.width / 2);
+  const ry = seat.y - (element.y + element.height / 2);
+  // The plan's seat in the turned box's frame (the box is turned back by -quarter turns about its middle).
+  const a = (quarter * Math.PI) / 2;
+  const across = rx * Math.cos(a) - ry * Math.sin(a);
+  // Where the drawing it shows puts its seat, across its own middle.
+  const drawn = seatPoints({
+    x: -boxW / 2,
+    y: -boxH / 2,
+    width: boxW,
+    height: boxH,
+    shape: element.shape,
+    chairFacing: facing,
+  } as SeatedBox)[0];
+  return drawn ? Math.round(across - drawn.x) : 0;
 }

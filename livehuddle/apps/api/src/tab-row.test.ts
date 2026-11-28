@@ -153,7 +153,16 @@ describe('rowToTab', () => {
   it('preserves elements from the parsed body in array order', () => {
     const els = [
       { id: 'el-a', type: 'shape', kind: 'signpost', x: 0, y: 0, width: 100, height: 80 },
-      { id: 'el-b', type: 'text', x: 10, y: 10, width: 50, height: 20, label: 'note' },
+      {
+        id: 'el-b',
+        type: 'shape',
+        shape: 'desk',
+        x: 10,
+        y: 10,
+        width: 50,
+        height: 20,
+        label: 'note',
+      },
     ];
     const dto = rowToTab(baseRow({ data: JSON.stringify({ elements: els }) }));
     expect(dto.elements).toEqual(els);

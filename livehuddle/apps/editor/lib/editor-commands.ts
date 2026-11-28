@@ -32,9 +32,6 @@ export type CommandContext = {
   canRedo: boolean;
   // 0 = nothing selected, 1 = single selection, >1 = multi-selection.
   selectionCount: number;
-  // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
-  // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
-  singleRotates: boolean;
   // True when the selection (single or multi) holds a piece of furniture that turns
   // (docs/specs/009-elements/furniture-facing.md): gates Rotate Left and Rotate Right.
   selectionTurns?: boolean;
@@ -61,9 +58,6 @@ export type CommandContext = {
 export type CommandHandlers = {
   deleteSelection: () => void;
   duplicateSelection: () => void;
-  bringToFront: () => void;
-  sendToBack: () => void;
-  rotate: (deg: number) => void;
   // A quarter turn of the selection's furniture: +1 clockwise, -1 anticlockwise.
   turn: (quarters: 1 | -1) => void;
   clearAnimation: () => void;
@@ -72,8 +66,6 @@ export type CommandHandlers = {
   renameDocument: () => void;
   deleteDocument: () => void;
   renameTab: () => void;
-  openTheme: () => void;
-  openCanvasOptions: () => void;
   openShare: () => void;
   openCollaborators: () => void;
   undo: () => void;
@@ -91,8 +83,8 @@ export type CommandHandlers = {
 
 // The two sides of the Edit | Walk toggle (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"), as Search
 // offers them: the one not in force. Neither writes to the document, so both stay for a read-only Editor. There are no
-// other tool commands: Hand, Eraser and Format Painter left with the Selection Mode picker (the Format Painter starts
-// from the selection toolbar). A session held walking never gets Edit to work (useCanvasTool's hold refuses it).
+// other tool commands: Hand, Eraser and Format Painter left with the Selection Mode picker, and the Format Painter
+// left livehuddle later. A session held walking never gets Edit to work (useCanvasTool's hold refuses it).
 export const CANVAS_TOOLS: { id: string; name: string; keywords: string }[] = [
   {
     id: 'select',
@@ -151,7 +143,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
 
   out.push(...selectionCommands(ctx, h));
 
-  // Walking (docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking"): no history and no Tab Style.
+  // Walking (docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking"): no history.
   const walking = ctx.canvasTool === 'avatar';
 
   // History. Offered only when there's actually something to un/redo, so
@@ -200,21 +192,6 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'delete space canvas document diagram remove trash destroy',
     run: h.deleteDocument,
   });
-  if (!walking) {
-    out.push({
-      id: 'open-theme',
-      name: 'Open Theme',
-      keywords: 'theme colour color scheme style appearance palette',
-      run: h.openTheme,
-    });
-    out.push({
-      id: 'open-canvas',
-      name: 'Open Canvas Options',
-      keywords:
-        'canvas background floor carpet wood tiles marble concrete grass sand options style backdrop',
-      run: h.openCanvasOptions,
-    });
-  }
   if (ctx.canShare && !ctx.isOffline) {
     out.push({
       id: 'share',

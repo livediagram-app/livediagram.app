@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, StickyElement } from '@livehuddle/document';
+import { createShape, ROOM_WALL, type Element, type StickyElement } from '@livehuddle/document';
 import type { ShapeBounds } from '@/lib/canvas';
 import { resolveBoxedMove } from './boxed-drag-resolve';
 
@@ -42,5 +42,31 @@ describe('resolveBoxedMove', () => {
     const out = resolve(4321 - START.x, 1234 - START.y);
     expect(START.x + out.tx).toBe(4321);
     expect(START.y + out.ty).toBe(1234);
+  });
+});
+
+// docs/specs/009-elements/office.md "Rooms line up": a room moved roughly beside another shares its wall, never box edge
+// to box edge (a double wall); Cmd / Ctrl moves it freely.
+describe('resolveBoxedMove for a room beside a room', () => {
+  const room = (id: string, x: number, y: number) =>
+    ({ ...createShape('room', x, y), id, width: 480, height: 320, roomDoor: 'none' }) as Element;
+  const START_ROOM: ShapeBounds = { x: 2000, y: 0, width: 480, height: 320 };
+  const move = (toX: number, noSnap = false) =>
+    resolveBoxedMove({
+      elements: [room('a', 0, 0), room('drag', 2000, 0)],
+      startBounds: new Map([['drag', START_ROOM]]),
+      primaryId: 'drag',
+      dx: toX - START_ROOM.x,
+      dy: 0,
+      noSnap,
+      guidesOn: true,
+    });
+
+  it('lands box edge to box edge, or a little apart, on the shared wall line', () => {
+    for (const toX of [480, 482, 500]) expect(START_ROOM.x + move(toX).tx).toBe(480 - ROOM_WALL);
+  });
+
+  it('moves freely with Cmd / Ctrl', () => {
+    expect(START_ROOM.x + move(482, true).tx).toBe(482);
   });
 });

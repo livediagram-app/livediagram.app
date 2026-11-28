@@ -2,8 +2,9 @@
 
 Status: **approved** (owner, 2026-11-07). Every piece of furniture with a front can face four ways, and turning it
 turns everything about it: its drawing, its seats and the way its sitters face, what blocks walking, and its live
-face. The Rotate buttons on the selection toolbar turn a placed piece; **Space** turns a piece while it is being
-placed.
+face. The facing tiles in a placed piece's menu section and the Rotate commands in Search turn it; **Space** turns a
+piece while it is being placed. The selection toolbar's Rotate buttons went on 2026-11-27 (owner: "remove rotation";
+[Element looks, layers, opacity and rotation](../002-project-scope/not-in-livehuddle.md#element-looks-layers-opacity-and-rotation)).
 
 ## Why
 
@@ -50,13 +51,13 @@ Every piece below takes a facing: its tile in the palette, its piece on the canv
 | Kitchen                  | Water Cooler, Coffee Machine, Vending Machine, Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle           |
 | Restroom                 | Toilet Cubicle, Washbasin                                                                                         |
 | Play and rest            | Ping-Pong Table, Pool Table, Foosball Table, Jukebox, Arcade Machine, Fireplace, Nap Pod, Treadmill, Weight Bench |
-| Venue and wayfinding     | Podium, Car Park, Bike Rack, Stairs, Suggestion Box, Rug                                                          |
+| Venue and wayfinding     | Podium, Car Park, Bike Rack, Stairs, Suggestion Box, Rug, Road ([Road](road.md): turns as the Rug does)           |
 
 **What does not turn**, and shows no Rotate buttons:
 
 - **Pieces that read the same from every side**: Plant, Outdoor Plant, Tree, Campfire, Fountain, Garden Umbrella,
-  Pillar, Column, Umbrella Stand, Coat Rack, Pet Bed.
-- **Pieces that hang on the back wall**, the one wall the camera sees face on: Notice Board, World Clock, Dartboard,
+  Pillar, Column, Umbrella Stand, Coat Rack, Pet Bed, Floor Lamp, Table Lamp, Desk Lamp.
+- **Pieces that hang on the back wall**, the one wall the camera sees face on: Notice Board, Clock, Dartboard,
   Calendar Wall, Team Photo Wall, Hand Dryer, Stage Curtains and the Elevator. On a side wall they would be seen edge
   on, their faces gone.
 - **Signs read face on**: the Directory and the Signpost.
@@ -84,11 +85,10 @@ Left**), or a facing picked outright from the element menu.
 
 ## Turning a placed piece
 
-- **Selection toolbar.** A selected piece that turns shows **Rotate Left** (↺) and **Rotate Right** (↻) in a group of
-  their own, always in the same place: straight after More and Edit Text, before Duplicate. Each turns the piece a
-  quarter turn. They are an Editor's; a Participant and a Viewer have no edit toolbar.
-- **Several pieces at once.** The multi-selection toolbar shows the same pair whenever the selection holds a piece that
-  turns. Each piece turns about its own centre; pieces that do not turn stay as they are.
+- **Selection toolbar.** No Rotate buttons, on one piece or a selection (owner, 2026-11-27,
+  [Element looks, layers, opacity and rotation](../002-project-scope/not-in-livehuddle.md#element-looks-layers-opacity-and-rotation)). The toolbar's More opens the element menu below.
+- **Several pieces at once.** **Rotate Left** and **Rotate Right** in Search turn every piece in the selection that
+  turns, each about its own centre; pieces that do not turn stay as they are.
 - **Element menu.** Every piece that turns has a section titled for it (Sofa, Lockers) with four tiles, **Down**,
   **Left**, **Up** and **Right**, the current one pressed, and a line saying what the facing means: "Which way
   somebody sitting here faces" on a piece with seats, "Which way its front faces" on the rest.
@@ -106,7 +106,7 @@ Left**), or a facing picked outright from the element menu.
   carried by the pointer instead: press, move and release over the canvas, exactly as a drag looks and feels, with the
   same preview, the same alignment snap and guides, and the same drop. Released over a panel, the palette or off the
   canvas, it places nothing; **Escape** puts it down. On a touch screen the tile drags as before and the piece is
-  turned with its toolbar once placed.
+  turned from its menu once placed.
 - While a piece is being placed, Space turns it and does nothing else: it neither pans the canvas nor starts editing
   the selected element's label. With nothing being placed Space is the pan key and the label key, as before.
 - The turn lasts while the tile stays armed (placing several sofas in a row faces each the same way) and is forgotten
@@ -133,8 +133,7 @@ piece when it turns:
 
 ## Share roles
 
-- **Editor**: turns any piece that turns, from the toolbar, the element menu and the command palette, and while
-  placing.
+- **Editor**: turns any piece that turns, from the element menu and the command palette, and while placing.
 - **Participant**: has no palette and no edit toolbar, so turns nothing; sits in turned pieces like everyone.
 - **Viewer**: as the Participant.
 
@@ -147,11 +146,11 @@ piece when it turns:
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- A turn from the toolbar, the element menu or the command palette: `Element · Changed · <Kind>`, once per change.
+- A turn from the element menu or the command palette: `Element · Changed · <Kind>`, once per change.
 - Placing a piece: `Element · Added · <Kind>`, as before, whatever its facing.
 
 ## Not in scope
 
 - Turning by anything but a quarter: furniture stands square to the room.
 - Wall pieces on side walls, and turning the pieces drawn to their size.
-- Turning a piece by Space while moving it on the canvas: the toolbar turns a placed piece.
+- Turning a piece by Space while moving it on the canvas: its menu section turns a placed piece.

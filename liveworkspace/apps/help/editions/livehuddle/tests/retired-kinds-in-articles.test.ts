@@ -15,6 +15,7 @@ const RETIRED: [string, RegExp][] = [
   ['the Radius control', /\bRadius\b/],
   ['Accent Edge', /Accent Edge/],
   ['a quiz', /\bquiz(?:zes)?\b/i],
+  ['Bring Focus (not-in-livehuddle.md "Bring Focus")', /Bring Focus/i],
   ['a web component', /\bweb components?\b/i],
 ];
 

@@ -40,6 +40,7 @@ export const SHAPE_KINDS = new Set<string>([
   'outdoor-plant',
   'tree',
   'garden-path',
+  'road',
   'grass',
   'garden-fence',
   // The social pieces (docs/specs/009-elements/social-pieces.md).
@@ -77,6 +78,10 @@ export const SHAPE_KINDS = new Set<string>([
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  // The lamps (docs/specs/009-elements/office-amenities.md "Lamps").
+  'floor-lamp',
+  'table-lamp',
+  'desk-lamp',
   // The venue pieces (docs/specs/009-elements/venue-pieces.md).
   'pillar',
   'column',
@@ -99,6 +104,7 @@ export const SHAPE_KINDS = new Set<string>([
   'suggestion-box',
   'signpost',
   'photo-wall',
+  'poster',
   // Door (docs/specs/009-elements/room-builder.md "Door").
   'door',
   // Window (docs/specs/009-elements/room-builder.md "Window").

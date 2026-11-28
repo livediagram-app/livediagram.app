@@ -6,23 +6,19 @@
 // wrap stay pure renderers.
 
 import type { ComponentProps } from 'react';
-import { Minimap } from '@/components/canvas/Minimap';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
+import { ViewDial } from '@/components/chrome/ViewDial';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 
 const zoomOf = (v: View) => v.zoom;
-const wholeView = (v: View) => v;
 
 // The corner zoom controls, showing the zoom from the viewport store.
 export function ViewZoomControls(props: Omit<ComponentProps<typeof ZoomControls>, 'zoom'>) {
   return <ZoomControls {...props} zoom={useViewportOf(zoomOf)} />;
 }
 
-// The Map, its view box following the view (its picture is memoised and does not redraw for it).
-export function ViewMinimap(
-  props: Omit<ComponentProps<typeof Minimap>, 'viewportZoom' | 'viewportOffset'>,
-) {
-  const view = useViewportOf(wholeView);
-  return <Minimap {...props} viewportZoom={view.zoom} viewportOffset={view.offset} />;
+// The view dial (docs/specs/008-canvas/3d-view.md "The view dial"), showing the zoom from the viewport store.
+export function ViewDialReader(props: Omit<ComponentProps<typeof ViewDial>, 'zoom'>) {
+  return <ViewDial {...props} zoom={useViewportOf(zoomOf)} />;
 }

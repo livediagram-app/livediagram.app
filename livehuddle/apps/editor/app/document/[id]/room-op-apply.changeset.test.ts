@@ -94,4 +94,12 @@ describe('applyRoomOpToTabs: changeset in one pass', () => {
       if (expected === elements) expect(next).toBe(tabs);
     }
   });
+
+  it('skips an agent’s text or sticky note (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category")', () => {
+    const tabs: Tab[] = [{ id: 't1', name: 'Tab', elements: [] }];
+    const sticky = { id: 'n', type: 'sticky', x: 0, y: 0, width: 10, height: 10 } as Element;
+    expect(applyRoomOpToTabs(tabs, changeset([{ kind: 'add', element: sticky, at: 0 }]))).toBe(
+      tabs,
+    );
+  });
 });

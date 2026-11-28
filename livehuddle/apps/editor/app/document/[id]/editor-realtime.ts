@@ -15,7 +15,7 @@ import type { ShareGate } from '@liveworkspace/workbench/lib/share-restriction';
 // the WebSocket room runs, the owner-vs-visitor identity + owner badge
 // info, the share-link list + password, the granted session role +
 // session share code, and the room ref. A cohesive slice
-// lifted out of useEditorState — same pattern as usePanelLayout /
+// lifted out of useEditorState, the same pattern as useEditorDialogs /
 // usePresenceState.
 //
 // The room-presence VALUES (cursors, selections, laser trails) live in

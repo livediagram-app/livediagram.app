@@ -2,7 +2,7 @@ import { Cursor } from '@liveworkspace/help-site/art/primitives';
 import { Stage } from '@liveworkspace/help-site/art/parts';
 import { CornerCard } from '../illustrations/editor-chrome';
 import { PixelCharacter } from '../illustrations/pixel-character';
-import { Desk, MeetingTable, Plant, Room, Sticky } from '../illustrations/space-furniture';
+import { Desk, MeetingTable, Plant, Room, NoticeBoard } from '../illustrations/space-furniture';
 
 // Collaboration: three people in one Space at once. Aria and Jae's cursors as they build, Jae holding the meeting
 // table, Mara walking in to the Meeting Room, a note pinned to its wall, and Share in the corner.
@@ -26,7 +26,7 @@ export function CollaborationArt() {
         strokeWidth={1.5}
         strokeDasharray="4 3"
       />
-      <Sticky x={330} y={60} w={40} h={34} tone="sky" label="Agenda" />
+      <NoticeBoard x={330} y={60} w={40} h={34} tone="sky" label="Agenda" />
       <PixelCharacter fx={214} fy={190} px={1.4} shirt="rose" name="Mara" />
       <Cursor x={130} y={150} name="Aria" colour="violet" />
       <Cursor x={322} y={140} name="Jae" colour="amber" />

@@ -1372,7 +1372,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "ClockZone": {
     "additionalProperties": false,
-    "description": "One time zone on a world clock: an IANA zone and its label.",
+    "description": "One time zone on the old World Clock: an IANA zone and its label. The Clock (social-pieces.md \"Clock\") shows each viewer's own time and reads no zones; a stored `clockZones` is still validated so old documents load, and ignored.",
     "properties": {
       "label": {
         "type": "string"
@@ -4822,8 +4822,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
-      "doorClosed": {
-        "type": "boolean"
+      "credit": {
+        "$ref": "#/components/schemas/ImageCredit"
       },
       "fillColor": {
         "type": "string"
@@ -4872,6 +4872,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "imageId": {
+        "type": "string"
       },
       "jukeboxSource": {
         "type": "string"
@@ -5090,6 +5093,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "outdoor-plant",
       "tree",
       "garden-path",
+      "road",
       "grass",
       "garden-fence",
       "notice-board",
@@ -5124,6 +5128,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "toilet-cubicle",
       "washbasin",
       "hand-dryer",
+      "floor-lamp",
+      "table-lamp",
+      "desk-lamp",
       "pillar",
       "column",
       "car-park",
@@ -5143,6 +5150,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "suggestion-box",
       "signpost",
       "photo-wall",
+      "poster",
       "door",
       "window",
       "directory",

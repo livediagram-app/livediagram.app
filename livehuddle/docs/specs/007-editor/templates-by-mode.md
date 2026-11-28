@@ -76,7 +76,9 @@ then opened out by one rule (`roomier`, `packages/templates/src/template-roomy.t
 own:
 
 - **Rooms grow** by a quarter (`TEMPLATE_ROOMY`, 1.25) about the template's centre: rooms, corridors, lawns and car
-  parks both ways, a Garden Path or a fence along its length only. Rooms that shared a wall still share it.
+  parks both ways, a Garden Path or a fence along its length only. Rooms that shared a wall still share it: a room
+  with no outline grows by its wall lines (5 px in at its sides and front, 31 px in at its back), not its box, so two
+  rooms on one wall line still stand on one after.
 - **Furniture keeps its size**, moved in groups: pieces within 16 px of each other in one room move together (a desk
   and its chair, a sofa on its rug, a counter with the microwave on it), and wall pieces in one run along a wall (a
   counter and a sink at one height) stay in line.
@@ -88,14 +90,55 @@ own:
   its back or a side wall, never the front wall it would turn its back to you from; a hung piece (a Notice Board, a
   Screen, a clock) onto the back wall or, its foot on it, the front wall. A push stops short of anything in the way.
 - **Nothing stands on anything**: a group left on another piece slides to the nearest free spot inside its walls.
-- **A Room Sign stays by its Door**, Bring Focus by its stage.
-- **Outside the rooms, a group keeps its place beside the plan**: one beside the rooms (the Team Pod's Team Board and
-  its Timer) moves as the plan's near edge moves, so the gap between them stays and a wall never grows under it; one
-  between them keeps its share of the plan, as a piece in a room does. The title, sticker and description above the
-  plan move as one, never tied to what stands beside the rooms.
+- **A Room Sign stays by its Door.**
+- **Outside the rooms, a group keeps its place beside the plan**: one beside the rooms moves as the plan's near edge moves, so the gap between them stays and a wall never grows under it; one
+  between them keeps its share of the plan, as a piece in a room does.
 
 A Blank Space (no rooms) is left as drawn. The pass runs once, when the Space is made (under 1 ms for the biggest,
 measured), never while it is open.
+
+A builder drawn at its final size opts out by naming its kind in `DRAWN_TO_SIZE` (`template-roomy.ts`); none does yet.
+
+## Made for 3D
+
+The owner, 2026-11-27: "Rebuild all of the templates for livehuddle to suit the 3d, items against walls, facing the
+right way etc, not too tight spaces". The Space is always 3D ([3D view](../008-canvas/3d-view.md)), and a piece's model
+stands on its front drawing's footprint, turned to its facing, on its box
+([3D engine](../008-canvas/3d-engine.md) "Block models"), not on the whole flat box. A template is laid out for where
+that model stands (`modelFloorBox`, `packages/templates/src/template-model-box.ts`):
+
+- **Wall pieces flush.** After `roomier`, one more pass (`flushToWalls`, `template-flush.ts`) moves each piece made to
+  stand against a wall (a kitchen counter or sink, a fridge or drinks fridge, a drinks cabinet, lockers, a vending or
+  arcade machine, a jukebox, a copier, a printer, a coffee machine, a water cooler, a Phone Booth) straight back until
+  its model's back is 1 px off the wall face behind it (the wall line plus 4 px), with the microwave, kettle or coffee
+  machine on its worktop. It reaches at most 200 px and stops if another piece's model is in the way. The box may then
+  poke over the wall line, as a fridge's empty top does. The Phone Booth's model is its front 56 px (the stool and the
+  back wall just behind it); the rest of its box is empty floor.
+- **A piece faces the way it is placed.** A builder's `facing` on a piece that turns turns its box too (`placePiece`,
+  `template-office-parts.ts`), so a machine on a side wall stands side-on, not stretched.
+- **Rooms side by side share one wall**: the next room starts 10 px before the last ends (stacked: 36 px), or stands a
+  corridor (120 px) apart.
+
+Every tab of the rebuilt templates passes one pure check (`template3dFit`, `template-3d-fit.ts`, test-only), which names
+each issue's rule:
+
+- `wall`: a Door or Window stands in a wall; a hung piece hangs on a wall face; a wall piece's model back is within
+  8 px of a wall face, facing into the room.
+- `facing`: a seat within 48 px of its table, desk or bar faces it; in a room with a stage or screen and four or more
+  of the same seat, each faces within 60 degrees of it; any other loose seat (a chair, sofa, stool, bench, bean bag or
+  reading nook) has no wall within 60 px in front and looks at something or into its room.
+- `overlap`: no two models stand on each other (a machine on a worktop, a lamp on a desk, a podium under curtains
+  aside), no model stands in a wall, and the door's width for 60 px either side of every Door is clear.
+- `reach`: from the Avatar Pad, a walk a character's width (60 px) wide reaches every seat (a desk from its sitter's
+  side, behind it) and the front of every piece someone uses.
+- `shared-wall`: box rooms side by side either share one wall line or stand at least 120 px apart.
+- `indoor` (the owner, 2026-11-27: "some templates seem to put an indoor chair outside which is weird, don't do
+  that"): on a site out of doors (a tab with Grass or a Garden Path), indoor furniture (`INDOOR_ONLY`: chairs, desks,
+  sofas, tables, shelves, bar, kitchen and bathroom pieces, machines, Bean Bags, Bar Stools, lamps, Nap Pods, gym
+  pieces) stands inside a room, a corridor, an Office Pod or a Phone Booth, never in the open air. Outdoors seats people
+  on Benches, Picnic Tables and Hammocks; a bar and its stools stand in a tent. A building's open floor is indoors.
+
+The check runs in 2 to 40 ms a tab, measured.
 
 ## Testing
 
@@ -108,11 +151,16 @@ measured), never while it is open.
   lie first, every tab (a building's every floor) has exactly one [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)
   and no Selection Mode button, the pad and the character standing on it touch no wall and no furniture, every piece in
   a room sits inside its walls, no seat stands in a doorway's first 80 px, and no two pieces of furniture overlap.
+- Every tab of the templates rebuilt for 3D (the Virtual Office, Coworking Space, Team Pod, All-Hands Hall, Focus
+  Library, Interview Suite, Client Lounge, Document Room, Company Campus, Conference Venue, Startup HQ, School Quad,
+  Co-working Tower and Hotel and Suites, every floor) passes `template3dFit`, each rule has a case of its own, and a
+  check stays under a 400 ms budget (`template-3d-fit.test.ts`). The walkable and room checks judge a piece where its
+  model stands, not its drawn box.
 - Blank Space is one pad, centred across and below the middle (`build-template.test.ts`).
 - **Every Space is roomy**: a walk between seats never brushes one. Two seats (chairs, desks, sofas, stools,
   benches, tables) side by side are either one row (at most 16 px apart) or an aisle apart, and two seats one behind
   the other either share an edge (a desk cluster's facing pair) or are an aisle apart. An aisle is at least
-  `TEMPLATE_AISLE`, 120 canvas px: two Regular characters' footprints (2 x 40 px x 1.5) side by side, plus the
+  `TEMPLATE_AISLE`, 120 canvas px: two Regular characters' walking footprints (2 x 40 px x 1.5, the width they collide at, which stayed when Regular was drawn larger on 2026-11-27) side by side, plus the
   distance at which a seat catches a character, which is none, since a character sits only once its feet are inside
   a seat it was going to ([Chair](../009-elements/chair.md) "Only the chair you are going to"). Rooms grew to fit
   (`template-builders-spaces-more.test.ts` "keeps every aisle between seats wide enough to walk"). A Podium is held

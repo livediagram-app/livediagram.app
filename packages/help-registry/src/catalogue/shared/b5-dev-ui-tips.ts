@@ -126,10 +126,8 @@ export const articles: Article[] = [
       'copy style clone look paste formatting appearance brush selection toolbar paint match',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
-    byApp: {
-      livehuddle: { category: 'Edit or Walk' },
-    },
+    // Not livehuddle (livehuddle docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and Clear Styles").
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'hand',
@@ -385,7 +383,7 @@ export const articles: Article[] = [
       'minimap mini map overview navigate viewport birds eye locate where am i contents pages',
     category: 'User Interface',
     categorySlug: 'user-interface',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'context-menus',
@@ -517,12 +515,11 @@ export const articles: Article[] = [
     keywords: 'restyle recolour recolor colors colours presets quick style scheme',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
     byApp: {
       livediagram: { title: 'Restyle a Diagram Fast' },
       livedocuments: { title: 'Restyle a Document Fast' },
       livedesign: { title: 'Restyle a Design Fast' },
-      livehuddle: { title: 'Restyle a Space Fast' },
     },
   },
   {
@@ -553,7 +550,8 @@ export const articles: Article[] = [
       'copy style paste formatting clone look duplicate appearance brush format panel paint once keep the page background pattern',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    // Not livehuddle (livehuddle docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and Clear Styles").
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
     slug: 'copy-and-paste',

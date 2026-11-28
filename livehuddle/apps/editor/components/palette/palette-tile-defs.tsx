@@ -6,7 +6,6 @@ import {
   type PaletteTileSection,
   type ToolGroupId,
 } from './tile-defs/types';
-import { WRITE_TILES } from './tile-defs/write-tiles';
 import { ROOM_TILES } from './tile-defs/room-tiles';
 import { AMENITY_TILES } from './tile-defs/amenity-tiles';
 import { LEISURE_TILES } from './tile-defs/leisure-tiles';
@@ -26,7 +25,6 @@ export type { PaletteTileDef, PaletteTileSection, ToolGroupId } from './tile-def
 // joins them in catalogue order, so a new tile goes in its section's module.
 
 export const PALETTE_TILES: PaletteTileDef[] = [
-  ...WRITE_TILES,
   ...ROOM_TILES,
   ...AMENITY_TILES,
   ...LEISURE_TILES,

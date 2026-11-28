@@ -9,9 +9,7 @@ import {
   type StickyElement,
   type Tab,
 } from '@livehuddle/document';
-import { storedArrow } from '@/test/retired-elements';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
-import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@liveworkspace/workbench/lib/format-config';
 import { useElementHelpers } from './useElementHelpers';
 
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
@@ -39,14 +37,10 @@ function harness(elements: Element[] = ROW) {
       activeId: 't1',
       activeTab: tab,
       editsBlocked: false,
-      formatSourceId: null,
-      formatConfig: { mode: 'keep', groups: {} } as never,
       getViewportCenter: () => ({ x: 0, y: 0 }),
-      commit: vi.fn(),
       commitTabs,
       setSelection,
       setEditingId,
-      setFormatSourceId: vi.fn(),
     }),
   );
   return { helpers: result.current, commitTabs, tab, setSelection, setEditingId };
@@ -142,102 +136,13 @@ describe('addBoxedAt', () => {
         activeId: 't1',
         activeTab: tab,
         editsBlocked: true,
-        formatSourceId: null,
-        formatConfig: { mode: 'keep', groups: {} } as never,
         getViewportCenter: () => ({ x: 0, y: 0 }),
-        commit: vi.fn(),
         commitTabs,
         setSelection: vi.fn(),
         setEditingId: vi.fn(),
-        setFormatSourceId: vi.fn(),
       }),
     );
     result.current.addBoxedAt(372, 100, (x) => note('new', x));
     expect(commitTabs).not.toHaveBeenCalled();
-  });
-});
-
-// The Format tool is the only painter (docs/specs/008-canvas/format-panel.md): its
-// Mode alone decides whether the brush stays loaded after a paint.
-describe('applyFormatFromSource', () => {
-  function paintHarness(
-    mode: FormatMode,
-    source = 'a',
-    lock: { element?: string; layer?: string; tab?: boolean } = {},
-  ) {
-    const line = storedArrow('line', { x: 0, y: 0 }, { x: 10, y: 0 });
-    const elements = [...ROW, line].map((el) =>
-      el.id === lock.element ? { ...el, locked: true } : el,
-    );
-    const tab: Tab = { id: 't1', name: 'Tab 1', elements, ...(lock.tab ? { locked: true } : {}) };
-    const commit = vi.fn();
-    const setFormatSourceId = vi.fn();
-    const { result } = renderHook(() =>
-      useElementHelpers({
-        readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
-        activeId: 't1',
-        activeTab: tab,
-        editsBlocked: false,
-        formatSourceId: source,
-        formatConfig: { ...DEFAULT_FORMAT_CONFIG, mode },
-        getViewportCenter: () => ({ x: 0, y: 0 }),
-        commit,
-        commitTabs: vi.fn(),
-        setSelection: vi.fn(),
-        setEditingId: vi.fn(),
-        setFormatSourceId,
-      }),
-    );
-    return { paint: result.current.applyFormatFromSource, commit, setFormatSourceId };
-  }
-
-  it('keeps the brush loaded in Keep painting', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('keep');
-    paint('b');
-    expect(commit).toHaveBeenCalledTimes(1);
-    expect(setFormatSourceId).not.toHaveBeenCalled();
-  });
-
-  it('empties the brush after one paint in Paint once', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('once');
-    paint('b');
-    expect(commit).toHaveBeenCalledTimes(1);
-    expect(setFormatSourceId).toHaveBeenCalledWith(null);
-  });
-
-  it('keeps a Paint once brush loaded on a tap that paints nothing', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('once');
-    telemetry.track.mockClear();
-    paint('a'); // the source itself
-    paint('line'); // a stored arrow, retired: the Format tool never paints it
-    expect(commit).not.toHaveBeenCalled();
-    expect(setFormatSourceId).not.toHaveBeenCalled();
-    expect(telemetry.track).not.toHaveBeenCalled();
-  });
-
-  it('empties the brush once its source is gone', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('keep', 'deleted');
-    paint('b');
-    expect(commit).not.toHaveBeenCalled();
-    expect(setFormatSourceId).toHaveBeenCalledWith(null);
-  });
-
-  // not-in-livehuddle.md "Element and Tab Locking": what was saved locked behaves as unlocked.
-  it('paints onto an element saved locked', () => {
-    const { paint, commit } = paintHarness('once', 'a', { element: 'b' });
-    paint('b');
-    expect(commit).toHaveBeenCalledTimes(1);
-  });
-
-  it('paints on a tab saved locked', () => {
-    const { paint, commit } = paintHarness('once', 'a', { tab: true });
-    paint('b');
-    expect(commit).toHaveBeenCalledTimes(1);
-  });
-
-  it('lends a source saved locked its look', () => {
-    const { paint, commit } = paintHarness('keep', 'a', { element: 'a' });
-    paint('b');
-    expect(commit).toHaveBeenCalledTimes(1);
   });
 });

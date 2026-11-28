@@ -9,6 +9,8 @@ import { NapPodIcon, PhoneBoothIcon, ReceptionDeskIcon } from '../palette-icons-
 import {
   CoatRackIcon,
   CopierIcon,
+  DeskLampIcon,
+  FloorLampIcon,
   FridgeIcon,
   HandDryerIcon,
   KettleIcon,
@@ -18,6 +20,7 @@ import {
   MicrowaveIcon,
   PrinterIcon,
   RestroomIcon,
+  TableLampIcon,
   ToiletCubicleIcon,
   UmbrellaStandIcon,
   WashbasinIcon,
@@ -58,6 +61,51 @@ export const AMENITY_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'bookshelf' },
     icon: <BookshelfIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // The lamps (docs/specs/009-elements/office-amenities.md "Lamps").
+    id: 'tools:floor-lamp',
+    tileGroup: 'amenities',
+    blurb: 'A tall lamp with a glowing shade',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Floor Lamp',
+    caption: 'Floor Lamp',
+    description:
+      'A tall brass standing lamp with a warm lit shade and a pool of light round its foot, for a reading corner or a reception. Characters walk round its base.',
+    filled: true,
+    action: { type: 'shape', kind: 'floor-lamp' },
+    icon: <FloorLampIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // The lamps (docs/specs/009-elements/office-amenities.md "Lamps").
+    id: 'tools:table-lamp',
+    tileGroup: 'amenities',
+    blurb: 'A small lamp for a desk or side table',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Table Lamp',
+    caption: 'Table Lamp',
+    description:
+      'A small lamp with a ceramic base and a warm lit shade. Place it on a desk or a table: characters walk past it.',
+    filled: true,
+    action: { type: 'shape', kind: 'table-lamp' },
+    icon: <TableLampIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // The lamps (docs/specs/009-elements/office-amenities.md "Lamps").
+    id: 'tools:desk-lamp',
+    tileGroup: 'amenities',
+    blurb: 'An angled lamp lighting the desk',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Desk Lamp',
+    caption: 'Desk Lamp',
+    description:
+      'An angled task lamp, its head tipped down to throw a pool of warm light on the desk. Place it on a desk: characters walk past it.',
+    filled: true,
+    action: { type: 'shape', kind: 'desk-lamp' },
+    icon: <DeskLampIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Office amenities (docs/specs/009-elements/office-amenities.md).

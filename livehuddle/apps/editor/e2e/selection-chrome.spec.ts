@@ -6,7 +6,8 @@ import { expect, expectNoPageErrors, seedTab, startBlankDocument, test } from '.
 
 const square = (id: string, label: string, x: number, y: number) => ({
   id,
-  type: 'sticky',
+  type: 'shape',
+  shape: 'desk',
   x,
   y,
   width: 120,

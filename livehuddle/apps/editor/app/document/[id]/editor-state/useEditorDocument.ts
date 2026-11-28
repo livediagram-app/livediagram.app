@@ -146,12 +146,6 @@ export function useEditorDocument(opts: { surface?: EditorSurface }) {
   const [opsApplied, setOpsApplied] = useState(0);
   const countAppliedOp = useCallback(() => setOpsApplied((n) => n + 1), []);
 
-  // True while a hover-preview is on screen (set by useStylePreview). Style
-  // previews mutate `tabs` via tickTabs so they render live, but they must
-  // never be persisted — only the click-commit should. Autosave reads this
-  // ref to skip the debounced save while a preview is showing.
-  const previewingRef = useRef(false);
-
   // Persist self only when name or color actually changed. Without
   // this guard the hydration GET → state set → effect fire chain
   // produced a useless PUT echoing the same values back to the
@@ -183,7 +177,6 @@ export function useEditorDocument(opts: { surface?: EditorSurface }) {
     nameConfirmed,
     opsApplied,
     ownWrites,
-    previewingRef,
     remoteOpJournalRef,
     selfParticipant,
     setDocumentId,

@@ -60,25 +60,23 @@ export function useEditorInteraction({
   const { cancelToCheckpoint, markCheckpoint, tabs, tickTabs } = fromHistory;
   const {
     editingId,
-    formatSourceId,
     readSelection,
     selectionStore,
     setActiveId,
     setEditCursorAtEnd,
     setEditingId,
-    setFormatSourceId,
     setMultiSelectedIds,
     setSelectedId,
   } = fromSelection;
   const { setContextMenu } = fromDialogs;
-  const { formatToolActive, shortcutsEnabled } = fromTools;
+  const { shortcutsEnabled } = fromTools;
   const { isReadOnly, participant } = fromCollaboration;
   const { alignmentGuidesRef, documentName, setDocumentName } = fromPersistence;
   const { activeTab } = fromActiveTab;
   const { getViewportCanvasRect, scrollIntoView, zoomRef } = fromViewport;
   const { isPinchingRef } = fromFollowing;
   const { lockedByOther } = fromPresence;
-  const { applyFormatFromSource, commit, currentSelectionIds, editsBlocked, tick } = fromEditing;
+  const { commit, currentSelectionIds, editsBlocked, tick } = fromEditing;
   const { openDocument } = fromTabs;
   const { dropIconElementOnShape } = fromCreation;
   // Element link picker state + the link read/write/follow handlers.
@@ -97,7 +95,6 @@ export function useEditorInteraction({
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     openDocument,
   });
 
@@ -114,8 +111,6 @@ export function useEditorInteraction({
     readSelection,
     isReadOnly,
     canWriteText: participant.can.writeText,
-    formatSourceId,
-    formatToolActive,
     documentName,
     tabs,
     activeTab,
@@ -123,10 +118,8 @@ export function useEditorInteraction({
     commit,
     discardLastStep: cancelToCheckpoint,
     tickTabs,
-    applyFormatFromSource,
     lockedByOther,
     set: {
-      setFormatSourceId,
       setSelectedId,
       setEditingId,
       setEditCursorAtEnd,
@@ -170,7 +163,7 @@ export function useEditorInteraction({
   // `drag` itself isn't consumed in the page (Canvas pulls cursor
   // styling from `canvasTool`, not the drag state); only the four
   // begin-handlers below are passed through to Canvas as props.
-  const { drag, shiftDupGhostIds, snapGuideStore, beginDrag, pressArmedAction } = useEditorDrag({
+  const { drag, shiftDupGhostIds, snapGuideStore, beginDrag } = useEditorDrag({
     activeTab,
     zoomRef,
     readSelection,
@@ -180,10 +173,6 @@ export function useEditorInteraction({
     isReadOnly,
     canMove: participant.can.move,
     canResize: participant.can.resize,
-    formatSourceId,
-    applyFormatFromSource,
-    formatToolActive,
-    setFormatSourceId,
     tick,
     commit,
     markCheckpoint,
@@ -232,7 +221,6 @@ export function useEditorInteraction({
       hasClipboard,
       drag,
       beginDrag,
-      pressArmedAction,
       beginEdit,
       canvasPointerRef,
       cancelEdit,

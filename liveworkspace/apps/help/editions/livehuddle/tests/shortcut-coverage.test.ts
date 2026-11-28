@@ -65,8 +65,9 @@ function documentedKeys(): Set<string> {
 function chords(): string[] {
   const src = readFileSync(SECTIONS_SRC, 'utf8');
   const found: string[] = [];
-  // Terminated on `], label:` rather than the first `]`, because two of the
-  // rows this must see are the bracket keys themselves (⌘⇧] / ⌘⇧[).
+  // Terminated on `], label:` rather than the first `]`, so a row whose key is a
+  // bracket itself is still read whole (livehuddle's ⌘⇧] / ⌘⇧[ left with Bring to
+  // Front, not-in-livehuddle.md "Element looks, layers, opacity and rotation").
   for (const m of src.matchAll(/keys: \[(.*?)\], label:/g)) {
     const keys = [...m[1]!.matchAll(/'([^']*)'/g)].map((k) => k[1]!);
     if (!keys.some((k) => k === '⌘' || k === '⇧')) continue;
@@ -78,10 +79,10 @@ function chords(): string[] {
 
 describe('the Keyboard Shortcuts article covers what the editor binds', () => {
   it('parses real tables (guard against this test going blind)', () => {
-    // Twenty-eight bindings when this landed, fewer once the diagram tools' keys left (Work Tracker #423). A
+    // Twenty-eight bindings when this landed, fewer once the diagram tools' keys left (Work Tracker #423) and the Write category's T, 8 and N went. A
     // collapse toward zero means the table shape changed and every assertion below passes vacuously.
-    expect(boundKeys().size).toBeGreaterThan(6);
-    expect(documentedKeys().size).toBeGreaterThan(6);
+    expect(boundKeys().size).toBeGreaterThan(3);
+    expect(documentedKeys().size).toBeGreaterThan(3);
   });
 
   it('documents every plain key in the lookup tables', () => {
@@ -95,7 +96,8 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
     // chord at all: undo, copy, paste, group and zoom were in the product and
     // in the dialog, and nowhere in the help centre.
     const src = readScoped(ARTICLE);
-    expect(chords().length).toBeGreaterThan(10);
+    // Eleven when this landed; nine once Bring to Front and Send to Back left livehuddle.
+    expect(chords().length).toBeGreaterThan(6);
     const missing = chords().filter((c) => !src.includes(`\`${c}\``));
     expect(missing).toEqual([]);
   });

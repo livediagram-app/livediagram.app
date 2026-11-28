@@ -30,9 +30,14 @@ describe('searchElementTiles', () => {
     const onTab = searchElementTiles({
       query: '',
       hasImage: true,
-      tabElements: [el({ type: 'sticky' }), el({ type: 'sticky' })],
+      tabElements: [
+        el({ type: 'shape', shape: 'chair' }),
+        el({ type: 'shape', shape: 'chair' }),
+        // Write is gone: a stored note is not offered again.
+        el({ type: 'sticky' }),
+      ],
     });
-    expect(ids(onTab)).toEqual(['tools:sticky']);
+    expect(ids(onTab)).toEqual(['tools:chair']);
     expect(searchElementTiles({ query: '', hasImage: true })).toEqual([]);
   });
 
@@ -48,8 +53,8 @@ describe('tile and element signatures', () => {
   const sigOf = (id: string) => tileSignature(tileById(id)!);
 
   it('tell apart the choices an element records', () => {
-    expect(elementSignature(el({ type: 'sticky' }))).toBe(sigOf('tools:sticky'));
-    expect(elementSignature(el({ type: 'text' }))).toBe(sigOf('tools:text'));
+    expect(elementSignature(el({ type: 'image' }))).toBe(sigOf('tools:image'));
+    expect(elementSignature(el({ type: 'link-card' }))).toBe('link-card');
   });
 
   // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4) has no tile.

@@ -7,14 +7,14 @@ describe('the key maps', () => {
     expect(Object.keys(keys)).not.toContain('PARTICIPANT_KEYS');
   });
 
-  it('keep 8 as Text for an Editor', () => {
-    const calls: string[] = [];
-    keys.EDIT_KEYS['8']!({ addText: () => calls.push('text') } as never);
-    expect(calls).toEqual(['text']);
+  // not-in-livehuddle.md "The Write category": T, 8 and N went with it.
+  it('add no text or note from a key', () => {
+    for (const k of ['t', '8', 'n']) expect(keys.EDIT_KEYS[k], k).toBeUndefined();
   });
 });
 
-// A covered board's keys: an empty key (synthetic events, some IMEs) is no bracket, though '' is in every string.
+// A covered board's keys. The bracket chords were Bring to Front and Send to Back, which left livehuddle
+// (not-in-livehuddle.md "Element looks, layers, opacity and rotation"): they are the browser's again.
 describe('coveredKeyRole', () => {
   const press = (key: string, code = '') => ({
     key,
@@ -24,9 +24,9 @@ describe('coveredKeyRole', () => {
     shiftKey: true,
     altKey: false,
   });
-  it('swallows Ctrl+Shift+bracket and leaves an empty key to the browser', () => {
-    expect(keys.coveredKeyRole(press('{'))).toBe('swallow');
-    expect(keys.coveredKeyRole(press('?', 'BracketRight'))).toBe('swallow');
+  it('leaves Ctrl+Shift+bracket and an empty key to the browser', () => {
+    expect(keys.coveredKeyRole(press('{'))).toBe('ignore');
+    expect(keys.coveredKeyRole(press('?', 'BracketRight'))).toBe('ignore');
     expect(keys.coveredKeyRole(press(''))).toBe('ignore');
   });
 });

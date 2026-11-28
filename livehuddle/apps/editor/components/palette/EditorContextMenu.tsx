@@ -2,8 +2,10 @@
 
 // Right-click context menu for the editor, lifted out of
 // editor-page.tsx. Renders one of two menus depending on what was
-// clicked: a single-element menu (link / layer order / note /
-// comment) or a whole-selection 'multi' menu. The canvas (empty-space)
+// clicked: a single-element menu (Size, the element's own section, an
+// image's or a link card's content) or a whole-selection 'multi' menu.
+// No Arrange, Rotation or Appearance (docs/specs/002-project-scope/
+// not-in-livehuddle.md "Element looks, layers, opacity and rotation"). The canvas (empty-space)
 // right-click opens the tab menu with its canvas sections folded in,
 // rendered by the TabBar — not here. Duplicate lives in the selection
 // toolbar (SelectionPopover), not here.
@@ -13,49 +15,28 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import {
-  onMouseHover,
-  useRevertOnUnmount,
-} from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { ElementRowsDialog } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
 import { elementSettingsHeroArt } from '@liveworkspace/ui/dialog-hero-art/element-settings';
-import { elementKindLabel } from '@livehuddle/document';
+import { elementKindLabel, isPoster } from '@livehuddle/document';
 import {
   isFixedSizeElement,
   isBoxed,
   isRetiredElement,
   isSelfDrawingShape,
-  supportsRotation,
 } from '@livehuddle/document';
-import {
-  ContextMenu,
-  ContextMenuDivider,
-} from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
-import {
-  LayerDownIcon,
-  LayersGlyph,
-  LayerUpIcon,
-  RotationGlyph,
-  RotationMenuIcon,
-  SizeMenuIcon,
-} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { ContextMenu } from '@liveworkspace/workbench/components/palette/ContextMenu';
+import { SizeMenuIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { SizeSection } from '@liveworkspace/workbench/components/palette/SizeSection';
 
-import { OpacityRow } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
-import { ElementAppearanceSections } from './ElementAppearanceSections';
-import { ElementMenuQuickBar } from './ElementMenuClearStyles';
+import { ElementDataSections, hasOwnSection } from './ElementDataSections';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
-
-import { ROTATION_ANGLES } from './context-menu-constants';
 import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 
 // Cursor position + which menu to show. `element` carries the clicked
@@ -66,27 +47,13 @@ export type { EditorContextMenuState } from './EditorContextMenu.types';
 export function EditorContextMenu(props: EditorContextMenuProps) {
   const { menu, elements, onClose } = props;
   const position = { x: menu.x, y: menu.y };
-  // Revert any in-flight swatch / border / rotation hover preview if the menu
-  // unmounts mid-hover (dismissed by click-away or Escape) — pointerleave won't
-  // fire on unmount. The inline tiles below share this single safety net; the
-  // preset rows + ColourRow also revert on their own pointerleave.
-  useRevertOnUnmount(props.onPreviewStyleEnd);
   // Grow UPWARD when the menu is opened in the bottom fifth of the
   // viewport, so the tall collapsible-category menu opens above the
   // cursor instead of running off-screen — matching the tab menu.
   const viewportHeight = useViewportHeight();
   const anchorBottom = menu.y > viewportHeight * 0.8;
-  // Accordion + colour-row scaffolding, shared with the multi-selection branch.
-  const {
-    sectionProps,
-    flyoutProps,
-    colorProps,
-    textColorHandlers,
-    fillColorHandlers,
-    strokeColorHandlers,
-  } = useContextMenuScaffold(props);
-  // Session-tool pickers (docs/specs/012-collaboration/session-tools.md): the chosen timer mode + countdown length,
-  // local until the facilitator hits Start (mirrors the old tab editor's Session accordion).
+  // The one-open-at-a-time accordion, shared with the multi-selection branch.
+  const { sectionProps } = useContextMenuScaffold();
 
   if (menu.mode === 'multi') {
     return (
@@ -110,7 +77,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // shape which carries its own data) can reset to their kind's aspect ratio. The diagram shapes they once morphed
     // between are retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
     // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") keeps its stored look
-    // and kind and has no settings or menu section of its own: no Shape, Opacity or Style, whose writes it ignores.
+    // and kind and has no settings or menu section of its own.
     const retired = isRetiredElement(target);
     const morphable =
       target.type === 'shape' &&
@@ -119,14 +86,12 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       // Every self-drawing kind carries its own data (progress / rail /
       // rating / charts / code block / checklist), so none of them morph.
       !isSelfDrawingShape(target.shape);
-    // Consistent category grouping (docs/specs/008-canvas/canvas-and-palette.md): placement (Layer / Shape /
-    // Rotation) · appearance (Progress / Animation / Colours / Border) ·
-    // content (Text / Icon / Image / Link) ·
-    // collaboration. A group divider renders above a group only when that
-    // group has a visible section, so an absent group never leaves a dangling
-    // rule. Placement always shows (Layer is unconditional), so each later
-    // group's divider just gates on the group's own visibility.
-    const showContentGroup = target.type === 'image' || target.type === 'link-card';
+    // Size, then the element's own section, then the content group (Image / Link) behind a divider.
+    // A Poster's Picture section is an Editor's (docs/specs/009-elements/poster.md).
+    const posterMenu = isPoster(target) && !!props.onChoosePosterPicture;
+    const showContentGroup = target.type === 'image' || target.type === 'link-card' || posterMenu;
+    const showSize = boxed && !isFixedSizeElement(target);
+    const showOwn = !retired && hasOwnSection(props, target);
     // Its own settings, opened from the menu's row named for it: the same sections in a dialog, laid open
     // (canvas-and-palette.md "An element's own settings open in a dialog"). The menu is not drawn under it.
     if (menu.mode === 'element' && menu.tools) {
@@ -138,23 +103,19 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           onClose={onClose}
         >
           <div data-context-menu="" className="-mx-6 -my-4 text-sm">
-            <ElementAppearanceSections
+            <ElementDataSections
               props={props}
               target={target}
-              onClose={onClose}
               sectionProps={sectionProps}
-              flyoutProps={flyoutProps}
-              colorProps={colorProps}
-              textColorHandlers={textColorHandlers}
-              fillColorHandlers={fillColorHandlers}
-              strokeColorHandlers={strokeColorHandlers}
-              afterGroup
-              toolsOnly
+              surface="dialog"
             />
           </div>
         </ElementRowsDialog>
       );
     }
+    // A menu with nothing in it does not open (docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and
+    // Clear Styles").
+    if (!showSize && !showOwn && !showContentGroup) return null;
     return (
       <ContextMenu
         position={position}
@@ -163,43 +124,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         flush
         anchorBottom={anchorBottom}
       >
-        {/* The quick bar above the categories (docs/specs/008-canvas/element-menu-quick-bar.md): Clear Styles at its
-            right. */}
-        <ElementMenuQuickBar target={target} onClose={onClose} />
-        {/* Layer — pinned FIRST in the menu (before the type-specific
-            categories, which render conditionally and so would otherwise
-            shuffle Layer's position around). Groups front/back + opacity +
-            (for boxed elements) the aspect-ratio lock. */}
-        <MenuAccordionSection title="Arrange" icon={<LayersGlyph />} {...sectionProps('layer')}>
-          {/* Layer order tweaks keep the menu open so you can nudge
-            front/back a few times in a row. */}
-          <MenuTileGrid cols={2}>
-            <MenuTile
-              icon={<LayerUpIcon />}
-              label="Bring to Front"
-              onClick={props.onBringToFront}
-            />
-            <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
-          </MenuTileGrid>
-          {/* Opacity slider: a non-closing row (dragging stays inside the
-            menu, so the outside-click guard leaves it open). */}
-          {retired ? null : (
-            <>
-              <ContextMenuDivider />
-              <OpacityRow
-                value={(target as { opacity?: number }).opacity ?? 1}
-                onChange={props.onSetOpacity}
-              />
-            </>
-          )}
-        </MenuAccordionSection>
         {/* Size — the exact box (docs/specs/008-canvas/element-size.md). Gathers the three controls that
             all answer "how big is this": the width / height boxes, the aspect
             lock (which lived in Layer) and the reset (which lived in Shape,
             so it only appeared for morphable kinds). */}
         {/* Fixed-size elements (docs/specs/009-elements/mode-button.md buttons) have no size to edit: offering the boxes would advertise
             a resize the drag paths deliberately ignore. */}
-        {boxed && !isFixedSizeElement(target) ? (
+        {showSize ? (
           <MenuAccordionSection title="Size" icon={<SizeMenuIcon />} {...sectionProps('size')}>
             <SizeSection
               width={(target as { width: number }).width}
@@ -215,49 +146,10 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             />
           </MenuAccordionSection>
         ) : null}
-        {/* Rotation — fixed snap angles. Each tile previews the orientation
-            (an upright marker rotated by the angle) so the effect is legible
-            before clicking; 0° resets to upright. Not on an annotation marker
-            (docs/specs/009-elements/blueprints/annotations.md [QD8]). */}
-        {supportsRotation(target) ? (
-          <MenuAccordionSection
-            title="Rotation"
-            icon={<RotationMenuIcon />}
-            {...sectionProps('rotation')}
-          >
-            <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-              {ROTATION_ANGLES.map((deg) => (
-                <SizeButton
-                  key={deg}
-                  active={((target as { rotation?: number }).rotation ?? 0) % 360 === deg}
-                  onClick={() => props.onCommitRotation(deg)}
-                  onPointerEnter={onMouseHover(() => props.onPreviewRotation(deg))}
-                  onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                >
-                  <span className="flex flex-col items-center gap-0.5">
-                    <RotationGlyph deg={deg} />
-                    <span className="text-[9px] leading-none tabular-nums">{deg}°</span>
-                  </span>
-                </SizeButton>
-              ))}
-            </div>
-          </MenuAccordionSection>
+        {/* The element's own section (Desk, Room, Portal and the rest). */}
+        {showOwn ? (
+          <ElementDataSections props={props} target={target} sectionProps={sectionProps} />
         ) : null}
-        {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ── */}
-        {retired ? null : (
-          <ElementAppearanceSections
-            props={props}
-            target={target}
-            onClose={onClose}
-            sectionProps={sectionProps}
-            flyoutProps={flyoutProps}
-            colorProps={colorProps}
-            textColorHandlers={textColorHandlers}
-            fillColorHandlers={fillColorHandlers}
-            strokeColorHandlers={strokeColorHandlers}
-            afterGroup
-          />
-        )}
         {showContentGroup ? <MenuGroupSeparator /> : null}
         <ElementContentSections
           props={props}

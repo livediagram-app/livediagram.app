@@ -24,12 +24,7 @@ import {
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { KEYBOARD_MARGIN_PX } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
-import {
-  glideViewport,
-  VIEW_GLIDE_MS,
-  type ViewPose,
-} from '@liveworkspace/workbench/lib/viewport-glide';
-import { onMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
+import { glideViewport, VIEW_GLIDE_MS } from '@liveworkspace/workbench/lib/viewport-glide';
 import { tabFitView } from '@/lib/tab-fit-view';
 import {
   OVERVIEW_ZOOM_BREAKPOINT_PX,
@@ -40,7 +35,6 @@ import {
   VIEW_MARGIN_SIDE,
   FIT_SAFETY,
   MIN_FIT_ZOOM,
-  sameView,
 } from '@liveworkspace/workbench/lib/editor-viewport-defaults';
 
 type EditorViewportDeps = {
@@ -270,21 +264,15 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     scrollToNew(el.x, el.y, el.width, el.height);
   }, [deps.activeTab.elements, deps]);
 
-  // The view the last fit landed on, and what it fitted: the Map showing up later fits again only while the view is
-  // still this one and the tab still holds what it did (a Map that shows as the fourth element lands moves nothing).
-  const lastFitRef = useRef<{ view: ViewPose; tabId: string; count: number } | null>(null);
-  // The glide to a fit still on its way (Walk to Edit's), and when its clock runs out: a Map that shows meanwhile fits
-  // again. Held until its last frame has drawn, not until its clock says so: on a busy machine the frames trail the
-  // clock, and a glide whose time is up can still have a frame to draw (which would land the view under the Map).
-  const fitGlideRef = useRef<{ until: number; cancel: () => void } | null>(null);
+  // The glide to a fit still on its way (Walk to Edit's), held until its last frame has drawn: a fit that lands at
+  // once stops it, or a late frame of it would put back the view it was heading to.
+  const fitGlideRef = useRef<{ cancel: () => void } | null>(null);
   const fitToScreen = useCallback(() => {
     const { activeTab } = depsRef.current;
     const view = tabFitView(canvasMainRef.current, activeTab.elements);
     if (!view) return;
-    lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length };
     // A fit lands at once, so a glide still on its way stops here: its last frames would put back the older view
-    // it was heading to (the fit made before the Map showed, under the Map). A glide's frames can trail its clock on
-    // a busy machine, so the Map's refit can find its time up while a frame is still to come.
+    // it was heading to.
     fitGlideRef.current?.cancel();
     fitGlideRef.current = null;
     setViewportZoom(view.zoom);
@@ -295,10 +283,9 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       const { activeTab } = depsRef.current;
       const view = tabFitView(canvasMainRef.current, activeTab.elements);
       if (!view) return;
-      lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length };
       fitGlideRef.current?.cancel();
       // In flight from here until its last frame lands (at once for a glide of no time, or under reduced motion).
-      const glide = { until: performance.now() + ms, cancel: () => {} };
+      const glide = { cancel: () => {} };
       fitGlideRef.current = glide;
       glide.cancel = glideViewport(
         { zoom: zoomRef.current, offset: viewportOffsetRef.current },
@@ -315,28 +302,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       );
     },
     [depsRef, setViewportOffset, setViewportZoom, viewportOffsetRef, zoomRef],
-  );
-  // docs/specs/008-canvas/minimap.md "Fit leaves the Map clear": a template's fit runs before the Map has a box, and
-  // so can a fit that glides in (Walk to Edit as a warm open's catch-up lands): that one glides on to the new fit.
-  useEffect(
-    () =>
-      onMapShown(() => {
-        // Looked at a frame later, so a fit on its way in the same frame has landed.
-        requestAnimationFrame(() => {
-          const last = lastFitRef.current;
-          const { activeTab } = depsRef.current;
-          const now = { zoom: zoomRef.current, offset: viewportOffsetRef.current };
-          if (!last || last.tabId !== activeTab.id || last.count !== activeTab.elements.length)
-            return;
-          const glide = fitGlideRef.current;
-          // Still gliding to that fit (a glide in flight is always to the last fit): on to the new one in the time
-          // it has left, or at once when its clock is up and only a trailing frame is still to come (that frame would
-          // put the view back under the Map).
-          if (glide) glideToFit(Math.max(0, glide.until - performance.now()));
-          else if (sameView(last.view, now)) fitToScreen();
-        });
-      }),
-    [depsRef, fitToScreen, glideToFit, zoomRef, viewportOffsetRef],
   );
 
   // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only

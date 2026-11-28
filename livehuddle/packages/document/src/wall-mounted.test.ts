@@ -104,3 +104,38 @@ describe('snapMovedWallPieces', () => {
     expect(out[1]).not.toBe(fire);
   });
 });
+
+describe('aimed at a wall in 3D (wall-pieces.md "Aimed at a wall in 3D")', () => {
+  // A Poster centred on the front wall's line (y 295), as the sight line meets it.
+  const onLine = () => {
+    const p = piece('poster', 0, 0);
+    return { ...p, x: 200 - p.width / 2, y: 295 - p.height / 2 };
+  };
+
+  it('lands on the face the camera sees, inside or outside, flush and never straddling', () => {
+    const poster = onLine();
+    const inside = snapToWallFace(poster, [room, poster], { x: 200, y: 294 });
+    expect(inside.y + inside.height).toBe(295 - WALL_MOUNT_GAP);
+    const outside = snapToWallFace(poster, [room, poster], { x: 200, y: 296 });
+    expect(outside.y).toBe(295 + WALL_MOUNT_GAP);
+  });
+
+  it('hangs on a back wall seen from the room on its standing face, not behind the wall', () => {
+    const p = piece('poster', 0, 0);
+    const poster = { ...p, x: 200 - p.width / 2, y: 31 - p.height / 2 };
+    const on = snapToWallFace(poster, [room, poster], { x: 200, y: 32 });
+    expect(on.y).toBe(4);
+  });
+
+  it('aims a dragged piece through snapMovedWallPieces', () => {
+    const poster = piece('poster', 100, 100);
+    const els: Element[] = [room, poster];
+    const out = snapMovedWallPieces(els, new Set([poster.id]), () => ({
+      at: { x: 200, y: 295 },
+      toward: { x: 200, y: 300 },
+    }));
+    const moved = out[1] as ShapeElement;
+    expect(moved.y).toBe(295 + WALL_MOUNT_GAP);
+    expect(moved.x + moved.width / 2).toBeCloseTo(200);
+  });
+});

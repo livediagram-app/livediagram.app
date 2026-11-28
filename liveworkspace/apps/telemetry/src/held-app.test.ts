@@ -141,6 +141,12 @@ describe('livehuddle in the telemetry service', () => {
         'Rug',
         // And, since livediagram's Work Tracker 1318, the Portal, which moved to livehuddle.
         'Portal',
+        // And, since the Real 3D Space, the lamps, the Poster and the Road.
+        'Desk-lamp',
+        'Floor-lamp',
+        'Table-lamp',
+        'Poster',
+        'Road',
       ].toSorted(),
     );
   });

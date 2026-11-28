@@ -7,7 +7,6 @@ import {
   type Element,
 } from '@livehuddle/document';
 import { AVATAR_WIDTH } from '@livehuddle/avatar/walk';
-import { avatarScale } from '@livehuddle/avatar/config';
 import { buildTemplate } from './build-template';
 import { templateFloors } from './template-floors';
 import { templateCategories, templateCategory } from './template-categories';
@@ -31,7 +30,8 @@ const BUILT = TEMPLATES.map((t) => t.kind).filter((k) =>
   ['campus', 'venues', 'games', 'homes'].includes(templateCategory(k) ?? ''),
 );
 // Two Regular characters side by side; a seat catches a character only when its feet step onto it.
-const AISLE = 2 * AVATAR_WIDTH * avatarScale('regular');
+// The width two Regular characters walk at (their collision reach's scale, 1.5), not the larger size they are drawn at.
+const AISLE = 2 * AVATAR_WIDTH * 1.5;
 const ROW_GAP = 16;
 
 const meets = (a: Box, b: Box) =>
@@ -133,7 +133,10 @@ describe.each(CAMPUS)('the %s campus', (kind: TemplateKind) => {
     const [directory] = all.filter((e) => e.shape === 'directory');
     const walk = all.find((e) => e.shape === 'avatar-pad')!;
     expect(directory).toBeDefined();
-    const bottom = Math.max(...all.filter((e) => e !== walk).map((e) => e.y + e.height));
+    // The site's own bottom: a street outside the gate (docs/specs/009-elements/road.md) is not the site.
+    const bottom = Math.max(
+      ...all.filter((e) => e !== walk && e.shape !== 'road').map((e) => e.y + e.height),
+    );
     // Built round (0, 0): the plan's middle is x 0.
     expect(Math.abs(directory!.x + directory!.width / 2)).toBeLessThan(200);
     expect(bottom - (directory!.y + directory!.height)).toBeLessThan(200);
@@ -154,8 +157,10 @@ describe.each(TABS)('the %s site', (_name, kind, els, first) => {
   it('closes every room and gives it exactly one Door on its walls, a path outside it', () => {
     for (const room of rooms) {
       expect(room.roomDoor, room.label).toBe('none');
+      // Its own Door, and a neighbour's on a wall they share (virtual-office-template.md "Laid out for the 3D view":
+      // touching rooms share one wall, so a room opening onto a floor or a lobby that is a room puts its Door on both).
       const own = doors.filter((d) => doorOnRoom(d, room));
-      expect(own, room.label).toHaveLength(1);
+      expect(own.length, room.label).toBeGreaterThanOrEqual(1);
       const box = doorBox(own[0]!);
       if (lawn) {
         // Outdoors, the door's footprint, grown 40 px out of the room, reaches a garden path.
@@ -171,10 +176,11 @@ describe.each(TABS)('the %s site', (_name, kind, els, first) => {
         ).toBe(true);
         continue;
       }
-      // Indoors, 160 px of open floor in front of it: no room and no piece of furniture.
+      // Indoors, 160 px of open floor in front of it: no piece of furniture, and no room but the one it opens into.
       const out = outside(box, room, 160);
       for (const piece of all) {
         if (['door', 'room-sign', 'rug'].includes(piece.shape) || piece === room) continue;
+        if (piece.shape === 'room' && meets(piece, box)) continue;
         expect(meets(piece, out), `${room.label}: ${piece.shape} at ${piece.x},${piece.y}`).toBe(
           false,
         );

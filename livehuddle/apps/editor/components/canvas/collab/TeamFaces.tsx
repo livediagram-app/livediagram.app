@@ -24,7 +24,7 @@ import { PageLift } from './WalkUpMoments';
 // The live faces of the Calendar Wall and the Suggestion Box (docs/specs/009-elements/team-pieces.md) laid over their
 // art: the calendar's month on the viewer's clock with its notes' tabs and its Calendar button, and the box's Suggest
 // button. Each opens its popover by the button, or large in the reader while walking. The month turns over on the
-// one minute clock the World Clock reads (lib/minute-clock), so no calendar keeps a timer of its own.
+// one minute clock the Clock reads (lib/minute-clock), so no calendar keeps a timer of its own.
 //
 // The popovers and readers load the first time one is opened (docs/specs/016-platform/web-performance.md "A piece's
 // panel"): the face fetches their code as a pointer comes over its button, the button takes focus, or someone walks.

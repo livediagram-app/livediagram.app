@@ -15,6 +15,7 @@ import type { SnapTarget } from '@/components/canvas/Canvas.types';
 import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { selectionBoxColors } from '@/lib/selection-box';
+import { real3DScreenAt } from '@/lib/real-3d/real-3d-pick';
 
 type Marquee = ReadableStore<MarqueeState | null>;
 
@@ -37,6 +38,14 @@ type CanvasGuideOverlayProps = {
 // snap-point markers, the pre-press snap dot, equal-spacing (distribution)
 // guides, and the marquee selection rectangle. Pure SVG, converting canvas
 // coords -> client via the wrapper rect + zoom. Split out of CanvasChrome.
+/**
+ * A canvas point on the screen: through Real 3D's camera while it draws, so a guide lies on the floor where the piece
+ * is (docs/specs/008-canvas/3d-view.md "Editing in 3D"); else by the flat view's origin and zoom.
+ */
+function screenOf(rect: { left: number; top: number }, zoom: number, x: number, y: number) {
+  return real3DScreenAt(x, y) ?? { x: rect.left + x * zoom, y: rect.top + y * zoom };
+}
+
 export function CanvasGuideOverlay({
   alignGuides,
   allSnapTargets,
@@ -57,6 +66,8 @@ export function CanvasGuideOverlay({
     alignGuides.length > 0 || allSnapTargets.length > 0 || !!drawHover || distGuides.length > 0,
     viewKey,
   );
+  const toScreen = (rect: { left: number; top: number }, x: number, y: number) =>
+    screenOf(rect, viewportZoom, x, y);
   return (
     <>
       {/* Alignment guides. While a move / resize snap is in effect,
@@ -83,10 +94,17 @@ export function CanvasGuideOverlay({
                   // screen-space endpoints. A vertical guide (axis 'x')
                   // holds x constant and runs start→end in y; horizontal
                   // is the mirror.
-                  const x1 = rect.left + (g.axis === 'x' ? g.position : g.start) * viewportZoom;
-                  const y1 = rect.top + (g.axis === 'x' ? g.start : g.position) * viewportZoom;
-                  const x2 = rect.left + (g.axis === 'x' ? g.position : g.end) * viewportZoom;
-                  const y2 = rect.top + (g.axis === 'x' ? g.end : g.position) * viewportZoom;
+                  const a = toScreen(
+                    rect,
+                    g.axis === 'x' ? g.position : g.start,
+                    g.axis === 'x' ? g.start : g.position,
+                  );
+                  const b = toScreen(
+                    rect,
+                    g.axis === 'x' ? g.position : g.end,
+                    g.axis === 'x' ? g.end : g.position,
+                  );
+                  const [x1, y1, x2, y2] = [a.x, a.y, b.x, b.y];
                   return (
                     <line
                       key={`${g.axis}:${g.position}:${i}`}
@@ -121,8 +139,7 @@ export function CanvasGuideOverlay({
                 className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
               >
                 {allSnapTargets.map((t, i) => {
-                  const x = rect.left + t.x * viewportZoom;
-                  const y = rect.top + t.y * viewportZoom;
+                  const { x, y } = toScreen(rect, t.x, t.y);
                   return (
                     <circle
                       key={`snap-${i}`}
@@ -148,8 +165,7 @@ export function CanvasGuideOverlay({
         ? (() => {
             const rect = origin;
             if (!rect) return null;
-            const x = rect.left + drawHover.x * viewportZoom;
-            const y = rect.top + drawHover.y * viewportZoom;
+            const { x, y } = toScreen(rect, drawHover.x, drawHover.y);
             return (
               <svg
                 aria-hidden
@@ -176,9 +192,10 @@ export function CanvasGuideOverlay({
         ? (() => {
             const rect = origin;
             if (!rect) return null;
-            const cx = (v: number) => rect.left + v * viewportZoom;
-            const cy = (v: number) => rect.top + v * viewportZoom;
             const color = 'rgb(236, 72, 153)'; // pink-500, distinct from alignment
+            // A span from `from` to `to` along its axis at `cross`, with its tick caps, as screen points.
+            const seg = (axis: 'x' | 'y', at: number, cross: number) =>
+              axis === 'x' ? toScreen(rect, at, cross) : toScreen(rect, cross, at);
             return (
               <svg
                 aria-hidden
@@ -187,27 +204,16 @@ export function CanvasGuideOverlay({
                 {distGuides.flatMap((g, gi) =>
                   g.spans.map((s, si) => {
                     const key = `${gi}:${si}`;
-                    // A cross-axis reference span carries its own axis.
-                    if ((s.axis ?? g.axis) === 'x') {
-                      const x1 = cx(s.from);
-                      const x2 = cx(s.to);
-                      const y = cy(s.cross);
-                      return (
-                        <g key={key} stroke={color} strokeWidth={1}>
-                          <line x1={x1} y1={y} x2={x2} y2={y} />
-                          <line x1={x1} y1={y - 4} x2={x1} y2={y + 4} />
-                          <line x1={x2} y1={y - 4} x2={x2} y2={y + 4} />
-                        </g>
-                      );
-                    }
-                    const y1 = cy(s.from);
-                    const y2 = cy(s.to);
-                    const x = cx(s.cross);
+                    // A cross-axis reference span carries its own axis; each tick crosses its end.
+                    const axis = s.axis ?? g.axis;
+                    const p1 = seg(axis, s.from, s.cross);
+                    const p2 = seg(axis, s.to, s.cross);
+                    const t = axis === 'x' ? { x: 0, y: 4 } : { x: 4, y: 0 };
                     return (
                       <g key={key} stroke={color} strokeWidth={1}>
-                        <line x1={x} y1={y1} x2={x} y2={y2} />
-                        <line x1={x - 4} y1={y1} x2={x + 4} y2={y1} />
-                        <line x1={x - 4} y1={y2} x2={x + 4} y2={y2} />
+                        <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} />
+                        <line x1={p1.x - t.x} y1={p1.y - t.y} x2={p1.x + t.x} y2={p1.y + t.y} />
+                        <line x1={p2.x - t.x} y1={p2.y - t.y} x2={p2.x + t.x} y2={p2.y + t.y} />
                       </g>
                     );
                   }),

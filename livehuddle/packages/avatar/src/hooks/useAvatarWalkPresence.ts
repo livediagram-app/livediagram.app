@@ -61,7 +61,7 @@ export function useAvatarWalkPresence<E extends AvatarSceneElement>({
   poseStore: StateStore<AvatarPose>;
   publishedLookRef: RefObject<string | null>;
   facingRef: RefObject<AvatarFacing>;
-  seatFields: () => { seatedOn: string | null; seat?: SeatClaim };
+  seatFields: () => { seatedOn: string | null; seat?: SeatClaim; handUp?: true };
   holdingRef: RefObject<DrinkKind | null>;
   posRef: RefObject<AvatarPoint | null>;
   heldRef: RefObject<AvatarHeldKeys>;

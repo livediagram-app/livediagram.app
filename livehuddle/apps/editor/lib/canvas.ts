@@ -6,6 +6,7 @@ import {
   type Element,
   isSelfDrawingShape,
 } from '@livehuddle/document';
+import { floorPointer } from '@/lib/space-3d/floor-pointer';
 
 // The snap thresholds, the arrow end and the icon drop side every editor shares
 // (@liveworkspace/workbench/lib/canvas-snap.ts), re-exported so importers keep resolving.
@@ -21,13 +22,34 @@ export {
 // pre-pan; callers that need fully world-space coords subtract the pan offset
 // themselves. Centralises the transform that was inlined at every pointer
 // handler in Canvas.tsx.
+//
+// In the tilted 3D view the point is where the pointer meets the floor (3d-view.md "Editing in 3D").
 export function pointerToCanvas(
   clientX: number,
   clientY: number,
   rect: DOMRect,
   zoom: number,
 ): { x: number; y: number } {
+  const floor = floorPointer(clientX, clientY);
+  if (floor) return floor;
   return { x: (clientX - rect.left) / zoom, y: (clientY - rect.top) / zoom };
+}
+
+/**
+ * How far the pointer has moved, in canvas px, from a press at (startX, startY): the screen move over the zoom, or in
+ * the tilted 3D view the move between the floor points under each (3d-view.md "Editing in 3D").
+ */
+export function pointerDelta(
+  startX: number,
+  startY: number,
+  clientX: number,
+  clientY: number,
+  zoom: number,
+): { dx: number; dy: number } {
+  const a = floorPointer(startX, startY);
+  const b = floorPointer(clientX, clientY);
+  if (a && b) return { dx: b.x - a.x, dy: b.y - a.y };
+  return { dx: (clientX - startX) / zoom, dy: (clientY - startY) / zoom };
 }
 
 // Size a newly-added boxed element. It inherits the currently-selected

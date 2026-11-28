@@ -4,7 +4,6 @@
 import { fenceParts, FENCE_RAIL_OPACITY } from '@livehuddle/avatar/fence';
 import {
   AVATAR_PAD_ART,
-  AVATAR_PAD_GLOW,
   AVATAR_PAD_VIEW,
   avatarPadPaint,
   type AvatarPadPaint,
@@ -38,12 +37,12 @@ import {
   isLongTable,
   longTableArt,
 } from './office';
-import { chairSeatFill } from './shape-geometry';
 import { pieceMaterial } from './piece-material';
 import { plasterWallsSvg } from './svg-render-doors';
 import { outlinedRoomPaths } from './room-builder';
 import { rectPath, roomFloorOf, roomFloorSvg } from './room-floors';
 import { grassEdgePath } from './office-garden';
+import { treeArt } from './tree-species';
 import { GRASS_BLADES, GRASS_MOTTLE, GRASS_TILES } from './garden-ground';
 import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { borderOf } from '@liveworkspace/element-model/svg-render-border';
@@ -135,29 +134,25 @@ export function fenceArt(el: Face, stroke: string): string {
     .join('');
 }
 
-// An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the vector table AvatarPadView draws, in the theme's stroke
-// and seat wash, fitted whole into the box and centred (`meet`), its ring lit (the shimmer and the arrival are the
-// canvas's).
+// An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the vector table AvatarPadView draws, outlined in the theme's
+// stroke in its own fixed woods, fitted whole into the box and centred (`meet`) (the arrival is the canvas's).
 const padPaintAttrs = (p: AvatarPadPaint) =>
   `fill="${xmlEscape(p.fill)}"` +
   (p.stroke ? ` stroke="${xmlEscape(p.stroke)}" stroke-width="${p.strokeWidth}"` : '') +
   (p.opacity !== undefined ? ` opacity="${p.opacity}"` : '') +
-  (p.strokeLinecap ? ` stroke-linecap="${p.strokeLinecap}"` : '');
+  (p.strokeLinecap ? ` stroke-linecap="${p.strokeLinecap}"` : '') +
+  (p.strokeLinejoin ? ` stroke-linejoin="${p.strokeLinejoin}"` : '');
 
 export function avatarPadArt(el: Face, stroke: string): string {
   if (el.width <= 0 || el.height <= 0) return '';
-  const glowId = `avatar-pad-glow-${xmlEscape(el.id)}`;
-  const body = chairSeatFill(undefined, stroke);
-  const g = xmlEscape(AVATAR_PAD_GLOW.color);
   const parts = AVATAR_PAD_ART.map((p) => {
-    const paint = padPaintAttrs(avatarPadPaint(p.role, stroke, body, `url(#${glowId})`));
+    const paint = padPaintAttrs(avatarPadPaint(p.role, stroke));
     return p.tag === 'ellipse'
       ? `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${p.rx}" ry="${p.ry}" ${paint}/>`
       : `<path d="${p.d}" ${paint}/>`;
   }).join('');
   return (
     `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="0 0 ${AVATAR_PAD_VIEW.width} ${AVATAR_PAD_VIEW.height}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
-    `<defs><radialGradient id="${glowId}"><stop offset="0%" stop-color="${g}" stop-opacity="${AVATAR_PAD_GLOW.innerOpacity}"/><stop offset="100%" stop-color="${g}" stop-opacity="0"/></radialGradient></defs>` +
     parts +
     `</svg>`
   );
@@ -170,9 +165,11 @@ export function furnitureArt(el: Face, seat: string, stroke: string): string {
     ? longTableArt(el.width, el.height, pieceFacing(el))
     : isSeatingShape(el.shape)
       ? FURNITURE_ART[el.shape]
-      : isGridOfficeShape(el.shape)
-        ? OFFICE_ART[el.shape]
-        : null;
+      : el.shape === 'tree'
+        ? treeArt(el.variant)
+        : isGridOfficeShape(el.shape)
+          ? OFFICE_ART[el.shape]
+          : null;
   if (!art) return '';
   // Every piece at its facing (docs/specs/009-elements/furniture-facing.md), as the canvas draws it.
   const frame = furnitureFrame(art, pieceFacing(el));

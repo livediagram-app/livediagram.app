@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livehuddle/document';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
@@ -10,12 +9,8 @@ const SettingsDialog = dynamic(
   () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
   { ssr: false },
 );
-const CanvasThemeDialog = dynamic(
-  () => import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
-  { ssr: false },
-);
 
-// The editor's global modal dialogs (settings, canvas theme). Each is gated on its own open flag and reads everything it needs
+// The editor's global modal dialogs (settings; no Tab Style, docs/specs/002-project-scope/not-in-livehuddle.md). Each is gated on its own open flag and reads everything it needs
 // straight from EditorContext, so EditorView just drops <EditorModals /> in
 // rather than carrying ~45 lines of dialog wiring. Comment/link/image
 // popovers stay inline in EditorView — they're anchored to canvas elements,
@@ -30,24 +25,6 @@ export function EditorModals() {
     userPreferences,
     setUserPreferences,
     selfParticipant,
-    canvasThemeTab,
-    isReadOnly,
-    activeTab,
-    setCanvasThemeTab,
-    setBackgroundPattern,
-    setBackgroundColor,
-    setPatternColor,
-    setBackgroundOpacity,
-    setBackgroundPatternScale,
-    setTheme,
-    setTabFont,
-    setTabDefaultTextSize,
-    setTabFinish,
-    applyTabLook,
-    tabs,
-    applyStyleToAllTabs,
-    applyingStyleToAllTabs,
-    canApplyStyleToAllTabs,
   } = useEditorContext();
 
   return (
@@ -71,43 +48,6 @@ export function EditorModals() {
           focus={settingsFocus}
           initialCategoryId={settingsCategory}
           initialSectionId={settingsSection}
-        />
-      ) : null}
-      {canvasThemeTab !== null && !isReadOnly ? (
-        <CanvasThemeDialog
-          tab={canvasThemeTab}
-          surface="space"
-          onTabChange={setCanvasThemeTab}
-          backgroundPattern={activeTab.backgroundPattern ?? 'grid'}
-          backgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
-          patternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
-          backgroundOpacity={activeTab.backgroundOpacity ?? 1}
-          backgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
-          onSetBackgroundPattern={setBackgroundPattern}
-          onSetBackgroundColor={setBackgroundColor}
-          onSetPatternColor={setPatternColor}
-          onSetBackgroundOpacity={setBackgroundOpacity}
-          onSetBackgroundPatternScale={setBackgroundPatternScale}
-          themeId={activeTab.theme ?? 'brand'}
-          onSetTheme={setTheme}
-          font={activeTab.font ?? null}
-          onSetFont={setTabFont}
-          defaultTextSize={activeTab.defaultTextSize}
-          onSetDefaultTextSize={setTabDefaultTextSize}
-          finish={activeTab.finish}
-          onSetFinish={setTabFinish}
-          canvasBackground={activeTab.backgroundColor}
-          onApplyLook={applyTabLook}
-          allTabs={
-            canApplyStyleToAllTabs
-              ? {
-                  tabCount: tabs.length,
-                  applying: applyingStyleToAllTabs,
-                  onApply: () => void applyStyleToAllTabs(),
-                }
-              : undefined
-          }
-          onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}
     </>

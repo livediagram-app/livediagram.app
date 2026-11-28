@@ -3,41 +3,25 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 
-import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
-import type { PanelId } from '@/lib/panel-layout';
 import { ItemToolsHost } from '@/components/panels/ItemToolsHost';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
-import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { RenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
-import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
-// The floating panels as elements (docs/specs/007-editor/panel-docking.md), lifted out of CanvasChrome:
-// the stable handler bundles for the memo'd panels, the docking-aware
-// wiring per panel, the palette's theme tint, and each panel's element with
-// its own visibility gate. CanvasChrome distributes the returned map into
-// the corner stacks (docking) or renders the elements inline (an embed). The
-// Explorer and the cluster popovers render beside the corner layer. The
-// tool-config panels, on screen only while
-// their own tool is active, live in useCanvasToolPanels.
+// The Explorer popover and the palette's theme tint, lifted out of CanvasChrome: the stable handler
+// bundles for the memo'd Explorer and its element. livehuddle has no corner panels (the Map, the last,
+// left: docs/specs/002-project-scope/not-in-livehuddle.md "The Map").
 
 export function useCanvasChromePanels({
   props,
   renameCurrent,
-  chromeHidden,
-  isMobile,
-  panelWiringFor,
 }: {
   props: CanvasChromeProps;
   // The Rename command's request for the Explorer's Current card (useRenameCurrentRequest).
   renameCurrent: RenameCurrentRequest;
-  chromeHidden: boolean;
-  isMobile: boolean;
-  panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
 }): {
-  panelEls: Partial<Record<PanelId, ReactNode>>;
   // The Explorer, a popover under the menu button (docs/specs/007-editor/toolbar-layout.md).
   explorerEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
@@ -48,13 +32,11 @@ export function useCanvasChromePanels({
     currentDocumentId,
     currentShareCode,
     onRenameCurrentDocument,
-    elements,
     onNewDocument,
     explorerMenuActions,
 
     setActiveDockAnchor,
     setActiveDockPanel,
-    settings,
     tabThemeId,
     chromeAway,
   } = props;
@@ -90,18 +72,7 @@ export function useCanvasChromePanels({
     setActiveDockAnchor(null);
   }, [setActiveDockPanel, setActiveDockAnchor]);
   // The theme tint for the palette tiles: see usePaletteChrome.
-  const { paletteTheme, paletteTint } = usePaletteChrome({ tabThemeId });
-
-  // --- Corner panels as elements (docs/specs/007-editor/panel-docking.md) ---
-  // Built once with docking-aware wiring, then rendered either inline (an embed)
-  // or distributed into corner stacks. Each keeps its own visibility gate.
-  // The tool-config panel (format), see useCanvasToolPanels. They share one contract: on screen
-  // only while their own tool is active.
-  const { formatEl } = useCanvasToolPanels({
-    props,
-    chromeHidden,
-    panelWiringFor,
-  });
+  const { paletteTint } = usePaletteChrome({ tabThemeId });
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
   // the folders someone expanded stay expanded.
@@ -136,38 +107,7 @@ export function useCanvasChromePanels({
     </>
   );
 
-  // Minimap (docs/specs/008-canvas/minimap.md) routed through docking like the other panels: it
-  // docks in the bottom-left and snaps / persists the same way. Desktop-only, gated on the map
-  // setting + a few elements; hidden in an embed / welcome (chromeHidden).
-  const mapEnabled = settings?.showMinimap !== false;
-  const mapAccent = paletteTheme.elementStroke;
-  const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
-  const minimapEl =
-    !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
-      <ViewMinimap
-        elements={elements}
-        tabFont={props.tabFont}
-        setViewportOffset={props.setViewportOffset}
-        setViewportZoom={props.setViewportZoom}
-        mainSize={props.mainSize}
-        paperColor={props.tabBackgroundColor}
-        accentColor={mapAccent}
-        position={minimapWiring.position}
-        onMove={props.onMoveMap}
-        onResetPosition={minimapWiring.onReset}
-        dock={minimapWiring.dock}
-        dimOutside={settings?.mapDimOutside !== false}
-        size={settings?.mapSize ?? 'medium'}
-      />
-    ) : null;
-
-  // Map of panel id → element for the docked-layout distribution.
-  const panelEls: Partial<Record<PanelId, ReactNode>> = {
-    minimap: minimapEl,
-    format: formatEl,
-  };
   return {
-    panelEls,
     explorerEl,
     paletteTint,
   };

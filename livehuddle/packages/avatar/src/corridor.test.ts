@@ -89,10 +89,10 @@ describe('a corridor in the walk', () => {
     expect(fenceStep({ x: 200, y: 60 }, { x: 260, y: 60 }, fences).blocked).toBe(false);
   });
 
-  it('is cut where an open Door stands on its wall, and whole where a shut one does', () => {
+  it('is cut where a Door stands on its wall, one saved shut included', () => {
     const door = { id: 'd', type: 'shape', shape: 'door', x: 152, y: -7, width: 96, height: 24 };
     expect(fenceSegments([shape({}), door])).toHaveLength(3);
     const shut = { ...door, doorClosed: true } as typeof door;
-    expect(fenceSegments([shape({}), shut])).toHaveLength(2);
+    expect(fenceSegments([shape({}), shut])).toHaveLength(3);
   });
 });

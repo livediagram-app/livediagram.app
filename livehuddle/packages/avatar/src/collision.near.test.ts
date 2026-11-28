@@ -81,6 +81,13 @@ describe('sameFences', () => {
     expect(sameFences(p, [{ ...line(0, 0, 1, 1), solid: { ...solid, width: 1 } }])).toBe(false);
     expect(sameFences(p, [{ ...line(0, 0, 1, 1), solid: { ...solid, height: 1 } }])).toBe(false);
   });
+
+  it('tells apart a wall whose thickness changed (fence.md "A wall keeps the whole body out of it")', () => {
+    const p = [{ ...line(0, 0, 1, 1), pad: 4 }];
+    expect(sameFences(p, [{ ...line(0, 0, 1, 1), pad: 4 }])).toBe(true);
+    expect(sameFences(p, [{ ...line(0, 0, 1, 1), pad: 6 }])).toBe(false);
+    expect(sameFences(p, [line(0, 0, 1, 1)])).toBe(false);
+  });
 });
 
 describe('fenceStep on a big board', () => {

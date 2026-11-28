@@ -43,7 +43,8 @@ async function seedDrawnDocument(
   const tabId = crypto.randomUUID();
   const box = (bid: string, label: string, x: number, y: number) => ({
     id: bid,
-    type: 'sticky',
+    type: 'shape',
+    shape: 'desk',
     x,
     y,
     width: 200,
@@ -53,7 +54,8 @@ async function seedDrawnDocument(
   const elements = [
     {
       id: 'actor',
-      type: 'sticky',
+      type: 'shape',
+      shape: 'desk',
       x: 440,
       y: 20,
       width: 120,
@@ -65,7 +67,8 @@ async function seedDrawnDocument(
     box('r', 'Runa (Backend)', 280, 480),
     {
       id: 'x3',
-      type: 'text',
+      type: 'shape',
+      shape: 'desk',
       x: 240,
       y: 380,
       width: 220,

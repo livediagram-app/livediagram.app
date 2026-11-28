@@ -6,6 +6,7 @@ import {
   snapRoomWalls,
   snapRoomWallsResize,
   ROOM_WALL,
+  ROOM_WALL_SNAP_THRESHOLD,
 } from './index';
 import type { ShapeElement } from './index';
 
@@ -55,6 +56,23 @@ describe('snapRoomWalls', () => {
       { x: 0, y: 300 },
     ])!;
     expect(snapRoomWalls(box(room('b', 395, 0)), [custom], none, 6).snappedX).toBe(false);
+  });
+
+  it('reaches a room dropped roughly beside another at the room threshold, box edge to box edge included', () => {
+    const t = ROOM_WALL_SNAP_THRESHOLD;
+    expect(snapRoomWalls(box(room('b', 400, 0)), [a], none, t)).toMatchObject({ dx: -ROOM_WALL });
+    expect(snapRoomWalls(box(room('b', 425, 40)), [a], none, t).dx).toBe(-25 - ROOM_WALL);
+    expect(snapRoomWalls(box(room('b', 400 + t, 0)), [a], none, t).snappedX).toBe(false);
+  });
+
+  it('shares a wall only with a room actually beside it on the other axis', () => {
+    // Its left edge on a's right wall line but wholly below a: no wall to share.
+    expect(snapRoomWalls(box(room('b', 392, 320)), [a], none, 40).snappedX).toBe(false);
+    // Below a but off to its right: a's front wall line is not under it.
+    expect(snapRoomWalls(box(room('b', 420, 266)), [a], none, 40).snappedY).toBe(false);
+    expect(
+      snapRoomWallsResize({ x: 392, y: 320, width: 300, height: 300 }, 'w', [a], none, 40),
+    ).toMatchObject({ guides: [] });
   });
 
   it('takes the nearest wall per axis across several rooms', () => {

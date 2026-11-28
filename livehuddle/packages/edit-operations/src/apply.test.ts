@@ -93,7 +93,7 @@ describe('applyEditOperations', () => {
     it('I5 is deterministic: no clock, no randomness, ids from makeId', () => {
       const random = vi.spyOn(Math, 'random');
       const now = vi.spyOn(Date, 'now');
-      const operations = [...mixed, add({ type: 'sticky', ...box, y: 200 })];
+      const operations = [...mixed, add({ type: 'shape', shape: 'desk', ...box, y: 200 })];
       const first = run(operations);
       expect(run(operations)).toEqual(first);
       expect(applied(first).createdIds).toEqual(['verify', 'id-1']);
@@ -102,7 +102,9 @@ describe('applyEditOperations', () => {
     });
 
     it('mints ids with crypto.randomUUID when no makeId is given', () => {
-      const outcome = applyEditOperations(checkoutFlow(), [add({ type: 'sticky', ...box })]);
+      const outcome = applyEditOperations(checkoutFlow(), [
+        add({ type: 'shape', shape: 'desk', ...box }),
+      ]);
       expect(applied(outcome).createdIds[0]).toMatch(/^[0-9a-f-]{36}$/);
     });
   });
@@ -113,7 +115,7 @@ describe('applyEditOperations', () => {
         set('n3', { label: 'Sign in' }),
         { op: 'rm', target: 'n5' },
         set('n3', { label: 'Log in' }),
-        add({ id: 'x', type: 'sticky', ...box }),
+        add({ id: 'x', type: 'shape', shape: 'desk', ...box }),
         set('x', { label: 'New' }),
       ]),
     );
@@ -123,8 +125,8 @@ describe('applyEditOperations', () => {
   it('lists the elements it created that are still there, in creation order', () => {
     const { createdIds } = applied(
       run([
-        add({ id: 'x', type: 'sticky', ...box }),
-        add({ id: 'y', type: 'sticky', ...box }),
+        add({ id: 'x', type: 'shape', shape: 'desk', ...box }),
+        add({ id: 'y', type: 'shape', shape: 'desk', ...box }),
         { op: 'rm', target: 'x' },
       ]),
     );
@@ -147,7 +149,7 @@ describe('applyEditOperations', () => {
           code: 'invalid_value',
           operation: 1,
           details: [
-            `shape=${JSON.stringify(shape)}: shapes are no longer supported in livehuddle: add a sticky`,
+            `shape=${JSON.stringify(shape)}: shapes are no longer supported in livehuddle: add a Space piece, such as a desk or a notice-board`,
           ],
         });
       }
@@ -215,13 +217,14 @@ describe('applyEditOperations', () => {
         name: 'Big',
         elements: Array.from({ length: MAX_ELEMENTS_PER_TAB }, (_, i) => ({
           id: `s${i}`,
-          type: 'sticky' as const,
+          type: 'shape',
+          shape: 'desk' as const,
           ...box,
         })),
       };
-      expect(refused(run([add({ id: 'one-more', type: 'sticky', ...box })], tab)).details).toEqual([
-        `the tab elements: at most ${MAX_ELEMENTS_PER_TAB} elements`,
-      ]);
+      expect(
+        refused(run([add({ id: 'one-more', type: 'shape', shape: 'desk', ...box })], tab)).details,
+      ).toEqual([`the tab elements: at most ${MAX_ELEMENTS_PER_TAB} elements`]);
     });
 
     it('refuses a tab without an id', () => {

@@ -16,7 +16,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import type { SpaceCall } from '@liveworkspace/index-client';
 import type { Tab } from '@livehuddle/document';
 
-const { client, toast, track, ask, sendStickies } = vi.hoisted(() => ({
+const { client, toast, track, ask } = vi.hoisted(() => ({
   client: {
     spaceCall: vi.fn(),
     callInvitePeople: vi.fn(),
@@ -27,7 +27,6 @@ const { client, toast, track, ask, sendStickies } = vi.hoisted(() => ({
   toast: { info: vi.fn(), success: vi.fn(), error: vi.fn() },
   track: vi.fn(),
   ask: vi.fn(),
-  sendStickies: vi.fn(),
 }));
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: client }));
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
@@ -41,10 +40,6 @@ vi.mock('@/lib/api/team-people', () => ({
 vi.mock('@liveworkspace/ask/ui', () => ({
   askSender: () => ask,
   tabPassages: () => [],
-}));
-vi.mock('@liveworkspace/workbench/components/send-to-plan/send-menu-item', () => ({
-  sendAllStickies: (_tab: string, elements: readonly { type: string }[]) =>
-    elements.some((e) => e.type === 'sticky') ? sendStickies : null,
 }));
 
 import { CallItemCard, openCallItem, shortName } from './CallItemCard';
@@ -63,15 +58,25 @@ const CALL: SpaceCall = {
   summaryDefault: { id: 'kb1', title: 'Team Wiki' },
 };
 
+const board = (id: string, x: number, y: number, notes: object[]) => ({
+  id,
+  type: 'shape',
+  shape: 'notice-board',
+  x,
+  y,
+  noticeNotes: notes,
+});
+
 const TABS = [
   {
     id: 't1',
     name: 'Floor 1',
     elements: [
-      { id: 'b', type: 'sticky', label: 'Ship the login\nmore', x: 10, y: 50 },
-      { id: 'a', type: 'text', label: 'Agenda', x: 0, y: 0 },
-      { id: 'c', type: 'shape', label: 'Not a note', x: 0, y: 10 },
-      { id: 'd', type: 'sticky', label: '   ', x: 0, y: 20 },
+      board('b', 10, 50, [{ text: 'Ship the login\nmore' }, { text: '   ' }]),
+      board('a', 0, 0, [{ title: 'Agenda', text: 'the rest' }]),
+      { id: 'c', type: 'shape', shape: 'desk', label: 'Not a note', x: 0, y: 10 },
+      // A stored sticky is no note (it is dropped when the tab is read).
+      { id: 'd', type: 'sticky', label: 'Gone', x: 0, y: 20 },
     ],
   },
 ] as unknown as Tab[];
@@ -100,7 +105,7 @@ afterEach(() => {
 const flush = () => act(async () => {});
 
 describe('wrap-up notes', () => {
-  it('takes stickies and texts in reading order, their first lines, up to the most', () => {
+  it('takes the Notice Boards’ notes in reading order, their first lines, up to the most', () => {
     expect(wrapUpNotes(TABS as never)).toEqual([
       { tab: 'Floor 1', lines: ['Agenda', 'Ship the login'] },
     ]);
@@ -108,14 +113,16 @@ describe('wrap-up notes', () => {
       {
         id: 't',
         name: '',
-        elements: Array.from({ length: 300 }, (_, i) => ({
-          id: `e${i}`,
-          type: 'sticky',
-          label: `n${i}`,
-          y: i,
-        })),
+        elements: [
+          board(
+            'e',
+            0,
+            0,
+            Array.from({ length: 300 }, (_, i) => ({ text: `n${i}` })),
+          ),
+        ],
       },
-      { id: 'u', name: 'More', elements: [{ id: 'x', type: 'sticky', label: 'late' }] },
+      { id: 'u', name: 'More', elements: [board('x', 0, 0, [{ text: 'late' }])] },
     ];
     const notes = wrapUpNotes(many);
     expect(notes).toHaveLength(1);
@@ -135,7 +142,7 @@ describe('wrap-up notes', () => {
       [],
       [
         ...(TABS as never[]),
-        { id: 't2', name: 'Floor 2', elements: [{ id: 'z', type: 'text', label: 'Two' }] },
+        { id: 't2', name: 'Floor 2', elements: [board('z', 0, 0, [{ text: 'Two' }])] },
       ],
     );
     expect(two.body).toContain('### Floor 2');
@@ -189,7 +196,6 @@ describe('the call card', () => {
         accountId="user_ada"
         mayInvite
         tabs={TABS}
-        activeTabId="t1"
         onSent={vi.fn()}
         {...over}
       />,
@@ -303,7 +309,6 @@ describe('Wrap Up', () => {
         accountId="user_ada"
         mayInvite
         tabs={TABS}
-        activeTabId="t1"
         onSent={onSent}
       />,
     );
@@ -355,11 +360,11 @@ describe('Wrap Up', () => {
     expect(toast.error).toHaveBeenCalledWith('Out of AI today.');
   });
 
-  it("sends the floor's stickies to a plan, and says when the summary could not go", async () => {
+  it('offers no Send Actions to Plan, and says when the summary could not go', async () => {
     client.sendCallSummary.mockRejectedValue(new Error('422'));
     open();
-    fireEvent.click(await screen.findByRole('button', { name: 'Send Actions to Plan' }));
-    expect(sendStickies).toHaveBeenCalled();
+    await screen.findByRole('button', { name: 'Send Summary' });
+    expect(screen.queryByRole('button', { name: 'Send Actions to Plan' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Send Summary' }));
     await flush();
     expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/couldn’t be sent/));
@@ -374,7 +379,6 @@ describe('Wrap Up', () => {
         accountId="user_ada"
         mayInvite
         tabs={[]}
-        activeTabId="t1"
         onSent={vi.fn()}
       />,
     );
@@ -383,8 +387,5 @@ describe('Wrap Up', () => {
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Send Summary' }).disabled).toBe(
       true,
     );
-    expect(
-      screen.getByRole<HTMLButtonElement>('button', { name: 'Send Actions to Plan' }).disabled,
-    ).toBe(true);
   });
 });

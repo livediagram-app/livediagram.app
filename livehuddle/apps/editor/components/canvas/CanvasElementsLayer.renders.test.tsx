@@ -108,7 +108,6 @@ const STABLE = {
   selectionInput: {
     elements: BOARD,
     editingId: null,
-    isPaintMode: false,
     readOnly: false,
   },
 };
@@ -126,7 +125,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     viewportZoom: over.zoom ?? 1,
     editingId: null,
     readOnly: false,
-    isPaintMode: false,
     canvasTool: 'select',
     drawDrag: null,
     onOpenElementSettings: fresh(),

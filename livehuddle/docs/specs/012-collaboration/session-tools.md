@@ -29,5 +29,5 @@ stops showing; nothing carries it onto a piece. A tab saved with the older `vote
 
 ## What stays
 
-[Bring Focus](bring-focus.md) and the [facilitator baton](facilitator.md) it answers to. The baton no longer governs a
+The [facilitator baton](facilitator.md). The baton no longer governs a
 clock: the Timer and Stopwatch pieces belong to their rooms, and anyone who takes part may run them.

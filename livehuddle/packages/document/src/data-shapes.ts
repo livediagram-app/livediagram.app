@@ -36,6 +36,7 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'outdoor-plant' ||
     kind === 'tree' ||
     kind === 'garden-path' ||
+    kind === 'road' ||
     kind === 'grass' ||
     kind === 'garden-fence' ||
     // The social pieces (docs/specs/009-elements/social-pieces.md) have nothing to write on.
@@ -71,6 +72,9 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'toilet-cubicle' ||
     kind === 'washbasin' ||
     kind === 'hand-dryer' ||
+    kind === 'floor-lamp' ||
+    kind === 'table-lamp' ||
+    kind === 'desk-lamp' ||
     kind === 'pillar' ||
     kind === 'column' ||
     kind === 'car-park' ||
@@ -91,6 +95,7 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'suggestion-box' ||
     kind === 'signpost' ||
     kind === 'photo-wall' ||
+    kind === 'poster' ||
     // A door (docs/specs/009-elements/room-builder.md) is a doorway, with nothing to write on.
     kind === 'door' ||
     // A window (room-builder.md "Window") is glass in a wall.

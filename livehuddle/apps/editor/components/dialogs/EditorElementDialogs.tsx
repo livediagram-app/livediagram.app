@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { isBoxed } from '@livehuddle/document';
+import { isBoxed, isPoster, posterPicture } from '@livehuddle/document';
 
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -101,6 +101,8 @@ export function EditorElementDialogs() {
             const targetId = imagePickerOpenFor.forElementId;
             if (!targetId) return null;
             const el = activeTab.elements.find((e) => e.id === targetId);
+            // A Poster frames a gallery picture as an Image element does (docs/specs/009-elements/poster.md).
+            if (isPoster(el)) return posterPicture(el);
             return el && isBoxed(el) && el.type === 'image' ? el.imageId : null;
           })()}
           onRemove={

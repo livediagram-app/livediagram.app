@@ -11,14 +11,14 @@ import {
   PageDots,
   TabStylePanel,
 } from '@liveworkspace/help-site/art/illustrations/tab-style-parts';
-import { Plant, RoomSign, Sticky } from './space-furniture';
+import { Plant, RoomSign, NoticeBoard } from './space-furniture';
 
 /** A selected note with its menu's Text flyout open on the Font tiles, one face chosen. */
 export function ElementFontMenu() {
   const fonts = ['Inter', 'Poppins', 'Nunito', 'Oswald', 'Lora', 'Kalam'];
   return (
     <Scene w={420} h={210}>
-      <Sticky x={26} y={70} w={96} h={80} label="Welcome!" lines={3} />
+      <NoticeBoard x={26} y={70} w={96} h={80} label="Welcome!" lines={3} />
       <SelectionBox x={26} y={70} w={96} h={80} />
       <Menu x={142} y={34} w={108} items={['Style', 'Text']} active={1} rowH={24} />
       <Label x={238} y={75} anchor="end" size={11} weight={600} tone="accent">
@@ -80,7 +80,7 @@ function RoomPreview() {
         <rect x={60} y={86} width={300} height={6} rx={3} className="fill-stone-300" />
       </g>
       <RoomSign x={78} y={100} name="Team Room" />
-      <Sticky x={226} y={98} w={44} h={26} tone="emerald" label="Hi!" />
+      <NoticeBoard x={226} y={98} w={44} h={26} tone="emerald" label="Hi!" />
       <Plant cx={332} cy={110} s={0.9} />
     </g>
   );

@@ -217,7 +217,7 @@ describe('ReceptionistLayer', () => {
     expect(parseFloat(press.style.left) + parseFloat(press.style.width) / 2).toBe(230);
     // Behind the desk, the 3D view draws him towards the camera by his height and chip, clear of the wall at its back
     // (receptionist.md "Behind the desk he is seen whole in the 3D view"); by his pad he was not.
-    expect(lift(container)).toBe('120px');
+    expect(lift(container)).toBe('152px');
   });
 
   it('is drawn towards the camera only behind a desk', () => {

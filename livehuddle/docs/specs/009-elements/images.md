@@ -121,11 +121,11 @@ a Viewer have no paste or drop on the canvas ([Share roles](#share-roles)).
 
 ### Share roles
 
-| Feature                                              | Editor | Participant | Viewer |
-| ---------------------------------------------------- | ------ | ----------- | ------ |
-| See an image                                         | Yes    | Yes         | Yes    |
-| Add one: Write's Image tile, paste or drop a picture | Yes    | No          | No     |
-| Change, resize, move or delete one, open its picker  | Yes    | No          | No     |
+| Feature                                             | Editor | Participant | Viewer |
+| --------------------------------------------------- | ------ | ----------- | ------ |
+| See an image                                        | Yes    | Yes         | Yes    |
+| Add one: paste or drop a picture (no palette tile)  | Yes    | No          | No     |
+| Change, resize, move or delete one, open its picker | Yes    | No          | No     |
 
 [Share roles](../013-workspace/share-roles.md#feature-by-feature-v1) holds the same row. The room enforces it: the
 participant content rule refuses every add from a Participant, and a Viewer sends no element ops.

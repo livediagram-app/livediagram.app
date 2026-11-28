@@ -1,9 +1,15 @@
 # Edit operations
 
+> **No text and no sticky notes** ([The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)):
+> `add text`, `add sticky`, a raw `add` element of type `text` or `sticky`, and a new one in a `replace` are refused
+> (`invalid_value` on `kind` or `type`, `invalid_result` in a replace: "text and sticky notes are no longer supported
+> in livehuddle: pin a note on a notice-board"), so no changeset, MCP edit or seeded document makes one. `add` takes
+> `link-card` and the Space pieces. Examples below that add a sticky or text record the design before 2026-11-27.
+
 > **No diagram shapes, no lint, no arrow selectors** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5): nothing coerces a kind.
 > `add <kind>` of a kind livehuddle does not have is refused (`invalid_value` on `kind`, naming the kinds `add`
 > takes), and so are `add shape` and the removed shapes (`square`, `circle`, `diamond` and the rest: "shapes are no
-> longer supported in livehuddle: add a sticky"); `set … shape=` takes only a kind livehuddle has. A `replace` refuses
+> longer supported in livehuddle: add a Space piece, such as a desk or a notice-board"); `set … shape=` takes only a kind livehuddle has. A `replace` refuses
 > a new shape of a kind livehuddle does not have, while an element the tab already holds rides through exactly as
 > stored. The arrow selectors (`a->b`, `from:`, `to:`, `downstream:`, `upstream:`) and the `after:` placement are
 > gone (unknown vocabulary); `layout` stays and sweeps any boxes into rows. A result's `lint` is `null` and its footer

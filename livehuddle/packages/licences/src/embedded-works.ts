@@ -65,6 +65,18 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: /(^|-)Inter-(Regular\.ttf|Bold\.otf)$/ },
     texts: text('inter-3.19-LICENSE.txt'),
   },
+  // The 3D view's characters: Quaternius' modular men and women, combined into one model file per pack
+  // (apps/editor/scripts/build-characters.mjs). Public domain; credited all the same.
+  {
+    id: 'quaternius-modular-characters',
+    name: 'Ultimate Modular Men and Women Packs (Quaternius)',
+    version: '2022-02',
+    licence: 'CC0-1.0',
+    carrier: 'the 3D view (character models)',
+    homepage: 'https://quaternius.com/packs/ultimatemodularcharacters.html',
+    trigger: { assets: /^(men|women)\.[\w-]+\.glb$/ },
+    texts: text('quaternius-modular-characters-CC0.txt'),
+  },
   // Icon geometry vendored into the monorepo's own source (packages/icons, shared by every product).
   {
     id: 'lucide',

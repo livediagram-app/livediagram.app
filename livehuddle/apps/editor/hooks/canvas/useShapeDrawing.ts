@@ -6,25 +6,25 @@
 // left with the element engine's part 4, docs/specs/002-project-scope/not-in-livehuddle.md
 // "The element engine".)
 
+import { snapFenceToGrass } from '@/lib/space-3d/fence-snap';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, useState } from 'react';
 import {
   createOutlinedRoom,
   isWallPiece,
   snapDoorToWall,
-  snapToWallFace,
   withDoorPiece,
   type Element,
   type Tab,
 } from '@livehuddle/document';
+import { snapAimedWallPiece } from '@/lib/real-3d/wall-aim';
 import { armedRoomSnap } from '@/lib/palette-drag-snap';
 import { placedSelection } from '@/lib/placed-selection';
 import { track } from '@/lib/telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
+import type { PendingDraw } from '@/lib/draw-mode';
 import { withPlacingFacing } from '@/lib/placing-facing';
-import { buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
-import type { CanvasTool } from '@/components/palette/palette.types';
+import { buildDrawnBoxed, buildDrawnComponent, isDrawTap } from '@/lib/draw-commit';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 
 type ShapeDrawingDeps = {
@@ -33,8 +33,6 @@ type ShapeDrawingDeps = {
   // inherits its size (see beginDraw / commitDraw).
   // Read when a draw begins (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
-  canvasTool: CanvasTool;
-  setCanvasTool: (tool: CanvasTool) => void;
   activeTab: Tab;
   // Every draw lands through the functional `commit` (live elements): the
   // commit closure is frozen for the whole
@@ -55,8 +53,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   const {
     editsBlocked,
     readSelection,
-    canvasTool,
-    setCanvasTool,
     activeTab,
     commit,
     setSelectedId,
@@ -76,18 +72,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // last one you had selected" behaviour through the combined gesture.
   const inheritSizeRef = useRef<Element | null>(null);
 
-  // The canvas tool an armed draw cannot share the pointer with: the format painter goes to select, so the next press
-  // draws what the banner says rather than painting.
-  const putDownPressTool = () => {
-    if (canvasTool === 'format') setCanvasTool('select');
-  };
-
   // Shared "arm draw mode" path for every palette add. Tap-to-drop and
   // drag-to-draw are one combined gesture now (no setting): picking an
   // element stashes the intent, and the canvas resolves the next pointer
   // gesture — a tap drops it at its inherited / default size, a drag sizes
   // it (see commitDraw). Clears the current selection so the popover
-  // doesn't float over the about-to-be-drawn box, and puts down a tool that acts on a press (putDownPressTool).
+  // doesn't float over the about-to-be-drawn box.
   const beginDraw = (intent: PendingDraw): void => {
     // Capture the selection's size BEFORE clearing it so commitDraw's
     // tap branch can inherit it.
@@ -98,7 +88,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setSelectedId(null);
     setMultiSelectedIds(new Set());
     setEditingId(null);
-    putDownPressTool();
     setPendingDraw(intent);
   };
 
@@ -115,6 +104,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     startY: number,
     endX: number,
     endY: number,
+    // Cmd / Ctrl held: an armed Room lands without its snap (docs/specs/008-canvas/snap-override.md).
+    free = false,
   ) => {
     if (editsBlocked) {
       setPendingDraw(null);
@@ -140,11 +131,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
-    // An armed Room lands where its preview showed it, snapped to its neighbours (docs/specs/009-elements/office.md
-    // "Rooms line up").
+    // An armed Room lands where its preview showed it, at its preset's size, snapped to its neighbours and sharing
+    // their walls (docs/specs/009-elements/office.md "Rooms line up"); Cmd / Ctrl places it freely.
     const roomSnap =
-      intent.type === 'shape' && intent.kind === 'room'
-        ? armedRoomSnap({ x: startX, y: startY }, activeTab.elements)
+      intent.type === 'shape' && intent.kind === 'room' && !free
+        ? armedRoomSnap({ x: startX, y: startY }, activeTab.elements, intent.variant)
         : null;
     const sx = startX + (roomSnap?.dx ?? 0);
     const sy = startY + (roomSnap?.dy ?? 0);
@@ -165,6 +156,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // pieces with it (office-amenities.md "The Restroom preset"): one commit, one undo, and every piece selected
     // (office.md "Placing selects every piece"). The pieces are built once, outside the updater, so the ids it
     // commits are the ids selected.
+    const tapped = isDrawTap(startX, startY, endX, endY);
     const wallPiece = isWallPiece(sized) ? sized : null;
     const pieces = wallPiece
       ? [sized]
@@ -174,15 +166,19 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       ...els,
       ...(wallPiece
         ? [snapDoorToWall(wallPiece, els)]
-        : pieces.map((el) => (el.type === 'shape' ? snapToWallFace(el, els) : el))),
+        : pieces.map((el) =>
+            el.type !== 'shape'
+              ? el
+              : // A tapped fence on a lawn's edge fences the whole side (fence.md "Placed on a lawn's edge"); a
+                // drawn one keeps the run you drew.
+                tapped
+                ? snapFenceToGrass(snapAimedWallPiece(el, els), els)
+                : snapAimedWallPiece(el, els),
+          )),
     ]);
     setSelection(placedSelection(pieces));
-    // A freshly added text element drops straight into typing mode
-    // (matches the double-click-to-add-text path in useElementCreation):
-    // an empty text box is only useful once you type into it, so save the
-    // user the extra click. Other element kinds stay selected-but-not-
-    // editing so their format popover is the immediate next interaction.
-    if (opensForTyping(intent)) setEditingId(sized.id);
+    // Every placed element stays selected-but-not-editing, so its toolbar is the next interaction (a text box,
+    // the one kind that dropped into typing, went with the Write category).
     setPendingDraw(null);
     const label =
       intent.type === 'shape'
@@ -197,16 +193,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
             : // Hyphenated kinds ('mind-node', 'session-button', ...) need
               // their spelled-out token or they split from the copy path's.
               shapeTelemetryToken(intent.kind)
-        : intent.type === 'text'
-          ? 'Text'
-          : intent.type === 'sticky'
-            ? 'Sticky'
-            : intent.type === 'link-card'
-              ? // titleCase would emit 'Link-Card' (it capitalises at the
-                // hyphen); the click path always reported 'LinkCard', so
-                // moving the event here must not split the dashboard token.
-                'LinkCard'
-              : 'Image';
+        : intent.type === 'link-card'
+          ? // titleCase would emit 'Link-Card' (it capitalises at the
+            // hyphen); the click path always reported 'LinkCard', so
+            // moving the event here must not split the dashboard token.
+            'LinkCard'
+          : 'Image';
     track('Element', 'Added', label);
     // An image lands as its empty placeholder, selected, with no picker popping up: the
     // placeholder's Select Image button (or a double-click) opens it when the person is ready
@@ -222,7 +214,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setSelectedId(null);
     setMultiSelectedIds(new Set());
     setEditingId(null);
-    putDownPressTool();
     setPendingDraw({ type: 'room-walls' });
   };
 

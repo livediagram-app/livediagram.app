@@ -12,12 +12,14 @@ import { handleDocuments } from './routes/documents';
 
 const T0 = 1_700_000_000_000;
 
-// A tab whose stored data is exactly `bytes` long: one text element padded to fit.
+// A tab whose stored data is exactly `bytes` long: one rug padded to fit (a text is dropped on read).
 function tabOf(bytes: number, id = 't1'): Tab {
   const base = {
     id,
     name: 'Board',
-    elements: [{ id: 'x', type: 'text', x: 0, y: 0, width: 10, height: 10, label: '' }],
+    elements: [
+      { id: 'x', type: 'shape', shape: 'rug', x: 0, y: 0, width: 1, height: 1, label: '' },
+    ],
   } as unknown as Tab;
   const pad = bytes - tabDataBytes(base);
   return {

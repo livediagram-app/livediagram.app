@@ -4,12 +4,11 @@ import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-sto
 import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 
 // Ephemeral, in-the-moment editing UI for the canvas: which tab is
-// active, what's selected / being edited, the format painter's "source"
-// element, the marquee multi-selection bag, and the two transient
+// active, what's selected / being edited, the marquee multi-selection bag, and the two transient
 // picker flags. A self-contained slice (no document-data or persistence
 // coupling) lifted out of useEditorState so the view-model is composed
 // from domain slices rather than one flat bag of useState calls — same
-// pattern as usePanelLayout / useEditorDialogs / usePresenceState.
+// pattern as useEditorDialogs / usePresenceState.
 //
 // The setters are threaded into the editor's many action hooks; the
 // values feed the derived selection / picker logic in useEditorState.
@@ -46,7 +45,6 @@ export function useEditorUiState(
   // editor places the caret at the END instead of select-all, so the
   // seeded first character isn't replaced by the next keystroke.
   const [editCursorAtEnd, setEditCursorAtEnd] = useState(false);
-  const [formatSourceId, setFormatSourceId] = useState<string | null>(null);
   // Multi-selection bag for marquee box-select. Mutually exclusive with the
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
   // selection / its popover / its accordion controls are suppressed. Both
@@ -65,8 +63,6 @@ export function useEditorUiState(
     setEditingId,
     editCursorAtEnd,
     setEditCursorAtEnd,
-    formatSourceId,
-    setFormatSourceId,
     setMultiSelectedIds,
     identityPromptOpen,
     setIdentityPromptOpen,

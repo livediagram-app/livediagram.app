@@ -14,10 +14,8 @@ import { tileDragStart } from './palette-tile-drag';
 // to every grid.
 export type PaletteTileActions = {
   addShape: (kind: ShapeKind, opts?: AddShapeOptions) => void;
-  addText: () => void;
   // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
   beginRoomWalls?: () => void;
-  addSticky: () => void;
   addImage: () => void;
   addLinkCard: () => void;
   addSticker: (stickerId: string) => void;
@@ -51,12 +49,8 @@ export function tileHandler(
           variant: a.variant,
           name: tileCaption(def.label, def.caption),
         });
-    case 'text':
-      return actions.addText;
     case 'room-walls':
       return actions.beginRoomWalls ?? (() => {});
-    case 'sticky':
-      return actions.addSticky;
     case 'image':
       return actions.addImage;
     case 'link-card':
@@ -90,8 +84,6 @@ export function tileActive(
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
     case 'room-walls':
       return pendingDraw.type === 'room-walls';
-    case 'sticky':
-      return pendingDraw.type === 'sticky';
     // Sticker tiles DO arm (they ride the shape intent carrying their
     // sticker id), but the catalogue is open-ended and the picker renders
     // hundreds of tiles, so pressed-state matching per sticker buys

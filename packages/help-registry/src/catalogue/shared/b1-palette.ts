@@ -108,17 +108,6 @@ export const articles: Article[] = [
     },
   },
   {
-    slug: 'bring-focus',
-    title: 'Bring Focus',
-    description: 'Ask everyone else in the room to come and look at one spot.',
-    keywords:
-      'bring focus look here attention everyone jump navigate gather point show spotlight presenter workshop big board find lost viewport zoom same view',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-    apps: ['livediagram', 'livehuddle'],
-  },
-  {
     slug: 'mode-buttons',
     title: 'Selection Mode Buttons',
     description: 'A button on the canvas that switches whoever presses it into a mode.',

@@ -56,6 +56,35 @@ export function UmbrellaStandIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// --- Lamps (docs/specs/009-elements/office-amenities.md "Lamps") ----------------------------------------------------
+
+export function FloorLampIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M8.5 2.5h7l2 6.5h-11z" />
+      <path d="M12 9v11M8.5 21.5c0-1.2 1.5-1.8 3.5-1.8s3.5.6 3.5 1.8z" />
+    </Glyph>
+  );
+}
+
+export function TableLampIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M8.5 3h7L19 11H5z" />
+      <path d="M12 11v2.5M9 21.5c-1.5-1-2-2.6-2-4C7 15 9.2 13.5 12 13.5s5 1.5 5 4c0 1.4-.5 3-2 4z" />
+    </Glyph>
+  );
+}
+
+export function DeskLampIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M4 21.5h9M8.5 21.5L5.5 12l9-5" />
+      <path d="M13.5 5.5l5.5-1.5 2 6.5-6.5 2.5z" />
+    </Glyph>
+  );
+}
+
 // --- Kitchen --------------------------------------------------------------------------------------------------------
 
 export function KitchenCounterIcon({ size = 14 }: IconSizeProps = {}) {

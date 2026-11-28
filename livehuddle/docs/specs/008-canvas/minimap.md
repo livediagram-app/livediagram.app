@@ -1,5 +1,9 @@
 # Minimap
 
+> **Gone from livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map)): the owner (2026-11-27) removed the Map. livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/008-canvas/minimap.md) is the one to read and change. livehuddle shows no Map, offers no Map rows in Settings and fits a tab to the whole canvas; its components are deleted. The rest of this page records what livehuddle had.
+
+Status: **gone from livehuddle** (2026-11-27).
+
 A bottom-left minimap that gives a zoomed-out overview of the whole tab and
 lets you jump the viewport anywhere with a tap or drag.
 
@@ -106,7 +110,7 @@ letterboxing handled for free.
 - `../packages/workbench/src/lib/fit-clear-of-panel.ts`: `fitClearOfPanel`, the fit moved beside or above the Map
   (above), used by `lib/tab-fit-view.ts`.
 
-- `components/canvas/Minimap.tsx`: the SVG overview inside a `MovablePanel`
+- `livediagram/apps/editor/components/canvas/Minimap.tsx`: the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is
   memoised on `elements` so panning only re-renders the viewport rectangle, and
   redrawn when a gesture ends rather than on each frame of it, a remote edit at most

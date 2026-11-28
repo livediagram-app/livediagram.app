@@ -18,24 +18,8 @@ export function useBoxedDragHandlers({
   setDrag,
   checkpointPendingRef,
 }: BoxedDragHandlerDeps) {
-  // A press that an armed action takes instead of selecting: true when it took it. Shared by a drag's press and
-  // a tap that panned instead of dragging (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
-  const pressArmedAction = (elementId: string): boolean => {
-    const d = depsRef.current;
-    // Persistent Format tool: first click arms the source, each later
-    // click paints onto the target and (in Keep painting) KEEPS the
-    // source armed so the user can format many elements in a row.
-    if (d.formatToolActive) {
-      if (d.formatSourceId === null) d.setFormatSourceId(elementId);
-      else d.applyFormatFromSource(elementId);
-      return true;
-    }
-    return false;
-  };
-
   const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
     const d = depsRef.current;
-    if (mode === 'move' && pressArmedAction(elementId)) return;
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
@@ -88,5 +72,5 @@ export function useBoxedDragHandlers({
     });
   };
 
-  return { beginDrag, pressArmedAction };
+  return { beginDrag };
 }

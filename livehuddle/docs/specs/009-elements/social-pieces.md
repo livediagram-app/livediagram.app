@@ -1,7 +1,7 @@
 # Social pieces
 
-Status: **approved** (owner, 2026-11-05). Pieces that give a Space somewhere to leave a note, see the time where
-colleagues are, and hang out between meetings: a **Notice Board** and a **World Clock** on the wall, a **Jukebox**, a
+Status: **approved** (owner, 2026-11-05). Pieces that give a Space somewhere to leave a note, see the time, and
+hang out between meetings: a **Notice Board** and a **Clock** on the wall, a **Jukebox**, a
 **Ping-Pong Table**, a **Pool Table**, a **Foosball Table**, an **Arcade Machine**, a **Dartboard** and a **Fireplace**
 in a new **Play** category, a **Vending Machine** in **Perks**, **Bean Bags** and a **Reading Nook** in **Seats**, and
 outdoor seating (**Bench**, **Picnic Table**, **Hammock**), a **Garden Umbrella**, a **Fountain**, a **Pond** and a
@@ -12,7 +12,7 @@ walked, sat at and used by everyone in [Avatar mode](../008-canvas/avatar-mode.m
 ## Why
 
 A virtual office that only holds meetings feels like a meeting. People in a real office leave notes on a board, glance
-at the clocks to see whether New York is awake yet, and drift to the ping-pong table or the fire after a long call.
+at the clock on the wall, and drift to the ping-pong table or the fire after a long call.
 These pieces give a Space those small, social places, built from the same parts as the rest of the office.
 
 ## Where they live
@@ -21,7 +21,7 @@ These pieces give a Space those small, social places, built from the same parts 
 | -------------- | ------------------------------------------------------------------------------------------ |
 | **Seats**      | Bean Bag, Reading Nook (after the office's Chair, Desk, Sofa and Meeting Table)            |
 | **Perks**      | Vending Machine (after the office's Plant, Bookshelf, Water Cooler and Coffee Machine)     |
-| **Meet**       | Notice Board, World Clock                                                                  |
+| **Meet**       | Notice Board, Clock                                                                        |
 | **Play** (new) | Jukebox, Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace |
 | **Garden**     | Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire                    |
 
@@ -39,7 +39,7 @@ Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcad
 | Piece           | Default size | Walk                                                                             |
 | --------------- | ------------ | -------------------------------------------------------------------------------- |
 | Notice Board    | 176 × 128    | Hangs on a wall: never blocks, never a destination                               |
-| World Clock     | 168 × 72     | Hangs on a wall: never blocks, never a destination                               |
+| Clock           | 64 × 64      | Hangs on a wall: never blocks, never a destination                               |
 | Jukebox         | 72 × 112     | Scenery: its base (the bottom quarter) blocks                                    |
 | Ping-Pong Table | 184 × 112    | Two seats, one at each end, facing the table (chair rules)                       |
 | Arcade Machine  | 64 × 112     | Scenery: its cabinet's foot blocks; walking up to it says "Insert Coin"          |
@@ -64,7 +64,7 @@ Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcad
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
   out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
   front of it.
-- **Wall pieces** (Notice Board, World Clock, Dartboard) are walked past, not to: standing in front of one rings
+- **Wall pieces** (Notice Board, Clock, Dartboard) are walked past, not to: standing in front of one rings
   nothing.
 - **Elements paint under avatars**, so nothing here is drawn over a character: the umbrella's canopy is drawn plainly
   as part of the piece, and a sitter at a picnic table under it stands in front of it.
@@ -116,29 +116,27 @@ by, at, color? }`, where `by` is the pinner's adder key (an Editor without one w
   drags, label-edits or erases the piece, never starts a draw over it, and is not a walk in Avatar mode. The count
   beside **Notes** is a badge ([Counts are badges](../004-interface-design/counts.md)), never "(3)".
 
-## World Clock
+## Clock
 
-A wooden plaque on the wall with small clock dials, one per time zone.
+A classic round wall clock (owner, 2026-11-27: "just a clock that uses each persons local timezone"): a dark wooden
+rim, a cream face with twelve hour marks (the twelve, three, six and nine longer), an hour hand and a minute hand, a brass
+centre pin, hung from a nail. No second hand, no digits, no labels.
 
-- **Zones**: up to six, each an IANA time zone (`Europe/London`) with a label of up to 24 characters ("London").
-  `ShapeElement.clockZones`: `{ zone, label }[]`. With none set the clock shows **the viewer's own zone**, labelled
-  **Local**, so a new clock is right for everyone who looks at it.
-- **The face** shows the first three zones as analogue dials side by side, each with its label and the time below in
-  digits (24-hour or 12-hour as the viewer's locale writes it). A zone whose day differs from the viewer's adds a small
-  "+1" or "-1". A zone the browser does not know draws its dial empty with "?" for the time.
-- **It ticks once a minute**, all clocks on the canvas together from one shared timer that wakes at the top of each
-  minute while any clock is on screen; nothing runs per frame. The hands jump; there is no second hand. Reduced
-  motion changes nothing, since nothing moves between minutes.
-- **While walking** a press on the clock opens every zone large in the [reader](../008-canvas/avatar-mode.md#the-reader),
-  and never walks you to the wall.
-- **Editing**: an Editor's element menu has a **World Clock** section listing the zones, each with its label field
-  and a remove button, and an **Add Zone** row: a zone field that suggests from the browser's list of zones as you
-  type, with the label filled from the city part of the zone ("New_York" → "New York"). The zone is stored by the
-  name the browser gives it, whatever its case or alias: "europe/london" is Europe/London (labelled London) and
-  "US/Eastern" is America/New_York. A label is never cleared from the menu: a label field
-  emptied and left goes back to the zone's label. A zone stored with no label reads as **Local**, on the dial and to a
-  screen reader. Participants and Viewers see
-  the clock and never the section.
+- **It shows each viewer's own local time**: everyone who looks at it reads the time where they are, from their
+  browser's zone. Nothing about the time is stored and there is nothing to set.
+- **It ticks once a minute**, every clock on the canvas together from one shared timer that wakes at the top of each
+  minute while any clock is on screen; nothing runs per frame. The hands jump. Reduced motion changes nothing, since
+  nothing moves between minutes.
+- **The face fits its box**: it is drawn round at the box's smaller side, centred, so a clock saved at the old World
+  Clock's 168 × 72 still shows one round clock, not a stretched one. In the Space's 3D view it hangs flat on its
+  wall, as round as seen, above head height.
+- **Scenery on the wall**, as the Dartboard and the Poster: a press while walking walks you up to it like any wall
+  piece (and beside it replays its walk-up moment, [Piece moments](piece-moments.md)); there is no reader and no
+  element menu section.
+- **Old documents**: it was the **World Clock** until 2026-11-27, a plaque with a dial per time zone. The kind keeps
+  its id `world-clock`, so saved boards and templates need no migration. A stored `ShapeElement.clockZones`
+  (`{ zone, label }[]`, up to six) is still accepted and validated, so an old document loads and saves as it was,
+  and is ignored: no clock draws or edits zones.
 - Its label is not drawn. It does not turn. Aspect locked.
 
 ## Jukebox
@@ -535,10 +533,12 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
 - **Pond**: a pool of water with a stone rim and a lily pad or two, drawn to its size like Grass (the rim, water and
   pads are a fixed handful of shapes however big). Resizable, not aspect locked. A faint ripple drifts across it (CSS;
   still under reduced motion). The water blocks: its footprint is the pond less its rim's outer edge.
+  In the Space's 3D view it is a real sunken pond (3d-engine.md "Models"): a stone coping round water that lies below
+  the lawn, dark in its depth and light in its shallows, with lily pads and reeds.
 
 ## Share roles
 
-- **Editor**: places, moves and deletes every piece; sets a World Clock's zones and a Jukebox's source; pins notes and
+- **Editor**: places, moves and deletes every piece; sets a Jukebox's source; pins notes and
   unpins any note.
 - **Participant**: pins a note and unpins its own, signed with its adder key, which the room checks; plays ping-pong;
   walks, sits and uses everything like everyone; the participant palette does not offer the pieces.
@@ -557,15 +557,15 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
 | Arcade Machine: see the High Scores   | Yes    | Yes         | Yes    |
 | Arcade Machine: clear the High Scores | Yes    | No          | No     |
 | Notice Board: pin a note              | Yes    | Yes (own)   | No     |
-| World Clock, Jukebox: set             | Yes    | No          | No     |
+| Jukebox: set                          | Yes    | No          | No     |
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- Placing one: `Element · Added · <Kind>` (`Notice-board`, `World-clock`, `Jukebox`, `Ping-pong-table`,
+- Placing one: `Element · Added · <Kind>` (`Notice-board`, `World-clock` (the Clock, by its kind id), `Jukebox`, `Ping-pong-table`,
   `Arcade-machine`, `Fireplace`, `Bench`, `Picnic-table`, `Hammock`, `Garden-umbrella`, `Fountain`, `Pond`,
   `Campfire`, `Pool-table`, `Foosball-table`, `Dartboard`, `Vending-machine`, `Bean-bag`, `Reading-nook`).
-- A note pinned or unpinned: `Element · Changed · Notice-board`; zones changed: `Element · Changed · World-clock`; a
-  source set: `Element · Changed · Jukebox`. Never the note's words, the zones or the address.
+- A note pinned or unpinned: `Element · Changed · Notice-board`; a source set: `Element · Changed · Jukebox`. Never
+  the note's words or the address.
 - A ping-pong game played to its end: `Canvas · Used · PingPong`, sent by the left player's screen alone, so a game
   counts once. Never the score or who played.
 - A Moon Mail run ended (Game Over or closed mid-run): `Canvas · Used · Arcade`, from the player's screen. High
@@ -580,6 +580,6 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
 - A snack or a can from the Vending Machine.
 - A built-in jukebox playlist, queueing songs, or volume control beyond mute.
 - Replying to, editing or reacting to a note; notes with images or links.
-- Alarms, meeting countdowns or daylight shading on the World Clock.
-- Music in an export or a still image: an export draws each piece's art, the notice board's cork and the clock's plaque,
+- Time zones, alarms, a second hand, meeting countdowns or daylight shading on the Clock.
+- Music in an export or a still image: an export draws each piece's art, the notice board's cork and the clock's face,
   without notes or hands.

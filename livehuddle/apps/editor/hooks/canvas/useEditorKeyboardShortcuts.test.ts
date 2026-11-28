@@ -74,10 +74,9 @@ describe('EDIT_KEYS (mutating tools / element adds)', () => {
     expect(EDIT_KEYS['0']).toBeUndefined();
   });
 
-  it('binds Text (T / 8) and Note (N)', () => {
-    expect(fired(EDIT_KEYS, 't')).toBe('text');
-    expect(fired(EDIT_KEYS, '8')).toBe('text');
-    expect(fired(EDIT_KEYS, 'n')).toBe('sticky');
+  // not-in-livehuddle.md "The Write category".
+  it('binds no Text (T / 8) or Note (N)', () => {
+    for (const k of ['t', '8', 'n']) expect(EDIT_KEYS[k], k).toBeUndefined();
   });
 
   // docs/specs/012-collaboration/workshop-mode.md "The palette": the diagram tools' keys left with the tools.
@@ -125,8 +124,6 @@ function modLive(isReadOnly = false, canvasTool = 'select') {
     onCut: () => calls.push('cut'),
     onDuplicate: () => calls.push('duplicate'),
     onSelectAll: () => calls.push('select-all'),
-    onBringToFront: () => calls.push('front'),
-    onSendToBack: () => calls.push('back'),
   };
   return { live, calls };
 }
@@ -215,15 +212,18 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
     expect(chord({ key: 'l', shiftKey: true }).hit).toBeNull();
   });
 
-  it('matches z-order on `code` so a non-US layout still reaches it', () => {
-    // The shifted bracket arrives as `}` / `{` on some layouts, so the
-    // code check is what makes the chord reachable there.
-    expect(chord({ key: ']', shiftKey: true }).hit).toBe('front');
-    expect(chord({ key: '}', shiftKey: true, code: 'BracketRight' }).hit).toBe('front');
-    expect(chord({ key: '[', shiftKey: true }).hit).toBe('back');
-    expect(chord({ key: '{', shiftKey: true, code: 'BracketLeft' }).hit).toBe('back');
-    // Without Shift they are not z-order at all.
-    expect(chord({ key: ']' }).hit).toBeNull();
+  // not-in-livehuddle.md "Element looks, layers, opacity and rotation": no z-order chords.
+  it('leaves Cmd+Shift+] and Cmd+Shift+[ to the browser', () => {
+    for (const [key, code] of [
+      [']', 'BracketRight'],
+      ['}', 'BracketRight'],
+      ['[', 'BracketLeft'],
+      ['{', 'BracketLeft'],
+    ] as const) {
+      const r = chord({ key, shiftKey: true, code });
+      expect(r.hit, key).toBeNull();
+      expect(r.prevented, key).toBe(false);
+    }
   });
 
   it('gives a view-role visitor the zoom and search chords and nothing else', () => {

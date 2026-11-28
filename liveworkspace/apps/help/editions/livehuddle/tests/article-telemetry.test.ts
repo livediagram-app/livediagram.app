@@ -42,8 +42,9 @@ describe('article telemetry ids', () => {
   });
 
   it('keeps the plain slug for the feature articles and splits off the Tips copies', () => {
-    expect(helpPathTelemetryId('/selection-modes/format-painter/')).toBe('format-painter');
-    expect(helpPathTelemetryId('/tips-and-tricks/format-painter/')).toBe('tips-format-painter');
+    // The Format Painter's two articles left livehuddle with it (not-in-livehuddle.md "Format Painter and Clear
+    // Styles"), so its Tips copy needs no token here.
+    expect(helpPathTelemetryId('/tips-and-tricks/format-painter/')).toBe('format-painter');
     expect(helpPathTelemetryId('search-panel/the-search-panel/command-palette')).toBe(
       'command-palette',
     );

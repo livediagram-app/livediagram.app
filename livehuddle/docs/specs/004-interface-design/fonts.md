@@ -85,7 +85,8 @@ rather than the `md` factory baseline.
 ## Text size
 
 A label's size (`textSize`) is **Scale** or an **exact px**. It is chosen on one control, the
-**Text Size** slider (`TextSizeControl`), everywhere a label's size is set:
+**Text Size** slider (`TextSizeControl`), everywhere a label's size is set. livehuddle's element menus have no Text
+flyout and no slider (deleted with it; [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#element-looks-layers-opacity-and-rotation)):
 
 - an element's **Text** flyout, single and multi selection (Typography → Size);
 - an arrow's **Caption** and a table's **Text** category, single and multi selection;

@@ -61,7 +61,7 @@ describe('useCanvasCall', () => {
       id: 'p1',
       at: { x: 500, y: 0 },
       // The default character size.
-      scale: 1.5,
+      scale: 1.9,
     });
     result.current.bars.onWalkTo!('p1', { x: 500, y: 0 });
     expect(walkTo).toHaveBeenCalledWith({ x: 440, y: 0 });

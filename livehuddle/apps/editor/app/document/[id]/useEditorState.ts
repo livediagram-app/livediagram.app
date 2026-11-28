@@ -94,7 +94,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromDocument,
     fromHistory,
     fromSelection,
-    fromTools,
     fromCollaboration,
     fromPersistence,
     fromActiveTab,
@@ -116,7 +115,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   const fromCreation = useEditorCreation({
     fromDocument,
-    fromHistory,
     fromSelection,
     fromTools,
     fromCollaboration,
@@ -132,12 +130,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromHistory,
     fromSelection,
     fromDialogs,
-    fromCollaboration,
-    fromPersistence,
     fromActiveTab,
     fromEditing,
     fromTabs,
-    fromCreation,
   });
   const fromInteraction = useEditorInteraction({
     fromDocument,
@@ -165,7 +160,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromViewport,
     fromEditing,
     fromCreation,
-    fromStyle,
     fromInteraction,
   });
   return {

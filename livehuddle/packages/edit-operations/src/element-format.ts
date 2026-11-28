@@ -5,7 +5,6 @@
 import {
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
-  STICKY_PRESETS,
   TEXT_PX_MAX,
   TEXT_PX_MIN,
   THEMES,
@@ -64,24 +63,23 @@ export function elementKindsText(): string {
   ].join('\n');
 }
 
-const fillValues = (el: Element) =>
-  el.type === 'sticky'
-    ? [...STICKY_PRESETS.map((p) => p.id.replace(/^sticky-/, '')), '#rrggbb']
-    : [...fillSlotNames(THEMES[0]!).keys(), '#rrggbb'];
+// Sticky notes are gone (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category"), so every kind `add`
+// makes fills from the theme's slots.
+const fillValues = () => [...fillSlotNames(THEMES[0]!).keys(), '#rrggbb'];
 
 type Alias = ReturnType<typeof aliasesOf>[number];
 // `line` is a stored arrow's alias, and a stored arrow is never a kind `add` makes (part 4 of the element engine).
 type MadeAlias = Exclude<Alias, 'line'>;
 const isMadeAlias = (alias: Alias): alias is MadeAlias => alias !== 'line';
 
-function aliasValue(el: Element, alias: MadeAlias): string {
+function aliasValue(alias: MadeAlias): string {
   switch (alias) {
     case 'label':
       return '<text>';
     case 'shape':
       return '<shape kind>';
     case 'fill':
-      return fillValues(el).join('|');
+      return fillValues().join('|');
     case 'stroke':
     case 'text-color':
       return '#rrggbb';
@@ -132,8 +130,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   // And its walls (office.md "Glass walls"): Solid or Glass.
   // And its floor (office.md "Floors"): its type.
   room: ['roomDoor', 'variant', 'floor'],
-  // docs/specs/009-elements/room-builder.md "Opening and closing": whether a door is shut.
-  door: ['doorClosed', 'variant'],
+  // docs/specs/009-elements/room-builder.md "Door types": a door's type.
+  door: ['variant'],
   // docs/specs/009-elements/office.md "Rug types", corridor.md: a rug's pattern and a corridor's shape.
   rug: ['variant'],
   // office.md "Long Table": a Meeting Table's type.
@@ -143,13 +141,14 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   stage: ['stageSpeakers', 'stageCameras'],
   // docs/specs/008-canvas/receptionist.md "Asking him to leave": whether the pad's Receptionist was asked to leave.
   'avatar-pad': ['receptionistLeft'],
-  // docs/specs/009-elements/social-pieces.md: a world clock's zones and a jukebox's source.
-  'world-clock': ['clockZones'],
+  // docs/specs/009-elements/social-pieces.md: a jukebox's source (the Clock has nothing to set).
   jukebox: ['jukeboxSource', 'chairFacing'],
   portal: ['portalTarget'],
   // docs/specs/009-elements/screen-and-room-sign.md "Screen": its Video Link, or the file it shows (read as stored; a
   // file is chosen in the editor, where the person's own access is at hand).
   screen: ['screenUrl', 'liveItem', 'liveName', 'liveTab'],
+  // docs/specs/009-elements/poster.md: the gallery picture it frames.
+  poster: ['imageId'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {
@@ -166,7 +165,7 @@ export function elementFormatText(kind: string): string | null {
   const size = [`Size: ${el.width}×${el.height} at first, grown to fit its label.`];
   const aliases = aliasesOf(el)
     .filter(isMadeAlias)
-    .map((a) => `${a}=${aliasValue(el, a)}`);
+    .map((a) => `${a}=${aliasValue(a)}`);
   const fields = storedFieldsOf(kind, el);
   return [
     head,

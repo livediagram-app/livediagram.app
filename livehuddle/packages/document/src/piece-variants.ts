@@ -31,6 +31,15 @@ export const RUG_VARIANTS = [
   'doormat',
 ] as const;
 
+/** A Tree's species (office.md "Tree species"), the first the one an absent `variant` draws: the Oak. */
+export const TREE_VARIANTS = ['oak', 'pine', 'birch', 'palm', 'cherry', 'maple', 'willow'] as const;
+
+/**
+ * A Screen's sizes (screen-and-room-sign.md "Sizes"), the first the one an absent `variant` draws: the Medium, the
+ * Screen's own default size. The palette lists them smallest first.
+ */
+export const SCREEN_VARIANTS = ['medium', 'monitor', 'small', 'large', 'cinema'] as const;
+
 /** A Room's wall styles (office.md "Glass walls"), the first the one an absent `variant` draws. */
 export const ROOM_WALL_VARIANTS = ['solid', 'glass'] as const;
 
@@ -43,6 +52,8 @@ const STORED_VARIANTS: Readonly<Record<string, readonly string[]>> = {
   door: DOOR_VARIANTS,
   rug: RUG_VARIANTS,
   corridor: CORRIDOR_VARIANTS,
+  tree: TREE_VARIANTS,
+  screen: SCREEN_VARIANTS,
 };
 
 /** Whether a kind keeps its type in `variant`. */
@@ -87,6 +98,13 @@ export const PIECE_VARIANT_SIZES: Readonly<
     persian: { width: 260, height: 170 },
     kilim: { width: 240, height: 150 },
     doormat: { width: 120, height: 72 },
+  },
+  // 16 by 10, as the Medium's 192 by 120 (screen-and-room-sign.md "Sizes").
+  screen: {
+    monitor: { width: 96, height: 60 },
+    small: { width: 144, height: 90 },
+    large: { width: 320, height: 200 },
+    cinema: { width: 640, height: 400 },
   },
   corridor: {
     corner: { width: 360, height: 360 },

@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { isRetiredElement, opensInlineLabelEditor } from '@livehuddle/document';
+import { isPoster, isRetiredElement, opensInlineLabelEditor } from '@livehuddle/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { pressLedger } from '@liveworkspace/workbench/lib/double-press';
@@ -23,10 +23,8 @@ export function useBoxedElementGestures({
   remotelyLocked,
   isMultiSelected,
   isSelected,
-  isPaintMode,
   onShiftSelect,
   onPlainClick,
-  onPressArmedAction,
   onBeginDrag,
   onBeginEdit,
   onEditLink,
@@ -38,7 +36,6 @@ export function useBoxedElementGestures({
   | 'isEditing'
   | 'onShiftSelect'
   | 'onPlainClick'
-  | 'onPressArmedAction'
   | 'onBeginDrag'
   | 'onBeginEdit'
   | 'onEditLink'
@@ -53,13 +50,11 @@ export function useBoxedElementGestures({
   // Single-selection state, so a shift press on the selected element can
   // start the duplicate drag (docs/specs/008-canvas/shift-drag-duplicate.md) instead of only toggling.
   isSelected: boolean;
-  // The format painter is armed: a press paints, so it never settles a click.
-  isPaintMode: boolean;
 }) {
   // The click rules (docs/specs/008-canvas/canvas-and-palette.md "Selection", "Marquee
   // box-select"): the host settles a plain click on a selected element (deselect it, or
   // select a multi-selection member alone), and reselects on a double-click's second press.
-  const settlesClick = !isPaintMode && onPlainClick !== undefined;
+  const settlesClick = onPlainClick !== undefined;
   // The touch long-press opened the menu on this press, so its release is not also a tap.
   const heldRef = useRef(false);
   const handleShapeDown = (e: ReactPointerEvent) => {
@@ -118,10 +113,10 @@ export function useBoxedElementGestures({
     // A finger on an element that runs off the screen pans (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)"):
     // a drag across a big frame is far more often "show me the rest" than "move this", and zooming out until it
     // fits is the way to move it. A tap still selects it (or settles the click on it), the long-press menu
-    // still opens, and the format painter keeps every press its own.
-    if (e.pointerType === 'touch' && !isPaintMode && !fitsOnCanvas(wrapperRef.current)) {
+    // still opens.
+    if (e.pointerType === 'touch' && !fitsOnCanvas(wrapperRef.current)) {
       markPanThrough(e, () => {
-        if (heldRef.current || onPressArmedAction?.(element.id)) return;
+        if (heldRef.current) return;
         if (settlesClick || !isSelected) onPlainClick?.(element.id);
       });
       return;
@@ -145,7 +140,12 @@ export function useBoxedElementGestures({
     // beginEdit branch doesn't apply. A single click stays the
     // selection / drag gesture so the user can move + resize the
     // placeholder freely without the picker popping up.
-    if (element.type === 'image' && imageContext?.onOpenPicker) {
+    // A Poster opens the same picker for its picture (docs/specs/009-elements/poster.md "Choosing its picture"):
+    // `onOpenPicker` is an Editor's alone.
+    if (
+      (element.type === 'image' || (isPoster(element) && imageContext?.posterPicker)) &&
+      imageContext?.onOpenPicker
+    ) {
       imageContext.onOpenPicker(element.id);
       return;
     }
@@ -166,8 +166,7 @@ export function useBoxedElementGestures({
     if (element.type === 'shape' && !opensInlineLabelEditor(element.shape)) {
       return;
     }
-    // Don't gate on isPaintMode here (the page-level beginEdit decides whether
-    // edit can start; it rejects during format painter, and exits group mode).
+    // The page-level beginEdit decides whether edit can start (and exits group mode).
     onBeginEdit(element.id);
   };
 

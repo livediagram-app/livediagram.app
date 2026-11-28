@@ -24,6 +24,15 @@ describe('ScreenView', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
+  it("shows liveworkspace's logo while idle, and not once it has a source", () => {
+    const { container, rerender } = render(<ScreenView element={el('screen')} />);
+    const logo = container.querySelector('[data-screen-idle-logo]');
+    expect(logo?.querySelector('svg')).toBeTruthy();
+    expect(logo?.textContent).toBe('liveworkspace');
+    rerender(<ScreenView element={el('screen', { screenUrl: 'https://youtu.be/dQw4w9WgXcQ' })} />);
+    expect(container.querySelector('[data-screen-idle-logo]')).toBeNull();
+  });
+
   it('shows its video link, and opens a large player on a press', () => {
     const { container } = render(
       <ScreenView element={el('screen', { screenUrl: 'https://youtu.be/dQw4w9WgXcQ' })} />,

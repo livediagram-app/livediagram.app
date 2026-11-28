@@ -1,7 +1,8 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { MarqueeState } from '@liveworkspace/workbench/components/canvas/MarqueeRect';
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
-import { ViewZoomControls } from '@/components/canvas/view-readers';
+import { ViewDialReader, ViewZoomControls } from '@/components/canvas/view-readers';
+import { turnSpace3D } from '@/lib/space-3d/space-3d-turn';
 
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
@@ -29,32 +30,17 @@ import { AvatarPalette } from '@/components/palette/AvatarPalette';
 import { stripPaletteFor } from '@/lib/avatar-palette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
-import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { ThemeStrip } from '@liveworkspace/workbench/components/canvas/ThemeStrip';
-import { Space3DButton } from '@/components/canvas/space-3d/Space3DButton';
+import { Space3DTurnButtons } from '@/components/canvas/space-3d/Space3DTurnButtons';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import {
-  Fragment,
-  useCallback,
-  useRef,
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-} from 'react';
+import { useCallback, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
-import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
-import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useRenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { StripMorph } from '@/components/palette/StripMorph';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
-import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import { atLeastInset } from '@livehuddle/ui';
-import {
-  STRIP_SELECTOR,
-  useStripCrowdsCorners,
-} from '@liveworkspace/workbench/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { CallDock } from '@/components/calls/CallDock';
 import { clusterRowLayout } from '@/components/calls/call-dock-row';
@@ -70,7 +56,7 @@ import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {
-  // The canvas <main>'s measured size (the Map's current-view window reads it; see Minimap.tsx).
+  // The canvas <main>'s measured size (the guide overlay and the draw preview read it).
   mainSize: { width: number; height: number };
   // True when every element has scrolled out of view: show the nudge above
   // the Fit button (useOffscreenContent in Canvas).
@@ -106,6 +92,8 @@ type ChromeExtras = {
   // Roll a whole new character, and play one of the panel's reactions.
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@livehuddle/avatar/reactions').AvatarReactionKind) => void;
+  // Whether your hand is raised (Raise Hand): its Actions card shows pressed.
+  avatarHandUp?: boolean;
   // Throw one of the Reactions bursts (docs/specs/008-canvas/avatar-mode.md) around the character.
   onAvatarBurst?: (reaction: import('@livehuddle/document').Reaction) => void;
   // Say something from the Avatar panel (docs/specs/008-canvas/avatar-mode.md "The message popover"): absent for
@@ -115,48 +103,12 @@ type ChromeExtras = {
   avatarStatus?: import('@livehuddle/avatar/status').AvatarStatus | null;
   onSetAvatarStatus?: (status: import('@livehuddle/avatar/status').AvatarStatus | null) => void;
   avatarSpeechCooling?: boolean;
-  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
-  // (the paint lives there), plus a description of the loaded element.
-  formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (
-    group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
-  ) => void;
-  onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
-  formatBrushSource?:
-    import('@liveworkspace/workbench/components/panels/FormatPanel').FormatBrushSource | null;
-  formatPanelPosition?: { x: number; y: number } | null;
-  onMoveFormatPanel?: (x: number, y: number) => void;
-  onResetFormatPanel?: () => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
 
-// Per-corner stack container classes (docs/specs/007-editor/panel-docking.md). Each is an absolute,
-// pointer-inert flex column pinned to one corner of the dock layer
-// (inset 16px = the `*-4` resting inset). Top corners stack downward,
-// bottom corners upward (flex-col-reverse) so the first panel always
-// sits flush to the corner and the rest flow away from it.
-// When the Toolbar strip reaches the top corners (always on a phone, docs/specs/007-editor/toolbar-layout.md
-// "On a phone"; on a desktop window too narrow for a centred strip to clear a
-// docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
-// rather than at the 16px inset, or a panel docked there (the Collaborate
-// banner) renders underneath the strip where it can't be reached
-// (toolbarTopClearancePx, lib/canvas-chrome.ts).
-
-const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
-  'top-left': 'left-4 top-4 flex-col items-start',
-  // Experiment (no header bar): below the Share and account card at the top right.
-  'top-right': 'right-4 top-[4.25rem] flex-col items-end',
-  'bottom-left': 'left-4 bottom-4 flex-col-reverse items-start',
-  // bottom-right omits `bottom-4`; its bottom is set inline to clear the
-  // fixed zoom controls (cornerBottomInset), so panels docked there sit
-  // above the zoom bar instead of overlapping it.
-  'bottom-right': 'right-4 flex-col-reverse items-end',
-};
-
 // The chrome layer of the canvas: empty-state prompt, template picker,
-// multi-select toolbar, mode banners, the menu button and Explorer, the
-// corner panels, the palette strip, and the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
+// multi-select toolbar, mode banners, the menu button and Explorer, the palette strip, and the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
 // Canvas's props plus the computed ChromeExtras.
 
 export function CanvasChrome(props: CanvasChromeProps) {
@@ -174,7 +126,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     handleZoomIn,
     handleZoomOut,
     marquee,
-    onOpenCanvasTheme,
     onConfirmIdentity,
     offscreenContent,
     onFitToScreen,
@@ -202,9 +153,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // A visitor's name card hides none of it: it is a modal over the canvas (Work Tracker 1522).
   const chromeHidden = chromeAway === true;
 
-  // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
-  const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
-    useCornerDocking({ chromeAway: chromeAway === true });
+  const isMobile = useIsMobileViewport();
   // Alignment guides while a palette tile is being dragged in (docs/specs/008-canvas/canvas-and-palette.md):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
@@ -280,101 +229,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
     />
   );
 
-  // Panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, explorerEl, paletteTint } = useCanvasChromePanels({
-    props,
-    renameCurrent,
-    chromeHidden,
-    isMobile,
-    panelWiringFor,
-  });
-
-  // Measured against the real top-corner stacks (useStripCrowdsCorners). A
-  // stack only renders while it holds a panel, so which top corners are
-  // occupied is part of what re-measures. A phone's strip always spans the top.
-  const topCornersKey = (['top-left', 'top-right'] as const)
-    .map((c) => dock.cornerStacks[c].filter((id) => panelEls[id] != null).join('+'))
-    .join('|');
-  // UI scale (docs/specs/007-editor/ui-scale.md): the strip, the panels and the
-  // bottom-right cluster are drawn at it, so the clearances around them follow.
-  const toolbarScale = useUiScale('toolbar');
-  const panelScale = useUiScale('panels');
-  const cornerScale = useUiScale('cornerButtons');
-  // The bar across the top that the top corners give way to: the strip.
-  const topBar = !isMobile && stripShown ? STRIP_SELECTOR : null;
-  const topBarCrowds = useStripCrowdsCorners(
-    cornerRefs,
-    topBar,
-    topCornersKey,
-    `${toolbarScale}/${panelScale}`,
-  );
-  const stripSpansTop = stripShown && (isMobile || topBarCrowds);
-  // Bucketing keys off the persisted placement ONLY (not which panel is
-  // mid-drag): a dragged panel must stay in the same DOM parent for the
-  // whole gesture — reparenting it would remount the component and drop
-  // the in-flight drag. While lifted it just renders `position: absolute`
-  // in place (MovablePanel), and its corner siblings reflow into the gap.
-  // The persisted corner/free placement only changes on pointer-up.
-  const freePanelIds = PANEL_IDS.filter(
-    (id) => panelEls[id] != null && dock.placementOf(id).mode === 'free',
-  );
-  const snapCorner = dock.drag?.candidate ?? null;
-  const snapHeight = dock.drag?.height ?? 0;
-  const dockedLayer = dockingActive ? (
-    <div ref={dockLayerRef} className="pointer-events-none absolute inset-0 z-[var(--z-panel)]">
-      {PANEL_CORNERS.map((corner) => {
-        const children = dock.cornerStacks[corner].filter((id) => panelEls[id] != null);
-        // Show the live landing slot at the end of the candidate corner's
-        // stack (flexbox places it where the panel will actually land).
-        const showSlot = snapCorner === corner;
-        if (children.length === 0 && !showSlot) return null;
-        return (
-          <div
-            key={corner}
-            ref={(el) => {
-              cornerRefs.current[corner] = el;
-            }}
-            style={{
-              ...(corner === 'bottom-right'
-                ? { bottom: cornerBottomInset(corner, cornerScale) }
-                : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
-                  stripSpansTop && corner.startsWith('top')
-                  ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : undefined),
-            }}
-            className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
-          >
-            {children.map((id) => (
-              <Fragment key={id}>{panelEls[id]}</Fragment>
-            ))}
-            {showSlot ? <PanelSnapSlot height={snapHeight} /> : null}
-          </div>
-        );
-      })}
-      {freePanelIds.map((id) => (
-        <Fragment key={id}>{panelEls[id]}</Fragment>
-      ))}
-    </div>
-  ) : null;
+  // The Explorer popover and the palette's theme tint live in useCanvasChromePanels.
+  const { explorerEl, paletteTint } = useCanvasChromePanels({ props, renameCurrent });
 
   // The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): with the avatar palette, in the bottom-right
   // cluster's row, on the zoom buttons' bottom line (owner, 2026-11-07, Work Tracker #642), at every width (Work
   // Tracker 1041): centred while there is room, moving left rather than covering the buttons.
   const callDockShown = strip === 'avatar' && stripShown;
-  // Clear of the bottom-left panels (the Map): the row's left column takes their width, or, with no room for the
-  // panels, the dock and the buttons on one line, the dock stands above the buttons (useCallDockFit).
+  // With no room for the dock and the buttons on one line, the dock stands above the buttons (useCallDockFit).
+  // UI scale (docs/specs/007-editor/ui-scale.md): the bottom-right cluster is drawn at the corner buttons' scale.
+  const cornerScale = useUiScale('cornerButtons');
   const clusterRef = useRef<HTMLDivElement>(null);
-  const bottomLeftStack = useCallback(
-    () => cornerRefs.current['bottom-left'] ?? null,
-    [cornerRefs],
-  );
-  const dockFit = useCallDockFit({
-    active: callDockShown,
-    rowRef: clusterRef,
-    stack: bottomLeftStack,
-    stackKey: dock.cornerStacks['bottom-left'].filter((id) => panelEls[id] != null).join('+'),
-    scale: cornerScale,
-  });
+  const dockFit = useCallDockFit({ active: callDockShown, rowRef: clusterRef, scale: cornerScale });
   const clusterRow = clusterRowLayout(callDockShown, dockFit.lifted);
   const callDock = callDockShown ? (
     <CallDock
@@ -383,6 +249,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
       lifted={dockFit.lifted}
     />
   ) : null;
+
+  const undoRedo =
+    !chromeAway && !readOnly && !walking ? (
+      <UndoRedoClusterStrip onUndo={onUndo} onRedo={onRedo} canUndo={canUndo} canRedo={canRedo} />
+    ) : null;
 
   return (
     <>
@@ -455,6 +326,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           onChange={props.onChangeAvatarField}
           onRandomise={props.onRandomiseAvatar}
           onReaction={props.onAvatarReaction}
+          handUp={props.avatarHandUp}
           onBurst={props.onAvatarBurst}
           shirt={selfParticipant?.color}
           status={props.avatarStatus ?? null}
@@ -484,21 +356,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <EditWalkStrip>{editWalk}</EditWalkStrip>
       ) : null}
 
-      {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
-          containers (with a free layer + snap guides) by `dockedLayer`; in an embed they render inline.
-          Each element carries its own visibility gate, so the welcome-flow / read-only / embed
-          suppression is unchanged. */}
-      {dockingActive ? (
-        dockedLayer
-      ) : (
-        <>
-          {panelEls.minimap}
-          {panelEls.format}
-        </>
-      )}
-
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
+          strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
       <div
         data-zoom-cluster=""
@@ -513,9 +372,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
                 bottom: toSurfacePx(16, cornerScale),
               }),
-          ...(dockFit.clear && !dockFit.lifted
-            ? { ['--call-dock-clear' as string]: `${dockFit.clear}px` }
-            : {}),
         }}
         // On a phone the cluster stays one row (docs/specs/007-editor/editor-app.md): its buttons share the
         // width there is, PHONE_CLUSTER_BUTTON_WIDTH, from 36px up to their
@@ -531,27 +387,34 @@ export function CanvasChrome(props: CanvasChromeProps) {
             itself (`contents`). */}
         <div data-cluster-buttons="" className={clusterRow.buttons}>
           {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-          {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. */}
-          {!chromeAway && !readOnly && !walking ? (
-            <UndoRedoClusterStrip
-              onUndo={onUndo}
-              onRedo={onRedo}
-              canUndo={canUndo}
-              canRedo={canRedo}
+          {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. On a desktop it
+              stands just left of the view dial, level with it (the owner, 2026-11-27: "to the left of the
+              navigator and zoom control, not below it"). */}
+          {isMobile ? undoRedo : null}
+          {/* A phone's Turn Left and Turn Right (docs/specs/008-canvas/3d-view.md "Turning the camera"). */}
+          {isMobile ? <Space3DTurnButtons /> : null}
+          {/* On a desktop the zoom is the view dial, standing over the row's right end (3d-view.md "The view
+              dial"); a phone keeps the row's zoom. */}
+          {isMobile ? (
+            <ViewZoomControls
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onSetZoom={handleSetZoom}
+              onFitToScreen={onFitToScreen}
+              pinchOnly
             />
-          ) : null}
-          {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
-                read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
-          {!chromeAway && !walking ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
-          {/* The 3D View switch (docs/specs/008-canvas/3d-view.md "Turning it on and off"): while walking. */}
-          {walking ? <Space3DButton turning={props.settings?.rotateIn3D === true} /> : null}
-          <ViewZoomControls
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onSetZoom={handleSetZoom}
-            onFitToScreen={onFitToScreen}
-            pinchOnly={isMobile}
-          />
+          ) : (
+            <div className="flex items-end gap-2">
+              {undoRedo}
+              <ViewDialReader
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onSetZoom={handleSetZoom}
+                onFitToScreen={onFitToScreen}
+                onTurn={turnSpace3D}
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

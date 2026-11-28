@@ -27,9 +27,10 @@ import {
   snapMovedWallPieces,
   type Element,
 } from '@livehuddle/document';
+import { aimWallPiece } from '@/lib/real-3d/wall-aim';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import { iconDropSide, type DragState } from '@/lib/canvas';
+import { iconDropSide, pointerDelta, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyShiftDuplicateSwap, type ShiftDupSwap } from './shift-duplicate-swap';
@@ -147,7 +148,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // The canvas going away mid-gesture writes nothing.
   useEffect(() => () => cancelPreview(), []);
 
-  const { beginDrag, pressArmedAction } = useBoxedDragHandlers({
+  const { beginDrag } = useBoxedDragHandlers({
     depsRef,
     setDrag,
     checkpointPendingRef,
@@ -218,8 +219,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       const tick = previewTick;
       // Screen-pixel delta into canvas-coord delta (invert the
       // current zoom).
-      const dx = (e.clientX - drag.startClientX) / zoomRef.current;
-      const dy = (e.clientY - drag.startClientY) / zoomRef.current;
+      const { dx, dy } = pointerDelta(
+        drag.startClientX,
+        drag.startClientY,
+        e.clientX,
+        e.clientY,
+        zoomRef.current,
+      );
       // Hold Cmd / Ctrl while dragging to place freely: skip alignment +
       // distribution snapping and its guide lines for this gesture (docs/specs/008-canvas/snap-override.md).
       const noSnap = e.metaKey || e.ctrlKey;
@@ -257,7 +263,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           // A moved door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door"), unless
           // Cmd / Ctrl places it freely. A wall piece goes back against the nearest wall (wall-pieces.md "Only on a
           // wall"), always.
-          const walled = snapMovedWallPieces(moved, drag.startBounds);
+          // In 3D it goes on the face of the wall it is aimed at (wall-pieces.md "Aimed at a wall in 3D").
+          const walled = snapMovedWallPieces(moved, drag.startBounds, aimWallPiece);
           return noSnap ? walled : snapMovedDoors(walled, drag.startBounds);
         });
         // Shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): holding Shift turns
@@ -374,8 +381,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           // Dissolve: remove the clones and land the ORIGINALS at the
           // release point, so a shift-up at the last moment still reads
           // as the plain move the user sees.
-          const dropDx = (e.clientX - drag.startClientX) / d.zoomRef.current;
-          const dropDy = (e.clientY - drag.startClientY) / d.zoomRef.current;
+          const { dx: dropDx, dy: dropDy } = pointerDelta(
+            drag.startClientX,
+            drag.startClientY,
+            e.clientX,
+            e.clientY,
+            d.zoomRef.current,
+          );
           d.tick((els) => {
             const withoutClones = els.filter((el) => !swap.cloneIds.has(el.id));
             return translateBoxedSelection(
@@ -524,6 +536,5 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     shiftDupGhostIds,
     snapGuideStore,
     beginDrag,
-    pressArmedAction,
   };
 }

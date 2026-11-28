@@ -240,7 +240,9 @@ A toast is easy to miss. Every one is also written to a list the person can open
   bottom-right cluster (Undo, Redo, Tidy, Layers, Style, Zoom), so a toast and Undo read as one row (the owner,
   2026-11-20: a centred toast 8px lower looked out of line). Where the cluster would sit beneath the centred stack, the
   stack's right edge stands 8px left of Undo, the toasts aligned to that edge; where it leaves the centre clear, the
-  stack stays centred. On a phone the cluster is a floor like the
+  stack stays centred. Where the cluster leaves too little room on its left for a toast (under 320px, as livehuddle's
+  walking row does, spanning the screen with the Call dock in its middle), it is a floor instead: the stack stands
+  8px above it, centred, never squeezed against the left edge. On a phone the cluster is a floor like the
   rest. A popover risen above a footer button (Tools, `data-toast-beside`, set by the shared anchored popover when it
   opens upward) is a side too, however tall: the stack stands 8px left of it, still on the cluster's line, so an Undo
   toast never covers a control in it (Tools' Present, the verifier, 2026-11-25); on a phone it is a floor. Any bottom-right control a product marks `data-toast-side` counts as that cluster: liveknowledge's floating

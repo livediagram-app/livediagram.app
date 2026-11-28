@@ -14,7 +14,8 @@ import {
 
 const square = (i: number) => ({
   id: `sq-${i}`,
-  type: 'sticky',
+  type: 'shape',
+  shape: 'desk',
   x: 200 + (i % 8) * 160,
   y: 160 + Math.floor(i / 8) * 140,
   width: 100,
@@ -23,7 +24,8 @@ const square = (i: number) => ({
 });
 const note = (i: number) => ({
   id: `tx-${i}`,
-  type: 'text',
+  type: 'shape',
+  shape: 'desk',
   x: 300 + (i % 8) * 160,
   y: 200 + Math.floor(i / 8) * 140,
   width: 60,

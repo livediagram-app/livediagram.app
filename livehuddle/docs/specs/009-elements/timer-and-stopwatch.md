@@ -4,7 +4,7 @@ Status: **approved** (owner, 2026-11-05: "The Timer button should be removed, an
 rooms that are Timer or Stopwatches"). Two placed pieces for a Space's meeting rooms: a **Timer** that counts down from
 a length you set, and a **Stopwatch** that counts up. They replace the Session strip's Timer button, which left
 livehuddle ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)). Both are placed
-pieces in the palette's **Meet** category, after the World Clock, and their state is shared live with everyone on
+pieces in the palette's **Meet** category, after the Clock, and their state is shared live with everyone on
 the tab.
 
 ## Why
@@ -25,7 +25,7 @@ screen.
   size, a drag moves the drop; aspect locked, no resize handles, no typed label (their label is not drawn), they do
   not turn.
 - **Walking** ([Avatar mode](../008-canvas/avatar-mode.md)): both are wall pieces, like the
-  [World Clock](social-pieces.md#how-each-one-walks): walked past, never blocking, never a destination.
+  [Clock](social-pieces.md#how-each-one-walks): walked past, never blocking, never a destination.
 - **Light and dark**: the body is a fixed, real-object drawing (a warm graphite body and a pale display), the same on
   every paper, as a Room Sign's plaque is; the outline is the theme's stroke. The display's digits are dark on the pale
   display in both themes, so they read on any floor.

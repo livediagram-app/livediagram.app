@@ -42,10 +42,16 @@ The **Tabs** group matches the <Noun />'s tabs by name, and marks the one you ar
 
 ## Elements
 
-<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+<AppNote app="livedesign,livediagram,livedocuments">
   The **Elements** group matches elements by their label: the text on a shape, a sticky note, a text
   box, and so on. Each result shows which tab it is on ("on Payments"), and picking one switches to
   that tab and selects the element.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The **Elements** group matches elements by their label: a room's name, a desk's label, and so on.
+  Each result shows which tab it is on ("on Ground Floor"), and picking one switches to that tab and
+  selects the element.
 </AppNote>
 
 <AppNote app="liveplanner">
@@ -73,17 +79,24 @@ Search covers **every tab**, not only the ones you have visited. Tabs load lazil
   inside a table without remembering which table, or which tab, it is on.
 </AppNote>
 
-<Figure app="livedesign,livediagram"
+<Figure
+  app="livedesign,livediagram"
   caption="Scope inside a work item: tabs and elements, each element tagged with the tab it is on."
 >
   <SearchTabsAndElements />
 </Figure>
 
-<Figure app="livedocuments" caption="Inside a document, search finds tabs and elements, each element tagged with its tab.">
+<Figure
+  app="livedocuments"
+  caption="Inside a document, search finds tabs and elements, each element tagged with its tab."
+>
   <DocumentsSearchTabsAndElements />
 </Figure>
 
-<Figure app="livehuddle" caption="Search finds tabs and elements by name: &quot;meeting&quot; finds the Meeting Rooms tab and the pieces in it.">
+<Figure
+  app="livehuddle"
+  caption='Search finds tabs and elements by name: "meeting" finds the Meeting Rooms tab and the pieces in it.'
+>
   <HuddleSearchTabsAndElements />
 </Figure>
 

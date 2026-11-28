@@ -26,23 +26,21 @@ Derived from [Room Builder and Door](../room-builder.md).
 
 - `packages/document/src/back-wall-doors.ts`: `backWallDoors(elements)` finds, for every rectangular Room (not one
   with a `roomOutline`), the Doors standing on its back wall line (`y + ROOM_BACK_FACE - ROOM_WALL / 2`, by
-  `doorLine` and `doorSpanOnWall`) as `{ from, to, closed }` spans in the room's px, and the set of those door ids;
-  cached per elements array (a WeakMap), rooms x doors per board. `backWallRuns` is the back band's runs between open
-  doorways (and an older room's `roomDoor: 'n'`); `backWallDoorLeaf` is a shut door's leaf (`ROOM_WALL + 2` down to
-  the wall line, between its jambs, `doorJamb` = `doorParts`' jamb) and knob.
-- `roomParts(width, height, door, backDoors)` breaks the back wall's `panel` and `face` with `backWallRuns` and draws
-  each shut door as a `panel` leaf, a `dye` over it and a `panel` knob. `glassRoomArt(el, backDoors)` breaks its faces
-  the same way, cuts the back wall's pane at open doors (`cutByDoors`) and lists shut leaves in `doors`.
+  `doorLine` and `doorSpanOnWall`) as `{ from, to }` spans in the room's px, and the set of those door ids;
+  cached per elements array (a WeakMap), rooms x doors per board. `backWallRuns` is the back band's runs between
+  doorways (and an older room's `roomDoor: 'n'`).
+- `roomParts(width, height, door, backDoors)` breaks the back wall's `panel` and `face` with `backWallRuns`.
+  `glassRoomArt(el, backDoors)` breaks its faces the same way and cuts the back wall's pane at the doors
+  (`cutByDoors`).
 - Canvas: `components/canvas/collab/back-wall-doors-store.tsx` (`BackWallDoorsProvider` round the element list in
   `CanvasElementsLayer`, a state store set before paint; `useRoomBackDoors(id)` and `useDoorOnBackWall(id)` read
   their slice, so only rooms and doors whose spans changed re-render). `RoomView` and `GlassRoomView` take the spans;
-  `DoorView` on a back wall drops its `floor` and `jamb` parts while open and draws no part while shut. A placement
+  `DoorView` on a back wall drops its `floor` and `jamb` parts. A placement
   preview has no provider: no spans.
 - Export: `renderElementsToSvg` and the editor's `export-tab.ts` pass `backWall: backWallDoors(elements)` through
   `BoxedExportOptions` to `svgElementBody`, `svgBehaviourFace`, `roomSvg`, `glassRoomSvg` and `doorSvg` (same rule).
-  The minimap draws each element alone and keeps the plain drawing (a doorway is under a pixel there).
-- Tests: `back-wall-doors.test.ts` (open and shut on each of the four walls, a Room Builder room, glass, the export)
-  and `back-wall-doors-store.test.tsx` (the canvas's room and door, open and shut, back wall and side wall).
+- Tests: `back-wall-doors.test.ts` (each of the four walls, a Room Builder room, glass, the export)
+  and `back-wall-doors-store.test.tsx` (the canvas's room and door, back wall and side wall).
 
 ## Notes
 
@@ -165,3 +163,16 @@ Notes:
 - A glass room is any `room` with `variant: 'glass'`: `roomWalls`, `roomZones`, `roomInterior` and the api's hearing
   check read the shape, never the variant, so walking, pathing and calls are a room's. `applyShapeVariant` stores
   `glass` (it is a room variant `storesVariant` names); a room preset carrying `variant` stores it too.
+
+## Doors open on their own (2026-11-27)
+
+- No stored state: `packages/document/src/retired-door-swing.ts` `dropRetiredDoorSwing(tab)` strips any element's
+  `doorClosed`, run by the stored-tab migration beside `dropRetiredLocks`. `doorClosed`, `toggledDoor`,
+  `isNextToDoor`, `useDoorToggle`, `avatar-door-press`, `can.swingDoor`, `shutDoorLines` and the path finder's
+  shut-door goal are gone; `fenceSegments` cuts every wall at every Door.
+- The plan draws every door in its open pose (`doorArt`'s `motion.open`), the export likewise.
+- The 3D view's opening is `lib/real-3d/scene-doors.ts` and `components/canvas/real-3d/door-motion.ts` (3d-engine
+  blueprint).
+- Tests: `packages/avatar/src/collision.door.test.ts` (a door saved shut is a way through; walks at an angle, at every
+  Size, pass the doorway), `lib/real-3d/scene-doors.test.ts` (the open and close rule, each type's parts),
+  `retired-door-swing.test.ts`.

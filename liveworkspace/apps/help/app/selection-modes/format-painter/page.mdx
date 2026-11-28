@@ -3,8 +3,6 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { FormatPainterMode } from '@/editions/livediagram/components/illustrations/palette-modes';
 import { FormatPanelScene } from '@/editions/livediagram/components/illustrations/selection-modes';
-import { FormatPainterMode as LivehuddleFormatPainterMode } from '@/editions/livehuddle/components/illustrations/palette-modes';
-import { FormatPanelScene as LivehuddleFormatPanelScene } from '@/editions/livehuddle/components/illustrations/selection-modes';
 import { FormatPainterMode as DesignFormatPainterMode } from '@/editions/livedesign/components/illustrations/palette-modes';
 import { FormatPainterMode as DocumentsFormatPainterMode } from '@/editions/livedocuments/components/illustrations/palette-modes';
 import { FormatPanelScene as DesignFormatPanelScene } from '@/editions/livedesign/components/illustrations/selection-modes';
@@ -37,11 +35,6 @@ The Format Painter copies the look of one element (its colours, line, text styli
   Other letters belong to other tools: `F` adds a frame and `P` picks up the pencil.
 </AppNote>
 
-<AppNote app="livehuddle">
-  It is a button on the selection toolbar, the small toolbar above an element you have selected. It
-  has no keyboard shortcut.
-</AppNote>
-
 ## How to use it
 
 <AppNote app="livedesign,livediagram,livedocuments">
@@ -56,18 +49,6 @@ The Format Painter copies the look of one element (its colours, line, text styli
   <Step n={3}>Click each element you want to apply that style to, one at a time.</Step>
 
 Every element you click takes on the copied look. Because it copies the styling rather than the content, each target keeps its own text and position; only its look changes. Press **Done** on the banner or click empty canvas to return to the tool you had before, press `Esc` to go to Select, or pick another tool.
-
-</AppNote>
-
-<AppNote app="livehuddle">
-  <Step n={1}>Select the element whose look you want to copy.</Step>
-  <Step n={2}>
-    Press **Format Painter** on the selection toolbar above it. The brush takes that element's style,
-    and a message under the palette strip tells you to press elements to paint it onto them.
-  </Step>
-  <Step n={3}>Press each element you want to apply that style to, one at a time.</Step>
-
-Every element you press takes on the copied look. Because it copies the styling rather than the content, each target keeps its own text and position; only its look changes. To stop, press **Done** in the message under the strip, press `Esc`, or click empty canvas.
 
 </AppNote>
 
@@ -97,12 +78,6 @@ Every element you press takes on the copied look. Because it copies the styling 
 <Figure app="livedocuments" caption="Format mode: the brush carries one element's look onto another.">
   <DocumentsFormatPainterMode />
 </Figure>
-<Figure
-  app="livehuddle"
-  caption="Format Painter pressed on the source's selection toolbar, its style being painted onto another shape."
->
-  <LivehuddleFormatPainterMode />
-</Figure>
 
 ## Choosing what it copies
 
@@ -123,12 +98,6 @@ While the Format Painter is on, a **Format** panel sits at the bottom right, abo
 
 <Figure app="livedocuments" caption="The Format panel shows what the brush copies and what happens after painting.">
   <DocumentsFormatPanelScene />
-</Figure>
-<Figure
-  app="livehuddle"
-  caption="Painting with Fill switched off: the Format panel copies only Border and Text, so the target keeps its own colour."
->
-  <LivehuddleFormatPanelScene />
 </Figure>
 
 The collapsed row always names what is currently enabled ("Border, Text", or "Everything" when all are on), so a painter that seems to be ignoring colours explains itself at a glance. With every toggle off it reads "Nothing", turns amber, and the brush paints nothing. Your choices are remembered on this device.
@@ -152,11 +121,6 @@ The format painter copies the exact look of one element onto another, which is p
   the right-click menu offer one-click colour and border variations derived from the active theme.
 </AppNote>
 
-<AppNote app="livehuddle">
-  For quick emphasis on a single element, its [element menu](/help/canvas/colours-borders-opacity/)
-  restyles it.
-</AppNote>
-
 <Tip>
   Style one element carefully, then let the format painter do the repetitive work. It is far quicker
   than matching colours and borders by eye across a busy <Noun />. For more on what each part
@@ -167,12 +131,6 @@ The format painter copies the exact look of one element onto another, which is p
 
 <AppNote app="livedesign,livediagram,livedocuments">
   **On an empty canvas** Format is greyed out, as there is nothing to copy from.
-</AppNote>
-
-<AppNote app="livehuddle">
-  **With nothing selected** there is no brush to take: the button lives on the selection toolbar, so
-  select an element first. **While walking** there is no selection toolbar; press **Edit** at the
-  start of the strip to build again.
 </AppNote>
 
 <AppNote app="livedesign">
@@ -187,10 +145,6 @@ The format painter copies the exact look of one element onto another, which is p
 
 <AppNote app="livedocuments">
   **On a view-only link** it is not offered, because painting changes the document.
-</AppNote>
-
-<AppNote app="livehuddle">
-  **Participants and view-only visitors** never get it, because painting changes the board.
 </AppNote>
 
 An element someone else has selected cannot be painted.

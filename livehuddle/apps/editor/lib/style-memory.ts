@@ -10,10 +10,17 @@ import {
   rederiveColorPresetForTheme,
   rederiveQuickSwatches,
   type Element,
+  type ShapeElement,
+  type TextElement,
   type ThemeDefinition,
 } from '@livehuddle/document';
+
+// A shape or a text element: the only elements whose look is remembered. A retired shape keeps its stored look
+// (docs/specs/002-project-scope/blueprints/element-engine.md).
+function remembersStyle(el: Element): el is ShapeElement | TextElement {
+  return (el.type === 'shape' && !isRetiredElement(el)) || el.type === 'text';
+}
 import { safeJson } from '@liveworkspace/workbench/lib/local-storage-safe';
-import { isQuickStyleTarget } from './quick-style';
 
 // `shape:<ShapeKind>` for a shape, `text` for every text element. A `board:` key (livediagram's whiteboard memory) is not
 // a kind, and nor are `arrow` and `path`, whose elements are retired (docs/specs/002-project-scope/not-in-livehuddle.md
@@ -90,7 +97,7 @@ export function recordStyleEdit(
   let next: StyleMemory | null = null;
   for (const el of after) {
     const was = previous.get(el.id);
-    if (!was || !isQuickStyleTarget(el)) continue;
+    if (!was || !remembersStyle(el)) continue;
     const kind = styleKindOf(el)!;
     for (const field of Object.keys(fieldsFor(kind))) {
       const value = (el as unknown as Record<string, unknown>)[field];

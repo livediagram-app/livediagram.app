@@ -52,10 +52,6 @@ describe('tileDragStart', () => {
     });
   });
 
-  it('carries a sticky note', () => {
-    expect(drag({ type: 'sticky' }).data.get(PALETTE_DND_MIME)).toBe('sticky');
-  });
-
   it('carries a sticker on its own mime, never the shape one', () => {
     const { data } = drag({ type: 'sticker', stickerId: 'speech-balloon' });
     expect(data.get(STICKER_DND_MIME)).toBe('speech-balloon');
@@ -63,6 +59,6 @@ describe('tileDragStart', () => {
   });
 
   it('offers no drag for a tool that arms a gesture rather than placing an element', () => {
-    expect(tileDragStart({ type: 'text' })).toBeUndefined();
+    expect(tileDragStart({ type: 'room-walls' })).toBeUndefined();
   });
 });

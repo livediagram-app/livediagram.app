@@ -10,7 +10,7 @@
 // Indoors, every room's Door opens onto the floor's open lobby or corridor (campusPlan, IndoorRoom). Each builder is
 // pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
-import { createShape, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
 import { campusPlan, type IndoorRoom } from './template-campus-parts';
 
@@ -39,7 +39,8 @@ const LOBBY_ROOMS: IndoorRoom[] = [
     name: 'Lobby Bar',
     x: 60,
     y: 60,
-    w: 560,
+    // The three rooms along the top share their walls (office.md "Rooms line up").
+    w: 650,
     h: 560,
     indoor: true,
     door: { side: 's', at: 140, sign: 1 },
@@ -74,20 +75,20 @@ const LOBBY_ROOMS: IndoorRoom[] = [
   },
   {
     name: 'Business Centre',
-    x: 1540,
+    x: 1450,
     y: 60,
-    w: 600,
+    w: 690,
     h: 360,
     indoor: true,
-    door: { side: 's', at: 300, sign: 1 },
+    door: { side: 's', at: 345, sign: 1 },
     windows: [
       { side: 'n', at: 300 },
       { side: 'e', at: 200 },
     ],
     pieces: [
       { kind: 'meeting-table', x: 40, y: 80 },
-      { kind: 'screen', x: 330, y: 44, w: 176 },
-      { kind: 'plant', x: 520, y: 250 },
+      { kind: 'screen', x: 380, y: 44, w: 176 },
+      { kind: 'plant', x: 610, y: 250 },
     ],
   },
   {
@@ -101,9 +102,10 @@ const LOBBY_ROOMS: IndoorRoom[] = [
     windows: [{ side: 'e', at: 120 }],
     pieces: [
       ...[110, 240, 370].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
-      { kind: 'rug', x: 200, y: 210 },
-      { kind: 'sofa', x: 224, y: 230, facing: 'n' },
-      { kind: 'fireplace', x: 450, y: 200 },
+      // A sofa on its rug facing the fire on the right wall.
+      { kind: 'rug', x: 190, y: 150 },
+      { kind: 'sofa', x: 240, y: 150, facing: 'w' },
+      { kind: 'fireplace', x: 450, y: 160 },
     ],
   },
 ];
@@ -138,23 +140,11 @@ export function buildHotelLobby(cx: number, cy: number): Element[] {
     height: LOBBY_H,
     rooms: LOBBY_ROOMS,
     open: LOBBY_FLOOR,
-    title: {
-      text: 'Hotel and Suites',
-      width: 340,
-      sticker: 'emoji-key',
-      subtitle:
-        'Three floors to stay on: the lobby, bar and ballroom here, the suites and the rooftop by the Lobby Lift.',
-    },
     // In the lobby, before the reception desk, between the columns and the Directory.
     arrival: {
       dx: -68,
       dy: 476,
-      hintW: 240,
-      hint: 'You arrive on the Avatar Pad in the lobby. The Lobby Lift takes you up to the suites and the rooftop.',
     },
-    extra: (left, top) => [
-      createShape('focus-button', left + BALLROOM.x + 580, top + BALLROOM.y + 60),
-    ],
   });
 }
 
@@ -166,7 +156,8 @@ const TOP_Y = 60;
 const BOTTOM_Y = 700;
 const SUITE_W = 600;
 const SUITE_H = 400;
-const SUITE_XS = [380, 1000, 1600] as const;
+// Side by side, each a wall's width over the last so neighbours share one wall (office.md "Rooms line up").
+const SUITE_XS = [380, 970, 1560] as const;
 
 // A suite off the corridor: a sofa on its rug, a desk and a plant, clear of the door's way in.
 function suite(name: string, x: number, top: boolean): IndoorRoom {
@@ -219,13 +210,6 @@ export function buildHotelSuites(cx: number, cy: number): Element[] {
     height: SUITES_H,
     rooms: SUITE_ROOMS,
     open: SUITES_FLOOR,
-    title: {
-      text: 'Suites',
-      width: 160,
-      sticker: 'emoji-key',
-      subtitle:
-        'Six suites off one corridor, each with a sofa and a desk. The Suites Lift is at the end.',
-    },
   });
 }
 
@@ -303,11 +287,5 @@ export function buildHotelRooftop(cx: number, cy: number): Element[] {
     height: ROOF_H,
     rooms: ROOF_ROOMS,
     open: TERRACE,
-    title: {
-      text: 'Rooftop',
-      width: 180,
-      sticker: 'emoji-sun',
-      subtitle: 'A terrace above the city: the rooftop bar, the spa room, hammocks and the pool.',
-    },
   });
 }

@@ -44,7 +44,7 @@ Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different featur
    `useAvatarWalk`'s enter effect runs, centres the view on the spot when the spot is outside the canvas, and nudges
    the view by `followCorrection` when the spot is on the canvas but inside `AVATAR_FOLLOW_MARGIN` of an edge (added
    to the current `viewportOffset`). The view is judged once it has settled: the wrapper's box unchanged for
-   `WALK_IN_STILL_FRAMES` (6) frames, or after `WALK_IN_MAX_FRAMES` (90), since the tab's fit and the Map's re-fit
+   `WALK_IN_STILL_FRAMES` (6) frames, or after `WALK_IN_MAX_FRAMES` (90), since the tab's fit can
    land frames after the tab opens walking; the spot itself is set at once.
 7. A template landing calls `onLanded(tabId)`, which removes the tab from `judged`; the next render with its new
    elements judges it again.

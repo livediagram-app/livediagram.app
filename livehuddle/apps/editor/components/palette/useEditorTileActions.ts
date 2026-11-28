@@ -9,24 +9,14 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
 export function useEditorTileActions(): PaletteTileActions {
-  const {
-    addShape,
-    addSticker,
-    addText,
-    beginRoomWalls,
-    addSticky,
-    addImage,
-    addLinkCard,
-    addAvatar,
-  } = useEditorContext();
+  const { addShape, addSticker, beginRoomWalls, addImage, addLinkCard, addAvatar } =
+    useEditorContext();
   const byComponent = {
     avatar: addAvatar,
   } as const;
   return {
     addShape,
-    addText,
     beginRoomWalls,
-    addSticky,
     addImage: () => addImage?.(),
     addLinkCard,
     addSticker,

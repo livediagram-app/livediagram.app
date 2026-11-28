@@ -57,7 +57,7 @@ function showSection(target: ShapeElement, elements: ShapeElement[] = [target]) 
   return onSetType;
 }
 
-const tiles = () => screen.getAllByRole('button').map((b) => b.textContent?.trim());
+const tiles = () => screen.queryAllByRole('button').map((b) => b.textContent?.trim());
 const tile = (name: string) =>
   screen.getAllByRole('button').find((b) => b.textContent?.trim() === name) as HTMLButtonElement;
 

@@ -49,9 +49,9 @@ describe('the element format', () => {
     expect(room).toContain('fill=theme|');
     expect(room).toContain('roomDoor');
     expect(room).toContain('Any other stored field by name');
-    const sticky = elementFormatText('sticky')!;
-    expect(sticky).toContain('fill=classic|');
-    expect(sticky).not.toContain('Any other stored field');
+    // Text and sticky notes are gone (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category").
+    expect(elementFormatText('sticky')).toBeNull();
+    expect(elementFormatText('text')).toBeNull();
   });
 
   it('knows nothing of a kind the engine does not make', () => {

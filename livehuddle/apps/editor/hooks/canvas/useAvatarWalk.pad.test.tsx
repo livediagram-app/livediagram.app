@@ -8,6 +8,7 @@ import type { AvatarPoint } from '@livehuddle/avatar/walk';
 import { track } from '@/lib/telemetry';
 import { bindAvatar } from '@/lib/avatar-bindings';
 import { useAvatarWalk } from '@livehuddle/avatar/hooks/useAvatarWalk';
+import { PAD_WAVE_DELAY_MS } from '@livehuddle/avatar/hooks/useAvatarWalkEntry';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // This editor's telemetry reaches Avatar mode through its bindings (lib/avatar-bindings.ts).
@@ -66,6 +67,41 @@ describe('useAvatarWalk entering on an Avatar Pad', () => {
     expect(result.current.poseStore.get().facing).toBe('down');
     expect(setViewportOffset).not.toHaveBeenCalled();
     expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'AvatarPadArrival');
+  });
+
+  it('waves hello once the arrival settles, everyone seeing it ("A wave on arrival")', () => {
+    vi.useFakeTimers();
+    try {
+      const near = pad('near', 100, 100);
+      const { result, rerender } = setup({ elements: [near] });
+      rerender({ active: true, els: [near] });
+      act(() => {
+        vi.advanceTimersByTime(PAD_WAVE_DELAY_MS - 100);
+      });
+      expect(result.current.poseStore.get().pose).toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(result.current.poseStore.get().pose).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('skips the wave when the mode is left before it plays', () => {
+    vi.useFakeTimers();
+    try {
+      const near = pad('near', 100, 100);
+      const { result, rerender } = setup({ elements: [near] });
+      rerender({ active: true, els: [near] });
+      rerender({ active: false, els: [near] });
+      act(() => {
+        vi.advanceTimersByTime(PAD_WAVE_DELAY_MS + 200);
+      });
+      expect(result.current.poseStore.get().pose).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('brings the view to a pad that is off screen, zoom untouched', () => {

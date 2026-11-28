@@ -49,3 +49,14 @@ export function PhotoWallIcon({ size = 14 }: IconSizeProps = {}) {
     </Glyph>
   );
 }
+
+// The Poster (docs/specs/009-elements/poster.md): a portrait frame round a sun over two hills.
+export function PosterIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <circle cx="14.5" cy="8" r="1.6" />
+      <path d="M7.5 18 11 12.5l2.5 3 1.5-1.5 2 4" />
+    </Glyph>
+  );
+}

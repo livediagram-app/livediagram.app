@@ -79,11 +79,14 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'outdoor-plant': { width: 72, height: 80 },
   tree: { width: 120, height: 160 },
   'garden-path': { width: 240, height: 64 },
+  // The Road (docs/specs/009-elements/road.md): two lanes across, any length.
+  road: { width: 480, height: 136 },
   grass: { width: 240, height: 160 },
   'garden-fence': { width: 200, height: 28 },
   // The social pieces (docs/specs/009-elements/social-pieces.md): each at its drawing's grid; a pond any size.
   'notice-board': { width: 176, height: 128 },
-  'world-clock': { width: 168, height: 72 },
+  // The Clock (kind `world-clock`): a round wall clock.
+  'world-clock': { width: 64, height: 64 },
   jukebox: { width: 72, height: 112 },
   'ping-pong-table': { width: 184, height: 112 },
   'arcade-machine': { width: 64, height: 112 },
@@ -115,6 +118,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'toilet-cubicle': { width: 96, height: 152 },
   washbasin: { width: 72, height: 112 },
   'hand-dryer': { width: 36, height: 44 },
+  // The lamps (docs/specs/009-elements/office-amenities.md "Lamps").
+  'floor-lamp': { width: 48, height: 136 },
+  'table-lamp': { width: 36, height: 48 },
+  'desk-lamp': { width: 36, height: 44 },
   // The venue pieces (docs/specs/009-elements/venue-pieces.md).
   pillar: { width: 48, height: 152 },
   column: { width: 64, height: 168 },
@@ -137,6 +144,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'suggestion-box': { width: 64, height: 112 },
   signpost: { width: 120, height: 144 },
   'photo-wall': { width: 176, height: 112 },
+  // The Poster (docs/specs/009-elements/poster.md): portrait, any size.
+  poster: { width: 56, height: 76 },
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   directory: { width: 72, height: 124 },
   elevator: { width: 112, height: 140 },
@@ -271,6 +280,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // words on them.
   if (
     kind === 'garden-path' ||
+    kind === 'road' ||
     kind === 'grass' ||
     kind === 'garden-fence' ||
     kind === 'pond' ||
@@ -289,6 +299,9 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'elevator') {
     return { ...base, label: '', textSize: 'sm', textAlignY: 'bottom', aspectLocked: true };
   }
+  // A Poster (docs/specs/009-elements/poster.md) is any size of frame, portrait or landscape, with no words; empty
+  // until an Editor chooses its picture.
+  if (kind === 'poster') return { ...base, label: '' };
   if (isOfficeShape(kind)) {
     return {
       ...base,
@@ -324,6 +337,9 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       kind === 'toilet-cubicle' ||
       kind === 'washbasin' ||
       kind === 'hand-dryer' ||
+      kind === 'floor-lamp' ||
+      kind === 'table-lamp' ||
+      kind === 'desk-lamp' ||
       kind === 'pillar' ||
       kind === 'column' ||
       kind === 'car-park' ||

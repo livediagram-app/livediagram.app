@@ -13,7 +13,8 @@ export { articlePath } from '@liveworkspace/help-registry/telemetry';
  * value: it is the stored series name on the public dashboard.
  */
 export const TELEMETRY_ID_OVERRIDES: Readonly<Record<string, string>> = {
-  'tips-and-tricks/format-painter': 'tips-format-painter',
+  // `tips-format-painter` ended here: the Format Painter and both its articles left livehuddle (owner, 2026-11-27;
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Format Painter and Clear Styles").
   'tips-and-tricks/command-palette': 'tips-command-palette',
 };
 

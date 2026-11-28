@@ -64,18 +64,18 @@ describe('a character’s status', () => {
     expect(name.className).toContain('truncate');
   });
 
-  it('fades an Away character and floats a Zz over it', () => {
-    const { container, getByText } = walker('away');
-    expect(getByText('Zz')).toBeTruthy();
-    expect(container.innerHTML).toContain('opacity: 0.5');
+  it('floats a Zz over an Away character', () => {
+    expect(walker('away').getByText('Zz')).toBeTruthy();
   });
 
-  it('puts headphones on a Focusing character', () => {
-    const focus = walker('focus').container.innerHTML;
-    cleanup();
-    const none = walker(null).container.innerHTML;
-    expect(focus).toContain('#8b5cf6');
-    expect(none).not.toContain('#8b5cf6');
+  // The figure is the 3D scene's (3d-engine.md): the walker hands it the status to wear (Away's fade, Focusing's
+  // headphones) and draws no figure of its own.
+  it('hands the status to the 3D figure and draws no flat figure', () => {
+    const { container } = walker('focus');
+    const box = container.querySelector<HTMLElement>('[data-figure]')!;
+    const figure = JSON.parse(box.dataset.figure ?? '{}') as { status?: string };
+    expect(figure.status).toBe('focus');
+    expect(container.querySelector('svg')).toBeNull();
   });
 
   it('draws Do Not Disturb as a rose dot with a white bar, read by name', () => {

@@ -9,8 +9,6 @@ import {
   SHAPE_KINDS,
   createLinkCard,
   createShape,
-  createSticky,
-  createText,
   kindWordOf,
   LABEL_FONT_PX,
   labelBoxSize,
@@ -27,7 +25,7 @@ import { newElementId } from '../ids';
 import { resolvePlacement, type Placed } from '../placement';
 import { nearestName } from '@liveworkspace/edit-operations/nearest';
 import { invalidValue } from '../rejections';
-import { DID_YOU_MEAN_MAX_DISTANCE, SHAPES_RETIRED } from '../vocabulary';
+import { DID_YOU_MEAN_MAX_DISTANCE, NOTES_RETIRED, SHAPES_RETIRED } from '../vocabulary';
 import { type EditState, writeFields } from '../state';
 import type { AddKindOperation, Fields } from '../types';
 
@@ -66,11 +64,12 @@ export const NOT_ADDED: Readonly<Record<string, string>> = {
       'speech-bubble',
     ].map((kind) => [kind, SHAPES_RETIRED]),
   ),
+  // Text and sticky notes are gone too (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category").
+  text: NOTES_RETIRED,
+  sticky: NOTES_RETIRED,
 };
 
 const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
-  text: () => createText(0, 0),
-  sticky: () => createSticky(0, 0),
   'link-card': () => createLinkCard(0, 0),
 };
 

@@ -93,7 +93,7 @@ Create a Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a
 acts as the rule's author, with their rights alone, through the target app's own door; lost access pauses the rule,
 and a chain stops after 3 hops or on a rule it already ran. Their values are this Space's own, as every step's.
 
-**As a target**, a Space takes **Post in a Space**: a sticky note on a chosen tab, its text the rule's, signed "Automation · <rule>", by the author. livehuddle has no chat, so a note on a tab is the post.
+**As a target**, a Space takes **Post in a Space**: a note pinned on the chosen tab's first [Notice Board](../009-elements/social-pieces.md) (in the tab's element order), titled "Automation · <rule>", its text the rule's (cut to the note's 280 characters), signed with the author's name and pinned by no person (`by: 'automation'`), so only an Editor unpins it, as a template's notes. livehuddle has no chat and no sticky notes ([The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)), so a note on the board is the post. A tab with no Notice Board refuses the step (`target_gone`, "The tab has no Notice Board to post on"), which pauses the rule until its author points it at a tab with one or adds a board; a board already holding its 50 notes refuses it (`failed`, "The Notice Board is full") and the rule stays on.
 
 **Starter: Meeting Ended, Send Actions to Plan**: Everyone Left, Summarise with AI, then Create a Card in a Plan titled `Actions from {{tab.name}}, {{now.date}}` with `{{summary}}`, linked back to the Space.
 

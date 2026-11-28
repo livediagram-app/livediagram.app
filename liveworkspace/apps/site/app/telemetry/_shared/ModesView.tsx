@@ -8,7 +8,7 @@ import { rankTrend, windowLabel } from './windows';
 
 // Modes section of the Features tab (docs/specs/017-telemetry/telemetry.md): the canvas selection modes picked from the
 // palette (`Canvas·Used·<mode>`, restricted to SELECTION_MODES), and the
-// options people set inside them (`UI·Changed·<Mode><Option>`). Split from the
+// options people set inside them (`UI·Changed·<Mode><Option>`, for an app whose modes have any). Split from the
 // Palette tab, which ranks the elements people add: a mode is a way of working
 // on the canvas, not a thing put on it. Which modes and options are the app's
 // own (its config's `modes`); FeaturesView shows this only for an app that has them.
@@ -29,10 +29,10 @@ export function ModesView({
     (r) =>
       r.category === 'Canvas' && r.action === 'Used' && config.selection.includes(r.type ?? ''),
   );
-  const options = rank(
-    rows,
-    (r) => r.category === 'UI' && r.action === 'Changed' && config.option.test(r.type ?? ''),
-  );
+  const option = config.option;
+  const options = option
+    ? rank(rows, (r) => r.category === 'UI' && r.action === 'Changed' && option.test(r.type ?? ''))
+    : null;
 
   return (
     <div className="mt-8">
@@ -52,16 +52,18 @@ export function ModesView({
             daily={summary.daily}
             emptyLabel="No selection modes were used in this window yet."
           />
-          <RankCard
-            trend={trend}
-            title="Mode Options"
-            subtitle={config.optionsSubtitle}
-            category="UI"
-            action="Changed"
-            items={options}
-            daily={summary.daily}
-            emptyLabel="No mode options were changed in this window yet."
-          />
+          {options && (
+            <RankCard
+              trend={trend}
+              title="Mode Options"
+              subtitle={config.optionsSubtitle ?? ''}
+              category="UI"
+              action="Changed"
+              items={options}
+              daily={summary.daily}
+              emptyLabel="No mode options were changed in this window yet."
+            />
+          )}
         </CardColumns>
       </div>
     </div>

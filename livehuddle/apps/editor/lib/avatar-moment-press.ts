@@ -18,7 +18,7 @@ import {
 // Work Tracker 867): in Avatar mode, a click on a moment piece whose click walks you to it (a tree, a kettle, a
 // Window) while you already stand beside it plays its moment again where you stand, instead of a walk that would go
 // nowhere. Seats (the Hammock, the Podium's speaker spot) keep walking you to the seat, and the pieces a click uses
-// (the Notice Board, the World Clock) keep their own press. One box test per click, never per frame.
+// (the Notice Board, the Calendar Wall) keep their own press. One box test per click, never per frame.
 
 type Point = { x: number; y: number };
 

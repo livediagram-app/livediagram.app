@@ -7,9 +7,6 @@ function handlers(): CommandHandlers {
   return {
     deleteSelection: vi.fn(),
     duplicateSelection: vi.fn(),
-    bringToFront: vi.fn(),
-    sendToBack: vi.fn(),
-    rotate: vi.fn(),
     turn: vi.fn(),
     clearAnimation: vi.fn(),
     setMarker: vi.fn(),
@@ -17,8 +14,6 @@ function handlers(): CommandHandlers {
     renameDocument: vi.fn(),
     deleteDocument: vi.fn(),
     renameTab: vi.fn(),
-    openTheme: vi.fn(),
-    openCanvasOptions: vi.fn(),
     openShare: vi.fn(),
     openCollaborators: vi.fn(),
     undo: vi.fn(),
@@ -38,7 +33,6 @@ const base: CommandContext = {
   canUndo: false,
   canRedo: false,
   selectionCount: 0,
-  singleRotates: false,
   singleIsShape: false,
   hasAnimation: false,
   marker: null,
@@ -59,11 +53,15 @@ describe('buildEditorCommands — document/tab commands', () => {
         'rename-tab',
         'rename-document',
         'delete-document',
-        'open-theme',
-        'open-canvas',
         'share',
       ]),
     );
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Tab style".
+  it('offers no command that opens the tab style', () => {
+    expect(ids(base)).not.toEqual(expect.arrayContaining(['open-theme']));
+    expect(ids(base)).not.toContain('open-canvas');
   });
 
   it('hides Share for non-owners', () => {
@@ -77,8 +75,7 @@ describe('buildEditorCommands — document/tab commands', () => {
   it('offers no selection commands when nothing is selected', () => {
     const out = ids(base);
     expect(out).not.toContain('delete');
-    expect(out).not.toContain('bring-to-front');
-    expect(out).not.toContain('rotate-90');
+    expect(out).not.toContain('rotate-left');
   });
 });
 
@@ -93,15 +90,11 @@ describe('buildEditorCommands, Share and Delete', () => {
 });
 
 describe('buildEditorCommands — selection commands', () => {
-  it('offers delete/duplicate/reorder for any selection (incl. multi), and no Lock', () => {
+  it('offers delete/duplicate for any selection (incl. multi), and no Lock', () => {
     const out = ids({ ...base, selectionCount: 3 });
-    expect(out).toEqual(
-      expect.arrayContaining(['delete', 'duplicate', 'bring-to-front', 'send-to-back']),
-    );
+    expect(out).toEqual(expect.arrayContaining(['delete', 'duplicate']));
     // not-in-livehuddle.md "Element and Tab Locking".
     expect(out).not.toContain('lock');
-    // Single-only commands stay hidden for a multi-selection.
-    expect(out).not.toContain('rotate-90');
     expect(out).not.toContain('note');
   });
 
@@ -110,11 +103,24 @@ describe('buildEditorCommands — selection commands', () => {
     expect(out.indexOf('delete')).toBeLessThan(out.indexOf('create-tab'));
   });
 
-  it('offers rotate for a single element that turns, and no note or comment command', () => {
-    const out = ids({ ...base, selectionCount: 1, singleRotates: true });
-    expect(out).toEqual(
-      expect.arrayContaining(['rotate-90', 'rotate-180', 'rotate-270', 'rotate-0']),
-    );
+  // not-in-livehuddle.md "Element looks, layers, opacity and rotation": no reorder and no free rotation.
+  it('offers no Bring to Front, Send to Back or angle Rotate, single or multi', () => {
+    for (const selectionCount of [1, 3]) {
+      const out = ids({ ...base, selectionCount });
+      for (const id of [
+        'bring-to-front',
+        'send-to-back',
+        'rotate-90',
+        'rotate-180',
+        'rotate-270',
+        'rotate-0',
+      ])
+        expect(out, id).not.toContain(id);
+    }
+  });
+
+  it('offers no note or comment command', () => {
+    const out = ids({ ...base, selectionCount: 1 });
     // Notes and comments left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions,
     // links and notes"): the palette never offers them.
     expect(out).not.toContain('note');
@@ -123,13 +129,6 @@ describe('buildEditorCommands — selection commands', () => {
       (c) => c.name,
     );
     expect(names.join(' ')).not.toMatch(/Note|Comment/);
-  });
-
-  // docs/specs/009-elements/blueprints/annotations.md [QD8]: an annotation marker never rotates.
-  it('offers no Rotate for an annotation marker', () => {
-    const out = ids({ ...base, selectionCount: 1, singleRotates: false });
-    expect(out).not.toContain('rotate-90');
-    expect(out).not.toContain('rotate-0');
   });
 
   it('offers Clear animation only when the element is animated', () => {
@@ -162,12 +161,9 @@ describe('buildEditorCommands — markers (shape only)', () => {
 });
 
 describe('buildEditorCommands — dispatch', () => {
-  it('runs the matching handler, including the rotation angle', () => {
+  it('runs the matching handler', () => {
     const h = handlers();
-    const cmds = buildEditorCommands({ ...base, selectionCount: 1, singleRotates: true }, h);
-    cmds.find((c) => c.id === 'rotate-180')!.run();
-    expect(h.rotate).toHaveBeenCalledWith(180);
-
+    const cmds = buildEditorCommands({ ...base, selectionCount: 1 }, h);
     cmds.find((c) => c.id === 'delete')!.run();
     expect(h.deleteSelection).toHaveBeenCalledOnce();
   });
@@ -220,15 +216,12 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   });
 
   // docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking".
-  it('offers no Undo, Redo or Tab Style while walking, and brings them back after', () => {
+  it('offers no Undo or Redo while walking, and brings them back after', () => {
     const history = { ...base, canUndo: true, canRedo: true };
     const walking = ids({ ...history, canvasTool: 'avatar' });
-    for (const id of ['undo', 'redo', 'open-theme', 'open-canvas'])
-      expect(walking).not.toContain(id);
+    for (const id of ['undo', 'redo']) expect(walking).not.toContain(id);
     expect(walking).toContain('share');
-    expect(ids(history)).toEqual(
-      expect.arrayContaining(['undo', 'redo', 'open-theme', 'open-canvas']),
-    );
+    expect(ids(history)).toEqual(expect.arrayContaining(['undo', 'redo']));
   });
 
   it('read-only sessions get exactly the view-safe subset', () => {

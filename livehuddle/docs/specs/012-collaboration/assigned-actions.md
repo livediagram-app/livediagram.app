@@ -285,7 +285,7 @@ ONE docked panel ([Panel corner docking](../007-editor/panel-docking.md)) for bo
 on a document: it replaced the separate Comments and Actions panels,
 which crowded the same corner:
 
-- `PanelId` `'collaborate'` in `lib/panel-layout.ts` (replacing the old
+- `PanelId` `'collaborate'` in `livediagram/apps/editor/lib/panel-layout.ts` (replacing the old
   `'comments'` + `'actions'` ids; stored layouts naming those are
   dropped by the normaliser and the merged panel takes its default
   corner), default corner `bottom-right` (only its reset target: it always

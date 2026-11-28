@@ -3,127 +3,118 @@
 // with a Door; a stone path along the beach in front of them meets the path up from the Avatar Pad at a small round
 // junction; below it, hammocks under the palms, a campfire circle of benches, garden umbrellas and a swimming pool. No fence: a beach
 // is open, and the Avatar Pad waits where the path comes up off the road. Built with campusPlan
-// (template-campus-parts.ts), spacious by the same rule as the campuses.
+// (template-campus-parts.ts), drawn at its final size for the 3D view (virtual-office-template.md "Laid out for the 3D
+// view"): its paths wide enough to walk two abreast, each Door's path widened over the one campusPlan runs.
 //
 // Pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
 import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
-import {
-  campusPlan,
-  JUNCTION,
-  PATH,
-  plaza,
-  plazaReach,
-  run,
-  type CampusRoom,
-} from './template-campus-parts';
+import { campusPlan, run, type CampusRoom } from './template-campus-parts';
+import { against, besideX, standAt } from './template-3d-place';
 
-const W = 2000;
-const H = 1200;
-// Where the path comes up off the road, and the path along the beach in front of the huts.
-const GATE = 600;
-const WALK_Y = 560;
-const ROOM_Y = 60;
-const ROOM_H = 420;
+// A path two characters wide, side by side with room to pass.
+const PATH = 112;
+const W = 2500;
+const H = 1500;
+// The gate's path up from the road, and the walk along the beach in front of the huts.
+const GATE = 750;
+const WALK_Y = 700;
+const ROOM_Y = 75;
+const ROOM_H = 525;
+// The round junction where the gate's path meets the walk, and how far from its middle a path ends in it.
+const JUNCTION = 240;
 const JOIN_Y = WALK_Y + PATH / 2;
-const JOIN_IN = plazaReach(JUNCTION);
-// How far each hut's door path runs down to the beach path.
+const JOIN_IN = Math.sqrt((JUNCTION / 2) ** 2 - (PATH / 2) ** 2) - PATH / 2;
+// How far below a hut the walk runs, for its Door's path.
 const DOWN = WALK_Y - ROOM_Y - ROOM_H;
 
-const ROOMS: CampusRoom[] = [
+const TIKI = { x: 950, y: ROOM_Y, w: 650, h: ROOM_H };
+const HUT = { x: besideX(TIKI), y: ROOM_Y, w: 700, h: ROOM_H };
+
+const rooms = (): CampusRoom[] => [
   {
     name: 'Tiki Bar',
-    x: 760,
-    y: ROOM_Y,
-    w: 520,
-    h: ROOM_H,
-    door: { side: 's', at: 260, sign: 1, reach: DOWN },
-    // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window").
+    ...TIKI,
+    door: { side: 's', at: 325, sign: 1, reach: DOWN },
     windows: [
-      { side: 'n', at: 380 },
-      { side: 'w', at: 220 },
+      { side: 'n', at: 470 },
+      { side: 'w', at: 260 },
     ],
     pieces: [
-      { kind: 'bar', x: 40, y: 40 },
-      { kind: 'drinks-fridge', x: 300, y: 36 },
-      ...[60, 120, 180, 240].map((x) => ({ kind: 'bar-stool' as const, x, y: 170 })),
-      { kind: 'jukebox', x: 420, y: 60 },
-      { kind: 'plant', x: 430, y: 300 },
+      against('bar', 'n', 180, TIKI),
+      against('drinks-fridge', 'n', 360, TIKI),
+      ...[90, 150, 210, 270].map((x) => standAt('bar-stool', x, 126, 's')),
+      against('jukebox', 'n', 590, TIKI),
+      against('plant', 's', 590, TIKI),
     ],
   },
   {
     name: 'Beach Hut',
-    x: 1360,
-    y: ROOM_Y,
-    w: 560,
-    h: ROOM_H,
-    door: { side: 's', at: 280, sign: 1, reach: DOWN },
+    ...HUT,
+    door: { side: 's', at: 350, sign: 1, reach: DOWN },
     windows: [
-      { side: 'n', at: 360 },
-      { side: 'e', at: 220 },
+      { side: 'n', at: 560 },
+      { side: 'e', at: 260 },
     ],
     pieces: [
-      { kind: 'screen', x: 24, y: 44, w: 140 },
-      { kind: 'meeting-table', x: 164, y: 110 },
-      { kind: 'plant', x: 470, y: 50 },
+      against('screen', 'n', 350, HUT),
+      { kind: 'meeting-table', x: 234, y: 190 },
+      against('plant', 's', 640, HUT),
     ],
   },
 ];
 
-const BEACH: OfficePiece[] = [
-  // The beach path in two halves, each ending at the junction's rim (the huts' door paths end under it), the path up
-  // from the road, and the junction over their ends.
-  run('garden-path', 160, WALK_Y, GATE - JOIN_IN - 160, PATH),
-  run('garden-path', GATE + JOIN_IN, WALK_Y, 1900 - GATE - JOIN_IN, PATH),
+// A Door's path down to the walk, as wide as the walk.
+const doorWalk = (box: typeof TIKI, at: number): OfficePiece =>
+  run('garden-path', box.x + at - PATH / 2, box.y + box.h - 10, PATH, WALK_Y - box.y - box.h + 30);
+
+const beach = (): OfficePiece[] => [
+  // The walk along the beach either side of the junction, the gate's path up to it, each Door's path, then the
+  // junction over them.
+  run('garden-path', 150, WALK_Y, GATE - JOIN_IN - 150, PATH),
+  run('garden-path', GATE + JOIN_IN, WALK_Y, W - 150 - GATE - JOIN_IN, PATH),
   run('garden-path', GATE - PATH / 2, JOIN_Y + JOIN_IN, PATH, H - JOIN_Y - JOIN_IN),
-  plaza(GATE, JOIN_Y, JUNCTION),
-  // The lagoon, and palms beside it.
-  { kind: 'pond', x: 60, y: 70, w: 560, h: 300 },
-  // A Ping-Pong Table on the sand between the lagoon and the walk (docs/specs/009-elements/social-pieces.md).
-  { kind: 'ping-pong-table', x: 300, y: 410 },
-  { kind: 'tree', x: 650, y: 120, w: 80 },
-  { kind: 'tree', x: 1290, y: 300, w: 64 },
-  // Hammocks under the palms, left of the path up.
-  { kind: 'tree', x: 60, y: 690 },
-  { kind: 'hammock', x: 200, y: 760 },
-  { kind: 'tree', x: 380, y: 690 },
-  { kind: 'hammock', x: 120, y: 1010 },
-  { kind: 'tree', x: 300, y: 960 },
-  // The campfire circle: a bench either side of the fire and one in front of it.
-  { kind: 'bench', x: 800, y: 830 },
-  { kind: 'campfire', x: 988, y: 836 },
-  { kind: 'bench', x: 1120, y: 830 },
-  { kind: 'bench', x: 960, y: 980 },
-  // Garden umbrellas along the beach, and planters.
-  { kind: 'garden-umbrella', x: 1420, y: 700 },
-  { kind: 'garden-umbrella', x: 1660, y: 700 },
-  // A swimming pool below the umbrellas (docs/specs/009-elements/venue-pieces.md), planters either side.
-  { kind: 'swimming-pool', x: 1400, y: 900, w: 440, h: 200 },
-  { kind: 'outdoor-plant', x: 1300, y: 1080 },
-  { kind: 'outdoor-plant', x: 1880, y: 960 },
-  // The Directory beside the path up, where you arrive.
-  { kind: 'directory', x: GATE + 50, y: 1040 },
+  doorWalk(TIKI, 325),
+  doorWalk(HUT, 350),
+  {
+    kind: 'garden-path',
+    x: GATE - JUNCTION / 2,
+    y: JOIN_Y - JUNCTION / 2,
+    w: JUNCTION,
+    h: JUNCTION,
+  },
+  // The lagoon, a Ping-Pong Table on the sand in front of it, palms along it.
+  { kind: 'pond', x: 100, y: 100, w: 700, h: 380 },
+  standAt('ping-pong-table', 470, 580),
+  standAt('tree', 870, 300),
+  // Hammocks under the palms.
+  standAt('tree', 100, 1010),
+  standAt('hammock', 280, 1040),
+  standAt('tree', 460, 1010),
+  standAt('hammock', 230, 1300),
+  standAt('tree', 400, 1280),
+  // The campfire circle: three benches round the fire, facing it.
+  standAt('bench', 1250, 980, 'n'),
+  standAt('bench', 1090, 1110, 'w'),
+  standAt('campfire', 1250, 1110),
+  standAt('bench', 1410, 1110, 'e'),
+  // Garden umbrellas over the sand, and the pool.
+  standAt('garden-umbrella', 1800, 960),
+  standAt('garden-umbrella', 2100, 960),
+  { kind: 'swimming-pool', x: 1700, y: 1130, w: 520, h: 260 },
+  standAt('outdoor-plant', 1600, 1400),
+  standAt('outdoor-plant', 2360, 1250),
+  standAt('directory', GATE + 130, 1400),
 ];
 
 export function buildBeachOffsite(cx: number, cy: number): Element[] {
   return campusPlan(cx, cy, {
     width: W,
     height: H,
-    rooms: ROOMS,
-    open: BEACH,
-    title: {
-      text: 'Beach Offsite',
-      width: 300,
-      sticker: 'emoji-sun',
-      subtitle:
-        'A day away together: plan in the beach hut, then the tiki bar, the hammocks and the campfire.',
-    },
-    // On the sand between the huts' walk and the campfire, where the beach's day happens.
-    arrival: {
-      dx: 6,
-      dy: 116,
-      hint: 'You arrive on the Avatar Pad on the beach. The Directory by the path walks you to any hut.',
-    },
+    rooms: rooms(),
+    open: beach(),
+    // Beside the gate's path where it comes up off the road, below the junction.
+    arrival: { dx: GATE + 140 - W / 2, dy: 96 + 1020 - (96 + H + 120) / 2 },
   });
 }

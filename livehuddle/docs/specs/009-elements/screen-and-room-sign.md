@@ -35,6 +35,24 @@ A flat wall screen: a dark panel in a thin bezel, a small status light on its lo
   Editor drags it, or types its size in the Size section, from `SCREEN_MIN` (96 × 60) up to `SCREEN_MAX` (1600 × 1000), a wall-filling screen. It keeps its
   proportions by default (`aspectLocked`), and the Size section's lock frees them, as for any shape. A Screen draws
   under the characters and never blocks walking, so a big one over a row of chairs leaves every chair to sit in.
+- <a id="sizes"></a>**Sizes** (the owner, 2026-11-27: "I want various sizes of Screen in sub category, like some small
+  ones, some much bigger ones"): the Meet category's Screen tile opens five sizes, as the Tree tile opens its species
+  (office.md "Tree species"), each placing a Screen at that size, its proportions 16 by 10:
+
+  | Size    | `variant` | Box       | In 3D                                   |
+  | ------- | --------- | --------- | --------------------------------------- |
+  | Monitor | `monitor` | 96 × 60   | A small panel on its wall at eye height |
+  | Small   | `small`   | 144 × 90  | On its wall at eye height               |
+  | Medium  | (none)    | 192 × 120 | On its wall, the default                |
+  | Large   | `large`   | 320 × 200 | On a wide stand against its wall        |
+  | Cinema  | `cinema`  | 640 × 400 | A cinema's wide frame on a wide stand   |
+
+  The size is stored in `variant` (as a [rug's type](office.md#rug-types)); absent is the Medium, the Screen as it
+  always was. A placed Screen changes size in place from the element menu's [Type](office.md#a-pieces-type) section,
+  keeping what it shows, its back on its wall and its middle along it. Resizing it by hand keeps its `variant` (the
+  name of the size it was placed at). The 3D model scales with it ([3D](../008-canvas/3d-engine.md#models): "The
+  Screen scales with its size").
+
 - **What it shows**, the first of these that applies, for each viewer:
   1. **A screen share in its room.** When someone standing in the Screen's room is sharing their screen in the call,
      and this viewer receives that share, the Screen shows it, scaled to fit inside the panel (letterboxed, never
@@ -46,7 +64,14 @@ A flat wall screen: a dark panel in a thin bezel, a small status light on its lo
        frame while you are in its room.
      - **A video** (`screenUrl`, a YouTube, Vimeo or Loom link) shows the video's poster (a named card for providers
        without one) with a play mark. Nothing third-party loads until somebody opens it, as for every embed.
-  3. **The idle face**: the panel dark, a faint screen glyph and **No one is sharing**.
+  3. <a id="the-idle-face"></a>**The idle face** (the owner, 2026-11-27: "when a screen has nothing configured to show, show
+     the liveworkspace logo in a pretty way with animated logo opening like when we hover"): a Screen with no file and no
+     video (`idleScreen`) shows the liveworkspace logo on its dark glass, the prism above the `live` + `workspace`
+     wordmark, centred, in the platform's slate accent with a soft glow behind it. Its name for a screen reader stays
+     **No one is sharing**. On the flat canvas the logo is still (the prism at rest). In Real 3D the prism opens and
+     turns as the header logo does on hover (brand-mark.md "Size and motion"), on a calm loop: at rest 3 s, open and
+     turning 5 s, settling home over 0.45 s, again ([3D](../008-canvas/3d-engine.md#idle-screens-show-the-logo)).
+     Reduced motion shows it still and open.
 - **Who receives the share** is the call's own rule, unchanged ([Who sees
   what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)): whoever in the room hears the sharer
   (within earshot, [Rooms are calls](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built))
@@ -139,6 +164,8 @@ A small plaque by a room's door: the room's name over a status line with a colou
   glows in its colour (a calm green, amber, a brick red), an enamel strip of the same colour down the nameplate's left
   edge so the state reads from across the room, and Knock a small brass button. The same sign on light and dark paper,
   as real objects are (the owner, 2026-11-17: "it isn't in keeping with the aesthetic").
+- **In 3D** its plaque carries its room's name in dark ink, crisp at every zoom, over its status lamp
+  ([Room names read in 3D](../008-canvas/3d-engine.md#room-names-read-in-3d)); renaming the room renames the plaque.
 
 - **Default 120 × 64**, aspect locked. Placed freely beside a door (snapping onto the nearest Door or doorway is a
   follow-up, Not in scope). Not a destination, never blocks walking, takes no label of its own: its name is its room's.

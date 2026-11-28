@@ -48,6 +48,21 @@ describe('a room’s Floor', () => {
     expect(onSetFloorColour).toHaveBeenLastCalledWith('#a2764e');
   });
 
+  // Large enough to see (owner, 2026-11-27): each type a picture in the room's colour, three to a page.
+  it('draws each type as a picture in the room’s colour, paged three at a time', () => {
+    showSection(room({ fillColor: '#41597a', floor: 'concrete' }));
+    const pictures = [...document.querySelectorAll('[data-floor-picture]')];
+    expect(pictures.map((p) => p.getAttribute('data-floor-picture'))).toEqual([
+      'boards',
+      'tiles',
+      'carpet',
+      'stone',
+      'concrete',
+    ]);
+    expect(pictures[0]!.querySelector('rect')!.getAttribute('fill')).toBe('#41597a');
+    expect(screen.getByRole('group', { name: 'Floor types page 2 of 2' })).toBeTruthy();
+  });
+
   it('draws with no target', () => {
     showSection(undefined);
     expect(tile('Floorboards')).toBeTruthy();

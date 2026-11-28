@@ -112,7 +112,7 @@ export const OFFICE: SpaceSceneSpec = {
   },
 };
 
-// The All-Hands Hall's front: the stage (x -200..200, y -654..-494) with its Bring Focus button, and the front row of
+// The All-Hands Hall's front: the stage (x -200..200, y -654..-494), and the front row of
 // chairs facing it either side of the aisle (x -172..110), the room's door far below the window's edge.
 export const HALL: SpaceSceneSpec = {
   id: 'all-hands-hall',

@@ -27,7 +27,6 @@ import { BackWallDoorsProvider } from '@/components/canvas/collab/back-wall-door
 type ElementsExtras = {
   // What the selection chrome derives the selection from (it reads the selection from the store).
   selectionInput: CanvasSelectionInput;
-  isPaintMode: boolean;
   // A retired arrow's card press: selects it, never drags it (RetiredArrowView).
   handleArrowSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
   handleElementClick: (id: string) => void;
@@ -55,9 +54,7 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
     handleElementClick,
     handleElementContextSelect,
     imageContext,
-    isPaintMode,
     onBeginDrag,
-    onPressArmedAction,
     onBeginEdit,
     onCancelEdit,
     onCommitLabel,
@@ -98,7 +95,6 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
     onCommitLabel,
     onCancelEdit,
     onBeginDrag,
-    onPressArmedAction,
     onShiftSelect,
 
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
@@ -127,11 +123,9 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
   const boxedShared = useMemo<BoxedShared>(
     () => ({
       onPlainClick: h.handleElementClick,
-      isPaintMode,
       tabSummaries,
       readOnly,
       onBeginDrag: h.onBeginDrag,
-      onPressArmedAction: h.onPressArmedAction,
       onShiftSelect: h.onShiftSelect,
       onBeginEdit: h.onBeginEdit,
       onCommitLabel: h.onCommitLabel,
@@ -154,16 +148,7 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
       imageContext,
       onContextSelect: h.handleElementContextSelect,
     }),
-    [
-      h,
-      isPaintMode,
-      tabSummaries,
-      readOnly,
-      chairSitters,
-      canvasTool,
-      imageContext,
-      portalResolver,
-    ],
+    [h, tabSummaries, readOnly, chairSitters, canvasTool, imageContext, portalResolver],
   );
   // The elements actually drawn.
   const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, render } from '@testing-library/react';
-import { armedMinuteTimers, minuteOf, useMinuteNow } from './minute-clock';
+import { armedMinuteTimers, localClock, minuteOf, useMinuteNow } from './minute-clock';
 
-// docs/specs/009-elements/social-pieces.md "World Clock": one shared minute timer, nothing per frame.
+// docs/specs/009-elements/social-pieces.md "Clock": one shared minute timer, nothing per frame.
 function Clock({ onRender }: { onRender: (n: number) => void }) {
   const now = useMinuteNow();
   onRender(now);
@@ -13,6 +13,11 @@ function Clock({ onRender }: { onRender: (n: number) => void }) {
 afterEach(() => vi.useRealTimers());
 
 describe('the minute clock', () => {
+  it("reads the viewer's own local time", () => {
+    const at = new Date(2026, 10, 27, 15, 42).getTime();
+    expect(localClock(at)).toEqual({ hour: 15, minute: 42 });
+  });
+
   it('rounds down to the minute', () => {
     expect(minuteOf(125_000)).toBe(120_000);
     expect(minuteOf(120_000)).toBe(120_000);

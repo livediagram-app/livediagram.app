@@ -131,4 +131,4 @@ Derived from [Timer and Stopwatch](../timer-and-stopwatch.md).
 
 ## Defaults ledger
 
-- Default sizes 128 × 88 and 104 × 112: chosen to sit beside the World Clock (168 × 72) at a readable digit size.
+- Default sizes 128 × 88 and 104 × 112: chosen to sit beside the World Clock (168 × 72, now the 64 × 64 Clock) at a readable digit size.

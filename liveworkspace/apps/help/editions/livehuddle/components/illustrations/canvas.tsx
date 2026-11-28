@@ -4,7 +4,15 @@
 
 import { Cursor, Label, Scene, SelectionBox } from '@liveworkspace/help-site/art/primitives';
 import { BottomBar, Card, CornerCluster, Icon, Strip, TopRow, stripSlot } from './editor-chrome';
-import { Desk, OfficeFloor, Plant, Room, Sticky, type StickyTone } from './space-furniture';
+import {
+  Chair,
+  Desk,
+  OfficeFloor,
+  Plant,
+  Room,
+  NoticeBoard,
+  type NoteTone,
+} from './space-furniture';
 
 /** The hand the canvas shows while you pan, its palm at (x, y). */
 export function HandCursor({ x, y }: { x: number; y: number }) {
@@ -48,31 +56,30 @@ export function CanvasOverview() {
   );
 }
 
-// Write's flyout rows, as the palette lists them.
-const WRITE_ROWS: readonly [string, string, string][] = [
-  ['Text', 'A free-standing text label', 'M4 7V4h16v3M9 20h6M12 4v16'],
+// Seats' flyout rows, as the palette lists them.
+const SEAT_ROWS: readonly [string, string][] = [
   [
-    'Note',
-    'A coloured note card',
-    'M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8ZM15 3v4a2 2 0 0 0 2 2h4',
+    'Chair',
+    'M5 9V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3M3 11a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v5H3ZM5 16v3M19 16v3',
   ],
-  ['Image', 'Place an uploaded picture', 'M3 5h18v14H3zM3 16l5-5 5 5M14 14l2-2 5 5'],
+  ['Sofa', 'M4 10V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2M2 12h20v5H2zM5 17v2M19 17v2'],
+  ['Desk', 'M4 11h16M6 11v8M18 11v8M9 4h6v5H9zM12 9v2'],
 ];
 
-/** Write's flyout, top-left at (x, y), 170 by 110: Text, Note and Image, `armed` tinted. */
-export function WriteFlyout({ x, y, armed = 'Note' }: { x: number; y: number; armed?: string }) {
+/** Seats' flyout, top-left at (x, y), 150 by 110: Chair, Sofa and Desk, `armed` tinted. */
+export function SeatsFlyout({ x, y, armed = 'Chair' }: { x: number; y: number; armed?: string }) {
   return (
-    <Card x={x} y={y} w={170} h={110} r={7}>
+    <Card x={x} y={y} w={150} h={110} r={7}>
       <Label x={x + 10} y={y + 14} size={10} weight={650} tone="strong">
-        Write
+        Seats
       </Label>
-      {WRITE_ROWS.map(([name, line, d], i) => {
+      {SEAT_ROWS.map(([name, d], i) => {
         const ry = y + 26 + i * 27;
         const on = name === armed;
         return (
           <g key={name}>
             {on && (
-              <rect x={x + 4} y={ry - 3} width={162} height={26} rx={5} className="fill-brand-50" />
+              <rect x={x + 4} y={ry - 3} width={142} height={26} rx={5} className="fill-brand-50" />
             )}
             <rect
               x={x + 9}
@@ -84,11 +91,8 @@ export function WriteFlyout({ x, y, armed = 'Note' }: { x: number; y: number; ar
               strokeWidth={0.75}
             />
             <Icon prims={[{ t: 'path', d }]} x={x + 19} y={ry + 10} size={10} />
-            <Label x={x + 36} y={ry + 6} size={9.5} weight={600} tone={on ? 'accent' : 'strong'}>
+            <Label x={x + 36} y={ry + 10} size={9.5} weight={600} tone={on ? 'accent' : 'strong'}>
               {name}
-            </Label>
-            <Label x={x + 36} y={ry + 16} size={9} tone="muted">
-              {line}
             </Label>
           </g>
         );
@@ -97,24 +101,24 @@ export function WriteFlyout({ x, y, armed = 'Note' }: { x: number; y: number; ar
   );
 }
 
-/** Dropping a sticky note from Write's flyout onto the floor: Write pressed on the strip, its rows hanging under it
- *  with Note armed, and the note just placed and still selected. */
+/** Dropping a chair from Seats' flyout onto the floor: Seats pressed on the strip, its rows hanging under it with
+ *  Chair armed, and the chair just placed and still selected. */
 export function AddingElements() {
   const sx = 12;
-  const fx = stripSlot(sx, 'write') - 30;
+  const fx = stripSlot(sx, 'seats') - 30;
   return (
     <Scene w={440} h={220}>
       <Room x={232} y={70} w={196} h={140} name="Team Room" />
-      <Strip x={sx} y={8} open="write" />
-      <WriteFlyout x={fx} y={40} />
+      <Strip x={sx} y={8} open="seats" />
+      <SeatsFlyout x={fx} y={40} />
       <path
-        d={`M${fx + 150} 112 C 250 110, 270 120, 300 128`}
+        d={`M${fx + 130} 112 C 250 110, 270 120, 304 136`}
         className="fill-none stroke-slate-400"
         strokeWidth={1}
         strokeDasharray="3 3"
       />
-      <Sticky x={300} y={112} w={64} h={58} label="Ideas" lines={2} />
-      <SelectionBox x={300} y={112} w={64} h={58} />
+      <Chair cx={322} cy={138} s={2.4} />
+      <SelectionBox x={306} y={122} w={32} h={32} />
       <Cursor x={346} y={152} />
     </Scene>
   );
@@ -178,7 +182,7 @@ export function Brush({ x, y }: { x: number; y: number }) {
 export function FormatPainter() {
   return (
     <Scene w={420} h={170}>
-      <Sticky x={52} y={40} w={92} h={74} tone="emerald" label="Stand-up" lines={3} />
+      <NoticeBoard x={52} y={40} w={92} h={74} tone="emerald" label="Stand-up" lines={3} />
       <SelectionBox x={52} y={40} w={92} h={74} />
       <path
         d="M150 64 C 200 34, 240 34, 270 58"
@@ -186,7 +190,7 @@ export function FormatPainter() {
         strokeWidth={1}
         strokeDasharray="3 3"
       />
-      <Sticky x={276} y={40} w={92} h={74} tone="emerald" label="Retro" lines={3} />
+      <NoticeBoard x={276} y={40} w={92} h={74} tone="emerald" label="Retro" lines={3} />
       <Brush x={330} y={102} />
       <Label x={98} y={136} size={9} anchor="middle" tone="muted">
         Picked up
@@ -199,7 +203,7 @@ export function FormatPainter() {
 }
 
 // A retro wall: a multi-colour theme gives each new note the palette's next hue.
-const WALL: readonly [StickyTone, string][] = [
+const WALL: readonly [NoteTone, string][] = [
   ['emerald', 'Wins'],
   ['sky', 'Ideas'],
   ['violet', 'Kudos'],
@@ -212,7 +216,7 @@ export function MulticolourTheme() {
   return (
     <Scene w={420} h={150}>
       {WALL.map(([tone, label], i) => (
-        <Sticky
+        <NoticeBoard
           key={label}
           x={22 + i * 78}
           y={34 + (i % 2) * 14}

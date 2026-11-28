@@ -32,11 +32,11 @@ You need to be signed in, and able to add cards to the plan you pick. Reading th
 </AppNote>
 
 <AppNote app="livedocuments,liveknowledge">
-  In a page's writing, right-click the words you picked for a menu with **Cut**, **Copy**,
-  **Paste** and **Send to Plan**, and **Send to Diagram** where it is offered (reading, it has
-  **Copy** and the sends). On a touch screen, long-press the words: the browser's own bar still
-  shows beside them, and the menu opens at the bottom of the screen (or the top, when the words are
-  low), where that bar never covers it. Hold **Shift** as you right-click for the browser's own menu.
+  In a page's writing, right-click the words you picked for a menu with **Cut**, **Copy**, **Paste**
+  and **Send to Plan**, and **Send to Diagram** where it is offered (reading, it has **Copy** and
+  the sends). On a touch screen, long-press the words: the browser's own bar still shows beside
+  them, and the menu opens at the bottom of the screen (or the top, when the words are low), where
+  that bar never covers it. Hold **Shift** as you right-click for the browser's own menu.
 </AppNote>
 
 <AppNote app="liveplanner">
@@ -45,8 +45,9 @@ You need to be signed in, and able to add cards to the plan you pick. Reading th
 </AppNote>
 
 <AppNote app="livehuddle">
-  A Space's stickies are its meeting's actions. The tab menu's **Send Stickies to Plan** sends every
-  sticky on the tab with words, top to bottom, one card each, at most 20 at a time.
+  A Space has no sticky notes, so nothing on its floors sends: the elements and the tab menu have no
+  **Send to Plan**. Send from an [Ask AI answer](#from-an-ask-ai-answer) instead. A card sent from a
+  Space before keeps its chip on the element it came from.
 </AppNote>
 
 <Step n={2}>
@@ -85,8 +86,7 @@ The card's footer says **Sent from**, with a link back to the place: the <Noun /
 
 <Tip>
   Agents can send too: an MCP client's `change_cards` add takes a `sentFrom` with the place (its
-  app, item, tab and element) and its words, and the card links back and gets its chip the same
-  way.
+  app, item, tab and element) and its words, and the card links back and gets its chip the same way.
 </Tip>
 
 </ArticleLayout>

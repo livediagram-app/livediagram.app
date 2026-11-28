@@ -1,5 +1,7 @@
 # Suggestions: Send to a Plan
 
+> **Gone from livehuddle** (owner, 2026-11-27: [The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)): stickies left a Space, and Send to Plan's "call ended with stickies" suggestion went with them. livehuddle offers no suggestion and sends no `UI·*·SuggestSendToPlan`; what follows is a record.
+
 The livehuddle side of [Suggestions](../../../../liveworkspace/docs/specs/016-notifications/suggestions.md) (Work Tracker 1371): one suggestion, offered in the editor's notice slot under
 the platform's rules (one at a time, never mid-gesture, once an item, Don't Suggest This Again, one switch in Settings ›
 Getting Started).
@@ -25,4 +27,4 @@ Never a Participant or a Viewer.
 
 ## Code
 
-`components/calls/SendToPlanSuggestion.tsx`, mounted in the editor; telemetry `UI·*·SuggestSendToPlan`.
+`SendToPlanSuggestion` in `components/calls/`, mounted in the editor (deleted with it); telemetry `UI·*·SuggestSendToPlan`.

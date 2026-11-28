@@ -4,8 +4,7 @@
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
-import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
-import { heading } from './template-session-parts';
+import type { Element } from '@livehuddle/document';
 import { arrival } from './template-arrival';
 import type { TemplateNote } from './template-notes';
 import { officePlan, type OfficePiece, type OfficeRoom } from './template-office-parts';
@@ -13,26 +12,9 @@ import { officePlan, type OfficePiece, type OfficeRoom } from './template-office
 const HEAD = 96;
 const BELOW = 120;
 
-// A space's floor plan with its heading (officePlan: floors first, then the heading, then the rest).
-function plan(
-  x0: number,
-  y0: number,
-  width: number,
-  rooms: OfficeRoom[],
-  title: string,
-  titleW: number,
-  sticker: string,
-  subtitle: string,
-  extra: Element[],
-): Element[] {
-  return officePlan(
-    rooms,
-    x0,
-    y0,
-    HEAD,
-    heading(x0, y0, width, title, titleW, sticker, subtitle),
-    extra,
-  );
+// A space's floor plan under its band (officePlan: floors first, then the rest).
+function plan(x0: number, y0: number, rooms: OfficeRoom[], extra: Element[]): Element[] {
+  return officePlan(rooms, x0, y0, HEAD, extra);
 }
 
 // Two desks facing two across a shared bench: the far pair's sitters face you, the near pair's face away.
@@ -91,12 +73,13 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       ],
       pieces: [
         // Two clusters an aisle apart, the lounge an aisle below them.
-        ...deskCluster(50, 56),
-        ...deskCluster(440, 56),
-        // The coffee bar.
-        { kind: 'coffee-machine', x: 50, y: 390 },
-        { kind: 'water-cooler', x: 140, y: 376 },
-        { kind: 'plant', x: 220, y: 410 },
+        // Far enough off the back wall for a walk behind the far row's chairs (templates-by-mode.md "Made for 3D").
+        ...deskCluster(50, 100),
+        ...deskCluster(440, 100),
+        // The coffee bar against the left wall, facing the floor.
+        { kind: 'coffee-machine', x: 12, y: 380, facing: 'w' },
+        { kind: 'water-cooler', x: 12, y: 470, facing: 'w' },
+        { kind: 'plant', x: 160, y: 430 },
         // The lounge: the sofa on its rug, a chair either side of it.
         { kind: 'rug', x: 460, y: 470 },
         { kind: 'sofa', x: 484, y: 490, facing: 'n' },
@@ -104,8 +87,9 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
         { kind: 'chair', x: 648, y: 490, facing: 'e' },
         { kind: 'plant', x: 780, y: 580 },
         { kind: 'bookshelf', x: 720, y: 46 },
-        // The members' lockers in the free corner under the booths (docs/specs/009-elements/office-amenities.md).
-        { kind: 'lockers', x: 900, y: 540 },
+        // The members' lockers in the free corner under the booths, against the front wall
+        // (docs/specs/009-elements/office-amenities.md).
+        { kind: 'lockers', x: 900, y: 540, facing: 's' },
         // The members' Notice Board under the Meeting Room, its notes pinned already (template-notes.ts).
         { kind: 'notice-board', x: 1110, y: 520, notes: COWORK_NOTES },
         // The Meeting Room's sign, right of its door on the face of its front wall: inside the room's box, so it
@@ -120,7 +104,8 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       name: 'Booth 1',
       x: 860,
       y: 40,
-      w: 200,
+      // A wall's width over the Meeting Room's, so the two share one wall (office.md "Rooms line up").
+      w: 250,
       h: 220,
       door: 'w',
       glass: true,
@@ -129,9 +114,10 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
     {
       name: 'Booth 2',
       x: 860,
-      y: 300,
-      w: 200,
-      h: 220,
+      // Under Booth 1, its back wall on Booth 1's front one.
+      y: 40 + 220 - 36,
+      w: 250,
+      h: 256,
       door: 'w',
       glass: true,
       pieces: [{ kind: 'phone-booth', x: 90, y: 44 }],
@@ -157,18 +143,11 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
   return plan(
     x0,
     y0,
-    width,
     rooms,
-    'Coworking Space',
-    360,
-    'emoji-desktop',
-    'Grab any desk, take calls in a booth, book the meeting room, and meet at the coffee bar.',
     // On the open floor between the desks and the lounge, the coffee bar and the booths in view.
     arrival({
       x: cx - COWORK_W / 2 + 366,
       y: cy - 4,
-      hintW: 160,
-      hint: 'You arrive on the Avatar Pad. Take any desk, or a booth for a call.',
     }),
   );
 }
@@ -177,10 +156,12 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
 
 const POD_W = 760;
 const POD_H = 480;
+// The strip beside the pod's right wall where the stand-up's Timer stood, until it moved inside the pod (QA,
+// 2026-11-27: outside, the pod's wall hid half of it in 3D). It held the Team Board of four stickies too, until sticky
+// notes left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category"); it keeps its width
+// so the pod and its Avatar Pad sit where they did.
 const BOARD_W = 300;
 const BOARD_GAP = 40;
-
-const TEAM_BOARD = ['This week', 'Blocked on', 'Wins', 'Questions'];
 
 export function buildTeamPod(cx: number, cy: number): Element[] {
   const width = POD_W + BOARD_GAP + BOARD_W;
@@ -195,73 +176,42 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
       w: POD_W,
       h: POD_H,
       door: 's',
-      // Windows over the desks and the table, the back wall between them left for the World Clock.
+      // Windows over the desks and the table, the back wall between them left for the Clock.
       windows: [
         { side: 'n', at: 150 },
         { side: 'n', at: 560 },
         { side: 'w', at: 260 },
       ],
       pieces: [
-        ...deskCluster(50, 56),
-        // The World Clock on the back wall between the desks and the table, where everyone on the team is
-        // (docs/specs/009-elements/social-pieces.md "World Clock"), at the gap's width.
-        { kind: 'world-clock', x: 302, y: 40, w: 136 },
-        { kind: 'meeting-table', x: 440, y: 80 },
+        ...deskCluster(50, 100),
+        // The Clock on the back wall between the desks and the table, where everyone on the team sees it
+        // (docs/specs/009-elements/social-pieces.md "Clock"), in the middle of the gap.
+        { kind: 'world-clock', x: 338, y: 40 },
+        { kind: 'meeting-table', x: 416, y: 80 },
         // A Phone Booth in the corner by the table, for a call away from the team: a call of its own, Busy while you
         // sit in it (docs/specs/009-elements/workday-pieces.md "Phone Booth").
-        { kind: 'phone-booth', x: 676, y: 40 },
-        { kind: 'coffee-machine', x: 50, y: 330 },
-        { kind: 'plant', x: 140, y: 360 },
+        { kind: 'phone-booth', x: 666, y: 40 },
+        { kind: 'coffee-machine', x: 12, y: 350, facing: 'w' },
+        { kind: 'plant', x: 100, y: 390 },
         // Against the right wall, its back to it (docs/specs/009-elements/wall-pieces.md "Only on a wall").
         { kind: 'bookshelf', x: 700, y: 300 },
         // The team's dog (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog"), between the pad and the
         // table, right of the doorway's column.
-        { kind: 'pet-bed', x: 456, y: 422 },
+        { kind: 'pet-bed', x: 470, y: 400 },
+        // The stand-up's Timer inside the pod, on the floor between the table and the bookshelf, where the team
+        // gathers: press it to timebox the round (docs/specs/009-elements/timer-and-stopwatch.md). It stood outside
+        // the right wall, which hid half of it in 3D (QA, 2026-11-27).
+        { kind: 'timer', x: 540, y: 250 },
       ],
     },
   ];
-  // The team's board on the wall beside the pod: four stickies to fill in together.
-  const bx = x0 + POD_W + BOARD_GAP;
-  const by = y0 + HEAD;
-  const board: Element[] = [
-    // The stand-up's Timer under the board: press it to timebox the round (docs/specs/009-elements/timer-and-stopwatch.md).
-    // Close enough under it (the stickies' own gap) to move with it when the plan opens out (template-roomy.ts).
-    createShape('timer', bx, by + 44 + 2 * 154),
-    {
-      ...createText(bx, by),
-      width: BOARD_W,
-      height: 32,
-      label: 'Team Board',
-      textSize: 'md',
-      textBold: true,
-    },
-    ...TEAM_BOARD.map((label, i) => ({
-      ...createSticky(bx + (i % 2) * 154, by + 44 + Math.floor(i / 2) * 154),
-      width: 146,
-      height: 146,
-      label,
-    })),
-  ];
-  return plan(
-    x0,
-    y0,
-    width,
-    rooms,
-    'Team Pod',
-    240,
-    'emoji-handshake',
-    'Your team’s corner: four desks together, a table and a timer for the stand-up, a booth for calls, and a board for the week.',
-    [
-      ...board,
-      // In the middle of the pod, between the desks and the table.
-      ...arrival({
-        x: cx - 168,
-        y: cy + 52,
-        hintW: 320,
-        hint: 'You arrive on the Avatar Pad. Take a desk, and meet at the table for the stand-up.',
-      }),
-    ],
-  );
+  return plan(x0, y0, rooms, [
+    // In the middle of the pod, between the desks and the table.
+    ...arrival({
+      x: cx - 168,
+      y: cy + 90,
+    }),
+  ]);
 }
 
 // --- All-Hands Hall ----------------------------------------------------------------
@@ -311,34 +261,18 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
         ),
         { kind: 'plant', x: 24, y: 60 },
         { kind: 'plant', x: 920, y: 60 },
-        { kind: 'water-cooler', x: 24, y: HALL_H - 340 },
+        { kind: 'water-cooler', x: 12, y: HALL_H - 340, facing: 'w' },
         // A Suggestion Box at the back for the Q&A: a question dropped in it is anonymous, and only Editors read it
         // (docs/specs/009-elements/team-pieces.md "Suggestion Box").
         { kind: 'suggestion-box', x: 24, y: HALL_H - 124 },
       ],
     },
   ];
-  const top = y0 + HEAD;
-  // The presenter's Bring Focus, so the room looks where they point. The stage names itself on its plate.
-  const focus: Element = createShape('focus-button', x0 + 720, top + 70);
-  return plan(
-    x0,
-    y0,
-    width,
-    rooms,
-    'All-Hands Hall',
-    320,
-    'emoji-raised-hands',
-    'Take a seat for the all-hands: the stage up front, the room facing it, Bring Focus for the presenter, and a box at the back for questions.',
-    [
-      focus,
-      // In the centre aisle, among the rows, facing the stage: the line under it is a narrow sign down the aisle.
-      ...arrival({
-        x: cx,
-        y: cy + 76,
-        hintW: 140,
-        hint: 'You arrive on the Avatar Pad: take a seat, and Raise Hand when someone is on the stage.',
-      }),
-    ],
-  );
+  return plan(x0, y0, rooms, [
+    // In the centre aisle, among the rows, facing the stage.
+    ...arrival({
+      x: cx,
+      y: cy + 76,
+    }),
+  ]);
 }

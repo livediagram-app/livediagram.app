@@ -76,10 +76,10 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
   },
 ];
 
-const DOCS: { title: string; kind: 'flow' | 'board' | 'room' | 'sticky' | 'tree' | 'sheet' }[] = [
+const DOCS: { title: string; kind: 'flow' | 'board' | 'room' | 'notice' | 'tree' | 'sheet' }[] = [
   { title: 'Virtual Office', kind: 'room' },
   { title: 'Team Pod', kind: 'flow' },
-  { title: 'Team stand-up', kind: 'sticky' },
+  { title: 'Team stand-up', kind: 'notice' },
   { title: 'All-Hands', kind: 'board' },
   { title: 'Brainstorm', kind: 'tree' },
   { title: 'Agenda', kind: 'sheet' },
@@ -150,9 +150,12 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
           />
         </g>
       );
-    case 'sticky':
+    case 'notice':
+      // A Notice Board with the team's notes pinned on it.
       return (
         <g className="help-art-as-drawn">
+          <rect x={x + 4} y={y + 2} width={56} height={30} rx={2} className="fill-amber-800" />
+          <rect x={x + 6} y={y + 4} width={52} height={26} rx={1} className="fill-amber-300" />
           {[
             ['fill-amber-200', 8, 6],
             ['fill-rose-200', 26, 9],

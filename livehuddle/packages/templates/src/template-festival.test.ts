@@ -5,6 +5,7 @@ import { FESTIVAL_STAGE } from './template-builders-festival';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 import { isInTemplateCategory, templateCategory } from './template-categories';
 import { templateFloors } from './template-floors';
+import { modelFloorBox } from './template-model-box';
 
 // docs/specs/012-collaboration/virtual-office-template.md "Venues": the Festival Field, the open-air venue (Work
 // Tracker #648). The rules every site keeps (doors, signs, paths, aisles, the pad on open floor) are held in
@@ -16,8 +17,14 @@ const all = buildTemplate('festival-field', 0, 0).filter((e): e is Shape => e.ty
 const of = (shape: string) => all.filter((e) => e.shape === shape);
 const rooms = of('room');
 const room = (name: string) => rooms.find((r) => r.label === name)!;
-const inside = (p: Box, r: Box) =>
-  p.x >= r.x && p.y >= r.y && p.x + p.width <= r.x + r.width && p.y + p.height <= r.y + r.height;
+// Inside a tent: where the piece stands in 3D (template-model-box.ts), as a piece against a wall stands its model, not
+// its drawn box, on the wall's face.
+const inside = (e: Box, r: Box) => {
+  const p = 'shape' in e ? modelFloorBox(e as Shape) : e;
+  return (
+    p.x >= r.x && p.y >= r.y && p.x + p.width <= r.x + r.width && p.y + p.height <= r.y + r.height
+  );
+};
 const meets = (a: Box, b: Box) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 const centre = (b: Box) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
@@ -31,7 +38,7 @@ describe('the Festival Field', () => {
     expect(of('grass')).toHaveLength(1);
   });
 
-  it('stands the Main Stage out on the grass, its curtains behind it, a Screen either side and Bring Focus by it', () => {
+  it('stands the Main Stage out on the grass, its curtains behind it, and a Screen either side', () => {
     const [stage] = of('stage');
     expect(of('stage')).toHaveLength(1);
     expect(stage).toMatchObject({
@@ -54,11 +61,8 @@ describe('the Festival Field', () => {
     expect(screens).toHaveLength(2);
     expect(screens.filter((s) => s.x + s.width <= stage!.x)).toHaveLength(1);
     expect(screens.filter((s) => s.x >= stage!.x + stage!.width)).toHaveLength(1);
-    const [focus] = of('focus-button');
-    expect(focus).toBeDefined();
-    expect(
-      Math.hypot(centre(focus!).x - centre(stage!).x, centre(focus!).y - centre(stage!).y),
-    ).toBeLessThan(500);
+    // Bring Focus is not offered (docs/specs/002-project-scope/not-in-livehuddle.md "Bring Focus").
+    expect(of('focus-button')).toHaveLength(0);
   });
 
   it('lands everyone on the crowd field in front of the stage, in no tent', () => {

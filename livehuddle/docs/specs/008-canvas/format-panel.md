@@ -1,5 +1,7 @@
 # Format Panel
 
+> **Gone from livehuddle** (owner, 2026-11-27: [Format Painter and Clear Styles](../002-project-scope/not-in-livehuddle.md#format-painter-and-clear-styles)). livediagram keeps it; what follows is a record.
+
 Status: **implemented**.
 
 While the **Format** painter ([Canvas and palette](canvas-and-palette.md#format-painter)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The painter starts from the selection toolbar's **Format Painter** button (owner, 2026-11-06: the palette's selection-mode picker, its old home, gave way to the [Edit | Walk toggle](avatar-mode.md#the-edit--walk-toggle)), the selected element loaded as the brush. The one tool panel livehuddle has (the [Eraser Panel](eraser-panel.md) is retired).
@@ -27,7 +29,7 @@ A short list of what-to-copy toggles turns the painter from one blunt action int
 
 ## Which field belongs to which toggle
 
-`lib/format-painter.ts` stays the single source of truth for **what CAN be painted**; the panel decides **which of it does**. The mapping from field to toggle lives beside it in `../packages/workbench/src/lib/format-config.ts`, and a test asserts that **every field either projection produces is assigned to a group**, so a field added to the painter later can't quietly escape the panel and always travel regardless of the toggles.
+`livediagram/apps/editor/lib/format-painter.ts` stays the single source of truth for **what CAN be painted**; the panel decides **which of it does**. The mapping from field to toggle lives beside it in `../packages/workbench/src/lib/format-config.ts`, and a test asserts that **every field either projection produces is assigned to a group**, so a field added to the painter later can't quietly escape the panel and always travel regardless of the toggles.
 
 ## The panel shows what is loaded
 

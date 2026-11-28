@@ -20,7 +20,7 @@ Scope, by file:
 | `packages/document/src/animation-membership.ts`                   | Wordless                                                                  |
 | `packages/document/src/svg-render-office-art.ts`                  | `avatarPadArt`: the export drawing                                        |
 | `packages/avatar/src/components/avatar-sprite-palette.ts`         | Re-exports the sprite tones from `AVATAR_PALETTE`                         |
-| `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas drawing; the shimmering lights                                 |
+| `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas drawing: one SVG, still                                        |
 | `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                    |
 | `livediagram/apps/editor/components/canvas/shape-svg-overlay.tsx` | Not an SVG-overlay shape                                                  |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                      |
@@ -29,13 +29,13 @@ Scope, by file:
 | `packages/avatar/src/hooks/useAvatarPadArrivals.ts`               | Arrivals from presence: own and peers'                                    |
 | `packages/avatar/src/components/AvatarPadArrivals.tsx`            | The beam, floor flash and sparks                                          |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`, `Canvas.tsx` | Compose the arrivals; draw them over the characters                       |
-| `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion         |
+| `apps/editor/app/canvas-motion.css`                               | `avatar-pad-beam`, `-flash`, `-spark`; reduced motion                     |
 | `apps/editor/components/palette/tile-defs/room-tiles.tsx`         | `tools:avatar-pad` in **Travel** (`tileGroup: 'travel'`)                  |
 | `apps/editor/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                           |
 | `apps/editor/components/palette/EditWalkToggle.tsx`               | Walk is always on the Edit                                                | Walk toggle |
 | `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                  |
 | `packages/api-schema/src/telemetry-schema.ts`                     | `Avatar-pad` element type token                                           |
-| `packages/templates/src/template-arrival.ts`                      | `arrival`: a Space's pad and how-to line, where the builder puts them     |
+| `packages/templates/src/template-arrival.ts`                      | `arrival`: a Space's pad, where the builder puts it                       |
 | `packages/templates/src/build-template.ts`                        | `floorsFirst`; Blank Space's pad (`blankPad`, `BLANK_PAD_DROP`)           |
 | `packages/templates/src/template-builders-{tower,hotel}.ts`       | An upper floor's pad by its Elevators                                     |
 | `apps/editor/lib/pad-only-tab.ts`                                 | `holdsOnlyPads`, `padOnlyTabCentre`: a pad-only tab is blank, entry view  |
@@ -92,21 +92,7 @@ Invariants:
 // packages/avatar/src/pad-art.ts
 export const AVATAR_PAD_GRID = { width: 32, height: 20 } as const;
 export const AVATAR_PAD_DEFAULT_SIZE = { width: 128, height: 80 } as const;
-export const AVATAR_PAD_TONES: {
-  outline;
-  side;
-  sideDark;
-  top;
-  topShade;
-  rim;
-  groove;
-  ring;
-  ringLit;
-  core;
-  coreHot;
-  lamp;
-};
-// (AVATAR_PAD_PARTS, the shared pixel table, stays for livediagram; livehuddle no longer draws it.)
+export const AVATAR_PAD_TONES: { oak; oakLight; walnut; cream; terracotta; sage; ochre }; // fixed, warm
 export function avatarPadArtRect(box: { width: number; height: number }): {
   x: number;
   y: number;
@@ -122,21 +108,18 @@ export type AvatarPadArtRole =
   | 'shadow'
   | 'side'
   | 'sideShade'
+  | 'band'
   | 'top'
-  | 'bevel'
-  | 'well'
   | 'glint'
-  | 'glow'
-  | 'ring'
-  | 'ringLit'
-  | 'lamp'
+  | 'rug'
+  | 'rugBand'
   | 'core'
-  | 'coreHot';
+  | 'roseLight'
+  | 'roseDark'
+  | 'hub';
 export type AvatarPadArtPart = { tag: 'ellipse'; role; cx; cy; rx; ry } | { tag: 'path'; role; d };
-export const AVATAR_PAD_ART: readonly AvatarPadArtPart[]; // 17 parts, back to front
-export const AVATAR_PAD_GLOW: { color; innerOpacity };
-export function isAvatarPadLight(role): boolean; // glow, ring, ringLit, lamp
-export function avatarPadPaint(role, stroke, body, glowFill): AvatarPadPaint;
+export const AVATAR_PAD_ART: readonly AvatarPadArtPart[]; // 12 parts, back to front
+export function avatarPadPaint(role, stroke): AvatarPadPaint; // theme stroke for outline and shade, fixed tones else
 
 // packages/avatar/src/pad.ts
 export const AVATAR_PAD_ARRIVAL_MS = 900;
@@ -164,7 +147,7 @@ export function nextArrivals(input: { arrivals; seen; present; pads; now }): rea
 - The element: an ordinary `ShapeElement` with `shape: 'avatar-pad'`; no fields of its own. Saved, copied, exported and
   validated like any shape (`SHAPE_KINDS`). No migration: a client without the kind drops it as an unknown shape, as
   for every new kind.
-- Arrivals, the spawn and the shimmer are transient view state (I2).
+- Arrivals and the spawn are transient view state (I2).
 
 ## Errors and edge cases
 
@@ -174,7 +157,7 @@ export function nextArrivals(input: { arrivals; seen; present; pads; now }): rea
 | Peer joins already standing on a pad  | One beam on your screen when they first appear (spec) |
 | Two pads equidistant                  | Earliest in element order                             |
 | Forty people arrive together          | Eight beams, oldest dropped                           |
-| Reduced motion                        | `.avatar-pad-arrival { display: none }`, no shimmer   |
+| Reduced motion                        | `.avatar-pad-arrival { display: none }`               |
 | Already in Avatar mode, picker opened | Shows Avatar current; any other pick leaves           |
 
 ## Security and trust
@@ -186,15 +169,12 @@ draw the colour only when it is a plain hex, and are capped (I3). Placing a pad 
 
 ## Performance and limits
 
-- Drawing: a fixed 17 nodes per pad (`AVATAR_PAD_ART`, built once at module load) plus one static radial gradient
-  (two stops) for the glow; no filters, nothing blurred per frame. The canvas view is memoised on the theme stroke,
-  the animation class and the press handler. Export emits the same 17 nodes and gradient.
-- Shimmer: one opacity loop (1 to 0.62 and back, eased, 1.6 s each way) on the two boxes that hold the light nodes:
-  the table is drawn as one SVG per run of light or unlit parts, back to front (`RUNS` in `AvatarPadView`: unlit,
-  the five lamps, unlit, glow / ring / ring highlight, unlit), and each run of lights sits in a `div` carrying
-  `avatar-pad-shimmer`, so the compositor fades it with no restyle on the page (Work Tracker 1257; a stepped fade on
-  the SVG nodes restyled and re-layerized the board about six times a second). Ten pulses to one 16 s iteration, so
-  the page handles an `animationiteration` once every 16 s. No inherited custom properties.
+- Drawing: a fixed 12 nodes per pad (`AVATAR_PAD_ART`, built once at module load) in one SVG: no gradient, no
+  filters, no animation, nothing per frame (a still board does no work for it; the old shimmer, a compositor loop on
+  the light nodes, went with the lights, owner 2026-11-27 "make it less scifi"). The canvas view is memoised on the
+  theme stroke, the animation class and the press handler. Export emits the same 12 nodes.
+- Paint: `avatarPadPaint(role, stroke)`: the outline and the side's shade in the theme stroke, the woods, the rug and
+  the inlay in `AVATAR_PAD_TONES` (fixed, warm), so light and dark paper both read it.
 - Arrival rule: runs only when the set of characters on screen changes (`presentKey`), O(people x pads); never per
   walked frame or presence packet.
 - Beam: three groups, 23 rects (five flash rows, four fading bands of three columns, six sparks), stepped keyframes (9, 7 and 8 steps), unmounted after 900ms (I3).
@@ -209,13 +189,14 @@ blurb "Where Avatars arrive".
 ## Accessibility
 
 - The pad's SVG is `role="img"` named "Avatar Pad"; the beam is `aria-hidden` decoration.
-- Motion: `prefers-reduced-motion` and `:root.reduce-motion` stop the shimmer and hide the beam.
-- Colour: the pad's identity does not depend on hue (outline, side and top are the theme's line and wash on any paper).
+- Motion: `prefers-reduced-motion` and `:root.reduce-motion` hide the beam; the pad itself never moves.
+- Colour: the pad's identity does not depend on hue: the theme's outline, the round rug and the compass rose read in
+  any colour vision, on either paper.
 
 ## Web Experience
 
 No layout shift: the beam is absolutely positioned inside the transformed canvas wrapper. No main-thread work on load:
-the drawing is 17 entries built once. INP: entry adds one O(n) pass, well under a frame.
+the drawing is 12 entries built once. INP: entry adds one O(n) pass, well under a frame.
 
 ## Observability
 
@@ -225,13 +206,10 @@ the drawing is 17 entries built once. INP: entry adds one O(n) pass, well under 
 
 Every Space and blank tab has one ([Avatar Pad](../avatar-pad.md#every-space-and-blank-tab-has-one)).
 
-- `arrival({ x, y, hint, hintW = ARRIVAL_HINT_W })`: `[how-to line, pad]`, the pad centred on `(x, y)`. The line
-  (`sm`, in the half's own ink, centre aligned) is `min(hintW, ARRIVAL_HINT_W)` wide, centred on the pad, its top
-  `ARRIVAL_HINT_BELOW` (8) under the pad, and `arrivalHintHeight(hint, width)` tall (`ceil(len * 7.4 / width)` lines
-  of 22 px). No line stands beside a pad: within 180 px of the pad's centre either side, it shows whole in a phone's
-  390 px view centred on the arrival.
+- `arrival({ x, y })`: `[pad]`, the pad centred on `(x, y)`. No how-to line: a Space holds no text element
+  ([The Write category](../../002-project-scope/not-in-livehuddle.md#the-write-category)).
 - Each Space builder passes its spot as an offset from the plan's centre `(cx, cy)` (a campus site: `arrival: { dx,
-dy, hintW?, hint }` on its `CampusSite`, placed by `campusPlan`); the spots are the spec's table ([Where a
+dy }` on its `CampusSite`, placed by `campusPlan`); the spots are the spec's table ([Where a
   Space's pad stands](../avatar-pad.md#where-a-spaces-pad-stands)), each checked by the tests below.
 - Clearance: the core sits 32 px below the pad's top (`(TOP.cy + 0.5) * 4`), and a Regular figure is
   `avatarFigureHeight(1.5)` = 99 px tall, so its head is 67 px above the pad's top; the tests hold the pad and that
@@ -251,25 +229,25 @@ dy, hintW?, hint }` on its `CampusSite`, placed by `campusPlan`); the spots are 
 
 ## Testing
 
-| Rule                                                                                     | Test                                                                                       |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Drawn core on `avatarPadCore`, fixed nodes, tints                                        | `packages/document/src/avatar-pad.test.ts`                                                 |
-| Scale whole, centred; core and footprint; rotation                                       | same                                                                                       |
-| Kind registration, factory, export drawing                                               | same                                                                                       |
-| Spawn pad: nearest, tie by order, none, no view                                          | `apps/editor/lib/avatar-pad.test.ts`                                                       |
-| Arrivals: new on a pad, not seen, cap, replace, expiry                                   | same                                                                                       |
-| Entry order, recentre, telemetry, I1, every entry                                        | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                      |
-| Own and peer beams from presence, once, expiry                                           | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                   |
-| View nodes, theme stroke, shimmer; beam, colour                                          | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                 |
-| I5: picker, key, command                                                                 | `EditWalkToggle.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts` |
-| A peer walks in from a board button                                                      | `apps/editor/e2e/realtime-peers.spec.ts`                                                   |
-| One pad per Space tab, on open floor, figure clear                                       | `packages/templates/src/template-builders-spaces-more.test.ts`                             |
-| In the plan, off its bottom-right, no stage; line clear, centred under it, within 180 px | same                                                                                       |
-| No pad on a path's stones                                                                | `packages/templates/src/template-paths.test.ts`                                            |
-| Floors first; Blank Space is one pad below the middle                                    | `packages/templates/src/build-template.test.ts`                                            |
-| A pad-only tab opens no walk                                                             | `apps/editor/lib/walk-entrance.test.ts`                                                    |
-| A new Space on its start is empty; Start Blank's pad                                     | `apps/editor/lib/new-document-content.test.ts`                                             |
-| The × lands the pad uncounted                                                            | `apps/editor/components/start/StartFromTemplates.test.tsx`                                 |
+| Rule                                                            | Test                                                                                       |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Drawn core on `avatarPadCore`, fixed nodes, tints               | `packages/document/src/avatar-pad.test.ts`                                                 |
+| Scale whole, centred; core and footprint; rotation              | same                                                                                       |
+| Kind registration, factory, export drawing                      | same                                                                                       |
+| Spawn pad: nearest, tie by order, none, no view                 | `apps/editor/lib/avatar-pad.test.ts`                                                       |
+| Arrivals: new on a pad, not seen, cap, replace, expiry          | same                                                                                       |
+| Entry order, recentre, telemetry, I1, every entry               | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                      |
+| Own and peer beams from presence, once, expiry                  | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                   |
+| View nodes, theme stroke, fixed woods, still; beam, colour      | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                 |
+| I5: picker, key, command                                        | `EditWalkToggle.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts` |
+| A peer walks in from a board button                             | `apps/editor/e2e/realtime-peers.spec.ts`                                                   |
+| One pad per Space tab, on open floor, figure clear              | `packages/templates/src/template-builders-spaces-more.test.ts`                             |
+| In the plan, off its bottom-right, no stage; no text on the tab | same                                                                                       |
+| No pad on a path's stones                                       | `packages/templates/src/template-paths.test.ts`                                            |
+| Floors first; Blank Space is one pad below the middle           | `packages/templates/src/build-template.test.ts`                                            |
+| A pad-only tab opens no walk                                    | `apps/editor/lib/walk-entrance.test.ts`                                                    |
+| A new Space on its start is empty; Start Blank's pad            | `apps/editor/lib/new-document-content.test.ts`                                             |
+| The × lands the pad uncounted                                   | `apps/editor/components/start/StartFromTemplates.test.tsx`                                 |
 
 ## Constants and configuration
 
@@ -280,8 +258,6 @@ dy, hintW?, hint }` on its `CampusSite`, placed by `campusPlan`); the spots are 
 | `AVATAR_PAD_DEFAULT_SIZE` | 128 x 80 | 4 canvas px per grid pixel (D212)                        | 64 to 256 wide |
 | `AVATAR_PAD_ARRIVAL_MS`   | 900      | Under a second; matches `avatar-pad-beam`                | 600 to 1200    |
 | `AVATAR_PAD_MAX_ARRIVALS` | 8        | A full row of arrivals without filling the canvas (D213) | 4 to 16        |
-| `ARRIVAL_HINT_W`          | 360      | The widest line a 390 px phone view shows whole (D215)   | 140 to 360     |
-| `ARRIVAL_HINT_BELOW`      | 8        | The line just under the pad's front rim                  | 4 to 24        |
 | `BLANK_PAD_DROP`          | 160      | Below the middle, in view at 100% on a phone (D216)      | 120 to 200     |
 
 ## Assets and external resources
@@ -290,5 +266,5 @@ None: the pad is a vector table and the beam a pixel table, both in source.
 
 ## Defaults ledger
 
-D211 (beam size), D212 (default size), D213 (arrival cap), D215 (a Space's how-to line), D216 (a blank tab's pad
+D211 (beam size), D212 (default size), D213 (arrival cap), D215 (a Space's how-to line, retired with the text elements), D216 (a blank tab's pad
 below the middle).

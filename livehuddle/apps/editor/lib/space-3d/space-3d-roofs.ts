@@ -2,9 +2,9 @@
 // 3D view puts a pitched roof on its walls, its ridge along the room's long side. The roof is a ghost like the walls
 // in front of you (app/space-3d.css), so it never hides anyone, and it goes while you stand inside that room. A room
 // on a floor that is not grass is a room inside a building and has none.
-import type { Element } from '@livehuddle/document';
+import { isGlassRoom, isRoomOutline, type Element } from '@livehuddle/document';
+import { pointInPolygon } from '@livehuddle/avatar/room-outline';
 import { SPACE_WALL_HEIGHT } from './space-3d-walls';
-import type { SpaceArea } from './space-3d-cutaway';
 
 /** How steep a roof is: its rise over half its span (about 35 degrees). */
 export const SPACE_ROOF_PITCH = 0.7;
@@ -19,6 +19,12 @@ export type SpaceRoof = {
   width: number;
   height: number;
   across: boolean;
+  // Flat, lying on the wall tops (a glass room, or a Room Builder room whose outline a hipped roof cannot follow).
+  flat?: boolean;
+  // Glass, as the room's walls are.
+  glass?: boolean;
+  // A Room Builder room's corners, as fractions of its box.
+  outline?: readonly { x: number; y: number }[];
 };
 
 type Box = { x: number; y: number; width: number; height: number };
@@ -26,16 +32,18 @@ type Box = { x: number; y: number; width: number; height: number };
 const inside = (p: { x: number; y: number }, b: Box) =>
   p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height;
 
-/** Every plain room (a box, unturned) whose middle stands on Grass, in board order. */
+/** Every unturned room whose middle stands on Grass, in board order: hipped, or flat for glass and outlines. */
 export function spaceRoofs(elements: readonly Element[]): SpaceRoof[] {
   const lawns: Box[] = [];
   for (const el of elements) if (el.type === 'shape' && el.shape === 'grass') lawns.push(el);
   if (lawns.length === 0) return [];
   const out: SpaceRoof[] = [];
   for (const el of elements) {
-    if (el.type !== 'shape' || el.shape !== 'room' || el.rotation || el.roomOutline) continue;
+    if (el.type !== 'shape' || el.shape !== 'room' || el.rotation) continue;
     const middle = { x: el.x + el.width / 2, y: el.y + el.height / 2 };
     if (!lawns.some((lawn) => inside(middle, lawn))) continue;
+    const outline = isRoomOutline(el.roomOutline) ? el.roomOutline : undefined;
+    const glass = isGlassRoom(el);
     out.push({
       id: el.id,
       x: el.x,
@@ -43,23 +51,12 @@ export function spaceRoofs(elements: readonly Element[]): SpaceRoof[] {
       width: el.width,
       height: el.height,
       across: el.height > el.width,
+      ...(glass || outline ? { flat: true } : null),
+      ...(glass ? { glass: true } : null),
+      ...(outline ? { outline } : null),
     });
   }
   return out;
-}
-
-/** The roofs whose rooms meet the drawn area. */
-export function roofsInArea(
-  roofs: readonly SpaceRoof[],
-  area: Pick<SpaceArea, 'left' | 'top' | 'right' | 'bottom'>,
-): SpaceRoof[] {
-  return roofs.filter(
-    (r) =>
-      r.x + r.width >= area.left &&
-      r.x <= area.right &&
-      r.y + r.height >= area.top &&
-      r.y <= area.bottom,
-  );
 }
 
 /** The roof over `feet`, by id: the one hidden while you stand in its room. */
@@ -68,7 +65,14 @@ export function roofOver(
   feet: { x: number; y: number } | null,
 ): string | null {
   if (!feet) return null;
-  return roofs.find((r) => inside(feet, r))?.id ?? null;
+  const under = (r: SpaceRoof) =>
+    inside(feet, r) &&
+    (!r.outline ||
+      pointInPolygon(
+        { x: (feet.x - r.x) / (r.width || 1), y: (feet.y - r.y) / (r.height || 1) },
+        r.outline,
+      ));
+  return roofs.find(under)?.id ?? null;
 }
 
 /**

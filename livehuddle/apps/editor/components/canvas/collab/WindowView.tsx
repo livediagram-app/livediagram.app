@@ -156,22 +156,6 @@ export function GlassRoomView({
               strokeWidth={1}
             />
           ))}
-          {art.doors.map((d, i) => (
-            <rect
-              key={`door-${i}`}
-              data-back-wall-door=""
-              x={d.x}
-              y={d.y}
-              width={d.w}
-              height={d.h}
-              rx={1.5}
-              fill={stroke}
-              fillOpacity={GLASS_WALL.face * 2}
-              stroke={stroke}
-              strokeOpacity={GLASS_WALL.pane}
-              strokeWidth={FURNITURE_PANEL_STROKE}
-            />
-          ))}
           {art.glints ? (
             <path
               d={art.glints}

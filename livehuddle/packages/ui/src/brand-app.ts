@@ -27,7 +27,19 @@ export const BRAND_ACCENT: Record<PrismScheme, string> = {
 export const BRAND_RAMP: Readonly<Record<BrandStep, string>> = BRAND_APPS[BRAND_APP].ramp;
 
 export {
+  BRAND_GRADIENTS,
   BRAND_MARK_VIEWBOX,
+  easeOutCubic,
+  PRISM_OPEN_MS,
+  PRISM_SETTLE_MS,
+  PRISM_SPIN_DEG_PER_S,
+  PRISM_SPIN_RAMP_MS,
+  prismFrame,
+  prismPalette,
+  restingTurn,
+  settleTurn,
+  type BrandGradient,
+  type PrismFrame,
   type BrandMarkVariant,
   type PrismPalette,
   type PrismScheme,

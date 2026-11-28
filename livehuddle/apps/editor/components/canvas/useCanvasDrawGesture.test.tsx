@@ -50,9 +50,15 @@ const press = (result: ReturnType<typeof setup>['result'], x: number, y: number)
   act(() => {
     result.current.beginPendingDrawGesture({ clientX: x, clientY: y } as React.PointerEvent);
   });
-const pointer = (type: 'pointermove' | 'pointerup', x = 0, y = 0, shiftKey = false) =>
+const pointer = (
+  type: 'pointermove' | 'pointerup',
+  x = 0,
+  y = 0,
+  shiftKey = false,
+  metaKey = false,
+) =>
   act(() => {
-    window.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, shiftKey }));
+    window.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, shiftKey, metaKey }));
   });
 
 beforeEach(() => vi.useFakeTimers());
@@ -73,7 +79,7 @@ describe('useCanvasDrawGesture box drag', () => {
     });
     pointer('pointerup');
     expect(result.current.drawDrag).toBeNull();
-    expect(onCommitDraw).toHaveBeenCalledWith(BOX, 100, 100, 300, 250);
+    expect(onCommitDraw).toHaveBeenCalledWith(BOX, 100, 100, 300, 250, false);
   });
 
   it('reads the zoom as it is now when the view zooms mid-drag', () => {
@@ -98,7 +104,7 @@ describe('useCanvasDrawGesture box drag', () => {
     pointer('pointermove', 300, 250);
     pointer('pointerup');
     expect(first).not.toHaveBeenCalled();
-    expect(second).toHaveBeenCalledWith(BOX, 100, 100, 300, 250);
+    expect(second).toHaveBeenCalledWith(BOX, 100, 100, 300, 250, false);
   });
 });
 
@@ -140,6 +146,33 @@ describe('useCanvasDrawGesture with Shift', () => {
     expect(result.current.drawDrag).toMatchObject({ currentX: 300, currentY: 300 });
     pointer('pointermove', 300, 150, false);
     expect(result.current.drawDrag).toMatchObject({ currentX: 300, currentY: 150 });
+  });
+});
+
+// docs/specs/009-elements/office.md "Rooms line up": an armed Room lands centred on the press, snapped as a whole room
+// by the commit (where its preview stood), so the press itself is not snapped as a corner; Cmd / Ctrl at the release
+// places it freely (docs/specs/008-canvas/snap-override.md).
+describe('useCanvasDrawGesture placing a Room', () => {
+  const near = { ...createSticky(103, 600), width: 80, height: 80 } as Element;
+
+  it('keeps the press as it is for a Room, while a drawn shape still latches its first corner', () => {
+    const onCommitDraw = vi.fn();
+    const { result } = setup({ onCommitDraw }, [near]);
+    press(result, 100, 100);
+    pointer('pointerup', 100, 100);
+    expect(onCommitDraw).toHaveBeenCalledWith(BOX, 100, 100, 100, 100, false);
+    const rect: PendingDraw = { type: 'shape', kind: 'stage' };
+    const drawn = setup({ pendingDraw: rect }, [near]);
+    press(drawn.result, 100, 100);
+    expect(drawn.result.current.drawDrag).toMatchObject({ startX: 103 });
+  });
+
+  it('tells the commit Cmd / Ctrl was held at the release', () => {
+    const onCommitDraw = vi.fn();
+    const { result } = setup({ onCommitDraw });
+    press(result, 100, 100);
+    pointer('pointerup', 100, 100, false, true);
+    expect(onCommitDraw).toHaveBeenCalledWith(BOX, 100, 100, 100, 100, true);
   });
 });
 

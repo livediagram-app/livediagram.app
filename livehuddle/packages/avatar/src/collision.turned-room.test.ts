@@ -71,12 +71,6 @@ describe('a turned room', () => {
     };
     const lines = fenceSegments([room({ rotation: 90 }), door]);
     expect(fenceStep({ x: 200, y: -20 }, { x: 200, y: -70 }, lines).blocked).toBe(false);
-    // Shut, it blocks again.
-    const shut = fenceSegments([
-      room({ rotation: 90 }),
-      { ...door, doorClosed: true } as typeof door,
-    ]);
-    expect(fenceStep({ x: 200, y: -20 }, { x: 200, y: -70 }, shut).blocked).toBe(true);
   });
 
   it('turns a Room Builder room by its rotation too', () => {

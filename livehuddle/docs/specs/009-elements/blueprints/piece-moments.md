@@ -14,7 +14,7 @@ Derived from [Piece moments](../piece-moments.md).
 | `apps/editor/components/canvas/collab/OfficeMoments.tsx`          | The drawn-over parts of the static office, amenity, venue and team pieces, and `PoolMoment`                                       |
 | `apps/editor/components/canvas/collab/office-moment-drawings.tsx` | The small drawings those moments are made of: a ring, drips, a breeze, a dart, steam, a sparrow and the rest                      |
 | `apps/editor/components/canvas/collab/WalkUpMoments.tsx`          | The walk-up answers the pieces' own views play: `NoteSwing`, `LonePin`, `TickingHand`, `PageLift`, `WindowMoment`                 |
-| `apps/editor/components/canvas/collab/SocialFaces.tsx`            | The Notice Board's face swings a note or wobbles a pin; the World Clock's face ticks its hands                                    |
+| `apps/editor/components/canvas/collab/SocialFaces.tsx`            | The Notice Board's face swings a note or wobbles a pin; the Clock's face ticks its hands                                          |
 | `apps/editor/components/canvas/collab/TeamFaces.tsx`              | The Calendar Wall's face lifts its page                                                                                           |
 | `apps/editor/components/canvas/collab/WindowView.tsx`             | Draws `WindowMoment` over the window and its light                                                                                |
 | `apps/editor/app/piece-moments.css`                               | The garden and fire keyframes; reduced motion for every moment                                                                    |
@@ -79,10 +79,10 @@ Derived from [Piece moments](../piece-moments.md).
   wall's centre line to `height / 2 + WALL_REACH` into the room (local +y) and `width / 2 + MOMENT_REACH` each way
   along it (local x) clockwise about the window's middle, and keeps the box around it. `(ux, uy)` is the window's own
   +x turned the same way, rounded to 1e-9 so a quarter turn is exact. Every other kind has `(1, 0)`.
-- **Face kinds**: `NoticeBoardFace`, `WorldClockFace` and `CalendarWallFace` read `useFreshMoment(element.id)`; a fresh
+- **Face kinds**: `NoticeBoardFace`, `ClockFace` and `CalendarWallFace` read `useFreshMoment(element.id)`; a fresh
   play re-renders that face only. The Notice Board wraps note `swingingNote(side, shown)` (0 on your left or when one
   note shows, else 1) in `NoteSwing` about its pin, or with no notes draws `LonePin` at the cork's top corner on your
-  side (`x + 22` or `x + w - 18`, `y + 16`). The World Clock wraps each dial's minute hand in `TickingHand` about its
+  side (`x + 22` or `x + w - 18`, `y + 16`). The Clock wraps its minute hand in `TickingHand` about its
   centre, delayed by `waveDelay(cx, side, width)`. The Calendar Wall draws `PageLift` at the sheet's bottom corner away
   from you (the near one is under your character), `(200, 160)` from the left or `(0, 160)` from the right.
 - **The Window**: `WindowView` draws `WindowMoment`, which reads `useFreshMoment(id)` and draws, keyed by the play, a
@@ -120,7 +120,7 @@ board's life.
 - A Window at an angle that is not a quarter turn (a custom room's slanted wall): the box around the turned reach,
   a little larger at the corners than the floor its light falls on.
 - A Notice Board with one note: that note swings from either side. With none: the lone pin, which ends invisible.
-- A World Clock before its first minute is read (`now` 0): it draws no hands, so nothing ticks.
+- A Clock before its first minute is read (`now` 0): it draws no hands, so nothing ticks.
 - Someone sitting in the Hammock: the sitter is drawn by the characters' layer and keeps still.
 - Walking out and back in mid-moment: still playing, so nothing restarts; the arrival after it ends plays.
 - A moment piece inside the placement preview: the preview's element id never plays, so it draws no moment.
@@ -175,6 +175,9 @@ linear but a thrown thing's travel across. A swing peaks at its `--swing` and da
 | Lockers         | Whole drawing rattles                                                             | A folded note falling from the nearest locker's vent           | 2.5 s  |
 | Coat Rack       | Coats and scarf swing 4 degrees on the hooks (28, 22); the hat hops 2 px          | Nothing                                                        | 1.9 s  |
 | Umbrella Stand  | Each umbrella swings 6 degrees on its foot, in a wave from you                    | A raindrop down the stand and a ring on the floor              | 2.7 s  |
+| Floor Lamp      | The shade, its lit rim and the floor's pool wink twice (`wink`)                   | Nothing; in 3D it rocks away from you and a warm halo flickers | 0.9 s  |
+| Table Lamp      | The shade, its lit rim and the desk's pool wink twice                             | Nothing; in 3D a warm halo flickers at the shade               | 0.9 s  |
+| Desk Lamp       | The head's lit rim and the desk's pool wink twice                                 | Nothing; in 3D a warm halo flickers at the head                | 0.9 s  |
 | Kitchen Counter | The nearest cupboard door, its panel line and handle, opens to 60 % and shuts     | Nothing                                                        | 1.3 s  |
 | Kitchen Sink    | The tea towel swings 5 degrees on the door (78, 33)                               | Three drops from the tap, a ring each                          | 2.8 s  |
 | Fridge          | The photo and the note on the door swing on their magnets                         | Three puffs of cold air from the door seal                     | 1.8 s  |
@@ -188,7 +191,7 @@ linear but a thrown thing's travel across. A swing peaks at its `--swing` and da
 | Swimming Pool   | Nothing (drawn to size)                                                           | A rubber duck bobbing on your side, two rings                  | 2.5 s  |
 | Hammock         | Ropes, sling, band and spreader bars swing 4 degrees on (76, 16), 1.8 s           | Nothing                                                        | 1.9 s  |
 | Notice Board    | The top note on your side swings 6 degrees on its pin, 1.6 s (on its face)        | On bare cork: a red pin pops in at your corner, wobbles, fades | 1.7 s  |
-| World Clock     | Each minute hand ticks once round in 12 steps, 1.2 s, a wave from you (its face)  | Nothing                                                        | 1.7 s  |
+| Clock           | Its minute hand ticks once round in 12 steps, 1.2 s (its face)                    | Nothing                                                        | 1.7 s  |
 | Calendar Wall   | Nothing                                                                           | A 28 px dog-ear curling up at the far bottom corner, 1.3 s     | 1.4 s  |
 | Suggestion Box  | The note in the slot and its writing rise 5 px and sink back, 1.1 s               | The bulb's glow (r 9, peak 0.75) and a sparkle beside it       | 1.5 s  |
 | Window          | Nothing                                                                           | The light's second wash (1.6 s); a glint across the pane       | 1.7 s  |
@@ -232,14 +235,14 @@ None: a moment is a decoration with no failure mode. No telemetry event (it is n
 
 ## Constants and configuration
 
-| Constant        | Value                                                                                                     | Why                                                                                       |
-| --------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `MOMENT_REACH`  | 24 px                                                                                                     | The Arcade Machine's reach: "right next to it"                                            |
-| `WALL_REACH`    | 56 px                                                                                                     | A wall piece's reach below: the floor in front of a room's back wall                      |
-| `COUNTER_REACH` | 96 px                                                                                                     | A counter piece's reach below: a counter's 88 px body, then the floor in front of it      |
-| `MOMENT_TOP`    | Per kind, 0 (all round what lies flat) to 0.85 (the foot of what stands tall); see `lib/piece-moments.ts` | Where the reach starts down the box: the base of what stands up, all round what lies flat |
-| `MOMENT_MS`     | Per kind, 1100 to 2800 ms; the Presentation table's lengths                                               | The still-playing guard: how long a moment runs                                           |
-| `CURL`          | 28 px (WalkUpMoments.tsx)                                                                                 | The Calendar Wall's dog-ear: big enough to read at 100 %, inside the bottom row's cell    |
+| Constant        | Value                                                                                                     | Why                                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `MOMENT_REACH`  | 24 px                                                                                                     | The Arcade Machine's reach: "right next to it"                                                                    |
+| `WALL_REACH`    | 56 px                                                                                                     | A wall piece's reach below: the floor in front of a room's back wall                                              |
+| `COUNTER_REACH` | 96 px                                                                                                     | A counter piece's (and a Table or Desk Lamp's) reach below: a counter's 88 px body, then the floor in front of it |
+| `MOMENT_TOP`    | Per kind, 0 (all round what lies flat) to 0.85 (the foot of what stands tall); see `lib/piece-moments.ts` | Where the reach starts down the box: the base of what stands up, all round what lies flat                         |
+| `MOMENT_MS`     | Per kind, 1100 to 2800 ms; the Presentation table's lengths                                               | The still-playing guard: how long a moment runs                                                                   |
+| `CURL`          | 28 px (WalkUpMoments.tsx)                                                                                 | The Calendar Wall's dog-ear: big enough to read at 100 %, inside the bottom row's cell                            |
 
 ## Defaults ledger
 

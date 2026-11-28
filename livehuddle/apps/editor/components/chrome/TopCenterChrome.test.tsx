@@ -20,7 +20,6 @@ const idle = {
   onCancelDraw: () => {},
   onExitFormatTool: () => {},
   canvasTool: undefined,
-  formatSourceId: null,
 } as unknown as ComponentProps<typeof TopCenterChrome>;
 
 describe('TopCenterChrome', () => {

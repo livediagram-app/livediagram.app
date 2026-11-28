@@ -30,7 +30,7 @@ const SCREEN_X = (ROOM_W - DOCUMENT_ROOM_SCREEN.width) / 2;
 // here before the room opens out; built, the front row stands 76 px from the screen with a 120 px aisle between the
 // rows, so the room sits close to the wall and sitting can frame the Screen with you (avatar-mode.md "The camera").
 const SEAT_XS = [194, 279, 364, 600, 685, 770];
-const ROW_YS = [456, 620] as const;
+const ROW_YS = [456, 624] as const;
 
 // The board by the screen: how the room works.
 const ROOM_NOTES: readonly TemplateNote[] = [
@@ -54,8 +54,8 @@ const ROOM_PIECES: OfficePiece[] = [
   ...ROW_YS.flatMap((y) =>
     SEAT_XS.map((x) => ({ kind: 'chair' as const, x, y, facing: 's' as const })),
   ),
-  { kind: 'coffee-machine', x: 40, y: 520 },
-  { kind: 'water-cooler', x: 952, y: 500 },
+  { kind: 'coffee-machine', x: 12, y: 520, facing: 'w' },
+  { kind: 'water-cooler', x: ROOM_W - 70, y: 500, facing: 'e' },
   { kind: 'plant', x: 40, y: 920 },
   { kind: 'plant', x: 944, y: 920 },
 ];
@@ -83,21 +83,11 @@ export function buildDocumentRoom(cx: number, cy: number): Element[] {
   return spacePlan(
     x0,
     y0,
-    width,
     rooms,
-    {
-      text: 'Document Room',
-      width: 320,
-      sticker: 'emoji-desktop',
-      subtitle:
-        'Meet round one file: it is live on the big screen for everyone with access, and the chairs face it.',
-    },
     // In the aisle just behind the last row, the screen ahead.
     arrival({
       x: cx,
       y: y0 + SPACE_HEAD + 780,
-      hintW: 200,
-      hint: 'You arrive on the Avatar Pad: take a seat, and press the screen to open the file large.',
     }),
   );
 }

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { parseAvatarConfig } from './config';
 import {
   AVATAR_STATUS_IDS,
   expandAvatarPacket,
   isLeanAvatarPacket,
   leanAvatarPacket,
+  type AvatarPacket,
   type AvatarPresence,
   type AvatarStatus,
 } from './wire';
@@ -86,6 +88,21 @@ describe('lean avatar packets', () => {
     expect(leanAvatarPacket(busy, true)).toEqual({ ...busy, x: 512.35, y: 300 });
   });
 
+  it('carries a raised hand and a newer Behaviour, and leaves a lowered hand out', () => {
+    const up: AvatarPresence = {
+      ...resting,
+      handUp: true,
+      reaction: { kind: 'clap', elapsedMs: 40 },
+    };
+    const lean = leanAvatarPacket(up, false);
+    expect(lean.handUp).toBe(true);
+    expect(lean.reaction).toEqual({ kind: 'clap', elapsedMs: 40 });
+    expect(expandAvatarPacket(lean, costume).handUp).toBe(true);
+    expect('handUp' in leanAvatarPacket({ ...resting, handUp: false }, false)).toBe(false);
+    // Through JSON, as the room relays it.
+    expect((JSON.parse(JSON.stringify(lean)) as AvatarPresence).handUp).toBe(true);
+  });
+
   it('knows a lean packet from a full one', () => {
     expect(isLeanAvatarPacket(resting)).toBe(false);
     expect(isLeanAvatarPacket(leanAvatarPacket(resting, true))).toBe(true);
@@ -116,5 +133,22 @@ describe('lean avatar packets', () => {
 
   it('keeps a full packet as it is', () => {
     expect(expandAvatarPacket(resting, undefined)).toEqual(resting);
+  });
+
+  // docs/specs/008-canvas/avatar-mode.md "Build": optional on the wire, Regular when absent or unknown.
+  it('carries a build through a packet, and reads one without it (an older sender) as Regular', () => {
+    const broad = { ...costume, build: 'large' } as const;
+    const sent: AvatarPacket = JSON.parse(
+      JSON.stringify(leanAvatarPacket({ ...resting, config: broad }, true)),
+    );
+    const got = expandAvatarPacket(sent, undefined);
+    expect(got.config).toEqual(broad);
+    expect(parseAvatarConfig(got.config).build).toBe('large');
+    const older: AvatarPacket = JSON.parse(JSON.stringify(leanAvatarPacket(resting, true)));
+    expect(older.config).not.toHaveProperty('build');
+    expect(parseAvatarConfig(expandAvatarPacket(older, undefined).config).build).toBe('regular');
+    // A lean packet keeps the build last seen.
+    const lean = leanAvatarPacket({ ...resting, config: broad }, false);
+    expect(expandAvatarPacket(lean, broad).config?.build).toBe('large');
   });
 });

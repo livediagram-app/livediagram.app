@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { SHAPE_DEFAULT_SIZE, type Element } from '@livehuddle/document';
+import { createShape, ROOM_WALL, SHAPE_DEFAULT_SIZE, type Element } from '@livehuddle/document';
 import { placingSize, resetPlacingFacing, turnPlacing } from '@/lib/placing-facing';
 import {
   getPaletteDragSnap,
@@ -25,10 +25,11 @@ function wrapper() {
   return { current: el };
 }
 
-function dragOver(target: HTMLElement, clientX: number, clientY: number) {
+function dragOver(target: HTMLElement, clientX: number, clientY: number, metaKey = false) {
   const event = new Event('dragover', { bubbles: true });
   Object.defineProperty(event, 'clientX', { value: clientX });
   Object.defineProperty(event, 'clientY', { value: clientY });
+  Object.defineProperty(event, 'metaKey', { value: metaKey });
   act(() => {
     target.dispatchEvent(event);
   });
@@ -36,7 +37,7 @@ function dragOver(target: HTMLElement, clientX: number, clientY: number) {
 
 function render(elements: Element[] = [neighbour]) {
   const wrapperRef = wrapper();
-  setPaletteDragPreview({ kind: 'sticky', width: 200, height: 200 });
+  setPaletteDragPreview({ kind: 'desk', width: 200, height: 200 });
   const view = renderHook(() => usePaletteDragGuides({ elements, readZoom: () => 1, wrapperRef }));
   return { ...view, wrapperRef };
 }
@@ -116,5 +117,41 @@ describe('a piece turned while placed (docs/specs/009-elements/furniture-facing.
     act(() => void turnPlacing('sofa', 1));
     expect(getPaletteDragSnap()?.dx).toBe(-4);
     expect(before).not.toBe(-4);
+  });
+});
+
+// docs/specs/009-elements/office.md "Rooms line up": a Room dragged in beside a room shares its wall; Cmd / Ctrl drops it
+// where the pointer is (docs/specs/008-canvas/snap-override.md).
+describe('a Room dragged in beside a room', () => {
+  const left = {
+    ...createShape('room', 0, 0),
+    id: 'a',
+    width: 480,
+    height: 320,
+    roomDoor: 'none',
+  } as Element;
+  function renderRoom(variant?: string, width = 480, height = 320) {
+    const wrapperRef = wrapper();
+    setPaletteDragPreview({ kind: 'room', variant, width, height });
+    renderHook(() => usePaletteDragGuides({ elements: [left], readZoom: () => 1, wrapperRef }));
+    return wrapperRef;
+  }
+
+  it('publishes the shared-wall snap for a box edge to box edge drop', () => {
+    const target = renderRoom();
+    dragOver(target.current, 480 + 240, 160);
+    expect(getPaletteDragSnap()?.dx).toBe(-ROOM_WALL);
+  });
+
+  it('publishes no snap with Cmd / Ctrl held', () => {
+    const target = renderRoom();
+    dragOver(target.current, 480 + 240, 160, true);
+    expect(getPaletteDragSnap()).toBeNull();
+  });
+
+  it('lines a shaped preset up by its edges only', () => {
+    const target = renderRoom('hexagon', 680, 560);
+    dragOver(target.current, 482 + 340, 280);
+    expect(getPaletteDragSnap()?.dx).toBe(-2);
   });
 });

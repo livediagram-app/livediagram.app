@@ -18,6 +18,7 @@ const WALL_MOUNTED: ReadonlySet<string> = new Set([
   'dartboard',
   'calendar-wall',
   'photo-wall',
+  'poster',
   'hand-dryer',
 ]);
 
@@ -77,11 +78,21 @@ function sidesOf(elements: readonly Element[]): Side[] {
  * slid along it to stay on it, and `WALL_MOUNT_GAP` off its line; a hung piece on a room's back wall hangs on its
  * standing face. Unchanged for one already on a wall, any other piece, or when the board has no wall.
  */
-export function snapToWallFace(piece: ShapeElement, elements: readonly Element[]): ShapeElement {
+export function snapToWallFace(
+  piece: ShapeElement,
+  elements: readonly Element[],
+  // Aimed at a wall in the 3D view (wall-pieces.md "Aimed at a wall in 3D"): a point on the side of the wall the
+  // camera sees it from. Only faces on that side are taken, and the piece always lands flush on one, never left
+  // straddling the wall it was aimed at.
+  toward?: { x: number; y: number },
+): ShapeElement {
   if (!mountsOnWall(piece.shape)) return piece;
   const turns = turnsWithFacing(piece.shape);
-  const sides = sidesOf(elements);
-  if (sides.some((side) => touches(piece, side, turns))) return piece;
+  const all = sidesOf(elements);
+  const sides = toward
+    ? all.filter((side) => ((side.vertical ? toward.x : toward.y) - side.line) * side.dir > 0)
+    : all;
+  if (!toward && sides.some((side) => touches(piece, side, turns))) return piece;
   const cx = piece.x + piece.width / 2;
   const cy = piece.y + piece.height / 2;
   let best: { el: ShapeElement; dist: number } | null = null;
@@ -134,13 +145,54 @@ function touches(piece: ShapeElement, side: Side, turns: boolean): boolean {
 export function snapMovedWallPieces(
   els: Element[],
   ids: { has(id: ElementId): boolean },
+  // A dragged wall piece aimed at a wall in 3D (snapToWallFace's `aim`): where it goes and the side it faces.
+  aim?: (
+    piece: ShapeElement,
+  ) => { at: { x: number; y: number }; toward: { x: number; y: number } } | null,
 ): Element[] {
   let changed = false;
   const out = els.map((el) => {
     if (!ids.has(el.id) || el.type !== 'shape' || !mountsOnWall(el.shape)) return el;
-    const next = snapToWallFace(el, els);
+    const aimed = aim?.(el);
+    const next = aimed
+      ? snapToWallFace(
+          { ...el, x: aimed.at.x - el.width / 2, y: aimed.at.y - el.height / 2 },
+          els,
+          aimed.toward,
+        )
+      : snapToWallFace(el, els);
     if (next !== el) changed = true;
     return next;
   });
   return changed ? out : els;
+}
+
+// Each board's wall faces, found once for every wall piece on it (the 3D view asks for each of its pieces in turn).
+const sidesFor = new WeakMap<readonly Element[], Side[]>();
+
+/** The wall face a mounted piece stands against: the wall's line, along x or y, and the side of it the piece is on. */
+export type MountedFace = { line: number; vertical: boolean; dir: 1 | -1; lo: number; hi: number };
+
+/**
+ * The wall face a mounted piece stands against (wall-pieces.md "Only on a wall"), or null for any other piece or one
+ * standing on no wall: of the faces it touches, one whose back wall's standing face holds its middle (a piece hung on
+ * a room's back wall belongs to the room's side), else the one its middle stands furthest out from. The 3D view hangs
+ * it flat on that face (3d-engine.md "Wall pieces sit on their wall").
+ */
+export function mountedFace(piece: ShapeElement, elements: readonly Element[]): MountedFace | null {
+  if (!mountsOnWall(piece.shape)) return null;
+  const turns = turnsWithFacing(piece.shape);
+  let sides = sidesFor.get(elements);
+  if (!sides) sidesFor.set(elements, (sides = sidesOf(elements)));
+  let best: { side: Side; score: number } | null = null;
+  for (const side of sides) {
+    if (!touches(piece, side, turns)) continue;
+    const centre = side.vertical ? piece.x + piece.width / 2 : piece.y + piece.height / 2;
+    const inBand = side.band > 0 && centre >= side.line - side.band && centre <= side.line;
+    const score = inBand ? Infinity : (centre - side.line) * side.dir;
+    if (!best || score > best.score) best = { side, score };
+  }
+  if (!best) return null;
+  const { line, vertical, dir, lo, hi } = best.side;
+  return { line, vertical, dir, lo, hi };
 }

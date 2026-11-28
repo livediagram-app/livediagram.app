@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   doorOnRoom,
   isFloorShape,
+  mountsOnWall,
   roomDoorSpan,
   roomWalls,
   seatsACharacter,
@@ -11,7 +12,7 @@ import { AVATAR_WIDTH, avatarFigureHeight } from '@livehuddle/avatar/walk';
 import { avatarPadCore } from '@livehuddle/avatar/pad-art';
 import { avatarScale } from '@livehuddle/avatar/config';
 import { buildTemplate } from './build-template';
-import { ARRIVAL_HINT_W } from './template-arrival';
+import { modelFloorBox } from './template-model-box';
 import { templateFloors } from './template-floors';
 import { templateCategory } from './template-categories';
 import { TEMPLATES, type TemplateKind } from './templates';
@@ -24,7 +25,8 @@ import { TEMPLATES, type TemplateKind } from './templates';
 type Box = { x: number; y: number; width: number; height: number };
 
 // An aisle: two Regular characters side by side, and no catch distance (a seat catches only feet inside it).
-const TEMPLATE_AISLE = 2 * AVATAR_WIDTH * avatarScale('regular');
+// The width two Regular characters walk at (their collision reach's scale, 1.5), not the larger size they are drawn at.
+const TEMPLATE_AISLE = 2 * AVATAR_WIDTH * 1.5;
 // The Spaces laid out to the aisle rule (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
 const ROOMY: readonly string[] = [
   'all-hands-hall',
@@ -107,6 +109,9 @@ const meets = (a: Box, b: Box) =>
 const inside = (a: Box, b: Box) =>
   a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
 const shapes = (els: Element[]) => els.filter((e): e is Shape => e.type === 'shape');
+// Where a piece stands on the floor in 3D: its model's footprint (template-model-box.ts), which a wall piece stands back
+// against its wall (templates-by-mode.md "Made for 3D"); a piece hung on a wall keeps its drawn box.
+const floorOf = (e: Shape): Box => (mountsOnWall(e.shape) ? e : modelFloorBox(e));
 
 // The wall a room's Door piece stands on (docs/specs/009-elements/office.md "The doorway is a Door"), or 'none'.
 function doorSide(
@@ -148,25 +153,19 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
     expect(els.slice(firstOther).some(isFloor)).toBe(false);
     expect(all.filter((e) => e.shape === 'avatar-pad')).toHaveLength(1);
     expect(all.filter((e) => e.shape === 'mode-button')).toEqual([]);
-    // The first tab's how-to line names the pad it stands beside.
-    if (first)
-      expect(
-        els.some((e) => e.type === 'text' && /Avatar Pad/.test(e.label ?? '')),
-        'how-to line',
-      ).toBe(true);
+    // No text and no sticky note: no heading, no how-to line, no board of stickies
+    // (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category").
+    expect(els.filter((e) => e.type === 'text' || e.type === 'sticky')).toEqual([]);
   });
 
   // docs/specs/009-elements/avatar-pad.md "Where a Space's pad stands" (Work Tracker #601, #584): the pad stands in the
   // plan, among the rooms and pieces, never in the margin under it or in its bottom-right corner, where the canvas's
-  // bottom-right cluster floats; and its how-to line beside it lies on open floor, inside the plan too.
-  it('lands everyone inside the plan, clear of its bottom-right corner, the how-to line on open floor', () => {
+  // bottom-right cluster floats.
+  it('lands everyone inside the plan, clear of its bottom-right corner', () => {
     // A building's other floors keep theirs by the Elevators, where a ride steps you out (the spec's "other floors").
     if (!first) return;
     const pad = all.find((e) => e.shape === 'avatar-pad')!;
-    const placed = [
-      ...els.filter((e) => e.type === 'sticky'),
-      ...all.filter((e) => e.shape !== 'avatar-pad' && e.shape !== 'sticker'),
-    ] as Box[];
+    const placed = all.filter((e) => e.shape !== 'avatar-pad' && e.shape !== 'sticker') as Box[];
     const left = Math.min(...placed.map((e) => e.x));
     const top = Math.min(...placed.map((e) => e.y));
     const right = Math.max(...placed.map((e) => e.x + e.width));
@@ -177,36 +176,9 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
     const inCorner =
       middle.x > left + (right - left) * 0.75 && middle.y > top + (bottom - top) * 0.75;
     expect(inCorner, 'in the bottom-right corner').toBe(false);
-    // Nobody arrives on a stage (a floor to walk onto, and the presenter's): the pad and its line keep off it.
+    // Nobody arrives on a stage (a floor to walk onto, and the presenter's): the pad keeps off it.
     const stages = all.filter((e) => e.shape === 'stage') as Box[];
     for (const stage of stages) expect(meets(pad, stage), 'pad on the stage').toBe(false);
-    const hint = els.find(
-      (e) => e.type === 'text' && /Avatar Pad/.test(e.label ?? ''),
-    ) as unknown as Box;
-    expect(inside(hint, { x: left, y: top, width: right - left, height: bottom - top })).toBe(true);
-    // Centred under the pad and no wider than ARRIVAL_HINT_W, so a phone's 390 px view centred on someone arriving
-    // shows the whole line (a line beside the pad ran off the screen: PR #1386's browser check).
-    expect(hint.x + hint.width / 2, 'line centred on the pad').toBeCloseTo(middle.x, 6);
-    expect(hint.width / 2, 'line within 180 px of the pad').toBeLessThanOrEqual(ARRIVAL_HINT_W / 2);
-    expect(hint.y, 'line under the pad').toBeGreaterThan(pad.y + pad.height);
-    const solid = [
-      ...els.filter((e) => e.type === 'sticky'),
-      ...all.filter((e) => !isFloorShape(e.shape) && e.shape !== 'sticker'),
-    ] as Box[];
-    for (const piece of solid)
-      expect(meets(hint, piece), `how-to line meets ${JSON.stringify(piece).slice(0, 120)}`).toBe(
-        false,
-      );
-    for (const room of rooms)
-      for (const w of roomWalls(room)) {
-        const wall = {
-          x: Math.min(w.a.x, w.b.x) - 5,
-          y: Math.min(w.a.y, w.b.y) - 5,
-          width: Math.abs(w.a.x - w.b.x) + 10,
-          height: Math.abs(w.a.y - w.b.y) + 10,
-        };
-        expect(meets(hint, wall), `how-to line meets ${room.label}'s wall`).toBe(false);
-      }
   });
 
   // Everyone arrives on the pad, feet on its core: the pad and that standing character (Regular, the one size
@@ -244,8 +216,9 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
   });
 
   it('keeps every piece in a room inside its walls, and every other piece clear of them', () => {
-    for (const piece of [...furniture, ...all.filter((e) => e.shape === 'rug')]) {
-      const at = `${piece.shape} at ${piece.x},${piece.y}`;
+    for (const el of [...furniture, ...all.filter((e) => e.shape === 'rug')]) {
+      const at = `${el.shape} at ${el.x},${el.y}`;
+      const piece = floorOf(el);
       const middle = {
         x: piece.x + piece.width / 2,
         y: piece.y + piece.height / 2,
@@ -275,8 +248,14 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
     for (const room of rooms) {
       const door = doorSide(room, els);
       if (door === 'none') continue;
-      const along = door === 'n' || door === 's' ? room.width : room.height;
-      const span = roomDoorSpan(along, door)!;
+      // The Door piece's own span along its wall (a Door stands anywhere on it, not only at the middle).
+      const piece = els.find((e): e is Shape => e.type === 'shape' && doorOnRoom(e, room))!;
+      // Its width is its length along the wall, turned about its middle onto a side wall.
+      const mid =
+        door === 'n' || door === 's'
+          ? piece.x + piece.width / 2 - room.x
+          : piece.y + piece.height / 2 - room.y;
+      const span = [mid - piece.width / 2, mid + piece.width / 2] as const;
       const approach =
         door === 'n' || door === 's'
           ? {
@@ -292,9 +271,10 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
               width: 80,
             };
       for (const seat of all.filter((e) => SEATS.includes(e.shape)))
-        expect(meets(seat, approach), `${room.label}: ${seat.shape} at ${seat.x},${seat.y}`).toBe(
-          false,
-        );
+        expect(
+          meets(floorOf(seat), approach),
+          `${room.label}: ${seat.shape} at ${seat.x},${seat.y}`,
+        ).toBe(false);
     }
   });
 
@@ -303,7 +283,9 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
     // The ten Spaces respaced for it; a Space added since adopts the rule when it is laid out.
     if (!ROOMY.includes(kind)) return;
     // A Podium is held like a seat but stands on a stage, not in a row (venue-pieces.md "Speaking from the Podium").
-    const seats = all.filter((e) => seatsACharacter(e.shape) && e.shape !== 'podium');
+    const seats = all
+      .filter((e) => seatsACharacter(e.shape) && e.shape !== 'podium')
+      .map((e) => ({ ...e, ...floorOf(e) }));
     for (const [i, a] of seats.entries())
       for (const b of seats.slice(i + 1)) {
         const gx = Math.max(b.x - (a.x + a.width), a.x - (b.x + b.width));
@@ -340,15 +322,17 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
     for (const [i, a] of solid.entries())
       for (const b of solid.slice(i + 1))
         if (!hung(a, b))
-          expect(meets(a, b), `${a.shape} at ${a.x},${a.y} / ${b.shape} at ${b.x},${b.y}`).toBe(
-            false,
-          );
+          expect(
+            meets(floorOf(a), floorOf(b)),
+            `${a.shape} at ${a.x},${a.y} / ${b.shape} at ${b.x},${b.y}`,
+          ).toBe(false);
     // And nothing stands on a fence.
     for (const fence of furniture.filter((e) => e.shape === 'garden-fence'))
       for (const piece of solid)
-        expect(meets(fence, piece), `${piece.shape} at ${piece.x},${piece.y} on a fence`).toBe(
-          false,
-        );
+        expect(
+          meets(fence, floorOf(piece)),
+          `${piece.shape} at ${piece.x},${piece.y} on a fence`,
+        ).toBe(false);
   });
 
   it('puts every sofa on a rug or out on open ground', () => {
@@ -374,10 +358,10 @@ describe('the new Spaces furnish what they promise', () => {
     expect(count('focus-library', 'office-pod')).toBe(2);
   });
 
-  it('gives the Training Room a stage, four tables and Bring Focus', () => {
+  it('gives the Training Room a stage and four tables, with no Bring Focus', () => {
     expect(count('training-room', 'stage')).toBe(1);
     expect(count('training-room', 'meeting-table')).toBe(4);
-    expect(count('training-room', 'focus-button')).toBe(1);
+    expect(count('training-room', 'focus-button')).toBe(0);
   });
 
   it('gives the Rooftop Bar a two-counter bar, eight stools, a cabinet, a fridge and two lounges', () => {
@@ -444,7 +428,7 @@ describe('the new Spaces furnish what they promise', () => {
     // The social pieces (docs/specs/009-elements/social-pieces.md).
     expect(count('garden-retreat', 'pond')).toBe(1);
     expect(count('garden-retreat', 'campfire')).toBe(1);
-    expect(count('garden-retreat', 'bench')).toBe(1);
+    expect(count('garden-retreat', 'bench')).toBe(3);
     const house = all.find((e) => e.shape === 'room')!;
     expect(house.label).toBe('Summer House');
     const span = roomDoorSpan(house.width, 's')!;
@@ -472,7 +456,7 @@ describe('the new Spaces furnish what they promise', () => {
     // Four arms and the round plaza they meet at (docs/specs/009-elements/office.md "Garden Path": paths never cross).
     expect(count('city-park', 'garden-path')).toBe(5);
     expect(count('city-park', 'stage')).toBe(1);
-    expect(count('city-park', 'bench')).toBe(2);
+    expect(count('city-park', 'bench')).toBe(4);
     expect(count('city-park', 'picnic-table')).toBe(1);
     expect(count('city-park', 'fountain')).toBe(1);
     expect(count('city-park', 'sofa')).toBe(0);

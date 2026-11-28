@@ -14,7 +14,7 @@ import {
 } from './hint-constants';
 import { resetHintRegistry } from './hint-registry';
 import { resetTouches } from './input-modality';
-import { useHint } from './useHint';
+import { forgetHintPress, useHint } from './useHint';
 
 function Harness({
   kind,
@@ -83,6 +83,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
   resetHintRegistry();
+  forgetHintPress();
 });
 
 describe('useHint, tooltip on pointer', () => {
@@ -358,6 +359,38 @@ describe('useHint, a pointer already resting on the trigger', () => {
   });
 });
 
+describe('useHint, a press that remounts its control', () => {
+  // The Edit | Walk toggle hands itself to the other strip when pressed: the new button lands under the still pointer.
+  it('keeps the hint shut over the remounted control until the pointer moves on', () => {
+    const at = { ...mouse, clientX: 40, clientY: 20 };
+    const first = render(<Harness kind="hover-card" />);
+    fireEvent.pointerEnter(wrapper(), at);
+    expect(tip()).not.toBeNull();
+    fireEvent.pointerDown(button(), at);
+    expect(tip()).toBeNull();
+    first.unmount();
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerEnter(wrapper(), at);
+    fireEvent.pointerMove(button(), at);
+    expect(tip()).toBeNull();
+    // Moving on and coming back opens it as ever.
+    fireEvent.pointerMove(document, { ...mouse, clientX: 90, clientY: 20 });
+    fireEvent.pointerLeave(wrapper(), mouse);
+    fireEvent.pointerEnter(wrapper(), at);
+    expect(tip()).not.toBeNull();
+  });
+
+  it('shows on another control the pointer reaches after moving on', () => {
+    const first = render(<Harness kind="hover-card" />);
+    fireEvent.pointerDown(button(), { ...mouse, clientX: 40, clientY: 20 });
+    first.unmount();
+    fireEvent.pointerMove(document, { ...mouse, clientX: 200, clientY: 20 });
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerEnter(wrapper(), { ...mouse, clientX: 200, clientY: 20 });
+    expect(tip()).not.toBeNull();
+  });
+});
+
 describe('useHint, after a press', () => {
   it('shows again once the pointer has left and come back, though the control kept focus', () => {
     focusVisible(true);
@@ -367,6 +400,8 @@ describe('useHint, after a press', () => {
     fireEvent.pointerDown(button(), mouse);
     expect(tip()).toBeNull();
     fireEvent.pointerLeave(wrapper(), mouse);
+    // The pointer really went somewhere (a press's spot stays shut until it moves on).
+    fireEvent.pointerMove(document, { ...mouse, clientX: 60 });
     fireEvent.pointerEnter(wrapper(), mouse);
     expect(tip()).not.toBeNull();
   });
@@ -392,6 +427,7 @@ describe('useHint, after a press', () => {
     fireEvent.pointerDown(firstButton, mouse);
     expect(screen.queryAllByRole('tooltip')).toHaveLength(0);
     fireEvent.pointerLeave(first, mouse);
+    fireEvent.pointerMove(document, { ...mouse, clientX: 60 });
     fireEvent.pointerEnter(first, mouse);
     expect(screen.getAllByRole('tooltip')).toHaveLength(1);
   });

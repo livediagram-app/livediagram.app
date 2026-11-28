@@ -44,45 +44,34 @@ export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['stickers']);
 export const SEARCH_ONLY_TILE_IDS: readonly string[] = [];
 
 // The meeting palette (docs/specs/012-collaboration/workshop-mode.md "The palette"): livehuddle's one palette, for
-// meeting in a Space. Light content to write with, the Space categories a Space is built from (one per question,
+// meeting in a Space. The Space categories a Space is built from (one per question,
 // from their one list in space-categories.tsx; the Avatar button is in Travel), then the decorations. No diagram tools,
 // no frame and no Collaborate elements: those are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
 // Rooms, Play and Garden list their named groups (docs/specs/010-palette/palette-top-level-categories.md
 // "Groups in a flyout", space-category-groups.ts): Rooms opens on Build, then Floor; a divider between two groups,
 // and a piece no group lists joins the last, so a new piece still joins by its tileGroup alone.
+// Tiles the catalogue still defines (a stored one finds its name and glyph) but no category offers: Bring Focus
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Bring Focus").
+const NOT_OFFERED: ReadonlySet<string> = new Set(['tools:focus-button']);
+
 function spaceCategoryEntry(id: string): PaletteLayoutEntry {
-  const own = tilesForCategory(id).map((t) => t.id);
+  const all = tilesForCategory(id).map((t) => t.id);
+  const own = all.filter((tid) => !NOT_OFFERED.has(tid));
   const tiles = groupedSpaceTiles(id, own, DIVIDE);
-  return tiles ? { id, tiles } : { id };
+  // A category with no named groups holds its own tiles unless one is not offered.
+  if (tiles) return { id, tiles };
+  return own.length === all.length ? { id } : { id, tiles: own };
 }
 
 const MEETING: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // What a Space is most often furnished with: a note and words, then, behind a divider, the pieces a meeting
-      // place is built from. No Image (Write's) or Link card (docs/specs/002-project-scope/not-in-livehuddle.md
-      // "Media", "Images are back").
+      // What a Space is most often furnished with: the pieces a meeting place is built from. No Sticky note, Text or
+      // Image: Write is gone (docs/specs/002-project-scope/not-in-livehuddle.md "The Write category").
       id: 'popular',
       description: 'What a Space is most often furnished with, from across the palette.',
-      tiles: [
-        'tools:sticky',
-        'tools:text',
-        DIVIDE,
-        'tools:room',
-        'tools:meeting-table',
-        'tools:chair',
-        'tools:focus-button',
-        'tools:avatar-pad',
-      ],
-    },
-    // Words, notes and pictures (owner, 2026-11-07: images are back, for branding;
-    // docs/specs/002-project-scope/not-in-livehuddle.md "Images are back"). No Pointer note, Table, Checklist, Page or
-    // Annotation. The Image shows only where uploads work (`needsImage`: not in an embed, not read-only).
-    {
-      id: 'write',
-      description: 'Text, sticky notes and images.',
-      tiles: ['tools:text', 'tools:sticky', 'tools:image'],
+      tiles: ['tools:room', 'tools:meeting-table', 'tools:chair', 'tools:avatar-pad'],
     },
     // Each Space category holds its group's tiles, in catalogue order or its named groups' order; one with none yet
     // is left off. Their order, and Travel's band of its own, are SPACE_CATEGORIES'

@@ -26,6 +26,8 @@ meeting table.
 - Drawn as a chair seen from above-front: a seat, a back, and a shadow, so it
   reads as furniture rather than as a box with a label. It is drawn **upright at every facing**
   (see [Facing](#facing)).
+- **In 3D**, a wooden dining chair with a rolled cushion and a curved, upholstered back
+  ([3D engine](../008-canvas/3d-engine.md) "Believable chairs").
 - **`ShapeElement.chairFacing`**: `'n' | 'e' | 's' | 'w'`, which way the seat
   points. Absent = `'n'` (back at the top, sitter facing down the canvas, toward
   the reader). Turned with Rotate Left / Right on the selection toolbar, from the element's context menu, or with

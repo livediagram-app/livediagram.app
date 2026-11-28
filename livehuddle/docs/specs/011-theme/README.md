@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./multicolour-themes.md - when working on Multi-colour (rainbow) themes: Rainbow/palette themes that tint each hierarchy branch a hue
-- ./canvas-and-theme-dialog.md - when working on the Tab Style dialog: a Mashup card (a random look per press) then a carousel of twenty-nine Looks, eight of them multi-colour (theme, finish, font and floor in one click), a Fine-tune list opening the Colours, Finish, Text and Canvas panels
+- ./canvas-and-theme-dialog.md - (Leaving livehuddle: no way to open it, 2026-11-27) when working on the Tab Style dialog: a Mashup card (a random look per press) then a carousel of twenty-nine Looks, eight of them multi-colour (theme, finish, font and floor in one click), a Fine-tune list opening the Colours, Finish, Text and Canvas panels
 - ./floors.md - when working on a Space's floor (the canvas backdrop): the fifteen floors, their light and dark tiles, strength, and the retired diagram patterns' load mapping
 - ./light-and-dark.md - when working on how a theme looks in light and dark mode: every theme's two halves, derived dark/light colours, contrast floor, per-viewer rendering, Autumn and Jewel retired
 - ./retired-schemes.md - when a scheme leaves the catalogue, or on Charcoal / the previous Default dark half / `custom:` theme ids and their load migration

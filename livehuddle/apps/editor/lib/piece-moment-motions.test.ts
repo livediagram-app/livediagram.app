@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   furnitureFrame,
   GARDEN_TONES,
+  LAMP_TONES,
   SOCIAL_TONES,
   VENUE_TONES,
   WORKPLACE_TONES,
@@ -27,6 +28,8 @@ const partOf = (kind: MomentKind, i: number): FurniturePart | undefined =>
   front(kind).view.parts[i];
 const fillOf = (p: FurniturePart | undefined) => (p && 'fill' in p ? p.fill : undefined);
 
+const LAMP_LIGHT: string[] = [LAMP_TONES.lit, LAMP_TONES.pool, LAMP_TONES.poolCore];
+
 // What each moving part is, so a change to a drawing that moves a part fails here, not on screen.
 const IS: Partial<Record<MomentKind, (i: number, p: FurniturePart) => boolean>> = {
   // Books: coloured panels on the shelves, below the top shelf's board.
@@ -47,6 +50,10 @@ const IS: Partial<Record<MomentKind, (i: number, p: FurniturePart) => boolean>> 
   'bike-rack': (_, p) => p.tag === 'path' && p.role === 'rail',
   'umbrella-stand': (_, p) => p.tag === 'path' && (p.role === 'panel' || p.role === 'line'),
   'coat-rack': (i, p) => (i >= 10 ? fillOf(p) === '#57534e' : p.tag === 'path'),
+  // A lamp's flicker: its pool of light and its lit rims, never its shade or its body.
+  'floor-lamp': (_, p) => LAMP_LIGHT.includes(fillOf(p) ?? ''),
+  'table-lamp': (_, p) => LAMP_LIGHT.includes(fillOf(p) ?? ''),
+  'desk-lamp': (_, p) => LAMP_LIGHT.includes(fillOf(p) ?? ''),
   podium: (i, p) =>
     p.tag === 'ellipse' &&
     (i === 11 ? fillOf(p) === VENUE_TONES.mic : fillOf(p) === VENUE_TONES.live),
@@ -89,7 +96,7 @@ describe('the part motions', () => {
     expect(partMotionsOf('chair')).toEqual([]);
   });
 
-  it('draws over every kind but the six whose own parts are the whole moment and the three faces', () => {
+  it('draws over every kind but the nine whose own parts are the whole moment and the three faces', () => {
     const notOver = MOMENT_KINDS.filter((k) => !drawsOverMoment(k));
     const onFace = MOMENT_KINDS.filter(playsOnFace);
     expect(onFace).toEqual(['notice-board', 'world-clock', 'calendar-wall']);
@@ -99,6 +106,9 @@ describe('the part motions', () => {
       'pool-table',
       'coat-rack',
       'kitchen-counter',
+      'floor-lamp',
+      'table-lamp',
+      'desk-lamp',
       'stage-curtains',
       'hammock',
     ]);

@@ -1,21 +1,16 @@
 'use client';
 
-import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
-import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorDialogsSlice } from './useEditorDialogs';
-import type { EditorCollaborationSlice } from './useEditorCollaboration';
-import type { EditorPersistenceSlice } from './useEditorPersistence';
 import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorTabsSlice } from './useEditorTabs';
-import type { EditorCreationSlice } from './useEditorCreation';
 
-// Styling the selection: the style setters, Quick Style's Clear Styles, portal setters, and the hover previews.
+// Styling the selection: the style setters and the portal setters.
 // A slice of useEditorState (../useEditorState.ts): it takes the slices composed before it and returns its own,
 // with `view`, its part of the editor's view-model.
 export function useEditorStyle({
@@ -23,72 +18,41 @@ export function useEditorStyle({
   fromHistory,
   fromSelection,
   fromDialogs,
-  fromCollaboration,
-  fromPersistence,
   fromActiveTab,
   fromEditing,
   fromTabs,
-  fromCreation,
 }: {
   fromDocument: EditorDocumentSlice;
   fromHistory: EditorHistorySlice;
   fromSelection: EditorSelectionSlice;
   fromDialogs: EditorDialogsSlice;
-  fromCollaboration: EditorCollaborationSlice;
-  fromPersistence: EditorPersistenceSlice;
   fromActiveTab: EditorActiveTabSlice;
   fromEditing: EditorEditingSlice;
   fromTabs: EditorTabsSlice;
-  fromCreation: EditorCreationSlice;
 }) {
-  const { previewingRef, toast } = fromDocument;
-  const { commitTabs, tabs, tickTabs } = fromHistory;
+  const { toast } = fromDocument;
+  const { commitTabs, tabs } = fromHistory;
   const { activeId, readSelection, setSelectedId } = fromSelection;
   const { contextMenu } = fromDialogs;
-  const { participant } = fromCollaboration;
-  const { tabsRef } = fromPersistence;
   const { activeTab } = fromActiveTab;
   const {
-    activeTheme,
-    commit,
     currentSelectionIds,
     editsBlocked,
-    liveActiveElements,
     rememberingCommit,
     rememberingTickTabs,
     selectionPrimary,
-    structureBlocked,
-    styleMemory,
   } = fromEditing;
   const { checkpointBurst } = fromTabs;
-  const { swatchOverrides } = fromCreation;
-  // Element styling / layering actions (layer order, text size /
-  // align / style, fill / stroke / text colour, opacity, padding, the
-  // arrow + border presets, shape-kind morph, reset-to-theme). All
-  // mutate the current selection; see useElementStyle.
+  // The element setters the canvas, Search and the element menu still reach (aspect lock, size, text align,
+  // markers, the Space pieces' settings, clearing animations). All mutate the current selection; see
+  // useElementStyle. The looks, layer and opacity setters left with the menu's Appearance and Arrange
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Element looks, layers, opacity and rotation").
   const {
     toggleAspectLockSelected,
-    bringSelectedToFront,
-    sendSelectedToBack,
-    setTextSizeSelected,
     setTextAlignSelected,
-    setFontSelected,
-    toggleTextStyleSelected,
-    setFillColorSelected,
-    setStrokeColorSelected,
-    setTextColorSelected,
-    setOpacitySelected,
-    setShadowSelected,
-    setPaddingSelected,
-    setIconSizeSelected,
-    burstSelectedStyle,
     resetAspectRatioSelected,
     setSizeSelected,
-    setRotationSelected,
-    setBorderStrokeSelected,
-    setBorderStyleSelected,
     setMarkerSelected,
-    setMarkerSizeSelected,
     setChairFacingSelected,
     turnSelected,
     setRoomDoorSelected,
@@ -101,16 +65,8 @@ export function useEditorStyle({
     setScreenSourceOf,
     setPadReceptionistSelected,
     setPadReceptionistOf,
-    setClockZonesSelected,
     setJukeboxSourceSelected,
-    resetShapeStyleSelected,
     clearAnimationsSelected,
-    setIconAnimationSelected,
-    setIconAnimationSpeedSelected,
-    setSetAnimationSpeedSelected,
-    setSetAnimationRepeatSelected,
-    setIconAnimationRepeatSelected,
-    resetColorsSelected,
   } = useElementStyle({
     currentSelectionIds,
     selectionPrimary,
@@ -125,20 +81,6 @@ export function useEditorStyle({
     notify: toast.info,
   });
 
-  // The Quick Style view (docs/specs/008-canvas/element-menu-quick-bar.md): what the element menu's Clear Styles resets.
-  // livehuddle has no Quick Style panel (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style).
-  // Every input of the Quick Style view but the selection, which ClearStylesHost reads from the store.
-  const quickStyleDeps: QuickStyleDeps = {
-    activeTab,
-    theme: activeTheme,
-    editsBlocked: structureBlocked,
-    canStyle: participant.participating ? participant.can.recolour : undefined,
-    liveElements: liveActiveElements,
-    commit,
-    memory: styleMemory,
-    swatchOverrides,
-  };
-
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
   // portal on ANOTHER tab, so these setters need the whole tab list and a
   // tabs-wide commit rather than the active tab's element mapper.
@@ -151,123 +93,9 @@ export function useEditorStyle({
     setSelectedId,
   });
 
-  // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on
-  // a desktop pointer shows it live; the change only sticks on click. See
-  // useStylePreview — preview/revert go through tickTabs (no history), the
-  // commit restores the original first so undo snapshots the true pre-hover
-  // state.
-  const {
-    clearPreview: clearStylePreview,
-    previewElementStyle,
-    commitElementStyle,
-    previewShapeColorPreset,
-    commitShapeColorPreset,
-    previewSetAnimation,
-    commitSetAnimation,
-    previewIconAnimation,
-    commitIconAnimation,
-    previewFillColor,
-    commitFillColor,
-    previewStrokeColor,
-    commitStrokeColor,
-    previewTextColor,
-    commitTextColor,
-    previewBorderStroke,
-    commitBorderStroke,
-    previewBorderStyle,
-    commitBorderStyle,
-    previewShadow,
-    commitShadow,
-    previewFinish,
-    commitFinish,
-    previewRotation,
-    commitRotation,
-    previewIconSize,
-    commitIconSize,
-    previewIconWeight,
-    commitIconWeight,
-    previewMarker,
-    commitMarker,
-    previewMarkerSize,
-    commitMarkerSize,
-    previewTextAlign,
-    commitTextAlign,
-    previewTextSize,
-    commitTextSize,
-    previewFont,
-    commitFont,
-    previewPadding,
-    commitPadding,
-    previewInlineIcon,
-    commitInlineIcon,
-  } = useStylePreview({
-    editsBlocked,
-    activeId,
-    currentSelectionIds,
-    tabsRef,
-    tickTabs,
-    commitTabs,
-    previewingRef,
-    onCommitted: styleMemory.recordEdit,
-  });
   return {
-    bringSelectedToFront,
-    sendSelectedToBack,
     view: {
-      quickStyleDeps,
-      bringSelectedToFront,
-      resetColorsSelected,
-      // Style-preset hover preview + click commit (docs/specs/010-palette/style-presets.md).
-      clearStylePreview,
-      previewElementStyle,
-      commitElementStyle,
-      previewShapeColorPreset,
-      commitShapeColorPreset,
-      previewSetAnimation,
-      commitSetAnimation,
-      previewIconAnimation,
-      commitIconAnimation,
-      // Granular colour / border / rotation hover preview + click commit.
-      previewFillColor,
-      commitFillColor,
-      previewStrokeColor,
-      commitStrokeColor,
-      previewTextColor,
-      commitTextColor,
-      previewBorderStroke,
-      commitBorderStroke,
-      previewBorderStyle,
-      commitBorderStyle,
-      previewShadow,
-      commitShadow,
-      previewFinish,
-      commitFinish,
-      previewRotation,
-      commitRotation,
-      previewIconSize,
-      commitIconSize,
-      previewIconWeight,
-      commitIconWeight,
-      previewMarker,
-      commitMarker,
-      previewMarkerSize,
-      commitMarkerSize,
-      previewTextAlign,
-      commitTextAlign,
-      previewTextSize,
-      commitTextSize,
-      previewFont,
-      commitFont,
-      previewPadding,
-      commitPadding,
-      previewInlineIcon,
-      commitInlineIcon,
-      sendSelectedToBack,
-      burstSelectedStyle,
-      setBorderStrokeSelected,
-      setBorderStyleSelected,
       setMarkerSelected,
-      setMarkerSizeSelected,
       setChairFacingSelected,
       turnSelected,
       setRoomDoorSelected,
@@ -280,33 +108,15 @@ export function useEditorStyle({
       setScreenSourceOf,
       setPadReceptionistSelected,
       setPadReceptionistOf,
-      setClockZonesSelected,
       setJukeboxSourceSelected,
       setPortalTargetSelected,
       setPortalNameSelected,
       createLinkedPortal,
-      resetShapeStyleSelected,
       clearAnimationsSelected,
-      setIconAnimationSelected,
-      setIconAnimationSpeedSelected,
-      setSetAnimationSpeedSelected,
-      setSetAnimationRepeatSelected,
-      setIconAnimationRepeatSelected,
-      setFillColorSelected,
-      setOpacitySelected,
-      setShadowSelected,
-      setPaddingSelected,
-      setIconSizeSelected,
       resetAspectRatioSelected,
       setSizeSelected,
-      setRotationSelected,
-      setStrokeColorSelected,
-      setFontSelected,
       setTextAlignSelected,
-      setTextColorSelected,
-      setTextSizeSelected,
       toggleAspectLockSelected,
-      toggleTextStyleSelected,
     },
   };
 }

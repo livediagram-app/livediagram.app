@@ -26,6 +26,8 @@ export const TOAST_START_SELECTOR = '[data-toast-start]';
 export const TOAST_EDGE_PX = 16;
 /** The gap between the stack and the chrome it stands on. */
 export const TOAST_FLOOR_GAP_PX = 8;
+/** The narrowest a toast stands beside a side; with less room left of it the side is a floor. */
+export const TOAST_MIN_BESIDE_PX = 320;
 /** A toast's widest, from 640px up (`sm:max-w-[36rem]`). */
 export const TOAST_MAX_WIDTH_PX = 576;
 /** Below Tailwind's `sm`, toasts span the screen. */
@@ -139,9 +141,16 @@ export function toastPlacement(input: {
   const right = w / 2 + half;
   let edge: number | null = null;
   let onLine = false;
+  let floorAbove = 0;
   for (const r of sides) {
     if (r.width <= 0 || r.height <= 0) continue;
     if (r.top >= h || (r.top < h / 2 && !r.beside)) continue;
+    // Too little room on its left for a toast (a row spanning the screen): it is a floor, stood on centred.
+    if (r.left - TOAST_FLOOR_GAP_PX - TOAST_EDGE_PX < TOAST_MIN_BESIDE_PX) {
+      if (r.right > left && r.left < right)
+        floorAbove = Math.max(floorAbove, h - r.top + TOAST_FLOOR_GAP_PX);
+      continue;
+    }
     if (!r.beside) {
       // On the cluster's line wherever it is: a centred toast 8px lower than Undo read as out of line.
       bottom = Math.max(bottom, h - (r.top + r.height));
@@ -150,6 +159,7 @@ export function toastPlacement(input: {
     if (r.right <= left || r.left >= right) continue;
     edge = Math.max(edge ?? 0, w - r.left + TOAST_FLOOR_GAP_PX);
   }
+  if (floorAbove > bottom) return { bottom: Math.round(floorAbove), right: null };
   // A start column: on the side's line, at the column's left edge instead of beside the side.
   if (onLine && start && start.width > 0)
     return {

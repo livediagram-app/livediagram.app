@@ -3,7 +3,6 @@ import { helpMetadata } from '@/lib/seo';
 import { FormatPainter } from '@/editions/livediagram/components/illustrations/canvas';
 import { FormatPainter as DesignFormatPainter } from '@/editions/livedesign/components/illustrations/canvas';
 import { FormatPainter as DocumentsFormatPainter } from '@/editions/livedocuments/components/illustrations/canvas';
-import { FormatPainter as HuddleFormatPainter } from '@/editions/livehuddle/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'The Format Painter',
@@ -29,12 +28,6 @@ The format painter copies the styling of one element and applies it to others, s
   you through two phases with an on-screen banner:
 </AppNote>
 
-<AppNote app="livehuddle">
-  The format painter is the **Format Painter** button on the selection toolbar, the small toolbar
-  above an element you have selected. Pressing it opens the **Format** panel, and a message under
-  the palette strip guides you:
-</AppNote>
-
 <AppNote app="livedesign,livedocuments">
   <Step n={1}>
     First the banner reads "Select a base element or page to copy its style". Click the element
@@ -49,13 +42,6 @@ The format painter copies the styling of one element and applies it to others, s
   </Step>
 </AppNote>
 
-<AppNote app="livehuddle">
-  <Step n={1}>
-    Select the element whose look you want to reuse, and press **Format Painter** on its toolbar.
-    The brush takes that element's style, and the panel's preview shows it.
-  </Step>
-</AppNote>
-
 <AppNote app="livedesign,livediagram,livedocuments">
   <Step n={2}>
     The banner then reads "Tap elements to paint this style onto them". Every element you click now
@@ -63,21 +49,9 @@ The format painter copies the styling of one element and applies it to others, s
   </Step>
 </AppNote>
 
-<AppNote app="livehuddle">
-  <Step n={2}>
-    The message under the strip then asks you to tap elements to paint the style onto them. Every
-    element you click now takes on the base element's formatting, and the base stays loaded so you
-    can keep going.
-  </Step>
-</AppNote>
-
 <AppNote app="livedesign,livediagram,livedocuments">
   Click **Done** in the banner, or click empty canvas, to put the brush down and return to the tool
   you had before. `Escape` puts it down too and returns you to Select (Hand on a touch screen).
-</AppNote>
-
-<AppNote app="livehuddle">
-  Click **Done** in the message, press `Escape`, or click empty canvas to put the brush down.
 </AppNote>
 
 <Figure app="livediagram,liveplanner,all" caption="The format painter lifts a styled element's look and paints it onto the next element you click.">
@@ -92,9 +66,6 @@ The format painter copies the styling of one element and applies it to others, s
   <DocumentsFormatPainter />
 </Figure>
 
-<Figure app="livehuddle" caption="Load the brush from one note, then click another to give it the same look.">
-  <HuddleFormatPainter />
-</Figure>
 
 ## Choosing what it copies
 
@@ -106,7 +77,6 @@ The **Format** panel decides what the brush carries. Under **Copies**, five swit
   - **Border**: stroke colour, width, pattern and corners, and an arrow's line.
 </AppNote>
 
-<AppNote app="livehuddle">- **Border**: stroke colour, width, pattern and corners.</AppNote>
 
 - **Text**: colour, size, weight, italic, underline, strikethrough, font and alignment.
 
@@ -168,12 +138,6 @@ One thing stays put by design: the painter never touches position, so where your
 <AppNote app="livedocuments">
   Because it changes elements and pages, the format painter is available to Editors only:
   Participants and view-only visitors don't get it. It is greyed out on an empty canvas.
-</AppNote>
-
-<AppNote app="livehuddle">
-  Because it only changes elements, the format painter is available to Editors only: Participants
-  and view-only visitors don't get it. It sits on the selection toolbar, so there is nothing to
-  press until you have selected something.
 </AppNote>
 
 <Tip>

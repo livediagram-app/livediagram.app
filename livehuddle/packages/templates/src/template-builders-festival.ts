@@ -1,6 +1,6 @@
 // The Festival Field (docs/specs/012-collaboration/virtual-office-template.md "Venues", Work Tracker #648): the open-air
 // venue, a fenced field built with campusPlan (template-campus-parts.ts) as the Beach Offsite is. Across the top, the
-// open-air Main Stage with its curtains for a backdrop, a big Screen either side and Bring Focus; in front of it the
+// open-air Main Stage with its curtains for a backdrop, and a big Screen either side; in front of it the
 // open crowd field, where everyone arrives. Down the left, three food stalls (small tents: closed rooms with a counter)
 // on a lane with picnic tables; down the right, the Bar Tent and, below it, the campfire area. A cross path joins the two
 // lanes at a small round junction, and the path up from the gate meets it there.
@@ -8,102 +8,105 @@
 // No new piece: a stall is a Room furnished from the bar and kitchen pieces, and the stage stands on the grass, heard by
 // the whole tab (docs/specs/009-elements/office.md "Stage").
 //
+// Drawn at its final size for the 3D view (virtual-office-template.md "Laid out for the 3D view"): lanes and paths
+// wide enough to walk two abreast, each stall's counter on its back wall, the benches turned to the fire.
+//
 // Pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
-import { createShape, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import type { OfficePiece } from './template-office-parts';
 import {
   campusPlan,
   fencedLawn,
-  JUNCTION,
   ONTO,
-  PATH,
   plaza,
-  plazaReach,
   REACH_SIDE,
   run,
   type CampusRoom,
 } from './template-campus-parts';
+import { against, outside, standAt, sofaOnRug } from './template-3d-place';
 
-const W = 2560;
-const H = 1440;
+// A path two characters wide, side by side with room to pass.
+const PATH = 112;
+const W = 3000;
+const H = 1800;
 const MID = W / 2;
-const GATE = 72;
+const GATE = 100;
 
 // The two columns of tents, and the lanes REACH_SIDE out from their doors.
-const COLUMN_W = 440;
-const LEFT_X = 60;
-const RIGHT_X = W - 60 - COLUMN_W;
+const COLUMN_W = 525;
+const LEFT_X = 75;
+const RIGHT_X = W - 75 - COLUMN_W;
 const LEFT_LANE = LEFT_X + COLUMN_W + REACH_SIDE;
 const RIGHT_LANE = RIGHT_X - REACH_SIDE - PATH;
-// The cross path between the lanes, meeting the path up from the gate at a small round junction.
-const CROSS_Y = 1160;
-const JOIN_IN = plazaReach(JUNCTION);
+// The cross path between the lanes, meeting the path up from the gate at a round junction.
+const CROSS_Y = 1450;
+const JUNCTION = 240;
+const JOIN_IN = Math.sqrt((JUNCTION / 2) ** 2 - (PATH / 2) ** 2) - PATH / 2;
 // How far each lane runs past the cross path's middle, so the cross path's ends lie under it.
 const LANE_PAST = PATH / 2 + 48;
 
 // The open-air Main Stage across the top, its curtains the backdrop behind it.
-export const FESTIVAL_STAGE = { x: MID - 320, y: 110, w: 640, h: 170 };
+export const FESTIVAL_STAGE = { x: MID - 320, y: 140, w: 640, h: 170 };
 
-// A food stall: a small tent, its counter along the back with stools in front, its door on the lane.
-const STALL_H = 280;
-const STALL_DOOR = { side: 'e', at: 210, sign: -1 } as const;
+// A food stall: a small tent, its counter on the back wall with stools in front, its door on the lane.
+const STALL = { w: COLUMN_W, h: 375 };
+const STALL_DOOR = { side: 'e', at: 210, sign: 1 } as const;
+const STALL_YS = [75, 590, 1105];
 const counter = (extra: OfficePiece): OfficePiece[] => [
-  { kind: 'bar', x: 40, y: 40 },
+  against('bar', 'n', 160, STALL),
   extra,
-  ...[60, 120, 180, 240].map((x) => ({ kind: 'bar-stool' as const, x, y: 170 })),
+  ...[70, 130, 190, 250].map((x) => standAt('bar-stool', x, 126, 's')),
 ];
 
-const ROOMS: CampusRoom[] = [
+const TENT = { x: RIGHT_X, y: 75, w: COLUMN_W, h: 700 };
+// The campfire area below the Bar Tent.
+const FIRE = { x: RIGHT_X + COLUMN_W / 2, y: 1080 };
+
+const rooms = (): CampusRoom[] => [
   {
     name: 'Pizza Stall',
     x: LEFT_X,
-    y: 60,
-    w: COLUMN_W,
-    h: STALL_H,
+    y: STALL_YS[0]!,
+    ...STALL,
     door: STALL_DOOR,
-    pieces: counter({ kind: 'kitchen-counter', x: 300, y: 40 }),
+    pieces: counter(against('kitchen-counter', 'n', 400, STALL)),
   },
   {
     name: 'Taco Stall',
     x: LEFT_X,
-    y: 400,
-    w: COLUMN_W,
-    h: STALL_H,
+    y: STALL_YS[1]!,
+    ...STALL,
     door: STALL_DOOR,
-    pieces: counter({ kind: 'drinks-fridge', x: 320, y: 30 }),
+    pieces: counter(against('drinks-fridge', 'n', 400, STALL)),
   },
   {
     name: 'Coffee Stall',
     x: LEFT_X,
-    y: 740,
-    w: COLUMN_W,
-    h: STALL_H,
+    y: STALL_YS[2]!,
+    ...STALL,
     door: STALL_DOOR,
-    pieces: counter({ kind: 'coffee-machine', x: 320, y: 40 }),
+    pieces: counter(against('coffee-machine', 'n', 400, STALL)),
   },
   {
     name: 'Bar Tent',
-    x: RIGHT_X,
-    y: 60,
-    w: COLUMN_W,
-    h: 560,
-    door: { side: 'w', at: 300, sign: -1 },
+    ...TENT,
+    door: { side: 'w', at: 380, sign: -1 },
     pieces: [
-      // The bar along the back, its stools clear of the way in from the door.
-      { kind: 'drinks-fridge', x: 40, y: 36 },
-      { kind: 'bar', x: 140, y: 40 },
-      ...[160, 220, 280, 340].map((x) => ({ kind: 'bar-stool' as const, x, y: 170 })),
-      { kind: 'jukebox', x: 350, y: 260 },
-      { kind: 'rug', x: 160, y: 400 },
-      { kind: 'sofa', x: 184, y: 420, facing: 'n' },
-      { kind: 'chair', x: 102, y: 428, facing: 'e' },
-      { kind: 'plant', x: 372, y: 440 },
+      // The bar on the back wall, its stools clear of the way in from the door.
+      against('drinks-fridge', 'n', 80, TENT),
+      against('bar', 'n', 300, TENT),
+      ...[210, 270, 330, 390].map((x) => standAt('bar-stool', x, 126, 's')),
+      against('jukebox', 'e', 330, TENT),
+      // A sofa on the front wall over its rug, a chair beside the rug turned to it.
+      ...sofaOnRug('s', 300, TENT),
+      standAt('chair', 130, TENT.h - 180, 'w'),
+      against('plant', 'e', TENT.h - 60, TENT),
     ],
   },
 ];
 
-const FIELD: OfficePiece[] = [
+const field = (): OfficePiece[] => [
   ...fencedLawn(W, H, MID - GATE, MID + GATE),
   // The cross path in two halves, each ending on a lane and at the junction's rim, then the lanes over their ends, the
   // path up from the gate, and the junction over them all.
@@ -115,62 +118,50 @@ const FIELD: OfficePiece[] = [
     RIGHT_LANE + PATH - ONTO - MID - JOIN_IN,
     PATH,
   ),
-  run('garden-path', LEFT_LANE, 210, PATH, CROSS_Y + LANE_PAST - 210),
-  run('garden-path', RIGHT_LANE, 310, PATH, CROSS_Y + LANE_PAST - 310),
+  run('garden-path', LEFT_LANE, 260, PATH, CROSS_Y + LANE_PAST - 260),
+  run('garden-path', RIGHT_LANE, 360, PATH, CROSS_Y + LANE_PAST - 360),
   run('garden-path', MID - PATH / 2, CROSS_Y + JOIN_IN, PATH, H - CROSS_Y - JOIN_IN),
   plaza(MID, CROSS_Y, JUNCTION),
-  // The Main Stage: its curtains behind it, a big Screen either side.
+  // The Main Stage: its curtains behind it, a big Screen either side. A Screen hangs on a wall (wall-mounted.ts), so
+  // each hangs on the outside of the nearest tent, facing across the field: the Pizza Stall's and the Bar Tent's.
   { kind: 'stage', ...FESTIVAL_STAGE, stageCameras: true, label: 'Main Stage' },
   { kind: 'stage-curtains', x: FESTIVAL_STAGE.x, y: FESTIVAL_STAGE.y - 70, w: FESTIVAL_STAGE.w },
-  { kind: 'screen', x: FESTIVAL_STAGE.x - 220, y: 120, w: 176 },
-  { kind: 'screen', x: FESTIVAL_STAGE.x + FESTIVAL_STAGE.w + 44, y: 120, w: 176 },
+  outside('screen', { x: LEFT_X, y: STALL_YS[0]!, ...STALL }, 'e', 75),
+  outside('screen', TENT, 'w', 140),
   // Picnic tables on the food lane's side of the crowd field, an umbrella beside each.
-  { kind: 'picnic-table', x: 720, y: 420 },
-  { kind: 'garden-umbrella', x: 936, y: 420 },
-  { kind: 'picnic-table', x: 720, y: 740 },
-  { kind: 'garden-umbrella', x: 936, y: 740 },
-  // The campfire area below the Bar Tent: a bench on each side of the fire, trees and a hammock.
-  { kind: 'campfire', x: 2190, y: 880 },
-  { kind: 'bench', x: 1996, y: 884 },
-  { kind: 'bench', x: 2328, y: 884 },
-  { kind: 'bench', x: 2162, y: 754 },
-  { kind: 'bench', x: 2162, y: 1006 },
-  { kind: 'tree', x: 1990, y: 690, w: 80 },
-  { kind: 'tree', x: 2400, y: 690, w: 96 },
-  { kind: 'hammock', x: 2320, y: 1080 },
+  standAt('picnic-table', 1000, 560),
+  standAt('garden-umbrella', 1180, 560),
+  standAt('picnic-table', 1000, 960),
+  standAt('garden-umbrella', 1180, 960),
+  // The campfire area below the Bar Tent: a bench on each side of the fire, facing it, trees and a hammock.
+  standAt('campfire', FIRE.x, FIRE.y),
+  standAt('bench', FIRE.x, FIRE.y - 150, 'n'),
+  standAt('bench', FIRE.x - 170, FIRE.y, 'w'),
+  standAt('bench', FIRE.x + 170, FIRE.y, 'e'),
+  standAt('bench', FIRE.x, FIRE.y + 150, 's'),
+  standAt('tree', RIGHT_X + 40, 900),
+  standAt('tree', W - 110, 900),
+  standAt('hammock', W - 180, 1500),
   // Under the trees in the bottom corners: a hammock on the left, a picnic table by the cross path.
-  { kind: 'tree', x: 120, y: 1250, w: 96 },
-  { kind: 'hammock', x: 240, y: 1290 },
-  { kind: 'tree', x: 420, y: 1250, w: 96 },
-  { kind: 'picnic-table', x: 760, y: 1240 },
-  { kind: 'tree', x: 1700, y: 1240, w: 96 },
-  { kind: 'tree', x: 2100, y: 1240, w: 96 },
+  standAt('tree', 150, 1600),
+  standAt('hammock', 320, 1620),
+  standAt('tree', 500, 1600),
+  standAt('picnic-table', 1000, 1640),
+  standAt('tree', 2000, 1700),
+  standAt('tree', 2400, 1700),
   // Planters either side of the gate, and the Directory just inside it.
-  { kind: 'outdoor-plant', x: MID - 140, y: 1320 },
-  { kind: 'outdoor-plant', x: MID + 140, y: 1320 },
-  { kind: 'directory', x: MID + 50, y: 1260 },
+  standAt('outdoor-plant', MID - 180, H - 90),
+  standAt('outdoor-plant', MID + 180, H - 90),
+  standAt('directory', MID + 140, H - 190),
 ];
 
 export function buildFestivalField(cx: number, cy: number): Element[] {
   return campusPlan(cx, cy, {
     width: W,
     height: H,
-    rooms: ROOMS,
-    open: FIELD,
-    title: {
-      text: 'Festival Field',
-      width: 300,
-      sticker: 'emoji-fireworks',
-      subtitle:
-        'A day out in the open: the band on the main stage, food from the stalls, then the bar tent and the campfire.',
-    },
+    rooms: rooms(),
+    open: field(),
     // On the crowd field, in front of the Main Stage.
-    arrival: {
-      dx: 0,
-      dy: 560 - H / 2 + 12,
-      hint: 'You arrive on the Avatar Pad in front of the Main Stage. Whoever is on the stage is heard by everyone.',
-    },
-    // The stage's Bring Focus, below the right-hand Screen.
-    extra: (left, top) => [createShape('focus-button', left + 1690, top + 250)],
+    arrival: { dx: 0, dy: 96 + 640 - (96 + H + 120) / 2 },
   });
 }

@@ -17,11 +17,9 @@ Scope, by file:
 | `apps/editor/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
 | `apps/editor/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`          | Inline layout for an icon or a marker, after the face branches             |
-| `apps/editor/components/palette/context-menu-rows.tsx`         | `MarkerTiles`: None + five tiles, the Size row                             |
-| `apps/editor/components/palette/ElementAppearanceSections.tsx` | Single-element gate `showMarkers`, Text flyout placement                   |
 | `apps/editor/components/palette/MultiSelectionContextMenu.tsx` | Multi-selection gate `markerSrc`                                           |
 | `apps/editor/lib/style-presets.ts`                             | `applyMarkerToEl`, `applyMarkerSizeToEl`                                   |
-| `apps/editor/hooks/canvas/useStylePreview.ts`                  | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
+| `livediagram/apps/editor/hooks/canvas/useStylePreview.ts`      | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
 | `apps/editor/hooks/canvas/useShapeStyleSetters.ts`             | `setMarkerSelected`, `setMarkerSizeSelected`                               |
 | `apps/editor/lib/editor-commands-selection.ts`                 | Command-palette "Add … Marker" / "Clear Marker" [QE12]                     |
 

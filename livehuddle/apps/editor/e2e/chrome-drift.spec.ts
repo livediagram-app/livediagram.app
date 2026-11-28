@@ -1,4 +1,11 @@
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  paletteTile,
+  startBlankDocument,
+  test,
+} from './fixtures';
 
 // The canvas never scrolls (docs/specs/008-canvas/canvas-and-palette.md "The canvas never scrolls"):
 // editing a label past its bottom edge used to scroll the canvas's box to reveal the editor, and the
@@ -13,10 +20,10 @@ test('editing a label at the bottom edge leaves the corner chrome where it is', 
   const cluster = page.locator('[data-zoom-cluster]');
   const before = await cluster.boundingBox();
 
-  // A sticky note straddling the bottom edge, then type its words: the editor sits below the edge.
-  await page.mouse.click(viewport.width / 2, viewport.height / 2);
-  await page.keyboard.press('n');
+  // A chair at the bottom edge, then type its label (written under it): the editor sits below the edge.
+  await (await paletteTile(page, 'Add Chair')).click();
   await page.mouse.click(viewport.width / 2, viewport.height - 40);
+  await page.getByRole('img', { name: 'Chair', exact: true }).dblclick();
   await page.keyboard.type('Hello there');
   await page.keyboard.press('Escape');
 

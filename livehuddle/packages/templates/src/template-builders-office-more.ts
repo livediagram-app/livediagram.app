@@ -46,14 +46,14 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
         { kind: 'office-pod', x: 870, y: 40 },
         { kind: 'desk', x: 700, y: 304, facing: 's' },
         { kind: 'desk', x: 830, y: 304, facing: 's' },
-        { kind: 'water-cooler', x: 1010, y: 300 },
+        { kind: 'water-cooler', x: 1030, y: 300, facing: 'e' },
         // The reading corner: a sofa on its rug and a chair facing it, away from the doorway.
         { kind: 'rug', x: 60, y: 462 },
         { kind: 'sofa', x: 84, y: 482, facing: 'n' },
         { kind: 'chair', x: 356, y: 482, facing: 'e' },
         { kind: 'plant', x: 444, y: 512 },
         // A Reading Nook by the cooler: a second quiet seat, away from the desks, an aisle below them.
-        { kind: 'reading-nook', x: 820, y: 536 },
+        { kind: 'reading-nook', x: 820, y: 520, facing: 's' },
         { kind: 'plant', x: 1010, y: 512 },
       ],
     },
@@ -61,21 +61,11 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
   return spacePlan(
     x0,
     y0,
-    width,
     rooms,
-    {
-      text: 'Focus Library',
-      width: 300,
-      sticker: 'emoji-books',
-      subtitle:
-        'Somewhere quiet to get things done: take a desk, step into a pod for a call, or read on the sofa.',
-    },
     // On the open floor between the two rows of desks, the shelves and the pods in view.
     arrival({
       x: cx + 52,
       y: cy + 60,
-      hintW: 320,
-      hint: 'You arrive on the Avatar Pad. Take a desk, or an Office Pod for a call.',
     }),
   );
 }

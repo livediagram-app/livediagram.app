@@ -3,18 +3,10 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { glideViewport } from '@liveworkspace/workbench/lib/viewport-glide';
+import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
+import { useArrivalIntro } from './useArrivalIntro';
 import { STRIP_MORPH_MS } from '@/lib/strip-morph';
-import {
-  SPACE_3D_OVERVIEW_MS,
-  space3DOverview,
-  space3DPreference,
-} from '@/lib/space-3d/space-3d-preference';
-import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
-// The arrival's glide in from the overview to you, in ms (3d-view.md "Arriving"): a little longer than the tilt, so
-// the camera is still settling as the walls finish rising.
-const SPACE_3D_ARRIVAL_GLIDE_MS = 900;
 // A walk that starts this soon after the canvas mounts is the load's, an arrival, not a switch from Edit.
 const LOAD_WALK_MS = 3000;
 import { SPACE_3D_ZOOM } from '@/lib/space-3d/space-3d-zoom';
@@ -34,6 +26,7 @@ export function useAvatarCamera({
   canvasMainRef,
   fitToScreen,
   fitOnEdit,
+  overview,
 }: {
   // True while the Avatar tool is active.
   walking: boolean;
@@ -46,6 +39,8 @@ export function useAvatarCamera({
   // Switching from Walk to Edit on the same tab glides the view out to the whole tab ("The Edit | Walk toggle"); the
   // host leaves an empty tab's view alone. Never on a load: only a walk ending fires it.
   fitOnEdit?: (() => void) | undefined;
+  // The whole tab framed, the arrival's overview to zoom in from (3d-view.md "Arriving"); unset, arrivals land at once.
+  overview?: (() => ViewPose | null) | undefined;
 }) {
   const avatarAtRef = useRef<(() => Point | null) | null>(null);
   const walkingRef = useLatest(walking);
@@ -57,26 +52,33 @@ export function useAvatarCamera({
 
   // The entry's glide in flight, if any: a later move (Fit, leaving, another entry) stops it where it got to.
   const glideRef = useRef<(() => void) | null>(null);
+  const overviewRef = useLatest(overview);
+  const readOverview = useCallback(() => overviewRef.current?.() ?? null, [overviewRef]);
+  const intro = useArrivalIntro({ viewport, canvasMainRef, overview: readOverview });
+  const stopIntro = intro.stop;
   const stopGlide = useCallback(() => {
     glideRef.current?.();
     glideRef.current = null;
-  }, []);
+    stopIntro();
+  }, [stopIntro]);
   useEffect(() => stopGlide, [stopGlide]);
 
-  // 100% (140% in the 3D view) with the feet in the middle, at once or gliding over `glideMs`. The wrapper scales about its own centre, so
+  // The 3D view's 180% with the feet in the middle, at once or gliding over `glideMs`. The wrapper scales about its own centre, so
   // the offset that centres a point is half the canvas's size less the point, at any zoom (as useEditorViewport's
   // centreOn).
+  // `arrive` starts from the whole tab and zooms in to the same view (3d-view.md "Arriving"), when that is worth it.
+  const playIntro = intro.play;
   const centreAvatar = useCallback(
-    (glideMs = 0) => {
+    (glideMs = 0, arrive = false) => {
       const at = avatarAt();
       const node = canvasMainRef.current;
       if (!at || !node) return false;
       const to = {
-        // The 3D view is closer than the flat plan (docs/specs/008-canvas/3d-view.md "It brings the camera closer").
-        zoom: space3DPreference.get() ? SPACE_3D_ZOOM : 1,
+        zoom: SPACE_3D_ZOOM,
         offset: { x: node.offsetWidth / 2 - at.x, y: node.offsetHeight / 2 - at.y },
       };
       stopGlide();
+      if (arrive && playIntro(to, at)) return true;
       if (glideMs > 0) {
         glideRef.current = glideViewport(
           viewport.get(),
@@ -90,7 +92,7 @@ export function useAvatarCamera({
       } else viewport.setView(to);
       return true;
     },
-    [avatarAt, canvasMainRef, viewport, stopGlide],
+    [avatarAt, canvasMainRef, viewport, stopGlide, playIntro],
   );
 
   const fitView = useCallback(() => {
@@ -100,9 +102,8 @@ export function useAvatarCamera({
   // Entering the mode: once the canvas has placed the character (its entry runs in the same commit), centre on it.
   // Switching to Walk on the same tab glides in beside the strip's morph, as Edit glides out ("The Edit | Walk
   // toggle"); a load, opening walking and travel to another tab (which keeps the mode, the character placed with the
-  // switch) land at once.
+  // switch) start from the whole tab and zoom in (3d-view.md "Arriving"), or land at once when that shows nothing new.
   const lastEntry = useRef<{ walking: boolean; tabId?: string | undefined } | null>(null);
-  const fitRef = useLatest(fitToScreen);
   const mountedAt = useRef(0);
   useEffect(() => {
     mountedAt.current = Date.now();
@@ -117,28 +118,11 @@ export function useAvatarCamera({
     // A switch from Edit on the same tab, not the walk a load starts (which turns on just after the first render).
     const switched =
       !!was && !was.walking && was.tabId === tabId && Date.now() - mountedAt.current > LOAD_WALK_MS;
-    // Arriving on a tab with the 3D view on (3d-view.md "Arriving"): the whole tab, flat, for a moment, so you see where
-    // you are, then the camera glides in to you as the view tilts. Reduced motion lands at once.
-    if (!switched && space3DPreference.get() && !prefersReducedMotion()) {
-      space3DOverview.set(true);
-      let timer = 0;
-      const frame = requestAnimationFrame(() => {
-        stopGlide();
-        fitRef.current();
-        timer = window.setTimeout(() => {
-          space3DOverview.set(false);
-          centreAvatar(SPACE_3D_ARRIVAL_GLIDE_MS);
-        }, SPACE_3D_OVERVIEW_MS);
-      });
-      return () => {
-        cancelAnimationFrame(frame);
-        clearTimeout(timer);
-        space3DOverview.set(false);
-      };
-    }
-    const frame = requestAnimationFrame(() => centreAvatar(switched ? STRIP_MORPH_MS : 0));
+    const frame = requestAnimationFrame(() =>
+      switched ? centreAvatar(STRIP_MORPH_MS) : centreAvatar(0, true),
+    );
     return () => cancelAnimationFrame(frame);
-  }, [walking, tabId, centreAvatar, stopGlide, fitRef]);
+  }, [walking, tabId, centreAvatar, stopGlide]);
 
   // Leaving the mode: the walk was close up on the character, so building opens on the whole tab. Only a change of
   // `walking` on the same tab counts (the first render, a reload or a tab change never fits here).

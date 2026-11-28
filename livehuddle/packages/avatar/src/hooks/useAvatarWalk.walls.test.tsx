@@ -3,10 +3,21 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { clearOfFences, FENCE_REACH, fenceSegments } from '../collision';
+import {
+  clearOfFences,
+  FENCE_BODY_SHARE,
+  FENCE_REACH,
+  fenceSegments,
+  WALL_PAD,
+} from '../collision';
+
 import { DEFAULT_AVATAR_CONFIG } from '../config';
 import type { AvatarPoint } from '../walk';
 import { FENCE_SETTLE_MS, useAvatarWalk } from './useAvatarWalk';
+
+// A room's wall keeps the whole body clear (fence.md "A wall keeps the whole body out of it"); a seat keeps the plain
+// reach.
+const WALL_REACH = FENCE_REACH * FENCE_BODY_SHARE + WALL_PAD;
 
 // A character never opens held against a wall (docs/specs/009-elements/fence.md "What does not walk", Work Tracker
 // #437): entering the mode beside a room's wall, inside its reach, puts it just clear of the wall on the side its feet
@@ -36,12 +47,12 @@ describe('useAvatarWalk walls', () => {
   it('nudges a character put down beside a room’s left wall, inside it, clear of the wall', () => {
     // The left wall's line is x = 5; feet 10 px inside it, where the wall would hold them.
     const { result } = enterAt({ x: 15, y: 200 });
-    expect(result.current.readPos()).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 5 + WALL_REACH + 0.5, y: 200 });
   });
 
   it('nudges one beside the wall outside out of its reach, never through the wall', () => {
     const { result } = enterAt({ x: -5, y: 200 });
-    expect(result.current.readPos()).toEqual({ x: 5 - FENCE_REACH - 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 5 - WALL_REACH - 0.5, y: 200 });
   });
 
   it('leaves one put down in the wall itself there, free to walk off either side', () => {
@@ -104,10 +115,12 @@ describe('useAvatarWalk walls moved onto a character', () => {
     act(() => {
       vi.advanceTimersByTime(FENCE_SETTLE_MS);
     });
-    expect(result.current.readPos()).toEqual({ x: 290 + FENCE_REACH + 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 290 + WALL_REACH + 0.5, y: 200 });
     // Told to the room once, at the new spot.
     expect(onPresence).toHaveBeenCalledTimes(1);
-    expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ x: 302.5, y: 200 }));
+    expect(onPresence).toHaveBeenLastCalledWith(
+      expect.objectContaining({ x: 290 + WALL_REACH + 0.5, y: 200 }),
+    );
   });
 
   it('leaves a character the walls settle clear of, or in, where it is', () => {
@@ -133,7 +146,7 @@ describe('useAvatarWalk walls moved onto a character', () => {
     expect(result.current.seatedOn).toBe('chair');
   });
 
-  it('snaps a seat beside a wall clear of its reach', () => {
+  it('snaps a seat beside a wall clear of the feet’s plain reach, never the padded one (off its seat)', () => {
     const { result } = standAt({ x: 300, y: 200 });
     act(() => result.current.sitOn('chair', { x: 15, y: 200 }, 'right'));
     expect(result.current.readPos()).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
@@ -142,7 +155,7 @@ describe('useAvatarWalk walls moved onto a character', () => {
   it('steps aside clear of a wall it would land beside', () => {
     const { result } = standAt({ x: 300, y: 200 });
     act(() => result.current.stepAside({ x: 15, y: 200 }));
-    expect(result.current.readPos()).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 5 + WALL_REACH + 0.5, y: 200 });
   });
 
   it('costs a settle well under a millisecond on a tab of 500 rooms', () => {
@@ -154,7 +167,10 @@ describe('useAvatarWalk walls moved onto a character', () => {
       y: 1000 + i * 500,
     }));
     const walls = fenceSegments([roomAt(285), ...rooms]);
-    expect(clearOfFences({ x: 300, y: 200 }, walls, FENCE_REACH)).toEqual({ x: 302.5, y: 200 });
+    expect(clearOfFences({ x: 300, y: 200 }, walls, FENCE_REACH)).toEqual({
+      x: 290 + WALL_REACH + 0.5,
+      y: 200,
+    });
     const ms = cpuMsOf(() => {
       for (let i = 0; i < 100; i++) clearOfFences({ x: 300, y: 200 }, walls, FENCE_REACH);
     });

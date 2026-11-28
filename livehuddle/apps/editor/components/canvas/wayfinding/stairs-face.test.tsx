@@ -129,7 +129,6 @@ function face(readOnly: boolean, wayfinding: Wayfinding) {
       element={stairs as BoxedElement}
       isSelected={false}
       isEditing={false}
-      isPaintMode={false}
       showHandles={false}
       showAnchors={false}
       onBeginDrag={vi.fn()}

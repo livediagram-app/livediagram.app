@@ -1,13 +1,13 @@
 # Palette top-level categories and bands
 
 Status: shipped. **In livehuddle, the categories and bands are the meeting palette's** (Work Tracker #423,
-[The meeting board](../012-collaboration/workshop-mode.md#the-palette)): Popular; Write; Rooms, Seats, Perks,
-Play, Garden, Meet; Travel. Stickers is search-only ([Stickers in search only](#stickers-in-search-only)). The band holding the Space categories but Travel is named
+[The meeting board](../012-collaboration/workshop-mode.md#the-palette)): Popular; Rooms, Seats, Perks,
+Play, Garden, Meet; Travel (no Write: [The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)). Stickers is search-only ([Stickers in search only](#stickers-in-search-only)). The band holding the Space categories but Travel is named
 **Meet**; Travel is a band of its own (**Travel**, band 7), so the strip sets it apart between two dividers
 ([The strip's order](#the-strips-order)). The Icons category is gone from livehuddle
 ([Icons](../002-project-scope/not-in-livehuddle.md#icons)): Stickers is the palette's decoration. So is the Media
-category, with adding a Link card anywhere ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)); the
-Image is in **Write** ([Images are back](../002-project-scope/not-in-livehuddle.md#images-are-back)). The Frame category (and then the Frame itself, [The Frame](../002-project-scope/not-in-livehuddle.md#the-frame)), Reaction Pads, and the Laser, Spotlight and Isometric mode buttons,
+category, with adding a Link card anywhere ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)), and
+with **Write** the Image tile ([The Write category](../002-project-scope/not-in-livehuddle.md#the-write-category)). The Frame category (and then the Frame itself, [The Frame](../002-project-scope/not-in-livehuddle.md#the-frame)), Reaction Pads, and the Laser, Spotlight and Isometric mode buttons,
 are gone from livehuddle ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), so there is no React category.
 The **Selection Mode** category (bar name "Modes") is gone too: its Select, Hand, Eraser and Format buttons left
 livehuddle, and the Avatar one moved to Travel ([Selection Mode button](../009-elements/mode-button.md#only-avatar)).
@@ -22,15 +22,15 @@ a divider into "Around the Space" and "Office Pieces". The catalogue is growing,
 Space holds would only get longer. So the meeting palette offers them as **seven top-level categories**, each a
 question somebody building a Space asks, in the Meet band (Travel in a band of its own, [The strip's order](#the-strips-order)):
 
-| Category   | id                  | Holds                                                                                                                                                                                                                                                                                                                                                               | The question                     |
-| ---------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **Seats**  | `collab-seating`    | Chair, Desk, Sofa, Meeting Table, Long Table, Bean Bag, Reading Nook, Hot Desk, Standing Desk ([Workday pieces](../009-elements/workday-pieces.md#where-they-live))                                                                                                                                                                                                 | Where do people sit?             |
-| **Rooms**  | `collab-rooms`      | **Build**: Room, Room Builder, Door; **Floor**: Fence, Stage, Stage Curtains, Podium, Office Pod, Phone Booth, Nap Pod, Reception Desk, Rug, Pillar, Column ([Venue pieces](../009-elements/venue-pieces.md#where-they-live), [Workday pieces](../009-elements/workday-pieces.md#where-they-live))                                                                  | How is the floor laid out?       |
-| **Perks**  | `collab-amenities`  | In three groups ([Office amenities](../009-elements/office-amenities.md#where-they-live)): Office (Plant, Bookshelf, Printer, Copier, Lockers, Coat Rack, Umbrella Stand), Kitchen (Water Cooler, Coffee Machine, Vending Machine, Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle), Restroom (the Restroom preset, Toilet Cubicle, Washbasin, Hand Dryer) | What makes it feel like a place? |
-| **Play**   | `collab-recreation` | **Bar**: Bar, Bar Stool, Drinks Cabinet, Drinks Fridge; **Games**: Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard; **Gym**: Treadmill, Weight Bench; **Lounge**: Jukebox, Fireplace, Pet Bed                                                                                                                                                | Where do people unwind?          |
-| **Garden** | `collab-garden`     | **Plants**: Outdoor Plant, Tree, Grass; **Paths and Fences**: Garden Path, Garden Fence; **Furniture**: Bench, Picnic Table, Hammock, Garden Umbrella; **Features**: Fountain, Pond, Swimming Pool, Campfire; **Parking**: Car Park, Bike Rack                                                                                                                      | Can we take it outside?          |
-| **Meet**   | `collab-meeting`    | Screen, Room Sign, Notice Board, World Clock, Calendar Wall, Suggestion Box, Team Photo Wall, Timer, Stopwatch ([Team pieces](../009-elements/team-pieces.md#where-they-live))                                                                                                                                                                                      | What does a meeting room need?   |
-| **Travel** | `collab-travel`     | Portal, Bring Focus, Avatar Pad, Directory, Signpost, Elevator, Stairs, Avatar Button                                                                                                                                                                                                                                                                               | How do people get somewhere?     |
+| Category   | id                  | Holds                                                                                                                                                                                                                                                                                                                                                                                                  | The question                     |
+| ---------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| **Seats**  | `collab-seating`    | Chair, Desk, Sofa, Meeting Table, Long Table, Bean Bag, Reading Nook, Hot Desk, Standing Desk ([Workday pieces](../009-elements/workday-pieces.md#where-they-live))                                                                                                                                                                                                                                    | Where do people sit?             |
+| **Rooms**  | `collab-rooms`      | **Build**: Room, Room Builder, Door; **Floor**: Fence, Stage, Stage Curtains, Podium, Office Pod, Phone Booth, Nap Pod, Reception Desk, Rug, Pillar, Column ([Venue pieces](../009-elements/venue-pieces.md#where-they-live), [Workday pieces](../009-elements/workday-pieces.md#where-they-live))                                                                                                     | How is the floor laid out?       |
+| **Perks**  | `collab-amenities`  | In three groups ([Office amenities](../009-elements/office-amenities.md#where-they-live)): Office (Plant, Bookshelf, Floor Lamp, Table Lamp, Desk Lamp, Printer, Copier, Lockers, Coat Rack, Umbrella Stand), Kitchen (Water Cooler, Coffee Machine, Vending Machine, Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle), Restroom (the Restroom preset, Toilet Cubicle, Washbasin, Hand Dryer) | What makes it feel like a place? |
+| **Play**   | `collab-recreation` | **Bar**: Bar, Bar Stool, Drinks Cabinet, Drinks Fridge; **Games**: Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard; **Gym**: Treadmill, Weight Bench; **Lounge**: Jukebox, Fireplace, Pet Bed                                                                                                                                                                                   | Where do people unwind?          |
+| **Garden** | `collab-garden`     | **Plants**: Outdoor Plant, Tree, Grass; **Paths and Fences**: Garden Path, Road, Garden Fence; **Furniture**: Bench, Picnic Table, Hammock, Garden Umbrella; **Features**: Fountain, Pond, Swimming Pool, Campfire; **Parking**: Car Park, Bike Rack                                                                                                                                                   | Can we take it outside?          |
+| **Meet**   | `collab-meeting`    | Screen, Room Sign, Notice Board, Clock, Calendar Wall, Suggestion Box, Team Photo Wall, Poster, Timer, Stopwatch ([Team pieces](../009-elements/team-pieces.md#where-they-live))                                                                                                                                                                                                                       | What does a meeting room need?   |
+| **Travel** | `collab-travel`     | Portal, Avatar Pad, Directory, Signpost, Elevator, Stairs, Avatar Button                                                                                                                                                                                                                                                                                                                               | How do people get somewhere?     |
 
 - **Data, not special cases.** Each tile names its category through its `tileGroup` (`travel`, `seating`, `rooms`,
   `amenities`, `recreation`, `garden`, `meeting`), and `COLLABORATE_CATEGORY_GROUPS` maps each category id to its
@@ -62,7 +62,7 @@ question somebody building a Space asks, in the Meet band (Travel in a band of i
   The flyout opens at its top, so Build is the first thing seen. Popular, which also holds the Room, stays one block.
 - **Defined once**, in `space-categories.tsx` (`SPACE_CATEGORIES`: id, tile group, label, blurb, flyout tagline,
   glyph); the category catalogue, the meeting layout, the flyout taglines and `COLLABORATE_CATEGORY_GROUPS` read it.
-- Popular still picks the Space pieces a Space is most often furnished with (Room, Meeting Table, Chair, Bring Focus,
+- Popular still picks the Space pieces a Space is most often furnished with (Room, Meeting Table, Chair and
   Avatar Pad) from across them.
 
 ### Groups in a flyout
@@ -79,7 +79,7 @@ each under its heading, in this order:
 |            | **Games**            | Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard |
 |            | **Lounge**           | Jukebox, Fireplace                                                     |
 | **Garden** | **Plants**           | Outdoor Plant, Tree, Grass                                             |
-|            | **Paths and Fences** | Garden Path, Garden Fence                                              |
+|            | **Paths and Fences** | Garden Path, Road, Garden Fence                                        |
 |            | **Furniture**        | Bench, Picnic Table, Hammock, Garden Umbrella                          |
 |            | **Features**         | Fountain, Pond, Campfire                                               |
 
@@ -101,17 +101,15 @@ The owner (2026-11-05) set the category bar's order, a hairline divider between 
 Play on 2026-11-06, [Play holds the Bar](#the-space-categories)):
 
 ```
-Write | Rooms Seats Perks Play Garden Meet | Travel
+Rooms Seats Perks Play Garden Meet | Travel
 ```
 
-- **Write** first: a note or a word is what anybody reaches for first, and a picture (a logo, a team photo) beside
-  them.
-- **Then building the Space**, floor first: Rooms (the floor plan), then what goes in it (Seats, Perks,
+- **Building the Space**, floor first (Write is gone, owner 2026-11-27): Rooms (the floor plan), then what goes in it (Seats, Perks,
   Play, Garden) and the meeting room's own pieces (Meet).
-- **Travel apart**: its pieces (Portal, Bring Focus, Avatar Pad, Directory, Elevator, Stairs, the Avatar Button) take people
+- **Travel apart**: its pieces (Portal, Avatar Pad, Directory, Elevator, Stairs, the Avatar Button) take people
   somewhere rather than furnish a place, so it stands alone between two dividers.
 - **No Stickers on the strip**: the decoration is found through Search, not a category button
-  ([Stickers in search only](#stickers-in-search-only)). No Media ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): the Image is Write's.
+  ([Stickers in search only](#stickers-in-search-only)). No Media ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)) and no Write.
 - **The mechanism is the bands.** The bar draws its divider wherever two neighbours' bands differ (`CategoryBar`'s
   band change), so Travel's divider is its band: `SPACE_CATEGORIES` gives Travel `band: 7`, the rest of the Space
   categories take the Meet band (6). `SPACE_CATEGORIES` is in this order, so the meeting layout, the flyouts and the
@@ -128,8 +126,8 @@ The building strip starts with the [Edit | Walk toggle](../008-canvas/avatar-mod
 canvas-tool picker (owner, 2026-11-06: "change the selection mode dropdown so it just lets me toggle between Editor
 and ... whatever using the board is without too long a name"). The picker's Build (Select, Hand) and Edit (Eraser,
 Format) bands went with it: Edit is plain selecting; panning is Space-drag, the trackpad, the middle button or a touch
-drag on empty canvas; Delete removes; the Format Painter is on the selection toolbar
-([Format panel](../008-canvas/format-panel.md)). The one Selection Mode button left in livehuddle, the Avatar Button in
+drag on empty canvas; Delete removes; the Format Painter left later
+([Format Painter and Clear Styles](../002-project-scope/not-in-livehuddle.md#format-painter-and-clear-styles)). The one Selection Mode button left in livehuddle, the Avatar Button in
 Travel, offers Avatar.
 
 ## What

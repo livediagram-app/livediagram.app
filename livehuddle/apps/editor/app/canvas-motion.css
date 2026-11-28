@@ -1009,33 +1009,9 @@
   }
 }
 
-/* The Avatar Pad (docs/specs/009-elements/avatar-pad.md). The pad's lights (its glow, ring and lamps) breathe on one
-   gentle opacity pulse, 1.6 s each way, eased. The pulse runs on the two boxes that hold the lights (AvatarPadView), so
-   the compositor plays it and a still board does no main-thread work for it (canvas-performance.md "A still Space does
-   nothing"): smooth, never stepped (a stepped fade is restyled on the page at every step), and ten pulses to an
-   iteration, so the page handles an iteration's end once every 16 s. The arrival is one beam, a floor flash and six
-   sparks per arriving person, capped at AVATAR_PAD_MAX_ARRIVALS on screen, unmounted when the beam is over
-   (AVATAR_PAD_ARRIVAL_MS = 900ms). */
-@keyframes avatar-pad-shimmer {
-  0%,
-  20%,
-  40%,
-  60%,
-  80%,
-  100% {
-    opacity: 1;
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    opacity: 0.62;
-  }
-}
-.avatar-pad-shimmer {
-  animation: avatar-pad-shimmer 16s ease-in-out infinite;
-}
+/* The Avatar Pad's arrival (docs/specs/009-elements/avatar-pad.md "The arrival"; the pad itself is still): one beam, a
+   floor flash and six sparks per arriving person, capped at AVATAR_PAD_MAX_ARRIVALS on screen, unmounted when the beam
+   is over (AVATAR_PAD_ARRIVAL_MS = 900ms). */
 @keyframes avatar-pad-beam {
   0% {
     opacity: 1;
@@ -1101,17 +1077,11 @@
 .avatar-pad-spark:nth-child(6) {
   animation-delay: 170ms;
 }
-/* Reduced motion: no shimmer and no beam. The arrival is decoration, so the character simply appears on the pad. */
+/* Reduced motion: no beam. The arrival is decoration, so the character simply appears on the pad. */
 @media (prefers-reduced-motion: reduce) {
-  .avatar-pad-shimmer {
-    animation: none !important;
-  }
   .avatar-pad-arrival {
     display: none;
   }
-}
-:root.reduce-motion .avatar-pad-shimmer {
-  animation: none !important;
 }
 :root.reduce-motion .avatar-pad-arrival {
   display: none;
@@ -1130,20 +1100,10 @@
 .lh-stage-spot {
   transition: opacity 500ms ease;
 }
-/* A Door swinging open or shut (docs/specs/009-elements/room-builder.md "Opening and closing"): the leaf turns about
- * its hinge and the swing arc fades with it. */
-.lh-door-leaf {
-  transition: transform 180ms ease-in-out;
-}
-.lh-door-swing {
-  transition: opacity 180ms ease-in-out;
-}
 @media (prefers-reduced-motion: reduce) {
   .lh-pod-door,
   .lh-sign-stripe,
-  .lh-stage-spot,
-  .lh-door-leaf,
-  .lh-door-swing {
+  .lh-stage-spot {
     transition: none;
   }
 }

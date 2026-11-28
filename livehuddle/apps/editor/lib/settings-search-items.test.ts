@@ -29,11 +29,11 @@ describe('SETTINGS_SEARCH_ITEMS', () => {
   });
 
   it('carries the category and section into the haystack', () => {
-    // So "map" finds the Map rows from the canvas search too, not just
+    // So "mouse" finds Middle-Mouse Pan from the canvas search too, not just
     // from inside the dialog.
-    const dim = SETTINGS_SEARCH_ITEMS.find((i) => i.rowKey === 'mapDimOutside')!;
-    expect(dim.keywords.toLowerCase()).toContain('panels');
-    expect(dim.keywords.toLowerCase()).toContain('map');
+    const pan = SETTINGS_SEARCH_ITEMS.find((i) => i.rowKey === 'middleMousePan')!;
+    expect(pan.keywords.toLowerCase()).toContain('editor');
+    expect(pan.keywords.toLowerCase()).toContain('mouse');
   });
 
   it('surfaces a Settings group from the shared search builder', () => {

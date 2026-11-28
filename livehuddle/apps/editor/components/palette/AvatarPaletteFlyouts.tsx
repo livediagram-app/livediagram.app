@@ -5,6 +5,7 @@ import { AvatarSprite } from '@livehuddle/avatar/components/avatar-sprite';
 import { crispAvatarScale } from '@livehuddle/avatar/walk';
 import { avatarBindings } from '@livehuddle/avatar/bindings';
 import {
+  AVATAR_BUILDS,
   AVATAR_CLOTHING,
   AVATAR_GENDERS,
   AVATAR_HAIR,
@@ -37,6 +38,9 @@ import {
   PictureTile,
 } from '@liveworkspace/workbench/components/palette/category-flyout-items';
 import type { AvatarPaletteActions } from './avatar-palette-widths';
+import { FigurePortrait } from './FigurePortrait';
+import type { PortraitCrop } from '@/lib/real-3d/figure-portrait';
+import { gameHairStyle, gameHairStyles, gamePackOf } from '@/lib/real-3d/game-look';
 
 // The avatar palette's flyouts (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): one per category, under
 // the category bar's own header, its tiles and cards drawn with the flyout's own PictureTile and CardTile. The look's
@@ -52,6 +56,10 @@ const BEHAVIOUR_BLURB: Record<AvatarReactionKind, string> = {
   spin: 'Two full turns on the spot.',
   cheer: 'Both arms up, and a bounce.',
   dance: 'A sway, the arms taking turns.',
+  'raise-hand': 'Up until you lower it: your turn next.',
+  clap: 'A round of applause everyone sees.',
+  'thumbs-up': 'Sounds good, without a word.',
+  point: 'One arm out: look over there.',
 };
 const REACTION_BLURB: Record<Reaction, string> = {
   confetti: 'A shower of paper all round you.',
@@ -61,19 +69,21 @@ const REACTION_BLURB: Record<Reaction, string> = {
   fireworks: 'Bursts of colour overhead.',
 };
 
-/** Your character in a choice, standing front on: what a look tile shows. */
-function Portrait({
+/** Your character as the sprite draws it: what a picture falls back to when the 3D one cannot be rendered. */
+function SpritePortrait({
   config,
   shirt,
   scale,
+  pose,
 }: {
   config: AvatarConfig;
   shirt?: string | undefined;
   scale: number;
+  pose?: ReturnType<typeof behaviourStill>;
 }) {
   return (
     <AvatarSprite
-      facing="down"
+      facing={pose?.facing ?? 'down'}
       config={config}
       walking={false}
       stepFrame={0}
@@ -82,7 +92,48 @@ function Portrait({
       shirt={shirt}
       // Whole pixels per sprite pixel, so the picture is crisp (crispAvatarScale).
       scale={crispAvatarScale(scale)}
+      pose={pose}
       portrait
+    />
+  );
+}
+
+/**
+ * Your character in a choice, as the Space draws it: the 3D game character rendered offscreen
+ * (docs/specs/008-canvas/3d-engine.md "Palette portraits"), the sprite only if that cannot be drawn.
+ */
+function Portrait({
+  config,
+  shirt,
+  crop = 'full',
+  move = null,
+  width,
+  height,
+  fallbackScale,
+}: {
+  config: AvatarConfig;
+  shirt?: string | undefined;
+  crop?: PortraitCrop;
+  move?: AvatarReactionKind | null;
+  width: number;
+  height: number;
+  fallbackScale: number;
+}) {
+  return (
+    <FigurePortrait
+      look={{ ...config, shirt }}
+      crop={crop}
+      move={move}
+      width={width}
+      height={height}
+      fallback={
+        <SpritePortrait
+          config={config}
+          shirt={shirt}
+          scale={fallbackScale}
+          pose={move ? behaviourStill(move) : undefined}
+        />
+      }
     />
   );
 }
@@ -121,6 +172,8 @@ function ChoiceTile({
       <PictureTile
         {...previewHandlers({ kind: 'look', patch, label: titleCase(label) })}
         data-flyout-item=""
+        // Named by its label alone: the picture says nothing to a screen reader (avatar-mode.md "The avatar palette").
+        aria-label={titleCase(label)}
         aria-pressed={active}
         active={active}
         name={titleCase(label)}
@@ -144,7 +197,7 @@ function CharacterBody({ a, mobile }: { a: AvatarPaletteActions; mobile: boolean
     <>
       <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-2 dark:bg-slate-800/60">
         <span className="flex shrink-0 items-end">
-          <Portrait config={a.config} shirt={a.shirt} scale={1.4} />
+          <Portrait config={a.config} shirt={a.shirt} width={72} height={104} fallbackScale={1.4} />
         </span>
         <div className="flex min-w-0 flex-col gap-2">
           <p className="text-[12px] leading-snug text-slate-600 dark:text-slate-300">
@@ -181,11 +234,17 @@ function CharacterBody({ a, mobile }: { a: AvatarPaletteActions; mobile: boolean
               key={g.id}
               label={g.label}
               active={a.config.gender === g.id}
-              height="h-[96px]"
+              height="h-[132px]"
               patch={{ gender: g.id }}
               onPick={() => a.onChange('gender', g.id)}
               picture={
-                <Portrait config={{ ...a.config, gender: g.id }} shirt={a.shirt} scale={0.9} />
+                <Portrait
+                  config={{ ...a.config, gender: g.id }}
+                  shirt={a.shirt}
+                  width={84}
+                  height={112}
+                  fallbackScale={0.9}
+                />
               }
             />
           ))}
@@ -205,7 +264,7 @@ function CharacterBody({ a, mobile }: { a: AvatarPaletteActions; mobile: boolean
                 patch={{ size: size.id }}
                 onPick={() => a.onChange('size', size.id)}
                 picture={
-                  <Portrait
+                  <SpritePortrait
                     config={a.config}
                     shirt={a.shirt}
                     scale={size.id === 'small' ? 0.7 : size.id === 'tall' ? 1 : 0.85}
@@ -228,11 +287,17 @@ function ClothesBody({ a }: { a: AvatarPaletteActions }) {
           key={c.id}
           label={c.label}
           active={a.config.clothing === c.id}
-          height="h-[96px]"
+          height="h-[132px]"
           patch={{ clothing: c.id }}
           onPick={() => a.onChange('clothing', c.id)}
           picture={
-            <Portrait config={{ ...a.config, clothing: c.id }} shirt={a.shirt} scale={0.9} />
+            <Portrait
+              config={{ ...a.config, clothing: c.id }}
+              shirt={a.shirt}
+              width={84}
+              height={112}
+              fallbackScale={0.9}
+            />
           }
         />
       ))}
@@ -240,24 +305,73 @@ function ClothesBody({ a }: { a: AvatarPaletteActions }) {
   );
 }
 
+/** The five builds, Skinny to Large (avatar-mode.md "Build"), each your whole character in it. */
+function BuildBody({ a }: { a: AvatarPaletteActions }) {
+  const worn = a.config.build ?? 'regular';
+  return (
+    <TileRow columns={5}>
+      {AVATAR_BUILDS.map((b) => (
+        <ChoiceTile
+          key={b.id}
+          label={b.label}
+          active={worn === b.id}
+          height="h-[128px]"
+          patch={{ build: b.id }}
+          onPick={() => a.onChange('build', b.id)}
+          picture={
+            <Portrait
+              config={{ ...a.config, build: b.id }}
+              shirt={a.shirt}
+              width={64}
+              height={104}
+              fallbackScale={0.9}
+            />
+          }
+        />
+      ))}
+    </TileRow>
+  );
+}
+
+/**
+ * The hairstyles your character's 3D pack draws, each as its own (docs/specs/008-canvas/3d-engine.md "Palette
+ * portraits"), and the one you wear as it is drawn: a style stored that the pack has no head for shows as its nearest.
+ */
+function hairChoices(config: AvatarConfig) {
+  const pack = gamePackOf(config.gender);
+  const styles = gameHairStyles(pack);
+  return {
+    choices: AVATAR_HAIR.filter((h) => styles.includes(h.id)),
+    worn: gameHairStyle(pack, config.hair),
+  };
+}
+
 function HairBody({ a }: { a: AvatarPaletteActions }) {
   // A config without a colour (an older build's) wears Brown, so Brown shows pressed.
   const colour = a.config.hairColour ?? 'brown';
+  const { choices, worn } = hairChoices(a.config);
   return (
     <>
       <TileRow columns={4}>
-        {AVATAR_HAIR.map((h) => (
+        {choices.map((h) => (
           <ChoiceTile
             key={h.id}
             label={h.label}
-            active={a.config.hair === h.id}
-            height="h-[84px]"
+            active={worn === h.id}
+            height="h-[104px]"
             patch={{ hair: h.id }}
             onPick={() => a.onChange('hair', h.id)}
             // Cropped to the head, so the hair is the picture.
             picture={
-              <span className="flex h-11 w-14 items-start justify-center overflow-hidden">
-                <Portrait config={{ ...a.config, hair: h.id }} shirt={a.shirt} scale={1.4} />
+              <span className="flex h-[72px] w-[76px] items-start justify-center overflow-hidden">
+                <Portrait
+                  config={{ ...a.config, hair: h.id }}
+                  shirt={a.shirt}
+                  crop="head"
+                  width={76}
+                  height={72}
+                  fallbackScale={1.4}
+                />
               </span>
             }
           />
@@ -315,6 +429,7 @@ function StatusCard({ s, a }: { s: StatusChoice; a: AvatarPaletteActions }) {
         })}
         data-flyout-item=""
         data-status-choice={s.id}
+        aria-label={s.label}
         aria-pressed={active}
         active={active}
         name={s.label}
@@ -369,30 +484,27 @@ function BehaviourBody({ a, mobile }: { a: AvatarPaletteActions; mobile: boolean
   return (
     <ul className="grid grid-cols-2 gap-1">
       {AVATAR_REACTIONS.map((r) => {
-        const pose = behaviourStill(r.id);
         return (
           <li key={r.id} className="flex">
             <CardTile
               {...previewHandlers({ kind: 'behaviour', id: r.id, label: titleCase(r.label) })}
               data-flyout-item=""
-              active={false}
+              aria-label={titleCase(r.label)}
+              active={r.id === 'raise-hand' && !!a.handUp}
               name={titleCase(r.label)}
               shortcut={mobile ? undefined : AVATAR_BEHAVIOUR_KEYS[r.id]}
               aria-keyshortcuts={mobile ? undefined : AVATAR_BEHAVIOUR_KEYS[r.id]}
               blurb={BEHAVIOUR_BLURB[r.id]}
               onClick={() => a.onReaction(r.id)}
               plate={
-                <AvatarSprite
-                  facing={pose.facing ?? 'down'}
+                <Portrait
                   config={a.config}
-                  walking={false}
-                  stepFrame={0}
-                  lift={0}
-                  wave={null}
                   shirt={a.shirt}
-                  scale={crispAvatarScale(0.46)}
-                  pose={pose}
-                  portrait
+                  crop="action"
+                  move={r.id}
+                  width={36}
+                  height={36}
+                  fallbackScale={0.46}
                 />
               }
             />
@@ -413,6 +525,7 @@ function ReactionsBody({ a, mobile }: { a: AvatarPaletteActions; mobile: boolean
               ? previewHandlers({ kind: 'reaction', id: r, label: REACTION_LABEL[r] })
               : {})}
             data-flyout-item=""
+            aria-label={REACTION_LABEL[r]}
             active={false}
             disabled={!a.onBurst}
             name={REACTION_LABEL[r]}
@@ -453,8 +566,10 @@ export function AvatarPaletteFlyout({
     category.id === 'clothes'
       ? AVATAR_CLOTHING.length
       : category.id === 'hair'
-        ? AVATAR_HAIR.length
-        : undefined;
+        ? hairChoices(actions.config).choices.length
+        : category.id === 'build'
+          ? AVATAR_BUILDS.length
+          : undefined;
   return (
     <div data-avatar-flyout={category.id} className="flex flex-col">
       <FlyoutHeader
@@ -468,8 +583,10 @@ export function AvatarPaletteFlyout({
         ref={bodyRef}
         onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}
         // Status runs to four rows of cards and Sound, so its cap is taller: the whole of it fits without scrolling on a
-        // desktop down to 1280x720 (docs/specs/008-canvas/avatar-mode.md "Set from the palette").
-        className={`flex ${category.id === 'status' ? 'max-h-[min(70vh,38rem)]' : 'max-h-[min(70vh,32rem)]'} flex-col gap-3 overflow-y-auto p-3 animate-fade-in`}
+        // desktop down to 1280x720 (docs/specs/008-canvas/avatar-mode.md "Set from the palette"). No fade of its own:
+        // the card's opening carries it, and a fade from nothing here waited on the first open's 3D pictures (the
+        // preview card's character) and sat at low contrast for about a second.
+        className={`flex ${category.id === 'status' ? 'max-h-[min(70vh,38rem)]' : 'max-h-[min(70vh,32rem)]'} flex-col gap-3 overflow-y-auto p-3`}
       >
         {category.id === 'character' ? (
           <CharacterBody a={actions} mobile={mobile} />
@@ -477,6 +594,8 @@ export function AvatarPaletteFlyout({
           <ClothesBody a={actions} />
         ) : category.id === 'hair' ? (
           <HairBody a={actions} />
+        ) : category.id === 'build' ? (
+          <BuildBody a={actions} />
         ) : category.id === 'status' ? (
           <StatusBody a={actions} />
         ) : category.id === 'behaviour' ? (

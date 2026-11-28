@@ -65,7 +65,7 @@ describe('migrateRoomOp', () => {
     const current: RoomOp = {
       kind: 'el',
       tabId: 't1',
-      op: { kind: 'update', element: { id: 's', type: 'text' } as Element },
+      op: { kind: 'update', element: { id: 's', type: 'shape', shape: 'desk' } as Element },
     };
     expect(migrateRoomOp(current)).toBe(current);
   });

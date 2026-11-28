@@ -1,5 +1,7 @@
 # Panel corner docking
 
+> **Corner docking is gone from livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-map)): the Map was its last corner panel, and it left on 2026-11-27. livehuddle renders no corner stacks, no snap slot and keeps no panel layout; a stored `livehuddle:panel-layout:v1` stays unread. livediagram keeps docking, and [its spec there](../../../../livediagram/docs/specs/007-editor/panel-docking.md) is the one to read and change. Two rules below still hold in livehuddle: the popovers off buttons (focus, Escape, phone drawers, in **Scope**) and the shared drag tolerance (in **Dragging, snapping, and free placement**). The rest of this page records what livehuddle had.
+
 The editor's corner panels (Minimap, Poll and the tool panels) each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a
@@ -29,7 +31,7 @@ theirs without adding a settings screen.
 - **Participating panels:** Minimap, Poll, and the Format panel (the Avatar and Eraser panels are retired), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; the body-height
   measurement relies on that pin). They are not dockable, and the
-  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLUSTER_HEIGHT_PX` plus `ZOOM_CLUSTER_GAP_PX`, at the UI scale, `apps/editor/lib/panel-layout.ts`) so a panel
+  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLUSTER_HEIGHT_PX` plus `ZOOM_CLUSTER_GAP_PX`, at the UI scale, `livediagram/apps/editor/lib/panel-layout.ts`) so a panel
   docked there never overlaps the zoom bar: the snap anchor, the corner guide, and the
   dock container all use the raised inset.
 
@@ -152,12 +154,12 @@ later, or reading a layout written by a newer client, never strands the UI.
 
 ## Implementation
 
-- **`apps/editor/lib/panel-layout.ts`**: types, `DEFAULT_PANEL_CORNER` (which corner each
+- **`livediagram/apps/editor/lib/panel-layout.ts`**: types, `DEFAULT_PANEL_CORNER` (which corner each
   panel rests in out of the box) plus `defaultPanelLayout()` that builds a layout from it,
   `normalizePanelLayout()`, and `readPanelLayout()` / `writePanelLayout()` against
   `localStorage`. Pure, unit-tested (placement normalisation: a panel can't be in two
   corners; reflow ordering; default fallback).
-- **`apps/editor/hooks/ui/usePanelDock.ts`**: owns the layout state (hydrated synchronously
+- **`livediagram/apps/editor/hooks/ui/usePanelDock.ts`**: owns the layout state (hydrated synchronously
   from `localStorage` at mount, re-read on the change event), derives the per-corner
   ordered panel lists, tracks the active drag + nearest-corner snap candidate, and exposes
   `placementOf(panelId)`, `isDragging(panelId)`, `resetPanel(panelId)`, plus the drag lifecycle (`beginDrag`,

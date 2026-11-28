@@ -76,6 +76,11 @@ describe('the office dog', () => {
       const round = petLeg('bed-1', n, circle)!;
       expect(Math.hypot(round.x - 236, round.y - 224)).toBeLessThanOrEqual(PET_RADIUS + 1e-9);
     }
+    // A spot it cannot walk to is passed over for the generator's next, the same everywhere.
+    const first = petLeg('bed-1', 1, box)!;
+    const other = petLeg('bed-1', 1, box, (p) => p.x !== first.x || p.y !== first.y);
+    expect(other).not.toEqual(first);
+    expect(petLeg('bed-1', 1, box, () => false)).toBeNull();
     // Two beds wander apart; negative legs (a clock before 1970) still nap on the same beat.
     expect(petLeg('bed-1', 1, box)).not.toEqual(petLeg('bed-2', 1, box));
     expect(petLeg('bed-1', -1, box)).toBeNull();

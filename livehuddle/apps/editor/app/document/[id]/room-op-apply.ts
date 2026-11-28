@@ -6,8 +6,10 @@ import {
   applyElementDelta,
   applyElementOps,
   applyRoomElementOp,
+  dropRetiredNotes,
   dropRetiredTimer,
   dropRetiredVote,
+  isRetiredNote,
   mergeIncomingElement,
   type ElementDelta,
   type ElementOp,
@@ -17,6 +19,12 @@ import type { RoomOp } from '@livehuddle/api-schema';
 
 // The retired tab fields an old client may still send: the dot vote and the Session strip's timer.
 const dropRetired = <T extends object>(tab: T): T => dropRetiredTimer(dropRetiredVote(tab));
+// A peer's whole tab also loses its texts and sticky notes (docs/specs/002-project-scope/not-in-livehuddle.md "The
+// Write category"): an old client may still hold them. A tab-meta patch carries no elements, so it skips this walk.
+const dropRetiredTab = <T extends object>(tab: T): T => dropRetiredNotes(dropRetired(tab));
+// An element op that adds or updates a text or a sticky note: an old client's, ignored.
+const addsRetiredNote = (op: { kind: string; element?: unknown }): boolean =>
+  (op.kind === 'add' || op.kind === 'update') && isRetiredNote(op.element);
 import { META_SKIP, mergeRemoteTab } from './tab-broadcast-ops';
 
 // The document-changing room ops, as a pure function over a tab list.
@@ -40,13 +48,15 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       // The tab keeps the id the op names: a payload naming another would renumber it here, and the next save
       // would write it over that other tab (the room drops such an op too, room-op-gate.ts).
       if (!tabs.some((t) => t.id === op.tabId))
-        return [...tabs, dropRetired({ ...op.tab, id: op.tabId })];
+        return [...tabs, dropRetiredTab({ ...op.tab, id: op.tabId })];
       return updateTab(tabs, op.tabId, (tab) => ({
-        ...mergeRemoteTab(tab, dropRetired(op.tab)),
+        ...mergeRemoteTab(tab, dropRetiredTab(op.tab)),
         id: tab.id,
       }));
     }
     case 'el':
+      // A text or a sticky note from an old client is ignored: a Space holds neither.
+      if (addsRetiredNote(op.op)) return tabs;
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
       // dropped: a follow-up `tab` or `document-meta` op brings it in whole.
       return updateTab(tabs, op.tabId, (tab) => {
@@ -66,7 +76,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       // created is appended first, then each element op applies exactly as case `el` does. An op
       // relayed without its element ops (over the relay cap) brings only a created tab here: the
       // editor re-fetches the content.
-      const ops = op.elementOps ?? [];
+      const ops = (op.elementOps ?? []).filter((o) => !addsRetiredNote(o));
       const withTab =
         op.tab && !tabs.some((t) => t.id === op.tabId)
           ? [...tabs, { ...op.tab, id: op.tabId, elements: [] }]
@@ -180,8 +190,12 @@ export function remoteRoomOp(op: RoomOp): RemoteOp<Tab[]> {
 // The element ops an op applies to one tab whatever else the tabs hold: a non-patch `el` op, or a changeset that
 // creates no tab. Anything else is applied alone.
 function elementRunOf(op: RoomOp): { key: string; items: readonly ElementOp[] } | null {
-  if (op.kind === 'el') return op.op.kind === 'patch' ? null : { key: op.tabId, items: [op.op] };
-  if (op.kind === 'changeset' && !op.tab) return { key: op.tabId, items: op.elementOps ?? [] };
+  if (op.kind === 'el') {
+    if (op.op.kind === 'patch') return null;
+    return { key: op.tabId, items: addsRetiredNote(op.op) ? [] : [op.op] };
+  }
+  if (op.kind === 'changeset' && !op.tab)
+    return { key: op.tabId, items: (op.elementOps ?? []).filter((o) => !addsRetiredNote(o)) };
   return null;
 }
 

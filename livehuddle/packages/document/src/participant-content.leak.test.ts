@@ -9,8 +9,8 @@ import { ELEMENT_TYPES, isValidElement } from './validate';
 // The participant content rule never leaks (docs/specs/013-workspace/share-roles.md "A Participant walks").
 // For one valid element of every type (and the kinds the rule treats apart), every stored field is offered several
 // new values by a Participant, whether or not it added the element. Whatever the room does, no field outside the
-// spec's list for that element may change, and a Participant changes content through no field at all: only a piece
-// (a Door's `doorClosed`) has a list. The list below IS the spec's table: widening what a Participant may do means
+// spec's list for that element may change, and a Participant changes content through no field at all: a piece would
+// have a list, and none has one today (a Door opens on its own; a board's notes go through their own merge). The list below IS the spec's table: widening what a Participant may do means
 // editing it here, on purpose, in the same change as the spec.
 
 const ME = 'a'.repeat(32);
@@ -138,9 +138,9 @@ const SAMPLES: Sample[] = [
   { name: 'its own earlier sticky', el: mine(createSticky(0, 0), 'ms'), allowed: [] },
   { name: 'its own earlier text', el: mine(createText(0, 0), 'mt'), allowed: [] },
   {
-    name: 'shape (a Door: its swing alone)',
+    name: 'shape (a Door: nothing, it opens on its own)',
     el: theirs(createShape('door', 0, 0), 'dr'),
-    allowed: ['doorClosed'],
+    allowed: [],
   },
   {
     // A stage's settings and name are an Editor's (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share

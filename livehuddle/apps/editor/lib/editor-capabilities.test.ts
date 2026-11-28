@@ -64,30 +64,6 @@ describe('resolveEditorCapabilities', () => {
   });
 });
 
-// docs/specs/009-elements/room-builder.md "Opening and closing": an Editor and a Participant swing doors.
-describe('swingDoor', () => {
-  const door = (extra: Record<string, unknown> = {}) => shape({ shape: 'door', ...extra });
-
-  it('lets an Editor swing any door', () => {
-    const can = resolveEditorCapabilities({ level: 'edit', adderKey: null });
-    expect(can.swingDoor(door()) && can.swingDoor(door({ locked: true }))).toBe(true);
-  });
-
-  // not-in-livehuddle.md "Element and Tab Locking": a door saved locked swings like any other.
-  it('lets a Participant swing any door, one saved locked too, with or without a key', () => {
-    for (const adderKey of [ME, null]) {
-      const can = resolveEditorCapabilities({ level: 'participate', adderKey });
-      expect(can.swingDoor(door())).toBe(true);
-      expect(can.swingDoor(door({ locked: true }))).toBe(true);
-    }
-  });
-
-  it('lets a Viewer swing none', () => {
-    const can = resolveEditorCapabilities({ level: 'view', adderKey: ME });
-    expect(can.swingDoor(door())).toBe(false);
-  });
-});
-
 // docs/specs/012-collaboration/tab-attendance.md "Who sees it": an Editor and a Participant open a tab's Attendance,
 // a Viewer never.
 describe('seeAttendance', () => {

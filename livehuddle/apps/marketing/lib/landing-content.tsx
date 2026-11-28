@@ -4,7 +4,6 @@ import {
   AttendanceArt,
   ArriveArt,
   AutomationsArt,
-  BringFocusArt,
   BrowserSpaceArt,
   BubbleArt,
   CallFromItemArt,
@@ -326,14 +325,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'One person runs the room',
         description:
           'Hand someone the facilitator baton and the tools that run the meeting answer to them alone, starting with the timer. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
-      },
-      {
-        art: <BringFocusArt />,
-        href: '/help/palette/behaviour/bring-focus/',
-        group: 'Run the room',
-        title: 'Ask the room to look here',
-        description:
-          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
       },
       {
         art: <EveryMeetingArt />,

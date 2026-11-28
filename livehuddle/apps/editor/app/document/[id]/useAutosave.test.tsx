@@ -60,7 +60,6 @@ function setup() {
     lastSavedNameRef: { current: 'D' },
     loadedTabIdsRef: { current: new Set(['t1']) },
     remoteOpJournalRef: journal,
-    previewingRef: { current: false },
     roomRef: { current: null as Room | null },
   };
   // Stable, as the real state setters are: a fresh function each render would re-run the save

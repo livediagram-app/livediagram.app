@@ -5,7 +5,7 @@
 // LiveCursors) rather than redrawing them.
 
 import { Scene, Arrow, Label } from '@liveworkspace/help-site/art/primitives';
-import { AvatarPad, Desk, Plant, Room, Sofa, Sticky } from './space-furniture';
+import { AvatarPad, Desk, Plant, Room, Sofa, NoticeBoard } from './space-furniture';
 import { PixelCharacter } from './pixel-character';
 
 /** The open canvas with no sign-in wall: a Space already in use, and a
@@ -16,7 +16,7 @@ export function OpenCanvas() {
       <Room x={24} y={30} w={250} h={170} name="Team Room" />
       <Desk x={50} y={70} />
       <Desk x={104} y={70} />
-      <Sticky x={180} y={60} w={58} h={50} label="Hello!" lines={2} />
+      <NoticeBoard x={180} y={60} w={58} h={50} label="Hello!" lines={2} />
       <AvatarPad cx={150} cy={160} />
       <PixelCharacter fx={150} fy={160} px={1.8} />
 

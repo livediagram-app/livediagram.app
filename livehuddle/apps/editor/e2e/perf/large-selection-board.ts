@@ -1,10 +1,10 @@
 // The large-selection board (docs/specs/008-canvas/canvas-performance.md "Dragging a very large
-// selection"): 1,770 elements, 900 labelled shapes in a 30 × 30 grid and 870 text captions, one in each gap
-// between a shape and its right-hand neighbour. Only kinds livehuddle still makes: arrows left with the element
-// engine's part 4 (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"). Deterministic: the
-// same board on every run.
+// selection"): 1,770 elements, 900 labelled desks in a 30 × 30 grid and 870 chairs, one in each gap
+// between a desk and its right-hand neighbour. Only kinds livehuddle still makes: arrows left with the
+// element engine's part 4, text and sticky notes with the Write category
+// (docs/specs/002-project-scope/not-in-livehuddle.md). Deterministic: the same board on every run.
 
-import { createSticky, createText, type Element } from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
 
 export const LARGE_GRID = 30;
 export const LARGE_NODE_COUNT = LARGE_GRID * LARGE_GRID;
@@ -22,11 +22,17 @@ export function buildLargeSelectionBoard(): Element[] {
   const captions: Element[] = [];
   for (let row = 0; row < LARGE_GRID; row++)
     for (let col = 0; col < LARGE_GRID; col++) {
-      const shape = createSticky(col * STEP_X, row * STEP_Y);
-      nodes.push({ ...shape, id: largeNodeId(row, col), label: `Step ${row * LARGE_GRID + col}` });
+      const shape = createShape('desk', col * STEP_X, row * STEP_Y);
+      nodes.push({
+        ...shape,
+        id: largeNodeId(row, col),
+        width: 120,
+        height: 80,
+        label: `Step ${row * LARGE_GRID + col}`,
+      });
       if (col > 0)
         captions.push({
-          ...createText(col * STEP_X - CAPTION_W, row * STEP_Y + 4),
+          ...createShape('chair', col * STEP_X - CAPTION_W, row * STEP_Y + 4),
           id: `a-${row}-${col}`,
           width: CAPTION_W,
           height: CAPTION_H,

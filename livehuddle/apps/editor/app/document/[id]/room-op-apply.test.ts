@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livehuddle/document';
 import { applyElementDelta, type ElementDelta, type ShapeElement } from '@livehuddle/document';
 import type { RoomOp } from '@livehuddle/api-schema';
-import { applyRoomOpToTabs } from './room-op-apply';
+import { applyRoomOpToTabs, remoteRoomOp } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
@@ -334,5 +334,34 @@ describe('applyRoomOpToTabs: changeset', () => {
         changeset({ tabId: 'nope', elementOps: [{ kind: 'remove', id: 'a' }] }),
       ),
     ).toBe(tabs);
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Write category": an old client's text or sticky note never
+  // lands.
+  describe('retired texts and sticky notes', () => {
+    const note = (id: string, type: 'text' | 'sticky') =>
+      ({ id, type, x: 0, y: 0, width: 10, height: 10, label: 'Hi' }) as Element;
+
+    it('ignores a peer adding or updating one, alone or in a run', () => {
+      const tabs = [tab()];
+      const element = note('n', 'sticky');
+      for (const elOp of [
+        { kind: 'add', element, at: 0 },
+        { kind: 'update', element },
+      ] as const) {
+        const op: RoomOp = { kind: 'el', tabId: 't1', op: elOp };
+        expect(applyRoomOpToTabs(tabs, op)).toBe(tabs);
+        const run = remoteRoomOp(op).run;
+        expect(run?.items).toEqual([]);
+      }
+    });
+
+    it('drops them from a peer’s whole tab, new or merged', () => {
+      const incoming = { ...tab(), elements: [el('a'), note('t', 'text'), note('s', 'sticky')] };
+      const added = applyRoomOpToTabs([], { kind: 'tab', tabId: 't1', tab: incoming });
+      expect(added[0]!.elements.map((e) => e.id)).toEqual(['a']);
+      const merged = applyRoomOpToTabs([tab()], { kind: 'tab', tabId: 't1', tab: incoming });
+      expect(merged[0]!.elements.some((e) => e.type === 'text' || e.type === 'sticky')).toBe(false);
+    });
   });
 });

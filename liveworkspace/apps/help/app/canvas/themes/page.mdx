@@ -2,7 +2,6 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvasBasics from '@/editions/livediagram/components/illustrations/canvas-basics';
-import { LookAndFeelTheme as HuddleLookAndFeelTheme } from '@/editions/livehuddle/components/illustrations/look-and-feel';
 
 export const metadata = helpMetadata({
   title: 'Themes',
@@ -23,9 +22,7 @@ A theme is the fastest way to make a <Noun /> look intentional. Instead of colou
 
 <AppNote app="livediagram">The catalogue ships twenty-five themes.</AppNote>
 
-<AppNote app="livedesign,livedocuments,livehuddle">
-  The catalogue ships twenty-four built-in themes.
-</AppNote>
+<AppNote app="livedesign,livedocuments">The catalogue ships twenty-four built-in themes.</AppNote>
 
 ## What a Theme Covers
 
@@ -43,12 +40,6 @@ A theme sets the canvas look together with the fill, border, and text colours of
   A theme sets the canvas background and pattern together with the fill, border, and text colours of
   your elements, so the page reads as one coherent style. Most themes paint every element the same
   colours; some are cleverer, tinting each branch of a hierarchy a different hue.
-</AppNote>
-
-<AppNote app="livehuddle">
-  A theme sets the canvas colour (and, for most themes, a floor) together with the fill, border, and
-  text colours of your elements, so the board reads as one coherent style. Most themes paint every
-  element the same colours; the multicolour ones give each element the next hue of a palette.
 </AppNote>
 
 A theme belongs to one tab, so the tabs of one <Noun /> can each wear a different one. A new <Noun /> starts on Default, and a tab you add starts on the theme of the tab you added it from.
@@ -70,24 +61,16 @@ You change a tab's theme from the **Tab Style** dialog, which opens on its home.
 
 <AppNote app="livedocuments">
   Open it with the **Style** button on a page's title bar (top right of every page; on an article
-  page, **Style** then **Tab Style**). Here every look but **Everyday** also gives the pages a background (the tab's **New Page Background**), and **Page Design** under **Fine-tune** adds a
+  page, **Style** then **Tab Style**). Here every look but **Everyday** also gives the pages a
+  background (the tab's **New Page Background**), and **Page Design** under **Fine-tune** adds a
   [design](/help/canvas/themes/page-designs/) behind every page.
 </AppNote>
 
-<AppNote app="livehuddle">
-  Open it with the **Theme & Canvas** button in the bottom-right corner of the editor, beside the
-  zoom controls (named **Style** on a wide screen). A look here sets the floor (carpet tiles, wood,
-  marble, grass and the rest) rather than a canvas pattern.
-</AppNote>
-
-<Figure app="livediagram,livedesign,livedocuments"
+<Figure
+  app="livediagram,livedesign,livedocuments"
   caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first."
 >
   <DiagramCanvasBasics.LookAndFeelTheme />
-</Figure>
-
-<Figure app="livehuddle" caption="The Colours panel of Tab Style: every theme, each shown on a room's floor and notes.">
-  <HuddleLookAndFeelTheme />
 </Figure>
 
 ## Beyond a Single Colour
@@ -103,11 +86,6 @@ You change a tab's theme from the **Tab Style** dialog, which opens on its home.
   Multicolour themes give each branch of a hierarchy of connected shapes its own hue.
 </AppNote>
 
-<AppNote app="livehuddle">
-  Multicolour themes give each element the next hue of a palette, so a wall of notes reads as
-  colourful at a glance.
-</AppNote>
-
 ## Quick Emphasis
 
 For tweaks to a single element rather than the whole tab, its right-click menu restyles it, so a key shape can stand out while still matching the overall look.
@@ -115,11 +93,6 @@ For tweaks to a single element rather than the whole tab, its right-click menu r
 <AppNote app="livediagram,livedesign,livedocuments">
   The [style presets](/help/palette/shapes/style-presets/) in the right-click menu offer one-click
   colour and border variations derived from the active theme.
-</AppNote>
-
-<AppNote app="livehuddle">
-  Its [element menu](/help/canvas/colours-borders-opacity/) restyles it, so a key note can stand out
-  while still matching the overall look.
 </AppNote>
 
 <Tip>

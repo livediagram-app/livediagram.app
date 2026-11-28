@@ -18,7 +18,7 @@ each be sized on their own (see "The setting"):
 - **Every panel**: each `MovablePanel`, docked into a corner,
   dragged, or open as a popover (the Explorer, the
   Collaborate cluster popover).
-  That covers the Explorer, AI, Map, Collaborate
+  That covers the Explorer, AI, Collaborate
   and the session and tool panels.
 - **The Quick Style panel** ([Quick style panel](../008-canvas/quick-style-panel.md)).
 - **The Tab Style panel** ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md)), flown out of the Theme &

@@ -244,7 +244,6 @@ function faceFor(kind: 'directory' | 'elevator', readOnly: boolean, wayfinding: 
       element={element}
       isSelected={false}
       isEditing={false}
-      isPaintMode={false}
       showHandles={false}
       showAnchors={false}
       onBeginDrag={vi.fn()}

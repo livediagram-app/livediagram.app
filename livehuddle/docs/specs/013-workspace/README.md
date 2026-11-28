@@ -31,6 +31,6 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./snapshots.md - when working on Snapshots: manual save points of the whole Space, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./automations.md - when working on Automations: rules a Space runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./send-to-plan.md - when working on Send to Plan: what livehuddle sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
-- ./suggestions.md - when working on the Send to a Plan suggestion: its trigger, its one click, who sees it
+- ./suggestions.md - (Gone from livehuddle) when working on the Send to a Plan suggestion: its trigger, its one click, who sees it
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles)
 - ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the Space is read, where a source opens, the suggested questions (the platform's `020-ask`)

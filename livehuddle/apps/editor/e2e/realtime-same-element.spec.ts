@@ -60,7 +60,8 @@ test('two peers dragging the same element at once end on the same position', asy
   const id = crypto.randomUUID();
   const square = (elId: string, x: number) => ({
     id: elId,
-    type: 'sticky',
+    type: 'shape',
+    shape: 'desk',
     x,
     y: 200,
     width: 160,

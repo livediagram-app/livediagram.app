@@ -204,9 +204,6 @@ export type ShapeElement = {
   // screens reach the whole tab. Absent = DEFAULT_STAGE_SPEAKERS ('edit') and off.
   stageSpeakers?: StageSpeakers;
   stageCameras?: boolean;
-  // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): true is shut; absent or false
-  // is open, so every door starts open.
-  doorClosed?: boolean;
   // An Avatar Pad's Receptionist (docs/specs/008-canvas/receptionist.md "Asking him to leave"): true once an Editor
   // asked him to leave this pad for good; absent or false, he is there.
   receptionistLeft?: boolean;
@@ -216,7 +213,8 @@ export type ShapeElement = {
   variant?: string;
   // Notice Board (docs/specs/009-elements/social-pieces.md "Notice Board"): its pinned notes, oldest first.
   noticeNotes?: NoticeNote[];
-  // World Clock (social-pieces.md "World Clock"): up to six zones; absent = the viewer's own zone.
+  // The old World Clock's zones (social-pieces.md "Clock"): still accepted and validated so old documents load, and
+  // ignored, since the Clock shows each viewer's own local time.
   clockZones?: ClockZone[];
   // Jukebox (social-pieces.md "Jukebox"): the https audio address it plays; absent = no music set.
   jukeboxSource?: string;
@@ -229,6 +227,10 @@ export type ShapeElement = {
   // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): its Video Link, a YouTube, Vimeo or Loom address it
   // shows when nobody in its room is sharing. Absent = none.
   screenUrl?: string;
+  // Poster (docs/specs/009-elements/poster.md "Choosing its picture"): the gallery image it frames, as an Image element's
+  // `imageId`, and the credit of a picture picked from Image search. Absent = empty, drawn as the placeholder.
+  imageId?: string;
+  credit?: ImageCredit;
   // Screen (screen-and-room-sign.md "A file on the Screen", Work Tracker 1427): the file it shows instead, from any app,
   // each viewer with their own access: the link, the file's name as chosen, and the tab it opens on (absent: the first).
   // @liveworkspace/element-model/live-item checks them; a Screen keeps no snapshot picture.

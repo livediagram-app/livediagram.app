@@ -48,7 +48,8 @@ const RETIRED: Record<string, unknown>[] = [
 
 const NOTE = {
   id: 'note',
-  type: 'sticky',
+  type: 'shape',
+  shape: 'desk',
   x: 80,
   y: 760,
   width: 160,
@@ -89,18 +90,11 @@ test.describe('Retired elements', () => {
     await expect(page.locator('[data-element-id="r9"]')).toContainText('Q&A Board');
     await expect(page.locator('[data-element-id="r0"]')).toContainText('Poll');
 
-    // The open's fit leaves the Map clear (docs/specs/008-canvas/minimap.md "Fit leaves the Map clear"): the note sits
-    // in the corner the Map covers, so once the Map shows the view fits again and the note stands beside it, where a
-    // drag takes the note and not the Map.
+    // No Map lies over the corner the note sits in (docs/specs/002-project-scope/not-in-livehuddle.md "The Map"), so a
+    // drag there takes the note.
     const note = page.locator('[data-element-id="note"]');
-    const map = page.locator('[data-tour-id="minimap"]');
-    await expect(map).toBeVisible();
-    await expect
-      .poll(async () => {
-        const [n, m] = [await note.boundingBox(), await map.boundingBox()];
-        return !!n && !!m && n.x >= m.x + m.width;
-      })
-      .toBe(true);
+    await expect(page.locator('[data-tour-id="minimap"]')).toHaveCount(0);
+    await expect(note).toBeVisible();
 
     // Edit the board around them: move the note, then let the autosave run.
     const at = (await note.boundingBox())!;

@@ -3,10 +3,19 @@ import { doorOnRoom, meetingPieceRoom, roomZones, type Element } from '@livehudd
 import { buildTemplate } from './build-template';
 import { buildTowerLevel2 } from './template-builders-tower';
 
+import { modelFloorBox } from './template-model-box';
 type Shape = Extract<Element, { type: 'shape' }>;
 const shapesOf = (els: readonly Element[]) => els.filter((e): e is Shape => e.type === 'shape');
-const inside = (p: Shape, r: Shape) =>
-  p.x >= r.x && p.y >= r.y && p.x + p.width <= r.x + r.width && p.y + p.height <= r.y + r.height;
+// In a room when the middle of where it stands in 3D is: a wall piece stands back on its wall, its drawn box poking over
+// the wall line (template-model-box.ts, docs/specs/007-editor/templates-by-mode.md "Made for 3D").
+const inside = (p: Shape, r: Shape) => {
+  // A microwave or a kettle stands where its base meets the worktop under it.
+  const rider = p.shape === 'microwave' || p.shape === 'kettle';
+  const m = rider ? { x: p.x, y: p.y + p.height - 1, width: p.width, height: 0 } : modelFloorBox(p);
+  const x = m.x + m.width / 2;
+  const y = m.y + m.height / 2;
+  return p !== r && x >= r.x && y >= r.y && x <= r.x + r.width && y <= r.y + r.height;
+};
 const roomOf = (els: Shape[], label: string) =>
   els.find((e) => e.shape === 'room' && e.label === label)!;
 const kindsIn = (els: Shape[], room: Shape) =>

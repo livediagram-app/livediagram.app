@@ -65,7 +65,6 @@ export function useCanvasTool({
     // `AvatarMode`, not `Avatar` — the palette's Avatar photo tile already owns
     // the `Avatar` token on Element·Added (docs/specs/008-canvas/avatar-mode.md).
     if (tool === 'avatar' && canvasTool !== 'avatar') track('Canvas', 'Used', 'AvatarMode');
-    if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
     setCanvasTool(tool);
   };
   // Opening walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"): a tab that offers the walk puts you in

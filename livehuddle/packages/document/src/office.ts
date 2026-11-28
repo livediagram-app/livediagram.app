@@ -7,8 +7,8 @@
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { FurnitureArt, FurniturePart } from './seating';
-import { ellipse, path, rect } from './furniture-parts';
-import { backWallDoorLeaf, backWallRuns, type BackWallDoor } from './back-wall-doors';
+import { path, rect } from './furniture-parts';
+import { backWallRuns, type BackWallDoor } from './back-wall-doors';
 import { SHARED_OFFICE_ART } from '@livehuddle/avatar/furniture-art';
 import {
   brokenRun,
@@ -24,6 +24,7 @@ import { OFFICE_RECREATION_ART } from './office-recreation';
 import { OFFICE_WORKPLACE_ART } from './office-workplace';
 import { OFFICE_KITCHEN_ART } from './office-kitchen';
 import { OFFICE_RESTROOM_ART } from './office-restroom';
+import { OFFICE_LAMP_ART } from './office-lamps';
 import { OFFICE_VENUE_ART } from './office-venue';
 import { OFFICE_WORKDAY_ART } from './office-workday';
 import { WAYFINDING_ART } from './office-wayfinding';
@@ -53,6 +54,7 @@ export type OfficeKind =
   | 'outdoor-plant'
   | 'tree'
   | 'garden-path'
+  | 'road'
   | 'grass'
   | 'garden-fence'
   // The Door (docs/specs/009-elements/room-builder.md "Door").
@@ -98,6 +100,10 @@ export type OfficeKind =
   | 'toilet-cubicle'
   | 'washbasin'
   | 'hand-dryer'
+  // The lamps (docs/specs/009-elements/office-amenities.md "Lamps").
+  | 'floor-lamp'
+  | 'table-lamp'
+  | 'desk-lamp'
   // The venue pieces (docs/specs/009-elements/venue-pieces.md).
   | 'pillar'
   | 'column'
@@ -119,7 +125,9 @@ export type OfficeKind =
   | 'calendar-wall'
   | 'suggestion-box'
   | 'signpost'
-  | 'photo-wall';
+  | 'photo-wall'
+  // The Poster (docs/specs/009-elements/poster.md): a picture frame on a wall.
+  | 'poster';
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
@@ -139,6 +147,7 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'outdoor-plant',
   'tree',
   'garden-path',
+  'road',
   'grass',
   'garden-fence',
   'door',
@@ -178,6 +187,9 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  'floor-lamp',
+  'table-lamp',
+  'desk-lamp',
   'pillar',
   'column',
   'car-park',
@@ -197,6 +209,7 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'suggestion-box',
   'signpost',
   'photo-wall',
+  'poster',
 ];
 
 /** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
@@ -205,6 +218,7 @@ export type SizedOfficeKind =
   | 'corridor'
   | 'stage'
   | 'garden-path'
+  | 'road'
   | 'grass'
   | 'garden-fence'
   | 'door'
@@ -217,6 +231,7 @@ const SIZED_OFFICE_KINDS: readonly string[] = [
   'corridor',
   'stage',
   'garden-path',
+  'road',
   'grass',
   'garden-fence',
   'door',
@@ -266,6 +281,7 @@ export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
   ...OFFICE_WORKPLACE_ART,
   ...OFFICE_KITCHEN_ART,
   ...OFFICE_RESTROOM_ART,
+  ...OFFICE_LAMP_ART,
   ...OFFICE_VENUE_ART,
   ...OFFICE_WORKDAY_ART,
   ...WAYFINDING_ART,
@@ -375,15 +391,6 @@ export function roomBackParts(
     parts.push(rect('panel', a, 0, b - a, W, 2, ROOM_TONES.wallTop));
     parts.push(rect('face', a, W - 1, b - a, F - W + 1, 1, ROOM_TONES.wallFace));
     parts.push(rect('mark', a, F - 4, b - a, 4, 0, ROOM_TONES.skirting));
-  }
-  // A shut Door on the back wall: its leaf in the face, dyed in the stroke so it reads shut at a glance however far out
-  // the view is, with a knob in the floor's colour.
-  for (const d of backDoors) {
-    if (!d.closed) continue;
-    const { leaf, knob } = backWallDoorLeaf(d);
-    parts.push(rect('panel', leaf.x, leaf.y, leaf.w, leaf.h, 1.5));
-    parts.push(rect('dye', leaf.x, leaf.y, leaf.w, leaf.h, 1.5));
-    parts.push(ellipse('panel', knob.cx, knob.cy, knob.r, knob.r));
   }
   return parts.filter((p) => p.tag !== 'rect' || (p.w > 0 && p.h > 0));
 }

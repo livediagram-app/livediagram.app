@@ -4,6 +4,8 @@
 
 /** How far the camera looks back from straight down, in degrees (DEFAULTS.md D136). */
 export const SPACE_3D_TILT_DEG = 52;
+/** How far a right-drag tilts the camera: from nearly overhead to low over the floor (3d-view.md "Turning the camera"). */
+export const SPACE_3D_TILT_RANGE: readonly [number, number] = [24, 70];
 /** The perspective's distance, in screen px (DEFAULTS.md D136). */
 export const SPACE_3D_PERSPECTIVE_PX = 1100;
 /** How long the tilt (and the walls' fold) takes, in ms. */
@@ -60,6 +62,19 @@ export function screenPointOf(
   perspective = SPACE_3D_PERSPECTIVE_PX,
   turn = 0,
 ): Point {
+  return screenPointAbove(point, 0, size, view, tiltDeg, perspective, turn);
+}
+
+/** Where a point `z` canvas px above a floor point shows on the screen (relative to the canvas's box). */
+export function screenPointAbove(
+  point: Point,
+  z: number,
+  size: { width: number; height: number },
+  view: View,
+  tiltDeg: number,
+  perspective = SPACE_3D_PERSPECTIVE_PX,
+  turn = 0,
+): Point {
   const cx = size.width / 2;
   const cy = size.height / 2;
   const { x: fx, y: fy } = toCamera(
@@ -70,8 +85,63 @@ export function screenPointOf(
     turn,
   );
   const t = (tiltDeg * Math.PI) / 180;
-  const w = perspective / (perspective - fy * Math.sin(t));
-  return { x: cx + fx * w, y: cy + fy * Math.cos(t) * w };
+  const h = z * view.zoom;
+  // rotateX(tilt) of (fx, fy, h): the height leans back up the screen and toward the camera.
+  const depth = fy * Math.sin(t) + h * Math.cos(t);
+  const w = perspective / (perspective - depth);
+  return { x: cx + fx * w, y: cy + (fy * Math.cos(t) - h * Math.sin(t)) * w };
+}
+
+/** The screen box (relative to the canvas's box) round points standing above the floor (x, y canvas; z height). */
+export function screenBoxOf(
+  points: readonly { x: number; y: number; z: number }[],
+  size: { width: number; height: number },
+  view: View,
+  tiltDeg: number,
+  perspective = SPACE_3D_PERSPECTIVE_PX,
+  turn = 0,
+): { x: number; y: number; width: number; height: number } {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const q of points) {
+    const p = screenPointAbove(q, q.z, size, view, tiltDeg, perspective, turn);
+    x0 = Math.min(x0, p.x);
+    y0 = Math.min(y0, p.y);
+    x1 = Math.max(x1, p.x);
+    y1 = Math.max(y1, p.y);
+  }
+  return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+}
+
+/**
+ * The screen box (relative to the canvas's box) round a floor rect standing `z` canvas px tall, as the tilted, turned
+ * camera shows it: what a toolbar over a piece in the 3D view is placed against.
+ */
+export function screenRectOf(
+  rect: { x: number; y: number; width: number; height: number },
+  z: number,
+  size: { width: number; height: number },
+  view: View,
+  tiltDeg: number,
+  perspective = SPACE_3D_PERSPECTIVE_PX,
+  turn = 0,
+): { x: number; y: number; width: number; height: number } {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const px of [rect.x, rect.x + rect.width])
+    for (const py of [rect.y, rect.y + rect.height])
+      for (const h of z > 0 ? [0, z] : [0]) {
+        const p = screenPointAbove({ x: px, y: py }, h, size, view, tiltDeg, perspective, turn);
+        x0 = Math.min(x0, p.x);
+        y0 = Math.min(y0, p.y);
+        x1 = Math.max(x1, p.x);
+        y1 = Math.max(y1, p.y);
+      }
+  return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
 }
 
 /**

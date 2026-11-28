@@ -30,16 +30,12 @@ export const HELP_ARTICLES = {
   // One key per tool panel, so every mode's panel can point at the article that explains it
   // (docs/specs/018-help/contextual-help-links.md); Avatar mode has none, its panel being the avatar palette now.
   // Each of these resolves to a real page: a key pointing at nothing is a bug, the same way an unregistered article is.
-  formatPainter: 'selection-modes/format-painter',
   // Tabs / import-export
   exportingSpaces: 'account-and-data/exporting-spaces',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
   // Canvas / themes
-  changingTheBackground: 'canvas/the-canvas/changing-the-background',
-  changingTheme: 'canvas/themes/changing-theme',
-  choosingAFinish: 'canvas/finish',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Tours and presence
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
@@ -51,7 +47,6 @@ export const HELP_ARTICLES = {
   explorerPanel: 'explorer/explorer-panel',
   // The Automations screen's How Rules Work and its gate (docs/specs/013-workspace/automations.md "The screen").
   automations: 'tools/automations',
-  minimap: 'user-interface/minimap',
   imageGallery: 'explorer/image-gallery',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
@@ -115,10 +110,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about panel opacity',
     description: 'Make the panels translucent so the canvas shows through.',
   },
-  formatPainter: {
-    title: 'Learn about the Format Painter',
-    description: "Tips for copying one element's look onto others.",
-  },
   exportingSpaces: {
     title: 'Learn about exporting',
     description: 'What each export format is for and how to use it.',
@@ -135,18 +126,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
   },
-  changingTheBackground: {
-    title: 'Learn about the canvas',
-    description: 'Tips for the background, patterns and the canvas behind what you draw.',
-  },
-  changingTheme: {
-    title: 'Learn about changing the theme',
-    description: "Tips for restyling a tab's colours in one go.",
-  },
-  choosingAFinish: {
-    title: 'Learn about finishes',
-    description: 'Drawing a tab crisp and print-ready, sketched by hand, or in bold marker.',
-  },
   choosingFonts: {
     title: 'Learn about fonts',
     description: 'Tips for choosing a typeface and text size for a tab.',
@@ -158,10 +137,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   automations: {
     title: 'Learn about Automations',
     description: 'Rules a Space runs on its own: triggers, steps, templates and the Audit Trail.',
-  },
-  minimap: {
-    title: 'Learn about the Map',
-    description: 'Tips for finding your way around a big canvas.',
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',

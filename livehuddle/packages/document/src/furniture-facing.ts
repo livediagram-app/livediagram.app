@@ -70,6 +70,8 @@ const TURNING_KINDS = [
   'stairs',
   'suggestion-box',
   'rug',
+  // The Road (docs/specs/009-elements/road.md) turns as a rug does: its sides swap about its middle.
+  'road',
 ] as const;
 
 /** A piece of furniture that takes a facing. */
@@ -126,7 +128,7 @@ type Turnable = Rect & {
 export function turnPiece<E extends Turnable>(el: E, to: SeatFacing): E {
   // A rug is a flat pattern drawn to its box, whatever its type (office.md "Rug"): on its side its box's sides swap
   // about its centre, so a Round rug stays a circle and a Runner keeps its length (Work Tracker 628).
-  if (el.shape === 'rug') return turnFlat(el, to);
+  if (el.shape === 'rug' || el.shape === 'road') return turnFlat(el, to);
   // A Long Table's drawings are built for its box (office.md "Long Table"), so it turns from its own.
   const art = isLongTable(el)
     ? longTableArt(el.width, el.height, pieceFacing(el))
