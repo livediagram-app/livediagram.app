@@ -3,7 +3,8 @@
 // Start Planning's session card pictures (docs/specs/026-plan/session-tabs.md "Making one", "Sprint Planning"): a
 // Session tab drawn small in the tab's own colours, the queue on the left (two rows ticked and greyed, the room's card
 // lit) and the card on the right with its fill button. Sprint Planning's rows carry estimate pills and its card a
-// filling capacity meter.
+// filling capacity meter. Bug Triage's rows carry priority dots, its card a strip of priority chips and a Close button
+// beside the fill button.
 import type { SessionKindId } from '@liveplanner/items';
 import type { PlanPalette } from '../plan-palette';
 
@@ -19,6 +20,9 @@ export function SessionPicture({
 }) {
   const rows = [0, 1, 2, 3, 4];
   const planning = sessionKind === 'planning';
+  const triage = sessionKind === 'triage';
+  // Bug Triage's rows' priority dots: urgent, high, none (dashed), medium, none.
+  const dots = ['#dc2626', '#ea580c', null, '#ca8a04', null];
   return (
     <span
       aria-hidden
@@ -77,6 +81,17 @@ export function SessionPicture({
                   strokeWidth="0.5"
                 />
               ) : null}
+              {triage ? (
+                <circle
+                  cx="34"
+                  cy={y + 4.5}
+                  r="1.8"
+                  fill={dots[r] ?? palette.card}
+                  stroke={dots[r] ? 'none' : palette.muted}
+                  strokeWidth="0.5"
+                  strokeDasharray={dots[r] ? undefined : '1 0.6'}
+                />
+              ) : null}
             </g>
           );
         })}
@@ -98,6 +113,34 @@ export function SessionPicture({
             <rect x="51" y="42" width="60" height="4" rx="2" fill={palette.column} />
             <rect x="51" y="42" width="34" height="4" rx="2" fill={palette.focus} />
             <rect x="85" y="42" width="9" height="4" fill={palette.focus} fillOpacity="0.35" />
+          </>
+        ) : null}
+        {triage ? (
+          <>
+            {[0, 1, 2, 3].map((c) => (
+              <rect
+                key={c}
+                x={51 + c * 11}
+                y="42"
+                width="9"
+                height="5"
+                rx="1.5"
+                fill={c === 1 ? palette.focus : palette.column}
+                fillOpacity={c === 1 ? 0.25 : 1}
+                stroke={c === 1 ? palette.focus : palette.border}
+                strokeWidth="0.5"
+              />
+            ))}
+            <rect
+              x="69"
+              y="55"
+              width="12"
+              height="8"
+              rx="2"
+              fill={palette.card}
+              stroke="#e11d48"
+              strokeOpacity="0.7"
+            />
           </>
         ) : null}
         <rect x="84" y="55" width="27" height="8" rx="2" fill={palette.focus} />

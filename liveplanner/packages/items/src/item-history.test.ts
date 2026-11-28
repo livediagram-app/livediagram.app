@@ -202,6 +202,27 @@ describe('groupHistory', () => {
     ).toEqual([{ at: at(20), by: SAM, tag: 'session', changes: [outcome('refined')] }]);
   });
 
+  // docs/specs/026-plan/session-tabs.md "History": an outcome undone straight after cancels out, as a flag does.
+  it('cancels a session outcome undone within the group, and keeps an undo of an older one', () => {
+    const closed = {
+      kind: 'session',
+      session: 'triage',
+      outcome: 'closed',
+      reason: 'Not a Bug',
+    } as const;
+    const undone = { kind: 'session', session: 'triage', outcome: 'closed', undone: true } as const;
+    const accepted = { kind: 'session', session: 'triage', outcome: 'accepted' } as const;
+    expect(
+      groupHistory([e(20, [undone], SAM, 'session'), e(10, [closed], SAM, 'session')]),
+    ).toEqual([]);
+    // An undo of a different outcome stands; so does an undo with nothing before it.
+    expect(
+      groupHistory([e(20, [undone], SAM, 'session'), e(10, [accepted], SAM, 'session')])[0]!
+        .changes,
+    ).toEqual([undone]);
+    expect(groupHistory([e(10, [undone], SAM, 'session')])[0]!.changes).toEqual([undone]);
+  });
+
   it('measures the window from the group’s first entry', () => {
     const step = ITEM_HISTORY_GROUP_MS / 1000 / 2 + 1;
     const grouped = groupHistory([

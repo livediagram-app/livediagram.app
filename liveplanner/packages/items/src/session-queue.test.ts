@@ -140,6 +140,22 @@ describe('sessionTarget', () => {
     expect(sessionTarget(c, [idea], ['new', 'icebox', 'todo', 'done'])).toBe('todo');
   });
 
+  // docs/specs/026-plan/session-tabs.md "Bug Triage": its Next Stage also steps past a waiting stage.
+  it('steps past the stages a kind passes (Bug Triage’s Needs Info) to the next open one', () => {
+    const triaged: ItemTypeDef = {
+      ...work,
+      id: 'tb',
+      statuses: ['new', 'needs-info', 'confirmed', 'wont-fix'],
+    };
+    const order = ['new', 'needs-info', 'confirmed', 'wont-fix'];
+    const names = new Map([['needs-info', 'Needs Info']]);
+    const c = card('N', 'new', { type: 'tb' });
+    expect(sessionTarget(c, [triaged], order, undefined, { names })).toBe('needs-info');
+    expect(sessionTarget(c, [triaged], order, undefined, { names, pass: ['needs info'] })).toBe(
+      'confirmed',
+    );
+  });
+
   // The Sprint Board template lists each type's waiting stages after Done: To Do … Done, Backlog, Ready.
   describe('a type that lists its waiting stages after Done', () => {
     const story: ItemTypeDef = {
@@ -205,6 +221,9 @@ it('knows its session kinds and outcomes', () => {
   expect(isSessionOutcome('done')).toBe(false);
   expect(isSessionKindId('planning')).toBe(true);
   expect(isSessionOutcome('committed')).toBe(true);
+  expect(isSessionKindId('triage')).toBe(true);
+  expect(isSessionOutcome('accepted')).toBe(true);
+  expect(isSessionOutcome('closed')).toBe(true);
 });
 
 it('offers each kind its own outcomes', () => {
@@ -214,4 +233,9 @@ it('offers each kind its own outcomes', () => {
   expect(outcomeFits('planning', 'flagged')).toBe(false);
   expect(outcomeFits('refinement', 'committed')).toBe(false);
   expect(outcomeFits('refinement', 'flagged')).toBe(true);
+  expect(outcomeFits('triage', 'accepted')).toBe(true);
+  expect(outcomeFits('triage', 'closed')).toBe(true);
+  expect(outcomeFits('triage', 'flagged')).toBe(true);
+  expect(outcomeFits('triage', 'refined')).toBe(false);
+  expect(outcomeFits('refinement', 'closed')).toBe(false);
 });

@@ -38,6 +38,20 @@ describe('Start Planning: Sessions', () => {
     expect(onSession).toHaveBeenCalledWith('refinement');
   });
 
+  // docs/specs/026-plan/session-tabs.md "Bug Triage", "Making one".
+  it('an Editor picks Bug Triage from Sessions, and a search for triage finds it', () => {
+    const onSession = vi.fn();
+    render(<StartPlanning onPickBoard={vi.fn()} onSession={onSession} />);
+    fireEvent.click(within(rail()).getByRole('button', { name: /^Sessions/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Bug Triage Session/ }));
+    expect(onSession).toHaveBeenCalledWith('triage');
+    fireEvent.change(screen.getByRole('textbox', { name: /Find a board/ }), {
+      target: { value: 'triage' },
+    });
+    expect(screen.getByRole('button', { name: /^Bug Triage Session/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Sprint Planning/ })).toBeNull();
+  });
+
   it('an Editor picks Sprint Planning from Sessions, and a search for capacity finds it', () => {
     const onSession = vi.fn();
     render(<StartPlanning onPickBoard={vi.fn()} onSession={onSession} />);

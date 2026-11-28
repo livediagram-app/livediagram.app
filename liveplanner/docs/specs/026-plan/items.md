@@ -856,11 +856,13 @@ Each entry is **tagged** by how it was made:
   taking their change back, not a second decision.
 - **A form's response**: the card made from it reads "created this card from a form response".
 - **A session's outcome** ([Session tabs](session-tabs.md#history)): an entry of its own, tagged `session`, holding one
-  `session` change (`{ kind: 'session', session: 'refinement' | 'planning', outcome: 'refined' | 'skipped' | 'flagged' |
-'committed' }`) and nothing else: "Sam refined this in a Refinement session", "Sam committed this in a Sprint Planning
-  session". Written by `POST /items/:itemId/session` (edit access),
-  which changes nothing on the card, so its Last Edited stays; the move or flag a Refined or Flagged outcome makes is
-  its own write and its own entry. It groups only with other session entries.
+  `session` change (`{ kind: 'session', session: 'refinement' | 'planning' | 'triage', outcome: 'refined' | 'skipped' |
+'flagged' | 'committed' | 'accepted' | 'closed', reason?, duplicateOf?, undone? }`) and nothing else: "Sam refined
+  this in a Refinement session", "Sam committed this in a Sprint Planning session", "Sam closed this as a duplicate of
+  BUG-12 in a Bug Triage session: Same root cause", "Sam undid Closed in a Bug Triage session". Written by
+  `POST /items/:itemId/session` (edit access), which changes nothing on the card, so its Last Edited stays; the move,
+  flag or duplicate link an outcome makes is its own write and its own entry. It groups only with other session
+  entries, and an outcome undone within the group cancels out.
 
 ### Kept bounded, in the plan
 

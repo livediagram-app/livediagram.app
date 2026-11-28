@@ -9,19 +9,26 @@ import type { ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
 import { typeStatusesOf } from './type-statuses';
 
-// What a session is run for. Stand-up, Bug Triage and Sprint Review come later and join this list with their own
-// outcomes.
-export const SESSION_KIND_IDS = ['refinement', 'planning'] as const;
+// What a session is run for. Stand-up and Sprint Review come later and join this list with their own outcomes.
+export const SESSION_KIND_IDS = ['refinement', 'planning', 'triage'] as const;
 export type SessionKindId = (typeof SESSION_KIND_IDS)[number];
 
 // What a session decided for a card: each kind offers some of these (SESSION_KIND_OUTCOMES).
-export const SESSION_OUTCOMES = ['refined', 'skipped', 'flagged', 'committed'] as const;
+export const SESSION_OUTCOMES = [
+  'refined',
+  'skipped',
+  'flagged',
+  'committed',
+  'accepted',
+  'closed',
+] as const;
 export type SessionOutcome = (typeof SESSION_OUTCOMES)[number];
 
 // The outcomes each kind's action bar offers, its completing one (the fill button) first.
 export const SESSION_KIND_OUTCOMES: Readonly<Record<SessionKindId, readonly SessionOutcome[]>> = {
   refinement: ['refined', 'skipped', 'flagged'],
   planning: ['committed', 'skipped'],
+  triage: ['accepted', 'closed', 'skipped', 'flagged'],
 };
 
 export const isSessionKindId = (v: unknown): v is SessionKindId =>
@@ -99,6 +106,9 @@ const BACKLOG_LIKE = ['backlog', 'icebox', 'inbox', 'ideas', 'idea', 'someday'];
 export type SessionStageInfo = {
   names?: ReadonlyMap<string, string> | undefined;
   phases?: ReadonlyMap<string, 'todo' | 'doing' | 'done'> | undefined;
+  // Stage names (lower case) a kind's Next Stage also steps past, as it does a Backlog-like one (Bug Triage's waiting
+  // stages: Needs Info, On Hold).
+  pass?: readonly string[] | undefined;
 };
 
 // Where a kind's completing outcome (Refined, Committed) takes a card (docs/specs/026-plan/session-tabs.md "Making
@@ -122,7 +132,11 @@ export function sessionTarget(
   if (at < 0) return null;
   const nameOf = (s: string) => (stages.names?.get(s) ?? s).trim().toLowerCase();
   const isDone = (s: string) => stages.phases?.get(s) === 'done' || DONE_LIKE.includes(nameOf(s));
-  const isOpen = (s: string) => s !== own && !isDone(s) && !BACKLOG_LIKE.includes(nameOf(s));
+  const isOpen = (s: string) =>
+    s !== own &&
+    !isDone(s) &&
+    !BACKLOG_LIKE.includes(nameOf(s)) &&
+    !(stages.pass?.includes(nameOf(s)) ?? false);
   // The first open stage after the card's own, past any Backlog-like one, before a Done-like one.
   for (const s of order.slice(at + 1)) {
     if (isDone(s)) break;

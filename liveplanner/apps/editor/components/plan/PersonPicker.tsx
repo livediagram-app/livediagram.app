@@ -216,9 +216,12 @@ export function PersonPicker({
           >
             {name}
           </span>
-          <span aria-hidden className="shrink-0 text-slate-400">
-            <ChevronDownIcon size={12} />
-          </span>
+          {/* A disabled picker reads its value, as a disabled select does: no chevron to open. */}
+          {disabled ? null : (
+            <span aria-hidden className="shrink-0 text-slate-400">
+              <ChevronDownIcon size={12} />
+            </span>
+          )}
         </button>
       )}
       {open ? (

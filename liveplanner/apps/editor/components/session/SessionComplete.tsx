@@ -2,11 +2,13 @@
 
 // A Session tab with no card left to go (docs/specs/026-plan/session-tabs.md "When the queue is done"): how many got
 // each of the kind's outcomes (Refined, Skipped and Flagged; Committed and Skipped), a kind's own summary (Sprint
-// Planning's tally), and for the facilitator Review Skipped and Start Again. An empty set-up says so instead, with
+// Planning's tally), and for the facilitator Undo Last (the last decision taken back, the room back on its card), Review
+// Skipped and Start Again. An empty set-up says so instead, with
 // Session Settings for an Editor.
 import type { ReactNode } from 'react';
 import { SESSION_KIND_OUTCOMES, type SessionOutcome } from '@liveplanner/items';
 import type { SessionDecision } from '@liveplanner/project';
+import { UndoLastChip, type SessionUndoLast } from './SessionActionBar';
 import { OUTCOME_LOOKS } from './session-kinds';
 
 const button =
@@ -20,6 +22,7 @@ export function SessionComplete({
   empty,
   decided,
   runs,
+  last,
   onReviewSkipped,
   onStartAgain,
   onSettings,
@@ -32,6 +35,8 @@ export function SessionComplete({
   empty: boolean;
   decided: Readonly<Record<string, SessionDecision>> | undefined;
   runs: boolean;
+  // Undo Last, the facilitator's: the last decision taken back, so closing the last card is never final.
+  last?: SessionUndoLast | null | undefined;
   onReviewSkipped: (() => void) | null;
   onStartAgain: () => void;
   // Session Settings, an Editor's; absent for everyone else.
@@ -89,7 +94,8 @@ export function SessionComplete({
       </dl>
       {summary}
       {runs ? (
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {last ? <UndoLastChip last={last} /> : null}
           {onReviewSkipped ? (
             <button type="button" className={button} onClick={onReviewSkipped}>
               Review Skipped

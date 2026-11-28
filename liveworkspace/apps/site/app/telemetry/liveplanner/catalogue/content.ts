@@ -1379,8 +1379,18 @@ export const PLAN_SESSION_OUTCOMES = chart(
   'Plan',
   'Used',
   'Session Outcomes',
-  'A card decided in a Session tab: Refined (moved on to its next stage), Skipped, Flagged, or Committed into a sprint in Sprint Planning.',
-  { types: ['SessionRefined', 'SessionSkipped', 'SessionFlagged', 'SessionCommitted'] },
+  'A card decided in a Session tab: Refined (moved on to its next stage), Skipped, Flagged, Committed into a sprint in Sprint Planning, Accepted or Closed in Bug Triage; and a decision undone.',
+  {
+    types: [
+      'SessionRefined',
+      'SessionSkipped',
+      'SessionFlagged',
+      'SessionCommitted',
+      'SessionAccepted',
+      'SessionClosed',
+      'SessionUndone',
+    ],
+  },
 );
 
 export const PLAN_REVEALED = chart(

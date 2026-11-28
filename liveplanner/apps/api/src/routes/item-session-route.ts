@@ -1,8 +1,17 @@
 // POST /items/:itemId/session (docs/specs/026-plan/session-tabs.md "History", blueprint session-tabs.md "Interfaces
 // and contracts"): a Session tab's outcome for a card, kept in the card's history as an entry of its own, tagged
-// `session`. It writes nothing on the card, so a skip leaves its Last Edited alone; the move a Refined or Committed
-// makes and the flag a Flagged sets are their own writes. Edit access: running a session is an Editor's.
-import { isSessionKindId, isSessionOutcome, outcomeFits } from '@liveplanner/items';
+// `session`. It writes nothing on the card, so a skip leaves its Last Edited alone; the move a Refined, Committed,
+// Accepted or Closed makes, the flag a Flagged sets and a duplicate's link are their own writes. A Close may carry its
+// reason and the card it duplicates; `undone` records an outcome taken back. Edit access: running a session is an
+// Editor's.
+import {
+  SESSION_REASON_MAX,
+  isSessionKindId,
+  isSessionOutcome,
+  outcomeFits,
+  sessionReason,
+  type ItemHistoryChange,
+} from '@liveplanner/items';
 import { appendItemHistory } from '../db/item-history';
 import { readItem } from '../db';
 import { methodNotAllowed, noContent } from '../responses';
@@ -20,13 +29,40 @@ export async function recordSessionOutcome(
   if (caller.scope && !caller.scope.has(itemId)) return itemNotFound();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const { session, outcome } = body as { session?: unknown; outcome?: unknown };
+  const { session, outcome, reason, duplicateOf, undone } = body;
   if (!isSessionKindId(session)) return rejected('session_invalid', 'session');
   // An outcome its kind does not offer (Committed in a Refinement) is as unknown as a made-up one.
   if (!isSessionOutcome(outcome) || !outcomeFits(session, outcome))
     return rejected('session_invalid', 'outcome');
+  // A reason and a duplicate are a Close's alone.
+  const closing = outcome === 'closed';
+  if (
+    reason !== undefined &&
+    (!closing || typeof reason !== 'string' || reason.length > SESSION_REASON_MAX)
+  )
+    return rejected('session_invalid', 'reason');
+  if (
+    duplicateOf !== undefined &&
+    (!closing ||
+      typeof duplicateOf !== 'string' ||
+      duplicateOf === itemId ||
+      (caller.scope && !caller.scope.has(duplicateOf)))
+  )
+    return rejected('session_invalid', 'duplicateOf');
+  if (undone !== undefined && undone !== true) return rejected('session_invalid', 'undone');
   const item = await readItem(ctx.env, projectId, itemId);
   if (!item) return itemNotFound();
+  if (typeof duplicateOf === 'string' && !(await readItem(ctx.env, projectId, duplicateOf)))
+    return rejected('session_invalid', 'duplicateOf');
+  const why = sessionReason(reason);
+  const change: ItemHistoryChange = {
+    kind: 'session',
+    session,
+    outcome,
+    ...(why ? { reason: why } : {}),
+    ...(typeof duplicateOf === 'string' ? { duplicateOf } : {}),
+    ...(undone ? { undone: true as const } : {}),
+  };
   const by = await writer(ctx, caller.owner);
   const kept = await appendItemHistory(
     ctx.env,
@@ -35,11 +71,11 @@ export async function recordSessionOutcome(
       {
         before: item,
         after: { ...item, updatedBy: by, updatedAt: Date.now() },
-        changes: [{ kind: 'session', session, outcome }],
+        changes: [change],
       },
     ],
     'session',
   );
-  console.info('[session] outcome.recorded', { projectId, outcome, kept });
+  console.info('[session] outcome.recorded', { projectId, outcome, undone: !!undone, kept });
   return noContent();
 }

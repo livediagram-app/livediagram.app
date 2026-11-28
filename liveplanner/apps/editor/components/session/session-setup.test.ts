@@ -155,6 +155,48 @@ describe('defaultSessionSetup for Sprint Planning', () => {
   });
 });
 
+// docs/specs/026-plan/session-tabs.md "Bug Triage", "Making one".
+describe('defaultSessionSetup for Bug Triage', () => {
+  const plan = ['new', 'triage', 'confirmed', 'done'];
+  const names = new Map([
+    ['new', 'New'],
+    ['triage', 'Under Review'],
+    ['confirmed', 'Confirmed'],
+    ['done', 'Done'],
+  ]);
+  it('prefers the bug-like types with cards in an intake stage, oldest first', () => {
+    const types: ItemTypeDef[] = [type('task'), type('bug'), { ...type('defect'), glyph: 'bug' }];
+    const items = [card('task', 'new'), card('bug', 'triage'), card('defect', 'new')];
+    expect(
+      defaultSessionSetup({
+        sessionKind: 'triage',
+        items,
+        types,
+        planStatuses: plan,
+        statusNames: names,
+      }),
+    ).toEqual({
+      typeIds: ['bug', 'defect'],
+      statuses: ['new', 'triage'],
+      sortBy: [{ field: 'createdAt', dir: 'asc' }],
+    });
+  });
+
+  it('keeps every type with intake cards when none is bug-like', () => {
+    const types = [type('task'), type('story')];
+    const items = [card('task', 'new'), card('story', 'confirmed')];
+    expect(
+      defaultSessionSetup({
+        sessionKind: 'triage',
+        items,
+        types,
+        planStatuses: plan,
+        statusNames: names,
+      }).typeIds,
+    ).toEqual(['task']);
+  });
+});
+
 describe('the set-up in words', () => {
   it('names the stages, then the order', () => {
     const types = [type('task')];

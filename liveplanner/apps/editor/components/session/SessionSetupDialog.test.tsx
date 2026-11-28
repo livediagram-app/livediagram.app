@@ -260,3 +260,40 @@ describe('Set Up Sprint Planning', () => {
     expect(screen.queryByLabelText('Capacity in points')).toBeNull();
   });
 });
+
+// docs/specs/026-plan/session-tabs.md "Bug Triage", "Making one".
+describe('Set Up Bug Triage', () => {
+  it('names its parts, and keeps a stage When Closed takes each type to, or the Close Stage', () => {
+    const onDone = vi.fn<(setup: SessionSetup) => void>();
+    render(
+      <SessionSetupDialog
+        sessionKind="triage"
+        initial={{ typeIds: ['bug'], statuses: ['triage'] }}
+        plan={plan()}
+        settings={false}
+        onDone={onDone}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Set Up Bug Triage' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Intake Stages' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'When Accepted' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'When Closed' })).toBeTruthy();
+    const closed = screen.getByLabelText<HTMLSelectElement>('Bug cards move to when closed');
+    expect(closed.options[0]!.textContent).toBe('Close Stage');
+    fireEvent.change(closed, { target: { value: 'done' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Start Session' }));
+    expect(onDone).toHaveBeenLastCalledWith({
+      typeIds: ['bug'],
+      statuses: ['triage'],
+      closeTargets: { bug: 'done' },
+    });
+    fireEvent.change(closed, { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Start Session' }));
+    expect(onDone).toHaveBeenLastCalledWith({ typeIds: ['bug'], statuses: ['triage'] });
+    cleanup();
+    // Refinement has no When Closed.
+    open({ typeIds: ['task'], statuses: ['backlog'] });
+    expect(screen.queryByRole('heading', { name: 'When Closed' })).toBeNull();
+  });
+});

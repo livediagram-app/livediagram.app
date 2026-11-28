@@ -95,6 +95,23 @@ describe('changeLine', () => {
     expect(words({ kind: 'session', session: 'planning', outcome: 'committed' })).toBe(
       'Committed this in a Sprint Planning session',
     );
+    // Bug Triage's (docs/specs/026-plan/session-tabs.md "Bug Triage", "History"): a Close's reason and duplicate, an
+    // undo.
+    expect(words({ kind: 'session', session: 'triage', outcome: 'accepted' })).toBe(
+      'Accepted this in a Bug Triage session',
+    );
+    expect(
+      words({ kind: 'session', session: 'triage', outcome: 'closed', reason: 'Can’t reproduce' }),
+    ).toBe('Closed this in a Bug Triage session: Can’t reproduce');
+    expect(
+      words({ kind: 'session', session: 'triage', outcome: 'closed', duplicateOf: linked.id }),
+    ).toMatch(/^Closed this as a duplicate of \S+7 in a Bug Triage session$/);
+    expect(
+      words({ kind: 'session', session: 'triage', outcome: 'closed', duplicateOf: 'gone' }),
+    ).toBe('Closed this as a duplicate of a card since deleted in a Bug Triage session');
+    expect(words({ kind: 'session', session: 'triage', outcome: 'closed', undone: true })).toBe(
+      'Undid Closed in a Bug Triage session',
+    );
     expect(words({ kind: 'set', field: 'title', value: 'New name' })).toBe(
       'Renamed this card to “New name”',
     );

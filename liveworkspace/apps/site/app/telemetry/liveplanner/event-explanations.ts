@@ -981,13 +981,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Created|VisualisationTab':
     'Someone started a Visualisation tab from Start Planning: one chart of the cards filling the tab.',
   'Plan|Created|SessionTab':
-    'Someone started a Session tab (Refinement or Sprint Planning) from Start Planning, to work through cards together.',
+    'Someone started a Session tab (Refinement, Sprint Planning or Bug Triage) from Start Planning, to work through cards together.',
   'Plan|Used|SessionRefined':
     'A facilitator marked a card Refined in a Session tab, moving it on to its next stage.',
   'Plan|Used|SessionSkipped': 'A facilitator skipped a card in a Session tab.',
   'Plan|Used|SessionFlagged': 'A facilitator flagged a card in a Session tab.',
   'Plan|Used|SessionCommitted':
     'A facilitator committed a card into the sprint in a Sprint Planning session, moving it on to its next stage.',
+  'Plan|Used|SessionAccepted':
+    'A facilitator accepted a bug in a Bug Triage session, moving it on to its accept stage.',
+  'Plan|Used|SessionClosed':
+    'A facilitator closed a bug with a reason in a Bug Triage session, moving it to its close stage.',
+  'Plan|Used|SessionUndone':
+    'A facilitator undid a decision in a Session tab, taking the card back to where it was.',
   'Plan|Changed|SessionSetup': "Someone changed a Session tab's set-up from Session Settings.",
   'Plan|Created|SuggestedDashboard':
     'Someone started a dashboard Start Planning suggested for their cards, under For You.',

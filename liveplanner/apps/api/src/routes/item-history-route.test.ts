@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../person/profiles', () => import('../test-profiles'));
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import type { ItemHistoryResponse, ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
-import { presetSetup, type Item } from '@liveplanner/items';
+import { SESSION_REASON_MAX, presetSetup, type Item } from '@liveplanner/items';
 import { sqliteD1, testCopyPlan, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -326,6 +326,57 @@ describe('a session outcome', () => {
     ]);
   });
 
+  // docs/specs/026-plan/session-tabs.md "Bug Triage", "History": a Close keeps its reason and duplicate; an undo is
+  // its own entry.
+  it('keeps a Bug Triage close with its reason and duplicate, and an undo', async () => {
+    const card = await make({ title: 'Login loops', status: 'todo' });
+    const dup = await make({ title: 'Login loops on Safari', status: 'todo' });
+    tick();
+    const closed = await outcome(card.id, {
+      session: 'triage',
+      outcome: 'closed',
+      reason: '  Same root cause ',
+      duplicateOf: dup.id,
+    });
+    expect(closed.status).toBe(204);
+    tick();
+    await outcome(card.id, { session: 'triage', outcome: 'closed', undone: true });
+    tick();
+    await outcome(card.id, { session: 'triage', outcome: 'accepted' });
+    const entries = (await history(card.id)).body.entries;
+    expect(entries.slice(0, 3).map((e) => e.changes)).toEqual([
+      [{ kind: 'session', session: 'triage', outcome: 'accepted' }],
+      [{ kind: 'session', session: 'triage', outcome: 'closed', undone: true }],
+      [
+        {
+          kind: 'session',
+          session: 'triage',
+          outcome: 'closed',
+          reason: 'Same root cause',
+          duplicateOf: dup.id,
+        },
+      ],
+    ]);
+  });
+
+  it('refuses a reason or duplicate that is not a Close’s, or not good, and an undone that is not true', async () => {
+    const card = await make({ title: 'Login' });
+    const bad = async (body: Record<string, unknown>, field: string) =>
+      expect((await outcome(card.id, { session: 'triage', ...body })).body).toEqual({
+        error: 'session_invalid',
+        field,
+      });
+    await bad({ outcome: 'accepted', reason: 'x' }, 'reason');
+    await bad({ outcome: 'closed', reason: 4 }, 'reason');
+    await bad({ outcome: 'closed', reason: 'x'.repeat(SESSION_REASON_MAX + 1) }, 'reason');
+    await bad({ outcome: 'skipped', duplicateOf: 'z' }, 'duplicateOf');
+    await bad({ outcome: 'closed', duplicateOf: 4 }, 'duplicateOf');
+    await bad({ outcome: 'closed', duplicateOf: card.id }, 'duplicateOf');
+    await bad({ outcome: 'closed', duplicateOf: 'nope' }, 'duplicateOf');
+    await bad({ outcome: 'closed', undone: false }, 'undone');
+    expect(await kinds(card.id)).toEqual([['', ['created']]]);
+  });
+
   it('refuses an unknown session kind or outcome, a missing card and anyone below Editor', async () => {
     const card = await make({ title: 'Login' });
     expect((await outcome(card.id, { session: 'standup', outcome: 'refined' })).body).toEqual({
@@ -374,5 +425,11 @@ describe('a session outcome', () => {
       404,
     );
     expect((await call('POST', `/items/${card.id}/session`, '[1]')).status).toBe(400);
+    // A duplicate its tab does not show is not the link's to name.
+    const close = { session: 'triage', outcome: 'closed', duplicateOf: elsewhere.id };
+    expect((await call('POST', `/items/${card.id}/session?tabId=t1`, close, who)).body).toEqual({
+      error: 'session_invalid',
+      field: 'duplicateOf',
+    });
   });
 });
