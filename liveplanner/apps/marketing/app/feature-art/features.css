@@ -47,3 +47,76 @@
     opacity: 0 !important;
   }
 }
+
+/* ── The Session tabs cards' fill button (components/feature-art/plan-sessions.tsx), the editor's press played on a
+   6s loop: the wash runs left to right (fa-s-wash), the label gives way to a tick at its end (fa-s-label, fa-s-tick),
+   then both drain back. Reduced motion shows the button at rest, its label showing. ── */
+@keyframes fa-s-wash {
+  0%,
+  30% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  52%,
+  78% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  90%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+.fa-s-wash {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: fa-s-wash 6s ease-in-out infinite;
+}
+@keyframes fa-s-label {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  55%,
+  86% {
+    opacity: 0;
+  }
+  92%,
+  100% {
+    opacity: 1;
+  }
+}
+.fa-s-label {
+  animation: fa-s-label 6s ease-in-out infinite;
+}
+@keyframes fa-s-tick {
+  0%,
+  52% {
+    opacity: 0;
+  }
+  57%,
+  84% {
+    opacity: 1;
+  }
+  90%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-s-tick {
+  opacity: 0;
+  animation: fa-s-tick 6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fa-s-wash,
+  .fa-s-tick {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .fa-s-label {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
