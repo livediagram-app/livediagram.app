@@ -4,25 +4,30 @@ Derived from [Session tabs](../session-tabs.md). File-level contracts, constants
 
 ## Domain and naming
 
-| Spec term     | Identifier                                                                                                                                                                                                                             |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Session tab   | `TabKind` `'session'` (`tab-kind.ts`), in `PLAN_TAB_KINDS`                                                                                                                                                                             |
-| session state | `Tab.session: SessionTabState` (`packages/project/src/session-tab.ts`)                                                                                                                                                                 |
-| session kind  | `SessionKindId` (`'refinement' \| 'planning' \| 'triage'`), `SESSION_KINDS` (label, outcomes, completes, closes, grouping, tally)                                                                                                      |
-| set-up        | `SessionSetup` `{ typeIds, statuses, sortBy?, targets?, closeTargets?, timeboxMs?, capacity? }`                                                                                                                                        |
-| outcome       | `SessionOutcome` `'refined' \| 'skipped' \| 'flagged' \| 'committed' \| 'accepted' \| 'closed'`; `SessionDecision` (with `SessionDecisionDetail`: `from`, `to`, `flagSet`, `reason`, `duplicateOf`, `linked`); `SESSION_KIND_OUTCOMES` |
-| close stage   | `sessionCloseTarget()` in `packages/items/src/session-triage.ts`                                                                                                                                                                       |
-| reason        | `sessionReason()`, `SESSION_REASON_MAX` (200), `session-triage.ts`                                                                                                                                                                     |
-| duplicate     | `duplicateFieldOf()` (`session-triage.ts`); the editor's `duplicateLink`, `duplicateUnlink` (`liveplanner/apps/editor/components/session/triage/triage-duplicate.ts`)                                                                  |
-| priority pill | `PriorityPill` (`apps/editor/components/session/triage/PriorityPill.tsx`)                                                                                                                                                              |
-| Close dialog  | `CloseDialog`, `closeHeroArt` (`apps/editor/components/session/triage/CloseDialog.tsx`, `CloseHeroArt.tsx`)                                                                                                                            |
-| Undo Last     | `lastDecided()` (`session-tab.ts`); `SessionUndoLast` on `SessionActionBar`                                                                                                                                                            |
-| tally         | `sessionTally()`, `capacityState()` in `packages/items/src/session-tally.ts`                                                                                                                                                           |
-| facilitator   | `SessionFacilitator` `{ id, name, color }`, `id` the collab key                                                                                                                                                                        |
-| queue         | `sessionQueue()` in `packages/items/src/session-queue.ts`                                                                                                                                                                              |
-| target stage  | `sessionTarget()` in `session-queue.ts`                                                                                                                                                                                                |
-| history entry | `ItemHistoryChange` `{ kind: 'session', session, outcome, reason?, duplicateOf?, undone? }`, tag `'session'`                                                                                                                           |
-| fill button   | `FillActionButton` (`apps/editor/components/session/FillActionButton.tsx`)                                                                                                                                                             |
+| Spec term     | Identifier                                                                                                                                                                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Session tab   | `TabKind` `'session'` (`tab-kind.ts`), in `PLAN_TAB_KINDS`                                                                                                                                                                                           |
+| session state | `Tab.session: SessionTabState` (`packages/project/src/session-tab.ts`)                                                                                                                                                                               |
+| session kind  | `SessionKindId` (`'refinement' \| 'planning' \| 'triage' \| 'review'`), `SESSION_KINDS` (label, outcomes, completes, closes, stays, archived, grouping, tally)                                                                                       |
+| set-up        | `SessionSetup` `{ typeIds, statuses, sortBy?, targets?, closeTargets?, timeboxMs?, capacity?, since?, until?, presenter? }`                                                                                                                          |
+| done range    | `SessionSetup.since`, `.until` (ms); `SessionPick.since`, `.until`, `.archived`; `doneRangeFrom()`, `inDoneRange()` in `packages/items/src/session-review.ts`                                                                                        |
+| presenter     | `SessionTabState.presenters` (card id to `ItemPerson` or `null`); `presenterOf()` (`session-tab.ts`); `SessionSetup.presenter: 'none'` turns it off                                                                                                  |
+| feedback      | `Comment.label` `'review'` (`COMMENT_LABELS`, `isCommentLabel`, `packages/project/src/comments.ts`); `reviewFeedback()` and `feedbackThreadOf()` (`liveplanner/apps/editor/components/session/review/review-feedback.ts`)                            |
+| follow-up     | `SessionTabState.followUps` (card id to new card ids); `withFollowUp()`; `followUpFieldOf()`, `followUpStatus()`, `FOLLOW_UP_TITLE_MAX`, `SESSION_FOLLOW_UPS_MAX` (`session-review.ts`); `FollowUpDialog`                                            |
+| demo strip    | `DemoStrip` (`liveplanner/apps/editor/components/session/review/DemoStrip.tsx`)                                                                                                                                                                      |
+| outcome       | `SessionOutcome` `'refined' \| 'skipped' \| 'flagged' \| 'committed' \| 'accepted' \| 'closed' \| 'reviewed'`; `SessionDecision` (with `SessionDecisionDetail`: `from`, `to`, `flagSet`, `reason`, `duplicateOf`, `linked`); `SESSION_KIND_OUTCOMES` |
+| close stage   | `sessionCloseTarget()` in `packages/items/src/session-triage.ts`                                                                                                                                                                                     |
+| reason        | `sessionReason()`, `SESSION_REASON_MAX` (200), `session-triage.ts`                                                                                                                                                                                   |
+| duplicate     | `duplicateFieldOf()` (`session-triage.ts`); the editor's `duplicateLink`, `duplicateUnlink` (`liveplanner/apps/editor/components/session/triage/triage-duplicate.ts`)                                                                                |
+| priority pill | `PriorityPill` (`apps/editor/components/session/triage/PriorityPill.tsx`)                                                                                                                                                                            |
+| Close dialog  | `CloseDialog`, `closeHeroArt` (`apps/editor/components/session/triage/CloseDialog.tsx`, `CloseHeroArt.tsx`)                                                                                                                                          |
+| Undo Last     | `lastDecided()` (`session-tab.ts`); `SessionUndoLast` on `SessionActionBar`                                                                                                                                                                          |
+| tally         | `sessionTally()`, `capacityState()` in `packages/items/src/session-tally.ts`                                                                                                                                                                         |
+| facilitator   | `SessionFacilitator` `{ id, name, color }`, `id` the collab key                                                                                                                                                                                      |
+| queue         | `sessionQueue()` in `packages/items/src/session-queue.ts`                                                                                                                                                                                            |
+| target stage  | `sessionTarget()` in `session-queue.ts`                                                                                                                                                                                                              |
+| history entry | `ItemHistoryChange` `{ kind: 'session', session, outcome, reason?, duplicateOf?, undone? }`, tag `'session'`                                                                                                                                         |
+| fill button   | `FillActionButton` (`apps/editor/components/session/FillActionButton.tsx`)                                                                                                                                                                           |
 
 Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy` host is unrelated.
 
@@ -31,9 +36,10 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 `SessionTabState` (version 1), stored whole on the tab body and carried in `tab-meta` patches like `timer`:
 
 ```ts
-{ v: 1; sessionKind: 'refinement' | 'planning' | 'triage'; setup: SessionSetup; facilitator?: SessionFacilitator;
+{ v: 1; sessionKind: 'refinement' | 'planning' | 'triage' | 'review'; setup: SessionSetup; facilitator?: SessionFacilitator;
   currentId?: string; cardStartedAt?: number;
-  decided?: Record<itemId, { outcome; at; by; from?; to?; fromRank?; flagSet?; reason?; duplicateOf?; linked? }> }
+  decided?: Record<itemId, { outcome; at; by; from?; to?; fromRank?; flagSet?; reason?; duplicateOf?; linked? }>;
+  presenters?: Record<itemId, ItemPerson | null>; followUps?: Record<itemId, string[]> }
 ```
 
 - `readSessionTab(raw)` is the only reader: anything malformed reads as `null` (the page then shows the empty set-up
@@ -42,15 +48,29 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
   string pairs only, `closeTargets` likewise; a decision's `from` and `to` only as a pair of strings, `flagSet` only as
   `true`, `reason` through `sessionReason`, `linked` only beside a `duplicateOf`; `capacity` a positive number rounded to a whole point and capped at `SESSION_CAPACITY_MAX`
   (9 999), else dropped; `timeboxMs` clamped to `SESSION_TIMEBOX_MIN_MS`..`SESSION_TIMEBOX_MAX_MS` (1 to 30 minutes) or
-  dropped; `decided` capped at `SESSION_QUEUE_MAX` (500) entries.
+  dropped; `decided` capped at `SESSION_QUEUE_MAX` (500) entries; `since` and `until` finite non-negative numbers
+  (an `until` before `since` dropped), `presenter` only as `'none'`; `presenters` keeps `isItemPerson` values or
+  `null`, `followUps` deduped string lists of at most `SESSION_FOLLOW_UPS_MAX` (20), both capped at 500 cards.
+- `Comment.label` lives inside the thread row's `comments` JSON: no column, no migration. `isComment` refuses any
+  label but `'review'`.
 - No migration: a tab without `session` is not a Session tab; an old build reads `kind: 'session'` as the general kind
   (`tabKindOf`) and shows an empty canvas, losing nothing.
 
 ## Behaviour and state
 
 - `sessionQueue({ items, types, planStatuses, setup, decided })` answers `{ decided: Item[], toGo: Item[], capped }`:
-  decided cards (still present, not archived or trashed) by `at`; to-go cards whose type is in `typeIds` and status in
-  `statuses`, not archived or trashed, not decided, `sortCards` by `sortBy` over rank order, capped at 500.
+  decided cards (still present, not trashed, not archived unless `pick.archived`) by `at`; to-go cards whose type is in
+  `typeIds` and status in `statuses`, not trashed, not archived unless `pick.archived`, entered their status
+  (`itemStatusSince`) within `pick.since`..`pick.until` when given, not decided, `sortCards` by `sortBy` over rank
+  order, capped at 500. Sprint Review passes `archived: true`.
+- Sprint Review: `SESSION_KINDS.review.stays` makes `decide` move nothing for `reviewed`; `doneRangeFrom(preset, now,
+lastReviewAt)` answers a chip's date (`since-last`, `7`, `14`, `30` days, `all` none); `lastReviewAt(tabs, exceptId)`
+  the newest decision `at` of another review tab. `presenterOf(session, item)`: `presenters[id]` when the key is set
+  (null: no one), else `itemAssignee(item)`, `null` with `presenter: 'none'`. `withPresenter`, `withFollowUp`
+  (append, dedupe, cap). `followUpFieldOf(type, toType)`: a Card field of `type` labelled in `FOLLOW_UP_FIELDS` linking
+  to `toType`; `followUpStatus(type, names)`: the type's first status whose name is Backlog-like, else `null` (the
+  editor then uses `newCardStatus`). Feedback: `feedbackThreadOf(threads)` the newest open thread whose first comment
+  has `label: 'review'`; a reply to it, else a start with title `Sprint Review feedback`, both `label: 'review'`.
 - `sessionTarget(item, types, planStatuses, targets, { names, phases })`: `targets[type]` when it is a status the type
   uses, else Next Stage over `typeStatusesOf(type, planStatuses)`: the first open status after the card's (open: not
   its own, not Done-like by phase `done` or name, not Backlog-like by name), stopping at a Done-like one; with none,
@@ -88,7 +108,7 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 
 ## Interfaces and contracts
 
-- `POST /api/projects/:id/items/:itemId/session` body `{ session: 'refinement' | 'planning' | 'triage', outcome,
+- `POST /api/projects/:id/items/:itemId/session` body `{ session: 'refinement' | 'planning' | 'triage' | 'review', outcome,
 reason?, duplicateOf?, undone? }` (edit access; a tab-scoped caller only for a card its tab shows, and a duplicate it
   shows). Appends one history entry tagged `session` holding one session change, by the caller, at now, the reason
   trimmed; writes nothing on the card. Answers `204`. Refusals: `session_invalid` (422, naming `session`, `outcome`,
@@ -97,6 +117,9 @@ reason?, duplicateOf?, undone? }` (edit access; a tab-scoped caller only for a c
   not a card of the plan (or of the tab), and an `undone` that is not `true`; `item_not_found` (404), `forbidden` (403)
   below edit. Lives in `apps/api/src/routes/item-session-route.ts`.
 - A changeset on a Session tab is refused (422 `invalid_value`) in `apps/api/src/changesets/submit.ts`.
+- Thread start and reply (`CardThreadStartRequest`, `CardThreadCommentRequest`) take `label?: 'review'`, read by
+  `newComment` (`apps/api/src/routes/comment-routes.ts`): any other present value answers 400 `label_invalid`. The
+  offline threads (`apps/editor/lib/offline/offline-threads.ts`) keep it the same way.
 - `recordSessionOutcome(scope, itemId, body)` in `apps/editor/lib/api/item-history.ts`; an offline plan records
   nothing.
 
@@ -114,7 +137,14 @@ above the action bar), `EstimatePill` (a row's aside), `CapacityPart` (the set-u
 notes) and `planning-words.ts` (pure wording). Bug Triage's live in `triage/`: `PriorityPill` (a row's aside),
 `CloseDialog` (the workbench `Dialog`, `size="md"`, a sheet on a phone, with `HeroDialogHeader` and `closeHeroArt`,
 `ChoicePills` for the reason chips, `TextInput` and `DialogFooter`; the shared `CardPickerDialog` for Duplicate Of
-opens over it), `triage-duplicate.ts` and `triage-words.ts` (the reason chips).
+opens over it), `triage-duplicate.ts` and `triage-words.ts` (the reason chips). Sprint Review's live in `review/`: `DemoStrip`
+(presenter picker, `CardPullRequests`' chips, Image field and picture Attachment thumbnails through `useImageUrl`,
+Link chips), `FeedbackStrip` (the text box, Add Feedback, the count), `FollowUpDialog` (the workbench `Dialog`,
+`size="md"`, `phoneSheet`, `HeroDialogHeader` with `followUpHeroArt`, `TextInput`, `Select`, `DialogFooter`),
+`ReviewSetupParts` (Done Range and Presenter), `ReviewSummary` (Session Complete's feedback and follow-ups),
+`PresenterDisc` (a row's aside), `review-feedback.ts` and `useReviewRun.ts` (feedback, presenter and follow-up writes).
+`SessionActionBar` takes `extra` (Sprint Review's Follow-up button) and a kind that stays reads "Stays in".
+`ThreadTile`'s comment rows draw `ReviewFeedbackChip` for a labelled comment.
 `session-words.ts` (a decided card's note, Undo Last's label) serves every kind. The tab writes go through `hooks/plan/useSessionTabActions.ts`. Start Planning
 gains the `sessions` category, the `session` start kind and `start/SessionPicture`.
 
@@ -122,8 +152,10 @@ gains the `sessions` category, the `session` start kind and `start/SessionPictur
 
 The sidebar is a `listbox` of `option`s (`aria-current` on the room's card); the progress bar is a `progressbar` with
 `aria-valuenow`; the fill button announces "Refined" through the live region; reduced motion swaps the fill for an
-instant state change; keys R, S, F, C (Commit or Close), A, U, J, K act only outside text fields and never while the
-Close dialog is open. The Close dialog is a `dialog` named "Close {Type}", its reason a labelled text field (Enter closes,
+instant state change; keys R, S, F, C (Commit or Close), A, N (Follow-up), U, J, K act only outside text fields and never while the
+Close or Follow-up dialog is open. The Follow-up dialog is a `dialog` named "New Follow-up", its title a labelled text
+field; the feedback box is a labelled `textarea` ("Feedback on WI-47") with its count in a `status`; the demo strip is
+a `region` named "Demo", its thumbnails links named for their picture. The Close dialog is a `dialog` named "Close {Type}", its reason a labelled text field (Enter closes,
 Escape cancels), its chips `aria-pressed`; Undo Last names its decision ("Undo Closed BUG-33") with
 `aria-keyshortcuts="U"`.
 
@@ -135,7 +167,8 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 ## Observability
 
 `[session] outcome.recorded` (with `undone`) on the api route (a refusal answers its code); `[changeset] session-tab` on a refused changeset; telemetry `Plan · Created · SessionTab`,
-`Plan · Changed · SessionSetup`, `Plan · Used · Session{Refined,Skipped,Flagged,Committed,Accepted,Closed,Undone}`.
+`Plan · Changed · SessionSetup`, `Plan · Used · Session{Refined,Skipped,Flagged,Committed,Accepted,Closed,Reviewed,Undone,FollowUp}`;
+`[session] feedback.failed` and `[session] follow-up.failed` when a write is refused (a toast says why).
 
 ## Testing
 
@@ -150,6 +183,13 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 - api `item-history-route.test.ts` ("a session outcome"): records, refuses below edit, unknown outcome, tab scope, a
   Close's reason and duplicate, an undo, each refusal of `reason`, `duplicateOf` and `undone`;
   `submit.test.ts`: a changeset on a Session tab refused.
+- items `session-review.test.ts`: range presets, in-range by status stamp (not last edited), follow-up field and
+  status; `session-queue.test.ts` archived cards and the range; project `session-tab.test.ts` presenters, follow-ups,
+  range bounds; `comments` label check; api `card-threads-route` label kept and refused.
+- editor: `SessionPage.review.test.tsx` (Reviewed keeps the card's stage and records it, an archived card queued and
+  left archived, feedback as a labelled comment for an Editor and a Participant, none for a Viewer, Follow-up making a
+  linked card through Related and through the description, N key, presenter pick, Session Complete's feedback and
+  follow-ups), `review-parts.test.tsx` (demo strip, feedback strip, follow-up dialog, set-up parts),
 - editor: `SessionPage.triage.test.tsx` (Accept past Needs Info, Close with reason and duplicate, Undo Last moving
   back and unlinking, U undoing a Flag, a moved card staying, the priority pills, roles, Session Complete),
   `triage-parts.test.tsx` (pill, duplicate link, words, Close dialog), `planning-parts.test.tsx` (tally states, estimate strip per role, pills, capacity part),
@@ -162,19 +202,22 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 
 ## Constants and configuration
 
-| Constant                 | Value     | Why                                          |
-| ------------------------ | --------- | -------------------------------------------- |
-| `SESSION_QUEUE_MAX`      | 500       | A session longer than this is not a session  |
-| `SESSION_TYPES_MAX`      | 50        | The type catalogue's own bound               |
-| `SESSION_STAGES_MAX`     | 100       | Under the type's 128 statuses                |
-| `SESSION_TIMEBOX_MIN_MS` | 60 000    | One minute                                   |
-| `SESSION_TIMEBOX_MAX_MS` | 1 800 000 | Thirty minutes                               |
-| `FACILITATOR_GRACE_MS`   | 10 000    | Covers a refresh before Take Over shows      |
-| `FILL_MS`                | 700       | The Refined fill: 250 in, 200 held, 250 out  |
-| `SEGMENTS_MAX`           | 40        | Past this the progress bar is one smooth bar |
-| `SESSION_CAPACITY_MAX`   | 9 999     | Far past any team's sprint                   |
-| `CAPACITY_NEAR`          | 0.85      | Amber from 85% of capacity                   |
-| `SESSION_REASON_MAX`     | 200       | A Close's reason: a line, not a comment      |
+| Constant                    | Value     | Why                                          |
+| --------------------------- | --------- | -------------------------------------------- |
+| `SESSION_QUEUE_MAX`         | 500       | A session longer than this is not a session  |
+| `SESSION_TYPES_MAX`         | 50        | The type catalogue's own bound               |
+| `SESSION_STAGES_MAX`        | 100       | Under the type's 128 statuses                |
+| `SESSION_TIMEBOX_MIN_MS`    | 60 000    | One minute                                   |
+| `SESSION_TIMEBOX_MAX_MS`    | 1 800 000 | Thirty minutes                               |
+| `FACILITATOR_GRACE_MS`      | 10 000    | Covers a refresh before Take Over shows      |
+| `FILL_MS`                   | 700       | The Refined fill: 250 in, 200 held, 250 out  |
+| `SEGMENTS_MAX`              | 40        | Past this the progress bar is one smooth bar |
+| `SESSION_CAPACITY_MAX`      | 9 999     | Far past any team's sprint                   |
+| `CAPACITY_NEAR`             | 0.85      | Amber from 85% of capacity                   |
+| `SESSION_REASON_MAX`        | 200       | A Close's reason: a line, not a comment      |
+| `SESSION_FOLLOW_UPS_MAX`    | 20        | Follow-ups kept per reviewed card            |
+| `FOLLOW_UP_TITLE_MAX`       | 200       | A follow-up's title, under the card's 500    |
+| `REVIEW_RANGE_DEFAULT_DAYS` | 14        | No earlier review: the last two weeks        |
 
 ## Defaults ledger
 
