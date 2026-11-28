@@ -33,7 +33,7 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 ```ts
 { v: 1; sessionKind: 'refinement' | 'planning' | 'triage'; setup: SessionSetup; facilitator?: SessionFacilitator;
   currentId?: string; cardStartedAt?: number;
-  decided?: Record<itemId, { outcome; at; by; from?; to?; flagSet?; reason?; duplicateOf?; linked? }> }
+  decided?: Record<itemId, { outcome; at; by; from?; to?; fromRank?; flagSet?; reason?; duplicateOf?; linked? }> }
 ```
 
 - `readSessionTab(raw)` is the only reader: anything malformed reads as `null` (the page then shows the empty set-up
@@ -63,7 +63,8 @@ Never "meeting", "ceremony" or "host" in code or copy; the dot vote's `startedBy
 - `duplicateFieldOf(type, toType)`: the type's Card field (in its fields) labelled Duplicate Of, Duplicates, Duplicate
   or Duplicated By that links to `toType`. `duplicateLink` adds the duplicate to it (appending to a field holding
   several; null when it holds it already or holds one other card); `duplicateUnlink` takes only that card back out.
-- Undo (`useSessionRun.undo`): with the card present, moves it back to `from` while its status is still `to`, clears
+- Undo (`useSessionRun.undo`): with the card present, moves it back to `from` while its status is still `to`, in front
+  of `beforeRank(items, from, fromRank)` (the decision keeps the card's `fromRank` beside `from` and `to`), clears
   the flag when `flagSet` and still flagged, `duplicateUnlink`s a `linked` duplicate, records `{ ..., undone: true }`;
   then `withoutDecision` and `withCurrent` on the card. `lastDecided(session)` names Undo Last's decision (the newest
   `at`).

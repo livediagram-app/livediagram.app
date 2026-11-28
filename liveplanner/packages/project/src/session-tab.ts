@@ -49,6 +49,8 @@ export type SessionDecision = {
   // The move the outcome made, so Undo can take the card back: from its stage, to the one it was moved to.
   from?: string;
   to?: string;
+  // The card's rank in its stage before the move, so Undo puts it back in its own place, not at the column's end.
+  fromRank?: string;
   // The outcome set the card's flag (Flag on a card not flagged yet).
   flagSet?: true;
   // A Close's reason and the card it duplicates (an id), and the Card field the duplicate was linked through.
@@ -193,7 +195,11 @@ function readDetail(d: Record<string, unknown>): SessionDecisionDetail {
   const out: SessionDecisionDetail = {};
   const from = str(d['from']);
   const to = str(d['to']);
-  if (from && to) Object.assign(out, { from, to });
+  if (from && to) {
+    Object.assign(out, { from, to });
+    const fromRank = str(d['fromRank']);
+    if (fromRank) out.fromRank = fromRank;
+  }
   if (d['flagSet'] === true) out.flagSet = true;
   const reason = sessionReason(d['reason']);
   if (reason) out.reason = reason;

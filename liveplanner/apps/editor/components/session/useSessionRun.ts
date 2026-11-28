@@ -7,6 +7,7 @@
 // moves the room on. Undo takes all of that back. Nothing here runs for someone who is not facilitating but reading.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  beforeRank,
   isFlagged,
   itemStatus,
   itemTitle,
@@ -145,7 +146,7 @@ export function useSessionRun({
     const moveTo = (to: string | null) => {
       if (!to || !from) return;
       plan.moveItem(item.id, { status: to, before: null });
-      Object.assign(detail, { from, to });
+      Object.assign(detail, { from, to, fromRank: item.rank });
     };
     if (outcome === kind.completes) moveTo(target(item));
     else if (outcome === kind.closes) {
@@ -190,7 +191,11 @@ export function useSessionRun({
     const item = items.get(itemId);
     if (item) {
       if (d.from && d.to && itemStatus(item) === d.to)
-        plan.moveItem(itemId, { status: d.from, before: null });
+        // Back in its own place: in front of the card now ranked after where it was, else the column's end.
+        plan.moveItem(itemId, {
+          status: d.from,
+          before: d.fromRank ? beforeRank(items.values(), d.from, d.fromRank, itemId) : null,
+        });
       if (d.flagSet && isFlagged(item)) void plan.patchItem(itemId, { clear: ['flagged'] });
       const unlink =
         d.linked && d.duplicateOf ? duplicateUnlink(item, d.linked, d.duplicateOf, types) : null;

@@ -129,13 +129,22 @@ describe('readSessionTab', () => {
           by: 'S',
           from: 'new',
           to: 'wont-fix',
+          fromRank: 'm',
           flagSet: true,
           reason: '  Not a Bug ',
           duplicateOf: 'z',
           linked: 'f-dup',
         },
         // A move with one end, a flag not true, an empty reason and a link with no duplicate all drop.
-        b: { outcome: 'accepted', at: 2, from: 'new', flagSet: 1, reason: ' ', linked: 'f-dup' },
+        b: {
+          outcome: 'accepted',
+          at: 2,
+          from: 'new',
+          fromRank: 'k',
+          flagSet: 1,
+          reason: ' ',
+          linked: 'f-dup',
+        },
       },
     })!;
     expect(s.setup.closeTargets).toEqual({ bug: 'wont-fix' });
@@ -145,6 +154,7 @@ describe('readSessionTab', () => {
       by: 'S',
       from: 'new',
       to: 'wont-fix',
+      fromRank: 'm',
       flagSet: true,
       reason: 'Not a Bug',
       duplicateOf: 'z',

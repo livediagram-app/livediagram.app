@@ -21,7 +21,7 @@ export type SelectVariant = 'outline' | 'ghost';
 export type SelectSize = 'sm' | 'md';
 
 const BASE =
-  'w-full min-w-0 cursor-pointer appearance-none rounded-md outline-none transition dark:[&>option]:bg-slate-800';
+  'peer w-full min-w-0 cursor-pointer appearance-none rounded-md outline-none transition disabled:cursor-default disabled:opacity-60 dark:[&>option]:bg-slate-800';
 
 const VARIANTS: Record<SelectVariant, string> = {
   outline:
@@ -56,7 +56,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       >
         {children}
       </select>
-      <ChevronDownIcon className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400" />
+      {/* A disabled select reads its value: faded, as a disabled field is everywhere, and with no chevron to open. */}
+      <ChevronDownIcon className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 peer-disabled:hidden" />
     </span>
   );
 });

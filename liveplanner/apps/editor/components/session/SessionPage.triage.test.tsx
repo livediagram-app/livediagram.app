@@ -254,7 +254,7 @@ describe('SessionPage: Bug Triage', () => {
     vi.mocked(recordSessionOutcome).mockClear();
     const chip = screen.getByRole('button', { name: 'Undo Closed BUG-1' });
     fireEvent.click(chip);
-    expect(f.plan.moveItem).toHaveBeenCalledWith('a', { status: 'new', before: null });
+    expect(f.plan.moveItem).toHaveBeenCalledWith('a', { status: 'new', before: 'b' });
     expect(f.plan.patchItem).toHaveBeenCalledWith('a', { clear: ['f-dup'] });
     expect(recordSessionOutcome).toHaveBeenCalledWith({ projectId: 'p1' }, 'a', {
       session: 'triage',
@@ -350,6 +350,29 @@ describe('SessionPage: Bug Triage', () => {
       expect(p.actions.runSession).not.toHaveBeenCalled();
       cleanup();
     }
+  });
+
+  it('closing the last bug can be taken back from Session Complete, by the chip or U', () => {
+    const f = mount({ mayEdit: true });
+    fireEvent.keyDown(window, { key: 's' });
+    fireEvent.keyDown(window, { key: 's' });
+    fireEvent.keyDown(window, { key: 'c' });
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Reason' });
+    fireEvent.change(input, { target: { value: 'Not a Bug' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByText('Session Complete')).toBeTruthy();
+    expect(f.state().decided?.c).toMatchObject({ from: 'new', to: 'wont-fix', fromRank: 'c' });
+    vi.mocked(f.plan.moveItem).mockClear();
+    // Undo Last names the last decision there too.
+    expect(screen.getByRole('button', { name: 'Undo Closed BUG-3' })).toBeTruthy();
+    fireEvent.keyDown(window, { key: 'u' });
+    expect(f.plan.moveItem).toHaveBeenCalledWith('c', { status: 'new', before: null });
+    expect(f.state().decided?.c).toBeUndefined();
+    expect(screen.getByRole('heading', { level: 3, name: 'Card C' })).toBeTruthy();
+    // Back on Session Complete, the chip takes the next one back.
+    fireEvent.keyDown(window, { key: 's' });
+    fireEvent.click(screen.getByRole('button', { name: 'Undo Skipped BUG-3' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'Card C' })).toBeTruthy();
   });
 
   it('Session Complete shows Accepted, Closed, Skipped and Flagged', () => {

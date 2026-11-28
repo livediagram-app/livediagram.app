@@ -131,13 +131,16 @@ Under the card, for the facilitator:
 - **Skip** and **Flag** grey the card in the sidebar, record their outcome in the card's history, and move on the
   same way. Flag also flags the card ([Flags](items.md#flags)).
 - A decided card shown again reads its outcome over the action bar ("Refined by Sam · Undo Outcome"); **Undo
-  Outcome** (the facilitator's) takes the decision back: the card returns to the stage the outcome moved it from
-  (when it is still where the outcome put it; a card someone has moved since stays put), a flag the outcome set comes
+  Outcome** (the facilitator's) takes the decision back: the card returns to the stage the outcome moved it from, in
+  its own place in that column (in front of the card now ranked after where it was, never at the column's end), when
+  it is still where the outcome put it (a card someone has moved since stays put); a flag the outcome set comes
   off, a duplicate link it made is removed, the card's history records the undo, and the outcome clears so the card
   can be decided again, the room staying on it.
 - **Undo Last**: once anything is decided, the facilitator's action bar starts with a small chip naming the latest
   decision ("Closed BUG-33 · Undo"), so the last decision is one press from undone without finding its card. It
-  undoes as Undo Outcome does and takes the room back to that card.
+  undoes as Undo Outcome does and takes the room back to that card. On a phone the bar is one row: Undo Last, Skip,
+  Flag (and Bug Triage's Close) as square icon buttons named for a screen reader, then the fill button taking the rest
+  of the row, with the "Moves to" line above it.
 - Keyboard, for the facilitator, when focus is not in a field: **R** Refined, **S** Skip, **F** Flag, **J** and **K**
   the next and previous card, **U** Undo Last.
 - Everyone else sees the bar's place hold who is facilitating ("Sam is running this session") and, for an Editor, the
@@ -146,7 +149,9 @@ Under the card, for the facilitator:
 ### When the queue is done
 
 - With no card left to go, the right side shows **Session Complete**: how many were Refined, Skipped and Flagged, and
-  for the facilitator **Review Skipped** (the first skipped card) and **Start Again** (clears every outcome).
+  for the facilitator **Undo Last** (the chip and **U**: the last decision taken back and the room back on its card, so
+  the last card's decision is never final), **Review Skipped** (the first skipped card) and **Start Again** (clears
+  every outcome).
 - An empty set-up (no card picked) says so, with **Session Settings** for an Editor.
 
 ## Facilitator

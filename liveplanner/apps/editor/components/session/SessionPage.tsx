@@ -119,8 +119,9 @@ export function SessionPage({
   );
   if (undoLast) outcomeKeys['u'] = undoLast;
   useSessionKeys({
-    on: runs && !settingsOpen && !closingId && !!room.current,
-    outcomes: outcomeKeys,
+    // On Session Complete only U (Undo Last) is live: there is no card to decide.
+    on: runs && !settingsOpen && !closingId && (!!room.current || !!undoLast),
+    outcomes: room.current ? outcomeKeys : undoLast ? { u: undoLast } : {},
     next: room.next,
     previous: room.previous,
   });
@@ -290,6 +291,14 @@ export function SessionPage({
       empty={total === 0}
       decided={decided}
       runs={runs}
+      last={
+        undoLast && last
+          ? {
+              label: undoLabel(last.itemId, last.decision, plan.items, plan.types),
+              onUndo: undoLast,
+            }
+          : null
+      }
       onReviewSkipped={(() => {
         const skipped = room.queue.decided.find((i) => decided?.[i.id]?.outcome === 'skipped');
         return skipped ? () => room.goTo(skipped.id) : null;

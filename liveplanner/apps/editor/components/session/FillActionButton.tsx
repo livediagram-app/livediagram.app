@@ -80,7 +80,7 @@ export function FillActionButton({
       disabled={disabled}
       aria-keyshortcuts={shortcut?.toUpperCase()}
       data-fill-phase={phase}
-      className="relative inline-flex h-10 min-w-[8.5rem] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-brand-700 px-5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-900"
+      className="relative inline-flex h-10 min-w-[8.5rem] cursor-pointer max-sm:min-w-0 max-sm:flex-1 items-center justify-center overflow-hidden rounded-lg bg-brand-700 px-5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-900"
     >
       <span
         aria-hidden

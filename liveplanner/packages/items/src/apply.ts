@@ -42,6 +42,20 @@ export function byRank(a: RankedItem, b: RankedItem): number {
   return compareRank(a.rank, b.rank) || a.key - b.key;
 }
 
+// The card a card ranked `rank` goes back in front of in `status`'s column (the first one ranked after it, `exceptId`
+// left out), or null for the column's end: how a session's Undo returns a card to its own place
+// (docs/specs/026-plan/session-tabs.md "Undo").
+export function beforeRank(
+  items: Iterable<RankedItem>,
+  status: string,
+  rank: string,
+  exceptId?: string,
+): string | null {
+  return (
+    columnItems(items, status, exceptId).find((i) => compareRank(i.rank, rank) > 0)?.id ?? null
+  );
+}
+
 // The rank that places an item at `place` among `items` (the item itself
 // excluded). A neighbour that is gone, or in another column, means the end.
 export function rankForPlace(
