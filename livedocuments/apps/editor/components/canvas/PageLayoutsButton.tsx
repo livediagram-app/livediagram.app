@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react';
 import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import type { LaidOutPage } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
-import type { LayoutPreviewAsk } from '@/hooks/editor/layout-preview-settle';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { CloseIcon, lucideGlyph } from '@livedocuments/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
@@ -123,7 +123,7 @@ export function PageLayoutsButton({
           {...props}
           wide={!mobile}
           onClose={close}
-          // The press lands what the hover shows (page-layout-edits.ts), so the preview is left for the apply to
+          // The press lands what the hover shows (page-layout-place.ts), so the preview is left for the apply to
           // take over, never put back first.
           onApply={(layout) => {
             props.onApply(layout);

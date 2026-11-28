@@ -1420,6 +1420,28 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 405, 422, 429, 503],
   },
   {
+    method: 'POST',
+    path: '/page-drafts',
+    segment: 'page-drafts',
+    tag: 'Documents',
+    summary:
+      'Describe a Page: what the next page of a tab holds, made from the caller’s words (up to 500 characters): for a slide or infographic tab a layout of its kind’s catalogue and the words for its slots, for an article or flashcard tab its writing as Markdown. Nothing is saved: the editor adds the page. An Editor of the document only, signed in; runs on the caller’s own AI key, or their team’s, when one applies, else on built-in AI, one of the 30 questions a day Ask AI counts.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        prompt: { type: 'string' },
+        documentId: { type: 'string' },
+        tabId: { type: 'string' },
+        kind: { type: 'string', enum: ['slide', 'infographic', 'article', 'flashcard'] },
+        teamId: { type: 'string' },
+        ai: { type: 'string', enum: ['built-in'] },
+      },
+      required: ['prompt', 'documentId', 'tabId', 'kind'],
+    },
+    statuses: [200, 400, 401, 403, 405, 422, 429, 502, 503],
+  },
+  {
     method: 'GET',
     path: '/preferences',
     segment: 'preferences',

@@ -39,7 +39,6 @@ export function EditorCanvasHost() {
     addLinkCard,
     addShape,
     dropBoardFile,
-    anyWelcomeOpen,
     beginDrag,
     beginEdit,
     beginRoomWalls,
@@ -340,7 +339,6 @@ export function EditorCanvasHost() {
         // shows the identity prompt so `lockedName` is moot there;
         // pure guests pass null and keep the editable name field.
         identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
-        welcomeOpen={anyWelcomeOpen}
         selfParticipant={selfParticipant}
         onConfirmIdentity={confirmIdentity}
         onCancelIdentity={cancelIdentity}

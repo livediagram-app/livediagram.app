@@ -11,11 +11,12 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 - The dialog is one modal (`CanvasThemeDialog`) titled **Tab Style** ("Appearance" names the VIEWER's own
   chrome, [Editor app](../007-editor/editor-app.md)). It opens on its **home**: a grid of **Looks**, then a
   **Fine-tune** list. The tab / canvas context menu carries no Look & Feel or Font category.
-- **Opening it.** Once a tab has pages, **Design** (a painter's palette, named "Design") sits at the foot of
-  Contents, docked or as a popover, where Add Page was ([Pages mode](../007-editor/pages-mode.md) "Contents",
-  2026-11-25), opening the dialog on its home as a centred modal (a bottom sheet on a phone); the bottom-right cluster then holds no Theme & canvas button. A page's
-  title bar no longer carries it on a desktop; a phone, which has no sidebar, reaches it from a page's Appearance
-  sheet's **Design** row (on Page Design; its looks one Back away), the sheet's one door to it since its Style row
+- **Opening it.** **Style**, by the zoom in the bottom-right cluster (the Theme & Canvas brush, `ThemeStrip`, its
+  tooltip "Your pages' design, background, colours, text and finish"), in every tab with pages or none, opens the
+  dialog on its home ("Page Design" below, 2026-11-25). Contents' foot holds Add Page, Describe a Page's AI button and
+  Contents Options, never a Design button ([Pages mode](../007-editor/pages-mode.md) "Contents"). A page's title bar
+  does not carry it; a phone reaches it from the bottom-right Style too, or from a page's Appearance sheet's
+  **Design** row (on Page Design; its looks one Back away), the sheet's one door to it since its Style row
   left (Work Tracker 1480, [Pages mode](../007-editor/pages-mode.md) "On a phone, three buttons at most"). An article page (or a card) already has a Style for its writing, so
   it never shows two: its Style popover **leads with a Tab Style row** (a brand icon tile, "Tab Style", "The tab's
   colours and the canvas around its pages", a chevron) above the article's own style, and the row opens the dialog.
@@ -309,7 +310,8 @@ on the tab as `newPageBackground` (a fill and a pattern, never a picture; `packa
 **Opening it** (owner, 2026-11-25): **Style**, by the zoom in the bottom-right cluster as in the other apps, in every
 tab (pages or none). Tab Style rises from it as a popover (a bottom sheet on a phone); Change Design and a phone page's
 Appearance sheet open the same popover. The pages' title bars no longer hold Design, and Contents' foot is Add Page
-again.
+again, with Describe a Page's AI button after it and Contents Options at its right
+([Describe a Page](../007-editor/describe-a-page.md) "The button").
 
 **Quick Picks** are whole styles: each a random look (colours, text, finish) with a design and one of that look's
 theme gradients, 24 rolled fresh each time the dialog opens (kept while its screens come and go), six at a time over

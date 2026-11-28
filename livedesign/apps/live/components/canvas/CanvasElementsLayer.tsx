@@ -339,8 +339,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         {/* Pages mode cuts elements off at the page edges (PageClip). */}
         <PageClip
           pages={props.pagesMode ? props.pagesMode.pages : null}
-          // A page under a layout preview shows only the preview.
-          hiddenPageId={props.pagesMode?.layoutPreview?.pageId ?? null}
           elements={elements}
           layers={tabLayers}
         >

@@ -711,6 +711,27 @@ In Plan mode:
       reopening the card.
     - **Share roles**: an Editor and a Participant change a card's type from the picker (editing a card); a Viewer
       always sees the plain label.
+    - <a id="status-pill"></a>**On a phone, the card's column** follows its number as a compact **status pill**
+      (Work Tracker 1512): a small dot in the column's colour (the colour the first board naming the status gives
+      its column, else its stage's colour), the column's name cut with an ellipsis, and a small chevron, as tall as
+      the header's other chips, so the header never grows. Below 360 px the name drops and the pill is the dot and
+      the chevron (its accessible name still says "Status: In Progress"); it never wraps or pushes the ⋯ and Close off.
+      A card with no status reads **No status**, its dot hollow.
+      - **Pressed**, it opens a **bottom sheet** (not a dropdown), over the panel: the grab handle, the card's title
+        small and muted, then the columns the card's type uses, in board order (the Details Status picker's list),
+        each a large row (48 px) with its colour dot and name, the current one ticked. The **done** columns (those a
+        board marks done: Done, Cancelled, Development Failure) sit in a group of their own below a hairline, so a
+        thumb never lands on one by accident. A column the card's type leaves out shows only while the card is in
+        it, ticked and marked "(not used by Task)", and cannot be picked back.
+      - **Picking** a column moves the card at once (the same save as the Details picker, so everyone sees it live),
+        a light haptic tick where the device has one, and the sheet slides away. The pill eases to the new colour
+        and name (at once with reduced motion), and a toast says "Moved to In Progress" with **Undo** for its few
+        seconds, putting the card back in the column it left. Picking the current column only closes the sheet. A
+        swipe down, a press outside it or Escape closes it without a change; neither the press nor Escape closes the
+        card (a clear scrim over the screen takes the press, so the panel's backdrop never sees it).
+      - **Share roles**: an Editor and a Participant (who edit cards) move a card from it; a Viewer sees the pill
+        without the chevron, and it does not open.
+      - A desktop keeps its header as it is: the status is the first row of Details beside the main column.
     - after a gap, the **⋯** menu and **Close**, each named by a tooltip.
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.
@@ -731,12 +752,23 @@ In Plan mode:
     - A label lives only while a card carries it: removing its last use forgets it, so it is no longer offered.
       Counts are of the plan's cards outside the Trash; archived cards count.
   - **Checklist**: a progress bar and "2 of 5" over its steps; each step's text is edited in place, ticked with
-    a rounded box, and taken off with ×; **Add a step** keeps its place for the next.
+    a rounded box, and taken off with ×; **Add a step** keeps its place for the next. A long step **wraps** onto as
+    many lines as it needs, never scrolling inside its row (Work Tracker 1514): its wrapped lines start under its
+    first word, not under the box (a hanging indent), at a comfortable line height, and steps sit a little further
+    apart than their lines; a long URL or word breaks rather than running past the row. The box and the × sit
+    centred against the whole step however many lines it takes, and the × keeps its narrow column on a phone (always
+    shown there, as there is no hover). Editing a step is the same wrapped text, growing as it is typed into; Enter
+    saves it, and a line break pasted in becomes a space. **Escape** while editing a step cancels that edit (the step
+    as it was saved) and leaves the field; in Add a step it leaves the field, the text kept. Either way Escape goes no
+    further: the card stays open, and a second Escape closes it.
   - **Main column**: the title, large, then the type's tabs (see [Item types](item-types.md)) and the fields
     of the chosen tab. The **Description** is rich text: bold, italic, underline, strikethrough, size, colour,
     headings and links, and **bullet** and **numbered lists** from their own toolbar buttons, from a toolbar over
     it or the usual shortcuts. Enter on a list item starts the next one; Enter on an empty item ends the list.
-    It reads as text until clicked (hovering shows **Edit**); an empty one is a quiet **Add a description…** line (a pencil before it), not a box. Editing, it sits on a raised surface with the shortcuts beneath and **Saving…** then **Saved**;
+    It reads as text until clicked (hovering shows **Edit**); an empty one is a quiet **Add a description…** line (a pencil before it), not a box.
+    Where there is no hover (a phone, a touch screen), **Edit** sits on the field's heading line, at its right end,
+    with a finger's tap area, so the text below takes the card's full width rather than leaving a column beside it
+    for the button (Work Tracker 1513); a host with no heading line keeps it in the text's corner. Editing, it sits on a raised surface with the shortcuts beneath and **Saving…** then **Saved**;
     focus leaving it, or Escape, returns it to reading.
     Every **Long Text** custom field is the same rich text, edited the same way, its empty line reading **Add
     _field name_…**; beneath it, as it nears its 2,000 characters, how many are left (from 90%), and past them

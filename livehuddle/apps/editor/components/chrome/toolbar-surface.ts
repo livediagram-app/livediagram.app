@@ -34,6 +34,11 @@ export const STRIP_TINT_OPEN =
 /** A strip button named beside its glyph, or the glyph alone (44px wide on a phone, for the thumb). */
 export const STRIP_CONTROL_NAMED = 'pl-2 pr-2.5';
 export const STRIP_CONTROL_GLYPH = 'w-9 phone:w-11';
+/** Named with a short word (Say): the audit judges a short word by its ink, so the pair balances between the longer
+ *  names' trailing half-step (a pixel left) and even padding (0.6px right in CI's Chromium): 9px leading, 10px
+ *  trailing (optical-alignment.md). */
+export const STRIP_CONTROL_NAMED_SHORT = 'pl-[9px] pr-2.5';
 
-/** A strip button's name, beside its glyph. */
-export const STRIP_CONTROL_LABEL = 'text-[13px] font-medium leading-none';
+/** A strip button's name, beside its glyph: centred on its cap band, not its line box (text-optical-centre,
+ *  docs/specs/004-interface-design/optical-alignment.md), so Say, Camera, Share and Pop Out don't sit a pixel high. */
+export const STRIP_CONTROL_LABEL = 'text-optical-centre text-[13px] font-medium leading-none';

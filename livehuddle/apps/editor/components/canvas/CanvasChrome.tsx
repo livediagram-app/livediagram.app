@@ -142,7 +142,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     showIdentityTray = false,
     tabThemeId,
     identityLockedName,
-    welcomeOpen,
     wrapperRef,
     chromeAway,
   } = props;
@@ -151,9 +150,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const viewport = useViewportStore();
   const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
   // An embed hides all floating chrome. `chromeHidden`
-  // folds it in next to the welcome-flow gate that already suppresses
-  // the same panels, so each panel stays hidden in either state.
-  const chromeHidden = welcomeOpen || chromeAway === true;
+  // A visitor's name card hides none of it: it is a modal over the canvas (Work Tracker 1522).
+  const chromeHidden = chromeAway === true;
 
   const isMobile = useIsMobileViewport();
   // Alignment guides while a palette tile is being dragged in (docs/specs/008-canvas/canvas-and-palette.md):
@@ -339,7 +337,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
       {buildMounted ? (
         <ToolbarPalette
-          // Hidden, not unmounted, while the chrome is away (an embed, welcome) or the avatar palette stands in
+          // Hidden, not unmounted, while the chrome is away (an embed) or the avatar palette stands in
           // for it, so the chosen category lasts the page load.
           hidden={chromeHidden || strip !== 'build'}
           canvasTool={canvasTool}
@@ -388,38 +386,34 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {/* The buttons: the row's right column beside the dock, or, with no dock in the row, laid out by the row
             itself (`contents`). */}
         <div data-cluster-buttons="" className={clusterRow.buttons}>
-          {welcomeOpen ? null : (
-            <>
-              {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-              {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. On a desktop it
-                  stands just left of the view dial, level with it (the owner, 2026-11-27: "to the left of the
-                  navigator and zoom control, not below it"). */}
-              {isMobile ? undoRedo : null}
-              {/* A phone's Turn Left and Turn Right (docs/specs/008-canvas/3d-view.md "Turning the camera"). */}
-              {isMobile ? <Space3DTurnButtons /> : null}
-              {/* On a desktop the zoom is the view dial, standing over the row's right end (3d-view.md "The view
-                  dial"); a phone keeps the row's zoom. */}
-              {isMobile ? (
-                <ViewZoomControls
-                  onZoomIn={handleZoomIn}
-                  onZoomOut={handleZoomOut}
-                  onSetZoom={handleSetZoom}
-                  onFitToScreen={onFitToScreen}
-                  pinchOnly
-                />
-              ) : (
-                <div className="flex items-end gap-2">
-                  {undoRedo}
-                  <ViewDialReader
-                    onZoomIn={handleZoomIn}
-                    onZoomOut={handleZoomOut}
-                    onSetZoom={handleSetZoom}
-                    onFitToScreen={onFitToScreen}
-                    onTurn={turnSpace3D}
-                  />
-                </div>
-              )}
-            </>
+          {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
+          {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. On a desktop it
+              stands just left of the view dial, level with it (the owner, 2026-11-27: "to the left of the
+              navigator and zoom control, not below it"). */}
+          {isMobile ? undoRedo : null}
+          {/* A phone's Turn Left and Turn Right (docs/specs/008-canvas/3d-view.md "Turning the camera"). */}
+          {isMobile ? <Space3DTurnButtons /> : null}
+          {/* On a desktop the zoom is the view dial, standing over the row's right end (3d-view.md "The view
+              dial"); a phone keeps the row's zoom. */}
+          {isMobile ? (
+            <ViewZoomControls
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onSetZoom={handleSetZoom}
+              onFitToScreen={onFitToScreen}
+              pinchOnly
+            />
+          ) : (
+            <div className="flex items-end gap-2">
+              {undoRedo}
+              <ViewDialReader
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onSetZoom={handleSetZoom}
+                onFitToScreen={onFitToScreen}
+                onTurn={turnSpace3D}
+              />
+            </div>
           )}
         </div>
       </div>

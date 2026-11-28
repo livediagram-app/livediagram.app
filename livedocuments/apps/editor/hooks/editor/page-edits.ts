@@ -53,10 +53,12 @@ import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits } from './pages-background-copy-edits';
 import { pageSplitEdits } from './page-split-edits';
 import { pageTidyEdits } from './page-tidy-edits';
-import { pageLayoutEdits } from './page-layout-edits';
+import { pageLayoutEdits } from './page-layout-place';
 
 export type { CardSplitState } from './page-split-edits';
 import type { PageEdits } from './page-edits-type';
+import { withDraftedPage, type DraftEngine } from './page-draft-edit';
+import type { PageDraft } from '@livedocuments/api-schema';
 export type { PageEdits } from './page-edits-type';
 
 type TabChange = (tab: Tab) => Tab | null;
@@ -389,7 +391,7 @@ export function pageEdits({
     debugLog('[page] page removed', { tabId, pageId });
   };
 
-  // Placing a layout and previewing a hovered one (page-layout-edits.ts).
+  // Placing a layout and previewing a hovered one (page-layout-place.ts).
   const { applyLayout, previewLayout } = pageLayoutEdits({
     tabId,
     tab,
@@ -401,6 +403,32 @@ export function pageEdits({
   });
   const laidOut = layOutPages(current);
   const contentCount = (pageId: string) => elementIdsOnPage(elements, laidOut, pageId).size;
+
+  // Describe a Page (docs/specs/007-editor/describe-a-page.md "The dialog"): the drafted page made as Add Page makes the
+  // next one, laid out and written through the agents' engine, one edit. False when it could not land (a lock, the
+  // page limit, the tab's kind changed while it was drafted).
+  const addDraftedPage = (draft: PageDraft, engine: DraftEngine, after?: string): boolean => {
+    if (!takesEdits()) return false;
+    const opts = {
+      sourceId: current.at(-1)?.id,
+      after: after ?? currentPage() ?? undefined,
+      themed: (t: Tab, id: string) => themed(t, id) ?? t,
+    };
+    const made = withDraftedPage(tab, draft, engine, opts);
+    if (!made) {
+      debugLog('[page] described page refused', { tabId, kind: draft.kind });
+      return false;
+    }
+    track('Tab', 'Changed', 'PageDescribed');
+    commitTab((t) =>
+      t === tab ? made.tab : (withDraftedPage(t, draft, engine, opts)?.tab ?? null),
+    );
+    onLayoutPlaced();
+    onGoTo(made.pageId);
+    if (made.flow) onArticleCreated?.(made.flow);
+    debugLog('[page] described page added', { tabId, kind: draft.kind });
+    return true;
+  };
 
   const previewInk = (preview: { pageId: string; patch: Partial<PageBackground> } | null) => {
     const target = preview ? page(preview.pageId) : undefined;
@@ -466,6 +494,7 @@ export function pageEdits({
     canMove,
     addPage: room ? addPage : undefined,
     addPageLike: room ? addPageLike : undefined,
+    addDraftedPage: room ? addDraftedPage : undefined,
     insertPageLike: room ? insertPageLike : undefined,
     choosePageKind,
     duplicatePage: room ? duplicatePage : undefined,

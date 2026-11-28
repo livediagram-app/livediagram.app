@@ -30,7 +30,7 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
   ([page surface blueprint](page-surface.md) "The footer and the top row"). The corner card's switch and the
   phone's switch row are gone.
 - **Offered** (`useKnowledgeViewsOffered`): `hydrated`, a `documentId`, `appChrome`, and none of `embedMode`,
-  `zenMode`, `anyWelcomeOpen`, a `workbench`, a `sessionCommunity`, a `sessionTabScope`. Not offered, the tabs
+  `zenMode`, a `workbench`, a `sessionCommunity`, a `sessionTabScope`. Not offered, the tabs
   are not drawn and the host shows Pages whatever the address says.
 - **The frame** is `fixed`, from the anchor's top (`data-knowledge-view-anchor`, a zero-height mark in the editor's
   column, `KnowledgeViewAnchor`) to the footer's top (`[data-editor-tabbar]`, measured with one `ResizeObserver`

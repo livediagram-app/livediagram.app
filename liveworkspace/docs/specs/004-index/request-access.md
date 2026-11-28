@@ -2,7 +2,9 @@
 
 Status: built (Work Tracker 1137, and Work Tracker 1308, which chose it as the answer to an editor address sent to a
 colleague: browsers never tell a page its address was copied from the address bar, so the warning is given where
-that address fails, on the colleague's screen).
+that address fails, on the colleague's screen). Since Work Tracker 1518 that address fails only for an item with no
+live share link: with one, the colleague opens the item through it ([one-explorer-contracts.md](one-explorer-contracts.md)
+"Opened by its editor address"), and Request Access is what is left when the owner has shared it with no one.
 
 ## What
 

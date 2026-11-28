@@ -137,6 +137,15 @@ export type ItemsTallyRequest = {
 // card's Time Spent field `field`: `start` (the caller's timer, with its id), `stop` (a timer, its time recorded as
 // entry `entry`), `add` (a manual entry of whole `minutes`), `remove` (an entry or a running timer, by id) or `put` (an
 // entry put back as it was, with its person; the undo of a remove). Answered with the card as stored.
+// POST /api/projects/:id/items/:itemId/session (docs/specs/026-plan/session-tabs.md "History"): a Session tab's
+// outcome for the card, kept in its history as an entry tagged `session`. Nothing on the card is written. 204.
+export type ItemSessionRequest = {
+  /** The session kind: `refinement` or `planning` (Sprint Planning). */
+  session: 'refinement' | 'planning';
+  /** What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning). */
+  outcome: 'refined' | 'skipped' | 'flagged' | 'committed';
+};
+
 export type ItemTimeRequest = { field: string } & (
   | { op: 'start'; timer: string }
   | { op: 'stop'; timer: string; entry: string }

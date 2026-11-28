@@ -18,5 +18,7 @@ Follow the references below only as needed; never upfront.
   empty-canvas card, where each editor wires them, and tests
 - ./sidebar-width.md - when implementing the left sidebars' width: the steps, the store, the resize handle, the
   film variable, the tooltip's `focused`, constants and tests
+- ./page-layout-preview.md - when implementing the layout hover preview: createPageLayoutPreview, the settle, each
+  product's placer, constants and tests
 - ./DEFAULTS.md - when you need a default the workbench specs leave open
 - ./COMPLETENESS.md - when checking which completeness categories the workbench blueprint covers

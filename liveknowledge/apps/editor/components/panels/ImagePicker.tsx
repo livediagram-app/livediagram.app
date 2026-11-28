@@ -150,7 +150,7 @@ export function ImagePicker({
     >
       <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Image</h2>
-        <DialogCloseButton compact onClick={onClose} />
+        <DialogCloseButton onClick={onClose} />
       </header>
       {uploadOnly ? null : (
         <nav className="flex gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">

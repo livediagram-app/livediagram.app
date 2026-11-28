@@ -31,7 +31,7 @@ import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-sca
 import {
   STRIP_CONTROL_GLYPH,
   STRIP_CONTROL_LABEL,
-  STRIP_CONTROL_NAMED,
+  STRIP_CONTROL_NAMED_SHORT,
   STRIP_RAIL_SCROLL,
   STRIP_TINT_BUTTON,
   STRIP_TINT_OPEN,
@@ -221,7 +221,7 @@ export function AvatarPalette(props: AvatarPaletteProps) {
           say.open ? say.setOpen(false) : say.openFrom(e.currentTarget, 'right', 320)
         }
         // The tinted strip button the Call dock's buttons share (toolbar-surface).
-        className={`${STRIP_TINT_BUTTON} ${barLabels ? STRIP_CONTROL_NAMED : STRIP_CONTROL_GLYPH} ${
+        className={`${STRIP_TINT_BUTTON} ${barLabels ? STRIP_CONTROL_NAMED_SHORT : STRIP_CONTROL_GLYPH} ${
           say.open ? STRIP_TINT_OPEN : TOOLBAR_TRIGGER_TONE
         }`}
       >

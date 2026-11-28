@@ -42,6 +42,10 @@ const QUIET =
 const BRAND =
   'bg-brand-700 pr-2 text-white shadow-brand-900/25 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500';
 
+// Hidden while a canvas card (CanvasModalCard: the name card, the New wizard) is open: the bar is drawn on the page,
+// above the canvas layer the card sits on.
+const UNDER_CARD = '[body:has([data-canvas-modal-card])_&]:invisible';
+
 const CheckIcon = lucideGlyph(lucideCheck, 14);
 const XIcon = lucideGlyph(lucideX, 14);
 
@@ -103,8 +107,10 @@ export function PageEditBarView({
           // Toasts stand on this button's line, beside it (liveworkspace toasts.md "Placement").
           data-toast-side=""
           data-page-read-corner=""
-          // Out of the way while the phone's More tray is open: it opens in this same corner, and these stood on it.
-          className="fixed z-[var(--z-toolbar)] flex items-center gap-2 phone:gap-1.5 [body:has([data-footer-more-tray]:not([hidden]))_&]:invisible"
+          // Out of the way while the phone's More tray is open (it opens in this same corner, and these stood on it)
+          // and while a canvas card is open (a guest's name card, Work Tracker 1522): drawn on the page, above the
+          // canvas's layer, they stood on the card's Cancel and Join on a phone.
+          className={`fixed z-[var(--z-toolbar)] flex items-center gap-2 phone:gap-1.5 [body:has([data-footer-more-tray]:not([hidden]))_&]:invisible ${UNDER_CARD}`}
         >
           {reactions}
           {onDescribe ? <DescribeStructureButton onPress={onDescribe} /> : null}
@@ -148,7 +154,7 @@ export function PageEditBarView({
         role="group"
         aria-label="Editing This Page"
         style={{ right: corner.right, bottom: corner.bottom }}
-        className="fixed z-[var(--z-toolbar)] flex min-w-0 items-center gap-2 phone:gap-1.5"
+        className={`fixed z-[var(--z-toolbar)] flex min-w-0 items-center gap-2 phone:gap-1.5 ${UNDER_CARD}`}
       >
         {/* A phone keeps the row for the buttons, Page Info and Share: the others editing are in the meta row's note. */}
         <span className="contents phone:hidden">

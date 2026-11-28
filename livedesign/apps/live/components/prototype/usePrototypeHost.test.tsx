@@ -179,15 +179,14 @@ describe('the header’s Prototype', () => {
   it('is every role’s on a wireframe tab: Editor, Participant and Viewer', () => {
     for (const level of ['edit', 'participate', 'view'] as const) {
       const can = resolveEditorCapabilities({ level, adderKey: 'a'.repeat(32) });
-      expect(offersPrototype(can, wireTab, false), level).toBe(true);
+      expect(offersPrototype(can, wireTab), level).toBe(true);
     }
   });
 
-  it('is not offered on another kind of tab or while a welcome is open', () => {
+  it('is not offered on another kind of tab', () => {
     const can = resolveEditorCapabilities({ level: 'edit', adderKey: null });
-    expect(offersPrototype(can, logoTab, false)).toBe(false);
-    expect(offersPrototype(can, wireTab, true)).toBe(false);
-    expect(offersPrototype({ playPrototype: false }, wireTab, false)).toBe(false);
+    expect(offersPrototype(can, logoTab)).toBe(false);
+    expect(offersPrototype({ playPrototype: false }, wireTab)).toBe(false);
   });
 
   it('plays from the screen in view', () => {

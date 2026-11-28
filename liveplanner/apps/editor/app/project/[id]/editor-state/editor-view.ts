@@ -60,6 +60,7 @@ export function buildEditorView(slices: {
   return {
     planTabs: planSlice.planTabs,
     forms: planSlice.forms,
+    sessions: planSlice.sessions,
     surface: env.surface,
     tourSquare: planSlice.tourSquare,
     addCustomColour: planDataSlice.addCustomColour,

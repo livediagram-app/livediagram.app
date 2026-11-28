@@ -77,7 +77,6 @@ describe('the view over the editor', () => {
   it.each([
     ['an embed', { embedMode: true }],
     ['zen mode', { zenMode: true }],
-    ['the welcome flow', { anyWelcomeOpen: true }],
     ['a link confined to one page', { sessionTabScope: ['p1'] }],
     ['a Community visit', { sessionCommunity: {} }],
     ['a knowledgebase still loading', { hydrated: false }],

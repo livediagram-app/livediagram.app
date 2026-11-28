@@ -17,6 +17,8 @@ const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
+  // Plan AI's `sm:w-[26rem]` (docs/specs/026-plan/plan-ai.md "The panel").
+  'plan-ai': 416,
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-project/layers.md).
   layers: 352,
   // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
@@ -40,6 +42,8 @@ export type DockPanel =
   | 'collaborate'
   | 'card-types'
   | 'plan-trash'
+  // Plan AI over the AI button beside Card Types (docs/specs/026-plan/plan-ai.md).
+  | 'plan-ai'
   // The Session strip's Timer and Vote (docs/specs/012-collaboration/session-tools.md "The Session strip").
   | 'session-timer'
   | 'session-vote'
@@ -56,6 +60,7 @@ function trackDockPanelOpened(id: DockPanel): void {
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
   else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
+  else if (id === 'plan-ai') track('Plan', 'Opened', 'PlanAi');
   else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
   else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
   else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');

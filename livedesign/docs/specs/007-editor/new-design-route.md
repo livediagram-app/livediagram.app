@@ -58,6 +58,18 @@ to `/explorer`, New Design to `/new`. An embed shows the card with New Design on
 Only the editor's own empty route (`/design`, `/design/placeholder`) hands off to `/new`, so a mistyped page never
 makes a design.
 
+### An editor address opened without access
+
+Its owner often copies the editor's address (`/design/<id>`) from the browser's bar, meaning to send the share link.
+Whoever opens it with no access of their own and no link they opened before is not stopped at a not-found card when
+the design has a live share link: the editor opens the design through that link, exactly as if they had followed it
+(Work Tracker 1518; [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
+"Opened by its editor address"). The link is the one that gives least: Viewer before Participant before Editor. Every
+rule on it holds as it does on the link itself: the password gate, Require Sign In and its allowed domains, the
+link's tab and its expiry (an expired or turned-off link is never used). The address stays the design's own. With no
+live link the not-found card below shows unchanged, and says nothing about whether the design exists. Its owner, and
+a signed-in member of its team, open the address as an editor as always, with no gate or prompt.
+
 ### Which not-found card
 
 Every refusal the api answers 404 is the same card; what it says depends only on what the visitor brought and who
@@ -130,6 +142,9 @@ adding another.
   session, not about creating a design. It says others will see the name on the visitor's cursor and comments; a
   Viewer, who never comments, is told only its cursor. Its name field takes at most `MAX_PARTICIPANT_NAME_LEN` (120)
   characters, the participant route's own cap, so a typed name is always one the route saves.
+- The name card is a modal over the canvas and nothing more: the layout stays as it is while it shows and after
+  Join or Cancel, so the header's Share or Make a Copy, the tab bar and the canvas's floating chrome stay up (Work
+  Tracker 1522). Its state (`anyWelcomeOpen`) only holds the tours while it is open.
 - **Empty tab:** an Editor sees the template start in the middle of the canvas
   ([Template start](start-diagramming.md)); a Participant or Viewer sees the empty-canvas card instead, since the start is
   never offered to a read-only session (`templateStartMode`; `useEmptyCardShown`, [From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "The empty-canvas card"): a Viewer reads that the owner can build it out, a Participant that they can add a sticky, text or an image from the Palette.

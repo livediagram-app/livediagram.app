@@ -24,6 +24,7 @@ import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { AppMark, ArchivedBadge, FolderChip, MadeByAiBadge, VisibilityBadge } from './badges';
 import { useExplorer } from './context';
 import { elsewhereLabel, FolderMosaic } from './FolderMosaic';
+import { FolderAppBadges, FolderGlyph, useFolderInside } from './FolderInside';
 import { FolderMenu, ItemMenu } from './menus';
 import { useExtras } from './extras';
 import { usePersonName } from '../data/usePeople';
@@ -271,6 +272,7 @@ export const FolderRow = memo(function FolderRow({
   renaming,
   itemCount,
   elsewhere,
+  preview,
   showOwner = false,
 }: {
   folder: Folder;
@@ -281,15 +283,18 @@ export const FolderRow = memo(function FolderRow({
   itemCount?: number;
   // With none of this app's, how many other apps' items it holds.
   elsewhere?: number;
+  // What is inside, for its glyph and app badges (one-explorer.md "What a folder holds, at a glance").
+  preview?: ShownFolderPreview;
 }) {
   const bits = useFolderBits(folder);
+  const inside = useFolderInside(folder, preview);
   const menu = useRowMenu({ disabled: renaming });
   const drop = useDropTarget({ teamId: folder.teamId, folderId: folder.id });
   const drag = useFolderDrag(folder, renaming);
   const label = (
     <>
-      <span className="shrink-0 text-amber-500">
-        <FolderSolidIcon />
+      <span className="flex shrink-0">
+        <FolderGlyph inside={inside} />
       </span>
       {renaming ? (
         <InlineRenameInput
@@ -311,6 +316,7 @@ export const FolderRow = memo(function FolderRow({
         elsewhere={elsewhere}
         className="ml-1"
       />
+      <FolderAppBadges inside={inside} size="row" className="ml-1 shrink-0" />
     </>
   );
   return (
@@ -324,13 +330,13 @@ export const FolderRow = memo(function FolderRow({
       {...drag}
     >
       {renaming ? (
-        <div className="flex min-w-0 items-center gap-2">{label}</div>
+        <div className="flex w-full min-w-0 items-center gap-2">{label}</div>
       ) : (
         <button
           type="button"
           onClick={bits.open}
           onDoubleClick={bits.open}
-          className="flex min-w-0 items-center gap-2 text-left"
+          className="flex w-full min-w-0 items-center gap-2 text-left"
         >
           {label}
         </button>
@@ -465,6 +471,7 @@ export const FolderCard = memo(function FolderCard({
 }) {
   const bits = useFolderBits(folder);
   const { folders } = useExplorer();
+  const inside = useFolderInside(folder, preview);
   const menu = useRowMenu({ disabled: renaming });
   const drop = useDropTarget({ teamId: folder.teamId, folderId: folder.id });
   const drag = useFolderDrag(folder, renaming);
@@ -481,21 +488,26 @@ export const FolderCard = memo(function FolderCard({
         type="button"
         onClick={renaming ? undefined : bits.open}
         onDoubleClick={renaming ? undefined : bits.open}
-        className={CARD_PREVIEW}
+        className={`relative ${CARD_PREVIEW}`}
         aria-label={`Open ${folder.name}`}
       >
         {preview ? (
           <FolderMosaic
             preview={preview}
             subfolders={folders.childrenOf(folder.id, folder.teamId)}
+            reserve={inside.apps.length > 0}
           />
         ) : (
           <span className="text-amber-400 [&_svg]:h-14 [&_svg]:w-14">
             <FolderSolidIcon size={56} />
           </span>
         )}
+        <FolderAppBadges inside={inside} size="card" className="absolute bottom-2 right-2" />
       </button>
-      <div className="flex items-center gap-1 p-2.5">
+      <div className="flex items-center gap-1.5 p-2.5">
+        <span className="flex shrink-0" aria-hidden>
+          <FolderGlyph inside={inside} size={14} />
+        </span>
         {renaming ? (
           <InlineRenameInput
             initial={folder.name}

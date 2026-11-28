@@ -75,3 +75,12 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## page-layout-preview
+
+- [x] Interfaces and contracts
+- [x] Behaviour and state
+- [x] Performance and limits
+- [x] Observability
+- [x] Testing
+- [x] Constants and configuration

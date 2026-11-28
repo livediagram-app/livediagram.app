@@ -3,6 +3,7 @@
 import { isTrashed } from '@liveplanner/items';
 import { useState, type SyntheticEvent } from 'react';
 import { EllipsisIcon, PlanCardsIcon, TrashIcon } from '@liveplanner/ui';
+import { SparkleIcon } from '@liveworkspace/ui';
 import {
   MenuActionRow,
   PortalMenu,
@@ -28,6 +29,7 @@ const stopPress = (e: SyntheticEvent) => e.stopPropagation();
 export function PlanCardsClusterStrip({
   types,
   trash,
+  ai,
   folded = false,
 }: {
   // On a phone beside the Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): the
@@ -37,6 +39,9 @@ export function PlanCardsClusterStrip({
   types?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Trash button: its panel's state and toggle. Absent, the strip has none.
   trash?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
+  // The AI button, folded in as the menu's first row (docs/specs/026-plan/plan-ai.md "The button"). Read only while
+  // folded: unfolded, the AI button keeps its own strip.
+  ai?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
 }) {
   const dragging = usePlanCardDragging();
   const plan = usePlan();
@@ -50,6 +55,9 @@ export function PlanCardsClusterStrip({
     return (
       <FoldedPlanStrip
         rows={[
+          ...(ai
+            ? [{ label: 'AI', icon: <SparkleIcon size={18} />, open: ai.open, onPick: ai.onToggle }]
+            : []),
           {
             label: 'Card Types',
             icon: <PlanCardsIcon size={18} />,
@@ -114,7 +122,9 @@ function FoldedPlanStrip({ rows }: { rows: FoldedRow[] }) {
         <ClusterPopoverSegment
           label="More card tools"
           hoverTitle="Cards"
-          hoverDescription="Card Types and the Trash."
+          hoverDescription={
+            rows[0]?.label === 'AI' ? 'AI, Card Types and the Trash.' : 'Card Types and the Trash.'
+          }
           icon={<EllipsisIcon size={18} />}
           dataTourId="card-types"
           popoverOpen={menuOpen || !!panelOpen}

@@ -3,6 +3,8 @@
 Live **session tools** that make a shared board interactive: a per-tab **timer** and per-tab
 **dot-voting** (on a Plan board, cast on its cards), both synced to every participant in real time.
 
+A **Session tab** is something else: a tab kind that works through a queue of cards ([Session tabs](../026-plan/session-tabs.md)). Its state is `Tab.session` (`session-tab.ts`); these tools are `Tab.timer` and `Tab.vote` (`session.ts`), and they stay on every tab, a Session tab's included.
+
 ## Why they need no new infrastructure
 
 Both tools store their state as optional **`Tab` fields**: `tab.timer` and
@@ -315,7 +317,7 @@ a timer or vote already running keeps its button so it can be stopped. Elsewhere
 tool runs (a session button on the canvas still starts one there). A popover whose button leaves (a tab switch)
 closes.
 
-Order, left to right: Timer, Vote. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the two tools, Layers, the theme brush and Fit fill the row on a 375px screen and up. Beside the strip, on a phone, the Plan strip folds into one **More Card Tools** button (an ellipsis), whose menu holds **Find a Card**, **Card Types** and, for an editor, the **Trash**, each opening its panel above that button as its own button would; so a voting board at 390px still keeps the cluster in one row. On a narrower screen the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
+Order, left to right: Timer, Vote. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the two tools, Layers, the theme brush and Fit fill the row on a 375px screen and up. Beside the strip, on a phone, the Plan strip folds into one **More Card Tools** button (an ellipsis), whose menu holds **AI** (on a Board, Sheet, Form or Dashboard tab, [Plan AI](../026-plan/plan-ai.md#the-button)), **Card Types** and the **Trash** (an editor's alone), each opening its panel above that button as its own button would; so a voting board at 390px still keeps the cluster in one row. On a narrower screen the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
 panel as a **popover hanging above it** with an arrow at the button, and a second press closes
 it. **While a vote runs, on a desktop, nothing else closes its popover**: a press on the
 canvas (casting a dot) leaves it up, because whoever runs the vote watches turnout

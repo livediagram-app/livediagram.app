@@ -56,6 +56,8 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'plan-drafts',
   // Describe a Form (docs/specs/030-forms/describe-a-form.md): `/form-drafts`.
   'form-drafts',
+  // Plan AI (docs/specs/026-plan/plan-ai.md): `/plan-ai`.
+  'plan-ai',
 ]);
 
 // The fixed words that appear BELOW a resource in the api's routes

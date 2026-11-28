@@ -26,7 +26,9 @@ Participant level is the middle: take part in the board, never reshape it.
 - **A Viewer only looks.** A comment, a vote and an answer are all taking part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone
   editing the element it looks at.
 - **Running a session is an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
-  editors. A Participant takes part and never runs.
+  editors. A Participant takes part and never runs. A [Session tab](../026-plan/session-tabs.md#share-roles) is
+  the same: an Editor sets it up and facilitates it; a Participant watches, peeks and works on the open card as on a
+  board; a Viewer watches and reads.
 - **Approving is a Viewer's one write** ([Approvals](approvals.md), the owner's choice, 2026-11-15): a Viewer, a
   Participant or an Editor named as an approver may **Approve** or **Request Changes** on the plan's open approval
   request. It writes the decision and nothing else, and only for someone named; asking for approval and cancelling

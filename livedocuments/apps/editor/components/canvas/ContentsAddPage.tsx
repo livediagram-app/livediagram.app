@@ -4,13 +4,16 @@
 // (PageContentsPanel, PageContentsSidebar) end on, the canvas's + after the last page
 // (AddPageButton) as a wide button: it adds another page like the last (its tooltip says what:
 // "Add Slide"), always of the tab's kind ("One kind a tab"). At the page limit it is
-// disabled, a Tooltip naming the limit. Docked, the sidebar's Minimise (`end`) sits to its right.
+// disabled, a Tooltip naming the limit. Describe a Page's AI button sits right after it
+// (docs/specs/007-editor/describe-a-page.md "The button"); docked, Contents Options (`end`) to the right of both.
 import { MAX_PAGES } from '@livedocuments/document';
 import { lucidePlus } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedocuments/ui';
 import type { ReactNode } from 'react';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { PageContents } from '@/hooks/ui/usePageContents';
 import { addAnotherLabel, addPageLabel } from '@/lib/add-page-labels';
+import { DescribePageButton } from './describe-page/DescribePageButton';
 
 const AddIcon = lucideGlyph(lucidePlus, 16);
 
@@ -21,11 +24,17 @@ const IDLE =
 
 export function ContentsAddPage({
   contents,
+  view,
   end,
+  onDescribed,
 }: {
   contents: PageContents;
+  // The view whose page edits Describe a Page makes its page through; absent, no AI button.
+  view?: PagesModeView;
   // Put to Add Page's right in its row: the docked sidebar's Minimise.
   end?: ReactNode;
+  // Once Describe a Page has made its page: the phone's sheet closes, so the new page is in view.
+  onDescribed?: () => void;
 }) {
   const { canAdd, add, addLike, lastPage, full } = contents;
   // A Viewer has no Add Page; the sidebar's Minimise (`end`) still sits at the foot's right.
@@ -58,6 +67,13 @@ export function ContentsAddPage({
           <span className="truncate">{short}</span>
         </button>
       </Tooltip>
+      {view ? (
+        <DescribePageButton
+          view={view}
+          contents={contents}
+          {...(onDescribed ? { onMade: onDescribed } : {})}
+        />
+      ) : null}
       {end}
     </div>
   );

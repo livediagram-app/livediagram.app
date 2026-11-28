@@ -243,7 +243,7 @@ transition? }`, `transition` omitted when Instant. A `here` row is `disabled`. T
 ### Prototype mode
 
 - **Entry.** `editorViewHeader` passes `leadAction={<PrototypeHeaderButton/>}` when `can.playPrototype` and
-  `wireframeTabPages(pagesOf(activeTab))` (the tab's first page is a wireframe page) and no welcome is open. Its press
+  `wireframeTabPages(pagesOf(activeTab))` (the tab's first page is a wireframe page); a visitor's name card leaves it in place. Its press
   calls `openPrototype(currentPageIdNow())`. The shared `EditorHeader` draws `leadAction` first among its right-edge
   actions.
 - **The address.** `usePrototypeHost` reads `wantsPrototype(location.search)` once, when the design is hydrated and the

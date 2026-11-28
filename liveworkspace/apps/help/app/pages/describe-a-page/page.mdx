@@ -1,0 +1,53 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Describe a Page',
+  description:
+    'Say what the next slide, page, article or card is about, and AI picks a layout and writes your words into it.',
+  path: '/help/pages/describe-a-page/',
+});
+
+<ArticleLayout
+  path="pages/describe-a-page"
+  title="Describe a Page"
+  description="Say what the next page should say, and AI picks a layout and writes it in."
+  categoryTitle="Pages"
+  categorySlug="pages"
+>
+
+When you already know what a page should say, **Describe a Page** saves you picking a layout and typing over its samples. Say what the page is about and what it should say, and AI makes the next page of the tab for you: it picks a layout that suits your words and writes them into it.
+
+It works for every kind of page, and is named for the tab's kind:
+
+- **Describe a Slide** on a slide tab, and **Describe a Page** on infographic pages: AI picks one of the kind's ready-made layouts (64 for slides, 92 for infographics), one that holds as many items as you give, and fills its heading, text, lists and figures. Anything the layout has that your words don’t need, such as a fifth and sixth figure, is taken off the page rather than left with sample words. Each figure is written together with the words that say what it is, so every caption sits under its own number, and no number shows twice. A layout with a chart, or with a change under each figure (such as **KPI Dashboard**), is used only when your words give a trend, such as figures for two quarters or "up 18% on last year".
+- **Describe an Article**: AI writes a new article, with its title and its writing, after the article you are in.
+- **Describe a Card** on flashcards: AI writes the card's words.
+
+## Before You Start
+
+- You need to be signed in and an **Editor** of the tab. Participants, Viewers and people on a share link without an account do not see the button.
+- It runs on your team's AI key, or your own (see [AI Keys](/help/account-and-data/ai-keys/)). Without one, it runs on built-in AI, included, and each page counts as one of your 30 built-in AI questions a day.
+
+## Make a Page
+
+1. Open **Contents** and press the sparkle button at its foot, right after **Add Slide** (or **Add Page**, **Add Article**, **Add Card**).
+2. Describe the page in your own words, up to 500 characters: what it is about, and some of what it should say. The examples above the box (**Agenda**, **Key Figures** and **Compare Plans** on a slide tab, for instance) fill it with words you can change.
+3. Press **Make Slide** (or **Make Page**, **Make Article**, **Make Card**), or Ctrl+Enter (⌘+Enter on a Mac).
+
+The new page lands right after the page you are on, the same size and background as your other pages, and Contents marks it. A message names the layout AI picked, such as "Added a slide from the Agenda layout". It is one change: **Undo** takes it away.
+
+It usually takes a few seconds. If it takes longer, the dialog says it is still working: a model that thinks first can take up to a minute. **Cancel** stops it, and nothing is added.
+
+## When It Can't
+
+- If your words don't describe a page, the dialog says so and keeps them for you to change.
+- If your key is not accepted, the line under the box says so, with a button to fix the key in Settings.
+- When you have used your built-in AI questions for the day, the dialog says so: try again tomorrow, or add a key of your own.
+- A tab holds up to 100 pages. At the limit the button is disabled, as Add Page is.
+
+## Privacy
+
+Only your description goes to the AI that makes the page, with the layouts' own names and samples: nothing else of your document is sent. Your words and the AI's reply are not logged.
+
+</ArticleLayout>

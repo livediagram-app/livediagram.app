@@ -564,7 +564,7 @@ screen (up to 720 px wide on a desktop, the full width less a small margin on a 
 viewport and scrolling inside) over a dimmed backdrop. Its type is the screen's, not the canvas's, so it reads at any
 walking zoom. It looks like every dialog in the app: the same card (radius, border, shadow, dark fill), the same
 dimmed, blurred backdrop, and the dialog header, the piece's name in the dialog's title type with the close (x) button
-(tooltip **Close**) at its right; the Screen's player keeps its dark bar over the video. Escape, Close or a click on the
+(tooltip **Close**) at its right; the Screen's player keeps its dark bar over the video, its close the same circled X in white ([close-button.md](../../../../liveworkspace/docs/specs/022-interface-design/close-button.md)). Escape, Close or a click on the
 backdrop dismisses it, and focus stays inside it while it is open. Nothing walks.
 
 - **Notice Board**: every note newest first at full size (title, body, author and date), with the add box and Unpin

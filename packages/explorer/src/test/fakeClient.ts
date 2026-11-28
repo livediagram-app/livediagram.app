@@ -346,10 +346,25 @@ export function createFakeIndex(
                   (!query.app || i.app === query.app),
               )
               .sort((a, b) => b.updatedAt - a.updatedAt);
+            // Every app's live items in the folder and every folder under it, as the index counts them.
+            const tree = new Set([folderId]);
+            for (let grew = true; grew;) {
+              grew = false;
+              for (const f of folders)
+                if (f.parentId && tree.has(f.parentId) && !tree.has(f.id)) {
+                  tree.add(f.id);
+                  grew = true;
+                }
+            }
+            const apps: Partial<Record<App, number>> = {};
+            for (const i of items)
+              if (i.folderId && tree.has(i.folderId) && i.trashedAt === null)
+                apps[i.app] = (apps[i.app] ?? 0) + 1;
             return {
               folderId,
               itemCount: inside.length,
               items: inside.slice(0, 4).map((i) => ({ ...i })),
+              apps,
             };
           }),
       })),

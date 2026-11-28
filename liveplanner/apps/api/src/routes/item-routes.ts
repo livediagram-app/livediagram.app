@@ -78,6 +78,7 @@ import { importPeople } from './item-import-people';
 import { importItems } from './item-import-route';
 import { pullRequestsFor } from './item-pull-requests';
 import { trackTime } from './item-time-route';
+import { recordSessionOutcome } from './item-session-route';
 import { COMMUNITY_CONTENT, readBody, type PlanRouteContext } from './context';
 import {
   readCreate,
@@ -401,6 +402,9 @@ export async function handleItemRoutes(ctx: PlanRouteContext): Promise<Response 
   // The card's history (docs/specs/026-plan/items.md "History"), read when its panel opens.
   if (segments.length === 6 && segments[5] === 'history')
     return itemHistory(ctx, projectId, itemId);
+  // A Session tab's outcome, kept in the card's history (docs/specs/026-plan/session-tabs.md "History").
+  if (segments.length === 6 && segments[5] === 'session')
+    return recordSessionOutcome(ctx, projectId, itemId);
   // A time write to a Time Spent field (docs/specs/026-plan/item-types.md "Time Spent").
   if (segments.length === 6 && segments[5] === 'time')
     return method === 'POST' ? trackTime(ctx, projectId, itemId) : methodNotAllowed();

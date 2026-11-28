@@ -21,6 +21,7 @@ import {
 import {
   CompactEmptyState,
   CountBadge,
+  DialogCloseButton,
   SearchIcon,
   lucideGlyph,
   noMatchTitle,
@@ -66,7 +67,6 @@ const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
 const ClearGlyph = lucideGlyph(lucideX, 13);
-const CloseGlyph = lucideGlyph(lucideX, 16);
 
 // A panel that cannot close: a drag down on its phone sheet is refused before it slides out, so it settles back.
 const STAYS_OPEN = () => false;
@@ -363,14 +363,13 @@ export function createStartPanel<
             />
           ) : null}
           <header
-            // Room on the right for the help and × pinned in the corner. On a phone only the title's row needs it: the
-            // search below runs the full width, so a long placeholder ("Find a board, sheet, form or layout") fits.
+            // Room on the right for the help and the 44px close (only the help where it never closes). On a phone
+            // only the title's row needs it: the search below runs the full width, so a long placeholder ("Find a
+            // board, sheet, form or layout") fits.
             // From `sm` it stands 100px tall, its row centred, so the band shows.
-            className={
-              isSheet
-                ? 'relative isolate flex flex-wrap content-center items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:min-h-[100px] sm:pl-6 max-sm:pr-5 max-sm:pt-1'
-                : 'relative isolate flex flex-wrap content-center items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-14 sm:min-h-[100px] sm:pl-6 max-sm:pr-5'
-            }
+            className={`relative isolate flex flex-wrap content-center items-center gap-x-4 gap-y-3 border-b py-4 pl-5 sm:min-h-[100px] sm:pl-6 max-sm:pr-5 ${
+              isSheet ? 'max-sm:pt-1 ' : ''
+            }${onClose ? 'pr-28' : 'pr-14'}`}
             style={{ borderColor: palette.border }}
           >
             <StartHeaderBand
@@ -380,7 +379,7 @@ export function createStartPanel<
             />
             {/* The title mark, the app's motif as one glyph, then the title and its line. */}
             <div
-              className={`flex min-w-0 flex-1 items-center gap-3 ${isSheet ? 'max-sm:pr-20' : 'max-sm:pr-10'}`}
+              className={`flex min-w-0 flex-1 items-center gap-3 ${onClose ? 'max-sm:pr-24' : 'max-sm:pr-10'}`}
             >
               <StartTitleMark kind={header.kind} band={header.band} />
               <div className="min-w-0">
@@ -449,31 +448,15 @@ export function createStartPanel<
                 </button>
               ) : null}
             </label>
-            {/* Help and ×, pinned to the panel's top right corner. */}
+            {/* Help and the close at the panel's right: centred down the band from `sm`, as the dialog hero header's
+                are; on a phone beside the title's row, the search running full width under them. */}
             <div
-              className={
-                isSheet
-                  ? 'absolute right-3 top-3 flex items-center gap-1 max-sm:top-0'
-                  : 'absolute right-3 top-3 flex items-center'
-              }
+              className={`absolute right-3 flex items-center gap-1 sm:top-1/2 sm:-translate-y-1/2 ${
+                isSheet ? 'top-0' : 'top-3'
+              }`}
             >
               <HelpLink article={helpArticle} variant="icon" />
-              {onClose ? (
-                <button
-                  type="button"
-                  aria-label="Close"
-                  onClick={onClose}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition hover:bg-[var(--start-hover)]"
-                  style={
-                    {
-                      color: header.band.muted,
-                      '--start-hover': startTint(palette, 7),
-                    } as CSSProperties
-                  }
-                >
-                  <CloseGlyph />
-                </button>
-              ) : null}
+              {onClose ? <DialogCloseButton onClick={onClose} /> : null}
             </div>
           </header>
           <div className="flex min-h-0 flex-1 max-sm:flex-col">

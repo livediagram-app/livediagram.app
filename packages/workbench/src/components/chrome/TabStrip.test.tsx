@@ -507,6 +507,29 @@ describe('TabStrip', () => {
     delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
   });
 
+  // Work Tracker 1508: on a touch screen no scroll button shows, so a clear band at the edge read as the row stopping
+  // short of the footer's controls. The fade there runs to the very edge.
+  it('fades its tabs to the very edge on a touch screen, and clear of the button with a mouse', () => {
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 200 });
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, value: 600 });
+    const masked = (touch: boolean) => {
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn((q: string) => ({
+          matches: q === PHONE_MEDIA_QUERY || (touch && q === '(pointer: coarse)'),
+        })),
+      );
+      const { unmount } = strip();
+      const mask = (screen.getByRole('toolbar').parentElement as HTMLElement).style.maskImage;
+      unmount();
+      return mask;
+    };
+    expect(masked(true)).toContain('transparent 100%');
+    expect(masked(false)).toContain('transparent calc(100% - 24px)');
+    delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
+    delete (HTMLElement.prototype as { scrollWidth?: number }).scrollWidth;
+  });
+
   // Renaming the open tab to a longer name widened it past the strip's edge, under the footer's Search.
   it('brings the open tab back when it grows, and leaves it alone when it shrinks', () => {
     let resized: () => void = () => {};

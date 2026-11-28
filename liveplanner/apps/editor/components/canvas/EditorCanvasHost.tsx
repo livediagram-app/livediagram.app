@@ -43,7 +43,6 @@ export function EditorCanvasHost() {
     beginArrowBend,
     beginArrowScale,
     dropBoardFile,
-    anyWelcomeOpen,
     appendTableColumnSelected,
     appendTableRowSelected,
     beginAnchorDrag,
@@ -413,7 +412,8 @@ export function EditorCanvasHost() {
             // shows the identity prompt so `lockedName` is moot there;
             // pure guests pass null and keep the editable name field.
             identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
-            welcomeOpen={anyWelcomeOpen}
+            // A visitor's name card hides no chrome (Work Tracker 1522): nothing on this route opens a welcome.
+            welcomeOpen={false}
             selfParticipant={selfParticipant}
             onConfirmIdentity={confirmIdentity}
             onCancelIdentity={cancelIdentity}

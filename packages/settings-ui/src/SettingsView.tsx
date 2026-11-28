@@ -153,7 +153,7 @@ export function SettingsView({
         title={showBack ? selected?.label : title}
         subtitle={subtitle}
         // The switch is wider than Share's buttons: the centre piece stands clear of it.
-        className={switcher && !isMobile ? '[--hero-centre-end:17rem]' : ''}
+        className={switcher && !isMobile ? '[--hero-centre-end:18.5rem]' : ''}
         actions={
           <>
             {switcher && !isMobile ? <div className="min-w-0 shrink">{switcher}</div> : null}

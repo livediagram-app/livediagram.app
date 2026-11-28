@@ -117,6 +117,23 @@ describe('submitChangeset', () => {
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM agent_changesets').get()!.n).toBe(0);
   });
 
+  it('refuses a Session tab: it is run in the editor, its cards changed with the card tools', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const db = await setUp();
+    await seedTabs(db.env, 'D', [
+      {
+        id: 't1',
+        name: 'Refinement',
+        elements: [],
+        kind: 'session',
+        session: { v: 1, sessionKind: 'refinement', setup: { typeIds: [], statuses: [] } },
+      } as never,
+    ]);
+    const res = await submit(db, [{ op: 'rm', target: 'a' }]);
+    expect(res).toMatchObject({ status: 422, body: { error: 'invalid_value' } });
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM agent_changesets').get()!.n).toBe(0);
+  });
+
   it('answers 200 when the relay throws: D1 holds the changeset, and the warning says so', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});

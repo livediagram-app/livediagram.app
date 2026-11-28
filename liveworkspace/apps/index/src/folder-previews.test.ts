@@ -15,10 +15,10 @@ const previews = async (auth: string, ids: string[], app?: string) =>
     await call(`/folders/previews?ids=${ids.join(',')}${app ? `&app=${app}` : ''}`, { auth }),
   );
 
-const folder = async (auth: string, name: string, teamId?: string) =>
+const folder = async (auth: string, name: string, teamId?: string, parentId?: string) =>
   (
     await body<{ folder: { id: string } }>(
-      await call('/folders', { method: 'POST', auth, body: { name, teamId } }),
+      await call('/folders', { method: 'POST', auth, body: { name, teamId, parentId } }),
     )
   ).folder.id;
 
@@ -41,7 +41,7 @@ describe('GET /folders/previews', () => {
     const all = await previews(ada.auth, [empty, f2, f1]);
     expect(all.previews.map((p) => p.folderId)).toEqual([empty, f2, f1]);
     const [e, two, one] = all.previews;
-    expect(e).toEqual({ folderId: empty, itemCount: 0, items: [] });
+    expect(e).toEqual({ folderId: empty, itemCount: 0, items: [], apps: {} });
     expect(two!.items.map((i) => i.title)).toEqual(['T']);
     // Six of Ada's plans and a diagram, one trashed: six live, the four newest shown.
     expect(one!.itemCount).toBe(6);
@@ -72,11 +72,49 @@ describe('GET /folders/previews', () => {
     expect((await previews(ada.auth, [])).previews).toEqual([]);
   });
 
+  it("counts every app's live items through the subfolders, whatever the filter, in the folder's scope only", async () => {
+    const ada = await person('user_a');
+    const top = await folder(ada.auth, 'Top');
+    const mid = await folder(ada.auth, 'Mid', undefined, top);
+    const deep = await folder(ada.auth, 'Deep', undefined, mid);
+    const bare = await folder(ada.auth, 'Bare', undefined, top);
+    await makeItem(ada.auth, { title: 'P', folderId: top });
+    await makeItem(ada.auth, { title: 'D1', folderId: mid, app: 'livediagram' });
+    await makeItem(ada.auth, { title: 'D2', folderId: deep, app: 'livediagram' });
+    await makeItem(ada.auth, { title: 'Doc', folderId: deep, app: 'livedocuments' });
+    const gone = await makeItem(ada.auth, { title: 'Gone', folderId: deep, app: 'livedesign' });
+    await call(`/items/${gone.id}`, { method: 'DELETE', auth: ada.auth });
+    // Out of the folder's scope (written straight in, as no route can): never counted, never hinted at.
+    h.db.sql
+      .prepare(
+        `INSERT INTO items (id, app, kind, owner_id, team_id, scope, folder_id, title, summary, created_at, updated_at)
+         VALUES ('stray', 'livedesign', 'design', 'user_e', NULL, 'p:user_e', ?, 'Stray', '{}', 0, 0)`,
+      )
+      .run(deep);
+
+    const all = await previews(ada.auth, [top, mid, bare]);
+    expect(all.previews.map((p) => [p.folderId, p.apps])).toEqual([
+      [top, { liveplanner: 1, livediagram: 2, livedocuments: 1 }],
+      [mid, { livediagram: 2, livedocuments: 1 }],
+      [bare, {}],
+    ]);
+    // Filtered to one app, the mosaic's items and count are that app's; the badges still name every app.
+    const plans = await previews(ada.auth, [mid], 'liveplanner');
+    expect(plans.previews[0]!.itemCount).toBe(0);
+    expect(plans.previews[0]!.apps).toEqual({ livediagram: 2, livedocuments: 1 });
+  });
+
   it('walks the folder index, never scanning the items table', () => {
     const ada: Person = { id: 'user_a', kind: 'account', teams: ['team1'] };
-    for (const app of [null, 'liveplanner' as const]) {
-      const q = folderPreviewQueries(ada, ['f1', 'f2'], app);
-      for (const { sql, args } of [q.items, q.counts]) {
+    // An app acting for the person (its own items only) counts its own app's alone.
+    const viaApp: Person = { ...ada, app: 'livediagram' };
+    for (const [who, app] of [
+      [ada, null],
+      [ada, 'liveplanner'],
+      [viaApp, 'livediagram'],
+    ] as const) {
+      const q = folderPreviewQueries(who, ['f1', 'f2'], app);
+      for (const { sql, args } of [q.items, q.counts, q.apps]) {
         const lines = h.db.sql
           .prepare(`EXPLAIN QUERY PLAN ${sql}`)
           .all(...(args as SQLInputValue[]))
@@ -123,6 +161,7 @@ describe('GET /folders/previews', () => {
     expect(got.previews).toHaveLength(60);
     for (const p of got.previews) {
       expect(p.itemCount).toBe(1000);
+      expect(p.apps).toEqual({ liveplanner: 1000 });
       expect(p.items.map((i) => i.title)).toEqual([
         'Item 1999',
         'Item 1998',

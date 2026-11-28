@@ -473,5 +473,5 @@ share link's visitor, a page's link and a Community post's reader get pages alon
   Ask's conversation, by taking the browser's Back over this view's own entry. Opened by its link, or from another
   knowledgebase, a view has nothing before it, and the chevron opens **Pages** (a history entry, as a footer tab is).
   It is navigation only: every role has it.
-- Not offered in an embed, in zen mode, in a workbench, behind the welcome flow, to a Community visitor or through a
-  link confined to one page.
+- Not offered in an embed, in zen mode, in a workbench, to a Community visitor or through a link confined to one
+  page. A visitor's name card leaves them up (new-document-route.md).

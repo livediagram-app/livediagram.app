@@ -11,10 +11,12 @@ import { useExplorer } from '../explorer/context';
 import { AppMark } from '../explorer/badges';
 import { FolderMenu, ItemMenu } from '../explorer/menus';
 import { elsewhereLabel } from '../explorer/FolderMosaic';
+import { FolderAppBadges, FolderGlyph, useFolderInside } from '../explorer/FolderInside';
+import type { ShownFolderPreview } from '../data/useFolderPreviews';
 import { useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
-import { FolderSolidIcon, ItemIcon } from '../ui/icons';
+import { ItemIcon } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
 import { folderCountLabel } from '../words';
 import { PANE_PREVIEW_BOX, PANE_THUMB_BOX, FolderPreview, PaneCard, PaneRow } from './pane-parts';
@@ -100,6 +102,7 @@ export const FolderCard = memo(function FolderCard({
   folder,
   itemCount,
   elsewhere,
+  preview,
   onOpen,
 }: {
   folder: Folder;
@@ -107,8 +110,11 @@ export const FolderCard = memo(function FolderCard({
   itemCount?: number;
   // With none of this app's, how many other apps' items it holds (useFolderPreviews).
   elsewhere?: number;
+  // What is inside, for its glyph and app badges (one-explorer.md "What a folder holds, at a glance").
+  preview?: ShownFolderPreview;
   onOpen: () => void;
 }) {
+  const inside = useFolderInside(folder, preview);
   const { folders, renamingId, setRenamingId, words } = useExplorer();
   const editing = renamingId === folder.id;
   const menu = useRowMenu({ disabled: editing });
@@ -124,7 +130,9 @@ export const FolderCard = memo(function FolderCard({
     ? own === 'Folder'
       ? elsewhereLabel(elsewhere)
       : `${own} · ${elsewhereLabel(elsewhere)}`
-    : own;
+    : inside.empty
+      ? 'Empty'
+      : own;
   const commit = (name: string) => {
     const next = name.trim();
     if (next && next !== folder.name) void folders.rename(folder.id, next);
@@ -132,7 +140,14 @@ export const FolderCard = memo(function FolderCard({
   };
   return (
     <PaneCard
-      preview={<FolderPreview icon={<FolderSolidIcon />} count={count} />}
+      preview={
+        <FolderPreview
+          icon={<FolderGlyph inside={inside} size={36} tone="text-brand-700 dark:text-brand-300" />}
+          count={count}
+          empty={inside.empty === true}
+          badges={<FolderAppBadges inside={inside} size="pane" />}
+        />
+      }
       title={
         editing ? (
           <InlineRenameInput

@@ -4,8 +4,12 @@ Follow the references below only as needed; never upfront.
 
 - ./action-parity.md - when implementing action parity: the shared shortcut section and its guard, the item command
   names, the shared deleted card, Community bar and tab menu each editor binds, and the tests that hold them
+- ./close-button.md - when implementing the close button: `DialogCloseButton`, how each header row centres it, the
+  hero headers' centre-piece offsets and the guard that fails a hand-typed close
 - ./error-words.md - when implementing error words: the shared helper in `@liveworkspace/ui/error-words`, where each
   package's fallback takes it, the retry rules and the tests that hold them
 - ./undo-not-confirm.md - when implementing Undo instead of a confirm: `useUndoableAction`, `revertStep`, the open
   item's delete handoff, each converted action and its tests
+- ./voice-input.md - when implementing voice input: `@liveworkspace/ui/voice-input` (`useVoiceInput`,
+  `VoiceInputButton`, `VoiceInputNote`), the fake recognizer for tests, each host field and the pulse token
 - ./COMPLETENESS.md - when checking which completeness categories the interface design blueprints cover

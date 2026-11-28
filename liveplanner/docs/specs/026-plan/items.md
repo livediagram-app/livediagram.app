@@ -511,9 +511,9 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
   Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
   placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
 - **On a phone beside the Session strip** (a tab whose cards take votes) the strip is one **More Card Tools** button,
-  its menu holding Find a Card and, for an editor, Card Types and the Trash (the Trash's only door on a phone);
-  each opens its panel above that button. A Participant or Viewer has only Find a Card, so it shows as that one
-  button, and with no card types nothing shows ([The Card Types panel](item-types.md#the-card-types-panel)) ([Session tools](../012-collaboration/session-tools.md#the-session-strip)).
+  its menu holding **AI** ([Plan AI](plan-ai.md#the-button)), Card Types and the Trash (the Trash's only door on a
+  phone), for an editor alone; each opens its panel above that button. A Participant or Viewer has none of them, so
+  no strip shows and the AI button keeps its own place in the row ([The Card Types panel](item-types.md#the-card-types-panel)) ([Session tools](../012-collaboration/session-tools.md#the-session-strip)).
 - On a wide desktop (1440 px and up) each of its buttons is named beside its icon in one short word (**Trash**,
   **Find**, **Types**), as the cluster's other strips are ([Editor app](../007-editor/editor-app.md)); narrower,
   they are icons alone. Their accessible names and hover cards keep the fuller labels (Find a Card, Card
@@ -855,6 +855,12 @@ Each entry is **tagged** by how it was made:
 - **An undo or redo** (the write's `undo`): drawn with **(Undo)** after it, so a card moving back reads as a person
   taking their change back, not a second decision.
 - **A form's response**: the card made from it reads "created this card from a form response".
+- **A session's outcome** ([Session tabs](session-tabs.md#history)): an entry of its own, tagged `session`, holding one
+  `session` change (`{ kind: 'session', session: 'refinement' | 'planning', outcome: 'refined' | 'skipped' | 'flagged' |
+'committed' }`) and nothing else: "Sam refined this in a Refinement session", "Sam committed this in a Sprint Planning
+  session". Written by `POST /items/:itemId/session` (edit access),
+  which changes nothing on the card, so its Last Edited stays; the move or flag a Refined or Flagged outcome makes is
+  its own write and its own entry. It groups only with other session entries.
 
 ### Kept bounded, in the plan
 

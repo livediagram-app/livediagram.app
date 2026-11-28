@@ -134,7 +134,8 @@ One centred dialog of steady height, in three steps.
    handbook for a 12 person logistics startup: how we ship, on-call, architecture and decisions."), 20 to 1,000
    characters, and three example chips that fill it, above the field (owner, 2026-11-22: "the try an example bits in
    the describe with AI screens should be above the textbox, not below it"). The primary button is **Suggest a
-   Structure**.
+   Structure**. The field can be spoken into: the microphone under it, before the count
+   ([Voice input](../../../../liveworkspace/docs/specs/022-interface-design/voice-input.md)).
 2. **Review.** The proposed page tree, indented as the sidebar draws it, each page with its title and one line on
    what belongs there. Every row has a checkbox (ticked) and its title can be renamed in place; unticking a page
    unticks its subpages, and ticking one ticks the pages above it. Above the tree: a suggested name for the knowledgebase, used only while it is still
@@ -240,7 +241,9 @@ will sit under, a line under each on what goes there, and where it helps a list,
   it (**Uses built-in AI**, or the key that answers Ask: the knowledgebase's, the team's or the person's own,
   [Which key answers](search-and-ask.md); where a key answers and built-in AI is here, the person's choice in Ask's
   picker applies here too). Buttons: Cancel and **Describe** (primary; `Mod-Enter` in the field). While it
-  works the field is locked and Describe reads "Drafting..."; Cancel stops the request.
+  works the field is locked and Describe reads "Drafting..."; Cancel stops the request. The microphone under the field, before the count, fills it from speech
+  ([Voice input](../../../../liveworkspace/docs/specs/022-interface-design/voice-input.md)); Escape while it
+  listens stops listening and leaves the dialog open.
 - **What it writes.** The structure lands in the page's **draft** at the top, under the Title: never saved, so it is the
   person's to change, Save or Cancel as any edit (Cancel on the bar asks before throwing it away, as it does for any
   unsaved change). It is one undo step. It holds at most 12 headings (Heading 2, with Heading 3 under them), each

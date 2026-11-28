@@ -60,7 +60,7 @@ describe('LayoutGallery', () => {
     render(<LayoutGallery page={screenPage!} onApply={onApply} onPreview={onPreview} />);
     const tile = document.querySelector('[data-layout-tile="wf-checkout"]')!;
     fireEvent.pointerEnter(tile);
-    expect(onPreview).toHaveBeenLastCalledWith('wf-checkout');
+    expect(onPreview).toHaveBeenLastCalledWith('wf-checkout', 'pointer');
     fireEvent.click(tile);
     expect(onApply).toHaveBeenCalledWith('wf-checkout');
   });

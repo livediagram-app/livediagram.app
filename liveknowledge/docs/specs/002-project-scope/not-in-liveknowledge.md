@@ -29,7 +29,9 @@ it stays for now, the way livehuddle left its diagram element engine for a follo
 reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deletion can find them. To delete:
 
 - **Editor, the row of pages:** `components/canvas/FirstPageChoice.tsx`, `page-kind-cards.tsx`, `AddPageButton.tsx`,
-  `ContentsAddPage.tsx`, `PagePanel.tsx` and its sections, the page cog, `PageLayoutsButton.tsx`, `layout-gallery/`,
+  `ContentsAddPage.tsx`, `PagePanel.tsx` and its sections, the page cog, `PageLayoutsButton.tsx` (its door in `PageSheetTitleBar.tsx` reads `CUT_FROM_FORK`), `layout-gallery/`,
+  `InfographicLayoutPreview.tsx` (the hover's own picture of a layout) with `PagesModeView.layoutPreview` and `PageClip`'s
+  `hiddenPageId`,
   the Use a Layout invite, `PageContentsSidebar.tsx`, `PageContentsPanel.tsx`, `useContentsChrome.tsx`,
   `page-row-slides.tsx`, `hooks/ui/usePageContents.ts`, `lib/contents-placement.ts`, the page navigator and stack
   controls, and the add, copy, remove, split, size, turn and kind verbs in `hooks/editor/page-edits.ts`.
@@ -112,4 +114,5 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
 
 Still reachable, and to settle when the MCP server and CLI are reworked in pages (build plan step 13): a JSON import
 of a tab exported from livedocuments keeps the pages it was stored with, and `update_document` still places free
-elements on a page.
+elements on a page. Such a slide or infographic page draws in the fork's sheets with its Background but no Layout
+button: layouts are cut, and its press placed nothing while its hover still drew a layout (Work Tracker 1507).

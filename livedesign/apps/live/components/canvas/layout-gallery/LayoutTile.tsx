@@ -6,6 +6,7 @@
 import { memo, type RefObject } from 'react';
 import type { LaidOutPage } from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { LayoutCard } from '@liveworkspace/workbench/components/canvas/layout-gallery/LayoutCard';
 import { LayoutThumb } from '../layout-thumb';
 import type { GalleryLayout } from './layout-gallery-filter';
@@ -34,7 +35,7 @@ export const LayoutTile = memo(function LayoutTile({
   current?: boolean;
   scrollRoot: RefObject<HTMLElement | null>;
   onPick: (id: PageLayoutId) => void;
-  onPreview: (id: PageLayoutId | null) => void;
+  onPreview: (id: PageLayoutId | null, how?: LayoutPreviewAsk) => void;
 }) {
   const tall = Math.round((width * page.rect.height) / page.rect.width);
   const height = page.kind === 'wireframe' ? Math.min(tall, WIREFRAME_TILE_MAX_H) : tall;

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, useEffect, type HTMLAttributes, type ReactNode } from 'react';
 import { Portal, SheetHandle, useSheetDrag, safeInset } from '@liveworkspace/ui';
 
 // A menu as a bottom sheet on a phone (docs/specs/007-editor/editor-app.md "Menus are bottom sheets on
@@ -17,13 +17,20 @@ type BottomSheetProps = Omit<HTMLAttributes<HTMLDivElement>, 'className' | 'styl
   zClassName: string;
   // Children that carry their own edge-to-edge sections need no bottom padding.
   flush?: boolean;
+  // Set by a host closing it from inside (a pick made): it slides out as a swipe would, then onClose.
+  closing?: boolean;
 };
 
 export const BottomSheet = forwardRef<HTMLDivElement, BottomSheetProps>(function BottomSheet(
-  { onClose, children, zClassName, flush = false, ...rest },
+  { onClose, children, zClassName, flush = false, closing = false, ...rest },
   ref,
 ) {
   const sheet = useSheetDrag(onClose);
+  const { dismiss } = sheet;
+  useEffect(() => {
+    if (closing) dismiss();
+    // oxlint-disable-next-line react/exhaustive-deps -- slides out once, when closing turns on
+  }, [closing]);
   return (
     <Portal>
       <div

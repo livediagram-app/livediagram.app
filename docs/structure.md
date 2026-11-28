@@ -67,7 +67,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script, header and HTML sanitiser every app's pages share
 │  ├─ ui                       the design system: buttons, fields, dialogs, menus, the back bar, hints, optical primitives, hooks,
-│  │                           chrome icons, appearance, browser repair and the site chrome a product binds
+│  │                           chrome icons, appearance, browser repair, voice input on AI prompt fields and the site chrome a product binds
 │  ├─ vector-export            the PDF writer every product's export loads on demand: SVG drawn as vectors, letters outlined, a text layer, tags
 │  ├─ walkthrough              recorded narrations in the four canvas apps: the recorder, the event timeline, the player, the Tools row and its panel, the dock and the bubble
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends

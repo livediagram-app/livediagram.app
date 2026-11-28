@@ -2,11 +2,13 @@
 
 // The open card's history (docs/specs/026-plan/items.md "History", blueprint item-store.md "History"): read when its
 // panel shows activity, and again, after a short pause, whenever the card changes (its `rev` moves: someone's write,
-// or yours). An answer for a card no longer shown is dropped. An offline plan keeps none ('offline').
+// or yours) or this screen writes its history without changing it (a session's Skip). An answer for a card no longer
+// shown is dropped. An offline plan keeps none ('offline').
 
 import { useEffect, useRef, useState } from 'react';
 import type { ItemHistoryEntry } from '@liveplanner/items';
 import { fetchItemHistory } from '@/lib/api/item-history';
+import { onHistoryWritten } from '@/lib/api/history-written';
 import type { ItemsScope } from '@/lib/api/items';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
@@ -35,6 +37,14 @@ export function useCardHistory(opts: {
     entries: readonly ItemHistoryEntry[];
   }>({ status: 'idle', entries: NONE });
   const [attempt, setAttempt] = useState(0);
+  // Bumped when this card's history is written without its `rev` moving: read again, after the pause.
+  const [written, setWritten] = useState(0);
+  useEffect(() => {
+    if (!enabled) return;
+    return onHistoryWritten((id) => {
+      if (id === itemId) setWritten((n) => n + 1);
+    });
+  }, [enabled, itemId]);
   // Whether this card's history has been read once: the first read goes at once, later ones after the pause.
   const readFor = useRef<string | null>(null);
 
@@ -67,7 +77,7 @@ export function useCardHistory(opts: {
       live = false;
       if (timer) clearTimeout(timer);
     };
-  }, [enabled, scope, itemId, rev, attempt]);
+  }, [enabled, scope, itemId, rev, attempt, written]);
 
   return {
     status: enabled && scope ? state.status : 'idle',

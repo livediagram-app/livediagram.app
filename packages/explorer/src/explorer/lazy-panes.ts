@@ -51,6 +51,11 @@ export const DetailsView = lazyPanel(
   { fallback: SkeletonRows },
 );
 
+/** The phone's sidebar drawer, opened from the sections bar: only a phone's tap draws it. */
+export const SectionsDrawer = lazyPanel('sections-drawer', () =>
+  import('./SectionsDrawer').then((m) => m.SectionsDrawer),
+);
+
 const PANES = [
   InboxPane,
   InvitesPane,
@@ -61,6 +66,7 @@ const PANES = [
   TrashPane,
   ArchivedIntro,
   DetailsView,
+  SectionsDrawer,
   LensBar,
   FilteredEmpty,
 ];

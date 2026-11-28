@@ -49,12 +49,14 @@ export function resolveFormTab(
   return { ok: true, tab };
 }
 
-// A question by id, else by its prompt (case and spaces aside); two prompts alike are ambiguous.
+// A question by id, else by its prompt (case and spaces aside); two prompts alike are ambiguous. An id may come in
+// the brackets a form's read writes it in ("[q-sev]").
 export function resolveQuestion(
   form: FormDefinition,
-  ref: string,
+  named: string,
 ): Named<{ question: FormQuestion }> {
   const all = questionsOf(form);
+  const ref = /^\s*\[[^\]]+\]\s*$/.test(named) ? named.trim().slice(1, -1).trim() : named;
   const byId = all.find((q) => q.id === ref);
   if (byId) return { ok: true, question: byId };
   const matches = all.filter((q) => same(promptOf(q), ref));

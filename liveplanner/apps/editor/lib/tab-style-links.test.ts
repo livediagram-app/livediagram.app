@@ -1,9 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { setBoardConfiguring, useBoardConfiguring } from '@/hooks/plan/board-configure-store';
 import {
-  BOARD_CONFIGURE_LINK,
   DASHBOARD_SETTINGS_LINK,
   FORM_SETTINGS_LINK,
   SHEET_SETTINGS_LINK,
@@ -14,18 +11,9 @@ import { takeOpenOn } from './settings-open-on';
 // opens the setting that really styles it.
 afterEach(() => {
   document.body.innerHTML = '';
-  setBoardConfiguring(false);
 });
 
 describe('the Tab Style links', () => {
-  it("opens the board's Configure", () => {
-    const { result, rerender } = renderHook(() => useBoardConfiguring());
-    expect(result.current).toBe(false);
-    BOARD_CONFIGURE_LINK.onOpen();
-    rerender();
-    expect(result.current).toBe(true);
-  });
-
   it("presses the Sheet's, the Form's and the Dashboard's own cog", () => {
     document.body.innerHTML = `
       <div data-plan-sheet="s"><button aria-label="Sheet Settings"></button></div>

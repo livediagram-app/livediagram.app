@@ -335,6 +335,7 @@ export * from './flow';
 // Tier limits (docs/specs/026-plan/automations.md "Tiers").
 export * from './tiers';
 export * from './automations';
+export * from './plan-ai';
 export * from './plan-drafts';
 export * from './form-drafts';
 export * from './github';

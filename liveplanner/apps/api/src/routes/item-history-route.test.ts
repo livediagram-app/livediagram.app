@@ -282,3 +282,97 @@ describe('who may read it', () => {
     expect((await call('POST', `/items/${bug.id}/history`, {})).status).toBe(405);
   });
 });
+
+// A Session tab's outcome (docs/specs/026-plan/session-tabs.md "History"): its own entry, tagged `session`, written
+// by POST /items/:itemId/session, an Editor's alone, nothing on the card changed.
+describe('a session outcome', () => {
+  const outcome = (itemId: string, body: unknown, who: Who = {}) =>
+    call('POST', `/items/${itemId}/session`, body, who);
+
+  it('keeps each outcome as a session entry, writing nothing on the card', async () => {
+    const card = await make({ title: 'Login', status: 'todo' });
+    tick();
+    const skipped = await outcome(card.id, { session: 'refinement', outcome: 'skipped' });
+    expect(skipped.status).toBe(204);
+    tick();
+    await outcome(card.id, { session: 'refinement', outcome: 'refined' });
+    const entries = (await history(card.id)).body.entries;
+    expect(entries.map((e) => [e.tag ?? '', e.changes])).toEqual([
+      ['session', [{ kind: 'session', session: 'refinement', outcome: 'refined' }]],
+      ['session', [{ kind: 'session', session: 'refinement', outcome: 'skipped' }]],
+      ['', [{ kind: 'created', status: 'todo' }]],
+    ]);
+    const list = await call<ItemsResponse>('GET', '/items');
+    expect(list.body.items.find((i) => i.id === card.id)?.rev).toBe(card.rev);
+  });
+
+  it('keeps a Sprint Planning commit, and refuses an outcome its kind does not offer', async () => {
+    const card = await make({ title: 'Export', status: 'todo' });
+    tick();
+    expect((await outcome(card.id, { session: 'planning', outcome: 'committed' })).status).toBe(
+      204,
+    );
+    expect((await outcome(card.id, { session: 'planning', outcome: 'refined' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    expect((await outcome(card.id, { session: 'refinement', outcome: 'committed' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    const entries = (await history(card.id)).body.entries;
+    expect(entries[0]?.changes).toEqual([
+      { kind: 'session', session: 'planning', outcome: 'committed' },
+    ]);
+  });
+
+  it('refuses an unknown session kind or outcome, a missing card and anyone below Editor', async () => {
+    const card = await make({ title: 'Login' });
+    expect((await outcome(card.id, { session: 'standup', outcome: 'refined' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'session',
+    });
+    expect((await outcome(card.id, { session: 'refinement', outcome: 'done' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    const gone = await outcome('nope', { session: 'refinement', outcome: 'refined' });
+    expect(gone.status).toBe(404);
+    const part = await outcome(
+      card.id,
+      { session: 'refinement', outcome: 'refined' },
+      { owner: 'visitor', code: 'PART' },
+    );
+    expect(part.status).toBe(403);
+    expect((await call('GET', `/items/${card.id}/session`)).status).toBe(405);
+    expect(await kinds(card.id)).toEqual([['', ['created']]]);
+  });
+
+  it('confines a tab-scoped Editor link to the cards its tab shows, and refuses a body that is not JSON', async () => {
+    const card = await make({ title: 'Login' });
+    const elsewhere = await make({ title: 'Signup' });
+    sql.sql.prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'`).run(
+      JSON.stringify({
+        elements: [
+          {
+            id: 'c1',
+            type: 'shape',
+            shape: 'plan-card',
+            x: 0,
+            y: 0,
+            width: 240,
+            height: 120,
+            planCard: { itemId: card.id },
+          },
+        ],
+      }),
+    );
+    const who = { owner: 'visitor', code: 'TAB1' };
+    const body = { session: 'refinement', outcome: 'refined' };
+    expect((await call('POST', `/items/${card.id}/session?tabId=t1`, body, who)).status).toBe(204);
+    expect((await call('POST', `/items/${elsewhere.id}/session?tabId=t1`, body, who)).status).toBe(
+      404,
+    );
+    expect((await call('POST', `/items/${card.id}/session`, '[1]')).status).toBe(400);
+  });
+});

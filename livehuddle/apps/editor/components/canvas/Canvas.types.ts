@@ -313,12 +313,6 @@ export type CanvasProps = {
   // display name is fixed to their account name: IdentityPrompt
   // locks the input.
   identityLockedName?: string | null;
-  // Hides the floating chrome (palette, explorer, zoom + history dock,
-  // plus buttons, selection popover) while the first-run welcome modal
-  // is taking the user through identity / template / theme selection.
-  // Keeps the canvas surface visible (so the modal isn't floating on a
-  // blank page) but free of distracting controls.
-  welcomeOpen: boolean;
   selfParticipant: import('@/lib/identity').Participant;
   // The name prompt's Join (the name typed) and Cancel.
   onConfirmIdentity: (name: string) => void;

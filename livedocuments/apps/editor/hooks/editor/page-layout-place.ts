@@ -1,13 +1,13 @@
-// A layout placed on a page (docs/specs/007-editor/pages-mode.md "Layouts", "Hover previews the layout on the
-// page"): the one path both a press and a hover take, so what a hover shows is what a press lands (Work Tracker 1502).
-// The layout is built for the page with the page's own words and pictures carried in, coloured from the tab's theme
-// for the page's half (themedForTab), and put in place of everything on the page (pageLaidOut). Pure.
+// A layout placed on a page (docs/specs/007-editor/pages-mode.md "Layouts", "Hover previews the layout on the page,
+// exactly as it lands"): the one path both a press and a hover take, so what a hover shows is what a press lands
+// (Work Tracker 1502). The layout is built for the page with the page's own words and pictures carried in, coloured
+// from the tab's theme for the page's half (themedForTab), and put in place of everything on the page (pageLaidOut).
 //
-// A hover hands the result to the canvas, which draws it in place of the tab's elements through the whole path a
-// placed page takes (EditorCanvasHost: each element inked for its page, in the viewer's half, its words re-inked for
-// what is behind them), and it is remembered here; a press on the layout it shows then commits those very elements,
-// so not even an id differs. Anything else
-// (the page changed since, another layout, no hover first) is placed afresh by the same function.
+// The hover, the press and what the canvas draws meanwhile are livedesign's too: one copy in the workbench
+// (createPageLayoutPreview, liveworkspace/docs/specs/011-workbench/page-layout-preview.md), given this placer and the
+// builders. A hover's result is drawn in place of the tab's elements through the whole path a placed page takes
+// (EditorCanvasHost: each element inked for its page, in the viewer's half, its words re-inked for what is behind
+// them), and a press on the layout it shows commits those very elements.
 import {
   elementsOnPage,
   layOutPages,
@@ -20,8 +20,8 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
-import { useSyncExternalStore } from 'react';
-import { createListeners } from '@liveworkspace/workbench/lib/listeners';
+import { createPageLayoutPreview } from '@liveworkspace/workbench/lib/page-layout-preview';
+import { track } from '@/lib/telemetry';
 
 /** The layout builder (buildPageLayoutOver), handed in: it loads on first use rather than with the editor. */
 export type LayoutBuild = (
@@ -30,7 +30,7 @@ export type LayoutBuild = (
   previous: readonly Element[],
 ) => Element[];
 
-/** The tab with `layout` placed on page `pageId`, or null when the page is gone or locked. */
+/** The tab with `layout` placed on page `pageId`, or null when the page is gone or locked. Pure. */
 export function layoutPlacedTab(
   tab: Tab,
   pageId: string,
@@ -48,48 +48,16 @@ export function layoutPlacedTab(
   return 'tab' in out ? out.tab : null;
 }
 
-// The layout a hover is showing: on which tab and page, over which board, and the board it shows.
-type Shown = {
-  tabId: string;
-  pageId: string;
-  layout: PageLayoutId;
-  over: readonly Element[];
-  elements: Element[];
-};
-let shown: Shown | null = null;
-const listeners = createListeners();
-
-/** Shows a hovered layout (the canvas draws `elements` in place of the tab's own), or puts the tab back (null). */
-export function showLayout(next: Shown | null): void {
-  if (next === shown) return;
-  shown = next;
-  listeners.notify();
-}
-
-/** What the canvas draws for tab `tabId` while a layout is hovered: the tab with it placed; else null. */
-export function useShownLayoutElements(tabId: string): Element[] | null {
-  return useSyncExternalStore(
-    listeners.subscribe,
-    () => (shown?.tabId === tabId ? shown.elements : null),
-    () => null,
-  );
-}
-
-/** The hovered layout's board for a tab, read outside React (tests); null when none shows. */
-export function shownLayoutElements(tabId: string): Element[] | null {
-  return shown?.tabId === tabId ? shown.elements : null;
-}
-
-/** The elements a press on `layout` lands: those the hover showed, while it showed this layout on this page over this
- *  very board; else null, to be placed afresh. */
-export function shownLayoutFor(
-  tabId: string,
-  pageId: string,
-  layout: PageLayoutId,
-  over: readonly Element[],
-): Element[] | null {
-  const s = shown;
-  return s && s.tabId === tabId && s.pageId === pageId && s.layout === layout && s.over === over
-    ? s.elements
-    : null;
-}
+// Every page layout set, loaded on the first hover or press, kept out of the editor's first load.
+export const {
+  showLayout,
+  useShownLayoutElements,
+  shownLayoutElements,
+  shownLayoutFor,
+  pageLayoutEdits,
+} = createPageLayoutPreview<Tab, PageLayoutId, LayoutBuild>({
+  load: () =>
+    import('@livedocuments/templates/page-layout-build').then((m) => m.buildPageLayoutOver),
+  place: layoutPlacedTab,
+  onPlace: () => track('Tab', 'Changed', 'PageLayout'),
+});

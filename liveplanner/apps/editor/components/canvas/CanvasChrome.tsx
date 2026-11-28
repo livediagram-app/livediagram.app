@@ -31,6 +31,7 @@ const BoardConfigureDialog = dynamic(
 import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
+import { PlanAiButton } from '@/components/plan-ai/PlanAiButton';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import {
   SessionClusterStrip,
@@ -225,8 +226,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
     configuring && configurableBoard
       ? elements.find((e): e is ShapeElement => e.id === configurableBoard && e.type === 'shape')
       : undefined;
-  // A Dashboard's or a Form tab's page covers the canvas as a page, not an element.
-  const elementCovers = canvasCovered && tabPlanKind !== 'dashboard' && tabPlanKind !== 'form';
+  // A Dashboard's, a Form tab's or a Session tab's page covers the canvas as a page, not an element.
+  const elementCovers =
+    canvasCovered &&
+    tabPlanKind !== 'dashboard' &&
+    tabPlanKind !== 'form' &&
+    tabPlanKind !== 'session';
   const clusterInset = elementCovers
     ? COVERED_CLUSTER_INSET
     : canvasCovered && tabPlanKind === 'form' && !isMobile
@@ -239,6 +244,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const planStripFolded = isMobile && !!(props.sessionTools && stripTools);
   // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
   const tabShowsCards = useTabShowsCards(elements);
+  // Beside the Session strip on a phone the AI button joins the folded Plan strip's menu, so a voting board's cluster
+  // stays one row (docs/specs/026-plan/plan-ai.md "The button"). Only an editor has that menu (Card Types).
+  const aiFolds = planStripFolded && tabShowsCards && !readOnly && !!tabPlanKind;
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
   usePublishCardTypesTaken(elements);
   // Panel elements + their wiring live in useCanvasChromePanels.
@@ -248,6 +256,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     collaborateEl,
     cardTypesPopoverEl,
     trashPopoverEl,
+    planAiPopoverEl,
     sessionPopoverEl,
   } = useCanvasChromePanels({
     props,
@@ -362,6 +371,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : collaborateEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
+      {zenMode ? null : planAiPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
 
@@ -447,6 +457,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 />
               </div>
             ) : null}
+            {/* The AI button (docs/specs/026-plan/plan-ai.md "The button"): left of the Plan strip, on a Board,
+              Sheet, Form or Dashboard tab. */}
+            {!zenMode && tabPlanKind && !aiFolds ? (
+              <PlanAiButton
+                open={activeDockPanel === 'plan-ai'}
+                onToggle={(button) => handleDockButtonClick('plan-ai', button, true)}
+              />
+            ) : null}
             {/* Card Types and the Trash (docs/specs/026-plan/item-types.md): one strip,
               while the tab has something that shows cards ("The Plan strip"). */}
             {!zenMode && tabShowsCards ? (
@@ -461,6 +479,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       }
                 }
                 folded={planStripFolded}
+                ai={
+                  aiFolds
+                    ? {
+                        open: activeDockPanel === 'plan-ai',
+                        onToggle: (button) => handleDockButtonClick('plan-ai', button, true),
+                      }
+                    : undefined
+                }
                 // The Trash leads the strip for an editor, off a phone or in its folded menu (docs/specs/026-plan/items.md "Trash").
                 trash={
                   !readOnly && (!isMobile || planStripFolded)

@@ -12,6 +12,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal, useClickOutside } from '@liveworkspace/ui';
 import { announceToastFloorChange } from '@liveworkspace/ui/toast';
+import { voiceInputListening } from '@liveworkspace/ui/voice-input';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
 import { usePopoverLayer } from './popover-stack';
 
@@ -208,9 +209,9 @@ export function AnchoredPopover({
 
   // Escape closes this panel only, before the dialog's own Escape, and only while it is the top popover
   // (popover-stack.ts): a popover it opened (a colour picker, a ConfirmPopover) takes Escape first, and this one
-  // stays.
+  // stays. A listening microphone inside keeps its Escape (it stops listening only: voice-input.md "Stopping").
   const { withinAbove } = usePopoverLayer(panel, (e) => {
-    if (e.key !== 'Escape' || passRef.current?.()) return;
+    if (e.key !== 'Escape' || passRef.current?.() || voiceInputListening()) return;
     e.stopPropagation();
     e.preventDefault();
     if (escapeRef.current?.()) return;

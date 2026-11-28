@@ -1444,6 +1444,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/projects/{id}/items/{itemId}/session',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      "Record a Session tab's outcome for a card (refined, skipped or flagged in a Refinement session) in the card's history, as an entry tagged session. Nothing on the card is written: the move or flag an outcome makes is its own write. Needs edit access.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemSessionRequest',
+    statuses: [204, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
     path: '/projects/{id}/items/{itemId}/time',
     segment: 'projects',
     tag: 'Items',
@@ -2371,6 +2384,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
 
   // ---- Account ----
+  {
+    method: 'POST',
+    path: '/plan-ai',
+    segment: 'plan-ai',
+    tag: 'Plans',
+    summary:
+      'Plan AI: an instruction or question (up to 1,000 characters) about one Board, Sheet, Form or Dashboard tab, sent as the editor reads it, answered with words and the changes the caller’s role on the plan may make, for the editor to make as the person’s own edits. Runs on the caller’s own AI key, or their team’s, unless built-in AI is picked, else on built-in AI, sharing Ask’s 30 questions a day. Nothing is saved. Signed in only (a guest is refused).',
+    auth: 'clerk',
+    statuses: [200, 400, 401, 403, 405, 422, 429, 503],
+  },
   {
     method: 'POST',
     path: '/plan-drafts',

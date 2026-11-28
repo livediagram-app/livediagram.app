@@ -95,6 +95,7 @@ const TOOL_SURFACES =
 
 // Escape is left alone while a modal dialog is open (one a tool opened over Tools),
 // or focus is in a part of a tool that takes Escape itself (a row's in-place confirm, `data-keeps-escape`).
+// (A listening microphone keeps its Escape in AnchoredPopover and PhoneDrawer themselves.)
 const modalOpen = () =>
   !!document.querySelector('[data-dialog-panel]') ||
   !!document.activeElement?.closest('[data-keeps-escape]');
@@ -546,11 +547,11 @@ export function ChromeToolsMenu({
                   </>
                 )}
               </AnimatedHeightBox>
-              {/* The close in the top right corner, as a popover's is, not centred down the band's row: on the list and
-              on a tool alike. Last in the DOM, so opening focuses the first tool (or the band's back button), not the
-              close. */}
-              <div className="absolute right-3 top-3">
-                <DialogCloseButton compact onClick={shut} />
+              {/* The close in the band's top right, on the list and on a tool alike: the 44px circle centres on the
+              100px band's row (top-7) and keeps its inset (right-4, sm:right-6), as a hero header's own close does.
+              Last in the DOM, so opening focuses the first tool (or the band's back button), not the close. */}
+              <div className="absolute right-4 top-7 sm:right-6">
+                <DialogCloseButton onClick={shut} />
               </div>
             </div>
           )}

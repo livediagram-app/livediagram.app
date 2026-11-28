@@ -25,3 +25,29 @@
 - [x] Presentation and UX
 - [x] Accessibility
 - [x] Testing
+
+## close-button
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [ ] Data and persistence (nothing is stored; the close is presentation)
+- [x] Errors and edge cases
+- [ ] Security and trust (no new input or boundary)
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Testing
+
+## voice-input
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [ ] Data and persistence (nothing is stored; the words go into the host field)
+- [x] Errors and edge cases
+- [x] Security and trust (no new boundary; the browser asks for the microphone, and the help says its speech service may hear the sound)
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Testing

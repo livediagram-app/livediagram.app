@@ -82,6 +82,19 @@ describe('changeLine', () => {
       'Changed the type Task → unknown-type',
     );
     expect(words({ kind: 'set', field: 'description' })).toBe('Edited the Description');
+    // A Session tab's outcomes (docs/specs/026-plan/session-tabs.md "History").
+    expect(
+      (['refined', 'skipped', 'flagged'] as const).map((outcome) =>
+        words({ kind: 'session', session: 'refinement', outcome }),
+      ),
+    ).toEqual([
+      'Refined this in a Refinement session',
+      'Skipped this in a Refinement session',
+      'Flagged this in a Refinement session',
+    ]);
+    expect(words({ kind: 'session', session: 'planning', outcome: 'committed' })).toBe(
+      'Committed this in a Sprint Planning session',
+    );
     expect(words({ kind: 'set', field: 'title', value: 'New name' })).toBe(
       'Renamed this card to “New name”',
     );
@@ -142,6 +155,7 @@ describe('changeLine', () => {
     expect(glyph({ kind: 'archived' })).toBe('archive');
     expect(glyph({ kind: 'flagged' })).toBe('flag');
     expect(glyph({ kind: 'type', from: 'a', to: 'b' })).toBe('type');
+    expect(glyph({ kind: 'session', session: 'refinement', outcome: 'refined' })).toBe('session');
     expect(glyph({ kind: 'set', field: 'title', value: 'x' })).toBe('renamed');
     expect(glyph({ kind: 'set', field: 'due', value: '2026-01-01' })).toBe('edited');
     expect(glyph({ kind: 'cleared', field: 'due' })).toBe('cleared');

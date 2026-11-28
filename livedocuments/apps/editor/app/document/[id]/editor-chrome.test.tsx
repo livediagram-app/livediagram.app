@@ -316,6 +316,27 @@ describe('the chrome store', () => {
   });
 });
 
+// Work Tracker 1522 (docs/specs/007-editor/new-document-route.md): a guest's Change Name opens the name card over
+// the canvas and nothing more. The header and the tab bar stay up while it shows and after it closes;
+// `anyWelcomeOpen` only holds the tours.
+describe("a guest's name card", () => {
+  it('leaves the header and the tab bar as they are, open and closed', () => {
+    const guest = { ...base, isOwner: false, canShareDocument: false } as EditorContextValue;
+    const chromeUp = () => {
+      expect(screen.getByRole('heading').textContent).toBe('Corner');
+      expect(screen.getByRole('navigation')).toBeTruthy();
+    };
+    const { rerender } = render(<Page value={{ ...guest, identityTrayOpen: true }} />);
+    chromeUp();
+    // Change Name: the tray gives way to the card.
+    rerender(<Page value={{ ...guest, identityOnlyScreenOpen: true, anyWelcomeOpen: true }} />);
+    chromeUp();
+    // Join or Cancel: the card closes, the name confirmed.
+    rerender(<Page value={guest} />);
+    chromeUp();
+  });
+});
+
 describe('a tab-scoped link', () => {
   // Work Tracker 946: the scope is set after mount (the share-code bootstrap), and the bar marks the other tabs then.
   // It subscribes to `isOutOfScope`, which useTabScope makes afresh only when the scope changes.

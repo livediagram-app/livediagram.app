@@ -6,6 +6,7 @@ import type { TagColour } from '@liveworkspace/element-model/tag-colours';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
 import type { TabTimer, TabVote } from './session';
+import type { SessionTabState } from './session-tab';
 import type { Layer } from './layers';
 import type { Finish } from '@liveworkspace/element-model/finish';
 import type { BackgroundPattern } from './retired-patterns';
@@ -31,6 +32,9 @@ export type Tab = {
   dashboard?: DashboardLayout;
   // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @liveplanner/forms.
   form?: FormDefinition;
+  // A Session tab's queue, place, outcomes and facilitator (docs/specs/026-plan/session-tabs.md), read via
+  // `readSessionTab` (./session-tab). Not the session tools below (`timer`, `vote`), which every tab keeps.
+  session?: SessionTabState;
   // The colours someone picked with + in a colour picker on this tab, newest first, lower-case
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the project offers them as Custom Colours.

@@ -68,7 +68,6 @@ export const CANVAS_CHROME_PROP_KEYS = [
   'tabThemeId',
   'takePart',
   'userPreferences',
-  'welcomeOpen',
   'workbenchBack',
   'zenMode',
 ] as const satisfies readonly (keyof CanvasProps)[];

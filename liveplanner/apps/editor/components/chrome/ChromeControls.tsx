@@ -3,6 +3,7 @@ import { ToastBell } from '@liveworkspace/ui/toast';
 import {
   CHROME_BTN,
   CHROME_BTN_LABELLED,
+  CHROME_PHONE_HIDDEN_PAIR,
   ChromeLabel,
 } from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
@@ -75,10 +76,9 @@ export function ChromeControls({
         </button>
       ) : null}
       {/* The notification list (liveworkspace/docs/specs/016-notifications/toasts.md): an icon alone, right of
-          Settings; toasts collapse into it as they leave. */}
-      {/* The bell and the light / dark switch sit as a pair, 4px apart rather than the bar's 12px (the owner,
-          2026-11-20). */}
-      <span className="inline-flex shrink-0 items-center">
+          Settings; toasts collapse into it as they leave, and fade where they are on a phone, which has none. */}
+      {/* The bell and the light / dark switch, a pair; a phone's bar leaves both out (CHROME_PHONE_HIDDEN_PAIR). */}
+      <span className={CHROME_PHONE_HIDDEN_PAIR}>
         <ToastBell className={CHROME_BTN} />
         {appearance ? <AppearanceToggle /> : null}
       </span>

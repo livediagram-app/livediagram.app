@@ -227,7 +227,6 @@ export function EditorView() {
     slideDeck,
     activeId,
     activeTab,
-    anyWelcomeOpen,
     embedMode,
     // The app's surroundings, and the workbench session (docs/specs/013-workspace/blueprints/
     // workbench-embeds.md, Surface table).
@@ -396,7 +395,7 @@ export function EditorView() {
       />
     );
   const footer =
-    anyWelcomeOpen || zenMode || embedMode ? null : (
+    zenMode || embedMode ? null : (
       <EditorViewFooter
         isOffline={isOffline}
         onSelectTab={selectTab}
@@ -405,7 +404,7 @@ export function EditorView() {
     );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in zen, an embed, the workbench frame, the welcome flow or a
+  // where there are bars to fold (not in zen, an embed, the workbench frame or a
   // running presentation).
   const landscapeBarsHandle =
     header && footer && slideDeck.presentingAt === null ? (
@@ -550,7 +549,7 @@ export function EditorView() {
                                     >
                                       {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
                                       {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
-                                      {ctx.activeTabConnected && !anyWelcomeOpen ? (
+                                      {ctx.activeTabConnected && !ctx.identityOnlyScreenOpen ? (
                                         <ConnectedTabHost />
                                       ) : (
                                         <SuppressElementIndicators when={embedMode}>

@@ -16,7 +16,7 @@ import { SettingsSignInLink } from '@liveworkspace/workbench/components/dialogs/
 export const SETTINGS_KIT: SettingsUiKit = {
   Glyph,
   SearchInput,
-  CloseButton: ({ onClick }) => <DialogCloseButton compact onClick={onClick} />,
+  CloseButton: ({ onClick }) => <DialogCloseButton onClick={onClick} />,
   NoMatches,
   HelpLink: ({ article }) => <HelpArticleLink article={article as HelpArticleKey} variant="text" />,
   SignInLink: SettingsSignInLink,

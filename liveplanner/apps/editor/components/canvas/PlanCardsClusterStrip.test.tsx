@@ -82,6 +82,57 @@ describe('the Plan strip folded on a phone', () => {
     expect(screen.queryByRole('menuitem')).toBeNull();
   });
 
+  // docs/specs/026-plan/plan-ai.md "The button": beside the Session strip on a phone the AI button folds in too, first.
+  it('lists AI first when it folds in, opening its panel above the button', () => {
+    dock.names = false;
+    const ai = vi.fn();
+    render(
+      <PlanCardsClusterStrip
+        folded
+        ai={{ open: false, onToggle: ai }}
+        types={{ open: false, onToggle: () => {} }}
+        trash={{ open: false, onToggle: () => {} }}
+      />,
+    );
+    const more = screen.getByRole('button', { name: 'More card tools' });
+    fireEvent.click(more);
+    expect(screen.getAllByRole('menuitem').map((r) => r.textContent)).toEqual([
+      'AI',
+      'Card Types',
+      'Trash',
+    ]);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'AI' }));
+    expect(ai).toHaveBeenCalledWith(more);
+  });
+
+  it('closes the open AI panel from the More button', () => {
+    dock.names = false;
+    const ai = vi.fn();
+    render(
+      <PlanCardsClusterStrip
+        folded
+        ai={{ open: true, onToggle: ai }}
+        types={{ open: false, onToggle: () => {} }}
+      />,
+    );
+    const more = screen.getByRole('button', { name: 'More card tools' });
+    expect(more.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(more);
+    expect(ai).toHaveBeenCalledWith(more);
+    expect(screen.queryByRole('menuitem')).toBeNull();
+  });
+
+  it('keeps AI out of the unfolded strip', () => {
+    dock.names = false;
+    render(
+      <PlanCardsClusterStrip
+        ai={{ open: false, onToggle: () => {} }}
+        types={{ open: false, onToggle: () => {} }}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /AI/ })).toBeNull();
+  });
+
   // A press on a row reaches only the menu: bubbling up the React tree to the canvas would take the focus and shut the
   // menu before the row's click, so no row would open.
   it('keeps a press on a row from reaching the canvas under it', () => {

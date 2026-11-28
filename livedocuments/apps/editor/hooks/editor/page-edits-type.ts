@@ -1,13 +1,15 @@
 // What the page panel can do to a Pages tab's pages (docs/specs/007-editor/pages-mode.md), as pageEdits
 // (page-edits.ts) builds it. Split out of page-edits.ts, which re-exports it.
-import type { LayoutPreviewAsk } from './layout-preview-settle';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import type {
   PageBackground,
   PageKind,
   PageOrientation,
   PageSizeId,
 } from '@livedocuments/document';
+import type { PageDraft } from '@livedocuments/api-schema';
 import type { PageLayoutId } from '@livedocuments/templates';
+import type { DraftEngine } from './page-draft-edit';
 import type { BackgroundCopyEdits } from './pages-background-copy-edits';
 import type { CardSplitState } from './page-split-edits';
 
@@ -29,6 +31,10 @@ export type PageEdits = BackgroundCopyEdits & {
   // Absent at the page limit.
   // Right after `after` (Contents' page here) when given, else right after `pageId`.
   addPageLike?: (pageId: string, after?: string) => void;
+  // Describe a Page (docs/specs/007-editor/describe-a-page.md): the page the api drafted, made as Add Page makes the
+  // next one (right after `after`, else the page someone is on), laid out and written through the agents' engine, one
+  // edit. False when it could not land. Absent at the page limit.
+  addDraftedPage?: (draft: PageDraft, engine: DraftEngine, after?: string) => boolean;
   // A new page like `pageId` straight above or below its unit (Contents' Insert Page Above and Below). Absent at the
   // page limit.
   insertPageLike?: (pageId: string, where: 'above' | 'below') => void;
