@@ -41,8 +41,8 @@ const MODEL_BY_KIND: ReadonlyMap<string, ModelTable[string]> = new Map(Object.en
 /** Builds a piece's model in its frame. */
 export function buildModel(kind: string, c: ModelContext): Builder {
   const m = new Builder();
-  const model = MODEL_BY_KIND.get(kind);
-  if (model) model(m, c);
+  const model = Object.hasOwn(MODELS, kind) ? MODEL_BY_KIND.get(kind) : undefined;
+  if (typeof model === 'function') model(m, c);
   else if (isWallPieceShape(kind)) {
     // Hung on a wall: a panel against the wall behind it, at eye height.
     const { x0, x1 } = c.f.foot;
