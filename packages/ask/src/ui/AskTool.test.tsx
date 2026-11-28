@@ -153,6 +153,16 @@ describe('Ask AI, the conversation', () => {
     expect(screen.getByRole('button', { name: 'Stop' })).toBeTruthy();
   });
 
+  it('positions its thread scroller, so the screen-reader labels inside never stretch the Tools popover', () => {
+    // An sr-only label is absolutely positioned: with no positioned scroller it is placed against the popover and
+    // grows its scroll height, so the whole popover scrolled under a wheel and the question box left the foot
+    // (Work Tracker 1531 verifier).
+    const { container } = render(<AskTool host={hostOf()} ctx={ctx} />);
+    const thread = container.querySelector('[data-ask-tool] > div');
+    expect(thread?.className).toMatch(/(^|\s)relative(\s|$)/);
+    expect(thread?.className).toContain('overflow-y-auto');
+  });
+
   it('sends on Enter, streams as text, then draws the answer with its chips, sources and who answered', async () => {
     render(<AskTool host={hostOf()} ctx={ctx} />);
     type('What happens on a timeout?');
