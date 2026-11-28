@@ -10,12 +10,12 @@ const ReviewIcon = lucideGlyph(lucidePresentation, 11);
 
 export function ReviewFeedbackMark() {
   return (
-    <p
+    <span
       data-comment-review=""
-      className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-sky-50 px-1.5 py-px text-[10px] font-medium text-sky-800 dark:bg-sky-500/15 dark:text-sky-200"
+      className="mt-0.5 flex w-fit items-center gap-1 rounded-full bg-sky-50 px-1.5 py-px text-[10px] font-medium text-sky-800 dark:bg-sky-500/15 dark:text-sky-200"
     >
       <ReviewIcon aria-hidden />
-      Review Feedback
-    </p>
+      <span className="text-optical-line">Review Feedback</span>
+    </span>
   );
 }
