@@ -85,6 +85,9 @@ between tools, never in a modal of its own on top of the editor.
 - **Every tool is the list's height** (owner, 2026-11-17). Opening a tool keeps Tools exactly as tall as its list:
   a short tool fills it, its main buttons at the very bottom, and a long one scrolls inside it with those buttons
   pinned and always in view. Tools never jumps in height as you move between the list and a tool.
+- **Tools fits the window** (Work Tracker 1531). On a short window (1280 by 720, or less) Tools and every tool in it are
+  no taller than the room above the Tools button: the tool's own content scrolls and its foot (Ask AI's question box
+  with Send and the microphone, a tool's main button) stays in view, never cut off below the popover's edge.
 - **A tool loads in its empty shape** (owner, 2026-11-17: opening a tool juddered). Most tools open empty, so while a
   tool's code or data loads it draws its explainer's skeleton (the art's frame, the heading, two lines, the steps)
   with its footer and a button's place pinned at the foot (`ToolSkeleton`, `ToolExplainerSkeleton` in
