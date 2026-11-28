@@ -12,6 +12,8 @@ import {
   standupThreadTitle,
 } from './standup-words';
 import { withPersonOrder } from './PeopleOrderPart';
+import { BlockedDialog } from './BlockedDialog';
+import { StandupActionBar } from './StandupActionBar';
 
 // docs/specs/026-plan/session-tabs.md "Stand-up": its words, the day's thread, the blockers and the comment strip.
 afterEach(cleanup);
@@ -87,5 +89,52 @@ describe('the comment strip', () => {
     expect(screen.getByPlaceholderText('Add a note to WI-1')).toBeTruthy();
     expect(screen.getByText('Add Comment')).toBeTruthy();
     expect(screen.queryByRole('status')).toBeNull();
+  });
+});
+
+describe('StandupActionBar', () => {
+  const props = {
+    runs: true,
+    holderName: 'You',
+    name: 'Ana',
+    line: 'Ana · card 1 of 2',
+    cardRef: 'WI-1',
+    flagged: false,
+    stage: 'doing',
+    stages: ['doing', 'done'],
+    statusName: (id: string) => id.toUpperCase(),
+    doneBy: null,
+    timebox: { leftMs: 65_000, totalMs: 120_000, up: false },
+    last: null,
+    onBlocked: vi.fn(),
+    onStage: vi.fn(),
+    onDone: vi.fn(),
+    onUndoDone: vi.fn(),
+  };
+
+  it('counts the person’s time down, then says time is up', () => {
+    const { rerender } = render(<StandupActionBar {...props} />);
+    expect(screen.getByRole('timer').textContent).toBe('1:05');
+    rerender(<StandupActionBar {...props} timebox={{ leftMs: 0, totalMs: 120_000, up: true }} />);
+    expect(screen.getByRole('timer').getAttribute('aria-label')).toBe('Time’s up');
+  });
+
+  it('names who runs the session for anyone else', () => {
+    render(<StandupActionBar {...props} runs={false} holderName="Sam" />);
+    expect(screen.getByRole('status').textContent).toBe('Sam is running this session');
+  });
+});
+
+describe('BlockedDialog', () => {
+  it('takes a typed reason, trimmed, and confirms only with one', () => {
+    const onConfirm = vi.fn();
+    const item = { id: 'a', type: 't', key: 1, rank: 'a', fields: { title: 'Card A' } } as never;
+    render(<BlockedDialog item={item} cardRef="WI-1" onCancel={vi.fn()} onConfirm={onConfirm} />);
+    const box = screen.getByRole('textbox', { name: /in the way/ });
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(onConfirm).not.toHaveBeenCalled();
+    fireEvent.change(box, { target: { value: '  Sandbox keys  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Mark Blocked' }));
+    expect(onConfirm).toHaveBeenCalledWith('Sandbox keys');
   });
 });
