@@ -33,5 +33,6 @@ the Explorer, whose liveworkspace.app pages link `/manifest.webmanifest` relativ
 
 ## On iPhone and iPad
 
-Safari gives a page Web Push only once it is on the Home Screen and opened from there. Settings says so in place of
-Turn On: Share, then Add to Home Screen, then open livehuddle from the Home Screen.
+Safari gives a page Web Push only once it is on the Home Screen and opened from there. Settings shows Add to Home Screen in place of
+Turn On, opening the steps for that iPhone or iPad and its browser: Share, then Add to Home Screen, then open livehuddle from
+the Home Screen (liveworkspace/docs/specs/003-accounts/push.md \"Settings\").

@@ -78,6 +78,8 @@ type EditorActionsDeps = {
     assigneeMemberId?: string;
     actionName: string;
     description: string;
+    // Its due day ('2026-12-03'), which the email names; absent for none.
+    due?: string;
     // The dialog's Email box: false sends the phone notification alone
     // (docs/specs/014-identity/phone-notifications.md).
     email: boolean;
@@ -206,6 +208,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
           assigneeMemberId: input.assignee.memberId,
           actionName: name,
           description: input.description.trim(),
+          ...(input.due ? { due: input.due } : {}),
           email: input.notifyEmail,
           tabId: deps.activeId,
           elementId,
@@ -240,12 +243,15 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
       // that keeps the assignee sends nothing, and a self-assignment
       // has no team context to email through.
       if (reassigned && input.teamId) {
+        // The due day the action keeps: the dialog's when it set one, else the one it had.
+        const due = input.due === undefined ? existing.due : input.due;
         deps.notify({
           teamId: input.teamId,
           assigneeUserId: input.assignee.userId,
           assigneeMemberId: input.assignee.memberId,
           actionName: name,
           description: input.description.trim(),
+          ...(due ? { due } : {}),
           email: input.notifyEmail,
           tabId: deps.activeId,
           elementId,

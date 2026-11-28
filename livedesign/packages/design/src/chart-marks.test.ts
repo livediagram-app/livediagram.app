@@ -22,7 +22,7 @@ const slices = [
 ];
 
 describe('chart marks (docs/specs/009-elements/pie-chart.md "Chart types")', () => {
-  it('cuts a doughnut’s hole out of each wedge, at 55% of its radius', () => {
+  it('cuts a doughnut’s hole out of each wedge, at 60% of its radius', () => {
     const pie = pieMarks(area, slices, false);
     const ring = pieMarks(area, slices, true);
     expect(pie.hole).toBe(0);
@@ -230,10 +230,11 @@ describe('chart types in the export', () => {
 
   it('fills an area chart and draws a scatter without lines', () => {
     const area = svgLineChart(shape('line-chart', { chartVariant: 'area' }), '#000');
-    expect(area).toContain('fill-opacity="0.25"');
-    expect(area).toContain('<polyline');
+    // Each area fades from its line to the baseline, under a smooth line.
+    expect(area).toContain('fill="url(#chart-fade-');
+    expect(area).toMatch(/<path d="M [^"]* C [^"]*" fill="none"/);
     const scatter = svgLineChart(shape('line-chart', { chartVariant: 'scatter' }), '#000');
-    expect(scatter).not.toContain('<polyline');
+    expect(scatter).not.toContain('fill="none"');
     expect(scatter).toContain('r="4"');
   });
 });

@@ -45,6 +45,7 @@ const edits = (): PageEdits =>
     canDuplicate: () => true,
     canMove: () => false,
     applyLayout: vi.fn(),
+    previewLayout: vi.fn(),
     contentCount: () => 0,
     isLocked: () => false,
     removePage: vi.fn(),

@@ -65,11 +65,12 @@ describe('Behaviour face export', () => {
     expect(svg).toContain('<polygon');
   });
 
-  it('shades a Picker at both lips and offers Again once something landed', () => {
+  it('draws a Picker on its accent payline and offers Spin Again once something landed', () => {
     const svg = svgOf(shape('picker', { label: 'Who?', pickerResult: 'Sam' }));
-    expect(svg).toContain('linearGradient id="reel-el-picker"');
+    // No stroke of its own: the Default scheme's accent for the paper.
+    expect(svg).toMatch(/fill="#[0-9a-f]{6}" fill-opacity="0.14"/);
     expect(svg).toContain('>Sam<');
-    expect(svg).toContain('>Again<');
+    expect(svg).toContain('>Spin Again<');
   });
 
   it('starts a page label under the masthead, and turns back its corner', () => {

@@ -74,7 +74,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   - **Header**: **Start Planning** (20 px), "Pick how to run the work. You can add more boards, sheets and dashboards
     later.", a search field (**Find a board, sheet or layout**, focused as the panel opens on a desktop, unless focus has gone somewhere since ([Start panel](../007-editor/start-panel.md))) and Help.
   - **The rail** (left, 208 px; on a phone a row of chips under the header that scrolls sideways): **Recommended**,
-    **Boards**, **Spreadsheets** and **Dashboards**, each with its glyph and how many it holds (a count badge, tinted with the chosen one), the chosen one tinted in
+    **Boards**, **Spreadsheets**, **Dashboards** and **Sessions** (an Editor's Refinement, Sprint Planning and Bug Triage Session, [Session tabs](session-tabs.md#making-one)), each with its glyph and how many it holds (a count badge, tinted with the chosen one), the chosen one tinted in
     the brand colour; then, under a hairline, **Inspiration** (as the others). The arrow keys move along the rail. It opens on
     Recommended each time.
   - **Connect File** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#connecting)):

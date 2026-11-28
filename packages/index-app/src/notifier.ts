@@ -80,6 +80,8 @@ export type NotifierDeps<E, M extends NotifierEmail = NotifierEmail> = {
       item: NotifierItem | null,
       actionName: string,
       description: string | null,
+      /** Its due day (`YYYY-MM-DD`), null for none. */
+      due: string | null,
     ): M;
     /** An approval request (approvals.md "The email"); an app without it sends none. */
     approvalRequested?(env: E, input: ApprovalEmailInput): M;
@@ -135,6 +137,8 @@ export type ActionAssignedInput = {
   assigneeCanOpen: boolean;
   actionName: string;
   description: string | null;
+  /** Its due day (`YYYY-MM-DD`), which the email names; null or absent for none. */
+  due?: string | null;
 };
 
 export type MentionsInput = {
@@ -305,6 +309,7 @@ export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
         input.assigneeCanOpen ? input.item : null,
         input.actionName,
         input.description,
+        input.due ?? null,
       );
       await deps.send(env, { ...email, to });
     },

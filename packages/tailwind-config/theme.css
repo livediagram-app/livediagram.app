@@ -96,6 +96,20 @@
     cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-reaction-tray: reaction-tray var(--transition-duration-short)
     cubic-bezier(0.16, 1, 0.3, 1);
+  /* Voice input listening (liveworkspace/docs/specs/022-interface-design/voice-input.md): the red halo round the mic
+   * breathes out and fades, looping while it listens. Ambient; the button takes it `motion-safe:` only, so Reduce Motion holds it still. */
+  --animate-voice-pulse: voice-pulse 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes voice-pulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
 }
 
 @keyframes reaction-pop {

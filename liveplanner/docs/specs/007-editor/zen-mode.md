@@ -58,9 +58,8 @@ toggle.
   visibility flags. `useEditorState` wraps it in `toggleZenMode` (adds
   the telemetry) and exposes that to the keyboard hook, the canvas-tool
   dropdown's Zen entry, and the zoom-dock exit button.
-- The chrome is hidden by the same gates that already hide it during the
-  welcome flow: each `welcomeOpen ? null` / `welcomeOpen || readOnly`
-  guard in `CanvasChrome` also checks `zenMode`. The header + tab bar are
+- The chrome is hidden by `CanvasChrome`'s `chromeHidden` (`zenMode`)
+  guards. The visitor's name card hides none of it. The header + tab bar are
   hidden in `EditorView`.
 - Not a `CanvasTool` (Select / Hand / Eraser are mutually-exclusive cursor
   modes); zen mode is an orthogonal visibility flag, so it sits beside

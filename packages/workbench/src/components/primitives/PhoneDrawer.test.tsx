@@ -104,6 +104,23 @@ describe('PhoneDrawer', () => {
     document.removeEventListener('keydown', later);
   });
 
+  it('leaves Escape to a listening microphone inside it (voice-input.md "Stopping")', () => {
+    const onClose = vi.fn();
+    render(
+      <PhoneDrawer name="AI" onClose={onClose}>
+        <button type="button" data-voice-input="" aria-pressed="true">
+          Stop Speaking
+        </button>
+      </PhoneDrawer>,
+    );
+    const mic = screen.getByRole('button', { name: 'Stop Speaking' });
+    fireEvent.keyDown(mic, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
+    mic.setAttribute('aria-pressed', 'false');
+    fireEvent.keyDown(mic, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('leaves Escape to a menu it opened that has focus, and to an earlier taker', () => {
     const menu = document.createElement('button');
     document.body.appendChild(menu);

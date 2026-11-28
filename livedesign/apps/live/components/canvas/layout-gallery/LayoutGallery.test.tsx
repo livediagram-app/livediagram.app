@@ -60,7 +60,7 @@ describe('LayoutGallery', () => {
     render(<LayoutGallery page={screenPage!} onApply={onApply} onPreview={onPreview} />);
     const tile = document.querySelector('[data-layout-tile="wf-checkout"]')!;
     fireEvent.pointerEnter(tile);
-    expect(onPreview).toHaveBeenLastCalledWith('wf-checkout');
+    expect(onPreview).toHaveBeenLastCalledWith('wf-checkout', 'pointer');
     fireEvent.click(tile);
     expect(onApply).toHaveBeenCalledWith('wf-checkout');
   });
@@ -150,7 +150,7 @@ describe('LayoutTile', () => {
     act(() => seen[0]!(true));
     expect(container.querySelector('svg')).not.toBeNull();
     fireEvent.focus(container.querySelector('[data-layout-tile]')!);
-    expect(onPreview).toHaveBeenCalledWith(layout.id);
+    expect(onPreview).toHaveBeenCalledWith(layout.id, 'focus');
     expect(screen.getByText(layout.description)).not.toBeNull();
     globalThis.IntersectionObserver = prior;
   });

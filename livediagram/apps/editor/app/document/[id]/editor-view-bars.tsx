@@ -46,7 +46,6 @@ export function editorViewHeader(
   const {
     zenMode,
     appChrome,
-    anyWelcomeOpen,
     canShareDocument,
     hydrated,
     documentShareable,
@@ -67,7 +66,7 @@ export function editorViewHeader(
         approval={<ApprovalBadge corner />}
         call={<ItemCallButton />}
         itemName={ctx.documentName}
-        showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+        showShare={canShareDocument && hydrated}
         shareable={documentShareable}
         // The Share button's words wear who can see the document; hovering it shows the legend.
         visibility={{
@@ -75,10 +74,10 @@ export function editorViewHeader(
           offline: view.isOffline,
           community: !!view.headerCommunity,
         }}
-        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
-        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during
+        // hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
-          !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
+          !canShareDocument && hydrated && documentId && !sessionCommunity
             ? () => void makeCopy()
             : undefined
         }
@@ -88,7 +87,7 @@ export function editorViewHeader(
         copyDescription="Duplicate this canvas into your own files."
         // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
         present={
-          hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
+          hydrated && !isMobileViewport && slideDeck.runnable.length > 0
             ? {
                 slideCount: slideDeck.runnable.length,
                 starting: slideDeck.startingDeck,
@@ -109,7 +108,7 @@ export function editorViewHeader(
   );
 }
 
-// The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
+// The tab bar, the editor's footer. Hidden in zen mode and in embeds (a visitor's name card hides nothing).
 export function editorViewFooter(
   ctx: EditorContextValue,
   view: {
@@ -119,7 +118,6 @@ export function editorViewFooter(
   },
 ): ReactNode {
   const {
-    anyWelcomeOpen,
     zenMode,
     embedMode,
     workbench,
@@ -161,7 +159,7 @@ export function editorViewFooter(
     hasClipboard,
   } = ctx;
   const { isOffline, selectTab } = view;
-  return anyWelcomeOpen || zenMode || embedMode ? null : (
+  return zenMode || embedMode ? null : (
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
         <TabBarWithConnect

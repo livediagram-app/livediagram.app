@@ -191,6 +191,38 @@ describe('groupHistory', () => {
     ]);
   });
 
+  it('groups a session’s quick outcomes for one card, the newest standing', () => {
+    const outcome = (o: 'refined' | 'skipped') =>
+      ({ kind: 'session', session: 'refinement', outcome: o }) as const;
+    expect(
+      groupHistory([
+        e(20, [outcome('refined')], SAM, 'session'),
+        e(10, [outcome('skipped')], SAM, 'session'),
+      ]),
+    ).toEqual([{ at: at(20), by: SAM, tag: 'session', changes: [outcome('refined')] }]);
+  });
+
+  // docs/specs/026-plan/session-tabs.md "History": an outcome undone straight after cancels out, as a flag does.
+  it('cancels a session outcome undone within the group, and keeps an undo of an older one', () => {
+    const closed = {
+      kind: 'session',
+      session: 'triage',
+      outcome: 'closed',
+      reason: 'Not a Bug',
+    } as const;
+    const undone = { kind: 'session', session: 'triage', outcome: 'closed', undone: true } as const;
+    const accepted = { kind: 'session', session: 'triage', outcome: 'accepted' } as const;
+    expect(
+      groupHistory([e(20, [undone], SAM, 'session'), e(10, [closed], SAM, 'session')]),
+    ).toEqual([]);
+    // An undo of a different outcome stands; so does an undo with nothing before it.
+    expect(
+      groupHistory([e(20, [undone], SAM, 'session'), e(10, [accepted], SAM, 'session')])[0]!
+        .changes,
+    ).toEqual([undone]);
+    expect(groupHistory([e(10, [undone], SAM, 'session')])[0]!.changes).toEqual([undone]);
+  });
+
   it('measures the window from the group’s first entry', () => {
     const step = ITEM_HISTORY_GROUP_MS / 1000 / 2 + 1;
     const grouped = groupHistory([
@@ -311,6 +343,15 @@ describe('readStoredHistory', () => {
       by: { id: '', name: 'A', color: '#000' },
       changes: [{ kind: 'flagged' }],
     });
+  });
+
+  // docs/specs/026-plan/session-tabs.md "History": a session outcome reads back only as one this build knows.
+  it('reads a session outcome back, and leaves out one from a later release', () => {
+    const outcome = { kind: 'session', session: 'refinement', outcome: 'skipped' };
+    const later = { kind: 'session', session: 'standup', outcome: 'skipped' };
+    expect(
+      readStoredHistory({ ...row, tag: 'session', changes: JSON.stringify([outcome, later]) }),
+    ).toEqual({ at: 5, by: SAM, tag: 'session', changes: [outcome] });
   });
 
   it('skips a row that does not parse', () => {

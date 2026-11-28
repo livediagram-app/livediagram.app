@@ -7,7 +7,7 @@ import type { ShownItem } from '../data/overlay';
 import { useExplorer } from '../explorer/context';
 import { emptyCopy } from '../explorer/EmptyPane';
 import { ConfirmDialog } from '@liveworkspace/ui';
-import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
+import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/trash-days';
 import { ItemIcon, RestoreIcon, TrashIcon } from '../ui/icons';
 import { useNow } from '../time';
 import { quoted } from '../quoted';

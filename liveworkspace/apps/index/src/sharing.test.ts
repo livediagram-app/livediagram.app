@@ -830,12 +830,13 @@ describe('what a link opens, and Shared with me', () => {
       expect(sent.status).toBe(401);
       expect(await body(sent)).toEqual({ error: 'password_required' });
     }
-    // Someone who never opened the link learns nothing: not that the item exists, nor its link.
+    // Someone who never opened the link, by the item's own address, is named its least live link (Work Tracker 1518,
+    // "Opened by its editor address") and nothing else: the password is still asked for at the link.
     const stranger = await call(`/items/${item.id}/grant`, { method: 'POST', auth: cyd.auth });
     expect(stranger.status).toBe(404);
-    expect(await body(stranger)).toEqual({ error: 'not_found' });
+    expect(await body(stranger)).toEqual({ error: 'not_found', link: link.code });
     const nobody = await call(`/items/${item.id}/grant`, { method: 'POST' });
-    expect(await body(nobody)).not.toHaveProperty('link');
+    expect(await body(nobody)).toEqual({ error: 'not_found', link: link.code });
 
     // A new password clears Shared with me: Bob is back to a stranger until he enters it through the link again.
     await call(`/items/${item.id}/share-password`, {
@@ -845,9 +846,9 @@ describe('what a link opens, and Shared with me', () => {
     });
     const after = await call(`/items/${item.id}/grant`, { method: 'POST', auth: bob.auth });
     expect(after.status).toBe(404);
-    expect(await body(after)).toEqual({ error: 'not_found' });
+    expect(await body(after)).toEqual({ error: 'not_found', link: link.code });
 
-    // A revoked link names nothing either.
+    // A revoked link names nothing: the item has no live link left.
     await call(`/share/${link.code}`, {
       auth: bob.auth,
       headers: { ...withCode, 'X-Share-Password': 'swordfish' },

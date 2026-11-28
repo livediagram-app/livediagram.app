@@ -26,9 +26,15 @@ export function planTabKindOf(tab: Pick<Tab, 'kind'>): PlanTabKind | null {
 // JSON carries it (and imports back as the form).
 const FORM_TAB_FORMATS = ['file'] as const satisfies readonly ExportFormatKey[];
 
+// A Session tab (docs/specs/026-plan/session-tabs.md "Agents and export"): a page over an empty canvas, so its JSON
+// alone, which carries its set-up and outcomes; its cards export from their boards.
+const SESSION_TAB_FORMATS = ['file'] as const satisfies readonly ExportFormatKey[];
+
 // The formats offered for the tab, in the dialog's order; undefined offers every one (any other tab).
 export function exportFormatsFor(tab: Pick<Tab, 'kind'>): readonly ExportFormatKey[] | undefined {
-  if (tabKindOf(tab) === 'form') return FORM_TAB_FORMATS;
+  const own = tabKindOf(tab);
+  if (own === 'form') return FORM_TAB_FORMATS;
+  if (own === 'session') return SESSION_TAB_FORMATS;
   const kind = planTabKindOf(tab);
   return kind ? PLAN_TAB_FORMATS[kind] : undefined;
 }

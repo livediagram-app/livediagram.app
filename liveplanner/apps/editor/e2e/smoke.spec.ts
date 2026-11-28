@@ -153,10 +153,12 @@ test.describe('mobile', () => {
     ]);
     expect(rows).toHaveLength(1);
     // Beside the Session strip the Plan strip is one More Card Tools button, so a voting board's cluster fits one
-    // row at 390px; Card Types is in its menu.
+    // row at 390px; Card Types is in its menu, and so is AI (docs/specs/026-plan/plan-ai.md "The button").
     await expect(page.getByRole('button', { name: 'Open Card Types' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Open AI' })).toHaveCount(0);
     await page.getByRole('button', { name: 'More card tools' }).tap();
     await expect(page.getByRole('menuitem', { name: 'Card Types' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'AI' })).toBeVisible();
     await page.keyboard.press('Escape');
 
     // The Timer opens its set-up as a popover that is genuinely on top, not just present.

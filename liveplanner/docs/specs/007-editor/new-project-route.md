@@ -93,6 +93,18 @@ only, opening the app in a new tab. Only the editor's own empty route (`/project
 `/project/placeholder`) hands off to `/new`.
 A mistyped or retired page never makes a new project.
 
+### An editor address opened without access
+
+Its owner often copies the editor's address (`/project/<id>`) from the browser's bar, meaning to send the share link.
+Whoever opens it with no access of their own and no link they opened before is not stopped at a not-found card when
+the plan has a live share link: the editor opens the plan through that link, exactly as if they had followed it
+(Work Tracker 1518; [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
+"Opened by its editor address"). The link is the one that gives least: Viewer before Participant before Editor. Every
+rule on it holds as it does on the link itself: the password gate, Require Sign In and its allowed domains, the
+link's tab and its expiry (an expired or turned-off link is never used). The address stays the plan's own. With no
+live link the not-found card below shows unchanged, and says nothing about whether the plan exists. Its owner, and
+a signed-in member of its team, open the address as an editor as always, with no gate or prompt.
+
 ### Which not-found card
 
 Every refusal the api answers 404 is the same card; what it says depends only on what the visitor brought and who
@@ -210,6 +222,9 @@ The editor route keeps:
 - The visitor identity confirmation modal (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
   `identityOnlyScreenOpen`), opening from the name tray's **Change Name** only: a visitor's name is defaulted, not asked, and the tray (`NameTray`, while `identityTrayOpen`) says which name they show under, with Change Name and Keep It ([From new to first edit](../../../../liveworkspace/docs/specs/011-workbench/first-edit.md) "A visitor's name"). Its name field takes at most `MAX_PARTICIPANT_NAME_LEN` (120) characters, the participant route's own cap, so a typed
   name is always one the route saves.
+- The name card is a modal over the canvas and nothing more: the layout stays as it is while it shows and after
+  Join or Cancel, so the header's Share or Make a Copy, the tab bar and the canvas's floating chrome stay up (Work
+  Tracker 1522). Its state (`anyWelcomeOpen`) only holds the tours while it is open.
 - Everything else: autosave, room, tab management,
   project metadata, share dialog, etc.
 

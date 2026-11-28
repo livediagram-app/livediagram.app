@@ -206,7 +206,7 @@ describe('phoneCopy', () => {
       expect(copy.description.length).toBeGreaterThan(10);
       expect(copy.description).not.toMatch(/live(diagram|planner|documents|design|workspace)/);
     }
-    expect(phoneCopy.state('needs-install').description).toContain('Add to Home Screen');
+    expect(phoneCopy.state('needs-install').description).toContain('Home Screen');
     expect(phoneCopy.subscribeFailed('dismissed')).toContain('Turn On');
     expect(phoneCopy.subscribeFailed('failed')).toContain('Try again');
     expect(phoneCopy.removeMessage('Pixel', true)).toContain('turn them on again here');
@@ -418,7 +418,7 @@ describe('PhoneNotificationsRow', () => {
     const second = renderWithKit(
       <PhoneNotificationsRow phone={iphone.host} support="needs-install" now={NOW} />,
     );
-    expect(await second.findByText('Add to Home Screen')).toBeTruthy();
+    expect(await second.findByRole('button', { name: 'Add to Home Screen' })).toBeTruthy();
     second.unmount();
 
     let fail = true;

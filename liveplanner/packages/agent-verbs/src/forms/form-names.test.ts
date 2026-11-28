@@ -44,6 +44,16 @@ describe('form names', () => {
       ok: true,
       question: { id: 'q-sev' },
     });
+    // An id in the brackets a form's read writes it in, as a model copies it.
+    expect(resolveQuestion(form, '[q-sev]')).toMatchObject({
+      ok: true,
+      question: { prompt: 'Severity' },
+    });
+    expect(resolveQuestion(form, ' [ q-sev ] ')).toMatchObject({ ok: true });
+    expect(resolveQuestion(form, '[q-none]')).toMatchObject({
+      ok: false,
+      code: 'question_unknown',
+    });
     const unknown = resolveQuestion(form, 'Colour');
     expect(!unknown.ok && unknown.message).toContain('Summary (q-sum)');
     const twice = {

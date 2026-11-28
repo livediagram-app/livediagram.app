@@ -199,6 +199,49 @@ describe('a team’s view', () => {
     );
   });
 
+  // Work Tracker 1504: a library of folders alone read 0 on its tab.
+  it('counts the folders at the Library root on its tab, beside the items', async () => {
+    const teamFolder = (id: string) => ({
+      id,
+      name: `Folder ${id}`,
+      parentId: null,
+      teamId: 't1',
+      ownerId: 'user_me',
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    page({ kind: 'team', id: 't1' }, fakeHost(), {
+      client: createFakeIndex({ folders: [teamFolder('fa'), teamFolder('fb')] }).client,
+    });
+    expect(await screen.findByText('Folder fa')).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { name: /Library/ }).textContent).toBe('Library2'),
+    );
+  });
+
+  it('counts the items and the root folders together', async () => {
+    page({ kind: 'team', id: 't1' }, fakeHost(), {
+      client: createFakeIndex({
+        items: [makeItem(1, { teamId: 't1' }), makeItem(2, { teamId: 't1' })],
+        folders: [
+          {
+            id: 'fa',
+            name: 'Briefs',
+            parentId: null,
+            teamId: 't1',
+            ownerId: 'user_me',
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        ],
+      }).client,
+    });
+    expect(await screen.findByText('Item 2')).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { name: /Library/ }).textContent).toBe('Library3'),
+    );
+  });
+
   it('keeps the lens when going back to the Library', async () => {
     const onNavigate = page(
       { kind: 'team', id: 't1', tab: 'people', q: 'opens-in:plan' },
@@ -244,11 +287,11 @@ describe('a team’s view', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Pending/ }));
     expect(rows()).toEqual(['m3']);
     fireEvent.click(screen.getByRole('button', { name: /^Everyone/ }));
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a Person' }), {
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a person' }), {
       target: { value: 'ANN' },
     });
     expect(rows()).toEqual(['m2']);
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a Person' }), {
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a person' }), {
       target: { value: 'nobody' },
     });
     expect(screen.getByText('No one matches “nobody”.')).toBeTruthy();

@@ -147,8 +147,13 @@ editor; `@liveworkspace/settings-ui`, `push/`):
 
 - **Turn On Phone Notifications** asks the browser's permission, subscribes with the deployment's public key and
   registers the device, labelled with its browser and system (`Safari on iOS`), and the app it was turned on in,
-  which the list shows by that app's logo (prism and wordmark), never its name as plain text. Where the browser can't, it says why instead: on an iPhone or iPad the app must first be added to
-  the Home Screen (Share, Add to Home Screen) and opened from there; a browser that has blocked notifications must be
+  which the list shows by that app's logo (prism and wordmark), never its name as plain text. Where the browser can't, it says why instead: on an iPhone or iPad (an iPad that says it is a Mac counts, by its
+  touch points) the app must first be added to the Home Screen and opened from there, and since no page can add
+  itself, **Add to Home Screen** in Turn On's place opens the steps: a centred dialog (a bottom sheet on a phone) with
+  the hero header and three numbered steps, each with a drawing of where to tap, worded for the device and browser
+  (`push/home-screen-guide.ts`): Share at the top right in Safari on an iPad, in the bottom bar in Safari on an
+  iPhone, at the right of the address bar in Chrome, behind the menu in Firefox, Edge and the rest; then Add to Home
+  Screen; then open it from its new icon and turn these on there. A browser that has blocked notifications must be
   allowed in its settings; a browser with no Web Push can't; a deployment with no VAPID key has phone notifications
   off. Signed in only: like API Tokens, the section shows only where the host offers an account's tools, so a guest or
   a signed-out person sees none.

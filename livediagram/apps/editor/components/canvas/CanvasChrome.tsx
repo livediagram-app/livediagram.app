@@ -83,7 +83,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     showIdentityTray = false,
     tabThemeId,
     identityLockedName,
-    welcomeOpen,
     wrapperRef,
     zenMode,
     onToggleZen,
@@ -93,9 +92,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const viewport = useViewportStore();
   const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
-  // folds it in next to the welcome-flow gate that already suppresses
-  // the same panels, so each panel stays hidden in either state.
-  const chromeHidden = welcomeOpen || zenMode === true;
+  // A visitor's name card hides none of it: it is a modal over the canvas (Work Tracker 1522).
+  const chromeHidden = zenMode === true;
   // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
@@ -352,7 +350,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <ToolbarPalette
           key={`${props.esBoard ? 'es-board' : 'standard'}${readOnly ? '-participant' : ''}`}
           participant={readOnly}
-          // Hidden, not unmounted, while the chrome is away (zen, welcome),
+          // Hidden, not unmounted, while the chrome is away (zen),
           // so the chosen category lasts the page load.
           hidden={chromeHidden}
           canvasTool={canvasTool}

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../person/profiles', () => import('../test-profiles'));
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import type { ItemHistoryResponse, ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
-import { presetSetup, type Item } from '@liveplanner/items';
+import { SESSION_REASON_MAX, presetSetup, type Item } from '@liveplanner/items';
 import { sqliteD1, testCopyPlan, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -280,5 +280,156 @@ describe('who may read it', () => {
 
   it('is read only', async () => {
     expect((await call('POST', `/items/${bug.id}/history`, {})).status).toBe(405);
+  });
+});
+
+// A Session tab's outcome (docs/specs/026-plan/session-tabs.md "History"): its own entry, tagged `session`, written
+// by POST /items/:itemId/session, an Editor's alone, nothing on the card changed.
+describe('a session outcome', () => {
+  const outcome = (itemId: string, body: unknown, who: Who = {}) =>
+    call('POST', `/items/${itemId}/session`, body, who);
+
+  it('keeps each outcome as a session entry, writing nothing on the card', async () => {
+    const card = await make({ title: 'Login', status: 'todo' });
+    tick();
+    const skipped = await outcome(card.id, { session: 'refinement', outcome: 'skipped' });
+    expect(skipped.status).toBe(204);
+    tick();
+    await outcome(card.id, { session: 'refinement', outcome: 'refined' });
+    const entries = (await history(card.id)).body.entries;
+    expect(entries.map((e) => [e.tag ?? '', e.changes])).toEqual([
+      ['session', [{ kind: 'session', session: 'refinement', outcome: 'refined' }]],
+      ['session', [{ kind: 'session', session: 'refinement', outcome: 'skipped' }]],
+      ['', [{ kind: 'created', status: 'todo' }]],
+    ]);
+    const list = await call<ItemsResponse>('GET', '/items');
+    expect(list.body.items.find((i) => i.id === card.id)?.rev).toBe(card.rev);
+  });
+
+  it('keeps a Sprint Planning commit, and refuses an outcome its kind does not offer', async () => {
+    const card = await make({ title: 'Export', status: 'todo' });
+    tick();
+    expect((await outcome(card.id, { session: 'planning', outcome: 'committed' })).status).toBe(
+      204,
+    );
+    expect((await outcome(card.id, { session: 'planning', outcome: 'refined' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    expect((await outcome(card.id, { session: 'refinement', outcome: 'committed' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    const entries = (await history(card.id)).body.entries;
+    expect(entries[0]?.changes).toEqual([
+      { kind: 'session', session: 'planning', outcome: 'committed' },
+    ]);
+  });
+
+  // docs/specs/026-plan/session-tabs.md "Bug Triage", "History": a Close keeps its reason and duplicate; an undo is
+  // its own entry.
+  it('keeps a Bug Triage close with its reason and duplicate, and an undo', async () => {
+    const card = await make({ title: 'Login loops', status: 'todo' });
+    const dup = await make({ title: 'Login loops on Safari', status: 'todo' });
+    tick();
+    const closed = await outcome(card.id, {
+      session: 'triage',
+      outcome: 'closed',
+      reason: '  Same root cause ',
+      duplicateOf: dup.id,
+    });
+    expect(closed.status).toBe(204);
+    tick();
+    await outcome(card.id, { session: 'triage', outcome: 'closed', undone: true });
+    tick();
+    await outcome(card.id, { session: 'triage', outcome: 'accepted' });
+    const entries = (await history(card.id)).body.entries;
+    expect(entries.slice(0, 3).map((e) => e.changes)).toEqual([
+      [{ kind: 'session', session: 'triage', outcome: 'accepted' }],
+      [{ kind: 'session', session: 'triage', outcome: 'closed', undone: true }],
+      [
+        {
+          kind: 'session',
+          session: 'triage',
+          outcome: 'closed',
+          reason: 'Same root cause',
+          duplicateOf: dup.id,
+        },
+      ],
+    ]);
+  });
+
+  it('refuses a reason or duplicate that is not a Close’s, or not good, and an undone that is not true', async () => {
+    const card = await make({ title: 'Login' });
+    const bad = async (body: Record<string, unknown>, field: string) =>
+      expect((await outcome(card.id, { session: 'triage', ...body })).body).toEqual({
+        error: 'session_invalid',
+        field,
+      });
+    await bad({ outcome: 'accepted', reason: 'x' }, 'reason');
+    await bad({ outcome: 'closed', reason: 4 }, 'reason');
+    await bad({ outcome: 'closed', reason: 'x'.repeat(SESSION_REASON_MAX + 1) }, 'reason');
+    await bad({ outcome: 'skipped', duplicateOf: 'z' }, 'duplicateOf');
+    await bad({ outcome: 'closed', duplicateOf: 4 }, 'duplicateOf');
+    await bad({ outcome: 'closed', duplicateOf: card.id }, 'duplicateOf');
+    await bad({ outcome: 'closed', duplicateOf: 'nope' }, 'duplicateOf');
+    await bad({ outcome: 'closed', undone: false }, 'undone');
+    expect(await kinds(card.id)).toEqual([['', ['created']]]);
+  });
+
+  it('refuses an unknown session kind or outcome, a missing card and anyone below Editor', async () => {
+    const card = await make({ title: 'Login' });
+    expect((await outcome(card.id, { session: 'standup', outcome: 'refined' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'session',
+    });
+    expect((await outcome(card.id, { session: 'refinement', outcome: 'done' })).body).toEqual({
+      error: 'session_invalid',
+      field: 'outcome',
+    });
+    const gone = await outcome('nope', { session: 'refinement', outcome: 'refined' });
+    expect(gone.status).toBe(404);
+    const part = await outcome(
+      card.id,
+      { session: 'refinement', outcome: 'refined' },
+      { owner: 'visitor', code: 'PART' },
+    );
+    expect(part.status).toBe(403);
+    expect((await call('GET', `/items/${card.id}/session`)).status).toBe(405);
+    expect(await kinds(card.id)).toEqual([['', ['created']]]);
+  });
+
+  it('confines a tab-scoped Editor link to the cards its tab shows, and refuses a body that is not JSON', async () => {
+    const card = await make({ title: 'Login' });
+    const elsewhere = await make({ title: 'Signup' });
+    sql.sql.prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'`).run(
+      JSON.stringify({
+        elements: [
+          {
+            id: 'c1',
+            type: 'shape',
+            shape: 'plan-card',
+            x: 0,
+            y: 0,
+            width: 240,
+            height: 120,
+            planCard: { itemId: card.id },
+          },
+        ],
+      }),
+    );
+    const who = { owner: 'visitor', code: 'TAB1' };
+    const body = { session: 'refinement', outcome: 'refined' };
+    expect((await call('POST', `/items/${card.id}/session?tabId=t1`, body, who)).status).toBe(204);
+    expect((await call('POST', `/items/${elsewhere.id}/session?tabId=t1`, body, who)).status).toBe(
+      404,
+    );
+    expect((await call('POST', `/items/${card.id}/session`, '[1]')).status).toBe(400);
+    // A duplicate its tab does not show is not the link's to name.
+    const close = { session: 'triage', outcome: 'closed', duplicateOf: elsewhere.id };
+    expect((await call('POST', `/items/${card.id}/session?tabId=t1`, close, who)).body).toEqual({
+      error: 'session_invalid',
+      field: 'duplicateOf',
+    });
   });
 });

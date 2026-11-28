@@ -67,6 +67,7 @@ export function localInboxRows(local: OfflineActivity, me: string): InboxLocalRo
     assignerName: a.assigner.name,
     teamId: a.teamId,
     card: null,
+    ...(a.due ? { due: a.due } : {}),
     createdAt: a.createdAt,
     updatedAt: a.updatedAt,
   });

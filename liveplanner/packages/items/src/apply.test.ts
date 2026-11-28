@@ -3,6 +3,7 @@ import {
   applyMove,
   applyPatch,
   applyTally,
+  beforeRank,
   columnItems,
   inversePatch,
   itemPlacer,
@@ -137,5 +138,19 @@ describe('itemPlacer', () => {
     // After a, the next card is the added one, so the rank lands between them.
     const afterA = placer.rankFor({ status: 'todo', after: 'a' });
     expect(afterA > 'b' && afterA < 'c').toBe(true);
+  });
+});
+
+describe('beforeRank', () => {
+  it('names the card now ranked after a rank in a column, or null for its end', () => {
+    const a = item({ status: 'new' }, { rank: 'b' });
+    const b = item({ status: 'new' }, { rank: 'd' });
+    const c = item({ status: 'done' }, { rank: 'c' });
+    const back = item({ status: 'new' }, { rank: 'z' });
+    const all = [a, b, c, back];
+    expect(beforeRank(all, 'new', 'a', back.id)).toBe(a.id);
+    expect(beforeRank(all, 'new', 'c', back.id)).toBe(b.id);
+    expect(beforeRank(all, 'new', 'e', back.id)).toBeNull();
+    expect(beforeRank(all, 'gone', 'a')).toBeNull();
   });
 });

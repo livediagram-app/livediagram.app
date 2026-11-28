@@ -12,12 +12,17 @@ import { PickerMenuSection } from './BehaviourMenuSections';
 const picker = (over: Partial<ShapeElement> = {}): ShapeElement =>
   ({ id: 'p1', type: 'rectangle', pickerSource: 'options', ...over }) as ShapeElement;
 
-function renderSection(element: ShapeElement, onSetPickerOptions = vi.fn()) {
+function renderSection(
+  element: ShapeElement,
+  onSetPickerOptions = vi.fn(),
+  onSetPickerRemoveDrawn = vi.fn(),
+) {
   const ui = (el: ShapeElement) => (
     <PickerMenuSection
       element={el}
       onSetPickerSource={vi.fn()}
       onSetPickerOptions={onSetPickerOptions}
+      onSetPickerRemoveDrawn={onSetPickerRemoveDrawn}
       sectionProps={{ open: true, onToggle: vi.fn() }}
     />
   );
@@ -54,5 +59,20 @@ describe('PickerMenuSection options', () => {
     fireEvent.change(textarea(), { target: { value: ' Ada \n\nBob' } });
     fireEvent.blur(textarea());
     expect(onSet).toHaveBeenCalledWith(['Ada', 'Bob']);
+  });
+});
+
+describe('PickerMenuSection Remove Once Drawn', () => {
+  it('turns the round on, and off again', () => {
+    const onSet = vi.fn();
+    const { rerenderWith } = renderSection(picker(), vi.fn(), onSet);
+    const row = () => screen.getByRole('button', { name: /Remove Once Drawn/ });
+    expect(row().getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(row());
+    expect(onSet).toHaveBeenLastCalledWith(true);
+    rerenderWith(picker({ pickerRemoveDrawn: true }));
+    expect(row().getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(row());
+    expect(onSet).toHaveBeenLastCalledWith(false);
   });
 });

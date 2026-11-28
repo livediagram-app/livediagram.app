@@ -42,7 +42,6 @@ import { getTheme } from '@/lib/themes';
 import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
 import type { ArticlesView } from './useArticles';
 import { pageEdits, type PageEdits } from './page-edits';
-import type { PageLayoutId } from '@livedocuments/templates';
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
@@ -94,10 +93,10 @@ export type PagesModeView = {
   theme?: ThemeDefinition;
   // The tab's elements, for the content a previewed layout carries over from its page.
   elements?: Element[];
-  // A layout previewed on a page while its tile is hovered: the page's own content is hidden
-  // under it (the clip leaves the page out) so the preview never mixes with it.
-  layoutPreview: { pageId: string; layout: PageLayoutId } | null;
-  setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
+  // The page whose layout tiles are hovered (its Use a Layout invite steps aside). Set only when the page changes,
+  // never per tile, so a sweep across the tiles re-renders nothing here (Work Tracker 1502).
+  layoutPreview: { pageId: string } | null;
+  setLayoutPreview: (preview: { pageId: string } | null) => void;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: PageEdits;
   // A page's place in the slide deck (Contents' page-row-slides, PageNotesButton), composed in by the editor; absent
@@ -423,7 +422,15 @@ export function usePagesMode(deps: {
     canEditNow.current = canEdit && activeTab.locked !== true;
   });
   const mayEdit = useCallback(() => canEditNow.current, []);
-  const [layoutPreview, setLayoutPreview] = useState<PagesModeView['layoutPreview']>(null);
+  const [layoutPreview, setLayoutPreviewNow] = useState<PagesModeView['layoutPreview']>(null);
+  // Read through a ref, not an updater: even an updater that keeps the state can render the editor once more.
+  const layoutPreviewPage = useRef<string | null>(null);
+  const setLayoutPreview = useCallback((next: PagesModeView['layoutPreview']) => {
+    const pageId = next?.pageId ?? null;
+    if (layoutPreviewPage.current === pageId) return;
+    layoutPreviewPage.current = pageId;
+    setLayoutPreviewNow(next);
+  }, []);
   // A page just added or duplicated, or the one before a deleted page: framed once it is in the
   // row (a frame later, as its sheet mounts or the row closes up).
   const [goTo, setGoTo] = useState<string | null>(null);

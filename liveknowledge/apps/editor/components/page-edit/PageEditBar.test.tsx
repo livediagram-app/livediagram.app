@@ -2,6 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { CanvasModalCard } from '@liveworkspace/workbench/components/palette/CanvasModalCard';
 import { PageEditBarView, type PageEditBarViewProps } from './PageEditBar';
 
 // docs/specs/030-knowledgebase/blueprints/editing.md "Presentation and UX": Edit while reading; the draft bar while
@@ -37,6 +38,22 @@ describe('the draft bar', () => {
     expect(corner.lastElementChild!.hasAttribute('data-page-edit')).toBe(true);
     rerender(<PageEditBarView {...props({ reactions, editing: true })} />);
     expect(screen.queryByTestId('reactions')).toBeNull();
+  });
+
+  // Work Tracker 1522: drawn on the page above the canvas layer, the pair stood on a guest's name card's Cancel and Join
+  // on a phone. Each bar hides while a canvas card (marked by CanvasModalCard) is open.
+  it('hides while a canvas card, such as the name card, is open', () => {
+    const under = '[body:has([data-canvas-modal-card])_&]:invisible';
+    const { rerender } = render(<PageEditBarView {...props()} />);
+    expect(document.querySelector('[data-page-read-corner]')!.className).toContain(under);
+    rerender(<PageEditBarView {...props({ editing: true })} />);
+    expect(document.querySelector('[data-page-edit-bar]')!.className).toContain(under);
+    render(
+      <CanvasModalCard label="Confirm your name" width="sm:w-[26rem]">
+        card
+      </CanvasModalCard>,
+    );
+    expect(document.querySelector('[data-canvas-modal-card]')).not.toBeNull();
   });
 
   // editing.md "The buttons" (owner 2026-11-21): Zen Mode to the right of Edit while reading, never while editing.

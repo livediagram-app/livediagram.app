@@ -36,7 +36,8 @@ From the top:
 
 - **Header.** The app's logo (40 px), the item's name (one line, cut with an ellipsis) and under it the app and who can
   see it: `livediagram · Shared`, `liveplanner · Shared and Team`, `livedocuments · Private` (the Share button's own
-  visibility words, `shareStatesLabel`). A round 44 px **Close** at its right.
+  visibility words, `shareStatesLabel`). A round 44 px **Close** at its right, the one every modal and drawer wears
+  ([close-button.md](../022-interface-design/close-button.md)).
 - **The app's section.** A control the top row no longer holds leads the drawer, under the header: livediagram's
   editor mode switch, as **Editor mode** over the three modes side by side (Diagram, Draw, Workshop), each 44 px tall
   with its tinted glyph and name, the current one raised and marked (a radio group; one press switches, and closes the drawer first, as a tile that

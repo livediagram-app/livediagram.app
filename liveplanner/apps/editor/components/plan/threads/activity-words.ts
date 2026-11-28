@@ -7,6 +7,7 @@
 import {
   CARD_FIELD_LABELS,
   PRIORITY_LABELS,
+  cardRefOrKey,
   customFieldText,
   dayLabel,
   isPriority,
@@ -16,9 +17,10 @@ import {
   type ItemHistoryEntry,
   type ItemHistoryValue,
   type ItemTypeDef,
+  type SessionOutcome,
   type StatusPhase,
 } from '@liveplanner/items';
-import { PRIORITY_COLOURS } from '@liveplanner/project';
+import { PRIORITY_COLOURS, SESSION_KINDS } from '@liveplanner/project';
 import { colourName } from '@liveworkspace/workbench/components/colour/colour-options';
 
 // A chip's colour: a status's stage (its dot as the Details status pill draws it), or a priority's own colour.
@@ -42,7 +44,9 @@ export type ActivityGlyph =
   | 'archive'
   | 'trash'
   | 'restore'
-  | 'type';
+  | 'type'
+  // A Session tab's outcome (docs/specs/026-plan/session-tabs.md "History").
+  | 'session';
 
 export type ActivityLine = { glyph: ActivityGlyph; parts: ActivityPart[] };
 
@@ -233,6 +237,8 @@ export function changeLine(
       };
     case 'set':
       return setLine(ctx, change.field, change.value, previous);
+    case 'session':
+      return { glyph: 'session', parts: [t(sessionOutcomeLine(ctx, change))] };
     case 'cleared': {
       const name = s(fieldName(ctx, change.field));
       return {
@@ -250,6 +256,31 @@ export function changeLine(
       };
     }
   }
+}
+
+// A Session tab's outcome, in words: "Refined this in a Refinement session", "Committed this in a Sprint Planning
+// session", "Closed this as a duplicate of BUG-12 in a Bug Triage session: Same root cause", "Undid Closed in a Bug
+// Triage session".
+const OUTCOME_VERBS: Record<SessionOutcome, string> = {
+  refined: 'Refined',
+  skipped: 'Skipped',
+  flagged: 'Flagged',
+  committed: 'Committed',
+  accepted: 'Accepted',
+  closed: 'Closed',
+};
+function sessionOutcomeLine(
+  ctx: ActivityContext,
+  change: Extract<ItemHistoryChange, { kind: 'session' }>,
+): string {
+  const where = `in a ${SESSION_KINDS[change.session].label} session`;
+  const verb = OUTCOME_VERBS[change.outcome];
+  if (change.undone) return `Undid ${verb} ${where}`;
+  const dup = change.duplicateOf ? ctx.items.get(change.duplicateOf) : undefined;
+  const as = change.duplicateOf
+    ? ` as a duplicate of ${dup ? cardRefOrKey(dup, ctx.types) : 'a card since deleted'}`
+    : '';
+  return `${verb} this${as} ${where}${change.reason ? `: ${change.reason}` : ''}`;
 }
 
 // A line's plain words, as a test reads it.

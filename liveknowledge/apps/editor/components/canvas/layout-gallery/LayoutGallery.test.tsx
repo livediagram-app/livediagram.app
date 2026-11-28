@@ -122,7 +122,7 @@ describe('LayoutTile', () => {
     act(() => seen[0]!(true));
     expect(container.querySelector('svg')).not.toBeNull();
     fireEvent.focus(container.querySelector('[data-layout-tile]')!);
-    expect(onPreview).toHaveBeenCalledWith(layout.id);
+    expect(onPreview).toHaveBeenCalledWith(layout.id, 'focus');
     expect(screen.getByText(layout.description)).not.toBeNull();
     globalThis.IntersectionObserver = prior;
   });

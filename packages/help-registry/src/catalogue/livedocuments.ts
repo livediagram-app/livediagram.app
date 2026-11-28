@@ -246,6 +246,18 @@ export const articles: Article[] = [
     apps: ['livedocuments'],
   },
   {
+    slug: 'describe-a-page',
+    title: 'Describe a Page',
+    description:
+      'Say what the next slide, page, article or card should say, and AI picks a layout and writes it in.',
+    keywords:
+      'describe a page describe a slide describe an article describe a card ai make a slide generate slide generate page ai page ai slide write with ai layout picked from words prompt sparkle button make slide make page make article make card built-in ai key',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Basics',
+    apps: ['livedocuments'],
+  },
+  {
     slug: 'infographic-layouts',
     title: 'Infographic Layouts',
     description:

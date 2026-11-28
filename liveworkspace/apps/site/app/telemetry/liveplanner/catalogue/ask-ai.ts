@@ -37,3 +37,31 @@ export const ASK_AI_SWITCHED = chart(
   'Answer With changed in Ask AI, to built-in AI or to a key.',
   { types: ['AskAiBuiltIn', 'AskAiKey'] },
 );
+
+// Plan AI, the AI button beside Card Types (docs/specs/026-plan/plan-ai.md): asked of the open tab, its changes made,
+// and a turn's changes undone. Never an instruction, a reply or which AI. Opening it (Plan·Opened·PlanAi) and a turn's
+// changes made (Plan·Changed·PlanAiChange) count in the Plan charts that take every type of their event.
+
+export const PLAN_AI_ASKED = chart(
+  'Plan',
+  'Used',
+  'Plan AI Turns',
+  'A question or an instruction sent to Plan AI about the open Board, Sheet, Form or Dashboard tab.',
+  { types: ['PlanAi'] },
+);
+
+export const PLAN_AI_UNDONE = chart(
+  'Plan',
+  'Undone',
+  'Plan AI Changes Undone',
+  'A Plan AI turn’s changes taken back with the Undo under its answer.',
+  { types: ['PlanAiChange'], rising: 'neutral' },
+);
+
+export const PLAN_AI_RAN = chart(
+  'Plan',
+  'Ran',
+  'Plan AI Asks',
+  'The api asking the model for a Plan AI turn (a reply that did not read is asked once more).',
+  { types: ['PlanAi'], rising: 'neutral' },
+);

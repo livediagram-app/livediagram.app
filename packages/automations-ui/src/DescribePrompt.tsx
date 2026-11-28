@@ -3,12 +3,14 @@
 // The words step of every Describe with AI dialog (Describe a Rule, liveworkspace/docs/specs/018-automations/
 // automations.md "AI"; liveplanner's Describe a Plan and Describe a Form): Try an Example first, its chips filling the
 // box and putting the cursor in it (owner, 2026-11-22: "the try an example bits in the describe with AI screens should
-// be above the textbox, not below it"), then the box with its count, a refusal said under it, and the source line
+// be above the textbox, not below it"), then the box with the microphone and its count under it (voice input,
+// liveworkspace/docs/specs/022-interface-design/voice-input.md), a refusal said under it, and the source line
 // (WorkbenchAiSource). One copy, so every dialog asks alike.
 
 import { forwardRef, useId, type ReactNode } from 'react';
 import { Button, TextArea } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
+import { VoiceInputButton, VoiceInputNote, useVoiceInput } from '@liveworkspace/ui/voice-input';
 
 export type DescribeExample = { label: string; text: string };
 
@@ -54,7 +56,9 @@ export const DescribePrompt = forwardRef<
   const sourceId = useId();
   const saidId = useId();
   const examplesId = useId();
-  const focus = () => (ref && typeof ref === 'object' ? ref.current?.focus() : undefined);
+  const field = ref && typeof ref === 'object' ? ref : undefined;
+  const focus = () => field?.current?.focus();
+  const voice = useVoiceInput({ value: text, onText, max, field, disabled: busy });
   return (
     <div {...{ [dataAttr]: '' }} className="flex flex-col gap-3 px-6 py-5 max-sm:px-4">
       {examples.length > 0 ? (
@@ -93,7 +97,7 @@ export const DescribePrompt = forwardRef<
           maxLength={max}
           value={text}
           readOnly={busy}
-          placeholder={placeholder}
+          placeholder={voice.placeholder(placeholder)}
           onChange={(e) => onText(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -103,14 +107,16 @@ export const DescribePrompt = forwardRef<
           }}
           className="resize-none"
         />
-        <div className="flex justify-end">
+        <div className="flex items-center justify-end gap-2">
+          <VoiceInputButton voice={voice} />
           <span
-            aria-live="polite"
+            aria-live={voice.listening ? 'off' : 'polite'}
             className="text-[12px] tabular-nums text-slate-500 dark:text-slate-400"
           >
             {text.length} / {max}
           </span>
         </div>
+        <VoiceInputNote voice={voice} />
       </div>
       {said && saidOnSource ? (
         <span role="alert" id={saidId} className="sr-only">

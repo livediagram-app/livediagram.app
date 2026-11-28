@@ -219,6 +219,18 @@ describe("the people each app's own pieces carry", () => {
       { id: 'p2', type: 'shape', pickerResult: 'Sam Roe' },
       { id: 'p3', type: 'shape', pickerSource: 'options', pickerResult: 'Pizza' },
     ]);
+    // A Remove Once Drawn round's drawn names go the same way as the result.
+    const [drawnRoom, drawnList] = redactElementsForCommunity([
+      { id: 'd1', type: 'shape', pickerRemoveDrawn: true, pickerDrawn: ['Jane Doe'] },
+      { id: 'd2', type: 'shape', pickerSource: 'options', pickerDrawn: ['Pizza'] },
+    ]);
+    expect(drawnRoom).toEqual({ id: 'd1', type: 'shape', pickerRemoveDrawn: true });
+    expect(drawnList).toEqual({
+      id: 'd2',
+      type: 'shape',
+      pickerSource: 'options',
+      pickerDrawn: ['Pizza'],
+    });
     expect(sticky).toEqual({ id: 's', type: 'sticky', label: 'Idea' });
     expect(roomPick).toEqual({ id: 'p1', type: 'shape', pickerSource: 'participants' });
     expect(defaultPick).toEqual({ id: 'p2', type: 'shape' });

@@ -39,7 +39,6 @@ export function renderEditorHeader(
   const {
     zenMode,
     appChrome,
-    anyWelcomeOpen,
     canShareProject,
     hydrated,
     projectShareable,
@@ -58,7 +57,7 @@ export function renderEditorHeader(
     <AreaErrorBoundary area="Header" fallback="panel">
       <PlanCornerActions
         itemName={ctx.projectName}
-        showShare={canShareProject && hydrated && !anyWelcomeOpen}
+        showShare={canShareProject && hydrated}
         shareable={projectShareable}
         // The Share button's colour reads the plan's visibility, as the header's badges did.
         visibility={{
@@ -69,7 +68,7 @@ export function renderEditorHeader(
         // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden through the
         // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
-          !canShareProject && hydrated && !anyWelcomeOpen && projectId && !sessionCommunity
+          !canShareProject && hydrated && projectId && !sessionCommunity
             ? () => void makeCopy()
             : undefined
         }
@@ -86,7 +85,7 @@ export function renderEditorHeader(
   );
 }
 
-// The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
+// The tab bar, the editor's footer. Hidden in zen mode and in embeds (a visitor's name card hides nothing).
 // Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
 export function renderEditorTabBar(
   ctx: EditorContextValue,
@@ -99,7 +98,6 @@ export function renderEditorTabBar(
   },
 ): ReactNode {
   const {
-    anyWelcomeOpen,
     zenMode,
     embedMode,
     workbench,
@@ -139,7 +137,7 @@ export function renderEditorTabBar(
   } = ctx;
   // A workspace frame's hooks: its Back, in the tab bar.
   const workbenchFrame = workbench?.frame ?? null;
-  return anyWelcomeOpen || zenMode || embedMode ? null : (
+  return zenMode || embedMode ? null : (
     <LandscapeBarFold shown={barsShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
         <TabBarWithConnect

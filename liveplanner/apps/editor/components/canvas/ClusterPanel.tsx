@@ -123,7 +123,7 @@ export function ClusterPanel({
                 {/* Help sits with the close button, where the editor's dialogs keep their window controls. */}
                 <div className="flex items-center gap-1">
                   {headerEnd}
-                  <DialogCloseButton compact onClick={onClose} />
+                  <DialogCloseButton onClick={onClose} />
                 </div>
               </div>
             </div>

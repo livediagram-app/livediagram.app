@@ -10,6 +10,7 @@ import { useEffect, useRef } from 'react';
 import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import type { LaidOutPage } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { CloseIcon, lucideGlyph } from '@livedocuments/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
@@ -35,7 +36,7 @@ type BodyProps = {
   onApply: (layout: PageLayoutId) => void;
   // Surprise Me: places a layout without closing (Body's host passes the plain apply).
   onSurprise?: (layout: PageLayoutId) => void;
-  onPreview: (layout: PageLayoutId | null) => void;
+  onPreview: (layout: PageLayoutId | null, how?: LayoutPreviewAsk) => void;
 };
 
 // The popover's body; unmounting (the popover closing) takes the preview off the page.
@@ -122,8 +123,9 @@ export function PageLayoutsButton({
           {...props}
           wide={!mobile}
           onClose={close}
+          // The press lands what the hover shows (page-layout-place.ts), so the preview is left for the apply to
+          // take over, never put back first.
           onApply={(layout) => {
-            props.onPreview(null);
             props.onApply(layout);
             close();
           }}

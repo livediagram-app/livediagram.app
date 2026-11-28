@@ -21,7 +21,7 @@ export class DraftRefusal<C extends string = string> extends Error {
   }
 }
 
-async function refusalOf<C extends string>(
+export async function refusalOf<C extends string>(
   res: Response,
   codes: readonly C[],
   make: (status: number, code: C, message: string) => DraftRefusal<C>,

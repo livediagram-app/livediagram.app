@@ -2403,6 +2403,9 @@ importers:
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
@@ -2424,6 +2427,9 @@ importers:
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
+      '@liveworkspace/edit-operations':
+        specifier: workspace:*
+        version: link:../../../packages/edit-operations
       '@liveworkspace/email':
         specifier: workspace:*
         version: link:../../../packages/email
@@ -2567,6 +2573,9 @@ importers:
       '@livedocuments/document-views':
         specifier: workspace:*
         version: link:../../packages/document-views
+      '@livedocuments/edit-operations':
+        specifier: workspace:*
+        version: link:../../packages/edit-operations
       '@livedocuments/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
@@ -2582,6 +2591,9 @@ importers:
       '@livedocuments/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
@@ -5824,6 +5836,9 @@ importers:
 
   liveplanner/apps/editor:
     dependencies:
+      '@liveplanner/agent-verbs':
+        specifier: workspace:*
+        version: link:../../packages/agent-verbs
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema

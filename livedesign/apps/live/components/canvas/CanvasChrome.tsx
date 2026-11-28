@@ -135,7 +135,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     showIdentityTray = false,
     tabThemeId,
     identityLockedName,
-    welcomeOpen,
     wrapperRef,
     zenMode,
     onToggleZen,
@@ -145,9 +144,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const viewport = useViewportStore();
   const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
-  // folds it in next to the welcome-flow gate that already suppresses
-  // the same panels, so each panel stays hidden in either state.
-  const chromeHidden = welcomeOpen || zenMode === true;
+  // A visitor's name card hides none of it: it is a modal over the canvas (Work Tracker 1522).
+  const chromeHidden = zenMode === true;
   // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
@@ -401,7 +399,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <ToolbarPalette
           key={readOnly ? 'participant' : 'standard'}
           participant={readOnly}
-          // Hidden, not unmounted, while the chrome is away (zen, welcome),
+          // Hidden, not unmounted, while the chrome is away (zen),
           // so the chosen category lasts the page load.
           hidden={chromeHidden}
           canvasTool={canvasTool}
@@ -475,100 +473,90 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // pushed off the screen.
         className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${clusterLeft === null ? '' : 'flex-wrap-reverse justify-end'} ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
       >
-        {welcomeOpen ? null : (
-          <>
-            {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
+        {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
+        {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
                 (docs/specs/013-workspace/share-roles.md). */}
-            {!zenMode && (!readOnly || !!props.participantPalette) ? (
-              <UndoRedoClusterStrip
-                onUndo={onUndo}
-                onRedo={onRedo}
-                canUndo={canUndo}
-                canRedo={canRedo}
-              />
-            ) : null}
-            {/* The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): right of Undo /
+        {!zenMode && (!readOnly || !!props.participantPalette) ? (
+          <UndoRedoClusterStrip
+            onUndo={onUndo}
+            onRedo={onRedo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+          />
+        ) : null}
+        {/* The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): right of Undo /
                 Redo, for every role, while the tab has two pages or more and Contents is minimised (the docked
                 sidebar already shows every page); not on a phone, whose row has no room for it (a swipe moves
                 between pages there). */}
-            {!zenMode &&
-            !isMobile &&
-            !contentsDocked &&
-            props.pagesMode &&
-            props.pagesMode.pages.length > 1 ? (
-              <PageNavigatorClusterStrip
-                pageIds={props.pagesMode.pages.map((p) => p.id)}
-                onGo={props.pagesMode.focusPage}
-              />
-            ) : null}
-            {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode, one strip,
+        {!zenMode &&
+        !isMobile &&
+        !contentsDocked &&
+        props.pagesMode &&
+        props.pagesMode.pages.length > 1 ? (
+          <PageNavigatorClusterStrip
+            pageIds={props.pagesMode.pages.map((p) => p.id)}
+            onGo={props.pagesMode.focusPage}
+          />
+        ) : null}
+        {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode, one strip,
                 for every role and on a phone too. */}
-            {!zenMode && props.pagesMode ? (
-              <PagesClusterStrip
-                contents={
-                  // Docked as the sidebar, Contents has no button (useContentsChrome).
-                  contentsDocked ? null : (
-                    <ContentsClusterSegment
-                      popoverOpen={activeDockPanel === 'contents'}
-                      onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
-                    />
-                  )
-                }
-                photo={
-                  photoPanelOffered ? (
-                    <PhotoClusterSegment
-                      popoverOpen={activeDockPanel === 'photo-panel'}
-                      onTogglePopover={(button) =>
-                        handleDockButtonClick('photo-panel', button, true)
-                      }
-                    />
-                  ) : null
-                }
-                inspect={
-                  props.pagesMode.pages[0]?.kind === 'wireframe' ? (
-                    <InspectClusterSegment
-                      active={canvasTool === 'inspect'}
-                      onToggle={() =>
-                        props.onSetCanvasTool(canvasTool === 'inspect' ? 'select' : 'inspect')
-                      }
-                    />
-                  ) : null
-                }
-                flow={
-                  props.pagesMode.pages[0]?.kind === 'wireframe' ? <FlowClusterSegment /> : null
-                }
-              />
-            ) : null}
-            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before the brush, only while
+        {!zenMode && props.pagesMode ? (
+          <PagesClusterStrip
+            contents={
+              // Docked as the sidebar, Contents has no button (useContentsChrome).
+              contentsDocked ? null : (
+                <ContentsClusterSegment
+                  popoverOpen={activeDockPanel === 'contents'}
+                  onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
+                />
+              )
+            }
+            photo={
+              photoPanelOffered ? (
+                <PhotoClusterSegment
+                  popoverOpen={activeDockPanel === 'photo-panel'}
+                  onTogglePopover={(button) => handleDockButtonClick('photo-panel', button, true)}
+                />
+              ) : null
+            }
+            inspect={
+              props.pagesMode.pages[0]?.kind === 'wireframe' ? (
+                <InspectClusterSegment
+                  active={canvasTool === 'inspect'}
+                  onToggle={() =>
+                    props.onSetCanvasTool(canvasTool === 'inspect' ? 'select' : 'inspect')
+                  }
+                />
+              ) : null
+            }
+            flow={props.pagesMode.pages[0]?.kind === 'wireframe' ? <FlowClusterSegment /> : null}
+          />
+        ) : null}
+        {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before the brush, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
-            {!zenMode &&
-            panelsOn.collaborate &&
-            (commentRows.length > 0 || actionRows.length > 0) ? (
-              <CollaborateClusterButton
-                openCount={kindCounts('open', commentRows, actionRows).all}
-                popoverOpen={activeDockPanel === 'collaborate'}
-                onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
-              />
-            ) : null}
-            {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
+        {!zenMode && panelsOn.collaborate && (commentRows.length > 0 || actionRows.length > 0) ? (
+          <CollaborateClusterButton
+            openCount={kindCounts('open', commentRows, actionRows).all}
+            popoverOpen={activeDockPanel === 'collaborate'}
+            onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
+          />
+        ) : null}
+        {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
                 read-only sessions pass no handler): see ThemeStrip. */}
-            {!zenMode ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
-            <ViewZoomControls
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onSetZoom={handleSetZoom}
-              onFitToScreen={onFitToScreen}
-              onToggleZen={onToggleZen}
-              zenActive={zenMode}
-              // View-only visitors have no palette (so no canvas-tool
-              // dropdown); the dock keeps the enter button for them.
-              zenEnterHere={readOnly}
-              pinchOnly={isMobile}
-            />
-          </>
-        )}
+        {!zenMode ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
+        <ViewZoomControls
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onSetZoom={handleSetZoom}
+          onFitToScreen={onFitToScreen}
+          onToggleZen={onToggleZen}
+          zenActive={zenMode}
+          // View-only visitors have no palette (so no canvas-tool
+          // dropdown); the dock keeps the enter button for them.
+          zenEnterHere={readOnly}
+          pinchOnly={isMobile}
+        />
       </div>
     </>
   );

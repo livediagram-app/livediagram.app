@@ -1,9 +1,12 @@
 import {
+  chartDropInBox,
   createLogoStrip,
   isFixedSizeShape,
   layOutPages,
   pageAt,
+  pageContentBox,
   pagesOf,
+  type ShapeKind,
 } from '@liveknowledge/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
@@ -213,6 +216,19 @@ export function slideAt(
   return page?.kind === 'slide' ? page.rect : undefined;
 }
 
+/** Where a chart kind dropped at a canvas point stands when the point is on a slide or an infographic page: sized for
+ *  the page (@liveworkspace/element-model/chart-drop-size); null anywhere else, or for a kind that is not a chart. */
+export function chartDropOn(
+  tab: Pick<Tab, 'pages' | 'pageOrientation'> | undefined,
+  kind: ShapeKind,
+  x: number,
+  y: number,
+): ReturnType<typeof chartDropInBox> {
+  if (!tab?.pages) return null;
+  const page = pageAt(layOutPages(pagesOf(tab)), { x, y });
+  return page ? chartDropInBox(kind, page.kind, pageContentBox(page), x, y) : null;
+}
+
 /** A new text in a style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"), centred on a canvas point,
  *  left aligned; on a slide (`slide`, its rect), 80% of its width and centred across it, wrapping there. */
 export function presetTextAt(
@@ -320,8 +336,11 @@ export function buildDrawnBoxed(
     isTap && intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
       ? stickerDropSize(getSticker(intent.stickerId), { width: drawnWidth, height }).width
       : drawnWidth;
-  const x = isTap ? startX - width / 2 : dragBox.x;
-  const y = isTap ? startY - height / 2 : dragBox.y;
+  // A chart tapped onto a slide or infographic page is sized for the page (pie-chart.md "Behaviour").
+  const onPage =
+    isTap && intent.type === 'shape' ? chartDropOn(activeTab, intent.kind, startX, startY) : null;
+  const x = onPage ? onPage.x : isTap ? startX - width / 2 : dragBox.x;
+  const y = onPage ? onPage.y : isTap ? startY - height / 2 : dragBox.y;
   const colours = deriveNewBoxedColours(base, {
     backgroundColor: activeTab.backgroundColor,
     patternColor: activeTab.patternColor,
@@ -337,8 +356,8 @@ export function buildDrawnBoxed(
     ...colours,
     x,
     y,
-    width,
-    height,
+    width: onPage ? onPage.width : width,
+    height: onPage ? onPage.height : height,
     ...textSize,
     // Icon draw intent: carry the chosen glyph id + seed label onto the
     // freshly-drawn 'icon' shape (so palette icons / tech icons draw to

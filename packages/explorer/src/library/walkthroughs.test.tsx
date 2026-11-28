@@ -1,11 +1,12 @@
 // The Library's Walkthroughs (liveworkspace/docs/specs/006-media/walkthroughs.md "The Explorer's Walkthroughs"): the
 // person's walkthroughs as cards, played in place from a blob, maximised, closed, and deleted after a confirm.
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { Explorer } from '../explorer/Explorer';
 import type { WalkthroughEntry, WalkthroughsHost } from './types';
 import { clockOf, sizeOf, WalkthroughsContent } from './WalkthroughsPane';
+import { mergedWalkthroughsHost } from './http';
 import { ExplorerProvider } from '../explorer/context';
 
 const entry = (n: number, over: Partial<WalkthroughEntry> = {}): WalkthroughEntry => ({
@@ -163,5 +164,55 @@ describe('Walkthroughs in the Library', () => {
   it('says the app keeps none without a host', async () => {
     page();
     expect(await screen.findByText('No Walkthroughs here')).toBeTruthy();
+  });
+
+  // In no app, every app's list: each shows as it arrives (Work Tracker 1493).
+  describe('from several apps', () => {
+    const later = <T,>() => {
+      let resolve!: (value: T) => void;
+      let reject!: (e: unknown) => void;
+      const promise = new Promise<T>((res, rej) => {
+        resolve = res;
+        reject = rej;
+      });
+      return { promise, resolve, reject };
+    };
+
+    it('shows a fast app’s cards while a slow app is still answering, then both', async () => {
+      const slow = later<WalkthroughEntry[]>();
+      const fast = host([entry(1)]);
+      const lagging = { ...host([]), list: vi.fn(() => slow.promise) };
+      page(mergedWalkthroughsHost([lagging, fast]));
+      expect(await screen.findByRole('button', { name: 'Play Walk 1' })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Play Walk 2' })).toBeNull();
+      await act(async () => slow.resolve([entry(2, { createdAt: Date.UTC(2026, 10, 18) })]));
+      expect(await screen.findByRole('button', { name: 'Play Walk 2' })).toBeTruthy();
+      // Newest first.
+      const plays = screen.getAllByRole('button', { name: /^Play Walk/ });
+      expect(plays.map((b) => b.getAttribute('aria-label'))).toEqual([
+        'Play Walk 2',
+        'Play Walk 1',
+      ]);
+    });
+
+    it('keeps its placeholders while only empty answers are in, and says empty once all are', async () => {
+      const slow = later<WalkthroughEntry[]>();
+      page(mergedWalkthroughsHost([host([]), { ...host([]), list: vi.fn(() => slow.promise) }]));
+      await waitFor(() =>
+        expect(document.querySelector('[data-walkthroughs-skeleton]')).toBeTruthy(),
+      );
+      expect(screen.queryByText('No walkthroughs yet')).toBeNull();
+      await act(async () => slow.resolve([]));
+      expect(await screen.findByText('No walkthroughs yet')).toBeTruthy();
+    });
+
+    it('shows the others when one app fails, and fails only when every app does', async () => {
+      const failing = { ...host([]), list: vi.fn(async () => Promise.reject(new Error('down'))) };
+      page(mergedWalkthroughsHost([failing, host([entry(1)])]));
+      expect(await screen.findByRole('button', { name: 'Play Walk 1' })).toBeTruthy();
+      cleanup();
+      page(mergedWalkthroughsHost([failing, { ...failing }]));
+      expect(await screen.findByText('Couldn’t load your walkthroughs.')).toBeTruthy();
+    });
   });
 });

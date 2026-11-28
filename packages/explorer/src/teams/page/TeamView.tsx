@@ -2,7 +2,8 @@
 
 // A team's page in the Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "A team's page"): the header (the
 // team's badge, name, plan, who is in it, Copy Link, Invite People and its menu), the tabs (Library, the default, People,
-// Usage with Pro on, and for its admins Audit Log), and the open tab. The People tab is drawn here; the Library and the Audit Log come in from
+// Usage with Pro on, and for its admins Audit Log), and the open tab. On a phone the menu also holds Help, which leaves the
+// Library's one-row toolbar there (Work Tracker 1516). The People tab is drawn here; the Library and the Audit Log come in from
 // the caller, which owns the list and loads the log's code only when it is opened.
 
 import { useMemo, useRef, useState, type ReactNode } from 'react';
@@ -12,7 +13,9 @@ import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
 import type { TeamDetails, TeamMember } from '../../data/teams';
 import { DEFAULT_TEAM_TAB, TEAM_TABS, type TeamTab } from '../../views';
 import { MUTED } from '../../ui/classes';
-import { CloseIcon, LinkIcon, PencilIcon, PlusIcon, SearchIcon, TrashIcon } from '../../ui/icons';
+import { HelpMarkIcon, LinkIcon, PencilIcon, PlusIcon, TrashIcon } from '../../ui/icons';
+import { useIsPhone } from '../../explorer/useViewMode';
+import { FindField } from '../../ui/FindField';
 import { useToast } from '../../ui/Toasts';
 import { LogOutIcon } from '../../ui/icons';
 import { memberName } from '../rules';
@@ -69,7 +72,7 @@ export function TeamView({
   };
   return (
     <div className="flex flex-col gap-5" data-team-page={details.team.id}>
-      <TeamHeader details={details} actions={actions} onInvite={invite} />
+      <TeamHeader details={details} actions={actions} onInvite={invite} helpHref={helpHref} />
       <TeamTabs
         tab={shown}
         onTab={onTab}
@@ -106,11 +109,15 @@ function TeamHeader({
   details,
   actions,
   onInvite,
+  helpHref,
 }: {
   details: TeamDetails;
   actions: TeamActions;
   onInvite: () => void;
+  /** The team's help article: a row of the menu on a phone, where the Library's toolbar leaves Help out. */
+  helpHref?: string;
 }) {
+  const phone = useIsPhone();
   const { team } = details;
   const tier = useTeamTier(team.id);
   const toast = useToast();
@@ -135,6 +142,15 @@ function TeamHeader({
       ? [
           { label: 'Edit Team', icon: <PencilIcon />, run: actions.askEdit },
           { label: 'Invite Link', icon: <LinkIcon />, run: actions.askLink },
+        ]
+      : []),
+    ...(phone && helpHref
+      ? [
+          {
+            label: 'Help',
+            icon: <HelpMarkIcon />,
+            run: () => void window.open(helpHref, '_blank', 'noopener,noreferrer'),
+          },
         ]
       : []),
     ...(actions.rule.canLeave && actions.me
@@ -183,7 +199,7 @@ function TeamHeader({
           <button
             type="button"
             onClick={copyLink}
-            className="relative touch-target-y inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 max-sm:flex-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            className="relative touch-target-y inline-flex h-9 cursor-pointer whitespace-nowrap items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 max-sm:flex-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           >
             <LinkIcon />
             Copy Link
@@ -193,7 +209,7 @@ function TeamHeader({
           <button
             type="button"
             onClick={onInvite}
-            className="relative touch-target-y inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-brand-700 max-sm:flex-1 dark:bg-brand-500 dark:hover:bg-brand-600"
+            className="relative touch-target-y inline-flex h-9 cursor-pointer whitespace-nowrap items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-brand-700 max-sm:flex-1 dark:bg-brand-500 dark:hover:bg-brand-600"
           >
             <PlusIcon />
             Invite People
@@ -394,29 +410,12 @@ function PeopleTab({
                 ),
               )}
             </div>
-            <label className="relative flex h-8 min-w-0 flex-[0_1_14rem] items-center max-sm:flex-1">
-              <span className="pointer-events-none absolute left-2.5 text-slate-400" aria-hidden>
-                <SearchIcon size={14} />
-              </span>
-              <span className="sr-only">Find a Person</span>
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Find a person"
-                className="h-8 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-7 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
-              />
-              {query ? (
-                <button
-                  type="button"
-                  aria-label="Clear search"
-                  onClick={() => setQuery('')}
-                  className="absolute right-1.5 inline-flex size-5 cursor-pointer items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                >
-                  <CloseIcon size={10} />
-                </button>
-              ) : null}
-            </label>
+            <FindField
+              label="Find a person"
+              value={query}
+              onChange={setQuery}
+              className="flex-[0_1_14rem] max-sm:flex-1"
+            />
           </div>
           {nothing ? (
             <p className={`m-0 px-4 py-8 text-center text-sm ${MUTED}`} data-team-no-people="">

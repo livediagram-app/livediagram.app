@@ -67,6 +67,7 @@ export const ORDER: readonly string[] = [
   'plan/card-activity',
   'plan/automations',
   'plan/describe-a-plan',
+  'plan/plan-ai',
   'plan/connect-github',
   'plan/calendar-feed',
   'plan/public-roadmap',

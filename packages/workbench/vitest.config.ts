@@ -54,6 +54,8 @@ const HELD_AT_100 = [
   'src/hooks/editor/useUnusedImagePrompt.ts',
   // Which side a menu flyout opens on (each product's 008-canvas canvas-and-palette.md, Work Tracker 961).
   'src/components/primitives/menu-flyout-side.ts',
+  // The Picker's one face, its reel and strip (each canvas product's 012-collaboration picker.md, Work Tracker 1506).
+  'src/components/canvas/picker/**',
   // A live embed's rules (liveworkspace/docs/specs/004-index/live-embeds.md, Work Tracker 930).
   'src/components/live-embed/live-embed-target.ts',
   'src/components/live-embed/live-embed-slots.ts',
@@ -259,6 +261,10 @@ const HELD_AT_100 = [
   // canvas-and-palette.md "A category that opens a dialog" and element-menu-quick-bar.md "Resources").
   'src/components/dialogs/ElementRowsDialogs.tsx',
   'src/components/dialogs/ElementResourcesDialog.tsx',
+  // A hovered page layout placed through the path a press takes, livedocuments' and livedesign's one copy
+  // (011-workbench/page-layout-preview.md, Work Tracker 1507).
+  'src/lib/page-layout-preview.ts',
+  'src/lib/layout-preview-settle.ts',
 ];
 
 export default defineProject({

@@ -74,6 +74,9 @@ export function useBehaviourSetters({
     patchTarget({ pickerSource }, 'picker', 'Picker');
   const setPickerOptionsSelected = (pickerOptions: string[]) =>
     patchTarget({ pickerOptions }, 'picker', 'Picker');
+  // Remove Once Drawn (docs/specs/012-collaboration/picker.md): turning it on or off starts a fresh round.
+  const setPickerRemoveDrawnSelected = (pickerRemoveDrawn: boolean) =>
+    patchTarget({ pickerRemoveDrawn, pickerDrawn: undefined }, 'picker', 'Picker');
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst it throws.
   const setReactionSelected = (reaction: Reaction) =>
     patchTarget({ reaction }, 'reaction-pad', 'ReactionPad');
@@ -83,6 +86,7 @@ export function useBehaviourSetters({
     setRevealedSelected,
     setPickerSourceSelected,
     setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected,
     setReactionSelected,
   };
 }

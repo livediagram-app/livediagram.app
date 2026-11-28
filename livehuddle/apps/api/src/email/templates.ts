@@ -5,7 +5,7 @@
 // plus a team name the inviter already chose.
 
 import { xmlEscape } from '@liveworkspace/icons';
-import { mentionQuote, subjectText } from '@liveworkspace/email/layout';
+import { dueDayWords, mentionQuote, subjectText } from '@liveworkspace/email/layout';
 import { accessGrantedParts, accessRequestedParts } from '@liveworkspace/email/access-request';
 import type { AccessGrantedEmailInput, AccessRequestedEmailInput } from '@liveworkspace/index-app';
 import type { Env } from '../types';
@@ -111,6 +111,8 @@ export function actionAssignedEmail(
   document: { id: string; name: string } | null,
   actionName: string,
   description: string | null,
+  // Its due day (`YYYY-MM-DD`), named in the intro; null for none.
+  due: string | null = null,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
@@ -126,9 +128,11 @@ export function actionAssignedEmail(
           : description.trim(),
       )
     : null;
+  const dueDay = dueDayWords(due);
+  const dueText = dueDay ? `, due <strong>${dueDay}</strong>` : '';
   const intro = document
-    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
-    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its document yet, so ask them to share it with you.`;
+    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>${dueText}.`
+    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>${dueText}. You can’t open its document yet, so ask them to share it with you.`;
   return {
     kind: 'ActionAssigned',
     subject: `${whoText} assigned you an action`,

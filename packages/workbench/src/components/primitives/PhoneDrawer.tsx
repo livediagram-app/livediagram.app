@@ -9,6 +9,7 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { Portal, SheetHandle, safeInset, useFocusTrap, useSheetDrag } from '@liveworkspace/ui';
 import { announceToastFloorChange, TOAST_FLOOR_POPOVER } from '@liveworkspace/ui/toast';
+import { voiceInputListening } from '@liveworkspace/ui/voice-input';
 
 export type PhoneDrawerProps = {
   // Its accessible name, unless `labelledBy` names a heading inside it.
@@ -54,6 +55,8 @@ export function PhoneDrawer({
     const onKey = (e: KeyboardEvent) => {
       const now = latest.current;
       if (e.key !== 'Escape' || e.defaultPrevented || now.hidden || now.passEscape?.()) return;
+      // A listening microphone in the drawer keeps its Escape: it stops listening only (voice-input.md "Stopping").
+      if (voiceInputListening()) return;
       // Focus in a menu or dialog the panel opened (portalled elsewhere): that one takes its own Escape.
       const focus = document.activeElement;
       const el = sheet.current;

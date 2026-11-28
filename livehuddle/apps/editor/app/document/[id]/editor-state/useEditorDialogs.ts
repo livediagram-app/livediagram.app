@@ -62,9 +62,8 @@ export function useEditorDialogs({
   const nameViews = nameChoiceViews(joinScreenOpen, useNameCardAsked());
   const identityOnlyScreenOpen = nameViews.card;
   const identityTrayOpen = nameViews.tray;
-  // Combined gate for chrome-hide. Only the join-existing flow lives
-  // on this route now; the historical new-document welcome lives on
-  // /live/new.
+  // The name card holds the tours while it is open (they wait on this), and nothing else: it is a modal over the
+  // canvas, so the chrome and both sidebars stay as they are (Work Tracker 1522).
   const anyWelcomeOpen = identityOnlyScreenOpen;
   return {
     contextMenu,

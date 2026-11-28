@@ -99,6 +99,8 @@ describe('Home', () => {
     const index = createFakeIndex({ items });
     renderHome(index);
     await screen.findByRole('heading', { level: 2, name: 'Most Used' });
+    // The heading is drawn while Home loads; its rows come with the request.
+    await screen.findAllByRole('link');
     const used = screen.getByRole('region', { name: 'Most Used' });
     expect(cards(used)).toEqual(['Item 2', 'Item 1']);
     expect(used.textContent).toContain('9 opens');
@@ -126,6 +128,8 @@ describe('Home', () => {
     const onNavigate = vi.fn();
     renderHome(createFakeIndex({ items: twenty() }), onNavigate);
     await screen.findByRole('heading', { name: 'Most Used' });
+    // The heading is drawn while Home loads; its rows come with the request.
+    await screen.findAllByRole('link');
     const more = within(screen.getByRole('region', { name: 'Recent' })).getByRole('link', {
       name: 'See More',
     });
@@ -142,6 +146,8 @@ describe('Home', () => {
   it('draws up to eight in each, Most Used ranked and the rest opened in the timeline', async () => {
     renderHome(createFakeIndex({ items: twenty() }));
     await screen.findByRole('heading', { name: 'Most Used' });
+    // The heading is drawn while Home loads; its rows come with the request.
+    await screen.findAllByRole('link');
     const used = screen.getByRole('region', { name: 'Most Used' });
     expect(cards(used)).toEqual(Array.from({ length: 8 }, (_, k) => `Item ${k + 1}`));
     // The ninth and tenth most used are among the latest opened of the rest.
@@ -166,6 +172,8 @@ describe('Home', () => {
       }),
     );
     await screen.findByRole('heading', { name: 'Most Used' });
+    // The heading is drawn while Home loads; its rows come with the request.
+    await screen.findAllByRole('link');
     const used = screen.getByRole('region', { name: 'Most Used' });
     const charts = [...used.querySelectorAll('[data-day-chart]')];
     // An index that sends no days draws the count alone.
@@ -189,6 +197,8 @@ describe('Home', () => {
       }),
     );
     await screen.findByRole('heading', { name: 'Most Used' });
+    // The heading is drawn while Home loads; its rows come with the request.
+    await screen.findAllByRole('link');
     expect(rows(section('recent')!, 'opened')).toEqual([]);
     expect(rows(section('recent')!, 'made')).toHaveLength(4);
   });
@@ -196,6 +206,8 @@ describe('Home', () => {
   it('leaves out Most Used while nothing is most used', async () => {
     renderHome(createFakeIndex({ items: [opened(1), opened(2), ...madeLater()] }));
     await screen.findByRole('heading', { name: 'Recent' });
+    // The heading is drawn while Home loads; its rows come with the request.
+    await screen.findAllByRole('link');
     expect(section('most-used')).toBeNull();
     expect(rows(section('recent')!, 'opened')).toEqual(['Item 1', 'Item 2']);
   });

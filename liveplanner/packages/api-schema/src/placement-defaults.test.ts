@@ -81,7 +81,9 @@ describe('creationIntentOf', () => {
 
 describe('creationTabKindOf', () => {
   it('is one of the creation tab kinds', () => {
-    expect(CREATION_TAB_KINDS).toEqual(['board', 'sheet', 'dashboard', 'form', 'empty']);
+    // A Session tab can be a new plan's first tab too (docs/specs/026-plan/session-tabs.md "Making one").
+    expect(CREATION_TAB_KINDS).toEqual(['board', 'sheet', 'dashboard', 'form', 'session', 'empty']);
+    expect(creationTabKindOf({ kind: 'session' })).toBe('session');
     expect(creationTabKindOf({ kind: 'sheet' })).toBe('sheet');
     expect(creationTabKindOf({ kind: 'whiteboard' })).toBe('empty');
   });

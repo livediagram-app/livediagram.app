@@ -8,20 +8,17 @@
 // reaching the piece and the walk behind it, which Dialog leaves to its caller. The Screen's large player
 // (docs/specs/009-elements/screen-and-room-sign.md "Screen") and the reading pieces' reader share it.
 import { useRef, type ReactNode } from 'react';
-import { lucideX } from '@liveworkspace/icons/lucide';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import {
   DialogCloseButton,
   DialogFooter,
   DialogHeader,
-  lucideGlyph,
   Portal,
   useEscape,
   useFocusTrap,
   type FocusTrapInitial,
 } from '@livehuddle/ui';
 
-const CloseIcon = lucideGlyph(lucideX, 16);
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 const TONES = {
@@ -105,7 +102,7 @@ export function ReaderShell({
               <DialogCloseButton onClick={onClose} />
             </DialogHeader>
           ) : (
-            // Over the Screen's video: a dark bar, its Close a labelled button that reads on black.
+            // Over the Screen's video: a dark bar, its close the one circled X in its dark tone, which reads on black.
             <div className="flex h-13 shrink-0 items-center justify-between gap-3 border-b border-white/10 px-3">
               <span className="flex min-w-0 items-center gap-2">
                 {barStart}
@@ -113,14 +110,7 @@ export function ReaderShell({
               </span>
               <span className="flex shrink-0 items-center gap-2">
                 {barActions}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-white/10 px-3 text-sm font-medium text-white ring-1 ring-white/15 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-white/25"
-                >
-                  <CloseIcon />
-                  Close
-                </button>
+                <DialogCloseButton tone="dark" onClick={onClose} />
               </span>
             </div>
           )}

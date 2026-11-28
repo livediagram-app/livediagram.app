@@ -3,20 +3,12 @@
 // The phone's way round the Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "The sidebar", On a phone):
 // below `sm` the sidebar folds into a drawer, and the sections bar under the page's header is the one way in. The
 // bar is a single full-width button naming the view on screen; the Explorer stacks it in one sticky block with the
-// header, so the two stay at the top together with no scroll listener. The drawer it opens takes the whole screen.
+// header, so the two stay at the top together with no scroll listener. The drawer it opens (SectionsDrawer.tsx, from its own chunk) takes the whole screen.
 
-import { useEffect, useRef } from 'react';
-import {
-  DialogCloseButton,
-  safeInlinePadding,
-  safeInset,
-  useEscape,
-  useFocusTrap,
-} from '@liveworkspace/ui';
+import { safeInlinePadding } from '@liveworkspace/ui';
 import { ChevronRightIcon, HamburgerIcon } from '../ui/icons';
 import { FOCUS_RING_INSET } from '../ui/classes';
 import { useExplorer } from './context';
-import { Sidebar } from './Sidebar';
 import { viewTitle } from './view-title';
 import { useHostExtras } from './host';
 import { useThisBrowserFolders } from './ThisBrowser';
@@ -31,7 +23,7 @@ export const SECTIONS_COPY = {
 export const SECTIONS_BAR_ATTR = 'data-sections-bar';
 
 // The bar's own side padding (the page's 16px gutter), cleared of a landscape notch.
-const GUTTER = safeInlinePadding('1rem');
+export const GUTTER = safeInlinePadding('1rem');
 
 /** The full-width bar under the header on a phone: the menu glyph, the view's name and a chevron, one button. */
 export function SectionsBar({
@@ -73,56 +65,6 @@ export function SectionsBar({
           <ChevronRightIcon size={14} />
         </span>
       </button>
-    </div>
-  );
-}
-
-/** Stops the page scrolling behind an open drawer, and hands it back as it was when the drawer closes. */
-function useScrollLock() {
-  useEffect(() => {
-    const root = document.documentElement;
-    const before = root.style.overflow;
-    root.style.overflow = 'hidden';
-    return () => {
-      root.style.overflow = before;
-    };
-  }, []);
-}
-
-/** The sidebar on a phone: the whole screen, on the page's own ground (so its rows look as they do beside the pane),
- *  sliding in from the left, its name and close on top. */
-export function SectionsDrawer({ id, onClose }: { id: string; onClose: () => void }) {
-  const panel = useRef<HTMLDivElement>(null);
-  // Focus goes to the panel once, as it opens, stays inside while it is open and goes back to the bar when it
-  // closes. Escape reads the latest onClose: keyed on it, as a fresh arrow each render, the panel took focus back
-  // from whatever row was focused every time the Explorer rendered.
-  useFocusTrap(panel, true, 'container');
-  useEscape(onClose, { preventDefault: true });
-  useScrollLock();
-  return (
-    <div
-      ref={panel}
-      id={id}
-      role="dialog"
-      aria-modal="true"
-      aria-label={SECTIONS_COPY.sidebar}
-      tabIndex={-1}
-      data-sections-drawer=""
-      style={{ paddingTop: safeInset('top'), paddingBottom: safeInset('bottom') }}
-      className="lw-drawer-in fixed inset-0 z-50 flex w-full flex-col bg-slate-50 outline-none sm:hidden dark:bg-slate-950"
-    >
-      <div
-        style={GUTTER}
-        className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 dark:border-slate-800/70"
-      >
-        <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
-          {SECTIONS_COPY.sidebar}
-        </span>
-        <DialogCloseButton onClick={onClose} compact />
-      </div>
-      <div style={GUTTER} className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-3">
-        <Sidebar />
-      </div>
     </div>
   );
 }

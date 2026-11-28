@@ -240,6 +240,8 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | its own address opens it as that link's visitor ("Grants"). Its refusal for a password |
 |                                |                     | asked of a person who sent no code names the link: `401 {error: "password_required",   |
 |                                |                     | link}` (only the code, which that person opened it by; "Reopened without the code").   |
+|                                |                     | Its `404` to a person with no access and no code names the item's least live link,     |
+|                                |                     | `{error: "not_found", link}`, when it has one ("Opened by its editor address").        |
 | `POST /items/:id/archive`      | owner               | To its owner's Archived (below) → `{item}`.                                            |
 | `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                         |
 
@@ -468,7 +470,11 @@ Folders are not per app: one tree per person, and one per team, holding items fr
 updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and items) up a level.
 - `GET /folders/previews?ids=a,b,…&app=`: what folder cards show of their insides: for each of up to 60 folders
   the person reaches, `{folderId, itemCount, items}` with its 4 newest live items (of `app`, when given) and a count
-  that stops at 1000. One batch however many folders; folders out of reach are left out.
+  that stops at 1000. One batch however many folders; folders out of reach are left out. Each also carries `apps`,
+  `{[app]: n}`: how many live items each app keeps in the folder and every folder under it, whatever `app` asks
+  (an app acting for a person: its own only), counting at most 1000 items per folder in all; an app with none is left
+  out, so `{}` is a folder with no items at any depth (the folder badges, one-explorer.md "What a folder holds, at a
+  glance").
 - `GET /spaces/previews?app=`: what Home's Spaces tiles show of each space the person is in
   ([one-explorer.md "Spaces, on Home"](one-explorer.md#spaces-on-home)): `{spaces: [{teamId, itemCount, items}]}`,
   their own (`teamId: null`) first, then each team their token names (at most 50) in its order, each with its 4
@@ -680,10 +686,28 @@ bounded), and the editor's api client does not report that `401` as an error (`i
 `@liveworkspace/workbench/lib/api/core`). It names only the code, never the item's title, owner or anything else, and only to the person the index already
 found in `shared_with` for that live link: someone who opened that very link before (and entered the password since
 it was last set, which clears `shared_with`). Anyone with no link, a revoked or expired one, a public link, or a
-request that sent a code of its own hears what they heard before (`404`, or `password_required` with no `link`). The item's Durable Object
+request that sent a code of its own hears what they heard before (`404`, or `password_required` with no `link`; a
+`404` may name the item's least link instead, "Opened by its editor address" below). The item's Durable Object
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.
+
+**Opened by its editor address.** An owner often copies the editor's address from the browser's bar, meaning to
+send the share link. Whoever opens that address with no access of their own (not the owner, not a member of the
+item's team) and no live link in their Shared with me asks for the grant with no code, and is refused `404`. When the
+item has a live share link, that refusal names one, `{error: "not_found", link: "<code>"}`, and the editor opens the
+item through it (`openShareLink`), exactly as if the visitor had followed the link: through the link's own door
+(`GET /share/:code`), so the item's sign-in rule (Require Sign In, its domains), its share password, the link's level
+and its tab all hold, and nothing is checked twice or skipped. The link named is the one that gives least: the lowest
+level (Viewer, then Participant, then Editor), at one level a one-tab link before a whole-item one, then the oldest. An
+expired link and a public link (a Community post's) are never named, nor any link of an item in the Trash or
+Archived. With none, the refusal is the plain `404` a missing item answers, so the address alone still reveals
+nothing, not even that the item exists. A visitor with no token at all is named the link the same way on their
+`401 unauthorized`. Only a person asking for themselves (or nobody) is named one: an app acting for a person, the
+Drive mirror and a request that sent a code of its own hear what they heard before. The owner and a team member never
+reach it: their own access opens the item as an editor, with no gate or prompt. Item ids are random (UUIDs, or an
+app's own random ids), so an item's address is no easier to guess than a link's code, and holding it opens no more
+than its least link already does.
 
 `aliases` is there only on a person's grant (never a link visitor's) when guests have merged into them: the collab
 key (`collabKeyFor`, `@liveworkspace/api-kit/collab-key`) of each guest in `person_aliases`, newest first, at most 32.
@@ -783,7 +807,9 @@ minute, with retries ([When a push fails](#when-a-push-fails)):
 latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, mentionedBy?,
 latestAgent?, aiState?, card?, firstAt, latestAt}],
 actions: [{elementId, actionId, elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId,
-assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the event log's
+assignerName?, teamId, doneById?, due?, card?, createdAt, updatedAt}]}`. `due` is an action's due day (`YYYY-MM-DD`, a calendar
+  day with no zone; absent when it has none, a malformed one dropped, never the push refused): its Inbox row says it
+  (inbox-reading.md). The same push makes the event log's
   collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
   is cut to length rather than refused. `participantIds` are the people who wrote in the thread themselves;

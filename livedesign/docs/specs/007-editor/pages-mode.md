@@ -867,6 +867,20 @@ in livedocuments.
     words afterwards, by element id.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
+- **Hover previews the layout on the page, exactly as it lands** (Work Tracker 1507,
+  [Page layout preview](../../../../liveworkspace/docs/specs/011-workbench/page-layout-preview.md)): while a tile is
+  hovered (or focused) the canvas draws the page with that layout placed, through the one path a press takes
+  (`layoutPlacedTab`, `apps/live/hooks/editor/page-layout-place.ts`: built for the page, the page's words and pictures
+  carried in, coloured from the tab's theme for the page's half, in place of everything on the page), and draws it as
+  it draws any element: on the page's own background, a wireframe page's cut to its screen under its system bars, in
+  the viewer's half and the tab's font. So the preview and the placed page cannot differ: a press on the layout being
+  shown commits the very elements shown. It is a preview only: nothing is written and nothing enters the history;
+  leaving the tiles (or closing the popover or panel) puts the page back. (The earlier preview drew its own picture
+  of the raw layout over the sheet, before the tab's theme was filled in, so a hovered logo or screen came out in
+  other colours than the one placed.)
+- **It draws the tile the pointer settles on**: a pointer sweeping across the tiles draws nothing until it rests on
+  one for `LAYOUT_PREVIEW_SETTLE_MS` (70 ms); a tile reached by the keyboard is drawn on the next frame; at most one
+  preview is drawn a frame, and putting the page back waits a frame, so focus moving tile to tile never flashes it.
 - **The layout gallery** is how every picker offers a page's layouts (the Layout popover, the empty
   page's card, Choose a Layout's dialog, a logo page's Layouts tab), all of them at once (a
   wireframe page's for its device class); a wireframe page's tiles stand at most 200 px tall, a

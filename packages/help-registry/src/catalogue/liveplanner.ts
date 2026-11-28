@@ -367,6 +367,18 @@ export const articles: Article[] = [
     apps: ['liveplanner'],
   },
   {
+    slug: 'plan-ai',
+    title: 'AI on a Tab',
+    description:
+      'Ask about the open board, sheet, form or dashboard, or tell AI what to change on it, and undo what it did.',
+    keywords:
+      'ai artificial intelligence assistant ask tell instruct change edit board cards create move sheet cells formula formulas total chart sort filter format starter sheet explain fix formula form questions reword add question dashboard sections rows slots resize layout undo built-in ai key copilot chat',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Getting Going',
+    apps: ['liveplanner'],
+  },
+  {
     slug: 'connect-github',
     title: 'Connect GitHub',
     description:

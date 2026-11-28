@@ -11,6 +11,7 @@ import { useFormActions } from '@/hooks/forms/useFormActions';
 import { useFormSheetColumns } from '@/hooks/forms/useFormSheetColumns';
 import { makeFormSheet } from '@/lib/forms-make-sheet';
 import { usePlanTabActions } from '@/hooks/plan/usePlanTabActions';
+import { useSessionTabActions } from '@/hooks/plan/useSessionTabActions';
 import { usePlanTabConversion } from '@/hooks/plan/usePlanTabConversion';
 import { usePlanCoverWiring } from '@/hooks/plan/usePlanCoverWiring';
 import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
@@ -174,6 +175,8 @@ export function useEditorPlan(
     markTabLoaded,
     readTabs: () => tabsRef.current,
   });
+  // Session tabs (docs/specs/026-plan/session-tabs.md): starting one, its set-up and running it.
+  const sessions = useSessionTabActions({ activeId, commitTabs, tickTabs });
   // Form tabs (docs/specs/030-forms/forms.md): starting one and every builder edit.
   const forms = useFormActions({
     activeId,
@@ -268,6 +271,7 @@ export function useEditorPlan(
     planCover,
     planTabs,
     presetCardTypes,
+    sessions,
     teamPeople,
     tourSquare,
   };

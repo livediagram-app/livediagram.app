@@ -6,6 +6,7 @@
 import { memo, type RefObject } from 'react';
 import type { LaidOutPage } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
+import type { LayoutPreviewAsk } from '@liveworkspace/workbench/lib/layout-preview-settle';
 import { LayoutCard } from '@liveworkspace/workbench/components/canvas/layout-gallery/LayoutCard';
 import { LayoutThumb } from '../infographic-layout-thumb';
 import type { GalleryLayout } from './layout-gallery-filter';
@@ -30,7 +31,7 @@ export const LayoutTile = memo(function LayoutTile({
   current?: boolean;
   scrollRoot: RefObject<HTMLElement | null>;
   onPick: (id: PageLayoutId) => void;
-  onPreview: (id: PageLayoutId | null) => void;
+  onPreview: (id: PageLayoutId | null, how?: LayoutPreviewAsk) => void;
 }) {
   const height = Math.round((width * page.rect.height) / page.rect.width);
   return (

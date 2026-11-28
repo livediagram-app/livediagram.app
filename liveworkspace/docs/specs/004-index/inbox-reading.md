@@ -19,7 +19,9 @@ Each row is four short lines, after a dot that marks it unread:
 3. **The words**: the latest comment's first line in quotes for a thread, an action's or a card's note, a
    suggestion's reason, a rule's notice. Absent when there are none.
 4. **Where**: the app's Living Prism, the **app's name** (livediagram, liveplanner, ...) and the item, then the tab
-   (› Board). The teal **Offline** pill for an item only this browser holds.
+   (› Board). The teal **Offline** pill for an item only this browser holds. An action or card with a due day says it
+   after the reason, as its editor does ("To do · Due tomorrow", "Due Thu 3 Dec", the year when it is another), in
+   the reader's own zone, red once past; one without a due day says nothing more.
 
 An **unread** row has the brand dot before its lead and its who and title semibold; a read row has neither. The
 reason's icon is kept beside the phrase so it never rests on words alone. A row an AI wrote last reads the

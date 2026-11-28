@@ -42,7 +42,6 @@ import {
   type PageSizeId,
   type Tab,
 } from '@livedocuments/document';
-import type { PageLayoutId } from '@livedocuments/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -54,25 +53,12 @@ import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits } from './pages-background-copy-edits';
 import { pageSplitEdits } from './page-split-edits';
 import { pageTidyEdits } from './page-tidy-edits';
-import {
-  layoutPlacedTab,
-  showLayout,
-  shownLayoutElements,
-  shownLayoutFor,
-  type LayoutBuild,
-} from './page-layout-place';
-
-// The layout builders, loaded once on first use (a hover's preview or a press).
-let builder: Promise<LayoutBuild> | null = null;
-const layoutBuilder = (): Promise<LayoutBuild> =>
-  (builder ??= import('@livedocuments/templates/page-layout-build').then(
-    (m) => m.buildPageLayoutOver,
-  ));
-// The newest layout hover asked for: one answered after the hover moved on draws nothing.
-let layoutPreviewAsk = 0;
+import { pageLayoutEdits } from './page-layout-place';
 
 export type { CardSplitState } from './page-split-edits';
 import type { PageEdits } from './page-edits-type';
+import { withDraftedPage, type DraftEngine } from './page-draft-edit';
+import type { PageDraft } from '@livedocuments/api-schema';
 export type { PageEdits } from './page-edits-type';
 
 type TabChange = (tab: Tab) => Tab | null;
@@ -405,41 +391,44 @@ export function pageEdits({
     debugLog('[page] page removed', { tabId, pageId });
   };
 
-  // Laid out in the page's content box (the page less its margins), the page's own words and
-  // pictures carried into it (docs/specs/007-editor/pages-mode.md "Content carries over"),
-  // one tab edit, through the one path a hover's preview takes too (page-layout-place.ts): a press
-  // on the layout a hover shows lands exactly the elements shown. The layout builders (every page
-  // layout set) load on the first use rather than with the editor: the pickers that offer a layout
-  // load them already to draw their thumbnails, so by then the module is in hand.
-  const applyLayout = async (pageId: string, layoutId: PageLayoutId): Promise<void> => {
-    if (refusedLocked(pageId, 'layout')) return;
-    const build = await layoutBuilder();
-    track('Tab', 'Changed', 'PageLayout');
-    commitTab((t) => {
-      const seen = shownLayoutFor(tabId, pageId, layoutId, t.elements);
-      return seen ? { ...t, elements: seen } : layoutPlacedTab(t, pageId, layoutId, build);
-    });
-    showLayout(null);
-    onLayoutPlaced();
-    debugLog('[page] layout placed', { tabId, pageId, layout: layoutId });
-  };
-  // A layout tile hovered: the page drawn with it placed, by the canvas itself, writing nothing; null puts it back.
-  // The builders may still be loading on the first hover: a hover that has moved on by then draws nothing.
-  const previewLayout = (pageId: string, layoutId: PageLayoutId | null) => {
-    const ask = ++layoutPreviewAsk;
-    if (!layoutId || isLocked(pageId)) {
-      if (shownLayoutElements(tabId)) showLayout(null);
-      return;
-    }
-    void layoutBuilder().then((build) => {
-      if (ask !== layoutPreviewAsk) return;
-      const placed = layoutPlacedTab(tab, pageId, layoutId, build);
-      if (!placed) return;
-      showLayout({ tabId, pageId, layout: layoutId, over: elements, elements: placed.elements });
-    });
-  };
+  // Placing a layout and previewing a hovered one (page-layout-place.ts).
+  const { applyLayout, previewLayout } = pageLayoutEdits({
+    tabId,
+    tab,
+    elements,
+    commitTab,
+    isLocked,
+    refusedLocked,
+    onLayoutPlaced,
+  });
   const laidOut = layOutPages(current);
   const contentCount = (pageId: string) => elementIdsOnPage(elements, laidOut, pageId).size;
+
+  // Describe a Page (docs/specs/007-editor/describe-a-page.md "The dialog"): the drafted page made as Add Page makes the
+  // next one, laid out and written through the agents' engine, one edit. False when it could not land (a lock, the
+  // page limit, the tab's kind changed while it was drafted).
+  const addDraftedPage = (draft: PageDraft, engine: DraftEngine, after?: string): boolean => {
+    if (!takesEdits()) return false;
+    const opts = {
+      sourceId: current.at(-1)?.id,
+      after: after ?? currentPage() ?? undefined,
+      themed: (t: Tab, id: string) => themed(t, id) ?? t,
+    };
+    const made = withDraftedPage(tab, draft, engine, opts);
+    if (!made) {
+      debugLog('[page] described page refused', { tabId, kind: draft.kind });
+      return false;
+    }
+    track('Tab', 'Changed', 'PageDescribed');
+    commitTab((t) =>
+      t === tab ? made.tab : (withDraftedPage(t, draft, engine, opts)?.tab ?? null),
+    );
+    onLayoutPlaced();
+    onGoTo(made.pageId);
+    if (made.flow) onArticleCreated?.(made.flow);
+    debugLog('[page] described page added', { tabId, kind: draft.kind });
+    return true;
+  };
 
   const previewInk = (preview: { pageId: string; patch: Partial<PageBackground> } | null) => {
     const target = preview ? page(preview.pageId) : undefined;
@@ -505,6 +494,7 @@ export function pageEdits({
     canMove,
     addPage: room ? addPage : undefined,
     addPageLike: room ? addPageLike : undefined,
+    addDraftedPage: room ? addDraftedPage : undefined,
     insertPageLike: room ? insertPageLike : undefined,
     choosePageKind,
     duplicatePage: room ? duplicatePage : undefined,

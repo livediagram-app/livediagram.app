@@ -8,6 +8,7 @@ Follow the references below only as needed; never upfront.
 - ./board-widgets.md - when working on a Plan board's header: its widgets, the Widgets palette category, placing, reordering and removing widgets
 - ./plan-views.md - when working on plan views: metrics and visualisations (Gantt, calendar, workload, status, priority) that read every card
 - ./view-as-diagram.md - when working on View As Diagram: a board drawn as a live livediagram diagram in a connected tab (boxes, Blocked By arrows, lanes, critical path), the dialog, redraws and changes from the diagram (the platform's `004-index/diagrams-and-plans.md`)
+- ./session-tabs.md - when working on Session tabs: a queue of cards worked through one at a time (Refinement, Sprint Planning with its estimate tally against capacity, Bug Triage with its close reasons, duplicates and undo), its set-up, sidebar, card, fill button, outcomes in card history, facilitator and timebox
 - ./item-types.md - when working on item types: the type catalogue, custom types and custom fields, the Card Types panel and the type editor
 - ./plan-tour.md - when working on the Plan tour: the guided tour of Plan mode, on the footer's Get Started button once a board or Sheet is open and run on it, its Boards and Sheets tracks, the Dashboards tour, its Settings row and telemetry
 - ./plan-agents.md - when working on how agents (MCP, CLI) read the plan, name columns, types and fields, and change card types
@@ -21,4 +22,5 @@ Follow the references below only as needed; never upfront.
 - ./public-roadmap.md - when working on the public roadmap: a board published as a live public page of chosen columns, card types and allowlisted fields, its upvotes, Suggest an Idea through a form, who may publish and Unpublish
 - ./email-to-board.md - when working on Email to Board: a board's secret address on in.liveplanner.app, who may manage it, Who Can Send, what a message makes, which mail is taken and the limits
 - ./blueprints/README.md - when implementing Plan mode, the Plan board or the item store: file-level contracts, constants, defaults and tests
+- ./plan-ai.md - when working on Plan AI: the AI button beside Card Types, asked or told to change the open Board, Sheet, Form or Dashboard tab, its share roles, which AI answers and its limits
 - ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the plan is read, where a source opens, the suggested questions (the platform's `020-ask`)

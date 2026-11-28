@@ -151,6 +151,7 @@ export function useEditorComments({
         assigneeMemberId: input.assigneeMemberId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
+        ...(input.due ? { due: input.due } : {}),
         email: input.email,
         tabId: input.tabId,
         elementId: input.elementId,
@@ -169,15 +170,11 @@ export function useEditorComments({
     return actionRowsFromElements(boxed, accountUserId ?? selfParticipant.id);
   }, [activeTab.elements, accountUserId, selfParticipant.id]);
 
-  // The visitor name prompt drives the chrome hide rule (palette / explorer / dock / tab bar all suppressed so the
-  // visitor's focus is on it). Gated on `hydrated` so it only shows once the post-mount useLayoutEffect has replaced
+  // The visitor name prompt. Gated on `hydrated` so it only shows once the post-mount useLayoutEffect has replaced
   // the placeholder participant with the loaded / freshly minted one; otherwise IdentityPrompt's
   // `useState(participant.name)` would capture the SSG placeholder "Guest".
   //
-  // Join screen for visitors landing on an existing document who haven't
-  // confirmed their identity yet. Same chrome-hide rule as the old
-  // welcome modal — focus the user on the name input before they
-  // start editing.
+  // For visitors landing on an existing document who haven't confirmed their identity yet.
   //
   // View-role visitors get this too: their name is broadcast to other
   // participants (cursor label, presence stack, comments), so they need
@@ -201,10 +198,8 @@ export function useEditorComments({
   const nameViews = nameChoiceViews(joinScreenOpen, useNameCardAsked());
   const identityOnlyScreenOpen = nameViews.card;
   const identityTrayOpen = nameViews.tray;
-  // Combined gate for chrome-hide. Only the join-existing flow lives
-  // on this route now; the historical new-document welcome lives on
-  // /live/new.
-  const anyWelcomeOpen = identityOnlyScreenOpen;
+  // The name card is a modal over the canvas and hides no chrome: the sidebars, header and footer stay as they are
+  // while it shows (docs/specs/007-editor/new-document-route.md, Work Tracker 1522).
 
   return {
     participantsByTab,
@@ -230,7 +225,6 @@ export function useEditorComments({
     actionRows,
     identityOnlyScreenOpen,
     identityTrayOpen,
-    anyWelcomeOpen,
   };
 }
 

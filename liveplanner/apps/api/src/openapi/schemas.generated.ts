@@ -9365,6 +9365,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "field"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "duplicateOf": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "session",
+            "type": "string"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/SessionOutcome"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionKindId"
+          },
+          "undone": {
+            "const": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "session",
+          "outcome"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -9436,7 +9467,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "automation_ai",
       "github",
       "automation_github",
-      "email"
+      "email",
+      "session"
     ],
     "type": "string"
   },
@@ -9602,6 +9634,50 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "kind",
       "snapshot"
+    ],
+    "type": "object"
+  },
+  "ItemSessionRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "duplicateOf": {
+        "description": "The id of the card a closed card duplicates, a card of this plan other than itself; only with `closed`.",
+        "type": "string"
+      },
+      "outcome": {
+        "description": "What the session decided, one its kind offers: `refined`, `skipped` or `flagged` (Refinement); `committed` or `skipped` (Sprint Planning); `accepted`, `closed`, `skipped` or `flagged` (Bug Triage).",
+        "enum": [
+          "refined",
+          "skipped",
+          "flagged",
+          "committed",
+          "accepted",
+          "closed"
+        ],
+        "type": "string"
+      },
+      "reason": {
+        "description": "A Close's reason, at most 200 characters; only with `closed`.",
+        "type": "string"
+      },
+      "session": {
+        "description": "The session kind: `refinement`, `planning` (Sprint Planning) or `triage` (Bug Triage).",
+        "enum": [
+          "refinement",
+          "planning",
+          "triage"
+        ],
+        "type": "string"
+      },
+      "undone": {
+        "const": true,
+        "description": "The outcome was taken back (Undo Outcome, Undo Last).",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "session",
+      "outcome"
     ],
     "type": "object"
   },
@@ -12429,7 +12505,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "board",
       "sheet",
       "dashboard",
-      "form"
+      "form",
+      "session"
     ],
     "type": "string"
   },
@@ -13862,6 +13939,169 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "SessionDecision": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "by": {
+        "type": "string"
+      },
+      "duplicateOf": {
+        "type": "string"
+      },
+      "flagSet": {
+        "const": true,
+        "type": "boolean"
+      },
+      "from": {
+        "type": "string"
+      },
+      "fromRank": {
+        "type": "string"
+      },
+      "linked": {
+        "type": "string"
+      },
+      "outcome": {
+        "$ref": "#/components/schemas/SessionOutcome"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "to": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "outcome",
+      "at",
+      "by"
+    ],
+    "type": "object"
+  },
+  "SessionFacilitator": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "color"
+    ],
+    "type": "object"
+  },
+  "SessionKindId": {
+    "enum": [
+      "refinement",
+      "planning",
+      "triage"
+    ],
+    "type": "string"
+  },
+  "SessionOutcome": {
+    "enum": [
+      "refined",
+      "skipped",
+      "flagged",
+      "committed",
+      "accepted",
+      "closed"
+    ],
+    "type": "string"
+  },
+  "SessionSetup": {
+    "additionalProperties": false,
+    "properties": {
+      "capacity": {
+        "type": "number"
+      },
+      "closeTargets": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "sortBy": {
+        "items": {
+          "$ref": "#/components/schemas/BoardSortLevel"
+        },
+        "type": "array"
+      },
+      "statuses": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "targets": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "timeboxMs": {
+        "type": "number"
+      },
+      "typeIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "typeIds",
+      "statuses"
+    ],
+    "type": "object"
+  },
+  "SessionTabState": {
+    "additionalProperties": false,
+    "properties": {
+      "cardStartedAt": {
+        "type": "number"
+      },
+      "currentId": {
+        "type": "string"
+      },
+      "decided": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/SessionDecision"
+        },
+        "type": "object"
+      },
+      "facilitator": {
+        "$ref": "#/components/schemas/SessionFacilitator"
+      },
+      "sessionKind": {
+        "$ref": "#/components/schemas/SessionKindId"
+      },
+      "setup": {
+        "$ref": "#/components/schemas/SessionSetup"
+      },
+      "v": {
+        "const": 1,
+        "type": "number"
+      }
+    },
+    "required": [
+      "v",
+      "sessionKind",
+      "setup"
+    ],
+    "type": "object"
+  },
   "SessionTool": {
     "enum": [
       "timer",
@@ -14149,14 +14389,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "penTextColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
+      "pickerDrawn": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "pickerOptions": {
         "items": {
           "type": "string"
         },
         "type": "array"
       },
+      "pickerRemoveDrawn": {
+        "type": "boolean"
+      },
       "pickerResult": {
         "type": "string"
+      },
+      "pickerRolledAt": {
+        "type": "number"
       },
       "pickerSource": {
         "$ref": "#/components/schemas/PickerSource"
@@ -15715,6 +15967,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "patternColor": {
         "type": "string"
       },
+      "session": {
+        "$ref": "#/components/schemas/SessionTabState"
+      },
       "tagColours": {
         "items": {
           "$ref": "#/components/schemas/TagColour"
@@ -15784,7 +16039,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "board",
       "sheet",
       "dashboard",
-      "form"
+      "form",
+      "session"
     ],
     "type": "string"
   },
@@ -15871,6 +16127,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rev": {
         "type": "number"
+      },
+      "session": {
+        "$ref": "#/components/schemas/SessionTabState"
       },
       "tagColours": {
         "items": {

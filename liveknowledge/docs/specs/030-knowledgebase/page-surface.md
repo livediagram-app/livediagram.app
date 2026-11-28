@@ -354,7 +354,9 @@ Owner, 2026-11-20: "Pages, Ask and Insights should be represented like tabs in t
   behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
   Share, so nothing stands over the reading column at any width.
 - On a phone the four tabs are the footer's row, 44 px targets: the open view's tab shows its icon and short label (Pages, Ask, Insights, Connect, with Connect's X when open), every other tab its icon alone, named in full for a screen reader and in its card (coordinator 2026-11-24: four labels and the X ran under More at 390 px). Under 360 px wide the open tab's label goes too, so nothing overlaps from 320 px up; the
-  notification list stays beside them and the footer's other items go behind one **More** button. Its card opens above the Ask, Insights and Connect
+  footer's other items go behind one **More** button, all but the notification list and the appearance, which a phone's
+  footer leaves out (Work Tracker 1508: the theme is in Settings › Appearance, the Inbox is the Explorer's, and toasts
+  fade where they are). Its card opens above the Ask, Insights and Connect
   views too (at the popover layer), so Get Started, Tools and Settings stay in reach on every view. The top row
   there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's
   writing bar takes the row and the row's own buttons step aside until the caret leaves.
@@ -498,8 +500,23 @@ per-page and no per-tab style.
 - **The chrome follows the theme**, as in every liveworkspace editor: the accent the sidebar, tabs, buttons and
   links use is the knowledgebase's theme accent, in the light and dark halves the theme defines. **Review Due** stays
   amber and errors stay red in every theme; the Verified tick takes the theme accent.
-  - The top row and the footer follow it too (the formatting bar's active state, Share, the footer's tabs): unlike
-    the other editors' header and tab bar, they carry no opt-out. Only the logo keeps the product's own colours.
+  - **Themed from the first frame** (Work Tracker 1521). Whatever puts the knowledgebase on screen puts its style
+    in the style store first and names it the one shown (`knowledgeStyleStore.show`, in `showDocument`): a first
+    load, a reload, another knowledgebase, and a warm open, which paints the last seen copy before the editor holds
+    the knowledgebase's id. Until the id is held, every reader without one (the chrome's tint, the canvas) reads the
+    shown knowledgebase's style, never the default; leaving the editor clears it. The last seen copy keeps the style
+    as it is now: a change after the open (made here or through the room) is folded into the copy
+    (`useKnowledgeStyleCopyFollow`, the follower's `followItem`), and the style the open read is never written again.
+    The editor's tint and light ground are written in the same commit that first draws the editor, before the
+    browser paints (`useEditorAccent`, an insertion effect). Switching to another knowledgebase rewrites both in
+    place, never removing them, so the next knowledgebase's buttons, mounted in that commit, start in its theme
+    rather than animating (`transition-colors`) out of the product's colours. No frame shows the knowledgebase in the product's own
+    colours on its way to its theme, in light, dark or any theme; nothing more is waited for, so the load takes no
+    longer.
+  - The top row and the footer follow it too (the formatting bar's active state, the footer's tabs): unlike the
+    other editors' header and tab bar, they carry no opt-out. Only the logo keeps the product's own colours, and
+    Share's words, which wear the knowledgebase's visibility in every app (Private green, Shared blue, Team violet,
+    Public pink, Offline grey; [editor-app.md "Header actions"](../007-editor/editor-app.md#header-actions)), never its theme.
   - A theme whose accent is too pale to carry text (a pastel's rose, a yellow, a mid orange) is deepened, hue kept,
     until white reads on its solid fills and its deeper step reads on its wash at 4.5:1.
   - In the dark appearance the page's ground is the chrome's own dark surface, so under a theme that tints the dark

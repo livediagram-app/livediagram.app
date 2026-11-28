@@ -10,15 +10,14 @@
 // Most Used and Recent's card of one has Offline's menu (ThisBrowserItemMenu: Open, Sync, Delete where the host can)
 // and drags to the Trash or a place (drag.tsx), each through these same verbs.
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import {
   BROWSER_STORAGE_COPY,
   THIS_BROWSER_COPY,
   type ThisBrowserConversion,
   type ThisBrowserItem,
 } from '../this-browser';
-import { DAY_MONTH } from '@liveworkspace/ui/date-format';
-import { LIST_CARD, MUTED } from '../ui/classes';
+import { MUTED } from '../ui/classes';
 import { ArchiveIcon, FolderOutlineIcon, TrashIcon } from '../ui/icons';
 import { useExplorer } from './context';
 import { useHostExtras } from './host';
@@ -26,7 +25,6 @@ import { PaneIconButton } from '../panel/pane-parts';
 import { LocalPreview } from './LocalPreview';
 import { useThisBrowserDrag } from '../drag/drag';
 import { useSyncLocal } from './this-browser-space/space';
-import { daysLeftLabel } from './TrashPane';
 import { useArchiveLocal, ThisBrowserPill } from './ThisBrowserItemMenu';
 export { useThisBrowserList, useThisBrowserFolders } from './this-browser-store';
 export {
@@ -67,7 +65,7 @@ export { LocalPreview };
 
 // Live: out of the app's Trash and out of Archived (one-explorer.md "Archived"), which only Archived lists.
 const live = (i: ThisBrowserItem) => i.trashedAt === null && !i.archivedAt;
-const localTrashed = (i: ThisBrowserItem) => i.trashedAt !== null && !i.archivedAt;
+export const localTrashed = (i: ThisBrowserItem) => i.trashedAt !== null && !i.archivedAt;
 /** Archived in this browser, newest first. */
 export const localArchived = (i: ThisBrowserItem) => i.trashedAt === null && Boolean(i.archivedAt);
 
@@ -187,38 +185,4 @@ export function LocalRow({
 export function useThisBrowserTrashed(): number {
   const { thisBrowser } = useHostExtras();
   return useMemo(() => thisBrowser?.items.filter(localTrashed).length ?? 0, [thisBrowser]);
-}
-
-/** The Trash's Offline group: each opens in its app, whose own Trash restores or deletes it. */
-export function ThisBrowserTrashGroup() {
-  const { thisBrowser } = useHostExtras();
-  const [now] = useState(() => Date.now());
-  const trashed = useMemo(() => thisBrowser?.items.filter(localTrashed) ?? [], [thisBrowser]);
-  if (trashed.length === 0) return null;
-  return (
-    <section
-      aria-labelledby="trash-this-browser"
-      data-trash-group="this-browser"
-      className={LIST_CARD}
-    >
-      <header className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-slate-700/60">
-        <h2
-          id="trash-this-browser"
-          className="min-w-0 truncate text-sm font-semibold text-slate-800 dark:text-slate-100"
-        >
-          {BROWSER_STORAGE_COPY.label}
-        </h2>
-        <span className={`text-xs ${MUTED}`}>Open one to restore or delete it.</span>
-      </header>
-      <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
-        {trashed.map((item) => (
-          <LocalRow
-            key={item.id}
-            item={item}
-            detail={`Deleted ${DAY_MONTH.format(item.trashedAt!)} · ${daysLeftLabel(item.trashedAt!, now)}`}
-          />
-        ))}
-      </ul>
-    </section>
-  );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, useEscape } from '@liveplanner/ui';
+import { Button, DialogCloseButton, useEscape } from '@liveplanner/ui';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import type { Participant } from '@/lib/identity';
@@ -53,14 +53,10 @@ export function IdentityPrompt({
               : 'Pick the name people will see while you collaborate on this plan.'}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onCancel}
-          aria-label="Close"
-          className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <CloseIcon />
-        </button>
+        {/* Pulled 8px up and down: the 44px close centres on the title's 28px line. */}
+        <div className="-my-2 shrink-0">
+          <DialogCloseButton onClick={onCancel} />
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto px-6 pb-8 pt-5">
         <IdentityNameRow

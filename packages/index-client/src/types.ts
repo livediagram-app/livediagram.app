@@ -202,6 +202,9 @@ export type CollabActionInput = {
   teamId: string | null;
   // Who closed it, when the app knows (the event log's `action_done`); unknown, its assignee.
   doneById?: string | null;
+  // The action's due day (`YYYY-MM-DD`, a calendar day with no zone), which its Inbox row says; absent when it has
+  // none. A card's due day rides in `card.due`.
+  due?: string;
   createdAt: number;
   updatedAt: number;
   // An open card assigned to someone rather than an element's action (pushed under COLLAB_CARDS_TAB, `elementId`
@@ -313,8 +316,15 @@ export type InboxForm = {
 };
 
 // A folder's newest items (at most FOLDER_PREVIEW_ITEMS) and how many live items it holds directly, counted up to
-// FOLDER_PREVIEW_COUNT_CAP.
-export type FolderPreview = { folderId: string; itemCount: number; items: Item[] };
+// FOLDER_PREVIEW_COUNT_CAP; and `apps`, each app's live items in it and every folder under it (an app with none left
+// out), every app whatever the filter, FOLDER_PREVIEW_COUNT_CAP items in all. Optional: an index from before it
+// sends none.
+export type FolderPreview = {
+  folderId: string;
+  itemCount: number;
+  items: Item[];
+  apps?: Partial<Record<App, number>>;
+};
 
 // A space's newest items (at most FOLDER_PREVIEW_ITEMS) and how many live items it holds in all, counted up to
 // FOLDER_PREVIEW_COUNT_CAP: the person's own (`teamId: null`) or a team's.

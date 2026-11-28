@@ -23,7 +23,7 @@ import { StartPlanning } from './start/StartPlanning';
 import type { PlanTemplateKind } from '@liveplanner/templates';
 import type { Tab } from '@liveplanner/project';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
-import type { PlanVisualisation } from '@liveplanner/items';
+import type { PlanVisualisation, SessionKindId } from '@liveplanner/items';
 
 // The most columns a preview draws.
 const PREVIEW_COLUMNS = 5;
@@ -138,8 +138,11 @@ export function PlanBoardPicker({
   onImport,
   onDescribe,
   onDescribeForm,
+  onSession,
 }: {
   onPick: (preset: string) => void;
+  // Sets up a Session tab (Start Planning's Sessions, docs/specs/026-plan/session-tabs.md); absent, none.
+  onSession?: (kind: SessionKindId) => void;
   // Opens Describe a Form (Start Planning's Forms card, docs/specs/030-forms/describe-a-form.md); absent, no card.
   onDescribeForm?: (() => void) | undefined;
   // Opens Describe a Plan (Start Planning's rail entry and search card); absent, neither.
@@ -190,6 +193,7 @@ export function PlanBoardPicker({
       onImport={onImport}
       onDescribe={onDescribe}
       onDescribeForm={onDescribeForm}
+      onSession={onSession}
     />
   );
 }

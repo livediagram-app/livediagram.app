@@ -44,7 +44,7 @@ export function PageContentsSidebar({
       contents={contents}
       pages={view.pages}
       focusPage={view.focusPage}
-      footer={(end) => <ContentsAddPage contents={contents} end={end} />}
+      footer={(end) => <ContentsAddPage contents={contents} view={view} end={end} />}
       badges={contentsBadges}
       summary={contents.summary}
       // Stack Pages in Contents Options: an Editor's, on a tab whose pages may stand either way

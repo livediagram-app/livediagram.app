@@ -96,12 +96,38 @@ describe('the Image Gallery', () => {
       })),
     });
     page({ kind: 'gallery' }, { gallery: host });
-    fireEvent.click(await screen.findByRole('button', { name: 'Used in 1 item' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Used in 1 file' }));
     expect(screen.queryByText('Not used')).toBeNull();
     expect(screen.getByRole('link', { name: 'Brief' }).getAttribute('href')).toBe(
       'https://livedocuments.app/document/doc-1',
     );
     expect(screen.getByText('in livedocuments')).toBeTruthy();
+  });
+
+  it('says files for every count in no app, its own uses and other apps’ alike', async () => {
+    const host = galleryHost([image(1), image(2)], {
+      usage: vi.fn(async () => ({
+        uses: {
+          'img-1': [{ id: 'd1', title: 'Flow', href: '/d/d1' }],
+          'img-2': [
+            {
+              id: 'doc-1',
+              title: 'Brief',
+              href: 'https://livedocuments.app/document/doc-1',
+              app: 'livedocuments',
+            },
+          ],
+        },
+        unchecked: new Set<string>(),
+      })),
+    });
+    page(
+      { kind: 'gallery' },
+      { gallery: host, filter: 'all', newApps: ['livediagram', 'livedocuments'] },
+    );
+    await screen.findByText('photo-1.png');
+    expect(await screen.findAllByRole('button', { name: 'Used in 1 file' })).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: /Used in 1 (item|canvas)/ })).toBeNull();
   });
 
   it('deletes after asking, saying where it is still used', async () => {
@@ -139,10 +165,15 @@ describe('the Image Gallery', () => {
     page({ kind: 'gallery' }, { gallery: host });
     const show = await screen.findByRole('group', { name: 'Show' });
     const [all, unused] = within(show).getAllByRole('button');
-    expect(all!.textContent).toBe('All');
+    // Each chip counts its images: all three, and the two nothing places.
+    expect(all!.textContent).toBe('All3');
+    expect(unused!.textContent).toBe('Unused2');
     expect(all!.getAttribute('aria-pressed')).toBe('true');
-    // Just left of Help.
-    expect(show.nextElementSibling?.textContent).toBe('Help');
+    // In the toolbar over the grid, beside Find an image; Help stays in the header.
+    const toolbar = document.querySelector<HTMLElement>('[data-gallery-toolbar]')!;
+    expect(toolbar.contains(show)).toBe(true);
+    expect(within(toolbar).getByRole('searchbox', { name: 'Find an image' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Help' })).toBeTruthy();
     fireEvent.click(unused!);
     expect(unused!.getAttribute('aria-pressed')).toBe('true');
     const grid = screen.getByRole('list', { name: 'Unused images' });
@@ -164,10 +195,10 @@ describe('the Image Gallery', () => {
 
   it('says every image is in use, and offers All again', async () => {
     page({ kind: 'gallery' }, { gallery: galleryHost([image(1)]) });
-    fireEvent.click(await screen.findByRole('button', { name: 'Unused' }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Unused/ }));
     expect(screen.getByText('No unused images')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Show All Images' }));
-    expect(screen.getByRole('button', { name: 'All' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: /^All/ }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByText('photo-1.png')).toBeTruthy();
   });
 
@@ -186,7 +217,7 @@ describe('the Image Gallery', () => {
     expect(screen.getByText('Old board')).toBeTruthy();
     expect(screen.getByText('(in the Trash)')).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Old board' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Unused' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Unused/ }));
     const grid = screen.getByRole('list', { name: 'Unused images' });
     expect(within(grid).getByText('photo-2.png')).toBeTruthy();
     expect(within(grid).queryByText('photo-3.png')).toBeNull();
@@ -204,7 +235,7 @@ describe('the Image Gallery', () => {
     page({ kind: 'gallery' }, { gallery: host });
     expect(await screen.findByText('In Library')).toBeTruthy();
     expect(screen.getAllByText('Not used')).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Unused' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Unused/ }));
     const grid = screen.getByRole('list', { name: 'Unused images' });
     expect(within(grid).getByText('photo-3.png')).toBeTruthy();
     expect(within(grid).queryByText('photo-2.png')).toBeNull();
@@ -217,7 +248,7 @@ describe('the Image Gallery', () => {
     page({ kind: 'gallery' }, { gallery: host });
     expect(await screen.findAllByText('Couldn’t check')).toHaveLength(2);
     expect(screen.queryByText('Not used')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Unused' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Unused/ }));
     expect(screen.getByText('No unused images')).toBeTruthy();
     expect(screen.getByText(/couldn’t be checked just now/)).toBeTruthy();
     expect(screen.queryByText(/so there is nothing to clear/)).toBeNull();
@@ -226,6 +257,112 @@ describe('the Image Gallery', () => {
     expect((await screen.findByRole('dialog')).textContent).toContain(
       'We couldn’t check where it’s used',
     );
+  });
+
+  // Work Tracker 1491: the Gallery could be narrowed only to All or Unused.
+  it('finds images by name, every word anywhere in it, and clears from the empty state', async () => {
+    const host = galleryHost([
+      image(1, { name: 'Dark Logo v2.png' }),
+      image(2, { name: 'team-photo.jpg' }),
+      image(3, { name: null }),
+    ]);
+    page({ kind: 'gallery' }, { gallery: host });
+    const find = await screen.findByRole('searchbox', { name: 'Find an image' });
+    fireEvent.change(find, { target: { value: 'logo DARK' } });
+    expect(screen.getByText('Dark Logo v2.png')).toBeTruthy();
+    expect(screen.queryByText('team-photo.jpg')).toBeNull();
+    fireEvent.change(find, { target: { value: 'untitled' } });
+    expect(screen.getByText('Untitled image')).toBeTruthy();
+    fireEvent.change(find, { target: { value: 'zebra' } });
+    expect(screen.getByText(/No images match “.zebra.”/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Search' }));
+    expect(screen.getByText('team-photo.jpg')).toBeTruthy();
+    // Escape clears it too, and the clear button.
+    fireEvent.change(find, { target: { value: 'team' } });
+    fireEvent.keyDown(find, { key: 'Escape' });
+    expect((find as HTMLInputElement).value).toBe('');
+    fireEvent.change(find, { target: { value: 'team' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+    expect((find as HTMLInputElement).value).toBe('');
+    expect(host.list).toHaveBeenCalledTimes(1);
+    expect(host.usage).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the images an app uses from its chip, with its count, beside the search', async () => {
+    const host = galleryHost([image(1), image(2), image(3), image(4)], {
+      usage: vi.fn(async () => ({
+        uses: {
+          // The host's own (an older api names no app), and another app's.
+          'img-1': [{ id: 'd1', title: 'Roadmap' }],
+          'img-2': [
+            { id: 'doc-1', title: 'Brief', app: 'livedocuments' },
+            { id: 'd2', title: 'Board', app: 'livediagram' },
+          ],
+          'img-3': [{ id: 'doc-2', title: 'Notes', app: 'livedocuments', trashed: true }],
+        },
+        unchecked: new Set<string>(),
+      })),
+    });
+    page({ kind: 'gallery' }, { gallery: host });
+    const show = await screen.findByRole('group', { name: 'Show' });
+    await waitFor(() =>
+      expect(
+        within(show)
+          .getAllByRole('button')
+          .map(
+            (b) =>
+              `${b.getAttribute('data-gallery-chip') ?? 'all'} ${b.lastElementChild?.textContent}`,
+          ),
+      ).toEqual(['all 4', 'unused 1', 'livediagram 2', 'livedocuments 2']),
+    );
+    const docs = within(show).getByRole('button', { name: /^livedocuments/ });
+    fireEvent.click(docs);
+    expect(docs.getAttribute('aria-pressed')).toBe('true');
+    const grid = screen.getByRole('list', { name: 'Images in livedocuments' });
+    expect(within(grid).getByText('photo-2.png')).toBeTruthy();
+    expect(within(grid).getByText('photo-3.png')).toBeTruthy();
+    expect(within(grid).queryByText('photo-1.png')).toBeNull();
+    // With the search, the two narrow together.
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find an image' }), {
+      target: { value: 'photo-3' },
+    });
+    expect(screen.queryByText('photo-2.png')).toBeNull();
+    expect(screen.getByText('photo-3.png')).toBeTruthy();
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find an image' }), {
+      target: { value: 'photo-1' },
+    });
+    expect(
+      screen.getByText(/Search looks at the names of the images in livedocuments/),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Show All Images' }));
+    expect(screen.getByText('photo-1.png')).toBeTruthy();
+    // Pressing the chip that is on goes back to All.
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find an image' }), {
+      target: { value: '' },
+    });
+    fireEvent.click(docs);
+    fireEvent.click(docs);
+    expect(within(show).getByRole('button', { name: /^All/ }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+  });
+
+  it('says when an app’s chip is left with nothing after a delete', async () => {
+    const host = galleryHost([image(1), image(2)], {
+      usage: vi.fn(async () => ({
+        uses: { 'img-1': [{ id: 'doc-1', title: 'Brief', app: 'livedocuments' }] },
+        unchecked: new Set<string>(),
+      })),
+    });
+    page({ kind: 'gallery' }, { gallery: host });
+    fireEvent.click(await screen.findByRole('button', { name: /^livedocuments/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete photo-1.png' }));
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete Image' }),
+    );
+    expect(await screen.findByText('No images in livedocuments')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Show All Images' }));
+    expect(screen.getByText('photo-2.png')).toBeTruthy();
   });
 
   it('has no Show switch without images or without usage to read', async () => {

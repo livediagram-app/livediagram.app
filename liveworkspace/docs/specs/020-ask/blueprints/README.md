@@ -6,30 +6,31 @@ Implements [ask.md](../ask.md).
 
 `packages/ask` (`@liveworkspace/ask`):
 
-| File                          | Holds                                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------------------ |
-| `src/limits.ts`               | every bound, with its value                                                                      |
-| `src/passages.ts`             | `AskPassage`, `contentWords`, `choosePassages` (the editor), `readPassages` (the server)         |
-| `src/request.ts`              | `askSystem`, `askRequest`, `readTurns`                                                           |
-| `src/answer.ts`               | `askAnswerStream`, `parseAskAnswer`: the reply's reader, shared with liveknowledge's Ask         |
-| `src/answer-parts.ts`         | `answerParts`, `answerWithoutMarkers`, `markedParts`, shared with liveknowledge's Ask            |
-| `src/events.ts`               | `readEvents`: a server-sent-events body, shared with liveknowledge's Ask                         |
-| `src/wire.ts`                 | `AskRequestBody`, `AskEvent`, `AskSource`, the refusal codes                                     |
-| `src/server/serve-ask.ts`     | `serveAsk(door)`: the whole route                                                                |
-| `src/server/daily-count.ts`   | `spendAskIn` (the room's side), `spendAsk` (the worker's side), `askCountName`                   |
-| `src/server/ask-credits.ts`   | `askCreditsOf` (the app's door, null with Pro off), `askPayer`, `chargeAsk`                      |
-| `src/ui/AskCreditsNotice.tsx` | a question the month's AI credits refused: the kit's `LimitNotice` with Ask Again                |
-| `src/ui/ask-tools-item.tsx`   | `useAskToolsItem(host)`: the Tools row, the tool behind `lazy` (`@liveworkspace/ask/tools-item`) |
-| `src/ui/AskTool.tsx`          | the tool: thread, field, Sources                                                                 |
-| `src/ui/AskComposer.tsx`      | the question box: field, count, AI pill slot, New Chat, Send and Stop; no app's words or context |
-| `src/ui/AnswerWith.tsx`       | the AI pill and its menu (`builtIn: false` drops the built-in row; `builtInDetail` its words)    |
-| `src/ui/composer.ts`          | `@liveworkspace/ask/composer`: the box, the pill and `askAiView`, for liveknowledge's Ask        |
-| `src/ui/AskSources.tsx`       | the Sources popover's content                                                                    |
-| `src/ui/conversation.ts`      | `AskConversation`, one per item (`conversationOf`), the six most recent kept                     |
-| `src/ui/tab-passages.ts`      | `tabPassages(tabs, options)`: the walk every editor shares                                       |
-| `src/ui/ask-client.ts`        | `askSender(accountId)`: the POST and its stream, through the workbench's api binding             |
-| `src/ui/ask-ai-choice.ts`     | the person's choice, in `localStorage`                                                           |
-| `src/ui/answer-lite.ts`       | the light Markdown a finished answer is drawn from                                               |
+| File                          | Holds                                                                                                                                                          |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/limits.ts`               | every bound, with its value                                                                                                                                    |
+| `src/passages.ts`             | `AskPassage`, `contentWords`, `choosePassages` (the editor), `readPassages` (the server)                                                                       |
+| `src/request.ts`              | `askSystem`, `askRequest`, `readTurns`                                                                                                                         |
+| `src/answer.ts`               | `askAnswerStream`, `parseAskAnswer`: the reply's reader, shared with liveknowledge's Ask                                                                       |
+| `src/answer-parts.ts`         | `answerParts`, `answerWithoutMarkers`, `markedParts`, shared with liveknowledge's Ask                                                                          |
+| `src/events.ts`               | `readEvents`: a server-sent-events body, shared with liveknowledge's Ask                                                                                       |
+| `src/wire.ts`                 | `AskRequestBody`, `AskEvent`, `AskSource`, the refusal codes                                                                                                   |
+| `src/server/serve-ask.ts`     | `serveAsk(door)`: the whole route                                                                                                                              |
+| `src/server/daily-count.ts`   | `spendAskIn` (the room's side), `spendAsk` (the worker's side), `askCountName`                                                                                 |
+| `src/server/ask-credits.ts`   | `askCreditsOf` (the app's door, null with Pro off), `askPayer`, `chargeAsk`                                                                                    |
+| `src/server/ai-draft.ts`      | `openAiDraft(door, opts)`: one operation on Ask's rules (its AI, the day, a credit after); Send to Knowledge Base's summary and livedocuments' Describe a Page |
+| `src/ui/AskCreditsNotice.tsx` | a question the month's AI credits refused: the kit's `LimitNotice` with Ask Again                                                                              |
+| `src/ui/ask-tools-item.tsx`   | `useAskToolsItem(host)`: the Tools row, the tool behind `lazy` (`@liveworkspace/ask/tools-item`)                                                               |
+| `src/ui/AskTool.tsx`          | the tool: thread, field, Sources                                                                                                                               |
+| `src/ui/AskComposer.tsx`      | the question box: field, count, AI pill slot, New Chat, Send and Stop; no app's words or context                                                               |
+| `src/ui/AnswerWith.tsx`       | the AI pill and its menu (`builtIn: false` drops the built-in row; `builtInDetail` its words)                                                                  |
+| `src/ui/composer.ts`          | `@liveworkspace/ask/composer`: the box, the pill and `askAiView`, for liveknowledge's Ask                                                                      |
+| `src/ui/AskSources.tsx`       | the Sources popover's content                                                                                                                                  |
+| `src/ui/conversation.ts`      | `AskConversation`, one per item (`conversationOf`), the six most recent kept                                                                                   |
+| `src/ui/tab-passages.ts`      | `tabPassages(tabs, options)`: the walk every editor shares                                                                                                     |
+| `src/ui/ask-client.ts`        | `askSender(accountId)`: the POST and its stream, through the workbench's api binding                                                                           |
+| `src/ui/ask-ai-choice.ts`     | the person's choice, in `localStorage`                                                                                                                         |
+| `src/ui/answer-lite.ts`       | the light Markdown a finished answer is drawn from                                                                                                             |
 
 Sending an answer on (ask.md "Sending an answer on") is the workbench's, so liveknowledge's Ask uses the same row:
 `components/send-to-plan/AnswerSendActions.tsx` (the two buttons, shown only while the host lets this session send),

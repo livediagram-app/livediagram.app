@@ -131,7 +131,7 @@ Collaborators and Tab Style (livedocuments, livediagram) and liveworkspace.app's
 
 `SettingsView` (`@liveworkspace/settings-ui`) draws the header for every Settings: `settingsHeroArt` unless the host
 passes `heroArt` (through `SettingsPanel`), its line the panel's `subtitle` for the side shown, the scope switch and
-the kit's close as its actions, and `[--hero-centre-end:17rem]` while the switch shows. Tab Style's own panel (not
+the kit's close as its actions, and `[--hero-centre-end:18.5rem]` while the switch shows. Tab Style's own panel (not
 `Dialog`) gives its `SheetHandle` `relative z-10` and the header `underHandle`, as `Dialog`'s phone sheet does.
 
 ## Size

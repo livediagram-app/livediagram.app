@@ -264,7 +264,7 @@ const GITHUB_VIEW = {
     />
   ),
   // The art's centre clears the wider actions when GitHub's button stands beside New Rule.
-  heroClassName: '[--hero-centre-end:18rem]',
+  heroClassName: '[--hero-centre-end:19.5rem]',
 };
 
 export const PLAN_AUTOMATIONS_KIT = defineAutomationsKit<

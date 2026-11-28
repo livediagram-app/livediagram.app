@@ -35,6 +35,7 @@ import { useInsertCanvasProps } from './editor-canvas-host/useInsertCanvasProps'
 import { useEditCanvasProps } from './editor-canvas-host/useEditCanvasProps';
 import { usePrototypeHost } from '@/components/prototype/usePrototypeHost';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
+import { useShownLayoutElements } from '@/hooks/editor/page-layout-place';
 
 // Prototype mode's player (docs/specs/007-editor/wireframe-pages.md "Prototype mode"): loaded on first play, so the
 // editor's first load carries none of it.
@@ -58,7 +59,6 @@ export function EditorCanvasHost() {
     commitElements,
     layerInertIds,
     laserConfig,
-    anyWelcomeOpen,
     beginAnchorDrag,
     broadcastCursor,
     broadcastLaser,
@@ -175,7 +175,9 @@ export function EditorCanvasHost() {
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
-  const shownElements = activeTab.elements;
+  // A hovered layout (Work Tracker 1507) is drawn through this same path as the placed page it previews.
+  const layoutShown = useShownLayoutElements(activeTab.id);
+  const shownElements = layoutShown ?? activeTab.elements;
   // On a page with a fill of its own, an element is drawn for that page rather than the chrome
   // (stock-colour-projector.ts "PageView"); off Pages mode, or with no filled page, nothing to do.
   const pageView = usePageView(shownElements, pagesMode?.pages, activeTab.theme);
@@ -348,7 +350,6 @@ export function EditorCanvasHost() {
               // shows the identity prompt so `lockedName` is moot there;
               // pure guests pass null and keep the editable name field.
               identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
-              welcomeOpen={anyWelcomeOpen}
               selfParticipant={selfParticipant}
               onConfirmIdentity={confirmIdentity}
               onCancelIdentity={cancelIdentity}

@@ -16,6 +16,7 @@ import { type ItemRow, type Access, getItemRow } from '../rows';
 import { eventStatements } from '../events';
 import { itemHistory } from '../history';
 import { recordVisitorCopy, recordVisitorOpen } from '../visitors';
+import { withFallbackLink } from '../share-fallback';
 import { recordOpen } from './opens';
 import { insertItem, itemFor, optionalId } from './create';
 import { clientIpOf } from './shared';
@@ -333,7 +334,9 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
 async function grantItem(ctx: RouteContext, id: string): Promise<Response> {
   const { env, caller } = ctx;
   const loaded = await loadItem(env, id, caller, 'view');
-  if (loaded instanceof Response) return loaded;
+  // Refused with no code: the item's least live link, when it has one, for the editor to open it through
+  // (share-fallback.ts, "Opened by its editor address").
+  if (loaded instanceof Response) return withFallbackLink(env, id, caller, loaded);
   const { row, access } = loaded;
   // An archived item is never granted: its owner (the only one who still reaches it) hears why.
   if (isArchived(row)) return archivedRefusal();

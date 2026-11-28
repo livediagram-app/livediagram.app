@@ -20,7 +20,7 @@ storage, route or room op.
 | the menu's note rows      | `SelectionMenuActions.comment`, `.addAction`, fed by `setSelectionNoteEntry` (`@liveworkspace/workbench` `selection-menu/selection-note-entry.ts`) |
 | the list's card           | `PageNoteCard`, from `pageNotesOf(tab)` (`apps/editor/lib/page-notes/page-notes.ts`)                                                               |
 | the notes' look           | `noteMarkStyles(tab)`, drawn by `PageNotesLook`                                                                                                    |
-| due day                   | `ElementAction.due` (`'YYYY-MM-DD'`), worded by `actionDueWords` (`@liveworkspace/workbench/lib/action-due`)                                       |
+| due day                   | `ElementAction.due` (`'YYYY-MM-DD'`), worded by `actionDueWords` (`@liveworkspace/index-client/action-due`)                                        |
 | anchor on the wire        | `DocumentCommentThread.anchor`: `CommentThreadAnchor` = `{ text } \| { detached: true }`                                                           |
 
 ## Behaviour and state
@@ -114,17 +114,17 @@ chip, the words "Due").
 
 ## Testing
 
-| Rule                                                      | Test                                                              |
-| --------------------------------------------------------- | ----------------------------------------------------------------- |
-| anchor survives edits, undo; detached kept, empty gone    | `apps/editor/lib/article/article-note-anchoring.test.ts`          |
-| the package helpers                                       | `packages/document/src/article-note-anchors.test.ts`              |
-| addReadingNote writes the saved page, refusals, abandoned | `apps/editor/hooks/editor/useArticles.reading-note.test.ts`       |
-| bar, keys, menu rows and the list, by role                | `apps/editor/components/page-notes/page-notes-roles.test.tsx`     |
-| list derivation, styles, the pick, the bar's place, keys  | `apps/editor/lib/page-notes/*.test.ts`                            |
-| not an update, restore keeps notes, the anchor on wire    | `apps/api/src/knowledge/note-anchors-api.test.ts`                 |
-| agent write keeps detached notes                          | `packages/edit-operations/src/pages/article-write.test.ts`        |
-| menu rows and entry, due words                            | workbench `selection-menu/*.test.ts(x)`, `lib/action-due.test.ts` |
-| MCP anchor                                                | `packages/agent-verbs/src/mcp/thread-run.test.ts`                 |
+| Rule                                                      | Test                                                                       |
+| --------------------------------------------------------- | -------------------------------------------------------------------------- |
+| anchor survives edits, undo; detached kept, empty gone    | `apps/editor/lib/article/article-note-anchoring.test.ts`                   |
+| the package helpers                                       | `packages/document/src/article-note-anchors.test.ts`                       |
+| addReadingNote writes the saved page, refusals, abandoned | `apps/editor/hooks/editor/useArticles.reading-note.test.ts`                |
+| bar, keys, menu rows and the list, by role                | `apps/editor/components/page-notes/page-notes-roles.test.tsx`              |
+| list derivation, styles, the pick, the bar's place, keys  | `apps/editor/lib/page-notes/*.test.ts`                                     |
+| not an update, restore keeps notes, the anchor on wire    | `apps/api/src/knowledge/note-anchors-api.test.ts`                          |
+| agent write keeps detached notes                          | `packages/edit-operations/src/pages/article-write.test.ts`                 |
+| menu rows and entry, due words                            | workbench `selection-menu/*.test.ts(x)`, index-client `action-due.test.ts` |
+| MCP anchor                                                | `packages/agent-verbs/src/mcp/thread-run.test.ts`                          |
 
 ## Constants and configuration
 

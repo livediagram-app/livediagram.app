@@ -125,7 +125,13 @@ export function HomePane({ hero }: { hero: boolean }) {
 
   const showMostUsed = loading || (!failed && mostUsed.length > 0);
   const showShared = shared.items.length > 0;
-  const rail = showMostUsed || !spaces.empty || showShared;
+  const showTimeline = timelineLoading || failed || timeline;
+  const layout = homeLayout({
+    timeline: showTimeline,
+    mostUsed: showMostUsed,
+    rest: !spaces.empty || showShared,
+  });
+  const cells = LAYOUT_CELLS[layout];
 
   return (
     <div data-explorer-view="home">
@@ -141,12 +147,10 @@ export function HomePane({ hero }: { hero: boolean }) {
               width, not the window's: the sidebar takes its share). Below that one column, Most Used first (the
               quickest way back in on a phone), then the timeline, then the rail's other panels: the order they are
               written in, so a keyboard and a screen reader meet them in that order too. */}
-          <div className="@container" data-home-layout="">
-            <div
-              className={`grid grid-cols-1 items-start gap-6 sm:gap-8 ${rail ? '@4xl:grid-cols-[minmax(0,1fr)_20rem] @4xl:grid-rows-[auto_1fr] @6xl:grid-cols-[minmax(0,1fr)_22rem]' : ''}`}
-            >
+          <div className="@container" data-home-layout={layout}>
+            <div className={`grid grid-cols-1 items-start gap-6 sm:gap-8 ${LAYOUT_GRID[layout]}`}>
               {showMostUsed ? (
-                <div className="min-w-0 @4xl:col-start-2 @4xl:row-start-1">
+                <div className={`min-w-0 ${cells.mostUsed}`}>
                   <HomeSection
                     id="most-used"
                     title={HOME_COPY.mostUsed}
@@ -167,6 +171,7 @@ export function HomePane({ hero }: { hero: boolean }) {
                                 line="used"
                                 rank={i + 1}
                                 peak={peak}
+                                iconMarks
                               />
                             </li>
                           ))}
@@ -181,8 +186,8 @@ export function HomePane({ hero }: { hero: boolean }) {
                   </HomeSection>
                 </div>
               ) : null}
-              {timelineLoading || failed || timeline ? (
-                <div className="min-w-0 @4xl:col-start-1 @4xl:row-span-2 @4xl:row-start-1">
+              {showTimeline ? (
+                <div className={`min-w-0 ${cells.timeline}`}>
                   <HomeSection
                     id="recent"
                     title={HOME_COPY.recent}
@@ -206,7 +211,7 @@ export function HomePane({ hero }: { hero: boolean }) {
               ) : null}
               {!spaces.empty || showShared ? (
                 <div
-                  className={`flex min-w-0 flex-col gap-6 @4xl:col-start-2 ${showMostUsed ? '@4xl:row-start-2' : '@4xl:row-start-1'}`}
+                  className={`flex min-w-0 flex-col gap-6 ${showMostUsed ? cells.rest : cells.restAlone}`}
                   data-home-rail=""
                 >
                   <HomeSpaces state={spaces} />
@@ -221,7 +226,7 @@ export function HomePane({ hero }: { hero: boolean }) {
                       <ul>
                         {shared.items.map((item) => (
                           <li key={item.id} className="min-w-0">
-                            <HomeRow item={item} showApp={showApp} line="opened" />
+                            <HomeRow item={item} showApp={showApp} line="opened" iconMarks />
                           </li>
                         ))}
                       </ul>
@@ -236,6 +241,51 @@ export function HomePane({ hero }: { hero: boolean }) {
     </div>
   );
 }
+
+/**
+ * How Home lays out its sections once the pane is 56rem wide (one-explorer.md "Home's layout"): `rail`, the timeline
+ * on the left and the rail's panels on the right; `split`, no timeline, so Most Used and the rail's other panels share
+ * the width half and half rather than leave the timeline's column empty (Work Tracker 1523); `single`, one column
+ * across the width (the timeline alone, or a lone panel or panel stack). Narrower, every layout is one column, in the
+ * order the sections are written.
+ */
+export type HomeLayout = 'rail' | 'split' | 'single';
+
+export function homeLayout(shown: {
+  timeline: boolean;
+  mostUsed: boolean;
+  rest: boolean;
+}): HomeLayout {
+  if (shown.timeline) return shown.mostUsed || shown.rest ? 'rail' : 'single';
+  return shown.mostUsed && shown.rest ? 'split' : 'single';
+}
+
+const LAYOUT_GRID: Record<HomeLayout, string> = {
+  rail: '@4xl:grid-cols-[minmax(0,1fr)_20rem] @4xl:grid-rows-[auto_1fr] @6xl:grid-cols-[minmax(0,1fr)_22rem]',
+  split: '@4xl:grid-cols-2',
+  single: '',
+};
+
+// Where each section sits in the wide grid: Most Used, the timeline, and the rail's other panels (`rest` under or
+// beside Most Used, `restAlone` with no Most Used).
+const LAYOUT_CELLS: Record<
+  HomeLayout,
+  { mostUsed: string; timeline: string; rest: string; restAlone: string }
+> = {
+  rail: {
+    mostUsed: '@4xl:col-start-2 @4xl:row-start-1',
+    timeline: '@4xl:col-start-1 @4xl:row-span-2 @4xl:row-start-1',
+    rest: '@4xl:col-start-2 @4xl:row-start-2',
+    restAlone: '@4xl:col-start-2 @4xl:row-start-1',
+  },
+  split: {
+    mostUsed: '@4xl:col-start-1 @4xl:row-start-1',
+    timeline: '',
+    rest: '@4xl:col-start-2 @4xl:row-start-1',
+    restAlone: '',
+  },
+  single: { mostUsed: '', timeline: '', rest: '', restAlone: '' },
+};
 
 /** A rail panel's rows as they load: the row's shape, with or without its thumbnail. */
 function RowsSkeleton({ rows, thumb }: { rows: number; thumb: boolean }) {

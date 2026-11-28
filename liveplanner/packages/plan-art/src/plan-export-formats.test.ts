@@ -17,6 +17,8 @@ describe('the formats a tab exports to', () => {
 
   it('offers a Form tab only the JSON, the one format that carries its form', () => {
     expect(exportFormatsFor({ kind: 'form' })).toEqual(['file']);
+    // A Session tab the same: its page is no element (docs/specs/026-plan/session-tabs.md "Agents and export").
+    expect(exportFormatsFor({ kind: 'session' })).toEqual(['file']);
   });
 
   it('never offers a Plan tab a Logo Kit or GIF', () => {

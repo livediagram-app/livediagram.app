@@ -42,7 +42,6 @@ export function editorViewHeader(
   },
 ): ReactNode {
   const {
-    anyWelcomeOpen,
     appChrome,
     copying,
     designId,
@@ -59,9 +58,7 @@ export function editorViewHeader(
     can,
   } = ctx;
   // Prototype (docs/specs/007-editor/wireframe-pages.md "Prototype mode"): on a wireframe tab, for every role.
-  const prototype = offersPrototype(can, activeTab, anyWelcomeOpen) ? (
-    <PrototypeHeaderButton />
-  ) : undefined;
+  const prototype = offersPrototype(can, activeTab) ? <PrototypeHeaderButton /> : undefined;
   // Experiment: no header bar. The name and its visibility badge are gone; Prototype, Copy, Share and the account float in a
   // card at the top right.
   return zenMode || !appChrome ? null : (
@@ -71,7 +68,7 @@ export function editorViewHeader(
         call={<ItemCallButton />}
         leadAction={prototype}
         itemName={ctx.designName}
-        showShare={canShareDesign && hydrated && !anyWelcomeOpen}
+        showShare={canShareDesign && hydrated}
         shareable={designShareable}
         // The Share button's colour reads the design's visibility, as the header's badge did.
         visibility={{
@@ -79,10 +76,10 @@ export function editorViewHeader(
           offline: view.isOffline,
           community: view.headerCommunity,
         }}
-        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
-        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during
+        // hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
-          !canShareDesign && hydrated && !anyWelcomeOpen && designId && !sessionCommunity
+          !canShareDesign && hydrated && designId && !sessionCommunity
             ? () => void makeCopy()
             : undefined
         }
@@ -100,7 +97,7 @@ export function editorViewHeader(
   );
 }
 
-// The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
+// The tab bar, the editor's footer. Hidden in zen mode and in embeds (a visitor's name card hides nothing).
 // Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
 export function editorViewFooter(
   ctx: EditorContextValue,
@@ -117,7 +114,6 @@ export function editorViewFooter(
     activeTab,
     addTab,
     followMe,
-    anyWelcomeOpen,
     embedMode,
     workbench,
     clearTabContent,
@@ -153,7 +149,7 @@ export function editorViewFooter(
     openCollaborators,
   } = ctx;
   const { isOffline, selectTab } = view;
-  return anyWelcomeOpen || zenMode || embedMode ? null : (
+  return zenMode || embedMode ? null : (
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
         <TabBarWithConnect

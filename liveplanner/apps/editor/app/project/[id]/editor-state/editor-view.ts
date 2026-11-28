@@ -60,6 +60,7 @@ export function buildEditorView(slices: {
   return {
     planTabs: planSlice.planTabs,
     forms: planSlice.forms,
+    sessions: planSlice.sessions,
     surface: env.surface,
     tourSquare: planSlice.tourSquare,
     addCustomColour: planDataSlice.addCustomColour,
@@ -421,6 +422,7 @@ export function buildEditorView(slices: {
     setSessionConfigSelected: styleSlice.setSessionConfigSelected,
     setPickerSourceSelected: styleSlice.setPickerSourceSelected,
     setPickerOptionsSelected: styleSlice.setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected: styleSlice.setPickerRemoveDrawnSelected,
     pressSessionButton: tabToolsSlice.pressSessionButton,
     setSessionConfigFor: tabToolsSlice.setSessionConfigFor,
     pickerFor: tabToolsSlice.pickerFor,

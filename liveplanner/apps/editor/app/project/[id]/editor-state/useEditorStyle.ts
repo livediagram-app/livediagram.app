@@ -196,6 +196,7 @@ export function useEditorStyle(
     setSessionConfigSelected,
     setPickerSourceSelected,
     setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected,
   } = usePortalSetters({
     currentSelectionIds,
     contextTargetId: contextMenu?.mode === 'element' ? contextMenu.elementId : null,
@@ -422,6 +423,7 @@ export function useEditorStyle(
     setPaddingSelected,
     setPageHeading,
     setPickerOptionsSelected,
+    setPickerRemoveDrawnSelected,
     setPickerSourceSelected,
     setPieAnimRepeatSelected,
     setPieAnimSelected,

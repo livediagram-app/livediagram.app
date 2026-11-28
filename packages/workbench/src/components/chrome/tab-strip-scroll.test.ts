@@ -139,6 +139,16 @@ describe('edgeMask', () => {
     expect(edgeMask({ left: true, right: true })).toContain('transparent 24px');
   });
 
+  it('runs to the very edge on a touch screen, with no button to clear', () => {
+    expect(edgeMask({ left: false, right: true }, true)).toBe(
+      'linear-gradient(to right, #000 0, #000 calc(100% - 16px), transparent 100%)',
+    );
+    expect(edgeMask({ left: true, right: false }, true)).toBe(
+      'linear-gradient(to right, transparent 0px, #000 16px, #000 100%)',
+    );
+    expect(edgeMask({ left: false, right: false }, true)).toBeUndefined();
+  });
+
   it('is fully opaque before a revealed tab stops', () => {
     expect(TAB_REVEAL_PAD).toBeGreaterThanOrEqual(44);
   });

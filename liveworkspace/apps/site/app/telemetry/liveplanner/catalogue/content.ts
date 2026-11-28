@@ -1348,12 +1348,49 @@ export const PLAN_CALENDAR_MOVES = chart(
   { types: ['CalendarDue', 'CalendarStart'] },
 );
 
+export const PLAN_STATUS_FROM_HEADER = chart(
+  'Plan',
+  'Changed',
+  'Cards Moved From the Status Pill',
+  "A card moved to another column from the status pill in a phone's card header.",
+  { types: ['StatusFromHeader'] },
+);
+
 export const PLAN_TABS_CREATED = chart(
   'Plan',
   'Created',
   'Plan Tabs Started',
-  'A Board, Sheet, Dashboard or Visualisation tab started from Start Planning, or a dashboard it suggested.',
-  { types: ['BoardTab', 'SheetTab', 'DashboardTab', 'VisualisationTab', 'SuggestedDashboard'] },
+  'A Board, Sheet, Dashboard, Visualisation or Session tab started from Start Planning, or a dashboard it suggested.',
+  {
+    types: [
+      'BoardTab',
+      'SheetTab',
+      'DashboardTab',
+      'VisualisationTab',
+      'SessionTab',
+      'SuggestedDashboard',
+    ],
+  },
+);
+
+// Session tabs (docs/specs/026-plan/session-tabs.md "Telemetry", in the liveplanner folder): each card's outcome as
+// the facilitator decides it. Never the card or the plan.
+export const PLAN_SESSION_OUTCOMES = chart(
+  'Plan',
+  'Used',
+  'Session Outcomes',
+  'A card decided in a Session tab: Refined (moved on to its next stage), Skipped, Flagged, Committed into a sprint in Sprint Planning, Accepted or Closed in Bug Triage; and a decision undone.',
+  {
+    types: [
+      'SessionRefined',
+      'SessionSkipped',
+      'SessionFlagged',
+      'SessionCommitted',
+      'SessionAccepted',
+      'SessionClosed',
+      'SessionUndone',
+    ],
+  },
 );
 
 export const PLAN_REVEALED = chart(
@@ -1773,6 +1810,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
+  PLAN_STATUS_FROM_HEADER,
   PLAN_VIEW_STATUSES,
   PLAN_VIEW_RANGE,
   PLAN_CARD_STYLES,
@@ -1783,6 +1821,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_CARD_TYPES_INHERITED,
   PLAN_CARD_TYPES_DETACHED,
   PLAN_REVEALED,
+  PLAN_SESSION_OUTCOMES,
   PLAN_CSV_IMPORTED,
   PLAN_CSV_EXPORTED,
 ];
@@ -1792,7 +1831,7 @@ export const PLAN_BOARDS: MetricStack = {
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
-  // Calendar moves, chart statuses, flow chart ranges, card styles, webhook secrets regenerated, calendar links reset or
+  // Calendar moves, status pill moves, chart statuses, flow chart ranges, card styles, webhook secrets regenerated, calendar links reset or
   // changed and roadmap settings changed are slices of Boards Set Up (every
   // Plan·Changed), and time added by hand a slice of Items Added (every Plan·Added), so the head counts them once. A
   // card from a template is already one of Items Added.
@@ -1800,6 +1839,7 @@ export const PLAN_BOARDS: MetricStack = {
     (m) =>
       m !== PLAN_CARD_TEMPLATES_USED &&
       m !== PLAN_CALENDAR_MOVES &&
+      m !== PLAN_STATUS_FROM_HEADER &&
       m !== PLAN_AUTOMATION_SECRETS_REGENERATED &&
       m !== PLAN_CALENDAR_FEEDS_RESET &&
       m !== PLAN_CALENDAR_FEED_OPTIONS &&

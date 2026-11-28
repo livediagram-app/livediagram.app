@@ -175,6 +175,10 @@ A toast is easy to miss. Every one is also written to a list the person can open
 
 - **A bell icon, with no label**, in the bottom bar, right of Settings: the editor's tab bar (every product) and the
   Explorer's bottom bar on liveworkspace.app. Its accessible name and hover card say "Notifications".
+- **Not on a phone's editor tab bar** (Work Tracker 1508): there the bar's width goes to the tabs, so the bell and the
+  light / dark switch beside it are hidden (`phone:hidden` on the pair). A phone keeps its toasts; they fade where they
+  are as they leave (below), the theme is in Settings › Appearance, and the Inbox is the Explorer's. The Explorer's
+  bottom bar, which has no tabs to give room to, keeps both.
 - **A dot on the bell** (brand colour, 8px, top right) when the list holds a toast the person has not seen: one that
   timed out, one retired from a full stack, or one that never popped up because notifications are off. A toast whose
   action the person took counts as seen; one they closed is not in the list at all. Opening the list marks everything in it seen and clears
@@ -187,8 +191,8 @@ A toast is easy to miss. Every one is also written to a list the person can open
   so the eye follows where it went. The bell then gives one small pulse (it grows to 115% and back over `short`).
 - **A closed toast does not collapse into the bell**: it fades and drops 4px over `micro` where it is, as it is gone
   from the list.
-- Where there is no bell on screen (a page without the bottom bar, a presentation, the bar scrolled or hidden), a
-  toast leaves as before: it fades and drops 4px over `micro`.
+- Where there is no bell on screen (a page without the bottom bar, a presentation, the bar scrolled or hidden, a
+  phone's editor), a toast leaves as before: it fades and drops 4px over `micro`.
 - **Under reduced motion** (the system setting or the app's Reduce Motion), a toast fades out where it is and the bell
   does not pulse.
 

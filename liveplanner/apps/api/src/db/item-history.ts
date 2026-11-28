@@ -26,8 +26,9 @@ import {
 // A card with no status, as a webhook names where it was.
 const NO_STATUS = 'No Status';
 
-// One landed write to one card: the card as it stood (null for a create) and as written.
-export type HistoryWrite = { before: Item | null; after: Item };
+// One landed write to one card: the card as it stood (null for a create) and as written. `changes`, when given, are
+// the entry's own rather than worked out from the two (a Session tab's outcome, which writes nothing on the card).
+export type HistoryWrite = { before: Item | null; after: Item; changes?: ItemHistoryChange[] };
 
 // Appends an entry per write that changed something a reader asks about, in one batch: one insert for every entry
 // (the rows as one JSON parameter, so a bulk create of n cards adds one statement, not n), then each changed card's
@@ -53,8 +54,8 @@ export async function appendItemHistory(
   const moves: string[] = [];
   const trimmed = new Set<string>();
   let cutoff = 0;
-  for (const { before, after } of writes) {
-    const changes = historyChangesOf(before, after);
+  for (const { before, after, changes: given } of writes) {
+    const changes = given ?? historyChangesOf(before, after);
     if (changes.length === 0) continue;
     if (listening) heard.push({ before, after, changes });
     const by = before ? after.updatedBy : after.createdBy;

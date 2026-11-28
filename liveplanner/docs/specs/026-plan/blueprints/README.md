@@ -13,10 +13,12 @@ Follow the references below only as needed; never upfront.
 - ./linked-boards.md - when implementing linked boards: the Actions board, linked cards, the heal, Won't Do and the links between canvas and board
 - ./tracker-import.md - when implementing the import from another tool: the readers, the plan and preview, imported comments, the editor's Import dialog view and the agent doors
 - ./plan-file.md - when implementing the whole plan file: the Export dialog's Whole Plan, the Import dialog's A Whole Plan row, the api's file routes and their checks
+- ./plan-ai.md - when implementing Plan AI: the ask and its reader, the api route, the editor's button, panel, tab readers and each kind's changes
 - ./describe-a-plan.md - when implementing Describe a Plan: the ask and the reply's reader, the api route and its per-account count, the editor's entry, dialog and preview
 - ./github-pull-requests.md - when implementing GitHub pull requests: the Pull Request field's reading module, card mentions, every consumer of the kind, and the parts still to build (webhook receiver, connection, state, rules)
 - ./calendar-feed.md - when implementing the calendar feed: the plan's feed table, the token, the access check, the .ics writer and the route, and the My Work feed through the index
 - ./public-roadmap.md - when implementing the public roadmap: the roadmaps table, the managing routes, the allowlisted public read and the vote, Votes as a sort field, the Publish Roadmap dialog and the public page
 - ./email-to-board.md - when implementing Email to Board: the addresses table and directory, the managing routes, the Worker's email door, the delivery and the card, the dialog
+- ./session-tabs.md - when implementing Session tabs: the `session` tab kind and `Tab.session`, the queue and target stage rules, the outcome route and history entry, the page, the fill button and the facilitator
 - ./DEFAULTS.md - when a Plan blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a Plan blueprint covers

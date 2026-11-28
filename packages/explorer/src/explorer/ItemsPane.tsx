@@ -29,9 +29,8 @@ import { EmptyPane, SkeletonRows } from './EmptyPane';
 import { OtherAppsHere } from './OtherAppsHere';
 import { FilteredEmpty, LensBar } from './lazy-lens';
 import { LensAnnouncer } from './LensAnnouncer';
-import { DetailsView } from './lazy-panes';
+import { ArchivedIntro, DetailsView, TrashPane } from './lazy-panes';
 import { useLensContext } from './SearchField';
-import { TrashNote, TrashPane } from './TrashPane';
 import { ThisBrowserArchivedGroup, useThisBrowserArchived } from './ArchivedThisBrowser';
 import { useArchivedAsk } from './useArchivedAsk';
 import { ListView } from './ListView';
@@ -40,7 +39,7 @@ import { TeamNotFound, TeamPage } from './TeamPane';
 import { NotFoundCard } from './NotFoundCard';
 import { PaneHeader, type Crumb } from './PaneHeader';
 import { viewTitle } from './view-title';
-import { useViewMode } from './useViewMode';
+import { useIsPhone, useViewMode } from './useViewMode';
 import { KindChips, SortMenu } from './team/LibraryToolbar';
 import {
   kindCounts,
@@ -56,6 +55,7 @@ export function ItemsPane({ view }: { view: ItemsView }) {
   const ctx = useExplorer();
   const { client, app, filter, overlay, epoch, folders, words, onCreate, viewerId } = ctx;
   const [mode, setMode] = useViewMode();
+  const phone = useIsPhone();
   // Details draws from its own chunk: a list that opens in it fetches the code while its items load.
   useEffect(() => {
     if (mode === 'details') void DetailsView.preload();
@@ -178,11 +178,25 @@ export function ItemsPane({ view }: { view: ItemsView }) {
     key: string;
     kinds: ReturnType<typeof kindCounts>;
     total: number;
+    folders: number;
   } | null>(null);
-  if (whole && (counted.current?.key !== viewKey || counted.current.total !== state.items.length)) {
-    counted.current = { key: viewKey, kinds: kindCounts(state.items), total: state.items.length };
+  if (
+    whole &&
+    (counted.current?.key !== viewKey ||
+      counted.current.total !== state.items.length ||
+      counted.current.folders !== folderRows.length)
+  ) {
+    counted.current = {
+      key: viewKey,
+      kinds: kindCounts(state.items),
+      total: state.items.length,
+      folders: folderRows.length,
+    };
   }
   const libraryCounts = counted.current?.key === viewKey ? counted.current : null;
+  // The Library tab counts what its root lists: the items and the folders beside them (Work Tracker 1504), so a
+  // library of folders alone never reads 0. The kind chips count items only, as they filter items.
+  const libraryTabCount = libraryCounts ? libraryCounts.total + libraryCounts.folders : null;
   const sharedProps = {
     folders: folderRows,
     items: libraryItems,
@@ -246,7 +260,8 @@ export function ItemsPane({ view }: { view: ItemsView }) {
   );
 
   if (teamRoot && view.kind === 'team') {
-    // The team's own header and tabs stand over the Library: its toolbar is the kind chips, Sort, the layout and New.
+    // The team's own header and tabs stand over the Library: its toolbar is the kind chips, Sort, the layout and New;
+    // on a phone one row (the scope chip, Sort as an icon, New), the kind chips under it (Work Tracker 1516).
     const teamMode = mode === 'list' ? 'card' : mode;
     const teamBody =
       mode === 'list' &&
@@ -262,7 +277,7 @@ export function ItemsPane({ view }: { view: ItemsView }) {
       );
     return (
       <div data-explorer-view={view.kind}>
-        <TeamPage teamId={view.id} tab={view.tab} libraryCount={libraryCounts?.total ?? null}>
+        <TeamPage teamId={view.id} tab={view.tab} libraryCount={libraryTabCount}>
           <PaneHeader
             leading={
               <KindChips
@@ -282,9 +297,11 @@ export function ItemsPane({ view }: { view: ItemsView }) {
             onSetViewMode={setMode}
             viewModes={TEAM_VIEW_MODES}
             showFilter
+            phoneRow
             actions={
               teamMode === 'card' ? (
                 <SortMenu
+                  compact={phone}
                   sort={librarySort}
                   onSort={(next) => {
                     setLibrarySort(next);
@@ -340,7 +357,13 @@ export function ItemsPane({ view }: { view: ItemsView }) {
           words={words}
         />
       ) : null}
-      {view.kind === 'trash' ? <TrashNote words={words} /> : null}
+      {archivedView && !state.loading && !state.error && !empty ? (
+        <ArchivedIntro
+          words={words}
+          count={state.items.length + localArchived.length}
+          more={state.hasMore}
+        />
+      ) : null}
       {body}
       {/* Kept in this browser, so it shows even when the account's list can't load (offline). */}
       {archivedView && !state.loading ? (

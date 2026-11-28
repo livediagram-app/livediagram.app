@@ -68,6 +68,7 @@ export const ROOT_TYPES = [
   'ItemsMoveRequest',
   'ItemsTallyRequest',
   'ItemTimeRequest',
+  'ItemSessionRequest',
   'ItemTypesRequest',
   'ItemTypesResponse',
   'PlanResponse',

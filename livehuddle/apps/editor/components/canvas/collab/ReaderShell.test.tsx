@@ -44,7 +44,7 @@ describe('the reader (docs/specs/008-canvas/avatar-mode.md "The reader")', () =>
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps the Screen's dark bar, its Close labelled", () => {
+  it("keeps the Screen's dark bar, its close the circled X in white", () => {
     const onClose = vi.fn();
     render(
       <ReaderShell title="Screen" tone="dark" onClose={onClose}>
@@ -55,7 +55,7 @@ describe('the reader (docs/specs/008-canvas/avatar-mode.md "The reader")', () =>
     const close = within(screen.getByRole('dialog', { name: 'Screen' })).getByRole('button', {
       name: 'Close',
     });
-    expect(close.textContent).toContain('Close');
+    expect(close.className).toMatch(/\bsize-11\b.*\bbg-white\/10\b/);
     fireEvent.click(close);
     expect(onClose).toHaveBeenCalledTimes(1);
   });

@@ -33,6 +33,8 @@ function verbOf(change: ItemHistoryChange): Verb {
       return 'Unflagged';
     case 'set':
       return change.field === 'title' ? 'Renamed' : 'Edited';
+    // An agent never runs a session; a session entry it somehow carried reads as an edit.
+    case 'session':
     case 'cleared':
     case 'type':
       return 'Edited';

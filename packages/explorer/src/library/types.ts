@@ -134,6 +134,12 @@ export type WalkthroughEntry = {
  *  Walkthroughs"): listed, played from a blob read with their token, and deleted for good. */
 export type WalkthroughsHost = {
   list: (signal?: AbortSignal) => Promise<WalkthroughEntry[]>;
+  /** The list in parts, where it comes from several apps (mergedWalkthroughsHost): `onPart` hears the list so far,
+   *  newest first, as each app answers, and `done` once every app has. Settles as `list` does. */
+  listParts?: (
+    signal?: AbortSignal,
+    onPart?: (entries: WalkthroughEntry[], done: boolean) => void,
+  ) => Promise<WalkthroughEntry[]>;
   media: (entry: WalkthroughEntry, signal?: AbortSignal) => Promise<Blob>;
   remove: (entry: WalkthroughEntry) => Promise<void>;
   /** A screen recording's public link on or off: the entry as it now is, or null when it couldn't be. */

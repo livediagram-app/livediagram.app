@@ -38,6 +38,8 @@ export type ActivityAction = ActivityPlace & {
   description: string;
   assignee: { userId: string | null; name: string | null };
   assigner: { id: string; name: string | null };
+  // Its due day ('2026-12-03'), which its Inbox row says; absent when it has none.
+  due?: string;
   createdAt: number;
   updatedAt: number;
   assignedToMe: boolean;
