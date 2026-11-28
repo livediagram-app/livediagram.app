@@ -1,0 +1,55 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ReviewScene } from '@/editions/liveplanner/components/illustrations/session-kinds';
+
+export const metadata = helpMetadata({
+  title: 'Sprint Review Sessions',
+  description:
+    "Walk the work finished since the last review one card at a time: demo it from its pull requests and designs, keep the room's feedback on it, make follow-ups.",
+  path: '/help/plan/session-tabs/sprint-review/',
+});
+
+<ArticleLayout
+  path="plan/session-tabs/sprint-review"
+  title="Sprint Review Sessions"
+  description="Demo each finished card and keep the room's feedback on the card, not in somebody's notes."
+  categoryTitle="Plan"
+  categorySlug="plan"
+  parentArticle={{ title: "Session Tabs", slug: "session-tabs" }}
+  subArticles={getSubArticles("session-tabs").filter((a) => a.slug !== "sprint-review")}
+>
+
+A **Sprint Review** session walks the work finished since the last review, one card at a time. Each card is demoed from what it links to, the room's feedback is saved on the card itself, and anything it sparks becomes a follow-up card on the spot.
+
+## Start One
+
+On a new tab, choose **Sessions** in **Start Planning**, then **Sprint Review**. **Set Up Sprint Review** opens on the types with finished cards and their **Done Stages** (Done, Closed, Shipped, Released, Resolved, Deployed and the like). Then:
+
+- Done Range: which finished cards, by when they **entered** their stage: **Since Last Review** (offered once the plan has run a Sprint Review), **Last 7 Days**, **Last 14 Days**, **Last 30 Days**, **All Time**, or **From** and **To** dates of your own. It starts on Since Last Review when there is one, else the last 14 days.
+- **Order**: **Last Edited At**, earliest first, by default, so the work reads roughly in the order it finished.
+- **Presenter**: **Assignee** (each card presented by whoever it's assigned to, changeable per card) or **None**.
+
+Archived cards in the range are reviewed too; nothing the session does reopens, restores or moves one. There is no target stage: **Reviewed** never moves a card. See [Set Up a Session](/help/plan/session-tabs/set-up-a-session/).
+
+## Run It
+
+<Figure caption="Sprint Review on a finished card: the demo strip with its presenter, a merged pull request and two designs, the feedback box, and Follow-up beside Reviewed.">
+  <ReviewScene />
+</Figure>
+
+- **The demo strip** runs across the top of the card: the **presenter** (the facilitator can name someone else for this card), the card's **Pull Requests** with their state (open, merged, closed), opening on GitHub, and its **Designs**: the pictures in its Image fields and attachments as thumbnails, and its Link fields as chips. A card with none of these says "Nothing linked to demo". See [Connect GitHub](/help/plan/connect-github/).
+- **Feedback**: type what the room thought into the box and press **Add Feedback** (or Enter). It is saved as a comment on the card, labelled **Review Feedback**, in a thread titled "Sprint Review feedback", so it shows in the card's comments on every board. Anyone who may comment can add it; a Viewer sees the count.
+- **Reviewed** (**R**): the card was demoed. It stays where it is and the room moves on.
+- **Follow-up** (**N**): opens **New Follow-up** with a **Title** (filled from the newest feedback on the card) and a **Card Type**. **Create Follow-up** makes the card in the type's backlog, with the reviewed card's priority, linked back to the card it came from. The room stays on the card, and you can make several.
+- **Skip** (**S**): leave it for another time.
+
+A reviewed card shown again reads its outcome and its follow-ups ("Reviewed by Sam · 1 follow-up"). Undo takes the decision back; follow-ups stay made.
+
+## When It's Done
+
+**Session Complete** counts the cards Reviewed and Skipped, then the **Feedback** ("5 comments on 3 cards") and every **Follow-up** made, each with the card it came from. Press one to open it.
+
+Each decision is in the card's [Activity](/help/plan/card-activity/): "Sam reviewed this in a Sprint Review session".
+
+</ArticleLayout>

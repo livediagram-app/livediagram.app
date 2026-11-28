@@ -4,6 +4,7 @@ import {
   ApiArt,
   ApprovalArt,
   AskAiArt,
+  BugTriageArt,
   CallArt,
   LiveDataArt,
   SendToPlanArt,
@@ -19,13 +20,18 @@ import {
   McpArt,
   OfflineSaveArt,
   PresenceArt,
+  RefinementArt,
   RealtimeArt,
   RevokeArt,
   SelectionGlowArt,
+  SessionTabsArt,
   SessionToolsArt,
   ShareLinksArt,
   SharePasswordArt,
   SnapshotsArt,
+  SprintPlanningArt,
+  SprintReviewArt,
+  StandupArt,
   TeamsArt,
   WalkthroughArt,
 } from '@/components/FeatureArt';
@@ -38,12 +44,12 @@ export const COLLABORATION_SECTION: LandingSection = {
   cta: 'Explore collaboration',
   title: 'Plan it together, live',
   description:
-    'Share a link and your team is in the plan with you: live presence on every board, sheet and dashboard, comments on cards and cells, a call started from the plan, cards sent in from your other apps, and Ask AI to answer from the plan itself.',
+    'Share a link and your team is in the plan with you: live presence on every board, sheet and dashboard, comments on cards and cells, refinement, stand-ups and sprint planning run one card at a time, cards sent in from your other apps, and Ask AI to answer from the plan itself.',
   metaDescription:
-    'Share a link and your team plans with you live: presence on every tab, comments on cards and cells, share links with the right access, and agent access.',
+    'Share a link and your team plans with you live: presence on every tab, comments, team sessions one card at a time, share links and agent access.',
   highlights: [
     'Comments where the work is',
-    'Start a call from the plan',
+    'Session tabs, one card at a time',
     'Cards from anywhere',
     'Ask the plan a question',
   ],
@@ -142,6 +148,54 @@ export const COLLABORATION_SECTION: LandingSection = {
       title: 'Ask the plan a question',
       description:
         'Signed in, open Ask AI in Tools and ask “what is in progress right now?” or “which cards have no description?”. The answer comes from the plan’s own cards and tabs, with each source a card you can open.',
+    },
+    {
+      art: <SessionTabsArt />,
+      href: '/help/plan/session-tabs/',
+      group: 'Run team sessions',
+      title: 'Session tabs, one card at a time',
+      description:
+        'Add a Session tab and the plan runs your meeting: a queue of real cards beside the one the room is on, one facilitator, and a button that fills as it confirms. Every decision lands on the card itself, so the board is up to date when the meeting ends.',
+    },
+    {
+      art: <RefinementArt />,
+      href: '/help/plan/session-tabs/refinement/',
+      group: 'Run team sessions',
+      title: 'Refinement',
+      description:
+        'Walk the backlog together, sharpen each card where it sits, and press Refined to move it on to Ready. Skip what needs more thought and Flag what needs someone outside the room.',
+    },
+    {
+      art: <StandupArt />,
+      href: '/help/plan/session-tabs/stand-up/',
+      group: 'Run team sessions',
+      title: 'Stand-up, person by person',
+      description:
+        "Go round the team through the cards each person has in flight. Mark a card Blocked with its reason, move it on a stage, or add a note to the day's thread, then Done for the next person.",
+    },
+    {
+      art: <SprintPlanningArt />,
+      href: '/help/plan/session-tabs/sprint-planning/',
+      group: 'Run team sessions',
+      title: 'Sprint Planning against capacity',
+      description:
+        'Take the top of the backlog one card at a time, estimate it on the spot and Commit it to the sprint, with the committed points tallied against the capacity you set.',
+    },
+    {
+      art: <BugTriageArt />,
+      href: '/help/plan/session-tabs/bug-triage/',
+      group: 'Run team sessions',
+      title: 'Bug Triage with a reason',
+      description:
+        "Go through the bugs that came in with each priority in view. Accept moves one on to Confirmed; Close Bug asks a reason, Won't Fix, Can't Reproduce or a linked duplicate, and keeps it in the card's history.",
+    },
+    {
+      art: <SprintReviewArt />,
+      href: '/help/plan/session-tabs/sprint-review/',
+      group: 'Run team sessions',
+      title: 'Sprint Review with the demo in view',
+      description:
+        'Walk the work finished since the last review with its pull requests and designs across the top. What the room thinks lands on the card as Review Feedback, and Follow-up makes the next card, linked back.',
     },
     {
       art: <ShareLinksArt />,

@@ -34,7 +34,7 @@ import { useSessionFacilitator } from './useSessionFacilitator';
 import { useSessionKeys } from './useSessionKeys';
 import { useSessionRun } from './useSessionRun';
 import { useSessionTimebox } from './useSessionTimebox';
-import { OUTCOME_LOOKS } from './session-kinds';
+import { OUTCOME_LOOKS, SESSION_KIND_LOOKS } from './session-kinds';
 import { EstimatePill, EstimateStrip } from './planning/EstimateStrip';
 import { PlanningSummary, PlanningTally } from './planning/PlanningTally';
 import { commitMakes } from './planning/planning-words';
@@ -159,6 +159,7 @@ function QueueSessionPage({
       count={total ? `${place} of ${total}` : ''}
       line={timebox?.up ? 'Time’s up' : setupWords(session.setup, plan.types, plan.statusNames)}
       baton={baton}
+      help={SESSION_KIND_LOOKS[session.sessionKind].helpArticle}
       onSettings={mayEdit ? () => setSettingsOpen(true) : undefined}
     >
       <SessionProgress

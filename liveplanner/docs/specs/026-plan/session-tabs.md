@@ -534,6 +534,21 @@ and the editor's `session-kinds.tsx` its wording and set-up defaults; a kind's o
 frame (`SessionFrame`: the canvas cover, the sidebar or a phone's queue folding down over the card, never squeezing it, the card side) under the same header
 (`SessionHeader`).
 
+## Help
+
+The help centre explains Session tabs in seven articles under **Plan → Session Tabs**
+([Contextual help links](../018-help/contextual-help-links.md)): the overview (`plan/session-tabs`: the page, the
+facilitator, Skip and Flag, the history entries, Session Complete and the roles), **Set Up a Session**
+(`plan/session-tabs/set-up-a-session`: card types, stages, order, target stage, timebox and Session Settings), and one per kind:
+`refinement`, `stand-up`, `sprint-planning`, `bug-triage` and `sprint-review`, each under `plan/session-tabs/`.
+
+- The sidebar header carries a `?` (`HelpArticleLink`, the bare icon) beside Session Settings, for every role, opening
+  the **kind's own** article; each kind names its article in `SESSION_KIND_LOOKS` (`helpArticle`).
+- The set-up dialog's header carries a `?` before its close, opening **Set Up a Session**, in Start Session and in
+  Session Settings alike.
+- The [Session tools](../012-collaboration/session-tools.md) articles (the timer and the dot vote) are a different
+  feature; the overview says so and links them.
+
 ## Agents and export
 
 - Agents see a Session tab in a plan's tabs as kind `session`; they do not run one. A changeset on it (the MCP's tab

@@ -4,7 +4,7 @@ import { SITE_URL } from '@liveplanner/ui';
 // liveplanner's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "liveplanner"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-11-24');
+const UPDATED = new Date('2026-11-28');
 
 // Facts liveplanner states on more than one page, kept in one place so every comparison says them
 // the same way.
@@ -18,6 +18,8 @@ const FREE =
   'liveplanner is free to start, with every feature on the free plan, no ads and no third-party trackers. A board exports as CSV, an image, a PDF or a Markdown outline, a sheet as CSV, and the whole plan as one .liveplanner file that imports back, so your work is never locked in.';
 const ACCOUNT =
   'Signing in is optional and free. It adds teams with shared folders, and the tools that keep working while nobody has the plan open: Automations, Email to Board and calendar feeds.';
+const SESSIONS =
+  'Session tabs run refinement, stand-ups, sprint planning, bug triage and sprint review one card at a time: a queue of real cards, one facilitator, and every decision landing on the card itself.';
 const AUTOMATIONS_ROW = {
   label: 'Automation',
   us: 'Rules on card, form, email, time and GitHub triggers, with steps in other apps, free with a sign-in',
@@ -73,6 +75,7 @@ const LIST: Alternative[] = [
     usBest: [
       'Boards with WIP limits: a column’s count turns amber the moment it goes over, and swimlanes split the board by assignee, type, priority or any field.',
       'One card, every board: the same card can sit on the sprint board and the roadmap, and moving it on one moves it on both.',
+      SESSIONS,
       'Card types of your own, with text, number, date, choice, person, formula and linked-card fields, and card templates that start a card already filled in.',
       'A Sheet tab with over 150 functions next to the board, reading its cards or listing them as rows that stay linked both ways.',
       'A Gantt chart and due and start calendars drawn from the cards, free for everyone, with bars you drag to change dates.',
@@ -164,6 +167,7 @@ const LIST: Alternative[] = [
     usBest: [
       'No seats needed and no feature gating: every feature works on the free plan, and nobody needs an account to start.',
       'A Gantt chart, due and start calendars and charts by field, all drawn live from the cards, with bars you drag to change dates.',
+      SESSIONS,
       GANTT_CLASHES,
       'Automations free with a sign-in: rules that move, assign and label cards on card, form, time and email triggers, and post to Slack or Microsoft Teams.',
       'Card types of your own with the fields your team tracks, from text and numbers to a link to another card.',
@@ -430,6 +434,7 @@ const LIST: Alternative[] = [
     ],
     usBest: [
       'Open a board in a click, with nothing to configure and no account needed.',
+      SESSIONS,
       'A Bug Triage template and a Bug Report form: reports from anyone with the link arrive as cards, ready to triage.',
       'Card types such as Bug or Task with the fields your team tracks, and an All Cards board that filters by any of them.',
       FLOW_CHARTS,
@@ -459,7 +464,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Does liveplanner support sprints?',
-        a: 'Not as a feature of its own: there are no sprint objects or velocity reports. You can run a sprint as a board, as the Project Planner template does, with an Estimate field for story points and a Points widget that adds up how many are done, but if scrum reporting matters to you, Jira is the better fit.',
+        a: 'You can run the meetings: a Sprint Planning session commits the top of the backlog card by card, estimating as you go, against a capacity you set, and a Sprint Review walks what got done with the room’s feedback kept on each card. There are no sprint objects or velocity reports, though: the sprint itself is a board, as the Project Planner template has it, so if scrum reporting matters to you, Jira is the better fit.',
       },
       {
         q: 'Can I import my Jira issues?',
@@ -520,6 +525,7 @@ const LIST: Alternative[] = [
     usBest: [
       'Fewer things, each done carefully: a board, a sheet, a dashboard and a form, with little to set up.',
       'Edits land live for everyone, with live cursors on boards and each person’s selection outlined in a Sheet.',
+      SESSIONS,
       'Card types with fields of your own, and one card on as many boards as need it.',
       'A Gantt chart and due and start calendars you can drag cards across.',
       'Time Tracking fields with timers anyone can start, adding up on the card and in the board’s Time widget.',

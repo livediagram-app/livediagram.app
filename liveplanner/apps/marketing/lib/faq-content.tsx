@@ -175,6 +175,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. On the Team Retro template, cards stay face down while the team writes, so nobody anchors on the first idea. Press Reveal, then vote for what matters most, and turn the actions into cards on the board.',
       },
       {
+        q: 'Can I run refinement, stand-ups or sprint planning in it?',
+        a: (
+          <>
+            Yes. Add a Session tab and pick its kind: Refinement, Stand-up, Sprint Planning, Bug
+            Triage or Sprint Review. The tab lines up real cards from your boards, one person
+            facilitates, and the room takes them one at a time, so each decision lands on the card
+            itself. See <a href="/help/plan/session-tabs/">Session tabs</a>.
+          </>
+        ),
+        aText:
+          'Yes. Add a Session tab and pick its kind: Refinement, Stand-up, Sprint Planning, Bug Triage or Sprint Review. The tab lines up real cards from your boards, one person facilitates, and the room takes them one at a time, so each decision lands on the card itself. See Session tabs.',
+      },
+      {
         q: 'Can liveplanner do routine steps for me?',
         a: (
           <>

@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SessionTabPage, RefinedFill } from '@/editions/liveplanner/components/illustrations/session-tabs';
+
+export const metadata = helpMetadata({
+  title: 'Refinement Sessions',
+  description:
+    'Run backlog refinement one card at a time: read each card together, sharpen it, and mark it Refined to move it on, or skip or flag it.',
+  path: '/help/plan/session-tabs/refinement/',
+});
+
+<ArticleLayout
+  path="plan/session-tabs/refinement"
+  title="Refinement Sessions"
+  description="Sharpen the backlog together, one card at a time, and move each card on once it's ready."
+  categoryTitle="Plan"
+  categorySlug="plan"
+  parentArticle={{ title: "Session Tabs", slug: "session-tabs" }}
+  subArticles={getSubArticles("session-tabs").filter((a) => a.slug !== "refinement")}
+>
+
+A **Refinement** session walks the room through the cards waiting to be ready, one at a time. Everyone sees the same card in full; the team talks it through and fills in what is missing, and the facilitator marks it **Refined**, which moves it on to its next stage. Nobody drags cards around a big board, and nobody wonders which card is next.
+
+## Start One
+
+On a new tab, choose **Sessions** in **Start Planning**, then **Refinement**. **Set Up Refinement** opens on the card types with cards in a stage like Backlog, New, To Do, Ideas or Needs Detail, and those stages. Choose the order (Priority, highest first, puts the most pressing cards first), check where **When Refined** takes each type, and press **Start Session**. See [Set Up a Session](/help/plan/session-tabs/set-up-a-session/).
+
+## Run It
+
+<Figure caption="Refinement on its fourth card: Skip, Flag, where Refined takes the card, and the Refined button.">
+  <SessionTabPage />
+</Figure>
+
+The card on the right is the real card: anyone who may edit cards can write its description, add its acceptance criteria, set its estimate or leave a comment while the room talks, and everyone sees each change as it is made.
+
+The facilitator's action bar holds three decisions:
+
+- **Refined** (**R**): the card is ready. It moves to its target stage (to the end of that column), and the session moves on to the next card still to go. The line beside the button says where it goes ("Moves to **Ready**"), or that it stays ("Stays in **Review**: no open stage comes after it").
+- **Skip** (**S**): not now. The card stays where it is, greyed in the queue.
+- **Flag** (**F**): it needs attention outside the session. The card is flagged, as from its menu, and greyed in the queue.
+
+<Figure caption="Pressing Refined: the button fills, ticks, and drains back out as the card moves on.">
+  <RefinedFill />
+</Figure>
+
+Changed your mind? **Undo Last** (**U**) takes back the latest decision, and **Undo Outcome** on any decided card takes back that one: a refined card goes back to the stage it came from, in its own place. **J** and **K** move between cards without deciding.
+
+## When It's Done
+
+**Session Complete** counts the cards Refined, Skipped and Flagged. **Review Skipped** jumps back to the first skipped card, and **Start Again** clears every outcome for the next refinement.
+
+Each decision is in the card's [Activity](/help/plan/card-activity/): "Sam refined this in a Refinement session", with the move it made beside it.
+
+## Tips
+
+- A timebox of 3 or 5 minutes a card keeps a long backlog moving: the room's segment turns amber when the time is up, and the facilitator decides whether to move on.
+- Give **When Refined** a stage of its own, such as **Ready**, so a refined card lands where Sprint Planning will pick it up. See [Sprint Planning Sessions](/help/plan/session-tabs/sprint-planning/).
+
+</ArticleLayout>

@@ -1,0 +1,128 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  SessionTabPage,
+  RefinedFill,
+  SessionCompleteScene,
+} from '@/editions/liveplanner/components/illustrations/session-tabs';
+
+export const metadata = helpMetadata({
+  title: 'Session Tabs',
+  description:
+    'Run refinement, stand-ups, sprint planning, bug triage and sprint review one card at a time: a queue of real cards, one facilitator, each decision on the card.',
+  path: '/help/plan/session-tabs/',
+});
+
+<ArticleLayout
+  path="plan/session-tabs"
+  title="Session Tabs"
+  description="Run your team's ceremonies one card at a time, with everyone looking at the same card."
+  categoryTitle="Plan"
+  categorySlug="plan"
+  subArticles={getSubArticles("session-tabs")}
+>
+
+Most teams refine, plan and triage by staring at one big board. Everything on it competes for attention, nobody is sure which card is next, and "is this one ready?" is settled by whoever drags first. A **Session tab** turns the cards you pick into a **queue** and walks the room through it one card at a time: the card in full on one side, the queue beside it, and one clear way to say "done, next".
+
+It is a view over your real cards, never a copy. Every edit, comment and move lands on the card itself, on every board it shows on.
+
+## The Five Kinds
+
+Each kind of session is made for one ceremony:
+
+- **[Refinement](/help/plan/session-tabs/refinement/)**: read each card, sharpen it, and mark it **Refined** to move it on.
+- **[Stand-up](/help/plan/session-tabs/stand-up/)**: walk the team person by person through the cards they have in flight, flagging what is blocked.
+- **[Sprint Planning](/help/plan/session-tabs/sprint-planning/)**: walk the top of the backlog and **Commit** cards into the sprint, their estimates tallied against capacity.
+- **[Bug Triage](/help/plan/session-tabs/bug-triage/)**: walk every new bug and **Accept** it or **Close** it with a reason.
+- **[Sprint Review](/help/plan/session-tabs/sprint-review/)**: walk the work finished since the last review, demo each card and keep the room's feedback on it.
+
+They all share the same page, the same facilitator and the same set-up, so once you have run one you can run them all.
+
+## Start a Session
+
+On a new tab, choose **Sessions** in **Start Planning**'s rail and pick a kind. Its set-up opens: the card types and stages to take cards from, their order, where each card goes once decided, and an optional timebox. Press **Start Session** and the tab becomes a Session tab, named after its kind. See [Set Up a Session](/help/plan/session-tabs/set-up-a-session/).
+
+Only an Editor can start a session or change its set-up. Later, **Session Settings** (the cog in the sidebar's header) reopens the same set-up; a card already decided keeps its outcome.
+
+## The Page
+
+<Figure caption="A Refinement session: the queue with three cards decided, the room on the fourth, the card in full and the facilitator's action bar.">
+  <SessionTabPage />
+</Figure>
+
+**The sidebar** on the left names the kind and how far through you are ("4 of 9"), and says the set-up in words. Under it, the **progress bar** has a segment per card: the accent for a card moved on, slate for a skipped one, the flag colour for a flagged one, and a tint for the card the room is on. Then the queue itself, each row the card's number and title with its type's colour along its edge. A decided card is greyed, its number replaced by its outcome.
+
+**The card** on the right is the same panel a card opens in from a board: its description, its fields, its comments, Linked Cards and Activity. Everything you change there is written to the real card, with the same rights as on a board.
+
+**The action bar** under the card belongs to the facilitator. It holds the kind's buttons, a line saying where the main one takes the card ("Moves to **Ready**"), the time left when a timebox is on, and the **fill button** on the right.
+
+The queue stays live: a card added to a picked stage joins at the end, and one dragged out of the picked stages on a board leaves it, unless the session has already decided it. Editing a card never moves it in the queue, so the room never sees "2 of 5" jump to "5 of 5". A queue holds at most 500 cards.
+
+## The Fill Button
+
+The main decision is one press. The button fills with the theme's accent from left to right, its label turns into a tick, and the fill drains back out, all in under a second. Then the card moves to its target stage, its history records the decision, and the room moves on to the next card still to go. With reduced motion on, it swaps straight to the tick and back.
+
+<Figure caption="The fill button's three moments: at rest, filling, then the tick before it drains away.">
+  <RefinedFill />
+</Figure>
+
+## The Facilitator
+
+One person runs the session: they move it from card to card and decide each outcome. The first Editor to open the tab takes the role, and the chip in the sidebar's header says who has it ("Sam is facilitating"). The facilitator's chip opens **Hand Over** (to another Editor in the room) and **Step Down**. If the facilitator's screen has been gone from the room for 10 seconds, any Editor sees **Take Over** on the chip, and one press takes the role. When nobody holds it, an Editor already on the tab sees **Facilitate**.
+
+When the facilitator moves on, everyone moves with them. Anyone else can press a row to **peek** at another card on their own screen; a bar over the card ("Back to Sam's Card") takes them back to the room's card.
+
+## Skip and Flag
+
+Refinement and Bug Triage have **Skip** and **Flag** on the left of the action bar; Sprint Planning and Sprint Review have **Skip**, and a Stand-up has **Blocked**, which flags the card with a reason:
+
+- **Skip** leaves the card as it is, greys it in the queue and moves on. Come back to it later from Session Complete's **Review Skipped**.
+- **Flag** flags the real card, as **Flag** in a card's menu does, greys it in the queue and moves on. It shows only when the card isn't flagged already.
+
+A decided card shown again reads its outcome over the action bar ("Refined by Sam"), with **Undo Outcome** for the facilitator: the card goes back to the stage it came from, in its own place, as long as nobody has moved it since, and a flag the session set comes off. Once anything is decided, the action bar starts with a small **Undo Last** chip naming the latest decision ("Closed BUG-33 · Undo"), so the last decision is always one press from undone.
+
+## What the Card's History Says
+
+Each decision is an entry of its own in the card's [Activity](/help/plan/card-activity/), so a card remembers it was refined, skipped or triaged, and by whom:
+
+- "Sam refined this in a Refinement session", "Sam skipped this in a Refinement session", "Sam flagged this in a Refinement session"
+- "Sam committed this in a Sprint Planning session"
+- "Sam accepted this in a Bug Triage session", "Sam closed this in a Bug Triage session: Can't reproduce", or "Sam closed this as a duplicate of BUG-12 in a Bug Triage session"
+- "Sam reviewed this in a Sprint Review session"
+- "Sam discussed this in a Stand-up session", "Sam flagged this in a Stand-up session: Waiting on the API keys"
+- an undo reads "Sam undid Closed in a Bug Triage session"
+
+A decision that moves the card, flags it or links a duplicate also records the move, the flag or the link, as any change does. A skip writes nothing on the card, so it doesn't change its Last Edited.
+
+## Keyboard
+
+The facilitator can run a session from the keyboard while the cursor isn't in a field. **J** and **K** move to the next and previous card, **U** is Undo Last, and each kind's buttons have a key: **R** Refined, **S** Skip, **F** Flag, **C** Commit (or Close in a Bug Triage), **A** Accept, **N** Follow-up, **D** Done and **B** Blocked. In the queue, Up and Down move between rows and Enter opens one.
+
+## A Timebox
+
+Give each card a few minutes in the set-up (each person, in a Stand-up) and the room's segment of the progress bar fills as the time passes. When it is up, the segment turns amber, a gentle chime plays once on every screen watching that card, and the header reads "Time's up". Nothing moves on by itself: the facilitator decides.
+
+This is separate from the plan's [Session Tools](/help/collaboration/session-tools/), the shared timer and dot vote, which you can still run on a Session tab.
+
+## Session Complete
+
+When no card is left to go, the right side shows **Session Complete**: how many cards had each outcome. The facilitator also gets **Undo Last** (so the last decision is never final), **Review Skipped** (the first skipped card) and **Start Again**, which clears every outcome.
+
+<Figure caption="Session Complete after a Refinement: the counts, then Undo Last, Review Skipped and Start Again.">
+  <SessionCompleteScene />
+</Figure>
+
+## Who Can
+
+- **Editors** start a session and change its set-up, hold the facilitator role, and run the session.
+- **Participants** watch it live, peek at any card, and edit and comment on the card as on a board, including Sprint Planning's estimates, Sprint Review's feedback and a Stand-up's notes.
+- **Viewers** watch it live and peek at any card, and read it.
+
+A [locked tab](/help/tabs/locking-tabs/) reads as a Viewer's for everyone.
+
+## Agents and Export
+
+Connected AI tools see a Session tab among the plan's tabs, but they don't run one: they change its cards with the card tools instead. Export offers a Session tab's set-up and outcomes as JSON, which Import reads back; its cards export from their boards.
+
+</ArticleLayout>

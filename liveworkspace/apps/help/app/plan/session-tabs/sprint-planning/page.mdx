@@ -1,0 +1,63 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PlanningScene } from '@/editions/liveplanner/components/illustrations/session-kinds';
+
+export const metadata = helpMetadata({
+  title: 'Sprint Planning Sessions',
+  description:
+    "Walk the top of the backlog one card at a time and commit cards into the sprint, estimating as you go, the points tallied against the team's capacity.",
+  path: '/help/plan/session-tabs/sprint-planning/',
+});
+
+<ArticleLayout
+  path="plan/session-tabs/sprint-planning"
+  title="Sprint Planning Sessions"
+  description="Commit the next sprint's cards one at a time, with the points tallied against your capacity."
+  categoryTitle="Plan"
+  categorySlug="plan"
+  parentArticle={{ title: "Session Tabs", slug: "session-tabs" }}
+  subArticles={getSubArticles("session-tabs").filter((a) => a.slug !== "sprint-planning")}
+>
+
+A **Sprint Planning** session walks the top of the backlog one card at a time and **commits** cards into the sprint. Each card can be estimated right there, and a tally under the progress bar adds up what you have committed against the team's capacity, so you can see the sprint filling up as you go.
+
+## Start One
+
+On a new tab, choose **Sessions** in **Start Planning**, then **Sprint Planning**. **Set Up Sprint Planning** opens on the types with cards in a ready-like stage (Reviewed, Ready, Refined, Ready for Development, Groomed, Selected or Backlog) and those stages. Then:
+
+- **Order**: None keeps the backlog's own order, the top first.
+- **When Committed**: where a committed card goes, **Next Stage** by default (on the Sprint Board, Ready commits to To Do), or any stage you name.
+- **Capacity**: optional, the sprint's size in estimate points, from 1 to 9 999.
+
+A picked type with no **Estimate** field says so in the set-up: its cards count as having no estimate. See [Set Up a Session](/help/plan/session-tabs/set-up-a-session/).
+
+## Run It
+
+<Figure caption="Sprint Planning on its fifth card: 13 of 30 points committed, this card's 5 shown lighter after them, and the Estimate strip over Commit.">
+  <PlanningScene />
+</Figure>
+
+- **Estimate**: a strip above the action bar holds the story-point sizes (1, 2, 3, 5, 8, 13, 21) and **None**, the card's own value pressed. Pressing one writes the card's Estimate at once. Anyone who may edit cards can use it, facilitator or not; a Viewer sees the value. The strip says what Commit would make the tally ("Commit makes it 18 of 30").
+- **Commit** (**C**): the card moves to its target stage and the room moves on. The line beside it says where it goes ("Moves to **To Do**").
+- **Skip** (**S**): leave it for another sprint, greyed in the queue.
+
+Each row in the queue shows the card's estimate as a small pill, and a dashed **?** for a card with none, so a missing estimate shows before you reach it.
+
+## The Tally
+
+Under the progress bar: **Committed**, then "13 of 30 points" (or "13 points" with no capacity) and a meter. The committed points fill it in the accent and the room's card adds a lighter segment, what Commit would add. From 85% of capacity the meter turns amber ("Near capacity"), and past it red ("Over capacity by 4 points"). It never stops a Commit: the decision stays the team's.
+
+Committed cards with no estimate are counted apart ("1 committed card has no estimate, not counted"), never as zero.
+
+## When It's Done
+
+**Session Complete** counts the cards Committed and Skipped, and the tally ("21 of 30 points committed"). **Undo Outcome** on a committed card takes it back to its stage, and the tally drops it.
+
+Each decision is in the card's [Activity](/help/plan/card-activity/): "Sam committed this in a Sprint Planning session".
+
+## Sprints in liveplanner
+
+A Sprint Planning session commits cards by moving them into the sprint's stage; there are no separate sprint objects or velocity reports. Run the sprint on a board such as the Sprint Board, and close it with a [Sprint Review](/help/plan/session-tabs/sprint-review/).
+
+</ArticleLayout>

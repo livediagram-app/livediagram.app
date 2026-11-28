@@ -27,7 +27,10 @@ team, not the individual.
 
 ## What it does
 
-- Plans with tabs: Board, Sheet, Dashboard and Form tabs, side by side.
+- Plans with tabs: Board, Sheet, Dashboard, Form and Session tabs, side by side.
+- Session tabs: Refinement, Stand-up, Sprint Planning, Bug Triage and Sprint
+  Review run one card at a time, with one facilitator and each decision landing
+  on the real card.
 - Boards: kanban columns of cards with WIP limits, swimlanes by assignee, type,
   priority or any field, header widgets (Completion, Due Soon, WIP Alerts and
   more), hidden cards for retros, and CSV import and export.

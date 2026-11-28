@@ -116,6 +116,12 @@ in-panel settings (the Settings dialog's rows), **empty-state messages** and too
   Participant or a Viewer, who has no New Template, sees **Learn about card templates** as a text link in its place.
   Not inside **Add a Card**: a `?` in its `role="menu"` would break walking it with the arrow keys.
 
+- A Session tab's sidebar header -> its kind's article (`planSessionRefinement`, `planSessionStandup`,
+  `planSessionPlanning`, `planSessionTriage`, `planSessionReview`, each `plan/session-tabs/<kind>`): a `?` beside
+  Session Settings, for every role ([Session tabs](../026-plan/session-tabs.md#help))
+- The session set-up dialog's header (Start Session and Session Settings) -> `plan/session-tabs/set-up-a-session`
+  (`planSessionSetup`), a `?` before the close
+
 **Toolbars that appear on demand**
 
 - A board's selection bar (several cards selected) -> `select-cards` (`planSelectCards`): a `?` icon after its

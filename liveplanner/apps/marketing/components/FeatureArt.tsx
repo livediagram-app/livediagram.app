@@ -42,5 +42,7 @@ export * from './feature-art/together-safety';
 
 export * from './feature-art/plan-crossapp';
 export * from './feature-art/together-calls';
+// Session tabs and their five kinds (docs/specs/026-plan/session-tabs.md).
+export * from './feature-art/plan-sessions';
 export * from './feature-art/forms-extra';
 export * from './feature-art/automations-reach';

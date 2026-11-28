@@ -83,9 +83,9 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 21,
+    articleCount: 22,
     kind: 'feature',
-    groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
+    groups: ['Getting Going', 'Boards and Cards', 'Sessions', 'Sheets', 'Forms and Dashboards'],
   },
   {
     slug: 'user-interface',
@@ -340,6 +340,90 @@ export const articles: Article[] = [
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',
+    apps: ['liveplanner'],
+  },
+  {
+    slug: 'session-tabs',
+    title: 'Session Tabs',
+    description:
+      'Run refinement, stand-ups, sprint planning, bug triage and sprint review one card at a time, with one facilitator.',
+    keywords:
+      'session sessions session tab ceremony ceremonies agile scrum meeting refinement grooming backlog stand-up standup daily sprint planning bug triage sprint review demo one card at a time queue facilitator facilitate skip flag refined fill button timebox progress',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Sessions',
+    apps: ['liveplanner'],
+  },
+  {
+    slug: 'set-up-a-session',
+    title: 'Set Up a Session',
+    description:
+      'Choose the card types, stages and order a session works through, where each card goes, and a timebox.',
+    keywords:
+      'session set up setup settings session settings card types stages intake stages done stages in-flight order sort by then by target stage next stage close stage when refined when committed when accepted when closed timebox minutes start session facilitator',
+    category: 'Plan',
+    categorySlug: 'plan/session-tabs',
+    parentSlug: 'session-tabs',
+    apps: ['liveplanner'],
+  },
+  {
+    slug: 'refinement',
+    title: 'Refinement Sessions',
+    description:
+      'Refine the backlog together one card at a time: mark each Refined to move it on, or skip or flag it.',
+    keywords:
+      'refinement refine refined backlog grooming groom backlog refinement ready definition of ready acceptance criteria story points skip flag session',
+    category: 'Plan',
+    categorySlug: 'plan/session-tabs',
+    parentSlug: 'session-tabs',
+    apps: ['liveplanner'],
+  },
+  {
+    slug: 'stand-up',
+    title: 'Stand-up Sessions',
+    description:
+      'Walk the team person by person through their in-flight cards: mark blockers, move cards, add notes.',
+    keywords:
+      'stand-up standup daily scrum daily stand up huddle blocked blocker blockers impediment in progress people order shuffled alphabetical person by person notes comment',
+    category: 'Plan',
+    categorySlug: 'plan/session-tabs',
+    parentSlug: 'session-tabs',
+    apps: ['liveplanner'],
+  },
+  {
+    slug: 'sprint-planning',
+    title: 'Sprint Planning Sessions',
+    description:
+      'Commit the top of the backlog into the sprint one card at a time, with estimates tallied against capacity.',
+    keywords:
+      'sprint planning plan sprint iteration commit committed capacity estimate estimates story points points tally velocity scrum backlog over capacity',
+    category: 'Plan',
+    categorySlug: 'plan/session-tabs',
+    parentSlug: 'session-tabs',
+    apps: ['liveplanner'],
+  },
+  {
+    slug: 'bug-triage',
+    title: 'Bug Triage Sessions',
+    description:
+      'Decide on every new bug one at a time: accept it, close it with a reason or as a duplicate, skip or flag it.',
+    keywords:
+      'bug triage triaging bugs defects issues incidents accept close reason duplicate wont fix cant reproduce not a bug priority severity intake new bugs',
+    category: 'Plan',
+    categorySlug: 'plan/session-tabs',
+    parentSlug: 'session-tabs',
+    apps: ['liveplanner'],
+  },
+  {
+    slug: 'sprint-review',
+    title: 'Sprint Review Sessions',
+    description:
+      "Demo the finished work one card at a time, keep the room's feedback on each card and make follow-ups.",
+    keywords:
+      'sprint review demo showcase done finished work feedback review feedback follow-up follow up presenter pull requests designs since last review retrospective',
+    category: 'Plan',
+    categorySlug: 'plan/session-tabs',
+    parentSlug: 'session-tabs',
     apps: ['liveplanner'],
   },
   {

@@ -1,0 +1,63 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { StandupScene } from '@/editions/liveplanner/components/illustrations/session-kinds';
+
+export const metadata = helpMetadata({
+  title: 'Stand-up Sessions',
+  description:
+    "Run a daily stand-up person by person through the cards each has in flight: mark blockers with a reason, move cards on, and add notes to the day's thread.",
+  path: '/help/plan/session-tabs/stand-up/',
+});
+
+<ArticleLayout
+  path="plan/session-tabs/stand-up"
+  title="Stand-up Sessions"
+  description="Walk the team person by person through the work in flight, so the stand-up stays about the cards."
+  categoryTitle="Plan"
+  categorySlug="plan"
+  parentArticle={{ title: "Session Tabs", slug: "session-tabs" }}
+  subArticles={getSubArticles("session-tabs").filter((a) => a.slug !== "stand-up")}
+>
+
+A **Stand-up** session walks the team **person by person** through the cards they have in flight. Each person speaks to their own cards, what is stuck gets flagged on the card itself, and nobody reads out a status report in front of a big board. It is built to be quick: one press per action, and a key for each.
+
+## Start One
+
+On a new tab, choose **Sessions** in **Start Planning**, then **Stand-up**. **Set Up Stand-up** opens on the card types with cards in progress, and their **In-flight Stages** (In Progress, Doing, In Review, Testing, Blocked and the like, never a stage of work that is only ready to start). Then pick the People Order:
+
+- **Board Order** (the default): people in the order their first card sits on the board.
+- **Alphabetical**: by name.
+- **Shuffled Daily**: a fresh order each day, the same on every screen that day, so nobody always goes first.
+
+Cards with no assignee come last, under **Unassigned**. A Stand-up has no Order or target stage: it never moves a card on its own. A timebox here is per person. See [Set Up a Session](/help/plan/session-tabs/set-up-a-session/).
+
+## Run It
+
+<Figure caption="A Stand-up on Priya: her in-flight cards unfolded in the sidebar, the note strip, and Blocked, Stage and Done.">
+  <StandupScene />
+</Figure>
+
+The sidebar lists one row per person, with how many cards they hold. The person the room is on is unfolded to their cards, each with its stage; press any other person to look at their cards on your screen alone. The header counts people ("2 of 4 people"), and the progress bar has a segment per person.
+
+The action bar first says whose card it is ("Priya · card 1 of 3"), then holds:
+
+- **Blocked** (**B**): opens **Mark Blocked**, with a short reason and chips that fill one in (Waiting on Someone, Waiting on Review, Needs a Decision, External Dependency, Unclear Requirements). **Mark Blocked** flags the real card, saves "Blocked:" and the reason as a comment on it, and keeps the room on the card.
+- **Stage**: a picker of the card's stages. Choosing one moves the real card there, so "it's in review now" is one press.
+- **Done** (**D**): the person is finished. Each of their cards not decided yet is recorded as discussed, and the room moves to the next person.
+
+Above it, anyone who may comment can type a note into **Add a note to …** and press **Add Comment** (or Enter). Notes land on the card in the day's stand-up thread ("Stand-up, 28 Nov"), so a card keeps one thread per day rather than a comment for every remark.
+
+**J** and **K** move between cards, across people. **Undo Last** (**U**) takes back the latest step, one at a time: a Done, a Blocked (the flag comes off; its comment stays, as said) or a Stage move (the card goes back to its own place).
+
+## When Everyone's Done
+
+**Session Complete** counts the cards Discussed and Flagged, then lists the **Blockers**: every card marked blocked in the stand-up, with its person and reason. Press one to open it; **Back to Summary** returns. With none, it reads "No blockers today".
+
+Each step is in the card's [Activity](/help/plan/card-activity/): "Sam discussed this in a Stand-up session", or "Sam flagged this in a Stand-up session: Waiting on the API keys".
+
+## Who Can
+
+The facilitator (an Editor) runs it: Done, Blocked and Stage are theirs. Participants and Editors can add notes from the strip and edit the card as on a board. Viewers watch, and have no note strip.
+
+</ArticleLayout>
