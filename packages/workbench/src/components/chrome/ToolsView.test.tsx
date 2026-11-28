@@ -10,6 +10,7 @@ import {
   TOOLS_TITLE,
   ToolsHeader,
   ToolsView,
+  toolsRoomCap,
 } from './ToolsView';
 
 afterEach(cleanup);
@@ -31,8 +32,32 @@ describe('ToolsView', () => {
     expect(view().style.height).toBe('260px');
     // Tools' one height in every app (785 px, less the band and the pad), unless the screen is shorter.
     expect(TOOLS_HEIGHT_PX).toBe(785);
-    expect(view().style.minHeight).toBe('calc(-104px + min(785px, 100dvh - 2rem))');
+    expect(view().style.minHeight).toBe(`calc(${toolsRoomCap(TOOLS_HEIGHT_PX)} - 104px)`);
     expect(view().className).toContain('min-h-[calc(min(500px,100dvh-2rem)-104px)]');
+  });
+
+  // Work Tracker 1531: on a short window (1280 by 720) Ask AI's question box fell below Tools' edge. The view is never
+  // taller than the room the popover has under the band, so its foot stays in view and its content scrolls.
+  it('never grows past the room above the Tools button', () => {
+    render(
+      <ToolsView
+        id="ask-ai"
+        label="Ask AI"
+        tall={false}
+        sheet={false}
+        waiting={false}
+        floorPx={900}
+      >
+        <form data-ask-composer="" />
+      </ToolsView>,
+    );
+    expect(view().style.maxHeight).toBe('calc(var(--anchored-room, 100dvh) - 104px)');
+    expect(toolsRoomCap(TOOLS_HEIGHT_PX)).toBe(
+      'min(785px, 100dvh - 2rem, var(--anchored-room, 100dvh))',
+    );
+    // The tool's own scroller takes what does not fit.
+    expect(view().firstElementChild?.className).toContain('min-h-0');
+    expect(view().firstElementChild?.className).toContain('overflow-y-auto');
   });
 
   it('grows with a phone’s drawer, at least the list’s height', () => {

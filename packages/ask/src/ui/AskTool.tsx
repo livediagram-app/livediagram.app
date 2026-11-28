@@ -359,7 +359,7 @@ function AskThread({
           const el = event.currentTarget;
           following.current = el.scrollHeight - el.scrollTop - el.clientHeight <= FOLLOW_WITHIN_PX;
         }}
-        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pb-3 pt-1"
+        className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pb-3 pt-1"
       >
         {turns.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 py-4">

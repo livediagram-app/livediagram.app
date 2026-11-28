@@ -51,6 +51,9 @@ holds the header's back button (`data-dialog-hero-back`, `aria-label` and toolti
 modal uses. No breadcrumb row. With a view, the body is `ToolsView`, then the tool. The popover's name reads
 "Tools, <label>"; a polite live region (`data-tools-live`) says "<label>" on the way in and "Tools" on the way out.
 Focus goes to the header's back button unless the tool took it; going back focuses `[data-tools-item={id}]`.
+Off a phone, `AnchoredPopover` sets `--anchored-room` on its panel (the room inside it, its `maxHeight` less its
+border), and Tools' floor (`TOOLS_HEIGHT_PX`) and a `ToolsView`'s height are each capped by it (`toolsRoomCap`), so on a short
+window the view shrinks to the room and its own scroller takes the overflow, its foot in view.
 
 - **Dialogs in place.** An `inPlace` press opens the dialog slot (`openDialogSlot()`, `@liveworkspace/ui`) before
   `onSelect`. The first `Dialog` that opens after it while it is unclaimed (it records the slot's `seq` the render it
