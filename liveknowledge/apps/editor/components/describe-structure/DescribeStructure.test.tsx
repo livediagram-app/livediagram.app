@@ -7,6 +7,12 @@ import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { KNOWLEDGEBASE_FLOW, type ArticleBlock, type Tab } from '@liveknowledge/document';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
+import { VOICE_START_LABEL, VOICE_STOP_LABEL } from '@liveworkspace/ui/voice-input';
+import {
+  installFakeSpeech,
+  lastSpeech,
+  removeFakeSpeech,
+} from '@liveworkspace/ui/voice-input-testing';
 
 const api = vi.hoisted(() => ({ apiKnowledgeAi: vi.fn() }));
 vi.mock('@/lib/api/knowledge', async (actual) => ({
@@ -226,6 +232,26 @@ describe('the dialog', () => {
       [undefined, 'The days deploys go out.'],
       [undefined, undefined],
     ]);
+  });
+
+  // Voice input (liveworkspace/docs/specs/022-interface-design/voice-input.md): the purpose can be spoken, and
+  // speaking never describes.
+  it('takes a spoken purpose into the field, and Escape stops listening without closing', async () => {
+    installFakeSpeech('webkitSpeechRecognition');
+    const { value } = chrome(EMPTY(), { editing: true });
+    renderInEditor(<DescribeStructureWhenOpen />, value);
+    act(() => openDescribeStructure('p1'));
+    const field = await screen.findByLabelText<HTMLTextAreaElement>('What Is This Page For?');
+    fireEvent.click(screen.getByRole('button', { name: VOICE_START_LABEL }));
+    await screen.findByRole('button', { name: VOICE_STOP_LABEL });
+    expect(field.getAttribute('placeholder')).toBe('Listening…');
+    act(() => lastSpeech().hear(['how we ship', false]));
+    expect(field.value).toBe('how we ship');
+    fireEvent.keyDown(field, { key: 'Escape' });
+    expect(await screen.findByRole('button', { name: VOICE_START_LABEL })).toBeTruthy();
+    expect(screen.getByLabelText('What Is This Page For?')).toBeTruthy();
+    expect(structureApi.apiDescribeStructure).not.toHaveBeenCalled();
+    removeFakeSpeech();
   });
 
   it("sends built-in when the person chose it over the team's key, and says so", async () => {

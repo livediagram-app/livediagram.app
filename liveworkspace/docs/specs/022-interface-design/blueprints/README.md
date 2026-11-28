@@ -10,4 +10,6 @@ Follow the references below only as needed; never upfront.
   package's fallback takes it, the retry rules and the tests that hold them
 - ./undo-not-confirm.md - when implementing Undo instead of a confirm: `useUndoableAction`, `revertStep`, the open
   item's delete handoff, each converted action and its tests
+- ./voice-input.md - when implementing voice input: `@liveworkspace/ui/voice-input` (`useVoiceInput`,
+  `VoiceInputButton`, `VoiceInputNote`), the fake recognizer for tests, each host field and the pulse token
 - ./COMPLETENESS.md - when checking which completeness categories the interface design blueprints cover

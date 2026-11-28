@@ -41,7 +41,9 @@
     "./callout": "./src/callout/index.ts",
     "./ai-writer-mark": "./src/ai-writer/AiWriterMark.tsx",
     "./ai-comment-marks": "./src/ai-writer/AiCommentMarks.tsx",
-    "./agent-for-person": "./src/ai-writer/agent-for-person.ts"
+    "./agent-for-person": "./src/ai-writer/agent-for-person.ts",
+    "./voice-input": "./src/voice-input/index.ts",
+    "./voice-input-testing": "./src/voice-input/fake-speech.ts"
   },
   "scripts": {
     "lint": "oxlint",

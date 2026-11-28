@@ -95,6 +95,7 @@ const TOOL_SURFACES =
 
 // Escape is left alone while a modal dialog is open (one a tool opened over Tools),
 // or focus is in a part of a tool that takes Escape itself (a row's in-place confirm, `data-keeps-escape`).
+// (A listening microphone keeps its Escape in AnchoredPopover and PhoneDrawer themselves.)
 const modalOpen = () =>
   !!document.querySelector('[data-dialog-panel]') ||
   !!document.activeElement?.closest('[data-keeps-escape]');

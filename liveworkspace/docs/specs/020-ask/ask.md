@@ -31,7 +31,8 @@ route's line, its room's count method, and what its editor hands the tool.
 - **A question that failed** shows the failure's fixed words in a warning callout with **Ask Again**. **Stop** ends
   a streaming answer and keeps what had arrived.
 - **The field** is at the foot: Enter sends, Shift and Enter make a new line, 1,000 characters at most with a count
-  from 900. Inside it, at the left, the AI pill (below); at the right **New Chat** (once there is a turn) and Send,
+  from 900. Inside it, at the left, the AI pill (below); at the right **New Chat** (once there is a turn), the
+  microphone ([voice-input.md](../022-interface-design/voice-input.md)) and Send,
   which becomes Stop while an answer streams. Opening the tool puts the caret in the field. The box is the shared
   `AskComposer`, which says nothing of a diagram or any app: liveknowledge's Ask uses the same box, with the same AI
   pill, for its knowledgebase ([search-and-ask.md](../../../../liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md)

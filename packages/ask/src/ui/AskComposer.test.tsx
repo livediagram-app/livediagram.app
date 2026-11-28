@@ -5,6 +5,12 @@ import { ASK_MAX_QUESTION_CHARS } from '../limits';
 import { AnswerWith } from './AnswerWith';
 import { ASK_COUNT_FROM, AskComposer } from './AskComposer';
 import { askAiView } from './ask-words';
+import { VOICE_START_LABEL, VOICE_STOP_LABEL } from '@liveworkspace/ui/voice-input';
+import {
+  installFakeSpeech,
+  lastSpeech,
+  removeFakeSpeech,
+} from '@liveworkspace/ui/voice-input-testing';
 
 // The question box every Ask shares (liveworkspace/docs/specs/020-ask/ask.md "The tool"): it knows no app, so each
 // host's words, pill and handlers are its own.
@@ -187,5 +193,38 @@ describe('the AI pill for an app of its own', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Answer With: Built-In AI' }));
     const menu = await screen.findByRole('dialog', { name: 'Answer With' });
     expect(within(menu).getAllByRole('radio')).toHaveLength(1);
+  });
+});
+
+// Voice input (liveworkspace/docs/specs/022-interface-design/voice-input.md): the mic before Send fills the field and
+// never sends; sending stops it.
+describe('speaking a question', () => {
+  afterEach(() => removeFakeSpeech());
+
+  it('has no microphone where the browser cannot hear speech', () => {
+    box();
+    expect(screen.queryByRole('button', { name: VOICE_START_LABEL })).toBeNull();
+  });
+
+  it('fills the field as it hears, sends only on Send, and sending stops it', async () => {
+    installFakeSpeech('webkitSpeechRecognition');
+    const { props, field } = box();
+    fireEvent.click(screen.getByRole('button', { name: VOICE_START_LABEL }));
+    await screen.findByRole('button', { name: VOICE_STOP_LABEL });
+    act(() => lastSpeech().hear(['what changed this week', false]));
+    expect(field().value).toBe('what changed this week');
+    expect(props.onAsk).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    expect(props.onAsk).toHaveBeenCalledWith('what changed this week');
+    expect(await screen.findByRole('button', { name: VOICE_START_LABEL })).toBeTruthy();
+    expect(lastSpeech().aborted).toBe(true);
+  });
+
+  it('is disabled while an answer streams', () => {
+    installFakeSpeech('webkitSpeechRecognition');
+    box({ streaming: true });
+    expect(screen.getByRole('button', { name: VOICE_START_LABEL }).hasAttribute('disabled')).toBe(
+      true,
+    );
   });
 });
