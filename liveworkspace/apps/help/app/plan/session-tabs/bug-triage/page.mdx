@@ -1,0 +1,76 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  TriageQueueScene,
+  TriageCloseScene,
+} from '@/editions/liveplanner/components/illustrations/session-kinds';
+
+export const metadata = helpMetadata({
+  title: 'Bug Triage Sessions',
+  description:
+    'Walk every new bug one at a time and decide: accept it, close it with a reason or as a duplicate, skip it or flag it, so nothing piles up untriaged.',
+  path: '/help/plan/session-tabs/bug-triage/',
+});
+
+<ArticleLayout
+  path="plan/session-tabs/bug-triage"
+  title="Bug Triage Sessions"
+  description="Get a decision on every new bug, oldest first, so none sits untriaged."
+  categoryTitle="Plan"
+  categorySlug="plan"
+  parentArticle={{ title: "Session Tabs", slug: "session-tabs" }}
+  subArticles={getSubArticles("session-tabs").filter((a) => a.slug !== "bug-triage")}
+>
+
+A **Bug Triage** session walks every new bug one at a time and gets a decision on each: **Accept** it, **Close** it with a reason, **Skip** it or **Flag** it. It starts with the bug that has waited longest, so nothing piles up untriaged.
+
+## Start One
+
+On a new tab, choose **Sessions** in **Start Planning**, then **Bug Triage Session** (named apart from the Bug Triage board under **Boards**). **Set Up Bug Triage** opens on the bug-like types (Bug, Defect, Issue, Incident, Problem, or any drawn with the bug glyph) with cards in an intake stage, and their **Intake Stages** (New, Under Review, Triage, Needs Triage, Inbox, Reported, Open and the like). It sorts **Created At**, earliest first. Then:
+
+- **When Accepted**: where an accepted bug goes. **Next Stage** steps past a waiting stage (Needs Info, Waiting, On Hold, Blocked), so a New bug on the Bug Tracker's Triage board accepts into **Confirmed**.
+- **When Closed**: where a closed bug goes, **Close Stage** by default: the type's first closing stage, such as Won't Fix, Cancelled or Not a Bug. With none, the bug stays where it is.
+
+See [Set Up a Session](/help/plan/session-tabs/set-up-a-session/).
+
+## Run It
+
+Each row in the queue shows the bug's priority as a pill in its colour, and a dashed **?** for one with none, so an unprioritised bug stands out before you reach it.
+
+<Figure caption="The triage queue: accepted and closed bugs greyed with their outcome, the room on an unprioritised bug.">
+  <TriageQueueScene />
+</Figure>
+
+Set **Priority**, Severity or any other field where it always is, inline in the card's **Details**, while the room talks. Anyone who may edit cards can, facilitator or not.
+
+The facilitator decides:
+
+- **Accept** (**A**): the bug is real. It moves to its target stage ("Moves to **Confirmed**") and the room moves on.
+- **Close** (**C**): opens **Close Bug**, below.
+- **Skip** (**S**) and **Flag** (**F**), as in every session.
+
+## Close a Bug
+
+<Figure caption="Close Bug: a reason, filled from a chip, an optional duplicate, and where the bug goes.">
+  <TriageCloseScene />
+</Figure>
+
+**Close Bug** names the bug in its header and asks for a short **reason**, up to 200 characters; the chips Won't Fix, Can't Reproduce, Duplicate, Works as Intended and Not a Bug fill one in. **Link Duplicate** picks the card this bug repeats: the reason fills in as "Duplicate of BUG-12" if it's empty, and when the bug's type has a Duplicate Of field, the link is written there too, so it shows in Linked Cards. A line says where the bug goes ("Moves to **Won't Fix**"; with a duplicate linked, a stage named Duplicate if the type has one).
+
+**Close Bug** needs a reason. Enter presses it and Escape cancels.
+
+A closed bug shown again reads its outcome: "Closed by Sam · Duplicate of BUG-12 · Can't reproduce", with **Undo Outcome**, which moves it back and removes the duplicate link the session made.
+
+## When It's Done
+
+**Session Complete** counts the bugs Accepted, Closed, Skipped and Flagged.
+
+Each decision is in the card's [Activity](/help/plan/card-activity/): "Sam accepted this in a Bug Triage session", "Sam closed this in a Bug Triage session: Can't reproduce", or "Sam closed this as a duplicate of BUG-12 in a Bug Triage session".
+
+## Tips
+
+- Pair it with a **Bug Report** [form](/help/plan/forms/): reports from anyone with the link land as new cards, ready for the next triage.
+- An [automation](/help/plan/automations/) can share new bugs out in turn; a triage session then decides on them together.
+
+</ArticleLayout>

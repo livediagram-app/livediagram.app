@@ -17,6 +17,7 @@ import {
 import { Prims } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
 import { Glyph } from './glyph';
+import { SESSION_ICONS } from './sessionIcons';
 import { VOTING_ICONS } from './votingIcons';
 
 export { Glyph };
@@ -28,6 +29,7 @@ export { Glyph };
  *  back to their category's glyph, then to FEATURE_FALLBACK_ICON. */
 export const FEATURE_ICONS: Record<string, ReactNode> = {
   ...VOTING_ICONS,
+  ...SESSION_ICONS,
   'planning-basics': (
     <Glyph>
       <Prims prims={lucideSquareKanban} />

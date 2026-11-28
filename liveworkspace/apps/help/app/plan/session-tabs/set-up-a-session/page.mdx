@@ -1,0 +1,76 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SessionSetupDialog } from '@/editions/liveplanner/components/illustrations/session-tabs';
+
+export const metadata = helpMetadata({
+  title: 'Set Up a Session',
+  description:
+    'Choose the card types and stages a Session tab takes its cards from, their order, where each card goes once decided, a timebox, and who facilitates.',
+  path: '/help/plan/session-tabs/set-up-a-session/',
+});
+
+<ArticleLayout
+  path="plan/session-tabs/set-up-a-session"
+  title="Set Up a Session"
+  description="Pick the cards a session works through, in what order, and where each one goes."
+  categoryTitle="Plan"
+  categorySlug="plan"
+  parentArticle={{ title: "Session Tabs", slug: "session-tabs" }}
+  subArticles={getSubArticles("session-tabs").filter((a) => a.slug !== "set-up-a-session")}
+>
+
+A session's **set-up** decides which cards it works through and what happens to each. It opens when you pick a kind under **Sessions** in **Start Planning**, as **Set Up Refinement**, **Set Up Stand-up** and so on, and again from **Session Settings** (the cog in the sidebar's header) once the session is running. Both are an Editor's alone.
+
+Each kind starts the set-up on sensible picks for its ceremony, so most sessions need nothing more than **Start Session**.
+
+<Figure caption="Set Up Refinement: the card types and stages as chips, the order, where Refined takes each type, and a five-minute timebox.">
+  <SessionSetupDialog />
+</Figure>
+
+## Card Types
+
+Every card type in the plan, as a chip. Pick at least one. Each kind picks first the types whose cards are where its ceremony starts: Refinement the types with cards in a stage like Backlog or Needs Detail, Bug Triage the bug-like types (Bug, Defect, Issue, Incident, Problem) with new cards, Sprint Review the types with finished cards.
+
+In a Sprint Planning set-up, a picked type with no **Estimate** field says so here, so nobody is surprised when its cards count as having no estimate.
+
+## Stages
+
+The stages (the board columns) the picked types use, in the plan's column order, each with how many cards it holds now. The session takes its cards from the stages you pick; pick at least one. The heading names what each kind looks for: **Stages** for Refinement and Sprint Planning, **Intake Stages** for Bug Triage, **Done Stages** for Sprint Review and **In-flight Stages** for a Stand-up.
+
+The queue is every card of the picked types in the picked stages, not archived and not in the Trash, live as the plan changes.
+
+## Order
+
+**Sort By** and **Then By**, the same choices a board's [Sort Cards](/help/plan/boards/) offers: Priority, Estimate, Start Date, Due Date, Created At, Last Edited At or one of your own fields, each lowest or highest first. **None** keeps the cards in their hand order on the board. A card with no value for a level comes after those with one.
+
+Bug Triage starts on **Created At**, earliest first,, so the bug that has waited longest comes first, and Sprint Review on **Last Edited At**, earliest first,, so the work reads roughly in the order it finished. A Stand-up has no Order: it has People Order instead (see [Stand-up](/help/plan/session-tabs/stand-up/)).
+
+## Target Stage
+
+Where the main decision takes each card: **When Refined**, **When Committed** or **When Accepted**, one row per picked type with a **Moves to** picker.
+
+- **Next Stage** (where each row starts) moves the card to the first open stage after its own in its type's order. It steps past a backlog-like stage (Backlog, Icebox, Inbox, Ideas, Someday) and never moves a card into a finished one (Done, Closed, Shipped and the like): with no open stage before Done, the card stays where it is, and the action bar says so ("Stays in **Review**").
+- **Any stage of the type's**, named instead, takes every card of that type there.
+
+Bug Triage also has **When Closed**, starting on **Close Stage**: the type's first closing stage (Won't Fix, Won't Do, Cancelled, Declined, Not a Bug and the like). Sprint Review and Stand-up have no target stage: they never move a card on their own.
+
+## Timebox
+
+Off by default. Turn it on for a length of time per card, from 1 to 30 minutes, with 2, 3, 5 and 10 as chips (per person, in a Stand-up). The room's segment of the progress bar fills as the time passes and turns amber with a soft chime when it is up. Nothing moves on by itself.
+
+## Facilitator
+
+There is nothing to set: whoever runs the session is the **facilitator**, the first Editor to open the tab. They can hand the role to another Editor in the room or step down from the chip in the sidebar's header, and any Editor can take it over once the facilitator has been gone for 10 seconds. See [Session Tabs](/help/plan/session-tabs/#the-facilitator).
+
+## Starting and Changing It
+
+The foot of the set-up previews the queue as you choose ("15 cards, Priority highest first"). **Start Session** makes the tab a Session tab in one step, which one undo takes back, and names it after its kind while it still has its default name.
+
+Saved from **Session Settings** with **Save**, a changed set-up sorts the queue afresh; a card already decided keeps its outcome and stays in the queue. A set-up that picks no card says so on the page, with **Session Settings** for an Editor.
+
+## Limits
+
+A queue holds at most 500 cards (a set-up that picks more shows the first 500 and says so). A set-up takes up to 50 card types and 100 stages, and a timebox of 1 to 30 minutes.
+
+</ArticleLayout>
