@@ -5,12 +5,13 @@ import { byRank } from './apply';
 import { isArchived, isTrashed } from './board-model';
 import { sortCards, type BoardSortLevel } from './board-sort';
 import { itemStatus, type Item } from './item';
+import { itemStatusSince } from './status-since';
 import type { ItemTypeDef } from './item-types';
 import { typeIn } from './type-catalogue';
 import { typeStatusesOf } from './type-statuses';
 
-// What a session is run for. Stand-up and Sprint Review come later and join this list with their own outcomes.
-export const SESSION_KIND_IDS = ['refinement', 'planning', 'triage'] as const;
+// What a session is run for. Stand-up comes later and joins this list with its own outcomes.
+export const SESSION_KIND_IDS = ['refinement', 'planning', 'triage', 'review'] as const;
 export type SessionKindId = (typeof SESSION_KIND_IDS)[number];
 
 // What a session decided for a card: each kind offers some of these (SESSION_KIND_OUTCOMES).
@@ -21,6 +22,7 @@ export const SESSION_OUTCOMES = [
   'committed',
   'accepted',
   'closed',
+  'reviewed',
 ] as const;
 export type SessionOutcome = (typeof SESSION_OUTCOMES)[number];
 
@@ -29,6 +31,7 @@ export const SESSION_KIND_OUTCOMES: Readonly<Record<SessionKindId, readonly Sess
   refinement: ['refined', 'skipped', 'flagged'],
   planning: ['committed', 'skipped'],
   triage: ['accepted', 'closed', 'skipped', 'flagged'],
+  review: ['reviewed', 'skipped'],
 };
 
 export const isSessionKindId = (v: unknown): v is SessionKindId =>
@@ -47,6 +50,12 @@ export type SessionPick = {
   typeIds: readonly string[];
   statuses: readonly string[];
   sortBy?: readonly BoardSortLevel[] | undefined;
+  // Sprint Review's done range: only cards that entered their stage from `since` and up to `until` (ms), by their
+  // status stamp, never their last edit.
+  since?: number | undefined;
+  until?: number | undefined;
+  // Archived cards are read too (Sprint Review: finished work may be archived), never restored or moved.
+  archived?: boolean | undefined;
 };
 
 export type SessionQueue = {
@@ -58,7 +67,16 @@ export type SessionQueue = {
   capped: boolean;
 };
 
-const live = (item: Item) => !isArchived(item) && !isTrashed(item);
+// Whether a card can sit in a queue: never a trashed one; an archived one only for a kind that reads them.
+const readable = (item: Item, archived: boolean | undefined) =>
+  !isTrashed(item) && (!!archived || !isArchived(item));
+
+// Whether `item` entered its stage within `since`..`until` (either absent: open).
+export const inDoneRange = (item: Item, since?: number, until?: number): boolean => {
+  if (since === undefined && until === undefined) return true;
+  const at = itemStatusSince(item);
+  return (since === undefined || at >= since) && (until === undefined || at <= until);
+};
 
 // The queue: every decided card still on the plan (by when it was decided), then every card of a picked type in a
 // picked stage not yet decided, sorted as a board sorts (rank breaking ties).
@@ -75,9 +93,14 @@ export function sessionQueue(input: {
   const decided: Item[] = [];
   const matched: Item[] = [];
   for (const item of input.items) {
-    if (!live(item)) continue;
+    if (!readable(item, pick.archived)) continue;
     if (Object.hasOwn(decidedAt, item.id)) decided.push(item);
-    else if (typeIds.has(item.type) && statuses.has(itemStatus(item) ?? '')) matched.push(item);
+    else if (
+      typeIds.has(item.type) &&
+      statuses.has(itemStatus(item) ?? '') &&
+      inDoneRange(item, pick.since, pick.until)
+    )
+      matched.push(item);
   }
   decided.sort((a, b) => decidedAt[a.id]!.at - decidedAt[b.id]!.at || byRank(a, b));
   const sorted = sortCards(matched.sort(byRank), pick.sortBy, input.types);

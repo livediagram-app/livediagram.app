@@ -24,6 +24,7 @@
 
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
+import { isCommentLabel } from './comment-label';
 import {
   threadResolved,
   threadWithComment,
@@ -121,7 +122,8 @@ export function isComment(value: unknown): value is Comment {
     (c.mentions === undefined ||
       (Array.isArray(c.mentions) && c.mentions.length <= MENTIONS_MAX)) &&
     // Reactions (docs/specs/012-collaboration/comment-reactions.md), when present, are the bounded list.
-    isCommentReactions(c.reactions)
+    isCommentReactions(c.reactions) &&
+    (c.label === undefined || isCommentLabel(c.label))
   );
 }
 

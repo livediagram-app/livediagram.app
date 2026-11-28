@@ -19,10 +19,18 @@ export type CardThreadStartRequest = {
   mentions?: CommentMention[];
   title?: string;
   field?: string;
+  /** What the comment is: `review` for Sprint Review feedback (shown as Review Feedback); else 400 label_invalid. */
+  label?: 'review';
 };
 
-// POST /api/projects/:id/threads/:threadId/comments (a reply) and PUT .../comments/:commentId (an edit).
-export type CardThreadCommentRequest = { text: string; mentions?: CommentMention[] };
+// POST /api/projects/:id/threads/:threadId/comments (a reply) and PUT .../comments/:commentId (an edit). A reply may
+// carry `label` as a start does; an edit keeps the comment's own.
+export type CardThreadCommentRequest = {
+  text: string;
+  mentions?: CommentMention[];
+  /** What the comment is: `review` for Sprint Review feedback; only on a reply. */
+  label?: 'review';
+};
 
 // POST /api/projects/:id/threads/:threadId/comments/:commentId/reactions: the caller's own reaction on one comment,
 // on or off (docs/specs/012-collaboration/comment-reactions.md). The reaction is kept under the caller's collab key,

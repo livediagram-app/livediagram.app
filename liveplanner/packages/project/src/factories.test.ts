@@ -6,6 +6,8 @@ import {
   createAnnotation,
   createArrow,
   createComment,
+  isComment,
+  isCommentLabel,
   createComponent,
   scaleElements,
   createImage,
@@ -401,6 +403,16 @@ describe('comment helpers', () => {
     expect(c).toMatchObject({ text: 'hello', authorName: 'Ada', authorColor: '#ff0000' });
     expect(typeof c.createdAt).toBe('number');
     expect(c.id.length).toBeGreaterThan(0);
+  });
+
+  it('createComment keeps a Review Feedback label, and isComment checks it (items.md "Review Feedback")', () => {
+    const c = createComment('Tooltips', { name: 'Ada', color: '#ff0000' }, undefined, 'review');
+    expect(c.label).toBe('review');
+    expect(createComment('x', { name: 'A', color: '#000' })).not.toHaveProperty('label');
+    expect(isComment(c)).toBe(true);
+    expect(isComment({ ...c, label: 'praise' })).toBe(false);
+    expect(isCommentLabel('review')).toBe(true);
+    expect(isCommentLabel(1)).toBe(false);
   });
 
   it('activeCommentCount is 0 for undefined or resolved threads', () => {

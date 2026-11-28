@@ -15,6 +15,7 @@ import {
 import {
   applyElementDelta,
   isCellKey,
+  isCommentLabel,
   sanitizeMentions,
   takesCellThreads,
   threadAt,
@@ -118,6 +119,13 @@ export async function newComment(
   if (!text) return badRequest('missing text');
   if (text.length > COMMENT_TEXT_MAX) return badRequest('text too long');
   const mentions = sanitizeMentions(body.mentions);
+  // What it says it is (items.md "Review Feedback"): a known label, else refused.
+  if (body.label !== undefined && !isCommentLabel(body.label))
+    return json(
+      { error: 'label_invalid', message: 'label names review or nothing' },
+      { status: 400 },
+    );
+  const label = body.label;
   const writer = await getParticipant(ctx.env, owner);
   return {
     id: crypto.randomUUID(),
@@ -137,6 +145,7 @@ export async function newComment(
         }
       : {}),
     ...(mentions ? { mentions } : {}),
+    ...(label ? { label } : {}),
   };
 }
 

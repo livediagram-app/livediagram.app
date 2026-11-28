@@ -3,13 +3,18 @@
 // the tab's sync, persistence and late-joiner replay. Written only by the facilitator (an Editor). Pure: the caller
 // passes `now`. Not the session TOOLS (timer, dot vote: ./session.ts), which every tab keeps, a Session tab's too.
 import {
+  SESSION_FOLLOW_UPS_MAX,
   SESSION_KIND_OUTCOMES,
   SESSION_QUEUE_MAX,
+  isItemPerson,
   isSessionKindId,
+  itemAssignee,
   isSessionOutcome,
   normaliseBoardSort,
   sessionReason,
   type BoardSortLevel,
+  type Item,
+  type ItemPerson,
   type SessionKindId,
   type SessionOutcome,
 } from '@liveplanner/items';
@@ -38,6 +43,12 @@ export type SessionSetup = {
   timeboxMs?: number;
   // A kind with a tally (Sprint Planning): the estimate points the committed cards are tallied against; absent: none.
   capacity?: number;
+  // Sprint Review's done range: the cards that entered a picked stage from `since` and up to `until` (ms epochs);
+  // absent: open on that side.
+  since?: number;
+  until?: number;
+  // Sprint Review's presenter: absent, each card's assignee (changeable per card); 'none', no presenter shown.
+  presenter?: 'none';
 };
 
 export type SessionFacilitator = { id: string; name: string; color: string };
@@ -73,6 +84,10 @@ export type SessionTabState = {
   cardStartedAt?: number;
   // Card id -> what the session decided for it.
   decided?: Record<string, SessionDecision>;
+  // Sprint Review: a card id -> the presenter the facilitator named for it (null: no one), over its assignee.
+  presenters?: Record<string, ItemPerson | null>;
+  // Sprint Review: a reviewed card id -> the follow-up cards made from it, oldest first.
+  followUps?: Record<string, string[]>;
 };
 
 // What each session kind is (docs/specs/026-plan/session-tabs.md "Designed to grow"): its name, the outcomes its
@@ -86,6 +101,10 @@ export type SessionKindInfo = {
   // Its closing outcome (Bug Triage's Closed): asked its reason in the Close dialog, it moves the card to its close
   // stage; absent: the kind has none.
   closes?: SessionOutcome;
+  // Its completing outcome leaves the card where it is (Sprint Review's Reviewed: the work is finished already).
+  stays?: true;
+  // Its queue reads archived cards too, and its set-up takes a done range (Sprint Review).
+  archived?: true;
   grouping: 'none';
   tally: 'none' | 'estimate';
 };
@@ -110,6 +129,15 @@ export const SESSION_KINDS: Readonly<Record<SessionKindId, SessionKindInfo>> = {
     outcomes: SESSION_KIND_OUTCOMES.triage,
     completes: 'accepted',
     closes: 'closed',
+    grouping: 'none',
+    tally: 'none',
+  },
+  review: {
+    label: 'Sprint Review',
+    outcomes: SESSION_KIND_OUTCOMES.review,
+    completes: 'reviewed',
+    stays: true,
+    archived: true,
     grouping: 'none',
     tally: 'none',
   },
@@ -154,8 +182,17 @@ function readSetup(raw: unknown): SessionSetup {
     setup.timeboxMs = Math.min(SESSION_TIMEBOX_MAX_MS, Math.max(SESSION_TIMEBOX_MIN_MS, box));
   const capacity = sessionCapacity(r['capacity']);
   if (capacity) setup.capacity = capacity;
+  const since = moment(r['since']);
+  const until = moment(r['until']);
+  if (since !== undefined) setup.since = since;
+  if (until !== undefined && (since === undefined || until >= since)) setup.until = until;
+  if (r['presenter'] === 'none') setup.presenter = 'none';
   return setup;
 }
+
+// A range edge as kept: a finite moment, not negative.
+const moment = (v: unknown): number | undefined =>
+  typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : undefined;
 
 // A capacity as kept: a positive number rounded to a whole point, at most SESSION_CAPACITY_MAX; else none.
 export function sessionCapacity(raw: unknown): number | undefined {
@@ -210,6 +247,33 @@ function readDetail(d: Record<string, unknown>): SessionDecisionDetail {
   return out;
 }
 
+// Presenters as kept: a person or null per card, at most SESSION_QUEUE_MAX cards.
+function readPresenters(raw: unknown): Record<string, ItemPerson | null> | undefined {
+  if (!isObj(raw)) return undefined;
+  const out: Record<string, ItemPerson | null> = {};
+  let n = 0;
+  for (const [id, p] of Object.entries(raw)) {
+    if (!id || (p !== null && !isItemPerson(p))) continue;
+    out[id] = p === null ? null : { id: p.id, name: p.name, color: p.color };
+    if (++n === SESSION_QUEUE_MAX) break;
+  }
+  return n ? out : undefined;
+}
+
+// Follow-ups as kept: deduped card ids per reviewed card, at most SESSION_FOLLOW_UPS_MAX each.
+function readFollowUps(raw: unknown): Record<string, string[]> | undefined {
+  if (!isObj(raw)) return undefined;
+  const out: Record<string, string[]> = {};
+  let n = 0;
+  for (const [id, list] of Object.entries(raw)) {
+    const ids = strings(list, SESSION_FOLLOW_UPS_MAX);
+    if (!id || !ids.length) continue;
+    out[id] = ids;
+    if (++n === SESSION_QUEUE_MAX) break;
+  }
+  return n ? out : undefined;
+}
+
 // The tab's session as stored, or null when it holds none this build can run (absent, malformed, or a kind from a
 // later release).
 export function readSessionTab(raw: unknown): SessionTabState | null {
@@ -225,6 +289,10 @@ export function readSessionTab(raw: unknown): SessionTabState | null {
   if (typeof raw['cardStartedAt'] === 'number') out.cardStartedAt = raw['cardStartedAt'];
   const decided = readDecided(raw['decided']);
   if (decided) out.decided = decided;
+  const presenters = readPresenters(raw['presenters']);
+  if (presenters) out.presenters = presenters;
+  const followUps = readFollowUps(raw['followUps']);
+  if (followUps) out.followUps = followUps;
   return out;
 }
 
@@ -301,6 +369,40 @@ export function lastDecided(
 export function withNoDecisions(s: SessionTabState): SessionTabState {
   const { decided: _d, currentId: _c, cardStartedAt: _t, ...rest } = s;
   return rest;
+}
+
+// --- Sprint Review ---------------------------------------------------------
+
+// Who presents `item`: the person the facilitator named for it (null: no one), else its assignee; none at all with
+// the set-up's presenter off.
+export function presenterOf(
+  s: SessionTabState,
+  item: Pick<Item, 'id' | 'fields'>,
+): ItemPerson | null {
+  if (s.setup.presenter === 'none') return null;
+  if (s.presenters && Object.hasOwn(s.presenters, item.id)) return s.presenters[item.id] ?? null;
+  return itemAssignee(item) ?? null;
+}
+
+// The facilitator names `who` (null: no one) to present `itemId`.
+export function withPresenter(
+  s: SessionTabState,
+  itemId: string,
+  who: ItemPerson | null,
+): SessionTabState {
+  const person = who ? { id: who.id, name: who.name, color: who.color } : null;
+  return { ...s, presenters: { ...s.presenters, [itemId]: person } };
+}
+
+// A follow-up card made from `itemId`, kept after the ones before (once each, at most SESSION_FOLLOW_UPS_MAX).
+export function withFollowUp(
+  s: SessionTabState,
+  itemId: string,
+  followUpId: string,
+): SessionTabState {
+  const had = s.followUps?.[itemId] ?? [];
+  if (had.includes(followUpId) || had.length >= SESSION_FOLLOW_UPS_MAX) return s;
+  return { ...s, followUps: { ...s.followUps, [itemId]: [...had, followUpId] } };
 }
 
 // --- Timebox -----------------------------------------------------------------
