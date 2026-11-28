@@ -1,7 +1,6 @@
 # Session tabs
 
-Status: **implemented** (Refinement, Sprint Planning, Bug Triage, Sprint Review). Stand-up is designed for here and
-comes later.
+Status: **implemented** (Refinement, Sprint Planning, Bug Triage, Sprint Review, Stand-up).
 
 A **Session tab** turns a filtered, ordered slice of the plan's cards into a **queue** the team works through one
 card at a time. The first **session kind** is **Refinement**: the team reads each card, sharpens it, and marks it
@@ -16,34 +15,39 @@ queue beside it and one clear way to say "done, next". A second kind, **Sprint P
 ([Sprint Planning](#sprint-planning)), and a third, **Bug Triage**, walks every new bug and gets a decision on each:
 accepted, closed with a reason, skipped or flagged ([Bug Triage](#bug-triage)), and a fourth, **Sprint Review**, walks the
 work finished since the last review, demoing each card and keeping the room's feedback on it
-([Sprint Review](#sprint-review)). It is a **view over the real cards**, never a copy: every
+([Sprint Review](#sprint-review)), and a fifth, **Stand-up**, walks the team person by person through the cards they have in
+flight, so the meeting stays about the work rather than drifting into status reports around a big board
+([Stand-up](#stand-up)). It is a **view over the real cards**, never a copy: every
 edit, comment and move lands on the card itself, on every board it shows on.
 
 ## Domain language
 
-| Term             | Meaning                                                                                                                                                        | Not                              |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **Session tab**  | A tab of kind `session`: one queue of cards worked through together                                                                                            | meeting tab, ceremony            |
-| **session kind** | What the session is for: `refinement`, `planning`, `triage`, `review` (later `standup`), stored as `session.sessionKind`                                       | type (a card's), template        |
-| **queue**        | The cards the session works through, in order: those its set-up picks, and every card it has already decided                                                   | list, backlog                    |
-| **set-up**       | What a session picks and how: its card types, its stages, its order, its target stages and its timebox                                                         | config, filter                   |
-| **stage**        | A status (a board column) the session takes cards from                                                                                                         | column (a board's), state        |
-| **target stage** | Where the kind's completing outcome (Refined, Committed, Accepted) moves a card: the next stage in its type's order, or the one the set-up names               | destination (a form's)           |
-| **close stage**  | Where Bug Triage's Closed moves a card: the type's first closing stage (Won't Fix, Cancelled), or the one the set-up names                                     | done column                      |
-| **reason**       | The short words a Close is given ("Can't reproduce"), kept with the outcome and in the card's history                                                          | comment, note                    |
-| **duplicate**    | The card a closed bug repeats, linked on Close                                                                                                                 | copy (Duplicate makes one)       |
-| **outcome**      | What the session decided for a card: **Refined**, **Skipped**, **Flagged**, **Committed**, **Accepted**, **Closed** or **Reviewed** (each kind offers its own) | result, verdict                  |
-| **done range**   | Sprint Review's dates: the cards that entered a picked done stage from this day (and up to that one), "since the last review" by default                       | period, sprint                   |
-| **presenter**    | Who demos a card in Sprint Review: its assignee unless the facilitator names someone else                                                                      | owner, speaker                   |
-| **feedback**     | What the room said about a card in Sprint Review, kept as a comment on the card labelled **Review Feedback**                                                   | note, review comment             |
-| **follow-up**    | A new card made from feedback in Sprint Review, linked to the card it came from                                                                                | child, task                      |
-| **demo strip**   | Sprint Review's band over the card: its presenter, pull requests and designs, there to demo from                                                               | header, preview                  |
-| **capacity**     | Sprint Planning's optional figure, in estimate points, that the committed cards are tallied against                                                            | budget, velocity                 |
-| **tally**        | The committed cards' estimates added up, beside the capacity; cards with no estimate are counted apart, never as zero                                          | total, burn                      |
-| **current card** | The card the session is on, shown on the right for everyone                                                                                                    | selected card                    |
-| **facilitator**  | The one person who runs the session: moves it from card to card and decides outcomes                                                                           | host, owner, driver              |
-| **timebox**      | An optional length of time per card                                                                                                                            | timer (that is a session tool's) |
-| **fill button**  | The action button that fills with the theme's accent as it confirms (`FillActionButton`), shared by every session kind                                         | progress button                  |
+| Term             | Meaning                                                                                                                                                                       | Not                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **Session tab**  | A tab of kind `session`: one queue of cards worked through together                                                                                                           | meeting tab, ceremony            |
+| **session kind** | What the session is for: `refinement`, `planning`, `triage`, `review` or `standup`, stored as `session.sessionKind`                                                           | type (a card's), template        |
+| **queue**        | The cards the session works through, in order: those its set-up picks, and every card it has already decided                                                                  | list, backlog                    |
+| **set-up**       | What a session picks and how: its card types, its stages, its order, its target stages and its timebox                                                                        | config, filter                   |
+| **stage**        | A status (a board column) the session takes cards from                                                                                                                        | column (a board's), state        |
+| **target stage** | Where the kind's completing outcome (Refined, Committed, Accepted) moves a card: the next stage in its type's order, or the one the set-up names                              | destination (a form's)           |
+| **close stage**  | Where Bug Triage's Closed moves a card: the type's first closing stage (Won't Fix, Cancelled), or the one the set-up names                                                    | done column                      |
+| **reason**       | The short words a Close is given ("Can't reproduce"), kept with the outcome and in the card's history                                                                         | comment, note                    |
+| **duplicate**    | The card a closed bug repeats, linked on Close                                                                                                                                | copy (Duplicate makes one)       |
+| **outcome**      | What the session decided for a card: **Refined**, **Skipped**, **Flagged**, **Committed**, **Accepted**, **Closed**, **Reviewed** or **Discussed** (each kind offers its own) | result, verdict                  |
+| **person**       | Stand-up's unit: one person and the in-flight cards assigned to them; the cards with no assignee are **Unassigned**, always last                                              | member, attendee                 |
+| **people order** | The order Stand-up walks its people in: **Board Order**, **Alphabetical** or **Shuffled Daily**                                                                               | rota, sort                       |
+| **blocker**      | A card marked **Blocked** in a Stand-up: flagged, with a short reason kept on the card as a comment                                                                           | impediment, issue                |
+| **done range**   | Sprint Review's dates: the cards that entered a picked done stage from this day (and up to that one), "since the last review" by default                                      | period, sprint                   |
+| **presenter**    | Who demos a card in Sprint Review: its assignee unless the facilitator names someone else                                                                                     | owner, speaker                   |
+| **feedback**     | What the room said about a card in Sprint Review, kept as a comment on the card labelled **Review Feedback**                                                                  | note, review comment             |
+| **follow-up**    | A new card made from feedback in Sprint Review, linked to the card it came from                                                                                               | child, task                      |
+| **demo strip**   | Sprint Review's band over the card: its presenter, pull requests and designs, there to demo from                                                                              | header, preview                  |
+| **capacity**     | Sprint Planning's optional figure, in estimate points, that the committed cards are tallied against                                                                           | budget, velocity                 |
+| **tally**        | The committed cards' estimates added up, beside the capacity; cards with no estimate are counted apart, never as zero                                                         | total, burn                      |
+| **current card** | The card the session is on, shown on the right for everyone                                                                                                                   | selected card                    |
+| **facilitator**  | The one person who runs the session: moves it from card to card and decides outcomes                                                                                          | host, owner, driver              |
+| **timebox**      | An optional length of time per card (per person, in a Stand-up)                                                                                                               | timer (that is a session tool's) |
+| **fill button**  | The action button that fills with the theme's accent as it confirms (`FillActionButton`), shared by every session kind                                                        | progress button                  |
 
 **Naming beside the session tools.** A tab already carries **session tools**, the timer and the dot vote
 ([Session tools](../012-collaboration/session-tools.md), `session.ts`, `Tab.timer`, `Tab.vote`). A Session tab is a
@@ -363,10 +367,103 @@ bar, timebox, facilitator and fill button as Refinement; what it brings is below
   cards hold and on how many cards ("5 comments on 3 cards"), and **Follow-ups**: each made in the session, its
   number and title and the card it came from, pressing one opening it.
 
+## Stand-up
+
+A Stand-up session walks the team **person by person** through the cards they have in flight, so each person speaks
+to their own work, what is stuck gets flagged on the card itself, and nobody reads a status report at a big board. It
+is the same tab, queue, card, progress bar, timebox, facilitator and fill button as Refinement; its unit is a person
+rather than a card, and what it brings is below. It must stay quick: one press per action, a key for each, nothing
+asked that the card does not need.
+
+### Making one
+
+- Start Planning's **Sessions** holds **Stand-up** ("Walk the team person by person through their in-flight cards:
+  flag what's blocked, move what moved") beside the others. Choosing it opens **Set Up Stand-up**:
+  1. **Card Types** as Refinement's. It picks first the types with cards in an in-flight stage (a stage in the Doing
+     phase, or named In Progress, Doing, Started, In Development, In Dev, Development, In Review, Review, Code Review,
+     Testing, In Testing, QA or Blocked); else every type with cards; else the first type.
+  2. **In-flight Stages** (the Stages part, named for stand-up): those in-flight stages picked first; else each picked
+     type's first stage.
+  3. **People Order**: **Board Order** (the default: people in the order their first card sits on the board, the
+     stages in the plan's column order, then each column's hand order), **Alphabetical** (by name) or **Shuffled
+     Daily** (a fresh order each day, the same on every screen that day: seeded by the day, in UTC, and the tab).
+     **Unassigned** always comes last. A person's own cards read in board order.
+  4. **Timebox** as Refinement's, but **per person** ("min per person"); off by default.
+- There is no Order and no When part: Stand-up never moves a card on its own.
+- Start Session names the tab **Stand-up** while it keeps its default name.
+
+### The queue
+
+- The queue is every kind's (the picked types in the picked stages, live, held in the order a screen first queued
+  it), **grouped by Assignee**: one **person** per assignee holding their cards, then **Unassigned** with every card
+  that has none. A card's Assignee is one person, so a card sits under one person; reassigned mid-session, it moves to
+  its new person.
+- A card moved out of the picked stages by the session itself (Stage, below) stays in the queue, as a decided card
+  does in every kind.
+- The header counts **people**: "Stand-up 2 of 5 people".
+
+### The sidebar
+
+- One row per person, in the people order: their disc (a dashed **?** disc for Unassigned), their name, how many
+  cards they hold, and a tick once they are **Done** (the row then greyed as a decided card is).
+- The room's person's row is **unfolded** to their cards, each a row as in every kind (its number, title, type edge
+  and outcome glyph) with its stage's name. Any other person's row unfolds and folds on this screen alone by pressing
+  it (`aria-expanded`); the room's person unfolds again when the room moves on.
+- Pressing a card row opens it as in every kind: the facilitator's press moves the room (to that card, and so to its
+  person); anyone else's is a peek.
+
+### The progress bar
+
+- One segment **per person** (a single smooth bar past 40): a Done person's is the accent, the room's person's the
+  accent's tint, filling as their timebox runs and amber once it is up. It names itself "Stand-up progress, 2 of 5
+  people done".
+
+### Running it
+
+- The **timebox** counts per person: it starts when the room reaches a person and keeps running as the room moves
+  between their cards; it restarts only on the next person. Time's up turns the room's segment amber and chimes once,
+  as in every kind, and never moves on by itself.
+- The **action bar** holds **Undo Last**, **Blocked** and **Stage** on the left, the line "{Name} · card 1 of 3"
+  (with "· Blocked: {reason}" when the card was marked blocked in this session), the timebox's time left when on, and
+  the **Done** fill button (the shared fill animation, labelled "Done", named "Done: {Name}") on the right. On a phone
+  it stays one row: Undo Last, Blocked and Stage as compact controls, then Done.
+- **Blocked** (a flag; only while the card is not flagged already) opens the **Blocked dialog**, a centred dialog (a
+  sheet on a phone) whose illustrated header names the card ("Mark Blocked", "WI-41 · Retry failed payments"): a short
+  **reason** (a text field of up to 200 characters, with Waiting on Someone, Waiting on Review, Needs a Decision,
+  External Dependency and Unclear Requirements as chips that fill it in), then **Cancel** and **Mark Blocked** at its
+  foot. Mark Blocked needs a reason; Enter in the reason presses it and Escape cancels. It flags the real card
+  ([Flags](items.md#flags)), saves "Blocked: {reason}" as a comment on it (in the day's stand-up thread, below),
+  records **Flagged** with the reason in its history and on the tab, and keeps the room on the card.
+- **Stage** is a single picker of the card's type's stages, its own picked: choosing one moves the real card there
+  (to the end of that column) and keeps the move on the tab, so Undo takes it back. The room stays on the card; a card
+  not decided yet is recorded **Discussed** with the move, so it stays in the queue whatever its new stage.
+- **Comment** sits in a strip above the action bar: one text box ("Add a note to WI-41") and **Add Comment** (Enter
+  adds it, Shift+Enter a new line). It saves the text as a comment on the real card in the day's **stand-up thread**:
+  the newest open thread on the card titled "Stand-up, {day}" ("Stand-up, 28 Nov"), else a new one so titled. It is
+  there for whoever may comment (an Editor or a Participant), whether or not they facilitate; a Viewer has no strip.
+- **Done** finishes the room's person: each of their cards not decided yet is recorded **Discussed** in its history
+  and on the tab (a card stays in its stage: Stand-up moves nothing by itself), the person is kept as Done, and the
+  room moves to the first card of the next person not yet Done, wrapping round past the end; with every person Done
+  the session is complete.
+- A Done person's card shown again reads "{Name} done by Sam" in the action bar, with **Undo Done** for the
+  facilitator; Blocked, Stage and Comment still act on the card.
+- **Undo Last** takes back the latest decision: a Done (the person no longer Done, the Discussed it recorded taken
+  back, the room back on their first card), a Blocked (the flag off when it set it, its comment left as said) or a
+  Stage move (the card back in its own place in the stage it came from, while it is still where the move put it).
+- Keys, for the facilitator outside text fields: **D** Done, **B** Blocked, **U** Undo Last, **J** and **K** the next
+  and previous card (across people).
+
+### When everyone is done
+
+- **Session Complete** shows Discussed and Flagged, then **Blockers**: every card marked blocked in the session, each
+  with its number, title, person and reason, pressing one opening it (for the facilitator, the room goes back to it;
+  for anyone else, a peek); "No blockers today" with none. Undo Last and Start Again as in every kind.
+- An empty set-up says so, as in every kind.
+
 ## Real time
 
-- The set-up, the current card, the outcomes, the facilitator, the card's start time and Sprint Review's presenters
-  named and follow-ups made are the tab's `session`
+- The set-up, the current card, the outcomes, the facilitator, the card's start time, Sprint Review's presenters
+  named and follow-ups made and Stand-up's people Done are the tab's `session`
   field, written only by the facilitator (or an Editor taking the baton), so it travels as the tab's metadata does,
   persists with the tab and replays to a late joiner. The facilitator moving on reaches everyone within the
   autosave's beat.
@@ -382,21 +479,22 @@ Refinement session". Sprint Planning's read "Sam committed this in a Sprint Plan
 Sprint Planning session". Bug Triage's read "Sam accepted this in a Bug Triage session", "Sam closed this in a Bug
 Triage session: Can't reproduce", or "Sam closed this as a duplicate of BUG-12 in a Bug Triage session: Same root
 cause". Sprint Review's read "Sam reviewed this in a Sprint Review session" and "Sam skipped this in a Sprint Review
-session". An undo reads "Sam undid Closed in a Bug Triage session"; an outcome undone by the same person within the
+session". Stand-up's read "Sam discussed this in a Stand-up session" and "Sam flagged this in a Stand-up session:
+Waiting on the API keys". An undo reads "Sam undid Closed in a Bug Triage session"; an outcome undone by the same person within the
 history's grouping minute cancels out, as a flag and an unflag do. Refined, Committed, Accepted, Closed and Flagged
 also record the move, the flag or the duplicate link itself, as any write does; a follow-up records as the new card's
 creation and its link. The outcome is written by
-`POST /items/:itemId/session` (`{ session: 'refinement' | 'planning' | 'triage' | 'review', outcome, reason?, duplicateOf?,
-undone? }`, the outcome one the kind offers; a reason and a duplicate only with Closed), which writes nothing on the
-card, so a skip changes no Last Edited.
+`POST /items/:itemId/session` (`{ session: 'refinement' | 'planning' | 'triage' | 'review' | 'standup', outcome, reason?,
+duplicateOf?, undone? }`, the outcome one the kind offers; a reason with Closed or with a Stand-up's Flagged, a duplicate
+only with Closed), which writes nothing on the card, so a skip changes no Last Edited.
 
 ## Share roles
 
-| Role            | May                                                                                                                                                                                                                |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Editor**      | Make a Session tab and change its set-up; hold the facilitator baton (take it, hand it over, step down, take it over); run the session (Sprint Review's Reviewed, Follow-up and presenter picks the facilitator's) |
-| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board (Sprint Planning's Estimate strip, Bug Triage's priority in Details and Sprint Review's feedback box included)            |
-| **Viewer**      | Watch it live; peek at any card; read it (the Estimate strip reads its value, with no chips; Details reads as on a board; Sprint Review's feedback reads as a count)                                               |
+| Role            | May                                                                                                                                                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Editor**      | Make a Session tab and change its set-up; hold the facilitator baton (take it, hand it over, step down, take it over); run the session (Sprint Review's Reviewed, Follow-up and presenter picks, Stand-up's Done, Blocked and Stage the facilitator's) |
+| **Participant** | Watch it live; peek at any card; edit the card's fields and comment on it, as on a board (Sprint Planning's Estimate strip, Bug Triage's priority in Details, Sprint Review's feedback box and Stand-up's comment strip included)                      |
+| **Viewer**      | Watch it live; peek at any card; read it (the Estimate strip reads its value, with no chips; Details reads as on a board; Sprint Review's feedback reads as a count; Stand-up shows no comment strip)                                                  |
 
 The outcome route asks edit access; deciding and undoing are the facilitator's alone. A locked tab reads as a
 Viewer's.
@@ -408,24 +506,29 @@ and the fill button. A kind brings only:
 
 - its **set-up parts** (Refinement's: card types, stages, order, When Refined, timebox; Sprint Planning's add
   Capacity; Bug Triage's add When Closed and start on oldest first; Sprint Review's swap When Refined for the Done
-  Range and Presenter and start on last edited, oldest first),
+  Range and Presenter and start on last edited, oldest first; Stand-up's swap Order and When Refined for People Order,
+  its timebox per person),
 - its **actions** (Refinement's: Refined, Skip, Flag; Sprint Planning's: Commit, Skip; Bug Triage's: Accept, Close,
-  Skip, Flag; Sprint Review's: Reviewed, Skip, and Follow-up, which decides nothing), each an outcome with a label,
+  Skip, Flag; Sprint Review's: Reviewed, Skip, and Follow-up, which decides nothing; Stand-up's: Done, which decides
+  Discussed for each of a person's cards, Blocked, which flags with a reason, and Stage), each an outcome with a label,
   glyph, key and history wording; the completing one is the fill button and moves the card to its target stage
-  (a kind that **stays**, Sprint Review, moves nothing); a **closing** one (Bug Triage's Close) asks its reason in its
+  (a kind that **stays**, Sprint Review and Stand-up, moves nothing); a **closing** one (Bug Triage's Close) asks its reason in its
   own dialog and moves the card to its close stage,
 - what its queue **reads** (Sprint Review's: archived cards too, in the done range),
 - its **field strip** above the action bar when the decision needs one (Sprint Planning's Estimate strip; Bug
-  Triage has none, its fields live in Details; Sprint Review's feedback box), a band over the card when it demos
+  Triage has none, its fields live in Details; Sprint Review's feedback box; Stand-up's comment strip), a band over the card when it demos
   (Sprint Review's demo strip), and the sidebar rows' pill (the estimate, the priority, the presenter),
-- its **grouping** of the sidebar (Refinement's: none; Stand-up's will be by person),
+- its **grouping** of the sidebar (Refinement's: none; Stand-up's by person, which makes the person its unit: the
+  progress bar, the timebox, the fill button and Session Complete count people),
 - its **tally** (Sprint Planning's: estimates against capacity; none for Refinement or Bug Triage), which brings the
   tally meter and the capacity set-up part.
 
 `SESSION_KINDS` (in `@liveplanner/project`) names each kind's label, outcomes, completing outcome, grouping and tally,
 and the editor's `session-kinds.tsx` its wording and set-up defaults; a kind's own parts live in their own folder
-(`components/session/planning/`, `components/session/triage/`, `components/session/review/`) and the page draws them
-only for that kind.
+(`components/session/planning/`, `components/session/triage/`, `components/session/review/`,
+`components/session/standup/`) and the page draws them only for that kind. Every kind's page is drawn in the same
+frame (`SessionFrame`: the canvas cover, the sidebar or a phone's fold-down queue, the card side) under the same header
+(`SessionHeader`).
 
 ## Agents and export
 
@@ -438,11 +541,12 @@ only for that kind.
 
 In the `Plan` category (the `Session` category is a visit's): `Plan · Created · SessionTab` on Start Session,
 `Plan · Changed · SessionSetup` on a set-up change, `Plan · Used · SessionRefined | SessionSkipped |
-SessionFlagged | SessionCommitted | SessionAccepted | SessionClosed | SessionReviewed` on each outcome, `Plan · Used ·
+SessionFlagged | SessionCommitted | SessionAccepted | SessionClosed | SessionReviewed` on each outcome
+(`SessionDiscussed` once per person a Stand-up marks Done, `SessionFlagged` for a Blocked), `Plan · Used ·
 SessionUndone` on an undo and `Plan · Used · SessionFollowUp` on a follow-up made (the one chart of session outcomes,
-every kind's included). Feedback counts as the comment it is (`Comment · Created · Thread`, `Comment · Added · Item`).
+every kind's included). Feedback and a Stand-up's comment count as the comment they are (`Comment · Created · Thread`, `Comment · Added · Item`).
 
 ## Limits
 
 - 500 cards in a queue; 50 card types and 100 stages in a set-up; a timebox of 1 to 30 minutes; a capacity of 1 to
-  9 999 points; a Close reason of 200 characters; 20 follow-ups per card and a follow-up title of 200 characters.
+  9 999 points; a Close reason and a Blocked reason of 200 characters; 20 follow-ups per card and a follow-up title of 200 characters.
