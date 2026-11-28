@@ -38,6 +38,30 @@ const started = async (itemId: string, text: string) => {
 };
 
 describe('offline threads', () => {
+  it('keeps a Review Feedback label and a given title (items.md "Review Feedback")', async () => {
+    await withCards(A, B);
+    const answer = await writeThread(
+      scope,
+      {
+        kind: 'start',
+        itemId: A,
+        text: 'Tooltips',
+        title: 'Sprint Review feedback',
+        label: 'review',
+      },
+      who,
+    );
+    const t = ('thread' in answer ? answer.thread : null)!;
+    expect(t.title).toBe('Sprint Review feedback');
+    expect(t.comments[0]?.label).toBe('review');
+    const reply = await writeThread(
+      scope,
+      { kind: 'reply', threadId: t.id, text: 'More', label: 'review' },
+      who,
+    );
+    expect(('thread' in reply ? reply.thread : null)?.comments[1]?.label).toBe('review');
+  });
+
   it('starts, replies, edits, resolves, renames and deletes, through the dispatching client', async () => {
     await withCards(A, B);
     const t = await started(A, 'Basket empties after switching restaurants');

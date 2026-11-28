@@ -16,6 +16,7 @@ import {
   EditedCommentMark,
 } from '@liveworkspace/workbench/components/comments/CommentMarks';
 import { AiCommentMarks } from '@liveworkspace/ui/ai-comment-marks';
+import { ReviewFeedbackMark } from '@/components/session/review/ReviewFeedbackMark';
 import { useReactionTray } from '@liveworkspace/workbench/components/comments/CommentReactions';
 import {
   ScopedAddReactionButton,
@@ -124,6 +125,7 @@ export function CommentRow({
           {comment.editedAt ? <EditedCommentMark /> : null}
         </div>
         {comment.ai && !comment.agent ? <AiCommentMark /> : null}
+        {comment.label === 'review' ? <ReviewFeedbackMark /> : null}
         {editing && onEdit ? (
           <CommentEditField
             initial={comment.text}

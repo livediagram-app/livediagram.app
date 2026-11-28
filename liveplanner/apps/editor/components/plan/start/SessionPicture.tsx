@@ -4,7 +4,8 @@
 // Session tab drawn small in the tab's own colours, the queue on the left (two rows ticked and greyed, the room's card
 // lit) and the card on the right with its fill button. Sprint Planning's rows carry estimate pills and its card a
 // filling capacity meter. Bug Triage's rows carry priority dots, its card a strip of priority chips and a Close button
-// beside the fill button.
+// beside the fill button. Sprint Review's rows carry presenter discs, its card a row of design thumbnails and a
+// Follow-up button beside the fill button.
 import type { SessionKindId } from '@liveplanner/items';
 import type { PlanPalette } from '../plan-palette';
 
@@ -21,6 +22,9 @@ export function SessionPicture({
   const rows = [0, 1, 2, 3, 4];
   const planning = sessionKind === 'planning';
   const triage = sessionKind === 'triage';
+  const review = sessionKind === 'review';
+  // Sprint Review's rows' presenter discs.
+  const people = ['#0891b2', '#d97706', '#7c3aed', '#059669', '#0891b2'];
   // Bug Triage's rows' priority dots: urgent, high, none (dashed), medium, none.
   const dots = ['#dc2626', '#ea580c', null, '#ca8a04', null];
   return (
@@ -81,6 +85,7 @@ export function SessionPicture({
                   strokeWidth="0.5"
                 />
               ) : null}
+              {review ? <circle cx="34" cy={y + 4.5} r="2.2" fill={people[r]} /> : null}
               {triage ? (
                 <circle
                   cx="34"
@@ -113,6 +118,34 @@ export function SessionPicture({
             <rect x="51" y="42" width="60" height="4" rx="2" fill={palette.column} />
             <rect x="51" y="42" width="34" height="4" rx="2" fill={palette.focus} />
             <rect x="85" y="42" width="9" height="4" fill={palette.focus} fillOpacity="0.35" />
+          </>
+        ) : null}
+        {review ? (
+          <>
+            {[0, 1, 2].map((c) => (
+              <rect
+                key={c}
+                x={51 + c * 17}
+                y="38"
+                width="15"
+                height="11"
+                rx="1.5"
+                fill={palette.focus}
+                fillOpacity={0.18 + c * 0.12}
+                stroke={palette.focus}
+                strokeOpacity="0.5"
+                strokeWidth="0.5"
+              />
+            ))}
+            <rect
+              x="69"
+              y="55"
+              width="12"
+              height="8"
+              rx="2"
+              fill={palette.card}
+              stroke={palette.border}
+            />
           </>
         ) : null}
         {triage ? (

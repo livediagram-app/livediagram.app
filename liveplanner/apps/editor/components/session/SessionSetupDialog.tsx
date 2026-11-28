@@ -32,6 +32,7 @@ import { cardsWord, stageCounts, stagesFor } from './session-setup';
 import { SESSION_KIND_LOOKS } from './session-kinds';
 import { sessionHeroArt } from './SessionHeroArt';
 import { CapacityPart, NoEstimateNote } from './planning/CapacityPart';
+import { ReviewSetupParts } from './review/ReviewSetupParts';
 
 const MINUTE = 60_000;
 const TIMEBOX_CHIPS = [2, 3, 5, 10] as const;
@@ -45,6 +46,7 @@ export function SessionSetupDialog({
   initial,
   plan,
   settings,
+  lastReviewAt = null,
   onDone,
   onClose,
 }: {
@@ -53,6 +55,8 @@ export function SessionSetupDialog({
   plan: Pick<PlanContextValue, 'items' | 'types' | 'statusNames'>;
   // Opened from Session Settings: saves in place rather than starting.
   settings: boolean;
+  // Sprint Review: when another review session last decided a card (its Since Last Review chip), or null.
+  lastReviewAt?: number | null;
   onDone: (setup: SessionSetup) => void;
   onClose: () => void;
 }) {
@@ -60,16 +64,22 @@ export function SessionSetupDialog({
   const look = SESSION_KIND_LOOKS[sessionKind];
   const tallies = SESSION_KINDS[sessionKind].tally === 'estimate';
   const closes = !!SESSION_KINDS[sessionKind].closes;
+  // Sprint Review: Reviewed moves nothing (no When part), and it reads finished work in a done range.
+  const stays = !!SESSION_KINDS[sessionKind].stays;
+  const archived = !!SESSION_KINDS[sessionKind].archived;
   const { items, types, statusNames } = plan;
   const planStatuses = useMemo(() => [...statusNames.keys()], [statusNames]);
   const [setup, setSetup] = useState<SessionSetup>(initial);
   const picked = types.filter((t) => setup.typeIds.includes(t.id));
   const stages = stagesFor(setup.typeIds, types, planStatuses);
-  const counts = useMemo(() => stageCounts(items.values(), setup.typeIds), [items, setup.typeIds]);
+  const counts = useMemo(
+    () => stageCounts(items.values(), setup.typeIds, archived),
+    [items, setup.typeIds, archived],
+  );
   const nameOf = (s: string) => statusNames.get(s) ?? s;
   const queue = useMemo(
-    () => sessionQueue({ items: items.values(), types, pick: setup }),
-    [items, types, setup],
+    () => sessionQueue({ items: items.values(), types, pick: { ...setup, archived } }),
+    [items, types, setup, archived],
   );
   const fields = boardSortFieldsOf(picked);
   const [first, second] = setup.sortBy ?? [];
@@ -176,7 +186,15 @@ export function SessionSetupDialog({
             ) : null}
           </div>
         </section>
-        {picked.length ? (
+        {archived ? (
+          <ReviewSetupParts
+            id={titleId}
+            setup={setup}
+            lastReviewAt={lastReviewAt}
+            onChange={setSetup}
+          />
+        ) : null}
+        {picked.length && !stays ? (
           <section className="flex flex-col gap-2" aria-labelledby={`${titleId}-target`}>
             <h3 id={`${titleId}-target`} className={HEADING}>
               {look.targetHeading}

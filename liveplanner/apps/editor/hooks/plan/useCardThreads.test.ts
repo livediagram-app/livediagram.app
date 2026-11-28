@@ -174,6 +174,25 @@ describe('writing', () => {
     expect(track).toHaveBeenCalledWith('Comment', 'Created', 'Thread');
   });
 
+  it('shows a titled, labelled thread at once (items.md "Review Feedback")', async () => {
+    vi.mocked(fetchThreads).mockResolvedValue([]);
+    vi.mocked(writeThread).mockReturnValue(new Promise(() => {}) as never);
+    const { result } = hook();
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    act(() => {
+      void result.current.act({
+        kind: 'start',
+        itemId: 'card-1',
+        text: 'Hi',
+        title: 'Sprint Review feedback',
+        label: 'review',
+      });
+    });
+    const [shown] = result.current.threadsOf('card-1');
+    expect(shown).toMatchObject({ title: 'Sprint Review feedback' });
+    expect(shown?.comments[0]?.label).toBe('review');
+  });
+
   it('applies a reply, a resolve and a rename at once', async () => {
     vi.mocked(fetchThreads).mockResolvedValue([thread('th-a')]);
     vi.mocked(writeThread).mockReturnValue(new Promise(() => {}) as never);

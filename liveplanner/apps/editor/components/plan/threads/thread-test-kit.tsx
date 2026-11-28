@@ -75,7 +75,13 @@ export function fakeThreads(initial: CardThread[], opts: { refuse?: boolean } = 
       if (action.kind === 'start') {
         const made = thread('th-new', {
           title: 'Sam: started',
-          comments: [comment('c-new', { text: action.text, authorId: ME })],
+          comments: [
+            comment('c-new', {
+              text: action.text,
+              authorId: ME,
+              ...(action.label ? { label: action.label } : {}),
+            }),
+          ],
           createdBy: { name: 'Sam', color: '#2563eb', authorId: ME },
           updatedAt: Date.now(),
           cards: [{ projectId: PLAN, itemId: action.itemId, key: 1 }],
@@ -119,7 +125,11 @@ export function fakeThreads(initial: CardThread[], opts: { refuse?: boolean } = 
                     }
                   : {
                       kind: 'add' as const,
-                      comment: comment('c-reply', { text: action.text, authorId: ME }),
+                      comment: comment('c-reply', {
+                        text: action.text,
+                        authorId: ME,
+                        ...(action.label ? { label: action.label } : {}),
+                      }),
                     };
       const out = applyThreadChange(t, change, Date.now());
       if (!out.ok) return false;

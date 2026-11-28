@@ -6,7 +6,7 @@
 // timebox's time left, a closing outcome's button (Bug Triage's Close, which opens the Close dialog) and the completing
 // outcome's fill button (Refined, Commit, Accept); a decided card's outcome, with its Close reason and duplicate, and
 // Undo Outcome; for everyone else, who is running the session.
-import type { Ref } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { isFlagged, type Item, type SessionKindId, type SessionOutcome } from '@liveplanner/items';
 import { SESSION_KINDS, type SessionDecision } from '@liveplanner/project';
 import { lucideUndo2 } from '@liveworkspace/icons/lucide';
@@ -71,6 +71,7 @@ export function SessionActionBar({
   note,
   last,
   onCloseOpen,
+  extra,
   onDecide,
   onUndo,
 }: {
@@ -94,6 +95,8 @@ export function SessionActionBar({
   last?: SessionUndoLast | null | undefined;
   // A kind with a closing outcome: opens its Close dialog.
   onCloseOpen?: (() => void) | undefined;
+  // A kind's own action after its other outcomes (Sprint Review's Follow-up), for the facilitator.
+  extra?: ReactNode;
   onDecide: (outcome: SessionOutcome) => void;
   onUndo: () => void;
 }) {
@@ -164,6 +167,7 @@ export function SessionActionBar({
           </button>
         );
       })}
+      {extra}
       <span className="min-w-0 flex-1 truncate px-2 text-[13px] text-slate-500 max-sm:basis-full max-sm:order-first max-sm:px-0 max-sm:text-[12px] dark:text-slate-400">
         {targetName ? (
           <>
@@ -178,7 +182,7 @@ export function SessionActionBar({
             <strong className="font-semibold text-slate-800 dark:text-slate-100">
               {statusName}
             </strong>
-            : no open stage comes after it
+            {kind.stays ? null : ': no open stage comes after it'}
           </>
         )}
       </span>

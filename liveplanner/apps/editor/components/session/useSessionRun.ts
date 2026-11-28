@@ -42,6 +42,7 @@ const TRACK_TYPES = {
   committed: 'SessionCommitted',
   accepted: 'SessionAccepted',
   closed: 'SessionClosed',
+  reviewed: 'SessionReviewed',
 } as const satisfies Record<SessionOutcome, string>;
 
 // What a Close asks: its reason, and the card it duplicates (an id) when one is linked.
@@ -67,9 +68,12 @@ export function useSessionRun({
 }) {
   const { items, types } = plan;
   const { setup, decided, currentId } = session;
+  const kind = SESSION_KINDS[session.sessionKind];
+  // A kind that reviews finished work reads archived cards too, never restoring them.
+  const archived = !!kind.archived;
   const queue = useMemo(
-    () => sessionQueue({ items: items.values(), types, pick: setup, decided }),
-    [items, types, setup, decided],
+    () => sessionQueue({ items: items.values(), types, pick: { ...setup, archived }, decided }),
+    [items, types, setup, decided, archived],
   );
   // The whole list as the sidebar shows it: decided cards first, then those still to go.
   const list = useMemo(() => [...queue.decided, ...queue.toGo], [queue]);
@@ -81,13 +85,15 @@ export function useSessionRun({
   const peek = peekId && peekId !== current?.id ? (items.get(peekId) ?? null) : null;
   const shown = peek ?? current;
   const planStatuses = useMemo(() => [...plan.statusNames.keys()], [plan.statusNames]);
-  const kind = SESSION_KINDS[session.sessionKind];
+  // Where the completing outcome takes `item`; null when it stays (always, for a kind that stays: Sprint Review).
   const target = (item: Item) =>
-    sessionTarget(item, types, planStatuses, setup.targets, {
-      names: plan.statusNames,
-      phases: plan.statusPhases,
-      pass: SESSION_KIND_LOOKS[session.sessionKind].passStages,
-    });
+    kind.stays
+      ? null
+      : sessionTarget(item, types, planStatuses, setup.targets, {
+          names: plan.statusNames,
+          phases: plan.statusPhases,
+          pass: SESSION_KIND_LOOKS[session.sessionKind].passStages,
+        });
   // Where a Close takes `item`: with a duplicate linked, a Duplicate stage may win over the close stage.
   const closeTarget = (item: Item, duplicate = false) =>
     sessionCloseTarget(item, types, planStatuses, setup.closeTargets, {

@@ -142,9 +142,12 @@ opens over it), `triage-duplicate.ts` and `triage-words.ts` (the reason chips). 
 Link chips), `FeedbackStrip` (the text box, Add Feedback, the count), `FollowUpDialog` (the workbench `Dialog`,
 `size="md"`, `phoneSheet`, `HeroDialogHeader` with `followUpHeroArt`, `TextInput`, `Select`, `DialogFooter`),
 `ReviewSetupParts` (Done Range and Presenter), `ReviewSummary` (Session Complete's feedback and follow-ups),
-`PresenterDisc` (a row's aside), `review-feedback.ts` and `useReviewRun.ts` (feedback, presenter and follow-up writes).
+`review-range.ts` (Since Last Review from the plan's other review tabs, read only while Session Settings is open),
+`review-feedback.ts`, `useReviewRun.ts` (feedback, presenter and follow-up writes) and `useReviewParts.tsx`, which
+composes them for `SessionPage` (the demo and feedback strips, Follow-up and its dialog, the N key, a row's presenter
+`PersonDisc` aside, a decided card's follow-up count and the Session Complete summary).
 `SessionActionBar` takes `extra` (Sprint Review's Follow-up button) and a kind that stays reads "Stays in".
-`ThreadTile`'s comment rows draw `ReviewFeedbackChip` for a labelled comment.
+`CommentRow` draws `review/ReviewFeedbackMark` for a labelled comment.
 `session-words.ts` (a decided card's note, Undo Last's label) serves every kind. The tab writes go through `hooks/plan/useSessionTabActions.ts`. Start Planning
 gains the `sessions` category, the `session` start kind and `start/SessionPicture`.
 
@@ -189,7 +192,9 @@ decisions. The timebox ticks once a second only while a timebox is on. The page'
 - editor: `SessionPage.review.test.tsx` (Reviewed keeps the card's stage and records it, an archived card queued and
   left archived, feedback as a labelled comment for an Editor and a Participant, none for a Viewer, Follow-up making a
   linked card through Related and through the description, N key, presenter pick, Session Complete's feedback and
-  follow-ups), `review-parts.test.tsx` (demo strip, feedback strip, follow-up dialog, set-up parts),
+  follow-ups), `review-parts.test.tsx` (demo strip, feedback strip, follow-up dialog, set-up parts, summary,
+  feedback threads, Since Last Review), `useReviewRun.test.tsx` (the write guards per role, each follow-up link shape),
+  `CardThreads.test.tsx` (the Review Feedback chip), `session-setup.test.ts` (Done-phase start, the default range).
 - editor: `SessionPage.triage.test.tsx` (Accept past Needs Info, Close with reason and duplicate, Undo Last moving
   back and unlinking, U undoing a Flag, a moved card staying, the priority pills, roles, Session Complete),
   `triage-parts.test.tsx` (pill, duplicate link, words, Close dialog), `planning-parts.test.tsx` (tally states, estimate strip per role, pills, capacity part),
